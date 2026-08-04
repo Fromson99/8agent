@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>trust-parser 뷰어</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <h1>trust-parser</h1>
+  <nav id="tabs">
+    <button data-tab="chunks" class="on">파싱 결과</button>
+    <button data-tab="onto">온톨로지</button>
+    <button data-tab="reconcile">대사 결과</button>
+    <button data-tab="query">질의</button>
+  </nav>
+  <span id="meta"></span>
+</header>
+
+<main>
+  <!-- 파싱 결과 -->
+  <section id="tab-chunks">
+    <aside class="filters">
+      <label>문서
+        <select id="doc-pick"></select>
+      </label>
+      <div id="facets"></div>
+      <label>본문 검색
+        <input id="q-text" type="search" placeholder="텍스트 포함…">
+      </label>
+      <p class="hint" id="chunk-count"></p>
+    </aside>
+    <div class="pane" id="chunk-list"></div>
+    <div class="pane detail" id="chunk-detail">
+      <p class="hint">청크를 고르면 원문·태그·참조가 여기 나옵니다.</p>
+    </div>
+  </section>
+
+  <!-- 온톨로지 -->
+  <section id="tab-onto" hidden></section>
+
+  <!-- 대사 결과 -->
+  <section id="tab-reconcile" hidden></section>
+
+  <!-- 질의 -->
+  <section id="tab-query" hidden>
+    <form id="q-form">
+      <select id="q-doc"></select>
+      <input id="q-input" placeholder="예: 신탁금액이 얼마인가요? / 중도해지는 어떻게 하나요?" autocomplete="off">
+      <button>질의</button>
+    </form>
+    <div id="q-result"></div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

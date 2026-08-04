@@ -1,0 +1,145 @@
+{
+  "_note": [
+    "골든 테스트의 기대 결과 (SPEC §B11). 구현이 이 verdict 집합을 그대로 내야 통과다.",
+    "value·source 같은 세부는 구현 시 채워지므로, 테스트는 (field_name, verdict) 쌍과 stats 만 비교한다.",
+    "행 순서는 별지1 필드 순서를 따른다 — 정답 문서 기준 순회(§B3-2)의 결과이기도 하다.",
+    "",
+    "설계 의도: 5종 verdict 를 모두 덮고, §B11-3 의 포맷 차이 3종(금 1억원/24.1.1/연 1.5%)과 파생값(만기일)을 포함한다."
+  ],
+  "contract": "data/golden_pairs/acct_001/contract.chunks.json",
+  "summary": "data/golden_pairs/acct_001/summary.md",
+  "rows": [
+    {
+      "field_name": "계좌번호",
+      "topic": "계좌번호(별지1)",
+      "value_type": "account_no",
+      "contract_value": "123-45-678901",
+      "summary_value": "12345678901",
+      "verdict": "MATCH",
+      "note": "구분자(-) 제거 후 동일 — §B7 account_no"
+    },
+    {
+      "field_name": "신탁금액",
+      "topic": "신탁금액(제2조)",
+      "value_type": "number",
+      "contract_value": "금 일억원정 (₩ 100,000,000)",
+      "summary_value": "100,000,000원",
+      "verdict": "MATCH",
+      "note": "포맷 차이 (§B11-3). 한글 단위 '일억' 과 콤마 표기가 같은 Decimal 로 정규화되어야 한다"
+    },
+    {
+      "field_name": "신탁기간",
+      "topic": "신탁기간(제3조)",
+      "value_type": "date_range",
+      "contract_value": "2024년 6월 3일부터 2027년 6월 2일까지",
+      "summary_value": "24.6.3 ~ 27.6.2",
+      "verdict": "MATCH",
+      "note": "포맷 차이 (§B11-3). 2자리 연도 → ISO 변환 후 양 끝점 비교"
+    },
+    {
+      "field_name": "운용내역 통지여부",
+      "topic": "운용내역통지(제7조)",
+      "value_type": "option_set",
+      "contract_value": "통지 요청 (이메일)",
+      "summary_value": null,
+      "verdict": "MISSING_IN_SUMMARY",
+      "note": "별지1엔 있으나 요약서에 항목 자체가 없음. UNMAPPED 와 구분해야 한다 — 이름을 못 찾은 게 아니라 값이 없는 것"
+    },
+    {
+      "field_name": "기본보수",
+      "topic": "신탁보수(제12조)",
+      "value_type": "percent",
+      "contract_value": "기타특약사항에 기재",
+      "summary_value": "연 0.8%",
+      "verdict": "NEEDS_REVIEW",
+      "note": "계약서 값이 다른 문서를 가리키는 참조라 별지1만으로는 대조 불가. auto-pass/fail 금지(§B3-3)"
+    },
+    {
+      "field_name": "수익보수",
+      "topic": "신탁보수(제12조)",
+      "value_type": "percent",
+      "contract_value": "(연 3%)를 초과하는 이익 × (15)%",
+      "summary_value": "기준수익률(연 3%) 초과분의 15.00%",
+      "verdict": "MATCH",
+      "note": "포맷 차이 (§B11-3). 15 vs 15.00 정규화 + 기준수익률 3% 일치"
+    },
+    {
+      "field_name": "지급주기",
+      "topic": "이익계산및지급(제13조)",
+      "value_type": "text",
+      "contract_value": "매월",
+      "summary_value": "분기",
+      "verdict": "VALUE_MISMATCH",
+      "note": "진짜 불일치. 요약서가 틀린 것으로 판정한다(§B3-2 방향성)"
+    },
+    {
+      "field_name": "원금지급비율",
+      "topic": "이익계산및지급(제13조)",
+      "value_type": "percent",
+      "contract_value": "0%",
+      "summary_value": "0%",
+      "verdict": "MATCH"
+    },
+    {
+      "field_name": "지급기간",
+      "topic": "이익계산및지급(제13조)",
+      "value_type": "date_range",
+      "contract_value": "2024.07.01 ~ 2027.06.02",
+      "summary_value": "2024.7.1 ~ 2027.6.2",
+      "verdict": "MATCH",
+      "note": "0 패딩 차이만 있음"
+    },
+    {
+      "field_name": "지급계좌",
+      "topic": "이익계산및지급(제13조)",
+      "value_type": "account_no",
+      "contract_value": "123-45-678901",
+      "summary_value": null,
+      "verdict": "MISSING_IN_SUMMARY"
+    },
+    {
+      "field_name": "중도해지수수료",
+      "topic": "중도해지(제15조)",
+      "value_type": "range_tiers",
+      "contract_value": "1년 미만 0.5% / 1년~2년 0.3% / 2년 이상 0%",
+      "summary_value": "1년 미만 0.5% / 1년~2년 0.2% / 2년 이상 0%",
+      "verdict": "VALUE_MISMATCH",
+      "note": "구간은 같고 2번째 요율만 0.3% vs 0.2%. 구간·요율 쌍 집합 비교로 잡혀야 한다(§B7 range_tiers). 절대 놓치면 안 되는 유형(§B3-4)"
+    },
+    {
+      "field_name": "신탁자금 운용방법",
+      "topic": "운용방법(제5조)",
+      "value_type": "option_set",
+      "contract_value": "채무증권, 수익증권, 금융기관에의 예치 A",
+      "summary_value": "수익증권, 채무증권, 금융기관에의 예치 A",
+      "verdict": "MATCH",
+      "note": "순서만 다름. 집합 비교라 일치(§B7 option_set)"
+    },
+    {
+      "field_name": "세부 운용지시",
+      "topic": "세부운용지시(제5조)",
+      "value_type": "text",
+      "contract_value": "국고채권 30~50%, A0등급 이상 회사채 20~40%, 금융기관 예치 10~30%",
+      "summary_value": null,
+      "verdict": "UNMAPPED",
+      "note": "요약서에 '투자전략' 이라는 이름으로 값이 실제로 존재하지만 aliases.yaml 에 별칭이 없어 못 찾음. 문서 결함이 아니라 설정 결함이므로 MISSING_IN_SUMMARY 와 구분한다. aliases.yaml 에 '투자전략' 을 추가하면 MATCH 로 바뀌어야 한다 — 이 전환 자체가 테스트 대상이다"
+    },
+    {
+      "field_name": "만기일",
+      "topic": null,
+      "value_type": "date",
+      "contract_value": "신탁기간에서 계산",
+      "summary_value": "2027-06-02",
+      "verdict": "MATCH",
+      "note": "파생 필드(§B7). '동일'이 아니라 '계산상 일관'으로 판정하고 계산식을 note 에 남긴다. 온톨로지 fields.만기일.derived = 신탁기간.end"
+    }
+  ],
+  "stats": {
+    "total": 14,
+    "match": 8,
+    "value_mismatch": 2,
+    "missing": 2,
+    "unmapped": 1,
+    "needs_review": 1
+  }
+}

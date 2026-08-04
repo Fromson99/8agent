@@ -1,0 +1,429 @@
+{
+  "_doc": [
+    "용어집 — 계약서와 설명서가 같은 것을 다르게 부르는 표현을 하나로 묶는다.",
+    "",
+    "쓰이는 곳",
+    "  P2 태깅   섹션에 어떤 용어가 나왔는지 표시한다 (terms[])",
+    "  P3 1단계  두 섹션이 공유하는 용어 수로 대응 후보를 좁힌다. 전수 비교를 피하는 장치.",
+    "",
+    "두 가지 경로로 채워진다 (둘 다 이 파일에 남는다)",
+    "  source: \"user\"  현업·담당자가 직접 추가. 항상 우선한다.",
+    "  source: \"llm\"   태깅 중 LLM 이 발견해 제안한 것. 리포트에 '용어집 추가 제안'으로 올라오고,",
+    "                  사람이 확인해 source 를 user 로 바꾸면 확정된다.",
+    "  source: \"seed\"  초기값. 공개 문서(신한은행 신규가입신청서 등)에서 확인된 표현.",
+    "",
+    "필드",
+    "  canonical      정규형 키. tag_schema 의 태그/요소 id 와 맞추면 연결이 쉽다.",
+    "  display        사람이 읽는 이름",
+    "  surfaces[]     문서에 실제로 쓰이는 표현들. 대소문자·공백은 비교 시 무시된다.",
+    "  value_type     이 용어가 가지는 값의 성격 (tag_schema.value_types)",
+    "  confusable_with 같은 말로 불리지만 다른 사안인 용어. 오매칭 방지에 쓰인다.",
+    "  note           왜 이렇게 묶었는지"
+  ],
+  "version": "1.0",
+  "terms": [
+    {
+      "canonical": "early_termination_fee_rate",
+      "display": "중도해지수수료율",
+      "value_type": "percent",
+      "surfaces": [
+        "중도해지수수료율",
+        "해지수수료율"
+      ],
+      "confusable_with": [
+        "early_termination_fee"
+      ],
+      "source": "user",
+      "note": "산식의 피연산자. '중도해지수수료'(결과 금액)와 구분해야 산식 비교가 성립한다."
+    },
+    {
+      "canonical": "trust_fee_rate",
+      "display": "신탁보수율",
+      "value_type": "percent",
+      "surfaces": [
+        "신탁보수율",
+        "기본보수율",
+        "보수율"
+      ],
+      "confusable_with": [
+        "trust_fee"
+      ],
+      "source": "user",
+      "note": "보수 산식의 피연산자. '신탁보수'(결과 금액)와 구분한다."
+    },
+    {
+      "canonical": "asset_maturity",
+      "display": "편입자산 만기",
+      "value_type": "date",
+      "surfaces": [
+        "신탁재산의 만기",
+        "편입자산 만기",
+        "채권 만기",
+        "운용자산 만기"
+      ],
+      "confusable_with": [
+        "trust_period"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "beneficiary",
+      "display": "수익자",
+      "value_type": "text",
+      "surfaces": [
+        "수익자",
+        "원본수익자",
+        "이익수익자",
+        "우선수익자"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "complaint_process",
+      "display": "민원·분쟁조정",
+      "value_type": "text",
+      "surfaces": [
+        "민원처리",
+        "분쟁조정",
+        "금융감독원",
+        "한국금융투자협회"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "deposit_protection",
+      "display": "예금자보호",
+      "value_type": "boolean",
+      "surfaces": [
+        "예금자보호",
+        "예금보험공사",
+        "예금보호",
+        "원금비보장",
+        "비보호"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "distinguishing_features",
+      "display": "distinguishing_features",
+      "value_type": "text",
+      "surfaces": [
+        "실적배당상품",
+        "특정금전신탁"
+      ],
+      "source": "llm"
+    },
+    {
+      "canonical": "early_termination_fee",
+      "display": "중도해지수수료",
+      "value_type": "formula",
+      "surfaces": [
+        "중도해지수수료",
+        "해지수수료",
+        "중도상환수수료"
+      ],
+      "confusable_with": [
+        "trust_fee",
+        "front_end_fee"
+      ],
+      "source": "seed",
+      "note": "수수료 자체. 요율은 early_termination_fee_rate 로 분리했다."
+    },
+    {
+      "canonical": "elapsed_days",
+      "display": "경과일수",
+      "value_type": "text",
+      "surfaces": [
+        "중도해지기준일수",
+        "경과일수",
+        "보유일수",
+        "신탁계약유지일수"
+      ],
+      "source": "seed",
+      "note": "중도해지수수료 산식의 피연산자"
+    },
+    {
+      "canonical": "front_end_fee",
+      "display": "선취보수",
+      "value_type": "percent",
+      "surfaces": [
+        "선취보수",
+        "신탁선취보수",
+        "선취수수료",
+        "선취판매수수료"
+      ],
+      "confusable_with": [
+        "trust_fee"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "invest_method",
+      "display": "운용방법",
+      "value_type": "text",
+      "surfaces": [
+        "운용방법",
+        "운용제한",
+        "신탁재산의 운용",
+        "운용지시",
+        "운용방식",
+        "편입비율 한도"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "invest_target",
+      "display": "운용자산",
+      "value_type": "text",
+      "surfaces": [
+        "운용자산의 종류",
+        "운용자산",
+        "종목명",
+        "투자대상",
+        "운용대상",
+        "편입자산",
+        "신탁자금 운용방법",
+        "운용지시서"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "notification",
+      "display": "운용내역 통보",
+      "value_type": "text",
+      "surfaces": [
+        "운용내역 통보",
+        "운용내역",
+        "자산운용보고서",
+        "통보 주기"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "other_costs",
+      "display": "other_costs",
+      "value_type": "text",
+      "surfaces": [
+        "신탁사무 처리비용",
+        "기타비용",
+        "신탁사무 처리에 드는 비용"
+      ],
+      "source": "llm"
+    },
+    {
+      "canonical": "principal_average_balance",
+      "display": "신탁원본평균잔액",
+      "value_type": "text",
+      "surfaces": [
+        "신탁원본평균잔액",
+        "신탁금 평균잔액",
+        "연평균잔액",
+        "평균잔액",
+        "신탁순자산평균잔액"
+      ],
+      "source": "seed",
+      "note": "보수 산식의 피연산자. 표현이 회사마다 달라 산식 비교의 걸림돌이 된다."
+    },
+    {
+      "canonical": "principal_non_guarantee",
+      "display": "principal_non_guarantee",
+      "value_type": "text",
+      "surfaces": [
+        "원본과 이익의 보전",
+        "원본 손실 발생 가능",
+        "원본과 이익의 보전을 하지 아니함"
+      ],
+      "source": "llm"
+    },
+    {
+      "canonical": "profit_payment",
+      "display": "신탁이익 지급방식",
+      "value_type": "enum",
+      "surfaces": [
+        "신탁이익 지급",
+        "이익계산 및 지급",
+        "이익 지급방식",
+        "배당금 지급",
+        "만기시 일괄지급"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "redemption_terms",
+      "display": "상환조건",
+      "value_type": "text",
+      "surfaces": [
+        "조기상환",
+        "중도상환",
+        "만기상환",
+        "상환조건",
+        "환매조건"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "risk_factors",
+      "display": "위험요인",
+      "value_type": "text",
+      "surfaces": [
+        "위험요인",
+        "투자위험",
+        "원금손실",
+        "손실위험",
+        "최대 손실 가능액"
+      ],
+      "confusable_with": [
+        "risk_grade"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "risk_grade",
+      "display": "위험등급",
+      "value_type": "enum",
+      "surfaces": [
+        "위험등급",
+        "투자위험등급",
+        "위험도",
+        "등급 산정기준"
+      ],
+      "confusable_with": [
+        "risk_factors"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "success_fee",
+      "display": "성과보수",
+      "value_type": "percent",
+      "surfaces": [
+        "수익보수",
+        "신탁수익보수",
+        "성과보수"
+      ],
+      "confusable_with": [
+        "trust_fee"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "tax_treatment",
+      "display": "과세",
+      "value_type": "percent",
+      "surfaces": [
+        "과세",
+        "배당소득세",
+        "원천징수",
+        "분리과세",
+        "비과세",
+        "세제혜택"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "terminated_principal",
+      "display": "해지신탁원본",
+      "value_type": "text",
+      "surfaces": [
+        "해지신탁원본",
+        "해지원본",
+        "해지 시 신탁원본"
+      ],
+      "source": "seed",
+      "note": "중도해지수수료 산식의 피연산자"
+    },
+    {
+      "canonical": "termination_right",
+      "display": "위법계약해지권",
+      "value_type": "duration",
+      "surfaces": [
+        "위법계약해지권",
+        "위법계약의 해지",
+        "계약의 해지",
+        "해지·해제"
+      ],
+      "confusable_with": [
+        "withdrawal_right",
+        "early_termination_fee"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "trust_amount",
+      "display": "신탁금액",
+      "value_type": "money",
+      "surfaces": [
+        "신탁금액",
+        "최초 신탁금액",
+        "수탁원금",
+        "가입금액",
+        "신탁원본",
+        "명목금액",
+        "Notional"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "trust_fee",
+      "display": "신탁보수",
+      "value_type": "percent",
+      "surfaces": [
+        "신탁보수",
+        "신탁기본보수",
+        "기본보수",
+        "운용보수"
+      ],
+      "confusable_with": [
+        "front_end_fee",
+        "early_termination_fee",
+        "success_fee"
+      ],
+      "source": "seed"
+    },
+    {
+      "canonical": "trust_period",
+      "display": "신탁기간",
+      "value_type": "duration_or_date",
+      "surfaces": [
+        "신탁기간",
+        "신탁계약기간",
+        "계약기간",
+        "가입기간",
+        "만기",
+        "36개월",
+        "신탁기간(2024-06-03 ~ 2027-06-02)"
+      ],
+      "confusable_with": [
+        "asset_maturity"
+      ],
+      "source": "seed",
+      "note": "'만기'가 신탁 만기인지 편입 자산 만기인지 문맥 의존 — asset_maturity 와 구분 필요"
+    },
+    {
+      "canonical": "trust_purpose",
+      "display": "trust_purpose",
+      "value_type": "text",
+      "surfaces": [
+        "신탁의 목적",
+        "이익증식",
+        "신탁재산의 관리·운용",
+        "이익증식 및 신탁재산의 관리·운용"
+      ],
+      "source": "llm"
+    },
+    {
+      "canonical": "withdrawal_right",
+      "display": "청약철회권",
+      "value_type": "duration",
+      "surfaces": [
+        "청약철회권",
+        "청약의 철회",
+        "청약철회"
+      ],
+      "confusable_with": [
+        "termination_right"
+      ],
+      "source": "seed"
+    }
+  ]
+}

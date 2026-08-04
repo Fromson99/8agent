@@ -1,0 +1,295 @@
+{
+  "_doc": [
+    "문서에 어떤 요소가 있어야 하는지를 **사용자가 선언**하는 파일. 코드는 이 선언만 따른다.",
+    "",
+    "2계층으로 되어 있다 — 대사 목표가 2단계이기 때문이다.",
+    "  sections[]          1단계 '실제로 동일한 부분이 있는가' 의 대상. 문서의 전체 구조.",
+    "  sections[].elements[]  2단계 '실제로 값이 일치하는가' 의 대상. 섹션 안의 개별 용어와 값.",
+    "",
+    "파이프라인에서 쓰이는 방식",
+    "  P1 도클링이 문서를 섹션/표로 쪼갠다 (여기 선언과 무관, 순수 파싱)",
+    "  P2 LLM 이 각 섹션에 sections[].id 를 태깅한다. hints 는 참고 표현일 뿐 정답이 아니다.",
+    "  P3 태그가 같은 섹션끼리 1차 대응 → 애매하면 LLM 판정",
+    "  P4 대응된 섹션 안에서 elements[] 를 뽑아 value_type 별로 값을 비교한다",
+    "",
+    "선언에 없는 것을 LLM 이 발견하면 리포트의 '스키마 추가 제안' 에 올라온다. 버리지 않는다.",
+    "",
+    "필드 설명",
+    "  scope                 both | contract_only | statement_only",
+    "  required_in_statement always | never | {\"product_type_in\":[...]} | {\"product_type_not_in\":[...]}",
+    "  hints                 사용자가 아는 표면 표현. 없어도 되고, 있으면 태깅 정확도가 오른다.",
+    "  confusable_with       같은 말로 불리지만 다른 사안인 태그. 오매칭 방지에 쓰인다.",
+    "  elements[].value_type value_types 의 키. 이 타입에 따라 비교 방식이 정해진다.",
+    "  elements[].key        해당 섹션에서 이 요소가 대사의 핵심인지 (핵심이면 불일치 심각도 high)"
+  ],
+
+  "version": "1.0",
+
+  "value_types": {
+    "duration": "기간. LLM 이 {years, months, days} 로 반환. 코드가 총 개월로 환산해 비교한다.",
+    "percent": "비율. {value, per_annum}. 연환산 표기 차이를 코드가 판정한다.",
+    "money": "금액. {amount, currency}. 단위 표기는 LLM 이 풀어서 정수로 준다.",
+    "date": "날짜. {iso: 'YYYY-MM-DD'}.",
+    "duration_or_date": "기간 또는 만기일 중 문서가 쓴 쪽. 둘 다 오면 함께 담는다.",
+    "formula": "산식. {expr, operands[], ops[]}. 코드가 피연산자·연산자 다중집합으로 비교한다.",
+    "enum": "분류값(위험등급 등). {raw, code}. code 는 mapping_table 로 통일한다.",
+    "boolean": "여부. {value: true|false}.",
+    "ref": "다른 곳을 가리키는 참조. {target: '별지1'}. 값이 아니므로 따라가서 다시 뽑는다.",
+    "text": "서술. {text}. 코드로 동등성 판정이 안 되므로 LLM 에 넘긴다."
+  },
+
+  "sections": [
+    {
+      "id": "invest_target",
+      "display": "운용자산의 종류 또는 종목명",
+      "scope": "both",
+      "required_in_statement": "always",
+      "legal_ref": "필수 설명항목 1",
+      "hints": ["운용자산의 종류", "운용자산", "종목명", "투자대상", "운용지시서", "신탁자금 운용방법"],
+      "elements": [
+        { "id": "asset_types", "display": "자산 종류", "value_type": "text", "key": true },
+        { "id": "asset_names", "display": "개별 종목명", "value_type": "text" },
+        { "id": "allocation", "display": "편입비율", "value_type": "percent" }
+      ]
+    },
+    {
+      "id": "invest_method",
+      "display": "운용방법 또는 운용제한",
+      "scope": "both",
+      "required_in_statement": "always",
+      "legal_ref": "필수 설명항목 2",
+      "hints": ["운용방법", "운용제한", "신탁재산의 운용", "운용방식"],
+      "elements": [
+        { "id": "method", "display": "운용방법", "value_type": "text", "key": true },
+        { "id": "restriction", "display": "운용제한", "value_type": "text" }
+      ]
+    },
+    {
+      "id": "trust_fee",
+      "display": "신탁보수",
+      "scope": "both",
+      "required_in_statement": "always",
+      "legal_ref": "필수 설명항목 3",
+      "hints": ["신탁보수", "신탁기본보수", "기본보수", "보수율", "수수료"],
+      "confusable_with": ["front_end_fee", "early_termination_fee", "product_fee"],
+      "elements": [
+        { "id": "rate", "display": "보수율", "value_type": "percent", "key": true },
+        { "id": "formula", "display": "보수 산식", "value_type": "formula" },
+        { "id": "base", "display": "부과 기준", "value_type": "text" },
+        { "id": "timing", "display": "수취 시기", "value_type": "text" }
+      ]
+    },
+    {
+      "id": "front_end_fee",
+      "display": "선취보수",
+      "scope": "both",
+      "required_in_statement": "never",
+      "hints": ["선취보수", "신탁선취보수", "선취수수료"],
+      "confusable_with": ["trust_fee", "early_termination_fee"],
+      "elements": [
+        { "id": "rate", "display": "선취보수율", "value_type": "percent", "key": true },
+        { "id": "formula", "display": "산식", "value_type": "formula" },
+        { "id": "refund", "display": "환급 조건", "value_type": "text" }
+      ]
+    },
+    {
+      "id": "early_termination_fee",
+      "display": "중도해지수수료",
+      "scope": "both",
+      "required_in_statement": "always",
+      "hints": ["중도해지수수료", "중도해지수수료율", "해지수수료", "중도상환수수료"],
+      "confusable_with": ["trust_fee", "front_end_fee"],
+      "elements": [
+        { "id": "rate", "display": "수수료율", "value_type": "percent", "key": true },
+        { "id": "formula", "display": "산식", "value_type": "formula", "key": true },
+        { "id": "tiers", "display": "경과기간별 구간", "value_type": "text" },
+        { "id": "exemption", "display": "면제 사유", "value_type": "text" }
+      ]
+    },
+    {
+      "id": "redemption_terms",
+      "display": "조기·중도·만기상환 조건",
+      "scope": "both",
+      "required_in_statement": { "product_type_in": ["ELS편입", "파생편입", "ISA"] },
+      "legal_ref": "필수 설명항목 4",
+      "hints": ["조기상환", "중도상환", "만기상환", "상환조건", "환매조건"],
+      "elements": [
+        { "id": "early_condition", "display": "조기상환 조건", "value_type": "text", "key": true },
+        { "id": "maturity_condition", "display": "만기상환 조건", "value_type": "text" },
+        { "id": "evaluation_date", "display": "평가일", "value_type": "date" }
+      ]
+    },
+    {
+      "id": "termination_right",
+      "display": "신탁계약의 해지·해제(위법계약해지권 포함)",
+      "scope": "both",
+      "required_in_statement": "always",
+      "legal_ref": "필수 설명항목 5",
+      "hints": ["위법계약해지권", "위법계약의 해지", "해지·해제", "계약의 해지"],
+      "confusable_with": ["early_termination_fee", "withdrawal_right"],
+      "elements": [
+        { "id": "illegal_contract_period", "display": "위법계약해지 행사기간", "value_type": "duration", "key": true },
+        { "id": "grounds", "display": "해지 사유", "value_type": "text" },
+        { "id": "procedure", "display": "절차", "value_type": "text" }
+      ]
+    },
+    {
+      "id": "risk_factors",
+      "display": "운용방법/특정 종목의 위험요인",
+      "scope": "both",
+      "required_in_statement": "always",
+      "legal_ref": "필수 설명항목 6",
+      "hints": ["위험요인", "투자위험", "원금손실", "손실위험"],
+      "confusable_with": ["risk_grade"],
+      "elements": [
+        { "id": "principal_loss", "display": "원금손실 가능성", "value_type": "boolean", "key": true },
+        { "id": "max_loss", "display": "최대 손실 가능액", "value_type": "text" },
+        { "id": "risk_types", "display": "위험 유형", "value_type": "text" }
+      ]
+    },
+    {
+      "id": "withdrawal_right",
+      "display": "청약철회권",
+      "scope": "both",
+      "required_in_statement": "always",
+      "legal_ref": "필수 설명항목 7",
+      "hints": ["청약철회권", "청약의 철회", "청약철회"],
+      "confusable_with": ["termination_right"],
+      "elements": [
+        { "id": "period", "display": "철회 가능 기간", "value_type": "duration", "key": true },
+        { "id": "start_point", "display": "기산점", "value_type": "text" }
+      ]
+    },
+    {
+      "id": "deposit_protection",
+      "display": "예금자보호 여부",
+      "scope": "both",
+      "required_in_statement": "always",
+      "legal_ref": "필수 설명항목 8",
+      "hints": ["예금자보호", "예금보험공사", "예금보호"],
+      "elements": [
+        { "id": "protected", "display": "보호 대상 여부", "value_type": "boolean", "key": true },
+        { "id": "limit", "display": "보호 한도", "value_type": "money" }
+      ]
+    },
+    {
+      "id": "complaint_process",
+      "display": "민원처리 및 분쟁조정 절차",
+      "scope": "both",
+      "required_in_statement": "always",
+      "legal_ref": "필수 설명항목 9",
+      "hints": ["민원처리", "분쟁조정", "금융감독원"],
+      "elements": [
+        { "id": "channels", "display": "접수 기관", "value_type": "text", "key": true }
+      ]
+    },
+    {
+      "id": "affiliated_service",
+      "display": "연계·제휴 서비스",
+      "scope": "statement_only",
+      "required_in_statement": { "product_type_not_in": ["에스크로"] },
+      "legal_ref": "필수 설명항목 10",
+      "hints": ["연계·제휴", "제휴서비스", "부가서비스"],
+      "elements": [
+        { "id": "services", "display": "제공 서비스", "value_type": "text", "key": true }
+      ]
+    },
+    {
+      "id": "distinguishing_features",
+      "display": "유사 금융상품과 구별되는 특징",
+      "scope": "statement_only",
+      "required_in_statement": "always",
+      "legal_ref": "필수 설명항목 11",
+      "hints": ["구별되는 특징", "유사 금융상품", "상품의 특징"],
+      "elements": [
+        { "id": "features", "display": "구별 특징", "value_type": "text", "key": true }
+      ]
+    },
+    {
+      "id": "consumer_notice",
+      "display": "소비자 숙지 필요사항",
+      "scope": "statement_only",
+      "required_in_statement": "always",
+      "legal_ref": "필수 설명항목 12",
+      "hints": ["숙지", "소비자 유의사항", "반드시 확인"],
+      "elements": [
+        { "id": "notices", "display": "숙지 사항", "value_type": "text", "key": true }
+      ]
+    },
+    {
+      "id": "risk_grade",
+      "display": "위험등급 및 등급 산정기준",
+      "scope": "both",
+      "required_in_statement": "always",
+      "legal_ref": "필수 설명항목 13",
+      "hints": ["위험등급", "투자위험등급", "등급 산정기준"],
+      "confusable_with": ["risk_factors"],
+      "mapping_key": "risk_grade",
+      "elements": [
+        { "id": "grade", "display": "위험등급", "value_type": "enum", "key": true, "mapping_key": "risk_grade" },
+        { "id": "basis", "display": "산정 기준", "value_type": "text" },
+        { "id": "volatility", "display": "변동성 구간", "value_type": "text" }
+      ]
+    },
+
+    {
+      "id": "trust_amount",
+      "display": "신탁금액",
+      "scope": "both",
+      "required_in_statement": "always",
+      "hints": ["신탁금액", "최초 신탁금액", "수탁원금", "가입금액", "신탁원본"],
+      "elements": [
+        { "id": "initial", "display": "최초 신탁금액", "value_type": "money", "key": true },
+        { "id": "additional", "display": "추가신탁 가능 여부", "value_type": "boolean" }
+      ]
+    },
+    {
+      "id": "trust_period",
+      "display": "신탁기간",
+      "scope": "both",
+      "required_in_statement": "always",
+      "hints": ["신탁기간", "신탁계약기간", "계약기간"],
+      "confusable_with": ["asset_maturity", "termination_right"],
+      "elements": [
+        { "id": "length", "display": "기간", "value_type": "duration_or_date", "key": true },
+        { "id": "start", "display": "시작일", "value_type": "date" },
+        { "id": "end", "display": "만기일", "value_type": "date" },
+        { "id": "extension", "display": "연장 가능 여부", "value_type": "boolean" }
+      ]
+    },
+    {
+      "id": "beneficiary",
+      "display": "수익자",
+      "scope": "both",
+      "required_in_statement": "never",
+      "hints": ["수익자", "원본수익자", "이익수익자"],
+      "elements": [
+        { "id": "principal", "display": "원본수익자", "value_type": "text", "key": true },
+        { "id": "income", "display": "이익수익자", "value_type": "text" }
+      ]
+    },
+    {
+      "id": "profit_payment",
+      "display": "신탁이익 지급방식",
+      "scope": "both",
+      "required_in_statement": "never",
+      "hints": ["신탁이익 지급방식", "이익계산 및 지급", "배당금 지급"],
+      "mapping_key": "profit_payment",
+      "elements": [
+        { "id": "method", "display": "지급방식", "value_type": "enum", "key": true, "mapping_key": "profit_payment" },
+        { "id": "schedule", "display": "지급 시기", "value_type": "text" }
+      ]
+    },
+    {
+      "id": "tax_treatment",
+      "display": "과세",
+      "scope": "both",
+      "required_in_statement": "never",
+      "hints": ["과세", "세금", "비과세", "분리과세", "원천징수"],
+      "elements": [
+        { "id": "rate", "display": "세율", "value_type": "percent", "key": true },
+        { "id": "basis", "display": "과세 근거", "value_type": "text" }
+      ]
+    }
+  ]
+}

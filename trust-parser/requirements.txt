@@ -1,0 +1,6 @@
+docling>=2.117     # T1 파싱: 레이아웃·표(TableFormer)·provenance
+pymupdf>=1.24      # T1 born-digital 판별, 골든 PDF 생성
+pdfplumber>=0.11   # 도클링이 표를 놓친 경우의 폴백 (§7 엣지 케이스)
+pydantic>=2.0      # 스키마 검증
+PyYAML>=6.0        # 온톨로지 로더
+pytest>=8.0

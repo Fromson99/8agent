@@ -1,0 +1,156 @@
+{
+  "document": "특정금전신탁 계약서 (삼성증권, ss2207)",
+  "schema_version": "facet-v1",
+  "schema_note": {
+    "axes": {
+      "role": ["약관본문", "별지1_입력", "별지2_변경"],
+      "topic": "조(article)를 앵커로 하는 공유 개념 — 본문과 별지가 같은 topic을 공유",
+      "level": ["조", "항", "호", "필드", "표"]
+    },
+    "refs": "제N조 / 제N항 / [별지N] 패턴을 정규식으로 추출한 참조 간선",
+    "provenance": "bbox는 실제 파서(레이아웃 검출) 연결 시 채워짐. 여기서는 page만 표기."
+  },
+  "chunks": [
+    {
+      "chunk_id": "body-a01",
+      "role": "약관본문",
+      "level": "조",
+      "article": "제1조",
+      "article_title": "신탁의 목적",
+      "topic": "신탁목적(제1조)",
+      "heading_path": ["특정금전신탁 계약서", "제1조(신탁의 목적)"],
+      "refs": [],
+      "provenance": { "page": 1, "bbox": null },
+      "text": "위탁자는 수익자의 이익증식 및 신탁재산 관리를 목적으로 금전을 신탁한다."
+    },
+    {
+      "chunk_id": "body-a02-p2",
+      "role": "약관본문",
+      "level": "항",
+      "article": "제2조",
+      "article_title": "신탁금액",
+      "clause": "②",
+      "topic": "신탁금액(제2조)",
+      "heading_path": ["특정금전신탁 계약서", "제2조(신탁금액)", "②"],
+      "refs": ["제3조"],
+      "provenance": { "page": 1, "bbox": null },
+      "text": "위탁자는 제3조에서 정한 신탁기간 이내에서 수탁자와 합의하에 추가로 금전을 신탁할 수 있다."
+    },
+    {
+      "chunk_id": "body-a15-p1",
+      "role": "약관본문",
+      "level": "항",
+      "article": "제15조",
+      "article_title": "중도해지",
+      "clause": "①",
+      "topic": "중도해지(제15조)",
+      "heading_path": ["특정금전신탁 계약서", "제15조(중도해지)", "①"],
+      "refs": ["제3조", "제12조", "별지1"],
+      "provenance": { "page": 2, "bbox": null },
+      "text": "제3조에서 정한 신탁기간 종료 전에 신탁을 해지하고자 할 때에는 위탁자와 수익자의 연서로써 수탁자에게 해지를 신청할 수 있으며 수탁자는 특별한 사유가 없는 한 이에 응하여야 한다. 신탁기간 종료 전에 신탁을 해지하는 경우에는 제12조에서 정한 신탁보수 중 중도해지 시까지의 신탁보수와 [별지1] 신탁계약 세부내역에 정한 중도해지수수료를 받는다. 다만, 신탁재산을 처분하기 곤란하여 신탁원본 및 신탁이익의 상환이 정상적으로 이루어지지 않거나 신탁재산의 만기가 도래하지 아니한 경우 등 특별한 사유가 있는 때에는 신탁재산을 처분하여 현금화가 가능할 때까지 중도해지가 불가능할 수 있으며, 중도해지가 가능하더라도 가격조건이 불리하게 되어 수익률이 하락할 수 있다."
+    },
+    {
+      "chunk_id": "body-a15-p3",
+      "role": "약관본문",
+      "level": "항",
+      "article": "제15조",
+      "article_title": "중도해지",
+      "clause": "③",
+      "topic": "중도해지(제15조)",
+      "heading_path": ["특정금전신탁 계약서", "제15조(중도해지)", "③"],
+      "refs": ["제2조", "제15조"],
+      "provenance": { "page": 2, "bbox": null },
+      "text": "위탁자가 제2조 제3항에 따라 신탁금을 출금하는 경우 그 범위 내에서 제1항의 중도해지가 있는 것으로 본다."
+    },
+    {
+      "chunk_id": "body-a16-p1",
+      "role": "약관본문",
+      "level": "항",
+      "article": "제16조",
+      "article_title": "신탁의 종료",
+      "clause": "①",
+      "topic": "신탁종료(제16조)",
+      "heading_path": ["특정금전신탁 계약서", "제16조(신탁의 종료)", "①"],
+      "refs": [],
+      "provenance": { "page": 2, "bbox": null },
+      "text": "이 신탁계약의 종료사유는 다음 각 호와 같다.",
+      "items": [
+        { "level": "호", "no": "1", "text": "신탁기간이 만료된 경우" },
+        { "level": "호", "no": "2", "text": "신탁의 목적을 달성하였거나 달성할 수 없게 된 경우" },
+        { "level": "호", "no": "3", "text": "신탁계약이 전부해지되는 경우" }
+      ]
+    },
+    {
+      "chunk_id": "app1-field-amount",
+      "role": "별지1_입력",
+      "level": "필드",
+      "article": "제2조",
+      "article_title": "신탁금액",
+      "topic": "신탁금액(제2조)",
+      "heading_path": ["[별지1] 신탁계약 세부내역", "신탁금액"],
+      "cross_ref_explicit": "계약서제2조",
+      "refs": ["제2조"],
+      "provenance": { "page": 5, "bbox": null },
+      "value_template": "금 ______ 원정 (₩ ______)",
+      "text": "신탁금액: 금 ___ 원정 (₩ ___)  [사용자 입력]"
+    },
+    {
+      "chunk_id": "app1-field-fee",
+      "role": "별지1_입력",
+      "level": "표",
+      "article": "제15조",
+      "article_title": "중도해지",
+      "topic": "중도해지(제15조)",
+      "heading_path": ["[별지1] 신탁계약 세부내역", "중도해지수수료"],
+      "cross_ref_explicit": "계약서제15조",
+      "refs": ["제15조"],
+      "provenance": { "page": 5, "bbox": null },
+      "table_options": [
+        "신탁계약일로부터 (___) 미만 경과 시 : 해지신탁금의 (___)%",
+        "신탁계약일로부터 (___) 이상 (___) 미만 경과 시 : 해지신탁금의 (___)",
+        "신탁계약일로부터 (___) 이상 경과 시 : 해지신탁금의 (___)%",
+        "해지 신탁금의 (___)% × (신탁계약 만기일까지 잔여일수 ÷ 신탁기간 총 일수)"
+      ],
+      "text": "중도해지수수료 [사용자 선택/입력 · 다단 조건 표]"
+    },
+    {
+      "chunk_id": "app1-runmethod-checklist",
+      "role": "별지1_입력",
+      "level": "표",
+      "article": "제5조",
+      "article_title": "신탁재산의 운용",
+      "topic": "운용방법(제5조)",
+      "heading_path": ["[별지1] 신탁계약 세부내역", "신탁자금 운용방법"],
+      "refs": ["제5조", "별지1"],
+      "provenance": { "page": 5, "bbox": null },
+      "structure": "checkbox_grid",
+      "options": [
+        { "no": 1, "label": "채무증권", "checked": false },
+        { "no": 2, "label": "지분증권", "checked": false },
+        { "no": 3, "label": "수익증권", "checked": false },
+        { "no": 4, "label": "파생결합증권", "checked": false },
+        { "no": 5, "label": "파생결합사채", "checked": false },
+        { "no": 6, "label": "증권예탁증권", "checked": false },
+        { "no": 7, "label": "외화증권", "checked": false },
+        { "no": 8, "label": "장내파생상품", "checked": false },
+        { "no": 9, "label": "장외파생상품", "checked": false },
+        { "no": 10, "label": "금융기관에의 예치 A", "checked": false },
+        { "no": 11, "label": "금융기관에의 예치 B", "checked": false },
+        { "no": 12, "label": "발행어음", "checked": false },
+        { "no": 13, "label": "금전채권", "checked": false },
+        { "no": 14, "label": "대출", "checked": false },
+        { "no": 15, "label": "어음", "checked": false },
+        { "no": 16, "label": "양도성 예금증서", "checked": false },
+        { "no": 17, "label": "환매조건부 매매", "checked": false },
+        { "no": 18, "label": "증권의 대여 또는 차입", "checked": false },
+        { "no": 19, "label": "보험금 지급 청구권", "checked": false },
+        { "no": 20, "label": "실물자산", "checked": false },
+        { "no": 21, "label": "무체 재산권", "checked": false },
+        { "no": 22, "label": "부동산의 매수 또는 개발", "checked": false },
+        { "no": 23, "label": "부동산 관련 권리", "checked": false },
+        { "no": 24, "label": "기타 자본시장과 금융투자업에 관한 법률에서 정한 방법", "checked": false }
+      ],
+      "text": "신탁자금 운용방법 1~24 중 선택 [체크박스 그리드 · 사용자 √ 표기]"
+    }
+  ]
+}

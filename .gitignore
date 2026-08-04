@@ -1,0 +1,22 @@
+# 비밀값 — 절대 커밋 금지
+.env
+.env.local
+*.key
+
+# 가상환경 (docling 이 torch 를 끌고 와 수 GB 입니다)
+# 슬래시 없이 — trust-parser/.venv 는 first-agent/.venv 를 가리키는 심볼릭 링크입니다.
+.venv
+
+# 실행 산출물
+out/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# 원본 은행 문서 — 공개 저장소에 재배포하지 않습니다.
+# 파이프라인을 돌리려면 각 사 공시 자료에서 직접 내려받아 이 경로에 두세요.
+first-agent/dataset/
+trust-parser/data/ss2207_special_trust.pdf
+
+# data/golden_pairs/ 는 제외하지 않습니다 — tools/make_golden_pdf.py 로 만든
+# 합성 테스트 픽스처이고, 채워진 값은 전부 지어낸 것입니다(실제 체결 건 아님).
