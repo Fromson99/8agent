@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AGENT6 — 근거 연결 편집</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="top">
+  <h1>AGENT6 근거 연결</h1>
+  <span class="sub" id="summary">불러오는 중…</span>
+  <span class="tabs">
+    <button id="tab-list" class="tab on">목록</button>
+    <button id="tab-canvas" class="tab">캔버스</button>
+  </span>
+  <span class="grow"></span>
+  <a class="navlink" href="/structure/">← 구조 해석 검수</a>
+  <label class="chk"><input type="checkbox" id="only-linked"> 연결된 구역만</label>
+  <label class="chk"><input type="checkbox" id="only-blocked"> 차단 항목만</label>
+  <button id="reload">다시 읽기</button>
+</header>
+
+<div id="banner" class="banner hidden"></div>
+
+<main class="cols">
+
+  <!-- 왼쪽: 코퍼스 선택 -->
+  <aside class="pane left">
+    <h2>구조화된 문서</h2>
+    <p class="hint">core 가 구조화한 코퍼스입니다. 고르면 가운데에 구역 트리가 펼쳐집니다.</p>
+    <div id="corpora"></div>
+  </aside>
+
+  <!-- 가운데: 구역 트리 -->
+  <section class="pane mid">
+    <h2 id="mid-title">구역</h2>
+    <input id="q" type="search" placeholder="조문 내용으로 찾기 (2글자 이상)">
+    <div id="tree" class="scroll"></div>
+  </section>
+
+  <!-- 연결선 -->
+  <svg id="wires" aria-hidden="true"></svg>
+  <div id="wirehint" class="wirehint"></div>
+
+  <!-- 오른쪽: 체크리스트 -->
+  <section class="pane right">
+    <h2>체크리스트</h2>
+    <p class="hint">항목을 고른 뒤 왼쪽 구역의 <b>잇기</b>를 누르면 선이 생깁니다.</p>
+    <div id="items" class="scroll"></div>
+  </section>
+
+</main>
+
+<!-- 캔버스 보기 — 법령 카드(좌) · 체크리스트 카드(우), 각 줄이 포트 -->
+<div id="cvwrap" class="cvwrap hidden">
+  <div id="canvas" class="canvas"></div>
+  <div id="cvhint" class="wirehint"></div>
+
+  <!-- 문서 노드를 누르면 열리는 구조 테이블. 여기서 조문을 캔버스로 꺼낸다. -->
+  <div id="cvtable" class="cvtable hidden">
+    <div class="cvtbar">
+      <b>구조 테이블</b>
+      <input id="cvq" type="search" placeholder="조문·제목·본문으로 찾기">
+      <span id="cvcount" class="sub"></span>
+      <span class="grow"></span>
+      <button id="cvclose" class="mini">닫기</button>
+    </div>
+    <div class="cvtscroll">
+      <table class="cvt">
+        <thead><tr><th>구역 (트리)</th><th>본문</th><th>하위</th>
+          <th>연결</th><th>계층 선택</th></tr></thead>
+        <tbody id="cvtbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="detail" class="detail hidden"></div>
+<script>
+  /* 화면이 죽으면 **빈 화면 대신 이유를** 보여 준다. 브라우저 콘솔을 열지 않으면
+     "아무것도 안 나온다" 밖에 알 수 없어서, 무엇이 어디서 터졌는지 잃는다. */
+  window.addEventListener("error", (e) => {
+    const b = document.getElementById("banner");
+    if (!b) return;
+    b.textContent = `화면 오류: ${e.message} (${(e.filename || "").split("/").pop()}:${e.lineno})`;
+    b.classList.remove("hidden");
+  });
+</script>
+<script src="app.js"></script>
+<script src="canvas.js"></script>
+<script>
+  document.getElementById("tab-list").onclick = () => cvToggle(false);
+  document.getElementById("tab-canvas").onclick = () => cvToggle(true);
+  cvInit();
+</script>
+</body>
+</html>

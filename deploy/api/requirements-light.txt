@@ -1,0 +1,14 @@
+# 가벼운 이미지 (~150MB) — PDF 파싱을 뺀다.
+#
+# 돌아가는 것:  /v1/parser/reconcile(마크다운 요약서), /v1/parser/reconcile/json,
+#              /v1/parser/query, /v1/parser/ontology, /v1/parser/fields, /viewer
+# 503 이 나는 것: /v1/parser/parse, PDF 요약서 대사, /v1/agent/* (txt·md 입력 제외)
+#
+# 이미 만들어 둔 chunks.json 을 넣어 쓰는 배포라면 이쪽으로 충분하다.
+
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+pydantic>=2.0
+PyYAML>=6.0
+anthropic>=0.60

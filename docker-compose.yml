@@ -1,0 +1,61 @@
+# 구조 해석 검수 서비스 — 이 저장소의 **기본** 서비스다.
+#
+#   docker compose up -d --build
+#   open http://localhost:5566
+#   docker compose logs -f
+#   docker compose down
+#
+# 레거시 두 엔진(archive/trust-parser-v1 · first-agent)을 싣는 API 는
+# `deploy/api/docker-compose.yml` 에 따로 있다. 이 서비스는 core.structure 만 있으면 돈다.
+
+# 프로젝트 이름을 못 박는다 — 디렉토리 이름이 바뀌어도 기존 볼륨
+# (8-agent_structure-data · 8-agent_hf-models)에 계속 붙는다.
+name: 8-agent
+
+services:
+  structure:
+    build:
+      context: .                          # 루트여야 core/ 를 복사할 수 있다
+      dockerfile: deploy/structure/Dockerfile
+      args:
+        BAKE_MODELS: "${BAKE_MODELS:-1}"  # 0 이면 빌드가 빨라지고 첫 요청이 느려진다
+    image: structure-interpreter:latest
+    container_name: structure-viewer
+    ports:
+      - "${PORT:-5566}:5566"
+    environment:
+      # 키는 이미지에 굽지 않는다 — 셸/CI 환경변수나 호스트 .env 에서 주입한다.
+      # 없으면 잔여 해소(S5b)만 못 하고 결정론 경로는 그대로 돈다.
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      ANTHROPIC_MODEL: "${ANTHROPIC_MODEL:-}"
+      CORS_ORIGINS: "${CORS_ORIGINS:-*}"
+      MAX_UPLOAD_MB: "${MAX_UPLOAD_MB:-40}"
+      STRUCTURE_STORE: /data/structure
+      STRUCTURE_CUSTOM_DIR: /data/structure/custom   # 등록한 규칙이 남는 자리
+      STRUCTURE_RENDER_SCALE: "${STRUCTURE_RENDER_SCALE:-2.0}"
+    volumes:
+      # 올린 문서·해석 결과·페이지 캐시·등록한 규칙.
+      # **바인드 마운트**다 — 화면에서 올린 PDF 와 해석 산출을 호스트에서 그대로 열어
+      # 볼 수 있어야 한다(named volume 이면 `docker cp` 없이는 못 본다).
+      - ${STRUCTURE_DATA:-./data/structure}:/data/structure
+      # 도클링 모델 캐시. BAKE_MODELS=0 으로 빌드했다면 첫 요청 때 여기로 받는다.
+      - hf-models:/models
+      # 개발 중 재빌드를 없앤다. 이미지에도 같은 파일이 있으므로 이 줄들을 지우면
+      # 그대로 이미지 안의 것이 뜬다.
+      #   viewer  새로고침만으로 반영된다 (StaticFiles 가 매 요청 디스크를 읽는다)
+      #   core/api 파이썬이라 **컨테이너 재시작**이 필요하다
+      #           (`docker compose restart structure`). 이게 없으면 코드를 고쳐도
+      #           이미지에 구운 옛 코드가 계속 돈다 — 실제로 그래서 "다시 해석"이
+      #           아무것도 안 바꾸는 것처럼 보였다.
+      - ./api:/app/api:ro
+      - ./core:/app/core:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:5566/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+
+volumes:
+  hf-models:

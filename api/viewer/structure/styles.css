@@ -1,0 +1,294 @@
+/* 구조 해석 검수 화면.
+   색은 계층 깊이(L0~L6)에만 쓴다 — 그것이 이 화면에서 유일하게 의미를 가진 축이다.
+   라이트/다크 둘 다 지원한다. */
+
+:root {
+  --bg: #f6f7f9;  --panel: #fff;  --ink: #16181d;  --dim: #6b7280;
+  --line: #e3e6ec; --accent: #2563eb; --warn: #b45309; --bad: #b91c1c; --good: #15803d;
+  --l0: #2563eb; --l1: #0891b2; --l2: #16a34a; --l3: #ca8a04;
+  --l4: #ea580c; --l5: #db2777; --l6: #7c3aed;
+  --shadow: 0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1115; --panel: #161a21; --ink: #e6e8ec; --dim: #9aa3b2;
+    --line: #262c36; --accent: #60a5fa; --warn: #f59e0b; --bad: #f87171; --good: #4ade80;
+    --l0: #60a5fa; --l1: #22d3ee; --l2: #4ade80; --l3: #fbbf24;
+    --l4: #fb923c; --l5: #f472b6; --l6: #a78bfa;
+    --shadow: 0 1px 3px rgba(0,0,0,.5);
+  }
+}
+
+* { box-sizing: border-box; }
+
+/* `hidden` 속성이 항상 이기게 한다.
+   작성자 스타일의 display 는 UA 스타일시트의 `[hidden]{display:none}` 을 이긴다 —
+   `.modal{display:flex}` 때문에 모달이 hidden 인데도 계속 떠 있었다. */
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR",
+        "Malgun Gothic", sans-serif;
+  display: flex; flex-direction: column;
+}
+
+/* --- 상단 바 ------------------------------------------------------------ */
+.bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 14px; background: var(--panel);
+  border-bottom: 1px solid var(--line); box-shadow: var(--shadow); z-index: 20;
+}
+.brand { font-weight: 700; letter-spacing: -.01em; }
+.spacer { flex: 1; }
+.status { color: var(--dim); font-size: 12px; }
+.status.err { color: var(--bad); }
+.status.busy::after { content: "…"; }
+
+button, .upload span, select, input[type=text], input:not([type]) {
+  font: inherit; color: inherit; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 7px; padding: 5px 10px;
+}
+button { cursor: pointer; }
+button:hover, .upload span:hover { border-color: var(--accent); }
+.upload span { display: inline-block; cursor: pointer; }
+select { max-width: 280px; }
+.chk { display: inline-flex; align-items: center; gap: 5px; color: var(--dim);
+       font-size: 12px; cursor: pointer; }
+
+.hints summary { cursor: pointer; color: var(--dim); font-size: 12px;
+                 list-style: none; padding: 5px 10px; border: 1px solid var(--line);
+                 border-radius: 7px; }
+.hints[open] summary { border-color: var(--accent); }
+.hintbody {
+  position: absolute; margin-top: 6px; z-index: 30; width: min(420px, 92vw);
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px; box-shadow: var(--shadow); display: grid; gap: 10px;
+}
+.hintbody label { display: grid; gap: 4px; font-size: 12px; color: var(--dim); }
+.hintbody input { width: 100%; }
+.hintbody small { color: var(--dim); opacity: .8; }
+
+/* --- 3단 레이아웃 ------------------------------------------------------- */
+.layout {
+  flex: 1; min-height: 0; display: grid; gap: 10px; padding: 10px;
+  grid-template-columns: minmax(240px, 320px) 1fr minmax(240px, 330px);
+}
+@media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+
+.panel {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.panelhead {
+  display: flex; align-items: center; gap: 8px; justify-content: space-between;
+  padding: 8px 12px; border-bottom: 1px solid var(--line);
+  font-weight: 600; font-size: 13px;
+}
+.panelhead .tools { display: flex; align-items: center; gap: 6px; }
+.panelhead button { padding: 2px 8px; font-size: 12px; }
+.filter { margin: 8px 10px 0; }
+
+/* --- 트리 ---------------------------------------------------------------- */
+.treebody { overflow: auto; padding: 6px 4px 12px; }
+.node {
+  display: flex; align-items: baseline; gap: 6px; padding: 3px 8px;
+  border-radius: 6px; cursor: pointer; white-space: nowrap;
+}
+.node:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.node.sel { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+.node.hidden { display: none; }
+.twist { width: 14px; text-align: center; color: var(--dim); flex: none; }
+.twist.leaf { visibility: hidden; }
+.chip {
+  flex: none; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px;
+  color: #fff;
+}
+.surface { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.node .meta { color: var(--dim); font-size: 11px; margin-left: auto; padding-left: 8px; }
+
+/* --- 페이지 + 오버레이 --------------------------------------------------- */
+.pagesbody { overflow: auto; padding: 12px; background: var(--bg); }
+.empty { color: var(--dim); text-align: center; padding: 60px 20px; }
+.empty .dim { font-size: 12px; opacity: .8; }
+
+.page { position: relative; margin: 0 auto 16px; box-shadow: var(--shadow);
+        background: #fff; width: fit-content; }
+.page img { display: block; width: 100%; height: auto; }
+.pagenum { position: absolute; top: -9px; left: 8px; background: var(--panel);
+           border: 1px solid var(--line); border-radius: 5px; padding: 0 6px;
+           font-size: 11px; color: var(--dim); }
+
+.box { position: absolute; border-radius: 3px; pointer-events: auto; cursor: pointer; }
+.box.chunk { border: 1px dashed currentColor; background: currentColor;
+             opacity: .10; }
+.box.chunk:hover { opacity: .22; }
+.box.opener { border: 2px solid currentColor; background: currentColor;
+              opacity: .18; }
+.box.opener:hover { opacity: .30; }
+.box.sel { outline: 2px solid var(--accent); outline-offset: 1px; opacity: .34; }
+.box.residual { border-color: var(--bad) !important; border-style: solid;
+                box-shadow: 0 0 0 2px color-mix(in srgb, var(--bad) 45%, transparent); }
+.box.dead { border-color: var(--dim) !important; border-style: dotted; opacity: .08; }
+/* 표·그림은 구조 후보를 내지 않는다 — 마커 블록과 눈으로 갈라 보이게 한다.
+   색(=속한 구역의 레벨)은 그대로 두고 테두리 모양만 다르게 한다. */
+.box.table { border-style: double; border-width: 3px; }
+.box.figure { border-style: dotted; border-width: 2px; }
+.figimg { max-width: 100%; margin: 6px 0; border: 1px solid var(--line); border-radius: 4px;
+          background: #fff; display: block; }
+.tablewrap { max-width: 100%; overflow-x: auto; margin: 6px 0; }
+.tablewrap .rt { width: auto; min-width: 100%; font-size: 11.5px; }
+.tablewrap .rt th, .tablewrap .rt td { border: 1px solid var(--line); white-space: pre-wrap; }
+.tablewrap .rt th { background: color-mix(in srgb, currentColor 8%, transparent); }
+
+.tag { position: absolute; transform: translateY(-100%);
+       font-size: 10px; font-weight: 700; padding: 0 4px; border-radius: 3px;
+       color: #fff; white-space: nowrap; pointer-events: none; }
+
+/* --- 오른쪽 요약 --------------------------------------------------------- */
+.sidebody { overflow: auto; padding: 12px; display: grid; gap: 14px; font-size: 12px; }
+.metric { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.metric b { font-size: 20px; letter-spacing: -.02em; }
+.pill { font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); }
+.pill.ok { color: var(--good); border-color: currentColor; }
+.pill.no { color: var(--bad); border-color: currentColor; }
+.sub { color: var(--dim); }
+.sec h4 { margin: 0 0 6px; font-size: 12px; }
+.rung { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+.warn { color: var(--warn); }
+.bad { color: var(--bad); }
+.list { display: grid; gap: 4px; }
+.list div { padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px;
+            cursor: pointer; }
+.list div:hover { border-color: var(--accent); }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+
+/* --- 툴팁 ---------------------------------------------------------------- */
+.tip {
+  position: fixed; z-index: 50; max-width: 460px; pointer-events: none;
+  background: var(--panel); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+  box-shadow: var(--shadow); font-size: 12px;
+}
+.tip .path { color: var(--dim); font-size: 11px; margin-bottom: 4px; }
+.tip .mk { margin-top: 5px; padding-top: 5px; border-top: 1px dashed var(--line); }
+
+/* --- 힌트/규칙 패널 보강 -------------------------------------------------- */
+.hintbody.wide { width: min(560px, 94vw); }
+.hintbody p.dim { margin: 0; color: var(--dim); font-size: 12px; }
+.hintbody .row { display: flex; gap: 8px; align-items: end; }
+.hintbody .row > label { flex: 1; }
+.hintbody code { font-family: ui-monospace, monospace;
+                 background: color-mix(in srgb, var(--ink) 8%, transparent);
+                 padding: 0 3px; border-radius: 3px; }
+.quick { display: flex; flex-wrap: wrap; gap: 4px; }
+.quick button { font-size: 11px; padding: 2px 7px; }
+#rList { max-height: 180px; overflow: auto; }
+#rList .rule { display: flex; align-items: baseline; gap: 6px; }
+#rList .rule b { flex: none; }
+#rList .rule code { flex: 1; overflow: hidden; text-overflow: ellipsis;
+                    white-space: nowrap; font-size: 11px; }
+#rList .rule button { flex: none; padding: 0 6px; font-size: 11px; }
+
+/* --- 탭 / 문서 목록 ------------------------------------------------------ */
+.tabs { display: flex; gap: 4px; }
+.tab { padding: 3px 9px; font-size: 12px; border-radius: 6px; }
+.tab.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.badge { display: inline-block; min-width: 16px; padding: 0 4px; border-radius: 8px;
+         background: var(--accent); color: #fff; font-size: 10px; text-align: center; }
+
+.doc { display: grid; gap: 2px; padding: 7px 9px; margin: 3px 6px; cursor: pointer;
+       border: 1px solid var(--line); border-radius: 8px; }
+.doc:hover { border-color: var(--accent); }
+.doc.on { border-color: var(--accent);
+          background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.doc .top { display: flex; align-items: baseline; gap: 6px; }
+.doc .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis;
+             white-space: nowrap; flex: 1; }
+.doc .bot { display: flex; gap: 6px; color: var(--dim); font-size: 11px; }
+.doc .del { margin-left: auto; padding: 0 6px; font-size: 11px; }
+
+/* --- 규칙 전체 모달 ------------------------------------------------------ */
+.modal { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.45);
+         display: flex; align-items: center; justify-content: center; padding: 24px; }
+.sheet { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+         width: min(1000px, 96vw); max-height: 88vh; display: flex; flex-direction: column;
+         box-shadow: var(--shadow); overflow: hidden; }
+.sheethead { display: flex; align-items: baseline; gap: 10px; padding: 12px 16px;
+             border-bottom: 1px solid var(--line); }
+.sheethead button { margin-left: auto; }
+.sheetbody { overflow: auto; padding: 14px 16px; display: grid; gap: 18px; font-size: 12px; }
+.sheetbody h3 { margin: 0 0 2px; font-size: 13px; }
+.sheetbody h3 .sub { font-weight: 400; margin-left: 6px; }
+.rt { width: 100%; border-collapse: collapse; }
+.rt th, .rt td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line);
+                 vertical-align: top; }
+.rt th { color: var(--dim); font-weight: 600; font-size: 11px; }
+.rt code { font-family: ui-monospace, monospace; font-size: 11px; word-break: break-all; }
+.kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 14px; }
+.kv div { display: flex; justify-content: space-between; gap: 8px;
+          border-bottom: 1px dotted var(--line); padding: 2px 0; }
+.kv b { font-family: ui-monospace, monospace; font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chips span { padding: 1px 6px; border: 1px solid var(--line); border-radius: 5px;
+              font-size: 11px; }
+
+/* --- 검사기 ------------------------------------------------------------- */
+.side { }
+.inspect { flex: 0 0 auto; max-height: 46vh; border-bottom: 1px solid var(--line);
+           gap: 8px; }
+.ihead { display: flex; align-items: center; gap: 6px; }
+.quote { padding: 7px 9px; border-radius: 7px; line-height: 1.45;
+         background: color-mix(in srgb, var(--ink) 5%, transparent); }
+.inspect .mk { border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px;
+               display: grid; gap: 3px; }
+.mkhead { display: flex; align-items: center; gap: 6px; }
+.reason { line-height: 1.4; }
+
+/* 겹친 마디 — 레벨이 깊을수록 안쪽으로 들어간다 */
+.box.opener .tag { position: absolute; }
+
+/* --- 구역 이름 ------------------------------------------------------------ */
+.node .title { color: var(--dim); overflow: hidden; text-overflow: ellipsis;
+               white-space: nowrap; }
+.inspect .names { display: grid; gap: 6px; }
+.inspect .names > div { border: 1px solid var(--line); border-radius: 7px;
+                        padding: 6px 8px; }
+.inspect .names .nm { font-weight: 600; }
+
+/* --- 설정 모달 ------------------------------------------------------------ */
+.sheethead .tabs { flex: 1; }
+.sheetbody label { display: grid; gap: 4px; font-size: 12px; color: var(--dim); }
+.sheetbody input { width: 100%; }
+.sheetbody .row { display: flex; gap: 8px; align-items: end; }
+.sheetbody .row > label { flex: 1; }
+.sheetbody p.dim { margin: 0; color: var(--dim); }
+.sheetbody code { font-family: ui-monospace, monospace;
+                  background: color-mix(in srgb, var(--ink) 8%, transparent);
+                  padding: 0 3px; border-radius: 3px; }
+.derived { display: grid; gap: 3px; }
+.derived .row2 { display: flex; align-items: baseline; gap: 8px;
+                 border-bottom: 1px dotted var(--line); padding: 2px 0; }
+.derived .row2 b { font-family: ui-monospace, monospace; }
+.derived .row2 .why { color: var(--dim); margin-left: auto; }
+
+/* 화면 사이 이동 — 루트(/)는 JSON 이라 여기 링크가 없으면 URL 을 아는 사람만 들어온다 */
+.navlink { color: var(--dim); text-decoration: none; font-size: 11.5px;
+           border: 1px solid var(--line); border-radius: 6px; padding: 3px 9px;
+           white-space: nowrap; }
+.navlink:hover { color: var(--accent); border-color: var(--accent); }
+
+/* 마디에 딸린 표·그림 — 자식 마디가 아니라 잎이라 색을 쓰지 않는다(색은 레벨의 축이다) */
+.node.leaf-att { opacity: .82; }
+.node.leaf-att:hover { opacity: 1; }
+.chip.att { background: transparent; color: var(--dim); border: 1px solid var(--line);
+            font-weight: 600; }
+.node.leaf-att .surface { font-weight: 500; color: var(--dim); }
+.node .meta.warn { color: var(--warn); }
+
+/* 읽기 순서 보기 — 구조가 안 잡힌 블록을 숨기지 않는다 */
+.flowrow { white-space: nowrap; gap: 7px; }
+.flowrow.orphan { background: color-mix(in srgb, var(--warn) 10%, transparent); }
+.chip.none { background: var(--dim); }
+.kindtag { color: var(--dim); font-size: 10px; min-width: 16px; }

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구조 해석 검수</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="brand">구조 해석 검수</div>
+
+  <label class="upload">
+    <input type="file" id="file" accept="application/pdf" hidden>
+    <span>PDF 열기</span>
+  </label>
+
+  <label class="chk" title="결정론이 못 가른 잔여만 배치 1콜로 묻는다">
+    <input type="checkbox" id="useLlm"> LLM 해소
+  </label>
+
+  <button id="showAll">설정 · 규칙</button>
+
+  <!-- 규칙을 고친 뒤 다시 올릴 필요가 없다. 파싱은 캐시돼 있고 해석만 다시 돈다. -->
+  <button id="reinterpret" title="현재 규칙·힌트로 해석만 다시 돌린다 (파싱 생략)"
+          disabled>↻ 다시 해석</button>
+
+  <div class="spacer"></div>
+  <a class="navlink" href="/agent6/">AGENT6 근거 연결 →</a>
+  <div id="status" class="status"></div>
+</header>
+
+<main id="app" class="layout">
+
+  <aside class="panel tree">
+    <div class="panelhead">
+      <div class="tabs">
+        <button id="tabTree" class="tab on">구조 트리</button>
+        <button id="tabDocs" class="tab">문서 <span id="docCount" class="badge">0</span></button>
+        <button id="tabFlow" class="tab" title="구조가 안 잡힌 블록까지 읽기 순서대로">읽기 순서</button>
+      </div>
+      <div class="tools" id="treeTools">
+        <button id="expandAll" title="모두 펼치기">＋</button>
+        <button id="collapseAll" title="모두 접기">－</button>
+      </div>
+    </div>
+    <input id="treeFilter" class="filter" placeholder="마디 찾기…">
+    <div id="tree" class="treebody"></div>
+    <div id="docs" class="treebody" hidden></div>
+    <div id="flow" class="treebody" hidden></div>
+  </aside>
+
+  <section class="panel pages">
+    <div class="panelhead">
+      <span id="docName">문서를 열어 주세요</span>
+      <div class="tools">
+        <label class="chk"><input type="checkbox" id="showBoxes" checked> 청킹 범위</label>
+        <label class="chk"><input type="checkbox" id="showMarkers" checked> 마커</label>
+        <label class="chk"><input type="checkbox" id="showResidual" checked> 잔여</label>
+        <button id="zoomOut">−</button><span id="zoomLabel">100%</span><button id="zoomIn">＋</button>
+      </div>
+    </div>
+    <div id="pages" class="pagesbody">
+      <div class="empty">
+        <p>PDF 를 열면 해석 결과를 원본 위에 겹쳐 보여 줍니다.</p>
+        <p class="dim">색은 계층 깊이, 실선 테두리는 구역을 여는 마커입니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel side">
+    <div class="panelhead">
+      <span>판정 근거</span>
+      <div class="tools"><button id="unpin" title="고정 해제">고정 해제</button></div>
+    </div>
+    <div id="inspect" class="sidebody inspect"></div>
+    <div class="panelhead"><span>요약</span></div>
+    <div id="summary" class="sidebody"></div>
+  </aside>
+
+</main>
+
+<div id="modal" class="modal" hidden>
+  <div class="sheet">
+    <div class="sheethead">
+      <div class="tabs">
+        <button id="mtHint" class="tab on">이 문서</button>
+        <button id="mtSys"  class="tab">시스템 규칙</button>
+        <button id="mtCust" class="tab">내가 등록한 패턴</button>
+      </div>
+      <button id="modalClose">닫기</button>
+    </div>
+
+    <div id="paneHint" class="sheetbody">
+      <p class="dim">이 문서 하나에 주는 입력이다. 무엇을 주든 관측은 계속 돌고,
+         어긋나면 오른쪽 요약에 경고가 뜬다.</p>
+      <div id="appliedNow"></div>
+      <label>부분 순서 <small>A&gt;B 를 쉼표로. 증거가 얇은 쌍만 찍어 준다</small>
+        <input id="hOrder" placeholder="kr_장>kr_절, kr_절>kr_article">
+      </label>
+      <div id="orderQuick" class="quick"></div>
+      <div id="derivedOrder"></div>
+      <div class="row">
+        <label>좌표 최상위 <small>이보다 얕은 계열을 L0 으로 접는다</small>
+          <input id="hRoot" placeholder="kr_article"></label>
+        <label>어휘 제한 <small>이 계열의 제안자만 발화</small>
+          <input id="hFamilies" placeholder="dot_number, roman"></label>
+      </div>
+      <label>층 지정 <small>층은 세미콜론, 같은 층은 쉼표. 유도를 건너뛴다</small>
+        <input id="hLadder" placeholder="dot_number:1; dot_number:2; circled">
+      </label>
+      <p class="dim">여기 넣고 <b>PDF 열기</b> 로 올리면 그 값으로 해석한다.</p>
+    </div>
+
+    <div id="paneSys" class="sheetbody" hidden></div>
+
+    <div id="paneCust" class="sheetbody" hidden>
+      <p class="dim">처음 보는 표기를 어휘에 더한다. <b>표면 패턴만</b> 담는다 —
+         계층은 문서가 유도하므로 레벨은 넣을 수 없다.</p>
+      <div class="row">
+        <label>id <input id="rId" placeholder="bwek"></label>
+        <label>계열 <input id="rFamily" placeholder="비우면 id 와 같음"></label>
+      </div>
+      <label>패턴 <small>반드시 <code>^</code> 로 시작</small>
+        <input id="rPattern" placeholder="^뷁\s*(\d+)\s*아"></label>
+      <div class="row">
+        <label>캡처 이름 <small>쉼표</small><input id="rGroups" placeholder="no"></label>
+        <label>서수 그룹 <small>쉼표</small><input id="rOrdinal" placeholder="no"></label>
+      </div>
+      <label>메모 <small>여기 예문을 적으면 등록 시 적중을 보여 준다</small>
+        <input id="rNote" placeholder="뷁1아 총칙"></label>
+      <div class="row"><button id="rSave">등록</button><span id="rMsg" class="sub"></span></div>
+      <div id="rList" class="list"></div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

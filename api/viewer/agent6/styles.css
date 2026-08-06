@@ -1,0 +1,225 @@
+:root {
+  --bg: #0f1115; --pane: #161922; --line: #272c39; --ink: #e6e9f0;
+  --dim: #8b93a7; --accent: #6ea8fe; --ok: #4ec9a0; --bad: #f2777a; --warn: #e2b341;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root { --bg: #f7f8fa; --pane: #fff; --line: #dfe3ea; --ink: #1a1d24;
+          --dim: #6b7280; --accent: #2563eb; --ok: #0f9d76; --bad: #d1434a;
+          --warn: #a86a00; color-scheme: light; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-size: 13px;
+       font-family: -apple-system, "Segoe UI", "Noto Sans KR", sans-serif; }
+
+.top { display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+       border-bottom: 1px solid var(--line); background: var(--pane); }
+.top h1 { font-size: 14px; margin: 0; font-weight: 650; }
+.grow { flex: 1; }
+.sub, .hint { color: var(--dim); font-size: 11.5px; }
+.hint { margin: 0 0 8px; line-height: 1.5; }
+.chk { display: flex; align-items: center; gap: 5px; color: var(--dim); font-size: 11.5px; }
+button { background: var(--pane); color: var(--ink); border: 1px solid var(--line);
+         border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 12px; }
+button:hover { border-color: var(--accent); }
+button.mini { padding: 2px 7px; font-size: 11px; }
+button.cut { color: var(--bad); }
+
+.banner { padding: 8px 16px; background: color-mix(in srgb, var(--warn) 18%, var(--pane));
+          border-bottom: 1px solid var(--line); font-size: 12px; }
+/* `!important` 가 필요하다. `.hidden` 과 `.cols`(display:grid) 는 둘 다 클래스 하나라
+   특정도가 같고, 뒤에 선언된 `.cols` 가 이긴다 — 캔버스를 켜도 목록이 안 숨어서
+   캔버스가 화면 아래로 밀려났다(실측). 숨김은 항상 이겨야 한다. */
+.hidden { display: none !important; }
+
+.cols { position: relative; display: grid; grid-template-columns: 230px 1fr 1fr;
+        gap: 0; height: calc(100vh - 47px); }
+.pane { padding: 12px 14px; overflow: hidden; display: flex; flex-direction: column;
+        border-right: 1px solid var(--line); }
+.pane.right { border-right: none; }
+.pane h2 { font-size: 12px; margin: 0 0 8px; color: var(--dim); font-weight: 600;
+           text-transform: uppercase; letter-spacing: .04em; }
+.scroll { overflow-y: auto; flex: 1; scrollbar-width: thin; }
+input[type=search] { width: 100%; margin-bottom: 8px; padding: 5px 8px;
+  background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; }
+
+/* 코퍼스 카드 */
+.corpus { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+          margin-bottom: 8px; cursor: pointer; background: var(--pane); }
+.corpus:hover { border-color: var(--accent); }
+.corpus.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.corpus b { display: block; font-size: 12.5px; margin-bottom: 3px; }
+.corpus .meta { color: var(--dim); font-size: 11px; line-height: 1.45; }
+.pill { display: inline-block; padding: 0 6px; border-radius: 999px; font-size: 10.5px;
+        border: 1px solid var(--line); color: var(--dim); }
+.pill.ok { color: var(--ok); border-color: currentColor; }
+.pill.bad { color: var(--bad); border-color: currentColor; }
+.pill.warn { color: var(--warn); border-color: currentColor; }
+
+/* 구역 트리 */
+.sec { padding: 4px 6px; border-radius: 5px; display: flex; gap: 8px; align-items: baseline;
+       border: 1px solid transparent; }
+.sec:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.sec.linked { border-color: color-mix(in srgb, var(--ok) 55%, transparent); }
+.sec.sel { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.sec .lab { font-weight: 600; white-space: nowrap; }
+.sec .ttl { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sec .act { margin-left: auto; opacity: 0; }
+.sec:hover .act { opacity: 1; }
+
+/* 체크리스트 */
+.item { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+        margin-bottom: 7px; background: var(--pane); cursor: pointer; }
+.item:hover { border-color: var(--accent); }
+.item.sel { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.item.blocked { border-left: 3px solid var(--bad); }
+.item .head { display: flex; gap: 7px; align-items: baseline; }
+.item .id { font-family: ui-monospace, monospace; font-weight: 650; }
+.item .nm { flex: 1; }
+.basis { margin-top: 6px; padding-left: 8px; border-left: 2px solid var(--line); }
+.basis .row { display: flex; gap: 6px; align-items: baseline; padding: 2px 0;
+              font-size: 11.5px; color: var(--dim); }
+.basis .coord { font-family: ui-monospace, monospace; color: var(--ink); }
+.basis .row.amb .coord { color: var(--warn); }
+.basis .row.miss .coord { color: var(--bad); }
+
+#wires { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+#wires path { fill: none; stroke: var(--ok); stroke-width: 1.6; opacity: .55; }
+#wires path.amb { stroke: var(--warn); stroke-dasharray: 4 3; }
+#wires path.miss { stroke: var(--bad); stroke-dasharray: 2 3; }
+#wires path.hot { stroke-width: 2.6; opacity: 1; }
+
+.detail { position: fixed; right: 14px; bottom: 14px; width: 460px; max-height: 46vh;
+          overflow: auto; background: var(--pane); border: 1px solid var(--accent);
+          border-radius: 10px; padding: 12px 14px; z-index: 20;
+          box-shadow: 0 8px 30px rgba(0,0,0,.35); }
+.detail h3 { margin: 0 0 6px; font-size: 12.5px; }
+.detail pre { white-space: pre-wrap; word-break: break-word; margin: 6px 0 0;
+              font-size: 11.5px; line-height: 1.55; color: var(--dim); }
+.detail .x { float: right; cursor: pointer; color: var(--dim); }
+
+/* 화면 사이 이동 — 루트(/)는 JSON 이라 여기 링크가 없으면 URL 을 아는 사람만 들어온다 */
+.navlink { color: var(--dim); text-decoration: none; font-size: 11.5px;
+           border: 1px solid var(--line); border-radius: 6px; padding: 3px 9px; }
+.navlink:hover { color: var(--accent); border-color: var(--accent); }
+
+/* --- 연결선을 읽히게 --------------------------------------------------------
+   30여 개를 같은 굵기로 그리면 굵은 띠 하나로 보인다. 평소엔 옅게, 고른 것만 진하게.
+   스크롤 밖으로 나간 끝은 패널 가장자리에 접고 점으로 "더 있다" 를 말한다. */
+#wires path { opacity: .28; stroke-width: 1.4; }
+#wires path.hot { opacity: 1; stroke-width: 2.4; }
+#wires path.off { stroke-dasharray: 3 4; }
+#wires circle.stub { fill: var(--ok); opacity: .9; }
+#wires circle.stub.amb { fill: var(--warn); }
+#wires circle.stub.miss { fill: var(--bad); }
+
+.wirehint { position: absolute; left: 50%; transform: translateX(-50%); bottom: 8px;
+            z-index: 6; font-size: 11px; color: var(--dim); background: var(--pane);
+            border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px;
+            pointer-events: none; white-space: nowrap; }
+
+/* --- 근거 줄: 끊기를 왼쪽에, 조문 이름은 접히게 -----------------------------
+   오른쪽에 두면 긴 조문 이름이 버튼을 패널 밖으로 밀어내 눌 수 없었다. */
+.basis .row { align-items: flex-start; gap: 5px; }
+.basis .coord { flex: 1; min-width: 0; overflow-wrap: anywhere; white-space: normal;
+                line-height: 1.45; }
+.basis .cut { flex: none; background: transparent; border: none; color: var(--dim);
+              cursor: pointer; font-size: 11px; line-height: 1.4; padding: 0 2px;
+              opacity: 0; }
+.item:hover .basis .cut, .item.sel .basis .cut { opacity: .7; }
+.basis .cut:hover { opacity: 1; color: var(--bad); }
+
+/* --- 캔버스 보기 ------------------------------------------------------------
+   [문서] ┄▸ [조문] ─▸ [항목]. 문서는 한 장이고, 연결된 조문만 노드로 빠져나온다.
+   점선(struct)은 "이 문서의 조문"이라는 구조, 실선은 "이 항목의 근거"라는 관계다. */
+.tabs { display: flex; gap: 4px; }
+.tab { padding: 3px 12px; font-size: 12px; }
+.tab.on { border-color: var(--accent); color: var(--accent); }
+
+.cvwrap { position: relative; height: calc(100vh - 47px); overflow: hidden; cursor: grab;
+          background-image: radial-gradient(var(--line) 1px, transparent 1px);
+          background-size: 22px 22px; }
+.cvwrap:active { cursor: grabbing; }
+.canvas { position: absolute; transform-origin: 0 0; will-change: transform; }
+
+#cvwires { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+#cvwires path { fill: none; stroke: var(--ok); stroke-width: 1.6; opacity: .8;
+                pointer-events: stroke; cursor: pointer; }
+#cvwires path:hover { stroke-width: 3; stroke: var(--bad); }
+#cvwires path.struct { stroke: var(--dim); stroke-dasharray: 3 5; opacity: .5;
+                       cursor: default; pointer-events: none; }
+#cvwires path.amb { stroke: var(--warn); stroke-dasharray: 5 4; }
+#cvwires path.miss { stroke: var(--bad); stroke-dasharray: 2 4; }
+#cvwires path.ghost { stroke: var(--accent); stroke-dasharray: 4 4; pointer-events: none; }
+
+.cvcard { position: absolute; width: 330px; background: var(--pane);
+          border: 1px solid var(--line); border-radius: 10px; padding-bottom: 5px;
+          box-shadow: 0 4px 18px rgba(0,0,0,.28); font-size: 12px; }
+.cvcard.doc { width: 300px; border-color: var(--accent); }
+/* 조문은 문서에서 **빠져나온** 것이라 테두리를 점선으로 둔다 — 원래 자리가 따로 있다 */
+.cvcard.sec { width: 250px; border-style: dashed;
+              border-color: color-mix(in srgb, var(--ok) 60%, var(--line)); }
+.cvcard.sec.amb { border-color: var(--warn); }
+.cvcard.sec.idle { border-color: var(--dim); opacity: .75; }
+.cvcard.item.blocked { border-left: 3px solid var(--bad); }
+.cvhead { padding: 8px 11px 7px; border-bottom: 1px solid var(--line); cursor: move;
+          display: flex; flex-direction: column; gap: 2px; }
+.cvhead b { font-size: 12.5px; line-height: 1.35; }
+.cvsub { color: var(--dim); font-size: 11px; }
+.cvopen { margin: 6px 11px 2px; width: calc(100% - 22px); font-size: 11px; }
+
+.cvrow { position: relative; display: flex; align-items: center; gap: 6px;
+         padding: 3px 11px; min-height: 20px; }
+.cvrow .rt { color: var(--dim); overflow: hidden; text-overflow: ellipsis;
+             white-space: nowrap; flex: 1; font-size: 11px; }
+.cvrow.out { cursor: crosshair; }
+.cvrow.out .rt { text-align: right; }
+.cvrow .port { position: absolute; width: 9px; height: 9px; border-radius: 50%;
+               background: var(--pane); border: 1.5px solid var(--dim); }
+.cvrow.out .port { right: -5px; }
+.cvrow.in .port { left: -5px; }
+.cvrow.out:hover .port { border-color: var(--accent); background: var(--accent); }
+.cvrow.amb .port { border-color: var(--warn); }
+.cvrow.miss .port, .cvrow.empty .port { border-color: var(--bad); }
+.cvrow.empty .rt { color: var(--bad); }
+.cvrow:hover { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+
+/* 구조 테이블 — 행은 표, 첫 칸은 트리.
+   목록으로 555줄을 펴면 어느 조의 몇 호인지가 사라지고, 순수 트리로만 두면
+   연결 수·본문을 나란히 못 본다. 첫 칸만 들여쓰고 나머지 칸은 줄을 맞춘다. */
+.cvtable { position: absolute; left: 0; right: 0; bottom: 0; height: 48vh; z-index: 12;
+           background: var(--pane); border-top: 1px solid var(--accent);
+           display: flex; flex-direction: column; cursor: default; }
+.cvtbar { display: flex; align-items: center; gap: 10px; padding: 7px 14px;
+          border-bottom: 1px solid var(--line); }
+.cvtbar input { flex: 0 1 320px; margin: 0; }
+.cvtscroll { overflow: auto; flex: 1; }
+.cvt { width: 100%; border-collapse: collapse; font-size: 11.5px; table-layout: fixed; }
+.cvt th { position: sticky; top: 0; z-index: 1; background: var(--pane); text-align: left;
+          color: var(--dim); font-weight: 600; padding: 4px 10px;
+          border-bottom: 1px solid var(--line); }
+/* 칸 너비를 못 박는다 — auto 로 두면 제목 한 줄이 길 때 표가 통째로 밀린다 */
+.cvt th:nth-child(1), .cvt td:nth-child(1) { width: 40%; }
+.cvt th:nth-child(2), .cvt td:nth-child(2) { width: auto; }
+.cvt th:nth-child(3), .cvt td:nth-child(3) { width: 62px; }
+.cvt th:nth-child(4), .cvt td:nth-child(4) { width: 48px; }
+.cvt th:nth-child(5), .cvt td:nth-child(5) { width: 210px; text-align: right; }
+.cvt td { padding: 2px 10px; border-bottom: 1px solid var(--line);
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cvt tr[data-sid] { cursor: pointer; }
+.cvt tr:hover td { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.cvt tr.on td { background: color-mix(in srgb, var(--ok) 12%, transparent); }
+.cvt tr.flash td { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+.cvt .tree { display: flex; align-items: baseline; gap: 6px; }
+.cvt .tw { width: 12px; flex: none; color: var(--dim); cursor: pointer;
+           font-size: 9px; user-select: none; }
+.cvt .tw.leaf { cursor: default; }
+.cvt .lb { font-family: ui-monospace, monospace; white-space: nowrap; flex: none; }
+.cvt .ti { color: var(--ink); overflow: hidden; text-overflow: ellipsis; }
+.cvt .pv { color: var(--dim); }
+.cvt .kd { color: var(--dim); }
+.cvt .nn { color: var(--accent); text-align: right; }
+.cvt .ac { white-space: nowrap; }
+.cvt .ac .mini { padding: 1px 6px; font-size: 10.5px; margin-left: 3px; }
+.cvt .ac .up { color: var(--dim); }
+.cvt .ac .down { color: var(--dim); }

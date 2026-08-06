@@ -1,0 +1,16 @@
+# 구조 해석 검수 서비스 — core.structure + 뷰어만.
+#
+# 레거시 엔진(trust-parser·first-agent)의 의존성은 빼고, 파싱에 필요한 것만 남긴다.
+# 그래도 docling 이 torch(CPU 휠)를 끌고 와 이미지가 ~2GB 다. 파싱을 컨테이너 밖에서
+# 하고 결과 JSON 만 넣을 거라면 docling 줄을 지우면 ~200MB 가 된다.
+
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9          # 파일 업로드
+pydantic>=2.0
+PyYAML>=6.0                      # 어휘(lexicon) 로더
+
+pymupdf>=1.24                    # 페이지 PNG 렌더 + born-digital 판별
+docling>=2.117                   # 레이아웃·표·provenance(bbox)
+
+anthropic>=0.60                  # S5b 잔여 해소 배치 1콜 (선택)
