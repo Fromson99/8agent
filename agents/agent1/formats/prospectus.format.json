@@ -1,0 +1,24 @@
+{
+  "doc_type": "투자설명서",
+  "format_version": 2,
+  "compiled_from": ["B1055656A.pdf"],
+  "regex_markers": [
+    {
+      "id": "부", "pattern": "^제(\\d+)부\\.\\s*(.+)$", "level": 0,
+      "groups": ["no", "title"], "label": "제{no}부",
+      "_note": "마침표가 목차(p2~4 '제1부 모집…')를 배제한다 — 본문(p12~)만 잡힌다"
+    },
+    {
+      "id": "항목", "pattern": "^(\\d{1,2})\\.\\s+([^\\d\\s].*)$", "level": 1,
+      "groups": ["no", "title"], "parent": "부", "label": "{no}. {title}",
+      "_note": "4자리 연도(2011. 2.18)와 요율(0.30)을 배제하려 자릿수·공백·비숫자 시작을 강제"
+    }
+  ],
+  "term_markers": [
+    { "term": "요약정보", "level": 0 }
+  ],
+  "hierarchy": ["문서", "부|요약정보", "항목"],
+  "default_section": "표지",
+  "confidence": "medium",
+  "notes": ["실물 B1055656A.pdf 66쪽 측정 기반 (AGENT1_SPEC §2.2)"]
+}

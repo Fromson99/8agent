@@ -1,0 +1,45 @@
+# 신탁계약서 ↔ 투자설명서 대조 규칙 (AGENT1_SPEC §2.3)
+#
+# rule 하나 = 좁힐 범위 한 쌍. 값을 어떻게 집을지는 규칙에 쓰지 않는다 —
+# section 으로 범위만 좁히고, 그 안에서 무엇이 값인지는 판정 단계가 정한다.
+#
+# target: null 은 "정답에는 있으나 대상 문서에 개념 자체가 없는 필드"의 명시적 선언이다.
+# 조용한 스킵이 아니라 NOT_APPLICABLE 한 행으로 리포트에 남는다.
+
+source_of_truth: { doc_type: 특정금전신탁 }
+target: { doc_type: 투자설명서 }
+
+rules:
+  - id: r-fee
+    source: { section: "별지1/신탁계약 세부내역", term: 기본보수 }
+    target:
+      section_any_of: ["제2부/13. 보수 및 수수료에 관한 사항"]
+      term: 총 보수
+      # 행 기준 — 설명서는 클래스별로 총 보수가 다르다(A 0.62 / B 1.02 / C 1.32).
+      # 이 값으로 셀을 **뽑지 않는다.** 판단자가 고른 행이 이 행인지 코드가 대조할 뿐이다.
+      row_anchor: "수수료선취-오프라인(A)"
+
+  - id: r-trustee-fee
+    source: { section: "별지1/신탁계약 세부내역", term: 수익보수 }
+    target:
+      section_any_of: ["제2부/13. 보수 및 수수료에 관한 사항"]
+      term: 신탁업자보수
+      row_anchor: "수수료선취-오프라인(A)"
+
+  - id: r-redeem
+    source: { section: "별지1/신탁계약 세부내역", term: 중도해지수수료 }
+    target: { section_any_of: ["제2부/13. 보수 및 수수료에 관한 사항"], term: 환매수수료 }
+
+  - id: r-period
+    source: { section: "별지1/신탁계약 세부내역", term: 신탁기간 }
+    target: { section_any_of: ["제2부/3. 집합투자기구의 신탁계약기간"], term: 집합투자기구의 신탁계약기간 }
+
+  - id: r-amount
+    source: { section: "별지1/신탁계약 세부내역", term: 신탁금액 }
+    target: { section_any_of: ["제1부/3. 모집 예정금액", "요약정보"], term: 신탁금액 }
+    note: "설명서의 모집 예정금액과 계약서의 신탁금액은 층위가 다르다 — 다르면 그렇게 보고한다."
+
+  - id: r-account
+    source: { section: "별지1/신탁계약 세부내역", term: 계좌번호 }
+    target: null
+    note: "투자설명서는 상품 설명 문서라 개별 계좌번호 개념이 없다."
