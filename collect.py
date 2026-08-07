@@ -145,7 +145,9 @@ def collect_target(adapter, client, target: Target, source_dir: Path,
             item["attachments"].append(entry)
 
     if errors and not item.get("body_file"):
-        item["status"] = "error"
+        # 전문 HWP 가 없어도(일부 규정은 서버가 행업으로 응답) 조문 HTML 을 확보했다면
+        # 본문은 있는 것이다 — 실패 사유는 그대로 남긴다
+        item["status"] = "partial" if item.get("body_html_file") else "error"
         item["error"] = "; ".join(errors)
     elif errors:
         item["status"] = "partial"
