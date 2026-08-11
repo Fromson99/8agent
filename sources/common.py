@@ -143,7 +143,9 @@ def detect_format(head: bytes) -> str:
     if head.startswith(b"%PDF"):
         return "pdf"
     stripped = head.lstrip()[:64].lower()
-    if stripped.startswith((b"<!doctype", b"<html", b"<script", b"<?xml")):
+    if stripped.startswith(b"<?xml"):
+        return "xml"
+    if stripped.startswith((b"<!doctype", b"<html", b"<script")):
         return "html"
     return "unknown"
 
@@ -180,7 +182,15 @@ def decode_disposition_filename(cd_raw: str | None) -> str | None:
 def safe_filename(name: str, fallback: str = "unnamed") -> str:
     name = unicodedata.normalize("NFC", name)
     name = re.sub(r'[\\/:*?"<>|\x00-\x1f]', "_", name).strip(" .")
-    return name[:150] or fallback
+    # ext4 파일명 한계는 255"바이트" — 한글은 UTF-8 3바이트라 문자수 제한으로는 못 막는다
+    # (실측: law.go.kr 별표 제목이 조문 인용까지 담아 400바이트를 넘는다)
+    stem, dot, ext = name.rpartition(".")
+    if not dot or len(ext) > 8:
+        stem, ext = name, ""
+    limit = 200 - (len(ext.encode("utf-8")) + 1 if ext else 0)
+    trimmed = stem.encode("utf-8")[:limit].decode("utf-8", errors="ignore").strip(" .")
+    name = f"{trimmed}.{ext}" if ext else trimmed
+    return name or fallback
 
 
 def sha256_file(path: Path) -> str:

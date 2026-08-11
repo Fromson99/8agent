@@ -3,8 +3,10 @@ from __future__ import annotations
 
 from typing import Callable
 
-from . import kofia
+from . import kofia, krx, lawgo
 
 ADAPTERS: dict[str, Callable] = {
     "kofia": kofia.build,
+    "krx": krx.build,
+    "law": lawgo.build,
 }

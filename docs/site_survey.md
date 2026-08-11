@@ -287,6 +287,48 @@ newForm.append($("<input/>", {type:"hidden", name:"_csrf", value:"86e9c07b-6a78-
 
 ---
 
+### 3-8. 별표·별지서식 목록 API (2026-08-10 추가 실측 — 어댑터 구현분)
+
+- getByulNode.do 트리는 [별표(BYUL), 별지서식(BYULSEO)] 가상 노드만 준다 — 파일 열거 불가.
+- 실제 목록: `POST /web/regulation/regulationListData.do` —
+  `start, limit, mtype=byul, Menucd=BYLAW, stit=규정, gbnid=BYUL|BYULSEO, gbn2=out`
+- **전제 2가지 (안 지키면 500)**: ① 같은 세션에서 `regulationList.do`(mtype=byul)를
+  먼저 열 것 ② `Referer` 헤더 필수 (격리 실험: Referer 없음 → 500, 있음 → 200).
+- 응답: `{total, result:[{TITLE(규정명), PCFILENAME, SERVERFILE, BOOKID,
+  STATEHISTORYID, FILECD(별표|별지서식), ...}]}` — **전 규정 공용 목록**이라
+  TITLE 정확일치로 걸러야 한다 (BYUL 154행 실측, 페이지네이션 start/limit).
+- 규정 본문의 별표는 조문 HTML·전문 HWP 에 포함되고, 별도 별표 파일은 주로
+  시행세칙에 딸린다 (유가 상장규정 0건 / 상장규정 시행세칙 18건 실측).
+- BYULCH(별첨)·BYULBU(부록)·BYULJI(별지)는 목록 페이지 JS 가 아는 분류지만
+  BYLAW 메뉴에서는 트리에 노출되지 않음 — 어댑터는 시도 후 실패 시 건너뜀.
+
+### 3-9. Download.do 토큰 (2026-08-10 추가 실측)
+
+- `_csrf` 는 **1회용**: `POST /login/getData.do` → `data._csrf` 신선 토큰으로만 열리고,
+  같은 토큰 재사용 시 200 + 88B `<script>alert("잘못된 접근...")`.
+- 페이지 렌더마다 토큰이 회전한다. 어댑터(KrxClient)는 Download.do 요청 직전에
+  매번 신선 토큰을 받아 주입하고, 그 외 요청은 최신 페이지 토큰을 쓴다.
+
+---
+
+# 3.5. 국가법령정보센터 OPEN API — law.go.kr/DRF (2026-08-10 실측)
+
+- 검색: `GET /DRF/lawSearch.do?OC=<oc>&target=law|admrul&type=XML&query=<명칭>`
+  - law 행: 법령일련번호(MST)·법령ID·공포일자/번호·제개정구분명·시행일자·현행연혁코드
+  - admrul 행: 행정규칙일련번호·행정규칙ID·발령일자/번호·현행연혁구분
+- 본문: `GET /DRF/lawService.do?OC=<oc>&target=law&MST=<mst>&type=XML`
+  (admrul 은 `ID=<일련번호>`) — 조문 + `<별표단위>` 블록
+- 별표·서식: `<별표단위>` 의 `<별표서식파일링크>` → `/LSW/flDownload.do?flSeq=<n>`
+  (HWP 원문; PDF·이미지 링크는 같은 내용의 파생본이라 수집 제외).
+  Content-Disposition 은 퍼센트인코딩 UTF-8. **별표 제목이 길어 파일명이
+  255바이트를 넘는다** — safe_filename 이 바이트 기준으로 자른다.
+- OC=test (API 문서 예시 키)로 검색·본문·다운로드 전부 동작 확인.
+  운영 수집은 open.law.go.kr 발급 키를 `LAW_OC` 환경변수로.
+- 확인된 식별자: 자본시장법 MST=283193, 시행령 MST=288399,
+  금융투자업규정 2100000282072(금융위 고시), 금융투자업규정시행세칙 2200000108855(금감원).
+
+---
+
 # 4. 판단 필요 사항 (task §10 — Phase 2 진행 전 결정 요청)
 
 1. **"금투협 모범규준" 범위** (§1-6): 폴더(seq=3) 전체 수집 vs 특정 규정 지정.
@@ -305,5 +347,5 @@ newForm.append($("<input/>", {type:"hidden", name:"_csrf", value:"86e9c07b-6a78-
 - KOFIA `searchTotal.do`(통합검색) 파라미터 — 트리로 전 규정 열거가 가능해 조사 생략
 - KOFIA lawType='2'(비정형 규정) fileDown 흐름 — 대상 4건 모두 lawType='1'이라 불필요
 - KRX `allDownload.do` 응답 형식 (§3-4) — Phase 3 구현 시 1회 호출로 확정
-- KRX 별표·서식 개별 파일 열거 (getByulNode 하위 노드 전개) — 상장규정 별표는 본문 HTML에
-  포함되어 있어 우선순위 낮음
+- ~~KRX 별표·서식 개별 파일 열거~~ → **해소** (§3-8): getByulNode 가 아니라
+  regulationListData.do(mtype=byul) 가 답이었다

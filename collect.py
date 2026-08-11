@@ -44,16 +44,46 @@ TARGETS: dict[str, list[Target]] = {
         Target("kofia", "표준투자권유준칙", "표준투자권유준칙"),
         Target("kofia", "증권 인수업무 등에 관한 규정", "증권 인수업무 등에 관한 규정"),
         Target("kofia", "대표주관업무 등 모범기준", "대표주관업무 등 모범기준"),
+        Target("kofia", "금융투자회사의 영업 및 업무에 관한 규정",
+               "금융투자회사의 영업 및 업무에 관한 규정"),
+        Target("kofia", "금융투자회사의 영업 및 업무에 관한 규정 시행세칙",
+               "금융투자회사의 영업 및 업무에 관한 규정 시행세칙"),
         # "금투협 모범규준" = 모범규준 분류(seq=3) 전체 — 구성원으로 전개된다
         Target("kofia", "모범규준(분류)", "모범규준", hints={"folder_seq": "3"}),
     ],
+    # 법령·행정규칙 — 국가법령정보센터 OPEN API (별표·서식 HWP 는 본문 XML 에서 전개)
+    "law": [
+        Target("law", "자본시장과 금융투자업에 관한 법률",
+               "자본시장과 금융투자업에 관한 법률", hints={"kind": "law"}),
+        Target("law", "자본시장과 금융투자업에 관한 법률 시행령",
+               "자본시장과 금융투자업에 관한 법률 시행령", hints={"kind": "law"}),
+        Target("law", "금융투자업규정", "금융투자업규정", hints={"kind": "admrul"}),
+        Target("law", "금융투자업규정시행세칙", "금융투자업규정시행세칙",
+               hints={"kind": "admrul"}),
+    ],
+    # 상장 규정 — 규정·시행세칙 쌍을 3개 시장 전부 (별표·별지서식은 어댑터가 함께 찾는다)
+    "krx": [
+        Target("krx", "유가증권시장 상장규정", "유가증권시장 상장규정"),
+        Target("krx", "유가증권시장 상장규정 시행세칙", "유가증권시장 상장규정 시행세칙"),
+        Target("krx", "코스닥시장 상장규정", "코스닥시장 상장규정"),
+        Target("krx", "코스닥시장 상장규정 시행세칙", "코스닥시장 상장규정 시행세칙"),
+        Target("krx", "코넥스시장 상장규정", "코넥스시장 상장규정"),
+        Target("krx", "코넥스시장 상장규정 시행세칙", "코넥스시장 상장규정 시행세칙"),
+    ],
 }
 
-SOURCE_LABELS = {"kofia": "law.kofia.or.kr"}
+SOURCE_LABELS = {"kofia": "law.kofia.or.kr", "krx": "rule.krx.co.kr",
+                 "law": "law.go.kr OPEN API"}
 
 
-def fetch_ref(client, ref: DocumentRef, dest_dir: Path) -> FetchResult:
-    """단일 문서 다운로드 + 검증 + 저장. 실패는 FetchResult(status=error)로 돌려준다."""
+def fetch_ref(client, ref: DocumentRef, dest_dir: Path,
+              taken: set[Path] | None = None) -> FetchResult:
+    """단일 문서 다운로드 + 검증 + 저장. 실패는 FetchResult(status=error)로 돌려준다.
+
+    taken: 이번 대상에서 이미 쓴 경로 — 서버가 다른 파일에 같은 Content-Disposition
+    이름을 주는 경우가 실재한다(KRX 별지서식 3건이 전부 '…_별표.hwp'). 충돌 시
+    ' (2)', ' (3)' 을 붙여 덮어쓰기를 막는다.
+    """
     try:
         resp = client.request(ref.method, ref.url, data=ref.data, headers=ref.headers)
     except FetchError as e:
@@ -79,6 +109,13 @@ def fetch_ref(client, ref: DocumentRef, dest_dir: Path) -> FetchResult:
     out_dir = dest_dir / ref.subdir if ref.subdir else dest_dir
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / filename
+    if taken is not None:
+        n = 2
+        while path in taken:
+            stem, dot, ext = filename.rpartition(".")
+            path = out_dir / (f"{stem} ({n}).{ext}" if dot else f"{filename} ({n})")
+            n += 1
+        taken.add(path)
     path.write_bytes(body)
 
     return FetchResult(
@@ -110,7 +147,8 @@ def collect_target(adapter, client, target: Target, source_dir: Path,
 
     meta = adapter.metadata(target)
     item["doc_no"] = meta.get("seq", item["doc_no"])
-    item.update({k: meta[k] for k in ("history_seq", "revised", "rev_kind", "dept") if k in meta})
+    item.update({k: meta[k] for k in ("kind", "history_seq", "revised", "rev_kind",
+                                      "enforce", "promul_no", "dept") if k in meta})
 
     if dry_run:
         item["status"] = "dry-run"
@@ -122,8 +160,9 @@ def collect_target(adapter, client, target: Target, source_dir: Path,
 
     dest_dir = source_dir / safe_filename(target.key)
     errors: list[str] = []
+    taken: set[Path] = set()
     for ref in refs:
-        result = fetch_ref(client, ref, dest_dir)
+        result = fetch_ref(client, ref, dest_dir, taken)
         rel = str(result.file.relative_to(REPO_ROOT)) if result.file else None
         entry = {
             "title": ref.title, "role": ref.role, "url": ref.url,
@@ -136,7 +175,7 @@ def collect_target(adapter, client, target: Target, source_dir: Path,
             errors.append(f"{ref.title}: {result.error}")
             item["attachments"].append(entry)
             continue
-        if ref.role == "body" and ref.file_ext == ".hwp":
+        if ref.role == "body" and ref.file_ext in (".hwp", ".xml"):
             item["body_file"], item["body_sha256"] = rel, result.sha256
             item["body_format"] = result.actual_format
         elif ref.role == "body" and ref.file_ext == ".html":
