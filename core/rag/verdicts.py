@@ -1,0 +1,429 @@
+"""판정 지문 — 답변 시점 LLM 이 찍는 "잘못 끌려온 구역" 기록과 그 승격.
+
+KG 는 완벽하지 않다. 참조 닫힘이 A→B 를 끌고 왔는데 B 가 엉뚱하면, 지금까지는
+LLM 이 조용히 안 쓰고 버렸다 — 그 판단이 증발했다. 이제는 **지문으로 남는다**
+(사용자 결정 2026-08-10):
+
+    답변 합성 시 discard 판정 (무관 | 오참조)
+      → verdicts.jsonl 에 적재 (append-only — 후보일 뿐, 무반영)
+      → 백로그 화면에서 사람이 간선 단위로 승인/기각
+      → 승인 = edge_rules.json 의 억제 간선 등재
+      → 참조 닫힘(expand_refs)이 그 간선을 건너뛴다
+
+제안자/검증자 분리는 그대로다: LLM 지문 몇 개가 쌓여도 간선은 살아 있고,
+사람의 승인만이 규칙을 만든다. 기각도 기록된다 — 같은 간선의 지문이 다시
+쌓이면 백로그에 다시 올라온다(반증 가능한 규칙, §5.5).
+"""
+
+from __future__ import annotations
+
+import json
+import os
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Optional
+
+from core.rag.index import store_path
+
+
+def verdicts_path() -> Path:
+    return Path(os.environ.get("RAG_LOG_DIR", store_path().parent / "rag")) \
+        / "verdicts.jsonl"
+
+
+def rules_path() -> Path:
+    """간선 억제 규칙 — L3 장부 자리(data/rules/)의 첫 입주자다."""
+    return Path(os.environ.get("RAG_RULES_DIR", store_path().parent / "rules")) \
+        / "edge_rules.json"
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _append(rec: dict) -> None:
+    p = verdicts_path()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with p.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+
+
+def _edge_key(src_doc, src, dst_doc, dst) -> str:
+    return f"{src_doc}:{src}→{dst_doc}:{dst}"
+
+
+# ---------------------------------------------------------------- 적재
+def log(qid: str, question: str, discards: list[dict]) -> int:
+    """합성이 돌려준 판정 지문을 적재한다. 반영은 없다 — 기록이 전부다."""
+    n = 0
+    for d in discards:
+        rec = {"kind": "지문", "qid": qid, "ts": _now(), "질의": question,
+               "판정": d.get("kind"), "사유": d.get("reason", ""),
+               "구역": d.get("section"), "경위": d.get("via"),
+               "매칭": d.get("matched")}
+        src = d.get("ref_src")
+        if src and d.get("section"):
+            rec["간선"] = {"src_doc": src["doc_id"], "src": src["node"],
+                           "src_path": src.get("path", ""),
+                           "surface": src.get("surface", ""),
+                           "dst_doc": d["section"]["doc_id"],
+                           "dst": d["section"]["node"],
+                           "dst_path": d["section"].get("path", "")}
+        _append(rec)
+        n += 1
+    return n
+
+
+def resolve(edge: dict, action: str, note: str = "") -> dict:
+    """백로그 처리 — 승인이면 억제 규칙 등재, 기각이면 기록만.
+
+    승인은 곧 규칙이다: 이후 참조 닫힘이 이 간선을 건너뛴다. 증거(해당
+    지문들의 qid)는 규칙에 함께 남는다 — 왜 억제됐는지 되짚을 수 있어야 한다.
+    """
+    key = _edge_key(edge["src_doc"], edge["src"], edge["dst_doc"], edge["dst"])
+    _append({"kind": "처리", "ts": _now(), "edge_key": key,
+             "action": action, "note": note})
+    if action != "승인":
+        return {"action": action, "edge_key": key}
+
+    p = rules_path()
+    data = {"suppress": []}
+    if p.exists():
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    if not any(_edge_key(r["src_doc"], r["src"], r["dst_doc"], r["dst"]) == key
+               for r in data.get("suppress", [])):
+        qids = [r.get("qid") for r in _records()
+                if r.get("kind") == "지문"
+                and r.get("간선") and _edge_key(
+                    r["간선"]["src_doc"], r["간선"]["src"],
+                    r["간선"]["dst_doc"], r["간선"]["dst"]) == key]
+        data.setdefault("suppress", []).append({
+            "src_doc": edge["src_doc"], "src": edge["src"],
+            "dst_doc": edge["dst_doc"], "dst": edge["dst"],
+            "src_path": edge.get("src_path", ""),
+            "dst_path": edge.get("dst_path", ""),
+            "이유": note or "판정 백로그 승인",
+            "evidence_qids": qids[:20], "created": _now()})
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps(data, ensure_ascii=False, indent=2),
+                     encoding="utf-8")
+    _rules_cache.clear()
+    return {"action": "승인", "edge_key": key, "suppressed": True}
+
+
+# ---------------------------------------------------------------- 교정(재지정)
+# 억제가 "이 간선은 틀렸다"라면, 교정은 "이 간선의 도착이 얕다 — 제2조가
+# 아니라 제2조 제3항이다"다. 답변 시점 LLM 이 착지의 자손 중에서 옳은 구역을
+# 고르면(닫힌 후보) 그 제안이 여기 쌓이고, 사람이 승인해야 재지정 규칙이 되어
+# 색인의 간선 자체가 그 좌표로 옮겨 앉는다.
+def log_fixes(qid: str, question: str, fixes: list[dict]) -> int:
+    """착지 교정 제안을 적재한다. 반영은 없다 — 기록이 전부다."""
+    n = 0
+    for f in fixes:
+        _append({"kind": "교정", "qid": qid, "ts": _now(), "질의": question,
+                 "간선": {k: f.get(k) for k in
+                          ("src_doc", "src", "src_path", "surface",
+                           "dst_doc", "dst", "dst_path")},
+                 "새_dst": f.get("new_dst"), "새_dst_path": f.get("new_dst_path", ""),
+                 "사유": f.get("reason", "")})
+        n += 1
+    return n
+
+
+def _fix_key(edge: dict, new_dst) -> str:
+    return (_edge_key(edge["src_doc"], edge["src"], edge["dst_doc"], edge["dst"])
+            + f"⤷{new_dst}")
+
+
+def resolve_fix(fix: dict, action: str, note: str = "") -> dict:
+    """교정 백로그 처리 — 승인이면 재지정 규칙 등재, 기각이면 기록만.
+
+    재지정은 같은 문서 안의 자손으로만 간다(제안이 착지의 자손에서 나오므로) —
+    다른 문서로 보내는 것은 교정이 아니라 링크 판정(links)의 몫이다.
+    """
+    key = _fix_key(fix, fix.get("new_dst"))
+    _append({"kind": "교정처리", "ts": _now(), "fix_key": key,
+             "action": action, "note": note})
+    if action != "승인":
+        return {"action": action, "fix_key": key}
+
+    p = rules_path()
+    data = {"suppress": [], "redirect": []}
+    if p.exists():
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    rows = data.setdefault("redirect", [])
+    if not any(_fix_key(r, r.get("new_dst")) == key for r in rows):
+        qids = [r.get("qid") for r in _records()
+                if r.get("kind") == "교정" and r.get("간선")
+                and r.get("새_dst") == fix.get("new_dst")
+                and _edge_key(r["간선"]["src_doc"], r["간선"]["src"],
+                              r["간선"]["dst_doc"], r["간선"]["dst"])
+                == _edge_key(fix["src_doc"], fix["src"],
+                             fix["dst_doc"], fix["dst"])]
+        rows.append({
+            "src_doc": fix["src_doc"], "src": fix["src"],
+            "dst_doc": fix["dst_doc"], "dst": fix["dst"],
+            "new_dst": fix["new_dst"],
+            "src_path": fix.get("src_path", ""),
+            "dst_path": fix.get("dst_path", ""),
+            "new_dst_path": fix.get("new_dst_path", ""),
+            "surface": fix.get("surface", ""),
+            "이유": note or "교정 백로그 승인",
+            "evidence_qids": qids[:20], "created": _now()})
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps(data, ensure_ascii=False, indent=2),
+                     encoding="utf-8")
+    _rules_cache.clear()
+    return {"action": "승인", "fix_key": key, "redirected": True}
+
+
+# ---------------------------------------------------------------- 조회
+_rules_cache: dict = {}
+
+
+def _rules() -> dict:
+    """edge_rules.json 을 mtime 캐시로 — {"keys": 억제 집합, "redir": 재지정 사전}."""
+    p = rules_path()
+    if not p.exists():
+        return {"keys": set(), "redir": {}}
+    sig = p.stat().st_mtime_ns
+    if _rules_cache.get("sig") != sig:
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            return {"keys": set(), "redir": {}}
+        _rules_cache["keys"] = {
+            _edge_key(r["src_doc"], r["src"], r["dst_doc"], r["dst"])
+            for r in data.get("suppress", [])}
+        _rules_cache["redir"] = {
+            (r["src_doc"], r["src"], r["dst_doc"], r["dst"]): r
+            for r in data.get("redirect", [])}
+        _rules_cache["sig"] = sig
+    return _rules_cache
+
+
+def is_suppressed(src_doc, src, dst_doc, dst) -> bool:
+    return _edge_key(src_doc, src, dst_doc, dst) in _rules().get("keys", set())
+
+
+def redirect_map() -> dict:
+    """승인된 재지정 — (src_doc, src, dst_doc, dst) -> 규칙 행. 색인이 간선을
+    세울 때 이 사전으로 도착 좌표를 옮겨 앉힌다."""
+    return dict(_rules().get("redir", {}))
+
+
+def _records() -> list[dict]:
+    p = verdicts_path()
+    if not p.exists():
+        return []
+    out = []
+    for line in p.read_text(encoding="utf-8").splitlines():
+        try:
+            out.append(json.loads(line))
+        except Exception:
+            continue
+    return out
+
+
+# ---------------------------------------------------------------- 판단 수정
+# LLM 판단(지문·교정)이 틀렸을 때 — "오참조라 했는데 실제로는 맞는 연결이다" —
+# 사람이 그 기록을 고친다. append-only 는 그대로다: 원본은 남고 '수정' 레코드가
+# 겹쳐 읽힌다(_effective). 무엇이 언제 왜 바뀌었는지가 이력으로 남는다.
+_EDITABLE = {"판정", "사유", "간선", "새_dst", "새_dst_path"}
+
+
+def edit(qid: str, target: str, idx: int, after: dict, note: str = "") -> dict:
+    """qid 의 target(지문|교정) 중 idx 번째 기록을 고친다 — 허용 필드만.
+    idx 는 그 qid 안에서의 적재 순서다(jsonl 은 append-only 라 안정적이다)."""
+    if target not in ("지문", "교정"):
+        raise ValueError("target 은 '지문' 또는 '교정'이어야 합니다")
+    rows = [r for r in _records()
+            if r.get("kind") == target and r.get("qid") == qid]
+    if not (0 <= idx < len(rows)):
+        raise ValueError(f"{qid} 의 {target} {idx}번째 기록이 없습니다")
+    clean = {k: v for k, v in (after or {}).items() if k in _EDITABLE}
+    if not clean:
+        raise ValueError(f"고칠 수 있는 필드가 없습니다 — 허용: {sorted(_EDITABLE)}")
+    before = {k: rows[idx].get(k) for k in clean}
+    rec = {"kind": "수정", "qid": qid, "target": target, "idx": idx,
+           "ts": _now(), "before": before, "after": clean, "메모": note}
+    _append(rec)
+    return rec
+
+
+def _effective() -> list[dict]:
+    """지문·교정 기록에 수정 레코드를 겹쳐 읽는다 — 마지막 수정이 이기고,
+    수정된 기록에는 수정이력이 붙는다. 백로그·조회는 전부 이걸 본다."""
+    recs = _records()
+    edits: dict[tuple, list] = {}
+    for r in recs:
+        if r.get("kind") == "수정":
+            edits.setdefault((r.get("qid"), r.get("target"), r.get("idx")),
+                             []).append(r)
+    if not edits:
+        return recs
+    out, counters = [], {}
+    for r in recs:
+        k = r.get("kind")
+        if k in ("지문", "교정"):
+            i = counters.get((r.get("qid"), k), 0)
+            counters[(r.get("qid"), k)] = i + 1
+            es = edits.get((r.get("qid"), k, i))
+            if es:
+                r = {**r, **es[-1]["after"],
+                     "수정이력": [{"ts": e.get("ts"), "메모": e.get("메모", ""),
+                                   "before": e.get("before"),
+                                   "after": e.get("after")} for e in es]}
+        out.append(r)
+    return out
+
+
+def score_terms(hit_keys: list[str], miss_keys: list[str]) -> dict:
+    """용어 진입의 실적 — 인용되면 hits, 무관 지문을 받으면 misses.
+
+    실적 기반 강등(§5.5 "적중률 붕괴 시 강등")의 재료다: misses 가 쌓인
+    용어는 검수 큐에서 다시 심사받거나 진입 자격을 잃는다. 여기서는 세기만
+    한다 — 상태를 바꾸는 것은 사람(또는 Phase 3 게이트)의 몫이다.
+    glossary.json 을 직접 고친다(core.terms import 금지 — 아키텍처 격리)."""
+    if not hit_keys and not miss_keys:
+        return {"hits": 0, "misses": 0}
+    from core.rag.index import terms_path
+
+    p = terms_path()
+    if not p.exists():
+        return {"hits": 0, "misses": 0}
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return {"hits": 0, "misses": 0}
+    rows = {t.get("key"): t for t in data.get("terms", [])}
+    nh = nm = 0
+    for k in hit_keys:
+        if k in rows:
+            rows[k]["hits"] = int(rows[k].get("hits") or 0) + 1
+            nh += 1
+    for k in miss_keys:
+        if k in rows:
+            rows[k]["misses"] = int(rows[k].get("misses") or 0) + 1
+            nm += 1
+    if nh or nm:
+        p.write_text(json.dumps(data, ensure_ascii=False, indent=2),
+                     encoding="utf-8")
+    return {"hits": nh, "misses": nm}
+
+
+def _add_q(g: dict, r: dict, cap: int = 8) -> None:
+    """묶음에 (qid, 질의 원문, 시각) 짝을 단다 — 화면이 qid 코드가 아니라
+    질문 글자로 보여줄 수 있어야 한다. 같은 qid 는 한 번만."""
+    qid = r.get("qid")
+    if not qid or any(x["qid"] == qid for x in g["질의들"]):
+        return
+    if len(g["질의들"]) < cap:
+        g["질의들"].append({"qid": qid, "질의": r.get("질의", ""),
+                            "ts": r.get("ts", "")})
+
+
+def backlog() -> dict:
+    """백로그 — 간선 지문은 간선별로, 교정 제안은 (간선, 새 좌표)별로 묶는다
+    (처리된 것 제외). 간선 없는 무관 지문은 최근 것만 통계로. 사람이 볼
+    화면의 재료다. 수정 레코드가 겹쳐 읽히므로(_effective) 사람이 고친 판단이
+    화면의 판단이다 — 판정을 "정상"으로 고친 지문은 백로그에서 빠진다."""
+    recs = _effective()
+    resolved: dict[str, str] = {}
+    fix_resolved: dict[str, str] = {}
+    for r in recs:
+        if r.get("kind") == "처리":
+            resolved[r["edge_key"]] = r["action"]
+        elif r.get("kind") == "교정처리":
+            fix_resolved[r["fix_key"]] = r["action"]
+
+    edges: dict[str, dict] = {}
+    fixes: dict[str, dict] = {}
+    loose: list[dict] = []
+    for r in recs:
+        if r.get("kind") == "교정":
+            if r.get("새_dst") is None:
+                continue                   # 수정으로 제안이 철회됐다
+            e = r.get("간선") or {}
+            key = _fix_key(e, r.get("새_dst"))
+            # 기각된 제안도 지문이 **새로** 쌓이면 다시 올라온다 — 단순화:
+            # 처리됐으면 숨긴다(승인이면 규칙 존재, 기각이면 닫힘).
+            if key in fix_resolved:
+                continue
+            g = fixes.setdefault(key, {"edge": e, "new_dst": r.get("새_dst"),
+                                       "new_dst_path": r.get("새_dst_path", ""),
+                                       "n": 0, "사유": [], "질의": [], "qids": [],
+                                       "질의들": []})
+            g["n"] += 1
+            if r.get("사유") and len(g["사유"]) < 3:
+                g["사유"].append(r["사유"])
+            if r.get("질의") and r["질의"] not in g["질의"][:5]:
+                g["질의"].append(r["질의"])
+            g["qids"].append(r.get("qid"))
+            _add_q(g, r)
+            continue
+        if r.get("kind") != "지문":
+            continue
+        if r.get("판정") not in ("무관", "오참조"):
+            continue                       # 수정으로 "정상" 처리됐다 — 지문이 아니다
+        e = r.get("간선")
+        # 억제 후보는 **오참조뿐**이다. "무관"은 좌표가 맞는데 이번 질문에 안
+        # 맞았다는 회수 신호라, 간선을 지우면 옳은 법령 참조를 영영 잃는다
+        # (실측 2026-08-11: 과태료 6.→제19조제1항 설명의무는 옳은 연결인데
+        # 무관 지문이 억제 후보로 올라와 있었다). 간선 없는 오참조도 지울
+        # 대상이 없으니 신호로만 남긴다.
+        if not e or r.get("판정") != "오참조":
+            loose.append(r)
+            continue
+        key = _edge_key(e["src_doc"], e["src"], e["dst_doc"], e["dst"])
+        # 기각된 간선도 지문이 **새로** 쌓이면 다시 올라온다 — 기각 시각 이후
+        # 지문만 다시 세는 대신, 단순화: 기각이면 숨기고 승인이면 규칙 존재.
+        if key in resolved:
+            continue
+        g = edges.setdefault(key, {"edge": e, "n": 0, "판정": {}, "사유": [],
+                                   "질의": [], "qids": [], "질의들": []})
+        g["n"] += 1
+        g["판정"][r["판정"]] = g["판정"].get(r["판정"], 0) + 1
+        if r.get("사유") and len(g["사유"]) < 3:
+            g["사유"].append(r["사유"])
+        if r.get("질의") and r["질의"] not in g["질의"][:5]:
+            g["질의"].append(r["질의"])
+        g["qids"].append(r.get("qid"))
+        _add_q(g, r)
+
+    rules = _rules()
+    return {"edges": sorted(edges.values(), key=lambda g: -g["n"]),
+            "fixes": sorted(fixes.values(), key=lambda g: -g["n"]),
+            "loose": loose[-30:],
+            "resolved": len(resolved) + len(fix_resolved),
+            "suppressed": len(rules.get("keys", set())),
+            "redirected": len(rules.get("redir", {}))}
+
+
+def by_qid() -> dict:
+    """qid -> {"지문": [...], "교정": [...]} — 디버깅 화면이 질의 로그 행에
+    그 질의가 남긴 판정·교정을 붙일 때 쓴다. 수정본이 실리고 이력이 붙는다."""
+    out: dict[str, dict] = {}
+    for r in _effective():
+        k = r.get("kind")
+        if k not in ("지문", "교정") or not r.get("qid"):
+            continue
+        g = out.setdefault(r["qid"], {"지문": [], "교정": []})
+        row: dict
+        if k == "지문":
+            row = {"판정": r.get("판정"), "사유": r.get("사유", ""),
+                   "간선": r.get("간선")}
+        else:
+            row = {"간선": r.get("간선"), "새_dst": r.get("새_dst"),
+                   "새_dst_path": r.get("새_dst_path", ""),
+                   "사유": r.get("사유", "")}
+        if r.get("수정이력"):
+            row["수정이력"] = r["수정이력"]
+        g[k].append(row)
+    return out
