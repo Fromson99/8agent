@@ -27,8 +27,3 @@ def check(level: int, stack: ScopeStack) -> str:
     if any(stack.last[i] is not None for i in range(level)):
         return OK
     return FORBID
-
-
-def reason(level: int, stack: ScopeStack) -> str:
-    return (f"L{level} 인데 그보다 얕은 레벨이 하나도 열려 있지 않습니다 "
-            f"(열린 레벨: {stack.open_levels() or '없음'})")

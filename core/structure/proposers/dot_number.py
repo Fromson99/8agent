@@ -43,7 +43,9 @@ def propose(block: Block, lex) -> list[Candidate]:
     out = scan(block, FAMILY, _FULL, _ordinal, fragment=_FRAGMENT, depth_of=_depth)
     seen = {(c.offset, c.end) for c in out}
     for c in scan(block, FAMILY, _MULTI, _ordinal, depth_of=_depth):
-        if not any(a <= c.offset < b or a < c.end <= b for a, b in seen):
+        # 구간 겹침 판정 — roman.py 와 같은 식. 이전 식(`a <= offset < b or …`)은
+        # 새 후보가 기존 구간을 통째로 덮는 경우를 놓쳤다.
+        if not any(a < c.end and c.offset < b for a, b in seen):
             out.append(c)
     out.sort(key=lambda c: c.offset)
     return out

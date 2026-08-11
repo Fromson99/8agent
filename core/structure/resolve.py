@@ -32,7 +32,7 @@ per-후보 루프가 아니다. 잔여가 0건이면 호출 자체가 없다.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 SYSTEM = """당신은 한국어 구조화 문서의 **구조 경계 판별기**다. 답을 만들지 마라 — 분류만 한다.
 
@@ -102,9 +102,14 @@ def resolve(result, llm, *, rebuild=True, **rebuild_kw) -> Resolution:
     """잔여를 한 번에 묻고 판정을 심는다. 잔여가 없으면 호출하지 않는다."""
     from core.structure import pipeline
 
-    res = Resolution(asked=len(result.residual))
-    if not result.residual:
-        res.notes.append("잔여 0건 — LLM 을 부르지 않았습니다")
+    by_id = {c.id: c for c in result.candidates}
+    # 잔여 리스트에는 후보 항목(`[모순] c7 …`)과 s5_thin 의 의심(`[놓친 제목?] blk5 …`)이
+    # 섞여 있다. S5b 는 **후보 판정**만 한다 — blkN 은 후보가 아니라서 물어봐야 응답이
+    # `ignored` 로 버려지고 asked 만 부풀며, 그 자리는 S5c(VLM)의 몫이다.
+    asked_ids = {cid for cid in (r.split()[1] for r in result.residual) if cid in by_id}
+    res = Resolution(asked=len(asked_ids))
+    if not asked_ids:
+        res.notes.append("후보 잔여 0건 — LLM 을 부르지 않았습니다")
         return res
     if llm is None:
         res.notes.append(f"잔여 {res.asked}건이 있으나 llm 이 없어 건너뜁니다")
@@ -117,9 +122,6 @@ def resolve(result, llm, *, rebuild=True, **rebuild_kw) -> Resolution:
         res.notes.append("LLM 호출이 실패했습니다 — 결정론 판정을 그대로 둡니다")
         result.warnings.append("잔여 해소 실패: LLM 응답을 받지 못했습니다")
         return res
-
-    by_id = {c.id: c for c in result.candidates}
-    asked_ids = {r.split()[1] for r in result.residual}
 
     for v in data.get("verdicts", []):
         cid, verdict = v.get("id", ""), v.get("verdict", "")
@@ -162,6 +164,9 @@ def resolve(result, llm, *, rebuild=True, **rebuild_kw) -> Resolution:
     else:
         # 바뀐 것이 없어도 잔여는 다시 뽑는다 — 판정을 받은 후보가 빠져야
         # 목록이 수렴하고, 두 번째 콜이 같은 질문을 반복하지 않는다.
+        # thin 의심도 다시 올린다 — rebuild 경로(pipeline.rebuild)와 잔여 구성이
+        # 같아야 두 경로의 결과를 나란히 볼 수 있다.
         result.residual = []
         pipeline.s5_residual(result)
+        pipeline.s5_thin(result, rebuild_kw.get("blocks"))
     return res

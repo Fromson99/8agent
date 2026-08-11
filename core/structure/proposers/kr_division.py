@@ -40,8 +40,5 @@ def _unit(m: re.Match) -> str:
 
 
 def propose(block: Block, lex) -> list[Candidate]:
-    out = scan(block, FAMILY, _FULL, _ordinal, fragment=_FRAGMENT)
-    for c in out:
-        m = _FULL.match(c.surface) or _FRAGMENT.match(c.surface)
-        c.family = f"kr_{_unit(m)}" if m else FAMILY
-    return out
+    return scan(block, FAMILY, _FULL, _ordinal, fragment=_FRAGMENT,
+                family_of=lambda m: f"kr_{_unit(m)}")

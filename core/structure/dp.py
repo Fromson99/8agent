@@ -1,10 +1,10 @@
-"""S3 전역 선택 — DP (SPEC §4 S3).
+"""S4 전역 선택 — DP (SPEC §4 S4).
 
 후보를 읽기순으로 놓고 왼→오 **1회 훑기**(최단경로/Viterbi). 완전탐색이 아니라 exact 다.
 
     상태 = 위치 + ScopeStack(레벨별 마지막 서수)
     전이 = 각 후보 `reject | activate`
-             activate 허용: check_nesting == ok  and  check_ordinal == ok
+             activate 허용: check_nesting != FORBID (서수 게이트는 벌점만 준다)
              activate 시 해당 레벨 서수↑, 하위 레벨 스코프 닫음
              reject 시 후보는 mention 으로 버려지고 스택 불변
     목적 = Σ 활성 s(cand) − Σ 벌점  최대 경로
@@ -157,8 +157,15 @@ def run(candidates: list[Candidate], ladder: Ladder) -> DPResult:
     result.audit.sort(key=lambda line: _seq(line, ordered))
 
     if result.pruned:
-        result.audit.append(
-            f"가지치기: s ≤ {ACTIVATE_FLOOR} 후보 {result.pruned}건을 활성 후보에서 뺐습니다")
+        # 사유를 뭉개지 않는다 — 계열 정합 탈락과 점수 가지치기는 다른 판정이다.
+        n_family = sum(1 for c in ordered if not c.survives)
+        n_floor = result.pruned - n_family
+        parts = []
+        if n_family:
+            parts.append(f"계열 정합 탈락 {n_family}건")
+        if n_floor:
+            parts.append(f"s ≤ {ACTIVATE_FLOOR} {n_floor}건")
+        result.audit.append(f"가지치기: {' · '.join(parts)} 을 활성 후보에서 뺐습니다")
     if result.beam_hits:
         result.audit.append(
             f"빔 상한({scoring.BEAM_WIDTH}) 에 {result.beam_hits}회 걸렸습니다 "
@@ -167,7 +174,7 @@ def run(candidates: list[Candidate], ladder: Ladder) -> DPResult:
 
 
 _GUARD_LABEL = {"block_pos": "블록위치", "particle_ko": "조사",
-                "particle_ko:referent": "참조서술어", "construction": "construction"}
+                "particle_ko:referent": "참조서술어"}
 
 
 def _why(cand: Candidate) -> str:

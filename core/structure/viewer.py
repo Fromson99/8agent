@@ -23,6 +23,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Optional
 
+from core import geometry
 from core.structure.model import Block, Node, StructureResult
 
 
@@ -47,13 +48,8 @@ def _rect(block: Block, sizes: dict[int, tuple[float, float]]) -> Optional[dict]
     w, h = size
     if not w or not h:
         return None
-    l, t, r, b = block.bbox
-    if block.bbox_origin.upper() == "BOTTOMLEFT":
-        # PDF 원점은 왼쪽 **아래**. 화면은 왼쪽 위이므로 y 를 뒤집는다.
-        top, bottom = h - max(t, b), h - min(t, b)
-    else:
-        top, bottom = min(t, b), max(t, b)
-    x0, x1 = min(l, r), max(l, r)
+    x0, top, x1, bottom = geometry.to_topleft(block.bbox, block.bbox_origin, h)
+    x0, x1 = min(x0, x1), max(x0, x1)
     return {"x": round(x0 / w, 5), "y": round(top / h, 5),
             "w": round((x1 - x0) / w, 5), "h": round((bottom - top) / h, 5)}
 
@@ -72,6 +68,8 @@ def _flat_tree(nodes: list[Node], out: list[dict], parent: Optional[int] = None)
             "n_children": len(n.children),
             # 이 마디에 딸린 표·그림. 자식 마디가 아니라 잎이다(`attach_leaves`).
             "attachments": n.attachments,
+            # 지면에서 덮은 범위 — 2단 편집의 어긋남을 되짚는 재료(`measure_extent`)
+            "extent": {str(k): v for k, v in sorted(n.extent.items())},
         })
         _flat_tree(n.children, out, nid)
 

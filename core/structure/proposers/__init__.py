@@ -42,10 +42,15 @@ def scan(block: Block, family: str, full: re.Pattern,
          ordinal_of: Callable[[re.Match], Optional[Ordinal]],
          *, fragment: Optional[re.Pattern] = None,
          depth_of: Optional[Callable[[re.Match], Optional[int]]] = None,
-         prefix: str = "") -> list[Candidate]:
+         family_of: Optional[Callable[[re.Match], str]] = None) -> list[Candidate]:
     """블록 하나에서 후보를 전량 수집한다.
 
     완전형이 먼저다 — 같은 자리에서 완전형이 잡히면 파편은 만들지 않는다.
+
+    `family_of` 는 **매치마다** 계열을 정한다 — 한 패턴이 여러 계열을 내는 제안자
+    (`kr_편/장/절/관`, `annex_별지/별표`, `bullet_■/·`)가 쓴다. 이게 없던 시절에는
+    제안자가 후보의 surface 를 자기 패턴에 **다시** 매칭해 계열을 갈았는데, 파편
+    패턴의 lookaround 가 잘린 surface 에서 깨져 계열이 조용히 뭉개졌다.
     """
     out: list[Candidate] = []
     taken: list[tuple[int, int]] = []
@@ -58,7 +63,7 @@ def scan(block: Block, family: str, full: re.Pattern,
                 continue
             taken.append((m.start(), m.end()))
             out.append(Candidate(
-                id="", family=family,
+                id="", family=family_of(m) if family_of else family,
                 depth=depth_of(m) if depth_of else None,
                 surface=m.group(0).strip(),
                 ordinal=ordinal_of(m),
@@ -68,7 +73,4 @@ def scan(block: Block, family: str, full: re.Pattern,
                 in_paren=in_paren(block.text, m.start()),
                 is_heading=block.is_heading, bbox=block.bbox))
     out.sort(key=lambda c: c.offset)
-    if prefix:
-        for c in out:
-            c.family = prefix
     return out

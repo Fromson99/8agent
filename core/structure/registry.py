@@ -73,9 +73,6 @@ class Registry:
     def guards(self, lang: str = "any") -> list[Signal]:
         return [s for s in self.by_role("local_guard") if _lang_ok(s.lang, lang)]
 
-    def families(self) -> list[str]:
-        return sorted({s.family for s in self.signals.values() if s.family})
-
     def describe(self) -> str:
         lines = [f"관리소 — 신호 {len(self.signals)}개"]
         for role in ROLES:

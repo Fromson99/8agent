@@ -76,10 +76,3 @@ def follows(cur: Ordinal, prev: Ordinal) -> bool:
                 and cur[-1] == prev[len(cur) - 1] + 1)
 
     return False
-
-
-def describe(cur: Ordinal, prev: Ordinal) -> str:
-    """왜 이어지지 않는지 — 감사 로그에 실린다."""
-    if len(cur) != len(prev):
-        return "가지 표기가 이어지지 않습니다"
-    return "한 칸 전진이 아닙니다"

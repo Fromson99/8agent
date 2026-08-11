@@ -66,6 +66,16 @@ from core.structure.model import Block, Node, StructureResult
 MIN_RATIO = 1.20
 # 한 페이지에서 이보다 많이 걸리면 그 쪽은 표지·양식이라 크기가 의미를 잃은 것이다.
 MAX_PER_PAGE = 12
+# 물어볼 쪽 수 상한. 호출 하나가 수십 초라 쪽이 많으면 재해석이 통째로 느려진다.
+MAX_PAGES = 6
+# 같은 글이 이만큼 되풀이되면 **쪽 머리글·문서 표제**다 — 묻지 않고 뺀다.
+# 실측(GMS_D3421 5쪽): `KB able ELS 제3421호 핵심(요약)상품설명서` 가 2.87배로
+# 5쪽 전부에 나온다. 문서 중간의 구역 제목이 아니라 문서 이름이므로 구조를 열지
+# 않는다. 이걸 묻느라 호출이 5배로 늘고 재해석이 300초 가까이 걸렸다.
+REPEAT_FURNITURE = 3
+# 판정은 가르는 일이지 짓는 일이 아니다 — 싼 모델로 충분하다. 비싸게 갈 이유가
+# 있으면 부르는 쪽이 model 을 준다.
+CHEAP_MODEL = "claude-haiku-4-5-20251001"
 # 같은 크기로 묶는 자릿수 — 3.932 와 3.930 은 같은 뭉치다.
 ROUND = 2
 
@@ -131,14 +141,13 @@ SCHEMA: dict[str, Any] = {
 
 
 def candidates(blocks: list[Block], result: StructureResult) -> list[Block]:
-    """비정상적으로 큰 글씨 뭉치. **같은 크기끼리 묶어** 본다.
-
-    한 줄만 큰 것은 강조이기 쉽고, 같은 크기가 문서에서 되풀이되면 계열이다. 다만
-    되풀이 여부로 거르지는 않는다 — 실측에서 `원금 비보장 상품`(반복 라벨)과
-    `특정금전신탁 계약서(全文)`(반복 표제)가 똑같이 되풀이됐다. 크기로 모으기만 하고
-    가르는 일은 VLM 이 한다.
+    """비정상적으로 큰 글씨. **되풀이되는 것은 빼고** 돌려준다.
 
     이미 구역을 연 블록은 뺀다 — 마커가 잡은 것을 다시 물을 이유가 없다.
+
+    같은 글이 `REPEAT_FURNITURE` 번 이상 나오면 쪽 머리글이거나 문서 표제다. 문서
+    **중간**의 구역 제목은 그렇게 되풀이되지 않는다. 이건 판정이 필요 없는 구별이라
+    결정론으로 처리하고 VLM 을 부르지 않는다 — 비용의 대부분이 여기 있었다.
     """
     opens = {n.block_idx for n in result.nodes()}
     big = [b for b in blocks
@@ -146,23 +155,29 @@ def candidates(blocks: list[Block], result: StructureResult) -> list[Block]:
            and b.size_ratio is not None and b.size_ratio >= MIN_RATIO]
     if not big:
         return []
+
+    seen: dict[str, int] = {}
+    for b in big:
+        key = b.text.replace(" ", "")[:60]
+        seen[key] = seen.get(key, 0) + 1
+    furniture = {k for k, n in seen.items() if n >= REPEAT_FURNITURE}
+    if furniture:
+        result.stats["vlm_furniture"] = sorted(furniture)[:5]
+        result.audit_log.append(
+            f"[VLM 제목] 되풀이 {REPEAT_FURNITURE}회 이상인 큰 글씨 {len(furniture)}종을 "
+            f"쪽 머리글·문서 표제로 보아 묻지 않았습니다")
+
     per_page: dict[int, int] = {}
     out: list[Block] = []
     for b in sorted(big, key=lambda x: x.idx):
+        if b.text.replace(" ", "")[:60] in furniture:
+            continue
         n = per_page.get(b.page, 0)
         if n >= MAX_PER_PAGE:
             continue                      # 이 쪽은 크기가 의미를 잃었다
         per_page[b.page] = n + 1
         out.append(b)
     return out
-
-
-def size_groups(cands: list[Block]) -> dict[float, list[int]]:
-    """크기 → 그 크기인 블록들. 사람이 확인할 때 쓰고, 프롬프트에도 실린다."""
-    g: dict[float, list[int]] = {}
-    for b in cands:
-        g.setdefault(round(b.size_ratio, ROUND), []).append(b.idx)
-    return dict(sorted(g.items(), reverse=True))
 
 
 def _context(result: StructureResult, blocks: list[Block],
@@ -221,11 +236,17 @@ def prompt_for(page: int, cands: list[Block], result: StructureResult,
 
 def ask(llm, page: int, page_png: str, cands: list[Block],
         result: StructureResult, blocks: list[Block],
-        n_blocks: int = 0, prev_run: Optional[dict] = None) -> list[dict]:
+        n_blocks: int = 0, prev_run: Optional[dict] = None,
+        model: Optional[str] = None) -> list[dict]:
     """페이지 하나를 그림째 묻는다. 실패하면 빈 목록 — 조용히 지어내지 않는다."""
+    # 싼 모델은 `effort` 를 지원하지 않는다(haiku: 400). 모델을 지정한 호출은
+    # effort 를 빼고 부른다 — 지원 여부를 모델별로 외우지 않기 위해서다.
+    kw: dict = {"images": [page_png], "effort": None if model else "high"}
+    if model:
+        kw["model"] = model
     data = llm.structured(f"vlm_heading_p{page}", SYSTEM,
                           prompt_for(page, cands, result, blocks, n_blocks, prev_run),
-                          SCHEMA, effort="high", images=[page_png])
+                          SCHEMA, **kw)
     if not data:
         return []
     ok = {f"blk{b.idx}" for b in cands}
@@ -347,11 +368,21 @@ def promote(result: StructureResult, verdicts: list[dict],
 
 
 def run(result: StructureResult, blocks: list[Block], pdf_path,
-        llm, *, max_pages: int = 0, scale: float = 1.6) -> int:
+        llm, *, max_pages: int = MAX_PAGES, scale: float = 1.6,
+        model: Optional[str] = CHEAP_MODEL) -> int:
     """S5c 전체 — 후보 고르기 → 쪽마다 그림째 묻기 → 세우기. 반환: 세운 제목 수.
 
-    `llm` 이나 `pdf_path` 가 없으면 **아무것도 하지 않는다.** 결정론 경로는 이 단계
-    없이도 완결이며, 그림이 없으면 물을 수 없다.
+    ## 같은 글은 한 번만 묻는다
+
+    쪽마다 부르면 **반복 표제를 쪽 수만큼 되묻는다.** 실측(GMS_D3421 5쪽):
+    `KB able ELS 제3421호 핵심(요약)상품설명서` 가 5쪽 전부에 2.87배로 반복돼
+    5번 물었고, 호출 하나가 수십 초라 재해석이 300초 가까이 걸렸다.
+
+    같은 글은 판정도 같다. 글자로 묶어 **처음 나온 쪽에서 한 번만 묻고** 나머지
+    occurrence 에 그 판정을 그대로 편다. 반복 표제는 대개 쪽 머리글이므로 VLM 이
+    body 로 내리는데, 그 판정 하나면 5개가 모두 정리된다.
+
+    `llm` 이나 `pdf_path` 가 없으면 **아무것도 하지 않는다.**
     """
     from core.structure import viewer as viewer_mod
 
@@ -360,25 +391,48 @@ def run(result: StructureResult, blocks: list[Block], pdf_path,
     cands = candidates(blocks, result)
     if not cands:
         return 0
-    pages = sorted({b.page for b in cands})
-    if max_pages:
+
+    # 글자로 묶는다 — 공백을 지운 정규형이 같으면 같은 글로 본다.
+    groups: dict[str, list[Block]] = {}
+    for b in cands:
+        groups.setdefault(b.text.replace(" ", "")[:60], []).append(b)
+    firsts = [g[0] for g in groups.values()]
+    result.stats["vlm_asked"] = len(firsts)
+    result.stats["vlm_deduped"] = len(cands) - len(firsts)
+
+    pages = sorted({b.page for b in firsts})
+    if max_pages and len(pages) > max_pages:
+        result.warnings.append(
+            f"큰 글씨가 {len(pages)}쪽에 걸쳐 있어 앞 {max_pages}쪽만 물었습니다 "
+            f"— 나머지 쪽의 제목은 세워지지 않습니다")
         pages = pages[:max_pages]
+    result.stats["vlm_pages"] = len(pages)
 
     verdicts: list[dict] = []
     prev_run: Optional[dict] = None
     for page in pages:
-        mine = [b for b in cands if b.page == page]
+        mine = [b for b in firsts if b.page == page]
         try:
             png = viewer_mod.page_png(pdf_path, page, scale=scale)
         except Exception as exc:                     # pragma: no cover
             result.warnings.append(f"{page}쪽 그림을 만들지 못했습니다 — {exc}")
             continue
-        got = ask(llm, page, png, mine, result, blocks, len(blocks), prev_run)
+        got = ask(llm, page, png, mine, result, blocks, len(blocks), prev_run,
+                  model=model)
         verdicts += got
         heads = [v for v in got if v.get("verdict") == "heading"]
         if heads:
             last = max(int(v["id"].replace("blk", "")) for v in heads)
             prev_run = ordinal_run(result, last, len(blocks))
-    result.stats["vlm_asked"] = len(cands)
-    result.stats["vlm_pages"] = len(pages)
-    return promote(result, verdicts, blocks, len(blocks))
+
+    # 물은 것의 판정을 같은 글의 나머지에도 편다.
+    by_id = {f"blk{b.idx}": b for b in firsts}
+    spread: list[dict] = []
+    for v in verdicts:
+        b = by_id.get(v.get("id"))
+        if b is None:
+            continue
+        key = b.text.replace(" ", "")[:60]
+        for twin in groups.get(key, []):
+            spread.append({**v, "id": f"blk{twin.idx}"})
+    return promote(result, spread, blocks, len(blocks))

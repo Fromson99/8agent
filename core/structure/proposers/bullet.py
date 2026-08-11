@@ -76,9 +76,6 @@ def _ordinal(m: re.Match):
 
 
 def propose(block: Block, lex) -> list[Candidate]:
-    out: list[Candidate] = []
-    for c in scan(block, FAMILY, _FULL, _ordinal, fragment=_FRAGMENT):
-        glyph = c.surface.strip()[:1]          # 글리프마다 다른 계열 (위 주석)
-        c.family = f"bullet_{_CANON.get(glyph, glyph)}"
-        out.append(c)
-    return out
+    # 글리프마다 다른 계열 (위 주석) — 두 패턴 모두 group(1) 이 글리프다.
+    return scan(block, FAMILY, _FULL, _ordinal, fragment=_FRAGMENT,
+                family_of=lambda m: f"bullet_{_CANON.get(m.group(1), m.group(1))}")

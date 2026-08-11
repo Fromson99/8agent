@@ -45,6 +45,8 @@ class Block:
     # `size_ratio` 는 본문 대비 배율이라 문서마다 임계를 다시 잡지 않아도 된다.
     size_ratio: Optional[float] = None
     bold: bool = False
+    font_name: str = ""           # 굵기가 이름에만 있는 글꼴이 있다
+
     gap_before: Optional[float] = None
 
     @property
@@ -94,6 +96,7 @@ class Block:
                            kind=kind,
                            size_ratio=getattr(e, "size_ratio", None),
                            bold=getattr(e, "bold", False),
+                           font_name=getattr(e, "font_name", ""),
                            gap_before=getattr(e, "gap_before", None)))
         return out
 
@@ -155,7 +158,7 @@ class Candidate:
     unassigned: bool = False
     assign_note: str = ""
 
-    # --- S3 산출 ---------------------------------------------------------
+    # --- S4 산출 (전역 선택 · DP) ----------------------------------------
     activated: bool = False
     activated_level: Optional[int] = None
     decision_note: str = ""
@@ -286,6 +289,21 @@ class Node:
     # 이 마디에 딸린 표·그림. **자식 마디가 아니라 잎**이다 — 구역을 열지 않으므로
     # 트리의 마디가 될 수 없지만, 어느 구역의 것인지는 말해야 한다.
     attachments: list[dict] = field(default_factory=list)
+    # --- 기하 (`pipeline.measure_extent`) -----------------------------------
+    # 제목 자신의 상자와, 그 마디가 **지면에서 실제로 덮은 범위**.
+    #
+    # 왜 필요한가: 읽기 순서는 한 줄이지만 지면은 2차원이다. 2단 편집에서 왼쪽 단의
+    # 내용이 오른쪽 단 제목의 span 에 들어가는 일이 생긴다(실측 GMS_D3421 p2:
+    # `유사 금융상품과 구별되는 특징`(좌) 아래 ELS/DLS 가 `발생 가능한 불이익
+    # 사항`(우) 으로 넘어갔다). 사람은 그림만 보면 바로 안다 — 좌표가 말해 주기
+    # 때문이다. 그 좌표를 저장해 두면 나중에 VLM 없이도 되짚을 수 있다.
+    #
+    # 여기서는 **재기만 한다.** 어긋남을 고치는 것은 이 데이터가 쌓인 뒤의 일이다.
+    bbox: Optional[list[float]] = None          # 제목 블록 자신의 상자
+    bbox_origin: str = "BOTTOMLEFT"
+    # 쪽번호 → {box, blocks} — 그 쪽에서 이 마디가 덮은 블록들의 상자 합집합.
+    # 쪽마다 따로 두는 이유: 구역이 쪽을 넘으면 하나의 상자로 합칠 수 없다.
+    extent: dict[int, dict] = field(default_factory=dict)
 
     def dump(self) -> dict:
         d = {"level": self.level, "family": self.family, "surface": self.surface,
@@ -296,6 +314,11 @@ class Node:
              "children": [c.dump() for c in self.children]}
         if self.attachments:
             d["attachments"] = self.attachments
+        if self.bbox:
+            d["bbox"] = self.bbox
+            d["bbox_origin"] = self.bbox_origin
+        if self.extent:
+            d["extent"] = {str(k): v for k, v in sorted(self.extent.items())}
         return d
 
     def walk(self):

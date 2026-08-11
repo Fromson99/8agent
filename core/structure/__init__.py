@@ -11,10 +11,11 @@
 
     proposers/      제안자        S0  text → 후보[]              레벨 의미 0
     guards/         국소 가드      S1  후보 → score (방향 있는 점수)
-    global_outer/   전역 바깥      S2  family 집합 → 레벨 사다리
-    global_inner/   전역 안쪽      S3  후보집합 + 컨텍스트 → 트리
-    dp.py           S3 DP (Viterbi)
-    fingerprint.py  S5 재현 판정 / 저장 분기
+    family/         계열 정합      S2  계열 안 수열·위치로 구조/인용 가르기
+    global_outer/   전역 바깥      S3  family 집합 → 레벨 사다리
+    global_inner/   전역 안쪽      S4  계층성·서수 게이트 (DP 가 부른다)
+    dp.py           S4 DP (Viterbi)
+    fingerprint.py  S6 재현 판정 / 저장 분기
     scoring.py      §5 수치 — 파이프라인 전체가 여기에 매달린다
     registry.py     관리소 — 신호를 role 로 등록만
     pipeline.py     core 파이프라인 (고정)

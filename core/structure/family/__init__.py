@@ -48,11 +48,8 @@ from __future__ import annotations
 
 import collections
 
-from core.structure.family import anchor, run, succession
+from core.structure.family import anchor, run
 from core.structure.model import Candidate
-
-# 순서가 의미를 갖는다 — 위치가 싸고 많이 죽인다.
-SIGNALS = (anchor, run, succession)
 
 
 def select(candidates: list[Candidate]) -> dict[str, int]:
@@ -96,7 +93,3 @@ def select(candidates: list[Candidate]) -> dict[str, int]:
                 if len(chain) < run.MIN_CHAIN and not c.family_note:
                     c.family_note = "1 로 여는 유일 항목"
     return dict(sorted(dropped.items()))
-
-
-def survivors(candidates: list[Candidate]) -> list[Candidate]:
-    return [c for c in candidates if c.survives]

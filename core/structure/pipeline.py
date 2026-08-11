@@ -145,7 +145,7 @@ def s3_induce(cands: list[Candidate], root: Optional[str] = None,
 
 
 # ---------------------------------------------------------------------------
-# S5 · fitness 게이트 + 잔여
+# S4 · 전역 선택 보정 + 트리 후처리 (층 해제 · 제목 · 잎 · 범위)
 # ---------------------------------------------------------------------------
 
 def s4_unlock(cands: list[Candidate], ladder, dpr) -> list[str]:
@@ -181,6 +181,11 @@ def s4_unlock(cands: list[Candidate], ladder, dpr) -> list[str]:
     for c in cands:
         if c.activated or not c.survives:
             continue
+        if c.s <= dp.ACTIVATE_FLOOR:
+            # 점수로 가지쳐진 후보다(`dp.run` 의 live 필터). DP 에 들어가지 않았으니
+            # margin 이 초기값 inf 로 남는데, 그것은 층이 막힌 증거가 아니다 —
+            # 여기서 거르지 않으면 저득점 계열의 층이 통째로 풀린다.
+            continue
         if c.decision_margin == float("inf") and c.level is not None:
             blocked[c.family_key] = blocked.get(c.family_key, 0) + 1
     if not blocked:
@@ -204,6 +209,97 @@ def _unlock_note(freed: list[str], cands: list[Candidate]) -> str:
     return ("[층 해제] " + ", ".join(f"{k}({n[k]}건)" for k in freed)
             + " — 사다리가 앉힌 층을 열 자리가 문서에 없어 미배정으로 돌리고 DP 를 "
               "다시 돌렸습니다")
+
+
+def _induce_and_select(result: StructureResult, blocks: Optional[list[Block]],
+                       n_blocks: int, *, root: Optional[str],
+                       hint: Optional[list[list[str]]],
+                       partial_order: Optional[list[tuple[str, str]]]) -> None:
+    """S3(사다리 유도) → S4(DP · 층 해제 1회 · 트리 · 제목 · 잎 · 범위).
+
+    `interpret` 와 `rebuild` 의 공통 구간 — 같은 열두 줄이 두 곳에 있으면 한쪽만
+    고쳐지는 사고가 난다. 감사 로그는 **잇는다**: 첫 해석은 빈 로그라 결과가 같고,
+    rebuild 는 앞선 로그를 보존해야 한다(무엇을 풀고 다시 돌렸는지가 거기 있다).
+    """
+    cands = result.candidates
+    result.ladder = s3_induce(cands, root=root, hint=hint,
+                              partial_order=partial_order,
+                              page_width=Block.page_widths(blocks) if blocks else None)
+    dpr = dp.run(cands, result.ladder)
+    # 사다리가 열 수 없는 층에 앉힌 계열이 있으면 풀고 **한 번만** 다시 돈다.
+    # 되풀이하지 않는다 — 두 번째에도 막히면 그것은 층 문제가 아니다.
+    freed = s4_unlock(cands, result.ladder, dpr)
+    if freed:
+        dpr = dp.run(cands, result.ladder)      # 새 DPResult — 감사도 새로 시작한다
+        dpr.audit.insert(0, _unlock_note(freed, cands))
+        result.stats["unlocked"] = freed
+    result.tree = dp.build_tree(cands, n_blocks)
+    # 제목은 **트리가 만들어진 뒤에** 뽑는다 — "이 마디가 내용을 따로 가졌는가"를
+    # 알아야 꼬리가 제목인지 본문인지 갈린다.
+    if blocks:
+        result.stats["titled"] = title_mod.extract(result.tree, cands, blocks)
+        result.stats["attached"] = attach_leaves(result, blocks)
+    measure_extent(result, blocks)   # 지면에서 덮은 범위 (2단 어긋남의 재료)
+    result.audit_log = result.audit_log + dpr.audit
+    result.stats["dp_total"] = round(dpr.total, 3)
+    result.stats["pruned"] = dpr.pruned
+
+
+def measure_extent(result: StructureResult, blocks: list[Block]) -> int:
+    """마디마다 **지면에서 실제로 덮은 범위**를 잰다. 반환: 잰 마디 수.
+
+    ## 왜 재 두는가 — 읽기 순서는 한 줄이지만 지면은 2차원이다
+
+    2단 편집에서 왼쪽 단의 내용이 오른쪽 단 제목의 span 으로 넘어간다. 실측
+    (GMS_D3421 p2): `유사 금융상품과 구별되는 특징`(좌단) 아래의 ELS·DLS 설명이
+    `발생 가능한 불이익 사항`(우단) 구역으로 들어갔다. 읽기 순서만 보면 실제로
+    그 사이에 있으니 코드로는 틀린 줄을 모른다.
+
+    그림을 보면 사람은 바로 안다 — **좌표가 다르기 때문이다.** 좌단 제목의 x 범위
+    안에 있는 내용이 우단 제목에 딸려 있으면 그건 어긋남이다. 그 판단에 필요한
+    좌표를 여기서 저장해 둔다.
+
+    ## 지금은 재기만 한다
+
+    어긋남을 고치지 않는다. 2단 판정에는 임계값이 필요하고(어디까지가 같은 단인가),
+    그 임계는 이 데이터가 여러 문서에 쌓인 뒤에 정해야 한다. 지금 정하면 문서 하나에
+    맞춘 숫자가 된다.
+
+    합집합은 **쪽마다 따로** 둔다. 구역이 쪽을 넘으면 한 상자로 합칠 수 없다.
+    표·그림도 포함한다 — 그것도 그 구역이 지면에서 차지한 자리다.
+    """
+    if not blocks:
+        return 0                     # 블록이 없으면 잴 것이 없다(rebuild 경로)
+    by_idx = {b.idx: b for b in blocks}
+    n = 0
+    for node in result.nodes():
+        own = by_idx.get(node.block_idx)
+        if own is not None and own.bbox:
+            node.bbox = list(own.bbox)
+            node.bbox_origin = own.bbox_origin
+        pages: dict[int, dict] = {}
+        for i in range(node.span[0], max(node.span[1], node.span[0] + 1)):
+            b = by_idx.get(i)
+            if b is None or not b.bbox:
+                continue
+            cur = pages.get(b.page)
+            l, t, r, bo = b.bbox
+            if cur is None:
+                pages[b.page] = {"box": [l, max(t, bo), r, min(t, bo)],
+                                 "origin": b.bbox_origin, "blocks": 1}
+            else:
+                box = cur["box"]
+                box[0] = min(box[0], l)
+                box[1] = max(box[1], t, bo)      # BOTTOMLEFT: 위쪽이 큰 y
+                box[2] = max(box[2], r)
+                box[3] = min(box[3], t, bo)
+                cur["blocks"] += 1
+        for v in pages.values():
+            v["box"] = [round(x, 2) for x in v["box"]]
+        node.extent = pages
+        n += bool(pages)
+    result.stats["measured_extent"] = n
+    return n
 
 
 def s5_thin(result: StructureResult, blocks: list[Block]) -> int:
@@ -438,7 +534,11 @@ def s5_residual(result: StructureResult) -> None:
 
 
 def residual_prompt(result: StructureResult) -> str:
-    """잔여를 LLM 배치 1콜에 던질 형태로 (§4 S5). 후보마다 원문 한 줄을 붙인다."""
+    """잔여를 LLM 배치 1콜에 던질 형태로 (§4 S5). 후보마다 원문 한 줄을 붙인다.
+
+    후보가 아닌 잔여(`[놓친 제목?] blkN …`, s5_thin)는 싣지 않는다 — 배치의 답은
+    후보 id 로만 돌아오므로 물어도 버려지고, 그 의심은 S5c(VLM)가 픽셀로 본다.
+    """
     if not result.residual:
         return ""
     by_id = {c.id: c for c in result.candidates}
@@ -446,11 +546,11 @@ def residual_prompt(result: StructureResult) -> str:
              "아래 후보들은 결정론 판별이 서로 다른 답을 냈습니다.",
              "각각이 **구조 경계**인지 **본문 속 인용**인지만 판정하세요.", ""]
     for r in result.residual:
-        cid = r.split()[1]
-        c = by_id.get(cid)
+        c = by_id.get(r.split()[1])
+        if c is None:
+            continue
         lines.append(r)
-        if c:
-            lines.append(f'    원문: "{c.text[:160]}"')
+        lines.append(f'    원문: "{c.text[:160]}"')
     return "\n".join(lines)
 
 
@@ -510,27 +610,9 @@ def interpret(blocks: list[Block], doc: str, *,
     result.stats["family_dropped"] = dropped
     result.stats["survivors"] = sum(1 for c in cands if c.survives)
 
-    page_width = Block.page_widths(blocks)
-    result.stats["page_width"] = len(page_width)
-    result.ladder = s3_induce(cands, root=root, hint=ladder_hint,
-                              partial_order=partial_order, page_width=page_width)
-
-    dpr = dp.run(cands, result.ladder)
-    # 사다리가 열 수 없는 층에 앉힌 계열이 있으면 풀고 **한 번만** 다시 돈다.
-    # 되풀이하지 않는다 — 두 번째에도 막히면 그것은 층 문제가 아니다.
-    freed = s4_unlock(cands, result.ladder, dpr)
-    if freed:
-        dpr = dp.run(cands, result.ladder)      # 새 DPResult — 감사도 새로 시작한다
-        dpr.audit.insert(0, _unlock_note(freed, cands))
-        result.stats["unlocked"] = freed
-    result.tree = dp.build_tree(cands, len(blocks))
-    # 제목은 **트리가 만들어진 뒤에** 뽑는다 — "이 마디가 내용을 따로 가졌는가"를
-    # 알아야 꼬리가 제목인지 본문인지 갈린다.
-    result.stats["titled"] = title_mod.extract(result.tree, cands, blocks)
-    result.stats["attached"] = attach_leaves(result, blocks)
-    result.audit_log = dpr.audit
-    result.stats["dp_total"] = round(dpr.total, 3)
-    result.stats["pruned"] = dpr.pruned
+    result.stats["page_width"] = len(Block.page_widths(blocks))
+    _induce_and_select(result, blocks, len(blocks), root=root, hint=ladder_hint,
+                       partial_order=partial_order)
 
     s5_fitness(result, blocks)
     s5_residual(result)
@@ -540,11 +622,15 @@ def interpret(blocks: list[Block], doc: str, *,
     # 트리가 다 선 **뒤에** 돈다: 조·항·호는 결정론이 이미 세웠고 VLM 은 그 위에
     # 지붕만 얹는다. pdf_path 나 llm 이 없으면 아무 일도 하지 않는다.
     if llm is not None and pdf_path:
+        import time as _t
+
         from core.structure import vlm_heading as vlm_mod
+        t0 = _t.monotonic()
         try:
             vlm_mod.run(result, blocks, pdf_path, llm)
         except Exception as exc:                     # 판정 실패가 해석을 세우면 안 된다
             result.warnings.append(f"VLM 제목 판정 실패 — {type(exc).__name__}: {exc}")
+        result.stats["vlm_sec"] = round(_t.monotonic() - t0, 1)
 
     # S5b · 잔여 해소 — 문서당 배치 1콜. llm 이 없으면 통째로 건너뛴다(결정론 경로).
     if llm is not None:
@@ -584,22 +670,8 @@ def rebuild(result: StructureResult, *, root: Optional[str] = None,
         c.decision_margin = float("inf")
         c.title, c.title_reason = "", ""
 
-    result.ladder = s3_induce(result.candidates, root=root, hint=ladder_hint,
-                              partial_order=partial_order,
-                              page_width=Block.page_widths(blocks) if blocks else None)
-    dpr = dp.run(result.candidates, result.ladder)
-    freed = s4_unlock(result.candidates, result.ladder, dpr)
-    if freed:
-        dpr = dp.run(result.candidates, result.ladder)
-        dpr.audit.insert(0, _unlock_note(freed, result.candidates))
-        result.stats["unlocked"] = freed
-    result.tree = dp.build_tree(result.candidates, n_blocks)
-    if blocks:
-        result.stats["titled"] = title_mod.extract(result.tree, result.candidates, blocks)
-        result.stats["attached"] = attach_leaves(result, blocks)
-    result.audit_log = result.audit_log + dpr.audit
-    result.stats["dp_total"] = round(dpr.total, 3)
-    result.stats["pruned"] = dpr.pruned
+    _induce_and_select(result, blocks, n_blocks, root=root, hint=ladder_hint,
+                       partial_order=partial_order)
     result.stats["survivors"] = sum(1 for c in result.candidates if c.survives)
 
     result.warnings = [w for w in result.warnings if not w.startswith("사다리 결함")]
@@ -608,12 +680,3 @@ def rebuild(result: StructureResult, *, root: Optional[str] = None,
         s5_fitness(result, blocks)
     s5_residual(result)
     s5_thin(result, blocks)      # 후보가 서지 못한 제목 (§타이포그래피)
-
-
-def interpret_parsed(parsed, doc: Optional[str] = None, **kw) -> StructureResult:
-    """`core.parse_adapter.ParseResult` 를 그대로 받는 편의 진입점."""
-    from pathlib import Path
-    # 원본 경로를 함께 넘긴다 — S5c 가 페이지 그림을 만들려면 PDF 가 있어야 한다.
-    kw.setdefault("pdf_path", parsed.path or None)
-    return interpret(Block.from_elements(parsed.elements),
-                     doc or Path(parsed.path).name, **kw)

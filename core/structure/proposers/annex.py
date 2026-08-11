@@ -32,11 +32,8 @@ def _ordinal(m: re.Match):
 
 
 def propose(block: Block, lex) -> list[Candidate]:
-    out: list[Candidate] = []
-    for c in scan(block, FAMILY, _FULL, _ordinal, fragment=_FRAGMENT):
-        m = _FULL.match(c.surface) or _FRAGMENT.match(c.surface)
-        c.family = f"annex_{m.group(1)}" if m else FAMILY
-        out.append(c)
+    out = scan(block, FAMILY, _FULL, _ordinal, fragment=_FRAGMENT,
+               family_of=lambda m: f"annex_{m.group(1)}")
 
     m = _BUCHIK.match(block.text)
     if m:

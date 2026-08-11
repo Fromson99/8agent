@@ -35,10 +35,17 @@ def of(candidates: list[Candidate], ladder: Ladder) -> Fingerprint:
 
 @dataclass
 class Ledger:
-    """fingerprint 별 관측 횟수. 관리소가 붙기 전의 최소 장부다."""
+    """fingerprint 별 관측 횟수 + 동결된 frame. 관리소가 붙기 전의 최소 장부다.
+
+    frame 은 재현이 확인된 문서군의 사다리(레벨별 family 순서)다. fingerprint
+    키에 순서가 이미 들어 있으므로 같은 키의 문서에 다시 주입하는 것은 무의미
+    하고, 가치는 **장부에 남는 것** 자체다 — 어떤 문서군이 안정적으로 재현되는지,
+    어떤 바인딩이 동결됐는지를 다음 국면(frame 라우팅, 측정기 장부)이 읽는다.
+    """
     path: Optional[Path] = None
     counts: dict[str, int] = field(default_factory=dict)
     docs: dict[str, list[str]] = field(default_factory=dict)
+    frames: dict[str, dict] = field(default_factory=dict)
 
     @classmethod
     def load(cls, path: str | Path) -> "Ledger":
@@ -46,14 +53,16 @@ class Ledger:
         if not p.exists():
             return cls(path=p)
         data = json.loads(p.read_text(encoding="utf-8"))
-        return cls(path=p, counts=data.get("counts", {}), docs=data.get("docs", {}))
+        return cls(path=p, counts=data.get("counts", {}), docs=data.get("docs", {}),
+                   frames=data.get("frames", {}))
 
     def save(self) -> None:
         if self.path is None:
             return
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.write_text(
-            json.dumps({"counts": self.counts, "docs": self.docs},
+            json.dumps({"counts": self.counts, "docs": self.docs,
+                        "frames": self.frames},
                        ensure_ascii=False, indent=2), encoding="utf-8")
 
     def observe(self, fp: Fingerprint, doc: str) -> int:
@@ -64,8 +73,15 @@ class Ledger:
         self.counts[key] = len(seen)
         return self.counts[key]
 
-    def count(self, fp: Fingerprint) -> int:
-        return self.counts.get(fp.key(), 0)
+    def freeze(self, fp: Fingerprint, doc: str) -> bool:
+        """frame 등재 — may_freeze 판정을 통과한 호출부만 부른다.
+        이미 동결돼 있으면 건드리지 않는다(첫 동결이 정본)."""
+        key = fp.key()
+        if key in self.frames:
+            return False
+        self.frames[key] = {"order": fp.order, "families": sorted(fp.families),
+                            "first_doc": doc}
+        return True
 
 
 def tier(count: int, fitness_passed: bool) -> str:
