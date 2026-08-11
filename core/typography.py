@@ -49,6 +49,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Optional
 
+from core import geometry
+
 # PyMuPDF 의 span flags 중 굵기 비트 (fitz.TEXT_FONT_BOLD)
 BOLD_BIT = 1 << 4
 # 글꼴 이름에 이게 들어가면 굵은 것으로 본다 — flags 를 안 세우는 PDF 가 흔하다.
@@ -57,6 +59,8 @@ BOLD_NAMES = ("bold", "heavy", "black", "semib", "demib", "extrab")
 BOLD_T = 0.6
 # 이보다 글자가 적은 쪽은 자기 최빈 크기를 믿지 않는다(표지·간지) — 문서 최빈을 쓴다
 MIN_PAGE_CHARS = 400
+# span 중심이 요소 상자를 살짝 벗어나는 일이 흔하다. 이 여유까지는 그 요소의 것으로 본다.
+PAD = 1.5
 
 
 def _is_bold(span: dict) -> bool:
@@ -93,21 +97,6 @@ def _page_spans(page) -> list[dict]:
                             "bold": _is_bold(span), "n": len(text),
                             "font": str(span.get("font", ""))})
     return out
-
-
-def _topleft(bbox: list[float], origin: str, height: float) -> list[float]:
-    """어떤 원점으로 왔든 TOPLEFT (x0, top, x1, bottom) 로."""
-    if str(origin).upper() == "BOTTOMLEFT":
-        return [bbox[0], height - max(bbox[1], bbox[3]),
-                bbox[2], height - min(bbox[1], bbox[3])]
-    return [bbox[0], min(bbox[1], bbox[3]), bbox[2], max(bbox[1], bbox[3])]
-
-
-def _inside(span_bbox: list[float], box: list[float], pad: float = 1.5) -> bool:
-    cx = (span_bbox[0] + span_bbox[2]) / 2
-    cy = (span_bbox[1] + span_bbox[3]) / 2
-    return (box[0] - pad <= cx <= box[2] + pad
-            and box[1] - pad <= cy <= box[3] + pad)
 
 
 def _dominant(spans: list[dict]) -> tuple[Optional[float], float, str]:
@@ -165,8 +154,8 @@ def annotate(path: str | Path, elements: list) -> dict[str, Any]:
         spans = by_page.get(e.page)
         if not h or not spans:
             continue
-        box = _topleft(e.bbox, getattr(e, "bbox_origin", "BOTTOMLEFT"), h)
-        hit = [s for s in spans if _inside(s["bbox"], box)]
+        box = geometry.to_topleft(e.bbox, getattr(e, "bbox_origin", "BOTTOMLEFT"), h)
+        hit = [s for s in spans if geometry.holds_center(box, s["bbox"], PAD)]
         size, ratio, font = _dominant(hit)
         if size is None:
             continue
@@ -223,7 +212,7 @@ def annotate(path: str | Path, elements: list) -> dict[str, Any]:
         h = heights.get(e.page)
         if not h:
             continue
-        box = _topleft(e.bbox, getattr(e, "bbox_origin", "BOTTOMLEFT"), h)
+        box = geometry.to_topleft(e.bbox, getattr(e, "bbox_origin", "BOTTOMLEFT"), h)
         last = prev_bottom.get(e.page)
         if last is not None:
             e.gap_before = round(max(0.0, box[1] - last), 2)

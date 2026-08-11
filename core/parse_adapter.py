@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
@@ -110,15 +111,6 @@ class Table:
         for r in out:
             r.sort(key=lambda c: c.col)
         return out
-
-    def grid(self) -> list[list[str]]:
-        """필요할 때만 펼친다. 병합 셀은 자기가 덮는 칸에 복제된다."""
-        g = [["" for _ in range(self.n_cols)] for _ in range(self.n_rows)]
-        for c in self.cells:
-            for r in range(c.row, min(c.row + c.row_span, self.n_rows)):
-                for k in range(c.col, min(c.col + c.col_span, self.n_cols)):
-                    g[r][k] = c.text
-        return g
 
     def text(self) -> str:
         return "\n".join(" | ".join(c.text for c in row) for row in self.rows())
@@ -258,8 +250,14 @@ class ParseResult:
 
 # ---------------------------------------------------------------------------
 
-def _norm(s: str) -> str:
-    return " ".join((s or "").replace("\xa0", " ").split())
+def norm_ws(s) -> str:
+    """공백 정규화 — NBSP 를 펴고 연속 공백을 하나로.
+
+    파싱 층의 표준 정규화다. grid_recover · agent6 전사도 이걸 쓴다 — 같은 4줄이
+    세 곳에 복붙되어 있으면 한 곳만 고쳐지는 사고가 난다.
+    (값 비교용 정규화는 별개다 — `core.normalize.normalize_text`.)
+    """
+    return " ".join(str(s or "").replace("\xa0", " ").split())
 
 
 def decode_text(path: str | Path) -> str:
@@ -405,7 +403,7 @@ def _table_of(item) -> Optional[Table]:
         return None
     cells = []
     for c in getattr(data, "table_cells", []) or []:
-        t = _norm(getattr(c, "text", "") or "")
+        t = norm_ws(getattr(c, "text", "") or "")
         bb = getattr(c, "bbox", None)
         box, origin = None, "TOPLEFT"
         if bb is not None:
@@ -457,7 +455,7 @@ def _picture_meta(item, doc) -> tuple[str, dict, str]:
     """
     caption = ""
     try:
-        caption = _norm(item.caption_text(doc) or "")
+        caption = norm_ws(item.caption_text(doc) or "")
     except Exception:                          # pragma: no cover - docling 버전차
         caption = ""
     meta: dict = {"ref": getattr(item, "self_ref", "")}
@@ -490,27 +488,26 @@ def _item_text(item) -> str:
     marker = (getattr(item, "marker", "") or "").strip()
     if marker and not text.strip().startswith(marker):
         text = f"{marker} {text}"
-    return _norm(text)
+    return norm_ws(text)
 
 
-def parse_pdf(path: str | Path, *, recognize_grids=None) -> ParseResult:
-    p = Path(path)
-    born, pdf_stats = is_born_digital(p)
-    warnings: list[str] = []
-    if not born:
-        warnings.append("born-digital 이 아닙니다 — OCR 로 파싱하며 정확도가 낮습니다 (§8 범위 밖)")
+def _elements_from_docling(doc) -> tuple[list[Element], dict[int, str], dict]:
+    """docling 문서 → Element 리스트. **포맷 무관** — PDF·DOCX 가 같은 길을 탄다.
 
-    doc = _converter(ocr=not born).convert(str(p)).document
+    반환: (elements, picture_uris, docling_stats). picture_uris 는 요소 index →
+    data URI 인데, 호출 쪽이 재정렬을 한다면 재정렬 **전** index 이므로 스스로
+    다시 맞춰야 한다(parse_pdf 가 그렇게 한다).
 
-    # `iterate_items()` 는 기본이 BODY 레이어뿐이다 — 머리말/꼬리말이 통째로 빠진다.
-    # 그런데 **파트 마커가 거기 숨어 있다**: 실측(ss2207)에서 `[별지1]` 이
-    # page_header 로 분류됐고, 그걸 못 받으면 별지1 구역을 통째로 놓친다.
-    # 그래서 받아 두고, 무엇을 무시할지는 형식(마커)이 정하게 한다.
+    `iterate_items()` 는 기본이 BODY 레이어뿐이다 — 머리말/꼬리말이 통째로 빠진다.
+    그런데 **파트 마커가 거기 숨어 있다**: 실측(ss2207)에서 `[별지1]` 이
+    page_header 로 분류됐고, 그걸 못 받으면 별지1 구역을 통째로 놓친다.
+    그래서 받아 두고, 무엇을 무시할지는 형식(마커)이 정하게 한다.
+    """
     from docling_core.types.doc.common.content_layer import ContentLayer
     layers = {ContentLayer.BODY, ContentLayer.FURNITURE}
 
     caption_refs = _caption_refs(doc)
-    picture_uris: dict[int, str] = {}      # 요소 index → data URI (재정렬 뒤 다시 맞춘다)
+    picture_uris: dict[int, str] = {}
 
     elements: list[Element] = []
     for item, _level in doc.iterate_items(included_content_layers=layers):   # ← 진짜 읽기 순서
@@ -545,8 +542,16 @@ def parse_pdf(path: str | Path, *, recognize_grids=None) -> ParseResult:
             continue
         label = str(getattr(item, "label", "text")).split(".")[-1].strip("'\"").lower()
         page, bbox, origin = _prov(item)
+        meta: dict = {}
+        # 제목 level. PDF 레이아웃 모델은 어휘에 Section-header 하나뿐이라 전부 1로
+        # 평면화되지만, DOCX 는 Word 스타일의 **진짜 계층**이 온다(msword_backend 가
+        # outlineLvl·스타일명에서 읽는다). docling 판단이므로 힌트로만 싣는다(§2.2).
+        if kind == "SectionHeaderItem":
+            lvl = getattr(item, "level", None)
+            if lvl is not None:
+                meta["level"] = int(lvl)
         elements.append(Element(index=len(elements), type=label, text=text,
-                                page=page, bbox=bbox, bbox_origin=origin))
+                                page=page, bbox=bbox, bbox_origin=origin, meta=meta))
 
     docling_stats = {
         "docling_texts": len(getattr(doc, "texts", [])),
@@ -554,6 +559,19 @@ def parse_pdf(path: str | Path, *, recognize_grids=None) -> ParseResult:
         "docling_pictures": len(getattr(doc, "pictures", [])),
         "docling_elements": len(elements),
     }
+    return elements, picture_uris, docling_stats
+
+
+def parse_pdf(path: str | Path, *, recognize_grids=None) -> ParseResult:
+    p = Path(path)
+    born, pdf_stats = is_born_digital(p)
+    warnings: list[str] = []
+    if not born:
+        warnings.append("born-digital 이 아닙니다 — OCR 로 파싱하며 정확도가 낮습니다 (§8 범위 밖)")
+
+    doc = _converter(ocr=not born).convert(str(p)).document
+    # picture_uris 는 요소 index → data URI (재정렬 뒤 다시 맞춘다)
+    elements, picture_uris, docling_stats = _elements_from_docling(doc)
 
     # 양식 페이지는 읽기 순서가 좌표와 어긋나 온다(T2b). 요소 index 가 여기서 다시
     # 매겨지므로 **index 를 쓰는 무엇보다 먼저** 돌아야 한다.
@@ -606,19 +624,61 @@ def parse_pdf(path: str | Path, *, recognize_grids=None) -> ParseResult:
 
 
 # ---------------------------------------------------------------------------
+# DOCX — 추론이 없는 경로
+# ---------------------------------------------------------------------------
+
+def parse_docx(path: str | Path) -> ParseResult:
+    """DOCX — 레이아웃 모델도 OCR 도 TableFormer 도 돌지 않는다.
+
+    docling 의 msword_backend 가 OOXML 태그를 그대로 읽는다: 문단·표·제목이 파일
+    안에 선언돼 있어 **추론이 아니라 독해**다. PDF 와 결정적으로 다른 것 둘:
+
+    1. 제목 계층이 진짜다 — Word 스타일(outlineLvl·"Heading N")의 level 이
+       section_header 요소의 meta.level 로 온다. PDF 는 전부 1로 평면화된다.
+    2. 지면 좌표가 없다 — DOCX 는 리플로우 문서라 페이지·bbox 가 파일에 존재하지
+       않는다. page=1 고정, 타이포그래피 주석(T2c)·reading_order 재정렬(T2b)·
+       격자 복구도 없다. iterate_items() 의 순서가 곧 문서 순서다.
+
+    구조 판정은 여기서도 형식의 마커가 한다 — meta.level 은 힌트다(§2.2).
+    """
+    p = Path(path)
+    doc = _converter(ocr=False).convert(str(p)).document
+    elements, picture_uris, docling_stats = _elements_from_docling(doc)
+    images = dict(picture_uris)            # 재정렬이 없으니 index 가 그대로다
+
+    warnings: list[str] = []
+    stats = {
+        **docling_stats,
+        "elements": len(elements),
+        "tables": sum(1 for e in elements if e.is_table),
+        "pictures": sum(1 for e in elements if e.is_picture),
+        "captioned_pictures": sum(1 for e in elements if e.is_picture and e.text),
+        "pictures_with_image": len(images),
+        "headings_with_level": sum(1 for e in elements if e.meta.get("level")),
+    }
+    if stats["tables"] == 0 and stats["docling_tables"] == 0:
+        warnings.append("표가 하나도 인식되지 않았습니다 — 값이 서술로 처리됩니다")
+
+    return ParseResult(
+        path=str(p), doc_id=hashlib.sha256(p.read_bytes()).hexdigest()[:12],
+        parser=f"docling {docling_version()} (docx, tables=native)",
+        born_digital=True, elements=elements, warnings=warnings, stats=stats,
+        images=images)
+
+
+# ---------------------------------------------------------------------------
 # Markdown — 요약서·설명서가 마크다운으로 오는 경우, 그리고 테스트용
 # ---------------------------------------------------------------------------
 
 _MD_IMAGE = re.compile(r"!\[(?P<alt>[^\]]*)\]\((?P<src>[^)]*)\)")
 
 
-def parse_markdown(path: str | Path) -> ParseResult:
-    """마크다운을 같은 Element 리스트로. 표는 파이프 표를 논리 셀로 읽는다.
+def _markdown_elements(raw: str) -> list[Element]:
+    """마크다운 본문 → Element 리스트. 표는 파이프 표를 논리 셀로 읽는다.
 
-    docling 없이 코어 전체를 돌릴 수 있게 하는 통로이기도 하다 — 테스트가 빨라진다.
+    parse_markdown(.md 파일)과 parse_hwp(HWP 변환분)가 같은 빌더를 쓴다 —
+    두 곳에 복붙되어 있으면 한 곳만 고쳐지는 사고가 난다.
     """
-    p = Path(path)
-    raw = decode_text(p)
     elements: list[Element] = []
     buf: list[str] = []                    # 표 블록 누적
 
@@ -653,7 +713,7 @@ def parse_markdown(path: str | Path) -> ParseResult:
             continue
         img = _MD_IMAGE.fullmatch(s)
         if img:
-            alt = _norm(img.group("alt"))
+            alt = norm_ws(img.group("alt"))
             meta = {"ref": img.group("src")}
             if alt:
                 meta["caption"] = alt
@@ -662,27 +722,169 @@ def parse_markdown(path: str | Path) -> ParseResult:
             continue
         if s.startswith("#"):
             elements.append(Element(index=len(elements), type="section_header",
-                                    text=_norm(s.lstrip("#").strip()), page=1))
+                                    text=norm_ws(s.lstrip("#").strip()), page=1))
         elif s.startswith(">"):
             elements.append(Element(index=len(elements), type="footnote",
-                                    text=_norm(s.lstrip(">").strip()), page=1))
+                                    text=norm_ws(s.lstrip(">").strip()), page=1))
+        elif set(s) <= set("-=_*") and (len(s) >= 3 or s[0] not in "-*"):
+            continue                        # 수평선 — 리스트 검사보다 먼저 와야 한다:
+            #                                 `---`/`***` 가 `-`/`*` 시작이라 불릿으로 오분류됐다
         elif s.startswith(("-", "*")) or (s[:2].rstrip(".").isdigit() and "." in s[:3]):
             elements.append(Element(index=len(elements), type="list_item",
-                                    text=_norm(s), page=1))
-        elif set(s) <= set("-=_"):
-            continue                        # 수평선
+                                    text=norm_ws(s), page=1))
         else:
             elements.append(Element(index=len(elements), type="text",
-                                    text=_norm(s), page=1))
+                                    text=norm_ws(s), page=1))
     if buf:
         flush_table()
+    return elements
 
+
+def parse_markdown(path: str | Path) -> ParseResult:
+    """마크다운을 같은 Element 리스트로.
+
+    docling 없이 코어 전체를 돌릴 수 있게 하는 통로이기도 하다 — 테스트가 빨라진다.
+    """
+    p = Path(path)
+    raw = decode_text(p)
+    elements = _markdown_elements(raw)
     return ParseResult(
         path=str(p), doc_id=hashlib.sha256(raw.encode()).hexdigest()[:12],
         parser="markdown", born_digital=True, elements=elements,
         stats={"elements": len(elements),
                "tables": sum(1 for e in elements if e.is_table),
                "pictures": sum(1 for e in elements if e.is_picture)})
+
+
+# ---------------------------------------------------------------------------
+# HWP — 변환을 거치는 경로 (hwp5 는 pyhwp, hwpx 는 OWPML 직독)
+# ---------------------------------------------------------------------------
+
+# 판별용 텍스트 추출 시한(초). 전체 변환 시한(convert.DEFAULT_TIMEOUT)보다 짧다 —
+# 판별은 싸야 하고, 이 시한을 넘기는 파일은 doc_type 명시 모드로 넣으면 된다.
+_HWP_PROBE_TIMEOUT = 30.0
+
+
+def _hwp_kind(path: Path) -> str:
+    """매직바이트 판별 — 확장자를 믿지 않는다(convert.py §8-5 와 같은 계약).
+
+    .hwp 로 내려받은 파일이 실제로는 hwpx·pdf 인 일이 실측으로 잦다. 조용히
+    엉뚱한 파서에 넣으면 라이브러리 내부 예외로 터진다 — 입구에서 이름을 대고 가른다.
+    """
+    from sources.common import detect_format
+    with Path(path).open("rb") as f:
+        return detect_format(f.read(8))
+
+
+def _hwp_reject(p: Path, kind: str) -> None:
+    """hwp5/hwpx 가 아닌 것을 원인과 처방을 말하며 거부한다. 항상 raise."""
+    if kind == "pdf":
+        raise ValueError(
+            f"'{p.name}' 은 확장자만 hwp 이고 실제로는 PDF 입니다 — "
+            f".pdf 로 바꿔 넣으면 그대로 처리됩니다")
+    raise ValueError(
+        f"'{p.name}' 은 한글 문서가 아닙니다 (감지: {kind}) — "
+        f"hwp5(ole)·hwpx(zip) 만 받습니다")
+
+
+def _convert_module():
+    """저장소 루트의 convert.py — hwp5→md 변환의 단일 소유자라 코어가 빌려 쓴다.
+
+    (자식 프로세스 격리·시간 초과·텍스트 폴백이 전부 저기에 있다 — 복제하면
+    XSLT 병증 대응이 두 벌이 된다.)
+    """
+    root = str(Path(__file__).resolve().parent.parent)
+    if root not in sys.path:
+        sys.path.insert(0, root)
+    import convert
+    return convert
+
+
+def parse_hwp(path: str | Path) -> ParseResult:
+    """HWP → markdown → 같은 Element 그릇. 지면 좌표가 없는 경로다(DOCX 와 같은 제약).
+
+    - hwp5(ole): convert.py 경로 그대로 — 자식 프로세스에서 XSLT(html)로 표를
+      md 표로 굳히고, 시한을 넘기면 텍스트 폴백으로 전문만 건진다(수 MB 합본에서
+      XSLT 가 병적으로 느린 실측). 그림은 변환이 버린다 — 개수만 경고로 남긴다.
+    - hwpx(zip): core.hwpx_md 가 OWPML 태그를 직독한다. 추론이 없다.
+
+    HWP 실측(KOFIA): 개요/named 스타일이 전무해 DOCX 경유로도 제목 계층은 오지
+    않는다. 구조는 여기서도 마커가 판정한다 — md 를 거치는 것이 손실이 아니다.
+    """
+    p = Path(path)
+    kind = _hwp_kind(p)
+    warnings: list[str] = []
+    conv: dict = {}
+
+    if kind == "hwpx(zip)":
+        from core import hwpx_md
+        if not hwpx_md.is_hwpx(p):
+            raise ValueError(
+                f"'{p.name}' 은 zip 이지만 HWPX(OWPML) 가 아닙니다 — "
+                f"docx 라면 확장자를 .docx 로 바꿔 넣어 주세요")
+        md = hwpx_md.hwpx_to_md(p)
+        parser = "hwpx(zip) → md (core.hwpx_md)"
+    elif kind == "hwp5(ole)":
+        convert = _convert_module()
+        try:
+            try:
+                md, conv = convert.extract_in_child(p, "html", convert.DEFAULT_TIMEOUT)
+            except convert.ExtractTimeout:
+                md, conv = convert.extract_in_child(p, "text", convert.DEFAULT_TIMEOUT)
+                warnings.append("HWP XSLT 변환이 시한을 넘겨 텍스트 폴백으로 뽑았습니다 — "
+                                "표가 <표> 자리표시자로 남습니다")
+        except convert.ExtractError as exc:
+            raise ValueError(
+                f"'{p.name}' 을 HWP5 로 읽지 못했습니다 — {exc} "
+                f"(OLE 파일이지만 한글 문서가 아닐 수 있습니다. 구형 Word .doc 이면 "
+                f".docx 나 PDF 로 다시 저장해 주세요)") from exc
+        parser = "hwp5(ole) → md (pyhwp/convert.py)"
+        if conv.get("images"):
+            warnings.append(f"그림 {conv['images']}개는 HWP 변환이 버립니다 — 개수만 남습니다")
+    else:
+        _hwp_reject(p, kind)
+
+    elements = _markdown_elements(md)
+    stats = {"elements": len(elements),
+             "tables": sum(1 for e in elements if e.is_table),
+             "pictures": sum(1 for e in elements if e.is_picture),
+             "md_chars": len(md)}
+    if conv:
+        stats["hwp_tables"] = conv.get("tables", 0)
+        stats["hwp_images"] = conv.get("images", 0)
+    if stats["tables"] == 0:
+        warnings.append("표가 하나도 인식되지 않았습니다 — 값이 서술로 처리됩니다")
+    return ParseResult(
+        path=str(p), doc_id=hashlib.sha256(p.read_bytes()).hexdigest()[:12],
+        parser=parser, born_digital=True, elements=elements,
+        warnings=warnings, stats=stats)
+
+
+def hwp_probe_text(path: str | Path, limit: int = 20_000) -> str:
+    """앞부분 텍스트만 싸게 — 내용 미리보기·경량 검사용 (전체 변환 없이).
+
+    hwp5 는 텍스트 경로만 돌린다(XSLT 없음) — 표는 안 나오지만 빠르고, 시한도
+    전체 변환보다 짧게 잡는다. 읽지 못하면 parse_hwp 와 같은 말로 거부한다.
+    """
+    p = Path(path)
+    kind = _hwp_kind(p)
+    if kind == "hwpx(zip)":
+        from core import hwpx_md
+        if not hwpx_md.is_hwpx(p):
+            raise ValueError(
+                f"'{p.name}' 은 zip 이지만 HWPX(OWPML) 가 아닙니다 — "
+                f"docx 라면 확장자를 .docx 로 바꿔 넣어 주세요")
+        return hwpx_md.hwpx_to_md(p)[:limit]
+    if kind == "hwp5(ole)":
+        convert = _convert_module()
+        try:
+            text, _ = convert.extract_in_child(p, "text", _HWP_PROBE_TIMEOUT)
+        except (convert.ExtractTimeout, convert.ExtractError) as exc:
+            raise ValueError(
+                f"'{p.name}' 의 판별용 텍스트를 뽑지 못했습니다 — {exc} "
+                f"(doc_type 을 직접 지정하는 명시 모드로 넣어 주세요)") from exc
+        return text[:limit]
+    _hwp_reject(p, kind)
 
 
 def element_from_dump(d: dict) -> Element:
@@ -730,6 +932,15 @@ def parse(path: str | Path) -> ParseResult:
         raise FileNotFoundError(f"입력 문서를 찾을 수 없습니다: {p}")
     if p.suffix.lower() == ".pdf":
         return parse_pdf(p)
+    if p.suffix.lower() == ".docx":
+        return parse_docx(p)
+    if p.suffix.lower() in (".hwp", ".hwpx"):
+        return parse_hwp(p)
     if p.suffix.lower() in (".md", ".markdown", ".txt"):
         return parse_markdown(p)
-    raise ValueError(f"지원하지 않는 형식입니다: {p.suffix} (pdf/md)")
+    if p.suffix.lower() == ".doc":
+        # OLE 라 hwp5 와 매직이 같다 — 확장자로 먼저 갈라야 정확한 처방이 나간다
+        raise ValueError(
+            f"구형 Word(.doc)는 읽는 파서가 없습니다 — Word/한컴오피스에서 .docx 로 "
+            f"다시 저장해 넣어 주세요 ('{p.name}')")
+    raise ValueError(f"지원하지 않는 형식입니다: {p.suffix} (pdf/docx/hwp/hwpx/md)")

@@ -39,7 +39,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from core.glossary import normalize as normalize_surface
-from core.parse_adapter import Element, ParseResult
+from core.parse_adapter import Element, ParseResult, norm_ws
 
 # 발화 요소의 두 얼굴 — 형식 파일의 `발화` 마커는 MARKER 줄만 본다.
 TYPE_MARKER = "utterance_marker"
@@ -89,9 +89,8 @@ class _Turn:
 # 정규화
 # ===========================================================================
 
-def _collapse(s: Any) -> str:
-    """공백 접기. STT 출력에는 줄바꿈·연속 공백이 섞여 온다."""
-    return " ".join(str(s or "").replace("\xa0", " ").split())
+# 공백 접기 — STT 출력에는 줄바꿈·연속 공백이 섞여 온다. 파싱 층 표준을 그대로 쓴다.
+_collapse = norm_ws
 
 
 _SPEAKER_INDEX = {normalize_surface(surface): canon

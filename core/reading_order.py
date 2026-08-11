@@ -29,7 +29,7 @@ p7 은 제목 `특정금전신탁 변경계약서` 가 231개 중 **222번째**�
 
 from __future__ import annotations
 
-from typing import Optional
+from core import geometry
 
 # 같은 행으로 묶는 세로 허용오차(pt). 본문 줄높이보다 작게 잡는다.
 ROW_TOL = 6.0
@@ -39,22 +39,9 @@ REORDER_T = 0.05
 INVERSION_TOL = 8.0
 
 
-def _top(bbox: Optional[list[float]], origin: str) -> Optional[float]:
-    """화면 기준 '위쪽' 을 **하나의 축으로** 돌려준다 — 값이 작을수록 위.
-
-    BOTTOMLEFT 는 y 가 클수록 위, TOPLEFT 는 작을수록 위다. 원점이 섞인 채로
-    정렬하면 표와 본문이 뒤집혀 끼워진다(`parse_adapter._prov` 주석).
-    """
-    if not bbox:
-        return None
-    if origin.upper() == "BOTTOMLEFT":
-        return -max(bbox[1], bbox[3])
-    return min(bbox[1], bbox[3])
-
-
 def _inversions(elements) -> int:
     """앞 요소보다 **뚜렷하게 위로** 되돌아간 자리의 수."""
-    tops = [_top(e.bbox, e.bbox_origin) for e in elements]
+    tops = [geometry.screen_top(e.bbox, e.bbox_origin) for e in elements]
     tops = [t for t in tops if t is not None]
     return sum(1 for a, b in zip(tops, tops[1:]) if b < a - INVERSION_TOL)
 
@@ -68,7 +55,7 @@ def _sorted_by_coords(elements) -> list:
     keys: list[tuple[float, float]] = []
     last = (0.0, 0.0)
     for e in elements:
-        t = _top(e.bbox, e.bbox_origin)
+        t = geometry.screen_top(e.bbox, e.bbox_origin)
         if t is None:
             keys.append(last)
             continue

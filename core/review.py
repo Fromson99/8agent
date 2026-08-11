@@ -16,10 +16,11 @@ bbox 없이 페이지·텍스트만 싣는다(전사는 meta 의 발화 좌표�
 
 ## 좌표 정규화
 
-core/structure/viewer.py 와 같은 방식이되 공유하지 않는다 — 그쪽은 structure
+payload 모양은 core/structure/viewer.py 와 공유하지 않는다 — 그쪽은 structure
 서브시스템(Block/Node)의 검수 화면이고, 여기는 structurize(Document)의 것이다.
-bbox 는 0~1 비율·TOPLEFT 로 통일해 화면이 렌더 배율을 몰라도 되게 한다.
-PDF prov 는 BOTTOMLEFT 원점이므로 페이지 높이로 뒤집는다(parse_adapter._prov 주석).
+다만 **원점 변환 자체는 `core.geometry` 공용**을 쓴다 — 뒤집기 산수가 두 벌이면
+한쪽만 고쳐진다. bbox 는 0~1 비율·TOPLEFT 로 통일해 화면이 렌더 배율을 몰라도
+되게 한다(PDF prov 는 BOTTOMLEFT — parse_adapter._prov 주석).
 """
 
 from __future__ import annotations
@@ -27,6 +28,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Optional
 
+from core import geometry
 from core.parse_adapter import Element
 
 
@@ -52,9 +54,7 @@ def norm_bbox(bbox: Optional[list[float]], origin: str,
     w, h = size
     if not w or not h:
         return None
-    l, t, r, b = bbox
-    if origin == "BOTTOMLEFT":                 # y 가 아래에서 위로 자란다 — 뒤집는다
-        t, b = h - t, h - b
+    l, t, r, b = geometry.to_topleft(bbox, origin, h)
     return {"l": round(l / w, 4), "t": round(t / h, 4),
             "r": round(r / w, 4), "b": round(b / h, 4)}
 

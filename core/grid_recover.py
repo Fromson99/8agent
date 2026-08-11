@@ -47,6 +47,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable, Optional
 
+from core import geometry
+from core.parse_adapter import Cell, Element, Table, norm_ws as _norm
+
 # 되찾은 격자가 이만큼은 글자를 담아야 채택한다.
 # **실측으로 뽑은 값이 아니다** — 임계이고, `dropped_pieces` 가 쌓이면 고칠 자리다.
 KEEP_T = 0.95
@@ -58,29 +61,10 @@ MIN_COLS = 2
 PAD = 1.5
 
 
-def _norm(s: str) -> str:
-    return " ".join((s or "").replace("\xa0", " ").split())
-
-
-def _to_topleft(bbox: list[float], origin: str, height: float) -> list[float]:
-    """어떤 원점으로 왔든 TOPLEFT (x0, top, x1, bottom) 로.
-
-    docling prov 는 BOTTOMLEFT, 셀은 TOPLEFT 다. 통일하지 않고 비교하면 위아래가
-    뒤집혀 엉뚱한 칸에 담긴다.
-    """
-    if str(origin).upper() == "BOTTOMLEFT":
-        return [bbox[0], height - max(bbox[1], bbox[3]),
-                bbox[2], height - min(bbox[1], bbox[3])]
-    return [bbox[0], min(bbox[1], bbox[3]), bbox[2], max(bbox[1], bbox[3])]
-
-
 def _cell_holding(cells: list, box: list[float]):
-    """조각의 **중심**을 품는 셀. 겹침 면적이 아니라 중심을 쓴다 — 글자가 셀 경계를
-    살짝 넘는 일이 흔해서 면적으로 재면 큰 셀이 다 가져간다."""
-    cx, cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+    """조각의 **중심**을 품는 셀 (중심 매칭의 이유는 `geometry.holds_center`)."""
     for c in cells:
-        if c.bbox and (c.bbox[0] - PAD <= cx <= c.bbox[2] + PAD
-                       and c.bbox[1] - PAD <= cy <= c.bbox[3] + PAD):
+        if c.bbox and geometry.holds_center(c.bbox, box, PAD):
             return c
     return None
 
@@ -95,11 +79,11 @@ def _pieces(element, height: float):
     if getattr(element, "table", None) is not None:
         for c in element.table.cells:
             if c.text and c.bbox:
-                yield (_to_topleft(c.bbox, c.origin, height), c.text,
+                yield (geometry.to_topleft(c.bbox, c.origin, height), c.text,
                        c.is_col_header, c.is_row_header)
         return
     if getattr(element, "text", "") and getattr(element, "bbox", None):
-        yield (_to_topleft(element.bbox, element.bbox_origin, height),
+        yield (geometry.to_topleft(element.bbox, element.bbox_origin, height),
                element.text, False, False)
 
 
@@ -139,9 +123,7 @@ def _covered(element, box: list[float]) -> bool:
     bb = getattr(element, "bbox", None)
     if not bb or str(getattr(element, "bbox_origin", "")).upper() != "BOTTOMLEFT":
         return False
-    cx, cy = (bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2
-    lo, hi = min(box[1], box[3]), max(box[1], box[3])
-    return box[0] <= cx <= box[2] and lo <= cy <= hi
+    return geometry.holds_center(box, bb)
 
 
 def recover(path: str | Path, elements: list, *,
@@ -149,8 +131,6 @@ def recover(path: str | Path, elements: list, *,
             page_heights: Optional[dict[int, float]] = None,
             ) -> tuple[list, dict, list[str]]:
     """흩어진 격자를 표로 되돌린다. `recognize` 가 없으면 **아무것도 하지 않는다.**"""
-    from core.parse_adapter import Element, Table
-
     stats: dict = {"recovered_tables": 0, "absorbed_elements": 0,
                    "rejected_grids": 0, "dropped_chars": 0, "dropped_pieces": []}
     warnings: list[str] = []
@@ -250,8 +230,6 @@ def pdfplumber_lines(path) -> dict[int, list]:
 
     `text` 전략은 쓰지 않는다 — 같은 페이지를 76행×15열로 과분할해 쓸모가 없었다.
     """
-    from core.parse_adapter import Cell
-
     try:
         import pdfplumber
     except ImportError:                          # pragma: no cover - 선택 의존성
