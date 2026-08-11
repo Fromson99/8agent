@@ -74,8 +74,9 @@ DEFAULT_RAW = ROOT / "agents/agent6/corpus/raw"
 DEFAULT_OUT = ROOT / "agents/agent6/corpus"
 DEFAULT_ITEMS = ROOT / "agents/agent6/checklist/items"
 
-# 원문으로 볼 확장자. .hwp 는 라우터가 못 받으므로 여기서도 받지 않는다(변환 후 투입).
-RAW_SUFFIXES = (".pdf", ".txt", ".md")
+# 원문으로 볼 확장자. .hwp 는 라우터가 못 받으므로 여기서도 받지 않는다(변환 후 투입 —
+# 레포 루트 convert.py). .docx 는 라우터가 받는다 — 출처 표기는 pdf 처럼 사이드카로.
+RAW_SUFFIXES = (".pdf", ".docx", ".txt", ".md")
 # 원문이 아닌 것 — 사이드카와 사람용 문서.
 NOT_RAW_STEMS = {"README", "readme"}
 
@@ -253,7 +254,7 @@ def read_provenance(path: str | Path) -> Provenance:
     else:
         raise ProvenanceError(
             f"{p.name}: 출처 표기가 없습니다. "
-            f"텍스트면 첫머리에 '# doc_id: …' 주석 블록을, PDF 면 "
+            f"텍스트면 첫머리에 '# doc_id: …' 주석 블록을, PDF·DOCX 면 "
             f"'{p.stem}.meta.yaml' 사이드카를 두세요 (corpus/raw/README.md §2). "
             f"필수 항목: {', '.join(REQUIRED_PROVENANCE)}")
 

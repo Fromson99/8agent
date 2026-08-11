@@ -2,6 +2,7 @@
 """agent1 — 파일 두 개를 받아 대사한다.
 
     python agents/agent1/src/cli.py run --contract <pdf> --prospectus <pdf> [-o report.json]
+    python agents/agent1/src/cli.py check --contract <pdf> --prospectus <pdf> [--checks yaml]
     python agents/agent1/src/cli.py scope  <pdf> --kind contract|prospectus --section "별지1/..."
 """
 from __future__ import annotations
@@ -19,6 +20,16 @@ import service                                         # noqa: E402
 def cmd_run(args) -> int:
     report = pipeline.run(args.contract, args.prospectus, args.rules,
                           save_docs=args.save_docs)
+    print(pipeline.to_text(report))
+    if args.out:
+        print(f"\n저장      {pipeline.write(report, args.out)}")
+    return 1 if report.stats.get("틀림", 0) else 0
+
+
+def cmd_check(args) -> int:
+    """검사 항목 모드 — 미리 정한 용어들을 두 문서에서 찾아 대조한다."""
+    import checklist
+    report = checklist.run(args.contract, args.prospectus, args.checks)
     print(pipeline.to_text(report))
     if args.out:
         print(f"\n저장      {pipeline.write(report, args.out)}")
@@ -50,6 +61,13 @@ def main(argv=None) -> int:
     r.add_argument("-o", "--out")
     r.add_argument("--save-docs", action="store_true")
     r.set_defaults(fn=cmd_run)
+
+    c = sub.add_parser("check", help="검사 항목(용어) 기반 대조 — 구조화는 병렬")
+    c.add_argument("--contract", required=True)
+    c.add_argument("--prospectus", required=True)
+    c.add_argument("--checks", help="검사 항목 YAML (기본: tasks/agent1_checklist.yaml)")
+    c.add_argument("-o", "--out")
+    c.set_defaults(fn=cmd_check)
 
     s = sub.add_parser("scope", help="범위 좁히기 결과만 보기 (LLM 없음)")
     s.add_argument("document")
