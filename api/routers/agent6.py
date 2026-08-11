@@ -299,3 +299,87 @@ def cut_link(edit: LinkEdit):
         raise HTTPException(404, "그런 연결이 없습니다")
     _write_basis(path, kept)
     return {"ok": True, "item": edit.item, "basis": kept, "needs_rebuild": True}
+
+
+# ---------------------------------------------------------------------------
+# 점검 실행 — 전사를 넣으면 체크리스트 + 연결된 근거로 판정한다
+# ---------------------------------------------------------------------------
+#
+# 화면에서 STT 전사를 붙여 넣으면 그대로 §5 파이프라인을 탄다. 여기서 새로 만드는
+# 것은 없다 — `cli.run_pipeline` 이 정본이고 이 엔드포인트는 **입출력만 바꾼다.**
+# 두 경로가 다른 코드를 타면 "CLI 에서는 되는데 화면에서는 안 된다" 가 생긴다.
+#
+# 모델은 하이쿠를 기본으로 둔다. 이 판정은 **가르는 일**이지 짓는 일이 아니고,
+# 근거 발췌·운영정의가 프롬프트에 이미 실려 있어 모델이 지어낼 자리가 좁다.
+
+DEFAULT_JUDGE_MODEL = "claude-haiku-4-5-20251001"
+
+
+class RunRequest(BaseModel):
+    transcript: str                     # STT 전사 — JSON 또는 평문
+    meta: Optional[dict] = None         # 상품·고객 메타 (없으면 조건부 항목이 보수 활성)
+    consistency: int = 1                # 자기일관성 회차. 화면에서는 1 이 기본(빠르다)
+    model: str = DEFAULT_JUDGE_MODEL
+    basis_policy: str = "warn"
+
+
+@router.post("/run", summary="전사 점검 — 체크리스트 + 연결된 근거로 판정")
+def run_check(req: RunRequest):
+    """전사를 받아 리포트를 돌려준다. 산출물은 임시 디렉터리에 쓰고 지운다."""
+    import tempfile
+
+    from agents.agent6.src import aggregate as agg_mod
+    from agents.agent6.src import cli as cli_mod
+
+    text = (req.transcript or "").strip()
+    if not text:
+        raise HTTPException(400, "전사가 비어 있습니다")
+
+    with tempfile.TemporaryDirectory() as tmp:
+        d = Path(tmp)
+        # JSON 이면 .json, 아니면 평문 .txt 로 떨군다 — 로더가 확장자로 가른다.
+        suffix = ".json" if text.lstrip().startswith(("{", "[")) else ".txt"
+        tp = d / f"transcript{suffix}"
+        tp.write_text(text, encoding="utf-8")
+        try:
+            res = cli_mod.run_pipeline(
+                tp, meta=req.meta, out_dir=d / "out",
+                llm_mode="live", consistency=max(1, req.consistency),
+                model=req.model, basis_policy=req.basis_policy,
+                append_queue=False, history=False)
+        except Exception as exc:
+            raise HTTPException(500, f"점검에 실패했습니다: {type(exc).__name__}: {exc}")
+
+        rep = res.report
+        judged = res.judged
+        audit = judged.basis_audit or {}
+        t = judged.llm_totals or {}
+        rows = [{
+            "id": r.id, "name": r.name, "type": r.type, "verdict": r.verdict,
+            "route": r.route, "confidence": r.confidence,
+            "evidence": [{"utterance": e.utterance, "quote": e.quote,
+                          "speaker": getattr(e, "speaker", "")}
+                         for e in (r.evidence or [])],
+            "reason": r.reason, "basis": [b for b in (r.basis or [])],
+        } for r in rep.items]
+        return {
+            "overall": rep.overall,
+            "counts": {v: sum(1 for r in rep.items if r.verdict == v)
+                       for v in {r.verdict for r in rep.items}},
+            "routes": agg_mod.route_counts(rep.items),
+            "items": rows,
+            "guidance": (d / "out" / "guidance.md").read_text(encoding="utf-8")
+                        if (d / "out" / "guidance.md").exists() else "",
+            "checked": res.checked,
+            "unavailable": sorted(judged.unavailable or []),
+            "context": {"batches": audit.get("batches", 0),
+                        "items": audit.get("items", 0),
+                        "with_basis_text": audit.get("with_basis_text", 0),
+                        "chars": audit.get("chars", 0)},
+            "llm": {"model": req.model, "calls": judged.calls,
+                    "input_tokens": t.get("input_tokens", 0),
+                    "output_tokens": t.get("output_tokens", 0),
+                    "errors": t.get("errors", 0),
+                    "seconds": round(judged.seconds, 1)},
+            "warnings": list(rep.warnings or []),
+        }

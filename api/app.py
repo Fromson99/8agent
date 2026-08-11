@@ -18,6 +18,8 @@ LLM 은 해석에만 관여하고, 애매하면 auto-pass/fail 하지 않고 NEE
 """
 from __future__ import annotations
 
+import logging
+import time
 from pathlib import Path
 
 from fastapi import FastAPI, Query, Request
@@ -25,15 +27,36 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from core import logbook
+
+logbook.setup("api")                     # 임포트 시점 — 라우터 임포트 로그도 잡는다
+log = logging.getLogger("api")
+
 from . import engines, settings
 from .documents import STORE as DOCS
 from .jobs import STORE
 from .routers import agent as agent_router
-from .routers import agent6 as agent6_router
 from .routers import chat as chat_router
 from .routers import jobs as jobs_router
+from .routers import logs as logs_router
 from .routers import parser as parser_router
 from .routers import structure as structure_router
+
+# 선택 라우터 — agent6 은 agents/, rag 는 core/rag 를 전제한다. 이 경로들이 빠진
+# 이미지에서 나머지 엔진까지 같이 죽으면 안 된다 (structure_app 과 같은 규약).
+try:
+    from .routers import agent6 as agent6_router
+except Exception:                                        # pragma: no cover
+    agent6_router = None
+try:
+    from .routers import glossary as glossary_router
+except Exception:                                        # pragma: no cover
+    glossary_router = None
+try:
+    from .routers import rag as rag_router
+except Exception as exc:                                 # pragma: no cover
+    rag_router = None
+    log.warning("rag 라우터 임포트 실패 — /v1/rag 없이 기동: %s", exc)
 
 app = FastAPI(
     title="신탁계약 정합성 검증 API",
@@ -49,6 +72,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# 접근 로그 — API 는 INFO, 정적 화면·에셋은 DEBUG (화면 하나가 수십 요청을
+# 내니 INFO 로 두면 정작 API 호출이 묻힌다). 2초 넘으면 WARNING — 느린
+# 요청은 레벨로 도드라져야 로그를 훑다가 눈에 걸린다.
+_API_PREFIXES = ("/v1/", "/chat", "/health", "/api/", "/out/")
+
+
+@app.middleware("http")
+async def access_log(request: Request, call_next):
+    t0 = time.perf_counter()
+    try:
+        response = await call_next(request)
+    except Exception:
+        log.exception("%s %s → 예외 (%.0fms)", request.method,
+                      request.url.path, (time.perf_counter() - t0) * 1000)
+        raise
+    dur = (time.perf_counter() - t0) * 1000
+    path = request.url.path
+    level = (logging.WARNING if dur > 2000
+             else logging.INFO if path.startswith(_API_PREFIXES)
+             else logging.DEBUG)
+    log.log(level, "%s %s → %d (%.0fms)", request.method,
+            path + (f"?{request.url.query}" if request.url.query else ""),
+            response.status_code, dur)
+    return response
+
 # /chat/stream 은 API_TOKEN 뒤에 두지 않는다 — GenOS 워크플로우가 내부망에서
 # `x-request-from: internal` 헤더로 부르는 경로이고, 플랫폼 규약에 Bearer 가 없다.
 # 공개망에 노출한다면 네트워크 계층(사설망·방화벽)에서 막아야 한다.
@@ -57,12 +106,22 @@ app.include_router(parser_router.router)
 app.include_router(agent_router.router)
 app.include_router(jobs_router.router)
 app.include_router(structure_router.router)
-app.include_router(agent6_router.router)
+from .routers import formats as formats_router  # noqa: E402
+
+app.include_router(formats_router.router)
+app.include_router(logs_router.router)
+if agent6_router is not None:
+    app.include_router(agent6_router.router)
+if glossary_router is not None:
+    app.include_router(glossary_router.router)
+if rag_router is not None:
+    app.include_router(rag_router.router)
 
 
 @app.exception_handler(Exception)
 async def unhandled(request: Request, exc: Exception):
     """예상 못 한 예외도 JSON 으로. 호출자가 HTML 오류 페이지를 파싱할 일은 없어야 한다."""
+    log.exception("처리되지 않은 예외 — %s %s", request.method, request.url.path)
     return JSONResponse(
         {"detail": {"message": f"{type(exc).__name__}: {exc}", "path": request.url.path}},
         status_code=500)
@@ -75,8 +134,13 @@ def index():
         "docs": "/docs",
         # 사람이 여는 화면. 여기 없으면 URL 을 아는 사람만 들어갈 수 있다.
         "ui": {
+            "문서·데이터 관리": "/home/       — 업로드·이름·삭제·재해석과 저장 현황",
             "구조 해석 검수": "/structure/   — PDF → 구조 트리·표·그림 (core)",
+            "용어집": "/glossary/    — 제목에서 거둔 용어 + 사람이 더한 용어",
+            "참조 연결": "/links/       — 조문 상호참조 확정·보류 검수",
+            "질의응답": "/rag/         — 문서에 묻기 + 경로·피드백 (진단 튜플)",
             "AGENT6 근거 연결": "/agent6/     — 체크리스트 ↔ 법령 조항 잇기/끊기",
+            "로그": "/logs/        — RAG 이벤트·앱 로그·파일 로그 관측",
         },
         "genos": {"chat": "POST /chat/stream", "health": "GET /health",
                   "protocol": "SSE — token / reasoning_token / agentFlowExecutedData / "
@@ -129,7 +193,39 @@ def health():
 # 기존 정적 뷰어 — cli.py serve 가 하던 일을 그대로 얹는다
 # ---------------------------------------------------------------------------
 
+# 문서·데이터 관리 화면 — structure_app 은 루트에 붙이지만, 이 앱의 루트는
+# GenOS 가 읽는 JSON 소개라 `/home` 별칭으로만 붙인다.
+_HOME_VIEWER = Path(__file__).resolve().parent / "viewer" / "home"
+if _HOME_VIEWER.is_dir():
+    app.mount("/home", StaticFiles(directory=str(_HOME_VIEWER), html=True),
+              name="home-viewer")
+
 # 구조 해석 검수 화면 — PDF 를 서버가 PNG 로 렌더하므로 CDN·번들 의존이 없다.
+_GLOSSARY_VIEWER = Path(__file__).resolve().parent / "viewer" / "glossary"
+if _GLOSSARY_VIEWER.is_dir():
+    app.mount("/glossary", StaticFiles(directory=str(_GLOSSARY_VIEWER), html=True),
+              name="glossary-viewer")
+
+_BINDINGS_VIEWER = Path(__file__).resolve().parent / "viewer" / "bindings"
+if _BINDINGS_VIEWER.is_dir():
+    app.mount("/bindings", StaticFiles(directory=str(_BINDINGS_VIEWER), html=True),
+              name="bindings-viewer")
+
+_LINKS_VIEWER = Path(__file__).resolve().parent / "viewer" / "links"
+if _LINKS_VIEWER.is_dir():
+    app.mount("/links", StaticFiles(directory=str(_LINKS_VIEWER), html=True),
+              name="links-viewer")
+
+_RAG_VIEWER = Path(__file__).resolve().parent / "viewer" / "rag"
+if _RAG_VIEWER.is_dir() and rag_router is not None:
+    app.mount("/rag", StaticFiles(directory=str(_RAG_VIEWER), html=True),
+              name="rag-viewer")
+
+_LOGS_VIEWER = Path(__file__).resolve().parent / "viewer" / "logs"
+if _LOGS_VIEWER.is_dir():
+    app.mount("/logs", StaticFiles(directory=str(_LOGS_VIEWER), html=True),
+              name="logs-viewer")
+
 _AGENT6_VIEWER = Path(__file__).resolve().parent / "viewer" / "agent6"
 if _AGENT6_VIEWER.exists():
     app.mount("/agent6", StaticFiles(directory=str(_AGENT6_VIEWER), html=True),
