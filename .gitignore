@@ -41,12 +41,19 @@ data/custom/
 data/glossary.json
 data/links.json
 # 같은 성격 — 화면·배치가 만들어 내는 상태와 관측의 누적입니다.
-data/rag/                 # 판정 지문·튜플·후보 (append-only 관측)
-data/embeddings/          # 구역 벡터 — 코퍼스에서 언제든 다시 만듭니다
-data/format_bindings.json # 폴더·문서 → doc_type 연결
-data/format_canvas.json   # 연결 화면의 배치와 미완성 초안
-data/structure_fixes.json # 사람이 옮긴 계층 교정
-data/structure_ledger.json # fingerprint 원장 — 관측 누적
+# (주석은 여기서도 제 줄에 — 위의 경고와 같은 이유입니다.)
+# data/rag             판정 지문·튜플·후보 (append-only 관측)
+# data/embeddings      구역 벡터 — 코퍼스에서 언제든 다시 만듭니다
+# format_bindings      폴더·문서 → doc_type 연결
+# format_canvas        연결 화면의 배치와 미완성 초안
+# structure_fixes      사람이 옮긴 계층 교정
+# structure_ledger     fingerprint 원장 — 관측 누적
+data/rag/
+data/embeddings/
+data/format_bindings.json
+data/format_canvas.json
+data/structure_fixes.json
+data/structure_ledger.json
 
 # 벤치 실행 결과. 질문셋(bench/questions.yaml)만 이력에 둡니다.
 bench/last_results.json
