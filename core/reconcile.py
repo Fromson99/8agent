@@ -120,14 +120,21 @@ def _section_matches(section_id: str, wanted: list[str]) -> bool:
 
 
 def _find(doc: Document, side: Side) -> Optional[Fact]:
+    """지정 section 안에서만 찾는다 — 섹션이 안 맞으면 None.
+
+    예전 판은 여기서 "섹션이 안 맞으면 아무 섹션의 같은 용어"로 폴백했다. 그러면
+    엉뚱한 섹션의 값으로 MATCH/VALUE_MISMATCH 가 나고, `run()` 의
+    MISSING_IN_TARGET 분기는 영영 도달하지 못한다(tgt 가 None 이 되는 경우가
+    "용어가 아예 없다"뿐이라 has_term_anywhere 가 항상 False). 섹션 구분은
+    폴백할 것이 아니라 판정의 일부다.
+    """
     wanted = side.sections()
     hits = [f for f in doc.facts
             if f.term == side.term and _section_matches(f.section_id, wanted)]
     if hits:
         # 값 정규화에 성공한 것을 먼저 — 같은 용어가 본문 문장에서도 잡힐 수 있다
         return next((f for f in hits if not f.needs_review), hits[0])
-    # 섹션 지정이 안 맞았을 뿐 용어 자체는 있는가 — UNMAPPED 와 구분하기 위해 본다
-    return next((f for f in doc.facts if f.term == side.term), None) if wanted else None
+    return None
 
 
 def _ref(fact: Optional[Fact], doc_label: str) -> Optional[dict]:

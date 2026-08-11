@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Iterable
 
 from core.glossary import Glossary, normalize
 from core.parse_adapter import Element
@@ -37,23 +37,11 @@ class Mention:
     kinds: list[str]           # 용어집이 선언한 kind
     in_heading: bool           # docling 이 heading 계열로 본 요소인가
     line_solo: bool            # 그 줄이 사실상 이 용어뿐인가
-    in_table: bool             # 표 안에서 나왔는가
-    cell: Optional[tuple[int, int]] = None   # 표면 (row, col)
 
     @property
     def is_section_candidate(self) -> bool:
         """section 경계 후보인가 — 용어가 section 이고 레이아웃이 제목 신호를 준다."""
         return "section" in self.kinds and (self.in_heading or self.line_solo)
-
-    def dump(self) -> dict:
-        d = {"term": self.term, "surface": self.surface,
-             "element_index": self.element_index, "page": self.page,
-             "kinds": self.kinds, "in_heading": self.in_heading,
-             "line_solo": self.line_solo, "in_table": self.in_table,
-             "section_candidate": self.is_section_candidate}
-        if self.cell:
-            d["cell"] = list(self.cell)
-        return d
 
 
 def _find(text: str, index: dict[str, str], glossary: Glossary) -> list[tuple[str, str]]:
@@ -96,20 +84,18 @@ def mark(elements: Iterable[Element], glossary: Glossary) -> list[Mention]:
             for row in e.table.rows():
                 for cell in row:
                     for term, surface in _find(cell.text, index, glossary):
-                        solo = _is_solo(cell.text, surface)
                         out.append(Mention(
                             term=term, surface=surface, element_index=e.index,
                             page=e.page, kinds=glossary.terms[term].kind,
-                            in_heading=False, line_solo=solo, in_table=True,
-                            cell=(cell.row, cell.col)))
+                            in_heading=False,
+                            line_solo=_is_solo(cell.text, surface)))
             continue
 
         for term, surface in _find(e.text, index, glossary):
             out.append(Mention(
                 term=term, surface=surface, element_index=e.index, page=e.page,
                 kinds=glossary.terms[term].kind,
-                in_heading=e.is_heading, line_solo=_is_solo(e.text, surface),
-                in_table=False))
+                in_heading=e.is_heading, line_solo=_is_solo(e.text, surface)))
     return out
 
 
@@ -117,21 +103,6 @@ def _is_solo(text: str, surface: str) -> bool:
     """그 줄이 사실상 이 용어뿐인가 — 제목 신호(§1.3)."""
     rest = normalize(text).replace(normalize(surface), "", 1)
     return len(rest) <= SOLO_TAIL_MAX
-
-
-def summarize(mentions: list[Mention]) -> dict:
-    """컴파일 리포트용 집계."""
-    per_term: dict[str, dict] = {}
-    for m in mentions:
-        e = per_term.setdefault(m.term, {"total": 0, "section_candidates": 0,
-                                         "in_table": 0, "pages": set()})
-        e["total"] += 1
-        e["section_candidates"] += int(m.is_section_candidate)
-        e["in_table"] += int(m.in_table)
-        e["pages"].add(m.page)
-    for e in per_term.values():
-        e["pages"] = sorted(e["pages"])
-    return per_term
 
 
 def unmatched_headings(elements: Iterable[Element], glossary: Glossary,

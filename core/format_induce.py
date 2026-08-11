@@ -74,9 +74,11 @@ SCHEMA: dict[str, Any] = {
                     "label": {"type": ["string", "null"]},
                     "max_tail": {"type": ["integer", "null"],
                                  "description": "마커 뒤에 허용하는 글자 수. 같은 문자열이 본문 속 참조로도 나타나는 마커에만 (예: [별지N] → 20). 아니면 null."},
+                    "require_heading": {"type": ["boolean", "null"],
+                                        "description": "이 마커를 제목(heading) 요소에서만 인정. 같은 번호 패턴이 구역 제목이자 본문 열거 번호로도 쓰이는 문서에만 (예: 준칙의 `N.`). 아니면 null."},
                     "evidence": {"type": "string"},
                 },
-                "required": ["id", "pattern", "level", "groups", "parent", "label", "max_tail", "evidence"],
+                "required": ["id", "pattern", "level", "groups", "parent", "label", "max_tail", "require_heading", "evidence"],
                 "additionalProperties": False,
             },
         },
@@ -126,9 +128,6 @@ class Candidate:
     repeated: bool = False
     heading_signal: bool = False
     suggest: str = "section"
-
-    def dump(self) -> dict:
-        return self.__dict__
 
 
 @dataclass
@@ -201,7 +200,8 @@ def induce(samples: list[tuple[str, ParseResult]], glossary: Glossary,
         regex_markers.append(RegexMarker(
             id=m["id"], pattern=m["pattern"], level=int(m["level"]),
             groups=m.get("groups") or [], parent=m.get("parent") or None,
-            label=m.get("label") or None, max_tail=m.get("max_tail")))
+            label=m.get("label") or None, max_tail=m.get("max_tail"),
+            require_heading=m.get("require_heading") or None))
 
     # 용어형 마커는 **용어집에 있는 section 용어만** 받는다 — LLM 이 지어낸 용어를 막는다
     section_terms = set(glossary.section_terms())
@@ -274,20 +274,40 @@ def _collect_candidates(samples: list[tuple[str, ParseResult]], glossary: Glossa
 def draft_without_llm(samples: list[tuple[str, ParseResult]], glossary: Glossary,
                       doc_type: Optional[str] = None) -> Induction:
     """알려진 반복 패턴을 실제로 적중시켜 본 뒤 살아남은 것만 채택한다."""
-    hit_counts: dict[str, int] = {}
-    for _path, parsed in samples:
+    warnings: list[str] = []
+    # 마커별로 **어느 샘플에서** 적중했는지를 본다. 누적 개수로 세면 한 샘플에서
+    # 여러 번 맞은 것이 "샘플마다 최소 1회" 를 통과해 버린다 — "여러 샘플에서
+    # 공통으로 성립하는 패턴만 채택"(모듈 원칙)이 깨진다.
+    hit_samples: dict[str, set[int]] = {}
+    for si, (_path, parsed) in enumerate(samples):
         for e in parsed.elements:
             if not e.opens_structure:
                 continue
             for mid, pattern, *_rest in KNOWN_PATTERNS:
                 if re.match(pattern, e.text.strip()):
-                    hit_counts[mid] = hit_counts.get(mid, 0) + 1
+                    hit_samples.setdefault(mid, set()).add(si)
+
+    adopted = {mid for mid, *_ in KNOWN_PATTERNS
+               if len(hit_samples.get(mid, ())) == max(1, len(samples))}
+    # parent 가 채택되지 않은 마커는 함께 버린다 — `항(parent=조)` 만 남으면
+    # Format 무결성 검사가 ValueError 로 초안 경로를 통째로 세운다. 조 없이 항
+    # 패턴만 맞았다는 것은 우연이므로, 계층을 지어내지 않고 버리는 쪽이 초안답다.
+    deps = {mid: parent for mid, _p, _lv, _g, parent, *_ in KNOWN_PATTERNS}
+    changed = True
+    while changed:
+        changed = False
+        for mid in sorted(adopted):
+            need = deps.get(mid)
+            if need and need not in adopted:
+                adopted.discard(mid)
+                warnings.append(f"'{mid}' 마커는 상위 '{need}' 가 없어 버렸습니다")
+                changed = True
 
     regex_markers = [
         RegexMarker(id=mid, pattern=pattern, level=level, groups=groups,
                     parent=parent, label=label, max_tail=max_tail)
         for mid, pattern, level, groups, parent, label, max_tail in KNOWN_PATTERNS
-        if hit_counts.get(mid, 0) >= max(1, len(samples))          # 샘플마다 최소 1회
+        if mid in adopted
     ]
 
     # section 용어가 제목 위치에 나타난 곳만 term_marker 로
@@ -303,7 +323,6 @@ def draft_without_llm(samples: list[tuple[str, ParseResult]], glossary: Glossary
 
     candidates = _collect_candidates(samples, glossary, regex_markers)
 
-    warnings = []
     if not regex_markers and not term_markers:
         warnings.append("규칙만으로는 마커를 하나도 찾지 못했습니다 — LLM 유도가 필요합니다")
         return Induction(fmt=None, candidates=candidates, warnings=warnings, source="rules")

@@ -99,9 +99,6 @@ class Document:
     def section(self, section_id: str) -> Optional[Section]:
         return next((s for s in self.sections if s.section_id == section_id), None)
 
-    def facts_of(self, section_id: str) -> list[Fact]:
-        return [f for f in self.facts if f.section_id == section_id]
-
     def find_fact(self, term: str, section_ids: Optional[list[str]] = None) -> Optional[Fact]:
         hits = [f for f in self.facts
                 if f.term == term
@@ -146,9 +143,13 @@ class _Builder:
         parent = self._parent_for(level)
         path = (parent.path if parent else []) + [key]
         section_id = "/".join(path)
-        # 같은 id 가 이미 있으면 뒤에 번호를 붙인다(반복 구조가 같은 이름을 낼 수 있다)
+        # 같은 id 가 이미 있으면 뒤에 번호를 붙인다(반복 구조가 같은 이름을 낼 수 있다).
+        # 같은 id 와 그 접미사(`…#2`)만 센다 — `startswith(section_id)` 로 세면
+        # 자식(`제1조/①`)과 딴 마커(`제1조의2`)까지 세어 번호가 건너뛴다.
         if any(s.section_id == section_id for s in self.sections):
-            n = sum(1 for s in self.sections if s.section_id.startswith(section_id))
+            n = sum(1 for s in self.sections
+                    if s.section_id == section_id
+                    or s.section_id.startswith(section_id + "#"))
             section_id = f"{section_id}#{n + 1}"
         sec = Section(section_id=section_id, marker=marker, path=path, level=level,
                       parent=parent.section_id if parent else None)
@@ -184,13 +185,13 @@ class _Builder:
         return list(sec.path) if sec else []
 
 
-def _match_regex(fmt: Format, element: Element) -> Optional[tuple[Any, dict]]:
-    """레벨이 얕은 마커부터 걸어 본다. 첫 적중이 이긴다.
+def _match_regex(markers, element: Element) -> Optional[tuple[Any, dict]]:
+    """레벨이 얕은 마커부터 걸어 본다(`fmt.by_level()` 순). 첫 적중이 이긴다.
 
     `require_heading` 마커는 제목 요소에서만 인정한다 — 번호 패턴이 구역 제목과
     본문 열거에 함께 쓰이는 문서에서는 패턴만으로 둘이 갈리지 않는다(RegexMarker 주석).
     """
-    for marker in fmt.by_level():
+    for marker in markers:
         if marker.require_heading and not element.is_heading:
             continue
         captured = marker.match(element.text)
@@ -208,7 +209,10 @@ def _match_term(builder: _Builder, element: Element) -> Optional[Any]:
     if tm is None and element.is_heading:
         # 제목에 수식어가 붙는 경우("특정금전신탁 변경계약서") — 꼬리가 짧으면 인정한다.
         # heading 신호가 있을 때만 완화한다. 본문 문장에는 적용되지 않는다(§1.3).
-        for k, cand in builder.term_keys.items():
+        # 긴 표면형을 먼저 본다(`_terms_in`·`term_marker._find` 와 같은 정책) —
+        # 삽입 순서로 돌면 형식 파일의 나열 순서가 판정을 좌우한다.
+        for k, cand in sorted(builder.term_keys.items(),
+                              key=lambda kv: len(kv[0]), reverse=True):
             if k in key and len(key) - len(k) <= _TERM_TAIL_MAX:
                 tm = cand
                 break
@@ -233,11 +237,12 @@ def build_sections(elements: list[Element], fmt: Format,
     b = _Builder(fmt, glossary)
     residual: list[int] = []
     unmatched: list[dict] = []
+    markers = fmt.by_level()               # 요소마다 재정렬하지 않는다
 
     for e in elements:
         heading_missed = False
         if e.opens_structure:
-            hit = _match_regex(fmt, e)
+            hit = _match_regex(markers, e)
             if hit:
                 marker, captured = hit
                 key = marker.key_of(captured)
@@ -322,8 +327,8 @@ def _content_of(e: Element) -> dict:
 #
 # 값 정규화는 여전히 value_type 파서가 하고, 실패는 needs_review 로 남는다(§3.3).
 
-# 문장 경계 — 한국어 종결부호 + 줄바꿈
-_SENTENCE_END = ("다.", "요.", "함.", "음.", ".", "?", "!", ";")
+# 문장 경계 — 한국어 종결부호("다." 등)는 전부 "." 로 끝나므로 "." 하나로 덮인다
+_SENTENCE_END = (".", "?", "!", ";")
 
 
 @dataclass

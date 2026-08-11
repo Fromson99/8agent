@@ -11,12 +11,13 @@
 
 from __future__ import annotations
 
-import unicodedata
 from pathlib import Path
 from typing import Iterable, Literal, Optional
 
 import yaml
 from pydantic import BaseModel, Field, model_validator
+
+from core.normalize import normalize_text
 
 # §1.2 — fact 용어에만 붙는다. 기본값 text.
 VALUE_TYPES = ("number", "date", "date_range", "percent",
@@ -30,12 +31,10 @@ def normalize(surface: str) -> str:
 
     "신탁 금액", "신탁금액(원)", "신탁금액" 이 모두 같은 키가 되게 한다(§B5-1 계승).
     조사는 지우지 않는다 — 지우면 서로 다른 용어가 충돌한다.
+    구현은 `core.normalize.normalize_text` 하나다 — 같은 정규화가 두 벌이면
+    한쪽만 고쳐져 매칭과 값 비교가 서로 다른 키를 쓰게 된다.
     """
-    out = []
-    for ch in unicodedata.normalize("NFKC", surface or ""):
-        if unicodedata.category(ch)[0] in ("L", "N"):
-            out.append(ch)
-    return "".join(out).casefold()
+    return normalize_text(surface)
 
 
 class Term(BaseModel):
@@ -120,10 +119,18 @@ class Glossary(BaseModel):
 
     def add_term(self, name: str, kind: Iterable[str], value_type: str = "text",
                  aliases: Optional[list[str]] = None) -> None:
-        """후보 승격(§2.4) — 용어집은 살아있는 파일이다."""
-        self.terms[name] = Term(kind=list(kind), value_type=value_type,
-                                aliases=list(aliases or []))
-        Glossary.model_validate(self.model_dump())      # 추가 후에도 무결성 유지
+        """후보 승격(§2.4) — 용어집은 살아있는 파일이다.
+
+        **사본으로 먼저 검증한다.** 넣고 나서 검증하면 실패해도 `self.terms` 에
+        오염된 항목이 남고, 호출자가 예외를 잡고 저장하면 무효 용어집이 디스크에
+        쓰인다 — 실제로 그 순서였다.
+        """
+        candidate = Term(kind=list(kind), value_type=value_type,
+                         aliases=list(aliases or []))
+        data = self.model_dump()
+        data["terms"][name] = candidate.model_dump()
+        Glossary.model_validate(data)                   # 실패하면 여기서 멈춘다
+        self.terms[name] = candidate
 
     def dump_yaml(self) -> str:
         data = {

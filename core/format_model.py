@@ -13,10 +13,17 @@ from __future__ import annotations
 
 import json
 import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator
+
+
+@lru_cache(maxsize=None)
+def _compile(pattern: str) -> re.Pattern:
+    """마커 패턴 컴파일 캐시 — 요소 수 × 마커 수만큼 불리는 자리라 매번 컴파일하지 않는다."""
+    return re.compile(pattern)
 
 
 class RegexMarker(BaseModel):
@@ -41,7 +48,7 @@ class RegexMarker(BaseModel):
     require_heading: Optional[bool] = None
 
     def compiled(self) -> re.Pattern:
-        return re.compile(self.pattern)
+        return _compile(self.pattern)
 
     def match(self, line: str) -> Optional[dict[str, str]]:
         """적중하면 {그룹이름: 값} + `_matched`, 아니면 None."""
@@ -119,15 +126,8 @@ class Format(BaseModel):
         """레벨 오름차순 — 얕은 마커를 먼저 걸어 본다."""
         return sorted(self.regex_markers, key=lambda m: m.level)
 
-    def term_marker(self, term: str) -> Optional[TermMarker]:
-        return next((t for t in self.term_markers if t.term == term), None)
-
     def section_terms(self) -> set[str]:
         return {t.term for t in self.term_markers}
-
-    def max_level(self) -> int:
-        levels = [m.level for m in self.regex_markers] + [t.level for t in self.term_markers]
-        return max(levels) if levels else 0
 
     def validate_against_glossary(self, glossary) -> list[str]:
         """term_markers 가 용어집의 section 용어를 가리키는지 — 컴파일 확정 전 검사."""
