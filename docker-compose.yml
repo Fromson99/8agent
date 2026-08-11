@@ -31,13 +31,23 @@ services:
       CORS_ORIGINS: "${CORS_ORIGINS:-*}"
       MAX_UPLOAD_MB: "${MAX_UPLOAD_MB:-40}"
       STRUCTURE_STORE: /data/structure
-      STRUCTURE_CUSTOM_DIR: /data/structure/custom   # 등록한 규칙이 남는 자리
+      # 등록한 규칙은 문서 스토어 **밖**에 둔다 — 안에 두면 문서 삭제 API 의
+      # rmtree 반경에 들어간다. (예전 자리 /data/structure/custom 에 이미 규칙이
+      # 있다면 data/custom/ 으로 옮기면 된다.)
+      STRUCTURE_CUSTOM_DIR: /data/custom
+      # 용어집·참조 링크의 정본. 코드 기본값(STORE.parent)도 같은 곳을 가리키지만
+      # **명시**한다 — 기본값이 바뀌어도 사람이 이은 용어·링크가 마운트 밖으로
+      # 새면 안 된다. 컨테이너를 지워도 남아야 하는 파일들이다.
+      GLOSSARY_STORE: /data/glossary.json
+      RAG_LINKS_STORE: /data/links.json
       STRUCTURE_RENDER_SCALE: "${STRUCTURE_RENDER_SCALE:-2.0}"
     volumes:
-      # 올린 문서·해석 결과·페이지 캐시·등록한 규칙.
+      # 올린 문서·해석 결과·페이지 캐시·등록한 규칙·용어집·참조 링크.
       # **바인드 마운트**다 — 화면에서 올린 PDF 와 해석 산출을 호스트에서 그대로 열어
       # 볼 수 있어야 한다(named volume 이면 `docker cp` 없이는 못 본다).
-      - ${STRUCTURE_DATA:-./data/structure}:/data/structure
+      # /data 전체를 마운트한다 — 예전처럼 /data/structure 만 마운트하면
+      # glossary.json·links.json 이 컨테이너 쓰기 계층에 떨어져 재생성 때 사라진다.
+      - ${DATA_DIR:-./data}:/data
       # 도클링 모델 캐시. BAKE_MODELS=0 으로 빌드했다면 첫 요청 때 여기로 받는다.
       - hf-models:/models
       # 개발 중 재빌드를 없앤다. 이미지에도 같은 파일이 있으므로 이 줄들을 지우면
@@ -49,6 +59,16 @@ services:
       #           아무것도 안 바꾸는 것처럼 보였다.
       - ./api:/app/api:ro
       - ./core:/app/core:ro
+    # 개발 중에는 코드가 바뀌면 **스스로 다시 뜬다.** 이게 없으면 바인드로 파일만
+    # 새것이고 실행 중인 파이썬은 프로세스 시작 때 임포트한 옛 코드다 —
+    # 실제로 그래서 "다시 해석" 이 옛 결과를 그대로 냈다.
+    # 끄려면 RELOAD=0 (운영은 꺼 두는 편이 낫다).
+    # umask 000 — /data 는 호스트(jin)와 컨테이너(app, uid 10001)가 **둘 다**
+    # 쓰는 바인드 마운트다. umask 를 열지 않으면 한쪽이 만든 파일을 다른 쪽이
+    # 못 고친다 — 실제로 판정 지문·검수 승인 쓰기가 조용히 막혔었다(개발 설정).
+    command: >
+      sh -c 'umask 000 && exec uvicorn api.structure_app:app --host 0.0.0.0 --port 5566
+      ${RELOAD_FLAG:---reload --reload-dir /app/core --reload-dir /app/api}'
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:5566/health"]

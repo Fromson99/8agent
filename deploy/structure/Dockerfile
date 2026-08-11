@@ -18,8 +18,13 @@ ENV PYTHONUNBUFFERED=1 \
     HF_HOME=/models \
     STRUCTURE_STORE=/data/structure \
     # 사람이 등록한 규칙은 **볼륨**에 둔다. 이미지 안에 두면 컨테이너를
-    # 다시 만들 때 통째로 사라진다.
-    STRUCTURE_CUSTOM_DIR=/data/structure/custom \
+    # 다시 만들 때 통째로 사라진다. 문서 스토어 **밖**이다 — 안에 두면
+    # 문서 삭제 API 의 rmtree 반경에 들어간다.
+    STRUCTURE_CUSTOM_DIR=/data/custom \
+    # 사람이 이은 용어·참조 링크의 정본 — 컨테이너를 지워도 남아야 하므로
+    # /data 아래에 명시한다 (compose 가 /data 전체를 바인드 마운트한다).
+    GLOSSARY_STORE=/data/glossary.json \
+    RAG_LINKS_STORE=/data/links.json \
     # docling 의 레이아웃 모델이 torch.compile 을 타는데, slim 이미지에는 g++ 가 없어
     # `InvalidCxxCompiler: No working C++ compiler` 로 파싱이 통째로 죽는다.
     # 컴파일러를 넣으면 이미지가 ~200MB 커진다. 추론은 eager 로도 정확도가 같고
@@ -52,7 +57,7 @@ from core.structure import registry; r=registry.default(); \
 assert r.by_role('proposer') and r.by_role('local_guard'); \
 print('신호', len(r.signals), '개 등록')"
 
-RUN mkdir -p /models /data/structure/custom \
+RUN mkdir -p /models /data/structure /data/custom \
     && useradd -m -u 10001 app \
     && chown -R app:app /models /data /app
 USER app
