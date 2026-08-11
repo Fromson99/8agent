@@ -62,7 +62,6 @@ class Structured:
     fitness: fitness_gate.Fitness
     parsed: parse_adapter.ParseResult
     route: Optional[router.Route] = None
-    detected: bool = False                 # 자동 판별로 doc_type 이 정해졌는가
 
     @property
     def quarantined(self) -> bool:
@@ -107,7 +106,7 @@ def _structurize(path: str | Path, doc_type: str, *,
     """
     routed = router.route(path, doc_type, **kw)
     s = Structured(doc=routed.doc, fitness=routed.fitness, parsed=routed.parsed,
-                   route=routed.route, detected=routed.detected)
+                   route=routed.route)
     if strict and s.quarantined:
         first = s.fitness.warnings[0] if s.fitness.warnings else ""
         raise RuntimeError(

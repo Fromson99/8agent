@@ -292,14 +292,14 @@ def test_gate_quarantines_a_foreign_document(sample_doc):
     elements = [_el(0, "이 문서는 전혀 다른 양식입니다."),
                 _el(1, "아무 마커도 없습니다.")]
     doc = structurize.run(_parsed(elements), _fmt(), g)
-    fit = fitness_gate.apply(doc, _fmt(), g, len(elements))
+    fit = fitness_gate.apply(doc, _fmt(), len(elements))
     assert not fit.passed
     assert any("부합" in w for w in fit.warnings)
 
 
 def test_gate_passes_a_conforming_document(sample_doc):
     doc, g = sample_doc
-    fit = fitness_gate.apply(doc, _fmt(), g, 7)
+    fit = fitness_gate.apply(doc, _fmt(), 7)
     assert fit.passed, fit.warnings
 
 
@@ -391,15 +391,6 @@ def test_encrypted_pdf_is_refused_by_name(tmp_path):
         parse_adapter.parse(p)
 
 
-def test_encrypted_pdf_is_refused_in_routing_too(tmp_path):
-    """판별 경로도 같이 막는다 — 여기서 조용히 빈 probe 를 내면 '미등록 유형'이라는
-    엉뚱한 진단이 나간다."""
-    from core import router
-    p = _encrypted_pdf(tmp_path / "enc.pdf")
-    with pytest.raises(parse_adapter.EncryptedDocument):
-        router._probe(p)
-
-
 def test_encrypted_pdf_is_not_mistaken_for_a_scan(tmp_path):
     """암호화 PDF 는 텍스트가 0자로 보인다 — 그대로 두면 스캔본으로 오판해 OCR 이 켜진다."""
     p = _encrypted_pdf(tmp_path / "enc.pdf")
@@ -488,7 +479,7 @@ def test_gate_scores_unexplained_mass():
     front = [_el(i, f"설명되지 않는 문장 {i}이다.") for i in range(8)]
     tail = [_el(8, "제1조(목적) 내용이다."), _el(9, "본문이다.")]
     doc = structurize.run(_parsed(front + tail), _fmt(), _glossary())
-    fit = fitness_gate.score(doc, _fmt(), _glossary(), 10)
+    fit = fitness_gate.score(doc, _fmt(), 10)
     assert fit.detail["parts"]["residual"] == pytest.approx(1 - 8 / 10, abs=0.01)
     assert any("설명하지 못한" in w for w in fit.warnings)
 
@@ -498,7 +489,7 @@ def test_small_front_matter_does_not_warn():
     elements = [_el(0, "표지")] + [_el(i, f"제{i}조(목적{i}) 내용이다.")
                                    for i in range(1, 12)]
     doc = structurize.run(_parsed(elements), _fmt(), _glossary())
-    fit = fitness_gate.score(doc, _fmt(), _glossary(), 12)
+    fit = fitness_gate.score(doc, _fmt(), 12)
     assert len(doc.residual) == 1
     assert not any("설명하지 못한" in w for w in fit.warnings)
 
@@ -507,7 +498,7 @@ def test_gate_warns_on_unmatched_headings():
     elements = [_el(0, "제1조(목적) 내용이다."),
                 _el(1, "부칙", type="section_header")]
     doc = structurize.run(_parsed(elements), _fmt(), _glossary())
-    fit = fitness_gate.score(doc, _fmt(), _glossary(), 2)
+    fit = fitness_gate.score(doc, _fmt(), 2)
     assert any("제목으로 보이는데" in w for w in fit.warnings)
 
 
@@ -525,7 +516,7 @@ def test_review_payload_carries_the_unexplained(tmp_path):
     parsed = parse_adapter.parse(md)
     g = _glossary()
     doc = structurize.run(parsed, _fmt(), g)
-    fit = fitness_gate.apply(doc, _fmt(), g, len(parsed.elements))
+    fit = fitness_gate.apply(doc, _fmt(), len(parsed.elements))
 
     class _R:                                  # router.Routed 의 최소 형태
         pass

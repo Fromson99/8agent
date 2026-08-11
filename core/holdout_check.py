@@ -61,7 +61,7 @@ def check(paths: list[str | Path], fmt: Format, glossary: Glossary,
     for p in paths:
         parsed = parse_adapter.parse(p)
         doc = structurize.run(parsed, fmt, glossary)
-        fit = fitness_gate.apply(doc, fmt, glossary, len(parsed.elements), threshold)
+        fit = fitness_gate.apply(doc, fmt, len(parsed.elements), threshold)
         report.results.append(SampleResult(
             path=str(p), score=fit.score, passed=fit.passed,
             sections=len(doc.sections), facts=len([f for f in doc.facts if not f.needs_review]),

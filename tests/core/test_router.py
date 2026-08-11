@@ -1,15 +1,11 @@
 """라우터 자체의 회귀 — 등록부가 정말 **유일한 결정자**인가 (SPEC §00).
 
-여기서 지키는 것은 두 가지다.
+여기서 지키는 것: 등록부가 모순되면 **적재 시점에** 터진다. 중복 doc_type,
+없는 파서, 형식·용어집과 어긋난 doc_type — 전부 조용히 굴러가면 엉뚱한 문서를
+그럴듯하게 구조화한다. 미등록 doc_type 은 비슷한 이름을 제안하며 거부한다.
 
-    (1) 등록부가 모순되면 **적재 시점에** 터진다. 중복 doc_type, 없는 파서,
-        형식·용어집과 어긋난 doc_type — 전부 조용히 굴러가면 엉뚱한 문서를
-        그럴듯하게 구조화한다.
-    (2) 판별에 실패했을 때 **추측하지 않는다.** 0개면 미등록, 2개 이상이면 모호.
-
-이 파일은 docling 을 부르지 않는다. 자동 모드 판별은 `Registry.detect` 만 쓰고
-(fitz/텍스트 앞부분만 읽는다) `router.route()` 는 부르지 않는다 — 실측 4개 파일에
-docling 을 돌리면 이 테스트가 분 단위가 되고, 그러면 아무도 돌리지 않게 된다.
+(자동 판별(detect)은 뺐다 — 유형은 호출자가 말하고, "그 유형이 맞긴 한가"는
+fitness 게이트가 판정한다. 이 파일은 docling 을 부르지 않는다.)
 """
 from __future__ import annotations
 
@@ -136,55 +132,6 @@ def test_route_signature_has_no_asset_arguments():
     params = set(inspect.signature(router.route).parameters)
     assert not (params & {"format", "fmt", "glossary", "format_path", "glossary_path"})
     assert {"path", "doc_type"} <= params
-
-
-# ===========================================================================
-# 자동 모드 — 실측 파일 (detect 만, docling 없음)
-# ===========================================================================
-
-REAL = [
-    ("agents/agent1/data/samples/ss2207_special_trust.pdf", "특정금전신탁"),
-    ("agents/agent1/data/B1055656A.pdf", "투자설명서"),
-    ("agents/agent1/data/golden/contract_filled.pdf", "특정금전신탁"),
-    ("agents/agent1/data/golden/prospectus.md", "투자설명서"),
-]
-
-
-@pytest.mark.parametrize("rel,want", REAL)
-def test_detect_real_files(rel, want):
-    """실측 문서가 제 유형으로 갈린다.
-
-    detect 규칙은 계약서·설명서·법령이 서로의 이름을 **인용**하기 때문에 늘 흔들린다
-    (계약서 본문이 '금융소비자 보호에 관한 법률'을 인용해 금소법으로도 걸린 적이 있다).
-    실측 파일로 고정해 두는 것 말고는 지킬 방법이 없다.
-    """
-    p = ROOT / rel
-    if not p.exists():
-        pytest.skip(f"실측 파일이 없습니다: {rel}")
-    assert router.load().detect(p).doc_type == want
-
-
-def test_unregistered_document_is_refused(tmp_path):
-    """어느 detect 에도 걸리지 않으면 '아마 이것'으로 넘기지 않는다."""
-    doc = tmp_path / "메모.txt"
-    doc.write_text("오늘 점심은 국밥이었다.", encoding="utf-8")
-    with pytest.raises(router.UnregisteredDocument) as e:
-        router.load().detect(doc)
-    assert "미등록" in str(e.value) and "doc_type" in str(e.value)
-
-
-def test_ambiguous_document_is_refused(tmp_path):
-    """두 route 에 동시에 걸리면 고르지 않는다 — 고르는 순간 근거 없는 추측이 된다."""
-    doc = tmp_path / "겹치는문서.txt"
-    doc.write_text("이 문서에는 특정금전신탁 이라는 말과 투자설명서 라는 말이 다 있다.",
-                   encoding="utf-8")
-    reg_path = _write_registry(tmp_path, [
-        {"doc_type": "가유형", "detect": {"content_any": ["특정금전신탁"]}},
-        {"doc_type": "나유형", "detect": {"content_any": ["투자설명서"]}}])
-    reg = router.load(reg_path)
-    with pytest.raises(router.AmbiguousDocument) as e:
-        reg.detect(doc)
-    assert "가유형" in str(e.value) and "나유형" in str(e.value)
 
 
 # ===========================================================================

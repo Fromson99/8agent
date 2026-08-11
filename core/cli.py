@@ -30,6 +30,7 @@ if str(ROOT) not in sys.path:
 
 from core import (fitness_gate, format_model, glossary as glossary_mod,   # noqa: E402
                   holdout_check, parse_adapter, reconcile, structurize, term_marker)
+from core.normalize import to_jsonable                                    # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -53,7 +54,7 @@ def cmd_compile(args) -> int:
 
     if args.no_llm:
         induction = format_induce.draft_without_llm(samples, g, args.doc_type)
-        print(f"\n유도      규칙 기반 초안 (LLM 없음)")
+        print("\n유도      규칙 기반 초안 (LLM 없음)")
     else:
         from core.llm import LLM
         llm = LLM(args.model)
@@ -88,7 +89,7 @@ def cmd_compile(args) -> int:
     print("\n적용 결과 (샘플에 형식을 걸어 본 것)")
     for path, parsed in samples:
         doc = structurize.run(parsed, fmt, g)
-        fit = fitness_gate.apply(doc, fmt, g, len(parsed.elements))
+        fit = fitness_gate.apply(doc, fmt, len(parsed.elements))
         print(f"  {Path(path).name}")
         print(f"    section {len(doc.sections)}  fact {len(doc.facts)}  "
               f"잔여 {len(doc.residual)}  부합 {fit.score:.0%}")
@@ -157,6 +158,11 @@ def cmd_routes(args) -> int:
 def cmd_structurize(args) -> int:
     from core import router
 
+    if not args.doc_type and not (args.glossary or args.format):
+        # 자동 판별(detect)은 뺐다 — 유형은 호출자가 말한다.
+        print("--doc-type 이 필요합니다. 등록된 유형은 `python -m core.cli routes` 로 "
+              "볼 수 있습니다 (미등록 유형 시험은 --glossary/--format 직접 지정)")
+        return 1
     if args.glossary or args.format:
         # 형식·용어집 직접 지정은 **컴파일 국면 전용**이다. 아직 registry 에 등록되지
         # 않은 새 유형을 손으로 돌려 보는 통로이며, 등록된 유형은 이 길로 오면 안 된다.
@@ -175,10 +181,9 @@ def cmd_structurize(args) -> int:
             return 1
         parsed = parse_adapter.parse(args.document)
         doc = structurize.run(parsed, fmt, g)
-        fit = fitness_gate.apply(doc, fmt, g, len(parsed.elements),
+        fit = fitness_gate.apply(doc, fmt, len(parsed.elements),
                                  args.threshold if args.threshold is not None
                                  else fitness_gate.DEFAULT_THRESHOLD)
-        detected = False
     else:
         try:
             routed = router.route(args.document, args.doc_type,
@@ -187,9 +192,7 @@ def cmd_structurize(args) -> int:
             print(f"배차 실패\n  {exc}")
             return 1
         doc, fit, parsed, fmt = routed.doc, routed.fitness, routed.parsed, None
-        detected = routed.detected
-        print(f"배차      {routed.doc_type}"
-              f"{' (자동 판별)' if detected else ''}  owner={routed.route.owner or '-'}")
+        print(f"배차      {routed.doc_type}  owner={routed.route.owner or '-'}")
 
     print(f"파서      {parsed.parser}")
     if fmt is None:
@@ -212,7 +215,7 @@ def cmd_structurize(args) -> int:
         for f in doc.facts:
             mark = "△" if f.needs_review else " "
             print(f" {mark}{f.term:<18} {f.value_type:<11} "
-                  f"{str(structurize.to_jsonable(f.value))[:26]:<28} ← {f.section_id}")
+                  f"{str(to_jsonable(f.value))[:26]:<28} ← {f.section_id}")
 
     if args.out:
         p = Path(args.out)
@@ -344,7 +347,7 @@ def main(argv=None) -> int:
 
     s = sub.add_parser("structurize", help="런타임 — 문서 → doc.json (등록부가 배차, LLM 없음)")
     s.add_argument("document")
-    s.add_argument("--doc-type", help="명시 모드. 생략하면 detect 규칙으로 자동 판별 (§00.3)")
+    s.add_argument("--doc-type", help="처리할 문서 유형 (등록부의 doc_type — `routes` 로 확인)")
     s.add_argument("--glossary", help="[컴파일 전용] 미등록 유형을 손으로 돌려 볼 때만")
     s.add_argument("--format", help="[컴파일 전용] 미등록 유형을 손으로 돌려 볼 때만")
     s.add_argument("--unregistered", action="store_true",
@@ -378,6 +381,9 @@ def main(argv=None) -> int:
     v.set_defaults(fn=cmd_review)
 
     args = ap.parse_args(argv)
+    # print 는 CLI 의 화면이고, logging 은 core 모듈의 관측이다 — 파일에도 남긴다.
+    from core import logbook
+    logbook.setup("cli")
     return args.fn(args)
 
 

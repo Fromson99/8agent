@@ -12,17 +12,20 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from core.format_model import Format
-from core.glossary import Glossary
 from core.structurize import Document
 
 DEFAULT_THRESHOLD = 0.70
 
 # 채점 항목의 가중치 — 합이 1.0
+#
+# fact_coverage(용어집 fact 용어가 잡혔는가, 0.30)를 뺐다: 용어는 유형별 용어집이
+# 아니라 전역 용어집이 담당하는 방향이라, "이 유형이라면 이 용어들이 잡혀야 한다"는
+# 기대치 자체가 성립하지 않는다. 게이트는 **형식 부합**만 잰다 — 마커가 검출되고,
+# 번호가 이어지고, 설명 못 한 잔여가 적은가.
 WEIGHTS = {
-    "marker_density": 0.25,      # 기대 마커가 실제로 검출됐는가
-    "ordinal_continuity": 0.25,  # 번호가 연속인가 (제1조~제32조 중간이 비지 않았는가)
-    "fact_coverage": 0.30,       # 용어집 fact 용어가 얼마나 잡혔는가
-    "residual": 0.20,            # 형식이 설명하지 못한 잔여(기본 구역 질량)가 적은가
+    "marker_density": 0.35,      # 기대 마커가 실제로 검출됐는가
+    "ordinal_continuity": 0.35,  # 번호가 연속인가 (제1조~제32조 중간이 비지 않았는가)
+    "residual": 0.30,            # 형식이 설명하지 못한 잔여(기본 구역 질량)가 적은가
 }
 
 # 잔여 경고 임계 — 이 비율 이상이면 경고를 낸다. 문서 무관 상수다: 표지 몇 줄은
@@ -76,25 +79,14 @@ def _ordinal_continuity(doc: Document) -> tuple[float, dict]:
     scores, detail = [], {}
     for marker_id, nums in seqs.items():
         uniq = sorted(set(nums))
+        present = set(uniq)
         span = uniq[-1] - uniq[0] + 1
         ratio = len(uniq) / span if span else 1.0
-        gaps = [n for n in range(uniq[0], uniq[-1] + 1) if n not in set(uniq)]
+        gaps = [n for n in range(uniq[0], uniq[-1] + 1) if n not in present]
         scores.append(ratio)
         detail[marker_id] = {"count": len(uniq), "range": [uniq[0], uniq[-1]],
                             "gaps": gaps[:20]}
     return sum(scores) / len(scores), detail
-
-
-def _fact_coverage(doc: Document, glossary: Glossary) -> tuple[float, dict]:
-    """용어집의 fact 용어 중 실제로 값이 잡힌 비율."""
-    wanted = glossary.fact_terms()
-    if not wanted:
-        return 1.0, {}
-    found = {f.term for f in doc.facts if not f.needs_review}
-    review = sorted({f.term for f in doc.facts if f.needs_review})
-    return len(found & set(wanted)) / len(wanted), {
-        "expected": len(wanted), "extracted": len(found & set(wanted)),
-        "missing": sorted(set(wanted) - found), "needs_review": review}
 
 
 def _residual(doc: Document, total_elements: int) -> tuple[float, dict]:
@@ -112,12 +104,11 @@ def _residual(doc: Document, total_elements: int) -> tuple[float, dict]:
                                    "ratio": round(ratio, 3)}
 
 
-def score(doc: Document, fmt: Format, glossary: Glossary, total_elements: int,
+def score(doc: Document, fmt: Format, total_elements: int,
           threshold: float = DEFAULT_THRESHOLD) -> Fitness:
     parts, detail = {}, {}
     parts["marker_density"], detail["marker_density"] = _marker_density(doc, fmt)
     parts["ordinal_continuity"], detail["ordinal_continuity"] = _ordinal_continuity(doc)
-    parts["fact_coverage"], detail["fact_coverage"] = _fact_coverage(doc, glossary)
     parts["residual"], detail["residual"] = _residual(doc, total_elements)
 
     total = sum(parts[k] * WEIGHTS[k] for k in WEIGHTS)
@@ -129,11 +120,11 @@ def score(doc: Document, fmt: Format, glossary: Glossary, total_elements: int,
     for marker_id, d in detail["ordinal_continuity"].items():
         if d["gaps"]:
             warnings.append(f"'{marker_id}' 번호가 끊깁니다: {d['gaps']}")
-    fc = detail["fact_coverage"]
-    if fc.get("missing"):
-        warnings.append(f"fact 용어를 찾지 못했습니다: {', '.join(fc['missing'])}")
-    if fc.get("needs_review"):
-        warnings.append(f"값 정규화 실패(판정 보류): {', '.join(fc['needs_review'])}")
+    # 값 정규화에 실패한 fact 는 용어 채점과 무관하게 알린다 — 판정 근거로 쓰이기
+    # 전에 사람이 봐야 한다(needs_review 는 조용히 넘어가면 안 되는 상태다).
+    review = sorted({f.term for f in doc.facts if f.needs_review})
+    if review:
+        warnings.append(f"값 정규화 실패(판정 보류): {', '.join(review)}")
     rd = detail["residual"]
     if rd.get("ratio", 0.0) >= RESIDUAL_WARN_RATIO:
         warnings.append(
@@ -157,9 +148,9 @@ def score(doc: Document, fmt: Format, glossary: Glossary, total_elements: int,
                            **detail})
 
 
-def apply(doc: Document, fmt: Format, glossary: Glossary, total_elements: int,
+def apply(doc: Document, fmt: Format, total_elements: int,
           threshold: float = DEFAULT_THRESHOLD) -> Fitness:
     """채점 결과를 Document 에 심고 돌려준다."""
-    f = score(doc, fmt, glossary, total_elements, threshold)
+    f = score(doc, fmt, total_elements, threshold)
     doc.fitness = f.dump()
     return f
