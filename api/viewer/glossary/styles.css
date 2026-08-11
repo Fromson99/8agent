@@ -1,0 +1,171 @@
+:root { --bg:#0f1115; --pane:#161922; --line:#272c39; --ink:#e6e9f0; --dim:#8b93a7;
+        --accent:#6ea8fe; --ok:#4ec9a0; --warn:#e2b341; --bad:#e06c75;
+        color-scheme: dark; }
+@media (prefers-color-scheme: light) {
+  :root { --bg:#f7f8fa; --pane:#fff; --line:#dfe3ea; --ink:#1a1d24; --dim:#6b7280;
+          --accent:#2563eb; --ok:#0f9d76; --warn:#b45309; --bad:#b91c1c;
+          color-scheme: light; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font-size:13px;
+       font-family:-apple-system,"Segoe UI","Noto Sans KR",sans-serif; }
+.top { display:flex; align-items:center; gap:12px; padding:10px 16px;
+       border-bottom:1px solid var(--line); background:var(--pane); }
+.top h1 { font-size:14px; margin:0; font-weight:650; }
+.grow { flex:1; } .sub,.hint { color:var(--dim); font-size:11.5px; font-weight:400; }
+.hint { padding:10px; line-height:1.6; }
+.navlink { color:var(--dim); text-decoration:none; font-size:11.5px;
+           border:1px solid var(--line); border-radius:6px; padding:3px 9px; }
+.navlink:hover { color:var(--accent); border-color:var(--accent); }
+.cols { display:grid; grid-template-columns:340px 1fr; height:calc(100vh - 47px); }
+.pane { padding:12px 14px; overflow:hidden; display:flex; flex-direction:column;
+        border-right:1px solid var(--line); }
+.pane.main { border-right:none; }
+.scroll { overflow:auto; flex:1; scrollbar-width:thin; }
+input[type=search] { width:100%; margin-bottom:8px; padding:5px 8px; background:var(--bg);
+  color:var(--ink); border:1px solid var(--line); border-radius:6px; }
+button { background:var(--pane); color:var(--ink); border:1px solid var(--line);
+         border-radius:6px; padding:4px 10px; cursor:pointer; font-size:12px; }
+button:hover { border-color:var(--accent); }
+
+/* ---------------- 왼쪽 · 문서 트리 ---------------- */
+.dochead { display:flex; align-items:center; gap:10px; margin-bottom:5px; }
+.dochead b { font-size:12.5px; }
+.chk { display:flex; align-items:center; gap:5px; color:var(--dim); font-size:11.5px; }
+.doctree { max-height:32vh; overflow:auto; scrollbar-width:thin; margin-bottom:10px;
+           border:1px solid var(--line); border-radius:8px; padding:5px 7px; }
+.fgroup { margin-bottom:2px; }
+.frow, .docrow { display:flex; align-items:center; gap:7px; padding:3px 4px;
+                 border-radius:6px; cursor:pointer; }
+.frow:hover, .docrow:hover { background:color-mix(in srgb, var(--accent) 8%, transparent); }
+.frow .fname { font-weight:650; font-size:12px; }
+.fgroup .docrow { margin-left:16px; }
+.docrow i { width:8px; height:8px; border-radius:50%; flex:none; }
+.docrow .dn { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
+.doctree input[type=checkbox] { accent-color:var(--accent); margin:0; flex:none; }
+
+/* 전체 / 여러 문서 / 직접 추가 */
+.seg { display:flex; gap:0; margin-bottom:8px; border:1px solid var(--line);
+       border-radius:6px; overflow:hidden; }
+.seg button { flex:1; border:none; border-radius:0; color:var(--dim); background:none; }
+.seg button + button { border-left:1px solid var(--line); }
+.seg button.on { color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, transparent); }
+
+/* 왼쪽 목록 — 한 줄 하나. 점은 어느 문서에 있는지, 매트릭스 열 색과 같다. */
+.term { display:flex; align-items:center; gap:7px; padding:5px 9px; margin-bottom:3px;
+        border:1px solid transparent; border-radius:7px; cursor:pointer; }
+.term:hover { border-color:var(--accent); }
+.term.on { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, transparent); }
+.term.shared .name { color:var(--ok); }
+.term .name { flex:1; font-weight:600; overflow:hidden; text-overflow:ellipsis;
+              white-space:nowrap; }
+.term .dots { display:flex; gap:3px; }
+.term .dots i { width:7px; height:7px; border-radius:50%; display:inline-block; }
+.pill { padding:0 6px; border-radius:999px; font-size:10.5px; border:1px solid var(--line);
+        color:var(--dim); white-space:nowrap; }
+.pill.ok { color:var(--ok); border-color:currentColor; }
+.pill.add { color:var(--accent); border-color:currentColor; }
+/* 생애주기 뱃지 — 출처(tier1/통계/질의루프)와 상태(잠정/강등) */
+.pill.t1 { color:var(--ok); border-color:currentColor; }
+.pill.st { color:var(--warn); border-color:currentColor; }
+.pill.lp { color:var(--accent); border-color:currentColor; }
+.pill.prov { color:var(--warn); border-style:dashed; }
+.pill.hd { color:var(--ok); border-color:currentColor; }
+.pill.dead { color:var(--bad); border-color:currentColor; text-decoration:line-through; }
+
+/* 검수 큐 — 잠정 용어의 승인/반려 */
+.rvitem { border:1px solid var(--line); border-radius:8px; padding:8px 12px;
+          margin-bottom:8px; display:flex; flex-direction:column; gap:4px; }
+.rvhead { display:flex; align-items:center; gap:8px; }
+.rvhead b { font-size:13px; }
+.rvhead button { padding:3px 10px; font-size:11.5px; border-radius:6px;
+                 border:1px solid var(--line); background:transparent;
+                 color:var(--ink); cursor:pointer; }
+.rvhead .rvok { color:var(--ok); border-color:var(--ok); }
+.rvhead .rvno { color:var(--bad); border-color:var(--bad); }
+.rvhead button:hover { filter:brightness(1.25); }
+.rvsnip { color:var(--dim); font-size:11.5px; border-left:2px solid var(--line);
+          padding-left:8px; }
+.relrow { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;
+          border-bottom:1px solid var(--line); padding:4px 0; font-size:12px; }
+.relrow:last-child { border-bottom:0; }
+.tdel { padding:1px 8px; font-size:11px; color:var(--dim); }
+.tdel:hover { border-color:#e06c75; color:#e06c75; }
+
+.addbox { border:1px solid var(--line); border-radius:8px; padding:6px 10px; margin-bottom:8px; }
+.addbox summary { cursor:pointer; color:var(--dim); font-size:11.5px; }
+.addbox textarea { width:100%; margin-top:6px; background:var(--bg); color:var(--ink);
+  border:1px solid var(--line); border-radius:6px; padding:6px; font:inherit; resize:vertical; }
+.row { display:flex; gap:8px; align-items:center; margin-top:6px; flex-wrap:wrap; }
+
+/* ---------------- 오른쪽 · 공통 ---------------- */
+.pane.main h2 { font-size:13px; margin:4px 0 10px; }
+.pane.main h2 .sub { font-weight:400; margin-left:6px; }
+.chip { display:inline-flex; align-items:center; gap:5px; border:1px solid var(--line);
+        border-radius:999px; padding:1px 9px; font-size:11px; color:var(--dim);
+        white-space:nowrap; }
+.chip i { width:7px; height:7px; border-radius:50%; display:inline-block; }
+
+/* ---------------- 네트워크 ---------------- */
+.netsvg { width:100%; height:auto; display:block; margin-bottom:4px;
+          background-image:radial-gradient(var(--line) 1px, transparent 1px);
+          background-size:26px 26px; border:1px solid var(--line); border-radius:10px; }
+.netsvg text { font-family:inherit; paint-order:stroke; stroke:var(--bg);
+               stroke-width:3px; stroke-linejoin:round; }
+.netsvg .ndoc { font-size:12.5px; font-weight:650; fill:var(--ink); }
+.netsvg .nterm { font-size:11px; font-weight:600; fill:var(--ink); }
+.netsvg .ge { opacity:.5; pointer-events:none; }
+.netsvg .gn { cursor:pointer; }
+.netsvg .gn:hover circle { stroke:var(--ink); stroke-width:1.5; }
+.netsvg .faded { opacity:.08; }
+.nethint { color:var(--dim); font-size:11.5px; margin:2px 0 18px; }
+
+/* ---------------- 용어 × 문서 매트릭스 ---------------- */
+.mx { border-collapse:separate; border-spacing:0; font-size:12px; }
+.mx th, .mx td { padding:3px 10px; border-bottom:1px solid var(--line); }
+.mx thead th { position:sticky; top:0; z-index:3; background:var(--bg);
+               text-align:left; font-weight:600; color:var(--dim); white-space:nowrap;
+               max-width:180px; overflow:hidden; text-overflow:ellipsis; }
+.mx thead th i { width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:5px; }
+.mx thead .corner { z-index:4; }
+.mx .rowhead { position:sticky; left:0; background:var(--bg); text-align:left;
+               font-weight:600; max-width:300px; overflow:hidden; text-overflow:ellipsis;
+               white-space:nowrap; cursor:pointer; }
+.mx .rowhead:hover { color:var(--accent); }
+.mx tr.shared .rowhead { color:var(--ok); }
+.mx td { text-align:center; min-width:64px; color:var(--dim); }
+.mx td.hit { color:var(--ink); cursor:pointer; border-radius:4px; }
+.mx td.hit:hover { outline:1px solid var(--accent); }
+.mx tbody tr:hover .rowhead { color:var(--accent); }
+
+/* ---------------- 용어 상세 ---------------- */
+.dhead { display:flex; align-items:center; gap:10px; margin:2px 0 6px; }
+.dhead h2 { margin:0; font-size:15px; }
+.surf { margin-bottom:6px; }
+.docfilter { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0 14px; }
+.docfilter .chip { cursor:pointer; }
+.docfilter .chip:hover { border-color:var(--accent); color:var(--accent); }
+.docfilter .chip.on { border-color:var(--accent); color:var(--accent);
+                      background:color-mix(in srgb, var(--accent) 10%, transparent); }
+.dgroup { margin-bottom:16px; }
+.dgroup h3 { font-size:12.5px; margin:0 0 4px; display:flex; align-items:center; gap:7px; }
+.dgroup h3 i { width:8px; height:8px; border-radius:50%; display:inline-block; }
+.occr { border-left:2px solid var(--line); padding:4px 10px; margin:0 0 4px 3px; }
+.occr:hover { border-left-color:var(--accent); background:color-mix(in srgb, var(--accent) 5%, transparent); }
+.occr .l1 { display:flex; align-items:baseline; gap:9px; }
+.via { font-size:10.5px; font-weight:650; }
+.pg { color:var(--dim); font-size:11px; font-family:ui-monospace,monospace; }
+.sec { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.quote { color:var(--dim); font-size:11.5px; line-height:1.55; margin-top:2px; }
+.go { color:var(--accent); text-decoration:none; font-size:11.5px; white-space:nowrap; }
+.go:hover { text-decoration:underline; }
+.dgroup details summary { cursor:pointer; padding:4px 10px; }
+
+/* 출현 미리보기 — 창을 넘기지 않고 그 자리에서 페이지를 편다 */
+.pvable .l1 { cursor:pointer; }
+.pv { max-height:440px; overflow:auto; margin-top:6px; border:1px solid var(--line);
+      border-radius:8px; scrollbar-width:thin; }
+.pvbox { position:relative; }
+.pvbox img { display:block; width:100%; }
+.pvbox .hl { position:absolute; border:2px solid #e2b341;
+             background:color-mix(in srgb, #e2b341 22%, transparent); border-radius:3px; }
+.pv .go { display:inline-block; padding:6px 10px; }

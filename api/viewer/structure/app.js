@@ -19,6 +19,9 @@ const S = {
   pinned: false, pinBlock: null,        // 검사기 고정
   open: new Set(),                      // 펼친 마디
   byId: new Map(), children: new Map(), path: new Map(),
+  blockAt: new Map(),                   // 블록 idx → 블록 (트리 잎용)
+  openBlk: new Set(),                   // 세부(자기 블록)를 편 마디
+  selBlock: null,                       // 낱개로 고른 블록 — 그것만 하이라이트
 };
 
 const lv = (n) => `var(--l${Math.min(Math.max(n | 0, 0), LV - 1)})`;
@@ -167,6 +170,15 @@ function renderFlow() {
   box.prepend(head);
 }
 
+/* 딥링크 — `?doc=…&block=…` 으로 들어오면 그 문서를 열고 그 블록을 짚는다.
+ *
+ * 용어집에서 "이 말이 여기 있다" 를 눌렀을 때 문서를 손으로 다시 찾게 하면 안 된다.
+ * 좌표는 이미 payload 에 있으므로 URL 로 넘겨 받아 그대로 고른다. */
+function deepLink() {
+  const u = new URLSearchParams(location.search);
+  return { doc: u.get("doc"), block: u.get("block"), node: u.get("node") };
+}
+
 /* -------------------------------------------------------------------- 적재 */
 async function load(docId) {
   say("불러오는 중", "busy");
@@ -177,11 +189,37 @@ async function load(docId) {
   index();
   $("docName").textContent = S.data.doc;
   S.pinned = false; renderInspector(null);
-  renderTree(); renderPages(); renderSummary();
-  renderOrderQuick(); renderApplied(); renderDerivedOrder();
+  // 한 화면이 터져도 나머지는 뜨게 한다. 트리에서 난 오류로 PDF 를 통째로 잃는
+  // 일이 실제로 있었다 — 화면끼리 서로를 세우면 안 된다.
+  for (const [name, fn] of [["트리", renderTree], ["페이지", renderPages],
+                            ["요약", renderSummary], ["순서", renderOrderQuick],
+                            ["힌트", renderApplied], ["유도순서", renderDerivedOrder]]) {
+    try { fn(); } catch (err) {
+      console.error(name, err);
+      say(`${name} 화면 오류: ${err.message}`, "err");
+    }
+  }
   refreshDocs();
   tab("tree");
   $("reinterpret").disabled = false;
+
+  // 딥링크로 들어왔으면 그 자리를 짚는다. 한 번만 쓰고 URL 에서 지운다 —
+  // 남겨 두면 다른 문서를 열어도 계속 그리로 끌려간다.
+  const dl = deepLink();
+  if (dl.doc === docId) {
+    if (dl.node != null) select(+dl.node, true);
+    if (dl.block != null) {
+      const b = S.blockAt.get(+dl.block);
+      if (b) {
+        // 그 블록을 품은 마디를 펼쳐야 트리에서도 보인다.
+        for (const n of S.data.nodes)
+          if (n.span[0] <= b.idx && b.idx < n.span[1]) { S.open.add(n.id); S.openBlk.add(n.id); }
+        renderTree();
+        pickBlock(b);
+      }
+    }
+    history.replaceState(null, "", location.pathname);
+  }
   say("");
 }
 
@@ -206,7 +244,9 @@ $("reinterpret").onclick = async () => {
   const t0 = Date.now();
   const tick = setInterval(() => {
     const s = Math.round((Date.now() - t0) / 1000);
-    say(`다시 해석 중… ${s}초 (첫 재해석은 파싱 캐시가 없어 몇 분 걸릴 수 있습니다)`, "busy");
+    say(`다시 해석 중… ${s}초`
+      + ($("useLlm").checked ? " · LLM 해소를 켜면 페이지마다 VLM 을 불러 수십 초씩 걸립니다"
+                             : " (첫 재해석은 파싱 캐시가 없어 몇 분 걸릴 수 있습니다)"), "busy");
   }, 1000);
   say("다시 해석 중… 0초", "busy");
   try {
@@ -221,6 +261,8 @@ $("reinterpret").onclick = async () => {
       + ` · 활성 ${d.activated}/${d.candidates} · 커버 ${d.coverage}`
       + (d.unlocked?.length ? ` · 층해제 ${d.unlocked.join(",")}` : "")
       + (d.thin_suspects ? ` · 놓친제목 의심 ${d.thin_suspects}` : "")
+      + (d.vlm_sec ? ` · VLM ${d.vlm_sec}초/${d.vlm_pages}쪽 `
+          + `(물음 ${d.vlm_asked}, 중복생략 ${d.vlm_deduped}, 제목 ${d.vlm_headings || 0})` : "")
       + ` · ${j.parse_note}`);
   } catch (err) {
     say(String(err.message || err), "err");
@@ -232,6 +274,8 @@ $("reinterpret").onclick = async () => {
 
 function index() {
   S.byId.clear(); S.children.clear(); S.path.clear(); S.open.clear(); S.sel = null;
+  S.blockAt.clear(); S.openBlk.clear(); S.selBlock = null;
+  for (const b of S.data.blocks) S.blockAt.set(b.idx, b);
   for (const n of S.data.nodes) {
     S.byId.set(n.id, n);
     if (!S.children.has(n.parent)) S.children.set(n.parent, []);
@@ -242,6 +286,31 @@ function index() {
     S.path.set(n.id, [...p, n.surface]);
     if (n.level <= 1) S.open.add(n.id);      // 처음엔 두 단계만 펼친다
   }
+}
+
+/* 이 마디가 **자기 것으로** 가진 블록 — span 에서 자식 마디의 몫과 제목 줄을 뺀 나머지. */
+function ownBlocks(n) {
+  const taken = new Set();
+  for (const k of S.children.get(n.id) || [])
+    for (let i = k.span[0]; i < k.span[1]; i++) taken.add(i);
+  const out = [];
+  for (let i = n.span[0]; i < n.span[1]; i++) {
+    if (taken.has(i) || i === n.block) continue;
+    const b = S.blockAt.get(i);
+    if (b) out.push(b);
+  }
+  return out;
+}
+
+/* 낱개 블록을 고른다 — **그 상자 하나만** 하이라이트하고 그 자리로 스크롤한다.
+ * 마디를 고르면 구간 전체가 칠해지는데, 세부를 볼 때는 그것이 오히려 방해다. */
+function pickBlock(b) {
+  S.selBlock = (S.selBlock === b.idx) ? null : b.idx;
+  pick(b, true);
+  paintSelection();
+  renderTree();
+  const el = document.querySelector(`.box[data-block="${b.idx}"]`);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 /* -------------------------------------------------------------------- 트리 */
@@ -288,12 +357,47 @@ function renderTree() {
       meta.textContent = `p${n.page} · ${n.span[1] - n.span[0]}블록`
         + (nt ? ` · 표${nt}` : "") + (nf ? ` · 그림${nf}` : "");
 
+      // 세부(자기 블록)는 **따로** 접는다. 자식 마디 펼침과 같이 묶으면 조 하나를
+      // 펼칠 때마다 본문 수십 줄이 함께 쏟아져 트리를 못 읽는다.
+      const own = ownBlocks(n);
+      let det = null;
+      if (own.length) {
+        det = document.createElement("span");
+        det.className = "det" + (S.openBlk.has(n.id) ? " on" : "");
+        det.textContent = `${S.openBlk.has(n.id) ? "▾" : "▸"} 세부 ${own.length}`;
+        det.onclick = (e) => {
+          e.stopPropagation();
+          S.openBlk.has(n.id) ? S.openBlk.delete(n.id) : S.openBlk.add(n.id);
+          renderTree();
+        };
+      }
+
       row.append(tw, chip, su, ti, meta);
+      if (det) row.append(det);
       row.onclick = () => select(n.id, true);
       const hay = `${n.surface} ${n.title || ""} ${n.family}`.toLowerCase();
       if (q && !hay.includes(q))
         row.classList.add("hidden");
       box.appendChild(row);
+
+      if (S.openBlk.has(n.id)) {
+        for (const b of own) {
+          const leaf = document.createElement("div");
+          leaf.className = "node leaf-blk"
+            + (S.selBlock === b.idx ? " sel" : "");
+          leaf.style.paddingLeft = 8 + (depth + 1) * 14 + "px";
+          const tag = b.kind === "table" ? "표" : b.kind === "figure" ? "그림" : "";
+          leaf.innerHTML =
+            `<span class="twist leaf"></span>` +
+            `<span class="chip blk">${esc(tag || "본문")}</span>` +
+            `<span class="surface">${esc((b.text || "(빈 블록)").slice(0, 70))}</span>` +
+            `<span class="meta">#${b.idx} p${b.page}</span>`;
+          leaf.onclick = (e) => { e.stopPropagation(); pickBlock(b); };
+          if (q && !(b.text || "").toLowerCase().includes(q))
+            leaf.classList.add("hidden");
+          box.appendChild(leaf);
+        }
+      }
 
       // 표·그림은 마디의 **잎**이다. 구역을 열지 않으므로 자식 마디가 아니지만,
       // 트리에 안 보이면 "표가 어느 구역 것인지" 를 화면에서 확인할 길이 없다.
@@ -352,7 +456,11 @@ function paintSelection() {
     }
   }
   document.querySelectorAll(".box").forEach((el) => {
-    el.classList.toggle("sel", inSel.has(+el.dataset.block));
+    const idx = +el.dataset.block;
+    el.classList.toggle("sel", inSel.has(idx));
+    // 낱개로 고른 블록은 **그것만** 도드라지게. 마디 선택(구간 전체)과 겹쳐도
+    // 어느 상자를 고른 것인지 눈으로 갈려야 한다.
+    el.classList.toggle("blksel", S.selBlock === idx);
   });
 }
 
@@ -571,12 +679,47 @@ function renderSummary() {
       `</div></div>`
     : `<div class="sec"><h4>잔여</h4><div class="sub">없음 — 결정론이 전부 갈랐습니다</div></div>`;
 
+  // 문서군(fingerprint) — 같은 모양의 문서가 몇 번 관측됐고 frame 이 동결됐는지.
+  // 관측이 쌓여야 tier 가 hot 이 된다 (원장: structure_ledger.json).
+  const fpc = d.stats.fingerprint_count;
+  const fp = d.fingerprint ? `
+    <div class="sub" title="${esc(d.fingerprint.key)}">문서군 관측 ${fpc ?? "–"}회
+      ${d.stats.may_freeze ? `<span class="pill ok">frame 동결</span>`
+                           : `<span class="pill">동결 전</span>`}</div>` : "";
+
+  // 이 문서가 어떻게 잘렸는가 — 구조화 틀(형식)이 붙었으면 유도가 아니라 그 틀이다.
+  // 붙은 틀에서는 사다리·문서군이 "유도의 산물"이 아니므로 먼저 말해 준다.
+  const bound = d.bound_doc_type
+    ? `<div class="metric"><span>구조화 틀</span>
+         <span><b>🧩 ${esc(d.bound_doc_type)}</b></span></div>
+       <div class="sub">이 문서는 유도가 아니라 형식 파일의 마커로 잘렸습니다 —
+         적합도는 <b>그 틀에 얼마나 맞는가</b>입니다 (구조화 연결 화면에서 바꿉니다)</div>`
+    : "";
+
+  // 원본 형식 — 여기서부터 흐름이 갈린다. 파서가 무엇을 실었는지가 판정의 전제라
+  // 결과 화면에 함께 둔다("hwp 라 제목 신호가 없었다" 를 여기서 알 수 있게).
+  const KINDS = {
+    pdf: ["PDF", "제목 표시 · 타이포그래피 · 지면 좌표"],
+    docx: ["DOCX", "제목 계층(Word 스타일) · 좌표 없음 — 합성 지면에 올림"],
+    hwp: ["HWP", "md 변환 · 마커만 (제목 신호·좌표 없음) — 합성 지면에 올림"],
+    hwpx: ["HWPX", "md 변환 · 마커만 (제목 신호·좌표 없음) — 합성 지면에 올림"],
+    lawxml: ["법령 XML", "태그 계층 그대로 — 추론 없음"],
+  };
+  const ki = KINDS[d.source_kind];
+  const src = ki ? `<div class="metric"><span>원본 형식</span>
+        <span><b>${ki[0]}</b></span></div>
+      <div class="sub">${esc(ki[1])}</div>
+      ${d.parser ? `<div class="sub mono">${esc(d.parser)}</div>` : ""}` : "";
+
   $("summary").innerHTML = `
+    ${src}
+    ${bound}
     <div class="metric"><span>적합도</span>
       <span><b>${pct(f.score)}</b>
       <span class="pill ${f.passed ? "ok" : "no"}">${f.passed ? "통과" : "미달"}</span>
       <span class="pill">${esc(f.tier)}</span></span></div>
     <div class="sub">커버 ${pct(f.coverage)} × 정합 ${pct(f.consistency)} × 사다리 ${pct(f.ladder_quality)}</div>
+    ${fp}
     <div class="sec"><h4>사다리</h4>${rungs}</div>
     ${problems.length ? `<div class="sec"><h4>사다리 결함</h4>${problems.join("")}</div>` : ""}
     ${hints}

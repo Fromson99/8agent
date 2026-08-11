@@ -293,3 +293,83 @@ document.querySelectorAll(".scroll").forEach((el) => el.addEventListener("scroll
 window.addEventListener("resize", wires);
 
 load();
+
+
+/* ------------------------------------------------------------ 점검 실행 */
+/* 전사를 넣으면 §5 파이프라인이 그대로 돈다. 화면은 입출력만 바꾼다 —
+ * 판정 로직을 여기서 다시 쓰면 CLI 와 갈린다. */
+const RUN_MODEL = "claude-haiku-4-5-20251001";
+
+function runToggle(on) {
+  document.getElementById("runwrap").classList.toggle("hidden", !on);
+  if (on) {
+    document.querySelector("main.cols").classList.add("hidden");
+    document.getElementById("cvwrap").classList.add("hidden");
+  }
+  for (const [id, want] of [["tab-list", false], ["tab-canvas", false], ["tab-run", on]])
+    document.getElementById(id).classList.toggle("on", want);
+  document.getElementById("runModel").textContent = `모델 ${RUN_MODEL}`;
+}
+
+document.getElementById("tab-run").onclick = () => { CV.on = false; runToggle(true); };
+
+const VERDICT = { PASS: "ok", FAIL: "bad", UNCLEAR: "warn", NOT_APPLICABLE: "" };
+
+document.getElementById("runBtn").onclick = async () => {
+  const text = (document.getElementById("runText").value || "").trim();
+  if (!text) return banner("전사를 넣어 주세요.");
+  const btn = document.getElementById("runBtn");
+  btn.disabled = true;
+  const t0 = Date.now();
+  const tick = setInterval(() => {
+    document.getElementById("runMsg").textContent =
+      `판정 중… ${Math.round((Date.now() - t0) / 1000)}초`;
+  }, 1000);
+  document.getElementById("runMsg").textContent = "판정 중… 0초";
+  try {
+    const r = await fetch(`${API}/run`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transcript: text, model: RUN_MODEL,
+                             consistency: +document.getElementById("runK").value }) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.detail || "실패");
+    renderRun(j);
+    document.getElementById("runMsg").textContent =
+      `${j.llm.seconds}초 · 호출 ${j.llm.calls} · 입력 ${j.llm.input_tokens.toLocaleString()} 토큰`;
+  } catch (err) {
+    document.getElementById("runMsg").textContent = String(err.message || err);
+  } finally {
+    clearInterval(tick);
+    btn.disabled = false;
+  }
+};
+
+function renderRun(j) {
+  const c = j.counts || {};
+  document.getElementById("runHead").innerHTML =
+    `<b class="${j.overall === "완전판매요건충족" ? "ok" : "bad"}">${esc(j.overall)}</b>`
+    + Object.entries(c).map(([k, v]) =>
+        `<span class="pill ${VERDICT[k] || ""}">${esc(k)} ${v}</span>`).join("")
+    + `<span class="grow"></span>`
+    + `<span class="sub">근거 원문 실림 ${j.context.with_basis_text}/${j.context.items} `
+    + `· 프롬프트 ${(j.context.chars || 0).toLocaleString()}자</span>`
+    + (j.checked ? "" : `<span class="pill bad">판정 못 받은 항목 ${j.unavailable.length}</span>`);
+
+  document.getElementById("runBody").innerHTML =
+    (j.warnings || []).map((w) => `<div class="warnrow">${esc(w)}</div>`).join("")
+    + j.items.map((it) => `
+      <div class="itemrow ${VERDICT[it.verdict] || ""}">
+        <div class="head">
+          <span class="id">${esc(it.id)}</span>
+          <span class="nm">${esc(it.name)}</span>
+          <span class="pill ${VERDICT[it.verdict] || ""}">${esc(it.verdict)}</span>
+          ${it.route ? `<span class="pill">${esc(it.route)}</span>` : ""}
+        </div>
+        ${it.reason ? `<div class="why">${esc(it.reason)}</div>` : ""}
+        ${(it.evidence || []).map((e) =>
+            `<div class="ev">“${esc(e.quote || "")}” <span class="sub">${esc(e.utterance || "")}</span></div>`).join("")}
+        ${(it.basis || []).length
+            ? `<div class="bs">${it.basis.map((b) => `<span class="pill">${esc(b)}</span>`).join("")}</div>`
+            : ""}
+      </div>`).join("");
+}

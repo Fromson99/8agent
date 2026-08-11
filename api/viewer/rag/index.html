@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>질의응답 — RAG</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="top">
+  <h1>질의응답</h1>
+  <span class="sub" id="summary">불러오는 중…</span>
+  <span class="grow"></span>
+  <nav class="nav">
+    <a class="navlink" href="/home/">문서·데이터</a>
+    <a class="navlink" href="/structure/">구조 검수</a>
+    <a class="navlink" href="/glossary/">용어집</a>
+    <a class="navlink" href="/links/">참조 연결</a>
+    <a class="navlink" href="/logs/">로그</a>
+    <a class="navlink" href="/rag/debug.html">디버깅</a>
+  </nav>
+</header>
+
+<main class="wrap">
+
+  <!-- 질의 — 결과의 근거 좌표는 전부 구조 뷰어 딥링크다 -->
+  <section class="pane">
+    <form id="askForm" class="askrow">
+      <input id="q" type="search" placeholder="문서에 물어보세요 — 예: 설명의무가 뭐야"
+             autocomplete="off" autofocus>
+      <button id="askBtn" type="submit">묻기</button>
+      <label class="chk" title="LLM 관련성 필터 — 끄면 거르지 않은 회수 원본이 보인다">
+        <input type="checkbox" id="optFilter" checked> 필터</label>
+    <label class="chk" title="검색이 빈손일 때 회복 사다리(의미해석→깔때기→원문→수색대→둘러보기)를 돈다">
+        <input type="checkbox" id="optRecover" checked> 탐험</label>
+    <label class="chk" title="기본: 벡터로 진입 → 참조 간선을 따라 연결 구역을 전부 싣는다. 출처는 회수 집합 그대로(정적). 끄면 용어 사다리">
+        <input type="checkbox" id="optVector" checked> 벡터 우선</label>
+    </form>
+  </section>
+
+  <section id="result" class="pane hidden">
+    <div id="answer" class="answer"></div>
+    <div id="refs" class="refs"></div>
+
+    <!-- 피드백 — 이 신호가 진단 튜플을 완성한다. 루프 2 전체의 입구다. -->
+    <div id="fb" class="fb hidden">
+      <span class="sub">이 답이 맞았나요?</span>
+      <button id="fbOk" class="good">맞아요</button>
+      <button id="fbNo" class="bad">이게 아니에요</button>
+      <span id="fbDone" class="sub hidden"></span>
+    </div>
+    <div id="fbPick" class="fbpick hidden">
+      <div class="sub">기대한 자리를 알려 주세요 (몰라도 보낼 수 있습니다)</div>
+      <div class="pickrow">
+        <select id="fbDoc"><option value="">문서 선택…</option></select>
+        <select id="fbNode" disabled><option value="">구역 선택…</option></select>
+      </div>
+      <input id="fbNote" placeholder="메모 (선택) — 무엇이 나왔어야 하나">
+      <div class="pickrow">
+        <button id="fbSend" class="bad">오답으로 기록</button>
+        <button id="fbCancel">취소</button>
+        <a id="fbPeek" class="navlink hidden" target="_blank">구조 뷰어에서 확인</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 경로 — 어느 단에서 잡혔고, 탐험이 어디를 걸었나. 조용히 정확 매칭인
+       척하지 않는다는 규율을 화면에도 그대로 둔다. -->
+  <section id="trailPane" class="pane hidden">
+    <div class="panehead"><b>어떻게 찾았나</b><span id="trailMode" class="sub"></span></div>
+    <ol id="trail" class="trail"></ol>
+  </section>
+
+  <!-- 판정 백로그 ↔ 최근 질의 — 탭으로 스위칭한다. 백로그(검수할 것)가 먼저다 -->
+  <section class="pane">
+    <div class="panehead tabs2">
+      <button id="tabBk" class="on">판정 백로그</button>
+      <button id="tabTup">최근 질의</button>
+      <span id="vdStats" class="sub"></span>
+      <span id="tupStats" class="sub hidden"></span>
+    </div>
+    <div id="verdicts" class="tuples"></div>
+    <div id="tuples" class="tuples hidden"></div>
+  </section>
+
+</main>
+
+<!-- 오른쪽 PDF 패널 — 근거를 누르면 그 자리(앵커 상자)가 원문 쪽 위에 뜬다.
+     본문 속 제N조 링크로 계속 타고 넘어가고, 궤적 칩으로 되돌아온다. -->
+<aside id="pdfpane" class="pdfpane hidden">
+  <div class="pphead">
+    <b id="ppDoc"></b>
+    <span class="grow"></span>
+    <a id="ppStruct" class="navlink" target="_blank" title="구조 뷰어에서 열기">구조 뷰어 ↗</a>
+    <button id="ppClose" title="닫기">✕</button>
+  </div>
+  <div id="ppTrail" class="pptrail hidden"></div>
+  <div id="ppBody" class="ppbody"></div>
+</aside>
+
+<script src="app.js"></script>
+<script src="pdfpane.js"></script>
+<script src="backlog.js"></script>
+</body>
+</html>

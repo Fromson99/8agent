@@ -14,9 +14,11 @@
   <span class="tabs">
     <button id="tab-list" class="tab on">목록</button>
     <button id="tab-canvas" class="tab">캔버스</button>
+    <button id="tab-run" class="tab">점검 실행</button>
   </span>
   <span class="grow"></span>
-  <a class="navlink" href="/structure/">← 구조 해석 검수</a>
+  <a class="navlink" href="/">← 문서·데이터</a>
+  <a class="navlink" href="/structure/">구조 해석 검수</a>
   <label class="chk"><input type="checkbox" id="only-linked"> 연결된 구역만</label>
   <label class="chk"><input type="checkbox" id="only-blocked"> 차단 항목만</label>
   <button id="reload">다시 읽기</button>
@@ -75,6 +77,29 @@
       </table>
     </div>
   </div>
+</div>
+
+<!-- 점검 실행 — 전사를 넣으면 체크리스트 + 연결된 근거로 판정한다 -->
+<div id="runwrap" class="runwrap hidden">
+  <aside class="runin">
+    <h2>STT 전사</h2>
+    <p class="hint">평문이나 전사 JSON 을 그대로 붙여 넣으세요. 체크리스트 30개와
+      각 항목에 연결된 법령 발췌가 함께 프롬프트로 들어갑니다.</p>
+    <textarea id="runText" placeholder="PB: 안녕하세요, 오늘 상품 설명드리겠습니다.&#10;고객: 네."></textarea>
+    <div class="row">
+      <label class="chk">자기일관성
+        <select id="runK"><option>1</option><option>3</option></select>회</label>
+      <span class="sub" id="runModel"></span>
+    </div>
+    <div class="row">
+      <button id="runBtn">점검 실행</button>
+      <span id="runMsg" class="sub"></span>
+    </div>
+  </aside>
+  <section class="runout">
+    <div id="runHead" class="runhead"></div>
+    <div id="runBody" class="scroll"></div>
+  </section>
 </div>
 
 <div id="detail" class="detail hidden"></div>

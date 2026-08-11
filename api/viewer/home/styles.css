@@ -1,0 +1,135 @@
+/* 문서·데이터 관리 — 저장소의 첫 화면. 다른 뷰어와 같은 결 (다크 우선, 13px). */
+:root { --bg:#0f1115; --pane:#161922; --line:#272c39; --ink:#e6e9f0; --dim:#8b93a7;
+        --accent:#6ea8fe; --ok:#4ec9a0; --warn:#e2b341; --bad:#e06c75;
+        color-scheme: dark; }
+@media (prefers-color-scheme: light) {
+  :root { --bg:#f7f8fa; --pane:#fff; --line:#dfe3ea; --ink:#1a1d24; --dim:#6b7280;
+          --accent:#2563eb; --ok:#0f9d76; --warn:#b45309; --bad:#b91c1c;
+          color-scheme: light; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font-size:13px;
+       font-family:-apple-system,"Segoe UI","Noto Sans KR",sans-serif; }
+.top { display:flex; align-items:center; gap:12px; padding:10px 16px;
+       border-bottom:1px solid var(--line); background:var(--pane);
+       position:sticky; top:0; z-index:5; }
+.top h1 { font-size:14px; margin:0; font-weight:650; }
+.grow { flex:1; }
+.sub { color:var(--dim); font-size:11.5px; }
+.nav { display:flex; gap:6px; }
+.navlink { color:var(--dim); text-decoration:none; font-size:11.5px;
+           border:1px solid var(--line); border-radius:6px; padding:3px 9px; }
+.navlink:hover { color:var(--accent); border-color:var(--accent); }
+.banner { padding:8px 16px; background:color-mix(in srgb,var(--warn) 18%,var(--pane));
+          border-bottom:1px solid var(--line); font-size:12px; white-space:pre-wrap; }
+.hidden { display:none !important; }
+
+.wrap { max-width:1080px; margin:0 auto; padding:16px; display:flex;
+        flex-direction:column; gap:14px; }
+
+/* 현황 카드 — 각 카드가 그 데이터를 관리하는 화면으로 가는 문이다 */
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; }
+.stat { display:block; background:var(--pane); border:1px solid var(--line);
+        border-radius:10px; padding:10px 14px; text-decoration:none; color:var(--ink); }
+a.stat:hover { border-color:var(--accent); }
+.stat .k { color:var(--dim); font-size:11px; letter-spacing:.02em; }
+.stat .v { font-size:19px; font-weight:700; margin-top:2px;
+           font-variant-numeric:tabular-nums; }
+.stat .d { color:var(--dim); font-size:11px; margin-top:2px; }
+.stat .d .ok { color:var(--ok); } .stat .d .warn { color:var(--warn); }
+
+/* 올리기 */
+.dropwrap { display:flex; gap:12px; align-items:stretch; }
+.drop { flex:1; display:flex; flex-direction:column; gap:4px; align-items:center;
+        justify-content:center; text-align:center; padding:22px 16px; cursor:pointer;
+        background:var(--pane); border:1.5px dashed var(--line); border-radius:10px; }
+.drop:hover, .drop.over { border-color:var(--accent); }
+.drop b { font-size:13px; }
+.upopts { display:flex; flex-direction:column; gap:8px; justify-content:center;
+          background:var(--pane); border:1px solid var(--line); border-radius:10px;
+          padding:12px 14px; min-width:230px; }
+.upopts input { padding:5px 8px; background:var(--bg); color:var(--ink);
+                border:1px solid var(--line); border-radius:6px; font:inherit; }
+.upopts input:focus { border-color:var(--accent); outline:none; }
+.upopts .chk { display:flex; align-items:center; gap:6px; color:var(--dim);
+               font-size:11.5px; cursor:pointer; }
+.uplist:empty { display:none; }
+.uplist { display:flex; flex-direction:column; gap:6px; }
+.up { display:flex; gap:10px; align-items:center; background:var(--pane);
+      border:1px solid var(--line); border-radius:8px; padding:7px 12px; font-size:12px; }
+.up .spin { width:11px; height:11px; border-radius:50%; flex:none;
+            border:2px solid var(--line); border-top-color:var(--accent);
+            animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .up .spin { animation:none; } }
+.up.err { border-color:var(--bad); }
+
+/* 문서 목록 */
+.pane { background:var(--pane); border:1px solid var(--line); border-radius:10px;
+        overflow:hidden; }
+.panehead { display:flex; align-items:center; gap:12px; padding:9px 14px;
+            border-bottom:1px solid var(--line); }
+.panehead b { font-size:13px; }
+input[type=search] { width:220px; padding:4px 8px; background:var(--bg);
+  color:var(--ink); border:1px solid var(--line); border-radius:6px; }
+.docs table { width:100%; border-collapse:collapse; }
+.docs th { text-align:left; color:var(--dim); font-weight:600; font-size:11px;
+           padding:7px 12px; border-bottom:1px solid var(--line); white-space:nowrap; }
+.docs td { padding:7px 12px; border-bottom:1px solid var(--line);
+           vertical-align:middle; font-variant-numeric:tabular-nums; }
+.docs tr:last-child td { border-bottom:none; }
+.docs tr:hover td { background:color-mix(in srgb,var(--accent) 5%,transparent); }
+/* 폴더 행 — 문서 행과 결이 다르다는 것이 한눈에 보여야 한다 */
+.docs tr.fold td { background:color-mix(in srgb,var(--accent) 7%,var(--bg));
+                   padding:6px 12px; }
+.docs tr.fold.openable { cursor:pointer; }
+.docs tr.fold.openable:hover td { background:color-mix(in srgb,var(--accent) 13%,var(--bg)); }
+.fold .ficon { margin-right:6px; }
+.fold b { font-size:12.5px; }
+.fold .sub { margin-left:8px; }
+.open-hint { float:right; color:var(--accent); font-size:11px; opacity:0;
+             transition:opacity .12s; }
+.fold.openable:hover .open-hint { opacity:1; }
+@media (prefers-reduced-motion: reduce) { .open-hint { transition:none; } }
+
+/* 끌어다 놓기 — 끌리는 행은 흐려지고, 받이는 또렷해진다 */
+tr.dragging { opacity:.45; }
+tr[draggable="true"] { cursor:grab; }
+tr[draggable="true"]:active { cursor:grabbing; }
+.docs tr.fold.dropover td, .ftool.dropover {
+  background:color-mix(in srgb,var(--accent) 22%,var(--bg));
+  box-shadow:inset 0 0 0 1.5px var(--accent); }
+
+/* 폴더 안 도구줄 — 어디에 들어와 있는지와 나가는 문, 폴더 자체의 동작 */
+.ftool { display:flex; align-items:center; gap:10px; padding:8px 12px;
+         border-bottom:1px solid var(--line);
+         background:color-mix(in srgb,var(--accent) 7%,var(--bg)); }
+.ftool b { font-size:12.5px; }
+/* 구조화 틀 줄 — 폴더 도구줄 바로 아래. 폴더 동작과 섞이지 않게 배경을 죽인다. */
+.ftool.fmtbar { background:var(--pane); font-size:12px; }
+.ftool.fmtbar select { background:var(--bg); color:var(--ink); font:inherit;
+  border:1px solid var(--line); border-radius:5px; padding:3px 6px; max-width:260px; }
+#mkFolder, #fCompile { white-space:nowrap; }
+.name a { color:var(--ink); text-decoration:none; font-weight:600; }
+.name a:hover { color:var(--accent); }
+/* 이름 옆 연필 — 늘 있되 조용히. 행에 손이 오면 또렷해진다. */
+.name .pencil { border:none; background:none; padding:0 5px; margin-left:2px;
+                font-size:11.5px; color:var(--dim); opacity:.55; cursor:pointer; }
+.docs tr:hover .name .pencil { opacity:1; }
+.name .pencil:hover { color:var(--accent); border:none; }
+.name .id { color:var(--dim); font-size:10.5px;
+            font-family:ui-monospace,Consolas,monospace; margin-left:6px; }
+.name input { width:min(340px,90%); padding:3px 6px; background:var(--bg);
+  color:var(--ink); border:1px solid var(--accent); border-radius:5px; font:inherit; }
+.pill { display:inline-block; padding:0 7px; border-radius:999px; font-size:10.5px;
+        border:1px solid var(--line); color:var(--dim); white-space:nowrap; }
+.pill.ok { color:var(--ok); border-color:currentColor; }
+.pill.warn { color:var(--warn); border-color:currentColor; }
+.pill.llm { color:var(--accent); border-color:currentColor; }
+.num { color:var(--dim); }
+.acts { display:flex; gap:5px; justify-content:flex-end; }
+button { background:var(--pane); color:var(--ink); border:1px solid var(--line);
+         border-radius:6px; padding:3px 9px; cursor:pointer; font-size:11.5px; }
+button:hover { border-color:var(--accent); }
+button:disabled { opacity:.5; cursor:default; }
+button.danger:hover { border-color:var(--bad); color:var(--bad); }
+.empty { padding:26px 16px; text-align:center; color:var(--dim); line-height:1.7; }

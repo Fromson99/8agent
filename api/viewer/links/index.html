@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>참조 연결</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <h1>참조 연결</h1>
+  <span class="sub" id="summary">불러오는 중…</span>
+  <span class="grow"></span>
+  <a class="navlink" href="/">← 문서·데이터</a>
+  <a class="navlink" href="/structure/">구조 해석 검수</a>
+  <a class="navlink" href="/glossary/">용어집</a>
+  <a class="navlink" href="/agent6/">AGENT6 →</a>
+</header>
+
+<div id="banner" class="banner hidden"></div>
+
+<main class="cols">
+  <section class="pane list">
+    <input id="q" type="search" placeholder="조문·경로 찾기 (예: 제4조)">
+    <div id="docs"></div>
+    <div id="map" class="map"></div>
+  </section>
+
+  <section class="pane body">
+    <div class="tabs">
+      <button id="tabDoc" class="on">문서</button>
+      <button id="tabList">목록</button>
+      <button id="tabGraph">그래프</button>
+      <span class="grow"></span>
+      <span class="sub" id="tabHint"></span>
+    </div>
+
+    <div id="trail" class="trail hidden">
+      <button id="trailBack" title="한 단계 뒤로 — 그 뒤 궤적은 사라집니다">← 뒤로</button>
+      <div id="trailChips" class="chips"></div>
+    </div>
+
+    <div id="docview" class="docview">
+      <div class="scroll" id="pages"><p class="hint">불러오는 중…</p></div>
+    </div>
+    <div id="refmenu" class="refmenu hidden"></div>
+
+    <div class="scroll hidden" id="mainscroll">
+
+      <h2 id="crossTitle">문서 사이 참조</h2>
+      <p class="hint">「수수료규정」 제2조 처럼 다른 문서를 부른 참조 —
+        이름 대조가 확정한 것과 판정(LLM·사람)으로 고정된 것.</p>
+      <div id="cross"></div>
+
+      <h2 id="pendTitle">보류 — 아직 못 정한 참조</h2>
+      <p class="hint">동법·같은 규정 같은 대용어라 이름으로 못 정한 것.
+        원문을 읽고 후보를 직접 고르거나, LLM 판정에 맡길 수 있다.
+        확신이 없는 판정은 보류로 남는다(fail-closed).</p>
+      <div class="row">
+        <button id="settleBtn" class="primary">LLM 판정 실행</button>
+        <span id="settleMsg" class="sub"></span>
+      </div>
+      <div id="pending"></div>
+
+      <h2 id="inTitle">문서 안 참조</h2>
+      <p class="hint">본문의 "제4조를 참고한다"가 잇는 구역들 —
+        왼쪽에서 문서를 고르면 그 문서만 보인다.</p>
+      <div id="indoc"></div>
+
+    </div>
+
+    <div id="graphview" class="graphview hidden">
+      <div id="gwrap" class="gwrap"><div id="gcanvas"></div></div>
+      <aside id="gside" class="gside">
+        <p class="hint">마디를 클릭하면 그 구역의 원문이 여기 뜹니다.
+          원문 속 <u>제N조</u> 같은 참조를 클릭하면 그 구역으로 건너갑니다.</p>
+      </aside>
+    </div>
+    <div id="gtip" class="gtip hidden"></div>
+  </section>
+</main>
+<script src="vendor/d3.v7.min.js"></script>
+<script src="graph.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

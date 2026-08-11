@@ -395,6 +395,9 @@ function cvInit() {
 
 function cvToggle(on) {
   CV.on = on;
+  const rw = document.getElementById('runwrap');
+  if (rw) rw.classList.add('hidden');   // 실행 화면과 겹치지 않게
+
   cq("#cvwrap").classList.toggle("hidden", !on);
   cq("main.cols").classList.toggle("hidden", on);
   cq("#tab-list").classList.toggle("on", !on);
