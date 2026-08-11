@@ -10,14 +10,21 @@ stochastic 은 컴파일 타임에 가둔다. 이 모듈은 형식 유도(T4)와
 from __future__ import annotations
 
 import json
+import logging
 import os
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
-DEFAULT_MODEL = "claude-opus-5"
+# 2026-08-11 사용자 결정: 전 경로 하이쿠 — 판정·합성 모두 싼 모델로 충분한지
+# 벤치로 확인하는 국면이다. effort 는 하이쿠가 안 받으므로 structured() 가
+# 하이쿠일 때 키를 뺀다 — 호출부는 모델을 모른 채 effort 를 계속 말해도 된다.
+DEFAULT_MODEL = "claude-haiku-4-5-20251001"
 ROOT = Path(__file__).resolve().parent.parent
+
+log = logging.getLogger("core.llm")
 
 
 def load_env() -> None:
@@ -50,11 +57,16 @@ class Exchange:
     # 이 호출에 함께 보낸 그림의 **개수**. 픽셀 자체는 로그에 남기지 않는다 —
     # 감사 로그가 base64 로 뒤덮이면 사람이 못 읽는다. 몇 장을 보고 답했는지는 남는다.
     images: int = 0
+    dur_ms: int = 0
+    # 첫 글자가 나온 시각(ms) — 스트리밍으로 잰다. 사용자가 체감하는 지연은
+    # 총 시간이 아니라 이 값이다(그 뒤로는 흘러나온다).
+    ttft_ms: int = 0
 
     def dump(self) -> dict:
         return {"kind": self.kind, "at": self.at, "model": self.model,
                 "usage": self.usage, "stop_reason": self.stop_reason,
-                "images": self.images,
+                "images": self.images, "dur_ms": self.dur_ms,
+                "ttft_ms": self.ttft_ms,
                 "system": self.system, "user": self.user,
                 "raw_response": self.raw_response, "error": self.error}
 
@@ -65,16 +77,23 @@ class LLM:
         import anthropic
 
         self.model = model or os.environ.get("ANTHROPIC_MODEL") or DEFAULT_MODEL
-        self._client = anthropic.Anthropic()
+        # timeout 없이는 멈춘 스트림이 영원히 매달린다 — 벤치 실측(2026-08-11):
+        # 응답이 안 오는 호출 하나가 5분을 통째로 먹었다. httpx 의미론으로 float
+        # 는 연결·읽기 모두에 걸리고, 스트리밍 읽기는 **청크 사이** 간격이다.
+        # 스트림은 생성이 느려도 ping 이벤트가 계속 와서, 30초 무소식은 죽은
+        # 연결이다 — 끊으면 SDK 가 재시도한다(같은 실측에서 재시도가 살렸다).
+        self._client = anthropic.Anthropic(timeout=30.0)
         self.log: list[Exchange] = []
 
     def structured(self, kind: str, system: str, user: str, schema: dict,
-                   max_tokens: int = 16000, effort: str = "high",
-                   images: Optional[list[str]] = None) -> Optional[dict]:
+                   max_tokens: int = 16000, effort: Optional[str] = "high",
+                   images: Optional[list[str]] = None,
+                   model: Optional[str] = None) -> Optional[dict]:
         """structured output 으로 JSON 을 받는다 (§2.3 "structured output").
 
         temperature 는 보내지 않는다 — 이 모델 계열에서 제거되어 400 이 난다.
-        결정성은 스키마 고정과 낮은 effort 로 얻고, 어차피 결과는 사람이 확정한다(§2.4).
+        결정성은 스키마 고정으로 얻고(effort 는 호출자가 정한다 — 컴파일 경로는
+        high 를 쓴다), 어차피 결과는 사람이 확정한다(§2.4).
 
         `images` 를 주면 **같은 호출에 그림을 함께 보낸다**(VLM). 쓰는 자리는 하나다:
         결정론이 **글자로는 볼 수 없는 축**을 물을 때. 마커 없는 제목은 크고 굵고 위가
@@ -83,7 +102,9 @@ class LLM:
 
         받는 형식은 `data:image/png;base64,...` (뷰어가 이미 그 형태로 페이지를 렌더한다).
         """
-        ex = Exchange(kind=kind, system=system, user=user, model=self.model,
+        use = model or self.model      # 호출마다 다른 모델을 쓸 수 있다 —
+                                       # 가르기만 하는 판정은 싼 모델로 충분하다
+        ex = Exchange(kind=kind, system=system, user=user, model=use,
                       at=datetime.now(timezone.utc).isoformat(timespec="seconds"))
         content: Any = user
         if images:
@@ -100,22 +121,34 @@ class LLM:
             # 질문이 와야 모델이 그림을 근거로 삼는다.
             content = blocks + [{"type": "text", "text": user}]
             ex.images = len(blocks)
+        # `effort` 는 모델 계열마다 지원이 갈린다 — haiku 는 400 을 낸다.
+        # 여기서 모델을 보고 키를 빼 준다 — 호출부는 effort 를 계속 말해도 된다.
+        cfg: dict = {"format": {"type": "json_schema", "schema": schema}}
+        if effort and "haiku" not in use:
+            cfg["effort"] = effort
+        t0 = time.perf_counter()
         try:
-            resp = self._client.messages.create(
-                model=self.model,
+            # 스트리밍 — 첫 글자 시각(ttft)을 재기 위해서다. 결과는 똑같이
+            # 한 덩어리 JSON 으로 파싱한다.
+            with self._client.messages.stream(
+                model=use,
                 max_tokens=max_tokens,
                 system=system,
-                output_config={"format": {"type": "json_schema", "schema": schema},
-                               "effort": effort},
+                output_config=cfg,
                 messages=[{"role": "user", "content": content}],
-            )
+            ) as stream:
+                text = ""
+                for chunk in stream.text_stream:
+                    if not text and chunk:
+                        ex.ttft_ms = int((time.perf_counter() - t0) * 1000)
+                    text += chunk
+                resp = stream.get_final_message()
             ex.stop_reason = resp.stop_reason or ""
             ex.usage = {"input_tokens": resp.usage.input_tokens,
                         "output_tokens": resp.usage.output_tokens}
             if resp.stop_reason == "refusal":
                 ex.error = "모델이 요청을 거절했습니다 (stop_reason=refusal)"
                 return None
-            text = next((b.text for b in resp.content if b.type == "text"), "")
             ex.raw_response = text
             ex.parsed = json.loads(text)
             return ex.parsed
@@ -123,7 +156,16 @@ class LLM:
             ex.error = f"{type(exc).__name__}: {exc}"
             return None
         finally:
+            ex.dur_ms = int((time.perf_counter() - t0) * 1000)
             self.log.append(ex)
+            if ex.error:
+                log.error("%s [%s] 실패 %dms — %s", kind, use, ex.dur_ms, ex.error)
+            else:
+                log.info("%s [%s] %dms — in %d, out %d 토큰%s",
+                         kind, use, ex.dur_ms,
+                         ex.usage.get("input_tokens", 0),
+                         ex.usage.get("output_tokens", 0),
+                         f", 그림 {ex.images}장" if ex.images else "")
 
     def totals(self) -> dict:
         return {
