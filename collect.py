@@ -52,13 +52,57 @@ TARGETS: dict[str, list[Target]] = {
         Target("kofia", "모범규준(분류)", "모범규준", hints={"folder_seq": "3"}),
     ],
     # 법령·행정규칙 — 국가법령정보센터 OPEN API (별표·서식 HWP 는 본문 XML 에서 전개)
+    # 명칭은 공식 명칭 완전일치가 필요하다 (자본시장법→자본시장과 금융투자업에 관한 법률 등
+    # 약칭 불가 — 2026-08-12 lawSearch 실측으로 전건 검증)
     "law": [
         Target("law", "자본시장과 금융투자업에 관한 법률",
                "자본시장과 금융투자업에 관한 법률", hints={"kind": "law"}),
         Target("law", "자본시장과 금융투자업에 관한 법률 시행령",
                "자본시장과 금융투자업에 관한 법률 시행령", hints={"kind": "law"}),
+        Target("law", "자본시장과 금융투자업에 관한 법률 시행규칙",
+               "자본시장과 금융투자업에 관한 법률 시행규칙", hints={"kind": "law"}),
+        Target("law", "외국환거래법", "외국환거래법", hints={"kind": "law"}),
+        Target("law", "상법", "상법", hints={"kind": "law"}),
+        # 금융복합기업집단법
+        Target("law", "금융복합기업집단의 감독에 관한 법률",
+               "금융복합기업집단의 감독에 관한 법률", hints={"kind": "law"}),
+        Target("law", "금융복합기업집단의 감독에 관한 법률 시행령",
+               "금융복합기업집단의 감독에 관한 법률 시행령", hints={"kind": "law"}),
+        # 금융사지배구조법
+        Target("law", "금융회사의 지배구조에 관한 법률",
+               "금융회사의 지배구조에 관한 법률", hints={"kind": "law"}),
+        Target("law", "금융회사의 지배구조에 관한 법률 시행령",
+               "금융회사의 지배구조에 관한 법률 시행령", hints={"kind": "law"}),
+        # 신용정보법
+        Target("law", "신용정보의 이용 및 보호에 관한 법률",
+               "신용정보의 이용 및 보호에 관한 법률", hints={"kind": "law"}),
+        Target("law", "개인정보 보호법", "개인정보 보호법", hints={"kind": "law"}),
+        Target("law", "개인정보 보호법 시행령", "개인정보 보호법 시행령",
+               hints={"kind": "law"}),
+        # 공공기관운영법
+        Target("law", "공공기관의 운영에 관한 법률",
+               "공공기관의 운영에 관한 법률", hints={"kind": "law"}),
+        # 공정거래법
+        Target("law", "독점규제 및 공정거래에 관한 법률",
+               "독점규제 및 공정거래에 관한 법률", hints={"kind": "law"}),
+        Target("law", "독점규제 및 공정거래에 관한 법률 시행령",
+               "독점규제 및 공정거래에 관한 법률 시행령", hints={"kind": "law"}),
         Target("law", "금융투자업규정", "금융투자업규정", hints={"kind": "admrul"}),
         Target("law", "금융투자업규정시행세칙", "금융투자업규정시행세칙",
+               hints={"kind": "admrul"}),
+        Target("law", "외국환거래규정", "외국환거래규정", hints={"kind": "admrul"}),
+        Target("law", "금융복합기업집단 감독규정", "금융복합기업집단 감독규정",
+               hints={"kind": "admrul"}),
+        Target("law", "금융회사 지배구조 감독규정", "금융회사 지배구조 감독규정",
+               hints={"kind": "admrul"}),
+        Target("law", "금융회사 지배구조 감독규정 시행세칙",
+               "금융회사 지배구조 감독규정 시행세칙", hints={"kind": "admrul"}),
+        Target("law", "전자금융감독규정", "전자금융감독규정", hints={"kind": "admrul"}),
+        Target("law", "전자금융감독규정시행세칙", "전자금융감독규정시행세칙",
+               hints={"kind": "admrul"}),
+        Target("law", "금융기관의 업무위탁 등에 관한 규정",
+               "금융기관의 업무위탁 등에 관한 규정", hints={"kind": "admrul"}),
+        Target("law", "은행업감독업무시행세칙", "은행업감독업무시행세칙",
                hints={"kind": "admrul"}),
     ],
     # 상장 규정 — 규정·시행세칙 쌍을 3개 시장 전부 (별표·별지서식은 어댑터가 함께 찾는다)
