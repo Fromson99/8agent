@@ -253,6 +253,84 @@ def review_queue(limit: int = Query(100, ge=1, le=500)):
     return {"queue": out, "total": len(rows)}
 
 
+@router.post("/scan-doc-titles",
+             summary="외부 문서제목 추출 — 참조가 부른, 코퍼스에 없는 문서명을 잠정 용어로")
+def scan_doc_titles():
+    """본문 참조가 이름으로 부른 문서(「보험업법」 제108조) 중 **코퍼스에 없는
+    것**의 제목을 뽑아 잠정 용어로 등재한다. 참조 해소(cross_resolve)는 이런
+    참조를 후보 없음으로 조용히 버린다 — 그 버려지는 이름이 여기의 재료다.
+
+    등재는 잠정(source="문서제목")이라 검수 큐를 지나야 산다 — 승인해야
+    색인·하이라이트에 참여하고, 반려(tombstone)하면 다시 올라오지 않는다."""
+    from core.rag import index as index_mod          # 지연 — 순환 회피
+    from core.rag import refs as refs_mod
+    idx = index_mod.current()
+    fold = refs_mod._fold_name
+    corpus = {fold(v.name) for v in idx.docs.values() if v.name}
+    rows = _load_user()
+    found: dict[str, dict] = {}
+    # 신호 둘의 합집합이다 (전수조사 2026-08-12: 외부 「」 제목 318 중 137은
+    # 제N조가 한 번도 안 따라와 참조 문법만으로는 사각).
+    #   참조   "「보험업법」 제108조" — 참조 문법의 힌트 (따옴표 없어도 잡힘)
+    #   꺽쇠   "「건축법」에 따른…"  — 법령 표기 관행상 「」 안은 거의 문서 제목
+    #          (실측 328 중 비제목 잡음 ~5건 — 승인제도가 거른다)
+    _BRACKET = re.compile(r"「([^」\n]{2,60})」")
+
+    for doc_id, v in idx.docs.items():
+        for b in v.blocks:
+            text = b.get("text") or ""
+
+            def take(hint: str, example: str) -> None:
+                h = fold(hint)
+                if not h or any(h in nm or nm in h for nm in corpus):
+                    return                           # 내 문서 — 참조 해소 몫이다
+                key = norm(hint)
+                if not key or key in rows:
+                    return                           # 이미 있음 — 기각(tombstone)도 존중
+                r = found.setdefault(key, {
+                    "term": hint, "key": key, "surfaces": [hint],
+                    "source": "문서제목", "status": "잠정", "confidence": "medium",
+                    "note": f"본문이 부른 외부 문서 — 예: {example}",
+                    "occurrences": [], "hits": 0, "misses": 0,
+                    "created": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                })
+                if len(r["occurrences"]) < 200:      # 폭주 방지 — 근거는 이걸로 충분
+                    own = v.owner(b.get("idx")) or {}
+                    r["occurrences"].append({
+                        "doc_id": doc_id, "doc": v.name,
+                        "node": own.get("id"), "level": own.get("level"),
+                        "surface": own.get("surface"), "section": own.get("title"),
+                        "path": v.path(own.get("id")),
+                        "page": b.get("page"), "block": b.get("idx"),
+                        "text": text[:120], "bbox": b.get("rect"),
+                        "kind": b.get("kind", "text"), "via": "본문"})
+
+            # 신호 ① — 참조 문법의 힌트 (따옴표 없는 "보험업법 제108조"도 잡는다)
+            if "제" in text:
+                for ref in refs_mod.find(text):
+                    hint = (ref.hint or "").strip()
+                    if not hint or refs_mod._ANAPHORA.match(hint):
+                        continue
+                    h = fold(hint)
+                    # cross_resolve 의 named 판정과 같은 규율 — 총칭('법')은 이름이 아니다
+                    if not h or (not ref.quoted and refs_mod._GENERIC_HINT.match(h)):
+                        continue
+                    take(hint, f"「{hint}」 {ref.surface.strip()}")
+            # 신호 ② — 꺽쇠 자체. 제N조가 안 따라와도 제목이다
+            for m in _BRACKET.finditer(text):
+                hint = m.group(1).strip()
+                if re.match(r"제\s*\d", hint):       # 「제7조 재예치」 — 조 라벨 오탐
+                    continue
+                take(hint, f"「{hint}」")
+    for key, r in found.items():
+        rows[key] = _defaults(r)
+    if found:
+        _save_user(rows)
+    return {"added": len(found),
+            "terms": sorted(r["term"] for r in found.values()),
+            "queued": sum(1 for r in rows.values() if r.get("status") == "잠정")}
+
+
 @router.get("/relations", summary="용어 관계 — 문서 관계 위에 얹어 보여주기 (실험)")
 def relations():
     """타이핑된 관계는 아직 없다 — 컴파일이 모아 둔 **후보**(계층·PROTO_REL)를

@@ -11,6 +11,8 @@
 
 from __future__ import annotations
 
+import json
+import os
 from pathlib import Path
 from typing import Iterable, Literal, Optional
 
@@ -145,6 +147,47 @@ class Glossary(BaseModel):
 def load(path: str | Path) -> Glossary:
     data = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
     return Glossary.model_validate(data)
+
+
+# 전역 용어집 — 화면(api/routers/glossary.py)이 관리하는 JSON 이 정본이다.
+# 유형별 용어집을 route 에 매달지 않는 방향이라, route 에 용어집이 없으면 이쪽을 쓴다.
+GLOBAL_STORE = Path(
+    os.environ.get("GLOSSARY_STORE",
+                   Path(os.environ.get("STRUCTURE_STORE",
+                                       Path(__file__).resolve().parent.parent
+                                       / "out" / "structure" / "viewer")).parent
+                   / "glossary.json"))
+
+
+def load_global(doc_type: str = "*", path: str | Path | None = None) -> Glossary:
+    """전역 용어집(JSON) → `Glossary`.
+
+    화면의 용어집은 **출현 네트워크**(어느 문서 어느 마디에 나왔나)이고 여기서
+    필요한 것은 **판정에 쓸 이름과 표면형**뿐이다. 그래서 옮기는 것은 셋:
+      - `term`      용어 이름
+      - `surfaces`  다른 표기 → aliases
+      - `status`    `tombstone`(버린 것)은 싣지 않는다
+
+    kind 는 `section` 으로 둔다 — 전역 용어는 "이 이름이 구역 제목이면 구역을 연다"
+    까지만 말한다. 값이 붙는 fact 용어는 태스크(체크리스트)의 일이라 여기서 정하지 않는다.
+    doc_type 이 route 와 어긋나면 적재가 거부되므로 호출자가 자기 유형을 넘긴다.
+    """
+    p = Path(path or GLOBAL_STORE)
+    if not p.exists():
+        return Glossary(version=1, doc_type=doc_type, terms={})
+    try:
+        raw = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return Glossary(version=1, doc_type=doc_type, terms={})
+
+    terms: dict[str, Term] = {}
+    for item in raw.get("terms", []):
+        name = str(item.get("term") or "").strip()
+        if not name or item.get("status") == "tombstone":
+            continue
+        aliases = [s for s in (item.get("surfaces") or []) if s and s != name]
+        terms[name] = Term(kind=["section"], aliases=sorted(set(aliases)))
+    return Glossary(version=1, doc_type=doc_type, terms=terms)
 
 
 def save(g: Glossary, path: str | Path) -> Path:

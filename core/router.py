@@ -216,7 +216,9 @@ def assets(route: Route) -> tuple[glossary_mod.Glossary, format_model.Format]:
 
     gp = route.glossary_path()
     if gp is None:
-        g = glossary_mod.Glossary(version=1, doc_type=route.doc_type, terms={})
+        # route 에 용어집이 없으면 **전역 용어집**을 쓴다 — 용어는 유형별이 아니라
+        # 시스템 전체의 것이라는 방향(§용어). 비어 있으면 마커만으로 돈다.
+        g = glossary_mod.load_global(route.doc_type)
     else:
         if not gp.exists():
             raise RouteAssetMissing(
