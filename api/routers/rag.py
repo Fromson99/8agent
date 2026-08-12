@@ -30,6 +30,7 @@ from pydantic import BaseModel
 from core import llm as llm_mod
 from core import logbook
 from core.rag import answer as answer_mod
+from core.rag import audit as audit_mod
 from core.rag import index as index_mod
 from core.rag import judge as judge_mod
 from core.rag import recover as recover_mod
@@ -265,10 +266,25 @@ def rag_section(doc_id: str = Query(...), node: int = Query(...)):
     walk(node, 0)
 
     from core.rag.answer import SECTION_CHARS
+    outline = v.section_outline(n, cap=SECTION_CHARS)
+
+    # 이 본문에 나타나는 **승인(활성) 용어** — 화면이 형광으로 세운다.
+    # 색인 항목은 활성 용어만 실으므로(잠정·기각은 밖) 따로 거를 것이 없다.
+    terms_hit: dict[str, str] = {}
+    for ent in idx.entries:
+        if ent.kind == "용어" and ent.value and ent.value in outline:
+            terms_hit.setdefault(ent.value, ent.key)
+    terms = [{"surface": s, "key": k}
+             for s, k in sorted(terms_hit.items(), key=lambda x: -len(x[0]))]
+
     return {"doc_id": doc_id, "node": node, "doc": v.name, "path": v.path(node),
             "page": n.get("page"), "geo": geo(v, node),
             "pages": max([b.get("page") or 1 for b in v.blocks] or [1]),
             "text": v.section_text(n, cap=SECTION_CHARS),
+            # 구조화 본문 — 항(①)·호(1.)가 마디로 서 있으면 들여쓰기로 계층이
+            # 보인다. 본문을 보여주는 화면은 이것을 기본으로 쓴다(text 는 호환용).
+            "outline": outline,
+            "terms": terms,
             "children": children,
             "refs": refs, "cited_by": cited}
 
@@ -424,8 +440,9 @@ def _ask_vector(idx, q: str, llm) -> Optional[dict]:
            # 출처는 회수 집합 그대로 — 모델 인용은 cited 로 따로 준다.
            "refs": vecfirst.static_refs(sections),
            "cited": [r.get("n") for r in ans.refs],
-           # 판정 지문 — "잘못 끌려온" 구역의 기록. 후보일 뿐, 반영은 백로그 승인.
-           "discards": ans.discards,
+           # 판정 지문은 여기 없다 — 답을 보낸 **뒤** 백그라운드 감사가 남긴다
+           # (audit.py). 답변 콜에 얹으면 그 판정을 만드는 시간이 곧 응답 지연이다.
+           "discards": [],
            # 착지 교정 — 이번 답변에서 LLM 이 고쳐 앉힌 참조. 간선 반영은 승인 몫.
            "fixes": fixes}
     if ans.error:
@@ -435,8 +452,9 @@ def _ask_vector(idx, q: str, llm) -> Optional[dict]:
         out["timing"] = _timing(llm)
     try:
         out["qid"] = tuples_mod.log_ask(out, prompt=_answer_prompt(llm))
-        if ans.discards:
-            verdicts_mod.log(out["qid"], q, ans.discards)
+        # 사후 감사 — 응답을 만든 **뒤** 큐에 넣는다(여기서 기다리지 않는다).
+        audit_mod.submit(llm, out["qid"], q, ans.answer, sections,
+                         {r.get("n") for r in ans.refs})
         if fixes:
             verdicts_mod.log_fixes(out["qid"], q, fixes)
         # 용어 진입의 실적 — 인용되면 hits, 무관 지문이면 misses. 중립(인용도
@@ -445,7 +463,9 @@ def _ask_vector(idx, q: str, llm) -> Optional[dict]:
             kw_by_coord = {(k["doc_id"], k["node"]): k["key"]
                            for k in vmeta["keywords"]}
             cited_n = {r.get("n") for r in ans.refs}
-            miss_n = {d.get("n") for d in ans.discards}
+            # 무관 지문은 이제 사후 감사가 남긴다 — 이 시점에 아직 없다.
+            # 인용된 것만 hits 로 세고, miss 는 감사가 백로그에 적는다.
+            miss_n = set()
             hit_keys, miss_keys = [], []
             for s in sections:
                 if s.kind != "용어":
@@ -534,7 +554,7 @@ def rag_ask(body: Ask):
                         "page": s.page, "kind": s.kind, "matched": s.matched}
                        for s in sections],
            "answer": ans.answer, "answerable": ans.answerable, "refs": ans.refs,
-           "discards": ans.discards, "fixes": fixes}
+           "discards": [], "fixes": fixes}
     if recovery is not None:
         out["recovery"] = {"rungs_fired": recovery.rungs_fired, **recovery.meta}
         if recovery.ask_user:
@@ -549,8 +569,8 @@ def rag_ask(body: Ask):
     # 탐험 성공은 승격 후보로도 센다. 기록 실패로 질의응답이 죽으면 안 된다.
     try:
         out["qid"] = tuples_mod.log_ask(out, prompt=_answer_prompt(llm))
-        if ans.discards:
-            verdicts_mod.log(out["qid"], q, ans.discards)
+        audit_mod.submit(llm, out["qid"], q, ans.answer, sections,
+                         {r.get("n") for r in ans.refs})
         if fixes:
             verdicts_mod.log_fixes(out["qid"], q, fixes)
         if recovery is not None and recovery.coords:
@@ -636,6 +656,45 @@ def rag_verdicts_resolve(body: EdgeResolve):
     if body.action not in ("승인", "기각"):
         raise HTTPException(400, "action 은 '승인' 또는 '기각'이어야 합니다")
     return verdicts_mod.resolve(body.model_dump(), body.action, body.note)
+
+
+class MissResolve(BaseModel):
+    """회수 결함(참조무관·검색무관) 처리 — 백로그 카드가 그대로 보낸다.
+
+    간선 억제는 여기 없다. 좌표가 맞는데 이번 질문에 안 맞았을 뿐이라 지우면
+    옳은 참조를 잃는다 — 대신 후순위(연결 유지·자리 경쟁에서 뒤로)와
+    진입제외(벡터·용어 진입에서만 제외)다.
+    """
+    판정: str = ""
+    구역: Optional[dict] = None
+    간선: Optional[dict] = None
+    action: str                        # "후순위" | "진입제외" | "정상"
+    note: str = ""
+
+
+@router.post("/verdicts/miss", summary="회수 결함 처리 — 후순위 · 진입제외 · 정상")
+def rag_verdicts_miss(body: MissResolve):
+    try:
+        return verdicts_mod.resolve_miss(
+            {"판정": body.판정, "구역": body.구역, "간선": body.간선},
+            body.action, body.note)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+
+
+class StructResolve(BaseModel):
+    """구조화오류 처리 — 계층은 검수 화면에서 고치고, 여기서는 닫는다."""
+    구역: dict
+    action: str                        # "고침" | "무시"
+    note: str = ""
+
+
+@router.post("/verdicts/struct", summary="구조화오류 처리 — 고침 · 무시")
+def rag_verdicts_struct(body: StructResolve):
+    try:
+        return verdicts_mod.resolve_struct(body.구역, body.action, body.note)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
 
 
 class VerdictEdit(BaseModel):

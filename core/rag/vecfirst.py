@@ -72,6 +72,9 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
 
     sections: list[Section] = []
     seen: set[tuple] = set()
+    # 진입 제외 — "검색무관" 판정이 쌓여 사람이 승인한 좌표는 **진입으로는** 안
+    # 데려온다. 참조를 타고는 여전히 온다(연결 지식을 지우는 것이 아니다).
+    from core.rag import verdicts as verdicts_mod
 
     # ── 승인 용어 진입 — 벡터보다 앞선다. 활성만 색인에 있으므로 일반어
     #    오염("가입" 선점)은 승인 단계가 이미 걸렀다.
@@ -79,6 +82,8 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
         v = index.docs.get(o.get("doc_id"))
         node = o.get("node")
         if v is None or (o["doc_id"], node) in seen:
+            continue
+        if verdicts_mod.is_entry_blocked(o["doc_id"], node):
             continue
         seen.add((o["doc_id"], node))
         n = v.by_id.get(node)
@@ -97,6 +102,8 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
         v = index.docs.get(doc_id)
         n = v.by_id.get(node) if v else None
         if v is None or (doc_id, node) in seen:
+            continue
+        if verdicts_mod.is_entry_blocked(doc_id, node):
             continue
         seen.add((doc_id, node))
         sections.append(Section(

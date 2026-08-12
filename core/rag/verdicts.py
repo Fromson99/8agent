@@ -4,11 +4,21 @@ KG 는 완벽하지 않다. 참조 닫힘이 A→B 를 끌고 왔는데 B 가 �
 LLM 이 조용히 안 쓰고 버렸다 — 그 판단이 증발했다. 이제는 **지문으로 남는다**
 (사용자 결정 2026-08-10):
 
-    답변 합성 시 discard 판정 (무관 | 오참조)
+    **사후 감사**(audit.py — 답을 보낸 뒤 백그라운드 1콜)의 판정
       → verdicts.jsonl 에 적재 (append-only — 후보일 뿐, 무반영)
-      → 백로그 화면에서 사람이 간선 단위로 승인/기각
+      → 백로그 화면에서 사람이 승인/기각
       → 승인 = edge_rules.json 의 억제 간선 등재
       → 참조 닫힘(expand_refs)이 그 간선을 건너뛴다
+
+판정은 네 갈래이고, **가는 곳이 다르다**:
+
+    오참조     간선이 틀렸다      → 억제 후보(간선별로 묶어 승인/기각)
+    참조무관   간선은 옳다        → 회수 신호(확장 규칙이 넓다) — 통계로만
+    검색무관   진입 검색이 빗나감 → 회수 신호(벡터·용어 검색) — 통계로만
+    구조화오류 계층이 원문과 다름 → 구역(문서·마디)별로 묶어 구조 재해석 후보
+
+무관 계열을 간선 억제 후보로 올리면 안 된다 — 좌표가 맞는데 이번 질문에 안
+맞았을 뿐이라, 지우면 옳은 법령 참조를 영영 잃는다(실측 2026-08-11).
 
 제안자/검증자 분리는 그대로다: LLM 지문 몇 개가 쌓여도 간선은 살아 있고,
 사람의 승인만이 규칙을 만든다. 기각도 기록된다 — 같은 간선의 지문이 다시
@@ -24,6 +34,11 @@ from pathlib import Path
 from typing import Optional
 
 from core.rag.index import store_path
+
+
+# 판정 갈래 — audit.KINDS 와 같아야 한다. 옛 기록의 "무관"은 참조무관·검색무관으로
+# 갈리기 전 이름이라 함께 받는다(적재된 것을 다시 쓰지 않는다).
+KINDS = ("오참조", "참조무관", "검색무관", "구조화오류", "무관")
 
 
 def verdicts_path() -> Path:
@@ -184,32 +199,160 @@ def resolve_fix(fix: dict, action: str, note: str = "") -> dict:
 
 
 # ---------------------------------------------------------------- 조회
+def _rule_add(section: str, row: dict, dedupe: tuple) -> bool:
+    """규칙 파일의 한 갈래에 행을 더한다(같은 키가 있으면 두지 않는다)."""
+    p = rules_path()
+    data = {}
+    if p.exists():
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            data = {}
+    rows = data.setdefault(section, [])
+    if any(tuple(r.get(k) for k in dedupe) == tuple(row.get(k) for k in dedupe)
+           for r in rows):
+        return False
+    rows.append({**row, "created": _now()})
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    _rules_cache.clear()
+    return True
+
+
+# ---------------------------------------------------------------- 축별 처리
+# 판정 넷은 **고치는 자리가 다르다.** 같은 버튼으로 다루면 옳은 연결을 지우게 된다.
+#
+#   오참조    간선이 틀림      → resolve()          억제/재지정 (기존)
+#   참조무관  연결은 옳음      → resolve_miss()     후순위(demote) — 지우지 않는다
+#   검색무관  진입이 빗나감    → resolve_miss()     진입 제외(entry_block)
+#   구조화오류 계층이 틀림      → resolve_struct()   구조 교정은 검수 화면에서, 여기선 닫기
+
+MISS_ACTIONS = ("후순위", "진입제외", "정상")
+STRUCT_ACTIONS = ("고침", "무시")
+
+
+def miss_key(rec: dict) -> str:
+    """회수 지문 하나의 키 — (판정, 구역 좌표, 간선). 같은 자리의 반복은 한 줄로 묶인다."""
+    s = rec.get("구역") or {}
+    e = rec.get("간선") or {}
+    return (f"{rec.get('판정')}|{s.get('doc_id')}:{s.get('node')}"
+            f"|{e.get('src_doc', '')}:{e.get('src', '')}")
+
+
+def resolve_miss(rec: dict, action: str, note: str = "") -> dict:
+    """회수 결함(참조무관·검색무관)의 처리.
+
+    억제(간선 삭제)는 여기에 **없다** — 좌표가 맞는데 이번 질문에 안 맞았을 뿐이라
+    지우면 옳은 참조를 영영 잃는다(실측 2026-08-11). 대신 두 갈래다:
+      후순위   그 간선을 확장 자리 경쟁에서 뒤로 민다 (연결은 산다)
+      진입제외 그 좌표를 벡터·용어 **진입**에서 뺀다 (참조로는 여전히 온다)
+    """
+    if action not in MISS_ACTIONS:
+        raise ValueError(f"action 은 {MISS_ACTIONS} 중 하나여야 합니다")
+    s, e = rec.get("구역") or {}, rec.get("간선") or {}
+    # **먼저 검증한다.** 처리 기록을 앞서 적으면 거부된 동작도 항목을 백로그에서
+    # 내려버린다 — 사람은 처리했다고 믿는데 아무 규칙도 안 생긴 상태가 된다.
+    if action == "후순위" and not e:
+        raise ValueError("간선이 없는 지문은 후순위로 미룰 수 없습니다 — "
+                         "진입으로 들어온 것이라면 '진입제외'입니다")
+    if action == "진입제외" and not s.get("doc_id"):
+        raise ValueError("구역 좌표가 없어 진입 제외를 걸 수 없습니다")
+
+    applied = False
+    if action == "후순위":
+        applied = _rule_add("demote", {
+            "src_doc": e["src_doc"], "src": e["src"],
+            "dst_doc": e["dst_doc"], "dst": e["dst"],
+            "src_path": e.get("src_path", ""), "dst_path": e.get("dst_path", ""),
+            "이유": note or "참조무관 지문 — 연결은 옳으나 회수 우선순위를 낮춤"},
+            ("src_doc", "src", "dst_doc", "dst"))
+    elif action == "진입제외":
+        applied = _rule_add("entry_block", {
+            "doc_id": s["doc_id"], "node": s.get("node"),
+            "path": s.get("path", ""), "doc": s.get("doc", ""),
+            "이유": note or "검색무관 지문 — 진입(벡터·용어)에서 제외"},
+            ("doc_id", "node"))
+    key = miss_key(rec)
+    _append({"kind": "회수처리", "ts": _now(), "miss_key": key,
+             "action": action, "note": note})
+    return {"action": action, "miss_key": key, "applied": applied}
+
+
+def struct_key(rec: dict) -> str:
+    s = rec.get("구역") or {}
+    return f"{s.get('doc_id')}:{s.get('node')}"
+
+
+def resolve_struct(section: dict, action: str, note: str = "") -> dict:
+    """구조화오류의 처리 — 규칙을 만들지 않는다.
+
+    계층은 검수 화면(계층 교정·틀 마커)에서 고친다. 여기서는 "고쳤다/무시한다"만
+    적어 백로그에서 내린다 — 고침 기록이 남아야 같은 자리가 다시 올라올 때
+    "또 그 자리"임을 알 수 있다.
+    """
+    if action not in STRUCT_ACTIONS:
+        raise ValueError(f"action 은 {STRUCT_ACTIONS} 중 하나여야 합니다")
+    if not section.get("doc_id"):
+        raise ValueError("구역 좌표가 없습니다")
+    key = f"{section.get('doc_id')}:{section.get('node')}"
+    _append({"kind": "구조처리", "ts": _now(), "struct_key": key,
+             "action": action, "note": note,
+             "구역": {k: section.get(k) for k in ("doc_id", "doc", "node", "path")}})
+    return {"action": action, "struct_key": key}
+
+
 _rules_cache: dict = {}
 
 
+_EMPTY_RULES = {"keys": set(), "redir": {}, "demote": set(), "entry": {}}
+
+
 def _rules() -> dict:
-    """edge_rules.json 을 mtime 캐시로 — {"keys": 억제 집합, "redir": 재지정 사전}."""
+    """edge_rules.json 을 mtime 캐시로. 규칙 네 종류 — 판정 네 갈래에 하나씩 대응한다.
+
+        suppress  오참조    이 간선은 틀렸다 → 참조 확장에서 뺀다
+        redirect  오참조    도착이 얕다 → 색인이 간선을 그 좌표로 옮겨 앉힌다
+        demote    참조무관  연결은 옳다 → 자리 경쟁에서 **뒤로 민다**(지우지 않는다)
+        entry     검색무관  진입(벡터·용어)이 빗나갔다 → 그 좌표를 **진입에서만** 뺀다
+                            (참조를 타고는 여전히 올 수 있다 — 연결 지식은 그대로)
+    """
     p = rules_path()
     if not p.exists():
-        return {"keys": set(), "redir": {}}
+        return dict(_EMPTY_RULES)
     sig = p.stat().st_mtime_ns
     if _rules_cache.get("sig") != sig:
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
         except Exception:
-            return {"keys": set(), "redir": {}}
+            return dict(_EMPTY_RULES)
         _rules_cache["keys"] = {
             _edge_key(r["src_doc"], r["src"], r["dst_doc"], r["dst"])
             for r in data.get("suppress", [])}
         _rules_cache["redir"] = {
             (r["src_doc"], r["src"], r["dst_doc"], r["dst"]): r
             for r in data.get("redirect", [])}
+        _rules_cache["demote"] = {
+            _edge_key(r["src_doc"], r["src"], r["dst_doc"], r["dst"])
+            for r in data.get("demote", [])}
+        _rules_cache["entry"] = {
+            (r["doc_id"], r["node"]): r for r in data.get("entry_block", [])}
         _rules_cache["sig"] = sig
     return _rules_cache
 
 
 def is_suppressed(src_doc, src, dst_doc, dst) -> bool:
     return _edge_key(src_doc, src, dst_doc, dst) in _rules().get("keys", set())
+
+
+def is_demoted(src_doc, src, dst_doc, dst) -> bool:
+    """참조 확장에서 **뒤로 밀 간선**인가. 지우는 것이 아니라 순서를 늦춘다 —
+    자리가 남으면 여전히 온다(옳은 연결이므로 잃으면 안 된다)."""
+    return _edge_key(src_doc, src, dst_doc, dst) in _rules().get("demote", set())
+
+
+def is_entry_blocked(doc_id, node) -> bool:
+    """이 좌표를 **진입**(벡터·용어)으로 데려오지 않는다. 참조 확장은 그대로다."""
+    return (doc_id, node) in _rules().get("entry", {})
 
 
 def redirect_map() -> dict:
@@ -337,14 +480,22 @@ def backlog() -> dict:
     recs = _effective()
     resolved: dict[str, str] = {}
     fix_resolved: dict[str, str] = {}
+    miss_resolved: dict[str, str] = {}
+    struct_resolved: dict[str, str] = {}
     for r in recs:
         if r.get("kind") == "처리":
             resolved[r["edge_key"]] = r["action"]
         elif r.get("kind") == "교정처리":
             fix_resolved[r["fix_key"]] = r["action"]
+        elif r.get("kind") == "회수처리":
+            miss_resolved[r["miss_key"]] = r["action"]
+        elif r.get("kind") == "구조처리":
+            struct_resolved[r["struct_key"]] = r["action"]
 
     edges: dict[str, dict] = {}
     fixes: dict[str, dict] = {}
+    struct: dict[str, dict] = {}       # 구조화오류 — 구역(문서·마디)별로 묶는다
+    misses: dict[str, dict] = {}       # 참조무관·검색무관 — 처리 단위로 묶는다
     loose: list[dict] = []
     for r in recs:
         if r.get("kind") == "교정":
@@ -370,8 +521,25 @@ def backlog() -> dict:
             continue
         if r.get("kind") != "지문":
             continue
-        if r.get("판정") not in ("무관", "오참조"):
+        if r.get("판정") not in KINDS:
             continue                       # 수정으로 "정상" 처리됐다 — 지문이 아니다
+        # 구조화오류는 간선이 아니라 **문서의 계층**을 가리킨다 — 억제와 무관하니
+        # 따로 모은다(사람은 여기서 검수 화면으로 건너가 계층을 고친다).
+        if r.get("판정") == "구조화오류":
+            sec = r.get("구역") or {}
+            key = f"{sec.get('doc_id')}:{sec.get('node')}"
+            if key in struct_resolved:
+                continue                   # 고쳤거나 무시하기로 한 자리
+            g = struct.setdefault(key, {"구역": sec, "key": key, "n": 0, "사유": [],
+                                        "질의": [], "qids": [], "질의들": []})
+            g["n"] += 1
+            if r.get("사유") and len(g["사유"]) < 3:
+                g["사유"].append(r["사유"])
+            if r.get("질의") and r["질의"] not in g["질의"][:5]:
+                g["질의"].append(r["질의"])
+            g["qids"].append(r.get("qid"))
+            _add_q(g, r)
+            continue
         e = r.get("간선")
         # 억제 후보는 **오참조뿐**이다. "무관"은 좌표가 맞는데 이번 질문에 안
         # 맞았다는 회수 신호라, 간선을 지우면 옳은 법령 참조를 영영 잃는다
@@ -379,6 +547,22 @@ def backlog() -> dict:
         # 무관 지문이 억제 후보로 올라와 있었다). 간선 없는 오참조도 지울
         # 대상이 없으니 신호로만 남긴다.
         if not e or r.get("판정") != "오참조":
+            # 회수 결함 — 같은 자리의 반복은 한 줄로 묶는다(처리 버튼이 붙으려면
+            # 카드 하나가 하나의 대상을 가리켜야 한다). 처리된 것은 내린다.
+            mkey = miss_key(r)
+            if mkey in miss_resolved:
+                continue
+            g = misses.setdefault(mkey, {
+                "key": mkey, "판정": r.get("판정", "무관"), "구역": r.get("구역"),
+                "간선": e, "경위": r.get("경위"), "매칭": r.get("매칭"),
+                "n": 0, "사유": [], "질의": [], "qids": [], "질의들": []})
+            g["n"] += 1
+            if r.get("사유") and len(g["사유"]) < 3:
+                g["사유"].append(r["사유"])
+            if r.get("질의") and r["질의"] not in g["질의"][:5]:
+                g["질의"].append(r["질의"])
+            g["qids"].append(r.get("qid"))
+            _add_q(g, r)
             loose.append(r)
             continue
         key = _edge_key(e["src_doc"], e["src"], e["dst_doc"], e["dst"])
@@ -398,12 +582,22 @@ def backlog() -> dict:
         _add_q(g, r)
 
     rules = _rules()
+    # 회수 결함 통계 — 어느 단이 빗나갔나. 간선을 지울 대상이 아니라 **규칙을
+    # 손볼 신호**라, 개수로만 보여 준다(참조무관=확장이 넓다, 검색무관=검색이 빗나갔다).
+    miss = {k: sum(1 for r in loose if r.get("판정") == k)
+            for k in ("참조무관", "검색무관", "무관")}
     return {"edges": sorted(edges.values(), key=lambda g: -g["n"]),
             "fixes": sorted(fixes.values(), key=lambda g: -g["n"]),
+            "struct": sorted(struct.values(), key=lambda g: -g["n"]),
+            "misses": sorted(misses.values(), key=lambda g: -g["n"])[:60],
+            "miss": {k: v for k, v in miss.items() if v},
             "loose": loose[-30:],
-            "resolved": len(resolved) + len(fix_resolved),
+            "resolved": (len(resolved) + len(fix_resolved)
+                         + len(miss_resolved) + len(struct_resolved)),
             "suppressed": len(rules.get("keys", set())),
-            "redirected": len(rules.get("redir", {}))}
+            "redirected": len(rules.get("redir", {})),
+            "demoted": len(rules.get("demote", set())),
+            "entry_blocked": len(rules.get("entry", {}))}
 
 
 def by_qid() -> dict:

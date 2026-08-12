@@ -115,17 +115,97 @@ class DocView:
 
     def path(self, node_id: Optional[int]) -> str:
         """마디의 조상 사슬 — `제2장 ▸ 제19조 ▸ 제3항`. 이것이 인용 좌표의
-        사람이 읽는 형태다."""
+        사람이 읽는 형태다.
+
+        표면(마커)과 제목을 **둘 다** 쓴다 — 제목만 쓰면 "제22조 (광고 관련
+        준수사항)"이 "광고 관련 준수사항"으로 떠서, 참조 검수 화면에서 제22조
+        마디가 계층에 없는 것처럼 읽힌다(실측 2026-08-12: 멀쩡한 구조를 계층
+        결손으로 오판하게 했다)."""
         parts: list[str] = []
         seen: set[int] = set()
         n = self.by_id.get(node_id)
         while n is not None and n.get("id") not in seen:
             seen.add(n.get("id"))
-            label = (n.get("title") or "").strip() or (n.get("surface") or "").strip()
+            surf = (n.get("surface") or "").strip()
+            title = (n.get("title") or "").strip()
+            label = f"{surf} {title}" if surf and title and surf not in title \
+                else (title or surf)
             if label:
                 parts.append(label)
             n = self.by_id.get(n.get("parent"))
         return " ▸ ".join(reversed(parts))
+
+    def section_outline(self, node: dict, cap: int = 6000) -> str:
+        """구역 본문을 **계층 그대로** — 자손 마디를 들여쓰기로 세워 넘긴다.
+
+        평평하게 이어 붙이면 "장을 찾았는데 그 아래 조·절이 어떻게 매달렸는지"가
+        컨텍스트에서 사라진다. 그러면 LLM 은 계층이 어긋난 것을 볼 수 없고(볼 것이
+        없으니), 우리는 구조화 오류를 영영 사후에 못 잡는다.
+
+        마디 줄에는 `▸` 를 붙여 본문과 가른다 — 모델이 "이건 우리 해석이 세운
+        제목이고 저건 원문 줄"을 구별할 수 있어야 계층을 의심할 수 있다.
+        """
+        root_id = node.get("id")
+        root_lv = node.get("level") or 0
+        s = node.get("span") or [0, 0]
+        lo, hi = s[0], max(s[1], s[0] + 1)
+
+        # 이 구역이 덮는 자손 마디 — 블록 시작점마다 어느 마디가 여는지 표시한다
+        opens: dict[int, list[dict]] = {}
+        for n in self.nodes:
+            if n.get("id") == root_id:
+                continue
+            ns = n.get("span") or [0, 0]
+            if lo <= ns[0] < hi:
+                opens.setdefault(ns[0], []).append(n)
+        for v in opens.values():
+            v.sort(key=lambda n: n.get("level") or 0)
+
+        # 층을 **실제 나타난 것끼리** 0,1,2… 로 접는다. 원래 레벨 차를 그대로 쓰면
+        # 편(L0) 아래 조(L4) 가 공백 8칸으로 들어가 눈에도 나쁘고 토큰도 버린다.
+        seen_lv = sorted({(n.get("level") or 0) for v in opens.values() for n in v}
+                         | {root_lv})
+        rank = {lv: i for i, lv in enumerate(seen_lv)}
+        depth_of = lambda lv: max(0, rank.get(lv, 0) - rank.get(root_lv, 0))
+
+        parts: list[str] = []
+        total, cut = 0, False
+        for b in range(lo, hi):
+            blk_head = ((self.block_by_idx.get(b) or {}).get("text") or "").lstrip()
+            for n in opens.get(b, []):
+                depth = depth_of(n.get("level") or 0)
+                surf = (n.get("surface") or "").strip()
+                title = (n.get("title") or "").strip()
+                label = " ".join(x for x in [surf, title] if x)
+                # 표면만 있는 마디(①·1.)는 본문 첫머리에 같은 표식이 이미
+                # 보인다 — 중복 줄을 세우지 않는다(들여쓰기가 계층을 말한다).
+                if not title and surf and surf in blk_head[:100]:
+                    continue
+                if label:
+                    line = "  " * depth + "▸ " + label
+                    parts.append(line)
+                    total += len(line)
+            blk = self.block_by_idx.get(b)
+            if blk is None:
+                continue
+            t = (blk.get("text") or "").strip()
+            if not t:
+                continue
+            # 본문은 그 자리를 여는 마디의 깊이만큼 들여쓴다 — 원문의 층이 눈에 보인다
+            here = opens.get(b)
+            depth = depth_of((here[-1].get("level") if here else root_lv) or 0)
+            line = "  " * depth + t
+            parts.append(line)
+            total += len(line)
+            if total >= cap:
+                cut = b + 1 < hi
+                break
+        out = "\n".join(parts)
+        if len(out) > cap:
+            out, cut = out[:cap], True
+        if cut:
+            out += "\n…(구역이 길어 여기서 잘림 — 이후 내용 있음)"
+        return out
 
     def section_text(self, node: dict, cap: int = 6000) -> str:
         """구역 본문. cap 은 폭주 방지다(실측: 구역 p50 80자·p99 5.7k·최대 68k —

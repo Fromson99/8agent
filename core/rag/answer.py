@@ -89,7 +89,7 @@ def assemble(index: Index, result: SearchResult) -> list[Section]:
             path=v.path(node_id) or v.name,
             page=page if page is not None else (n or {}).get("page"),
             kind=kind, matched=matched, block=block,
-            text=v.section_text(n, cap=SECTION_CHARS) if n else ""))
+            text=v.section_outline(n, cap=SECTION_CHARS) if n else ""))
 
     for h in result.hits:
         if len(out) >= CANDIDATES_MAX:
@@ -127,7 +127,7 @@ def sections_from_coords(index: Index, coords: list[dict]) -> list[Section]:
             n=0, doc_id=c["doc_id"], doc=v.name, node=node_id,
             path=v.path(node_id) or v.name, page=(n or {}).get("page"),
             kind=f"탐색({c.get('via', '')})", matched=c.get("why", "")[:80],
-            text=v.section_text(n, cap=SECTION_CHARS) if n else ""))
+            text=v.section_outline(n, cap=SECTION_CHARS) if n else ""))
         if len(out) >= CANDIDATES_MAX:
             break
     out = expand_refs(index, out)
@@ -172,7 +172,12 @@ def expand_refs(index: Index, sections: list[Section],
         added = 0
         near = [(s.doc_id, e) for e in index.ref_edges().get(s.doc_id, [])]
         far = [(e["dst_doc"], e) for e in cross if e.get("src_doc") == s.doc_id]
-        for dst_doc, e in near + far:
+        # 후순위 간선은 **뒤로 민다**(빼지 않는다) — "연결은 옳은데 이번 질문엔
+        # 안 맞았다"는 판정의 처리다. 자리가 남으면 여전히 온다.
+        cand = sorted(near + far,
+                      key=lambda p: verdicts_mod.is_demoted(
+                          s.doc_id, s.node, p[0], p[1].get("dst")))
+        for dst_doc, e in cand:
             if added >= REF_SECTIONS or len(out) >= cap:
                 break
             blk = e.get("block")
@@ -397,20 +402,11 @@ ANSWER_SYSTEM = (
     "④ 근거는 refs 에 컨텍스트 번호로만 담는다. 번호 밖의 문서·조항을 인용하지 "
     "마라. 실제로 근거로 쓴 번호만 담는다.\n"
     "⑤ 결론을 먼저 1~3문장으로, 그 뒤에 근거 설명. 컨텍스트에 답이 없으면 "
-    "answerable 을 false 로 두고, 어떤 자료가 있으면 답할 수 있는지만 안내한다.\n"
-    "⑥ 판정 지문 — 답에 쓰지 **않은** 구역 중 '잘못 끌려온' 것을 discard 에 "
-    "표시한다. 회수 규칙이 완벽하지 않아 네 판단이 그 결함의 기록이 된다. "
-    "두 가지를 **엄격히** 가른다:\n"
-    "  · kind=오참조 — **참조 해소가 좌표를 틀렸을 때만**. 머리의 경위에 적힌 "
-    "표면형(예: '제19조제1항')이 가리키는 조항과, 실제로 실린 구역이 **다른** "
-    "경우다. 표면형이 가리키는 그 조항이 맞게 실렸다면 오참조가 **아니다** — "
-    "질문과 아무리 무관해도 그 연결은 옳다(옳은 연결을 오참조로 적으면 사람이 "
-    "그 법령 참조를 영영 잃는다).\n"
-    "  · kind=무관 — 좌표는 맞는데 이번 질문에 안 맞는 경우. 참조로 끌려온 "
-    "구역이라도 연결이 옳다면 여기다. 회수(진입)가 빗나갔다는 신호다.\n"
-    "  확실한 것만 적어라 — 이 기록은 후보일 뿐이고 반영은 사람이 승인한다. "
-    "애매하면 비워 둔다. 답에 인용한 구역은 discard 에 넣지 마라."
+    "answerable 을 false 로 두고, 어떤 자료가 있으면 답할 수 있는지만 안내한다."
 )
+# 판정(어느 구역이 잘못 끌려왔나)은 **이 콜에 없다.** 사용자를 기다리게 하는 콜에서
+# 판정까지 하면 구조화 출력이 그 배열을 다 만들 때까지 답이 나오지 않는다 —
+# 답변 지연에 감사 비용이 얹힌다. 감사는 답을 보낸 **뒤** 백그라운드로 돈다(audit.py).
 
 ANSWER_SCHEMA = {
     "type": "object",
@@ -418,17 +414,8 @@ ANSWER_SCHEMA = {
         "answer": {"type": "string"},
         "refs": {"type": "array", "items": {"type": "integer"}},
         "answerable": {"type": "boolean"},
-        "discard": {"type": "array", "items": {
-            "type": "object",
-            "properties": {
-                "n": {"type": "integer"},
-                "kind": {"type": "string", "enum": ["무관", "오참조"]},
-                "reason": {"type": "string"},
-            },
-            "required": ["n", "kind", "reason"],
-            "additionalProperties": False}},
     },
-    "required": ["answer", "refs", "answerable", "discard"],
+    "required": ["answer", "refs", "answerable"],
     "additionalProperties": False,
 }
 
@@ -453,7 +440,8 @@ class Answer:
     refs: list = field(default_factory=list)      # Section.cite() 목록
     answerable: bool = False
     error: str = ""
-    # 판정 지문 — "잘못 끌려온" 구역의 기록 (후보 — 사람 승인 전 무반영).
+    # 판정 지문은 여기 없다 — 답을 보낸 뒤 `core.rag.audit` 이 백그라운드에서 남긴다.
+    # (호환을 위해 자리는 둔다: 옛 호출자가 `.discards` 를 읽어도 빈 목록이다.)
     discards: list = field(default_factory=list)
 
 
@@ -485,21 +473,8 @@ def synthesize(llm, question: str, sections: list[Section]) -> Answer:
     valid = {s.n: s for s in use}
     refs = [valid[i].cite() for i in out.get("refs", [])
             if isinstance(i, int) and i in valid]
-    cited = {r["n"] for r in refs}
-    # 판정 지문 — 닫힌 번호만, 인용한 구역은 제외(모순 판정 차단). 좌표·경위를
-    # 여기서 붙인다 — 모델은 번호만 말하고 좌표는 코드가 되돌린다(refs 와 동일 규율).
-    discards = []
-    for d in out.get("discard", []):
-        i = d.get("n")
-        if not isinstance(i, int) or i not in valid or i in cited:
-            continue
-        s = valid[i]
-        discards.append({"n": i, "kind": d.get("kind", "무관"),
-                         "reason": (d.get("reason") or "")[:200],
-                         "section": s.cite(), "via": s.kind,
-                         "matched": s.matched, "ref_src": s.ref_src})
-    log.info("답변 합성 — 구역 %d, 인용 %d, 지문 %d, answerable=%s (%.0fms)",
-             len(use), len(refs), len(discards), bool(out.get("answerable")),
+    log.info("답변 합성 — 구역 %d, 인용 %d, answerable=%s (%.0fms)",
+             len(use), len(refs), bool(out.get("answerable")),
              (time.perf_counter() - t0) * 1000)
     return Answer(answer=out.get("answer", ""), refs=refs,
-                  answerable=bool(out.get("answerable")), discards=discards)
+                  answerable=bool(out.get("answerable")))

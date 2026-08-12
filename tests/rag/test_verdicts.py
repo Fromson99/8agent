@@ -40,18 +40,51 @@ def _sections():
     ]
 
 
-def test_지문은_닫힌_번호에_간선이_붙는다():
-    llm = FakeLLM({"answer": "답", "refs": [1], "answerable": True,
-                   "discard": [
-                       {"n": 2, "kind": "오참조", "reason": "벌칙은 무관"},
-                       {"n": 1, "kind": "무관", "reason": "인용했는데?"},   # 모순 — 버림
-                       {"n": 99, "kind": "무관", "reason": "없는 번호"},    # 밖 — 버림
-                   ]})
+def test_답변_콜은_판정하지_않는다():
+    """판정이 답변 콜에 있으면 그것을 만드는 시간이 곧 응답 지연이다 — 갈랐다."""
+    llm = FakeLLM({"answer": "답", "refs": [1], "answerable": True})
     ans = answer_mod.synthesize(llm, "질문", _sections())
-    assert len(ans.discards) == 1
-    d = ans.discards[0]
+    assert ans.answer == "답" and ans.discards == []
+    assert "discard" not in answer_mod.ANSWER_SCHEMA["properties"]
+
+
+def test_감사는_닫힌_번호에_간선이_붙는다():
+    from core.rag import audit as audit_mod
+
+    llm = FakeLLM({"findings": [
+        {"n": 2, "kind": "오참조", "reason": "벌칙은 무관"},
+        {"n": 1, "kind": "검색무관", "reason": "인용했는데?"},   # 모순 — 버림
+        {"n": 99, "kind": "검색무관", "reason": "없는 번호"},    # 밖 — 버림
+    ]})
+    found = audit_mod.audit(llm, "질문", "답", _sections(), cited={1})
+    assert len(found) == 1
+    d = found[0]
     assert d["kind"] == "오참조" and d["section"]["node"] == 3
     assert d["ref_src"]["node"] == 1            # 어느 간선이 데려왔는지 좌표로
+
+
+def test_감사는_경위와_어긋난_판정을_바로잡는다():
+    """참조로 오지 않은 구역에 '오참조'를 붙이면 좌표가 없어 백로그가 손댈 데가 없다."""
+    from core.rag import audit as audit_mod
+
+    llm = FakeLLM({"findings": [
+        {"n": 1, "kind": "오참조", "reason": "좌표 틀림"},      # 진입 검색인데 오참조?
+        {"n": 2, "kind": "검색무관", "reason": "질문과 무관"},   # 참조로 왔는데 검색무관?
+    ]})
+    found = {f["n"]: f["kind"] for f in
+             audit_mod.audit(llm, "질문", "답", _sections(), cited=set())}
+    assert found[1] == "검색무관"      # 참조가 아니면 진입 검색의 결함이다
+    assert found[2] == "참조무관"      # 참조로 왔으면 확장의 결함이다
+
+
+def test_구조화오류는_인용한_구역에도_붙는다():
+    """인용했더라도 계층이 틀렸으면 그건 우리 구조화의 결함이다."""
+    from core.rag import audit as audit_mod
+
+    llm = FakeLLM({"findings": [
+        {"n": 1, "kind": "구조화오류", "reason": "제3조가 제1조 자식으로 매달림"}]})
+    found = audit_mod.audit(llm, "질문", "답", _sections(), cited={1})
+    assert [f["kind"] for f in found] == ["구조화오류"]
 
 
 def _iso(tmp_path, monkeypatch):
@@ -190,3 +223,95 @@ def test_억제_간선은_참조_닫힘에서_빠진다(tmp_path, monkeypatch):
                      "승인", "시험")
     grown2 = answer_mod.expand_refs(idx, list(entry))
     assert not any(s.node == 3 for s in grown2)         # 억제 후 — 건너뛴다
+
+
+def test_감사는_백그라운드에서_돌고_백로그에_남는다(tmp_path, monkeypatch):
+    """답변 스레드는 기다리지 않는다 — 큐에 넣고 워커가 뒤에서 적재한다."""
+    from core.rag import audit as audit_mod
+
+    _iso(tmp_path, monkeypatch)
+    llm = FakeLLM({"findings": [
+        {"n": 2, "kind": "오참조", "reason": "벌칙 조항이 아니다"},
+        {"n": 1, "kind": "구조화오류", "reason": "항이 앞 조에 붙었다"}]})
+    assert audit_mod.submit(llm, "q1", "질문", "답", _sections(), cited=set())
+    assert audit_mod.drain(timeout=10), "감사 워커가 큐를 비우지 못했습니다"
+
+    b = verdicts.backlog()
+    assert len(b["edges"]) == 1                     # 오참조 → 간선 억제 후보
+    assert len(b["struct"]) == 1                    # 구조화오류 → 구역별로 따로
+    assert b["struct"][0]["구역"]["node"] == 1
+
+
+# ---------------------------------------------------------------- 축별 처리
+# 판정 넷은 고치는 자리가 다르다. 같은 버튼으로 다루면 옳은 연결을 지우게 된다.
+
+def _miss(kind, with_edge=True):
+    r = {"판정": kind, "사유": "이번 질문과 무관", "경위": "참조" if with_edge else "벡터",
+         "구역": {"n": 2, "doc_id": "d1", "doc": "A", "node": 3, "path": "제3조"}}
+    if with_edge:
+        r["간선"] = {"src_doc": "d1", "src": 1, "src_path": "제1조",
+                     "surface": "제3조", "dst_doc": "d1", "dst": 3, "dst_path": "제3조"}
+    return r
+
+
+def test_참조무관은_후순위로_밀린다_지우지_않는다(tmp_path, monkeypatch):
+    _iso(tmp_path, monkeypatch)
+    rec = _miss("참조무관")
+    verdicts.log("q1", "질문", [{**rec, "kind": "참조무관", "reason": rec["사유"],
+                                "section": rec["구역"], "via": "참조",
+                                "ref_src": {"doc_id": "d1", "node": 1,
+                                            "path": "제1조", "surface": "제3조"}}])
+    g = verdicts.backlog()["misses"][0]
+    assert g["판정"] == "참조무관"
+
+    verdicts.resolve_miss(g, "후순위", "확장이 넓다")
+    assert verdicts.is_demoted("d1", 1, "d1", 3)      # 뒤로 밀린다
+    assert not verdicts.is_suppressed("d1", 1, "d1", 3)   # 연결은 산다
+    assert verdicts.backlog()["misses"] == []         # 처리돼 백로그에서 내려간다
+
+
+def test_검색무관은_진입에서만_빠진다(tmp_path, monkeypatch):
+    _iso(tmp_path, monkeypatch)
+    rec = _miss("검색무관", with_edge=False)
+    verdicts.log("q1", "질문", [{"kind": "검색무관", "reason": "무관", "via": "벡터",
+                                "section": rec["구역"], "ref_src": None}])
+    g = verdicts.backlog()["misses"][0]
+    verdicts.resolve_miss(g, "진입제외", "벡터가 빗나갔다")
+    assert verdicts.is_entry_blocked("d1", 3)         # 진입으로는 안 온다
+    assert not verdicts.is_suppressed("d1", 1, "d1", 3)   # 참조로는 여전히 온다
+
+
+def test_간선_없는_지문은_후순위로_밀_수_없다(tmp_path, monkeypatch):
+    import pytest
+    _iso(tmp_path, monkeypatch)
+    with pytest.raises(ValueError, match="진입제외"):
+        verdicts.resolve_miss(_miss("검색무관", with_edge=False), "후순위")
+
+
+def test_구조화오류는_규칙을_만들지_않고_닫힌다(tmp_path, monkeypatch):
+    _iso(tmp_path, monkeypatch)
+    sec = {"n": 1, "doc_id": "d1", "doc": "A", "node": 5, "path": "제5조"}
+    verdicts.log("q1", "질문", [{"kind": "구조화오류", "reason": "항이 앞 조에 붙음",
+                                "section": sec, "via": "벡터", "ref_src": None}])
+    b = verdicts.backlog()
+    assert len(b["struct"]) == 1 and b["struct"][0]["구역"]["node"] == 5
+
+    verdicts.resolve_struct(sec, "고침", "계층 교정으로 옮김")
+    assert verdicts.backlog()["struct"] == []          # 닫힌다
+    # 계층은 검수 화면에서 고치는 것이라 억제·진입 규칙이 생기지 않는다
+    assert not verdicts.is_entry_blocked("d1", 5)
+    assert not verdicts.is_demoted("d1", 1, "d1", 5)
+
+
+def test_거부된_처리는_기록되지_않는다(tmp_path, monkeypatch):
+    """검증 전에 기록하면 거부된 동작도 항목을 백로그에서 내려버린다 —
+    사람은 처리했다고 믿는데 아무 규칙도 안 생긴 상태가 된다."""
+    import pytest
+    _iso(tmp_path, monkeypatch)
+    rec = {"kind": "검색무관", "reason": "무관", "via": "벡터", "ref_src": None,
+           "section": {"n": 1, "doc_id": "d1", "doc": "A", "node": 3, "path": "제3조"}}
+    verdicts.log("q1", "질문", [rec])
+    g = verdicts.backlog()["misses"][0]
+    with pytest.raises(ValueError):
+        verdicts.resolve_miss(g, "후순위")           # 간선이 없다 — 거부
+    assert len(verdicts.backlog()["misses"]) == 1    # 여전히 백로그에 있다
