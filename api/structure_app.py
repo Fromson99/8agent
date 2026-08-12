@@ -14,10 +14,12 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import sys
 import time
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -54,7 +56,75 @@ try:
 except Exception:                                        # pragma: no cover
     rag_router = None
 
-app = FastAPI(title="구조 해석 검수", version="1.0.0", description=__doc__)
+# ------------------------------------------------------------------ 예열
+# 임베딩 모델 적재와 색인 로드는 프로세스 수명 동안 딱 한 번이다 —
+# core/embedding.py 의 `_model` 전역과 core/rag 의 mtime 캐시가 이미 잡아
+# 둔다. 문제는 그 한 번을 **첫 사용자가** 물었다는 것이다: 재기동 직후 첫
+# 질의가 11초(실측 모델 적재 10.8초 · 검색 색인 0.4초 · 벡터 색인 36ms).
+#
+# 기동 때 미리 문다. uvicorn 의 "startup complete" 가 그만큼 늦어지고, 늦어지는
+# 동안은 포트가 응답하지 않는다 — 이게 곧 준비 신호다(로드밸런서·healthcheck 가
+# 덜 익은 프로세스로 트래픽을 보내지 못한다).
+#
+# 워커를 늘리면 워커마다 2GB 를 다시 문다 — serve.sh 가 단일 프로세스인 이유다.
+# STRUCTURE_PREHEAT=0 이면 건너뛴다(시험·모델 없는 슬림 이미지).
+PREHEAT: dict = {"done": False, "steps": {}}
+
+
+def _preheat() -> None:
+    """무거운 것을 순서대로 만져 캐시에 앉힌다. 한 단이 실패해도 다음 단은
+    돈다 — 예열 실패는 '그 비용을 첫 요청이 문다'일 뿐 기동 실패가 아니다."""
+    steps = PREHEAT["steps"]
+
+    def step(name: str, fn) -> None:
+        t0 = time.perf_counter()
+        try:
+            note = fn()
+        except Exception as exc:
+            steps[name] = f"{type(exc).__name__}: {exc}"
+            log.warning("예열 '%s' 실패 — 그 비용은 첫 요청이 문다: %s", name, exc)
+        else:
+            steps[name] = note or round((time.perf_counter() - t0) * 1000)
+            log.info("예열 '%s' — %s", name, steps[name])
+
+    def search_index():
+        from core.rag import index as index_mod
+        index_mod.current()
+
+    def vector_index():
+        from core.rag import vector as vector_mod
+        if vector_mod.current() is None:
+            return "색인 없음 — 벡터 단은 빠진다"
+
+    def embed_model():
+        from core import embedding
+        if not embedding.available():
+            return "모델 없음 — 벡터 단은 빠진다"
+        if embedding.encode_one("예열") is None:
+            return "인코딩 실패 — 벡터 단은 빠진다"
+
+    step("검색 색인", search_index)
+    step("벡터 색인", vector_index)
+    step("임베딩 모델", embed_model)
+    PREHEAT["done"] = True
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if os.environ.get("STRUCTURE_PREHEAT", "1") == "0":
+        log.info("예열 생략 — STRUCTURE_PREHEAT=0")
+    else:
+        t0 = time.perf_counter()
+        # to_thread — 동기 적재를 코루틴 안에서 그대로 하면 그 십여 초 동안
+        # 이벤트 루프가 통째로 멈춘다. 기동 중이라 할 일이 없더라도, 루프를
+        # 붙잡지 않는 편이 시그널 처리(Ctrl-C·SIGTERM)에 안전하다.
+        await asyncio.to_thread(_preheat)
+        log.info("예열 완료 — %.1f초", time.perf_counter() - t0)
+    yield
+
+
+app = FastAPI(title="구조 해석 검수", version="1.0.0", description=__doc__,
+              lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -107,7 +177,10 @@ async def access_log(request: Request, call_next):
 @app.get("/health", tags=["health"])
 def health():
     """의존성이 실제로 임포트되는지까지 본다 — 기동만 되고 첫 요청에서 죽는 것을 막는다."""
-    out: dict = {"status": "ok", "store": str(structure_router.STORE), "deps": {}}
+    # 예열 결과는 status 를 흔들지 않는다 — 예열이 빗나가도 서비스는 돈다
+    # (느려질 뿐이다). 어느 단이 몇 ms 였는지가 콜드 스타트를 되짚는 근거다.
+    out: dict = {"status": "ok", "store": str(structure_router.STORE),
+                 "preheat": PREHEAT, "deps": {}}
     for name in ("fitz", "docling"):
         try:
             __import__(name)
