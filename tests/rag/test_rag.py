@@ -136,15 +136,17 @@ def test_조립_경로와_본문():
     idx = _index()
     r = search(idx, "부당권유행위 금지가 뭐야?")
     s = answer_mod.assemble(idx, r)[0]
-    assert s.path == "영업행위 준수사항 ▸ 부당권유행위 금지"
+    # 경로는 표면형과 제목을 병기한다 — 제목만 쓰면 "제22조 (…)"가 조 마디
+    # 없이 뜬 것처럼 읽혀 계층 결손으로 오판하게 했다(실측 2026-08-12).
+    assert s.path == "제2장 영업행위 준수사항 ▸ 제21조 부당권유행위 금지"
     assert "단정적 판단" in s.text                    # span 의 블록이 본문이 된다
     assert s.n == 1 and s.page == 2
 
 
 def test_경로는_조상_사슬():
     v = DocView.build(*_doc())
-    assert v.path(3) == "영업행위 준수사항 ▸ 부당권유행위 금지"
-    assert v.path(1) == "영업행위 준수사항"
+    assert v.path(3) == "제2장 영업행위 준수사항 ▸ 제21조 부당권유행위 금지"
+    assert v.path(1) == "제2장 영업행위 준수사항"
     assert v.path(None) == ""
 
 
