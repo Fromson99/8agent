@@ -47,9 +47,6 @@ parsers:
 
 routes:
   - doc_type: 특정금전신탁            # ← 형식·용어집의 doc_type과 글자까지 같아야 한다
-    detect:
-      extension: .pdf
-      content_any: ["특정금전신탁", "제1조(신탁의 목적)", "[별지1]"]
     parser: auto
     format:   agents/agent1/formats/trust_contract.format.json
     glossary: agents/agent1/glossary/trust_contract.glossary.yaml
@@ -57,11 +54,6 @@ routes:
     owner: agent1                    # 등록한 에이전트 (감사용)
 
   - doc_type: 금소법
-    detect:
-      # 이름만으로는 갈리지 않는다 — 계약서 본문도 이 법을 인용한다(실측).
-      # 국가법령정보센터 산출물의 시행일·법률번호 머리글이 원문의 표지다.
-      content_all: ["금융소비자 보호에 관한 법률"]
-      content_any: ["[시행", "법률 제"]
     parser: auto
     format:   agents/agent6/formats/statute.format.json
     glossary: agents/agent6/glossary/statute.glossary.yaml
@@ -69,7 +61,6 @@ routes:
     owner: agent6
 
   - doc_type: STT전사
-    detect: { extension: .json, schema_hint: speaker }
     parser: transcript
     format:   agents/agent6/formats/transcript.format.json
     glossary: agents/agent6/glossary/transcript.glossary.yaml
@@ -88,8 +79,7 @@ registry는 곧 **시스템의 문서 처리 능력 목록**이다 — "지금 �
 ```python
 from core import router
 
-routed = router.route(path, doc_type="특정금전신탁")   # 명시 모드
-routed = router.route(path)                            # 자동 모드(detect)
+routed = router.route(path, doc_type="특정금전신탁")   # doc_type 은 호출자가 말한다
 routed = router.require(path, doc_type=...)            # 격리 문서를 거부한다 (태스크용)
 
 routed.doc          # core.structurize.Document (doc.json, §00.4)
@@ -107,14 +97,17 @@ routed.quarantined  # 게이트 미달 여부
 2. **doc_type 3중 일치 검사** — route 적재 시 registry의 `doc_type`, 형식 파일의 `doc_type`, 용어집의 `doc_type`이 셋 다 같은지 확인하고, 하나라도 다르면 `RouteAssetMissing`으로 거부한다(`router._assets`). 어긋난 자산은 조용히 굴러가다 엉뚱한 문서를 그럴듯하게 구조화하므로 적재 시점에 막는다.
 3. **우회 금지 테스트** — `tests/architecture/test_no_bypass.py`가 `agents/` 아래 모든 소스를 AST로 훑어 `core.glossary.load` / `core.format_model.load` / `core.parse_adapter.parse` 호출과 `*.format.json` · `*.glossary.yaml` 경로 리터럴을 금지한다. 예외는 컴파일 국면 도구만, 이유를 적어 허용 목록에 올린다.
 
-오류는 전부 시끄럽다: `RoutingError`와 하위 `UnregisteredDocType`(명시 모드에 없는 유형 — 비슷한 이름을 제안한다) / `UnregisteredDocument`(자동 모드 미적중) / `AmbiguousDocument`(두 route에 동시 적중 — 추측하지 않는다) / `RouteAssetMissing`(자산 부재·doc_type 불일치).
+오류는 전부 시끄럽다: `RoutingError`와 하위 `UnregisteredDocType`(등록부에 없는 유형 — 비슷한 이름을 제안한다) / `RouteAssetMissing`(자산 부재·doc_type 불일치).
 
 새 코드에서 `format_model.load(...)` / `glossary.load(...)`를 직접 부르지 않는다. 예외는 컴파일 국면 도구인 `core/cli.py compile`과 `core/format_induce.py`뿐이다 — 아직 등록부에 없는 유형을 다루기 때문이다.
 
-### 00.3 판별 두 모드
+### 00.3 doc_type 은 호출자가 말한다
 
-- **명시 모드(기본)**: 호출자(Agent)가 doc_type을 지정한다. Agent는 대부분 자기가 다루는 문서 종류를 알고 있다.
-- **자동 모드(보조)**: 미지 파일은 detect 규칙으로 판별한다. 두 route에 걸치거나 어디에도 안 걸리면 **추측하지 않고 "미등록 유형"으로 시끄럽게 거부**한다(게이트 철학).
+자동 판별(detect 규칙)은 **뺐다.** 사용자가 유형에 맞게 넣는 운영이라 "무슨 유형인지 추측"하는 층이 할 일이 없고, "그 유형이 맞긴 한가"는 구조화 뒤 적합도 게이트가 정량으로 판정한다(임계 미달 = 격리, §3.4). 추측하는 층을 두면 그 오판이 게이트 점수로 가려진다.
+
+유형을 **모르는** 문서는 라우터가 아니라 구조 해석기로 들어간다(§4) — 형식 파일 없이 문서에서 구조를 유도하고, 같은 모양이 반복 관측되면 그 문서군의 형식을 만든다(§00.6).
+
+3중 일치 검사에서 용어집은 **선택**이다. route에 용어집이 없으면 전역 용어집(`core.glossary.load_global`, 화면이 관리하는 `glossary.json`)을 쓴다 — 용어는 유형별이 아니라 시스템 전체의 것이라는 방향이다.
 
 ### 00.4 출력 계약 — doc.json 스키마
 
@@ -131,6 +124,43 @@ doc.json 스키마는 코어의 기능이 아니라 **라우터와 파싱 로직
 트리 링크는 `children`(하위 section_id 목록)이고, 어느 section에도 안 속한 요소는 `Document.residual`(요소 index 목록)로 남아 게이트가 센다 — 잔여는 dump에 실리지 않고 `fitness.detail`에 점수로 반영된다.
 
 문서 고유의 특수 정보는 스키마 확장이 아니라 기존 그릇 안에 담는다 — 구역 특성은 `marker`에, 특수 내용물은 `content`에(표=셀 그리드, 체크박스=options), 새 값 유형은 `value_type` enum 추가로, 품질 정보는 `fitness.warnings`에.
+
+### 00.4.1 입력 형식 — 흐름은 여기서 갈린다
+
+마커(글자)는 어느 형식에서나 같지만, **파서가 실어 주는 신호는 형식이 정한다.** 이걸 감추면 "같은 틀인데 어떤 문서만 덜 잘린다"가 원인 없이 나타난다.
+
+| 형식 | 파서 | 싣는 신호 | 지면 |
+|---|---|---|---|
+| `pdf` | docling (레이아웃+TableFormer, born-digital이면 OCR off) | 제목 표시 · 타이포그래피(크기·굵기·간격) · 좌표 | 원본 |
+| `docx` | docling msword_backend (추론 없음) | Word 스타일의 **진짜 제목 계층**(level) | 없음 → 합성 |
+| `hwp` | pyhwp → md (`convert.py`) | **마커만** — 제목 선언도 좌표도 없다 | 없음 → 합성 |
+| `hwpx` | OWPML 직독 (`core.hwpx_md`) | 마커만 | 없음 → 합성 |
+| `xml` (법령 본문) | `core.structure.lawxml` | 태그 계층이 곧 구조 (추론 0, 적합도 1.0) | 없음 → 합성 |
+
+- 확장자를 믿지 않는다 — 매직바이트로 가른다(`.hwp` 탈을 쓴 pdf·hwpx는 이름을 대고 거부).
+- 구형 Word(`.doc`)는 읽는 파서가 없다. hwp5와 OLE 매직이 같아 확장자로 먼저 갈라 ".docx로 다시 저장" 처방을 낸다.
+- 지면이 없는 형식은 `core.structure.synthpdf`가 A4 합성 지면에 흘려 찍고 **좌표를 요소에 되심는다** — 이후는 PDF와 완전히 같은 길(검수 오버레이·페이지 PNG·재해석)이다.
+- 실무 함정: `require_heading` 마커(제목 위치에서만 인정)는 제목 신호가 없는 hwp에서 **영영 발화하지 않는다.** 형식을 섞어 유도하면 한쪽에서만 도는 규칙이 되므로, 컴파일이 섞임을 경고하고 신호가 적은 쪽을 홀드아웃으로 민다.
+
+### 00.4.2 구조화 두 경로와 그 연결
+
+같은 파싱 결과(`ParseResult`) 위에 구조화 경로가 둘이다.
+
+- **형식 경로**(§3) — 유형을 아는 문서. registry의 형식 파일 마커로 결정론 구조화 + 적합도 게이트. 라우터(`router.route`)와 검수 화면이 같이 쓴다.
+- **유도 경로**(§4 구조 해석기) — 유형을 모르는 문서. 형식 없이 S0~S6으로 구조를 유도하고, 같은 fingerprint가 재현되면 frame을 동결한다.
+
+무엇으로 자를지는 **연결(binding)**이 정한다: 폴더 → 틀이 기본 단위이고, 특이한 문서 하나는 문서 → 틀로 예외를 건다(문서 연결이 폴더 연결을 이긴다). 정본은 문서 스토어 옆 `format_bindings.json`이고, 화면은 `/bindings/`(구조화 연결 캔버스)다. 연결이 없으면 유도 경로로 간다.
+
+연결·틀의 수명 규칙:
+
+- 문서 삭제·폴더 이름 변경·폴더 삭제는 **연결을 함께 옮기거나 지운다.** 안 따라가면 조용히 끊기거나(이름 변경), 같은 이름의 폴더를 다시 만들 때 죽은 틀이 되살아난다.
+- 저장된 결과에는 무엇으로 잘렸는지 남는다(`structured_by`: `induce` / `lawxml` / `format:<유형>@v<n>`). 지금 규칙과 다르면 **낡은 결과**로 표시하고 다시 해석하게 한다 — 연결을 바꿔도 결과는 자동으로 갱신되지 않는다.
+- 틀을 다시 컴파일하면 `format_version`이 오르고, 그 틀로 잘린 문서는 모두 낡음으로 잡힌다.
+- 법령 XML은 태그가 곧 구조라 틀을 붙이지 않는다(붙이면 원문이 아니라 검수용 합성 지면을 자르게 된다). 컴파일 샘플에서도 제외된다.
+
+### 00.4.3 형식 만들기 — 컴파일 국면을 화면에서
+
+CLI(`core.cli compile`)와 같은 절차를 이미 올라온 문서로 돌린다(`POST /v1/formats/compile`): 샘플 파싱(캐시 재사용) → 마커 체계 유도(규칙 기본, LLM 선택) → 적용 미리보기 → 홀드아웃 검증(샘플 4개↑) → 형식 저장 → registry 등재 → 연결. 등재는 registry.yaml에 `# --- ui-compiled: <유형> ---` 블록으로 덧붙인다 — 파일을 통째로 재직렬화하면 실측 기록이 담긴 주석이 전부 날아가기 때문이다. 사람이 손으로 등록한 route는 UI가 덮어쓰지도 지우지도 않는다.
 
 ### 00.5 거버넌스 — 8개 Agent 병렬 개발 규칙
 
@@ -326,7 +356,7 @@ LLM의 임무 (structured output, 낮은 temperature):
   ],
   "fitness": { "score": 0.97, "passed": true, "warnings": [],
                "detail": { "parts": { "marker_density": 1.0, "ordinal_continuity": 1.0,
-                                      "fact_coverage": 0.9, "residual": 1.0 } } }
+                                      "residual": 1.0 } } }
 }
 ```
 
@@ -350,7 +380,17 @@ fact의 `value`는 원문이 아니라 파싱된 타입값이다. 비교·계산
 
 ### 3.4 적합도 게이트 (형식 오추출 방어 2)
 
-매 문서 구조화 후 채점: 기대 마커 검출 밀도, 조 번호 연속성, 용어집 필수 fact 검출률, 잔여(어느 section에도 안 속한 요소) 비율. 임계 미달이면 **처리 결과를 확정하지 않고 격리** — "이 문서는 형식 v1과 N%만 부합. 다른 양식이거나 양식이 개정되었을 수 있음." 조용한 실패 금지.
+매 문서 구조화 후 채점한다. **형식 부합만** 재는 세 축이다(합 1.0):
+
+| 항목 | 가중치 | 재는 것 |
+|---|---|---|
+| `marker_density` | 0.35 | 형식이 선언한 마커가 실제로 검출됐는가 |
+| `ordinal_continuity` | 0.35 | 번호가 이어지는가 (제1조~제32조 중간이 비지 않았는가) |
+| `residual` | 0.30 | 형식이 설명하지 못한 잔여(기본 구역 질량)가 적은가 |
+
+임계 미달이면 **처리 결과를 확정하지 않고 격리** — "이 문서는 형식 v1과 N%만 부합. 다른 양식이거나 양식이 개정되었을 수 있음." 조용한 실패 금지.
+
+용어집 fact 검출률(`fact_coverage`)은 뺐다: 용어가 유형별 용어집이 아니라 전역으로 가면 "이 유형이라면 이 용어들이 잡혀야 한다"는 기대치 자체가 성립하지 않는다. 값 정규화에 실패한 fact(`needs_review`)는 채점과 무관하게 경고로 알린다 — 판정 근거로 쓰이기 전에 사람이 봐야 하는 상태다.
 
 ### 3.5 형식 버전 관리 (형식 오추출 방어 3)
 
