@@ -117,6 +117,18 @@ def _llm():
     return llm_mod.LLM()
 
 
+@router.get("/links/summary", summary="참조 수만 — 상단바 배지·홈 현황용")
+def rag_links_summary():
+    """/links 는 기하·원문 문맥까지 실어 수 MB 다. 배지와 현황 칩은 수만
+    필요하므로 여기서 끝낸다 — 홈이 11.8MB 를 받아 length 만 세던 것을 끊는다."""
+    idx = index_mod.current()
+    edges, pending = idx.cross_refs()
+    return {"docs": len(idx.docs),
+            "cross": len(edges),
+            "pending": len(pending),
+            "in_doc": sum(len(es or []) for es in idx.ref_edges().values())}
+
+
 @router.get("/links", summary="조문 상호참조 — 확정 간선과 보류 목록")
 def rag_links():
     """저작·검수 화면(/links/)용. 좌표에 사람이 읽는 경로를 붙여 준다 —

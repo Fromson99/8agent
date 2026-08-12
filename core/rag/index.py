@@ -421,6 +421,39 @@ class Index:
             pending = [p for p in pending
                        if (p["src_doc"], p["src"], tuple(p["key"])) not in covered
                        and (p["src_doc"], p["src"], p["surface"]) not in covered]
+            # 자동 연결 — 후보가 하나로 떨어지는 보류는 기본 연결한다 (2026-08-12
+            # 사용자 결정: 기본은 전부 연결, 사람은 참조 화면에서 끊는다).
+            # 대용어("법"·"동법")라 이름 대조가 물러섰을 뿐, 코퍼스 안에서 갈
+            # 곳이 하나뿐인 참조다(실측 5,006 중 3,901). 여럿에 걸린 것만
+            # 보류로 남는다. 틀린 자동 간선은 끊기(억제 규칙)와 질의 중 LLM
+            # 판정(백로그)이 사후에 거른다 — 그래서 기본 연결이 안전하다.
+            auto_seen = {(e["src_doc"], e["src"], e.get("dst_doc"), e["dst"])
+                         for e in edges}
+            still = []
+            for p in pending:
+                uniq = {(c["doc_id"], c["node"]) for c in p["candidates"]}
+                if len(uniq) != 1:
+                    still.append(p)
+                    continue
+                dst_doc, dst = next(iter(uniq))
+                ek = (p["src_doc"], p["src"], dst_doc, dst)
+                if ek in auto_seen:
+                    continue
+                auto_seen.add(ek)
+                # via 는 화면에 그대로 뜨는 말이다. "추정" — 이름을 안 부른
+                # 참조인데 그 조를 가진 문서가 하나뿐이라 그리 이었다는 뜻.
+                # (이름대조=확실 / 추정=후보 유일 / 보류=후보 여럿)
+                edges.append({"src_doc": p["src_doc"], "src": p["src"],
+                              "dst_doc": dst_doc, "dst": dst,
+                              "surface": p["surface"], "hint": p["hint"],
+                              "block": p.get("block"), "via": "추정"})
+            pending = still
+            # 끊긴 간선은 목록에서도 빠진다 — 참조 화면의 끊기(억제 규칙)가
+            # 확장(expand_refs)만이 아니라 이 목록에서도 이겨야 검수가 남는다.
+            from core.rag import verdicts as verdicts_mod   # 순환 의존 회피
+            edges = [e for e in edges
+                     if not verdicts_mod.is_suppressed(
+                         e["src_doc"], e["src"], e.get("dst_doc", ""), e["dst"])]
             edges = [self._redirect(e["src_doc"], e["src"], e) for e in edges]
             self._cross = (edges, pending)
         return self._cross
