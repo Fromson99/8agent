@@ -1,41 +1,28 @@
-/* 질의응답 화면 — 다른 뷰어와 같은 결 (다크 우선, 13px). */
-:root { --bg:#0f1115; --pane:#161922; --line:#272c39; --ink:#e6e9f0; --dim:#8b93a7;
-        --accent:#6ea8fe; --ok:#4ec9a0; --warn:#e2b341; --bad:#e06c75;
-        color-scheme: dark; }
-@media (prefers-color-scheme: light) {
-  :root { --bg:#f7f8fa; --pane:#fff; --line:#dfe3ea; --ink:#1a1d24; --dim:#6b7280;
-          --accent:#2563eb; --ok:#0f9d76; --warn:#b45309; --bad:#b91c1c;
-          color-scheme: light; } }
-* { box-sizing: border-box; }
-body { margin:0; background:var(--bg); color:var(--ink); font-size:13px;
-       font-family:-apple-system,"Segoe UI","Noto Sans KR",sans-serif; }
-.top { display:flex; align-items:center; gap:12px; padding:10px 16px;
-       border-bottom:1px solid var(--line); background:var(--pane);
-       position:sticky; top:0; z-index:5; }
-.top h1 { font-size:14px; margin:0; font-weight:650; }
-.grow { flex:1; }
-.sub { color:var(--dim); font-size:11.5px; }
-.nav { display:flex; gap:6px; }
-.navlink { color:var(--dim); text-decoration:none; font-size:11.5px;
-           border:1px solid var(--line); border-radius:6px; padding:3px 9px; }
-.navlink:hover { color:var(--accent); border-color:var(--accent); }
-.hidden { display:none !important; }
+/* 질의응답 화면 — 토큰·상단바·이동은 /ui/ui.css 가 쥔다. */
 
 /* 본문 폭 — 읽기 폭(1180px)까지는 중앙, 그보다 넓으면 그대로 중앙에 둔다.
  * PDF 패널이 열리면 **중앙정렬을 끄고** 왼쪽 끝부터 패널 앞까지 꽉 채운다:
  * auto 마진을 남겨 두면 남은 공간 안에서 다시 가운데로 몰려 큰 화면에서
  * 왼쪽에 큰 빈칸이 생긴다(실측 2560px 에서 좌우 각 568px). */
-.wrap { max-width:1180px; margin:0 auto; padding:16px; display:flex;
-        flex-direction:column; gap:14px; }
-.pane { background:var(--pane); border:1px solid var(--line); border-radius:10px;
-        padding:12px 14px; }
-.panehead { display:flex; align-items:baseline; gap:10px; margin-bottom:8px; }
-.panehead b { font-size:13px; }
+.wrap { max-width:1180px; margin:0 auto; padding:14px; display:flex;
+        flex-direction:column; gap:12px; }
+.pane { background:var(--pane); border:1px solid var(--line); border-radius:var(--r);
+        padding:11px 13px; }
+.panehead { display:flex; align-items:baseline; gap:10px; margin-bottom:7px; }
+.panehead b { font-size:12.5px; }
 
+/* 묻는 줄 — 이 화면의 본체. 스위치는 아래 줄로 물러나 알약이 된다 */
+.askpane { padding:9px 11px; }
 .askrow { display:flex; gap:8px; align-items:center; }
 .askrow input[type=search] { flex:1; padding:8px 10px; background:var(--bg);
         color:var(--ink); border:1px solid var(--line); border-radius:8px; font:inherit; }
 .askrow input[type=search]:focus { border-color:var(--accent); outline:none; }
+.askopts { display:flex; gap:5px; flex-wrap:wrap; margin-top:7px; }
+.askopts .chk { padding:2px 9px; border:1px solid var(--line); border-radius:999px; }
+.askopts .chk:hover { color:var(--ink); border-color:var(--accent); }
+.askopts .chk input { margin:0; accent-color:var(--accent); }
+.askopts .chk:has(input:checked) { color:var(--accent);
+        border-color:color-mix(in srgb,var(--accent) 55%,var(--line)); }
 button { padding:7px 14px; background:var(--accent); color:#fff; border:0;
          border-radius:8px; font:inherit; font-weight:600; cursor:pointer; }
 button:disabled { opacity:.5; cursor:default; }
@@ -52,6 +39,12 @@ button.good { background:var(--ok); }
 .ref a { color:var(--accent); text-decoration:none; }
 .ref a:hover { text-decoration:underline; }
 .ref .n { color:var(--dim); font-variant-numeric:tabular-nums; }
+
+/* 빈약한 답의 넛지 — 사고가 아니라 안내라서 경고 띠보다 조용하게 */
+.nudge { margin-top:10px; padding:8px 11px; font-size:12px; line-height:1.6;
+         border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));
+         border-left:3px solid var(--warn); border-radius:8px;
+         background:color-mix(in srgb,var(--warn) 7%,transparent); }
 
 .fb { display:flex; gap:10px; align-items:center; margin-top:12px;
       border-top:1px solid var(--line); padding-top:10px; }
@@ -101,7 +94,7 @@ button.good { background:var(--ok); }
 .go:hover { color:var(--accent); }
 
 /* 오른쪽 PDF 패널 — 근거의 자리를 새 탭 없이 그 자리에서 확인한다 */
-.pdfpane { position:fixed; top:47px; right:0; bottom:0; width:520px; z-index:30;
+.pdfpane { position:fixed; top:var(--bar); right:0; bottom:0; width:520px; z-index:30;
            background:var(--pane); border-left:1px solid var(--line);
            display:flex; flex-direction:column;
            box-shadow:-8px 0 24px rgba(0,0,0,.25); }
@@ -148,6 +141,8 @@ body.haspp .wrap { max-width:none; margin-left:0; margin-right:536px; }
 .pptxt { white-space:pre-wrap; line-height:1.65; font-size:12px; margin-top:10px;
          border-top:1px solid var(--line); padding-top:8px;
          overflow-wrap:anywhere; }
+/* 마디 줄(▸) — 해석이 세운 제목. 본문과 갈라 보여야 계층이 읽힌다 */
+.olh { color:var(--accent); font-weight:650; }
 .pplink { color:var(--accent); cursor:pointer; text-decoration:none;
           border-bottom:1px dashed color-mix(in srgb,var(--accent) 45%,transparent); }
 .pplink:hover { background:color-mix(in srgb,var(--accent) 13%,transparent); }

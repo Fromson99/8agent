@@ -305,6 +305,22 @@ function runToggle(on) {
   if (on) {
     document.querySelector("main.cols").classList.add("hidden");
     document.getElementById("cvwrap").classList.add("hidden");
+    // 근거 없는 항목 — 판정이 설 수 없다는 걸 실행 전에 말하고,
+    // 잇는 자리(목록 탭 + 차단 필터)로 가는 문을 그 자리에 둔다.
+    const nb = Object.keys(S.blocked).length;
+    const rb = document.getElementById("runBlocked");
+    rb.classList.toggle("hidden", !nb);
+    if (nb) {
+      rb.innerHTML = `근거 없는 항목 <b>${nb}개</b> — 연결된 법령 발췌가 없어
+        이 항목들은 판정이 서지 않습니다.
+        <button id="goLinkBlocked">목록에서 잇기 →</button>`;
+      document.getElementById("goLinkBlocked").onclick = () => {
+        runToggle(false);
+        cvToggle(false);                       // 목록 탭으로
+        const c = document.getElementById("only-blocked");
+        if (!c.checked) { c.checked = true; c.dispatchEvent(new Event("change")); }
+      };
+    }
   }
   for (const [id, want] of [["tab-list", false], ["tab-canvas", false], ["tab-run", on]])
     document.getElementById(id).classList.toggle("on", want);

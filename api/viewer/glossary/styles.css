@@ -1,38 +1,23 @@
-:root { --bg:#0f1115; --pane:#161922; --line:#272c39; --ink:#e6e9f0; --dim:#8b93a7;
-        --accent:#6ea8fe; --ok:#4ec9a0; --warn:#e2b341; --bad:#e06c75;
-        color-scheme: dark; }
-@media (prefers-color-scheme: light) {
-  :root { --bg:#f7f8fa; --pane:#fff; --line:#dfe3ea; --ink:#1a1d24; --dim:#6b7280;
-          --accent:#2563eb; --ok:#0f9d76; --warn:#b45309; --bad:#b91c1c;
-          color-scheme: light; } }
-* { box-sizing: border-box; }
-body { margin:0; background:var(--bg); color:var(--ink); font-size:13px;
-       font-family:-apple-system,"Segoe UI","Noto Sans KR",sans-serif; }
-.top { display:flex; align-items:center; gap:12px; padding:10px 16px;
-       border-bottom:1px solid var(--line); background:var(--pane); }
-.top h1 { font-size:14px; margin:0; font-weight:650; }
-.grow { flex:1; } .sub,.hint { color:var(--dim); font-size:11.5px; font-weight:400; }
-.hint { padding:10px; line-height:1.6; }
-.navlink { color:var(--dim); text-decoration:none; font-size:11.5px;
-           border:1px solid var(--line); border-radius:6px; padding:3px 9px; }
-.navlink:hover { color:var(--accent); border-color:var(--accent); }
-.cols { display:grid; grid-template-columns:340px 1fr; height:calc(100vh - 47px); }
-.pane { padding:12px 14px; overflow:hidden; display:flex; flex-direction:column;
+/* 용어집 — 토큰·상단바·이동은 /ui/ui.css 가 쥔다. */
+.hint { color:var(--dim); font-size:11.5px; font-weight:400; padding:8px; line-height:1.6; }
+.cols { display:grid; grid-template-columns:320px 1fr; height:calc(100vh - var(--bar)); }
+.pane { padding:10px 12px; overflow:hidden; display:flex; flex-direction:column;
         border-right:1px solid var(--line); }
 .pane.main { border-right:none; }
 .scroll { overflow:auto; flex:1; scrollbar-width:thin; }
-input[type=search] { width:100%; margin-bottom:8px; padding:5px 8px; background:var(--bg);
-  color:var(--ink); border:1px solid var(--line); border-radius:6px; }
+input[type=search] { width:100%; margin-bottom:6px; padding:5px 8px; background:var(--bg);
+  color:var(--ink); border:1px solid var(--line); border-radius:6px; font:inherit;
+  font-size:12px; }
 button { background:var(--pane); color:var(--ink); border:1px solid var(--line);
          border-radius:6px; padding:4px 10px; cursor:pointer; font-size:12px; }
 button:hover { border-color:var(--accent); }
 
 /* ---------------- 왼쪽 · 문서 트리 ---------------- */
-.dochead { display:flex; align-items:center; gap:10px; margin-bottom:5px; }
+.dochead { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
 .dochead b { font-size:12.5px; }
 .chk { display:flex; align-items:center; gap:5px; color:var(--dim); font-size:11.5px; }
-.doctree { max-height:32vh; overflow:auto; scrollbar-width:thin; margin-bottom:10px;
-           border:1px solid var(--line); border-radius:8px; padding:5px 7px; }
+.doctree { max-height:26vh; overflow:auto; scrollbar-width:thin; margin-bottom:7px;
+           border:1px solid var(--line); border-radius:8px; padding:4px 6px; }
 .fgroup { margin-bottom:2px; }
 .frow, .docrow { display:flex; align-items:center; gap:7px; padding:3px 4px;
                  border-radius:6px; cursor:pointer; }
@@ -44,9 +29,10 @@ button:hover { border-color:var(--accent); }
 .doctree input[type=checkbox] { accent-color:var(--accent); margin:0; flex:none; }
 
 /* 전체 / 여러 문서 / 직접 추가 */
-.seg { display:flex; gap:0; margin-bottom:8px; border:1px solid var(--line);
+.seg { display:flex; gap:0; margin-bottom:6px; border:1px solid var(--line);
        border-radius:6px; overflow:hidden; }
-.seg button { flex:1; border:none; border-radius:0; color:var(--dim); background:none; }
+.seg button { flex:1; border:none; border-radius:0; color:var(--dim); background:none;
+              padding:3px 6px; font-size:11.5px; white-space:nowrap; }
 .seg button + button { border-left:1px solid var(--line); }
 .seg button.on { color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, transparent); }
 
@@ -68,6 +54,8 @@ button:hover { border-color:var(--accent); }
 .pill.t1 { color:var(--ok); border-color:currentColor; }
 .pill.st { color:var(--warn); border-color:currentColor; }
 .pill.lp { color:var(--accent); border-color:currentColor; }
+/* 문서제목 — 참조가 부른 외부 문서의 이름. 코퍼스에 없는 문서라는 표시다 */
+.pill.doc { color:var(--ink); border-style:double; }
 .pill.prov { color:var(--warn); border-style:dashed; }
 .pill.hd { color:var(--ok); border-color:currentColor; }
 .pill.dead { color:var(--bad); border-color:currentColor; text-decoration:line-through; }
@@ -138,8 +126,12 @@ button:hover { border-color:var(--accent); }
 .mx tbody tr:hover .rowhead { color:var(--accent); }
 
 /* ---------------- 용어 상세 ---------------- */
-.dhead { display:flex; align-items:center; gap:10px; margin:2px 0 6px; }
+.dhead { display:flex; align-items:center; gap:10px; margin:2px 0 6px; flex-wrap:wrap; }
 .dhead h2 { margin:0; font-size:15px; }
+/* 질의응답으로 건너가는 문 — 진입 앵커 루프의 손잡이라 살짝 세운다 */
+.askgo { border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));
+         border-radius:6px; padding:2px 9px; }
+.askgo:hover { text-decoration:none; border-color:var(--accent); }
 .surf { margin-bottom:6px; }
 .docfilter { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0 14px; }
 .docfilter .chip { cursor:pointer; }

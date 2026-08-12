@@ -1,0 +1,172 @@
+/* 공용 UI — 여덟 화면이 모두 이 한 장을 먼저 읽는다.
+ *
+ * 여기 오기 전엔 화면마다 같은 토큰·상단바·버튼 규칙을 저마다 베껴 두고 있었다
+ * (팔레트만 여덟 벌, 그중 하나는 라이트 우선이라 혼자 다른 색이었다).
+ * 그래서 화면을 옮길 때마다 결이 미묘하게 달라졌고, 이동 링크도 화면마다
+ * 다른 묶음이 다른 순서로 붙어 있었다.
+ *
+ * 규율 하나로 정리한다 — **이동은 글자, 동작은 버튼**.
+ *   상단바 왼쪽 : 여덟 화면으로 가는 이동. 테두리 없는 글자, 지금 화면만 또렷하다.
+ *   상단바 오른쪽 : 그 화면에서만 되는 동작. 테두리 있는 버튼·토글.
+ *   화면 안 탭·필터 : 상단바에 올리지 않는다. 그것이 다루는 판 위에 둔다.
+ */
+
+:root {
+  --bg:#0f1115; --pane:#161922; --panel:#161922; --line:#272c39;
+  --ink:#e6e9f0; --dim:#8b93a7; --accent:#6ea8fe;
+  --ok:#4ec9a0; --good:#4ec9a0; --warn:#e2b341; --bad:#e06c75;
+  --r:10px;            /* 판의 모서리 */
+  --bar:40px;          /* 상단바 높이 — 전체 높이 계산이 이 값 하나를 본다 */
+  --shadow:0 1px 3px rgba(0,0,0,.45);
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg:#f7f8fa; --pane:#fff; --panel:#fff; --line:#dfe3ea;
+    --ink:#1a1d24; --dim:#6b7280; --accent:#2563eb;
+    --ok:#0f9d76; --good:#15803d; --warn:#b45309; --bad:#b91c1c;
+    --shadow:0 1px 3px rgba(16,24,40,.08);
+    color-scheme:light;
+  }
+}
+
+* { box-sizing:border-box; }
+/* `hidden` 속성은 언제나 이긴다 — 작성자 스타일의 display 가 UA 의
+   `[hidden]{display:none}` 을 이겨서 숨긴 모달이 계속 떠 있던 적이 있다. */
+[hidden] { display:none !important; }
+.hidden { display:none !important; }
+body {
+  margin:0; background:var(--bg); color:var(--ink);
+  font:13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR",
+       "Malgun Gothic", sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.grow { flex:1; }
+.sub { color:var(--dim); font-size:11.5px; font-weight:400; }
+
+/* --- 상단바 -------------------------------------------------------------- */
+.ui-bar {
+  position:sticky; top:0; z-index:40; flex:none;
+  display:flex; align-items:center; gap:10px;
+  height:var(--bar); padding:0 12px 0 0;
+  background:var(--pane); border-bottom:1px solid var(--line);
+}
+/* 표식 — 어느 시스템 안에 있는지. 누르면 첫 화면으로 */
+.ui-mark {
+  display:flex; align-items:center; gap:7px; height:100%;
+  padding:0 12px; text-decoration:none; color:var(--ink); flex:none;
+}
+.ui-mark i {
+  width:19px; height:19px; border-radius:6px; flex:none;
+  display:grid; place-items:center; font-style:normal;
+  font-size:11px; font-weight:800; letter-spacing:-.02em;
+  color:#fff; background:var(--accent);
+}
+.ui-mark b { font-size:12px; font-weight:700; letter-spacing:-.01em; }
+@media (max-width:1180px) { .ui-mark b { display:none; } }
+
+/* 이동 — 여덟 화면이 늘 같은 순서로 있다. 일 순서대로: 넣고 → 자르고 →
+   이어 붙이고 → 묻고 → 점검하고 → 들여다본다. */
+.ui-nav { display:flex; align-items:stretch; height:100%; min-width:0; }
+.ui-nav a {
+  display:flex; align-items:center; padding:0 10px;
+  color:var(--dim); text-decoration:none; font-size:12px; white-space:nowrap;
+  border-bottom:2px solid transparent; margin-bottom:-1px;
+}
+.ui-nav a:hover { color:var(--ink); background:color-mix(in srgb,var(--accent) 8%,transparent); }
+.ui-nav a.on { color:var(--ink); font-weight:650; border-bottom-color:var(--accent); }
+.ui-nav .gap { width:1px; margin:11px 7px; background:var(--line); flex:none; }
+/* 검수 대기 배지 — 사람 손을 기다리는 수. 누르면 그 큐가 바로 열린다 */
+.ui-nav .qbadge {
+  display:inline-block; margin-left:5px; padding:0 5px; min-width:15px;
+  border-radius:8px; font-size:10px; font-weight:700; text-align:center;
+  line-height:1.5; cursor:pointer;
+  color:var(--warn); background:color-mix(in srgb,var(--warn) 16%,transparent);
+}
+.ui-nav .qbadge:hover { color:#fff; background:var(--warn); }
+.ui-nav .qbadge.err { color:var(--bad); background:color-mix(in srgb,var(--bad) 16%,transparent); }
+.ui-nav .qbadge.err:hover { color:#fff; background:var(--bad); }
+@media (max-width:820px) { .ui-nav .gap { display:none; } .ui-nav a { padding:0 7px; } }
+
+/* 상태 한 줄 — 이 화면이 지금 무엇을 쥐고 있나. 길면 말줄임 */
+.ui-meta {
+  color:var(--dim); font-size:11.5px; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+@media (max-width:1000px) { .ui-meta { display:none; } }
+
+/* 동작 — 이 화면에서만 되는 것들. 크기·모양을 여기서 한 번에 못 박는다 */
+.ui-acts { display:flex; align-items:center; gap:6px; flex:none; }
+.ui-acts button, .ui-acts .btn, .ui-acts select, .ui-acts input {
+  font:inherit; font-size:11.5px; font-weight:400;
+  color:var(--ink); background:var(--pane);
+  border:1px solid var(--line); border-radius:7px; padding:3px 9px;
+  cursor:pointer; white-space:nowrap;
+}
+.ui-acts button:hover:not(:disabled), .ui-acts .btn:hover { border-color:var(--accent); color:var(--accent); }
+.ui-acts button:disabled { opacity:.45; cursor:default; }
+.ui-acts .btn { display:inline-block; text-decoration:none; }
+.ui-acts button.go { color:var(--accent); border-color:color-mix(in srgb,var(--accent) 55%,var(--line)); }
+/* 토글 — 체크박스도 버튼과 같은 알약이라야 줄이 흔들리지 않는다 */
+.ui-acts .chk {
+  display:inline-flex; align-items:center; gap:5px; color:var(--dim);
+  font-size:11.5px; padding:3px 9px; border:1px solid var(--line);
+  border-radius:7px; cursor:pointer; white-space:nowrap;
+}
+.ui-acts .chk:hover { color:var(--ink); border-color:var(--accent); }
+.ui-acts .chk input { margin:0; accent-color:var(--accent); }
+.ui-acts .chk:has(input:checked) { color:var(--accent); border-color:color-mix(in srgb,var(--accent) 55%,var(--line)); }
+.ui-acts .status { color:var(--dim); font-size:11.5px; }
+.ui-acts .status.err { color:var(--bad); }
+.ui-acts .status.busy::after { content:"…"; }
+.ui-acts .badge {
+  display:inline-block; min-width:15px; padding:0 4px; margin-left:4px;
+  border-radius:8px; background:var(--accent); color:#fff;
+  font-size:10px; font-weight:700; text-align:center;
+}
+
+/* 본문에서 만들어 붙는 이동 링크 (app.js 가 찍는다) */
+.navlink {
+  color:var(--dim); text-decoration:none; font-size:11.5px; white-space:nowrap;
+  border:1px solid var(--line); border-radius:6px; padding:3px 9px;
+}
+.navlink:hover { color:var(--accent); border-color:var(--accent); }
+
+/* 알림 띠 — 상단바 바로 아래. 화면이 죽었을 때 이유가 여기 뜬다 */
+.banner {
+  padding:7px 14px; font-size:12px; white-space:pre-wrap; flex:none;
+  background:color-mix(in srgb,var(--warn) 18%,var(--pane));
+  border-bottom:1px solid var(--line);
+}
+.banner.err { background:color-mix(in srgb,var(--bad) 20%,var(--pane)); }
+
+/* --- 화면 안 탭 (판 위에 놓는다. 상단바로 올리지 않는다) ------------------ */
+.uitabs { display:flex; gap:3px; }
+.uitabs button {
+  font:inherit; font-size:11.5px; padding:3px 10px; border-radius:999px;
+  color:var(--dim); background:transparent; border:1px solid transparent;
+  cursor:pointer; white-space:nowrap;
+}
+.uitabs button:hover { color:var(--ink); }
+.uitabs button.on {
+  color:var(--accent); border-color:color-mix(in srgb,var(--accent) 55%,var(--line));
+  background:color-mix(in srgb,var(--accent) 10%,transparent); font-weight:650;
+}
+
+/* 화면 전체를 갈아 끼우는 보기 전환은 상단바에 설 수 있다 (AGENT6 의 목록·캔버스·점검).
+   그때도 동작 버튼과 섞이지 않게 알약 모양을 지킨다. */
+.ui-acts .uitabs button { border-color:transparent; background:transparent; padding:3px 10px; }
+.ui-acts .uitabs button:hover { color:var(--ink); border-color:transparent; }
+.ui-acts .uitabs button.on {
+  color:var(--accent); border-color:color-mix(in srgb,var(--accent) 55%,var(--line));
+  background:color-mix(in srgb,var(--accent) 10%,transparent);
+}
+
+/* 승인 용어 — 본문 속에서 은은하게. 참조 링크(파랑 점선)와 결이 달라야 한다 */
+a.term { color:inherit; text-decoration:none; border-radius:3px;
+         background:color-mix(in srgb,var(--ok) 16%,transparent);
+         box-shadow:inset 0 -1.5px 0 color-mix(in srgb,var(--ok) 55%,transparent); }
+a.term:hover { background:color-mix(in srgb,var(--ok) 30%,transparent); }
+
+/* 화면 읽기가 불편한 사람에게만 보이는 제목 */
+.sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }

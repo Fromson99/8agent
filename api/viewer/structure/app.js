@@ -22,9 +22,67 @@ const S = {
   blockAt: new Map(),                   // 블록 idx → 블록 (트리 잎용)
   openBlk: new Set(),                   // 세부(자기 블록)를 편 마디
   selBlock: null,                       // 낱개로 고른 블록 — 그것만 하이라이트
+  ruleBlocks: new Set(),                // 규칙 제안의 근거로 담아 둔 블록들
 };
 
 const lv = (n) => `var(--l${Math.min(Math.max(n | 0, 0), LV - 1)})`;
+
+/* ---------------------------------------------------- 계열 이름을 사람 말로
+ *
+ * 사다리에 등재되는 키는 `계열[:깊이]@들여쓰기단` 이다(`dot_number:1@2`).
+ * 기계에는 정확하지만 사람에게는 암호다 — 그래서 **이 문서에 실제로 나온 표면**을
+ * 대표로 뽑아 보여 준다(`1. · 3단`). 원본 키는 title 로 남긴다: 순서 지정 입력란은
+ * 여전히 키를 받으므로 어딘가에는 있어야 한다.
+ */
+const FAM_NAME = {                       // 예시가 안 잡힐 때만 쓰는 이름표
+  buchik: "부칙", kr_article: "제N조", kr_장: "제N장", kr_절: "제N절",
+  kr_편: "제N편", kr_관: "제N관", circled: "①", dot_number: "1.",
+  hangul_jamo: "가.", roman: "Ⅰ.", annex: "[별표]", custom: "직접 등록",
+  "paren_number:both": "(1)", "paren_number:right": "1)",
+};
+
+function famSurfaces() {
+  if (S.famEx) return S.famEx;
+  const count = new Map();
+  for (const b of S.data?.blocks || []) {
+    for (const m of b.markers || []) {
+      const bag = count.get(m.family) || new Map();
+      const s = (m.surface || "").trim();
+      if (s) bag.set(s, (bag.get(s) || 0) + 1);
+      count.set(m.family, bag);
+    }
+  }
+  S.famEx = new Map([...count].map(([k, bag]) =>
+    [k, [...bag].sort((a, b) => b[1] - a[1])[0]?.[0] || ""]));
+  return S.famEx;
+}
+
+/* `bullet_■@0` → `■ · 1단` */
+function famLabel(key) {
+  const ex = famSurfaces().get(key);
+  const m = String(key).match(/^(.*?)(?:@(\d+))?$/);
+  const base = m[1], tier = m[2];
+  const name = ex || FAM_NAME[base] || FAM_NAME[base.split(":")[0]] || base;
+  return name + (tier != null ? ` · ${+tier + 1}단` : "");
+}
+
+const fam = (key) => `<span title="${esc(key)}">${esc(famLabel(key))}</span>`;
+
+/* `들여쓰기 0.050<0.168` 같은 기계 증거를 문장으로. 모르는 형태는 그대로 둔다. */
+function whyText(why) {
+  let m;
+  if ((m = why.match(/^들여쓰기\s+([\d.]+)<([\d.]+)/)))
+    return `왼쪽에서 더 일찍 시작합니다 (여백 ${(+m[1] * 100).toFixed(1)}% vs ${(+m[2] * 100).toFixed(1)}%)`;
+  if ((m = why.match(/^사이-끼임\s+(\d+):(\d+)/)))
+    return `번호가 이어지는 사이에 끼어 있습니다 (${m[1]}건 대 ${m[2]}건)`;
+  if ((m = why.match(/^덮음\s+(\d+)%/)))
+    return `구간이 상대를 ${m[1]}% 덮습니다`;
+  if ((m = why.match(/^리셋 정렬\s+(\d+)\/(\d+)/)))
+    return `번호가 다시 1부터 시작합니다 (${m[2]}번 중 ${m[1]}번 일치)`;
+  if (why.startsWith("자기계열 depth")) return "같은 계열 안의 깊이 차이입니다";
+  if (why.startsWith("지정")) return "사람이 지정했습니다";
+  return why;
+}
 
 /* ---------------------------------------------------------------- 상태 표시 */
 function say(msg, kind = "") {
@@ -188,6 +246,12 @@ async function load(docId) {
   S.data = await r.json();
   index();
   $("docName").textContent = S.data.doc;
+  // 이 문서의 연결 — 용어집은 이름으로, 참조는 id 로 문서를 짚는다
+  $("docLinks").innerHTML = `
+    <a href="/glossary/?doc=${encodeURIComponent(S.data.doc)}"
+       title="이 문서의 용어만 걸러 본다">용어 →</a>
+    <a href="/links/?doc=${encodeURIComponent(S.docId)}"
+       title="이 문서가 걸린 참조 간선만 본다">참조 →</a>`;
   S.pinned = false; renderInspector(null);
   // 한 화면이 터져도 나머지는 뜨게 한다. 트리에서 난 오류로 PDF 를 통째로 잃는
   // 일이 실제로 있었다 — 화면끼리 서로를 세우면 안 된다.
@@ -275,6 +339,8 @@ $("reinterpret").onclick = async () => {
 function index() {
   S.byId.clear(); S.children.clear(); S.path.clear(); S.open.clear(); S.sel = null;
   S.blockAt.clear(); S.openBlk.clear(); S.selBlock = null;
+  S.famEx = null;                       // 계열 표면 예시는 문서마다 다시 뽑는다
+  S.ruleBlocks.clear();
   for (const b of S.data.blocks) S.blockAt.set(b.idx, b);
   for (const n of S.data.nodes) {
     S.byId.set(n.id, n);
@@ -578,7 +644,7 @@ function renderInspector(b) {
       <div class="mkhead">
         <b>${esc(m.surface)}</b>
         <span class="pill ${state[1] === "good" ? "ok" : "no"}">${state[0]}</span>
-        <span class="sub mono">${esc(m.family)}</span>
+        <span class="sub">${fam(m.family)}</span>
         <span class="sub mono" style="margin-left:auto">s=${m.s > 0 ? "+" : ""}${m.s}</span>
       </div>
       ${m.llm ? `<div class="sub">LLM 판정: <b>${esc(m.llm)}</b></div>` : ""}
@@ -586,6 +652,23 @@ function renderInspector(b) {
       <div class="sub reason">${esc(m.note || "")}</div>
     </div>`;
   }).join("") || "<div class='sub'>이 블록에는 마커가 없습니다</div>";
+
+  // 고친다 — 이 블록이 구역을 열어야 하는데 안 열었다면 두 갈래로 손을 댄다.
+  //   규칙 제안: 새 **표면 표기**를 어휘에 더한다(다른 문서에도 적용된다)
+  //   계층 교정: 표기는 맞는데 붙은 자리가 틀렸다(이 문서의 좌표만 고친다)
+  const picked = S.ruleBlocks.has(b.idx);
+  const fixable = b.node != null;
+  const acts = `<div class="ifix">
+    <label class="chk" title="규칙 제안에 이 블록을 근거로 넣는다">
+      <input type="checkbox" id="rbPick" ${picked ? "checked" : ""}> 규칙 후보로 담기
+      ${S.ruleBlocks.size ? `<span class="pill">${S.ruleBlocks.size}</span>` : ""}
+    </label>
+    <button id="rbTry" ${S.ruleBlocks.size ? "" : "disabled"}
+      title="담은 블록을 LLM 에게 보여 규칙을 제안받고, 등록해 전후를 비교한다">
+      규칙 제안·시험</button>
+    ${fixable ? `<button id="hxUp" title="이 마디를 한 층 올린다 (부모의 형제로)">↰ 내어쓰기</button>
+      <button id="hxDown" title="바로 앞 형제 마디의 자식으로 넣는다">↳ 들여쓰기</button>` : ""}
+  </div>`;
 
   box.innerHTML = `
     <div class="ihead">
@@ -599,7 +682,194 @@ function renderInspector(b) {
     ${b.opens && b.opens.length > 1
       ? `<div class="warn">이 블록이 구역 ${b.opens.length}개를 엽니다 —
          원문이 한 줄이라 좌표가 같습니다</div>` : ""}
+    ${acts}
     ${marks}`;
+
+  $("rbPick").onchange = (e) => {
+    e.target.checked ? S.ruleBlocks.add(b.idx) : S.ruleBlocks.delete(b.idx);
+    renderInspector(b);
+  };
+  $("rbTry").onclick = () => tryRule();
+  if (fixable) {
+    $("hxUp").onclick = () => moveNode(b.node, "up");
+    $("hxDown").onclick = () => moveNode(b.node, "down");
+  }
+}
+
+/* ------------------------------------------------- 규칙 제안 (LLM) · §6
+ *
+ * "이 자리가 구역인데 안 잘렸다" 를 블록으로 지목하면 LLM 이 **표면 패턴**을 제안한다.
+ * 서버는 제안만 하지 않고 **등록한 뒤 캐시가 있는 문서 전부를 다시 해석해** 전후
+ * 점수를 잰다 — 규칙 하나가 다른 문서를 망가뜨리는 것을 그 자리에서 본다. 그래서
+ * 결과에는 항상 유지/롤백이 붙는다. */
+async function tryRule() {
+  if (!S.docId || !S.ruleBlocks.size) return;
+  const note = prompt("이 자리가 무엇인지 한 줄로 적어 주세요 (선택)\n"
+    + "예: 이 줄들은 별표 제목인데 구역이 열리지 않았습니다", "") ?? "";
+  say(`규칙 제안 중 — 블록 ${[...S.ruleBlocks].join(", ")} (LLM + 전체 재해석)`, "busy");
+  try {
+    const r = await fetch(`${API}/${S.docId}/rules/try`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ blocks: [...S.ruleBlocks], note }) });
+    const j = await r.json();
+    if (!r.ok) {
+      // 규약을 어긴 제안은 버리지 않는다 — 손으로 고쳐 등록할 수 있게 넘긴다
+      if (j.detail?.proposal) { say(""); showBadProposal(j.detail); return; }
+      throw new Error(j.detail?.message || j.detail || "실패");
+    }
+    say("");
+    showRuleResult(j);
+  } catch (err) {
+    say(String(err.message || err), "err");
+  }
+}
+
+/* 제안이 규약을 어겼을 때 — 패턴을 등록 폼에 그대로 넣어 준다. */
+function showBadProposal(d) {
+  const p = d.proposal || {};
+  $("ruleResult").innerHTML = `
+    <div class="verdict bad">${esc(d.message || "제안이 규약을 어겼습니다")}</div>
+    <div class="rulebox">
+      <div><b>${esc(p.id || "(이름 없음)")}</b> <span class="sub mono">${esc(p.family || "")}</span></div>
+      <code>${esc(p.pattern || "")}</code>
+      <div class="sub">${esc(p.why || "")}</div>
+      <button id="ruleHand">패턴 손보기 — 등록 폼으로</button>
+    </div>
+    <div class="sub">${esc(d.how || "")}</div>`;
+  $("ruleKeep").hidden = $("ruleRollback").hidden = true;
+  $("ruleModal").hidden = false;
+  $("ruleHand").onclick = () => {
+    $("ruleModal").hidden = true;
+    $("modal").hidden = false;
+    mtab("mtCust");
+    $("rId").value = p.id || "";
+    $("rFamily").value = p.family || "";
+    $("rPattern").value = p.pattern || "";
+    $("rGroups").value = (p.groups || []).join(", ");
+    $("rOrdinal").value = (p.ordinal_from || []).join(", ");
+    $("rNote").value = p.surface || p.why || "";
+    $("rPattern").focus();
+  };
+}
+
+/* 제안 결과 — 규칙 자체와 **전후 점수**를 함께 보여주고 유지/롤백을 받는다. */
+function showRuleResult(j) {
+  const m = $("ruleModal");
+  const body = $("ruleResult");
+  if (!j.proposed) {
+    body.innerHTML = `<p class="warn">${esc(j.note || "새 표면 표기가 아니라는 판단입니다")}</p>
+      <p class="sub">${esc(j.why || "")}</p>
+      <p class="sub">표기는 맞는데 붙은 자리가 틀렸다면 <b>계층 교정</b>(내어쓰기/들여쓰기)을 쓰세요.</p>`;
+    $("ruleKeep").hidden = $("ruleRollback").hidden = true;
+  } else {
+    const rows = (j.scope || []).map((s) => {
+      const d = (s.after ?? 0) - (s.before ?? 0);
+      const cls = d > 0.0005 ? "ok" : d < -0.0005 ? "no" : "";
+      return `<tr><td>${esc(s.name || s.doc_id)}</td>
+        <td class="mono">${((s.before ?? 0) * 100).toFixed(1)}%</td>
+        <td class="mono">${((s.after ?? 0) * 100).toFixed(1)}%</td>
+        <td class="mono"><span class="pill ${cls}">${d >= 0 ? "+" : ""}${(d * 100).toFixed(1)}</span></td>
+        <td class="mono">${s.nodes ?? ""}</td></tr>`;
+    }).join("");
+    body.innerHTML = `
+      <div class="verdict ${j.worse ? "bad" : j.better ? "good" : ""}">${esc(j.verdict)}</div>
+      <div class="rulebox">
+        <div><b>${esc(j.rule.id)}</b> <span class="sub mono">${esc(j.rule.family || "")}</span></div>
+        <code>${esc(j.rule.pattern)}</code>
+        <div class="sub">${esc(j.why || "")}</div>
+      </div>
+      <table class="rt"><tr><th>문서</th><th>전</th><th>후</th><th>변화</th><th>마디</th></tr>
+        ${rows}</table>
+      ${j.skipped?.length ? `<div class="sub">시험 범위 밖 ${j.skipped.length}건 —
+        파싱 캐시가 없거나 XML 인제스트 문서입니다</div>` : ""}
+      <div class="sub">규칙은 <b>이미 등록되어 있습니다</b>. 그대로 두려면 유지,
+        원래대로 돌리려면 롤백을 누르세요(되돌리면 이 문서들은 원래 산출로 돌아갑니다).</div>`;
+    $("ruleKeep").hidden = $("ruleRollback").hidden = false;
+    $("ruleKeep").onclick = () => decideRule(j.rule_id, "유지");
+    $("ruleRollback").onclick = () => decideRule(j.rule_id, "롤백");
+  }
+  m.hidden = false;
+}
+
+async function decideRule(ruleId, action) {
+  say(`${action} 중…`, "busy");
+  const r = await fetch(`${API}/rules/decide`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rule_id: ruleId, action }) });
+  if (!r.ok) { say(await errText(r), "err"); return; }
+  $("ruleModal").hidden = true;
+  S.ruleBlocks.clear();
+  say(action === "유지" ? `규칙 ${ruleId} 를 유지했습니다` : `규칙 ${ruleId} 를 되돌렸습니다`);
+  await load(S.docId);
+}
+
+/* ------------------------------------------------- 계층 교정 · §계층
+ *
+ * 표면 규칙이 닿지 않는 어긋남(2단 조판·페이지 넘김으로 엉킨 순서)을 **이 문서의
+ * 좌표만** 고쳐 바로잡는다. 재해석해도 살아남는다(result.json 이 아니라 별도 기록). */
+async function moveNode(nodeId, dir) {
+  const n = S.byId.get(nodeId);
+  if (!n) return;
+  let parent = null;
+  if (dir === "up") {
+    const p = n.parent == null ? null : S.byId.get(n.parent);
+    parent = p ? p.parent : null;                 // 부모의 부모 = 한 층 올림
+    if (n.parent == null) { say("이미 최상위입니다", "err"); return; }
+  } else {
+    // 바로 앞 형제 — 들여쓰기는 "앞 항목의 자식이 된다" 는 뜻이다
+    const sibs = S.data.nodes.filter((x) => x.parent === n.parent);
+    const i = sibs.findIndex((x) => x.id === nodeId);
+    if (i <= 0) { say("앞에 형제 마디가 없어 들여쓸 수 없습니다", "err"); return; }
+    parent = sibs[i - 1].id;
+  }
+  const r = await fetch(`${API}/${S.docId}/hierarchy/fix`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ node: nodeId, parent, note: "화면에서 교정" }) });
+  if (!r.ok) { say(await errText(r), "err"); return; }
+  const j = await r.json();
+  say(`'${n.surface}' 를 ${dir === "up" ? "내어썼습니다" : "들여썼습니다"} — L${j.level}`);
+  await load(S.docId);
+}
+
+/* 이 구역의 계층을 LLM 이 훑어 교정 후보를 낸다 — 적용은 사람이 하나씩. */
+async function suggestHierarchy() {
+  if (S.sel == null) { say("먼저 트리에서 마디를 고르세요", "err"); return; }
+  say("계층 교정 후보를 찾는 중 (LLM)…", "busy");
+  const r = await fetch(`${API}/${S.docId}/hierarchy/suggest`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ node: S.sel, depth: 3, limit: 60 }) });
+  if (!r.ok) { say(await errText(r), "err"); return; }
+  const j = await r.json();
+  say("");
+  const fixes = j.fixes || [];
+  const body = $("ruleResult");
+  body.innerHTML = fixes.length
+    ? `<div class="verdict">교정 후보 ${fixes.length}건 — 적용은 하나씩 누르세요</div>`
+      + fixes.map((f, i) => `<div class="rulebox">
+          <div><b>${esc(S.byId.get(f.node)?.surface || f.node)}</b>
+            → <span class="sub">부모: ${esc(S.byId.get(f.parent)?.surface || f.parent)}</span></div>
+          <div class="sub">${esc(f.why || "")}</div>
+          <button data-fix="${i}">이대로 옮기기</button></div>`).join("")
+    : `<div class="verdict">고칠 것을 찾지 못했습니다 — 계층이 그대로 두어도 된다는 판단입니다</div>`;
+  $("ruleKeep").hidden = $("ruleRollback").hidden = true;
+  $("ruleModal").hidden = false;
+  body.querySelectorAll("[data-fix]").forEach((btn) => {
+    btn.onclick = async () => {
+      const f = fixes[+btn.dataset.fix];
+      const r2 = await fetch(`${API}/${S.docId}/hierarchy/fix`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ node: f.node, parent: f.parent, note: f.why || "LLM 제안" }) });
+      btn.disabled = true;
+      btn.textContent = r2.ok ? "옮겼습니다" : await errText(r2);
+      if (r2.ok) await load(S.docId);
+    };
+  });
+}
+
+async function errText(r) {
+  const j = await r.json().catch(() => ({}));
+  const d = j.detail;
+  return typeof d === "string" ? d : (d && d.message) || `실패 (${r.status})`;
 }
 /* 표·그림은 평문으로 보이면 검수가 안 된다 — 표는 격자로, 그림은 자리만 알린다.
  * 병합 셀은 span 을 되살려 원본 모양대로 그린다. 머리글은 <th> 로 갈라, 값 셀의
@@ -644,7 +914,7 @@ function renderSummary() {
   const pct = (x) => (x == null ? "–" : (x * 100).toFixed(0) + "%");
   const rungs = l.rungs.map((r) =>
     `<div class="rung"><span class="chip" style="background:${lv(r.level)}">L${r.level}</span>
-     <span>${esc(r.families.join(", "))}</span>
+     <span>${r.families.map(fam).join(", ")}</span>
      <span class="sub" style="margin-left:auto">reg ${r.reg_score.toFixed(2)}</span></div>`).join("");
 
   const problems = [];
@@ -682,7 +952,12 @@ function renderSummary() {
   // 문서군(fingerprint) — 같은 모양의 문서가 몇 번 관측됐고 frame 이 동결됐는지.
   // 관측이 쌓여야 tier 가 hot 이 된다 (원장: structure_ledger.json).
   const fpc = d.stats.fingerprint_count;
-  const fp = d.fingerprint ? `
+  // 틀로 잘린 문서는 **관측 대상이 아니다** — 문서군 통계는 "유도가 같은 모양을
+  // 몇 번 봤나" 이고, 틀이 있으면 그 유도를 하지 않는다. `–회` 로 두면 관측이 안 된
+  // 것처럼 읽히므로 해당 없음을 말한다.
+  const fp = d.bound_doc_type
+    ? `<div class="sub">문서군 관측 — 해당 없음 (틀로 자르므로 유도 관측을 쌓지 않습니다)</div>`
+    : d.fingerprint ? `
     <div class="sub" title="${esc(d.fingerprint.key)}">문서군 관측 ${fpc ?? "–"}회
       ${d.stats.may_freeze ? `<span class="pill ok">frame 동결</span>`
                            : `<span class="pill">동결 전</span>`}</div>` : "";
@@ -706,6 +981,12 @@ function renderSummary() {
     lawxml: ["법령 XML", "태그 계층 그대로 — 추론 없음"],
   };
   const ki = KINDS[d.source_kind];
+  // 파싱이 **무엇을 잃었는지**는 판정의 전제다. HWP 변환은 그림을 버리고, 시한을
+  // 넘기면 표까지 버린다 — 그 사실이 화면 어디에도 없으면 "왜 표가 없지" 가 된다.
+  const pw = (d.parser_warnings || []).length
+    ? `<div class="sec"><h4>파싱에서 잃은 것</h4>` + d.parser_warnings
+        .map((w) => `<div class="warn">${esc(w)}</div>`).join("") + `</div>`
+    : "";
   const src = ki ? `<div class="metric"><span>원본 형식</span>
         <span><b>${ki[0]}</b></span></div>
       <div class="sub">${esc(ki[1])}</div>
@@ -720,6 +1001,7 @@ function renderSummary() {
       <span class="pill">${esc(f.tier)}</span></span></div>
     <div class="sub">커버 ${pct(f.coverage)} × 정합 ${pct(f.consistency)} × 사다리 ${pct(f.ladder_quality)}</div>
     ${fp}
+    ${pw}
     <div class="sec"><h4>사다리</h4>${rungs}</div>
     ${problems.length ? `<div class="sec"><h4>사다리 결함</h4>${problems.join("")}</div>` : ""}
     ${hints}
@@ -858,11 +1140,14 @@ function renderDerivedOrder() {
     const m = x.match(/^(\S+)→(\S+)\s*\((.+)\)$/);
     return m ? { a: m[1], b: m[2], why: m[3] } : null;
   }).filter(Boolean);
-  box.innerHTML = `<h3>시스템이 유도한 순서 <span class="sub">${pairs.length}쌍</span></h3>` +
-    (pairs.length
-      ? `<div class="derived">${pairs.map((p) =>
-          `<div class="row2"><b>${esc(p.a)}&gt;${esc(p.b)}</b>
-            <span class="why">${esc(p.why)}</span></div>`).join("")}</div>`
+  box.innerHTML = `<h3>시스템이 유도한 순서 <span class="sub">${pairs.length}쌍</span></h3>`
+    + `<div class="sub">왼쪽이 <b>바깥</b>(상위), 오른쪽이 <b>안쪽</b>입니다 —
+       이 순서가 사다리의 층을 만듭니다.</div>`
+    + (pairs.length
+      ? `<table class="rt derived"><tr><th>바깥</th><th>안쪽</th><th>왜 그렇게 봤나</th></tr>`
+        + pairs.map((p) => `<tr><td>${fam(p.a)}</td><td>${fam(p.b)}</td>
+            <td class="why">${esc(whyText(p.why))}</td></tr>`).join("")
+        + `</table>`
       : `<div class="sub">없음</div>`);
 }
 
@@ -882,7 +1167,9 @@ function renderOrderQuick() {
     const [a, b] = p.split("/");
     for (const [x, y] of [[a, b], [b, a]]) {
       const btn = document.createElement("button");
-      btn.textContent = `${x}>${y}`;
+      // 눈에는 표면, 손에는 키 — 입력란은 키를 받는다
+      btn.textContent = `${famLabel(x)} ▸ ${famLabel(y)}`;
+      btn.title = `${x}>${y} — 누르면 순서 지정란에 넣습니다`;
       btn.onclick = () => {
         const cur = ($("hOrder").value || "").trim();
         $("hOrder").value = cur ? `${cur}, ${x}>${y}` : `${x}>${y}`;
@@ -935,7 +1222,14 @@ $("showAll").onclick = () => {
 $("modalClose").onclick = () => ($("modal").hidden = true);
 $("rSave") && ($("paneCust").dataset.ready = "1");
 $("modal").onclick = (e) => { if (e.target.id === "modal") $("modal").hidden = true; };
-addEventListener("keydown", (e) => { if (e.key === "Escape") $("modal").hidden = true; });
+$("ruleClose").onclick = () => ($("ruleModal").hidden = true);
+$("ruleModal").onclick = (e) => { if (e.target.id === "ruleModal") $("ruleModal").hidden = true; };
+$("hxSuggest").onclick = suggestHierarchy;
+addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  $("modal").hidden = true;
+  $("ruleModal").hidden = true;
+});
 
 function renderAllRules(d) {
   const rows = (items, cols) =>

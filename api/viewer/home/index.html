@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>문서·데이터 관리</title>
+<link rel="stylesheet" href="/ui/ui.css">
 <link rel="stylesheet" href="styles.css">
+<script src="/ui/nav.js" defer></script>
 <!-- 예전 딥링크 호환 — 루트가 검수 화면이던 시절의 `/?doc=…` 을 그대로 넘긴다.
      화면이 그려지기 전에 돌려야 하므로 head 에서 동기로 처리한다. -->
 <script>
@@ -14,42 +16,38 @@
 </head>
 <body>
 
-<header class="top">
-  <h1>문서·데이터 관리</h1>
-  <span class="sub" id="summary">불러오는 중…</span>
+<header class="ui-bar">
+  <nav class="ui-nav" data-nav="home"></nav>
+  <span class="ui-meta" id="summary">불러오는 중…</span>
   <span class="grow"></span>
-  <nav class="nav">
-    <a class="navlink" href="/structure/">구조 해석 검수</a>
-    <a class="navlink" href="/bindings/">구조화 연결</a>
-    <a class="navlink" href="/glossary/">용어집</a>
-    <a class="navlink" href="/links/">참조 연결</a>
-    <a class="navlink" href="/rag/">질의응답</a>
-    <a class="navlink" href="/agent6/">AGENT6</a>
-    <a class="navlink" href="/logs/">로그</a>
-  </nav>
 </header>
+<h1 class="sr">문서·데이터 관리</h1>
 
 <div id="banner" class="banner hidden"></div>
 
 <main class="wrap">
 
-  <!-- 저장 현황 — 파일이 정본인 시스템이라 "지금 무엇이 얼마나 있나"가 첫 정보다 -->
+  <!-- 할 일 — 사람 승인을 기다리는 검수 큐. 승인이 검색을 바꾸는 루프의 입구라
+       현황보다 위에 둔다. 대기가 없으면 통째로 사라진다. -->
+  <section id="todo" class="todo hidden"></section>
+
+  <!-- 저장 현황 — 파일이 정본인 시스템이라 "지금 무엇이 얼마나 있나"가 첫 정보다.
+       칩 하나하나가 그 데이터를 다루는 화면으로 가는 문이다. -->
   <section id="stats" class="stats"></section>
 
-  <!-- 올리기 — 끌어다 놓거나 클릭. 올리면 바로 구조 해석까지 돈다 -->
+  <!-- 올리기 — 끌어다 놓거나 클릭. 올리면 바로 구조 해석까지 돈다.
+       올릴 때 정하는 것(폴더·LLM)은 받는 자리 안에 함께 둔다. -->
   <section class="dropwrap">
     <label id="drop" class="drop">
       <input type="file" id="file" accept="application/pdf,.xml,.hwp,.hwpx,.docx" multiple hidden>
-      <b>PDF·HWP·DOCX·법령 XML 을 끌어다 놓거나 클릭해서 올리기</b>
-      <span class="sub">올리면 바로 구조 해석이 돌고, 같은 파일을 다시 올리면 제자리 갱신됩니다
-        (법령 XML 은 추론 없이 태그 계층 그대로 · HWP·DOCX 는 합성 지면 위에 섭니다)</span>
+      <b>PDF · HWP · DOCX · 법령 XML 을 끌어다 놓기</b>
+      <span class="sub">올리면 바로 구조 해석이 돌고, 같은 파일은 제자리 갱신됩니다</span>
     </label>
     <div class="upopts">
-      <input id="upFolder" list="folderList"
-             placeholder="폴더 (선택) — 예: 법령문서"
+      <input id="upFolder" list="folderList" placeholder="폴더 (선택)"
              title="올리는 문서를 묶어 둘 폴더. 폴더에 구조화 틀을 연결하면 그 틀로 잘린다">
       <label class="chk" title="결정론이 못 가른 잔여만 배치 1콜로 묻는다 · 틀 만들기에서는 마커 유도에 쓴다 (ANTHROPIC_API_KEY 필요)">
-        <input type="checkbox" id="useLlm"> LLM 잔여 해소 · 틀 유도
+        <input type="checkbox" id="useLlm"> LLM 잔여 해소
       </label>
     </div>
   </section>
@@ -60,10 +58,16 @@
   <section class="pane">
     <div class="panehead">
       <b id="docTitle">문서</b>
-      <button id="mkFolder" title="빈 폴더를 먼저 만들어 두고 문서를 넣을 수 있습니다">＋ 폴더 만들기</button>
+      <!-- 게이트 필터 — 격리(사람 손이 필요한 것)만 모아 보는 문 -->
+      <span class="uitabs" id="gateSeg">
+        <button data-g="" class="on">전체</button>
+        <button data-g="fail" title="구조가 서지 않아 검수가 필요한 문서">격리 <b id="nFail"></b></button>
+        <button data-g="pass">통과</button>
+      </span>
       <input id="q" type="search" placeholder="이름·폴더로 찾기">
       <span class="grow"></span>
       <span class="sub">이름을 바꿔도 내용 해시(id)와 해석 결과는 그대로입니다</span>
+      <button id="mkFolder" title="빈 폴더를 먼저 만들어 두고 문서를 넣을 수 있습니다">＋ 폴더</button>
     </div>
     <div id="docs" class="docs"></div>
   </section>

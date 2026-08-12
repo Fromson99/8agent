@@ -4,36 +4,29 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>구조 해석 검수</title>
+<link rel="stylesheet" href="/ui/ui.css">
 <link rel="stylesheet" href="styles.css">
+<script src="/ui/nav.js" defer></script>
 </head>
 <body>
 
-<header class="bar">
-  <div class="brand">구조 해석 검수</div>
-
-  <label class="upload">
-    <input type="file" id="file" accept="application/pdf,.xml,.hwp,.hwpx,.docx" hidden>
-    <span>PDF·XML 열기</span>
-  </label>
-
-  <label class="chk" title="결정론이 못 가른 잔여만 배치 1콜로 묻는다">
-    <input type="checkbox" id="useLlm"> LLM 해소
-  </label>
-
-  <button id="showAll">설정 · 규칙</button>
-
-  <!-- 규칙을 고친 뒤 다시 올릴 필요가 없다. 파싱은 캐시돼 있고 해석만 다시 돈다. -->
-  <button id="reinterpret" title="현재 규칙·힌트로 해석만 다시 돌린다 (파싱 생략)"
-          disabled>↻ 다시 해석</button>
-
-  <div class="spacer"></div>
-  <a class="navlink" href="/">← 문서·데이터</a>
-  <a class="navlink" href="/bindings/">구조화 연결 →</a>
-  <a class="navlink" href="/glossary/">용어집 →</a>
-  <a class="navlink" href="/links/">참조 연결 →</a>
-  <a class="navlink" href="/agent6/">AGENT6 근거 연결 →</a>
-  <div id="status" class="status"></div>
+<header class="ui-bar">
+  <nav class="ui-nav" data-nav="structure"></nav>
+  <span class="grow"></span>
+  <div class="ui-acts">
+    <label class="btn" title="PDF · HWP · DOCX · 법령 XML">
+      <input type="file" id="file" accept="application/pdf,.xml,.hwp,.hwpx,.docx" hidden>
+      ＋ 열기</label>
+    <!-- 규칙을 고친 뒤 다시 올릴 필요가 없다. 파싱은 캐시돼 있고 해석만 다시 돈다. -->
+    <button id="reinterpret" title="현재 규칙·힌트로 해석만 다시 돌린다 (파싱 생략)"
+            disabled>↻ 다시 해석</button>
+    <label class="chk" title="결정론이 못 가른 잔여만 배치 1콜로 묻는다">
+      <input type="checkbox" id="useLlm"> LLM</label>
+    <button id="showAll">설정 · 규칙</button>
+    <span id="status" class="status"></span>
+  </div>
 </header>
+<h1 class="sr">구조 해석 검수</h1>
 
 <main id="app" class="layout">
 
@@ -58,6 +51,9 @@
   <section class="panel pages">
     <div class="panelhead">
       <span id="docName">문서를 열어 주세요</span>
+      <!-- 열린 문서의 연결 — 이 트리 좌표를 소비하는 화면들로 문서째 건너간다.
+           app.js 가 문서를 열 때 채운다. -->
+      <span id="docLinks" class="doclinks"></span>
       <div class="tools">
         <label class="chk"><input type="checkbox" id="showBoxes" checked> 청킹 범위</label>
         <label class="chk"><input type="checkbox" id="showMarkers" checked> 마커</label>
@@ -76,7 +72,11 @@
   <aside class="panel side">
     <div class="panelhead">
       <span>판정 근거</span>
-      <div class="tools"><button id="unpin" title="고정 해제">고정 해제</button></div>
+      <div class="tools">
+        <button id="hxSuggest" title="고른 마디 아래 계층을 LLM 이 훑어 교정 후보를 낸다">
+          계층 교정 제안</button>
+        <button id="unpin" title="고정 해제">고정 해제</button>
+      </div>
     </div>
     <div id="inspect" class="sidebody inspect"></div>
     <div class="panelhead"><span>요약</span></div>
@@ -137,6 +137,20 @@
       <div class="row"><button id="rSave">등록</button><span id="rMsg" class="sub"></span></div>
       <div id="rList" class="list"></div>
     </div>
+  </div>
+</div>
+
+<!-- 규칙 제안·계층 교정 결과 — 규칙 하나가 다른 문서를 어떻게 움직였는지 함께 본다 -->
+<div id="ruleModal" class="modal" hidden>
+  <div class="sheet">
+    <div class="sheethead">
+      <b>규칙 제안 · 계층 교정</b>
+      <div class="grow"></div>
+      <button id="ruleKeep" hidden>유지</button>
+      <button id="ruleRollback" hidden>롤백</button>
+      <button id="ruleClose">닫기</button>
+    </div>
+    <div id="ruleResult" class="sheetbody"></div>
   </div>
 </div>
 

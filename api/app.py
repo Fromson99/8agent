@@ -193,6 +193,12 @@ def health():
 # 기존 정적 뷰어 — cli.py serve 가 하던 일을 그대로 얹는다
 # ---------------------------------------------------------------------------
 
+# 공용 UI — 여덟 화면이 공유하는 토큰·상단바·이동 묶음. 화면들이 절대 경로
+# (`/ui/ui.css`)로 부르므로 다른 뷰어보다 먼저 붙여 둔다.
+_SHARED_VIEWER = Path(__file__).resolve().parent / "viewer" / "shared"
+if _SHARED_VIEWER.is_dir():
+    app.mount("/ui", StaticFiles(directory=str(_SHARED_VIEWER)), name="shared-ui")
+
 # 문서·데이터 관리 화면 — structure_app 은 루트에 붙이지만, 이 앱의 루트는
 # GenOS 가 읽는 JSON 소개라 `/home` 별칭으로만 붙인다.
 _HOME_VIEWER = Path(__file__).resolve().parent / "viewer" / "home"

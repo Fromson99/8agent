@@ -4,20 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>용어집</title>
+<link rel="stylesheet" href="/ui/ui.css">
 <link rel="stylesheet" href="styles.css">
+<script src="/ui/nav.js" defer></script>
 </head>
 <body>
-<header class="top">
-  <h1>용어집</h1>
-  <span class="sub" id="summary">불러오는 중…</span>
+<header class="ui-bar">
+  <nav class="ui-nav" data-nav="glossary"></nav>
+  <span class="ui-meta" id="summary">불러오는 중…</span>
   <span class="grow"></span>
-  <a class="navlink" href="#review" id="reviewLink">검수 큐 <b id="reviewN"></b></a>
-  <a class="navlink" href="#relations" id="relLink">관계</a>
-  <a class="navlink" href="/">← 문서·데이터</a>
-  <a class="navlink" href="/structure/">구조 해석 검수</a>
-  <a class="navlink" href="/links/">참조 연결</a>
-  <a class="navlink" href="/agent6/">AGENT6 →</a>
+  <div class="ui-acts">
+    <button id="reviewLink" title="잠정 용어를 승인·반려한다">검수 큐<b id="reviewN" class="badge hidden"></b></button>
+    <button id="relLink" title="용어 사이 관계">관계</button>
+  </div>
 </header>
+<h1 class="sr">용어집</h1>
 
 <main class="cols">
   <section class="pane list">

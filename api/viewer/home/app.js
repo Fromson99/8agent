@@ -10,7 +10,7 @@
  * 등록부가 있어야 성립한다.
  *
  * 현황은 라우터가 빠져 있어도 죽지 않는다 — 슬림 이미지에서는 그 카드만 "—" 다. */
-const S = { docs: [], folders: [], folder: null, q: "",
+const S = { docs: [], folders: [], folder: null, q: "", gate: "",
             // 구조화 틀 — routes: 등록된 형식, bind: {folders,docs} → doc_type
             formats: [], bind: { folders: {}, docs: {} } };
 const $ = (id) => document.getElementById(id);
@@ -36,14 +36,16 @@ async function jget(url) {
 
 /* ------------------------------------------------------------------ 적재 */
 async function load() {
-  const [docs, folders, rules, glo, links, a6, fmts] = await Promise.allSettled([
+  const [docs, folders, rules, glo, links, a6, fmts, rev, bk] = await Promise.allSettled([
     jget("/v1/structure/documents"),
     jget("/v1/structure/folders"),
     jget("/v1/structure/rules/custom"),
     jget("/v1/glossary"),
-    jget("/v1/rag/links"),
+    jget("/v1/rag/links/summary"),   // 수만 필요하다 — 전체 payload 는 11.8MB
     jget("/v1/agent6/graph"),
     jget("/v1/formats"),
+    jget("/v1/glossary/review?limit=1"),
+    jget("/v1/rag/verdicts"),
   ]);
   S.docs = docs.status === "fulfilled" ? docs.value.documents : [];
   if (fmts.status === "fulfilled") {
@@ -55,6 +57,7 @@ async function load() {
         .map((n) => ({ name: n, docs: S.docs.filter((d) => d.folder === n).length }));
   if (S.folder && !S.folders.some((f) => f.name === S.folder)) S.folder = null;
   renderStats({ rules, glo, links, a6 });
+  renderTodo({ rev, links, bk });
   renderDocs();
   const total = S.docs.reduce((a, d) => a + (d.bytes || 0), 0);
   $("summary").textContent =
@@ -62,7 +65,40 @@ async function load() {
     + (S.folders.length ? ` · 폴더 ${S.folders.length}` : "")
     + (glo.status === "fulfilled" ? ` · 용어 ${glo.value.stats.terms}` : "")
     + (links.status === "fulfilled"
-       ? ` · 참조 ${links.value.cross.length}+보류 ${links.value.pending.length}` : "");
+       ? ` · 참조 ${links.value.cross}+보류 ${links.value.pending}` : "");
+}
+
+/* 할 일 — 사람 손을 기다리는 큐 셋. 성격이 둘로 갈린다:
+ *   승인형  용어·백로그 — 사람 승인이 게이트다. 한 건씩 읽고 결정한다.
+ *   정리형  참조 보류   — 사람 몫이 아니다. LLM 판정 한 번이 훑고(fail-closed),
+ *                        남는 잔여만 사람이 원문 보고 고친다. CTA 가 달라야 한다.
+ * 수만 보여 주면 왜 눌러야 하는지 모른다 — 그 일이 무엇을 바꾸는지 함께 쓴다. */
+function renderTodo({ rev, links, bk }) {
+  const box = $("todo");
+  if (!box) return;
+  const items = [];
+  const n = (x) => x.toLocaleString("ko-KR");
+  if (rev.status === "fulfilled" && rev.value.total)
+    items.push({ href: "/glossary/#review", k: "용어 검수", v: rev.value.total,
+                 d: "승인하면 질의 진입 앵커가 됩니다", go: "승인/반려 →" });
+  if (links.status === "fulfilled" && links.value.pending)
+    items.push({ href: "/links/#pending", k: "참조 보류", v: links.value.pending,
+                 d: "갈 곳이 하나뿐인 참조는 이미 이어짐(추정) — 여럿에 걸린 것만 남았습니다",
+                 go: "고르기 →" });
+  if (bk.status === "fulfilled") {
+    const c = (bk.value.edges || []).length + (bk.value.fixes || []).length
+            + (bk.value.struct || []).length + (bk.value.misses || []).length;
+    if (c) items.push({ href: "/rag/#backlog", k: "판정 백로그", v: c,
+                        d: "승인하면 잘못된 간선을 억제합니다", go: "승인/기각 →" });
+  }
+  box.classList.toggle("hidden", !items.length);
+  box.innerHTML = items.map((t) => `
+    <a class="task" href="${t.href}">
+      <span class="tv">${n(t.v)}</span>
+      <span class="tk">${t.k}</span>
+      <span class="td">${t.d}</span>
+      <span class="tgo">${t.go}</span>
+    </a>`).join("");
 }
 
 function renderStats({ rules, glo, links, a6 }) {
@@ -83,9 +119,9 @@ function renderStats({ rules, glo, links, a6 }) {
         + ` · 출현 ${glo.value.stats.occurrences}`)
     : card("/glossary/", "용어", "—", off);
   html += links.status === "fulfilled"
-    ? card("/links/", "조문 상호참조", links.value.cross.length,
-        `<span class="warn">보류 ${links.value.pending.length}</span> · 문서 안 `
-        + Object.values(links.value.in_doc).reduce((a, e) => a + e.length, 0))
+    ? card("/links/", "조문 상호참조", links.value.cross,
+        `<span class="warn">보류 ${links.value.pending}</span> · 문서 안 `
+        + links.value.in_doc)
     : card("/links/", "조문 상호참조", "—", off);
   html += rules.status === "fulfilled"
     ? card("/structure/", "등록한 표면 패턴", rules.value.rules.length,
@@ -116,7 +152,8 @@ const docRow = (d, withFolder) => `<tr data-id="${esc(d.doc_id)}" draggable="tru
   <td><span class="pill ${d.passed ? "ok" : "warn"}"
         title="적합도 ${pct(d.score)} · ${esc(d.tier || "")}">
         ${d.passed ? "통과" : "격리"} ${pct(d.score)}</span>
-      ${d.used_llm ? '<span class="pill llm" title="잔여 해소에 LLM 사용">LLM</span>' : ""}</td>
+      ${d.used_llm ? '<span class="pill llm" title="잔여 해소에 LLM 사용">LLM</span>' : ""}
+      ${d.stale ? `<span class="pill warn" title="${esc(d.stale_reason || "")}">↻ 다시 해석</span>` : ""}</td>
   <td class="num">${fmtAt(d.at)}</td>
   <td><div class="acts">
     <button class="del danger" title="원본·해석 결과·페이지 캐시 삭제">삭제</button>
@@ -128,18 +165,26 @@ function renderDocs() {
     S.folders.map((f) => `<option value="${esc(f.name)}">`).join("");
   updateUpload();
 
+  // 게이트 칩 — 격리 수는 늘 보인다. 0이어도 칩은 남아 "없음"이 정보가 된다.
+  const nFail = S.docs.filter((d) => !d.passed).length;
+  $("nFail").textContent = nFail || "";
+
   const n = S.q.replace(/\s/g, "").toLowerCase();
   let html = "";
   let bind = [];
 
-  if (n) {
-    // 찾기 — 폴더 경계를 무시하고 평평하게. 폴더 이름으로도 걸린다.
+  if (n || S.gate) {
+    // 찾기·게이트 필터 — 폴더 경계를 무시하고 평평하게. 폴더 이름으로도 걸린다.
     const rs = S.docs.filter((d) =>
-      `${d.name || d.doc_id} ${d.folder || ""}`.replace(/\s/g, "").toLowerCase().includes(n));
-    $("docTitle").textContent = `찾기 결과 (${rs.length})`;
+      (!n || `${d.name || d.doc_id} ${d.folder || ""}`.replace(/\s/g, "").toLowerCase().includes(n))
+      && (!S.gate || (S.gate === "fail" ? !d.passed : d.passed)));
+    $("docTitle").textContent = S.gate && !n
+      ? `${S.gate === "fail" ? "격리" : "통과"} 문서 (${rs.length})`
+      : `찾기 결과 (${rs.length})`;
     html = rs.length
       ? `<table>${HEAD}${rs.map((d) => docRow(d, true)).join("")}</table>`
-      : "<div class='empty'>일치하는 문서가 없습니다.</div>";
+      : `<div class='empty'>${S.gate === "fail" && !n
+          ? "격리 문서가 없습니다 — 전부 통과했습니다." : "일치하는 문서가 없습니다."}</div>`;
   } else if (S.folder === null) {
     // 맨 위 — 폴더들(빈 폴더 포함)과 미분류 문서. 탐색기의 루트다.
     const unfiled = S.docs.filter((d) => !d.folder);
@@ -438,12 +483,24 @@ async function uploadOne(file) {
     const r = await fetch("/v1/structure/documents", { method: "POST", body: fd });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(typeof j.detail === "string" ? j.detail : r.status);
-    row.innerHTML = `<b>${esc(file.name)}</b>
-      ${j.folder ? `<span class="pill">📁 ${esc(j.folder)}</span>` : ""}
-      <span class="pill ${j.passed ? "ok" : "warn"}">${j.passed ? "통과" : "격리"} ${pct(j.score)}</span>
-      <span class="sub">${j.pages}쪽</span>
-      <a class="navlink" href="/structure/?doc=${encodeURIComponent(j.doc_id)}">검수 열기 →</a>`;
-    setTimeout(() => row.remove(), 12000);
+    // 통과와 격리는 다음 걸음이 다르다 — 통과는 조용히 사라지고,
+    // 격리는 그 자리가 검수 통로의 입구가 되어 닫을 때까지 남는다.
+    if (j.passed) {
+      row.innerHTML = `<b>${esc(file.name)}</b>
+        ${j.folder ? `<span class="pill">📁 ${esc(j.folder)}</span>` : ""}
+        <span class="pill ok">통과 ${pct(j.score)}</span>
+        <span class="sub">${j.pages}쪽</span>
+        <a class="navlink" href="/structure/?doc=${encodeURIComponent(j.doc_id)}">검수 열기 →</a>`;
+      setTimeout(() => row.remove(), 12000);
+    } else {
+      row.classList.add("warn");
+      row.innerHTML = `<b>${esc(file.name)}</b>
+        ${j.folder ? `<span class="pill">📁 ${esc(j.folder)}</span>` : ""}
+        <span class="pill warn">격리 ${pct(j.score)}</span>
+        <span class="sub">구조가 서지 않았습니다 — 원본 위에서 무엇이 안 잡혔는지 보세요</span>
+        <a class="navlink warn" href="/structure/?doc=${encodeURIComponent(j.doc_id)}">왜 격리인지 보기 →</a>
+        <button onclick="this.parentElement.remove()" title="닫기">✕</button>`;
+    }
     load();
   } catch (e) {
     row.classList.add("err");
@@ -480,4 +537,12 @@ const drop = $("drop");
 drop.addEventListener("drop", (e) => takeFiles(e.dataTransfer.files));
 $("mkFolder").onclick = makeFolder;
 $("q").oninput = (e) => { S.q = e.target.value.trim(); renderDocs(); };
+$("gateSeg").querySelectorAll("button").forEach((b) => {
+  b.onclick = () => {
+    S.gate = b.dataset.g;
+    $("gateSeg").querySelectorAll("button").forEach((x) =>
+      x.classList.toggle("on", x === b));
+    renderDocs();
+  };
+});
 load();

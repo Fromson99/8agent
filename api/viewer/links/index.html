@@ -4,18 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>참조 연결</title>
+<link rel="stylesheet" href="/ui/ui.css">
 <link rel="stylesheet" href="styles.css">
+<script src="/ui/nav.js" defer></script>
 </head>
 <body>
-<header class="top">
-  <h1>참조 연결</h1>
-  <span class="sub" id="summary">불러오는 중…</span>
+<header class="ui-bar">
+  <nav class="ui-nav" data-nav="links"></nav>
+  <span class="ui-meta" id="summary">불러오는 중…</span>
   <span class="grow"></span>
-  <a class="navlink" href="/">← 문서·데이터</a>
-  <a class="navlink" href="/structure/">구조 해석 검수</a>
-  <a class="navlink" href="/glossary/">용어집</a>
-  <a class="navlink" href="/agent6/">AGENT6 →</a>
 </header>
+<h1 class="sr">참조 연결</h1>
 
 <div id="banner" class="banner hidden"></div>
 
@@ -48,14 +47,24 @@
     <div class="scroll hidden" id="mainscroll">
 
       <h2 id="crossTitle">문서 사이 참조</h2>
-      <p class="hint">「수수료규정」 제2조 처럼 다른 문서를 부른 참조 —
-        이름 대조가 확정한 것과 판정(LLM·사람)으로 고정된 것.</p>
+      <p class="hint"><b>본문에 다른 문서의 조가 언급되면 전부 이어져 있다.</b>
+        칩은 대상을 어떻게 알아냈나다 — <b>이름대조</b>: 본문이 문서 이름을
+        불렀다(확실) · <b>추정</b>: 이름 없이 불렀지만("법 제22조") 그 조를 가진
+        문서가 하나뿐이라 그리 이었다(틀릴 수 있음 — 검수 대상).
+        <b>행을 클릭하면 양쪽 본문이 펼쳐진다</b> — 읽고 틀렸으면 연결선의
+        <b>✂ 끊기</b>. 끊음은 억제 규칙에 영구 기록되고, 질의 중 LLM 판정이
+        잡은 오참조(<a class="qlink" href="/rag/#backlog">백로그</a>) 승인도
+        같은 장부에 남는다.</p>
+      <!-- 연결 형태별 분리 — 자동(검수 우선)·이름대조·판정을 갈라 훑는다 -->
+      <div id="viaSeg" class="viaseg"></div>
       <div id="cross"></div>
 
-      <h2 id="pendTitle">보류 — 아직 못 정한 참조</h2>
-      <p class="hint">동법·같은 규정 같은 대용어라 이름으로 못 정한 것.
-        원문을 읽고 후보를 직접 고르거나, LLM 판정에 맡길 수 있다.
-        확신이 없는 판정은 보류로 남는다(fail-closed).</p>
+      <h2 id="pendTitle">보류 — 여럿에 걸려 자동으로 못 이은 참조</h2>
+      <p class="hint">후보가 하나면 이미 자동으로 이었다. 여기 남는 건
+        <b>여러 문서·구역에 걸린 것뿐</b>이다 — 원문을 보고 후보에서 직접
+        고르면 확정된다. LLM 판정 실행은 이 잔여를 미리 갈라 두는 선택지다
+        (질의 중에도 판정은 간접으로 돈다 · 확신 없으면 보류로 남김).
+        보류인 동안은 질의 확장에 쓰이지 않는다.</p>
       <div class="row">
         <button id="settleBtn" class="primary">LLM 판정 실행</button>
         <span id="settleMsg" class="sub"></span>
@@ -79,6 +88,7 @@
     <div id="gtip" class="gtip hidden"></div>
   </section>
 </main>
+<script src="/ui/hl.js"></script>
 <script src="vendor/d3.v7.min.js"></script>
 <script src="graph.js"></script>
 <script src="app.js"></script>

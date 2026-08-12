@@ -46,13 +46,17 @@ const KIND = {
 const HEADING_KINDS = ["pdf", "docx"];       // 제목 신호가 오는 형식
 
 const S = {
-  docs: [], folders: [], formats: [],
+  docs: [], folders: [], formats: [], orphans: [],
   bind: { folders: {}, docs: {} },
-  pos: {}, drafts: [],
+  pos: {}, drafts: [], rev: 0,
   q: "",
   drag: null,            // 노드 옮기기
   wire: null,            // 선 긋는 중 {from, x, y}
   busy: new Set(),       // 실행 중인 틀 (버튼 잠금)
+  cancel: false,         // 긴 작업 중단 요청
+  sel: null,             // 고른 노드 — 오른쪽 상세가 이것을 그린다
+  open: new Set(),       // 펼친 폴더 (안의 문서를 캔버스에 세운다)
+  rules: new Map(),      // doc_type → 규칙 (한 번 받아 두고 다시 안 받는다)
 };
 
 /* 노드 id 규약 — 한 문자열로 종류와 키를 함께 나른다(DOM·좌표·초안이 같은 키를 쓴다) */
@@ -73,7 +77,21 @@ const BUILTIN = {
 const NODE_W = 210, GAP_Y = 74, COL_FOLDER = 40, COL_DOC = 285, COL_FMT = 560;
 
 /* 문서 하나의 원본 형식 배지. 형식이 흐름을 가르므로 문서가 보이는 곳마다 붙인다. */
-const kindOf = (docId) => S.docs.find((d) => d.doc_id === docId)?.source_kind || "";
+const docOf = (docId) => S.docs.find((d) => d.doc_id === docId);
+const kindOf = (docId) => docOf(docId)?.source_kind || "";
+
+/* 문서 상태 배지 — 낡음(다시 해석 필요) · 격리(틀에 미달) · 파싱 캐시 없음(느림) */
+function stateBadges(d) {
+  if (!d) return "";
+  const out = [];
+  if (d.stale)
+    out.push(`<span class="pill warn" title="${esc(d.stale_reason || "")}">↻ 다시 해석</span>`);
+  if (d.passed === false)
+    out.push(`<span class="pill bad" title="적합도 ${Math.round((d.score || 0) * 100)}% — 임계 미만">⚠ 격리</span>`);
+  if (d.parse_cached === false)
+    out.push(`<span class="pill" title="파싱 캐시가 없어 다시 해석이 분 단위입니다 — 미리 만들어 두면 빨라집니다">파싱 캐시 없음</span>`);
+  return out.join("");
+}
 
 function kindBadge(k) {
   const info = KIND[k];
@@ -131,20 +149,36 @@ async function load() {
   if (fmts.status === "fulfilled") {
     S.formats = fmts.value.routes || [];
     S.bind = fmts.value.bindings || { folders: {}, docs: {} };
+    S.orphans = fmts.value.orphans || [];
     for (const [k, note] of Object.entries(fmts.value.kind_signals || {}))
       if (KIND[k]) KIND[k].note = note;     // 설명의 정본은 서버다
   }
   if (canvas.status === "fulfilled") {
     S.pos = canvas.value.pos || {};
     S.drafts = canvas.value.drafts || [];
+    S.rev = canvas.value.rev || 0;
+    if (canvas.value.open) S.open = new Set(canvas.value.open);
   }
   render();
+  if (S.orphans.length)
+    banner("가리키던 틀이 사라진 연결이 있습니다: "
+      + S.orphans.map((o) => `${o.key} → ${o.doc_type}`).join(", ")
+      + " — 그 문서는 지금 구조를 유도합니다", "err");
 }
 
+/* 캔버스 저장 — rev 로 남의 저장을 덮어쓰지 않는다(409 면 새로 읽어 온다). */
 async function saveCanvas() {
-  await fetch("/v1/formats/canvas", {
+  const r = await fetch("/v1/formats/canvas", {
     method: "PUT", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ pos: S.pos, drafts: S.drafts }) });
+    body: JSON.stringify({ pos: S.pos, drafts: S.drafts, rev: S.rev,
+                           open: [...S.open] }) });
+  if (r.status === 409) {
+    banner("다른 화면이 먼저 저장했습니다 — 최신 상태를 다시 불러옵니다", "err");
+    await load();
+    return false;
+  }
+  if (r.ok) S.rev = (await r.json()).rev;
+  return r.ok;
 }
 
 /* --------------------------------------------------------------- 모델 계산 */
@@ -178,6 +212,13 @@ function model() {
   for (const id of Object.keys(S.pos)) {
     if (kind(id) === "folder" && S.folders.some((f) => f.name === key(id))) add(id, {});
     if (kind(id) === "doc" && S.docs.some((d) => d.doc_id === key(id))) add(id, {});
+  }
+  // 펼친 폴더 — 안의 문서를 캔버스에 세운다. 기본은 접힘이다: 폴더가 연결 단위라
+  // 문서를 늘 펼치면 캔버스가 문서 목록이 되고 "폴더 → 틀" 이 안 보인다.
+  for (const name of S.open) {
+    if (!S.folders.some((f) => f.name === name)) continue;
+    add(FOLDER(name), {});
+    for (const d of S.docs.filter((x) => x.folder === name)) add(DOC(d.doc_id), {});
   }
 
   // 선 — 실선(확정) / 파선(초안)
@@ -225,9 +266,13 @@ function layout(nodes) {
   for (const n of nodes.values()) {
     const k = kind(n.id);
     const col = k === "folder" ? "folder" : k === "doc" ? "doc" : "fmt";
+    // 슬롯은 **자리 유무와 무관하게** 센다. 예전에는 자리 없는 노드만 셌는데,
+    // 드래그를 시작하면 그 노드가 자리를 갖게 되어 슬롯 하나가 사라지고 같은 열의
+    // 나머지 노드가 통째로 한 칸씩 튀어 올랐다(순간이동의 정체).
+    const slot = seq[col]++;
     const p = S.pos[n.id];
     n.x = p ? p[0] : (COL_OF[k] ?? COL_FOLDER);
-    n.y = p ? p[1] : 30 + seq[col]++ * GAP_Y;
+    n.y = p ? p[1] : 30 + slot * GAP_Y;
   }
 }
 
@@ -281,16 +326,22 @@ function renderSources() {
     if (!hit(f.name) && !docs.some((d) => hit(d.name))) continue;
     const bound = S.bind.folders[f.name];
     const mix = kindMix(docs.map((d) => d.doc_id));
+    // 목록에서도 접힌다. 찾는 중일 때는 맞은 문서를 감추면 안 되므로 강제로 편다.
+    const open = S.open.has(f.name) || !!q;
     const el = document.createElement("div");
     el.className = "sfolder";
     el.innerHTML = `<div class="srow" draggable="true" data-node="${esc(FOLDER(f.name))}">
+        <button class="caret" data-fold="${esc(f.name)}"
+          title="${open ? "접기" : "펼치기"}">${docs.length ? (open ? "▾" : "▸") : "·"}</button>
         <span class="ic">📁</span><b>${esc(f.name)}</b>
         <span class="sub" title="${esc(mix)}">${docs.length}</span>
         ${bound ? `<span class="pill">🧩 ${esc(bound)}</span>` : ""}
       </div>`;
-    for (const d of docs) {
-      if (!hit(d.name) && !hit(f.name)) continue;
-      el.appendChild(docRow(d, true));
+    if (open) {
+      for (const d of docs) {
+        if (!hit(d.name) && !hit(f.name)) continue;
+        el.appendChild(docRow(d, true));
+      }
     }
     box.appendChild(el);
   }
@@ -310,6 +361,19 @@ function renderSources() {
       e.dataTransfer.effectAllowed = "copy";
     });
     el.ondblclick = () => dropNode(el.dataset.node);      // 두 번 눌러도 놓인다
+    el.onclick = (e) => {                                 // 한 번 누르면 상세만 본다
+      if (e.target.closest("[data-fold]")) return;
+      if (model().nodes.has(el.dataset.node)) select(el.dataset.node);
+    };
+  });
+  box.querySelectorAll("[data-fold]").forEach((b) => {
+    b.onclick = async (e) => {
+      e.stopPropagation();
+      const name = b.dataset.fold;
+      S.open.has(name) ? S.open.delete(name) : S.open.add(name);
+      await saveCanvas();
+      render();
+    };
   });
 }
 
@@ -345,17 +409,28 @@ function nodeEl(n) {
     const uses = Object.entries(S.bind.folders).filter(([, t]) => t === n.fmt.doc_type).length;
     const ex = Object.entries(S.bind.docs).filter(([, t]) => t === n.fmt.doc_type).length;
     // 이 틀이 실제로 어떤 형식의 문서를 자르고 있나 — 섞였으면 그 자체가 신호다
-    const mix = kindMix(docsOf(n.fmt.doc_type));
+    const ids = docsOf(n.fmt.doc_type);
+    const mix = kindMix(ids);
+    // 이 틀이 실제로 어떤 상태인가 — 낡음(다시 해석 필요)과 격리(미달)는 연결이
+    // 맞는지 판단할 유일한 근거다. 폴더 노드 하나로 뭉뚱그리면 이게 안 보인다.
+    const stale = ids.filter((i) => docOf(i)?.stale).length;
+    const failed = ids.filter((i) => docOf(i) && docOf(i).passed === false).length;
     el.innerHTML = `<div class="head"><span class="ic">🧩</span>
         <b>${esc(n.fmt.doc_type)}</b></div>
-      <div class="meta">폴더 ${uses} · 예외 ${ex}
+      <div class="meta">폴더 ${uses} · 예외 ${ex} · 문서 ${ids.length}
         ${n.fmt.owner === "ui" ? "" : `<span class="pill">${esc(n.fmt.owner || "")}</span>`}</div>
       ${mix ? `<div class="meta dim" title="원본 형식마다 파서가 싣는 신호가 다릅니다">${
         esc(mix)}</div>` : ""}
+      ${stale ? `<div class="meta warn" title="연결이나 틀이 바뀌었습니다 — 다시 해석해야 반영됩니다">
+        ↻ 다시 해석 필요 ${stale}</div>` : ""}
+      ${failed ? `<div class="meta bad" title="이 틀과 부합이 임계 미만입니다 — 다른 양식이거나 틀이 안 맞습니다">
+        ⚠ 격리 ${failed}</div>` : ""}
       <div class="acts">
         <button data-act="apply" ${uses + ex ? "" : "disabled"}
           title="${uses + ex ? "이 틀에 이어진 문서를 이 틀로 다시 해석한다"
                              : "먼저 폴더나 문서를 이어 주세요"}">이 틀로 해석</button>
+        ${n.fmt.owner === "ui" ? `<button data-act="drop" class="ghost"
+          title="이 틀을 등록부에서 지운다 — 이어진 문서는 다시 구조를 유도한다">틀 삭제</button>` : ""}
         ${uses + ex ? "" : `<button data-act="off" class="ghost"
           title="캔버스에서만 치운다 — 틀은 등록부에 남는다">치우기</button>`}
       </div>`;
@@ -389,10 +464,27 @@ function nodeEl(n) {
     const bound = isF ? S.bind.folders[k] : (builtin ? null : S.bind.docs[k]);
     const badge = isF ? "" : kindBadge(kindOf(k));
     const mix = isF ? kindMix(S.docs.filter((d) => d.folder === k).map((d) => d.doc_id)) : "";
-    el.innerHTML = `<div class="head"><span class="ic">${isF ? "📁" : "📄"}</span>
+    const state = isF
+      ? (() => {                            // 폴더는 안의 문서 상태를 합쳐 보여준다
+          const inner = S.docs.filter((d) => d.folder === k);
+          const st = inner.filter((d) => d.stale).length;
+          const fa = inner.filter((d) => d.passed === false).length;
+          const wp = inner.filter((d) => d.parse_cached === false).length;
+          return (st ? `<span class="pill warn">↻ ${st}</span>` : "")
+            + (fa ? `<span class="pill bad">⚠ ${fa}</span>` : "")
+            + (wp ? `<span class="pill">캐시없음 ${wp}</span>` : "");
+        })()
+      : stateBadges(docOf(k));
+    // 폴더는 접힘이 기본 — 펼치면 안의 문서가 캔버스에 서고 소속 선으로 이어진다
+    const caret = isF && S.docs.some((d) => d.folder === k)
+      ? `<button class="caret" data-act="fold"
+           title="${S.open.has(k) ? "접기 — 안의 문서를 감춘다" : "펼치기 — 안의 문서를 세운다"}"
+         >${S.open.has(k) ? "▾" : "▸"}</button>` : "";
+    el.innerHTML = `<div class="head">${caret}<span class="ic">${isF ? "📁" : "📄"}</span>
         <b>${esc(name)}</b>${badge}</div>
       <div class="meta">${esc(sub)}${mix ? ` · ${esc(mix)}` : ""}${!isF && S.bind.docs[k]
         ? ' · <span class="pill warn">예외</span>' : ""}</div>
+      ${state ? `<div class="meta">${state}</div>` : ""}
       <div class="acts">
         ${bound
           ? `<button data-act="unbind" class="ghost"
@@ -436,13 +528,20 @@ function drawWires(nodes, edges) {
 
 /* ------------------------------------------------------------ 노드 손짓 */
 function bindNode(el, n) {
-  // 머리를 끌면 자리를 옮긴다 (자리는 서버에 남는다)
+  if (S.sel === n.id) el.classList.add("sel");
+  // 머리를 끌면 자리를 옮기고, 움직이지 않고 떼면 **고른 것**이다(상세가 뜬다).
   el.querySelector(".head").addEventListener("pointerdown", (e) => {
-    if (e.target.isContentEditable) return;
+    if (e.target.isContentEditable || e.target.closest("[data-act]")) return;
     e.preventDefault();
     const r = $("canvas").getBoundingClientRect();
-    S.drag = { id: n.id, dx: e.clientX - r.left - n.x, dy: e.clientY - r.top - n.y };
+    S.drag = { id: n.id, dx: e.clientX - r.left - n.x, dy: e.clientY - r.top - n.y,
+               moved: false };
     el.setPointerCapture(e.pointerId);
+  });
+  // 몸통 아무 데나 눌러도 고를 수 있다 — 머리만 눌러야 하면 손이 아프다
+  el.addEventListener("click", (e) => {
+    if (e.target.closest("[data-act]") || e.target.isContentEditable) return;
+    select(n.id);
   });
 
   // 고리에서 끌면 선을 긋는다 (출처 노드에만 있다 — 방향은 출처→틀 하나뿐이다)
@@ -480,6 +579,14 @@ async function nodeAction(act, n) {
     render();
     return;
   }
+  if (act === "fold") {
+    const name = key(n.id);
+    S.open.has(name) ? S.open.delete(name) : S.open.add(name);
+    await saveCanvas();
+    render();
+    if (S.sel === n.id) renderDetail();
+    return;
+  }
   if (act === "unbind") return unbindNode(n.id);
   if (act === "del") {
     S.drafts = S.drafts.filter((d) => `draft:${d.id}` !== n.id);
@@ -490,6 +597,23 @@ async function nodeAction(act, n) {
   }
   if (act === "run") return runDraft(n.draft);
   if (act === "apply") return applyFormat(n.fmt.doc_type);
+  if (act === "drop") return dropFormat(n.fmt.doc_type);
+}
+
+async function dropFormat(docType) {
+  const ids = docsOf(docType);
+  if (!confirm(`틀 '${docType}' 을 지웁니다.\n`
+    + (ids.length ? `이어진 문서 ${ids.length}건의 연결이 함께 풀리고, 다시 해석하면 `
+                    + "문서에서 구조를 유도합니다.\n" : "")
+    + "형식 파일과 등록부 항목이 지워집니다 (되돌릴 수 없습니다).")) return;
+  const r = await fetch(`/v1/formats/${encodeURIComponent(docType)}?force=true`,
+                        { method: "DELETE" });
+  if (!r.ok) { banner(await errText(r), "err"); return; }
+  const j = await r.json();
+  await load();
+  banner(`틀 '${docType}' 을 지웠습니다`
+    + (j.unbound?.length ? ` — 연결 ${j.unbound.length}건도 함께 풀었습니다 `
+        + "(그 문서는 '다시 해석' 해야 유도 결과로 돌아갑니다)" : ""));
 }
 
 async function unbindNode(id) {
@@ -544,7 +668,15 @@ async function runDraft(draft) {
   if (!name) { banner("틀 이름을 먼저 적어 주세요 (노드 제목을 눌러 고칩니다)", "err"); return; }
   if (S.busy.has(name)) return;
   S.busy.add(name);
-  banner(`'${name}' — 이어진 문서로 마커 체계를 유도하는 중…`);
+  S.cancel = false;
+  // 컴파일 자체는 싸다 — 비싼 것은 샘플 파싱이다. 캐시를 먼저 만들어 두면 컴파일 요청이
+  // 몇 초로 끝나고, 오래 걸리는 구간에서 진행률과 취소가 보인다.
+  if (!await warmUp(draftDocs(draft))) {
+    S.busy.delete(name); progressDone();
+    banner("파싱을 멈췄습니다 — 아무 틀도 만들지 않았습니다", "err");
+    return;
+  }
+  progress(`'${name}' — 이어진 문서로 마커 체계를 유도하는 중…`);
 
   const r = await fetch("/v1/formats/compile", {
     method: "POST", headers: { "Content-Type": "application/json" },
@@ -552,6 +684,7 @@ async function runDraft(draft) {
       doc_type: name, folders: draft.folders || [], doc_ids: draft.docs || [],
       use_llm: $("useLlm").checked, overwrite: false, bind: true }) });
   S.busy.delete(name);
+  progressDone();
   if (!r.ok) { banner(await errText(r), "err"); return; }
   const j = await r.json();
 
@@ -575,25 +708,69 @@ async function runDraft(draft) {
   await applyFormat(name, j.doc_ids);
 }
 
+/* 긴 작업은 **한 건씩** 돌리고 진행률을 보인다 — 서버를 한 요청에 몇 분씩 묶어 두면
+ * 프록시 시한에 걸려 통째로 날아가고, 어디까지 됐는지도 알 수 없다. 취소도 받는다. */
+function progress(text) {
+  let el = $("progress");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "progress";
+    el.className = "progress";
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `<span class="spin"></span><span>${esc(text)}</span>
+    <button id="cancelJob">취소</button>`;
+  $("cancelJob").onclick = () => { S.cancel = true; progress("취소하는 중…"); };
+  return el;
+}
+const progressDone = () => $("progress")?.remove();
+
+/* 파싱 캐시 만들기 — 캐시가 없는 문서만. 여기가 유일하게 분 단위인 구간이다(docling). */
+async function warmUp(ids) {
+  const cold = ids.filter((i) => docOf(i)?.parse_cached === false);
+  if (!cold.length) return true;
+  for (const [i, id] of cold.entries()) {
+    if (S.cancel) return false;
+    progress(`파싱 캐시 ${i + 1}/${cold.length} — ${docOf(id)?.name || id}`
+      + " (첫 문서는 docling 모델 적재로 오래 걸립니다)");
+    const r = await fetch(`/v1/structure/${encodeURIComponent(id)}/parse`,
+                          { method: "POST" });
+    if (!r.ok) { banner(await errText(r), "err"); return false; }
+  }
+  return true;
+}
+
 async function applyFormat(docType, ids) {
   const targets = ids || docsOf(docType);
   if (!targets.length) { banner("이 틀에 이어진 문서가 없습니다", "err"); return; }
-  banner(`'${docType}' 틀로 ${targets.length}개 문서를 다시 해석하는 중…`);
+  S.cancel = false;
   const done = [];
-  for (const id of targets) {
-    const r = await fetch(`/v1/structure/${encodeURIComponent(id)}/reinterpret`,
-                          { method: "POST" });
-    if (r.ok) done.push({ id, ...(await r.json()) });
-    else banner(await errText(r), "err");
+  try {
+    if (!await warmUp(targets)) { banner("파싱을 멈췄습니다", "err"); return; }
+    for (const [i, id] of targets.entries()) {
+      if (S.cancel) break;
+      progress(`'${docType}' 로 다시 해석 ${i + 1}/${targets.length} — ${docOf(id)?.name || id}`);
+      const r = await fetch(`/v1/structure/${encodeURIComponent(id)}/reinterpret`,
+                            { method: "POST" });
+      if (r.ok) done.push({ id, ...(await r.json()) });
+      else banner(await errText(r), "err");
+    }
+  } finally {
+    progressDone();
+    await load();
   }
-  await load();
   if (!done.length) return;
   const avg = done.reduce((a, d) => a + (d.score || 0), 0) / done.length;
+  const failed = done.filter((d) => d.passed === false);
   banner(`'${docType}' 로 ${done.length}개를 다시 해석했습니다 — 평균 부합 `
-    + `${Math.round(avg * 100)}% · 결과 화면으로 넘어갑니다`);
+    + `${Math.round(avg * 100)}%`
+    + (failed.length ? ` · ⚠ 격리 ${failed.length}건(${failed.map((f) => f.name).join(", ")})`
+                     : "")
+    + (S.cancel ? " (취소로 일부만 처리)" : " · 결과 화면으로 넘어갑니다"));
+  if (S.cancel) return;
   setTimeout(() => {
     location.href = `/structure/?doc=${encodeURIComponent(done[0].id)}`;
-  }, 900);
+  }, 1200);
 }
 
 /* 초안에 이어 둔 것이 실제로 가리키는 문서들 (폴더는 안의 문서로 펼친다).
@@ -615,6 +792,275 @@ function docsOf(docType) {
   return ids;
 }
 
+/* ------------------------------------------------------------------ 상세 패널
+ *
+ * 노드를 눌렀을 때 "이건 무엇이고 무엇으로 잘리나" 의 답이 없으면 캔버스는 그림일
+ * 뿐이다. 특히 틀과 내장 경로는 **규칙 자체**(마커 정규식 / 태그 계층)를 보여 준다 —
+ * 규칙을 볼 수 없으면 결과가 이상할 때 원인을 짚을 데가 없다.
+ */
+async function select(id) {
+  // 같은 노드를 다시 고르면 아무 일도 하지 않는다 — 머리를 누르면 pointerup 과
+  // click 이 둘 다 오는데, 그때마다 다시 그리면 화면이 한 번 깜빡인다.
+  if (S.sel === id) return;
+  S.sel = id;
+  render();
+  await renderDetail();
+}
+
+async function rulesOf(docType) {
+  if (S.rules.has(docType)) return S.rules.get(docType);
+  const r = await fetch(`/v1/formats/${encodeURIComponent(docType)}/rules`);
+  const j = r.ok ? await r.json() : { error: await errText(r) };
+  S.rules.set(docType, j);
+  return j;
+}
+
+const kv = (rows) => `<div class="kv">` + rows.filter((x) => x[1] != null && x[1] !== "")
+  .map(([k, v]) => `<span>${esc(k)}</span><b>${v}</b>`).join("") + `</div>`;
+
+function docLine(id) {
+  const d = docOf(id);
+  if (!d) return `<div class="dim">${esc(id)} (없음)</div>`;
+  return `<a href="/structure/?doc=${encodeURIComponent(id)}" title="검수 화면에서 열기">
+    ${esc(d.name || id)}</a> ${kindBadge(d.source_kind)}${stateBadges(d)}`;
+}
+
+async function renderDetail() {
+  const box = $("detail");
+  const id = S.sel;
+  if (!id) {
+    $("detailKind").textContent = "";
+    box.innerHTML = `<div class="empty"><p class="dim">노드를 누르면 여기에 뜹니다.</p></div>`;
+    return;
+  }
+  const k = kind(id), key0 = key(id);
+  $("detailKind").textContent =
+    { folder: "폴더", doc: "문서", fmt: "구조화 틀", draft: "초안", builtin: "내장" }[k] || "";
+
+  if (k === "folder") {
+    const inner = S.docs.filter((d) => d.folder === key0);
+    const bound = S.bind.folders[key0];
+    box.innerHTML = `<h4>📁 ${esc(key0)}</h4>`
+      + kv([["문서", inner.length], ["형식 분포", esc(kindMix(inner.map((d) => d.doc_id)))],
+            ["구조화 틀", bound ? `🧩 ${esc(bound)}` : "<span class='dim'>연결 없음 — 문서마다 유도</span>"],
+            ["다시 해석 필요", inner.filter((d) => d.stale).length || null],
+            ["격리", inner.filter((d) => d.passed === false).length || null],
+            ["파싱 캐시 없음", inner.filter((d) => d.parse_cached === false).length || null]])
+      + `<h4>든 문서</h4><div class="dlist">`
+      + (inner.map((d) => `<div>${docLine(d.doc_id)}</div>`).join("")
+         || `<div class="dim">비어 있습니다</div>`) + `</div>`
+      + `<div class="dacts">
+           <button data-d="toggle">${S.open.has(key0) ? "캔버스에서 접기" : "캔버스에 펼치기"}</button>
+           ${bound ? `<button data-d="apply">이 틀로 해석</button>
+                      <button data-d="unbind" class="ghost">연결 끊기</button>` : ""}
+         </div>`;
+  } else if (k === "doc") {
+    const d = docOf(key0);
+    if (!d) { box.innerHTML = `<div class="dim">문서가 없습니다</div>`; return; }
+    const own = S.bind.docs[key0];
+    const via = own ? `🧩 ${esc(own)} <span class="pill warn">예외</span>`
+      : (d.folder && S.bind.folders[d.folder])
+        ? `🧩 ${esc(S.bind.folders[d.folder])} <span class="dim">(폴더 ${esc(d.folder)} 를 따라)</span>`
+        : `<span class="dim">연결 없음 — 문서에서 구조를 유도</span>`;
+    box.innerHTML = `<h4>📄 ${esc(d.name || key0)}</h4>`
+      + kv([["원본 형식", `${kindBadge(d.source_kind)} <span class="dim">${
+              esc(KIND[d.source_kind]?.note || "")}</span>`],
+            ["폴더", esc(d.folder || "미분류")],
+            ["구조화", via],
+            ["잘린 방식", esc(d.structured_by || "")],
+            ["적합도", d.score == null ? null
+              : `${Math.round(d.score * 100)}% <span class="pill ${d.passed ? "ok" : "bad"}">${
+                  d.passed ? "통과" : "격리"}</span>`],
+            ["쪽", d.pages], ["파싱 캐시", d.parse_cached ? "있음" : "없음 — 다시 해석이 느립니다"],
+            ["갱신", esc((d.at || "").replace("T", " ").slice(0, 16))],
+            ["doc_id", `<span class="dim">${esc(key0)}</span>`]])
+      + (d.stale ? `<h4>다시 해석 필요</h4><div class="rule"><div class="why">${
+          esc(d.stale_reason || "")}</div></div>` : "")
+      + `<div class="dacts">
+           <a class="navlink" href="/structure/?doc=${encodeURIComponent(key0)}">검수 화면 →</a>
+           <button data-d="warm">파싱 캐시 만들기</button>
+           <button data-d="reinterpret">다시 해석</button>
+           ${own ? `<button data-d="unbind" class="ghost">예외 연결 끊기</button>` : ""}
+         </div>`;
+  } else if (k === "builtin") {
+    box.innerHTML = `<h4>🏛 불러오는 중…</h4>`;
+    const r = await fetch(`/v1/formats/builtin/${encodeURIComponent(key0)}`);
+    if (!r.ok) { box.innerHTML = `<div class="dim">${esc(await errText(r))}</div>`; return; }
+    const j = await r.json();
+    const mine = S.docs.filter((d) => d.source_kind === "lawxml");
+    box.innerHTML = `<h4>🏛 ${esc(j.name)}</h4>`
+      + kv([["문서", mine.length], ["판정", j.deterministic ? "결정론 (추론 0)" : "추론"],
+            ["적합도", j.fitness]])
+      + `<div class="why" style="color:var(--dim);margin-top:6px">${esc(j.note)}</div>`
+      + `<h4>규칙 — 태그가 곧 구역</h4>`
+      + `<div class="rule"><div class="top"><b>계층 순서</b></div>
+           <code>${j.order.join(" › ")}</code>
+           <div class="why">문서에 없는 종류는 건너뛰고, 있는 것끼리 이 순서로 레벨을 받습니다</div></div>`
+      + j.rules.map((x) => `<div class="rule"><div class="top">
+            <span class="lv">태그</span><b>${esc(x.tag)}</b>
+            <span class="dim" style="margin-left:auto">${esc(x.family)}</span></div></div>`).join("")
+      + `<h4>알아둘 것</h4>` + j.notes.map((n) =>
+          `<div class="rule"><div class="why">${esc(n)}</div></div>`).join("")
+      + `<h4>이 경로로 잘린 문서</h4><div class="dlist">`
+      + mine.map((d) => `<div>${docLine(d.doc_id)}</div>`).join("") + `</div>`;
+  } else if (k === "draft") {
+    const d = S.drafts.find((x) => `draft:${x.id}` === id);
+    if (!d) { box.innerHTML = `<div class="dim">초안이 없습니다</div>`; return; }
+    const ids = draftDocs(d);
+    box.innerHTML = `<h4>🧩 ${esc(d.name)} <span class="dim">(초안)</span></h4>`
+      + kv([["이어 둔 폴더", (d.folders || []).map(esc).join(", ")],
+            ["이어 둔 문서", (d.docs || []).length || null],
+            ["샘플 문서", ids.length], ["형식 분포", esc(kindMix(ids))]])
+      + `<div class="why" style="color:var(--dim);margin-top:6px">
+           아직 아무 일도 일어나지 않았습니다 — 실행해야 마커 체계를 유도해 틀이 만들어집니다.</div>`
+      + `<h4>샘플</h4><div class="dlist">`
+      + (ids.map((i) => `<div>${docLine(i)}</div>`).join("") || `<div class="dim">없음</div>`)
+      + `</div><div class="dacts"><button data-d="run" ${ids.length ? "" : "disabled"}>구조화 실행하기</button></div>`;
+  } else if (k === "fmt") {
+    box.innerHTML = `<h4>🧩 ${esc(key0)}</h4><div class="dim">규칙을 불러오는 중…</div>`;
+    const j = await rulesOf(key0);
+    if (j.error) { box.innerHTML = `<div class="dim">${esc(j.error)}</div>`; return; }
+    const ids = docsOf(key0);
+    box.innerHTML = `<h4>🧩 ${esc(j.doc_type)}</h4>`
+      + kv([["만든 이", esc(j.owner || "")], ["버전", `v${j.format_version}`],
+            ["신뢰도", esc(j.confidence || "")],
+            ["게이트 임계", `${Math.round(j.threshold * 100)}%`],
+            ["파서", esc(j.parser || "")],
+            ["형식 파일", `<span class="dim">${esc(j.format)}</span>`],
+            ["용어집", j.glossary ? `<span class="dim">${esc(j.glossary)}</span>`
+                                  : "<span class='dim'>전역 용어집</span>"],
+            ["유도에 쓴 샘플", (j.compiled_from || []).map(esc).join(", ")],
+            ["문서", ids.length], ["형식 분포", esc(kindMix(ids))]])
+      + (j.hierarchy?.length ? `<h4>계층</h4><div class="rule"><code>${
+          j.hierarchy.map(esc).join(" › ")}</code></div>` : "")
+      + `<h4>규칙 — 마커 ${j.regex_markers.length}개 <button class="mini" data-d="addmk"
+             title="새 마커를 더한다">＋</button></h4>`
+      + j.regex_markers.map((m) => `<div class="rule" data-mk="${esc(m.id)}">
+          <div class="top"><span class="lv">L${m.level}</span><b>${esc(m.id)}</b>
+            ${m.require_heading ? `<span class="pill warn"
+              title="제목 위치에서만 인정 — 제목 신호가 없는 HWP 에서는 발화하지 않습니다">제목 필요</span>` : ""}
+            ${m.parent ? `<span class="dim">아래: ${esc(m.parent)}</span>` : ""}
+            <button class="mini" data-d="editmk" data-id="${esc(m.id)}"
+              style="margin-left:auto" title="이 마커의 정규식·층을 고친다">고치기</button>
+            <button class="mini" data-d="delmk" data-id="${esc(m.id)}"
+              title="이 마커를 지운다">✕</button>
+          </div><code>${esc(m.pattern)}</code>
+          ${m.label ? `<div class="why">이름표 ${esc(m.label)}${
+            m.groups?.length ? ` · 캡처 ${m.groups.map(esc).join(", ")}` : ""}</div>` : ""}
+        </div>`).join("")
+      + (j.term_markers.length ? `<h4>용어형 마커 ${j.term_markers.length}개</h4>`
+          + j.term_markers.map((t) => `<div class="rule"><div class="top">
+              <span class="lv">L${t.level}</span><b>${esc(t.term)}</b>
+              ${t.under ? `<span class="dim" style="margin-left:auto">${esc(t.under)} 아래</span>` : ""}
+            </div><div class="why">제목 위치에 이 용어가 오면 구역을 엽니다(정규식 없음)</div></div>`).join("")
+          : "")
+      + kv([["기본 구역", esc(j.default_section || "")]])
+      + `<h4>이 틀에 걸린 것</h4><div class="dlist">`
+      + j.bound_folders.map((f) => `<div>📁 ${esc(f)}</div>`).join("")
+      + ids.map((i) => `<div>${docLine(i)}</div>`).join("")
+      + (ids.length || j.bound_folders.length ? "" : `<div class="dim">아직 없음</div>`)
+      + `</div>
+         <div class="dacts">
+           <button data-d="apply" ${ids.length ? "" : "disabled"}>이 틀로 해석</button>
+           ${j.owner === "ui" ? `<button data-d="drop" class="ghost">틀 삭제</button>` : ""}
+         </div>`;
+  }
+
+  box.querySelectorAll("[data-d]").forEach((b) => {
+    b.onclick = () => detailAction(b.dataset.d, k, key0, b.dataset.id);
+  });
+}
+
+/* 마커 고치기 — 다시 컴파일하지 않고 규칙 한 줄만 바로잡는 길.
+ * 고치면 버전이 올라 이 틀로 잘린 문서가 전부 '다시 해석 필요' 가 된다. */
+async function editMarker(docType, id) {
+  const j = S.rules.get(docType);
+  const m = (j.regex_markers || []).find((x) => x.id === id) || {};
+  const pattern = prompt(
+    `'${id}' 의 정규식 — 반드시 ^ 로 시작합니다 (구역은 줄 머리에서 열립니다)`,
+    m.pattern || "^");
+  if (pattern === null) return;
+  const lv = prompt(`'${id}' 의 층(level) — 작을수록 바깥`, String(m.level ?? 0));
+  if (lv === null) return;
+  await patchRules(docType, [{ id, pattern: pattern.trim(), level: Number(lv) }]);
+}
+
+async function addMarker(docType) {
+  const id = prompt("새 마커의 id (예: 별표)");
+  if (!id?.trim()) return;
+  const pattern = prompt("정규식 — ^ 로 시작", "^\\[별표\\s*(\\d+)\\]");
+  if (pattern === null) return;
+  const lv = prompt("층(level) — 작을수록 바깥", "0");
+  if (lv === null) return;
+  const groups = (prompt("캡처 이름 — 쉼표 (없으면 비움)", "no") || "")
+    .split(",").map((s) => s.trim()).filter(Boolean);
+  await patchRules(docType, [{ id: id.trim(), pattern: pattern.trim(),
+                               level: Number(lv), groups }]);
+}
+
+async function patchRules(docType, markers, extra = {}) {
+  const r = await fetch(`/v1/formats/${encodeURIComponent(docType)}/rules`, {
+    method: "PATCH", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ markers, ...extra }) });
+  if (!r.ok) { banner(await errText(r), "err"); return false; }
+  const j = await r.json();
+  S.rules.delete(docType);                 // 캐시를 버리고 새 규칙을 다시 받는다
+  await load();
+  await renderDetail();
+  banner(`'${docType}' 규칙을 고쳤습니다 (v${j.format_version}) — ${j.changed.join(", ")}`
+    + (j.affected.length ? ` · ${j.affected.length}곳이 '다시 해석 필요' 가 됐습니다` : ""));
+  return true;
+}
+
+async function detailAction(act, k, key0, id) {
+  if (act === "editmk") return editMarker(key0, id);
+  if (act === "addmk") return addMarker(key0);
+  if (act === "delmk") {
+    if (!confirm(`마커 '${id}' 를 지웁니다 — 이 틀로 자르던 구역이 사라집니다.`)) return;
+    return patchRules(key0, [{ id, delete: true }]);
+  }
+  if (act === "toggle") {
+    S.open.has(key0) ? S.open.delete(key0) : S.open.add(key0);
+    await saveCanvas();
+    render();
+    return renderDetail();
+  }
+  if (act === "unbind") return unbindNode(k === "folder" ? FOLDER(key0) : DOC(key0));
+  if (act === "apply") {
+    return applyFormat(k === "folder" ? S.bind.folders[key0] : key0,
+                       k === "folder" ? S.docs.filter((d) => d.folder === key0)
+                         .map((d) => d.doc_id) : undefined);
+  }
+  if (act === "drop") return dropFormat(key0);
+  if (act === "run") {
+    const d = S.drafts.find((x) => `draft:${x.id}` === S.sel);
+    if (d) return runDraft(d);
+  }
+  if (act === "warm") {
+    progress("파싱 캐시 만드는 중…");
+    const r = await fetch(`/v1/structure/${encodeURIComponent(key0)}/parse`,
+                          { method: "POST" });
+    progressDone();
+    if (!r.ok) { banner(await errText(r), "err"); return; }
+    const j = await r.json();
+    banner(j.cached ? "이미 파싱 캐시가 있습니다" : `파싱 캐시를 만들었습니다 — ${j.took_sec}초`);
+    await load();
+    return renderDetail();
+  }
+  if (act === "reinterpret") {
+    progress("다시 해석 중…");
+    const r = await fetch(`/v1/structure/${encodeURIComponent(key0)}/reinterpret`,
+                          { method: "POST" });
+    progressDone();
+    if (!r.ok) { banner(await errText(r), "err"); return; }
+    const j = await r.json();
+    banner(`다시 해석했습니다 — 부합 ${Math.round((j.score || 0) * 100)}%`
+      + (j.parse_cached === false ? " (파싱을 새로 했습니다)" : ""));
+    await load();
+    return renderDetail();
+  }
+}
+
 /* --------------------------------------------------------------- 캔버스 손짓 */
 function dropNode(nodeId, x, y) {
   if (!S.pos[nodeId]) {
@@ -630,6 +1076,14 @@ function dropNode(nodeId, x, y) {
 const cv = $("canvas");
 cv.addEventListener("dragover", (e) => { e.preventDefault(); cv.classList.add("over"); });
 cv.addEventListener("dragleave", () => cv.classList.remove("over"));
+/* 빈 바탕을 누르면 고르기를 푼다 */
+cv.addEventListener("click", (e) => {
+  if (e.target.closest(".node")) return;
+  S.sel = null;
+  render();
+  renderDetail();
+});
+
 cv.addEventListener("drop", (e) => {
   e.preventDefault();
   cv.classList.remove("over");
@@ -645,6 +1099,7 @@ cv.addEventListener("pointermove", (e) => {
   if (S.drag) {
     const x = Math.max(0, Math.round(e.clientX - r.left - S.drag.dx));
     const y = Math.max(0, Math.round(e.clientY - r.top - S.drag.dy));
+    S.drag.moved = true;
     S.pos[S.drag.id] = [x, y];
     const el = cv.querySelector(`[data-node="${CSS.escape(S.drag.id)}"]`);
     if (el) { el.style.left = `${x}px`; el.style.top = `${y}px`; }
@@ -664,7 +1119,13 @@ cv.addEventListener("pointermove", (e) => {
 });
 
 cv.addEventListener("pointerup", async (e) => {
-  if (S.drag) { S.drag = null; saveCanvas(); return; }
+  if (S.drag) {
+    const { id, moved } = S.drag;
+    S.drag = null;
+    if (moved) saveCanvas();
+    else select(id);                       // 누르기만 했다 = 고른 것
+    return;
+  }
   if (!S.wire) return;
   const from = S.wire.from;
   S.wire = null;

@@ -97,7 +97,7 @@ async function loadPP(doc, node) {
       <button id="ppVTree" class="ppv ${tree.length ? "" : "hidden"}">계층 ${tree.length}</button>
     </div>
     <div class="pppage" id="ppPageBox"></div>
-    <div id="ppText" class="pptxt">${ppLinkify(d.text, d.refs, d.doc_id)}</div>
+    <div id="ppText" class="pptxt">${ppOutline(d)}</div>
     <div id="ppTree" class="pptree hidden">
       <div class="ptbar sub">층을 누르면 그 자리가 하이라이트됩니다. 계층이 잘못
         붙었으면 <b>⇥ 들여쓰기</b>(앞 형제 밑으로) · <b>⇤ 내어쓰기</b>(부모 밖으로)로
@@ -286,6 +286,16 @@ function ppPage(shown, scrollToBox) {
 const PP_HINT = new RegExp(
   "(?:[가-힣A-Za-z0-9·]{0,20}(?:법|법률|령|규칙|세칙|규정|약관|조례|정관|지침|고시)"
   + "|」|(?<![가-힣])영)\\s*$");
+
+/* 본문은 구조화 outline 이 기본이다 — 항(①)·호(1.)의 들여쓰기가 계층 그대로
+ * 보이고, `▸ ` 마디 줄은 본문과 결이 다르게 칠한다. 참조 링크는 그 위에 얹는다. */
+function ppOutline(d) {
+  const h = ppLinkify(d.outline || d.text, d.refs, d.doc_id)
+    .replace(/^([ ]*)▸ (.*)$/gm,
+      (_, ind, label) => `${ind}<span class="olh">▸ ${label}</span>`);
+  // 승인 용어 — 참조 링크와 결이 다른 초록 밑줄. 누르면 용어집으로
+  return uiMarkTerms(h, d.terms);
+}
 
 function ppLinkify(text, refs, docId) {
   let html = esc(text || "");

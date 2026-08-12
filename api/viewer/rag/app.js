@@ -33,6 +33,7 @@ $("askForm").addEventListener("submit", async (e) => {
   $("fb").classList.add("hidden");
   $("fbPick").classList.add("hidden");
   $("fbDone").classList.add("hidden");
+  $("nudge").classList.add("hidden");
   try {
     const out = await api("/v1/rag/ask", {
       method: "POST", headers: { "content-type": "application/json" },
@@ -98,6 +99,22 @@ function render(out) {
       → 아래 백로그에 기록됨</div>`;
   }
 
+  // 빈약한 답의 다음 걸음 — 답이 못 섰거나, 근거가 없거나, 정상 회수가 실패해
+  // 탐험이 돈 경우. 그 순간에만 디버깅 통로를 연다 (평소엔 조용하다).
+  const weak = out.answerable === false || !(out.refs || []).length || rungs.length;
+  $("nudge").classList.toggle("hidden", !weak);
+  if (weak) {
+    const why = out.answerable === false ? "답을 세우지 못했습니다"
+      : !(out.refs || []).length ? "근거 구역이 하나도 실리지 않았습니다"
+      : "정상 회수가 빈손이라 회복 사다리(탐험)가 돌았습니다";
+    $("nudge").innerHTML = `⚠ ${why} — 아래 <b>어떻게 찾았나</b>에서 어느 단이
+      비었는지 보이고, ${S.qid ? `<a class="qlink"
+        href="/rag/debug.html?qid=${encodeURIComponent(S.qid)}">디버깅 화면</a>에서
+      프롬프트·토큰까지 전모가 보입니다.` : "디버깅 화면에서 전모가 보입니다."}
+      용어가 없어 못 찾은 것이면 <a class="qlink" href="/glossary/">용어집</a>에
+      더해 주세요.`;
+  }
+
   if (S.qid) $("fb").classList.remove("hidden");
   loadTuples();
   loadVerdicts();
@@ -152,10 +169,14 @@ async function sendFeedback(verdict, expected, note) {
       body: JSON.stringify({ qid: S.qid, verdict, expected, note }),
     });
     $("fbPick").classList.add("hidden");
-    $("fbDone").textContent = verdict === "정답"
+    // 오답이면 다음 걸음까지 말해 준다 — 기록은 후보일 뿐, 백로그 승인이
+    // 간선을 억제해야 검색이 실제로 바뀐다 (루프 2의 나머지 절반).
+    $("fbDone").innerHTML = verdict === "정답"
       ? "기록했습니다 — 이 질의는 golden 후보입니다"
-      : "기록했습니다 — 진단 튜플에 기대 좌표가 남았습니다";
+      : `기록했습니다 — 아래 <a href="#backlog" class="qlink">판정 백로그</a>에
+         후보로 쌓입니다. 거기서 승인해야 잘못된 참조 간선이 억제됩니다.`;
     $("fbDone").classList.remove("hidden");
+    sessionStorage.removeItem("ui-queue-counts");   // 상단바 배지 즉시 갱신
     loadTuples();
   } catch (err) { alert("피드백 실패: " + err.message); }
 }
@@ -302,6 +323,16 @@ $("tabBk").onclick = () => setBkTab(true);
 $("tabTup").onclick = () => setBkTab(false);
 
 (async function init() {
+  // 딥링크 ①: ?q=<질문> — 용어집 "이 용어로 질의 →" 등 다른 화면이 질문을
+  // 실어 보낸다. 채워만 두지 않고 바로 묻는다 — 오는 목적이 그것이다.
+  const q0 = new URLSearchParams(location.search).get("q");
+  if (q0) {
+    $("q").value = q0;
+    $("askForm").requestSubmit();
+  }
+  // 딥링크 ②: #backlog — 홈 할 일·상단바 배지가 검수할 것으로 바로 보낸다
+  if (location.hash === "#backlog")
+    $("backlog")?.scrollIntoView({ block: "start" });
   try {
     const d = await api("/v1/rag/search?q=__ping__");
     $("summary").textContent = `문서 ${d.documents}건 · 색인 ${d.entries}줄`;

@@ -4,44 +4,48 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>질의응답 — RAG</title>
+<link rel="stylesheet" href="/ui/ui.css">
 <link rel="stylesheet" href="styles.css">
+<script src="/ui/nav.js" defer></script>
 </head>
 <body>
 
-<header class="top">
-  <h1>질의응답</h1>
-  <span class="sub" id="summary">불러오는 중…</span>
+<header class="ui-bar">
+  <nav class="ui-nav" data-nav="rag"></nav>
+  <span class="ui-meta" id="summary">불러오는 중…</span>
   <span class="grow"></span>
-  <nav class="nav">
-    <a class="navlink" href="/home/">문서·데이터</a>
-    <a class="navlink" href="/structure/">구조 검수</a>
-    <a class="navlink" href="/glossary/">용어집</a>
-    <a class="navlink" href="/links/">참조 연결</a>
-    <a class="navlink" href="/logs/">로그</a>
-    <a class="navlink" href="/rag/debug.html">디버깅</a>
-  </nav>
+  <div class="ui-acts">
+    <a class="btn" href="/rag/debug.html" title="질의 하나의 전모 — 사다리·프롬프트·토큰">디버깅</a>
+  </div>
 </header>
+<h1 class="sr">질의응답</h1>
 
 <main class="wrap">
 
-  <!-- 질의 — 결과의 근거 좌표는 전부 구조 뷰어 딥링크다 -->
-  <section class="pane">
+  <!-- 질의 — 결과의 근거 좌표는 전부 구조 뷰어 딥링크다.
+       묻는 줄이 먼저, 그 줄을 바꾸는 스위치는 아래 작은 알약으로 물러난다. -->
+  <section class="pane askpane">
     <form id="askForm" class="askrow">
       <input id="q" type="search" placeholder="문서에 물어보세요 — 예: 설명의무가 뭐야"
              autocomplete="off" autofocus>
       <button id="askBtn" type="submit">묻기</button>
+    </form>
+    <div class="askopts">
       <label class="chk" title="LLM 관련성 필터 — 끄면 거르지 않은 회수 원본이 보인다">
         <input type="checkbox" id="optFilter" checked> 필터</label>
-    <label class="chk" title="검색이 빈손일 때 회복 사다리(의미해석→깔때기→원문→수색대→둘러보기)를 돈다">
+      <label class="chk" title="검색이 빈손일 때 회복 사다리(의미해석→깔때기→원문→수색대→둘러보기)를 돈다">
         <input type="checkbox" id="optRecover" checked> 탐험</label>
-    <label class="chk" title="기본: 벡터로 진입 → 참조 간선을 따라 연결 구역을 전부 싣는다. 출처는 회수 집합 그대로(정적). 끄면 용어 사다리">
+      <label class="chk" title="기본: 벡터로 진입 → 참조 간선을 따라 연결 구역을 전부 싣는다. 출처는 회수 집합 그대로(정적). 끄면 용어 사다리">
         <input type="checkbox" id="optVector" checked> 벡터 우선</label>
-    </form>
+    </div>
   </section>
 
   <section id="result" class="pane hidden">
     <div id="answer" class="answer"></div>
     <div id="refs" class="refs"></div>
+    <!-- 빈약한 답의 다음 걸음 — 답이 못 서거나 탐험이 돌았을 때만 뜬다.
+         품질을 볼 사람을 그 순간에 디버깅 통로로 끌어들인다. -->
+    <div id="nudge" class="nudge hidden"></div>
 
     <!-- 피드백 — 이 신호가 진단 튜플을 완성한다. 루프 2 전체의 입구다. -->
     <div id="fb" class="fb hidden">
@@ -72,8 +76,9 @@
     <ol id="trail" class="trail"></ol>
   </section>
 
-  <!-- 판정 백로그 ↔ 최근 질의 — 탭으로 스위칭한다. 백로그(검수할 것)가 먼저다 -->
-  <section class="pane">
+  <!-- 판정 백로그 ↔ 최근 질의 — 탭으로 스위칭한다. 백로그(검수할 것)가 먼저다.
+       id 는 딥링크 자리 — 홈 할 일·상단바 배지·피드백 안내가 #backlog 로 온다 -->
+  <section id="backlog" class="pane">
     <div class="panehead tabs2">
       <button id="tabBk" class="on">판정 백로그</button>
       <button id="tabTup">최근 질의</button>
@@ -99,6 +104,7 @@
   <div id="ppBody" class="ppbody"></div>
 </aside>
 
+<script src="/ui/hl.js"></script>
 <script src="app.js"></script>
 <script src="pdfpane.js"></script>
 <script src="backlog.js"></script>

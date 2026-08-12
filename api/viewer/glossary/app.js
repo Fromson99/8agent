@@ -30,9 +30,19 @@ async function load() {
   S.docColor = {};
   docNames().forEach((d, i) => (S.docColor[d] = DOC_COLORS[i % DOC_COLORS.length]));
   if (S.selDocs === null) S.selDocs = new Set(docNames());   // 처음엔 전부
+  // 딥링크 — 구조 검수의 "용어 →" 가 ?doc=<이름> 으로 문서 하나를 짚어 보낸다
+  const dq = new URLSearchParams(location.search).get("doc");
+  if (dq && docNames().includes(dq)) {
+    S.selDocs = new Set([dq]);
+    $("allDocs").checked = false;
+  }
   const m = location.hash.match(/t=([^&]+)/);
   if (m) S.sel = decodeURIComponent(m[1]);
   if (S.sel && !S.data.terms.some((t) => t.key === S.sel)) S.sel = null;
+  // 딥링크 — 홈 할 일·상단바 배지가 #review 로 검수 큐를 바로 연다
+  if (location.hash === "#review" && !S.review) {
+    S.review = true; S.relations = false; syncViewBtns();
+  }
   render();
 }
 
@@ -157,7 +167,8 @@ $("allDocs").onchange = (e) => {
  * 검수를 기다리는 것이라 화면에서 구별돼야 한다. */
 function lifePills(r) {
   const src = { "수기": ["add", "추가"], "tier1": ["t1", "정의"],
-                "통계": ["st", "통계"], "질의루프": ["lp", "질의"] }[r.source];
+                "통계": ["st", "통계"], "질의루프": ["lp", "질의"],
+                "문서제목": ["doc", "문서제목"] }[r.source];
   let out = src ? `<span class="pill ${src[0]}" title="출처: ${esc(r.source)}">${src[1]}</span>` : "";
   if (r.status === "잠정")
     out += `<span class="pill prov" title="잠정 — 검수·실적을 기다린다">잠정</span>`;
@@ -239,19 +250,26 @@ async function renderReview() {
   box.innerHTML = "<p class='hint'>검수 큐 불러오는 중…</p>";
   const d = await (await fetch(`${API}/review`)).json();
   $("reviewN").textContent = d.total || "";
+  // 외부 문서제목 뽑기 — 참조가 부른, 코퍼스에 없는 문서명을 잠정으로 합류시킨다
+  const scanBtn = `<button id="scanDocT"
+      title="본문 참조가 이름으로 부른 외부 문서(「보험업법」 …)의 제목을 뽑아 잠정 용어로 올립니다">
+      문서제목 뽑기</button>`;
   if (!d.queue.length) {
     box.innerHTML = `<div class="dhead"><button data-back-review>← 전체</button>
-      <h2>검수 큐</h2></div><p class="hint">잠정 용어가 없습니다 — 깨끗합니다.</p>`;
+      <h2>검수 큐</h2><span class="grow"></span>${scanBtn}</div>
+      <p class="hint">잠정 용어가 없습니다 — 깨끗합니다.</p>`;
   } else {
     box.innerHTML = `
       <div class="dhead"><button data-back-review>← 전체</button>
         <h2>검수 큐</h2><span class="pill prov">잠정 ${d.total}</span>
-        <span class="sub">승인하면 검색 신뢰가 오르고, 반려하면 같은 후보가 다시 올라오지 않습니다</span></div>
+        <span class="sub"><b>승인 = 질의응답의 진입 앵커 등재 + 본문 하이라이트</b> —
+          반려하면 같은 후보가 다시 올라오지 않습니다</span>
+        <span class="grow"></span>${scanBtn}</div>
       ${d.queue.map((r) => `
         <section class="rvitem" data-rv="${esc(r.key)}">
           <div class="rvhead">
             <b>${esc(r.term)}</b>
-            <span class="pill ${r.source === "tier1" ? "t1" : "st"}">${esc(r.source || "")}</span>
+            <span class="pill ${{ tier1: "t1", 문서제목: "doc" }[r.source] || "st"}">${esc(r.source || "")}</span>
             <span class="pill">${esc(r.confidence || "")}</span>
             <span class="sub">${r.n_occ}회 · ${r.docs.length}문서</span>
             <span class="grow"></span>
@@ -276,6 +294,19 @@ async function renderReview() {
   box.querySelectorAll("[data-inspect]").forEach((b) => {
     b.onclick = () => { S.review = false; select(b.dataset.inspect); };
   });
+  const sc = box.querySelector("#scanDocT");
+  if (sc) sc.onclick = async () => {
+    sc.disabled = true; sc.textContent = "뽑는 중…";
+    const r = await fetch(`${API}/scan-doc-titles`, { method: "POST" });
+    const j = await r.json();
+    sc.disabled = false; sc.textContent = "문서제목 뽑기";
+    if (!r.ok) { alert(j.detail || "실패"); return; }
+    sessionStorage.removeItem("ui-queue-counts");   // 상단바 배지 갱신
+    alert(j.added
+      ? `외부 문서제목 ${j.added}개를 잠정으로 올렸습니다:\n${j.terms.join(", ")}`
+      : "새로 뽑을 문서제목이 없습니다 — 전부 이미 등재됐거나 기각된 이름입니다");
+    await load();
+  };
 }
 
 async function reviewAct(key, status) {
@@ -283,6 +314,7 @@ async function reviewAct(key, status) {
     method: "PATCH", headers: { "content-type": "application/json" },
     body: JSON.stringify({ status }),
   });
+  sessionStorage.removeItem("ui-queue-counts");   // 상단바 배지 즉시 갱신
   await load();                       // 목록·배지 갱신 (review 모드 유지)
 }
 
@@ -456,6 +488,8 @@ function detailHtml() {
       ${lifePills(r)}
       ${(r.hits || r.misses) ? `<span class="pill"
         title="용어 진입 실적 — 답변에 인용됨 ✓ / 무관 지문 ✗">실적 ${r.hits || 0}✓ ${r.misses || 0}✗</span>` : ""}
+      <a class="go askgo" href="/rag/?q=${encodeURIComponent(r.term)}"
+         title="질의응답에서 이 말로 바로 묻는다 — 승인(활성) 용어면 진입 앵커로 착지한다">이 용어로 질의 →</a>
       ${r.user ? `<button class="tdel" data-del="${esc(r.key)}"
           title="${r.source === "수기" ? "더한 용어를 지운다 — 제목에서 거둔 출현은 남는다"
                  : "강등한다(tombstone) — 색인에서 빠지고 기록은 남는다"}">✕ ${
@@ -519,23 +553,31 @@ $("rescanBtn").onclick = async () => {
   load();
 };
 
-/* 검수 큐·관계 — 헤더 링크로 여닫는다. 잠정 용어 수 배지는 로드 때마다 갱신. */
+/* 검수 큐·관계 — 상단바 버튼으로 여닫는다. 켜진 것은 눌린 채로 보인다.
+   잠정 용어 수 배지는 로드 때마다 갱신. */
+function syncViewBtns() {
+  $("reviewLink").classList.toggle("go", S.review);
+  $("relLink").classList.toggle("go", S.relations);
+}
 $("reviewLink").onclick = (e) => {
   e.preventDefault();
   S.relations = false;
   S.review = !S.review;
+  syncViewBtns();
   render();
 };
 $("relLink").onclick = (e) => {
   e.preventDefault();
   S.review = false;
   S.relations = !S.relations;
+  syncViewBtns();
   render();
 };
 async function refreshReviewBadge() {
   try {
     const d = await (await fetch(`${API}/review?limit=1`)).json();
     $("reviewN").textContent = d.total ? String(d.total) : "";
+    $("reviewN").classList.toggle("hidden", !d.total);
   } catch { /* 배지는 장식이다 — 실패해도 화면은 산다 */ }
 }
 const _load0 = load;

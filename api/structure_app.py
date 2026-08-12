@@ -206,6 +206,12 @@ async def unhandled(request: Request, exc: Exception):
         status_code=500)
 
 
+# 공용 UI — 여덟 화면이 공유하는 토큰·상단바·이동 묶음. 화면들이 절대 경로
+# (`/ui/ui.css`)로 부르므로 루트 마운트보다 **먼저** 붙어 있어야 한다.
+_SHARED_VIEWER = Path(__file__).resolve().parent / "viewer" / "shared"
+if _SHARED_VIEWER.is_dir():
+    app.mount("/ui", StaticFiles(directory=str(_SHARED_VIEWER)), name="shared-ui")
+
 _GLOSSARY_VIEWER = Path(__file__).resolve().parent / "viewer" / "glossary"
 if _GLOSSARY_VIEWER.is_dir():
     app.mount("/glossary", StaticFiles(directory=str(_GLOSSARY_VIEWER), html=True),

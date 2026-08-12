@@ -14,7 +14,7 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => (s || "").replace(/[&<>"]/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const COLORS = ["#60a5fa", "#4ade80", "#fbbf24", "#f472b6", "#a78bfa", "#22d3ee"];
-const VIA_CLS = { "이름대조": "ok", "LLM": "accent", "사람": "warn" };
+const VIA_CLS = { "이름대조": "ok", "LLM": "accent", "사람": "warn", "추정": "" };
 
 async function load() {
   const r = await fetch(API);
@@ -25,7 +25,15 @@ async function load() {
     S.color[d.doc_id] = COLORS[i % COLORS.length];
     S.name[d.doc_id] = d.doc;
   });
+  // 딥링크 ①: ?doc=<doc_id> — 구조 검수의 "참조 →" 가 문서 하나를 짚어 보낸다
+  const d0 = new URLSearchParams(location.search).get("doc");
+  if (d0 && S.data.docs.some((x) => x.doc_id === d0)) S.doc = d0;
   render();
+  // 딥링크 ②: #pending — 홈 할 일·상단바 배지가 보류 검수 자리로 바로 보낸다
+  if (location.hash === "#pending") {
+    setTab("list");
+    $("pendTitle")?.scrollIntoView({ block: "start" });
+  }
 }
 
 function render() {
@@ -346,34 +354,91 @@ const end = (docId, docName, path, withDoc) => `
     <span class="p">${esc(path)}</span>
   </span>`;
 
+/* via 칩의 설명 — 형태마다 신뢰가 다르니 검수 순서도 다르다 */
+const VIA_TIP = {
+  "추정":   "이름 없이 부른 참조(법·동법…) — 그 조를 가진 문서가 하나뿐이라 그리 이은 것. 문서가 늘면 틀릴 수 있어 가장 먼저 훑을 대상",
+  "이름대조": "문서 이름을 불러 결정론으로 확정 — 신뢰 높음",
+  "LLM":     "LLM 판정으로 links.json 에 고정된 것",
+  "사람":    "사람이 보류에서 직접 고른 것",
+  "교정":    "백로그 재지정으로 도착이 옮겨 앉은 것",
+  "저장":    "links.json 에 저장된 것 (경위 표기 없음)",
+};
+const PAGE = 300;          // 한 번에 세우는 행 수 — 4천 행을 다 세우면 화면이 죽는다
+
 function renderCross() {
-  const rows = S.data.cross.filter((e) =>
+  const all = S.data.cross.filter((e) =>
     (!S.doc || e.src_doc === S.doc || e.dst_doc === S.doc)
     && (hit(e.src_path) || hit(e.dst_path) || hit(e.surface)));
+
+  // 연결 형태별 분리 — 칩에 수가 실리고, 고르면 그 형태만 남는다
+  const counts = {};
+  all.forEach((e) => { const v = e.via || "저장"; counts[v] = (counts[v] || 0) + 1; });
+  const vias = ["추정", "이름대조", "LLM", "사람", "교정", "저장"].filter((v) => counts[v]);
+  if (S.via && !counts[S.via]) S.via = "";          // 필터 결과에 그 형태가 없어졌다
+  $("viaSeg").innerHTML =
+    `<button data-v="" class="${!S.via ? "on" : ""}">전체 ${all.length}</button>`
+    + vias.map((v) => `<button data-v="${esc(v)}" class="${S.via === v ? "on" : ""}"
+        title="${esc(VIA_TIP[v] || "")}">${esc(v)} ${counts[v]}</button>`).join("");
+  $("viaSeg").querySelectorAll("button").forEach((b) => {
+    b.onclick = () => { S.via = b.dataset.v; S.crossCap = PAGE; renderCross(); };
+  });
+
+  const rows = S.via ? all.filter((e) => (e.via || "저장") === S.via) : all;
+  // 필터 맥락(문서·검색·형태)이 바뀌면 상한을 처음으로 되돌린다
+  const sig = `${S.doc}|${S.q}|${S.via}`;
+  if (S.crossSig !== sig) { S.crossSig = sig; S.crossCap = PAGE; }
   $("crossTitle").textContent = `문서 사이 참조 (${rows.length})`;
-  // 해제는 **저장으로 확정된 간선**(LLM·사람 판정 — links.json)에만 있다.
-  // 이름 대조로 선 간선은 파일에 없어서 지워도 다시 선다 — 버튼을 안 보인다.
-  const saved = (e) => e.via && e.via !== "이름대조";
-  $("cross").innerHTML = rows.map((e, i) => `
+  // 모든 간선에 **끊기**가 있다 — 자동으로 선 간선이 대부분이므로 사람 몫은
+  // 데이터 검수(틀린 것 발견 → 끊기)다. 끊기는 억제 규칙(edge_rules.json)에
+  // 영구 기록돼 목록과 질의 확장 양쪽에서 빠진다 — 다시 서지 않는다.
+  // 판정으로 저장된 간선(LLM·사람)에는 되돌리기(해제 — 보류로 복귀)도 남긴다.
+  const saved = (e) => e.via && !["이름대조", "추정"].includes(e.via);
+  const shown = rows.slice(0, S.crossCap);
+  $("cross").innerHTML = shown.map((e, i) => `
     <div class="edge">
-      <div class="line">
+      <div class="line open" data-i="${i}"
+           title="클릭하면 양쪽 본문이 펼쳐집니다 — 왜 이어졌는지 그 자리에서 확인">
         ${end(e.src_doc, e.src_doc_name, e.src_path, true)}
         <span class="chip">${esc(e.surface)}</span>
         ${end(e.dst_doc, e.dst_doc_name, e.dst_path, true)}
         <span class="pill ${VIA_CLS[e.via] || ""}">${esc(e.via || "저장")}</span>
       </div>
+      <div class="edgeview hidden"></div>
       <div class="links">
         <a class="go" href="${goSrc(e.src_doc, e)}">참조가 쓰인 자리 →</a>
         <a class="go" href="${goDst(e.dst_doc, e)}">가리키는 구역 →</a>
+        <button class="cut" data-i="${i}"
+            title="이 연결은 틀렸다 — 억제 규칙으로 기록되고 목록·질의 확장에서 빠집니다">✂ 끊기</button>
         ${saved(e) ? `<button class="unlink" data-i="${i}"
-            title="links.json 에서 지운다 — 보류로 되돌아간다">해제</button>` : ""}
+            title="판정만 지운다 — 보류로 되돌아간다 (틀렸다는 기록은 안 남음)">해제</button>` : ""}
       </div>
     </div>`).join("") || "<p class='empty'>문서 사이 확정 간선이 없습니다.</p>";
 
+  // 행 클릭 = 본문 펼침 — 경로만 보고는 "왜 이어졌나"를 판단할 수 없다.
+  // 왼쪽엔 참조가 쓰인 자리(표면이 형광), 오른쪽엔 가리키는 구역 본문이 서고,
+  // 둘을 잇는 선 위에 끊기가 있다 — 읽고 그 자리에서 자른다.
+  $("cross").querySelectorAll(".line.open").forEach((el) => {
+    el.onclick = () => toggleEdgeView(el, shown[+el.dataset.i]);
+  });
+  if (rows.length > shown.length) {
+    const more = document.createElement("button");
+    more.className = "more";
+    more.textContent = `+ ${Math.min(PAGE, rows.length - shown.length)}개 더 보기 (남은 ${rows.length - shown.length})`;
+    more.onclick = () => { S.crossCap += PAGE; renderCross(); };
+    $("cross").appendChild(more);
+  }
+
+  // 끊기 — 백로그 승인과 같은 자리(억제 규칙)에 남는다. 사전 검수와 사후
+  // 판정이 한 장부를 쓴다.
+  $("cross").querySelectorAll(".cut").forEach((el) => {
+    el.onclick = () => cutEdge(shown[+el.dataset.i], el);
+  });
+
   $("cross").querySelectorAll(".unlink").forEach((el) => {
     el.onclick = async () => {
-      const e = rows[+el.dataset.i];
+      const e = shown[+el.dataset.i];
       el.disabled = true;
+      sessionStorage.removeItem("ui-queue-counts");   // 상단바 배지 갱신
       const r = await fetch(`${API}/remove`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ src_doc: e.src_doc, src: e.src,
@@ -385,13 +450,104 @@ function renderCross() {
   });
 }
 
+/* 끊기 — 목록 행의 ✂ 와 펼침 뷰의 연결선 버튼이 같은 길을 쓴다 */
+async function cutEdge(e, btn) {
+  btn.disabled = true;
+  sessionStorage.removeItem("ui-queue-counts");   // 상단바 배지 갱신
+  const r = await fetch("/v1/rag/verdicts/resolve", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ src_doc: e.src_doc, src: e.src,
+                           dst_doc: e.dst_doc, dst: e.dst,
+                           src_path: e.src_path || "", dst_path: e.dst_path || "",
+                           action: "승인",
+                           note: "참조 화면 데이터 검수에서 끊음" }) });
+  if (!r.ok) { banner((await r.json()).detail || "실패"); btn.disabled = false; return; }
+  banner("끊었습니다 — 목록과 질의 확장에서 빠집니다 (억제 규칙에 기록)");
+  load();
+}
+
+/* ---------------------------------------------------- 간선 본문 펼침 뷰
+ * 경로는 좌표일 뿐이다 — 판단은 본문으로 한다. 행을 누르면 그 자리에서
+ * 양쪽 구역의 원문이 펼쳐지고, 참조 표면(제N조)이 형광으로 선다. */
+const _secCache = {};
+async function fetchSection(doc, node) {
+  const k = `${doc}:${node}`;
+  if (!_secCache[k]) {
+    const r = await fetch(`/v1/rag/section?doc_id=${encodeURIComponent(doc)}&node=${node}`);
+    _secCache[k] = r.ok ? await r.json() : { text: "(본문을 불러오지 못했습니다)" };
+  }
+  return _secCache[k];
+}
+
+/* 계층 결손 탐지 — 도착 경로에 표면(제22조)이 안 보이면, 그 마디가 구조에
+ * 없어서 참조가 조상 구역에 앉았다는 신호다. 연결이 아니라 계층의 문제 —
+ * 구조 검수로 보내는 통로를 그 자리에 띄운다. */
+function edgeMisfit(e) {
+  const flat = (s) => (s || "").replace(/\s+/g, "");
+  const key = flat(e.surface).match(/제\d+조(의\d+)?/)?.[0];
+  return key ? !flat(e.dst_path).includes(key) : false;
+}
+
+/* 본문 렌더 — 구조화 outline 을 기본으로 쓴다. 항(①)·호(1.)가 마디로 서
+ * 있으면 들여쓰기가 계층 그대로고, `▸ ` 줄은 우리 해석이 세운 마디 제목이라
+ * 본문과 눈으로 갈라 보이게 칠한다. 표면(제N조)은 형광. */
+function bodyHtml(sec, surface) {
+  let h = esc(sec.outline || sec.text || "");
+  const s = esc(surface || "");
+  if (s) h = h.split(s).join(`<mark class="hl">${s}</mark>`);
+  // 마디 줄(들여쓰기 + ▸ 라벨)만 스타일 — esc 이후라 태그 주입 걱정이 없다
+  h = h.replace(/^([ ]*)▸ (.*)$/gm,
+    (_, ind, label) => `${ind}<span class="olh">▸ ${label}</span>`);
+  // 승인 용어 — 초록 밑줄로 은은하게. 누르면 용어집의 그 용어로 간다
+  return uiMarkTerms(h, sec.terms);
+}
+
+async function toggleEdgeView(lineEl, e) {
+  const box = lineEl.parentElement.querySelector(".edgeview");
+  if (!box.classList.contains("hidden")) { box.classList.add("hidden"); return; }
+  box.classList.remove("hidden");
+  box.innerHTML = "<p class='hint'>본문 불러오는 중…</p>";
+  const [src, dst] = await Promise.all([
+    fetchSection(e.src_doc, e.src), fetchSection(e.dst_doc, e.dst)]);
+  box.innerHTML = `
+    <div class="evpane src">
+      <div class="evhead">참조가 쓰인 자리 —
+        <b>${esc(short(e.src_doc_name))} ▸ ${esc(e.src_path)}</b></div>
+      <div class="evbody">${bodyHtml(src, e.surface)}</div>
+    </div>
+    <div class="evlink">
+      <span class="evwire"></span>
+      <span class="evsurf">${esc(e.surface)}</span>
+      <button class="evcut" title="이 연결은 틀렸다 — 억제 규칙으로 기록되고 목록·질의 확장에서 빠집니다">✂ 끊기</button>
+      <span class="evwire arrow"></span>
+    </div>
+    <div class="evpane dst">
+      <div class="evhead">가리키는 구역 —
+        <b class="hl">${esc(short(e.dst_doc_name))} ▸ ${esc(e.dst_path)}</b></div>
+      ${edgeMisfit(e) ? `<div class="evwarn">⚠ 도착 경로에 <b>${esc(e.surface)}</b>
+        마디가 없습니다 — 대상 문서 구조에서 ${esc(e.surface)}가 계층으로 서지
+        않아, 참조가 그 위 구역에 앉았습니다. <b>고칠 곳은 참조가 아니라
+        계층입니다</b> — 구조 검수에서 마디를 세우고 다시 해석하면 이 참조는
+        자동으로 옮겨 앉습니다.
+        <a class="qlink" href="/structure/?doc=${encodeURIComponent(e.dst_doc)}&node=${e.dst}">구조 검수에서 열기 →</a></div>` : ""}
+      <div class="evbody">${bodyHtml(dst, "")}</div>
+    </div>`;
+  box.querySelector(".evcut").onclick = (ev) => {
+    ev.stopPropagation();
+    cutEdge(e, ev.target);
+  };
+}
+
 function renderPending() {
   const rows = S.data.pending.filter((p) =>
     (!S.doc || p.src_doc === S.doc)
     && (hit(p.surface) || hit(p.context) || hit(p.hint)));
   $("pendTitle").textContent = `보류 — 아직 못 정한 참조 (${rows.length})`;
   $("settleBtn").disabled = !S.data.pending.length;
-  $("pending").innerHTML = rows.map((p, i) => `
+  const psig = `${S.doc}|${S.q}`;
+  if (S.pendSig !== psig) { S.pendSig = psig; S.pendCap = PAGE; }
+  const shown = rows.slice(0, S.pendCap || (S.pendCap = PAGE));
+  $("pending").innerHTML = shown.map((p, i) => `
     <div class="pend">
       <div class="head">
         <span class="dot" style="background:${S.color[p.src_doc]}"></span>
@@ -411,12 +567,20 @@ function renderPending() {
           <a class="go" href="/structure/?doc=${encodeURIComponent(c.doc_id)}&node=${c.node}">보기 →</a>
         </div>`).join("")}
     </div>`).join("") || "<p class='empty'>보류가 없습니다 — 전부 확정됐거나 참조가 없습니다.</p>";
+  if (rows.length > shown.length) {
+    const more = document.createElement("button");
+    more.className = "more";
+    more.textContent = `+ ${Math.min(PAGE, rows.length - shown.length)}개 더 보기 (남은 ${rows.length - shown.length})`;
+    more.onclick = () => { S.pendCap += PAGE; renderPending(); };
+    $("pending").appendChild(more);
+  }
 
   $("pending").querySelectorAll(".pick").forEach((el) => {
     el.onclick = async () => {
-      const p = rows[+el.dataset.p];
+      const p = shown[+el.dataset.p];
       el.disabled = true;
-      const r = await fetch(`${API}/pick`, {
+      sessionStorage.removeItem("ui-queue-counts");   // 상단바 배지 갱신
+  const r = await fetch(`${API}/pick`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           src_doc: p.src_doc, src: p.src,
@@ -436,10 +600,15 @@ function renderInDoc() {
       hit(e.src_path) || hit(e.dst_path) || hit(e.surface));
     total += rows.length;
     if (!rows.length) return "";
+    // 문서당 상한 — 전체 7,900행을 다 세우면 화면이 죽는다. 넘치면 검색·문서
+    // 선택으로 좁히라고 말한다 (여긴 결정론 전부라 훑기보다 찾기가 맞다).
+    const capped = rows.slice(0, 100);
+    const rest = rows.length - capped.length;
     return `<div class="docgroup">
         <span class="dot" style="background:${S.color[d]}"></span>
-        ${esc(short(S.name[d]))} <span class="pill">${rows.length}</span></div>`
-      + rows.map((e) => `
+        ${esc(short(S.name[d]))} <span class="pill">${rows.length}</span>
+        ${rest > 0 ? `<span class="sub">앞 100개만 — 나머지 ${rest}개는 검색이나 왼쪽 문서 선택으로 좁혀 보세요</span>` : ""}</div>`
+      + capped.map((e) => `
       <div class="edge">
         <div class="line nopill">
           ${end(d, S.name[d], e.src_path, false)}
@@ -467,11 +636,13 @@ function banner(msg) {
 $("settleBtn").onclick = async () => {
   $("settleBtn").disabled = true;
   $("settleMsg").textContent = "판정 중…";
+  sessionStorage.removeItem("ui-queue-counts");   // 상단바 배지 갱신
   const r = await fetch(`${API}/settle`, { method: "POST" });
   const j = await r.json();
   if (!r.ok) { $("settleMsg").textContent = j.detail || "실패"; $("settleBtn").disabled = false; return; }
   $("settleMsg").textContent =
-    `보류 ${j.pending}건 중 ${j.settled}건 확정 — 나머지는 확신이 없어 남겼습니다`;
+    `보류 ${j.pending}건 중 ${j.settled}건 확정 — 남은 것은 확신이 없어 보류입니다.`
+    + ` 이제 이 잔여만 사람 몫입니다 (원문 보고 후보에서 고르세요)`;
   load();
 };
 

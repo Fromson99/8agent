@@ -4,25 +4,28 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AGENT6 — 근거 연결 편집</title>
+<link rel="stylesheet" href="/ui/ui.css">
 <link rel="stylesheet" href="styles.css">
+<script src="/ui/nav.js" defer></script>
 </head>
 <body>
 
-<header class="top">
-  <h1>AGENT6 근거 연결</h1>
-  <span class="sub" id="summary">불러오는 중…</span>
-  <span class="tabs">
-    <button id="tab-list" class="tab on">목록</button>
-    <button id="tab-canvas" class="tab">캔버스</button>
-    <button id="tab-run" class="tab">점검 실행</button>
-  </span>
+<!-- 상단바엔 이 화면 전체를 바꾸는 것만 둔다. 판 하나만 거르는 필터(연결된
+     구역만·차단 항목만)는 그 판의 머리로 내려갔다. -->
+<header class="ui-bar">
+  <nav class="ui-nav" data-nav="agent6"></nav>
+  <span class="ui-meta" id="summary">불러오는 중…</span>
   <span class="grow"></span>
-  <a class="navlink" href="/">← 문서·데이터</a>
-  <a class="navlink" href="/structure/">구조 해석 검수</a>
-  <label class="chk"><input type="checkbox" id="only-linked"> 연결된 구역만</label>
-  <label class="chk"><input type="checkbox" id="only-blocked"> 차단 항목만</label>
-  <button id="reload">다시 읽기</button>
+  <div class="ui-acts">
+    <span class="uitabs">
+      <button id="tab-list" class="tab on">목록</button>
+      <button id="tab-canvas" class="tab">캔버스</button>
+      <button id="tab-run" class="tab">점검 실행</button>
+    </span>
+    <button id="reload" title="저장된 연결·체크리스트를 다시 읽는다">↻ 다시 읽기</button>
+  </div>
 </header>
+<h1 class="sr">AGENT6 근거 연결</h1>
 
 <div id="banner" class="banner hidden"></div>
 
@@ -30,14 +33,17 @@
 
   <!-- 왼쪽: 코퍼스 선택 -->
   <aside class="pane left">
-    <h2>구조화된 문서</h2>
+    <div class="phead"><h2>구조화된 문서</h2></div>
     <p class="hint">core 가 구조화한 코퍼스입니다. 고르면 가운데에 구역 트리가 펼쳐집니다.</p>
     <div id="corpora"></div>
   </aside>
 
   <!-- 가운데: 구역 트리 -->
   <section class="pane mid">
-    <h2 id="mid-title">구역</h2>
+    <div class="phead">
+      <h2 id="mid-title">구역</h2>
+      <label class="chk"><input type="checkbox" id="only-linked"> 연결된 것만</label>
+    </div>
     <input id="q" type="search" placeholder="조문 내용으로 찾기 (2글자 이상)">
     <div id="tree" class="scroll"></div>
   </section>
@@ -48,7 +54,10 @@
 
   <!-- 오른쪽: 체크리스트 -->
   <section class="pane right">
-    <h2>체크리스트</h2>
+    <div class="phead">
+      <h2>체크리스트</h2>
+      <label class="chk"><input type="checkbox" id="only-blocked"> 차단 항목만</label>
+    </div>
     <p class="hint">항목을 고른 뒤 왼쪽 구역의 <b>잇기</b>를 누르면 선이 생깁니다.</p>
     <div id="items" class="scroll"></div>
   </section>
@@ -85,6 +94,9 @@
     <h2>STT 전사</h2>
     <p class="hint">평문이나 전사 JSON 을 그대로 붙여 넣으세요. 체크리스트 30개와
       각 항목에 연결된 법령 발췌가 함께 프롬프트로 들어갑니다.</p>
+    <!-- 근거 없는 항목 경고 — 실행 탭을 여는 순간 판정이 설 수 없는 항목을
+         알리고, 잇는 자리(목록 탭·차단 필터)로 바로 보낸다 -->
+    <div id="runBlocked" class="runblocked hidden"></div>
     <textarea id="runText" placeholder="PB: 안녕하세요, 오늘 상품 설명드리겠습니다.&#10;고객: 네."></textarea>
     <div class="row">
       <label class="chk">자기일관성

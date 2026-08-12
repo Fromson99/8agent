@@ -1,34 +1,13 @@
-/* 로그 화면 — 다른 뷰어와 같은 결 (다크 우선, 13px). */
-:root { --bg:#0f1115; --pane:#161922; --line:#272c39; --ink:#e6e9f0; --dim:#8b93a7;
-        --accent:#6ea8fe; --ok:#4ec9a0; --warn:#e2b341; --bad:#e06c75;
-        color-scheme: dark; }
-@media (prefers-color-scheme: light) {
-  :root { --bg:#f7f8fa; --pane:#fff; --line:#dfe3ea; --ink:#1a1d24; --dim:#6b7280;
-          --accent:#2563eb; --ok:#0f9d76; --warn:#b45309; --bad:#b91c1c;
-          color-scheme: light; } }
-* { box-sizing: border-box; }
-body { margin:0; background:var(--bg); color:var(--ink); font-size:13px;
-       font-family:-apple-system,"Segoe UI","Noto Sans KR",sans-serif; }
-.top { display:flex; align-items:center; gap:12px; padding:10px 16px;
-       border-bottom:1px solid var(--line); background:var(--pane);
-       position:sticky; top:0; z-index:5; }
-.top h1 { font-size:14px; margin:0; font-weight:650; }
-.grow { flex:1; }
-.sub { color:var(--dim); font-size:11.5px; }
-.nav { display:flex; gap:6px; }
-.navlink { color:var(--dim); text-decoration:none; font-size:11.5px;
-           border:1px solid var(--line); border-radius:6px; padding:3px 9px; }
-.navlink:hover { color:var(--accent); border-color:var(--accent); }
-.hidden { display:none !important; }
+/* 로그 화면 — 토큰·상단바·이동은 /ui/ui.css 가 쥔다. */
 .chk { display:flex; align-items:center; gap:5px; color:var(--dim);
        font-size:11.5px; cursor:pointer; white-space:nowrap; }
 
-.wrap { max-width:1000px; margin:0 auto; padding:16px; display:flex;
-        flex-direction:column; gap:14px; }
-.pane { background:var(--pane); border:1px solid var(--line); border-radius:10px;
-        padding:12px 14px; }
-.panehead { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-.panehead b { font-size:13px; }
+.wrap { max-width:1060px; margin:0 auto; padding:14px; display:flex;
+        flex-direction:column; gap:12px; }
+.pane { background:var(--pane); border:1px solid var(--line); border-radius:var(--r);
+        padding:10px 12px; }
+.panehead { display:flex; align-items:center; gap:9px; margin-bottom:7px; }
+.panehead b { font-size:12.5px; }
 
 button { padding:6px 12px; background:var(--accent); color:#fff; border:0;
          border-radius:8px; font:inherit; font-weight:600; cursor:pointer; }

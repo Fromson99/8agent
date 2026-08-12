@@ -101,6 +101,7 @@ function bkMount(els) {
       await api(url, { method: "POST",
                        headers: { "content-type": "application/json" },
                        body: JSON.stringify(body) });
+      sessionStorage.removeItem("ui-queue-counts");   // 상단바 배지 즉시 갱신
     } catch (err) { alert("처리 실패: " + err.message); }
     refresh();
   }
@@ -173,26 +174,64 @@ function bkMount(els) {
     </div>`;
   }
 
-  /* 무관 지문 — 좌표는 맞는데 이번 질문에 안 맞은 것. **억제 버튼이 없다**:
-   * 옳은 연결을 지우면 그 법령 참조를 영영 잃는다. 이건 회수(진입)가 빗나갔다는
-   * 신호라, 고칠 자리는 간선이 아니라 용어·벡터 쪽이다. */
-  function looseCard(r, i) {
-    const s = r.구역 || {};
-    const e = r.간선;
-    return `<div class="bk" data-i="${i}">
+  /* 구조화오류 — 간선이 아니라 **문서의 계층**이 틀렸다는 판정. 억제·교정으로
+   * 고칠 수 없고, 검수 화면에서 계층을 옮겨야 한다(그래서 버튼이 그리로 간다). */
+  function structCard(g, i) {
+    const s = g.구역 || {};
+    const link = `/structure/?doc=${encodeURIComponent(s.doc_id || "")}`
+      + (s.node != null ? `&node=${s.node}` : "");
+    return `<div class="bk st" data-si="${i}">
       <div class="bkhead">
-        <span class="badge warn">${esc(r.판정 || "무관")}</span>
+        <span class="badge bad">구조화오류</span>
         <span class="q">${esc(s.doc || "")} ▸ ${esc(ppTail(s.path || ""))}
-          <i class="sub">${esc(bkClip(r.사유 || "", 44))}</i></span>
-        <span class="sub">▾ 펼치기</span>
+          <i class="sub">${esc(bkClip(g.사유?.[0] || "", 44))}</i></span>
+        <span class="sub">${g.n}회 · ▾ 펼치기</span>
       </div>
       <div class="bkbody hidden">
-        <div class="bkhint">LLM 판단: 이 구역이 <b>이번 질문에</b> 무관하게 회수됐다.
-          ${e ? `참조 <b>${esc(e.surface || "")}</b> 를 타고 왔지만 <b>그 연결 자체는 옳다</b> —
-                 그래서 억제(연결 삭제) 버튼이 없다. 고칠 자리는 간선이 아니라
-                 회수(진입)다: 이 질문에 저 문서가 왜 잡혔는지가 문제다.`
-             : `참조 간선 없이 회수(벡터·용어)가 직접 데려왔다.`}
-          기록으로만 남아 회수 품질의 재료가 된다.</div>
+        <div class="bkhint">LLM 판단: 이 구역의 <b>계층이 원문과 어긋난다</b>.
+          우리 구조 해석이 마디를 잘못 매단 것이라 연결(간선)로는 고칠 수 없다 —
+          검수 화면에서 <b>계층 교정</b>(내어쓰기·들여쓰기)을 하거나, 같은 어긋남이
+          문서군 전체에 있으면 <b>구조화 틀의 마커</b>를 고친다.</div>
+        <div class="bkpath">
+          <span class="plabel">계층이 이상한 구역</span>
+          ${pathLink(s.doc_id, s.node, `${s.doc || ""} ▸ ${s.path || ""}`, "",
+                     "누르면 PDF 로")}
+        </div>
+        ${(g.사유 || []).map((r) => `<div class="sub">LLM 사유: ${esc(r)}</div>`).join("")}
+        <div class="acts">
+          <a class="btnlink" href="${link}" target="_blank"
+             title="검수 화면에서 그 마디를 열어 계층을 옮긴다">검수 화면에서 고치기 →</a>
+          <button class="yes" data-sact="고침">고쳤음 — 닫기</button>
+          <button class="no" data-sact="무시">무시 — 문제 아님</button>
+        </div>
+        ${qtabs((g.질의들 || []).slice(-5))}
+      </div>
+    </div>`;
+  }
+
+  /* 회수 결함(참조무관·검색무관) — **억제 버튼이 없다.** 좌표가 맞는데 이번
+   * 질문에 안 맞았을 뿐이라 연결을 지우면 옳은 참조를 영영 잃는다. 대신 둘:
+   *   후순위   그 간선을 확장 자리 경쟁에서 뒤로 민다 (참조무관)
+   *   진입제외 그 좌표를 벡터·용어 진입에서만 뺀다 (검색무관 — 참조로는 온다) */
+  function missCard(g, i) {
+    const s = g.구역 || {};
+    const e = g.간선;
+    const isSearch = g.판정 === "검색무관" || !e;
+    return `<div class="bk ms" data-mi="${i}">
+      <div class="bkhead">
+        <span class="badge warn">${esc(g.판정 || "무관")}</span>
+        <span class="q">${esc(s.doc || "")} ▸ ${esc(ppTail(s.path || ""))}
+          <i class="sub">${esc(bkClip(g.사유?.[0] || "", 40))}</i></span>
+        <span class="sub">${g.n}회 · ▾ 펼치기</span>
+      </div>
+      <div class="bkbody hidden">
+        <div class="bkhint">${isSearch
+          ? `<b>진입 검색</b>(벡터·용어)이 이 구역을 데려왔는데 질문과 무관했다.
+             <b>진입 제외</b> = 앞으로 이 좌표를 진입으로 데려오지 않는다
+             (참조를 타고는 여전히 온다 — 연결 지식은 그대로다).`
+          : `<b>참조 확장</b>이 데려왔고 <b>연결 자체는 옳다</b>. 그래서 억제(삭제)
+             버튼이 없다. <b>후순위</b> = 자리 경쟁에서 뒤로 민다 — 자리가 남으면
+             여전히 온다.`}</div>
         <div class="bkpath">
           ${e ? `<span class="plabel">참조가 쓰인 자리</span>
                  ${pathLink(e.src_doc, e.src, e.src_path, "", "연결은 옳다 — 누르면 PDF 로")}
@@ -200,8 +239,13 @@ function bkMount(els) {
           <span class="plabel">이 질문엔 무관한 구역</span>
           ${pathLink(s.doc_id, s.node, `${s.doc || ""} ▸ ${s.path || ""}`, "", "누르면 PDF 로")}
         </div>
-        <div class="sub">LLM 사유: ${esc(r.사유 || "")}</div>
-        ${qtabs([{ qid: r.qid, 질의: r.질의 || "", ts: r.ts || "" }])}
+        ${(g.사유 || []).map((r) => `<div class="sub">LLM 사유: ${esc(r)}</div>`).join("")}
+        <div class="acts">
+          ${e ? `<button class="yes" data-mact="후순위">후순위 — 뒤로 밀기</button>` : ""}
+          <button class="yes" data-mact="진입제외">진입 제외 — 검색으로 안 데려오기</button>
+          <button class="no" data-mact="정상">정상 — 문제 아님</button>
+        </div>
+        ${qtabs((g.질의들 || []).slice(-5))}
       </div>
     </div>`;
   }
@@ -209,11 +253,15 @@ function bkMount(els) {
   /* ---------------------------------------------------------- 그리기 */
   function render() {
     const bl = BK.data;
-    const edges = bl.edges || [], fixes = bl.fixes || [], loose = bl.loose || [];
+    const edges = bl.edges || [], fixes = bl.fixes || [];
+    const struct = bl.struct || [], misses = bl.misses || [], miss = bl.miss || {};
 
     if (els.stats) els.stats.textContent =
-      `간선 지문 ${edges.length} · 무관 지문 ${loose.length}`
-      + ` · 억제 규칙 ${bl.suppressed ?? 0} · 재지정 규칙 ${bl.redirected ?? 0}`
+      `오참조 ${edges.length} · 구조화오류 ${struct.length} · 회수 결함 ${misses.length}`
+      + (miss.검색무관 || miss.참조무관
+         ? ` (검색 ${miss.검색무관 || 0} · 참조 ${miss.참조무관 || 0})` : "")
+      + ` │ 규칙 — 억제 ${bl.suppressed ?? 0} · 재지정 ${bl.redirected ?? 0}`
+      + ` · 후순위 ${bl.demoted ?? 0} · 진입제외 ${bl.entry_blocked ?? 0}`
       + ` · 처리 ${bl.resolved ?? 0}`;
     if (els.fixStats) els.fixStats.textContent =
       `대기 ${fixes.length}건 · 재지정 규칙 ${bl.redirected ?? 0}`;
@@ -221,11 +269,18 @@ function bkMount(els) {
     const edgesHtml =
       (edges.length
         ? `<div class="sub" style="margin:0 0 5px">오참조 — 참조 해소가 좌표를 틀렸다는
-             판정. 승인하면 그 연결을 안 쓴다.</div>` + edges.map(edgeCard).join("")
+             판정. 승인하면 그 연결을 안 쓴다 — 억제된 간선은
+             <a class="qlink" href="/links/">참조 화면</a>과 질의 확장에서 빠진다.</div>`
+          + edges.map(edgeCard).join("")
         : `<span class="sub">억제 대기 중인 오참조 간선이 없습니다</span>`)
-      + (loose.length ? `<div class="sub" style="margin:12px 0 5px">무관 — 좌표는 맞는데
-          이번 질문에 안 맞은 회수 (최근 ${loose.length}) · 연결은 그대로 둔다</div>`
-          + loose.slice().reverse().map(looseCard).join("") : "");
+      + (struct.length ? `<div class="sub" style="margin:12px 0 5px">구조화오류 —
+          실린 구역의 계층이 원문과 어긋난다는 판정 (${struct.length}곳) ·
+          고칠 자리는 검수 화면의 계층 교정이다</div>`
+          + struct.map(structCard).join("") : "")
+      + (misses.length ? `<div class="sub" style="margin:12px 0 5px">회수 결함 —
+          좌표는 맞는데 이번 질문에 안 맞은 것 (${misses.length}곳) · 연결은 지우지 않는다.
+          <b>검색무관</b>은 진입 검색(벡터·용어)이, <b>참조무관</b>은 참조 확장이 빗나간 것이다</div>`
+          + misses.map(missCard).join("") : "");
     const fixesHtml =
       fixes.map(fixCard).join("") || `<span class="sub">대기 중인 교정 제안이 없습니다</span>`;
 
@@ -259,6 +314,23 @@ function bkMount(els) {
                 new_dst: g.new_dst, src_path: e.src_path || "",
                 dst_path: e.dst_path || "", new_dst_path: g.new_dst_path || "",
                 surface: e.surface || "", action: b.dataset.act }, b);
+        };
+      });
+      // 회수 결함 — 후순위/진입제외/정상 (억제 없음)
+      box.querySelectorAll(".bk.ms button[data-mact]").forEach((b) => {
+        b.onclick = () => {
+          const g = misses[+b.closest(".bk").dataset.mi];
+          act("/v1/rag/verdicts/miss",
+              { 판정: g.판정, 구역: g.구역, 간선: g.간선,
+                action: b.dataset.mact }, b);
+        };
+      });
+      // 구조화오류 — 여기서는 닫기만 한다(고치는 자리는 검수 화면)
+      box.querySelectorAll(".bk.st button[data-sact]").forEach((b) => {
+        b.onclick = () => {
+          const g = struct[+b.closest(".bk").dataset.si];
+          act("/v1/rag/verdicts/struct",
+              { 구역: g.구역, action: b.dataset.sact }, b);
         };
       });
     });
