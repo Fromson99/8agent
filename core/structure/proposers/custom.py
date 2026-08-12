@@ -155,6 +155,7 @@ def propose(block: Block, lex) -> list[Candidate]:
                 ordinal=ordinal, block_idx=block.idx, offset=m.start(), end=m.end(),
                 page=block.page, element_index=block.element_index, text=block.text,
                 construction="full", in_paren=in_paren(block.text, m.start()),
-                is_heading=block.is_heading, bbox=block.bbox))
+                is_heading=block.is_heading, bbox=block.bbox,
+                text_x=block.text_x))
     out.sort(key=lambda c: c.offset)
     return out

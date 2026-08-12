@@ -81,21 +81,30 @@ def _is_bold(span: dict) -> bool:
 
 
 def _page_spans(page) -> list[dict]:
-    """이 쪽의 span 들 — (bbox_TOPLEFT, size, bold, 글자수)."""
+    """이 쪽의 span 들 — (bbox_TOPLEFT, size, bold, 글자수, 잉크 시작 x).
+
+    `rawdict` 로 읽는 이유는 `ink_x` 하나 때문이다. span 의 bbox 는 **선행 공백을
+    포함**해서 시작한다 — 들여쓰기를 공백 문자로 표현한 조판에서는 span bbox 만
+    보면 서로 다른 층이 같은 x 로 읽힌다(실측 2026-08-11: `가.` span bbox 101.72,
+    첫 글자 '가' 는 115.04). 글자 단위로 내려가야 진짜 왼쪽 끝이 나온다.
+    """
     out: list[dict] = []
-    data = page.get_text("dict")
+    data = page.get_text("rawdict")
     for block in data.get("blocks", []):
         for line in block.get("lines", []):
             for span in line.get("spans", []):
-                text = (span.get("text") or "").strip()
+                chars = span.get("chars") or []
+                text = "".join(c.get("c", "") for c in chars).strip()
                 if not text:
                     continue
                 bb = span.get("bbox")
                 if not bb:
                     continue
+                ink = next((c for c in chars if c.get("c", "").strip()), None)
+                ink_x = float(ink["bbox"][0]) if ink and ink.get("bbox") else float(bb[0])
                 out.append({"bbox": list(bb), "size": round(float(span.get("size", 0)), 2),
                             "bold": _is_bold(span), "n": len(text),
-                            "font": str(span.get("font", ""))})
+                            "font": str(span.get("font", "")), "ink_x": ink_x})
     return out
 
 
@@ -115,6 +124,42 @@ def _dominant(spans: list[dict]) -> tuple[Optional[float], float, str]:
     size = weight.most_common(1)[0][0] if weight else None
     font = fonts.most_common(1)[0][0] if fonts else ""
     return size, (bold / total if total else 0.0), font
+
+
+def ensure_text_x(path: str | Path, elements: list) -> int:
+    """캐시에서 되살린 요소에 `text_x` 가 없으면 채운다 — 몇 개를 채웠는지 돌려준다.
+
+    `annotate` 는 파싱 때 한 번 도는데, 그 전에 굳은 `parse.json` 에는 이 축이
+    없다. 재파싱(docling 몇 분)을 강요하지 않으려고 이 값만 다시 잰다 —
+    PyMuPDF 텍스트 추출뿐이라 싸다. 이미 있으면 아무것도 하지 않는다.
+    """
+    if not elements or all(getattr(e, "text_x", None) is not None
+                           for e in elements if getattr(e, "bbox", None)):
+        return 0
+    import fitz
+
+    try:
+        doc = fitz.open(str(path))
+    except Exception:                                  # pragma: no cover
+        return 0
+    try:
+        by_page = {i: _page_spans(pg) for i, pg in enumerate(doc, start=1)}
+        heights = {i: float(pg.rect.height) for i, pg in enumerate(doc, start=1)}
+    finally:
+        doc.close()
+    n = 0
+    for e in elements:
+        if getattr(e, "text_x", None) is not None or not getattr(e, "bbox", None):
+            continue
+        h, spans = heights.get(e.page), by_page.get(e.page)
+        if not h or not spans:
+            continue
+        box = geometry.to_topleft(e.bbox, getattr(e, "bbox_origin", "BOTTOMLEFT"), h)
+        hit = [s for s in spans if geometry.holds_center(box, s["bbox"], PAD)]
+        if hit:
+            e.text_x = round(min(s["ink_x"] for s in hit), 2)
+            n += 1
+    return n
 
 
 def annotate(path: str | Path, elements: list) -> dict[str, Any]:
@@ -156,6 +201,16 @@ def annotate(path: str | Path, elements: list) -> dict[str, Any]:
             continue
         box = geometry.to_topleft(e.bbox, getattr(e, "bbox_origin", "BOTTOMLEFT"), h)
         hit = [s for s in spans if geometry.holds_center(box, s["bbox"], PAD)]
+        # 글자가 **실제로 시작하는** x. 요소 bbox 의 왼쪽 끝과 다를 수 있다:
+        # 들여쓰기를 좌표가 아니라 **선행 공백 문자**로 표현하는 조판이 흔하고
+        # (실측 2026-08-11 상품설명서: `가.` 앞 공백 4개 → bbox 0.1709 인데
+        # 글자는 0.1932 에서 시작), 그러면 bbox 만 보는 들여쓰기 증거는 서로
+        # 다른 층을 같은 자리로 읽는다. _page_spans 는 빈 span 을 이미 버리므로
+        # 여기 남은 것은 전부 잉크다.
+        if hit:
+            e.text_x = round(min(s["ink_x"] for s in hit), 2)
+            if e.bbox and e.text_x - e.bbox[0] > 1.0:
+                stats["indented_by_space"] = stats.get("indented_by_space", 0) + 1
         size, ratio, font = _dominant(hit)
         if size is None:
             continue

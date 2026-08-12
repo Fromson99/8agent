@@ -60,23 +60,48 @@ class DPResult:
     beam_hits: int = 0
 
 
-def _levels_for(cand: Candidate, ladder: Ladder) -> list[int]:
-    """이 후보가 앉을 수 있는 레벨들."""
-    if not cand.unassigned and cand.level is not None:
-        return [cand.level]
-    return list(range(max(1, ladder.depth)))       # 미배정 — 문맥이 정한다
+def _levels_for(cand: Candidate, ladder: Ladder,
+                stack: Optional[ScopeStack] = None,
+                depth: Optional[int] = None) -> list[int]:
+    """이 후보가 앉을 수 있는 레벨들.
+
+    사다리가 층을 정해 준 후보라도, **지금 열린 구간보다 더 들여쓰여 있으면**
+    그 구간 안쪽 자리도 후보로 준다. 전역 사다리는 계열마다 층이 하나라
+    "여기서는 `가.` 가 `1)` 안" 을 표현하지 못하는데, 그 문서는 들여쓰기로
+    이미 그렇게 그려 놓았다(실측 2026-08-11 상품설명서 p.123). 고르는 것은
+    DP 다 — 사다리를 벗어나면 novelty 벌점을 물므로, 기하가 뚜렷할 때만 이긴다.
+    """
+    top = depth if depth is not None else max(1, ladder.depth)
+    if cand.unassigned or cand.level is None:
+        return list(range(top))                    # 미배정 — 문맥이 정한다
+    levels = [cand.level]
+    if stack is not None and cand.x_norm is not None:
+        # 나보다 얕게 그려진 채 열려 있는 가장 깊은 구간 — 나는 그 안이다
+        inner = [i for i, x in enumerate(stack.xs)
+                 if x is not None and i > cand.level
+                 and x + scoring.INDENT_EPS < cand.x_norm]
+        if inner:
+            levels.append(min(max(inner) + 1, top - 1))
+    return sorted(set(levels))
 
 
 def run(candidates: list[Candidate], ladder: Ladder) -> DPResult:
     """읽기순 1회 훑기. 후보의 `activated` / `decision_note` 를 채운다."""
     result = DPResult()
-    depth = max(1, ladder.depth)
-
+    # 사다리 칸 수 + 여유. 사다리는 계열마다 층이 하나뿐이라, 같은 표기가 더
+    # 깊은 자리에도 쓰인 문서에서는 **맨 아래 계열보다 더 안쪽**에 앉힐 칸이
+    # 아예 없다(실측: `1)` 이 마지막 칸이라 그 아래 목을 놓을 자리가 없었다).
+    # 들여쓰기를 잴 수 있는 문서에서만 연다 — 기하 없이 열면 근거 없는 깊이가
+    # 생긴다. 여는 것과 쓰는 것은 다르다: 쓰려면 novelty 벌점을 물어야 한다.
     ordered = sorted(candidates, key=lambda c: (c.doc, c.block_idx, c.offset))
     # 계열 정합(S2)에서 떨어진 후보는 DP 에 들어오지 않는다 — 자기 계열 수열·위치가
     # 이미 "구조가 아니다" 라고 말했다. 그래도 감사 로그에는 남는다(§8.7).
     live = [c for c in ordered if c.survives and c.s > ACTIVATE_FLOOR]
     result.pruned = len(ordered) - len(live)
+
+    depth = max(1, ladder.depth)
+    if any(c.x_norm is not None for c in live):
+        depth += scoring.INDENT_EXTRA_DEPTH
 
     paths: dict[ScopeStack, _Path] = {
         ScopeStack.empty(depth): _Path(0.0, ScopeStack.empty(depth))}
@@ -95,7 +120,7 @@ def run(candidates: list[Candidate], ladder: Ladder) -> DPResult:
             _offer(stack, _Path(path.score, stack,
                                 path.steps + [(i, None, 0.0, "reject")]))
 
-            for level in _levels_for(cand, ladder):
+            for level in _levels_for(cand, ladder, stack, depth):
                 if level >= depth:
                     continue
                 if nesting.check(level, stack) == nesting.FORBID:
@@ -104,15 +129,25 @@ def run(candidates: list[Candidate], ladder: Ladder) -> DPResult:
                 novelty = 0.0
                 if ladder.level_of(cand.family_key) != level:
                     novelty = scoring.LEVEL_NOVELTY
-                gain = cand.s + penalty + novelty
+                # 들여쓰기 모순 — 이 자리에 앉으면 나보다 얕게 그려진 구간을
+                # 닫게 되는가. 그렇다면 문서가 그린 안팎을 뒤집는 배치다.
+                contra = 0.0
+                if cand.x_norm is not None:
+                    if any(x is not None and x + scoring.INDENT_EPS < cand.x_norm
+                           for x in stack.xs[level:]):
+                        contra = scoring.INDENT_CONTRADICTION
+                gain = cand.s + penalty + novelty + contra
                 best_activate = max(best_activate, gain)
                 note = f"L{level} s={cand.s:+.2f}"
+                if contra:
+                    note += f" 들여쓰기모순({contra:+.2f})"
                 if penalty:
                     note += f" {why}({penalty:+.2f})"
                 if novelty:
                     note += f" novelty({novelty:+.2f})"
-                _offer(stack.activate(level, cand.ordinal),
-                       _Path(path.score + gain, stack.activate(level, cand.ordinal),
+                nxt_stack = stack.activate(level, cand.ordinal, cand.x_norm)
+                _offer(nxt_stack,
+                       _Path(path.score + gain, nxt_stack,
                              path.steps + [(i, level, gain, note)]))
 
         # 최선(활성)과 차선(기각=0)의 차 — 이것이 §4 S5 가 말하는 "근소차" 다.

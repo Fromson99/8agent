@@ -110,6 +110,46 @@ def nesting_evidence(outer: list[Candidate], inner: list[Candidate]) -> int:
     return count
 
 
+def chain_nesting(outer: list[Candidate], inner: list[Candidate]) -> int:
+    """**연속단위 안**의 이웃 사이에 inner 가 들어앉은 횟수 (사이-끼임의 정밀판).
+
+    사이-끼임은 A 의 인접 출현 아무 쌍이나 세기 때문에 촘촘히 섞인 두 계열에서
+    무승부가 된다(실측 28:27, 6:6). 그런데 계층의 진짜 증거는 밀도가 아니라
+    **번호가 이어지는가**다:
+
+        5) 투자설명서의 변경 …
+            가. 나. 다. 라.          ← 5) 와 6) 사이에 통째로 들어앉았다
+        6) 집합투자업자의 합병 …     ← 5)→6), 같은 연속단위가 이어진다
+
+    5 다음이 6 이므로 그 사이의 것은 **5) 안에** 있다 — 두 출현이 서로 다른
+    수열에 속하면(리셋으로 끊긴 이웃) 그 사이는 중첩의 증거가 아니다. 같은
+    연속단위(`chain`)의 이웃만 세어 그 차이를 살린다.
+
+    실측(같은 문서, 계열을 들여쓰기로 쪼갠 뒤): 최상위 `가.` 는 18:1 로 `1)` 을
+    품고, 목으로 쓰인 `가.` 는 3:4 로 `1)` 에 담긴다 — 사이-끼임은 둘 다
+    무승부(25:24, 6:6)라 아무 말도 못 하던 자리다.
+    """
+    runs: dict[tuple, list[Candidate]] = defaultdict(list)
+    for c in outer:
+        if c.chain is not None:
+            runs[(c.doc, c.chain)].append(c)
+    ipos: dict[str, list[int]] = defaultdict(list)
+    for c in inner:
+        ipos[c.doc].append(c.block_idx)
+    for v in ipos.values():
+        v.sort()
+    count = 0
+    for (doc, _), cs in runs.items():
+        i = ipos.get(doc)
+        if not i:
+            continue
+        cs.sort(key=lambda c: c.block_idx)
+        for a, b in zip(cs, cs[1:]):
+            if any(a.block_idx < x < b.block_idx for x in i):
+                count += 1
+    return count
+
+
 # --- 조립 -------------------------------------------------------------------
 
 def _self_depth_edges(keys: list[str]) -> set[tuple[str, str]]:
@@ -181,7 +221,8 @@ def _find_cycles(nodes: list[str], edges: set[tuple[str, str]],
 def induce_ladder(survivors: list[Candidate], root: str | None = None,
                   hint: list[list[str]] | None = None,
                   partial_order: list[tuple[str, str]] | None = None,
-                  page_width: dict[int, float] | None = None) -> Ladder:
+                  page_width: dict[int, float] | None = None,
+                  chain_evidence: bool = False) -> Ladder:
     """레벨 사다리를 유도한다.
 
     hint          층을 통째로 지정한다(`[["dot_number:1"], ["circled"]]`). 주면 유도를
@@ -267,8 +308,16 @@ def induce_ladder(survivors: list[Candidate], root: str | None = None,
                 continue
             # 4. 사이-끼임 — 한 방향이 압도할 때만. 마진 1 은 3:2, 2:1 같은 노이즈를
             #    통과시켜 순환을 만든다(실측: 목→절 2:1 이 순환 7개의 시작점).
-            na = nesting_evidence(fired[a], fired[b])
-            nb = nesting_evidence(fired[b], fired[a])
+            #    **연속단위 안의 이웃만 센다**(chain_nesting) — 밀도가 아니라
+            #    "번호가 이어지는 사이에 들어앉았는가"가 중첩의 증거다.
+            if chain_evidence:
+                na = chain_nesting(fired[a], fired[b])
+                nb = chain_nesting(fired[b], fired[a])
+            else:
+                na = nb = 0
+            if na == nb == 0:            # 연속단위 셈이 침묵하면 밀도 셈으로
+                na = nesting_evidence(fired[a], fired[b])
+                nb = nesting_evidence(fired[b], fired[a])
             total = na + nb
             if total and na > nb and na / total >= scoring.MIN_NESTING_RATIO:
                 edges.add((a, b)); why.append(f"{a}→{b} (사이-끼임 {na}:{nb})")

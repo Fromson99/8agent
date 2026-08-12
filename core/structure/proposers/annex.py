@@ -42,6 +42,6 @@ def propose(block: Block, lex) -> list[Candidate]:
             block_idx=block.idx, offset=m.start(), end=m.end(), page=block.page,
             element_index=block.element_index, text=block.text,
             construction="full", in_paren=False, is_heading=block.is_heading,
-            bbox=block.bbox))
+            bbox=block.bbox, text_x=block.text_x))
     out.sort(key=lambda c: c.offset)
     return out

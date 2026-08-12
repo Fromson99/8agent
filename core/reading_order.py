@@ -29,6 +29,8 @@ p7 은 제목 `특정금전신탁 변경계약서` 가 231개 중 **222번째**�
 
 from __future__ import annotations
 
+import re
+
 from core import geometry
 
 # 같은 행으로 묶는 세로 허용오차(pt). 본문 줄높이보다 작게 잡는다.
@@ -65,6 +67,50 @@ def _sorted_by_coords(elements) -> list:
     return [elements[i] for i in order]
 
 
+# 홀로 선 마커 조각 — `(2)` 처럼 마커만 담긴 요소. 제목·본문과 같은 줄에 있는데
+# 파서가 따로 떼어 낸 것이다.
+_BARE_MARKER = re.compile(
+    r"^\s*(?:\(\d{1,3}\)|\d{1,3}\)|[\u2460-\u2473]|[가-힣]\.|\d{1,3}\.)\s*$")
+# 같은 줄로 볼 세로 허용오차(pt). ROW_TOL 보다 빡빡하게 — 줄이 확실히 같아야 옮긴다.
+SAME_LINE_TOL = 3.0
+
+
+def _repair_split_lines(page_els: list) -> int:
+    """**같은 줄인데 순서가 멀어진** 마커 조각을 제자리로 되돌린다. 옮긴 수를 낸다.
+
+    실측(상품설명서 p.123): `(2) 수시공시` 한 줄이 `(2)`(x0 77.38)와
+    `수시공시`(x0 104.67)로 쪼개져 왔는데 — y 는 301.04 로 **완전히 같다** —
+    파서가 `(2)` 를 그 쪽의 **맨 끝**으로 보냈다. 그러면 마커가 제 내용보다 11
+    요소 뒤에 서고, 읽기순 1회 훑기인 구조화는 그 구역의 부모를 영영 못 만든다
+    (골든 8건이 여기서 깨졌다).
+
+    같은 문서에서 이렇게 쪼개진 줄은 10 건인데 9 건은 마커가 바로 앞에 붙어 있어
+    아무 문제가 없다. 그래서 **순서가 어긋난 것만** 건드린다 — 멀쩡한 조각을
+    옮기면 없던 문제를 만든다. 쪼개진 줄을 합치지는 않는다: 합치기는 파서가
+    준 요소 경계를 바꾸는 일이라 반경이 넓고, 자리만 되돌려도 구조는 선다.
+    """
+    tops = [geometry.screen_top(e.bbox, e.bbox_origin) if e.bbox else None
+            for e in page_els]
+    moved = 0
+    for i in range(len(page_els) - 1, -1, -1):
+        a = page_els[i]
+        if not a.bbox or not _BARE_MARKER.match(a.text or ""):
+            continue
+        for j, b in enumerate(page_els):
+            if j == i or not b.bbox or tops[i] is None or tops[j] is None:
+                continue
+            if abs(tops[i] - tops[j]) > SAME_LINE_TOL:
+                continue                       # 다른 줄
+            if a.bbox[2] > b.bbox[0] + 1:
+                continue                       # 마커가 왼쪽이 아니다
+            if i < j:
+                break                          # 이미 앞에 있다 — 멀쩡하다
+            page_els.insert(j, page_els.pop(i))
+            moved += 1
+            break
+    return moved
+
+
 def reorder(elements: list) -> tuple[list, dict, list[str]]:
     """양식 페이지의 읽기 순서를 좌표로 다시 세운다.
 
@@ -79,8 +125,13 @@ def reorder(elements: list) -> tuple[list, dict, list[str]]:
         by_page.setdefault(e.page, []).append(e)
 
     out: list = []
+    n_repaired = 0
     for pno in sorted(by_page):
-        page_els = by_page[pno]
+        page_els = list(by_page[pno])
+        # 쪼개진 줄부터 제자리로 — 역행 세기 **전에** 한다. 이게 역행의 원인인
+        # 경우가 있고(실측 p.123: 역행 1개가 통째로 이것이었다), 임계(5%)에
+        # 못 미쳐 재정렬이 안 도는 쪽에서도 고쳐야 한다.
+        n_repaired += _repair_split_lines(page_els)
         n_pairs = max(1, len(page_els) - 1)
         before = _inversions(page_els)
         if before / n_pairs > REORDER_T:
@@ -96,6 +147,11 @@ def reorder(elements: list) -> tuple[list, dict, list[str]]:
     for i, e in enumerate(out):
         e.index = i
 
+    if n_repaired:
+        stats["repaired_split_lines"] = n_repaired
+        warnings.append(
+            f"같은 줄인데 순서가 어긋나 있던 마커 조각 {n_repaired}개를 제자리로 "
+            f"되돌렸습니다 — 마커가 제 내용보다 뒤에 오면 그 구역의 부모가 서지 않습니다")
     if stats["reordered_pages"]:
         pages = ", ".join(f"p{r['page']}({r['before']}→{r['after']})"
                           for r in stats["reordered_pages"])

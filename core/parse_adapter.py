@@ -167,6 +167,11 @@ class Element:
     bbox: Optional[list[float]] = None
     # bbox 의 좌표원점. PDF prov 는 BOTTOMLEFT, 표 셀은 TOPLEFT 라 섞인다.
     bbox_origin: str = "BOTTOMLEFT"
+    # 글자가 **실제로 시작하는** x (typography 가 심는다). bbox[0] 과 다를 수
+    # 있다 — 들여쓰기를 선행 공백으로 표현한 조판에서 bbox 는 공백까지 왼쪽으로
+    # 늘어난다. 들여쓰기 증거(S3)는 이 값을 봐야 층을 구별한다. x 는 좌표원점과
+    # 무관하므로(뒤집히는 것은 y 뿐) bbox[0] 과 그대로 비교된다.
+    text_x: Optional[float] = None
     # --- 타이포그래피 (`core.typography` 가 심는다) --------------------------
     # 마커 없는 제목은 **크고 굵고 위가 트여** 있어서 제목이다. 그 축이 없으면
     # 판별기가 아무리 정교해도 볼 수 없다. `None` 은 재지 못했다는 뜻이고 0 과 다르다.
@@ -218,6 +223,8 @@ class Element:
         if self.bbox:
             d["bbox"] = self.bbox
             d["bbox_origin"] = self.bbox_origin
+        if self.text_x is not None:
+            d["text_x"] = self.text_x
         if self.font_size is not None:
             d["font"] = {"size": self.font_size, "ratio": self.size_ratio,
                          "bold": self.bold, "bold_ratio": self.bold_ratio,
@@ -898,7 +905,8 @@ def element_from_dump(d: dict) -> Element:
     return Element(
         index=d["index"], type=d.get("type", "text"), text=d.get("text", ""),
         table=table, page=d.get("page", 1), bbox=d.get("bbox"),
-        bbox_origin=d.get("bbox_origin", "BOTTOMLEFT"), meta=d.get("meta") or {},
+        bbox_origin=d.get("bbox_origin", "BOTTOMLEFT"), text_x=d.get("text_x"),
+        meta=d.get("meta") or {},
         font_size=font.get("size"), size_ratio=font.get("ratio"),
         bold=bool(font.get("bold")), bold_ratio=font.get("bold_ratio", 0.0),
         font_name=font.get("name", ""), gap_before=font.get("gap_before"))

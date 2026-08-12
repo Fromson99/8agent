@@ -40,6 +40,9 @@ class Block:
     element_index: int = 0         # 원본 요소 index (출처 되돌리기용)
     bbox: Optional[list[float]] = None
     bbox_origin: str = "BOTTOMLEFT"
+    # 글자가 실제로 시작하는 x — 들여쓰기를 선행 공백으로 표현한 조판에서
+    # bbox[0] 은 공백까지 왼쪽으로 늘어난다. 들여쓰기 증거(S3)는 이쪽을 본다.
+    text_x: Optional[float] = None
     kind: str = "text"             # text | table | figure
     # 타이포그래피 (`core.typography`). 마커 없는 제목을 보려면 이 축이 있어야 한다.
     # `size_ratio` 는 본문 대비 배율이라 문서마다 임계를 다시 잡지 않아도 된다.
@@ -93,6 +96,7 @@ class Block:
                            is_heading=e.is_heading, element_index=e.index,
                            bbox=getattr(e, "bbox", None),
                            bbox_origin=getattr(e, "bbox_origin", "BOTTOMLEFT"),
+                           text_x=getattr(e, "text_x", None),
                            kind=kind,
                            size_ratio=getattr(e, "size_ratio", None),
                            bold=getattr(e, "bold", False),
@@ -139,6 +143,16 @@ class Candidate:
     is_heading: bool = False
     # 블록의 좌표. 판별에는 안 쓰이고 **들여쓰기 증거**(S3)와 검수 화면만 쓴다.
     bbox: Optional[list[float]] = None
+    # 글자가 실제로 시작하는 x. 들여쓰기 증거는 bbox[0] 이 아니라 이쪽을 본다 —
+    # 선행 공백으로 들여쓴 조판에서 bbox 는 공백까지 왼쪽으로 늘어난다.
+    text_x: Optional[float] = None
+    # 같은 계열이 여러 깊이에 나타나는 문서에서, 이 후보가 속한 들여쓰기 뭉치
+    # (`global_outer.indent.split` 이 심는다). 사다리의 칸은 계열이 아니라
+    # **계열 × 이 뭉치**다 — None 이면 안 쪼갠 것이고 예전과 똑같이 동작한다.
+    indent_group: Optional[int] = None
+    # 페이지 폭 대비 정규화한 잉크 x (파이프라인이 DP 앞에서 채운다). DP 는
+    # 페이지 폭을 모르므로 여기 실어 보낸다 — **구간 안의 깊이 판단**에 쓴다.
+    x_norm: Optional[float] = None
 
     guards: dict[str, float] = field(default_factory=dict)
     s: float = 0.0
@@ -173,8 +187,11 @@ class Candidate:
 
     @property
     def family_key(self) -> str:
-        """사다리에 등재되는 키. 자기계열 depth 가 있으면 깊이까지가 한 계열이다."""
-        return f"{self.family}:{self.depth}" if self.depth is not None else self.family
+        """사다리에 등재되는 키. 자기계열 depth 가 있으면 깊이까지가 한 계열이고,
+        한 계열이 여러 깊이에 그려진 문서에서는 들여쓰기 뭉치까지가 한 칸이다
+        (`가.@0` 최상위 · `가.@1` 목) — 안 쪼갠 문서는 예전 키 그대로다."""
+        base = f"{self.family}:{self.depth}" if self.depth is not None else self.family
+        return f"{base}@{self.indent_group}" if self.indent_group is not None else base
 
     @property
     def tail(self) -> str:
@@ -253,21 +270,33 @@ class ScopeStack:
     불변으로 둔다 — DP 는 상태를 키로 병합하므로 해시가 되어야 한다.
     """
     last: tuple[Optional[Ordinal], ...]
+    # 그 레벨을 연 후보의 들여쓰기(정규화 x). 계층은 문서 전체의 순서가 아니라
+    # **지금 열려 있는 구간과의 관계**로도 읽힌다 — 부모보다 더 들여쓴 것은
+    # 자식이지 형제가 아니다. 상태에 실어야 DP 가 그걸 볼 수 있다.
+    xs: tuple[Optional[float], ...] = ()
+
+    def __post_init__(self) -> None:
+        if not self.xs:
+            object.__setattr__(self, "xs", tuple([None] * len(self.last)))
 
     @classmethod
     def empty(cls, depth: int) -> "ScopeStack":
-        return cls(tuple([None] * depth))
+        return cls(tuple([None] * depth), tuple([None] * depth))
 
     def open_levels(self) -> list[int]:
         return [i for i, v in enumerate(self.last) if v is not None]
 
-    def activate(self, level: int, ordinal: Optional[Ordinal]) -> "ScopeStack":
+    def activate(self, level: int, ordinal: Optional[Ordinal],
+                 x: Optional[float] = None) -> "ScopeStack":
         """해당 레벨을 갱신하고 **하위 레벨 스코프를 닫는다**(SPEC §4 S3)."""
         nxt = list(self.last)
         nxt[level] = ordinal if ordinal is not None else ()
+        xs = list(self.xs)
+        xs[level] = x
         for deeper in range(level + 1, len(nxt)):
             nxt[deeper] = None
-        return ScopeStack(tuple(nxt))
+            xs[deeper] = None
+        return ScopeStack(tuple(nxt), tuple(xs))
 
 
 @dataclass

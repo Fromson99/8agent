@@ -119,11 +119,13 @@ def s2_family(cands: list[Candidate]) -> dict[str, int]:
 def s3_induce(cands: list[Candidate], root: Optional[str] = None,
               hint: Optional[list[list[str]]] = None,
               partial_order: Optional[list[tuple[str, str]]] = None,
-              page_width: Optional[dict[int, float]] = None):
+              page_width: Optional[dict[int, float]] = None,
+              chain_evidence: bool = False):
     survivors = [c for c in cands if c.survives]
     ladder = ladder_mod.induce_ladder(survivors, root=root, hint=hint,
                                       partial_order=partial_order,
-                                      page_width=page_width)
+                                      page_width=page_width,
+                                      chain_evidence=chain_evidence)
 
     by_family: dict[str, list[Candidate]] = {}
     for c in survivors:
@@ -214,7 +216,8 @@ def _unlock_note(freed: list[str], cands: list[Candidate]) -> str:
 def _induce_and_select(result: StructureResult, blocks: Optional[list[Block]],
                        n_blocks: int, *, root: Optional[str],
                        hint: Optional[list[list[str]]],
-                       partial_order: Optional[list[tuple[str, str]]]) -> None:
+                       partial_order: Optional[list[tuple[str, str]]],
+                       chain_evidence: bool = False) -> None:
     """S3(사다리 유도) → S4(DP · 층 해제 1회 · 트리 · 제목 · 잎 · 범위).
 
     `interpret` 와 `rebuild` 의 공통 구간 — 같은 열두 줄이 두 곳에 있으면 한쪽만
@@ -223,6 +226,7 @@ def _induce_and_select(result: StructureResult, blocks: Optional[list[Block]],
     """
     cands = result.candidates
     result.ladder = s3_induce(cands, root=root, hint=hint,
+                              chain_evidence=chain_evidence,
                               partial_order=partial_order,
                               page_width=Block.page_widths(blocks) if blocks else None)
     dpr = dp.run(cands, result.ladder)
@@ -567,6 +571,7 @@ def interpret(blocks: list[Block], doc: str, *,
               partial_order: Optional[list[tuple[str, str]]] = None,
               llm=None,
               pdf_path=None,
+              split_indent: bool = True,
               ledger: Optional[fp_mod.Ledger] = None) -> StructureResult:
     """블록 리스트를 해석해 구조 트리와 frame 재료를 낸다.
 
@@ -606,12 +611,42 @@ def interpret(blocks: list[Block], doc: str, *,
 
     s1_score(cands, blocks, reg, lex, lang)
 
+    # 후보마다 정규화 들여쓰기를 심는다 — DP 가 "지금 열린 구간보다 안쪽인가"를
+    # 보려면 페이지 폭으로 나눈 값이 후보에 붙어 있어야 한다(DP 는 폭을 모른다).
+    from core.structure.global_outer import indent as _ind
+    _pw = Block.page_widths(blocks)
+    for c in cands:
+        x = _ind._x(c)
+        w = _pw.get(c.page)
+        if c.offset == 0 and x is not None and w:
+            c.x_norm = round(x / w, 4)
+
+    # 계열이 여러 깊이에 그려졌으면 들여쓰기 뭉치로 쪼갠다 — **S2 앞**이어야
+    # 한다. 서수 정합(S2)도 사다리(S3)도 family_key 로 묶으므로, 여기서 갈라야
+    # "최상위 나. 뒤에 목 가." 가 역행이 아니라 다른 칸으로 읽힌다.
+    #
+    # 쪼개기 자체는 순서를 정하지 않는다 — **칸을 만들 뿐**이다. 그 칸들의
+    # 위아래는 사다리의 증거가 정하는데, 들여쓰기는 이 문서의 `1)` 처럼 퍼진
+    # 계열에서 침묵한다. 그 자리를 `chain_nesting`(연속단위 안의 끼임)이 메운다
+    # — 쪼개고 나서야 계열별로 방향이 갈리기 때문에 둘은 **함께** 켠다.
+    if split_indent:
+        from core.structure.global_outer import indent as indent_mod
+        pw_split = Block.page_widths(blocks)
+        by_fam: dict[str, list[Candidate]] = {}
+        for c in cands:
+            by_fam.setdefault(c.family_key, []).append(c)
+        split_stats = {k: s for k, cs in by_fam.items()
+                       if (s := indent_mod.split(cs, pw_split))}
+        if split_stats:
+            result.stats["indent_split"] = split_stats
+
     dropped = s2_family(cands)
     result.stats["family_dropped"] = dropped
     result.stats["survivors"] = sum(1 for c in cands if c.survives)
 
     result.stats["page_width"] = len(Block.page_widths(blocks))
-    _induce_and_select(result, blocks, len(blocks), root=root, hint=ladder_hint,
+    _induce_and_select(result, blocks, len(blocks), chain_evidence=split_indent,
+                       root=root, hint=ladder_hint,
                        partial_order=partial_order)
 
     s5_fitness(result, blocks)

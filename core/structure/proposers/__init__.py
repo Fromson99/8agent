@@ -71,6 +71,7 @@ def scan(block: Block, family: str, full: re.Pattern,
                 page=block.page, element_index=block.element_index,
                 text=block.text, construction=construction,
                 in_paren=in_paren(block.text, m.start()),
-                is_heading=block.is_heading, bbox=block.bbox))
+                is_heading=block.is_heading, bbox=block.bbox,
+                text_x=block.text_x))
     out.sort(key=lambda c: c.offset)
     return out
