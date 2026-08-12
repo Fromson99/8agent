@@ -15,7 +15,6 @@ custom 규칙은 문서를 안 가려서, 시험은 영향받는 문서를 전�
 
 from __future__ import annotations
 
-import importlib
 import json
 import sys
 from pathlib import Path
@@ -44,9 +43,11 @@ def test_규칙_시험은_파싱캐시가_있는_문서만_만진다(tmp_path, m
     _doc(store, pdf_doc, parsed=True)
     _doc(store, xml_doc, parsed=False)
 
-    monkeypatch.setenv("STRUCTURE_STORE", str(store))
+    # STORE 는 모듈 적재 때 굳는 상수라 env 만 바꿔서는 안 바뀐다. 그렇다고
+    # importlib.reload 로 갈면 앱이 이미 등록해 둔 라우터 객체와 어긋나 **뒤에
+    # 도는 시험들이 깨진다**(실측). 상수만 갈아 끼운다 — monkeypatch 가 되돌린다.
     from api.routers import structure as mod
-    importlib.reload(mod)                      # STORE 는 모듈 적재 때 정해진다
+    monkeypatch.setattr(mod, "STORE", store)
 
     assert mod._rule_scope() == [pdf_doc]      # XML 문서는 범위 밖
     assert set(mod._all_doc_ids()) == {pdf_doc, xml_doc}   # 목록에는 보인다

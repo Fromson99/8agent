@@ -94,17 +94,61 @@ def _meta(d: Path) -> dict:
     return m
 
 
+# 저장된 결과가 **무엇으로 잘렸는지** — 연결이 바뀌었는지 알려면 이게 있어야 한다.
+#   induce            유도(S0~S6)
+#   lawxml            태그 계층
+#   format:<유형>@v<n> 형식 파일 (버전까지 — 틀을 다시 컴파일하면 결과가 낡는다)
+def _structured_by(data: dict, kind: str) -> str:
+    if kind == "lawxml":
+        return "lawxml"
+    bound = data.get("bound_doc_type")
+    if not bound:
+        return "induce"
+    return f"format:{bound}@v{data.get('format_version', 1)}"
+
+
+def _expected_structured_by(doc_id: str, meta: dict) -> str:
+    """지금 규칙이라면 어떤 것으로 잘려야 하나 — 저장된 것과 다르면 낡은 결과다."""
+    if (meta.get("source_kind") or "") == "lawxml":
+        return "lawxml"
+    from api.routers.formats import binding_for, format_version_of
+
+    bound = binding_for(doc_id, meta.get("folder") or "")
+    if not bound:
+        return "induce"
+    return f"format:{bound}@v{format_version_of(bound)}"
+
+
+def _with_freshness(doc_id: str, meta: dict) -> dict:
+    """meta 에 '다시 해석해야 하는가' 를 얹는다. 저장하지 않고 볼 때마다 계산한다 —
+    연결은 문서 밖에서 바뀌므로 굳혀 두면 그 순간부터 거짓말이 된다."""
+    want = _expected_structured_by(doc_id, meta)
+    # 기록이 없는 옛 문서는 **유도(또는 태그)**로 잘린 것이다 — 형식 연결은 이 표시가
+    # 생긴 뒤에야 가능해졌으므로, 없다는 것 자체가 "형식으로 자르지 않았다" 는 뜻이다.
+    have = meta.get("structured_by") or (
+        "lawxml" if (meta.get("source_kind") or "") == "lawxml" else "induce")
+    m = dict(meta, structured_by=have, expected_structured_by=want)
+    if have != want:
+        m["stale"] = True
+        m["stale_reason"] = f"저장된 결과는 {have} 인데 지금 규칙은 {want} 입니다"
+    return m
+
+
 def _parse_cached(pdf: Path, cache: Path):
     """파싱은 **한 번만** 한다. 비싼 것은 docling 모델 추론이고 해석(S0~S5)은 싸다.
 
     규칙을 고치고 다시 해석할 때마다 몇 분씩 기다리게 하지 않으려고 가른다.
     캐시가 깨졌으면 조용히 다시 파싱한다 — 낡은 형식 때문에 문서를 못 열면 안 된다.
     """
-    from core import parse_adapter
+    from core import parse_adapter, typography
 
     if cache.exists():
         try:
-            return parse_adapter.result_from_dump(json.loads(cache.read_text("utf-8")))
+            parsed = parse_adapter.result_from_dump(json.loads(cache.read_text("utf-8")))
+            # 캐시가 굳은 뒤에 생긴 축을 채운다 — 들여쓰기 증거가 보는 '글자가
+            # 실제로 시작하는 x'. 없으면 선행 공백으로 들여쓴 층을 구별 못 한다.
+            typography.ensure_text_x(pdf, parsed.elements)
+            return parsed
         except Exception:
             pass
     parsed = parse_adapter.parse(pdf)
@@ -145,6 +189,8 @@ def _interpret_with_format(parsed, pdf: Path, name: str, doc_type: str) -> dict:
     data["parser_warnings"] = parsed.warnings
     data["parser"] = parsed.parser
     data["bound_doc_type"] = doc_type
+    # 형식 버전 — 틀을 다시 컴파일하면 이 값이 올라가고, 저장된 결과는 낡은 것이 된다
+    data["format_version"] = fmt.format_version
     return data
 
 
@@ -297,6 +343,7 @@ async def upload(
         # 사람이 바꾼 이름이 파일명보다 먼저다 — 재업로드가 관리를 되돌리면 안 된다.
         "doc_id": doc_id, "name": prev.get("name") or file.filename, "bytes": len(raw),
         "source_kind": _source_kind(d),
+        "structured_by": _structured_by(data, _source_kind(d)),
         "pages": len(data["pages"]), "score": data["fitness"]["score"],
         "passed": data["fitness"]["passed"], "tier": data["fitness"]["tier"],
         "fingerprint": data.get("fingerprint", {}).get("key"),
@@ -355,6 +402,7 @@ def reinterpret(doc_id: str, use_llm: bool = Form(False),
     st = data.get("stats", {})
     meta.update({"score": data["fitness"]["score"], "passed": data["fitness"]["passed"],
                  "tier": data["fitness"]["tier"], "used_llm": bool(use_llm),
+                 "structured_by": _structured_by(data, meta.get("source_kind") or ""),
                  "fingerprint": data.get("fingerprint", {}).get("key"),
                  "fingerprint_count": st.get("fingerprint_count"),
                  "at": datetime.now(timezone.utc).isoformat(timespec="seconds")})
@@ -384,7 +432,20 @@ def reinterpret(doc_id: str, use_llm: bool = Form(False),
 @router.get("/documents", summary="올라온 문서 목록")
 def documents():
     STORE.mkdir(parents=True, exist_ok=True)
-    out = [_meta(d) for d in sorted(STORE.iterdir()) if d.is_dir() and _meta(d)]
+    out = []
+    for d in sorted(STORE.iterdir()):
+        if not d.is_dir():
+            continue
+        m = _meta(d)
+        if not m:
+            continue
+        # 파싱 캐시 유무 — 없으면 다시 해석이 docling 재파싱이라 **분 단위**다.
+        # 화면이 그 사실을 미리 말해 줄 수 있어야 한다(§9 예열).
+        # 법령 XML 은 애초에 파싱을 하지 않는다(태그 직행) — 예열이라는 개념이 없으므로
+        # 캐시 없음을 흠으로 보이면 안 된다.
+        m["parse_cached"] = (m.get("source_kind") == "lawxml"
+                             or (d / "parse.json").exists())
+        out.append(_with_freshness(d.name, m))
     return {"documents": sorted(out, key=lambda m: m.get("at", ""), reverse=True)}
 
 
@@ -470,6 +531,10 @@ def rename_folder(name: str, body: Folder):
                                              encoding="utf-8")
                 moved += 1
     _save_folder_names([n for n in _load_folder_names() if n != name] + [new])
+    # 구조화 틀 연결은 폴더 **이름**으로 걸린다 — 따라가지 않으면 조용히 끊긴다.
+    from api.routers.formats import rename_folder_binding
+
+    rename_folder_binding(name, new)
     return {"renamed": name, "to": new, "docs": moved}
 
 
@@ -487,6 +552,11 @@ def remove_folder(name: str):
                                              encoding="utf-8")
                 unfiled += 1
     _save_folder_names([n for n in _load_folder_names() if n != name])
+    # 연결도 지운다 — 남기면 같은 이름으로 폴더를 다시 만들 때 죽은 줄 알았던 틀이
+    # 되살아난다(사람은 새 폴더를 만들었다고 생각하는데 옛 규칙이 적용된다).
+    from api.routers.formats import forget_folder
+
+    forget_folder(name)
     return {"deleted": name, "docs_unfiled": unfiled}
 
 
@@ -558,6 +628,7 @@ def _reinterpret_doc(doc_id: str) -> dict:
     meta = _meta(d)
     meta.update({"score": data["fitness"]["score"], "passed": data["fitness"]["passed"],
                  "tier": data["fitness"]["tier"],
+                 "structured_by": _structured_by(data, meta.get("source_kind") or ""),
                  "at": datetime.now(timezone.utc).isoformat(timespec="seconds")})
     (d / "meta.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
     return {"doc_id": doc_id, "name": meta.get("name", doc_id),
@@ -657,7 +728,27 @@ def rules_try(doc_id: str, body: RuleTry):
     try:
         rule = custom.validate(out)
     except custom.RuleError as exc:
-        raise HTTPException(422, f"제안된 규칙이 규약을 어깁니다: {exc}")
+        # 한 번은 스스로 고치게 한다 — 무엇을 어겼는지 그대로 돌려준다.
+        # 실측에서 가장 흔한 실패가 "groups 는 1개인데 캡처 그룹이 0개" 였다.
+        fixed = LLM().structured(
+            "structure.rule", RULE_SYSTEM,
+            json.dumps({"블록들": view, "메모": body.note,
+                        "직전_제안": out,
+                        "규약_위반": str(exc),
+                        "지시": "위반을 고쳐 같은 형식으로 다시 답하라. "
+                                "groups 에 적은 이름 수와 패턴의 캡처 그룹 수는 같아야 한다."},
+                       ensure_ascii=False),
+            RULE_SCHEMA, max_tokens=1200, effort="low")
+        try:
+            if fixed is None:
+                raise custom.RuleError(str(exc))
+            rule = custom.validate(fixed)
+        except custom.RuleError as exc2:
+            # 여기서 끝내면 막다른 길이다 — 제안 자체를 돌려줘 손으로 고칠 수 있게 한다.
+            raise HTTPException(422, detail={
+                "message": f"제안된 규칙이 규약을 어깁니다: {exc2}",
+                "proposal": fixed or out,
+                "how": "패턴을 손보아 '내가 등록한 패턴' 으로 직접 등록할 수 있습니다"})
 
     scope = _rule_scope()
     before = {s: _meta(_dir(s)).get("score") for s in scope}
@@ -894,6 +985,34 @@ def hierarchy_unfix(doc_id: str, node: int):
     return {"removed": n}
 
 
+@router.post("/{doc_id}/parse", summary="파싱 캐시 만들기 — docling 을 미리 돌려 캐시를 만든다")
+def warm_parse(doc_id: str):
+    """다시 해석이 **분 단위**가 되는 유일한 원인(파싱 캐시 없음)을 미리 없앤다.
+
+    옛 문서에는 `parse.json` 이 없어 재해석이 docling 을 다시 돌린다(실측 48초).
+    연결을 바꾸고 여러 문서를 한꺼번에 다시 해석할 때 그 비용이 한 번에 몰리는데,
+    화면이 이 갈래로 **하나씩 진행률을 보이며** 예열하면 어디서 오래 걸리는지 보인다.
+    이미 캐시가 있으면 아무 일도 하지 않는다(멱등).
+    """
+    import time
+
+    d = _dir(doc_id)
+    pdf = d / "source.pdf"
+    if not pdf.exists():
+        raise HTTPException(404, f"문서를 찾을 수 없습니다: {doc_id}")
+    cache = d / "parse.json"
+    if cache.exists():
+        return {"doc_id": doc_id, "cached": True, "took_sec": 0.0}
+    t0 = time.monotonic()
+    try:
+        parsed = _parse_cached(pdf, cache)
+    except Exception as exc:
+        raise HTTPException(500, f"파싱에 실패했습니다: {type(exc).__name__}: {exc}")
+    return {"doc_id": doc_id, "cached": False,
+            "took_sec": round(time.monotonic() - t0, 1),
+            "elements": len(parsed.elements)}
+
+
 @router.get("/{doc_id}/pdf", summary="원본 PDF")
 def source(doc_id: str):
     p = _dir(doc_id) / "source.pdf"
@@ -1104,6 +1223,11 @@ def remove(doc_id: str):
     if not d.exists():
         raise HTTPException(404, f"'{doc_id}' 를 찾을 수 없습니다")
     shutil.rmtree(d, ignore_errors=True)
+    # 이 문서에 걸린 예외 연결과 캔버스 자리도 함께 지운다 — 남기면 죽은 id 가 표에
+    # 남고, 같은 파일을 다시 올리면(같은 sha → 같은 doc_id) 옛 연결이 되살아난다.
+    from api.routers.formats import forget_doc
+
+    forget_doc(doc_id)
     return {"deleted": doc_id}
 
 

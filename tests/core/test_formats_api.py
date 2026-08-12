@@ -251,14 +251,27 @@ def test_mixed_source_kinds_warn_and_are_reported(client):
 
 def test_canvas_round_trips(client):
     """캔버스는 **화면의 기억**이다 — 이어 놓은 초안이 새로고침에 날아가면 못 쓴다."""
-    assert client.get("/v1/formats/canvas").json() == {"pos": {}, "drafts": []}
+    assert client.get("/v1/formats/canvas").json() == {"pos": {}, "drafts": [],
+                                                       "open": [], "rev": 0}
     body = {"pos": {"folder:시험폴더": [60, 30]},
             "drafts": [{"id": "d1", "name": "새 구조화 1",
-                        "folders": ["시험폴더"], "docs": []}]}
+                        "folders": ["시험폴더"], "docs": []}],
+            "rev": 0}
     assert client.put("/v1/formats/canvas", json=body).status_code == 200
     back = client.get("/v1/formats/canvas").json()
     assert back["pos"]["folder:시험폴더"] == [60, 30]
     assert back["drafts"][0]["folders"] == ["시험폴더"]
+    assert back["rev"] == 1
+
+
+def test_canvas_detects_a_concurrent_save(client):
+    """탭 두 개 — 나중 저장이 앞의 것을 말없이 지우면 안 된다."""
+    first = {"pos": {"folder:A": [10, 10]}, "drafts": [], "rev": 0}
+    assert client.put("/v1/formats/canvas", json=first).status_code == 200
+    stale = {"pos": {"folder:B": [20, 20]}, "drafts": [], "rev": 0}   # 옛 rev
+    r = client.put("/v1/formats/canvas", json=stale)
+    assert r.status_code == 409 and "먼저 저장" in r.json()["detail"]
+    assert client.get("/v1/formats/canvas").json()["pos"] == {"folder:A": [10, 10]}
 
 
 def test_compile_from_folders_and_loose_docs(client):
@@ -287,6 +300,191 @@ def test_folder_docs_are_not_bound_individually(client):
         "doc_ids": ["a" * 16], "threshold": 0.5})
     assert r.status_code == 200
     assert client.get("/v1/formats/bindings").json()["docs"] == {}
+
+
+def test_deleting_a_document_forgets_its_binding(client):
+    """죽은 doc_id 가 표에 남으면, 같은 파일을 다시 올릴 때(같은 sha) 옛 연결이 되살아난다."""
+    _put_doc(client, "a" * 16, "하나.md", "시험폴더")
+    _put_doc(client, "b" * 16, "둘.md", "시험폴더")
+    assert _compile(client, bind=False).status_code == 200
+    client.put("/v1/formats/bindings",
+               json={"scope": "doc", "key": "a" * 16, "doc_type": "시험규정"})
+    client.put("/v1/formats/canvas",
+               json={"pos": {f"doc:{'a' * 16}": [1, 2]},
+                     "drafts": [{"id": "d1", "name": "x", "folders": [],
+                                 "docs": ["a" * 16]}], "rev": 0})
+    assert client.delete(f"/v1/structure/{'a' * 16}").status_code == 200
+    assert client.get("/v1/formats/bindings").json()["docs"] == {}
+    c = client.get("/v1/formats/canvas").json()
+    assert c["pos"] == {} and c["drafts"][0]["docs"] == []
+
+
+def test_renaming_a_folder_carries_the_binding(client):
+    """연결은 폴더 **이름**으로 걸린다 — 따라가지 않으면 조용히 끊긴다."""
+    _put_doc(client, "a" * 16, "하나.md", "시험폴더")
+    _put_doc(client, "b" * 16, "둘.md", "시험폴더")
+    assert _compile(client).status_code == 200
+    r = client.patch("/v1/structure/folders/시험폴더", json={"name": "새이름"})
+    assert r.status_code == 200
+    assert client.get("/v1/formats/bindings").json()["folders"] == {"새이름": "시험규정"}
+
+
+def test_deleting_a_folder_forgets_the_binding(client):
+    """남기면 같은 이름으로 폴더를 다시 만들 때 죽은 줄 알았던 틀이 되살아난다."""
+    _put_doc(client, "a" * 16, "하나.md", "시험폴더")
+    _put_doc(client, "b" * 16, "둘.md", "시험폴더")
+    assert _compile(client).status_code == 200
+    assert client.delete("/v1/structure/folders/시험폴더").status_code == 200
+    assert client.get("/v1/formats/bindings").json()["folders"] == {}
+
+
+def test_stale_result_is_flagged(client):
+    """연결을 바꾸면 저장된 결과는 낡는다 — 다시 해석하기 전까지 그렇다고 말해야 한다."""
+    _put_doc(client, "a" * 16, "하나.md", "시험폴더")
+    _put_doc(client, "b" * 16, "둘.md", "시험폴더")
+    assert _compile(client).status_code == 200          # 폴더가 틀에 묶인다
+
+    docs = {d["doc_id"]: d for d in client.get("/v1/structure/documents").json()["documents"]}
+    assert docs["a" * 16]["stale"] is True              # 아직 유도 결과가 저장돼 있다
+    assert docs["a" * 16]["expected_structured_by"] == "format:시험규정@v1"
+
+    client.post(f"/v1/structure/{'a' * 16}/reinterpret")
+    docs = {d["doc_id"]: d for d in client.get("/v1/structure/documents").json()["documents"]}
+    assert not docs["a" * 16].get("stale")
+    assert docs["a" * 16]["structured_by"] == "format:시험규정@v1"
+
+
+def test_recompiling_bumps_the_version_and_stales_results(client):
+    """틀을 다시 만들면 이미 잘린 문서는 옛 틀 결과다 — 버전으로 그것을 잡는다."""
+    _put_doc(client, "a" * 16, "하나.md", "시험폴더")
+    _put_doc(client, "b" * 16, "둘.md", "시험폴더")
+    assert _compile(client).status_code == 200
+    client.post(f"/v1/structure/{'a' * 16}/reinterpret")
+    assert _compile(client, overwrite=True).status_code == 200      # v2
+    docs = {d["doc_id"]: d for d in client.get("/v1/structure/documents").json()["documents"]}
+    assert docs["a" * 16]["stale"] is True
+    assert docs["a" * 16]["expected_structured_by"] == "format:시험규정@v2"
+
+
+def test_format_delete_refuses_while_bound_then_cleans_up(client):
+    _put_doc(client, "a" * 16, "하나.md", "시험폴더")
+    _put_doc(client, "b" * 16, "둘.md", "시험폴더")
+    assert _compile(client).status_code == 200
+    r = client.delete("/v1/formats/시험규정")
+    assert r.status_code == 409 and "연결된 것이 있습니다" in r.json()["detail"]
+    r = client.delete("/v1/formats/시험규정?force=true")
+    assert r.status_code == 200
+    assert client.get("/v1/formats/bindings").json()["folders"] == {}
+    assert "시험규정" not in [x["doc_type"]
+                           for x in client.get("/v1/formats").json()["routes"]]
+
+
+def test_human_format_is_not_deletable(client):
+    r = client.delete("/v1/formats/특정금전신탁")
+    assert r.status_code == 409 and "사람이 등록한" in r.json()["detail"]
+
+
+def test_orphan_bindings_are_reported_not_hidden(client):
+    """틀이 사라졌는데 연결이 남으면 — 지우면 '왜 풀렸지', 두면 '왜 안 잘리지'. 말해 준다."""
+    _put_doc(client, "a" * 16, "하나.md", "시험폴더")
+    _put_doc(client, "b" * 16, "둘.md", "시험폴더")
+    assert _compile(client).status_code == 200
+    # 등록부에서만 지운다(연결은 그대로) — 사람이 registry.yaml 을 고친 상황
+    text = client._registry.read_text(encoding="utf-8")
+    import re as _re
+    client._registry.write_text(
+        _re.sub(r"[ \t]*# --- ui-compiled: 시험규정 ---\n(?:.*\n)*?[ \t]*# --- /ui-compiled: 시험규정 ---\n?",
+                "", text), encoding="utf-8")
+    from core import router as core_router
+    core_router.load.cache_clear()
+    j = client.get("/v1/formats").json()
+    assert j["orphans"] == [{"scope": "folder", "key": "시험폴더", "doc_type": "시험규정"}]
+
+
+def test_format_rules_are_readable(client):
+    """틀을 눌렀을 때 **무엇을 보고 자르는지**가 안 보이면 결과를 의심할 수밖에 없다."""
+    _put_doc(client, "a" * 16, "하나.md", "시험폴더")
+    _put_doc(client, "b" * 16, "둘.md", "시험폴더")
+    assert _compile(client).status_code == 200
+    j = client.get("/v1/formats/시험규정/rules").json()
+    assert j["doc_type"] == "시험규정" and j["owner"] == "ui"
+    ids = [m["id"] for m in j["regex_markers"]]
+    assert "조" in ids
+    assert all({"id", "level", "pattern"} <= set(m) for m in j["regex_markers"])
+    assert j["bound_folders"] == ["시험폴더"]
+    assert j["format_version"] == 1
+    assert client.get("/v1/formats/없는틀/rules").status_code == 404
+
+
+def test_editing_a_marker_bumps_version_and_stales_docs(client):
+    """규칙 한 줄을 고치는 길 — 다시 컴파일하지 않고. 고치면 결과가 낡아야 한다."""
+    _put_doc(client, "a" * 16, "하나.md", "시험폴더")
+    _put_doc(client, "b" * 16, "둘.md", "시험폴더")
+    assert _compile(client).status_code == 200
+    client.post(f"/v1/structure/{'a' * 16}/reinterpret")
+
+    r = client.patch("/v1/formats/시험규정/rules", json={
+        "markers": [{"id": "조", "pattern": r"^제\s*(\d+)\s*조", "level": 1}],
+        "note": "괄호 없는 조도 잡게"})
+    assert r.status_code == 200, r.text
+    j = r.json()
+    assert j["format_version"] == 2 and j["changed"] == ["수정 조"]
+    assert j["affected"] == ["시험폴더"]
+
+    docs = {d["doc_id"]: d for d in client.get("/v1/structure/documents").json()["documents"]}
+    assert docs["a" * 16]["stale"] is True          # 고친 규칙은 다시 해석해야 반영된다
+    rules = client.get("/v1/formats/시험규정/rules").json()
+    assert next(m for m in rules["regex_markers"] if m["id"] == "조")["pattern"] \
+        == r"^제\s*(\d+)\s*조"
+
+
+def test_broken_regex_is_refused(client):
+    """깨진 패턴이 들어가면 그 유형의 **모든** 문서가 구조화에서 터진다 — 입구에서 막는다."""
+    _put_doc(client, "a" * 16, "하나.md", "시험폴더")
+    _put_doc(client, "b" * 16, "둘.md", "시험폴더")
+    assert _compile(client).status_code == 200
+    r = client.patch("/v1/formats/시험규정/rules",
+                     json={"markers": [{"id": "조", "pattern": "^제(\\d+"}]})
+    assert r.status_code == 422 and "정규식이 깨졌습니다" in r.json()["detail"]
+    r = client.patch("/v1/formats/시험규정/rules",
+                     json={"markers": [{"id": "조", "pattern": "제(\\d+)조"}]})
+    assert r.status_code == 422 and "^ 로 시작" in r.json()["detail"]
+
+
+def test_cannot_empty_a_format(client):
+    _put_doc(client, "a" * 16, "하나.md", "시험폴더")
+    _put_doc(client, "b" * 16, "둘.md", "시험폴더")
+    assert _compile(client).status_code == 200
+    ids = [m["id"] for m in client.get("/v1/formats/시험규정/rules").json()["regex_markers"]]
+    r = client.patch("/v1/formats/시험규정/rules",
+                     json={"markers": [{"id": i, "delete": True} for i in ids]})
+    assert r.status_code == 422 and "아무것도 자르지 못합니다" in r.json()["detail"]
+
+
+def test_human_format_rules_are_not_editable(client):
+    r = client.patch("/v1/formats/특정금전신탁/rules",
+                     json={"markers": [{"id": "조", "level": 2}]})
+    assert r.status_code == 409 and "사람이 관리하는" in r.json()["detail"]
+
+
+def test_builtin_rules_are_readable(client):
+    """법령 XML 도 규칙이 있다 — 정규식이 아니라 태그라는 것만 다르다."""
+    j = client.get("/v1/formats/builtin/lawxml").json()
+    assert j["order"][:3] == ["편", "장", "절"] and j["deterministic"] is True
+    assert any("합성 지면" in n for n in j["notes"])
+    assert client.get("/v1/formats/builtin/없는것").status_code == 404
+
+
+def test_canvas_remembers_open_folders(client):
+    body = {"pos": {}, "drafts": [], "open": ["시험폴더"], "rev": 0}
+    assert client.put("/v1/formats/canvas", json=body).status_code == 200
+    assert client.get("/v1/formats/canvas").json()["open"] == ["시험폴더"]
+
+
+def test_warm_parse_is_idempotent(client):
+    _put_doc(client, "a" * 16, "하나.md", "시험폴더")
+    r = client.post(f"/v1/structure/{'a' * 16}/parse")
+    assert r.status_code == 200 and r.json()["cached"] is True   # _put_doc 이 이미 만든다
 
 
 def test_doc_binding_beats_folder_binding(client):

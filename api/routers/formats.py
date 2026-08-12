@@ -62,6 +62,18 @@ HOLDOUT_FROM = 4
 # 바인딩 저장소 — {"folders": {이름: doc_type}, "docs": {doc_id: doc_type}}
 # ---------------------------------------------------------------------------
 
+def _write_atomic(path: Path, text: str) -> None:
+    """같은 디렉토리에 쓰고 rename — 반쯤 쓰인 파일이 남지 않는다.
+
+    연결 표는 이 시스템의 **설정 정본**이다. 두 탭이 동시에 저장하다 파일이 깨지면
+    모든 문서가 "연결 없음" 으로 떨어진다. rename 은 같은 파일시스템에서 원자적이다.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+
+
 def load_bindings() -> dict:
     if BINDINGS_FILE.exists():
         try:
@@ -74,15 +86,57 @@ def load_bindings() -> dict:
 
 
 def _save_bindings(b: dict) -> None:
-    BINDINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    BINDINGS_FILE.write_text(json.dumps(b, ensure_ascii=False, indent=1),
-                             encoding="utf-8")
+    _write_atomic(BINDINGS_FILE, json.dumps(b, ensure_ascii=False, indent=1))
+
+
+# --- 문서·폴더의 삶을 따라가는 정리 (structure 라우터가 부른다) ----------------
+#
+# 연결은 문서·폴더의 **이름**으로 걸린다. 이름이 바뀌거나 사라졌는데 표가 그대로면
+# 연결이 조용히 끊기거나(폴더 이름 변경) 죽은 항목이 남는다(문서 삭제). 더 나쁜 것은
+# 같은 이름의 폴더를 다시 만들었을 때 **죽은 줄 알았던 틀이 되살아나는** 것이다.
+
+def forget_doc(doc_id: str) -> None:
+    """문서가 사라졌다 — 그 문서의 예외 연결과 캔버스 자리를 함께 지운다."""
+    b = load_bindings()
+    if b["docs"].pop(doc_id, None) is not None:
+        _save_bindings(b)
+    _forget_canvas_node(f"doc:{doc_id}")
+
+
+def rename_folder_binding(old: str, new: str) -> None:
+    """폴더 이름이 바뀌었다 — 연결도 따라간다(안 따라가면 조용히 끊긴다)."""
+    b = load_bindings()
+    if old in b["folders"]:
+        b["folders"][new] = b["folders"].pop(old)
+        _save_bindings(b)
+    _rename_canvas_node(f"folder:{old}", f"folder:{new}")
+
+
+def forget_folder(folder: str) -> None:
+    """폴더가 사라졌다 — 연결을 지운다. 남겨 두면 같은 이름을 다시 만들 때 되살아난다."""
+    b = load_bindings()
+    if b["folders"].pop(folder, None) is not None:
+        _save_bindings(b)
+    _forget_canvas_node(f"folder:{folder}")
 
 
 def binding_for(doc_id: str, folder: str = "") -> Optional[str]:
     """이 문서에 연결된 doc_type. 문서 바인딩이 폴더 바인딩보다 우선한다."""
     b = load_bindings()
     return b["docs"].get(doc_id) or (b["folders"].get(folder) if folder else None)
+
+
+def format_version_of(doc_type: str) -> int:
+    """이 틀의 현재 버전. 저장된 결과가 낡았는지 재는 잣대다(틀을 다시 만들면 오른다)."""
+    from core import format_model
+    from core import router as core_router
+
+    try:
+        core_router.load.cache_clear()
+        fp = core_router.load().get(doc_type).format_path()
+        return format_model.load(fp).format_version if fp and fp.exists() else 0
+    except Exception:                       # 등록부에서 사라진 틀 — 고아 연결이다
+        return 0
 
 
 # ---------------------------------------------------------------------------
@@ -180,9 +234,252 @@ def formats():
             "format": r.format, "ready": bool(fp and fp.exists()),
             "glossary": r.glossary,
         })
-    return {"routes": routes, "bindings": load_bindings(),
+    b = load_bindings()
+    # 고아 연결 — 가리키던 틀이 등록부에서 사라진 것. 조용히 지우지 않는다:
+    # 지우면 "왜 연결이 풀렸지" 가 되고, 두면 "왜 안 잘리지" 가 된다. 말해 준다.
+    known = {r.doc_type for r in reg.routes}
+    orphans = ([{"scope": "folder", "key": k, "doc_type": v}
+                for k, v in b["folders"].items() if v not in known]
+               + [{"scope": "doc", "key": k, "doc_type": v}
+                  for k, v in b["docs"].items() if v not in known])
+    return {"routes": routes, "bindings": b, "orphans": orphans,
             # 원본 형식마다 파서가 싣는 신호 — 화면이 배지 툴팁에 그대로 쓴다
             "kind_signals": KIND_SIGNALS}
+
+
+@router.get("/builtin/{name}", summary="내장 구조화의 규칙 — 손으로 만든 것이 아니다")
+def builtin_rules(name: str):
+    """법령 XML 같은 내장 경로가 **무엇을 보고 자르는지**.
+
+    화면에서 노드를 눌렀을 때 "이건 어떻게 잘리나" 의 답이 없으면, 사람은 그것을
+    블랙박스로 여기고 결과를 의심하게 된다. 규칙이 코드 상수인 경로도 그 상수를
+    그대로 보여 준다(마커 정규식 대신 **태그 이름**이라는 것만 다르다).
+    """
+    if name != "lawxml":
+        raise HTTPException(404, f"내장 구조화 '{name}' 을 모릅니다")
+    from core.structure import lawxml
+
+    return {
+        "id": "lawxml", "name": "법령 XML 태그",
+        "note": "국가법령정보센터 본문 XML — 태그 계층을 그대로 옮긴다(추론 0).",
+        "deterministic": True, "fitness": 1.0,
+        "kind": "tag",
+        # 있는 종류끼리 이 순서로 레벨을 받는다(문서에 없는 종류는 건너뛴다)
+        "order": list(lawxml.KIND_ORDER),
+        "families": dict(lawxml.FAMILY),
+        "rules": [
+            {"tag": k, "family": lawxml.FAMILY.get(k, k), "note": "태그가 곧 구역"}
+            for k in lawxml.KIND_ORDER],
+        "notes": [
+            "조문단위·항·호·목은 태그로 명시되어 있어 마커 정규식이 필요 없다.",
+            "편·장·절은 조문여부=전문 인 행의 텍스트에서 읽는다.",
+            "행정규칙(AdmRulService)은 조문내용이 평문이라 행 머리 패턴으로 가른다.",
+            "지면 좌표가 없어 검수용 합성 지면을 만든다 — 그래서 이 문서에는 "
+            "구조화 틀을 붙이지 않는다(붙이면 원문이 아니라 합성 지면을 자르게 된다).",
+        ],
+    }
+
+
+@router.get("/{doc_type}/rules", summary="이 틀이 무엇을 보고 자르는지 (마커 전부)")
+def format_rules(doc_type: str):
+    from core import format_model
+    from core import router as core_router
+
+    core_router.load.cache_clear()
+    try:
+        r = core_router.load().get(doc_type)
+    except Exception as exc:
+        raise HTTPException(404, str(exc))
+    fp = r.format_path()
+    if fp is None or not fp.exists():
+        raise HTTPException(404, f"틀 '{doc_type}' 의 형식 파일이 없습니다")
+    fmt = format_model.load(fp)
+    b = load_bindings()
+    return {
+        "doc_type": doc_type, "owner": r.owner, "threshold": r.threshold,
+        "note": r.note, "parser": r.parser,
+        "format": str(fp.relative_to(ROOT)) if fp.is_relative_to(ROOT) else str(fp),
+        "format_version": fmt.format_version, "confidence": fmt.confidence,
+        "compiled_from": fmt.compiled_from, "hierarchy": fmt.hierarchy,
+        "default_section": fmt.default_section, "notes": fmt.notes,
+        "glossary": r.glossary,
+        # 마커 — 레벨 순으로. 이게 "이 틀의 규칙" 그 자체다.
+        "regex_markers": [
+            {"id": m.id, "level": m.level, "pattern": m.pattern, "label": m.label,
+             "groups": m.groups, "parent": m.parent,
+             "require_heading": m.require_heading} for m in fmt.by_level()],
+        "term_markers": [{"term": t.term, "level": t.level, "under": t.under}
+                         for t in fmt.term_markers],
+        "bound_folders": [k for k, v in b["folders"].items() if v == doc_type],
+        "bound_docs": [k for k, v in b["docs"].items() if v == doc_type],
+    }
+
+
+class MarkerEdit(BaseModel):
+    """마커 하나 — id 가 같으면 고치고, 없으면 더한다. `delete` 면 지운다."""
+    id: str
+    pattern: Optional[str] = None
+    level: Optional[int] = None
+    label: Optional[str] = None
+    groups: Optional[list[str]] = None
+    parent: Optional[str] = None
+    require_heading: Optional[bool] = None
+    delete: bool = False
+
+
+class RulesPatch(BaseModel):
+    markers: list[MarkerEdit] = []
+    default_section: Optional[str] = None
+    threshold: Optional[float] = None
+    note: str = ""
+
+
+@router.patch("/{doc_type}/rules", summary="틀의 마커를 고친다 (버전이 오른다)")
+def edit_rules(doc_type: str, body: RulesPatch):
+    """형식 파일을 직접 고친다 — 다시 컴파일하지 않고 규칙 한 줄만 바로잡는 길.
+
+    고치면 **버전이 오른다.** 그래야 이 틀로 잘려 있던 문서가 전부 "낡음"으로 잡히고,
+    사람이 다시 해석해 새 규칙을 실제로 적용하게 된다(조용히 어긋나지 않는다).
+    정규식은 저장 전에 컴파일해 본다 — 깨진 패턴이 들어가면 그 유형의 **모든** 문서가
+    구조화에서 터진다.
+    """
+    import re as _re
+
+    from core import format_model
+    from core import router as core_router
+
+    core_router.load.cache_clear()
+    try:
+        r = core_router.load().get(doc_type)
+    except Exception as exc:
+        raise HTTPException(404, str(exc))
+    fp = r.format_path()
+    if fp is None or not fp.exists():
+        raise HTTPException(404, f"틀 '{doc_type}' 의 형식 파일이 없습니다")
+    if not fp.resolve().is_relative_to(FORMATS_DIR.resolve()) and r.owner != "ui":
+        raise HTTPException(409, f"틀 '{doc_type}' 은 사람이 관리하는 형식 파일입니다 — "
+                                 f"UI 로 고치지 않습니다 ({fp})")
+
+    fmt = format_model.load(fp)
+    by_id = {m.id: m for m in fmt.regex_markers}
+    changed: list[str] = []
+    for e in body.markers:
+        if e.delete:
+            if by_id.pop(e.id, None) is not None:
+                changed.append(f"삭제 {e.id}")
+            continue
+        if e.pattern is not None:
+            if not e.pattern.startswith("^"):
+                raise HTTPException(422, f"'{e.id}' 패턴은 ^ 로 시작해야 합니다 — "
+                                         f"구역은 줄 머리에서 열립니다")
+            try:
+                _re.compile(e.pattern)
+            except _re.error as exc:
+                raise HTTPException(422, f"'{e.id}' 의 정규식이 깨졌습니다: {exc}")
+        cur = by_id.get(e.id)
+        if cur is None:
+            if e.pattern is None or e.level is None:
+                raise HTTPException(422, f"새 마커 '{e.id}' 에는 pattern 과 level 이 필요합니다")
+            by_id[e.id] = format_model.RegexMarker(
+                id=e.id, pattern=e.pattern, level=e.level,
+                groups=e.groups or [], label=e.label or "",
+                parent=e.parent, require_heading=bool(e.require_heading))
+            changed.append(f"추가 {e.id}")
+        else:
+            data = cur.model_dump()
+            for k in ("pattern", "level", "label", "groups", "parent", "require_heading"):
+                v = getattr(e, k)
+                if v is not None:
+                    data[k] = v
+            by_id[e.id] = format_model.RegexMarker(**data)
+            changed.append(f"수정 {e.id}")
+
+    if not by_id:
+        raise HTTPException(422, "마커를 전부 지우면 이 틀은 아무것도 자르지 못합니다")
+    fmt.regex_markers = sorted(by_id.values(), key=lambda m: (m.level, m.id))
+    if body.default_section:
+        fmt.default_section = body.default_section
+    fmt.format_version += 1                 # 낡음 표시가 이 숫자를 본다
+    fmt.notes = (fmt.notes or []) + [
+        f"UI 편집 {datetime.now(timezone.utc).date().isoformat()}: "
+        f"{', '.join(changed) or '변경 없음'}" + (f" — {body.note}" if body.note else "")]
+    format_model.save(fmt, fp)
+
+    if body.threshold is not None:
+        _set_threshold(doc_type, body.threshold)
+    core_router.load.cache_clear()
+    b = load_bindings()
+    affected = ([k for k, v in b["folders"].items() if v == doc_type]
+                + [k for k, v in b["docs"].items() if v == doc_type])
+    return {"doc_type": doc_type, "format_version": fmt.format_version,
+            "changed": changed, "affected": affected,
+            "note": "이 틀로 잘린 문서는 모두 '다시 해석 필요' 가 됩니다"}
+
+
+def _set_threshold(doc_type: str, threshold: float) -> None:
+    """등록부의 임계만 바꾼다 — 주석을 태우지 않으려고 그 줄만 짚어 고친다."""
+    from core import router as core_router
+
+    reg_path = Path(core_router.DEFAULT_REGISTRY)
+    text = reg_path.read_text(encoding="utf-8")
+    pat = re.compile(rf"(- doc_type: {re.escape(doc_type)}\n(?:[ \t]+\S.*\n)*?"
+                     rf"[ \t]+threshold: )[0-9.]+")
+    new, n = pat.subn(rf"\g<1>{threshold:g}", text, count=1)
+    if n:
+        _write_atomic(reg_path, new)
+        core_router.load.cache_clear()
+
+
+@router.delete("/{doc_type}", summary="UI 로 만든 틀 삭제 (연결도 함께 정리)")
+def remove_format(doc_type: str, force: bool = False):
+    """등록부에서 UI 등재 블록을 걷어내고 형식 파일을 지운다.
+
+    사람이 손으로 등록한 route 는 지우지 않는다 — 자산(용어집 등)이 딸려 있고,
+    그건 등록부를 직접 고칠 일이다. 연결이 남아 있으면 기본적으로 거부한다:
+    지우고 나면 그 폴더의 문서가 **말없이 유도 경로로 돌아가기** 때문이다.
+    """
+    import yaml
+
+    from core import router as core_router
+
+    core_router.load.cache_clear()
+    reg_path = Path(core_router.DEFAULT_REGISTRY)
+    text = reg_path.read_text(encoding="utf-8")
+    data = yaml.safe_load(text) or {}
+    route = next((r for r in data.get("routes", []) if r.get("doc_type") == doc_type), None)
+    if route is None:
+        raise HTTPException(404, f"틀 '{doc_type}' 은 등록부에 없습니다")
+    begin = f"# --- ui-compiled: {doc_type} ---"
+    if route.get("owner") != "ui" or begin not in text:
+        raise HTTPException(409, f"틀 '{doc_type}' 은 사람이 등록한 route 입니다 — "
+                                 f"UI 가 지우지 않습니다 (core/registry.yaml 을 직접 고치세요)")
+
+    b = load_bindings()
+    users = ([f"폴더 {k}" for k, v in b["folders"].items() if v == doc_type]
+             + [f"문서 {k}" for k, v in b["docs"].items() if v == doc_type])
+    if users and not force:
+        raise HTTPException(409, f"틀 '{doc_type}' 에 연결된 것이 있습니다: {users} — "
+                                 f"연결을 먼저 끊거나 force 로 함께 정리하세요 "
+                                 f"(지우면 그 문서는 다시 구조를 유도합니다)")
+
+    end = f"# --- /ui-compiled: {doc_type} ---"
+    text = re.sub(rf"[ \t]*{re.escape(begin)}\n(?:.*\n)*?[ \t]*{re.escape(end)}\n?", "", text)
+    _write_atomic(reg_path, text)
+    core_router.load.cache_clear()
+
+    fp = route.get("format")
+    if fp:
+        p = Path(fp) if Path(fp).is_absolute() else ROOT / fp
+        # 형식 파일은 UI 가 만든 자리(FORMATS_DIR)에 있을 때만 지운다 —
+        # 등록부가 저장소 안 다른 파일을 가리키고 있으면 남의 것이다.
+        if p.exists() and p.resolve().parent == FORMATS_DIR.resolve():
+            p.unlink()
+
+    b["folders"] = {k: v for k, v in b["folders"].items() if v != doc_type}
+    b["docs"] = {k: v for k, v in b["docs"].items() if v != doc_type}
+    _save_bindings(b)
+    _forget_canvas_node(f"fmt:{doc_type}")
+    return {"deleted": doc_type, "unbound": users}
 
 
 # ---------------------------------------------------------------------------
@@ -364,6 +661,13 @@ def compile_format(body: CompileBody):
 
     FORMATS_DIR.mkdir(parents=True, exist_ok=True)
     out = FORMATS_DIR / f"{_slug(doc_type)}.format.json"
+    # 다시 만들면 버전을 올린다 — 이 값이 안 오르면 "이 결과는 옛 틀로 잘렸다" 를
+    # 아무도 알 수 없다(문서 목록의 낡음 표시가 이 숫자를 본다).
+    if out.exists():
+        try:
+            fmt.format_version = format_model.load(out).format_version + 1
+        except Exception:                   # 깨진 옛 파일 — 버전만 올리고 넘어간다
+            fmt.format_version += 1
     format_model.save(fmt, out)
     # registry 의 format 은 저장소 루트 기준 상대경로다. 밖에 있으면(시험용 FORMATS_DIR)
     # `../..` 로 거슬러 쓰지 않고 절대경로를 적는다 — 읽는 쪽이 헷갈리지 않게.
@@ -426,25 +730,74 @@ def bindings():
 class Canvas(BaseModel):
     pos: dict[str, list[float]] = {}
     drafts: list[dict] = []
+    open: list[str] = []                # 펼쳐 둔 폴더 — 접힘이 기본이라 이쪽을 적는다
+    # 낙관적 동시성 — 받은 rev 가 지금 것과 다르면 남이 먼저 저장한 것이다.
+    # 통째로 교체하는 PUT 이라 이게 없으면 탭 두 개 중 나중 저장이 앞의 것을 지운다.
+    rev: int = 0
+
+
+def _load_canvas() -> dict:
+    if CANVAS_FILE.exists():
+        try:
+            d = json.loads(CANVAS_FILE.read_text(encoding="utf-8"))
+            return {"pos": dict(d.get("pos", {})), "drafts": list(d.get("drafts", [])),
+                    "open": list(d.get("open", [])), "rev": int(d.get("rev", 0))}
+        except (OSError, json.JSONDecodeError, ValueError):
+            pass
+    return {"pos": {}, "drafts": [], "open": [], "rev": 0}
+
+
+def _store_canvas(c: dict) -> dict:
+    _write_atomic(CANVAS_FILE, json.dumps(c, ensure_ascii=False, indent=1))
+    return c
+
+
+def _forget_canvas_node(node_id: str) -> None:
+    """사라진 문서·폴더를 캔버스에서도 지운다 — 자리와 초안 연결 양쪽."""
+    c = _load_canvas()
+    changed = c["pos"].pop(node_id, None) is not None
+    kind, _, key = node_id.partition(":")
+    field = "folders" if kind == "folder" else "docs"
+    for d in c["drafts"]:
+        before = list(d.get(field, []))
+        d[field] = [x for x in before if x != key]
+        changed = changed or d[field] != before
+    if changed:
+        c["rev"] += 1
+        _store_canvas(c)
+
+
+def _rename_canvas_node(old_id: str, new_id: str) -> None:
+    c = _load_canvas()
+    changed = False
+    if old_id in c["pos"]:
+        c["pos"][new_id] = c["pos"].pop(old_id)
+        changed = True
+    kind, _, old_key = old_id.partition(":")
+    new_key = new_id.partition(":")[2]
+    field = "folders" if kind == "folder" else "docs"
+    for d in c["drafts"]:
+        if old_key in (d.get(field) or []):
+            d[field] = [new_key if x == old_key else x for x in d[field]]
+            changed = True
+    if changed:
+        c["rev"] += 1
+        _store_canvas(c)
 
 
 @router.get("/canvas", summary="캔버스 배치 + 미완성 초안")
 def canvas():
-    if CANVAS_FILE.exists():
-        try:
-            d = json.loads(CANVAS_FILE.read_text(encoding="utf-8"))
-            return {"pos": dict(d.get("pos", {})), "drafts": list(d.get("drafts", []))}
-        except (OSError, json.JSONDecodeError):
-            pass
-    return {"pos": {}, "drafts": []}
+    return _load_canvas()
 
 
-@router.put("/canvas", summary="캔버스 배치 저장 (통째로 교체)")
+@router.put("/canvas", summary="캔버스 배치 저장 (통째로 교체 · rev 충돌 감지)")
 def save_canvas(body: Canvas):
-    CANVAS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    CANVAS_FILE.write_text(
-        json.dumps(body.model_dump(), ensure_ascii=False, indent=1), encoding="utf-8")
-    return body.model_dump()
+    cur = _load_canvas()
+    if body.rev != cur["rev"]:
+        raise HTTPException(409, f"다른 화면이 먼저 저장했습니다 (rev {cur['rev']} ≠ "
+                                 f"{body.rev}) — 새로고침한 뒤 다시 놓아 주세요")
+    return _store_canvas({"pos": body.pos, "drafts": body.drafts,
+                          "open": body.open, "rev": cur["rev"] + 1})
 
 
 @router.put("/bindings", summary="폴더/문서 → 형식 연결 (doc_type=null 로 해제)")
