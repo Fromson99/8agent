@@ -52,6 +52,11 @@ data/links.json
 data/rag/
 data/rules/
 data/embeddings/
+# 법령 관계망 파생 — corpus/law/relations 원본에서 python -m core.lawnet 로 재생성
+data/delegation.json
+data/law_index.json
+# 폐쇄망 왕복 스냅샷 — 런타임 산출
+data/ops/
 data/format_bindings.json
 data/format_canvas.json
 data/structure_fixes.json

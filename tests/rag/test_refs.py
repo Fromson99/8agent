@@ -455,3 +455,98 @@ def test_회수가_문서_사이_참조도_든다():
     assert ("d2", 1, "참조") in got            # 문서 사이 — 수수료규정 제2조
     far = next(s for s in sections if s.doc_id == "d2")
     assert "보수는 수수료규정" in far.text      # 남의 문서의 데이터가 실려 온다
+
+
+# ---------------------------------------------------------------- 관계 술어
+def test_관계술어_문면이_간선의_의미를_가른다():
+    """준용·배제·의제·근거 — 표면형 바로 뒤 관용구의 결정론 분류."""
+    cases = [
+        ("제10조를 준용한다.", "준용"),
+        ("제10조 준용", "준용"),
+        ("제10조에도 불구하고 이를 허용한다.", "배제"),
+        ("제10조를 적용하지 아니한다.", "배제"),
+        ("제10조는 적용되지 아니한다.", "배제"),
+        ("제10조를 위반한 것으로 본다.", "의제"),
+        ('제10조제3항에서 "금융위원회가 정하여 고시하는 것"이란 다음과 같다.', "수임"),
+        ("제10조에 따라 등록하여야 한다.", "근거"),
+        ("제10조에 의하여 처분한다.", "근거"),
+        ("제10조 및 제11조", "인용"),
+    ]
+    for text, want in cases:
+        ref = refs.find(text)[0]
+        got = refs.rel_of(text, ref.start + len(ref.surface))
+        assert got == want, f"{text!r}: {got} != {want}"
+
+
+def test_해소가_rel을_싣는다():
+    """픽스처 그대로 — "제4조에도 불구하고"(배제)와 "제4조와 별표 1을 참고"(인용)."""
+    v = Index.from_docs([_doc()]).docs["d1"]
+    edges = refs.resolve(v)
+    by = {(e["block"], e["surface"]): e["rel"] for e in edges}
+    assert by[(4, "제4조")] == "배제"          # 제4조의2 본문의 "에도 불구하고"
+    assert by[(2, "제4조")] == "인용"          # "제4조와 별표 1을 참고하고"
+
+
+def test_사람_정정이_자동_분류를_덮는다():
+    """rel_fixes(links.json) — 자동 분류는 그대로 두고 조립 시점에 덮는다."""
+    fix = [{"src_doc": "d1", "src": 5, "dst_doc": "", "dst": 4, "rel": "준용"}]
+    idx = Index.from_docs([_doc()], rel_fixes=fix)
+    e = next(x for x in idx.ref_edges()["d1"] if x["src"] == 5 and x["dst"] == 4)
+    assert e["rel"] == "준용" and e["rel_via"] == "사람"    # 자동값은 '배제'였다
+    # 정정이 없으면 자동 분류 그대로
+    idx2 = Index.from_docs([_doc()])
+    e2 = next(x for x in idx2.ref_edges()["d1"] if x["src"] == 5 and x["dst"] == 4)
+    assert e2["rel"] == "배제" and "rel_via" not in e2
+
+
+# ------------------------------------------------------------- 선언 별칭
+def _decl_docs():
+    """'이하 "법"이라 한다' 선언을 가진 하위 규정 + 같은 조 번호의 법률 둘."""
+    caller = ("c1", {"name": "갑감독규정.pdf"}, {"nodes": [
+        {"id": 1, "parent": None, "level": 1, "surface": "제1조",
+         "title": "목적", "page": 1, "span": [0, 1]},
+        {"id": 2, "parent": None, "level": 1, "surface": "제2조",
+         "title": "기준", "page": 1, "span": [1, 2]},
+    ], "blocks": [
+        {"idx": 0, "page": 1, "text": '제1조(목적) 이 규정은 「모범금융법」(이하 '
+         '"법"이라 한다)에서 위임된 사항을 정한다.', "kind": "text"},
+        {"idx": 1, "page": 1, "text": '제2조(기준) 법 제10조제1항에서 "기준"이란 '
+         '다음과 같다. 같은 법 제11조는 그대로 적용한다.', "kind": "text"},
+    ]})
+    law = ("L1", {"name": "모범금융법.pdf"}, {"nodes": [
+        {"id": 1, "parent": None, "level": 1, "surface": "제10조",
+         "title": "위임", "page": 1, "span": [0, 1]},
+        {"id": 2, "parent": None, "level": 1, "surface": "제11조",
+         "title": "적용", "page": 1, "span": [1, 2]},
+    ], "blocks": [
+        {"idx": 0, "page": 1, "text": "제10조(위임) 기준은 고시로 정한다.", "kind": "text"},
+        {"idx": 1, "page": 1, "text": "제11조(적용) 이 법을 적용한다.", "kind": "text"},
+    ]})
+    law2 = ("L2", {"name": "다른금융법.pdf"}, {"nodes": [
+        {"id": 1, "parent": None, "level": 1, "surface": "제10조",
+         "title": "딴 조", "page": 1, "span": [0, 1]},
+    ], "blocks": [
+        {"idx": 0, "page": 1, "text": "제10조(딴 조) 무관한 내용.", "kind": "text"},
+    ]})
+    return caller, law, law2
+
+
+def test_선언_별칭이_대용어를_확정한다():
+    """'법 제10조' — 후보가 법률 둘이지만, 선언("이하 법이라 한다")이 정한다."""
+    caller, law, law2 = _decl_docs()
+    docs = Index.from_docs([caller, law, law2]).docs
+    aliases = refs.declared_aliases(docs["c1"])
+    assert aliases == {"법": "모범금융법"}
+    edges, pending = refs.cross_resolve(docs)
+    e = next(x for x in edges if x["src_doc"] == "c1" and "제10조" in x["surface"])
+    assert e["dst_doc"] == "L1" and e["via"] == "선언"
+    assert e["rel"] == "수임"                      # "에서 '기준'이란" — 위임 수신
+
+
+def test_동법_같은법은_선언으로_확정하지_않는다():
+    """'같은 법'은 선행 인용 문맥의 대용어 — 선언이 아니라 판정 몫."""
+    caller, law, law2 = _decl_docs()
+    edges, pending = refs.cross_resolve(Index.from_docs([caller, law, law2]).docs)
+    assert not any(e for e in edges if e.get("hint") == "같은 법")
+    p = next(x for x in pending if x["hint"] == "같은 법")
+    assert p["surface"] == "제11조"                 # 보류로 남아 판정을 기다린다

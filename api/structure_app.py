@@ -149,6 +149,22 @@ from api.routers import logs as logs_router               # noqa: E402
 
 app.include_router(logs_router.router)
 
+# 계보 원장 — 수집→변환→구조화→연결 낙차 (docs/LINEAGE.md). 읽기 전용 파생
+# 뷰라 core 만 전제한다 — 선택이 아니다.
+from api.routers import lineage as lineage_router         # noqa: E402
+
+app.include_router(lineage_router.router)
+
+# 망분리 운반 — 스냅샷·아웃박스·재생. 이게 죽어도 검수 화면은 떠야 한다.
+# `from api import ops` 가 아니라 점표기다 — 시험이 sys.modules 에서 모듈을
+# 지워도 부모 패키지 속성에 낡은 모듈이 남아, from 형태는 그걸 집어온다.
+try:
+    import api.ops as ops_mod                              # noqa: E402
+
+    ops_mod.install(app)
+except Exception as exc:                                  # pragma: no cover
+    log.warning("ops 설치 실패 — 운반 기능 없이 기동: %s", exc)
+
 
 # 접근 로그 — api.app 과 같은 규약: API 는 INFO, 정적은 DEBUG, 2초↑ WARNING.
 _API_PREFIXES = ("/v1/", "/health")
@@ -240,10 +256,22 @@ if _RAG_VIEWER.is_dir() and rag_router is not None:
     app.mount("/rag", StaticFiles(directory=str(_RAG_VIEWER), html=True),
               name="rag-viewer")
 
+# 공리 루프 — 규칙의 생애(잠정→규칙→정착)와 적중 원장 검수 (RULE_LOOP.md §7-4)
+_RULES_VIEWER = Path(__file__).resolve().parent / "viewer" / "rules"
+if _RULES_VIEWER.is_dir() and rag_router is not None:
+    app.mount("/rules", StaticFiles(directory=str(_RULES_VIEWER), html=True),
+              name="rules-viewer")
+
 _LOGS_VIEWER = Path(__file__).resolve().parent / "viewer" / "logs"
 if _LOGS_VIEWER.is_dir():
     app.mount("/logs", StaticFiles(directory=str(_LOGS_VIEWER), html=True),
               name="logs-viewer")
+
+# 계보 원장 — 수집→변환→구조화→연결 낙차 감독 (docs/LINEAGE.md)
+_LINEAGE_VIEWER = Path(__file__).resolve().parent / "viewer" / "lineage"
+if _LINEAGE_VIEWER.is_dir():
+    app.mount("/lineage", StaticFiles(directory=str(_LINEAGE_VIEWER), html=True),
+              name="lineage-viewer")
 
 _VIEWER = Path(__file__).resolve().parent / "viewer" / "structure"
 if _VIEWER.is_dir():

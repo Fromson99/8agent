@@ -103,6 +103,7 @@ $("file").addEventListener("change", async (e) => {
   if (g("hLadder")) fd.append("ladder", g("hLadder").replace(/\s/g, ""));
   if (g("hOrder")) fd.append("order", g("hOrder").replace(/\s/g, ""));
   if ($("useLlm").checked) fd.append("use_llm", "true");
+  if ($("engine").value) fd.append("engine", $("engine").value);
 
   say(`해석 중 — ${f.name} (첫 문서는 docling 모델 적재로 오래 걸립니다)`, "busy");
   try {
@@ -246,6 +247,9 @@ async function load(docId) {
   S.data = await r.json();
   index();
   $("docName").textContent = S.data.doc;
+  // 선택칸을 이 문서의 실제 엔진에 맞춘다 — 안 맞추면 다른 문서에서 고른 값이
+  // 남아 "다시 해석"이 엉뚱한 엔진으로 돈다.
+  $("engine").value = S.data.engine === "docxstyle" ? "docxstyle" : "";
   // 이 문서의 연결 — 용어집은 이름으로, 참조는 id 로 문서를 짚는다
   $("docLinks").innerHTML = `
     <a href="/glossary/?doc=${encodeURIComponent(S.data.doc)}"
@@ -301,6 +305,9 @@ $("reinterpret").onclick = async () => {
   if (g("hLadder")) fd.append("ladder", g("hLadder").replace(/\s/g, ""));
   if (g("hOrder")) fd.append("order", g("hOrder").replace(/\s/g, ""));
   if ($("useLlm").checked) fd.append("use_llm", "true");
+  // 항상 보낸다 — 안 보내면 서버가 저장된 선택을 유지하는데, 화면의 선택칸은
+  // 사용자가 방금 고른 값이라 그것이 의도다 (빈값 = 유도로 복귀).
+  fd.append("engine", $("engine").value || "induce");
 
   $("reinterpret").disabled = true;
   // 몇 초 걸리는지 실시간으로 보여 준다. 파싱 캐시가 없는 문서는 docling 을 다시

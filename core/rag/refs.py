@@ -101,6 +101,41 @@ _CONTEXT = 48                          # 앞말 창 — 「…」 최대 42자�
 # 뒤 참조가 이 문서 안의 같은 번호 조로 잘못 붙는다(시행령에서 실측된 오연결).
 _CONT = re.compile(r"\s*(?:(?:단서|본문|전단|후단)\s*)?(?:[ㆍ·,、]|및|또는|부터|와|과)\s*")
 
+# 관계 술어 — 표면형 **바로 뒤** 문면이 간선의 의미를 말한다. 법령 관용구라
+# 문서 무관이다(과적합 아님). 위임("대통령령으로 정하는")은 여기 없다 —
+# 문면에 좌표가 없어 refs 가 아니라 위임 데이터(delegation.json)의 몫이다.
+#   준용   "제N조를 준용한다" — 다른 규범을 변경 가해 적용 (보완 간선)
+#   배제   "제N조에도 불구하고" · "제N조를 적용하지 아니한다" (부정 간선 —
+#          놓치면 반대 답이 나가는 유일한 부류)
+#   의제   "제N조를 위반한 것으로 본다" (간주)
+#   수임   "제N조에서 '금융위원회가 정하여 고시하는 것'이란 …" — **위임 수신**
+#          정의구문. 이 문장을 쓴 조문이 곧 그 위임의 구체 내용이다. 하위
+#          법령·규정이 상위 조문을 되가리키는 유일한 좌표라(위임 데이터의
+#          행정규칙 대상은 문서 수준뿐 — 실측 2026-08-13), 수직 체인 복원의
+#          핵심 간선이다. 신호는 "에서" 바로 뒤의 여는 따옴표.
+#   근거   "제N조에 따라/따른/의하여" (조건·근거 표시)
+#   인용   그 밖 — 술어 없는 언급
+# 열거("제1항ㆍ제3항을 준용")는 술어가 마지막 참조 뒤에만 붙으므로 앞 항들은
+# 인용으로 남는다 — 보수적 분류(확실한 것만 라벨)를 택한다.
+_REL_AFTER = (
+    ("준용", re.compile(r"^\s*(?:[을를]\s*)?준용")),
+    ("배제", re.compile(r"^\s*에도\s*불구하고")),
+    ("배제", re.compile(r"^\s*(?:[은는을를이가]\s*)?적용(?:하지|되지)\s*아니")),
+    ("의제", re.compile(r"^\s*(?:[은는을를이가]\s*)?.{0,12}?(?:으로|로)\s*본다")),
+    ("수임", re.compile(r"^\s*에서\s*[\"'“「『]")),
+    ("근거", re.compile(r"^\s*에\s*(?:따라|따른|의하|의한|근거)")),
+)
+
+
+def rel_of(text: str, end: int) -> str:
+    """참조 끝 위치의 뒷문면 → 관계 라벨. end 는 표면형(사슬 포함)의 끝."""
+    tail = text[end:end + 20]
+    for rel, pat in _REL_AFTER:
+        if pat.match(tail):
+            return rel
+    return "인용"
+
+
 # 구역 제목 읽기 — 본문 패턴과 같은 문법을 앞머리 고정으로 쓴다.
 _LABEL_ARTICLE = re.compile(r"^제\s*(\d{1,3})\s*조(?:의\s*(\d{1,2}))?")
 _LABEL_DIVISION = re.compile(rf"^제\s*(\d{{1,3}})\s*([{_UNITS}])")
@@ -413,13 +448,34 @@ def resolve(view: "DocView") -> list[dict]:
             if pair in seen:
                 continue
             seen.add(pair)
+            text = b.get("text") or ""
             edges.append({"src": src.get("id"), "dst": dst,
-                          "surface": ref.surface.strip(), "block": b.get("idx")})
+                          "surface": ref.surface.strip(), "block": b.get("idx"),
+                          "rel": rel_of(text, ref.start + len(ref.surface))})
     return edges
 
 
-def cross_resolve(docs: dict) -> tuple[list, list]:
-    """문서 사이의 참조 — (확정 간선, 보류 목록).
+# 대용어 자기 선언 — "「자본시장과 금융투자업에 관한 법률」(이하 "법"이라 한다)".
+# 저자가 이 문서 스코프에서 그 말의 뜻을 정의한 것이다 — 발명이 아니라 전사라
+# 이름 대조와 같은 급의 확정 근거다. 약칭 선언("이하 "지배구조법"이라 한다")도
+# 같은 문법이라 함께 잡힌다. 같은 말의 재선언은 첫 것이 이긴다(첫머리 정의가 정본).
+_DECL_RE = re.compile(
+    r"「([^」]{2,40})」[^「」]{0,30}?이하\s*[\"'“]?\s*([가-힣A-Za-z]{1,8})\s*"
+    r"[\"'”]?\s*(?:이|이라|라)\s*한다")
+
+
+def declared_aliases(view: "DocView") -> dict[str, str]:
+    """문서가 선언한 대용어 → 선언된 문서명 (표면 그대로)."""
+    out: dict[str, str] = {}
+    for b in view.blocks:
+        for m in _DECL_RE.finditer(b.get("text") or ""):
+            out.setdefault(_fold_name(m.group(2)), m.group(1).strip())
+    return out
+
+
+def cross_resolve(docs: dict, declare: bool = True) -> tuple[list, list]:
+    """문서 사이의 참조 — (확정 간선, 보류 목록). declare=False 면 선언
+    별칭 확정을 끈다(엔진 스위치) — 그 참조들은 보류로 내려간다.
 
     확정은 결정론이 닿는 데까지만: 힌트가 문서명과 맞고(「수수료규정」 ⊂
     수수료규정.pdf) 대상 구역이 하나로 떨어질 때. 제 이름을 부른 참조
@@ -434,6 +490,7 @@ def cross_resolve(docs: dict) -> tuple[list, list]:
     keymaps = {d: _key_map(v) for d, v in docs.items()}
     kidmaps = {d: _children(v) for d, v in docs.items()}
     names = {d: _fold_name(v.name) for d, v in docs.items()}
+    decls = {d: declared_aliases(v) for d, v in docs.items()}
     # 문서마다 제 조 번호의 지붕 — 이보다 큰 번호는 이 문서의 조가 아니다
     own_max = {d: max((k[1] for k in km if k[0] == "조"), default=0)
                for d, km in keymaps.items()}
@@ -461,7 +518,23 @@ def cross_resolve(docs: dict) -> tuple[list, list]:
                 hint = _fold_name(ref.hint)
                 named = (bool(hint) and not _ANAPHORA.match(ref.hint)
                          and (ref.quoted or not _GENERIC_HINT.match(hint)))
-                if named and (hint in names[doc_id] or names[doc_id] in hint):
+                # 선언 별칭 — 이 문서가 "이하 '법'이라 한다"로 그 말을 정의했다.
+                # 동법·같은 법(대용어의 대용어 — 선행 인용 문맥)은 선언으로
+                # 확정하지 않는다: "「수수료규정」 … 동법"의 동법은 수수료규정이다.
+                decl = (decls[doc_id].get(hint)
+                        if declare and hint and not _ANAPHORA.match(ref.hint)
+                        else None)
+                decl_hit = False
+                if decl is not None:
+                    dn = _fold_name(decl)
+                    tgts = [d for d, nm in names.items()
+                            if d != doc_id and nm and (dn == nm or dn in nm or nm in dn)]
+                    dc = [(d, nid) for d in tgts for nid in keymaps[d].get(key, [])]
+                    if dc:
+                        cands, decl_hit = dc, True
+                if decl_hit:
+                    pass
+                elif named and (hint in names[doc_id] or names[doc_id] in hint):
                     # 제 이름을 부른 참조 — 이 문서 자신에서 찾는다
                     cands = [(doc_id, nid) for nid in keymaps[doc_id].get(key, [])]
                 elif named:
@@ -482,7 +555,7 @@ def cross_resolve(docs: dict) -> tuple[list, list]:
                 cands = [c for c in cands if c != (doc_id, src_id)]
                 if not cands:
                     continue
-                if named and len(cands) == 1:
+                if (named or decl_hit) and len(cands) == 1:
                     dst_doc, dst = cands[0]
                     if ref.chain:
                         dst = _descend(docs[dst_doc], kidmaps[dst_doc], dst,
@@ -494,7 +567,9 @@ def cross_resolve(docs: dict) -> tuple[list, list]:
                     edges.append({"src_doc": doc_id, "src": src_id,
                                   "dst_doc": dst_doc, "dst": dst,
                                   "surface": ref.surface.strip(), "hint": ref.hint,
-                                  "block": b.get("idx"), "via": "이름대조"})
+                                  "block": b.get("idx"),
+                                  "via": "선언" if decl_hit else "이름대조",
+                                  "rel": rel_of(text, ref.start + len(ref.surface))})
                 else:
                     pk = (doc_id, src_id, key, ref.hint)
                     if pk in seen_p:
@@ -506,5 +581,6 @@ def cross_resolve(docs: dict) -> tuple[list, list]:
                         "surface": ref.surface.strip(), "hint": ref.hint,
                         "key": list(key), "block": b.get("idx"),
                         "context": text[lo:ref.start + len(ref.surface) + 40],
+                        "rel": rel_of(text, ref.start + len(ref.surface)),
                         "candidates": [{"doc_id": d, "node": n} for d, n in cands]})
     return edges, pending

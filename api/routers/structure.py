@@ -25,11 +25,9 @@ PDF.js 를 붙이면 뷰어가 CDN 이나 번들에 묶인다. 이 서비스는 
 
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import shutil
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -53,6 +51,27 @@ import re
 # 반경에 들어간다(등록한 규칙 전부가 문서 하나 지우는 손짓에 날아간다).
 _DOC_ID = re.compile(r"^[0-9a-f]{16}$")
 
+# 형식 분기·해석·저장 규약은 core.ingest 가 쥔다 — 코드단 일원화(docs/LINEAGE.md).
+# 업로드 API 와 CLI(ingest_lawxml.py)가 같은 문을 지나야 배치 인제스트가 이
+# 라우터 없이도 같은 결과를 낸다. 아래 별칭은 라우터 안 호출부와 바깥 임포트
+# (api/ops.py·formats·시험)가 쓰는 얇은 문이다.
+from core import ingest as ingest_mod  # noqa: E402
+
+_source_kind = ingest_mod.source_kind
+_structured_by = ingest_mod.structured_by
+_parse_cached = ingest_mod.parse_cached
+_hint_kwargs = ingest_mod.hint_kwargs
+
+
+def _ledger_path() -> Path:
+    return ingest_mod.ledger_path(STORE)
+
+
+def _interpret(pdf: Path, **kw) -> dict:
+    """core.ingest.interpret_doc — 이 라우터가 쥔 스토어·틀 연결 조회만 얹는다."""
+    from api.routers.formats import binding_for
+    return ingest_mod.interpret_doc(pdf, store=STORE, binding_of=binding_for, **kw)
+
 
 def _dir(doc_id: str) -> Path:
     """저장 경로. 경로 탈출만 막는 게 아니라 **문서 id 의 모양**을 강제한다."""
@@ -73,15 +92,6 @@ def _dir(doc_id: str) -> Path:
 SOURCE_KINDS = ("pdf", "hwp", "hwpx", "docx", "lawxml")
 
 
-def _source_kind(d: Path) -> str:
-    """이 문서가 어떤 원본에서 왔나. meta 에 없으면 남아 있는 원본 파일로 되짚는다
-    (형식을 적기 전에 올라온 문서도 화면에서 갈려 보이게)."""
-    for ext in ("xml", "hwpx", "hwp", "docx"):
-        if (d / f"source.{ext}").exists():
-            return "lawxml" if ext == "xml" else ext
-    return "pdf" if (d / "source.pdf").exists() else ""
-
-
 def _meta(d: Path) -> dict:
     p = d / "meta.json"
     if not p.exists():
@@ -94,23 +104,13 @@ def _meta(d: Path) -> dict:
     return m
 
 
-# 저장된 결과가 **무엇으로 잘렸는지** — 연결이 바뀌었는지 알려면 이게 있어야 한다.
-#   induce            유도(S0~S6)
-#   lawxml            태그 계층
-#   format:<유형>@v<n> 형식 파일 (버전까지 — 틀을 다시 컴파일하면 결과가 낡는다)
-def _structured_by(data: dict, kind: str) -> str:
-    if kind == "lawxml":
-        return "lawxml"
-    bound = data.get("bound_doc_type")
-    if not bound:
-        return "induce"
-    return f"format:{bound}@v{data.get('format_version', 1)}"
-
-
 def _expected_structured_by(doc_id: str, meta: dict) -> str:
     """지금 규칙이라면 어떤 것으로 잘려야 하나 — 저장된 것과 다르면 낡은 결과다."""
     if (meta.get("source_kind") or "") == "lawxml":
         return "lawxml"
+    # 사람이 엔진을 고른 문서는 그 선택이 규칙이다 — 연결(binding)보다 세다.
+    if meta.get("engine") == "docxstyle":
+        return "docxstyle"
     from api.routers.formats import binding_for, format_version_of
 
     bound = binding_for(doc_id, meta.get("folder") or "")
@@ -134,162 +134,6 @@ def _with_freshness(doc_id: str, meta: dict) -> dict:
     return m
 
 
-def _parse_cached(pdf: Path, cache: Path):
-    """파싱은 **한 번만** 한다. 비싼 것은 docling 모델 추론이고 해석(S0~S5)은 싸다.
-
-    규칙을 고치고 다시 해석할 때마다 몇 분씩 기다리게 하지 않으려고 가른다.
-    캐시가 깨졌으면 조용히 다시 파싱한다 — 낡은 형식 때문에 문서를 못 열면 안 된다.
-    """
-    from core import parse_adapter, typography
-
-    if cache.exists():
-        try:
-            parsed = parse_adapter.result_from_dump(json.loads(cache.read_text("utf-8")))
-            # 캐시가 굳은 뒤에 생긴 축을 채운다 — 들여쓰기 증거가 보는 '글자가
-            # 실제로 시작하는 x'. 없으면 선행 공백으로 들여쓴 층을 구별 못 한다.
-            typography.ensure_text_x(pdf, parsed.elements)
-            return parsed
-        except Exception:
-            pass
-    parsed = parse_adapter.parse(pdf)
-    cache.write_text(json.dumps(parse_adapter.result_to_dump(parsed), ensure_ascii=False),
-                     encoding="utf-8")
-    return parsed
-
-
-def _ledger_path() -> Path:
-    """fingerprint 원장 — glossary.json 과 같은 자리 규약(문서 스토어 옆).
-    이 파일이 없으면 관측이 늘 1회라 tier 가 warm 에 고정된다 — 재현빈도 기반
-    frame 동결(§7)은 관측이 프로세스를 넘어 쌓여야 성립한다."""
-    return Path(os.environ.get("STRUCTURE_LEDGER", STORE.parent / "structure_ledger.json"))
-
-
-def _interpret_with_format(parsed, pdf: Path, name: str, doc_type: str) -> dict:
-    """바인딩된 문서 — 유도(S0~S6) 대신 **형식 마커의 결정론 구조화**로 해석한다.
-
-    라우터 경로와 같은 판정(structurize + fitness 게이트)을 쓰고, 화면 payload 로는
-    from_format 이 모양을 옮긴다. 유형이 틀렸으면 게이트 점수가 낮게 나온다 —
-    그것이 "미리 만든 틀에 맞냐 틀리냐"의 답이다.
-    """
-    from core import fitness_gate, structurize
-    from core import router as core_router
-    from core.structure import from_format, viewer
-
-    core_router.load.cache_clear()          # UI 등재 직후의 형식도 보여야 한다
-    r = core_router.load().get(doc_type)
-    g, fmt = core_router.assets(r)
-    doc = structurize.run(parsed, fmt, g)
-    fit = fitness_gate.apply(doc, fmt, len(parsed.elements), r.threshold)
-    result, blocks = from_format.result_from_document(parsed, doc, fit,
-                                                      doc_type=doc_type)
-    data = viewer.payload(result, blocks, pdf_path=pdf, elements=parsed.elements,
-                          images=parsed.images)
-    if name:
-        data["doc"] = name
-    data["parser_warnings"] = parsed.warnings
-    data["parser"] = parsed.parser
-    data["bound_doc_type"] = doc_type
-    # 형식 버전 — 틀을 다시 컴파일하면 이 값이 올라가고, 저장된 결과는 낡은 것이 된다
-    data["format_version"] = fmt.format_version
-    return data
-
-
-def _interpret(pdf: Path, cache: Optional[Path] = None,
-               doc_id: str = "", name: str = "", folder: str = "", **kw) -> dict:
-    from core.structure import fingerprint as fp_mod
-    from core.structure import pipeline, viewer
-    from core.structure.model import Block
-
-    parsed = _parse_cached(pdf, cache or pdf.parent / "parse.json")
-    kind = _source_kind(pdf.parent)
-
-    # 형식 바인딩(문서 > 폴더)이 있으면 유도가 아니라 형식 경로다
-    from api.routers.formats import binding_for
-    bound = binding_for(doc_id, folder) if doc_id else None
-    if bound:
-        data = _interpret_with_format(parsed, pdf, name, bound)
-        data["source_kind"] = kind
-        return data
-
-    blocks = Block.from_elements(parsed.elements)
-    # 원장은 doc_id 로 관측한다 — 저장 파일명은 전부 source.pdf 라 이름으로
-    # 세면 모든 문서가 한 항목으로 뭉개진다. 이름이 바뀌어도 doc_id 는 남는다.
-    ledger = fp_mod.Ledger.load(_ledger_path())
-    result = pipeline.interpret(blocks, doc=doc_id or pdf.name, pdf_path=str(pdf),
-                                ledger=ledger, **kw)
-    if result.stats.get("may_freeze"):
-        ledger.freeze(result.fingerprint, doc_id or pdf.name)
-    ledger.save()
-    data = viewer.payload(result, blocks, pdf_path=pdf, elements=parsed.elements,
-                          images=parsed.images)
-    if name:
-        data["doc"] = name          # 화면 헤더용 — doc_id·source.pdf 가 아니라 문서 이름
-    data["parser_warnings"] = parsed.warnings
-    data["source_kind"] = kind
-    data["parser"] = parsed.parser
-    return data
-
-
-def _hint_kwargs(root, families, ladder, order) -> dict:
-    """사람이 넣는 힌트(§7)를 `pipeline.interpret` 인자로. 업로드와 재해석이 같은 것을
-    받아야 하므로 한 곳에 둔다 — 두 곳에 있으면 한쪽만 고쳐져 결과가 갈린다."""
-    kw: dict = {"root": root or None}
-    if families:
-        kw["families"] = [x.strip() for x in families.split(",") if x.strip()]
-    if ladder:
-        kw["ladder_hint"] = [[y.strip() for y in g.split(",") if y.strip()]
-                             for g in ladder.split(";") if g.strip()]
-    if order:
-        pairs = []
-        for x in order.split(","):
-            a, _, b = x.partition(">")
-            if b:
-                pairs.append((a.strip(), b.strip()))
-        kw["partial_order"] = pairs
-    return kw
-
-
-def _prepare_converted(d: Path, raw: bytes, suffix: str) -> Path:
-    """HWP·DOCX 업로드 준비 — 원본 보존, 파싱, 합성 지면, 파싱 캐시.
-
-    지면 좌표가 없는 형식이라 synthpdf 가 지면을 만들어 준다(lawxml 과 같은 길).
-    좌표는 요소에 심겨 parse.json 으로 저장되므로, 재해석(reinterpret)이 캐시에서
-    요소를 되살려도 오버레이가 그대로 성립한다. _interpret 은 이 캐시를 읽으므로
-    docling 이 합성 PDF 를 다시 파싱하는 일은 없다.
-    """
-    from core import parse_adapter
-    from core.structure import synthpdf
-
-    src = d / f"source{suffix}"
-    src.write_bytes(raw)                       # 원본 보존 — 재변환·감사용
-    parsed = parse_adapter.parse(src)
-    pdf_bytes = synthpdf.paginate(parsed.elements)   # 요소에 page·bbox 를 심는다
-    pdf = d / "source.pdf"
-    pdf.write_bytes(pdf_bytes)
-    (d / "parse.json").write_text(
-        json.dumps(parse_adapter.result_to_dump(parsed), ensure_ascii=False),
-        encoding="utf-8")
-    return pdf
-
-
-def _upload_lawxml(raw: bytes, filename: str, folder: Optional[str]) -> dict:
-    """law.go.kr 본문 XML 업로드 — 추론 없이 태그 계층을 옮긴다 (ingest_lawxml 공유).
-
-    corpus/law 수집분과 sha 가 일치하면 별표서식 HWP 변환 md 까지 자동 연결된다.
-    """
-    if str(ROOT) not in sys.path:
-        sys.path.insert(0, str(ROOT))
-    from ingest_lawxml import ingest_bytes
-
-    name = Path(filename).stem
-    name = re.sub(r"\s*본문$", "", name) or name
-    try:
-        r = ingest_bytes(raw, name, STORE, (folder or "").strip())
-    except ValueError as exc:
-        raise HTTPException(400, f"법령 본문 XML 이 아닙니다: {exc}")
-    return {"doc_id": r["doc_id"], **r["meta"]}
-
-
 @router.post("/documents", summary="PDF·HWP·DOCX·법령XML 업로드 → 구조 해석")
 async def upload(
     file: UploadFile = File(...),
@@ -299,67 +143,43 @@ async def upload(
     order: Optional[str] = Form(None, description="'A>B' 를 쉼표로 (예: kr_장>kr_절)"),
     use_llm: bool = Form(False, description="잔여를 배치 1콜로 해소"),
     folder: Optional[str] = Form(None, description="묶어 둘 폴더 라벨 (예: 법령문서)"),
+    engine: Optional[str] = Form(None, description="빈값=유도/형식 · docxstyle=Word 스타일 통짜(docx 전용)"),
 ):
+    eng = (engine or "").strip()
+    if eng not in ("", "auto", "induce", "docxstyle"):
+        raise HTTPException(400, f"모르는 엔진입니다: {eng} (가능: docxstyle)")
+    eng = "docxstyle" if eng == "docxstyle" else ""
     lower = (file.filename or "").lower()
     if lower.endswith(".doc"):
         raise HTTPException(400, "구형 Word(.doc)는 읽지 못합니다 — "
                                  ".docx 로 다시 저장해 올려 주세요")
-    if not lower.endswith((".pdf", ".xml", ".hwp", ".hwpx", ".docx")):
+    family = ingest_mod.family_of(lower)
+    if family is None:
         raise HTTPException(400, "PDF·HWP(X)·DOCX 또는 법령 본문 XML 만 받습니다")
     raw = await file.read()
     if len(raw) > MAX_MB * 1024 * 1024:
         raise HTTPException(413, f"파일이 {MAX_MB}MB 를 넘습니다")
-    if lower.endswith(".xml"):
-        return _upload_lawxml(raw, file.filename or "문서.xml", folder)
 
-    doc_id = hashlib.sha256(raw).hexdigest()[:16]
-    d = _dir(doc_id)
-    prev = _meta(d)      # 같은 내용을 다시 올리는 경우 — 사람이 고친 이름·폴더를 지킨다
-    d.mkdir(parents=True, exist_ok=True)
+    # 표시 이름 — XML 은 파일명의 " 본문" 꼬리를 뗀다(law.go.kr 내려받기 규약).
+    # 나머지는 파일명 그대로 — 사람이 화면에서 고친 이름은 core 가 지킨다.
+    name = file.filename or "문서"
+    if family == "xml":
+        stem = Path(name).stem
+        name = re.sub(r"\s*본문$", "", stem) or stem
 
-    kw = _hint_kwargs(root, families, ladder, order)
-    if use_llm:
-        from core.llm import LLM
-        kw["llm"] = LLM()
-
-    eff_folder = (folder or "").strip() or (prev.get("folder") or "")
+    from api.routers.formats import binding_for
     try:
-        if lower.endswith((".hwp", ".hwpx", ".docx")):
-            pdf = _prepare_converted(d, raw, "." + lower.rsplit(".", 1)[-1])
-        else:
-            pdf = d / "source.pdf"
-            pdf.write_bytes(raw)
-        data = _interpret(pdf, doc_id=doc_id, folder=eff_folder,
-                          name=prev.get("name") or file.filename, **kw)
+        r = ingest_mod.ingest(
+            raw, file.filename or name, store=STORE, name=name,
+            folder=(folder or "").strip(), use_llm=use_llm, engine=eng,
+            hints=_hint_kwargs(root, families, ladder, order),
+            binding_of=binding_for)
     except ValueError as exc:            # 위장 포맷 등 — 사용자가 고칠 수 있는 실패
-        shutil.rmtree(d, ignore_errors=True)
-        raise HTTPException(400, str(exc))
+        raise HTTPException(400, f"법령 본문 XML 이 아닙니다: {exc}"
+                            if family == "xml" else str(exc))
     except Exception as exc:
-        shutil.rmtree(d, ignore_errors=True)
         raise HTTPException(500, f"해석에 실패했습니다: {type(exc).__name__}: {exc}")
-
-    (d / "result.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
-    meta = {
-        # 사람이 바꾼 이름이 파일명보다 먼저다 — 재업로드가 관리를 되돌리면 안 된다.
-        "doc_id": doc_id, "name": prev.get("name") or file.filename, "bytes": len(raw),
-        "source_kind": _source_kind(d),
-        "structured_by": _structured_by(data, _source_kind(d)),
-        "pages": len(data["pages"]), "score": data["fitness"]["score"],
-        "passed": data["fitness"]["passed"], "tier": data["fitness"]["tier"],
-        "fingerprint": data.get("fingerprint", {}).get("key"),
-        "fingerprint_count": data.get("stats", {}).get("fingerprint_count"),
-        "used_llm": bool(use_llm),
-        "at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-    }
-    new_folder = (folder or "").strip()
-    if new_folder:
-        meta["folder"] = new_folder[:80]
-    elif prev.get("folder"):
-        meta["folder"] = prev["folder"]
-    if meta.get("folder"):
-        _register_folder(meta["folder"])
-    (d / "meta.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
-    return {"doc_id": doc_id, **_meta(d)}
+    return {"doc_id": r["doc_id"], **_meta(_dir(r["doc_id"]))}
 
 
 @router.post("/{doc_id}/reinterpret", summary="같은 문서를 현재 규칙으로 다시 해석")
@@ -367,7 +187,10 @@ def reinterpret(doc_id: str, use_llm: bool = Form(False),
                 root: Optional[str] = Form(None),
                 families: Optional[str] = Form(None),
                 ladder: Optional[str] = Form(None),
-                order: Optional[str] = Form(None)):
+                order: Optional[str] = Form(None),
+                engine: Optional[str] = Form(
+                    None, description="없음=저장된 선택 유지 · induce=유도로 복귀 · "
+                                      "docxstyle=Word 스타일 통짜(docx 전용)")):
     """규칙을 고친 뒤 **파싱을 건너뛰고** 해석만 다시 돌린다.
 
     등록한 표면 패턴(`/rules/custom`)이나 힌트를 바꿔도 다시 올릴 필요가 없다.
@@ -384,6 +207,14 @@ def reinterpret(doc_id: str, use_llm: bool = Form(False),
     cache = d / "parse.json"
     cached = cache.exists()          # 없으면 docling 을 다시 돌린다 — 몇 분이 걸린다
     before = _meta(d)
+    # 엔진 — 안 주면 저장된 선택 유지, 명시하면 그것으로 바꾼다(빈 문자열·induce 는 복귀)
+    if engine is None:
+        eng = before.get("engine") or ""
+    else:
+        e = engine.strip()
+        if e not in ("", "auto", "induce", "docxstyle"):
+            raise HTTPException(400, f"모르는 엔진입니다: {e} (가능: docxstyle)")
+        eng = "docxstyle" if e == "docxstyle" else ""
     kw = _hint_kwargs(root, families, ladder, order)
     if use_llm:
         from core.llm import LLM
@@ -392,13 +223,19 @@ def reinterpret(doc_id: str, use_llm: bool = Form(False),
     try:
         data = _interpret(pdf, cache=cache, doc_id=doc_id,
                           folder=before.get("folder") or "",
-                          name=before.get("name") or "", **kw)
+                          name=before.get("name") or "", engine=eng, **kw)
+    except ValueError as exc:        # 엔진-형식 불일치 등 — 사용자가 고칠 수 있는 실패
+        raise HTTPException(400, str(exc))
     except Exception as exc:
         raise HTTPException(500, f"재해석에 실패했습니다: {type(exc).__name__}: {exc}")
     took = round(time.monotonic() - t0, 1)
 
     (d / "result.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     meta = _meta(d)
+    if eng:
+        meta["engine"] = eng
+    else:
+        meta.pop("engine", None)     # 유도로 복귀 — 선택을 지워야 신선도 판정이 안 낡는다
     st = data.get("stats", {})
     meta.update({"score": data["fitness"]["score"], "passed": data["fitness"]["passed"],
                  "tier": data["fitness"]["tier"], "used_llm": bool(use_llm),
@@ -481,10 +318,9 @@ def _save_folder_names(names) -> None:
 
 def _register_folder(name: str) -> None:
     """라벨을 쓰는 모든 경로(업로드·PATCH)가 부른다 — 문서가 다 빠져나가도
-    폴더가 사라지지 않아야 '만들어 둔 폴더'로 느껴진다."""
-    cur = _load_folder_names()
-    if name and name not in cur:
-        _save_folder_names([*cur, name])
+    폴더가 사라지지 않아야 '만들어 둔 폴더'로 느껴진다. 구현은 core.ingest 에
+    하나만 있다 — 인제스트 경로(xml 포함)와 같은 등록부를 써야 해서다."""
+    ingest_mod.register_folder(STORE, name)
 
 
 def _folder_name(raw: str) -> str:
@@ -609,12 +445,17 @@ def result(doc_id: str):
 #                     docling 이 다시 추론해 원천 태그 구조가 사라진다.**
 #                     그래서 이 갈래는 절대 재해석하지 않는다(데이터 파괴).
 def _rule_scope() -> list[str]:
-    """규칙 시험이 다시 해석해도 되는 문서 — 파싱 캐시가 있는 것만."""
+    """규칙 시험이 다시 해석해도 되는 문서 — 파싱 캐시가 있는 것만.
+
+    docxstyle 엔진으로 고정한 문서도 뺀다 — 제안자가 안 돌아 규칙과 무관하고,
+    유도로 재해석하면 사람이 고른 엔진 선택을 짓밟는다.
+    """
     root = STORE
     if not root.exists():
         return []
     return [d.name for d in sorted(root.iterdir())
-            if (d / "parse.json").exists() and (d / "source.pdf").exists()]
+            if (d / "parse.json").exists() and (d / "source.pdf").exists()
+            and _meta(d).get("engine") != "docxstyle"]
 
 
 def _reinterpret_doc(doc_id: str) -> dict:
@@ -622,7 +463,8 @@ def _reinterpret_doc(doc_id: str) -> dict:
     d = _dir(doc_id)
     before = _meta(d)
     data = _interpret(d / "source.pdf", cache=d / "parse.json", doc_id=doc_id,
-                      folder=before.get("folder") or "", name=before.get("name") or "")
+                      folder=before.get("folder") or "", name=before.get("name") or "",
+                      engine=before.get("engine") or "")
     (d / "result.json").write_text(json.dumps(data, ensure_ascii=False),
                                    encoding="utf-8")
     meta = _meta(d)

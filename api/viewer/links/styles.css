@@ -41,6 +41,9 @@ h2 { font-size:12.5px; margin:0; padding:14px 0 4px; font-weight:650;
 .pill.ok { color:var(--ok); border-color:currentColor; }
 .pill.accent { color:var(--accent); border-color:currentColor; }
 .pill.warn { color:var(--warn); border-color:currentColor; }
+.pill.bad { color:#f87171; border-color:currentColor; }
+.relsel { margin-left:auto; font-size:10.5px; background:transparent;
+  color:var(--muted, #94a3b8); border:1px solid var(--line); border-radius:6px; }
 
 /* 문서 지도 — 왼쪽은 이름 열, 오른쪽은 화살표 레인. 서로 침범하지 않는다. */
 .map { margin-top:10px; border:1px solid var(--line); border-radius:var(--r);

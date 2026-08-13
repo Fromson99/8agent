@@ -24,5 +24,7 @@ SURFACE = "완전형 / 파편"
 
 
 def score(cand: Candidate, blocks, lex) -> dict[str, float]:
-    return {ID: (scoring.CONSTRUCTION_FULL if cand.construction == "full"
+    # "style" 은 표면이 없는 대신 작성자가 제목이라 **선언**한 것이다(Word 스타일).
+    # 완전형과 같게 본다 — 선언보다 완전한 구성은 없다.
+    return {ID: (scoring.CONSTRUCTION_FULL if cand.construction in ("full", "style")
                  else scoring.CONSTRUCTION_FRAGMENT)}

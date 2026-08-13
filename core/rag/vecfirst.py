@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import time
 
 from core.rag import answer as answer_mod
@@ -28,7 +29,9 @@ from core.rag.search import _ascii_only, _token_in_query
 log = logging.getLogger("core.rag.vecfirst")
 
 ENTRY_K = 4             # 진입 구역 수 — 너무 많으면 확장 자리가 없다
-MAX_DEPTH = 3           # 참조 닫힘의 깊이 제한 — 법령 참조망은 얕고 넓다
+# 참조 닫힘의 깊이 — 법령 참조망은 얕고 넓다. 바닥(배제·위임·준용)과 항해가
+# 생기면서 이 무차별 닫힘은 보수화 후보다 — golden A/B 로 정할 손잡이.
+MAX_DEPTH = int(os.environ.get("RAG_REF_DEPTH", "3"))
 KEYWORD_ENTRY_CAP = 2   # 승인 용어가 차지할 수 있는 진입 자리 — 나머지는 벡터
 
 
@@ -63,8 +66,9 @@ def _approved_hits(index: Index, query: str, cap: int = KEYWORD_ENTRY_CAP):
 
 
 def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
-             cap: int = CANDIDATES_MAX) -> tuple[list[Section], dict]:
-    """(구역들, 회수 경위). 진입 순서: 승인 용어(정밀) → 벡터(의미) → 연결."""
+             cap: int = CANDIDATES_MAX, llm=None) -> tuple[list[Section], dict]:
+    """(구역들, 회수 경위). 진입: 승인 용어(정밀) → 벡터(의미). 확장: 결정론
+    바닥(배제·위임·준용 무조건) → 무차별 참조 닫힘 → 남은 자리는 LLM 항해."""
     t0 = time.perf_counter()
     vec = vector_mod.search(query, topk=max(entry_k * 2, 8))
     meta: dict = {"vector_hits": len(vec), "entries": [], "keywords": [],
@@ -113,6 +117,14 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
             text=v.section_text(n, cap=SECTION_CHARS) if n else ""))
         meta["entries"].append({"doc_id": doc_id, "node": node, "cos": cos})
 
+    # ── 결정론 바닥 — 배제(역방향 포함)·위임·준용은 판단 없이 무조건 동반.
+    #    배제는 누락이 오답을 만드는 유일한 간선이라 자리 경쟁보다 먼저다.
+    from core.rag import expand as expand_mod
+    n0 = len(sections)
+    sections = expand_mod.expand_floor(index, sections, cap=cap)
+    meta["floor"] = [{"kind": s.kind, "path": s.path, "matched": s.matched}
+                     for s in sections[n0:]]
+
     # 연결 닫힘 — expand_refs(1-hop 결정론)를 새 구역이 안 늘 때까지.
     # 매 회전마다 직전 회전의 신규 구역이 확장 출발점이 된다.
     depth = 0
@@ -123,6 +135,14 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
         sections = grown
         depth += 1
     meta["depth"] = depth
+
+    # ── LLM 항해 — 자리가 남고 판단자가 있으면, 간선 카드를 보고 고른다.
+    #    걸음은 kind="항해" 로 남아 진단 튜플에 경로가 쌓인다(승격 루프의 연료).
+    from core.rag import switches as switches_mod
+    if llm is not None and switches_mod.is_on("navigate") and len(sections) < cap:
+        sections, nav = expand_mod.navigate(llm, index, query, sections, cap=cap)
+        if nav.get("hops"):
+            meta["nav"] = nav
 
     for i, s in enumerate(sections, start=1):
         s.n = i

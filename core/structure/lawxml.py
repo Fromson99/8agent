@@ -242,8 +242,17 @@ def _parse_flat(lines, allow_div: bool, head: Optional[U] = None) -> list[U]:
 
 
 def admrul_tree(root: ET.Element) -> tuple[list[U], dict]:
-    """`<AdmRulService>` → U 트리. 조문내용 평문을 행 머리 패턴으로 가른다."""
-    top = _parse_flat((root.findtext("조문내용") or "").splitlines(), allow_div=True)
+    """`<AdmRulService>` → U 트리. 조문내용을 행 머리 패턴으로 가른다.
+
+    조문내용은 두 켜로 온다 — 조문형식여부=N 은 문서 전체가 한 덩어리,
+    =Y 는 **조마다 요소가 반복**된다(실측: 금융복합기업집단 감독규정 22개).
+    전부 이어 한 흐름으로 가른다. findtext(첫 요소만)로 읽으면 Y형 문서의
+    본문이 통째로 사라진다 — 실측(2026-08-13): 조 22개 중 제1조만 남았다.
+    """
+    lines: list[str] = []
+    for el in root.iter("조문내용"):
+        lines.extend((el.text or "").splitlines())
+    top = _parse_flat(lines, allow_div=True)
     base = root.find("행정규칙기본정보")
     info = {el.tag: _clean(el.text) for el in (base if base is not None else [])
             if el.text and not len(el)}
@@ -360,6 +369,22 @@ def build(xml_text: str, doc_name: str,
         raise ValueError(f"모르는 본문 XML 루트: {root.tag}")
     annex_stats: dict = {}
     tree = tree + _appendix_units(root, annex_md, annex_stats)
+    result, blocks, pdf_bytes = assemble(tree, doc_name,
+                                         source_label="law.go.kr XML",
+                                         tag="lawxml", extra_stats=annex_stats)
+    return result, blocks, pdf_bytes, info
+
+
+def assemble(tree: list[U], doc_name: str, *, source_label: str, tag: str,
+             extra_stats: Optional[dict] = None,
+             ) -> tuple[StructureResult, list[Block], bytes]:
+    """U 트리 → (결과, 블록, 합성 PDF). 결정적 이관 경로들의 공용 조립부.
+
+    lawxml(XML 태그)과 rulehtml(조문 HTML 클래스)이 같은 문으로 나온다 —
+    원천이 무엇이든 "구조가 원천에 명시돼 있어 추론이 없다"는 성질이 같아서
+    fitness 1.0/hot 규약을 공유한다. source_label 이 그 원천의 이름이다.
+    """
+    extra_stats = extra_stats or {}
 
     # 레벨 배정 — 있는 종류끼리 KIND_ORDER 순서. 부칙·별표 컨테이너는 L0.
     used_kinds: set[str] = set()
@@ -391,9 +416,9 @@ def build(xml_text: str, doc_name: str,
                         u.kind not in ("항", "호", "목"), size)
         node = Node(level=level, ordinal=u.ordinal, family=FAMILY.get(u.kind, u.kind),
                     surface=u.surface, block_idx=hb.idx, page=hb.page,
-                    element_index=hb.idx, candidate_id=f"lawxml:{hb.idx}",
+                    element_index=hb.idx, candidate_id=f"{tag}:{hb.idx}",
                     title=u.title, title_reason="원천 태그",
-                    activation_reason="law.go.kr XML 태그", bbox=hb.bbox,
+                    activation_reason=f"{source_label} 태그", bbox=hb.bbox,
                     bbox_origin="TOPLEFT")
         for line in u.content:
             emit_block(line, "내용", False, BODY_FONT)
@@ -418,7 +443,7 @@ def build(xml_text: str, doc_name: str,
             walk(n.children)
     walk(roots)
     ladder = Ladder(rungs=[Rung(level=lv, families=sorted(fams), reg_score=1.0,
-                                evidence="law.go.kr XML 태그 계층 (추론 없음)")
+                                evidence=f"{source_label} 태그 계층 (추론 없음)")
                            for lv, fams in sorted(by_level.items())])
     fams = sorted({f for s in by_level.values() for f in s})
     fp = Fingerprint(families=fams,
@@ -428,12 +453,12 @@ def build(xml_text: str, doc_name: str,
         doc=doc_name, tree=roots, ladder=ladder, candidates=[],
         fitness_score=1.0, fitness_passed=True, tier="hot", fingerprint=fp,
         stats={"coverage": 1.0, "consistency": 1.0, "ladder_quality": 1.0,
-               "source": "law.go.kr XML", "deterministic": True,
-               "units": counts, "blocks": len(blocks), **annex_stats},
+               "source": source_label, "deterministic": True,
+               "units": counts, "blocks": len(blocks), **extra_stats},
         applied={"root": None, "families": None, "ladder_hint": None,
                  "partial_order": None, "llm": False, "lang": "ko",
-                 "source": "lawxml"},
+                 "source": tag},
     )
     pdf_bytes = layout.doc.tobytes()
     layout.doc.close()
-    return result, blocks, pdf_bytes, info
+    return result, blocks, pdf_bytes

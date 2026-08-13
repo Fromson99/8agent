@@ -14,6 +14,10 @@
 **➜ 처음이라면 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 부터.** 무엇을 하고 어떤
 기제로 되어 있는지를 한 편으로 설명한다.
 
+**➜ 법령 RAG 를 만진다면 [docs/LEGAL_DOMAIN.md](docs/LEGAL_DOMAIN.md) 필독.** 법령의
+위계·계층·연결관계(위임·수임·준용·배제…)와 실측으로 배운 함정을 정리했다 —
+이 도메인 문법이 곧 검색 품질이다.
+
 ---
 
 ## 5분 안에 돌려 보기

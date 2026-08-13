@@ -51,6 +51,10 @@ class Block:
     font_name: str = ""           # 굵기가 이름에만 있는 글꼴이 있다
 
     gap_before: Optional[float] = None
+    # Word 스타일의 제목 레벨 (`Element.meta.level`). docx 만 싣는 신호다 —
+    # PDF 는 전부 1로 평면화되고 hwp 는 아예 없다(§00.4.1). 스타일을 안 쓴
+    # docx 도 None 이다. 이 값이 있다는 것은 **작성자가 제목이라 선언했다**는 뜻.
+    heading_level: Optional[int] = None
 
     @property
     def proposes(self) -> bool:
@@ -92,6 +96,7 @@ class Block:
                 kind, text = "text", e.text
             else:
                 continue
+            lvl = (getattr(e, "meta", None) or {}).get("level")
             out.append(cls(idx=len(out), text=text.strip(), page=e.page,
                            is_heading=e.is_heading, element_index=e.index,
                            bbox=getattr(e, "bbox", None),
@@ -101,12 +106,15 @@ class Block:
                            size_ratio=getattr(e, "size_ratio", None),
                            bold=getattr(e, "bold", False),
                            font_name=getattr(e, "font_name", ""),
-                           gap_before=getattr(e, "gap_before", None)))
+                           gap_before=getattr(e, "gap_before", None),
+                           heading_level=int(lvl) if lvl else None))
         return out
 
     def dump(self) -> dict:
         d = {"idx": self.idx, "page": self.page, "text": self.text,
              "is_heading": self.is_heading, "element_index": self.element_index}
+        if self.heading_level is not None:
+            d["heading_level"] = self.heading_level
         if self.kind != "text":
             d["kind"] = self.kind
         if self.size_ratio is not None:

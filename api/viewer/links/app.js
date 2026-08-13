@@ -14,7 +14,21 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => (s || "").replace(/[&<>"]/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const COLORS = ["#60a5fa", "#4ade80", "#fbbf24", "#f472b6", "#a78bfa", "#22d3ee"];
-const VIA_CLS = { "이름대조": "ok", "LLM": "accent", "사람": "warn", "추정": "" };
+const VIA_CLS = { "이름대조": "ok", "선언": "ok", "LLM": "accent", "사람": "warn",
+                  "추정": "", "교정": "accent", "규칙": "warn" };
+/* 관계 배지 — 간선의 의미(문면 술어에서 결정론 분류). 근거·인용은 대다수라
+ * 배지를 접고(소음), 회수 정책이 갈리는 준용·배제·의제만 눈에 띄운다. */
+const REL_CLS = { "준용": "accent", "배제": "bad", "의제": "warn", "수임": "ok" };
+const relPill = (rel) =>
+  REL_CLS[rel] ? `<span class="pill ${REL_CLS[rel]}">${rel}</span> ` : "";
+/* 관계 정정 — 자동 분류(문면 술어)가 틀리면 사람이 여기서 덮는다.
+ * links.json rel_fixes 에 남고, 비우면(자동값 재선택) 해제된다. */
+const REL_OPTS = ["인용", "근거", "수임", "준용", "배제", "의제"];
+const relSel = (r, i) => r.src_id == null ? "" :
+  `<select class="relsel" data-r="${i}" title="관계 정정 — 자동 분류를 덮습니다">`
+  + REL_OPTS.map((o) =>
+      `<option${o === (r.rel || "인용") ? " selected" : ""}>${o}</option>`).join("")
+  + `</select>`;
 
 async function load() {
   const r = await fetch(API);
@@ -78,13 +92,15 @@ function docRefGroups(d) {
   const rows = [];
   for (const e of S.data.in_doc[d] || []) {
     rows.push({ kind: "in", surface: e.surface, block: e.block, geo: e.src_geo,
-                src_path: e.src_path,
+                src_path: e.src_path, rel: e.rel,
+                src_doc: d, src_id: e.src, dst_doc: "", dst_id: e.dst,
                 dst: { doc: d, name: S.name[d], path: e.dst_path, geo: e.dst_geo } });
   }
   for (const e of S.data.cross) {
     if (e.src_doc === d && e.block != null) {
       rows.push({ kind: "cross", surface: e.surface, block: e.block, geo: e.src_geo,
-                  via: e.via, src_path: e.src_path,
+                  via: e.via, src_path: e.src_path, rel: e.rel,
+                  src_doc: e.src_doc, src_id: e.src, dst_doc: e.dst_doc, dst_id: e.dst,
                   dst: { doc: e.dst_doc, name: e.dst_doc_name, path: e.dst_path,
                          geo: e.dst_geo } });
     }
@@ -92,7 +108,8 @@ function docRefGroups(d) {
   for (const p of S.data.pending) {
     if (p.src_doc === d && p.block != null) {
       rows.push({ kind: "pend", surface: p.surface, block: p.block, geo: p.src_geo,
-                  src_path: p.src_path, hint: p.hint, cands: p.candidates });
+                  src_path: p.src_path, hint: p.hint, cands: p.candidates,
+                  rel: p.rel });
     }
   }
   const by = new Map();                    // 같은 블록의 참조들은 상자 하나로
@@ -144,8 +161,8 @@ function renderDoc() {
     el.onclick = (ev) => { ev.stopPropagation(); refMenu(g, ev); };
     el.onmouseenter = () => {
       tip.innerHTML = g.map((r) => r.kind === "pend"
-        ? `<span class="pill warn">보류</span> ${esc(r.surface)} — 후보 ${r.cands.length}`
-        : `<span class="chip">${esc(r.surface)}</span> ${esc(short(r.dst.name || ""))}`
+        ? `<span class="pill warn">보류</span> ${relPill(r.rel)}${esc(r.surface)} — 후보 ${r.cands.length}`
+        : `${relPill(r.rel)}<span class="chip">${esc(r.surface)}</span> ${esc(short(r.dst.name || ""))}`
           + ` ▸ ${esc(r.dst.path)}`).join("<br>");
       tip.classList.remove("hidden");
     };
@@ -165,12 +182,12 @@ function refMenu(g, ev) {
   const rows = [];
   g.forEach((r, i) => {
     if (r.kind !== "pend") {
-      rows.push(`<div class="mi" data-r="${i}"><span class="chip">${esc(r.surface)}</span>
-        <span class="p">${esc(short(r.dst.name || ""))} ▸ ${esc(r.dst.path)}</span></div>`);
+      rows.push(`<div class="mi" data-r="${i}">${relPill(r.rel)}<span class="chip">${esc(r.surface)}</span>
+        <span class="p">${esc(short(r.dst.name || ""))} ▸ ${esc(r.dst.path)}</span>${relSel(r, i)}</div>`);
     } else {
       r.cands.forEach((c, j) => rows.push(
         `<div class="mi" data-r="${i}" data-c="${j}"><span class="pill warn">보류</span>
-          <span class="chip">${esc(r.surface)}</span>
+          ${relPill(r.rel)}<span class="chip">${esc(r.surface)}</span>
           <span class="p">후보: ${esc(short(c.doc))} ▸ ${esc(c.path)}</span></div>`));
     }
   });
@@ -187,6 +204,21 @@ function refMenu(g, ev) {
         const c = r.cands[+mi.dataset.c];
         follow(g, { doc: c.doc_id, name: c.doc, path: c.path, geo: c.geo });
       }
+    };
+  });
+  menu.querySelectorAll(".relsel").forEach((sel) => {
+    sel.onclick = (ev) => ev.stopPropagation();     // 행 클릭(이동)과 분리
+    sel.onchange = async (ev) => {
+      ev.stopPropagation();
+      const r = g[+sel.dataset.r];
+      await fetch("/v1/rag/links/rel", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ src_doc: r.src_doc, src: r.src_id,
+                               dst_doc: r.dst_doc || "", dst: r.dst_id,
+                               rel: sel.value, surface: r.surface }),
+      });
+      menu.classList.add("hidden");
+      load();                                       // 색인이 파일 변경을 보고 다시 선다
     };
   });
 }
@@ -361,6 +393,7 @@ const VIA_TIP = {
   "LLM":     "LLM 판정으로 links.json 에 고정된 것",
   "사람":    "사람이 보류에서 직접 고른 것",
   "교정":    "백로그 재지정으로 도착이 옮겨 앉은 것",
+  "규칙":    "일반 규칙(귀납층)이 착지를 옮긴 것 — pill 에 규칙 id. 끊거나 재교정하면 그 규칙의 반례로 원장에 기록된다",
   "저장":    "links.json 에 저장된 것 (경위 표기 없음)",
 };
 const PAGE = 300;          // 한 번에 세우는 행 수 — 4천 행을 다 세우면 화면이 죽는다
@@ -373,7 +406,7 @@ function renderCross() {
   // 연결 형태별 분리 — 칩에 수가 실리고, 고르면 그 형태만 남는다
   const counts = {};
   all.forEach((e) => { const v = e.via || "저장"; counts[v] = (counts[v] || 0) + 1; });
-  const vias = ["추정", "이름대조", "LLM", "사람", "교정", "저장"].filter((v) => counts[v]);
+  const vias = ["추정", "이름대조", "LLM", "사람", "교정", "규칙", "저장"].filter((v) => counts[v]);
   if (S.via && !counts[S.via]) S.via = "";          // 필터 결과에 그 형태가 없어졌다
   $("viaSeg").innerHTML =
     `<button data-v="" class="${!S.via ? "on" : ""}">전체 ${all.length}</button>`
@@ -392,7 +425,9 @@ function renderCross() {
   // 데이터 검수(틀린 것 발견 → 끊기)다. 끊기는 억제 규칙(edge_rules.json)에
   // 영구 기록돼 목록과 질의 확장 양쪽에서 빠진다 — 다시 서지 않는다.
   // 판정으로 저장된 간선(LLM·사람)에는 되돌리기(해제 — 보류로 복귀)도 남긴다.
-  const saved = (e) => e.via && !["이름대조", "추정"].includes(e.via);
+  // links.json 에 실재하는 형태만 — 교정·규칙은 색인이 세운 오버레이라 해제할
+  // 파일 행이 없다(해제 대신 끊기·재교정이 그들의 반례 경로다).
+  const saved = (e) => ["LLM", "사람", "저장"].includes(e.via || "저장");
   const shown = rows.slice(0, S.crossCap);
   $("cross").innerHTML = shown.map((e, i) => `
     <div class="edge">
@@ -401,7 +436,7 @@ function renderCross() {
         ${end(e.src_doc, e.src_doc_name, e.src_path, true)}
         <span class="chip">${esc(e.surface)}</span>
         ${end(e.dst_doc, e.dst_doc_name, e.dst_path, true)}
-        <span class="pill ${VIA_CLS[e.via] || ""}">${esc(e.via || "저장")}</span>
+        <span class="pill ${VIA_CLS[e.via] || ""}" title="${esc(e.rule || VIA_TIP[e.via] || "")}">${esc(e.via || "저장")}${e.rule ? " " + esc(e.rule) : ""}</span>
       </div>
       <div class="edgeview hidden"></div>
       <div class="links">

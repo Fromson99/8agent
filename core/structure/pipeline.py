@@ -83,6 +83,12 @@ def s0_propose(blocks: list[Block], reg: registry_mod.Registry, lex,
     if allow:
         out = [c for c in out if c.family in allow or c.family_key in allow
                or c.family.split(":")[0] in allow]
+    # 스타일 선언(너비 0)은 같은 자리의 **표면 마커에 자리를 내준다** — 같은
+    # 절단인데 마커는 서수까지 실어 계열 정합·서수 게이트가 작동하고, 스타일은
+    # 서수가 없다. 둘 다 세우면 DP 가 한 블록을 두 번 열어 같은 제목이 겹으로
+    # 나온다. scan() 의 완전형-이-파편을-덮는 규칙과 같은 원리의 계열 간 판이다.
+    opened = {c.block_idx for c in out if c.construction != "style" and c.offset == 0}
+    out = [c for c in out if not (c.construction == "style" and c.block_idx in opened)]
     out.sort(key=lambda c: (c.block_idx, c.offset, c.family))
     for i, c in enumerate(out, start=1):
         c.id = f"c{i}"

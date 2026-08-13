@@ -17,8 +17,10 @@
     { key:"links",     href:"/links/",     label:"참조" },
     { gap:true },
     { key:"rag",       href:"/rag/",       label:"질의응답" },
+    { key:"rules",     href:"/rules/",     label:"공리" },
     { key:"agent6",    href:"/agent6/",    label:"점검" },
     { gap:true },
+    { key:"lineage",   href:"/lineage/",   label:"원장" },
     { key:"logs",      href:"/logs/",      label:"로그" },
   ];
 
@@ -46,6 +48,12 @@
       pick: (d) => (d.edges || []).length + (d.fixes || []).length
                  + (d.struct || []).length + (d.misses || []).length,
       hint: "판정 백로그 — 승인하면 잘못된 간선을 억제합니다" },
+    // 공리 루프 — 승격 결정을 기다리는 규칙(잠정 + 정착 후보 권고).
+    { key: "rules", jump: "/rules/",
+      url: "/v1/rag/rules",
+      pick: (d) => (d.rules || []).filter((r) => r.status === "잠정"
+                 || (r["보고서"] || {})["권고"] === "정착 후보").length,
+      hint: "규칙 승격 대기 — 잠정 승인·정착(공리) 결정은 사람 몫입니다" },
     // 오류는 성격이 다르다(빨강) — 대기가 아니라 사고다. 있을 때만 뜬다.
     { key: "logs", jump: "/logs/", tone: "err",
       url: "/v1/logs/app?level=ERROR&limit=50",
@@ -91,6 +99,25 @@
     }
   }
 
+  /* 기록 모드 칩 — 로컬 미러(OPS_RECORD=1)에서만 뜬다. 쓰기 조작이 지금 몇 건
+   * 아웃박스에 쌓였는지를 어느 화면에서든 보이게 한다 — 반출을 잊고 세션을
+   * 닫는 사고를 막는 자리다. 캐시하지 않는다: 이 수는 방금 한 조작을 따라
+   * 움직여야 믿을 수 있다. */
+  async function opsChip(host) {
+    try {
+      const r = await fetch("/v1/ops/status");
+      if (!r.ok) return;
+      const s = await r.json();
+      if (!s.record) return;
+      const b = document.createElement("span");
+      b.className = "ops-chip";
+      b.textContent = `기록 ${s.outbox}건`;
+      b.title = "기록 모드 — 화면에서 한 쓰기 조작이 아웃박스에 쌓입니다.\n"
+              + "반출: curl -o outbox.tar.gz <이 서버>/v1/ops/outbox/export";
+      host.appendChild(b);
+    } catch { /* ops 가 없는 배포 — 칩만 안 뜬다 */ }
+  }
+
   function mount() {
     const host = document.querySelector("[data-nav]");
     if (!host) return;
@@ -112,6 +139,7 @@
     ).join("");
 
     badges(host);
+    opsChip(host);
   }
 
   if (document.readyState === "loading")

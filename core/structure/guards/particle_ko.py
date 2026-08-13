@@ -31,6 +31,10 @@ SURFACE = "마커 직후 조사 부착 / 참조 서술어 근접"
 
 
 def score(cand: Candidate, blocks, lex) -> dict[str, float]:
+    if cand.end == cand.offset:
+        # 너비 0 마커(스타일 선언) — 조사가 붙을 표면이 없다. 꼬리 첫 글자로
+        # 재면 `은행…` `이사회…` 처럼 조사 글자로 시작하는 제목이 억울하게 깎인다.
+        return {ID: scoring.PARTICLE_CLEAN}
     tail = cand.tail
     attached = lex.josa.attached(tail) or lex.josa.chained_reference(tail)
     if not attached:

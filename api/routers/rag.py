@@ -22,6 +22,7 @@ import json
 import logging
 import os
 import time
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
@@ -159,6 +160,7 @@ def rag_links():
         in_doc[d] = [{"src": e["src"], "src_path": v.path(e["src"]),
                       "dst": e["dst"], "dst_path": v.path(e["dst"]),
                       "surface": e["surface"], "block": e.get("block"),
+                      "rel": e.get("rel", "인용"), "rel_via": e.get("rel_via"),
                       "src_geo": block_geo(v, e.get("block")),
                       "dst_geo": node_geo(v, e["dst"])}
                      for e in es]
@@ -224,13 +226,16 @@ def rag_section(doc_id: str = Query(...), node: int = Query(...)):
 
     refs, seen = [], set()
 
-    def add_ref(surface, dst_doc, dst, via=""):
+    def add_ref(surface, dst_doc, dst, via="", rule=None):
         if (surface, dst_doc, dst) in seen:
             return
         seen.add((surface, dst_doc, dst))
         dv = idx.docs.get(dst_doc)
         refs.append({"surface": surface, "dst_doc": dst_doc, "dst": dst,
                      "dst_path": dv.path(dst) if dv else "", "via": via,
+                     # 무기명 발동 금지는 표현층까지다 — 규칙이 옮긴 간선은
+                     # 화면에서도 어느 규칙인지 보여야 한다.
+                     **({"rule": rule} if rule else {}),
                      "geo": geo(dv, dst)})
 
     for e in idx.ref_edges().get(doc_id, []):
@@ -238,7 +243,8 @@ def rag_section(doc_id: str = Query(...), node: int = Query(...)):
             add_ref(e["surface"], doc_id, e["dst"])
     for e in idx.cross_ref_edges():
         if e.get("src_doc") == doc_id and inside(e.get("block")):
-            add_ref(e["surface"], e["dst_doc"], e["dst"], e.get("via", ""))
+            add_ref(e["surface"], e["dst_doc"], e["dst"], e.get("via", ""),
+                    e.get("rule"))
 
     cited = []
     for e in idx.ref_edges().get(doc_id, []):
@@ -301,24 +307,51 @@ def rag_section(doc_id: str = Query(...), node: int = Query(...)):
             "refs": refs, "cited_by": cited}
 
 
-def _save_links(links: list) -> int:
-    """links.json 에 덧붙인다 — 같은 (출발, 도착) 좌표는 한 번만."""
+def _links_file() -> dict:
+    """links.json 전체 — links 밖의 키(runs 등)도 그대로 든다."""
     path = index_mod.links_path()
-    cur: list = []
     if path.exists():
         try:
-            cur = json.loads(path.read_text(encoding="utf-8")).get("links", [])
+            return json.loads(path.read_text(encoding="utf-8"))
         except Exception:
-            cur = []
+            pass
+    return {}
+
+
+def _write_links_file(data: dict) -> None:
+    path = index_mod.links_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2),
+                    encoding="utf-8")
+
+
+def _save_links(links: list) -> int:
+    """links.json 에 덧붙인다 — 같은 (출발, 도착) 좌표는 한 번만.
+    links 외의 키(runs)는 건드리지 않고 보존한다."""
+    data = _links_file()
+    cur: list = data.get("links", [])
     seen = {(c.get("src_doc"), c.get("src"), c.get("dst_doc"), c.get("dst"))
             for c in cur}
     fresh = [l for l in links
              if (l["src_doc"], l["src"], l["dst_doc"], l["dst"]) not in seen]
     if fresh:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps({"links": cur + fresh}, ensure_ascii=False,
-                                   indent=2), encoding="utf-8")
+        data["links"] = cur + fresh
+        _write_links_file(data)
     return len(fresh)
+
+
+def _record_settle_run(run: dict) -> None:
+    """settle 실행 이력을 links.json "runs" 에 남긴다 — 연결 국면의 자기
+    기록이다 (docs/LINEAGE.md). 확정이 0건이어도 실행 사실은 남는다 —
+    계보 원장이 '한 번도 안 돌았음'과 '돌았는데 굳은 게 없음'을 구별해야
+    해서다. 최근 50회만 이력으로 든다 — 이력이지 로그가 아니다."""
+    data = _links_file()
+    data.setdefault("links", [])
+    runs = data.get("runs", [])
+    runs.append({"at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                 **run})
+    data["runs"] = runs[-50:]
+    _write_links_file(data)
 
 
 @router.post("/links/settle", summary="보류 참조를 LLM 판정으로 확정 — links.json 에 고정")
@@ -331,6 +364,7 @@ def rag_links_settle():
         raise HTTPException(503, "LLM 없음 — ANTHROPIC_API_KEY 를 설정해야 판정이 돕니다")
     links, meta = judge_mod.settle_cross(llm, idx)
     out = {**meta, "saved": _save_links(links) if links else 0}
+    _record_settle_run({"via": "LLM", **meta, "saved": out["saved"]})
     if llm.log:
         out["usage"] = llm.totals()
     return out
@@ -376,22 +410,74 @@ def rag_links_remove(body: Unlink):
     """저장으로 확정된 간선(LLM·사람)만 지울 수 있다. 이름 대조로 선 간선은
     파일에 없어서 지워도 다음 색인에서 다시 선다 — 그건 해제가 아니라 구조를
     고칠 일이다. 지운 보류는 다시 보류 목록에 나타난다(되돌리기다, 삭제가 아니라)."""
-    path = index_mod.links_path()
-    cur: list = []
-    if path.exists():
-        try:
-            cur = json.loads(path.read_text(encoding="utf-8")).get("links", [])
-        except Exception:
-            cur = []
+    data = _links_file()
+    cur: list = data.get("links", [])
     keep = [l for l in cur
             if (l.get("src_doc"), l.get("src"), l.get("dst_doc"), l.get("dst"))
             != (body.src_doc, body.src, body.dst_doc, body.dst)]
     if len(keep) == len(cur):
         raise HTTPException(404, "저장된 간선이 아닙니다 — 이름 대조로 선 간선은 "
                                  "해제할 수 없습니다")
-    path.write_text(json.dumps({"links": keep}, ensure_ascii=False, indent=2),
-                    encoding="utf-8")
+    data["links"] = keep
+    _write_links_file(data)
     return {"removed": len(cur) - len(keep), "left": len(keep)}
+
+
+@router.get("/switches", summary="엔진 규칙 스위치 — 자동 규칙의 등록부와 상태")
+def rag_switches():
+    from core.rag import switches as switches_mod
+    return {"switches": switches_mod.snapshot()}
+
+
+class SwitchSet(BaseModel):
+    key: str
+    on: bool
+
+
+@router.post("/switches", summary="엔진 규칙 켜고 끄기 — 다음 질의부터 반영")
+def rag_switches_set(body: SwitchSet):
+    """규칙은 코드가 갖고 있지만 켜짐/꺼짐은 사용자 소유다. 끄면 확정 규칙의
+    간선은 보류로 내려가고, 동반 규칙은 회수에서 빠진다. 저장된 판정
+    (links.json·정정·억제)은 스위치와 무관하다."""
+    from core.rag import switches as switches_mod
+    try:
+        switches_mod.set_switch(body.key, body.on)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"switches": switches_mod.snapshot()}
+
+
+class RelFix(BaseModel):
+    src_doc: str
+    src: int
+    dst: int
+    dst_doc: str = ""              # 문서 안 간선이면 빈 값
+    rel: str = ""                  # 준용|배제|의제|근거|인용 — 빈 값이면 정정 해제
+    surface: str = ""              # 표시용 — 키가 아니다
+
+
+@router.post("/links/rel", summary="간선 관계 라벨 정정 — 사람이 자동 분류를 덮는다")
+def rag_links_rel(body: RelFix):
+    """문면 술어 분류(rel_of)가 틀릴 수 있다 — 정정은 links.json 의 rel_fixes 에
+    남고 조립 시점에 자동 분류를 덮는다(관측은 고쳐 쓰지 않는다). 같은 좌표를
+    다시 보내면 갈아끼우고, rel 을 비워 보내면 정정을 해제한다(자동 분류로 복귀)."""
+    kinds = ("준용", "배제", "의제", "수임", "근거", "인용")
+    if body.rel and body.rel not in kinds:
+        raise HTTPException(400, f"rel 은 {'/'.join(kinds)} 중 하나여야 합니다")
+    data = _links_file()
+    fixes: list = data.get("rel_fixes", [])
+    key = (body.src_doc, body.src, body.dst_doc, body.dst)
+    fixes = [f for f in fixes
+             if (f.get("src_doc"), f.get("src"), f.get("dst_doc", ""), f.get("dst"))
+             != key]
+    if body.rel:
+        fixes.append({"src_doc": body.src_doc, "src": body.src,
+                      "dst_doc": body.dst_doc, "dst": body.dst,
+                      "rel": body.rel, "surface": body.surface,
+                      "at": datetime.now(timezone.utc).isoformat(timespec="seconds")})
+    data["rel_fixes"] = fixes
+    _write_links_file(data)
+    return {"fixes": len(fixes)}
 
 
 def _answer_prompt(llm) -> Optional[dict]:
@@ -422,7 +508,7 @@ def _ask_vector(idx, q: str, llm) -> Optional[dict]:
     벡터가 빈손이면 None — 호출부가 용어 사다리로 폴백한다."""
     from core.rag import vecfirst
 
-    sections, vmeta = vecfirst.retrieve(idx, q)
+    sections, vmeta = vecfirst.retrieve(idx, q, llm=llm)
     if not sections:
         return None
     n_kw = len(vmeta.get("keywords", []))
@@ -437,6 +523,18 @@ def _ask_vector(idx, q: str, llm) -> Optional[dict]:
         {"stage": "참조 확장", "count": len(sections) - n_entry - n_kw,
          "note": f"참조 간선 닫힘, 깊이 {vmeta['depth']}"},
     ]
+    floor = vmeta.get("floor") or []
+    if floor:
+        kinds = {}
+        for f in floor:
+            kinds[f["kind"]] = kinds.get(f["kind"], 0) + 1
+        ladder.insert(2, {"stage": "필수 동반", "count": len(floor),
+                          "note": " · ".join(f"{k} {c}" for k, c in kinds.items())
+                                  + " (배제·위임·준용은 판단 없이 동반)"})
+    nav = vmeta.get("nav")
+    if nav:
+        ladder.append({"stage": "간선 항해", "count": len(nav.get("picked", [])),
+                       "note": f"LLM 이 간선 카드에서 고름, {nav['hops']}홉"})
     # 착지 교정 — "제2조제3항"을 가리키고 조에 머문 참조를, 답변 전에 자손
     # 후보에서 고쳐 앉힌다. 고친 구역이 곧 이번 답변의 근거다.
     fixes = answer_mod.repair_landings(llm, idx, sections)
@@ -663,11 +761,33 @@ class EdgeResolve(BaseModel):
     note: str = ""
 
 
+def _rule_edge(src_doc, src, dst_doc, dst):
+    """현재 색인에서 그 좌표에 선 간선이 일반 규칙의 산출인지 — 규칙이 바뀌기
+    전(억제·재지정 기록 전)에 찾아야 한다. 기록 후에는 색인이 다시 서서 그
+    간선이 사라지거나 제자리로 돌아가 귀속을 잃는다."""
+    for e in index_mod.current().cross_refs()[0]:
+        if (e.get("via") == "규칙"
+                and (e["src_doc"], e["src"], e.get("dst_doc"), e["dst"])
+                == (src_doc, src, dst_doc, dst)):
+            return e
+    return None
+
+
 @router.post("/verdicts/resolve", summary="지문 처리 — 승인은 간선 억제 규칙이 된다")
 def rag_verdicts_resolve(body: EdgeResolve):
     if body.action not in ("승인", "기각"):
         raise HTTPException(400, "action 은 '승인' 또는 '기각'이어야 합니다")
-    return verdicts_mod.resolve(body.model_dump(), body.action, body.note)
+    # 반증 배선 — 끊는 간선이 규칙의 산출이면 그 규칙의 반례로 원장에 남긴다.
+    # 사람은 원장을 모른 채 화면에서 끊었을 뿐이고, 나르는 것은 시스템 몫이다.
+    re = _rule_edge(body.src_doc, body.src, body.dst_doc, body.dst) \
+        if body.action == "승인" else None
+    out = verdicts_mod.resolve(body.model_dump(), body.action, body.note)
+    if re is not None:
+        from core.rag import rules as rules_mod
+        rules_mod.log_overturn_auto(
+            re.get("rule", ""), {**re, "dst": re.get("규칙_전", re["dst"])},
+            "규칙 착지에 오참조 승인 — 사람의 끊기")
+    return out
 
 
 class MissResolve(BaseModel):
@@ -749,12 +869,23 @@ class FixResolve(BaseModel):
 def rag_fixes_resolve(body: FixResolve):
     if body.action not in ("승인", "기각"):
         raise HTTPException(400, "action 은 '승인' 또는 '기각'이어야 합니다")
+    payload = body.model_dump()
     if body.action == "승인":
         idx = index_mod.current()
         dv = idx.docs.get(body.dst_doc)
         if dv is None or dv.by_id.get(body.new_dst) is None:
             raise HTTPException(400, "새 좌표가 유효하지 않습니다 — 문서나 구역이 없습니다")
-    return verdicts_mod.resolve_fix(body.model_dump(), body.action, body.note)
+        # 반증 배선 + 출처 — 고치는 간선이 규칙의 산출이면 (1) 그 규칙의
+        # 반례로 원장에 남기고 (2) 새 사례 행에 출처를 새겨 귀납이 표본에서
+        # 빼게 한다(자기확증 방지).
+        re = _rule_edge(body.src_doc, body.src, body.dst_doc, body.dst)
+        if re is not None:
+            payload["출처"] = {"rule": re.get("rule", "")}
+            from core.rag import rules as rules_mod
+            rules_mod.log_overturn_auto(
+                re.get("rule", ""), {**re, "dst": re.get("규칙_전", re["dst"])},
+                "규칙 착지를 사람이 재교정")
+    return verdicts_mod.resolve_fix(payload, body.action, body.note)
 
 
 @router.get("/debug", summary="디버깅 합본 — 질의 로그 + 판정·교정 + 품질 통계")
@@ -801,3 +932,128 @@ def rag_nodes(doc_id: str = Query(...)):
             "nodes": [{"node": n.get("id"), "path": v.path(n.get("id")),
                        "page": n.get("page"), "level": n.get("level")}
                       for n in v.nodes]}
+
+
+# ---------------------------------------------------------------- 일반 규칙(귀납층)
+# RULE_LOOP.md 의 API 면. 발동·상태는 core.rag.rules 가 정하고, 여기는
+# 화면(백로그·적중 원장·스위치)의 문이다.
+
+@router.get("/rules", summary="일반 규칙 — 목록 · 실적 · 유효 모드")
+def rag_rules():
+    from core.rag import rules as rules_mod
+
+    st = rules_mod.stats()
+    rows = []
+    for r in rules_mod.load():
+        rows.append({**r, "실적": st.get(r["id"], {}),
+                     "보고서": rules_mod.promotable(r["id"])})
+    return {"mode": rules_mod.mode(),
+            "env": os.environ.get("RAG_RULES_MODE", "off"),
+            "breaker": rules_mod.breaker(), "rules": rows,
+            "중첩": rules_mod.overlaps()}
+
+
+class RuleResolve(BaseModel):
+    """상태 전이 — 사람 경로. 잠정→규칙 승인, 규칙→정착 승격, 강등·보류.
+    방향 전환(→정착, 정착→)은 이 문으로만 온다 — by 는 항상 '사람'이다."""
+    id: str
+    status: str                        # "규칙" | "정착" | "보류" | "강등"
+    note: str = ""
+
+
+@router.post("/rules/resolve", summary="규칙 상태 전이 — 정착 승격/강등은 사람만")
+def rag_rules_resolve(body: RuleResolve):
+    from core.rag import rules as rules_mod
+
+    try:
+        return rules_mod.set_status(body.id, body.status, by="사람",
+                                    note=body.note)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@router.get("/rules/hits", summary="적중 원장 — 규칙이 증거를 심판한 사건들")
+def rag_rules_hits(rule: str = Query("", description="규칙 id 로 거름 (빈값=전부)"),
+                   limit: int = Query(200, ge=1, le=2000)):
+    from core.rag import rules as rules_mod
+
+    led = [r for r in rules_mod._ledger()
+           if not rule or r.get("rule") == rule]
+    # 부검 상태를 겹쳐 읽는다 — 원장은 append-only 라 적중 행을 다시 쓰지 않는다
+    judged: dict[str, str] = {}
+    for r in led:
+        if r.get("kind") in ("확정", "뒤집힘"):
+            judged[json.dumps([r.get("rule"), r.get("대상")],
+                              sort_keys=True)] = r["kind"]
+    hits = []
+    for r in led:
+        if r.get("kind") != "적중":
+            continue
+        k = json.dumps([r.get("rule"), r.get("대상")], sort_keys=True)
+        hits.append({**r, "status": judged.get(k, "미검")})
+    # 사람이 읽는 좌표 — 원장은 좌표만 적는다(append-only 최소주의). 화면이
+    # "어디를 어디로 옮겼나"를 문장으로 보여줘야 부검이 성립한다.
+    idx = index_mod.current()
+
+    def _label(t: dict, new_dst) -> dict:
+        sv, dv = idx.docs.get(t.get("src_doc")), idx.docs.get(t.get("dst_doc"))
+        return {"src": sv.name if sv else (t.get("src_doc") or "?"),
+                "src_path": sv.path(t.get("src")) if sv else "",
+                "dst": dv.name if dv else (t.get("dst_doc") or "?"),
+                "dst_path": dv.path(t.get("dst")) if dv else "",
+                "new_path": dv.path(new_dst)
+                if dv and new_dst is not None else ""}
+    out = hits[-limit:]
+    for h in out:
+        h["표지"] = _label(h.get("대상") or {},
+                           (h.get("행동") or {}).get("redirect_to"))
+    # 생애 이벤트 — 등재·상태변경·부검이 타임라인의 재료다.
+    events = [r for r in led
+              if r.get("kind") in ("등재", "상태변경", "확정", "뒤집힘")
+              and (not rule or r.get("rule") == rule)]
+    return {"hits": out, "count": len(hits), "events": events[-100:]}
+
+
+class HitResolve(BaseModel):
+    """적중 부검 — 확정(규칙이 옳았다) | 뒤집힘(데이터가 옳았다 = 반례).
+    뒤집힘이 쌓이면 차단기가 on→shadow 로 강하한다."""
+    rule: str
+    대상: dict
+    action: str                        # "확정" | "뒤집힘"
+    note: str = ""
+
+
+@router.post("/rules/hits/resolve", summary="적중 부검 — 뒤집힘은 규칙의 반례가 된다")
+def rag_rules_hits_resolve(body: HitResolve):
+    from core.rag import rules as rules_mod
+
+    try:
+        return rules_mod.resolve_hit(body.rule, body.대상, body.action,
+                                     body.note)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+class BreakerAction(BaseModel):
+    action: str                        # "해제"
+    note: str = ""
+
+
+@router.post("/rules/breaker", summary="차단기 해제 — shadow→on 복귀는 사람만")
+def rag_rules_breaker(body: BreakerAction):
+    from core.rag import rules as rules_mod
+
+    if body.action != "해제":
+        raise HTTPException(400, "action 은 '해제'만 있습니다 — 강하는 자동이다")
+    return rules_mod.reset_breaker(body.note)
+
+
+@router.post("/rules/induce", summary="귀납 한 바퀴 — 승인 사례를 일반 규칙 후보로")
+def rag_rules_induce():
+    """군집화 → 일반화(기계 우선, 잔여는 LLM) → replay 검증 → 잠정 등재.
+    발동은 없다 — 등재까지다. 크론이 아니라 화면 버튼으로도 돌 수 있게 둔다."""
+    from core.rag import induce as induce_mod
+
+    if os.environ.get("RAG_RULES_INDUCE", "on").strip().lower() == "off":
+        raise HTTPException(409, "RAG_RULES_INDUCE=off — 유도가 꺼져 있습니다")
+    return {"report": induce_mod.run(index_mod.current(), _llm())}

@@ -190,7 +190,11 @@ def resolve_fix(fix: dict, action: str, note: str = "") -> dict:
             "new_dst_path": fix.get("new_dst_path", ""),
             "surface": fix.get("surface", ""),
             "이유": note or "교정 백로그 승인",
-            "evidence_qids": qids[:20], "created": _now()})
+            "evidence_qids": qids[:20], "created": _now(),
+            # 출처 — 이 간선이 일반 규칙의 산출 위에서 태어났다면 그 규칙 id.
+            # 귀납(induce)이 이 행을 표본에서 뺀다 — 규칙이 제 산출을 제
+            # 증거로 삼는 자기확증을 막는다.
+            **({"출처": fix["출처"]} if fix.get("출처") else {})})
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(json.dumps(data, ensure_ascii=False, indent=2),
                      encoding="utf-8")
@@ -319,7 +323,9 @@ def _rules() -> dict:
     p = rules_path()
     if not p.exists():
         return dict(_EMPTY_RULES)
-    sig = p.stat().st_mtime_ns
+    # 경로도 서명에 든다 — mtime 만 보면 경로가 바뀌는 환경(테스트의 tmp,
+    # env 전환)에서 다른 파일의 규칙이 스테일로 남는다.
+    sig = (str(p), p.stat().st_mtime_ns)
     if _rules_cache.get("sig") != sig:
         try:
             data = json.loads(p.read_text(encoding="utf-8"))

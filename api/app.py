@@ -38,6 +38,7 @@ from .jobs import STORE
 from .routers import agent as agent_router
 from .routers import chat as chat_router
 from .routers import jobs as jobs_router
+from .routers import lineage as lineage_router
 from .routers import logs as logs_router
 from .routers import parser as parser_router
 from .routers import structure as structure_router
@@ -109,6 +110,7 @@ app.include_router(structure_router.router)
 from .routers import formats as formats_router  # noqa: E402
 
 app.include_router(formats_router.router)
+app.include_router(lineage_router.router)
 app.include_router(logs_router.router)
 if agent6_router is not None:
     app.include_router(agent6_router.router)
@@ -116,6 +118,16 @@ if glossary_router is not None:
     app.include_router(glossary_router.router)
 if rag_router is not None:
     app.include_router(rag_router.router)
+
+# 망분리 운반 — 스냅샷·아웃박스·재생. 이게 죽어도 서비스 본체는 떠야 한다.
+# `from api import ops` 가 아니라 점표기다 — 시험이 sys.modules 에서 모듈을
+# 지워도 부모 패키지 속성에 낡은 모듈이 남아, from 형태는 그걸 집어온다.
+try:
+    import api.ops as ops_mod
+
+    ops_mod.install(app)
+except Exception as exc:                                 # pragma: no cover
+    log.warning("ops 설치 실패 — 운반 기능 없이 기동: %s", exc)
 
 
 @app.exception_handler(Exception)
@@ -227,10 +239,22 @@ if _RAG_VIEWER.is_dir() and rag_router is not None:
     app.mount("/rag", StaticFiles(directory=str(_RAG_VIEWER), html=True),
               name="rag-viewer")
 
+# 공리 루프 — 규칙의 생애(잠정→규칙→정착)와 적중 원장 검수 (RULE_LOOP.md §7-4)
+_RULES_VIEWER = Path(__file__).resolve().parent / "viewer" / "rules"
+if _RULES_VIEWER.is_dir() and rag_router is not None:
+    app.mount("/rules", StaticFiles(directory=str(_RULES_VIEWER), html=True),
+              name="rules-viewer")
+
 _LOGS_VIEWER = Path(__file__).resolve().parent / "viewer" / "logs"
 if _LOGS_VIEWER.is_dir():
     app.mount("/logs", StaticFiles(directory=str(_LOGS_VIEWER), html=True),
               name="logs-viewer")
+
+# 계보 원장 — 수집→변환→구조화→연결 낙차 감독 (docs/LINEAGE.md)
+_LINEAGE_VIEWER = Path(__file__).resolve().parent / "viewer" / "lineage"
+if _LINEAGE_VIEWER.is_dir():
+    app.mount("/lineage", StaticFiles(directory=str(_LINEAGE_VIEWER), html=True),
+              name="lineage-viewer")
 
 _AGENT6_VIEWER = Path(__file__).resolve().parent / "viewer" / "agent6"
 if _AGENT6_VIEWER.exists():

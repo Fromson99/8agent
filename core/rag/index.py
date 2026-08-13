@@ -256,6 +256,7 @@ class Index:
     docs: dict                     # doc_id -> DocView
     entries: list                  # Entry 목록 (제목 + 용어)
     saved_links: list = field(default_factory=list)   # links.json — 판정으로 고정된 링크
+    rel_fixes: list = field(default_factory=list)     # links.json — 사람이 고친 관계 라벨
     _postings: Optional[dict] = None
     _n_blocks: int = 0
     _refs: Optional[dict] = None
@@ -265,7 +266,8 @@ class Index:
     @classmethod
     def from_docs(cls, docs: list[tuple[str, dict, dict]],
                   user_terms: Optional[list[dict]] = None,
-                  saved_links: Optional[list[dict]] = None) -> "Index":
+                  saved_links: Optional[list[dict]] = None,
+                  rel_fixes: Optional[list[dict]] = None) -> "Index":
         """(doc_id, meta, result) 목록에서 색인을 세운다. 파일이 아니라 값을
         받는다 — 시험이 저장소 없이 색인을 만들 수 있어야 한다."""
         views: dict[str, DocView] = {}
@@ -302,7 +304,8 @@ class Index:
                 entries.append(Entry(
                     value=sfc, key=skey, kind="용어",
                     target=f"term:{key}", occurrences=t.get("occurrences", [])))
-        return cls(docs=views, entries=entries, saved_links=saved_links or [])
+        return cls(docs=views, entries=entries, saved_links=saved_links or [],
+                   rel_fixes=rel_fixes or [])
 
     @classmethod
     def load(cls, store: Optional[Path] = None,
@@ -331,12 +334,15 @@ class Index:
             except Exception:
                 terms = []
         links: list[dict] = []
+        rel_fixes: list[dict] = []
         if links_file.exists():
             try:
-                links = json.loads(links_file.read_text(encoding="utf-8")).get("links", [])
+                blob = json.loads(links_file.read_text(encoding="utf-8"))
+                links = blob.get("links", [])
+                rel_fixes = blob.get("rel_fixes", [])
             except Exception:
                 links = []
-        return cls.from_docs(docs, terms, links)
+        return cls.from_docs(docs, terms, links, rel_fixes)
 
     # ------------------------------------------------------------- 본문 색인
     def postings(self) -> dict:
@@ -398,7 +404,21 @@ class Index:
             self._refs = {doc_id: [self._redirect(doc_id, e["src"], e)
                                    for e in refs_mod.resolve(v)]
                           for doc_id, v in self.docs.items()}
+            # 사람이 고친 관계 라벨 — 자동 분류(문면 술어)는 그대로 두고 조립
+            # 시점에 덮는다. 억제·재지정과 같은 규율: 관측을 고쳐 쓰지 않는다.
+            fixes = self._rel_fix_map()
+            for doc_id, es in self._refs.items():
+                for e in es:
+                    r = fixes.get((doc_id, e["src"], "", e["dst"]))
+                    if r:
+                        e["rel"], e["rel_via"] = r, "사람"
         return self._refs
+
+    def _rel_fix_map(self) -> dict:
+        """(src_doc, src, dst_doc(문서 안이면 ""), dst) → 사람이 정한 rel."""
+        return {(f.get("src_doc", ""), f.get("src"), f.get("dst_doc", ""),
+                 f.get("dst")): f["rel"]
+                for f in self.rel_fixes if f.get("rel")}
 
     def cross_refs(self) -> tuple:
         """문서 사이 참조 — (확정 간선, 보류 목록).
@@ -408,7 +428,9 @@ class Index:
         항목은 목록에서 뺀다 — 한 번 판정한 것을 다시 묻지 않는다."""
         if self._cross is None:
             from core.rag import refs as refs_mod
-            edges, pending = refs_mod.cross_resolve(self.docs)
+            from core.rag import switches as switches_mod   # 순환 회피 — 지연
+            edges, pending = refs_mod.cross_resolve(
+                self.docs, declare=switches_mod.is_on("declare"))
             covered: set = set()
             for lk in self.saved_links:
                 dv = self.docs.get(lk.get("dst_doc"))
@@ -429,24 +451,47 @@ class Index:
             # 판정(백로그)이 사후에 거른다 — 그래서 기본 연결이 안전하다.
             auto_seen = {(e["src_doc"], e["src"], e.get("dst_doc"), e["dst"])
                          for e in edges}
+
+            def in_appendix(v, node) -> bool:
+                cur = v.by_id.get(node)
+                while cur is not None:
+                    s = (cur.get("surface") or "").strip()
+                    if s == "부칙" or s.startswith("별표") or s.startswith("별지"):
+                        return True
+                    cur = v.by_id.get(cur.get("parent"))
+                return False
+
+            presume_on = switches_mod.is_on("presume")
+            mainbody_on = switches_mod.is_on("mainbody")
             still = []
             for p in pending:
                 uniq = {(c["doc_id"], c["node"]) for c in p["candidates"]}
-                if len(uniq) != 1:
+                pick = via = None
+                if len(uniq) == 1 and presume_on:
+                    # "추정" — 이름을 안 부른 참조인데 그 조를 가진 문서가
+                    # 하나뿐이라 그리 이었다 (이름대조=확실 / 추정=후보 유일).
+                    pick, via = next(iter(uniq)), "추정"
+                elif mainbody_on and len({d for d, _ in uniq}) == 1:
+                    # "본문우선" — 한 문서 안 본문·부칙 번호 중복. 부칙 조는
+                    # 밖에서 "부칙 제N조"로 부르므로 맨 "제N조"는 본문이다.
+                    dv = self.docs.get(next(iter(uniq))[0])
+                    mains = [(d, n) for d, n in uniq
+                             if dv and not in_appendix(dv, n)]
+                    if len(mains) == 1:
+                        pick, via = mains[0], "본문우선"
+                if pick is None:
                     still.append(p)
                     continue
-                dst_doc, dst = next(iter(uniq))
+                dst_doc, dst = pick
                 ek = (p["src_doc"], p["src"], dst_doc, dst)
                 if ek in auto_seen:
                     continue
                 auto_seen.add(ek)
-                # via 는 화면에 그대로 뜨는 말이다. "추정" — 이름을 안 부른
-                # 참조인데 그 조를 가진 문서가 하나뿐이라 그리 이었다는 뜻.
-                # (이름대조=확실 / 추정=후보 유일 / 보류=후보 여럿)
                 edges.append({"src_doc": p["src_doc"], "src": p["src"],
                               "dst_doc": dst_doc, "dst": dst,
                               "surface": p["surface"], "hint": p["hint"],
-                              "block": p.get("block"), "via": "추정"})
+                              "block": p.get("block"), "via": via,
+                              "rel": p.get("rel", "인용")})
             pending = still
             # 끊긴 간선은 목록에서도 빠진다 — 참조 화면의 끊기(억제 규칙)가
             # 확장(expand_refs)만이 아니라 이 목록에서도 이겨야 검수가 남는다.
@@ -455,6 +500,36 @@ class Index:
                      if not verdicts_mod.is_suppressed(
                          e["src_doc"], e["src"], e.get("dst_doc", ""), e["dst"])]
             edges = [self._redirect(e["src_doc"], e["src"], e) for e in edges]
+            # 일반 규칙(귀납층)은 인스턴스 재지정 **다음**이다 — 사람이 그
+            # 간선에 직접 확정한 좌표가 규칙을 이긴다. off 면 호출 자체가 없어
+            # 오늘의 시스템과 같다(RULE_LOOP.md §6 폭발 반경 보증 ④).
+            from core.rag import rules as rules_mod     # 순환 의존 회피 — 지연
+            if rules_mod.mode() != "off":
+                edges = [rules_mod.apply_edge(self, e) for e in edges]
+                # 사람 우선 재확인 — 규칙이 옮긴 좌표 **위에도** 인스턴스
+                # 재지정이 이긴다. 사람이 규칙의 착지를 다시 고쳤다면 그것이
+                # 반례이고, 원좌표(규칙_전)로 원장에 귀속된다. 억제는
+                # apply_edge 안에서 이미 이겼다(옮기기 전 검사).
+                redone = []
+                for e in edges:
+                    if e.get("via") == "규칙":
+                        r2 = self._redirect(e["src_doc"], e["src"], e)
+                        if r2.get("dst") != e.get("dst"):
+                            rules_mod.log_overturn_auto(
+                                e.get("rule", ""),
+                                {**e, "dst": e.get("규칙_전", e.get("dst"))},
+                                "사람 재지정이 규칙 착지를 덮음")
+                            e = {k: v for k, v in r2.items()
+                                 if k not in ("rule", "규칙_전")}
+                    redone.append(e)
+                edges = redone
+            # 사람이 고친 관계 라벨 — 재지정·규칙이 좌표를 다 정한 다음이라,
+            # 사람이 화면에서 본 그 좌표에 정확히 붙는다.
+            fixes = self._rel_fix_map()
+            for e in edges:
+                r = fixes.get((e["src_doc"], e["src"], e.get("dst_doc", ""), e["dst"]))
+                if r:
+                    e["rel"], e["rel_via"] = r, "사람"
             self._cross = (edges, pending)
         return self._cross
 
@@ -492,6 +567,20 @@ def _signature(store: Path, terms_file: Path, links_file: Path) -> tuple:
     fp = structure_fixes.fixes_path()
     if fp.exists():
         sig.append(("__hfix__", fp.stat().st_mtime_ns))
+    # 엔진 스위치도 서명에 든다 — 끄고 켠 것이 다음 질의부터 보여야 스위치다
+    from core.rag import switches as switches_mod       # 순환 의존 회피 — 지연
+    ep = switches_mod.engine_path()
+    if ep.exists():
+        sig.append(("__engine__", ep.stat().st_mtime_ns))
+    # 일반 규칙(귀납층)도 서명에 든다 — 파일 mtime 에 더해 **유효 모드 값**
+    # 자체를 싣는다: env 전환·차단기 강하는 파일을 안 만지므로 mtime 만으로는
+    # 스위치가 다음 질의에 반영되지 않는다.
+    from core.rag import rules as rules_mod             # 순환 의존 회피 — 지연
+    for tag, p in (("__grules__", rules_mod.rules_file()),
+                   ("__breaker__", rules_mod.breaker_file())):
+        if p.exists():
+            sig.append((tag, p.stat().st_mtime_ns))
+    sig.append(("__rmode__", rules_mod.mode()))
     return tuple(sig)
 
 
