@@ -380,6 +380,13 @@ def _records() -> list[dict]:
     return out
 
 
+def flagged_qids() -> set[str]:
+    """감사·교정이 지적한 질의들의 qid — 시스템이 스스로 틀렸다고 표시한
+    자리다. 위키 유입 판정(wiki_triage)이 이 질의들을 먼저 본다."""
+    return {r.get("qid", "") for r in _records()
+            if r.get("kind") in ("지문", "교정") and r.get("qid")}
+
+
 # ---------------------------------------------------------------- 판단 수정
 # LLM 판단(지문·교정)이 틀렸을 때 — "오참조라 했는데 실제로는 맞는 연결이다" —
 # 사람이 그 기록을 고친다. append-only 는 그대로다: 원본은 남고 '수정' 레코드가

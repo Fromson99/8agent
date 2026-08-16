@@ -297,6 +297,16 @@ def set_status(rule_id: str, status: str, by: str, note: str = "") -> dict:
             _write_rules(rows)
             _event({"kind": "상태변경", "rule": rule_id, "이전": cur,
                     "이후": status, "by": by, "note": note})
+            # 정착 승격·강등은 지식 위키의 연대기에도 잇는다 — 기계가 배운
+            # 것의 "왜"는 위키가 남긴다(wikilife.py 머리). 부가 기록이라
+            # 실패해도 전이는 성립한다.
+            try:
+                from core.rag import wikilife
+                wikilife.note_rule_transition(rule_id, cur or "", status,
+                                              rationale=r.get("rationale", ""),
+                                              by=by)
+            except Exception:                          # pragma: no cover
+                log.exception("위키 연대기 기록 실패 — 전이는 성립")
             return r
     raise ValueError(f"규칙 {rule_id} 가 없습니다")
 
