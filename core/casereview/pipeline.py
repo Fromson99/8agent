@@ -17,6 +17,7 @@ LLM 콜은 셋이다: 사실 추출 1 · 쟁점 도출 1 · 포섭 1(쟁점당).
 from __future__ import annotations
 
 import logging
+import os
 import re
 import time
 from typing import Optional
@@ -679,7 +680,16 @@ INTERPRET_SCHEMA = {
 }
 _INTERP_NORMS_MAX = 8        # 판정 콜에 넘기는 규범 수
 _INTERP_CHARS = 700          # 규범당 발췌 — 판정은 조문 문언을 봐야 선다
-_INTERP_K = 3                # 자기일관성 표결 수 — agent6 judge 와 같은 장치
+# ── 판정 안정화 실측 (2026-08-16) ──────────────────────────────────────────
+# 같은 state 로 판정 콜만 5회 반복(파이프라인 상류 고정):
+#   하이쿠   16-0022 → 긍정2·조건부3 (같은 입력에 흔들림)   18-0261 → 긍정4·조건부1
+#   소넷5    성공한 건 5/5 일치 — 단 max_tokens=600 이 사고 토큰에 먹혀 절반 넘게 잘림
+# 4회차 뒤집힘 33%의 원인은 상류(쟁점 수·요건 수 분산은 뒤집힌 사례나 아닌 사례나
+# 비슷)가 아니라 **판정 콜 자체의 분산**이었다. 표결 k=3 은 흔들리는 모델을 세 번
+# 물은 것 — 비용 3배에 완화만 됐다. 흔들리지 않는 모델을 한 번 묻는 쪽이 맞다.
+_INTERP_K = 1                # 표결 폐지 — 안정 모델 단일 콜 (k>1 은 실험용으로만)
+_INTERP_MODEL = os.environ.get("REVIEW_INTERPRET_MODEL", "claude-sonnet-5")
+_INTERP_MAX_TOKENS = 2400    # 600 → 2400: 사고 토큰 + JSON. 잘리면 llm.py 가 이름 붙여 보고
 _CARD_CTX_CHARS = 1500       # 카드 한 장의 배경 상한
 _CARD_CTX_MAX = 2            # 배경 카드 수
 
@@ -744,7 +754,8 @@ def interpret_case(llm, st: ReviewState) -> Optional[dict]:
     votes = []
     for _ in range(_INTERP_K):
         out = llm.structured("review.interpret", INTERPRET_SYSTEM, user,
-                             INTERPRET_SCHEMA, max_tokens=600, effort="medium")
+                             INTERPRET_SCHEMA, max_tokens=_INTERP_MAX_TOKENS,
+                             effort="medium", model=_INTERP_MODEL)
         if out is not None:
             votes.append(out)
     if not votes:

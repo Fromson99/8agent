@@ -243,7 +243,21 @@ def run_one(llm, idx, case: dict, text: Optional[str] = None) -> dict:
         for jo in _JO.findall(n.path or ""):
             got_arts.add((wikictx._pack(n.doc), jo))
     wa = {(wikictx._pack(l), j) for l, j in want_articles(case)}
+    # 근거 정확도 — 판정이 basis 로 든 조문이 회답의 근거 조문과 겹치나.
+    # 방향이 맞아도 근거가 엉뚱하면 실무에선 더 위험하다(그럴듯한 오답) — 이 자가
+    # 없어서 그런 오답이 정답으로 세어지고 있었다. basis 는 "문서 ▸ 경로" 문자열이라
+    # 문서명은 낫표 없이 앞머리, 조는 경로 어디든 "제N조" 로 잡는다.
+    basis = (st.overall or {}).get("basis") or []
+    got_basis = set()
+    for b in basis:
+        doc = wikictx._pack(str(b).split("▸")[0].strip())
+        for jo in _JO.findall(str(b)):
+            got_basis.add((doc, jo))
     return {"case_no": case["case_no"], "label": case.get("label", "")[:60],
+            # 근거: 회답 근거 조문 중 시스템 basis 에 든 수 / 시스템이 든 basis 중
+            # 회답 근거에 없는 수(과잉·엉뚱). 둘 다 (문서, 조) 단위.
+            "basis_hit": len(wa & got_basis), "basis_n": len(got_basis),
+            "basis_stray": len(got_basis - wa) if wa else 0,
             "issues": len(st.issues), "by_net": sum(1 for i in st.issues if i.by_net),
             "norms": len(st.norms), "subs": len(st.subs),
             "unclear": len(st.unresolved()),
@@ -318,6 +332,21 @@ def score(rows: list, labels: dict) -> None:
     if cmp_n:
         print(f"  방향 일치   {hit}/{cmp_n} ({hit / cmp_n:.0%})"
               f"   · 판단 유보 {held} · 미라벨 {unlabeled}")
+    # 근거 정확도 — 방향과 별개의 축. "방향 맞고 근거도 맞음"이 진짜 정답이다.
+    with_basis = [r for r in rows if r.get("basis_n")]
+    if with_basis:
+        b_hit = sum(r["basis_hit"] for r in with_basis)
+        b_want = sum(r.get("want_arts", 0) for r in with_basis)
+        b_stray = sum(r.get("basis_stray", 0) for r in with_basis)
+        b_n = sum(r["basis_n"] for r in with_basis)
+        both = sum(1 for r in with_basis
+                   if labels.get(r["case_no"]) == r["direction"] and r["basis_hit"])
+        dir_ok = sum(1 for r in with_basis if labels.get(r["case_no"]) == r["direction"])
+        print(f"  근거 회수   {b_hit}/{b_want} ({b_hit / max(b_want, 1):.0%})"
+              f"   ← 회답 근거 조문이 시스템 basis 에 들었나 (조 단위)")
+        print(f"  근거 과잉   {b_stray}/{b_n} ({b_stray / max(b_n, 1):.0%})"
+              f"   ← 시스템 basis 중 회답에 없는 조문 (엉뚱한 근거의 비율)")
+        print(f"  방향+근거   {both}/{dir_ok}   ← 방향 맞은 것 중 근거도 맞은 것 — 이게 진짜 정답")
     else:
         print(f"  방향 일치   비교 가능 0건 · 판단 유보 {held} · 미라벨 {unlabeled}")
 

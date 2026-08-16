@@ -582,11 +582,15 @@ def _interp_llm(directions, extra=None):
     return _FakeLLM(by)
 
 
-def test_판정은_다수가_정하고_셋이_갈리면_조건부다(tmp_path, monkeypatch):
-    """중복 등재 쌍(18-0261=18-0583)에 반대 판정이 나온 실측의 교정 —
-    한 콜은 동전 던지기다."""
+def test_판정은_기본_단일콜이고_k를_올리면_다수결이다(tmp_path, monkeypatch):
+    """기본 k=1 — 안정 모델 단일 콜(2026-08-16 실측: 흔들리는 모델을 세 번 묻는
+    것보다 안 흔들리는 모델을 한 번). k 는 실험용으로 남아 있고, 올리면 다수결·
+    과반 없으면 조건부(아는 척하지 않는다)."""
     _wiki(tmp_path, monkeypatch)
     idx = Index.from_docs([_doc()])
+    st = rp.run(_interp_llm(["부정"]), idx, "제공 검토", track="해석")
+    assert st.overall["direction"] == "부정" and st.overall["votes"] == ["부정"]
+    monkeypatch.setattr(rp, "_INTERP_K", 3)
     st = rp.run(_interp_llm(["긍정", "긍정", "부정"]), idx, "제공 검토", track="해석")
     assert st.overall["direction"] == "긍정" and st.overall["votes"] == ["긍정", "긍정", "부정"]
     st = rp.run(_interp_llm(["긍정", "부정", "조건부"]), idx, "제공 검토", track="해석")

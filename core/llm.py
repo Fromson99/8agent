@@ -150,6 +150,13 @@ class LLM:
                 ex.error = "모델이 요청을 거절했습니다 (stop_reason=refusal)"
                 return None
             ex.raw_response = text
+            if resp.stop_reason == "max_tokens":
+                # 잘린 JSON 은 파싱 오류로 나가는데, 원인은 예산이다 — 이름을 바로
+                # 붙여야 호출부가 max_tokens 를 올린다(실측 2026-08-16: 소넷5 는
+                # 사고 토큰이 출력 예산을 먹어 600 에서 절반 넘게 잘렸다).
+                ex.error = (f"출력이 max_tokens={max_tokens} 에서 잘림 "
+                            f"(out {resp.usage.output_tokens}) — 예산을 올려라")
+                return None
             ex.parsed = json.loads(text)
             return ex.parsed
         except Exception as exc:                       # 호출·파싱 실패를 삼키지 않는다
