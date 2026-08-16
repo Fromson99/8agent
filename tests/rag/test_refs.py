@@ -550,3 +550,48 @@ def test_동법_같은법은_선언으로_확정하지_않는다():
     assert not any(e for e in edges if e.get("hint") == "같은 법")
     p = next(x for x in pending if x["hint"] == "같은 법")
     assert p["surface"] == "제11조"                 # 보류로 남아 판정을 기다린다
+
+
+# ------------------------------------------- 부칙 개정 조 (실측 2026-08-16)
+
+def _amend_doc():
+    """부칙에 「다른 법률의 개정」 조가 있는 문서 — 그 조가 부르는 조번호는
+    개정 **대상** 법의 것이라, 같은 문서의 같은 번호 조에 붙으면 오해소다."""
+    return ("d9", {"name": "개정부칙법.pdf"}, {"nodes": [
+        {"id": 1, "parent": None, "level": 1, "surface": "제17조",
+         "title": "본문의 열일곱째 조", "page": 1, "span": [0, 1]},
+        {"id": 2, "parent": None, "level": 1, "surface": "부칙",
+         "title": "", "page": 2, "span": [1, 4]},
+        {"id": 3, "parent": 2, "level": 2, "surface": "제17조",
+         "title": "신탁의 회계감사에 관한 경과조치", "page": 2, "span": [2, 3]},
+        {"id": 4, "parent": 2, "level": 2, "surface": "제42조",
+         "title": "다른 법률의 개정", "page": 2, "span": [3, 4]},
+    ], "blocks": [
+        {"idx": 0, "page": 1, "text": "제17조(본문의 열일곱째 조) 본문이다.",
+         "kind": "text"},
+        {"idx": 1, "page": 2, "text": "부칙", "kind": "text"},
+        {"idx": 2, "page": 2, "text": "제17조(신탁의 회계감사에 관한 경과조치) "
+         "이 법 시행 당시 종전의 규정에 따른다.", "kind": "text"},
+        {"idx": 3, "page": 2, "text": "제42조(다른 법률의 개정) ① 금융감독기구의"
+         "설치등에관한법률 일부를 다음과 같이 개정한다. 제17조제4호 중 "
+         "\"선물시장\"을 \"파생상품시장\"으로 한다.", "kind": "text"},
+    ]})
+
+
+def test_부칙_개정조에서_나가는_참조는_만들지_않는다():
+    """개정 조의 '제17조'는 남의 법 조번호다 — 이 문서의 제17조가 아니다."""
+    view = Index.from_docs([_amend_doc()]).docs["d9"]
+    edges = refs.resolve(view)
+    assert not [e for e in edges if e["src"] == 4], (
+        "개정 조 출발 간선이 생겼다 — 남의 법 조번호를 자기 문서에 붙인 것")
+
+
+def test_같은_문서의_경과조치_조는_평소대로_참조한다():
+    """개정 조만 막는다 — 부칙 전체를 막으면 경과조치의 정당한 참조까지 죽는다."""
+    doc = _amend_doc()
+    doc[2]["blocks"][2]["text"] = ("제17조(신탁의 회계감사에 관한 경과조치) "
+                                   "제42조에 따른 개정에도 불구하고 종전에 따른다.")
+    view = Index.from_docs([doc]).docs["d9"]
+    edges = refs.resolve(view)
+    assert [e for e in edges if e["src"] == 3 and e["dst"] == 4], \
+        "경과조치 조의 참조가 사라졌다"

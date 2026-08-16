@@ -417,11 +417,33 @@ def _descend(view: "DocView", children: dict, nid: int,
     return cur, depth
 
 
+# 부칙의 개정·폐지 조 — 여기서 부르는 조번호는 **남의 법** 것이다.
+#   "금융감독기구설치법 제17조제4호 중 '선물시장'을 '파생상품시장'으로 한다"
+# 이 제17조는 개정 **대상** 법률의 제17조이지 이 문서의 제17조가 아니다. 같은
+# 문서 좌표로 해소하면 번호만 같은 엉뚱한 조에 붙는다 — 실측(2026-08-16):
+# 문서 안 간선 16,334개 중 이 출발지가 2,987개(18.3%)였고, 자본시장법 부칙
+# 제42조의 '제17조'는 같은 부칙의 「신탁의 회계감사에 관한 경과조치」에 붙어
+# 있었다. §2 함정 ②(본문·부칙 번호 중복)보다 나쁘다: 그쪽은 후보가 여럿인
+# 문제지만 이쪽은 **정답이 이 문서에 아예 없다**.
+#
+# 대상 문서로의 cross 해소는 별건이다 — 대상 법령명이 조가 아니라 그 항의
+# 머리("…법률 일부를 다음과 같이 개정한다")에 있어 항 단위 스코프가 필요하다.
+# 여기서는 **틀린 간선을 만들지 않는 것**까지만 한다 (조용한 오답 금지).
+_AMEND_TITLES = ("다른 법령의 개정", "다른 법률의 개정",
+                 "다른 법령의 폐지", "다른 법률의 폐지")
+
+
+def _is_amendment_clause(view: "DocView", nid) -> bool:
+    path = view.path(nid) or ""
+    return "부칙" in path and any(t in path for t in _AMEND_TITLES)
+
+
 def resolve(view: "DocView") -> list[dict]:
     """문서 안의 참조 간선 — [{"src","dst","surface","block"}].
 
     src 는 참조가 쓰인 블록을 덮는 가장 깊은 구역, dst 는 제목이 그 번호를
-    다는 구역이다. 자기 자신·조상/자손으로의 참조는 버린다.
+    다는 구역이다. 자기 자신·조상/자손으로의 참조는 버린다. 부칙 개정·폐지
+    조에서 출발하는 참조는 아예 만들지 않는다(_is_amendment_clause 머리).
     """
     by_key = _key_map(view)
     children = _children(view)
@@ -431,6 +453,8 @@ def resolve(view: "DocView") -> list[dict]:
     for b in view.blocks:
         src = view.owner(b.get("idx"))
         if src is None:
+            continue
+        if _is_amendment_clause(view, src.get("id")):
             continue
         src_chain = _chain(view, src.get("id"))
         for ref in find(b.get("text") or ""):
