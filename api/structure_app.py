@@ -149,11 +149,27 @@ from api.routers import logs as logs_router               # noqa: E402
 
 app.include_router(logs_router.router)
 
+# 법령해석례 열람 — data/expc 색인·위키를 읽기만 한다. 표준 라이브러리만
+# 전제하므로 선택이 아니다 (색인이 없으면 라우터가 404 로 말한다).
+from api.routers import expc as expc_router               # noqa: E402
+
+app.include_router(expc_router.router)
+
 # 계보 원장 — 수집→변환→구조화→연결 낙차 (docs/LINEAGE.md). 읽기 전용 파생
 # 뷰라 core 만 전제한다 — 선택이 아니다.
 from api.routers import lineage as lineage_router         # noqa: E402
 
 app.include_router(lineage_router.router)
+
+# 법적 검토 — 사실을 요건에 대는 층 (docs/REVIEW.md). rag 회수 위에 얹히므로
+# rag 라우터와 같은 조건에서만 선다(LLM·색인 전제).
+if rag_router is not None:
+    try:
+        from api.routers import review as review_router    # noqa: E402
+
+        app.include_router(review_router.router)
+    except Exception:                                      # pragma: no cover
+        log.exception("검토 라우터 적재 실패 — 나머지 화면은 그대로 뜬다")
 
 # 망분리 운반 — 스냅샷·아웃박스·재생. 이게 죽어도 검수 화면은 떠야 한다.
 # `from api import ops` 가 아니라 점표기다 — 시험이 sys.modules 에서 모듈을
@@ -261,6 +277,12 @@ _RULES_VIEWER = Path(__file__).resolve().parent / "viewer" / "rules"
 if _RULES_VIEWER.is_dir() and rag_router is not None:
     app.mount("/rules", StaticFiles(directory=str(_RULES_VIEWER), html=True),
               name="rules-viewer")
+
+# 법령해석례 — 위키(맥락)와 사례(원문) 두 판 (docs/expc.md)
+_EXPC_VIEWER = Path(__file__).resolve().parent / "viewer" / "expc"
+if _EXPC_VIEWER.is_dir():
+    app.mount("/expc", StaticFiles(directory=str(_EXPC_VIEWER), html=True),
+              name="expc-viewer")
 
 _LOGS_VIEWER = Path(__file__).resolve().parent / "viewer" / "logs"
 if _LOGS_VIEWER.is_dir():
