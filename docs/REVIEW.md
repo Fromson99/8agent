@@ -200,6 +200,9 @@ api/routers/review.py         POST /v1/review · GET /v1/review/{bindings,impact
 
 ## 골든 셋 — 오류율을 재는 자 (scripts/review_golden.py)
 
+> 처음 보는 사람은 [GOLDEN.md](GOLDEN.md) 부터 — 시험지·채점자 비유로 풀어 쓴
+> 책이다. 여기는 회차별 실측 원문(연대기)이다.
+
 법제처 해석례 67건은 그 자체로 **정답이 붙은 검토 사례**다 — 질의요지가
 사실관계이고 회답이 정답이다. 회답의 결론 방향을 LLM 이 한 번 라벨링해
 캐시하고(`data/review/golden_labels.json`, 부정 31 · 긍정 30 · 조건부 6),

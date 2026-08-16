@@ -546,7 +546,7 @@ def test_해석_판정이_사안_방향을_세우고_불충족은_프롬프트�
     })
     st = rp.run(llm, idx, "개인정보를 목적 외로 제공하려 한다", track="해석")
     assert st.overall and st.overall["direction"] == "긍정"
-    assert "불충족으로 판정된 요건" in seen["user"]      # 규율 ④의 재료가 실렸다
+    assert "포섭 관측 — 불충족 요건" in seen["user"]     # 관측이 판정 입력에 실린다 (규율 ⑤)
     assert any(s["stage"] == "해석 판정" for s in st.trail)
 
 

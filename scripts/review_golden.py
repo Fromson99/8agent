@@ -87,19 +87,54 @@ def colloquial_of(llm, case: dict) -> str:
     COLLOQ.write_text(json.dumps(have, ensure_ascii=False, indent=1), "utf-8")
     return q
 
+LABEL_MODEL = "claude-opus-5"     # 자(尺)는 강한 모델로 — 하이쿠 라벨이 자를 흐렸다
+# ── 방향의 정의 (2026-08-16 재정립) ─────────────────────────────────────────
+# v1(하이쿠)·v2 초판(오푸스)이 서로 22% 어긋났고, 열어 보니 **"긍정"의 정의가
+# 두 개**였다: ⑴ 회답 문장의 극성("할 수 있다"=긍정 / "아니다"=부정) ⑵ 물음
+# 대비 답("…해야 하나요?"에 "아니다"면 부정, "…없어도 되나요?"에 "아니다"면 긍정).
+# 21-0340 회답 "조정할 수 있습니다"가 부정으로, 20-0489 "규정이 있어야만 …
+# 것은 아닙니다"(=없어도 된다)가 부정으로 라벨됐다 — 라벨러마다 축을 섞어 썼다.
+# 시스템(interpret_case)은 회답처럼 문장을 내므로 채점 축은 **⑴ 회답 극성**이다.
+# ⑵는 부가 필드(answer_to_question)로 따로 남긴다 — 나중에 쓰되 섞지 않는다.
 LABEL_SYSTEM = (
-    "너는 법제처 법령해석 회답의 **결론 방향**만 뽑는 분류기다. 회답 전문을 읽고 "
-    "셋 중 하나로 답한다: 긍정(할 수 있다·해당한다·하여야 한다), "
-    "부정(할 수 없다·해당하지 않는다·아니다), "
-    "조건부(사정에 따라 다르다·종합 고려하여 판단해야 한다). "
-    "이유를 붙이지 말고 방향만 정확히 고른다."
+    "너는 법제처 법령해석 회답의 **결론 문장 극성**을 뽑는 라벨러다 — 이 라벨이 "
+    "시스템 채점의 자(尺)라 정확도가 전부다.\n"
+    "**polarity(방향)는 회답 결론 문장 자체가 무엇을 말하는지**다 — 질문이 어떻게 "
+    "물었는지와 무관하게:\n"
+    "  긍정 = 결론이 '…할 수 있다 / …에 해당한다 / …포함된다 / …하여야 한다 / "
+    "…필요하다 / …적용된다' 꼴. '~할 수 있습니다'는 긍정이다(가능성 판단의 "
+    "법제처 문체).\n"
+    "  부정 = 결론이 '…할 수 없다 / …에 해당하지 않는다 / …아니다 / …필요 없다 / "
+    "…적용되지 않는다 / …것은 아니다' 꼴. 이중부정('…없어도 된다', '…있어야만 "
+    "하는 것은 아니다')은 **부정 극성**이다 — 뜻이 허용이어도 문장 극성으로 판다.\n"
+    "  조건부 = 회답이 '사정에 따라 결론이 갈린다 / …인 경우에는 …이고 …인 "
+    "경우에는 …이다 / 종합 고려하여 판단'처럼 **결론을 갈라 둘 때만**.\n"
+    "규율: ① 회답이 '가·나…'로 여러 물음에 답하면 물음마다 parts 에 따로 판정하고, "
+    "polarity 는 첫 물음(주된 물음)을 따른다. ② evidence 는 결론 문장을 회답에서 "
+    "**그대로** 옮긴다. ③ answer_to_question 은 별도 축이다: 질의요지의 물음에 "
+    "대해 회답이 '예'인지 '아니오'인지 — 극성과 다를 수 있다('…없어도 되나요?'에 "
+    "'…것은 아닙니다'면 극성 부정·물음 대비 예). ④ confidence: 결론 문장이 명시적이면 "
+    "high, 문맥으로 읽어야 하면 medium, 결론이 흐리거나 극성 판정이 애매하면 low."
 )
 LABEL_SCHEMA = {
     "type": "object",
-    "properties": {"direction": {"type": "string",
-                                 "enum": ["긍정", "부정", "조건부"]}},
-    "required": ["direction"], "additionalProperties": False,
+    "properties": {
+        "direction": {"type": "string", "enum": ["긍정", "부정", "조건부"]},
+        "answer_to_question": {"type": "string", "enum": ["예", "아니오", "갈림", "불명"]},
+        "parts": {"type": "array", "items": {
+            "type": "object",
+            "properties": {
+                "question": {"type": "string"},
+                "direction": {"type": "string", "enum": ["긍정", "부정", "조건부"]},
+                "evidence": {"type": "string"}},
+            "required": ["question", "direction", "evidence"],
+            "additionalProperties": False}},
+        "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
+    },
+    "required": ["direction", "answer_to_question", "parts", "confidence"],
+    "additionalProperties": False,
 }
+LABELS_V2 = OUT_DIR / "golden_labels_v2.json"    # 근거·확신도·물음별 — 사람 검증 대상 목록의 원천
 
 
 def _llm():
@@ -115,23 +150,39 @@ def _cases() -> list:
 
 
 # ---------------------------------------------------------------- 라벨링
-def label(llm, cases: list) -> dict:
-    """회답 → 방향. 한 번 만들어 캐시한다(파생물이고 회답이 정본이다)."""
-    have = json.loads(LABELS.read_text("utf-8")) if LABELS.is_file() else {}
-    todo = [c for c in cases if c["case_no"] not in have and (c.get("answer") or "")]
-    print(f"라벨 {len(have)}건 보유 · {len(todo)}건 새로 매긴다")
+def label(llm, cases: list, force: bool = False) -> dict:
+    """회답 → 방향(+물음별·근거·확신도). 강한 모델로 매기고 캐시한다.
+
+    v2 는 골든 자의 재보정이다(2026-08-16): 하이쿠가 매긴 v1 라벨은 사람 검증이
+    없었고, "~할 수 있습니다"의 긍정/조건부 경계와 다부 회답(가·나)의 접힘이
+    흐렸다. 자가 흐리면 시스템 오답과 라벨 오답을 못 가른다.
+    """
+    have = {} if force else (
+        json.loads(LABELS_V2.read_text("utf-8")) if LABELS_V2.is_file() else {})
+    todo = [c for c in cases if (force or c["case_no"] not in have)
+            and (c.get("answer") or "")]
+    print(f"라벨 v2 {len(have)}건 보유 · {len(todo)}건 새로 매긴다 ({LABEL_MODEL})")
     for i, c in enumerate(todo, 1):
         out = llm.structured("golden.label", LABEL_SYSTEM,
-                             f"[회답]\n{c['answer'][:2000]}", LABEL_SCHEMA,
-                             max_tokens=100, effort="low")
+                             f"[질의요지]\n{(c.get('issue') or '')[:1500]}\n\n"
+                             f"[회답]\n{c['answer'][:3000]}",
+                             LABEL_SCHEMA, max_tokens=800, effort="medium",
+                             model=LABEL_MODEL)
         if out:
-            have[c["case_no"]] = out["direction"]
+            have[c["case_no"]] = out
         if i % 10 == 0:
             print(f"  … {i}/{len(todo)}")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    LABELS.write_text(json.dumps(have, ensure_ascii=False, indent=1), "utf-8")
-    print(f"라벨 {len(have)}건 저장 — {LABELS.relative_to(REPO_ROOT)}")
-    return have
+    LABELS_V2.write_text(json.dumps(have, ensure_ascii=False, indent=1), "utf-8")
+    # 채점기가 읽는 얇은 표는 방향만 — v1 과 같은 모양이라 뒤가 안 바뀐다
+    flat = {k: v["direction"] for k, v in have.items()}
+    LABELS.write_text(json.dumps(flat, ensure_ascii=False, indent=1), "utf-8")
+    low = [k for k, v in have.items() if v.get("confidence") == "low"]
+    multi = [k for k, v in have.items() if len(v.get("parts") or []) > 1]
+    print(f"라벨 {len(have)}건 저장 — {LABELS_V2.relative_to(REPO_ROOT)}")
+    print(f"  사람 검증 대상(low) {len(low)}건: {' · '.join(low[:12])}")
+    print(f"  다부 회답 {len(multi)}건: {' · '.join(multi[:12])}")
+    return flat
 
 
 # ---------------------------------------------------------------- 실행
@@ -270,6 +321,29 @@ def score(rows: list, labels: dict) -> None:
     else:
         print(f"  방향 일치   비교 가능 0건 · 판단 유보 {held} · 미라벨 {unlabeled}")
 
+    # 혼동표 — 방향 일치율만 보면 편향을 못 잡는다. 홀드아웃 실측(2026-08-16):
+    # 일치 47%인데 정답 긍정 52건 중 긍정 출력이 4건(8%), 27건을 부정으로
+    # 뒤집었다 — 출력 분포가 정답 분포와 거꾸로였다. 이 표가 없어서 4회차까지
+    # 그 편향을 못 봤다.
+    dirs = ("긍정", "부정", "조건부")
+    conf = {(g, d): 0 for g in dirs for d in dirs + ("미정",)}
+    for r in rows:
+        g = labels.get(r["case_no"])
+        if g in dirs:
+            conf[(g, r["direction"] if r["direction"] in dirs else "미정")] += 1
+    print(f"\n혼동표 (행=정답 · 열=출력)      긍정   부정  조건부   미정   재현율")
+    for g in dirs:
+        tot_g = sum(conf[(g, d)] for d in dirs + ("미정",))
+        rec = conf[(g, g)] / tot_g if tot_g else 0
+        print(f"  정답 {g:<4}({tot_g:3}건)   "
+              + "  ".join(f"{conf[(g, d)]:5}" for d in dirs + ("미정",))
+              + f"   {rec:.0%}")
+    out_dist = {d: sum(conf[(g, d)] for g in dirs) for d in dirs}
+    gold_dist = {g: sum(conf[(g, d)] for d in dirs + ("미정",)) for g in dirs}
+    skew = {d: (out_dist[d] / max(gold_dist[d], 1)) for d in dirs}
+    print(f"  출력/정답 비율 — " + " · ".join(f"{d} {skew[d]:.2f}" for d in dirs)
+          + "   (1.0 = 분포 일치 · 크면 그쪽으로 남발)")
+
     if miss:
         print(f"\n단계 귀속 — 틀린 {miss}건이 어디서 났나")
         for k, v in blame.items():
@@ -286,7 +360,8 @@ def score(rows: list, labels: dict) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--label", action="store_true", help="회답 방향 라벨링(1회)")
+    ap.add_argument("--label", action="store_true", help="회답 방향 라벨링(v2 · 강한 모델)")
+    ap.add_argument("--force", action="store_true", help="--label 과 함께: 캐시 무시하고 전부 다시")
     ap.add_argument("--limit", type=int, default=0, help="실행할 사례 수")
     ap.add_argument("--only", help="특정 안건번호만 (예: 25-0484)")
     ap.add_argument("--report", action="store_true", help="마지막 실행 재집계")
@@ -315,7 +390,7 @@ def main() -> int:
         return 2
 
     if args.label:
-        label(llm, cases)
+        label(llm, cases, force=args.force)
         return 0
 
     if args.only:
