@@ -40,6 +40,7 @@ import os
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
@@ -54,6 +55,37 @@ INDEX = REPO_ROOT / "data" / "expc" / "index.json"
 OUT_DIR = REPO_ROOT / "data" / "review"
 LABELS = OUT_DIR / "golden_labels.json"
 LAST = OUT_DIR / "golden_last.json"
+TUNED = OUT_DIR / "golden_tuned_cases.json"     # 동결 — 이 밖의 사례가 홀드아웃
+COLLOQ = OUT_DIR / "colloquial.json"            # 구어 변환 캐시 (1회 컴파일)
+
+# 구어 변환 — 질의요지는 변호사 문체(법령·조문을 문면 인용)라 회수가 쉽다.
+# 실사용 질문은 좌표 없이 상황만 말한다. 같은 사례·같은 정답에 문체만 바꿔
+# 돌리면 "인용이 사라졌을 때 시스템이 얼마나 버티나"가 그대로 재진다.
+COLLOQ_SYSTEM = (
+    "너는 법제처 질의요지를 일반인의 구어 질문으로 바꾸는 변환기다.\n"
+    "규칙: ① 법령명·조문 번호·'같은 법' 등 법률 좌표를 **전부 뺀다** — 일반인은 "
+    "법을 모른 채 상황만 말한다. ② 사실관계(누가·무엇을·어떤 상황)는 더하지도 "
+    "빼지도 않는다. ③ 1~3문장 존댓말 구어('~인가요?', '~해도 되나요?'). "
+    "④ 각주 번호·정의 괄호 등 문서 장치는 버린다."
+)
+COLLOQ_SCHEMA = {"type": "object",
+                 "properties": {"question": {"type": "string"}},
+                 "required": ["question"], "additionalProperties": False}
+
+
+def colloquial_of(llm, case: dict) -> str:
+    """사례의 구어판 — 캐시가 정본, 없으면 LLM 으로 1회 컴파일."""
+    have = json.loads(COLLOQ.read_text("utf-8")) if COLLOQ.is_file() else {}
+    q = have.get(case["case_no"])
+    if q:
+        return q
+    out = llm.structured("golden.colloquial", COLLOQ_SYSTEM,
+                         f"[질의요지]\n{(case.get('issue') or '')[:2000]}",
+                         COLLOQ_SCHEMA, max_tokens=400, effort="low")
+    q = (out or {}).get("question") or (case.get("issue") or "")[:300]
+    have[case["case_no"]] = q
+    COLLOQ.write_text(json.dumps(have, ensure_ascii=False, indent=1), "utf-8")
+    return q
 
 LABEL_SYSTEM = (
     "너는 법제처 법령해석 회답의 **결론 방향**만 뽑는 분류기다. 회답 전문을 읽고 "
@@ -142,13 +174,16 @@ def want_articles(case: dict) -> set:
     return out
 
 
-def run_one(llm, idx, case: dict) -> dict:
-    """사례 하나를 검토에 통과시키고 채점에 필요한 것만 접는다."""
+def run_one(llm, idx, case: dict, text: Optional[str] = None) -> dict:
+    """사례 하나를 검토에 통과시키고 채점에 필요한 것만 접는다.
+
+    text 를 주면 질의요지 대신 그것으로 돈다(구어 골든) — 정답 라벨은 같다.
+    """
     from core.casereview import pipeline as rp
     from core.rag import wikictx
 
     t0 = time.perf_counter()
-    st = rp.run(llm, idx, (case.get("issue") or "")[:2000], track="해석")
+    st = rp.run(llm, idx, (text or case.get("issue") or "")[:2000], track="해석")
     got_docs = {n.doc for n in st.norms}
     want = set(case.get("laws") or [])
     # 회수된 조문 좌표 — 규범의 경로에서 조를 읽는다 ("… ▸ 제35조")
@@ -255,6 +290,12 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=0, help="실행할 사례 수")
     ap.add_argument("--only", help="특정 안건번호만 (예: 25-0484)")
     ap.add_argument("--report", action="store_true", help="마지막 실행 재집계")
+    ap.add_argument("--holdout", action="store_true",
+                    help="동결 목록(golden_tuned_cases.json) 밖 사례만 — 튜닝에 안 쓴 검증 셋")
+    ap.add_argument("--out", type=Path, default=None,
+                    help="결과 저장 경로 (기본 golden_last.json) — 실행 판을 잃지 않기 위해")
+    ap.add_argument("--colloquial", action="store_true",
+                    help="질의요지 대신 구어 변환(법령명·조번호 제거)으로 돌린다 — 문체 강건성 측정")
     args = ap.parse_args()
 
     if not INDEX.is_file():
@@ -277,8 +318,16 @@ def main() -> int:
         label(llm, cases)
         return 0
 
-    picked = [c for c in cases if c["case_no"] == args.only] if args.only \
-        else cases[:args.limit or 5]
+    if args.only:
+        picked = [c for c in cases if c["case_no"] == args.only]
+    elif args.holdout:
+        tuned = set(json.loads(TUNED.read_text("utf-8"))["case_nos"]) \
+            if TUNED.is_file() else set()
+        picked = [c for c in cases if c["case_no"] not in tuned
+                  and (c.get("answer") or "")][:args.limit or 10**9]
+        print(f"홀드아웃 — 동결 {len(tuned)}건 밖 {len(picked)}건 (튜닝 금지 셋)")
+    else:
+        picked = cases[:args.limit or 5]
     if not picked:
         print("고른 사례가 없습니다", file=sys.stderr)
         return 2
@@ -289,7 +338,8 @@ def main() -> int:
     print(f"검토 {len(picked)}건 실행 — 사례당 30~60초")
     for i, c in enumerate(picked, 1):
         try:
-            r = run_one(llm, idx, c)
+            txt = colloquial_of(llm, c) if args.colloquial else None
+            r = run_one(llm, idx, c, text=txt)
         except Exception as e:                       # 한 건이 죽어도 나머지는 돈다
             print(f"  !! {c['case_no']} 실패: {e}")
             continue
@@ -301,8 +351,9 @@ def main() -> int:
               f"쟁점{r['issues']} 요건{r['subs']} → {r['direction']} (정답 {gold})"
               f" {r['sec']}s")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    LAST.write_text(json.dumps({"rows": rows}, ensure_ascii=False, indent=1),
-                    "utf-8")
+    out_path = args.out or LAST
+    out_path.write_text(json.dumps({"rows": rows}, ensure_ascii=False, indent=1),
+                        "utf-8")
     score(rows, labels)
     return 0
 
