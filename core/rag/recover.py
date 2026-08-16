@@ -3,6 +3,8 @@
 원본의 회복은 "다른 방식으로 다시 찾기"의 사다리였고, 매 단은 앞 단이
 빈손일 때만 돈다(첫 성공에서 멈춤):
 
+    ⓪ 도메인 단  창고의 구조를 아는 지식이 먼저 (recover_domains — 법령판:
+                 쟁점 재회수·명칭 확장, 결정론). 범용 단은 그 뒤의 일이다.
     ① 의미해석   등록 용어 목록 + 지형도를 LLM 에 보여 주고 뜻이 통하는
                  용어를 고르게 한다. 글자가 안 겹쳐도 의미가 통하면 잡힌다.
     ② 깔때기     구역 계층(카탈로그)을 한 단계씩 내려가며 고른다 —
@@ -30,7 +32,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
-from core.rag import oql
+from core.rag import oql, recover_domains, switches
 from core.rag.graph import Graph, Sec
 from core.rag.index import Index, norm
 from core.rag.search import tokens_of
@@ -461,6 +463,18 @@ def run(llm, index: Index, query: str,
         rec.trail.append({"stage": stage, "count": len(coords), "note": note})
         log.info("회복 %s — %d건 (누적 %.0fms)%s", stage, len(coords),
                  (time.perf_counter() - t0) * 1000, f" — {note}" if note else "")
+
+    # ⓪ 도메인 단 — 창고의 구조를 아는 지식이 먼저 시도한다 (recover_domains
+    #    머리). 법령판은 쟁점 재회수·명칭 확장 — 전부 결정론이라 범용 단보다
+    #    수십 배 싸다. 찾으면 범용 사다리는 돌지 않는다(같은 첫-성공 규율).
+    if switches.is_on("domain_recover"):
+        for rung in recover_domains.rungs():
+            coords, dmeta = rung.fn(llm, index, query)
+            record(rung.name, coords, dmeta.get("note", ""))
+            if coords:
+                rec.coords, rec.rungs_fired = coords, [rung.name]
+                rec.meta = {rung.name: dmeta}
+                return rec
 
     # ① 의미해석
     coords, branches, meta = rung_sense(llm, g, index, query)

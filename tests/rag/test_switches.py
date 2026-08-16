@@ -31,9 +31,10 @@ def _use_engine(monkeypatch, tmp_path, off=()):
     return p
 
 
-def test_기본은_전부_켜짐이고_끈_것만_파일에_남는다(monkeypatch, tmp_path):
+def test_기본값대로_켜지고_어긋난_것만_파일에_남는다(monkeypatch, tmp_path):
     p = _use_engine(monkeypatch, tmp_path)
-    assert all(s["on"] for s in switches.snapshot())
+    # 빈 파일 = 오늘의 시스템 — 등록부의 기본값 그대로 (없으면 켜짐)
+    assert all(s["on"] == s.get("기본", True) for s in switches.snapshot())
     switches.set_switch("presume", False)
     assert not switches.is_on("presume") and switches.is_on("declare")
     switches.set_switch("presume", True)          # 기본값 복귀 — 파일에서 사라진다
@@ -43,6 +44,16 @@ def test_기본은_전부_켜짐이고_끈_것만_파일에_남는다(monkeypatc
         assert False, "모르는 스위치는 거부해야 한다"
     except ValueError:
         pass
+
+
+def test_기본_꺼짐_스위치는_켠_것이_파일에_남는다(monkeypatch, tmp_path):
+    p = _use_engine(monkeypatch, tmp_path)
+    assert not switches.is_on("issue_spot_llm")   # 실험 규칙 — 기본 꺼짐
+    switches.set_switch("issue_spot_llm", True)
+    assert switches.is_on("issue_spot_llm")
+    assert json.loads(p.read_text())["switches"] == {"issue_spot_llm": True}
+    switches.set_switch("issue_spot_llm", False)  # 기본값 복귀 — 파일에서 사라진다
+    assert json.loads(p.read_text())["switches"] == {}
 
 
 def _dup_docs():

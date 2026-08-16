@@ -125,10 +125,14 @@ def test_둘러보기는_고를_게_없으면_정직하게_되묻는다():
     assert "가진 자료" in rec.ask_user                  # 보유 문서를 들어 되묻는다
 
 
-def test_사다리_기록이_남는다():
+def test_사다리_기록이_남는다(tmp_path, monkeypatch):
+    # 도메인 단이 실제 위키·사전을 물지 않게 빈 경로로 격리한다
+    monkeypatch.setenv("WIKI_STORE", str(tmp_path / "빈위키"))
+    monkeypatch.setenv("RAG_ALIASES", str(tmp_path / "없음.json"))
     rec = recover.run(None, _index(), "존재하지않는말")
     stages = [t["stage"] for t in rec.trail]
-    assert stages == ["의미해석", "깔때기", "원문", "수색대", "둘러보기"]
+    assert stages == ["쟁점 재회수", "명칭 확장",          # ⓪ 도메인 단 (법령판)
+                      "의미해석", "깔때기", "원문", "수색대", "둘러보기"]
 
 
 # ---------------------------------------------------------------- 좌표 → 구역

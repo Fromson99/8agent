@@ -24,6 +24,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Optional
 
+from core.rag import switches, wikictx
 from core.rag.index import Index
 from core.rag.search import SearchResult
 
@@ -40,6 +41,7 @@ SUMMARY_CHARS = 400        # 필터가 보는 요약 길이 — 판정 입력이
 TERM_SECTIONS = 4          # 용어 하나가 끌어오는 구역 수 — 한 용어의 독식 방지
 REF_SECTIONS = 3           # 구역 하나가 참조로 끌어오는 구역 수 — 같은 역할
 FILTER_MIN = 2             # 이 미만이면 필터 생략 — 1개는 고를 게 없다
+DISCARD_CHARS = 400        # 버려진 구역의 발췌 — 왜 버려졌는지 사람이 보려면 본문이 필요하다
 
 
 @dataclass
@@ -103,7 +105,11 @@ def assemble(index: Index, result: SearchResult) -> list[Section]:
                 push(o.get("doc_id", ""), o.get("node"), "용어", h.value,
                      block=o.get("block"), page=o.get("page"))
         else:
-            push(h.doc_id, h.node, h.kind, h.value, block=h.block)
+            # 값만 남기면 "무엇이 걸렸나"는 알아도 "어떻게 걸렸나"(정확·부분·
+            # 하이브리드)를 모른다 — 검수는 그 둘이 다 있어야 선다.
+            push(h.doc_id, h.node, h.kind,
+                 f"{h.match} '{h.value}'" if h.match else h.value,
+                 block=h.block)
 
     out = expand_refs(index, out[:CANDIDATES_MAX])
     for i, s in enumerate(out, start=1):
@@ -381,8 +387,14 @@ def filter_sections(llm, question: str, sections: list[Section]) -> tuple[list[S
     valid = {s.n for s in sections}
     keep = [i for i in out.get("keep", []) if isinstance(i, int) and i in valid]
     kept = [s for s in sections if s.n in keep]
+    # 버린 것도 남긴다 — "왜 이 조문이 답에 없나"의 절반은 여기 있다. 버려진
+    # 구역은 context 에 실리지 않으므로 이 자리에 안 적으면 영영 안 보인다.
     meta.update({"out": len(kept), "applied": True,
-                 "reason": (out.get("reason") or "")[:200]})
+                 "reason": (out.get("reason") or "")[:200],
+                 "버림": [{"n": s.n, "doc": s.doc, "path": s.path, "kind": s.kind,
+                           "matched": s.matched,
+                           "발췌": (s.text or "")[:DISCARD_CHARS]}
+                          for s in sections if s.n not in keep]})
     log.info("관련성 필터 — %d → %d구역%s", meta["in"], meta["out"],
              f" ({meta['reason']})" if meta["reason"] else "")
     return kept, meta
@@ -402,7 +414,11 @@ ANSWER_SYSTEM = (
     "④ 근거는 refs 에 컨텍스트 번호로만 담는다. 번호 밖의 문서·조항을 인용하지 "
     "마라. 실제로 근거로 쓴 번호만 담는다.\n"
     "⑤ 결론을 먼저 1~3문장으로, 그 뒤에 근거 설명. 컨텍스트에 답이 없으면 "
-    "answerable 을 false 로 두고, 어떤 자료가 있으면 답할 수 있는지만 안내한다."
+    "answerable 을 false 로 두고, 어떤 자료가 있으면 답할 수 있는지만 안내한다.\n"
+    "⑥ [해석 맥락 — 지식 위키]가 있으면 그것은 축적된 해석 지식(법제처 해석례 "
+    "요약 등)에서 온 **배경**이다 — 답의 방향(문턱이 좁은지, 준용이 어디까지 "
+    "가는지)을 잡는 데 쓰되, refs 에는 넣지 말고 수치·조항 인용의 근거로도 쓰지 "
+    "마라. 위키와 [컨텍스트]의 조문이 어긋나면 조문이 이긴다."
 )
 # 판정(어느 구역이 잘못 끌려왔나)은 **이 콜에 없다.** 사용자를 기다리게 하는 콜에서
 # 판정까지 하면 구조화 출력이 그 배열을 다 만들 때까지 답이 나오지 않는다 —
@@ -443,11 +459,15 @@ class Answer:
     # 판정 지문은 여기 없다 — 답을 보낸 뒤 `core.rag.audit` 이 백그라운드에서 남긴다.
     # (호환을 위해 자리는 둔다: 옛 호출자가 `.discards` 를 읽어도 빈 목록이다.)
     discards: list = field(default_factory=list)
+    # 이번 합성에 배경으로 들어간 위키 아티클 [{slug, title, why}] — 관측용.
+    wiki: list = field(default_factory=list)
 
 
-def synthesize(llm, question: str, sections: list[Section]) -> Answer:
+def synthesize(llm, question: str, sections: list[Section],
+               spots: list[dict] | None = None) -> Answer:
     """구역들로 답을 만든다. refs 는 번호로 받고 좌표로 되돌린다 — 모델이
-    좌표를 쓰는 일은 없다."""
+    좌표를 쓰는 일은 없다. spots 는 검색 전에 이미 골라진 쟁점 카드
+    (wikictx.spot) — 위키 맥락 블록의 앞자리에 같이 끼운다."""
     if not sections:
         # 원본 §0-0 ② — 부재 단정이 아니라 회수 실패를 말한다.
         return Answer(answer="이번 검색으로는 관련 구역이 회수되지 않았습니다. "
@@ -462,7 +482,16 @@ def synthesize(llm, question: str, sections: list[Section]) -> Answer:
     # 여기서 또 자르면 사용자에게 보여준 컨텍스트와 모델이 본 컨텍스트가 갈린다.
     use = sections
     t0 = time.perf_counter()
-    user = f"[질문]\n{question}\n\n[컨텍스트]\n{_context_text(use)}"
+    # 위키 맥락 — "어떻게 읽는가"의 배경 (wikictx.py 머리). 조문이 근거,
+    # 위키는 방향이다 (ANSWER_SYSTEM ⑥). 끄면 기존 프롬프트 그대로다.
+    # 쟁점 카드(spots)가 먼저 선다 — 검색을 이끈 카드가 답의 방향도 안다.
+    picks = list(spots or [])
+    if switches.is_on("wiki_context"):
+        have = {p["slug"] for p in picks}
+        picks += [p for p in wikictx.pick(question, {s.doc for s in use})
+                  if p["slug"] not in have]
+    user = (f"[질문]\n{question}\n\n[컨텍스트]\n{_context_text(use)}"
+            + wikictx.block(picks))
     out = llm.structured("rag.answer", ANSWER_SYSTEM, user, ANSWER_SCHEMA,
                          max_tokens=4000, effort="high")
     if out is None:
@@ -477,4 +506,6 @@ def synthesize(llm, question: str, sections: list[Section]) -> Answer:
              len(use), len(refs), bool(out.get("answerable")),
              (time.perf_counter() - t0) * 1000)
     return Answer(answer=out.get("answer", ""), refs=refs,
-                  answerable=bool(out.get("answerable")))
+                  answerable=bool(out.get("answerable")),
+                  wiki=[{"slug": p["slug"], "title": p["title"],
+                         "why": p["why"]} for p in picks])

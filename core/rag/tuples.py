@@ -60,7 +60,8 @@ def _append(rec: dict) -> None:
 
 
 # ---------------------------------------------------------------- 질의 기록
-def log_ask(out: dict, prompt: Optional[dict] = None) -> str:
+def log_ask(out: dict, prompt: Optional[dict] = None,
+            calls: Optional[list] = None) -> str:
     """/ask 응답에서 진단 튜플을 뽑아 적재한다. 응답에 실을 qid 를 돌려준다.
 
     "어떻게 찾았는가"(사다리·탐험 경로·좌표)에 더해 **무엇이 나갔는가**(답
@@ -93,6 +94,13 @@ def log_ask(out: dict, prompt: Optional[dict] = None) -> str:
     if prompt:
         rec["프롬프트"] = {"system": prompt.get("system", ""),
                            "user": prompt.get("user", "")}
+    # 쟁점기의 전모(트리거 적중·판정·질의 확장)와 **모든 LLM 콜의 원문**.
+    # 답 합성 프롬프트만으로는 "판정이 무엇을 보고 섰나"가 안 보인다 —
+    # 검수는 결론이 아니라 그 앞의 입력을 봐야 성립한다.
+    if out.get("쟁점"):
+        rec["쟁점"] = out["쟁점"]
+    if calls:
+        rec["콜"] = calls
     if out.get("timing") is not None:
         rec["timing"] = out["timing"]
     if out.get("recovery") is not None:

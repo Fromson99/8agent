@@ -66,13 +66,19 @@ def _approved_hits(index: Index, query: str, cap: int = KEYWORD_ENTRY_CAP):
 
 
 def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
-             cap: int = CANDIDATES_MAX, llm=None) -> tuple[list[Section], dict]:
+             cap: int = CANDIDATES_MAX, llm=None,
+             vec_query: str = "") -> tuple[list[Section], dict]:
     """(구역들, 회수 경위). 진입: 승인 용어(정밀) → 벡터(의미). 확장: 결정론
-    바닥(배제·위임·준용 무조건) → 무차별 참조 닫힘 → 남은 자리는 LLM 항해."""
+    바닥(배제·위임·준용 무조건) → 무차별 참조 닫힘 → 남은 자리는 LLM 항해.
+
+    vec_query 는 **벡터 채널 전용** 질의다(쟁점 재작성, wikictx.vector_query).
+    용어 진입은 여전히 query(원문)로 간다 — 채널마다 무는 것이 다르기
+    때문이다: 색인 용어는 사용자의 낱말과 겹쳐야 물고, 벡터는 조문 문체와
+    겹쳐야 문다. 합류는 순위·슬롯 기반이라 질의가 달라도 안전하다."""
     t0 = time.perf_counter()
-    vec = vector_mod.search(query, topk=max(entry_k * 2, 8))
+    vec = vector_mod.search(vec_query or query, topk=max(entry_k * 2, 8))
     meta: dict = {"vector_hits": len(vec), "entries": [], "keywords": [],
-                  "depth": 0}
+                  "depth": 0, "vec_query": vec_query or ""}
 
     sections: list[Section] = []
     seen: set[tuple] = set()
