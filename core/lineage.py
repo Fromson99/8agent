@@ -119,6 +119,10 @@ def build(store: Path, links_file: Path, corpus: Optional[Path] = None) -> dict:
             manifest = _read_json(src_dir / "manifest.json")
             if manifest is None:
                 continue
+            # 다른 수명주기를 선언한 코퍼스(해석례: 수집→색인→위키)는 이 원장의
+            # 단계 모델(수집→변환→구조화→연결) 밖이다 — 낙차로 세지 않는다.
+            if manifest.get("phase_model"):
+                continue
             source = src_dir.name
             for item in manifest.get("items", []):
                 sha, body_file, fmt = body_of(item)

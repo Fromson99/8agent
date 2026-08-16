@@ -17,6 +17,7 @@
     { key:"links",     href:"/links/",     label:"참조" },
     { gap:true },
     { key:"rag",       href:"/rag/",       label:"질의응답" },
+    { key:"expc",      href:"/expc/",      label:"해석례" },
     { key:"rules",     href:"/rules/",     label:"공리" },
     { key:"agent6",    href:"/agent6/",    label:"점검" },
     { gap:true },
@@ -54,6 +55,11 @@
       pick: (d) => (d.rules || []).filter((r) => r.status === "잠정"
                  || (r["보고서"] || {})["권고"] === "정착 후보").length,
       hint: "규칙 승격 대기 — 잠정 승인·정착(공리) 결정은 사람 몫입니다" },
+    // 위키 생애 — 권고가 '유지'가 아닌 아티클(분쟁·재컴파일·재검증 대기).
+    { key: "expc", jump: "/expc/#wiki",
+      url: "/v1/expc/summary",
+      pick: (d) => d.wiki_pending || 0,
+      hint: "위키 생애 대기 — 분쟁 중·재컴파일 후보·재검증 필요 아티클" },
     // 오류는 성격이 다르다(빨강) — 대기가 아니라 사고다. 있을 때만 뜬다.
     { key: "logs", jump: "/logs/", tone: "err",
       url: "/v1/logs/app?level=ERROR&limit=50",
