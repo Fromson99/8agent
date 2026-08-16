@@ -70,6 +70,8 @@ class Issue:
     id: str = field(default_factory=lambda: _nid("i"))
     from_req: Optional[str] = None         # 되먹임 출처 (Sub.req_id)
     by_net: bool = False                   # 결정론 안전망이 세운 쟁점인가 (품질 표시)
+    why: str = ""                          # 왜 이 쟁점·이 카드인가 — LLM 이 적는다 (검수·채점용)
+    core: bool = True                      # 핵심(질문이 직접 묻는 것) / 부수(딸려 온 것)
 
 
 # ---------------------------------------------------------------- ③ 규범

@@ -94,7 +94,10 @@ ISSUE_SYSTEM = (
     "규제 대상 행위 — 정보의 수집·제공·위탁, 업(業)으로 하는 행위, 인가·등록·신고가 "
     "필요할 수 있는 행위, 고객 자산·데이터의 취급 — 가 하나라도 있으면 반드시 그에 "
     "걸리는 쟁점을 세운다. 확신이 없어도 세우는 쪽이 맞다: 세운 쟁점은 뒤에서 "
-    "요건별로 검증되지만, 안 세운 쟁점은 영영 검토되지 않는다."
+    "요건별로 검증되지만, 안 세운 쟁점은 영영 검토되지 않는다. "
+    "⑥ 쟁점마다 why 에 **왜 이 사안에 이 쟁점이 걸리는지, 왜 이 카드인지**를 한두 "
+    "문장으로 적고, confidence 에 핵심(질문이 직접 묻는 것)/부수(딸려 오는 것)를 "
+    "가른다 — 부수 쟁점은 뒤에서 판정의 무게를 낮춘다."
 )
 ISSUE_SCHEMA = {
     "type": "object",
@@ -103,8 +106,10 @@ ISSUE_SCHEMA = {
         "properties": {"question": {"type": "string"}, "gate": {"type": "string"},
                        "card": {"type": "string"},
                        "regulation": {"type": "string",
-                                      "enum": ["수평", "수직", "충돌", ""]}},
-        "required": ["question", "gate", "card", "regulation"],
+                                      "enum": ["수평", "수직", "충돌", ""]},
+                       "why": {"type": "string"},
+                       "confidence": {"type": "string", "enum": ["핵심", "부수"]}},
+        "required": ["question", "gate", "card", "regulation", "why", "confidence"],
         "additionalProperties": False}}},
     "required": ["issues"], "additionalProperties": False,
 }
@@ -175,7 +180,9 @@ def spot_issues(llm, facts: list, limit: int = ISSUE_MAX) -> list:
             gate=str(it.get("gate", ""))[:200],
             axis=(wikictx._meta(row["text"]).get("판단 축", "") if row else ""),
             regulation=reg if reg in ("수평", "수직", "충돌") else None,
-            card=row["slug"] if row else None))
+            card=row["slug"] if row else None,
+            why=str(it.get("why", ""))[:300],
+            core=(it.get("confidence") != "부수")))
     return issues or _issues_from_cards(facts, limit)
 
 
@@ -435,9 +442,31 @@ def build_norms(idx, issue: Issue, state: ReviewState,
     # 지목 조문은 **좌표로 연다** — 검색을 거치지 않는다. 색인값은 조문 제목이라
     # "「개인정보 보호법」 제17조제1항" 같은 문자열은 검색으로 안 물린다(실측).
     # ① 입력 문면의 인용(사안 자신의 좌표 — 가장 강한 신호)이 맨 앞,
-    # ② 카드의 조문 후보가 그 뒤다.
+    # ② 카드의 조문 후보는 **질문이 그 법령을 언급할 때만** 연다 — 카드의 조문 후보는
+    #    그 카드를 컴파일할 때 본 사례들의 조문이라 사안이 다르면 무관하다(실측
+    #    15-0720: 정보공개법 질문에 「포섭의 경계」 카드가 개인정보법 제2조·공정거래법
+    #    제47조를, 「다른 법률 근거의 문턱」이 개인정보법 제18조·국세기본법을 끌어와
+    #    규범 12개 중 7개가 잡음이었다). 카드의 판단 축은 일반화되지만 조문 후보는
+    #    그렇지 않다.
+    # 스코프 = 질문 원문 + 이 쟁점의 문장·관문. 쟁점이 "개인정보를 넘겨도 되는가"라고
+    # 법령명 없이 물어도 카드 조문 후보의 법령명이 쟁점 문장에 없으면 안 연다 — 대신
+    # 그 법은 어휘 사다리·회수 바닥이 스스로 찾아온다(밑의 pool). 카드가 조문을
+    # **밀어 넣는** 길만 막는 것이지, 그 법이 오는 길을 막는 게 아니다.
+    scope = wikictx._pack((state.question or "") + " " + issue.question + " " + issue.gate)
+    spots_scoped = []
+    for sp in spots or []:
+        provs = []
+        for pv in sp.get("provisions", []):
+            m = _PROVISION.search(pv)
+            law = wikictx._pack((m.group("a") or m.group("b") or "")) if m else ""
+            # 법령 정식명은 길다 — 핵심 두 어절(예: "개인정보보호법")이 스코프에 있으면 연다
+            key = law.replace("에관한법률", "").replace("법률", "법")
+            if law and (law in scope or (len(key) >= 4 and key in scope)):
+                provs.append(pv)
+        if provs:
+            spots_scoped.append({**sp, "provisions": provs})
     coords = _cite_coords(idx, state.question) \
-        + (_coords_of(idx, spots) if spots else [])
+        + (_coords_of(idx, spots_scoped) if spots_scoped else [])
     prior = sections_from_coords(idx, coords) if coords else []
     prior = [s for s in prior if not _is_deleted(s.text)]
     # ③ 필수 동반 — 착지 조문의 위임·배제·수임·준용을 판단 없이 동반한다.
@@ -678,8 +707,14 @@ INTERPRET_SCHEMA = {
     },
     "required": ["direction", "reason", "basis"], "additionalProperties": False,
 }
-_INTERP_NORMS_MAX = 8        # 판정 콜에 넘기는 규범 수
-_INTERP_CHARS = 700          # 규범당 발췌 — 판정은 조문 문언을 봐야 선다
+# 판정 입력은 **자르지 않는다** (2026-08-16 실측 15-0720): 정보공개법 제9조를 회수해
+# 놓고 조당 700자로 잘라 넘기니 ①항 머리글에서 예산이 끝나 답이 있는 ①항 제5호가
+# 빠졌다. 판정 모델은 정직하게 "그 조문 본문이 제시되지 않아 확정할 수 없다"고
+# 조건부를 냈다 — 회수 채점은 2/2 성공인데 판정에는 답이 있는 부분이 안 갔다.
+# 판정에는 회수한 조문의 **마디 전문**을 스토어에서 다시 읽어 준다. 규범 수 상한도
+# 없앤다. 컨텍스트가 터지면 그때 좌표(질문이 인용한 항·호) 우선으로 배분한다.
+_INTERP_NORMS_MAX = None     # 상한 없음
+_INTERP_CHARS = None         # 자르지 않음 — 스토어 전문
 # ── 판정 안정화 실측 (2026-08-16) ──────────────────────────────────────────
 # 같은 state 로 판정 콜만 5회 반복(파이프라인 상류 고정):
 #   하이쿠   16-0022 → 긍정2·조건부3 (같은 입력에 흔들림)   18-0261 → 긍정4·조건부1
@@ -720,7 +755,7 @@ def _card_context(st: ReviewState) -> str:
     return "\n\n[해석 맥락 — 지식 위키]\n" + "\n\n---\n\n".join(parts)
 
 
-def interpret_case(llm, st: ReviewState) -> Optional[dict]:
+def interpret_case(llm, st: ReviewState, idx=None) -> Optional[dict]:
     """사안 하나의 해석 판정 — 방향·이유·근거 조문. 판정 불가면 None.
 
     사안 수준이다(쟁점당이 아니라). 쟁점을 여럿 세워도 법제처 질문은
@@ -739,8 +774,16 @@ def interpret_case(llm, st: ReviewState) -> Optional[dict]:
     for n in st.norms:                        # 쟁점들이 같은 조를 공유하면 한 번만
         uniq.setdefault((n.doc_id, n.node), n)
     parts = []
-    for n in list(uniq.values())[:_INTERP_NORMS_MAX]:
-        body = " ".join(r.text for r in n.reqs)[:_INTERP_CHARS]
+    for n in uniq.values():
+        # 요건표(Req.text)는 포섭용 조각(260/400자)이라 판정 입력으로 쓰면 잘린다.
+        # 판정은 스토어의 마디 전문을 본다 — 조 아래 항·호·목까지 전부.
+        body = ""
+        v = idx.docs.get(n.doc_id) if idx is not None else None
+        nd = v.by_id.get(n.node) if v is not None else None
+        if nd is not None:
+            body = v.section_text(nd, cap=10**9)
+        if not body:
+            body = " ".join(r.text for r in n.reqs)
         parts.append(f"◆ {n.doc} ▸ {n.path}\n{body}")
     unmet = [s for s in st.subs if s.judgment == "불충족"]
     unmet_txt = ("\n\n[포섭 관측 — 불충족 요건] (참고 — 핵심 요건인지 판정이 가린다)\n"
@@ -809,7 +852,7 @@ def run(llm, idx, text: str, track: str = "해석") -> ReviewState:
     # 해석 트랙 — 요건표 위에 문언 해석 판정을 얹는다 (INTERPRET_SYSTEM 머리).
     # 코드가 접은 불충족이 있으면 프롬프트에 실려 판정을 구속한다(규율 ④).
     if track == "해석":
-        st.overall = interpret_case(llm, st)
+        st.overall = interpret_case(llm, st, idx)
         if st.overall:
             st.step("해석 판정", 1,
                     f"{st.overall['direction']} — {st.overall['reason'][:60]}")

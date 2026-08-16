@@ -172,8 +172,10 @@ def test_쟁점이_지목한_법이_배경_법에_밀리지_않는다(tmp_path, 
     monkeypatch.setenv("WIKI_STORE", str(tmp_path))
     idx = Index.from_docs([*_two_docs()])
     st = ReviewState(question="q")
-    # 질문은 증권사 배경이라 트리거("동의"·"제공")가 안 물지만, 카드가 지목돼 있다
-    issue = Issue(question="증권사가 투자성향 정보를 제휴사에 넘겨도 되는가",
+    # 질문은 증권사 배경이라 트리거("동의"·"제공")가 안 물지만, 카드가 지목돼 있고
+    # 쟁점 문장이 개인정보 보호법을 언급한다 — 카드 조문 후보는 쟁점·질문이 그 법을
+    # 말할 때만 열린다(15-0720 실측: 안 그러면 카드 컴파일 사례의 조문이 무관하게 딸려 온다)
+    issue = Issue(question="증권사가 투자성향 정보를 제휴사에 넘기는 것이 개인정보 보호법상 허용되는가",
                   gate="금융투자업 관련 정보인가", card="쟁점/동의와-정보이용")
     norms = rp.build_norms(idx, issue, st)
     assert norms, "규범이 하나도 안 섰다"

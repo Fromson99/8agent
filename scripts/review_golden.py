@@ -225,6 +225,35 @@ def want_articles(case: dict) -> set:
     return out
 
 
+def material_status(idx, case: dict) -> tuple:
+    """(상태, 회답 근거 조문 수, 창고에 있는 수). 상태 = 전부 | 일부 | 전무 | 근거없음.
+
+    "못 찾았다"에는 두 가지가 섞여 있다 — 창고에 있는데 못 찾은 것(회수 결함)과
+    창고에 없는 것(수집 공백). 섞어 재면 회수 점수가 늘 낮아 판정 문제가 가려진다.
+    실측(2026-08-16 홀드아웃): 회답 근거 조문 145개 중 52%가 창고에 없는 법령이었고,
+    창고에 전부 있는 25건은 조문 회수 90%였다 — 회수는 멀쩡, 재료가 없었다.
+    """
+    from core.rag import wikictx
+    wa = want_articles(case)
+    if not wa:
+        return ("근거없음", 0, 0)
+    by_law = {wikictx._pack(v.name): v for v in idx.docs.values()}
+    have = 0
+    for law, jo in wa:
+        v = by_law.get(wikictx._pack(law))
+        if v is None:
+            continue
+        for n in v.by_id:
+            p = v.path(n) or ""
+            if "부칙" in p:
+                continue
+            if any(seg == jo or seg.startswith(jo + " ") for seg in p.split(" ▸ ")):
+                have += 1
+                break
+    st = "전부" if have == len(wa) else ("전무" if have == 0 else "일부")
+    return (st, len(wa), have)
+
+
 def run_one(llm, idx, case: dict, text: Optional[str] = None) -> dict:
     """사례 하나를 검토에 통과시키고 채점에 필요한 것만 접는다.
 
@@ -253,7 +282,9 @@ def run_one(llm, idx, case: dict, text: Optional[str] = None) -> dict:
         doc = wikictx._pack(str(b).split("▸")[0].strip())
         for jo in _JO.findall(str(b)):
             got_basis.add((doc, jo))
+    mat, mat_n, mat_have = material_status(idx, case)
     return {"case_no": case["case_no"], "label": case.get("label", "")[:60],
+            "material": mat, "material_have": f"{mat_have}/{mat_n}",
             # 근거: 회답 근거 조문 중 시스템 basis 에 든 수 / 시스템이 든 basis 중
             # 회답 근거에 없는 수(과잉·엉뚱). 둘 다 (문서, 조) 단위.
             "basis_hit": len(wa & got_basis), "basis_n": len(got_basis),
@@ -332,6 +363,20 @@ def score(rows: list, labels: dict) -> None:
     if cmp_n:
         print(f"  방향 일치   {hit}/{cmp_n} ({hit / cmp_n:.0%})"
               f"   · 판단 유보 {held} · 미라벨 {unlabeled}")
+    # 재료 상태별 — 창고에 재료가 다 있는 사례에서만 회수·판정 실력이 온전히 보인다.
+    by_mat: dict = {}
+    for r in rows:
+        by_mat.setdefault(r.get("material", "?"), []).append(r)
+    if len(by_mat) > 1:
+        print(f"\n재료 상태별 (회답 근거 조문이 창고에…)")
+        for k in ("전부", "일부", "전무", "근거없음"):
+            rs = by_mat.get(k)
+            if not rs:
+                continue
+            h = sum(1 for r in rs if labels.get(r["case_no"]) == r["direction"])
+            a = sum(r.get("got_arts", 0) for r in rs); w = sum(r.get("want_arts", 0) for r in rs)
+            print(f"  {k:5} {len(rs):3}건   방향 {h}/{len(rs)} ({h / len(rs):.0%})"
+                  + (f"   조문 회수 {a}/{w} ({a / w:.0%})" if w else ""))
     # 근거 정확도 — 방향과 별개의 축. "방향 맞고 근거도 맞음"이 진짜 정답이다.
     with_basis = [r for r in rows if r.get("basis_n")]
     if with_basis:
@@ -396,6 +441,8 @@ def main() -> int:
     ap.add_argument("--report", action="store_true", help="마지막 실행 재집계")
     ap.add_argument("--holdout", action="store_true",
                     help="동결 목록(golden_tuned_cases.json) 밖 사례만 — 튜닝에 안 쓴 검증 셋")
+    ap.add_argument("--material", action="store_true",
+                    help="회답 근거 조문이 창고에 전부 있는 사례만 — 회수·판정 실력을 재료 공백과 분리해 잰다")
     ap.add_argument("--out", type=Path, default=None,
                     help="결과 저장 경로 (기본 golden_last.json) — 실행 판을 잃지 않기 위해")
     ap.add_argument("--colloquial", action="store_true",
@@ -422,6 +469,8 @@ def main() -> int:
         label(llm, cases, force=args.force)
         return 0
 
+    from core.rag import index as index_mod
+    idx = index_mod.current()
     if args.only:
         picked = [c for c in cases if c["case_no"] == args.only]
     elif args.holdout:
@@ -432,12 +481,16 @@ def main() -> int:
         print(f"홀드아웃 — 동결 {len(tuned)}건 밖 {len(picked)}건 (튜닝 금지 셋)")
     else:
         picked = cases[:args.limit or 5]
+    if args.material:
+        before = len(picked)
+        stat = {c["case_no"]: material_status(idx, c)[0] for c in picked}
+        picked = [c for c in picked if stat[c["case_no"]] == "전부"]
+        from collections import Counter
+        print(f"재료 필터 — {before}건 중 회답 근거 조문이 창고에 전부 있는 {len(picked)}건만 "
+              f"({dict(Counter(stat.values()))})")
     if not picked:
         print("고른 사례가 없습니다", file=sys.stderr)
         return 2
-
-    from core.rag import index as index_mod
-    idx = index_mod.current()
     rows = []
     print(f"검토 {len(picked)}건 실행 — 사례당 30~60초")
     for i, c in enumerate(picked, 1):
