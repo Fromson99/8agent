@@ -29,17 +29,19 @@
 ## 1-2. 어떻게 쪼갰나 — 입력에 따라 세 경로
 
 ```mermaid
-flowchart TB
-  I1["law.go.kr 본문 XML"] --> A1["lawxml<br/>태그 계층을 그대로 옮긴다<br/>추론 없음"]
-  I2["DOCX"] --> A2["from_styles<br/>Word 스타일 계층을 통짜로 신뢰"]
-  I3["HWP · PDF"] --> A3["from_format<br/>문서에 형식이 연결돼 있으면<br/>그 형식대로"]
-  I3 --> A4["dp · scoring<br/>마커·타이포그래피로 계층을 유도"]
-  A1 --> T["마디 트리"]
+%%{init:{'theme':'base','themeVariables':{'fontFamily':'system-ui, sans-serif','fontSize':'13px','primaryColor':'#FFFFFF','primaryTextColor':'#1B1F24','primaryBorderColor':'#C7CFD3','lineColor':'#96A0A7','secondaryColor':'#F1F4F5','tertiaryColor':'#FAFBFB','clusterBkg':'#F5F8F8','clusterBorder':'#DBE1E3','edgeLabelBackground':'#FCFCFB'},'flowchart':{'curve':'basis','nodeSpacing':32,'rankSpacing':50,'padding':12}}}%%
+flowchart LR
+  X1[/"law.go.kr 본문 XML"/] --> A1("lawxml<br/>태그를 그대로 옮긴다")
+  X2[/"DOCX"/] --> A2("from_styles<br/>Word 스타일을 신뢰")
+  X3[/"HWP · PDF"/] --> A3("from_format<br/>연결된 형식대로")
+  X3 --> A4("dp · scoring<br/>마커·타이포로 추론")
+  A1 --> T[("마디 트리")]
   A2 --> T
   A3 --> T
   A4 --> T
-  style A1 fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px
-  style A4 fill:#F7EAE6,stroke:#B8321C,stroke-width:2px
+  style A1 fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px,color:#1E4F46
+  style A4 fill:#F7EAE6,stroke:#B8321C,stroke-width:2px,color:#7E2214
+  style T fill:#FFFFFF,stroke:#6E7A82,stroke-width:2px
 ```
 
 **왜 세 경로인가.** law.go.kr 본문 XML은 조·항·호·목이 이미 태그로 갈라져 있어
@@ -52,16 +54,19 @@ flowchart TB
 한 조가 여러 마디로 쪼개진다. 개인정보 보호법 제18조의 실제 모양:
 
 ```mermaid
-graph TD
-  J["제18조 · node_id 227<br/>개인정보의 목적 외 이용·제공 제한"]
+%%{init:{'theme':'base','themeVariables':{'fontFamily':'system-ui, sans-serif','fontSize':'13px','primaryColor':'#FFFFFF','primaryTextColor':'#1B1F24','primaryBorderColor':'#C7CFD3','lineColor':'#96A0A7','secondaryColor':'#F1F4F5','tertiaryColor':'#FAFBFB','clusterBkg':'#F5F8F8','clusterBorder':'#DBE1E3','edgeLabelBackground':'#FCFCFB'},'flowchart':{'curve':'basis','nodeSpacing':32,'rankSpacing':50,'padding':12}}}%%
+flowchart TB
+  J["제18조 · 227<br/>목적 외 이용·제공 제한"]
   J --> H1["① · 228"]
-  J --> H2["② · 229<br/>다음 각 호는 예외"]
+  J --> H2["② · 229<br/>각 호는 예외"]
   J --> H3["③ · 240"]
   J --> H4["④ · 246"]
-  H2 --> N1["1. · 230<br/>별도 동의를 받은 경우"]
+  H2 --> N1["1. · 230<br/>별도 동의"]
   H2 --> N2["2. · 231<br/>다른 법률에 특별한 규정"]
-  H2 --> N3["3. · 232<br/>급박한 생명·신체·재산"]
+  H2 --> N3["3. · 232<br/>급박한 생명·신체"]
   H2 --> N4["4. · 233<br/>삭제"]
+  style J fill:#FFFFFF,stroke:#6E7A82,stroke-width:2px
+  style N4 fill:#EEF1F2,stroke:#B6BFC4,color:#69737A
 ```
 
 | 마디마다 붙는 것 | 뜻 |
@@ -83,25 +88,26 @@ graph TD
 ## 1-4. 조문을 어떻게 이었나 — 출처가 둘이고 로직이 완전히 다르다
 
 ```mermaid
-flowchart TB
-  subgraph W1["출처 A — 위임 데이터 · API 에서 받는다"]
+%%{init:{'theme':'base','themeVariables':{'fontFamily':'system-ui, sans-serif','fontSize':'13px','primaryColor':'#FFFFFF','primaryTextColor':'#1B1F24','primaryBorderColor':'#C7CFD3','lineColor':'#96A0A7','secondaryColor':'#F1F4F5','tertiaryColor':'#FAFBFB','clusterBkg':'#F5F8F8','clusterBorder':'#DBE1E3','edgeLabelBackground':'#FCFCFB'},'flowchart':{'curve':'basis','nodeSpacing':32,'rankSpacing':50,'padding':12}}}%%
+flowchart LR
+  subgraph SA["출처 A · API 에서 받는다"]
     direction TB
-    API["law.go.kr lsDelegated XML<br/>23개 법령분"]
-    API --> E1["시행령 2,283"]
-    API --> E2["인용법령 23,352"]
-    API --> E3["위임행정규칙 1,251"]
-    API --> E4["시행규칙 129"]
+    API[/"lsDelegated XML<br/>23개 법령분"/] --> AR("양 끝을 창고 마디에 붙인다")
+    AR --> AO["위임 간선<br/>시행령 · 인용법령<br/>위임행정규칙 · 시행규칙"]
   end
-  subgraph W2["출처 B — 문면 간선 · 본문에서 파싱한다"]
+  subgraph SB["출처 B · 본문에서 파싱한다"]
     direction TB
-    TXT["조문 본문 문자열"]
-    TXT --> P1["표기 패턴으로 참조를 찾는다"]
-    P1 --> P2["가리키는 마디로 잇는다"]
-    P2 --> P3["참조 바로 뒤 술어로<br/>관계를 라벨링한다"]
-    P3 --> R1["준용 · 배제 · 의제<br/>수임 · 근거 · 인용"]
+    TXT[/"조문 본문"/] --> B1("① 표기를 찾는다")
+    B1 --> B2("② 실존하는 데까지 내려간다")
+    B2 --> B3("③ 열거를 편다")
+    B3 --> B4{"문서 안이냐 사이냐"}
+    B4 --> B5("④ 뒤 술어로 관계를 붙인다")
+    B5 --> BO["문면 간선<br/>준용 · 배제 · 의제<br/>수임 · 근거 · 인용"]
   end
-  style API fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px
-  style TXT fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px
+  style API fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px,color:#1E4F46
+  style TXT fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px,color:#1E4F46
+  style AO fill:#FFFFFF,stroke:#6E7A82,stroke-width:2px
+  style BO fill:#FFFFFF,stroke:#6E7A82,stroke-width:2px
 ```
 
 ### 출처 A — 위임 간선은 왜 파싱이 아니라 API인가
@@ -234,12 +240,16 @@ flowchart TB
 ## 1-5. 함께 세우는 것
 
 ```mermaid
+%%{init:{'theme':'base','themeVariables':{'fontFamily':'system-ui, sans-serif','fontSize':'13px','primaryColor':'#FFFFFF','primaryTextColor':'#1B1F24','primaryBorderColor':'#C7CFD3','lineColor':'#96A0A7','secondaryColor':'#F1F4F5','tertiaryColor':'#FAFBFB','clusterBkg':'#F5F8F8','clusterBorder':'#DBE1E3','edgeLabelBackground':'#FCFCFB'},'flowchart':{'curve':'basis','nodeSpacing':32,'rankSpacing':50,'padding':12}}}%%
 flowchart LR
-  T["마디 트리"] --> X1["색인 9,785항목<br/>조문 제목·본문"]
-  T --> X2["조 단위 임베딩<br/>embeddings/sections"]
-  T --> X3["용어 1,154<br/>정의 조항 + 이하 X 라 한다"]
-  H["해석례 180건"] --> X4["위키 raw · 불변층"]
-  X4 -->|"LLM 세션이 읽고 컴파일"| X5["아티클 34<br/>쟁점 카드 16"]
+  T[("마디 트리")] --> X1["색인 9,785항목"]
+  T --> X2["조 단위 임베딩"]
+  T --> X3["용어 1,154"]
+  H[/"해석례 180건"/] --> W1["위키 raw · 불변층"]
+  W1 -->|"LLM 세션이 컴파일"| W2["아티클 34<br/>쟁점 카드 16"]
+  style T fill:#FFFFFF,stroke:#6E7A82,stroke-width:2px
+  style X2 fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px,color:#1E4F46
+  style W2 fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px,color:#1E4F46
 ```
 
 **임베딩은 조 단위로 만든다.** 호·항 단위로 쪼개면 “①항 개인정보처리자는…”
@@ -265,15 +275,17 @@ flowchart LR
 ## 2-0. 전체
 
 ```mermaid
-flowchart TB
-  U["사용자 질문<br/>법령명도 조번호도 없는 구어"]
-  U --> F["① 사실 확정<br/>주체·행위·대상으로 쪼갠다"]
-  F --> IS["② 쟁점 도출<br/>법령이 알아듣는 Yes/No 질문으로"]
-  IS --> QQ["쟁점마다 질의 문자열 조립"]
-  QQ --> RT["③ 규범 조립<br/>네 통로로 회수"]
-  RT --> SB["④ 포섭<br/>요건마다 사실을 댄다"]
-  SB --> JD["⑤ 판정<br/>방향 + 근거 좌표"]
-  style IS fill:#F7EAE6,stroke:#B8321C,stroke-width:3px
+%%{init:{'theme':'base','themeVariables':{'fontFamily':'system-ui, sans-serif','fontSize':'13px','primaryColor':'#FFFFFF','primaryTextColor':'#1B1F24','primaryBorderColor':'#C7CFD3','lineColor':'#96A0A7','secondaryColor':'#F1F4F5','tertiaryColor':'#FAFBFB','clusterBkg':'#F5F8F8','clusterBorder':'#DBE1E3','edgeLabelBackground':'#FCFCFB'},'flowchart':{'curve':'basis','nodeSpacing':32,'rankSpacing':50,'padding':12}}}%%
+flowchart LR
+  U[/"사용자 질문<br/>구어 · 좌표 없음"/] --> F("① 사실 확정")
+  F --> IS("② 쟁점 도출")
+  IS --> RT("③ 규범 조립")
+  RT --> SB("④ 포섭")
+  SB --> JD("⑤ 판정")
+  JD --> O[("방향 + 근거 좌표")]
+  style IS fill:#F7EAE6,stroke:#B8321C,stroke-width:3px,color:#7E2214
+  style RT fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px,color:#1E4F46
+  style O fill:#FFFFFF,stroke:#6E7A82,stroke-width:2px
 ```
 
 **②가 붉은 이유** — 사용자 질문과 법령 사이의 통역이 여기서 일어난다.
@@ -296,16 +308,19 @@ flowchart TB
 쟁점 하나는 **네 조각**으로 이뤄진다.
 
 ```mermaid
+%%{init:{'theme':'base','themeVariables':{'fontFamily':'system-ui, sans-serif','fontSize':'13px','primaryColor':'#FFFFFF','primaryTextColor':'#1B1F24','primaryBorderColor':'#C7CFD3','lineColor':'#96A0A7','secondaryColor':'#F1F4F5','tertiaryColor':'#FAFBFB','clusterBkg':'#F5F8F8','clusterBorder':'#DBE1E3','edgeLabelBackground':'#FCFCFB'},'flowchart':{'curve':'basis','nodeSpacing':32,'rankSpacing':50,'padding':12}}}%%
 flowchart LR
-  subgraph IS["Issue 하나"]
-    direction TB
-    Q1["question<br/>Yes/No 로 답할 수 있게<br/>압축한 쟁점 질문"]
-    Q2["gate · 관문 질문<br/>'이 사안에 개인정보가 있는가'<br/>→ 어느 법을 볼지 정한다"]
-    Q3["axis · 판단 축<br/>위키 쟁점 카드에서 옴"]
-    Q4["card · 카드 슬러그<br/>선례와 조문 후보를 들고 온다"]
-  end
-  W["위키 쟁점 카드 16<br/>= 고를 수 있는 메뉴"] -.->|"고른다"| Q3
-  W -.-> Q4
+  FA[/"사실"/] --> SP("② spot_issues")
+  W["쟁점 카드 16<br/>고를 수 있는 메뉴"] -.-> SP
+  SP --> Q1["question<br/>Yes/No 물음"]
+  SP --> Q2["gate<br/>어느 법을 볼지 정한다"]
+  SP --> Q3["axis<br/>판단 축"]
+  SP --> Q4["card<br/>카드 슬러그"]
+  Q1 --> QX[("질의 문자열<br/>question + gate")]
+  Q2 --> QX
+  style Q2 fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px,color:#1E4F46
+  style QX fill:#FFFFFF,stroke:#6E7A82,stroke-width:2px
+  style W fill:#EEF1F2,stroke:#B6BFC4,color:#69737A
 ```
 
 | 조각 | 하는 일 |
@@ -333,30 +348,27 @@ qx = _review_query(q, spots)      ← 카드가 준 것까지 붙인 최종 질�
 ## 2-3. ③ 규범 조립 — 네 통로로 회수
 
 ```mermaid
-flowchart TB
-  QX["질의 문자열 qx"]
-  QX --> B1["① 문면 인용 좌표"]
-  QX --> B2["② 카드 조문 후보"]
-  QX --> B4["④ 검색"]
-  B1 --> C1["좌표 직행<br/>검색을 안 거친다"]
-  B2 --> SC{"쟁점 문장이<br/>그 법령을 말하나?"}
-  SC -->|"예"| C2["카드 좌표를 연다"]
-  SC -->|"아니오"| SK["안 연다"]
-  B4 --> L["어휘 사다리<br/>정확 → 부분 → 본문"]
-  B4 --> V["벡터<br/>조 단위 임베딩 코사인"]
-  V --> IL["_interleave<br/>벡터를 앞에 둔다"]
-  L --> IL
-  C1 --> FL["③ expand_floor<br/>위임·수임·배제·준용 한 걸음"]
-  C2 --> FL
-  C1 --> M(("합류"))
-  C2 --> M
-  FL --> M
-  IL --> M
-  M --> SORT["우선순위 정렬<br/>직행 좌표 > 관계망 > 참조 확장"]
-  SORT --> K["규범 6개 · 상한"]
-  M --> G["용어 정의<br/>상한 밖 별도 칸"]
-  style V fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px
-  style SK fill:#F7EAE6,stroke:#B8321C
+%%{init:{'theme':'base','themeVariables':{'fontFamily':'system-ui, sans-serif','fontSize':'13px','primaryColor':'#FFFFFF','primaryTextColor':'#1B1F24','primaryBorderColor':'#C7CFD3','lineColor':'#96A0A7','secondaryColor':'#F1F4F5','tertiaryColor':'#FAFBFB','clusterBkg':'#F5F8F8','clusterBorder':'#DBE1E3','edgeLabelBackground':'#FCFCFB'},'flowchart':{'curve':'basis','nodeSpacing':32,'rankSpacing':50,'padding':12}}}%%
+flowchart LR
+  QX[/"질의 문자열"/]
+  QX --> P1("① 문면 좌표")
+  QX --> P2("② 카드 후보")
+  QX --> P4("④ 검색")
+  P1 --> D1["좌표 직행 · 검색 우회"]
+  P2 --> GK{"쟁점이 그 법을 말하나"}
+  GK -->|"예"| D2["카드 좌표"]
+  GK -->|"아니오"| XX["안 연다"]
+  P4 --> D4["어휘 + 벡터 번갈아"]
+  D1 --> FL("③ 관계망 한 걸음<br/>위임·수임·배제·준용")
+  D2 --> FL
+  FL --> MG(("합류"))
+  D4 --> MG
+  MG --> K["규범 6 · 상한"]
+  MG --> G["용어 정의 · 상한 밖"]
+  style FL fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px,color:#1E4F46
+  style G fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px,color:#1E4F46
+  style XX fill:#F7EAE6,stroke:#B8321C,stroke-width:2px,color:#7E2214
+  style K fill:#FFFFFF,stroke:#6E7A82,stroke-width:2px
 ```
 
 ### ① 문면 인용 좌표 — 검색을 안 거친다
@@ -381,8 +393,8 @@ flowchart TB
 
 ### ③ 관계망 한 걸음 — 판단 없이 동반
 
-①②가 어떤 조문에 착지하면 1단계에서 만든 간선을 따라 **위임·수임·배제·준용을
-무조건 함께 데려온다.** LLM이 고르지 않는다.
+①②로 연 좌표는 **곧바로 합류하지 않고 이 단계를 통과한다.** 착지 조문의
+위임·수임·배제·준용을 **무조건 함께 데려온다** — LLM이 고르지 않는다.
 
 ```
 착지    개인정보 보호법 제35조 (열람 요구)
@@ -394,16 +406,18 @@ flowchart TB
 ### ④ 검색 — 어휘와 벡터를 둘 다, 벡터를 앞에
 
 ```mermaid
+%%{init:{'theme':'base','themeVariables':{'fontFamily':'system-ui, sans-serif','fontSize':'13px','primaryColor':'#FFFFFF','primaryTextColor':'#1B1F24','primaryBorderColor':'#C7CFD3','lineColor':'#96A0A7','secondaryColor':'#F1F4F5','tertiaryColor':'#FAFBFB','clusterBkg':'#F5F8F8','clusterBorder':'#DBE1E3','edgeLabelBackground':'#FCFCFB'},'flowchart':{'curve':'basis','nodeSpacing':32,'rankSpacing':50,'padding':12}}}%%
 flowchart LR
-  QX["질의 문자열"] --> L1["정확 일치<br/>조문 제목이 그대로"]
-  L1 --> L2["부분 일치"]
-  L2 --> L3["본문"]
-  QX --> V1["질의 임베딩"]
-  V1 --> V2["조 단위 벡터와 코사인"]
-  V2 --> V3["상위 K"]
-  L3 --> Z["_interleave<br/>벡터 먼저, 어휘 다음, 번갈아"]
-  V3 --> Z
-  style V3 fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px
+  QX[/"질의 문자열"/] --> L1("정확 일치")
+  L1 --> L2("부분 일치")
+  L2 --> L3("본문")
+  QX --> V1("질의 임베딩")
+  V1 --> V2("조 단위 벡터 코사인")
+  L3 --> Z(("_interleave"))
+  V2 --> Z
+  Z --> OUT["벡터가 앞 · 어휘가 뒤"]
+  style V2 fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px,color:#1E4F46
+  style OUT fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px,color:#1E4F46
 ```
 
 **벡터를 앞에 둔 이유.** 옛 구조는 사다리였다 — 정확 일치가 하나라도 걸리면
@@ -439,14 +453,19 @@ flowchart LR
 ## 2-4. ④⑤ 포섭과 판정
 
 ```mermaid
+%%{init:{'theme':'base','themeVariables':{'fontFamily':'system-ui, sans-serif','fontSize':'13px','primaryColor':'#FFFFFF','primaryTextColor':'#1B1F24','primaryBorderColor':'#C7CFD3','lineColor':'#96A0A7','secondaryColor':'#F1F4F5','tertiaryColor':'#FAFBFB','clusterBkg':'#F5F8F8','clusterBorder':'#DBE1E3','edgeLabelBackground':'#FCFCFB'},'flowchart':{'curve':'basis','nodeSpacing':32,'rankSpacing':50,'padding':12}}}%%
 flowchart LR
-  N["규범 6<br/>조문 마디"] --> SB["④ subsume<br/>요건 하나하나에<br/>사실을 댄다"]
-  FA["사실"] --> SB
-  SB --> RQ["Req[]<br/>충족 · 불충족 · 불명"]
-  RQ --> JD["⑤ interpret_case"]
-  IDX["구조 스토어"] -->|"마디 전문 · 자르지 않음"| JD
+  N["규범 6"] --> SB("④ subsume")
+  FA[/"사실"/] --> SB
+  SB --> RQ["요건표<br/>충족 · 불충족 · 불명"]
+  RQ --> JD("⑤ interpret_case")
+  IDX[("구조 스토어")] -->|"마디 전문 · 안 자름"| JD
   GL["용어 정의"] --> JD
-  JD --> O["direction 긍정/부정/조건부<br/>basis 근거 좌표<br/>reason 이유"]
+  JD --> O[("방향 · 근거 · 이유")]
+  RQ -.->|"불명은 다음 쟁점으로"| SP["② 쟁점"]
+  style JD fill:#E3EDEA,stroke:#2C6B60,stroke-width:2px,color:#1E4F46
+  style O fill:#FFFFFF,stroke:#6E7A82,stroke-width:2px
+  style SP fill:#EEF1F2,stroke:#B6BFC4,color:#69737A
 ```
 
 **판정 입력은 자르지 않는다.** 포섭용 요건 조각은 260/400자로 줄여 넣지만,
