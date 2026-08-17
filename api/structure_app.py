@@ -171,6 +171,15 @@ if rag_router is not None:
     except Exception:                                      # pragma: no cover
         log.exception("검토 라우터 적재 실패 — 나머지 화면은 그대로 뜬다")
 
+# 골든 태깅 — 사람이 화면에서 정답 조문을 직접 짚는다 (docs/RETRIEVAL.md).
+# 정규식 자로는 결정 근거와 전제 인용을 못 가른다 — 그 일을 사람이 한다.
+try:
+    from api.routers import golden as golden_router        # noqa: E402
+
+    app.include_router(golden_router.router)
+except Exception:                                          # pragma: no cover
+    log.exception("골든 태깅 라우터 적재 실패 — 나머지 화면은 그대로 뜬다")
+
 # 망분리 운반 — 스냅샷·아웃박스·재생. 이게 죽어도 검수 화면은 떠야 한다.
 # `from api import ops` 가 아니라 점표기다 — 시험이 sys.modules 에서 모듈을
 # 지워도 부모 패키지 속성에 낡은 모듈이 남아, from 형태는 그걸 집어온다.
@@ -283,6 +292,12 @@ _EXPC_VIEWER = Path(__file__).resolve().parent / "viewer" / "expc"
 if _EXPC_VIEWER.is_dir():
     app.mount("/expc", StaticFiles(directory=str(_EXPC_VIEWER), html=True),
               name="expc-viewer")
+
+# 골든 태깅 화면 — 정답 조문을 항·호까지 짚는다
+_GOLDEN_VIEWER = Path(__file__).resolve().parent / "viewer" / "golden"
+if _GOLDEN_VIEWER.is_dir():
+    app.mount("/golden", StaticFiles(directory=str(_GOLDEN_VIEWER), html=True),
+              name="golden-viewer")
 
 _LOGS_VIEWER = Path(__file__).resolve().parent / "viewer" / "logs"
 if _LOGS_VIEWER.is_dir():

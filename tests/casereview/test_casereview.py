@@ -571,10 +571,13 @@ def test_적법성_트랙은_해석_판정을_얹지_않는다(tmp_path, monkeyp
 def _interp_llm(directions, extra=None):
     """interpret 호출마다 directions 를 차례로 내는 대역."""
     it = iter(directions)
+    # 쟁점 문장이 법을 말한다 — 검색 질의는 쟁점 문장(+probe)뿐이고 카드 조문 후보
+    # 텍스트는 더 이상 질의에 실리지 않는다(build_norms ④ · 2026-08-17). 쟁점이
+    # 법을 말하지 않으면 벡터가 찾을 몫인데 이 가짜 색인에는 벡터가 없다.
     by = {
         "review.facts": {"facts": []},
-        "review.issues": {"issues": [{"question": "가능한가?", "gate": "",
-                                      "card": "쟁점/목적외-제공",
+        "review.issues": {"issues": [{"question": "개인정보 보호법상 목적 외 제공이 가능한가?",
+                                      "gate": "", "card": "쟁점/목적외-제공",
                                       "regulation": ""}]},
         "review.subsume": {"subs": []},
         "review.interpret": lambda u: {"direction": next(it),

@@ -80,9 +80,16 @@ class LLM:
         # timeout 없이는 멈춘 스트림이 영원히 매달린다 — 벤치 실측(2026-08-11):
         # 응답이 안 오는 호출 하나가 5분을 통째로 먹었다. httpx 의미론으로 float
         # 는 연결·읽기 모두에 걸리고, 스트리밍 읽기는 **청크 사이** 간격이다.
-        # 스트림은 생성이 느려도 ping 이벤트가 계속 와서, 30초 무소식은 죽은
-        # 연결이다 — 끊으면 SDK 가 재시도한다(같은 실측에서 재시도가 살렸다).
-        self._client = anthropic.Anthropic(timeout=30.0)
+        # 스트림은 생성이 되는 동안엔 ping 이 계속 와서 무소식이 아니다.
+        #
+        # 30 → 120 (2026-08-17). 30초로도 죽은 연결은 잡혔지만, **첫 글자 전
+        # 침묵**까지 같이 잘랐다: 입력을 다 읽는 동안(prefill)은 보낼 것이 없어
+        # 조용하고, 판정 프롬프트는 회수한 조문 **전문**을 싣는다(pipeline
+        # section_text cap=10**9). 벡터 채널이 조문을 늘린 뒤 혼합 골든에서
+        # ReadTimeout 이 36.9초·35.1초에 났다 — 죽은 연결이 아니라 긴 prefill 을
+        # 죽었다고 오판한 것이다. 죽은 연결 감지라는 목적은 120초로도 선다
+        # (5분을 통째로 먹던 그 실패는 여전히 잡힌다).
+        self._client = anthropic.Anthropic(timeout=120.0)
         self.log: list[Exchange] = []
 
     def structured(self, kind: str, system: str, user: str, schema: dict,

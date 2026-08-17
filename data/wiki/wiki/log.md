@@ -232,3 +232,12 @@
 ## [2026-08-16] rule | 재심: 정착 강등 rule:gr-0001 → 보류
 - Disposition: Disputed
 - 요지: 이 규칙을 rule:gr-0001 로 인용한 아티클은 생애 보고서가 '분쟁 중'으로 표시한다 — Status: Disputed 블록 검토 (by 사람)
+
+## [2026-08-17] rule | 컴파일 대기: 정착 규칙 rule:gr-0001
+- Disposition: New
+- 근거: 시험 (by 사람)
+- 요지: 정착(AXIOM)에 오른 기계 규칙의 '왜'를 아티클로 남긴다 — 본문에 rule:gr-0001 표기로 인용하면 강등 시 재심이 자동으로 걸린다
+
+## [2026-08-17] rule | 재심: 정착 강등 rule:gr-0001 → 보류
+- Disposition: Disputed
+- 요지: 이 규칙을 rule:gr-0001 로 인용한 아티클은 생애 보고서가 '분쟁 중'으로 표시한다 — Status: Disputed 블록 검토 (by 사람)

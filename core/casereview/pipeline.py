@@ -35,6 +35,17 @@ NORM_SECTIONS = 6         # 쟁점 하나에 조립할 규범 상한 — 판단�
 REQ_MAX = 6               # 규범 하나에서 뽑을 요건 상한
 ISSUE_MAX = 4             # 검토 하나에 세울 쟁점 상한 (질의응답 2장보다 넓다)
 SUB_REQ_CAP = 18          # 포섭 한 콜에 넘길 요건 상한 — 넘기면 출력이 잘린다(실측)
+# 요건 한 조각의 글자 상한. **한 번 넓혀 봤다가 되돌렸다** (2026-08-17):
+# 40 / 800 / 1200 으로 넓혀 고집 세트 11건을 재니 요건이 240→321 로 늘고 잘림·
+# 타임아웃은 0 이었는데, 판정은 안 따라왔다 — 유보 3건이 풀려 1건만 정답, 2건은
+# 오답(○0△8✗3 → ○1△5✗5). 근거는 오히려 나빠졌다(18-0124 과잉 1→4,
+# 16-0182 근거 0/2→0/0). 요건 목록이 길어지자 판정이 **결정적 조문을 고르는 데서**
+# 흔들린다. 병목은 재료의 양이 아니다 — 넓히면 잡음만 는다.
+REQ_LEAF_CHARS = 260      # 호·목 (잎)
+REQ_STEM_CHARS = 400      # 항·조 줄기, 통짜 조, 회수 본문 대체
+_ISSUE_MAX_TOKENS = 8000  # 1500 → 2500 → 8000 (2026-08-17). max_tokens 는 천장이지
+                          # 예약이 아니다 — 안 쓰면 값이 0 이므로 넉넉히 잡는다.
+                          # 잘리면 쟁점이 통째로 없어진다(상류라 제일 비싼 실패)
 
 
 # ---------------------------------------------------------------- ① 사실
@@ -95,6 +106,13 @@ ISSUE_SYSTEM = (
     "필요할 수 있는 행위, 고객 자산·데이터의 취급 — 가 하나라도 있으면 반드시 그에 "
     "걸리는 쟁점을 세운다. 확신이 없어도 세우는 쪽이 맞다: 세운 쟁점은 뒤에서 "
     "요건별로 검증되지만, 안 세운 쟁점은 영영 검토되지 않는다. "
+    "⑤-2 question 과 gate 에는 **사실에 나온 법률용어를 원문 표기 그대로** 옮겨라 "
+    "— 쪼개거나 풀어 쓰지 마라. 이 문장이 그대로 조문 검색 질의가 되므로 용어가 "
+    "쪼개지면 엉뚱한 조문이 온다(실측 2026-08-17, 골든 24-0239: "
+    "\"공시대상기업집단\"을 \"공시 대상 기업집단\"으로 풀어 써 검색이 '공시 의무' "
+    "조문으로 갔다 — 정답인 이익제공 금지 조항은 회수되지 않았다). 그리고 사안이 "
+    "묻는 **행위**(이익제공·위탁·겸직·열람 요구 등)를 반드시 question 에 넣어라 — "
+    "배경 서술(지정·해당·설립 등)만 남으면 그 배경의 조문이 회수된다.\n"
     "⑥ 쟁점마다 why 에 **왜 이 사안에 이 쟁점이 걸리는지, 왜 이 카드인지**를 한두 "
     "문장으로 적고, confidence 에 핵심(질문이 직접 묻는 것)/부수(딸려 오는 것)를 "
     "가른다 — 부수 쟁점은 뒤에서 판정의 무게를 낮춘다."
@@ -160,14 +178,16 @@ def spot_issues(llm, facts: list, limit: int = ISSUE_MAX) -> list:
     # 메우는 쪽이 낫다 (골든 셋 25-0653 에서 안전망이 남의 쟁점을 세웠다).
     user = f"[정리된 사실]\n{fact_txt}\n\n[쟁점 카드 목록]\n{menu}"
     out = llm.structured("review.issues", ISSUE_SYSTEM, user, ISSUE_SCHEMA,
-                         max_tokens=1500, effort="medium")
+                         max_tokens=_ISSUE_MAX_TOKENS, effort="medium")
     if out is None or not out.get("issues"):
+        log.info("쟁점 1차 빈손 — 재시도한다 (사실 %d개)", len(facts))
         out = llm.structured(
             "review.issues", ISSUE_SYSTEM,
             user + "\n\n[재시도] 앞선 시도가 쟁점을 세우지 못했다. 사실에 규제 "
                    "대상 행위가 있는지 다시 보고, 있으면 반드시 쟁점을 세워라.",
-            ISSUE_SCHEMA, max_tokens=1500, effort="medium")
+            ISSUE_SCHEMA, max_tokens=_ISSUE_MAX_TOKENS, effort="medium")
     if out is None:
+        log.warning("쟁점 콜이 두 번 다 실패 — 카드 트리거(안전망)로 받는다")
         return _issues_from_cards(facts, limit)
     by_slug = {r["slug"]: r for r in rows}
     issues = []
@@ -183,7 +203,15 @@ def spot_issues(llm, facts: list, limit: int = ISSUE_MAX) -> list:
             card=row["slug"] if row else None,
             why=str(it.get("why", ""))[:300],
             core=(it.get("confidence") != "부수")))
-    return issues or _issues_from_cards(facts, limit)
+    if issues:
+        return issues
+    net = _issues_from_cards(facts, limit)
+    if not net:
+        # 무성 실패 — 검토가 통째로 없어지는데 로그가 없으면 정상 완주와 구별이
+        # 안 된다(혼합 골든 v2 07-0261: 쟁점0·3.6초가 실패 한 줄 없이 지나갔다).
+        log.warning("쟁점 0 — LLM 두 번 다 빈손이고 카드 트리거도 안 물었다 "
+                    "(사실 %d개) · 이 사례는 검토 없이 끝난다", len(facts))
+    return net
 
 
 # ---------------------------------------------------------------- ③ 규범
@@ -244,7 +272,7 @@ def _split_proviso(req: Req) -> list:
     if len(head) < 8 or len(tail) < 8:
         return [req]
     req.text = head
-    return [req, Req(text=tail[:300], node=req.node, proviso=True,
+    return [req, Req(text=tail[:REQ_STEM_CHARS], node=req.node, proviso=True,
                      id=(req.id or "") + "-단서")]
 
 
@@ -266,7 +294,7 @@ def _reqs_from_nodes(v, doc_id: str, node_id, cap: int = REQ_MAX) -> list:
     kids = [k for k in v.nodes if k.get("parent") == node_id]
     if not kids:                                   # 조가 통짜면 그 자체가 요건
         t = _own_text(v, n)
-        return _split_proviso(Req(text=t[:400], node=node_id,
+        return _split_proviso(Req(text=t[:REQ_STEM_CHARS], node=node_id,
                                   id=Req.coord_id(doc_id, node_id))) if t else []
     out = []
     for k in kids:
@@ -277,15 +305,15 @@ def _reqs_from_nodes(v, doc_id: str, node_id, cap: int = REQ_MAX) -> list:
             for g in gk:
                 t = _own_text(v, g)
                 if t and not _is_deleted(t):       # 삭제된 호는 판정 대상이 아니다
-                    leaves.append(Req(text=t[:260], node=g["id"],
+                    leaves.append(Req(text=t[:REQ_LEAF_CHARS], node=g["id"],
                                       id=Req.coord_id(doc_id, g["id"])))
             if leaves:
-                out.append(_mark_logic(Req(text=stem[:260], node=k["id"],
+                out.append(_mark_logic(Req(text=stem[:REQ_LEAF_CHARS], node=k["id"],
                                            id=Req.coord_id(doc_id, k["id"]),
                                            children=leaves)))
                 continue
         if stem and not _is_deleted(stem):
-            out.extend(_split_proviso(Req(text=stem[:400], node=k["id"],
+            out.extend(_split_proviso(Req(text=stem[:REQ_STEM_CHARS], node=k["id"],
                                           id=Req.coord_id(doc_id, k["id"]))))
         if len(out) >= cap:
             break
@@ -420,24 +448,273 @@ def _spot_for(issue: Issue, q: str) -> list:
     return wikictx.spot(q)
 
 
+_ART_SURFACE = re.compile(r"^제\d+(?:-\d+)?조(?:의\d+)?$")
+
+
+def _article_of(v, node_id):
+    """마디를 감싸는 **조** 마디로 올린다 — 호·항으로 착지해도 규범은 조 단위다.
+
+    판정 입력은 조의 마디 전문이므로(제9조 ①항 제5호가 답이라도 ①항 머리글이
+    있어야 읽힌다) 벡터가 호에 착지하면 그 조를 연다. 조가 없으면(별표·부칙
+    머리) 그 마디 그대로다.
+    """
+    cur = node_id
+    seen: set = set()
+    while cur is not None and cur not in seen:
+        n = v.by_id.get(cur)
+        if n is None:
+            break
+        if _ART_SURFACE.match(n.get("surface") or ""):
+            return cur
+        seen.add(cur)
+        cur = n.get("parent")
+    return node_id
+
+
+def _vector_sections(idx, query: str, exclude: set, topk: int = 12) -> list:
+    """벡터 채널 — 쟁점 문장(법률 문체)으로 구역을 찾아 조 단위 Section 으로.
+
+    같은 조에 여러 마디가 착지하면 하나로 접는다(그게 곧 표다). 실패하면 빈
+    목록 — 호출부는 벡터가 없다와 못 한다를 구별할 필요가 없다.
+    """
+    from core.rag import vector as vector_mod
+    from core.rag.answer import SECTION_CHARS, Section
+    try:
+        nodes = vector_mod.search(query, topk=topk)
+    except Exception as exc:                          # 모델·색인 부재
+        log.warning("벡터 채널 실패 — 어휘만으로 간다: %s", exc)
+        return []
+    out, seen = [], set()
+    for doc_id, node, cos in nodes:
+        v = idx.docs.get(doc_id)
+        if v is None:
+            continue
+        art = _article_of(v, node)
+        key = (doc_id, art)
+        if key in seen or key in exclude:
+            continue
+        seen.add(key)
+        n = v.by_id.get(art)
+        out.append(Section(
+            n=0, doc_id=doc_id, doc=v.name, node=art,
+            path=v.path(art) or v.name, page=(n or {}).get("page"),
+            kind="벡터", matched=f"코사인 {cos:.2f}",
+            text=v.section_outline(n, cap=SECTION_CHARS) if n else ""))
+    return out
+
+
+_TERMS_CACHE: dict = {}
+
+
+def _legal_terms() -> set:
+    """창고의 정의 조항에서 뽑은 법률용어 — 질의에서 **쪼개지지 않게 지킨다**.
+
+    골든 24-0239 실측(2026-08-17): 쟁점이 "공시대상기업집단"을 "공시 대상 기업집단"
+    으로 풀어 쓰자 어휘 검색이 '공시 의무' 조문을 물었고 정답(제47조 이익제공 금지)은
+    회수되지 않았다. 같은 회수기가 용어를 온전히 준 질의에서는 제47조를 정확히
+    데려온다 — 회수기의 결함이 아니라 질의의 결함이다.
+
+    두 곳에서 긁는다:
+
+    ① 정의 조항(제N조 "용어의 뜻")의 각 호 — «"용어"란» 꼴. 창고 42개 문서 중
+       14개가 정의 조를 갖고 있다.
+    ② **본문 어디서든 «(이하 "X"라 한다)» 꼴** — 이게 없으면 정작 필요한 용어를
+       놓친다. 24-0239 의 "공시대상기업집단"은 제2조가 아니라 제26조제1항의
+       «제31조제1항 전단에 따라 지정된 공시대상기업집단(이하 "공시대상기업집단"
+       이라 한다)» 에서 정의된다 — 정의 조만 보면 사전에 안 들어온다(실측).
+
+    ②가 훨씬 흔하다. 법률은 긴 지시를 한 번 풀어 쓰고 그 뒤로는 약칭을 쓴다.
+    """
+    if _TERMS_CACHE:
+        return _TERMS_CACHE["terms"]
+    from core.rag import index as index_mod
+    pat = re.compile(r"[\"“「]([^\"”」「]{3,30})[\"”」]\s*"
+                     r"(?:\([^)]{0,20}\))?\s*(?:이?란|라\s*함은)")
+    # «(이하 "X"라 한다)» · «(이하 "X"이라 한다)» — 본문 어디서든
+    alias = re.compile(r"이하\s*[\"“]([^\"”]{3,30})[\"”]\s*(?:이)?라\s*(?:고\s*)?한다")
+    out: set = set()
+    try:
+        idx = index_mod.current()
+    except Exception:                                  # 색인 부재 — 지킬 것이 없다
+        _TERMS_CACHE["terms"] = out
+        return out
+    for v in idx.docs.values():
+        # ① 정의 조항
+        for n in v.nodes:
+            if (n.get("surface") or "") not in ("제2조", "제3조"):
+                continue
+            head = v.section_outline(n, cap=300) or ""
+            if "용어의 뜻" not in head and "용어의 정의" not in head:
+                continue
+            for k in v.nodes:
+                if k.get("parent") != n["id"]:
+                    continue
+                m = pat.search(v.section_outline(k, cap=300) or "")
+                if m:
+                    out.add(m.group(1).strip())
+            break
+        # ② 본문의 «(이하 "X"라 한다)» — 블록 텍스트를 한 번에 훑는다
+        for blk in (v.blocks or []):
+            txt = blk.get("text") if isinstance(blk, dict) else str(blk)
+            for m in alias.finditer(txt or ""):
+                out.add(m.group(1).strip())
+    _TERMS_CACHE["terms"] = out
+    return out
+
+
+def _keep_terms(q: str) -> str:
+    """질의에 쪼개진 법률용어의 원문 표기를 덧붙인다. **지금은 쓰지 않는다.**
+
+    24-0239 를 고치려고 만들었다가 직접 시험에서 역효과가 확인됐다(2026-08-17):
+    "공시대상기업집단"을 덧붙이니 그 용어가 제목에 든 조(제31·35·38·41조 —
+    전부 '공시' 계열)가 상위로 올라와 정답 제47조(이익제공 금지)를 더 밀어냈다.
+    온전한 질의에서도 제47조가 1순위에서 뒤로 밀렸다.
+
+    **배경 용어를 증폭하면 판별 낱말이 묻힌다.** 이 사안에서 답을 가르는 낱말은
+    "이익제공"이고 "공시대상기업집단"은 배경이다. 질의 후처리로 용어를 보태는
+    방식 자체가 틀렸다 — 무엇이 배경이고 무엇이 판별인지는 질의 밖에서 알 수 없다.
+
+    올바른 자리는 **쟁점 프롬프트**다(ISSUE_SYSTEM ⑤-2): 사실의 법률용어를 원문
+    표기로 옮기고 사안이 묻는 **행위**를 반드시 넣게 한다. 용어 사전(_legal_terms)
+    은 남겨 둔다 — 1154개 용어는 다른 데(용어 인식·해당성 물음 판정)에 쓸모가 있다.
+    """
+    terms = _legal_terms()
+    if not terms:
+        return q
+    flat = re.sub(r"\s+", "", q)
+    add = [t for t in terms if len(t) >= 5 and t not in q and re.sub(r"\s+", "", t) in flat]
+    return q + ("  " + " ".join(sorted(add)) if add else "")
+
+
+def _review_query(q: str, spots: list) -> str:
+    """검색 질의 = 쟁점 문장 + 카드의 조문질의(probe). **조문 후보 텍스트는 안 넣는다.**
+
+    카드 조문 후보(「…법률」 제47조제1항)는 그 카드를 컴파일할 때 본 사례의
+    좌표라 사안이 다르면 무관한데, 질의에 실리면 "제47조"라는 조 제목이 엉뚱한
+    법의 제47조에 정확 일치로 물린다(혼합 골든 20:80 실측 2026-08-17: 06-0131
+    구어판이 자본시장법 제47조 하나 물고 정보공개법은 0건).
+    """
+    probes = []
+    pq = wikictx._pack(q)
+    for s in spots or []:
+        pr = (s.get("probe") or "").strip()
+        if pr and wikictx._pack(pr) not in pq and pr not in probes:
+            probes.append(pr)
+    return q + ("\n[법률용어 질의] " + " ".join(probes) if probes else "")
+
+
+def _interleave(a: list, b: list) -> list:
+    out, seen = [], set()
+    for i in range(max(len(a), len(b))):
+        for s in (a[i:i + 1] + b[i:i + 1]):
+            k = (s.doc_id, s.node)
+            if k not in seen:
+                seen.add(k)
+                out.append(s)
+    return out
+
+
+_DEFN_HEAD = re.compile(r"용어의\s*뜻|용어의\s*정의")
+
+
+def _sibling_and_defn(idx, secs: list, cap: int = 8) -> list:
+    """회수한 조의 **이웃 조**와 그 법의 **정의 조**를 함께 연다.
+
+    골든 v2 첫 실행에서 놓친 마디 15개를 전수로 갈랐더니 셋으로 나뉘었다:
+
+        둘째 법을 못 따라감   5개   백지 지시("다른 법률에 특별한 규정")라 어휘 고리 0
+        정의 조항을 안 가져옴 4개   실체 규정은 잡고 정의를 놓친다
+        같은 법 인접 조 못 감 5개   20-0569 는 제28조의2·제28조의5 를 잡고 그 사이
+                                   제28조의4 를 놓쳤다 — 같은 절 안 이웃이다
+
+    이 함수는 뒤의 둘을 한 번에 치려고 만들었다. **지금은 쓰지 않는다** — 두 번
+    시도해 두 번 실패했다(2026-08-17, 골든 v2 네 판):
+
+        run1  확장 없음          회수 51/66 (77%)   ← 기준선
+        run2  확장을 앞자리에     48/66 (73%)   상한 6 밖으로 정답이 밀려났다
+        run3  확장을 뒷자리로     47/66 (71%)   밀어내기를 막았는데도 안 오름
+        run4  run3 재현           45/66 (68%)   같은 코드 두 판 폭 = 2개
+
+    겨냥했던 세 사례(07-0261·17-0387·18-0124)가 **두 판 모두에서 하나도 살아나지
+    않았다.** run2 에서 올라간 것은 확장 효과가 아니라 요동이었다.
+
+    왜 안 먹혔는지는 아직 모른다. 다시 시도하려면 **회수 파이프라인에 넣기 전에
+    "이 확장이 정답 마디를 실제로 데려오는가"를 오프라인으로 먼저 확인**하라 —
+    파이프라인에 꽂고 전체 지표로 재면 요동에 묻힌다(폭 2개에 효과 0개).
+
+    정의 조는 그 법의 "용어의 뜻" 조 하나만 연다. 아침에 용어 사전(116개)으로
+    질문에서 용어를 뽑아 여는 방식을 시도했다가 정밀도 12%로 접었는데, 여기서는
+    **이미 회수한 법**에 대해서만 열므로 엉뚱한 법의 정의 조가 딸려오지 않는다.
+    """
+    from core.rag.answer import SECTION_CHARS, Section
+    have = {(s.doc_id, s.node) for s in secs}
+    out: list = []
+    seen_defn: set = set()
+    for s in list(secs)[:cap]:
+        v = idx.docs.get(s.doc_id)
+        if v is None:
+            continue
+        node = v.by_id.get(s.node)
+        if node is None:
+            continue
+        # ── 이웃 조 — 같은 부모 아래 앞뒤 하나씩
+        sibs = [k for k in v.nodes if k.get("parent") == node.get("parent")
+                and _ART_SURFACE.match(k.get("surface") or "")]
+        ids = [k["id"] for k in sibs]
+        if node["id"] in ids:
+            i = ids.index(node["id"])
+            for j in (i - 1, i + 1):
+                if 0 <= j < len(ids) and (s.doc_id, ids[j]) not in have:
+                    have.add((s.doc_id, ids[j]))
+                    sib = v.by_id.get(ids[j]) or {}
+                    out.append(Section(
+                        n=0, doc_id=s.doc_id, doc=v.name, node=ids[j],
+                        path=v.path(ids[j]) or v.name, page=sib.get("page"),
+                        kind="이웃", matched=sib.get("surface") or "",
+                        text=v.section_outline(sib, cap=SECTION_CHARS) if sib else ""))
+        # ── 정의 조 — 그 법에 하나만
+        if s.doc_id in seen_defn:
+            continue
+        seen_defn.add(s.doc_id)
+        for k in v.nodes:
+            if not _ART_SURFACE.match(k.get("surface") or ""):
+                continue
+            if "부칙" in (v.path(k["id"]) or ""):
+                continue
+            head = v.section_outline(k, cap=300) or ""
+            if not _DEFN_HEAD.search(head) or _is_deleted(head):
+                continue
+            if (s.doc_id, k["id"]) not in have:
+                have.add((s.doc_id, k["id"]))
+                out.append(Section(
+                    n=0, doc_id=s.doc_id, doc=v.name, node=k["id"],
+                    path=v.path(k["id"]) or v.name, page=k.get("page"),
+                    kind="정의", matched=k.get("surface") or "",
+                    text=v.section_outline(k, cap=SECTION_CHARS)))
+            break
+    return out
+
+
 def build_norms(idx, issue: Issue, state: ReviewState,
                 limit: int = NORM_SECTIONS) -> list:
     """③ 규범 조립 — 쟁점이 지목한 조문을 회수해 Norm 으로 세운다.
 
-    회수는 기존 자산 그대로다: 쟁점 카드의 조문 후보로 질의를 넓히고
-    (wikictx.expand_query — 검색 사다리 ①이 법령명을 문다), 검색·조립이
-    관계망 동반(위임·준용·배제)까지 끌어온다. 검토는 새 검색기를 만들지
-    않는다 — 회수 위에 판단을 얹는다.
+    회수 통로 넷 — ① 입력 문면 인용의 좌표(주소 펴기) ② 카드 조문 후보의 좌표
+    (사안이 그 법을 말할 때만) ③ ①②의 관계망 바닥(위임·배제·준용) ④ 검색 =
+    **어휘 앵커와 벡터를 둘 다 돌려 합류**. 순서는 ①②③ 이 앞이고 ④ 가 남는
+    자리를 채운다.
 
-    다만 **순서는 검토가 정한다**: 쟁점이 지목한 법령의 구역을 앞자리에
-    세우고(배경 법에 밀리지 않게), 삭제된 조문은 뺀다. 지목한 법이 하나도
-    안 왔으면 그 법령명만으로 한 번 더 찾는다 — 쟁점이 법을 아는데 회수가
-    못 데려오는 것은 회수의 결함이지 쟁점의 결함이 아니다.
+    ④ 가 낙하식이 아닌 이유(2026-08-17 혼합 골든 20:80 실측): 옛 사다리
+    (core.rag.search.search)는 정확 일치가 하나라도 걸리면 벡터를 안 돌렸다.
+    주소 없는 질문(B) 41건의 조문 회수가 15%였고, 실패 33건 대부분이 "제47조"·
+    "공공기관"·"적용대상" 같은 **우연한 조 제목 일치**가 정확 단에 걸려 벡터가
+    한 번도 안 돈 경우였다 — 벡터만 따로 돌리면 정답 조가 1~4위였다(06-0131
+    정보공개법 제9조 3위 · 07-0261 공공기관운영법 제27조 1위). 주소 있는
+    질문(A)은 ①이 답을 펴므로 ④의 방식에 영향받지 않는다.
     """
     q = issue.question + " " + issue.gate
     spots = _spot_for(issue, q)
-    qx = wikictx.expand_query(q, spots) if spots else q
-    targets = _target_laws(spots)
+    qx = _review_query(q, spots)
 
     # 지목 조문은 **좌표로 연다** — 검색을 거치지 않는다. 색인값은 조문 제목이라
     # "「개인정보 보호법」 제17조제1항" 같은 문자열은 검색으로 안 물린다(실측).
@@ -465,6 +742,7 @@ def build_norms(idx, issue: Issue, state: ReviewState,
                 provs.append(pv)
         if provs:
             spots_scoped.append({**sp, "provisions": provs})
+    targets = _target_laws(spots_scoped)   # 앞자리 승격도 스코프 안의 법만
     coords = _cite_coords(idx, state.question) \
         + (_coords_of(idx, spots_scoped) if spots_scoped else [])
     prior = sections_from_coords(idx, coords) if coords else []
@@ -479,20 +757,34 @@ def build_norms(idx, issue: Issue, state: ReviewState,
                else (2 if s.kind == "참조" else 1))
 
     have = {(s.doc_id, s.node) for s in prior}
-    pool = [s for s in assemble(idx, run_search(idx, qx))
-            if not _is_deleted(s.text) and (s.doc_id, s.node) not in have]
+    # ④ 검색 — 어휘 앵커(정확·부분·본문 사다리)와 벡터(쟁점 문장 → 조)를 **둘 다**
+    #    돌려 번갈아 합류한다. 벡터가 앞이다: 주소 없는 질문에서 답을 찾는 채널이
+    #    벡터이고, 어휘 앵커는 우연한 제목 일치일 때가 많다(도크스트링 실측).
+    lex = [s for s in assemble(idx, run_search(idx, qx))
+           if not _is_deleted(s.text) and (s.doc_id, s.node) not in have]
+    vec = [s for s in _vector_sections(idx, qx, have, topk=limit * 2)
+           if not _is_deleted(s.text)]
+    pool = _interleave(vec, lex)
     # 좌표로 못 연 지목 법이 검색 결과에 있으면 그것도 앞자리로 올린다
     prior += [s for s in pool if wikictx._pack(s.doc) in targets]
     rest = [s for s in pool if s not in prior]
     norms = []
-    for s in (prior + rest)[:limit]:
+    # 정의 마디 — 상한 밖의 별도 칸으로 뺀다(ReviewState.glossary). 회수한 법의
+    # "용어의 뜻" 조 하나씩이고, 규범 6칸을 잡아먹지 않는다.
+    picked = (prior + rest)[:limit]
+    used = {(x.doc_id, x.node) for x in picked}
+    state.glossary += [x for x in _sibling_and_defn(idx, picked, cap=limit)
+                       if x.kind == "정의" and not _is_deleted(x.text)
+                       and (x.doc_id, x.node) not in used
+                       and (x.doc_id, x.node) not in {(g.doc_id, g.node) for g in state.glossary}]
+    for s in picked:
         v = idx.docs.get(s.doc_id)
         reqs = _reqs_from_nodes(v, s.doc_id, s.node) if v is not None else []
         if not reqs:                               # 마디가 비면 회수 본문으로 받는다
             body = re.sub(r"\s+", " ", s.text or "").strip()
             if not body:
                 continue
-            reqs = [Req(text=body[:400], node=s.node,
+            reqs = [Req(text=body[:REQ_STEM_CHARS], node=s.node,
                         id=Req.coord_id(s.doc_id, s.node))]
         n = Norm(doc=s.doc, doc_id=s.doc_id, node=s.node, path=s.path,
                  reqs=reqs, effect="")
@@ -566,7 +858,7 @@ def subsume(llm, issue: Issue, norms: list, facts: list) -> list:
         f"[정리된 사실]\n{fact_txt}\n\n[요건 목록] "
         f"— ◆는 조문, 〔〕는 그 항의 머리글(맥락), [id]가 판정 대상이다\n"
         + "\n".join(lines),
-        SUB_SCHEMA, max_tokens=4000, effort="low")
+        SUB_SCHEMA, max_tokens=12000, effort="low")
     if out is None:
         return []
     subs = []
@@ -724,7 +1016,9 @@ _INTERP_CHARS = None         # 자르지 않음 — 스토어 전문
 # 물은 것 — 비용 3배에 완화만 됐다. 흔들리지 않는 모델을 한 번 묻는 쪽이 맞다.
 _INTERP_K = 1                # 표결 폐지 — 안정 모델 단일 콜 (k>1 은 실험용으로만)
 _INTERP_MODEL = os.environ.get("REVIEW_INTERPRET_MODEL", "claude-sonnet-5")
-_INTERP_MAX_TOKENS = 2400    # 600 → 2400: 사고 토큰 + JSON. 잘리면 llm.py 가 이름 붙여 보고
+_INTERP_MAX_TOKENS = 12000   # 2400 → 3600 → 12000 (2026-08-17). 소넷5 는 사고 토큰이
+                             # 출력 예산을 먹으므로 판정이 제일 잘 잘린다. 천장이라
+                             # 안 쓰면 비용 0. 잘리면 llm.py 가 이름 붙여 보고
 _CARD_CTX_CHARS = 1500       # 카드 한 장의 배경 상한
 _CARD_CTX_MAX = 2            # 배경 카드 수
 
@@ -785,6 +1079,18 @@ def interpret_case(llm, st: ReviewState, idx=None) -> Optional[dict]:
         if not body:
             body = " ".join(r.text for r in n.reqs)
         parts.append(f"◆ {n.doc} ▸ {n.path}\n{body}")
+    # 용어 정의 — 규범과 섞지 않고 따로 싣는다. 판정이 "X가 Y에 해당하는가"를
+    # 다룰 때 Y 의 정의가 없으면 답이 안 나온다(19-0152 는 정의 조가 정답이었다).
+    defn_txt = ""
+    if getattr(st, "glossary", None):
+        rows = []
+        for g in st.glossary[:3]:
+            gv = idx.docs.get(g.doc_id) if idx is not None else None
+            gn = gv.by_id.get(g.node) if gv is not None else None
+            rows.append(f"◆ {g.doc} ▸ {g.path}\n"
+                        + (gv.section_text(gn, cap=8000) if gn is not None else g.text))
+        defn_txt = "\n\n[용어 정의] (규범이 아니라 낱말의 뜻 — 해당성 판단에 쓴다)\n" \
+                   + "\n\n".join(rows)
     unmet = [s for s in st.subs if s.judgment == "불충족"]
     unmet_txt = ("\n\n[포섭 관측 — 불충족 요건] (참고 — 핵심 요건인지 판정이 가린다)\n"
                  + "\n".join(f"- {s.req_text[:100]} ({s.reason[:60]})"
@@ -792,7 +1098,7 @@ def interpret_case(llm, st: ReviewState, idx=None) -> Optional[dict]:
     issues_txt = "\n".join(f"- {i.question}" + (f" (판단 축: {i.axis})" if i.axis
                                                 else "") for i in st.issues)
     user = (f"[질문]\n{st.question[:2000]}\n\n[도출된 쟁점]\n{issues_txt}\n\n"
-            f"[회수된 조문]\n" + "\n\n".join(parts) + unmet_txt
+            f"[회수된 조문]\n" + "\n\n".join(parts) + defn_txt + unmet_txt
             + _card_context(st))
     votes = []
     for _ in range(_INTERP_K):

@@ -167,6 +167,13 @@ class ReviewState:
     facts: list = field(default_factory=list)
     issues: list = field(default_factory=list)
     norms: list = field(default_factory=list)
+    # 정의 마디 — **규범 상한(NORM_SECTIONS) 밖의 별도 칸**이다.
+    # 정의는 판단 대상이 아니라 용어 해설이라 6칸을 쓸 이유가 없다. 그런데
+    # 규범 자리에 넣으면 둘 다 안 된다(2026-08-17 골든 v2 네 판 실측):
+    #   앞자리에 넣으면 정답을 상한 밖으로 밀어내고(회수 77%→73%),
+    #   뒷자리에 넣으면 prior+rest 가 이미 6칸을 꽉 채워(쟁점당 6.0) 하나도 못 들어간다.
+    # 그래서 칸을 따로 뗀다 — 회수 판정에도 세고, 판정 프롬프트에도 실린다.
+    glossary: list = field(default_factory=list)
     subs: list = field(default_factory=list)
     verdicts: list = field(default_factory=list)
     trail: list = field(default_factory=list)      # 단계 기록 (사다리와 같은 규율)
