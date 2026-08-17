@@ -6,7 +6,7 @@
 > **Preview** 를 누르면 그림으로 그려집니다. 노션에는 붙여넣기가 아니라
 > `···` → **Import** → **Markdown & CSV** 로 가져오세요.
 >
-> **핵심만 보려면** — [ARCH_ONEPAGE.md](ARCH_ONEPAGE.md) (도판 여덟 장)
+> **시스템 구조만 보려면** — [ARCH_SYSTEM.md](ARCH_SYSTEM.md)
 
 ---
 

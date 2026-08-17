@@ -1,0 +1,423 @@
+<title>시스템 아키텍처</title>
+<style>
+:root{
+  --paper:#F2F4F5; --surface:#FBFCFC; --sunk:#EAEEEF;
+  --ink:#171A1E; --ink2:#4E5A63; --ink3:#7C8791;
+  --rule:#D3D9DC; --rule2:#E5E9EB;
+  --seal:#B8321C; --celadon:#2C6B60;
+  --code:#ECF0F1; --code-ink:#242A30;
+  --plate:#FCFCFB; --plate-rule:#E1E5E6;
+  --serif:"Nanum Myeongjo","Apple SD Gothic Neo",Batang,"바탕","Noto Serif KR","Songti SC",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",Pretendard,"Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+  --mono:"SF Mono","JetBrains Mono",D2Coding,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#11141A; --surface:#191D23; --sunk:#0D1014;
+  --ink:#E7EAEC; --ink2:#A5AFB7; --ink3:#76818A;
+  --rule:#2A3138; --rule2:#20262C;
+  --seal:#E4674E; --celadon:#66B5A4;
+  --code:#1B2026; --code-ink:#D3D9DD;
+}}
+:root[data-theme="dark"]{
+  --paper:#11141A; --surface:#191D23; --sunk:#0D1014;
+  --ink:#E7EAEC; --ink2:#A5AFB7; --ink3:#76818A;
+  --rule:#2A3138; --rule2:#20262C;
+  --seal:#E4674E; --celadon:#66B5A4;
+  --code:#1B2026; --code-ink:#D3D9DD;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.65 var(--sans);
+     -webkit-font-smoothing:antialiased}
+.page{max-width:1060px;margin:0 auto;padding:40px 24px 80px}
+.measure{height:10px;margin:0;border:0;
+  background:linear-gradient(var(--rule),var(--rule)) top left/100% 1px no-repeat,
+             repeating-linear-gradient(90deg,var(--rule) 0 1px,transparent 1px 22px) top left/100% 5px no-repeat}
+.eyebrow{font:600 .7rem/1 var(--mono);letter-spacing:.16em;color:var(--seal);text-transform:uppercase}
+h1{font:400 clamp(1.9rem,4vw,2.5rem)/1.2 var(--serif);letter-spacing:-.01em;margin:.5em 0 .3em}
+.byline{font:400 .8rem/1.7 var(--mono);color:var(--ink3);margin:0}
+section{padding:40px 0 4px}
+.hd{display:flex;align-items:baseline;gap:11px;margin:0 0 13px}
+.hd .k{font:600 .68rem/1 var(--mono);letter-spacing:.14em;color:var(--seal);
+       white-space:nowrap;padding-top:.3em}
+.hd h2{font:400 1.4rem/1.3 var(--serif);margin:0}
+.hd .sub{font:400 .84rem/1.5 var(--sans);color:var(--ink3);margin-left:auto;
+         text-align:right;padding-top:.4em}
+.plate{background:var(--plate);border:1px solid var(--plate-rule);border-radius:5px;
+       padding:24px 18px;overflow-x:auto}
+.mermaid{display:block;min-width:min-content}
+.tw{overflow-x:auto;margin:16px 0 0;border:1px solid var(--rule2);border-radius:5px}
+table{border-collapse:collapse;width:100%;font-size:.86rem;background:var(--surface)}
+th,td{text-align:left;padding:8px 13px;border-bottom:1px solid var(--rule2);
+      vertical-align:top;line-height:1.5}
+thead th{font:650 .72rem/1.4 var(--sans);letter-spacing:.06em;color:var(--ink2);
+         background:var(--sunk);border-bottom:1px solid var(--rule);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.n,th.n{font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:.82rem;
+          white-space:nowrap}
+td code,th code{background:transparent;padding:0;font-size:.9em}
+code{font:500 .875em/1.5 var(--mono);background:var(--code);color:var(--code-ink);
+     padding:.12em .38em;border-radius:3px}
+.mark{display:inline-block;font:650 .74rem/1 var(--mono)}
+.mark.y{color:var(--celadon)} .mark.n{color:var(--seal)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0 0}
+@media (max-width:760px){.cols{grid-template-columns:1fr}}
+.cols>.tw{margin:0}
+</style>
+
+<div class="page">
+<header>
+  <div class="eyebrow">8-AGENT</div>
+  <h1>시스템 아키텍처</h1>
+  <p class="byline">법령 42문서 · 마디 66,942 · 간선 27,318 · DB 없음 (파일 저장)</p>
+</header>
+
+<section>
+  <div class="hd"><span class="k">1</span><h2>계층</h2>
+    <span class="sub">입력 → 구조화 → 저장 → 질의 → 검토 → 표면</span></div>
+  <div class="plate"><pre class="mermaid">flowchart TB
+  subgraph L0["입력"]
+    direction LR
+    I1["law.go.kr 본문 XML"]
+    I2["HWP · DOCX · PDF"]
+    I3["해석례 · 회신 원문"]
+  end
+  subgraph L1["구조화 · core/structure"]
+    direction LR
+    A1["lawxml<br/>태그 계층 그대로"]
+    A2["from_styles<br/>Word 스타일 신뢰"]
+    A3["from_format<br/>형식 바인딩"]
+    A4["dp · scoring<br/>마커·타이포 유도"]
+  end
+  subgraph L2["저장 · data"]
+    direction LR
+    D1["structure/<br/>마디 트리 42문서"]
+    D2["delegation.json<br/>간선 27,318"]
+    D3["embeddings/sections<br/>조 단위 벡터"]
+    D4["wiki/<br/>raw + 아티클"]
+    D5["glossary.json<br/>용어"]
+  end
+  subgraph L3["질의 · core/rag"]
+    direction LR
+    R1["index"]
+    R2["search<br/>어휘 사다리"]
+    R3["vector<br/>의미 검색"]
+    R4["graph · delegation · expand"]
+  end
+  subgraph L4["검토 · core/casereview"]
+    P1["pipeline · 5단계"]
+  end
+  subgraph L5["표면 · api"]
+    direction LR
+    S1["structure_app<br/>FastAPI"]
+    S2["routers 13"]
+    S3["viewer 10"]
+  end
+  I1 --> A1
+  I2 --> A2
+  I2 --> A3
+  I2 --> A4
+  A1 --> D1
+  A2 --> D1
+  A3 --> D1
+  A4 --> D1
+  D1 --> D2
+  D1 --> D3
+  D1 --> D5
+  I3 --> D4
+  D1 --> R1
+  D2 --> R4
+  D3 --> R3
+  D5 --> R1
+  R1 --> R2
+  R1 --> R3
+  R2 --> P1
+  R3 --> P1
+  R4 --> P1
+  D4 --> P1
+  P1 --> S2
+  R1 --> S2
+  S1 --> S2
+  S1 --> S3</pre></div>
+</section>
+
+<hr class="measure">
+
+<section>
+  <div class="hd"><span class="k">2</span><h2>저장 계층</h2>
+    <span class="sub">DB 없음 · data/ 파일이 전부</span></div>
+  <div class="plate"><pre class="mermaid">flowchart LR
+  subgraph SD["구조"]
+    direction TB
+    T1["structure/&lt;doc_id&gt;/<br/>마디 트리 · span · path"]
+    T2["law_index.json<br/>문서 목록"]
+    T3["structure_ledger.json<br/>인제스트 원장"]
+  end
+  subgraph GD["연결"]
+    direction TB
+    G1["delegation.json<br/>시행령 · 위임행정규칙<br/>인용법령 · 시행규칙"]
+    G2["rules/edge_rules.json<br/>간선 규칙"]
+  end
+  subgraph VD["검색"]
+    direction TB
+    V1["embeddings/sections/<br/>조 단위 벡터"]
+    V2["glossary.json<br/>용어 1,154"]
+    V3["aliases.json<br/>약칭"]
+  end
+  subgraph WD["해석 지식"]
+    direction TB
+    W1["wiki/raw/<br/>불변 원문"]
+    W2["wiki/wiki/<br/>아티클 34"]
+    W3["wiki/ledger.jsonl<br/>적중 원장"]
+    W4["expc/index.json<br/>해석례 180"]
+  end
+  subgraph RD["평가"]
+    direction TB
+    E1["review/marked.json<br/>정답 66마디"]
+    E2["review/golden_v2_run*.json"]
+  end</pre></div>
+
+  <div class="tw"><table>
+    <thead><tr><th>좌표 규칙</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr><td>마디 지정</td><td><code>(법령명, node_id)</code> — 법과 시행령은 별개 문서, <code>node_id</code>는 문서마다 1부터</td></tr>
+      <tr><td>마디 계층</td><td>편 · 장 · 절 · 조 · 항 · 호 · 목</td></tr>
+      <tr><td>부칙</td><td>본칙과 같은 트리에 들어오며 <code>path</code>로 구별</td></tr>
+      <tr><td>간선 anchor</td><td>항·호·목까지 — <code>제2조제1호가목</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<hr class="measure">
+
+<section>
+  <div class="hd"><span class="k">3</span><h2>모듈</h2>
+    <span class="sub">core/ 네 갈래</span></div>
+  <div class="plate"><pre class="mermaid">flowchart TB
+  subgraph CS["core/structure — 구조화"]
+    direction LR
+    CS1["pipeline"]
+    CS2["lawxml · from_styles · from_format"]
+    CS3["dp · scoring · lexicon · title"]
+    CS4["registry · resolve · fingerprint"]
+    CS5["viewer"]
+  end
+  subgraph CR["core/rag — 질의"]
+    direction LR
+    CR1["index"]
+    CR2["search · vector · vecfirst"]
+    CR3["graph · delegation · expand · refs"]
+    CR4["answer · judge · verdicts"]
+    CR5["wikictx · wikiledger · wikilife"]
+    CR6["switches · rules · oql"]
+  end
+  subgraph CC["core/casereview — 검토"]
+    direction LR
+    CC1["pipeline · 5단계"]
+    CC2["model · ReviewState"]
+    CC3["binding"]
+  end
+  subgraph CT["core/terms — 용어"]
+    direction LR
+    CT1["build · candidates · cluster"]
+    CT2["embed · embed_sections"]
+    CT3["gate · judge · relations"]
+  end
+  CS1 --> CR1
+  CT2 --> CR2
+  CR1 --> CC1
+  CR2 --> CC1
+  CR3 --> CC1
+  CR5 --> CC1
+  CR6 --> CR3</pre></div>
+</section>
+
+<hr class="measure">
+
+<section>
+  <div class="hd"><span class="k">4</span><h2>회수 경로</h2>
+    <span class="sub">쟁점 하나 → 규범 6 + 정의</span></div>
+  <div class="plate"><pre class="mermaid">flowchart TB
+  Q["쟁점"]
+  Q --> B1["문면 인용 파싱<br/>refs"]
+  Q --> B2["쟁점 카드 조문 후보<br/>wikictx"]
+  Q --> B4["검색<br/>search + vector"]
+  B1 --> C1["좌표 직행"]
+  B2 --> C2["카드 좌표"]
+  B4 --> L["어휘 사다리<br/>정확 → 부분 → 본문"]
+  B4 --> V["의미 검색<br/>조 단위 임베딩"]
+  V --> IL["_interleave<br/>의미 우선"]
+  L --> IL
+  C1 --> FL["관계망 동반<br/>expand_floor"]
+  C2 --> FL
+  FL --> E1["위임"]
+  FL --> E2["수임"]
+  FL --> E3["배제"]
+  FL --> E4["준용"]
+  C1 --> M(("합류"))
+  C2 --> M
+  E1 --> M
+  E2 --> M
+  E3 --> M
+  E4 --> M
+  IL --> M
+  M --> AR["_article_of<br/>항·호 → 조 승격"]
+  AR --> K["규범 · 상한 6"]
+  M --> G["용어 정의<br/>상한 밖 glossary"]</pre></div>
+
+  <div class="cols">
+    <div class="tw"><table>
+      <thead><tr><th>스위치</th><th>대상</th></tr></thead>
+      <tbody>
+        <tr><td><code>floor_delegation</code></td><td>위임 동반</td></tr>
+        <tr><td><code>floor_reception</code></td><td>수임 동반</td></tr>
+        <tr><td><code>floor_exclusion</code></td><td>배제 동반</td></tr>
+        <tr><td><code>floor_junyong</code></td><td>준용 동반</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>간선</th><th class="n">순방향</th><th class="n">역방향</th></tr></thead>
+      <tbody>
+        <tr><td>위임 → 시행령</td><td class="n"><span class="mark y">있음</span></td><td class="n"><span class="mark y">있음</span></td></tr>
+        <tr><td>수임</td><td class="n"><span class="mark y">있음</span></td><td class="n"><span class="mark y">있음</span></td></tr>
+        <tr><td>배제</td><td class="n"><span class="mark y">있음</span></td><td class="n"><span class="mark y">있음</span></td></tr>
+        <tr><td>준용</td><td class="n"><span class="mark y">있음</span></td><td class="n"><span class="mark n">미구현</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<hr class="measure">
+
+<section>
+  <div class="hd"><span class="k">5</span><h2>검토 파이프라인</h2>
+    <span class="sub">5단계 · LLM 3종</span></div>
+  <div class="plate"><pre class="mermaid">flowchart LR
+  IN["질의 텍스트"] --> S1
+  S1["extract_facts"] --> S2["spot_issues"]
+  S2 --> S3["build_norms"]
+  S3 --> S4["subsume"]
+  S4 --> S5["interpret_case"]
+  S5 --> OUT["direction<br/>basis · reason"]
+  W["위키 쟁점 카드"] -.-> S2
+  IDX["구조 스토어 · 색인"] -.-> S3
+  NET["관계망"] -.-> S3
+  IDX -.->|"마디 전문"| S5</pre></div>
+
+  <div class="tw"><table>
+    <thead><tr><th>단계</th><th>함수</th><th>입력 → 출력</th><th>모델</th><th class="n">예산</th></tr></thead>
+    <tbody>
+      <tr><td>① 사실</td><td><code>extract_facts</code></td><td>텍스트 → Fact[≤8]</td><td>Haiku 4.5</td><td class="n">—</td></tr>
+      <tr><td>② 쟁점</td><td><code>spot_issues</code></td><td>Fact[] + 카드 → Issue[≤4]</td><td>Haiku 4.5</td><td class="n">8,000</td></tr>
+      <tr><td>③ 규범</td><td><code>build_norms</code></td><td>Issue → Section[≤6] + glossary</td><td>없음</td><td class="n">—</td></tr>
+      <tr><td>④ 포섭</td><td><code>subsume</code></td><td>Section[] + Fact[] → Req[≤18]</td><td>Haiku 4.5</td><td class="n">12,000</td></tr>
+      <tr><td>⑤ 판정</td><td><code>interpret_case</code></td><td>ReviewState + 마디 전문 → 방향·근거</td><td>Sonnet 5</td><td class="n">12,000</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="tw"><table>
+    <thead><tr><th>상수</th><th class="n">값</th></tr></thead>
+    <tbody>
+      <tr><td><code>NORM_SECTIONS</code></td><td class="n">6</td></tr>
+      <tr><td><code>ISSUE_MAX</code></td><td class="n">4</td></tr>
+      <tr><td><code>SUB_REQ_CAP</code></td><td class="n">18</td></tr>
+      <tr><td><code>REQ_LEAF_CHARS</code> / <code>REQ_STEM_CHARS</code></td><td class="n">260 / 400</td></tr>
+      <tr><td>판정 입력 절단</td><td class="n">없음 · <code>cap=10**9</code></td></tr>
+      <tr><td>클라이언트 타임아웃</td><td class="n">120초</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<hr class="measure">
+
+<section>
+  <div class="hd"><span class="k">6</span><h2>상태</h2>
+    <span class="sub">ReviewState 하나가 5단계를 관통</span></div>
+  <div class="plate"><pre class="mermaid">flowchart LR
+  subgraph RS["ReviewState"]
+    direction TB
+    F1["facts[]"]
+    F2["issues[]"]
+    F3["norms{issue: Section[]}"]
+    F4["glossary[] — 상한 밖"]
+    F5["reqs[]"]
+    F6["overall{direction, basis, reason}"]
+  end
+  S1["① 사실"] --> F1
+  S2["② 쟁점"] --> F2
+  S3["③ 규범"] --> F3
+  S3 --> F4
+  S4["④ 포섭"] --> F5
+  S5["⑤ 판정"] --> F6
+  F1 -.-> S2
+  F2 -.-> S3
+  F3 -.-> S4
+  F4 -.-> S5
+  F5 -.-> S5</pre></div>
+</section>
+
+<hr class="measure">
+
+<section>
+  <div class="hd"><span class="k">7</span><h2>API 표면</h2>
+    <span class="sub">FastAPI · 포트 5566</span></div>
+  <div class="plate"><pre class="mermaid">flowchart LR
+  subgraph APP["api/structure_app.py · FastAPI"]
+    direction TB
+    subgraph RT["routers/"]
+      direction LR
+      T1["/v1/structure"]
+      T2["/v1/rag"]
+      T3["/v1/review"]
+      T4["/v1/expc"]
+      T5["/v1/glossary"]
+      T6["/v1/golden"]
+      T7["/v1/lineage"]
+      T8["/v1/formats"]
+      T9["/v1/parser"]
+      T10["/v1/agent · /v1/agent6"]
+      T11["/v1/jobs · /v1/logs"]
+    end
+    subgraph VW["viewer/ · StaticFiles"]
+      direction LR
+      V1["/rag"]
+      V2["/glossary"]
+      V3["/expc"]
+      V4["/golden"]
+      V5["/rules"]
+      V6["/links"]
+      V7["/bindings"]
+      V8["/agent6"]
+      V9["/logs"]
+      V10["/ui"]
+    end
+  end
+  CL["브라우저 · curl"] --> RT
+  CL --> VW</pre></div>
+
+  <div class="cols">
+    <div class="tw"><table>
+      <thead><tr><th>배포</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td>실행</td><td><code>scripts/serve.sh</code> + uvicorn 재시작</td></tr>
+        <tr><td>컨테이너</td><td>쓰지 않음</td></tr>
+        <tr><td>포트</td><td class="n">5566</td></tr>
+        <tr><td>DB</td><td>없음 — <code>data/</code> 파일이 전부</td></tr>
+        <tr><td>스토어 위치</td><td><code>STRUCTURE_STORE</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>계층</th><th class="n">수</th></tr></thead>
+      <tbody>
+        <tr><td>문서</td><td class="n">42</td></tr>
+        <tr><td>마디</td><td class="n">66,942</td></tr>
+        <tr><td>색인 항목</td><td class="n">9,785</td></tr>
+        <tr><td>간선</td><td class="n">27,318</td></tr>
+        <tr><td>위키 아티클</td><td class="n">34</td></tr>
+        <tr><td>해석례</td><td class="n">180</td></tr>
+        <tr><td>용어</td><td class="n">1,154</td></tr>
+        <tr><td>라우터 · 화면</td><td class="n">13 · 10</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+</div>
