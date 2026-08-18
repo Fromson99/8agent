@@ -7,7 +7,7 @@ manifest·차단 감지는 공통 파이프라인이 소유한다.
 ## 배치
 
 ```
-collect.py                 # CLI 진입점: --source --dry-run --force --max-targets
+lawrag/pipeline/collect.py                 # CLI 진입점: --source --dry-run --force --max-targets
 sources/
   __init__.py              # 어댑터 레지스트리 {source_id: factory}
   base.py                  # Target / DocumentRef / FetchResult / SourceAdapter
@@ -15,14 +15,14 @@ sources/
   kofia.py                 # Phase 3
   fss.py                   # Phase 4 (동일 패턴)
   krx.py                   # Phase 4 (동일 패턴)
-corpus/<source_id>/<규정명>/    # 산출물 (git 미추적)
-corpus/<source_id>/manifest.json
+data/corpus/<source_id>/<규정명>/    # 산출물 (git 미추적)
+data/corpus/<source_id>/manifest.json
 logs/                      # 요청 로그 (git 미추적)
 tests/law_crawler/         # 픽스처 기반, 네트워크 없음
 scripts/merge_manifests.py # 소스별 manifest 병합
 ```
 
-## 자료형 (`sources/base.py`)
+## 자료형 (`lawrag/sources/base.py`)
 
 ```python
 Role = Literal["body", "attachment", "comparison_table"]
@@ -70,7 +70,7 @@ class SourceAdapter(Protocol):
 파일명 추측으로 구분하면 하위 파이프라인이 깨진다 (task §7). `fetch`의 기본 구현은
 `common.HttpClient`에 위임하고, 어댑터는 세션 준비와 discover만 소유한다.
 
-## 공통 파이프라인 (`collect.py` + `sources/common.py`)
+## 공통 파이프라인 (`lawrag/pipeline/collect.py` + `lawrag/sources/common.py`)
 
 ```
 for target in targets:
@@ -101,7 +101,7 @@ for target in targets:
   → `actual_format` 기록. 확장자와 불일치해도 파일은 받은 그대로 저장 (변환 금지)
 - sha256 → manifest. 시행일 필드가 없는 소스(KOFIA)에서 개정 감지의 유일한 수단
 
-### manifest (소스별 `corpus/<source>/manifest.json`, §3 스키마 확장)
+### manifest (소스별 `data/corpus/<source>/manifest.json`, §3 스키마 확장)
 
 ```jsonc
 {
@@ -112,7 +112,7 @@ for target in targets:
     "enforce": "",                      // 시행일 필드가 없는 소스는 빈 값 (조작 금지)
     "revised": "2026-04-09",            // 확장: 개정일 (revisionInfo 실측)
     "history_seq": "1787",              // 확장: 판 식별자
-    "body_file": "corpus/kofia/표준투자권유준칙/….hwp",
+    "body_file": "data/corpus/kofia/표준투자권유준칙/….hwp",
     "attachments": [{ "title": "...", "seq": "27611", "file": "...", "url": "...",
                       "role": "attachment", "sha256": "...", "actual_format": "hwp5(ole)",
                       "content_disposition_raw": "..." }],
@@ -121,7 +121,7 @@ for target in targets:
 }
 ```
 
-병합: `scripts/merge_manifests.py`가 `corpus/*/manifest.json` → `corpus/manifest.json`
+병합: `scripts/merge_manifests.py`가 `data/corpus/*/manifest.json` → `data/corpus/manifest.json`
 (items 이어붙이기, `source` 필드로 구분).
 
 ## 소스별 discover 계획

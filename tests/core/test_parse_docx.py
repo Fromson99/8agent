@@ -14,7 +14,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core import parse_adapter                                         # noqa: E402
+from lawrag.core import parse_adapter                                         # noqa: E402
 
 docx = pytest.importorskip("docx", reason="python-docx 필요 (docling 의존성)")
 

@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from api.routers import glossary as g                       # noqa: E402
+from lawrag.api.routers import glossary as g                       # noqa: E402
 
 
 def _isolate(tmp_path, monkeypatch, terms=None):

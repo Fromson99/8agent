@@ -42,7 +42,7 @@
 ```
 
 "부모 하나"를 가정한 코드는 반드시 깨진다. 가족 지도의 정본은
-`data/law_index.json`(가족 11개·문서 38건, `python -m core.lawnet` 로 재생성).
+`data/law_index.json`(가족 11개·문서 38건, `python -m lawrag.core.lawnet` 로 재생성).
 
 ---
 
@@ -274,7 +274,7 @@
 ## 6. 실측으로 배운 함정 목록 (새로 손대는 사람 필독)
 
 1. **law.go.kr 검색은 공식 명칭 완전일치만** — "자본시장법"(약칭) 불가.
-   TARGETS 추가 후 `collect.py --dry-run` 으로 먼저 검증.
+   TARGETS 추가 후 `lawrag/pipeline/collect.py --dry-run` 으로 먼저 검증.
 2. **MST(법령일련번호)는 개정판마다 바뀐다** — 조인 정본 키는 법령ID·명칭.
    위임 데이터 속 대상 MST 는 편집 시점 구판이다(실측: 283193 vs 238305).
 3. **행정규칙 XML 은 두 꼴** — 조문형식여부 N(한 덩어리) / Y(조마다 요소
@@ -285,7 +285,7 @@
 5. **좌표 해소는 부칙·별표 자손 제외** (§2 함정 ②).
 6. **KOFIA·KRX 는 HWP 보다 조문 HTML** — HWP 는 스타일 전무(추론 필요),
    같은 본문의 조문 HTML 은 구조가 클래스로 명시(결정적 이관,
-   `core/structure/rulehtml.py`). 별표·서식만 HWP 몫.
+   `lawrag/core/structure/rulehtml.py`). 별표·서식만 HWP 몫.
 7. **번호 표기 변형** — 항 16 이상은 `<16>`, 호 가지 "10의2.", KOFIA 는
    "1)"·"(1)"·"※" 도 쓴다. 마커 정규식을 좁게 잡으면 조용히 빠진다.
 8. **요약하지 말고 전사하라** — 문서 요약은 제1조(목적), 조문 요약은 조
@@ -295,7 +295,7 @@
    적용례(옛 사람·회사를 어떻게 대우하나) · **다른 법령의 개정**(남의 법
    문구 치환 목록). 앞의 둘은 권리·의무를 정하지만 개정 조는 사무적
    대응표라 대개 질의의 답이 아니다. 조 제목이 정형이라 문자열로 갈린다
-   (`core/rag/index.py: addendum_kind`, 실측 부칙 마디 3,993: 개정 1,880 ·
+   (`lawrag/core/rag/index.py: addendum_kind`, 실측 부칙 마디 3,993: 개정 1,880 ·
    시행일 895 · 경과조치 691 · 적용례 519). **다만 이름표일 뿐 회수에서
    거르지 않는다** — "언제부터 시행되나요"의 답은 시행일 조다. 어떤 질문에
    어떤 종류가 답인지는 진단 튜플에 관측으로 쌓고, 규칙 승격은 그 데이터가
@@ -314,17 +314,17 @@
 
 | 자산 | 내용 | 재생성 |
 |---|---|---|
-| `corpus/` | 수집 원문 (XML·조문 HTML·HWP) — 불변 | `python collect.py --source law` |
-| `corpus/law/relations/` | 위임·체계도 XML 원본 | 수집 스크립트 (멱등) |
-| `data/structure/` | 구조화 스토어 — 전 문서 결정적 이관 (fitness 1.0) | `python ingest_lawxml.py` · `python ingest_rulehtml.py` |
-| `data/delegation.json` | 위임 간선 + 좌표 해소 | `python -m core.lawnet` |
+| `data/corpus/` | 수집 원문 (XML·조문 HTML·HWP) — 불변 | `python -m lawrag.pipeline.collect --source law` |
+| `data/corpus/law/relations/` | 위임·체계도 XML 원본 | 수집 스크립트 (멱등) |
+| `data/structure/` | 구조화 스토어 — 전 문서 결정적 이관 (fitness 1.0) | `python -m lawrag.pipeline.ingest_lawxml` · `python -m lawrag.pipeline.ingest_rulehtml` |
+| `data/delegation.json` | 위임 간선 + 좌표 해소 | `python -m lawrag.core.lawnet` |
 | `data/law_index.json` | 문서 종별·시행일·제1조 전사·가족 트리 | 〃 |
-| 참조 간선 (rel·via) | 색인 로딩 때 문면에서 재계산 | `core/rag/refs.py` |
+| 참조 간선 (rel·via) | 색인 로딩 때 문면에서 재계산 | `lawrag/core/rag/refs.py` |
 | `data/links.json` | 사람·LLM 판정 (확정·rel 정정) — 판정은 파일이 정본 | links 검수 화면 |
 
 ```bash
 # 한 바퀴 (전부 멱등)
-python collect.py --source law && python ingest_lawxml.py && python -m core.lawnet
+python -m lawrag.pipeline.collect --source law && python -m lawrag.pipeline.ingest_lawxml && python -m lawrag.core.lawnet
 python -m pytest tests/core tests/rag -q
 
 # 화면: /links/ 참조 검수 · /rules/ 엔진 스위치 · /rag/ 질의(사다리에 "필수 동반"·"간선 항해")

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from sources import kofia
+from lawrag.sources import kofia
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "law_crawler" / "kofia"
 

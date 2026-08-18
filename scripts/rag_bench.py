@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""RAG 질문셋 러너 — bench/questions.yaml 의 질문을 /v1/rag/ask 로 돌린다.
+"""RAG 질문셋 러너 — data/bench/questions.yaml 의 질문을 /v1/rag/ask 로 돌린다.
 
     .venv/bin/python scripts/rag_bench.py                 # 전체 셋
     .venv/bin/python scripts/rag_bench.py --set bond-grade
@@ -7,7 +7,7 @@
 
 질문마다: answerable · 답 첫 글자 시간(TTFT, 스트리밍 실측) · 합성 시간 ·
 총 시간 · 근거 수 · 지문/교정 수를 표로 낸다. 원자료는
-bench/last_results.json 에 남는다 — 질문셋을 고친 뒤 다시 돌려 전후를
+data/bench/last_results.json 에 남는다 — 질문셋을 고친 뒤 다시 돌려 전후를
 비교하는 것이 이 파일의 쓰임새다. 모든 질의는 서버의 진단 튜플로도 쌓여
 /rag/debug.html 에서 전모(답 전문·회수 구역)를 다시 볼 수 있다.
 """
@@ -37,7 +37,7 @@ def ask(base: str, question: str, timeout: int = 300) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="http://localhost:5566")
-    ap.add_argument("--file", default=str(ROOT / "bench" / "questions.yaml"))
+    ap.add_argument("--file", default=str(ROOT / "data" / "bench" / "questions.yaml"))
     ap.add_argument("--set", dest="only", default=None,
                     help="이 id 의 셋만 돌린다")
     args = ap.parse_args()
@@ -76,7 +76,7 @@ def main() -> None:
                   f" · 지문 {row['지문']} · 교정 {row['교정']} | {q}"
                   + (f"  !! {err}" if err else ""), flush=True)
 
-    out_path = ROOT / "bench" / "last_results.json"
+    out_path = ROOT / "data" / "bench" / "last_results.json"
     out_path.write_text(json.dumps({"at": time.strftime("%Y-%m-%dT%H:%M:%S"),
                                     "rows": rows}, ensure_ascii=False, indent=2),
                         encoding="utf-8")

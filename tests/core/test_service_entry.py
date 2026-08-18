@@ -43,7 +43,7 @@ def svc(tmp_path, monkeypatch):
     monkeypatch.delenv("OPS_INBOX_DIR", raising=False)
 
     for mod in [m for m in list(sys.modules)
-                if m.startswith(("api.routers", "api.structure_app", "api.ops",
+                if m.startswith(("lawrag.api.routers", "lawrag.api.structure_app", "lawrag.api.ops",
                                  "service"))]:
         del sys.modules[mod]
 

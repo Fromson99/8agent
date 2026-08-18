@@ -15,8 +15,8 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.rag import vecfirst, vector as vector_mod        # noqa: E402
-from core.rag.index import Index                           # noqa: E402
+from lawrag.core.rag import vecfirst, vector as vector_mod        # noqa: E402
+from lawrag.core.rag.index import Index                           # noqa: E402
 
 
 def _docs():
@@ -58,7 +58,7 @@ def _arm_vector(tmp_path, monkeypatch, qvec):
             f.write(json.dumps({"doc_id": "d1", "node": node}) + "\n")
     monkeypatch.setenv("RAG_VECTOR_STORE", str(d))
     vector_mod._cache.clear()
-    from core import embedding
+    from lawrag.core import embedding
     monkeypatch.setattr(embedding, "available", lambda: True)
     monkeypatch.setattr(embedding, "encode_one",
                         lambda q: np.array(qvec, dtype=np.float32))

@@ -1,7 +1,7 @@
 """hwpx → md — 실제 수집 파일 픽스처 대상 (네트워크 없음)."""
 from pathlib import Path
 
-from core import hwpx_md
+from lawrag.core import hwpx_md
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures" / "law_crawler" / "lawgo"
 

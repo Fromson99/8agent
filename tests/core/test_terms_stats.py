@@ -14,12 +14,12 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.rag.index import DocView                          # noqa: E402
-from core.terms import gate as gate_mod                     # noqa: E402
-from core.terms import hierarchy as hier_mod                # noqa: E402
-from core.terms import relations as rel_mod                 # noqa: E402
-from core.terms.cluster import cluster                      # noqa: E402
-from core.terms.stats import Scored, _contiguous_in, _g2_pair, score  # noqa: E402
+from lawrag.core.rag.index import DocView                          # noqa: E402
+from lawrag.core.terms import gate as gate_mod                     # noqa: E402
+from lawrag.core.terms import hierarchy as hier_mod                # noqa: E402
+from lawrag.core.terms import relations as rel_mod                 # noqa: E402
+from lawrag.core.terms.cluster import cluster                      # noqa: E402
+from lawrag.core.terms.stats import Scored, _contiguous_in, _g2_pair, score  # noqa: E402
 
 kiwi_ok = True
 try:                                                        # pragma: no cover
@@ -40,7 +40,7 @@ def _view(texts, doc_id="d1", name="A.pdf"):
 
 @needs_kiwi
 def test_후보와_공기_한_스캔(monkeypatch):
-    from core.terms.candidates import harvest
+    from lawrag.core.terms.candidates import harvest
 
     h = harvest([_view(["신탁재산은 신탁보수를 공제한다.",
                         "신탁재산의 운용방법은 수익자가 정한다."])])
@@ -52,7 +52,7 @@ def test_후보와_공기_한_스캔(monkeypatch):
 
 @needs_kiwi
 def test_나열은_공기가_아니라_형제다():
-    from core.terms.candidates import harvest
+    from lawrag.core.terms.candidates import harvest
 
     h = harvest([_view(["펌프, 압축기 및 송풍기 등의 회전기기를 점검한다."])])
     kinds = {(c.a, c.b): c.kind for c in h.cooccurs}
@@ -70,7 +70,7 @@ def test_g2_는_붙어다니는_쌍에_높다():
 def test_proto_rel_은_회피_쌍을_승격하지_않는다():
     """G² 는 양측 검정 — 기대보다 훨씬 **적게** 공기해도 유의가 나온다.
     그런 쌍(음의 연관)은 관계 후보가 아니다."""
-    from core.terms.candidates import Cooccur, HarvestResult
+    from lawrag.core.terms.candidates import Cooccur, HarvestResult
 
     h = HarvestResult()
     h.n_sents = 1000
@@ -92,7 +92,7 @@ def test_proto_rel_은_회피_쌍을_승격하지_않는다():
 
 def test_cvalue_중첩_보정():
     """"안전밸브"가 늘 "압력안전밸브" 안에서만 나오면 감점된다."""
-    from core.terms.candidates import HarvestResult, Mention
+    from lawrag.core.terms.candidates import HarvestResult, Mention
 
     h = HarvestResult()
 
@@ -137,7 +137,7 @@ def test_계층_어휘포함은_접미_일치만():
 
 
 def test_proto_rel_승격_임계():
-    from core.terms.candidates import Cooccur, HarvestResult
+    from lawrag.core.terms.candidates import Cooccur, HarvestResult
 
     h = HarvestResult()
     h.n_sents = 100
@@ -153,8 +153,8 @@ def test_proto_rel_승격_임계():
 
 def test_게이트_변별력과_유령용어(tmp_path):
     """어디에나 있는 어휘는 기각되고, LLM 이 지어낸 대표명은 무시된다."""
-    from core.terms.candidates import HarvestResult, Mention
-    from core.terms.judge import Verdict
+    from lawrag.core.terms.candidates import HarvestResult, Mention
+    from lawrag.core.terms.judge import Verdict
 
     h = HarvestResult()
     h.n_blocks = 20
@@ -182,8 +182,8 @@ def test_군집은_병합하지_않는다(tmp_path):
     단위일 뿐, 케노니컬 병합은 검수·질의 루프가 벌어서 만든다."""
     import json
 
-    from core.terms.candidates import HarvestResult, Mention
-    from core.terms.judge import Verdict
+    from lawrag.core.terms.candidates import HarvestResult, Mention
+    from lawrag.core.terms.judge import Verdict
 
     h = HarvestResult()
     h.n_blocks = 40

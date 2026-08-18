@@ -33,7 +33,7 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
-GOLDEN = ROOT / "bench" / "golden"
+GOLDEN = ROOT / "data" / "bench" / "golden"
 
 
 def _store() -> Path:

@@ -1,16 +1,15 @@
 # 비밀값 — 절대 커밋 금지
-# .env 는 저장소 루트 하나뿐입니다. first-agent/.env 는 그것을 가리키는 심볼릭 링크이고
-# (레거시 엔진이 자기 폴더에서 찾습니다), 컨테이너는 환경변수로 주입받습니다.
+# .env 는 저장소 루트 하나뿐입니다.
 .env
 .env.local
 *.key
 
 # 가상환경 (docling 이 torch 를 끌고 와 수 GB 입니다)
-# 슬래시 없이 — 루트 .venv 는 first-agent/.venv 를 가리키는 심볼릭 링크입니다.
+# 슬래시 없이 — 루트 .venv (2026-08-18 first-agent/.venv 에서 옮김).
 .venv
 
 # 실행 산출물
-out/
+var/
 # {stem}.doc.json · *.reconcile.json — CLI 로 재생성됩니다.
 # (주석은 반드시 제 줄에 — 패턴 뒤에 붙이면 주석까지 패턴이 되어 아무것도 안 걸립니다.)
 agents/*/output/
@@ -24,14 +23,12 @@ __pycache__/
 #
 # 이 브랜치(dev)는 내부 저장소(infoczAI/agent8) 전용이며 dataset/ 을 포함합니다.
 # 공개 저장소(Fromson99/8agent)의 main 은 아래 두 경로를 제외합니다:
-#     first-agent/dataset/
-#     agents/agent1/data/          (원본 PDF 및 dataset 심볼릭 링크)
-#     agents/agent6/corpus/raw/    (법령·준칙 원문 PDF)
+#     lawrag/agents/agent6/corpus/raw/    (법령·준칙 원문 PDF)
 #
 # ⚠️ 이 브랜치를 공개 저장소로 push 하거나 merge 하지 마세요 — 원본 은행 문서가
 #    함께 넘어갑니다.
 
-# archive/trust-parser-v1/data/golden_pairs/ 는 tools/make_golden_pdf.py 로 만든 합성
+# (옛 archive/trust-parser-v1 골든 쌍 메모 — 코드는 2026-08-18 삭제)
 # 테스트 픽스처이고, 채워진 값은 전부 지어낸 것입니다(실제 체결 건 아님).
 
 # 서비스 런타임 데이터 — 화면에서 올린 문서·해석 결과·등록 규칙·용어집·참조 링크.
@@ -62,5 +59,5 @@ data/format_canvas.json
 data/structure_fixes.json
 data/structure_ledger.json
 
-# 벤치 실행 결과. 질문셋(bench/questions.yaml)만 이력에 둡니다.
-bench/last_results.json
+# 벤치 실행 결과. 질문셋(data/bench/questions.yaml)만 이력에 둡니다.
+data/bench/last_results.json

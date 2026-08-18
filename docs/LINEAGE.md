@@ -29,8 +29,8 @@ links.json. 그런데 이 기록들은 서로를 모른다. "이 문서가 어�
 
 | 단계 | ground truth | done 판정 |
 |---|---|---|
-| 수집 | `corpus/<출처>/manifest.json` | 항목 status=ok 이고 본문 sha 가 있다 |
-| 변환 | 본문 옆 `.md` 사이드카 (convert.py) | 본문 형식이 hwp 계열일 때만 요구되고, 사이드카 존재가 완료다 |
+| 수집 | `data/corpus/<출처>/manifest.json` | 항목 status=ok 이고 본문 sha 가 있다 |
+| 변환 | 본문 옆 `.md` 사이드카 (lawrag/core/hwp5_md.py) | 본문 형식이 hwp 계열일 때만 요구되고, 사이드카 존재가 완료다 |
 | 구조화 | `data/structure/<doc_id>/meta.json` | doc_id 디렉토리가 스토어에 있다 (passed·score 는 상세로 병기) |
 | 연결 | `data/links.json` | 말뭉치 국면 — 문서 단위가 아니다 (아래) |
 
@@ -44,12 +44,12 @@ links.json. 그런데 이 기록들은 서로를 모른다. "이 문서가 어�
 구조화까지 가는 **로직**은 형식마다 다르다: XML 은 태그에서 결정적 이관,
 hwp 는 md 사이드카를 거치고, PDF·DOCX 는 업로드 해석 직행. 이것을
 일원화하는 방법은 로직을 합치는 것이 아니라 **단계 모델을 하나로 두고
-형식이 자기 경로만 선언하게** 하는 것이다 — core/lineage.py `ROUTES`:
+형식이 자기 경로만 선언하게** 하는 것이다 — lawrag/core/lineage.py `ROUTES`:
 
 | 계열 | 변환 요구 | 구조화로 가는 길 |
 |---|---|---|
-| xml | 없음 | lawxml 결정적 이관 (ingest_lawxml.py) |
-| hwp | md 사이드카 | convert.py → 구조화(경로 공사 중) |
+| xml | 없음 | lawxml 결정적 이관 (lawrag/pipeline/ingest_lawxml.py) |
+| hwp | md 사이드카 | lawrag/core/hwp5_md.py → 구조화(경로 공사 중) |
 | pdf · docx | 없음 | 업로드 해석 직행 (POST /v1/structure/documents) |
 
 새 형식이 오면 이 표에 한 줄이 늘 뿐, 단계 모델·조인 키(sha256)·화면은
@@ -58,11 +58,11 @@ hwp 는 md 사이드카를 거치고, PDF·DOCX 는 업로드 해석 직행. 이
 스토어에 닿는 순간 doc_id 가 본문 sha 이므로 원장 조인은 동일하다 —
 XML 로 구조화된 25건이 아무 추가 기록 없이 원장에 서는 이유다.
 
-**코드단도 한 문이다 — core/ingest.py.** 선언(ROUTES)이 어휘라면 실행부는
+**코드단도 한 문이다 — lawrag/core/ingest.py.** 선언(ROUTES)이 어휘라면 실행부는
 `core.ingest.ingest(raw, filename, store=…)` 하나다: 계열 판정 →
 xml 은 lawxml 이관, pdf 는 직행, hwp·docx 는 parse_adapter+합성 지면 —
-전부 이 문 안의 분기다. 업로드 API(api/routers/structure.py)와
-CLI(ingest_lawxml.py)는 이 문을 부르는 낯일 뿐이고, 형식 바인딩(틀 연결)은
+전부 이 문 안의 분기다. 업로드 API(lawrag/api/routers/structure.py)와
+CLI(lawrag/pipeline/ingest_lawxml.py)는 이 문을 부르는 낯일 뿐이고, 형식 바인딩(틀 연결)은
 api 소유라 조회 함수(binding_of)로 주입받는다 — core 가 api 를 임포트하는
 역방향을 만들지 않기 위해서다. 실행부 계열과 ROUTES 선언의 어휘 일치는
 규약 테스트(tests/core/test_ingest.py)가 지킨다.
@@ -85,7 +85,7 @@ api 소유라 조회 함수(binding_of)로 주입받는다 — core 가 api 를 
 
 원장의 본문 규칙: `body_sha256` 이 있으면 그것, 없으면 role=body 첨부의
 sha256·file·actual_format. 둘 다 없으면 본문 미확보(수집 미완 — kofia
-partial 2건이 실제 사례)다. 이 규칙은 core/lineage.py `body_of()` 한 곳에만
+partial 2건이 실제 사례)다. 이 규칙은 lawrag/core/lineage.py `body_of()` 한 곳에만
 있다.
 
 ## 고아 — 수집분과 조인되지 않는 스토어 문서
@@ -120,7 +120,7 @@ partial 2건이 실제 사례)다. 이 규칙은 core/lineage.py `body_of()` 한
 경로 해석은 라우터가 한 번만 한다 — STRUCTURE_STORE 는
 api.routers.structure 의 STORE 를, links 는 core.rag.index.links_path() 를
 빌린다 (ops.py 와 같은 이유: env 를 두 번 해석하면 어긋나는 날이 온다).
-corpus 는 collect.py 와 같은 저장소 루트의 `corpus/` 가 기본이고
+corpus 는 lawrag/pipeline/collect.py 와 같은 저장소 루트의 `data/corpus/` 가 기본이고
 CORPUS_DIR 로만 바꾼다(테스트용).
 
 ## 지금 실측 (2026-08-13)

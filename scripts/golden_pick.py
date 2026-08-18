@@ -65,7 +65,7 @@ def cited(case: dict) -> tuple:
 
 
 def score(cases: list) -> list:
-    from core.rag import index as index_mod, wikictx
+    from lawrag.core.rag import index as index_mod, wikictx
     idx = index_mod.current()
     have = {wikictx._pack(v.name): v for v in idx.docs.values()}
 

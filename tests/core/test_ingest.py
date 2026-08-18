@@ -1,4 +1,4 @@
-"""문서 인제스트의 문(core/ingest.py) — 일원화 규약.
+"""문서 인제스트의 문(lawrag/core/ingest.py) — 일원화 규약.
 
 여기서 지키는 것 셋:
   (1) 어휘 일치 — 실행부(EXT_FAMILY 계열)와 경로 선언(lineage.ROUTES)은 같은
@@ -21,14 +21,14 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core import ingest, lineage  # noqa: E402
+from lawrag.core import ingest, lineage  # noqa: E402
 
 FIX = ROOT / "tests" / "fixtures" / "law_crawler" / "lawgo"
 
 
 def test_실행부와_경로선언은_같은_계열_어휘를_쓴다():
     assert set(ingest.EXT_FAMILY.values()) == set(lineage.ROUTES), (
-        "core.ingest 의 계열과 core.lineage.ROUTES 선언이 어긋났다 — "
+        "lawrag.core.ingest 의 계열과 core.lineage.ROUTES 선언이 어긋났다 — "
         "새 형식은 두 곳에 함께 늘어야 한다 (docs/LINEAGE.md)")
 
 

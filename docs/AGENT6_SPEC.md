@@ -47,10 +47,10 @@
 
 ---
 
-## 2. 근거 문서 코퍼스 (`corpus/`) — "미리 연결"의 재료
+## 2. 근거 문서 코퍼스 (`data/corpus/`) — "미리 연결"의 재료
 
 컴파일 타임에 아래 문서를 수집·발췌해 로컬에 둔다. **런타임은 이 발췌만 사용한다.**
-**코퍼스 ID = `corpus/raw/`의 파일명**이며(사이드카의 `doc_id`와도 같아야 한다), basis 좌표가
+**코퍼스 ID = `data/corpus/raw/`의 파일명**이며(사이드카의 `doc_id`와도 같아야 한다), basis 좌표가
 그 ID로 원문을 찾는다.
 
 | 코퍼스 ID | 문서 | 출처 | 용도 |
@@ -67,19 +67,19 @@
 법령은 조→항→호→목 구조가 계약서보다도 규칙적이어서 조/항/호 인식기가 그대로 적용된다:
 
 ```
-corpus/raw/{ID}.pdf|txt (+ {ID}.meta.yaml)   # 원문 + provenance (출처·수집일·verification)
+data/corpus/raw/{ID}.pdf|txt (+ {ID}.meta.yaml)   # 원문 + provenance (출처·수집일·verification)
         ↓ corpus_build.py → router.route(파일, doc_type=…)   # 코어가 배차·구조화·채점
-corpus/structured/{ID}.doc.json              # Agent1과 **동일한** doc.json 스키마
+data/corpus/structured/{ID}.doc.json              # Agent1과 **동일한** doc.json 스키마
         ↓ 좌표 lookup (find_sections + 자손 subtree)
-corpus/excerpts/{ID}/{좌표}.txt              # 컴파일 타임 물질화 (런타임이 로드하는 최종 형태)
-corpus/manifest.json                         # basis 좌표의 해소/미해소 — 빌드 게이트
+data/corpus/excerpts/{ID}/{좌표}.txt              # 컴파일 타임 물질화 (런타임이 로드하는 최종 형태)
+data/corpus/manifest.json                         # basis 좌표의 해소/미해소 — 빌드 게이트
 ```
 
-구현: `agents/agent6/src/corpus_build.py` (CLI `python -m agents.agent6.src.corpus_build`).
+구현: `lawrag/agents/agent6/src/corpus_build.py` (CLI `python -m agents.agent6.src.corpus_build`).
 이 파일에는 **파싱도 구조화도 없다** — `router.route()`를 부르고, 나온 doc.json에서
 체크리스트가 요구한 좌표만 골라 발췌로 굳힌다. 요구되지 않은 조문은 뽑지 않는다(발췌는
 "미리 연결"의 결과물이지 조문 덤프가 아니다). 런타임이 발췌를 만나는 유일한 통로는
-`agents/agent6/src/basis.py`이며, 그 안에 검색은 없다 — 좌표로 파일 하나를 여는 것이 전부다.
+`lawrag/agents/agent6/src/basis.py`이며, 그 안에 검색은 없다 — 좌표로 파일 하나를 여는 것이 전부다.
 
 이 승격의 효과: (a) 항목 스펙의 basis가 파일 경로가 아니라 **section 좌표**
 (`KSB/제21조/제1호`)가 되어 Agent1과 동일한 좌표 체계로 통일된다. (b) 법 개정 시 raw만
@@ -91,8 +91,8 @@ corpus/manifest.json                         # basis 좌표의 해소/미해소 
 
 ### 2.1 route 등록 — 코퍼스가 라우터를 타는 방법
 
-`core/registry.yaml`에 agent6이 owner인 route 4개가 등록돼 있고, 그 자산은
-`agents/agent6/{formats,glossary}/`에 있다:
+`lawrag/core/registry.yaml`에 agent6이 owner인 route 4개가 등록돼 있고, 그 자산은
+`lawrag/agents/agent6/{formats,glossary}/`에 있다:
 
 | doc_type | detect | format / glossary | 임계 |
 |---|---|---|---|
@@ -112,7 +112,7 @@ detect 규칙이 이름만으로 갈리지 않는다는 것이 실측의 교훈�
 운영 빌드에서 **기본 거부**이며 `--allow-synthetic`으로만 통과한다 — 합성 조문이 진짜 법령처럼
 유통되는 것이 이 시스템의 최악 실패다.
 
-### 2.2 현재 코퍼스 상태 (`corpus/manifest.json`, 2026-08-05 빌드)
+### 2.2 현재 코퍼스 상태 (`data/corpus/manifest.json`, 2026-08-05 빌드)
 
 | ID | 상태 | 비고 |
 |---|---|---|
@@ -130,7 +130,7 @@ detect 규칙이 이름만으로 갈리지 않는다는 것이 실측의 교훈�
 유형: **존재형**(필수 발화의 존재) / **부재형**(금지 발화의 부재) / **충분성형**(정도 판정).
 `when`은 조건부 활성화(메타 기반, 결정론).
 
-**`when`은 자연어가 아니라 작은 DSL이다** (`agents/agent6/src/when.py`). 항목 스펙은 데이터지
+**`when`은 자연어가 아니라 작은 DSL이다** (`lawrag/agents/agent6/src/when.py`). 항목 스펙은 데이터지
 코드가 아니므로 `eval()`을 쓰지 않고 손으로 짠 재귀 하강 파서가 읽는다. 문법:
 
 ```
@@ -210,7 +210,7 @@ and/or는 Kleene 3치 논리를 따른다 — UNKNOWN이 결과를 바꾸지 못
 
 ## 4. 항목 스펙 포맷 (`checklist/items/*.yaml`) — 이 시스템의 심장
 
-아래는 `agents/agent6/checklist/items/D-20.yaml`의 실물이다(스키마: `src/schema.py`의 `ChecklistItem`).
+아래는 `lawrag/agents/agent6/checklist/items/D-20.yaml`의 실물이다(스키마: `src/schema.py`의 `ChecklistItem`).
 
 ```yaml
 id: D-20
@@ -258,7 +258,7 @@ judgment_hints:
 ## 5. 런타임 파이프라인
 
 모듈 대응: `preprocess → lexicon → context_asm → judge → cross_signal → aggregate → report`
-(진입점 `agents/agent6/src/cli.py`의 `run_pipeline`). **LLM 키가 없어도 끝까지 돈다** — 키가
+(진입점 `lawrag/agents/agent6/src/cli.py`의 `run_pipeline`). **LLM 키가 없어도 끝까지 돈다** — 키가
 없으면 판정기가 결정론 모드로 자동 강등하고 그 사실을 리포트에 적는다(§5.1).
 
 1. **전처리** — 전사 로드(`router.require`, doc_type `STT전사`)·화자 정규화·매칭용 문자열 생성.
@@ -315,7 +315,7 @@ judgment_hints:
 | 충분성형 (파생 아님) | 무관 | UNCLEAR | low | 준법감시큐 |
 | 충분성형 (파생) | — | aggregate가 계산 (§9-5) | — | 구성 항목이 정함 |
 
-구현은 `agents/agent6/src/judge.py`의 `judge_deterministic()`이다. **표와 코드가 어긋나면
+구현은 `lawrag/agents/agent6/src/judge.py`의 `judge_deterministic()`이다. **표와 코드가 어긋나면
 표가 정본이다.**
 
 왜 이렇게 기우는가 — 이 표는 대칭이 아니다. 부재형은 신호가 **있으면** 의심하고, 존재형은
@@ -377,7 +377,7 @@ guard를 믿지 않는 이유도 같다: 인접 상쇄는 문맥 판단인데 �
 
 - `basis_refs`는 **`{코퍼스ID}/{section_path}`** — `KSB/제19조`, `KSB/제21조/제1호`,
   `CASE/2023-046`. 조문 번호를 축약한 `KSB/19-1` 같은 표기는 쓰지 않는다(발췌 파일 경로
-  `corpus/excerpts/KSB/제21조_제1호.txt`가 이 좌표에서 기계적으로 나온다).
+  `data/corpus/excerpts/KSB/제21조_제1호.txt`가 이 좌표에서 기계적으로 나온다).
 - `evidence[]`는 `{text, section_id, start?, end?, char_start?, char_end?}`이며 **좌표가 최소
   하나는 있어야** 한다. section_id는 전사 발화 좌표(`발화001`)다.
 - `route`는 `PB보완 | 준법감시큐`, `confidence`는 `high | medium | low`,
@@ -401,7 +401,7 @@ guard를 믿지 않는 이유도 같다: 인접 상쇄는 문맥 판단인데 �
   실패로 끝난다). 조 번호 결번 보고와 반복 머리글(`noise_candidates`) 보고를 표준 출력에
   포함한다 — 파싱 누락과 발췌 오염이 조용히 지나가지 않게 한다. **[구현됨]**
   남은 작업: (a) **법령 원문 확보** — law.go.kr·fsc.go.kr은 자동 접근을 차단하므로 담당자가
-  수동 다운로드한 PDF를 `corpus/raw/`에 투입하고 사이드카를 쓴다(공통 규칙 §4: 조문을
+  수동 다운로드한 PDF를 `data/corpus/raw/`에 투입하고 사이드카를 쓴다(공통 규칙 §4: 조문을
   기억으로 지어내지 않는다). (b) `--strict` 빌드를 CI에 연결. (c) KOFIA-R 사이드카의
   `doc_type`을 등록부의 route 이름과 맞추기(현재 UNROUTABLE의 원인).
 - **T-A6.3 목업 체크리스트 작성** — §3의 30개를 §4 포맷 YAML로. `checklist/items/*.yaml`
@@ -447,9 +447,9 @@ guard를 믿지 않는 이유도 같다: 인접 상쇄는 문맥 판단인데 �
 ## 10. 저장소 구조
 
 ```
-agents/agent6/
+lawrag/agents/agent6/
   checklist/items/*.yaml            # §4 — 30개 (목업 → INT 교체 예정)
-  corpus/
+  data/corpus/
     raw/{ID}.pdf|txt + {ID}.meta.yaml   # 원문 + provenance 사이드카 (+ README.md 규약)
     structured/{ID}.doc.json            # 라우터가 만든 doc.json
     excerpts/{ID}/{좌표}.txt            # 물질화된 발췌 (좌표의 / → _)
@@ -465,12 +465,12 @@ tests/agent6/  test_corpus.py, test_when.py, fixtures/corpus/…
                (전사 픽스처 clean/violation/ambiguous·mutations 는 미작성 — §9)
 ```
 
-route 자산(formats·glossary)은 이 폴더에 있지만 **연결은 `core/registry.yaml`이 한다**(§2.1).
+route 자산(formats·glossary)은 이 폴더에 있지만 **연결은 `lawrag/core/registry.yaml`이 한다**(§2.1).
 
 CLI:
 ```bash
 python -m agents.agent6.src.cli run --transcript t.json [--meta m.json] [--no-llm] \
-    [--per-item] [--max-batch 6] [--basis-policy warn|block] -o agents/agent6/output/
+    [--per-item] [--max-batch 6] [--basis-policy warn|block] -o lawrag/agents/agent6/output/
 python -m agents.agent6.src.cli harvest --queue review_queue.jsonl --resolved r.jsonl [--dry-run]
 python -m agents.agent6.src.corpus_build [--allow-synthetic] [--strict]
 ```

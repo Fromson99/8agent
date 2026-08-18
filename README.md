@@ -11,7 +11,8 @@
 `core` 는 신탁계약서도 금소법도 모른다. 도메인 지식은 전부 `agents/` 아래 **데이터
 파일**에 있다. 그래서 새 업무를 붙이는 일은 새 코드가 아니라 새 폴더 + 새 데이터다.
 
-**➜ 처음이라면 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 부터.** 무엇을 하고 어떤
+**➜ 법령 RAG 가 목적이면 [docs/ARCH_SYSTEM.md](docs/ARCH_SYSTEM.md) 부터.** 구조 해석기·agents 구도는
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — 무엇을 하고 어떤
 기제로 되어 있는지를 한 편으로 설명한다.
 
 **➜ 법령 RAG 를 만진다면 [docs/LEGAL_DOMAIN.md](docs/LEGAL_DOMAIN.md) 필독.** 법령의
@@ -22,17 +23,19 @@
 
 ## 5분 안에 돌려 보기
 
-### 1) 구조 해석 검수 화면 (컨테이너, 준비물 없음)
-
-용어집도 형식도 없이 PDF 를 넣으면 계층 구조를 복원해 원본 위에 겹쳐 보여 준다.
+### 1) 서버 (호스트 직접 실행 — 컨테이너 안 쓴다)
 
 ```bash
-docker compose up -d --build        # 첫 빌드는 docling 모델을 굽느라 몇 분 걸린다
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+cp .env.example .env            # ANTHROPIC_API_KEY (개발망) 또는 GENOS_LLM_URL·GENOS_LLM_KEY (GenOS)
+scripts/serve.sh                # uvicorn api.structure_app:app  → http://localhost:5566
 open http://localhost:5566          # 구조 해석 검수
+open http://localhost:5566/rag/     # 법령 질의응답
 open http://localhost:5566/agent6/  # 체크리스트 ↔ 법령 근거 연결
 ```
 
-화면 사용법과 환경변수는 [deploy/structure/README.md](deploy/structure/README.md).
+반영 경로는 `scripts/serve.sh` 재시작 하나다. 폐쇄망(GenOS) 배포·데이터 반입은
+[docs/OPS_TRANSPORT.md](docs/OPS_TRANSPORT.md).
 
 ### 2) 로컬 CLI
 
@@ -41,55 +44,81 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m pytest tests -q
 
 # 지금 무엇을 처리할 수 있는가
-.venv/bin/python -m core.cli routes
+.venv/bin/python -m lawrag.core.cli routes
 
 # 형식 없이 구조만 — 처음 보는 문서
-.venv/bin/python -m core.structure.cli interpret 문서.pdf
+.venv/bin/python -m lawrag.core.structure.cli interpret 문서.pdf
 
 # 등록된 문서 종류 → doc.json (LLM 없음, 결정론)
-.venv/bin/python -m core.cli structurize 문서.pdf -o doc.json
+.venv/bin/python -m lawrag.core.cli structurize 문서.pdf -o doc.json
 ```
 
 ### 3) 에이전트
 
 ```bash
-# agent1 — 계약서 ↔ 투자설명서 값 대사 (파일 두 개 in, 리포트 out)
-.venv/bin/python agents/agent1/src/cli.py run \
-    --contract   agents/agent1/data/golden/contract_filled.pdf \
-    --prospectus agents/agent1/data/B1055656A.pdf \
-    -o agents/agent1/output/agent1.report.json
-
-# agent6 — 녹취 전사 하나로 체크리스트 30항목 점검 (ANTHROPIC_API_KEY 필요)
+# agent6 — 녹취 전사 하나로 체크리스트 30항목 점검 (LLM 필요)
 .venv/bin/python -m agents.agent6.src.cli run --transcript 전사.json -o out/
 ```
 
-LLM 키는 저장소 루트 `.env` 의 `ANTHROPIC_API_KEY` 를 읽는다(컨테이너는 환경변수로 주입).
+LLM 은 저장소 루트 `.env` 를 읽는다 — `ANTHROPIC_API_KEY`(개발망) 또는 `GENOS_LLM_URL`·`GENOS_LLM_KEY`(GenOS 서빙, [docs/OPS_TRANSPORT.md](docs/OPS_TRANSPORT.md) §LLM).
 
 ---
 
 ## 무엇이 어디에 있나
 
-| 폴더 | 역할 | 문서 |
+뿌리는 일곱이다 — 진입점 하나, 코드 하나, 도구, 테스트, 문서, 상태, 휘발.
+
+```
+8-AGENT/
+├── service.py        GenOS 코드 서빙 진입점 — 계약상 저장소 뿌리에 있어야 한다
+├── lawrag/           코드 전부 (파이썬 패키지 하나)
+│   ├── api/          FastAPI 앱 하나(structure_app, 5566) · viewer/ 정적 화면 · ops(폐쇄망 운반)
+│   ├── core/         structure/(구조 해석) rag/(회수·질의) casereview/(검토) terms/(용어) + 파싱·인제스트·llm·embedding
+│   ├── sources/      수집 어댑터 — kofia · fss · krx · lawgo · expc · prec · cite
+│   ├── pipeline/     수집→변환→인제스트→위키 트리아지 CLI 12개  (`python -m lawrag.pipeline.<이름>`)
+│   └── agents/agent6/  녹취 체크리스트 ↔ 법령 근거 (앱이 라우터·화면을 싣는다)
+├── scripts/          운영·평가 도구 — serve.sh · data_ship.sh · 골든·벤치·트레이스·도판
+├── tests/            core · rag · casereview · law_crawler · agent6 · architecture
+├── docs/             문서 (+ tasks/ 작업 지시, archive/ 옛 스펙, examples/ 과제3·5 예시)
+├── data/             남는 상태 — structure/ embeddings/ wiki/ review/ bench/ corpus/(수집 원본, 미추적) …
+└── var/              휘발 — logs/ out/ (전부 .gitignore)
+```
+
+| 위치 | 무엇 | 문서 |
 |---|---|---|
-| [core/](core/) | 파싱 → 구조화. 문서 종류를 모르는 범용 층 | [core/README.md](core/README.md) |
-| [core/structure/](core/structure/) | 구분자만 보고 계층을 복원하는 구조 해석기 | [docs/structure_interpreter_SPEC.md](docs/structure_interpreter_SPEC.md) |
-| [agents/agent1/](agents/agent1/) | 신탁계약서 ↔ 투자설명서 **값** 대조 | [agents/agent1/README.md](agents/agent1/README.md) |
-| [agents/agent6/](agents/agent6/) | 녹취 체크리스트 점검 — 판정기가 LLM | [agents/agent6/README.md](agents/agent6/README.md) |
-| [api/](api/) | FastAPI. `structure_app`(기본 5566) · `app`(레거시 5555) | [api/README.md](api/README.md) |
-| [deploy/](deploy/) | 컨테이너 이미지 두 종 | [deploy/structure/README.md](deploy/structure/README.md) |
-| [docs/](docs/) | 아키텍처 + SPEC 4종 + QA 질문지 | ↓ |
-| [tests/](tests/) | core · agent1 · agent6 · architecture | |
-| [archive/](archive/) · `first-agent/` | v1·v0 보존. 기본 이미지에는 안 들어간다 | |
+| [lawrag/core/](lawrag/core/) | 파싱 → 구조화. 문서 종류를 모르는 범용 층 | [lawrag/core/README.md](lawrag/core/README.md) |
+| [lawrag/core/structure/](lawrag/core/structure/) | 구분자만 보고 계층을 복원하는 구조 해석기 | [docs/structure_interpreter_SPEC.md](docs/structure_interpreter_SPEC.md) |
+| [lawrag/core/rag/](lawrag/core/rag/) · [lawrag/core/casereview/](lawrag/core/casereview/) | 법령 회수·질의응답 · 법적 검토 | [docs/ARCH_SYSTEM.md](docs/ARCH_SYSTEM.md) · [docs/REVIEW.md](docs/REVIEW.md) |
+| [lawrag/pipeline/](lawrag/pipeline/) · [lawrag/sources/](lawrag/sources/) | 수집·변환·인제스트 단계와 소스별 어댑터 | [lawrag/pipeline/__init__.py](lawrag/pipeline/__init__.py) · [docs/adapter_design.md](docs/adapter_design.md) |
+| [lawrag/agents/agent6/](lawrag/agents/agent6/) | 녹취 체크리스트 점검 — 판정기가 LLM | [lawrag/agents/agent6/README.md](lawrag/agents/agent6/README.md) |
+| [lawrag/api/](lawrag/api/) | FastAPI `structure_app` (5566) + GenOS 운반 `ops` | [lawrag/api/README.md](lawrag/api/README.md) |
+| [scripts/](scripts/) | 서버 기동·데이터 반입·골든·벤치 도구 | [docs/OPS_TRANSPORT.md](docs/OPS_TRANSPORT.md) |
+| [data/](data/) | 서버 상태 — 무엇이 git 에 있고 무엇을 메일로 나르나 | [data/README.md](data/README.md) |
+| [tests/](tests/) | core · rag · casereview · law_crawler · agent6 · architecture | |
+| [docs/archive/](docs/archive/) | v0·v1·agent1 시절 문서 (코드는 git 이력에) | |
 
-**문서**
+**문서** — 두 시대가 겹쳐 있다. 법령 RAG 를 만지면 위 묶음, 구조 해석기·agent6 을 만지면 아래 묶음.
 
-| | |
+| 법령 RAG (현행) | |
 |---|---|
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | **여기서 시작.** 역할과 기제를 한 편으로 |
-| [docs/SPEC.md](docs/SPEC.md) | 플랫폼 규격의 정본. 다른 문서가 §번호로 이걸 가리킨다 |
-| [docs/AGENT1_SPEC.md](docs/AGENT1_SPEC.md) · [docs/AGENT6_SPEC.md](docs/AGENT6_SPEC.md) | 에이전트별 지시사항서 |
+| [docs/ARCH_SYSTEM.md](docs/ARCH_SYSTEM.md) | **여기서 시작.** 수집·질의 두 단계와 질의응답 경로 |
+| [docs/RAG_DOMAIN.md](docs/RAG_DOMAIN.md) | 법 도메인 사실 열둘이 시스템 어디에 박혔나 |
+| [docs/LEGAL_DOMAIN.md](docs/LEGAL_DOMAIN.md) | 법령의 위계·계층·간선, 실측으로 배운 함정 |
+| [docs/TAGS.md](docs/TAGS.md) | 조문 성격 태그층 — 외부 설계 검토와 구현 기록 |
+| [docs/expc.md](docs/expc.md) | 해석례 수집·색인·llm-wiki (해석 지식은 원문과 다른 층) |
+| [docs/REVIEW.md](docs/REVIEW.md) · [docs/RULE_LOOP.md](docs/RULE_LOOP.md) | 사실→쟁점→규범→포섭→결론 검토 뼈대 · 자가 규칙 루프 |
+| [docs/GOLDEN.md](docs/GOLDEN.md) · [docs/RETRIEVAL.md](docs/RETRIEVAL.md) | 골든 셋 채점 규칙과 회차 실측 · 회수를 재는 자 |
+| [docs/LINEAGE.md](docs/LINEAGE.md) · [docs/OPS_TRANSPORT.md](docs/OPS_TRANSPORT.md) | 문서 계보 원장 · 폐쇄망 운반 |
+| [docs/NOTION_ARCHITECTURE.md](docs/NOTION_ARCHITECTURE.md) | 2026-08-17 실측 종합 스냅샷 (노션 임포트용) |
+| [docs/site_survey.md](docs/site_survey.md) · [docs/access_profile.md](docs/access_profile.md) · [docs/adapter_design.md](docs/adapter_design.md) | 규정 수집기 — 사이트 조사·접속 프로파일·어댑터 설계 |
+
+| 구조 해석기 · agents (초기 구도) | |
+|---|---|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | core/agents 분리 구도(초기)의 역할과 기제 |
+| [docs/SPEC.md](docs/SPEC.md) | 플랫폼 규격의 정본. lawrag/core/structure 가 §번호로 이걸 가리킨다 |
+| [docs/AGENT6_SPEC.md](docs/AGENT6_SPEC.md) | agent6 지시사항서 |
 | [docs/structure_interpreter_SPEC.md](docs/structure_interpreter_SPEC.md) | 구조 해석기 규격 |
-| [docs/QA_SESSION.md](docs/QA_SESSION.md) | 요구사항과 구현의 간극 — 확인이 필요한 것 |
+| [docs/archive/](docs/archive/) | (보존) agent1 스펙·QA 질문지·v1 설계 — 코드는 2026-08-18 삭제, git 이력에 있다 |
 
 ---
 
@@ -98,11 +127,11 @@ LLM 키는 저장소 루트 `.env` 의 `ANTHROPIC_API_KEY` 를 읽는다(컨테�
 자세한 것은 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) §1.
 
 **1. stochastic 을 컴파일 타임에 가둔다.** LLM 은 형식을 만들 때 한 번만 쓰고, 매 문서를
-처리하는 런타임에서는 `core/llm.py` 가 import 조차 되지 않는다. 같은 문서를 두 번
+처리하는 런타임에서는 `lawrag/core/llm.py` 가 import 조차 되지 않는다. 같은 문서를 두 번
 구조화하면 JSON 이 동일하다.
 
-**2. 등록부가 처리 규칙을 정한다.** `core/router.py` 는 형식·용어집 경로를 인자로 받지
-않는다. 호출자는 `doc_type` 만 말할 수 있고 `core/registry.yaml` 이 나머지를 정한다 —
+**2. 등록부가 처리 규칙을 정한다.** `lawrag/core/router.py` 는 형식·용어집 경로를 인자로 받지
+않는다. 호출자는 `doc_type` 만 말할 수 있고 `lawrag/core/registry.yaml` 이 나머지를 정한다 —
 같은 doc_type 은 누가 부르든 같은 규칙으로 처리된다. 이 강제는
 [tests/architecture/](tests/architecture/) 가 AST 로 지킨다.
 
@@ -130,8 +159,6 @@ auto-pass/fail 하지 않고 `NEEDS_REVIEW` 로 뺀다.
 
 **남은 것** — 전체 목록은 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) §6.
 
-- **투자설명서 형식 부합률 53%** → 격리. `tests/agent1/test_golden.py` 5건이 이것 때문에
-  실패한다. 형식이 실물 66p 투자설명서를 아직 못 따라간다.
 - **컴파일의 LLM 경로를 실행하지 않았다.** 현재 형식은 규칙 기반 초안(`--no-llm`)이고
   신뢰도 `low` 로 표기돼 있다.
 - **스탬프된 값이 인쇄 문구 뒤에 붙는다** · **체크박스 √ 검출 미구현** ·
@@ -142,5 +169,5 @@ auto-pass/fail 하지 않고 `NEEDS_REVIEW` 로 뺀다.
 ## 주의 — 이 브랜치는 내부 전용
 
 `dev` 브랜치는 내부 저장소(`infoczAI/agent8`) 전용이며 **원본 은행 문서**를 포함한다
-(`first-agent/dataset/`, `agents/*/data/`, `agents/agent6/corpus/raw/`).
+(`lawrag/agents/agent6/corpus/raw/`).
 공개 저장소로 push 하거나 merge 하지 말 것. 자세한 것은 [.gitignore](.gitignore) 머리말.

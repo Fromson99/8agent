@@ -21,15 +21,15 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core import router                                       # noqa: E402
-from core import glossary as glossary_mod                     # noqa: E402
+from lawrag.core import router                                       # noqa: E402
+from lawrag.core import glossary as glossary_mod                     # noqa: E402
 
 
 # ===========================================================================
 # 임시 등록부 만들기 — 실제 registry.yaml 을 건드리지 않고 실패 상황을 만든다
 # ===========================================================================
 
-PARSERS = {"auto": "core.parse_adapter:parse"}
+PARSERS = {"auto": "lawrag.core.parse_adapter:parse"}
 
 
 def _write_registry(tmp: Path, routes: list[dict], parsers=None) -> Path:
@@ -85,7 +85,7 @@ def test_unknown_parser_rejected():
 def test_parser_target_must_be_module_and_function():
     with pytest.raises(ValueError, match="모듈:함수"):
         router.Registry.model_validate({
-            "parsers": {"auto": "core.parse_adapter"},
+            "parsers": {"auto": "lawrag.core.parse_adapter"},
             "routes": [{"doc_type": "X"}]})
 
 

@@ -19,7 +19,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core import lineage  # noqa: E402
+from lawrag.core import lineage  # noqa: E402
 
 
 def _sha(tag: str) -> str:
@@ -143,7 +143,7 @@ def test_간선_저장과_해제가_runs_를_보존한다(world, monkeypatch):
     지우는 손이 지나가도 남아야 한다."""
     pytest.importorskip("fastapi", reason="FastAPI 필요")
     monkeypatch.setenv("RAG_LINKS_STORE", str(world["links"]))
-    from api.routers import rag as rag_router
+    from lawrag.api.routers import rag as rag_router
 
     added = rag_router._save_links([{"src_doc": "x", "src": 1,
                                      "dst_doc": "y", "dst": 2, "via": "사람"}])

@@ -36,7 +36,7 @@ MARKED = ROOT / "data" / "review" / "marked.json"
 
 def _query(idx, law: str, jo: str, node_id) -> str:
     """정답 마디의 조 제목 + 본문 앞머리 — 쟁점이 이상적으로 냈을 질의의 대역."""
-    from core.rag import wikictx
+    from lawrag.core.rag import wikictx
     key = wikictx._pack(law)
     for v in idx.docs.values():
         if wikictx._pack(v.name) != key:
@@ -57,9 +57,9 @@ def main() -> int:
     ap.add_argument("-v", "--verbose", action="store_true")
     a = ap.parse_args()
 
-    from core.rag import index as index_mod, wikictx
-    from core.casereview.model import Issue, ReviewState
-    from core.casereview import pipeline as rp
+    from lawrag.core.rag import index as index_mod, wikictx
+    from lawrag.core.casereview.model import Issue, ReviewState
+    from lawrag.core.casereview import pipeline as rp
 
     idx = index_mod.current()
     M = json.loads(MARKED.read_text("utf-8"))["cases"]

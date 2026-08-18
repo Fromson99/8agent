@@ -80,7 +80,7 @@ CONCLUSION_TO_VERDICT = {"가능": "비조치", "조건부": "조건부", "불�
 
 
 def _llm():
-    from core import llm as llm_mod
+    from lawrag.core import llm as llm_mod
     llm_mod.load_env()
     if not os.environ.get("ANTHROPIC_API_KEY"):
         return None
@@ -138,8 +138,8 @@ def label(llm, cs: list, force: bool = False) -> dict:
 
 # ---------------------------------------------------------------- 실행
 def run_one(llm, idx, case: dict) -> dict:
-    from core.casereview import pipeline as rp
-    from core.rag import wikictx
+    from lawrag.core.casereview import pipeline as rp
+    from lawrag.core.rag import wikictx
     t0 = time.perf_counter()
     st = rp.run(llm, idx, case["issue"][:2000], track="적법성")
     concl = [v.conclusion for v in st.verdicts]
@@ -231,7 +231,7 @@ def main() -> int:
         return 0
     picked = [c for c in cs if c["case_no"] == args.only] if args.only \
         else cs[:args.limit or 5]
-    from core.rag import index as index_mod
+    from lawrag.core.rag import index as index_mod
     idx = index_mod.current()
     rows = []
     print(f"B트랙 검토 {len(picked)}건 실행")

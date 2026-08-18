@@ -10,9 +10,9 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.rag import oql                            # noqa: E402
-from core.rag.graph import Graph                    # noqa: E402
-from core.rag.index import Index                    # noqa: E402
+from lawrag.core.rag import oql                            # noqa: E402
+from lawrag.core.rag.graph import Graph                    # noqa: E402
+from lawrag.core.rag.index import Index                    # noqa: E402
 from tests.rag.test_graph import _docs              # noqa: E402
 
 

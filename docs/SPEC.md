@@ -1,5 +1,7 @@
 # 지시사항서 — 용어집 기반 문서 구조화 & 정합성 검증 시스템 (v2)
 
+> **2026-08-18 주의** — 아래 저장소 지도의 `archive/trust-parser-v1/`·`first-agent/`·`deploy/`·`lawrag/agents/agent1/` 은 삭제됐고(git 이력), 뿌리 CLI 는 `pipeline/` 로 갔다. 현행 트리는 README.
+>
 > 이 문서는 Claude Code가 단독으로 구현할 수 있도록 작성된 자립형 스펙이다.
 > 배경 대화 없이 이 문서만으로 작업을 시작할 수 있어야 한다.
 > v1을 대체한다. **v1 스펙 문서는 이 저장소에 없다** — v1 코드가 `archive/trust-parser-v1/`에 보존돼 있고(`api/`의 `/v1/parser/*` 엔진이 아직 그것을 부른다), v1의 설계는 그 코드와 `archive/trust-parser-v1/README.md`로만 남아 있다. v1의 부품(파서·fact·비교기·검증 게이트) 개념은 계승하되, 시스템의 중심을 **사용자 용어집(glossary) + 형식 컴파일 워크플로**로 재편했다.
@@ -34,7 +36,7 @@ Agent 1~8 (소비자 — 라이브러리를 조립해 태스크 수행)
 
 ### 00.2 등록부 (registry) — "미리 정의"의 실체
 
-새 문서 유형 지원 = **코드 수정이 아니라 route 등록**이다. 실물은 `core/registry.yaml`이며, 아래는 그 파일에서 route 3개를 그대로 옮긴 것이다(현재 등록 6개).
+새 문서 유형 지원 = **코드 수정이 아니라 route 등록**이다. 실물은 `lawrag/core/registry.yaml`이며, 아래는 그 파일에서 route 3개를 그대로 옮긴 것이다(현재 등록 6개).
 
 ```yaml
 version: 1
@@ -48,33 +50,33 @@ parsers:
 routes:
   - doc_type: 특정금전신탁            # ← 형식·용어집의 doc_type과 글자까지 같아야 한다
     parser: auto
-    format:   agents/agent1/formats/trust_contract.format.json
-    glossary: agents/agent1/glossary/trust_contract.glossary.yaml
+    format:   lawrag/agents/agent1/formats/trust_contract.format.json
+    glossary: lawrag/agents/agent1/glossary/trust_contract.glossary.yaml
     threshold: 0.70                  # 이 유형의 적합도 임계 (§3.4)
     owner: agent1                    # 등록한 에이전트 (감사용)
 
   - doc_type: 금소법
     parser: auto
-    format:   agents/agent6/formats/statute.format.json
-    glossary: agents/agent6/glossary/statute.glossary.yaml
+    format:   lawrag/agents/agent6/formats/statute.format.json
+    glossary: lawrag/agents/agent6/glossary/statute.glossary.yaml
     threshold: 0.60
     owner: agent6
 
   - doc_type: STT전사
     parser: transcript
-    format:   agents/agent6/formats/transcript.format.json
-    glossary: agents/agent6/glossary/transcript.glossary.yaml
+    format:   lawrag/agents/agent6/formats/transcript.format.json
+    glossary: lawrag/agents/agent6/glossary/transcript.glossary.yaml
     threshold: 0.50
     owner: agent6
 ```
 
 현재 등록된 6개: **특정금전신탁 · 투자설명서**(owner agent1), **금소법 · 금소법시행령 · 표준투자권유준칙 · STT전사**(owner agent6).
 
-registry는 곧 **시스템의 문서 처리 능력 목록**이다 — "지금 무엇을 처리할 수 있는가"의 답이 이 파일 하나다. 사람이 보는 표는 `python -m core.cli routes`(= `router.describe()`)가 낸다: 유형별 parser·owner·임계·자산 존재 여부, 자산이 없어 배차되지 않는 유형까지.
+registry는 곧 **시스템의 문서 처리 능력 목록**이다 — "지금 무엇을 처리할 수 있는가"의 답이 이 파일 하나다. 사람이 보는 표는 `python -m lawrag.core.cli routes`(= `router.describe()`)가 낸다: 유형별 parser·owner·임계·자산 존재 여부, 자산이 없어 배차되지 않는 유형까지.
 
 ### 00.2.1 강제 — 에이전트는 doc_type만 말할 수 있다
 
-등록부가 있어도 에이전트가 자기 형식 파일을 직접 실으면 강제는 없는 것과 같다. 그래서 **`core/router.py`가 유일한 진입점이고, 그 함수는 형식·용어집 경로를 인자로 받지 않는다.**
+등록부가 있어도 에이전트가 자기 형식 파일을 직접 실으면 강제는 없는 것과 같다. 그래서 **`lawrag/core/router.py`가 유일한 진입점이고, 그 함수는 형식·용어집 경로를 인자로 받지 않는다.**
 
 ```python
 from core import router
@@ -99,7 +101,7 @@ routed.quarantined  # 게이트 미달 여부
 
 오류는 전부 시끄럽다: `RoutingError`와 하위 `UnregisteredDocType`(등록부에 없는 유형 — 비슷한 이름을 제안한다) / `RouteAssetMissing`(자산 부재·doc_type 불일치).
 
-새 코드에서 `format_model.load(...)` / `glossary.load(...)`를 직접 부르지 않는다. 예외는 컴파일 국면 도구인 `core/cli.py compile`과 `core/format_induce.py`뿐이다 — 아직 등록부에 없는 유형을 다루기 때문이다.
+새 코드에서 `format_model.load(...)` / `glossary.load(...)`를 직접 부르지 않는다. 예외는 컴파일 국면 도구인 `lawrag/core/cli.py compile`과 `lawrag/core/format_induce.py`뿐이다 — 아직 등록부에 없는 유형을 다루기 때문이다.
 
 ### 00.3 doc_type 은 호출자가 말한다
 
@@ -111,7 +113,7 @@ routed.quarantined  # 게이트 미달 여부
 
 ### 00.4 출력 계약 — doc.json 스키마
 
-doc.json 스키마는 코어의 기능이 아니라 **라우터와 파싱 로직 사이의 계약서**다. 등록 조건은 단 하나: 출력이 이 스키마를 통과할 것. 실물은 `core/structurize.py`의 `Document.dump()`가 만든다.
+doc.json 스키마는 코어의 기능이 아니라 **라우터와 파싱 로직 사이의 계약서**다. 등록 조건은 단 하나: 출력이 이 스키마를 통과할 것. 실물은 `lawrag/core/structurize.py`의 `Document.dump()`가 만든다.
 
 ```
 { doc_type, format_version, source_file, generated_at,
@@ -133,7 +135,7 @@ doc.json 스키마는 코어의 기능이 아니라 **라우터와 파싱 로직
 |---|---|---|---|
 | `pdf` | docling (레이아웃+TableFormer, born-digital이면 OCR off) | 제목 표시 · 타이포그래피(크기·굵기·간격) · 좌표 | 원본 |
 | `docx` | docling msword_backend (추론 없음) | Word 스타일의 **진짜 제목 계층**(level) | 없음 → 합성 |
-| `hwp` | pyhwp → md (`convert.py`) | **마커만** — 제목 선언도 좌표도 없다 | 없음 → 합성 |
+| `hwp` | pyhwp → md (`lawrag/core/hwp5_md.py`) | **마커만** — 제목 선언도 좌표도 없다 | 없음 → 합성 |
 | `hwpx` | OWPML 직독 (`core.hwpx_md`) | 마커만 | 없음 → 합성 |
 | `xml` (법령 본문) | `core.structure.lawxml` | 태그 계층이 곧 구조 (추론 0, 적합도 1.0) | 없음 → 합성 |
 
@@ -248,7 +250,7 @@ terms:
 
 각 샘플을 Docling으로 변환: 요소 리스트 `{index(reading_order), type, text|table, page, bbox, meta}`. born-digital 전제이므로 OCR 금지(텍스트 레이어 사용 — `is_born_digital()`로 확인하고, 아니면 경고와 함께 OCR로 내려간다). 표는 셀 구조 보존. Docling 버전은 `parse_adapter.docling_version()`이 파싱 결과에 기록한다.
 
-구현(`core/parse_adapter.py`)에서 확정된 세 가지 — v1에서 잃었던 자리다:
+구현(`lawrag/core/parse_adapter.py`)에서 확정된 세 가지 — v1에서 잃었던 자리다:
 - **읽기 순서**는 `doc.iterate_items()`로 얻는다. `doc.texts`/`doc.tables`를 이어붙이면 표가 전부 문서 끝으로 밀린다. 머리말/꼬리말 레이어(FURNITURE)도 함께 받는다 — 실측에서 `[별지1]`이 page_header로 분류됐고, 그것을 못 받으면 별지1 구역을 통째로 놓친다.
 - **표의 논리 셀**은 `table.data.table_cells`(span 정보 보존)를 쓴다. `table.data.grid`는 병합 셀을 덮는 칸마다 복제한다.
 - **리스트 마커**는 되붙인다. docling이 `1. `을 `marker`로 떼어내므로 `text`만 쓰면 호 번호가 사라져 `^\d+\.` 정규식이 영영 안 맞는다.
@@ -409,10 +411,10 @@ fact의 `value`는 원문이 아니라 파싱된 타입값이다. 비교·계산
 
 ### 4.1 정합성 비교 (신탁계약서 ↔ 투자설명서)
 
-비교는 **"어떤 문서의 어떤 section에 있는 어떤 용어" ↔ "다른 문서의 어떤 section의 내용"** 을 잇는 매핑 규칙으로 정의된다. 파일: `tasks/reconcile_{pair}.yaml` (실물: `agents/agent1/tasks/reconcile_trust_vs_prospectus.yaml`). 스키마는 `core/reconcile.py`의 `TaskSpec`이다.
+비교는 **"어떤 문서의 어떤 section에 있는 어떤 용어" ↔ "다른 문서의 어떤 section의 내용"** 을 잇는 매핑 규칙으로 정의된다. 파일: `tasks/reconcile_{pair}.yaml` (실물: `lawrag/agents/agent1/tasks/reconcile_trust_vs_prospectus.yaml`). 스키마는 `lawrag/core/reconcile.py`의 `TaskSpec`이다.
 
 ```yaml
-# agents/agent1/tasks/reconcile_trust_vs_prospectus.yaml
+# lawrag/agents/agent1/tasks/reconcile_trust_vs_prospectus.yaml
 source_of_truth: 특정금전신탁          # 정답 문서의 doc_type — **문자열이다**(중첩 매핑 아님)
 target: 투자설명서                     # 대상 문서의 doc_type — 문자열
 rules:
@@ -441,13 +443,13 @@ rules:
 
 원칙: source(정답)의 rule은 전부 리포트에 한 행씩 나타난다 — 누락·미매핑도 행으로. LLM은 판정에 개입하지 않는다.
 
-CLI: `python -m core.cli reconcile <source.doc.json> <target.doc.json> --task <yaml>`.
+CLI: `python -m lawrag.core.cli reconcile <source.doc.json> <target.doc.json> --task <yaml>`.
 
 ### 4.2 검색 (선택 소비자)
 
 임베딩 없음. 질의 → 용어집 매칭(aliases 포함)으로 term 확정 → facts 직조회(값 질문) 또는 section 필터+키워드(해석 질문) → section의 `path`·`content`로 답과 출처 제시. 한국어 키워드 매칭은 형태소 분석기(예: kiwipiepy) 사용.
 
-**현황: 미구현**(T12, 선택). 저장소에 검색 소비자 모듈은 없다. kiwipiepy도 현재 환경에 설치돼 있지 않다 — 형태소 의존 코드는 없을 때 문자 정규화로 자동 강등하고 그 사실을 산출물에 남긴다(선례: `agents/agent6/src/preprocess.py`의 `Normalizer`).
+**현황: 미구현**(T12, 선택). 저장소에 검색 소비자 모듈은 없다. kiwipiepy도 현재 환경에 설치돼 있지 않다 — 형태소 의존 코드는 없을 때 문자 정규화로 자동 강등하고 그 사실을 산출물에 남긴다(선례: `lawrag/agents/agent6/src/preprocess.py`의 `Normalizer`).
 
 ---
 
@@ -455,18 +457,18 @@ CLI: `python -m core.cli reconcile <source.doc.json> <target.doc.json> --task <y
 
 상태 표기: **[구현됨]** = 코드가 저장소에 있고 테스트가 돈다, **[미구현]** = 아직 없다.
 
-- **T0. 라우터·등록부·doc.json 계약** — §00 전부. `core/registry.yaml`(등록부 + 파서 플러그인 표), `core/router.py`(유일한 진입점: `route` / `require` / `describe`, 명시·자동 두 모드, doc_type 3중 일치 검사), `core/structurize.py`의 `Document.dump()`(출력 계약), `tests/architecture/test_no_bypass.py`(우회 금지). **[구현됨]** — T1~T12는 이 계약 위에서 조립된다. 이 항목이 없으면 §00은 실행할 수 없는 지시였다.
-- **T1. 용어집 로더** — glossary YAML 파싱·검증 (pydantic). kind 이원화, value_type, aliases. `core/glossary.py` **[구현됨]**
-- **T2. 파싱 어댑터** — Docling 호출·요소 정규화. 버전 기록. `core/parse_adapter.py` **[구현됨]**
-- **T3. 용어 마킹기** — 파싱 결과에 용어집 용어 출현을 표시 (컴파일 국면의 LLM 입력 준비). `core/term_marker.py` **[구현됨]**
-- **T4. LLM 형식 유도기** — §2.3. structured output 스키마 = 형식 파일 스키마 + 후보 목록. `core/format_induce.py` **[구현됨]**
-- **T5. 확정 인터페이스** — CLI: 적용 결과 미리보기(`--preview`), 후보 승격(`--promote 이름:section|fact`), 용어집·형식 파일 기록. `core/cli.py compile` **[구현됨]**
-- **T6. 홀드아웃 검증기** — §2.5. `core/holdout_check.py` **[구현됨]**
-- **T7. 런타임 구조화기** — §3.1-3.2. regex_markers+term_markers로 section 트리, 내용 적재, JSON 출력. `core/structurize.py` **[구현됨]**
-- **T8. 값 정규화기** — §3.3 타입별 파서 8종 + 비교기. `core/normalize.py` **[구현됨]**
-- **T9. 적합도 게이트** — §3.4 채점·격리. `core/fitness_gate.py` **[구현됨]**
-- **T10. 비교 엔진** — §4.1. rule 로더 + 정답 기준 순회 + 타입 비교기 + 리포트. `core/reconcile.py` **[구현됨]**
-- **T11. 골든 테스트** — 실물 자산이 이미 저장소에 있다: `agents/agent1/data/samples/ss2207_special_trust.pdf`(빈 템플릿 — 구조화 검증용)와 **값이 채워진 쌍** `agents/agent1/data/golden/{contract_filled.pdf, prospectus.md}`(비교 검증용). 테스트는 `tests/core/`(빠른 회귀, docling 불필요) · `tests/agent1/`(실물 PDF 골든) · `tests/agent6/`(코퍼스 빌드·when DSL) · `tests/architecture/`(우회 금지). **[구현됨]**
+- **T0. 라우터·등록부·doc.json 계약** — §00 전부. `lawrag/core/registry.yaml`(등록부 + 파서 플러그인 표), `lawrag/core/router.py`(유일한 진입점: `route` / `require` / `describe`, 명시·자동 두 모드, doc_type 3중 일치 검사), `lawrag/core/structurize.py`의 `Document.dump()`(출력 계약), `tests/architecture/test_no_bypass.py`(우회 금지). **[구현됨]** — T1~T12는 이 계약 위에서 조립된다. 이 항목이 없으면 §00은 실행할 수 없는 지시였다.
+- **T1. 용어집 로더** — glossary YAML 파싱·검증 (pydantic). kind 이원화, value_type, aliases. `lawrag/core/glossary.py` **[구현됨]**
+- **T2. 파싱 어댑터** — Docling 호출·요소 정규화. 버전 기록. `lawrag/core/parse_adapter.py` **[구현됨]**
+- **T3. 용어 마킹기** — 파싱 결과에 용어집 용어 출현을 표시 (컴파일 국면의 LLM 입력 준비). `lawrag/core/term_marker.py` **[구현됨]**
+- **T4. LLM 형식 유도기** — §2.3. structured output 스키마 = 형식 파일 스키마 + 후보 목록. `lawrag/core/format_induce.py` **[구현됨]**
+- **T5. 확정 인터페이스** — CLI: 적용 결과 미리보기(`--preview`), 후보 승격(`--promote 이름:section|fact`), 용어집·형식 파일 기록. `lawrag/core/cli.py compile` **[구현됨]**
+- **T6. 홀드아웃 검증기** — §2.5. `lawrag/core/holdout_check.py` **[구현됨]**
+- **T7. 런타임 구조화기** — §3.1-3.2. regex_markers+term_markers로 section 트리, 내용 적재, JSON 출력. `lawrag/core/structurize.py` **[구현됨]**
+- **T8. 값 정규화기** — §3.3 타입별 파서 8종 + 비교기. `lawrag/core/normalize.py` **[구현됨]**
+- **T9. 적합도 게이트** — §3.4 채점·격리. `lawrag/core/fitness_gate.py` **[구현됨]**
+- **T10. 비교 엔진** — §4.1. rule 로더 + 정답 기준 순회 + 타입 비교기 + 리포트. `lawrag/core/reconcile.py` **[구현됨]**
+- **T11. 골든 테스트** — 실물 자산이 이미 저장소에 있다: `lawrag/agents/agent1/data/samples/ss2207_special_trust.pdf`(빈 템플릿 — 구조화 검증용)와 **값이 채워진 쌍** `lawrag/agents/agent1/data/golden/{contract_filled.pdf, prospectus.md}`(비교 검증용). 테스트는 `tests/core/`(빠른 회귀, docling 불필요) · `tests/agent1/`(실물 PDF 골든) · `tests/agent6/`(코퍼스 빌드·when DSL) · `tests/architecture/`(우회 금지). **[구현됨]**
   변이 테스트(골든 쌍을 의도적으로 훼손해 정확히 해당 판정이 나는지)는 **[미구현]** — 현재는 실물 쌍에 이미 존재하는 불일치를 고정 검증한다(`tests/agent1/test_golden.py::test_real_mismatch_is_caught`).
 - **T12. (선택) 검색 소비자** — §4.2. **[미구현]**
 
@@ -499,7 +501,7 @@ core/                          범용 모듈. 문서 종류·에이전트를 모
     family/ lexicon/          계열 응집 · 언어 자원(조사·수사 yaml)
     pipeline.py registry.py scoring.py resolve.py viewer.py cli.py
 
-agents/agent1/                 신탁계약서 ↔ 투자설명서 대사 (AGENT1_SPEC.md)
+lawrag/agents/agent1/                 신탁계약서 ↔ 투자설명서 대사 (AGENT1_SPEC.md)
   glossary/*.glossary.yaml     사용자 최우선 입력 (§1)
   formats/*.format.json        컴파일 산출물 (§2.4)
   tasks/                       reconcile_trust_vs_prospectus.yaml (core 엔진용, §4.1)
@@ -508,9 +510,9 @@ agents/agent1/                 신탁계약서 ↔ 투자설명서 대사 (AGENT
   src/  service.py(코어 조립) · scope.py · judge.py · pipeline.py · cli.py
   output/{stem}.doc.json · *.report.json
 
-agents/agent6/                 녹취 체크리스트 점검 (AGENT6_SPEC.md)
+lawrag/agents/agent6/                 녹취 체크리스트 점검 (AGENT6_SPEC.md)
   checklist/items/*.yaml       항목 스펙 30개
-  corpus/{raw,structured,excerpts} · manifest.json
+  data/corpus/{raw,structured,excerpts} · manifest.json
   formats/ · glossary/         법령·준칙·전사 route 자산
   src/  corpus_build.py · preprocess.py · context_asm.py · judge.py · basis.py
         aggregate.py · report.py · harvest.py · llm_cache.py
@@ -523,8 +525,8 @@ deploy/api/                    레거시 2엔진 이미지 + 자체 compose
 docs/                          SPEC.md · AGENT1_SPEC.md · AGENT6_SPEC.md
                                structure_interpreter_SPEC.md
 tests/  core · agent1 · agent6 · architecture
-archive/trust-parser-v1/       v1(온톨로지 기반) 보존. api/app.py 가 이것을 참조한다
-first-agent/                   v0(LLM 해석) 보존. api/app.py 의 /v1/agent/* 엔진.
+archive/trust-parser-v1/       v1(온톨로지 기반) 보존. lawrag/api/app.py 가 이것을 참조한다
+first-agent/                   v0(LLM 해석) 보존. lawrag/api/app.py 의 /v1/agent/* 엔진.
                                기본 서비스 이미지에는 들어가지 않는다(.dockerignore)
 ```
 

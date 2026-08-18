@@ -16,10 +16,10 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.rag import induce as induce_mod       # noqa: E402
-from core.rag import replay as replay_mod       # noqa: E402
-from core.rag import rules as rules_mod         # noqa: E402
-from core.rag.index import Index                # noqa: E402
+from lawrag.core.rag import induce as induce_mod       # noqa: E402
+from lawrag.core.rag import replay as replay_mod       # noqa: E402
+from lawrag.core.rag import rules as rules_mod         # noqa: E402
+from lawrag.core.rag.index import Index                # noqa: E402
 
 
 # ===========================================================================
@@ -72,7 +72,7 @@ def store(monkeypatch, tmp_path):
     monkeypatch.setenv("RAG_LOG_DIR", str(tmp_path / "rag"))
     monkeypatch.delenv("RAG_RULES_MODE", raising=False)
     monkeypatch.delenv("RAG_RULES_AUTOPROMOTE", raising=False)
-    from core.rag import verdicts as verdicts_mod
+    from lawrag.core.rag import verdicts as verdicts_mod
     rules_mod._load_cache.clear()
     rules_mod._seen_hits.clear()
     verdicts_mod._rules_cache.clear()

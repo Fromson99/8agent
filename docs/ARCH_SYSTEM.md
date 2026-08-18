@@ -515,9 +515,9 @@ uvicorn 재시작으로 반영하고, 포트는 5566이다.
 
 | 단계 | 모듈 |
 |---|---|
-| 1단계 구조화 | `core/structure/` — `lawxml` · `from_styles` · `from_format` · `dp` · `scoring` |
-| 1단계 문면 간선 | `core/rag/refs.py` — `resolve` · `cross_resolve` · `rel_of` |
-| 1단계 용어·임베딩 | `core/terms/` — `build` · `embed_sections` |
-| 2단계 회수 | `core/rag/` — `index` · `search` · `vector` · `expand` · `delegation` · `wikictx` |
-| 2단계 검토 | `core/casereview/pipeline.py` — 5단계 함수 |
-| 표면 | `api/structure_app.py` · `api/routers/` 13개 · `api/viewer/` 10개 |
+| 1단계 구조화 | `lawrag/core/structure/` — `lawxml` · `from_styles` · `from_format` · `dp` · `scoring` |
+| 1단계 문면 간선 | `lawrag/core/rag/refs.py` — `resolve` · `cross_resolve` · `rel_of` |
+| 1단계 용어·임베딩 | `lawrag/core/terms/` — `build` · `embed_sections` |
+| 2단계 회수 | `lawrag/core/rag/` — `index` · `search` · `vector` · `expand` · `delegation` · `wikictx` |
+| 2단계 검토 | `lawrag/core/casereview/pipeline.py` — 5단계 함수 |
+| 표면 | `lawrag/api/structure_app.py` · `lawrag/api/routers/` 13개 · `lawrag/api/viewer/` 10개 |

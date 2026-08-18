@@ -22,7 +22,7 @@ GenOS 는 임의의 uvicorn 앱을 서빙하지 않는다. 계약은 이 파일�
     {"op": "apply", "tar_b64": "…"}                 아웃박스 재생 → 건별 리포트
     {"op": "apply_from", "path": "/mnt/…"}          공유 볼륨에서 읽어 재생
 
-호출은 네트워크가 아니라 ASGI 로 앱 자신을 부른다(api/ops.py 의 자기 호출) —
+호출은 네트워크가 아니라 ASGI 로 앱 자신을 부른다(lawrag/api/ops.py 의 자기 호출) —
 포트도 프록시도 없이 게이트웨이 한 문으로 전부 지나간다.
 
 기본 판정은 코드 결정론이라는 원칙은 여기서도 같다: 이 파일은 아무것도
@@ -52,13 +52,13 @@ _APP = None                       # 앱은 첫 호출 때 한 번만 세운다 �
 def _app():
     global _APP
     if _APP is None:
-        from api.structure_app import app
+        from lawrag.api.structure_app import app
         _APP = app
     return _APP
 
 
 def _ops():
-    import api.ops as ops_mod
+    import lawrag.api.ops as ops_mod
     return ops_mod
 
 

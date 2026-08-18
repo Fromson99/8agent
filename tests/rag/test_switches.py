@@ -1,4 +1,4 @@
-"""엔진 규칙 스위치 — 자동 규칙은 전부 사용자가 켜고 끈다 (core/rag/switches.py).
+"""엔진 규칙 스위치 — 자동 규칙은 전부 사용자가 켜고 끈다 (lawrag/core/rag/switches.py).
 
 여기서 지키는 것 넷:
   (1) 기본값은 전부 켜짐 — 파일 없음 = 오늘의 시스템. 켜짐은 파일에 안 적는다.
@@ -16,9 +16,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.rag import expand, refs, switches            # noqa: E402
-from core.rag.answer import Section                    # noqa: E402
-from core.rag.index import Index                       # noqa: E402
+from lawrag.core.rag import expand, refs, switches            # noqa: E402
+from lawrag.core.rag.answer import Section                    # noqa: E402
+from lawrag.core.rag.index import Index                       # noqa: E402
 
 
 def _use_engine(monkeypatch, tmp_path, off=()):

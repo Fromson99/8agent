@@ -1,7 +1,7 @@
 """law.go.kr OPEN API 어댑터 순수 파싱 — 실측 응답 픽스처 대상 (네트워크 없음)."""
 from pathlib import Path
 
-from sources.lawgo import parse_annexes, parse_search
+from lawrag.sources.lawgo import parse_annexes, parse_search
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures" / "law_crawler" / "lawgo"
 

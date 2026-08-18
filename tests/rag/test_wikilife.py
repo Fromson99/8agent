@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.rag import wikiledger, wikilife                    # noqa: E402
+from lawrag.core.rag import wikiledger, wikilife                    # noqa: E402
 
 
 def _wiki(tmp_path: Path) -> Path:
@@ -75,7 +75,7 @@ def test_규칙_전이가_위키_연대기에_남는다(tmp_path, monkeypatch):
 
 
 def test_triage_우선순위는_오답이_먼저다():
-    import wiki_triage
+    from lawrag.pipeline import wiki_triage
     cands = [
         {"qid": "a", "ts": "3", "feedbacks": []},
         {"qid": "b", "ts": "2", "feedbacks": [{"verdict": "정답"}]},

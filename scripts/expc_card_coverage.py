@@ -32,7 +32,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 os.environ.setdefault("STRUCTURE_STORE", str(REPO_ROOT / "data" / "structure"))
 
-from core.rag import wikictx  # noqa: E402
+from lawrag.core.rag import wikictx  # noqa: E402
 
 
 def _tuples() -> list:

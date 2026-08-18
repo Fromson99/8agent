@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-from sources.krx import (
+from lawrag.sources.krx import (
     filter_byul_rows,
     is_alert_page,
     parse_csrf,

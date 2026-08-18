@@ -5,7 +5,7 @@ import logging
 
 import pytest
 
-from sources.common import (
+from lawrag.sources.common import (
     BACKOFF_SECONDS,
     CrawlAborted,
     FetchError,

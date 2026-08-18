@@ -1,4 +1,4 @@
-"""조문 HTML 결정적 이관 — KRX 마크업 규약 (core/structure/rulehtml.py).
+"""조문 HTML 결정적 이관 — KRX 마크업 규약 (lawrag/core/structure/rulehtml.py).
 
 여기서 지키는 것 다섯:
   (1) 편·장·절 문단(p.pyun/jang/jeol)과 조 블록(div.Mjo)이 문서 순서대로
@@ -18,7 +18,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.structure import rulehtml  # noqa: E402
+from lawrag.core.structure import rulehtml  # noqa: E402
 
 HTML = """<html><body><form></form>
 <div class="innerbody" id="innerbody" style="height:310">

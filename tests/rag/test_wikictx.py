@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.rag import switches, wikictx                       # noqa: E402
+from lawrag.core.rag import switches, wikictx                       # noqa: E402
 
 
 def _wiki(tmp_path: Path) -> Path:

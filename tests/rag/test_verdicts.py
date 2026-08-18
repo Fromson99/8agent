@@ -12,10 +12,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.rag import answer as answer_mod                   # noqa: E402
-from core.rag import verdicts                               # noqa: E402
-from core.rag.answer import Section                         # noqa: E402
-from core.rag.index import Index                            # noqa: E402
+from lawrag.core.rag import answer as answer_mod                   # noqa: E402
+from lawrag.core.rag import verdicts                               # noqa: E402
+from lawrag.core.rag.answer import Section                         # noqa: E402
+from lawrag.core.rag.index import Index                            # noqa: E402
 
 
 class FakeLLM:
@@ -49,7 +49,7 @@ def test_답변_콜은_판정하지_않는다():
 
 
 def test_감사는_닫힌_번호에_간선이_붙는다():
-    from core.rag import audit as audit_mod
+    from lawrag.core.rag import audit as audit_mod
 
     llm = FakeLLM({"findings": [
         {"n": 2, "kind": "오참조", "reason": "벌칙은 무관"},
@@ -65,7 +65,7 @@ def test_감사는_닫힌_번호에_간선이_붙는다():
 
 def test_감사는_경위와_어긋난_판정을_바로잡는다():
     """참조로 오지 않은 구역에 '오참조'를 붙이면 좌표가 없어 백로그가 손댈 데가 없다."""
-    from core.rag import audit as audit_mod
+    from lawrag.core.rag import audit as audit_mod
 
     llm = FakeLLM({"findings": [
         {"n": 1, "kind": "오참조", "reason": "좌표 틀림"},      # 진입 검색인데 오참조?
@@ -79,7 +79,7 @@ def test_감사는_경위와_어긋난_판정을_바로잡는다():
 
 def test_구조화오류는_인용한_구역에도_붙는다():
     """인용했더라도 계층이 틀렸으면 그건 우리 구조화의 결함이다."""
-    from core.rag import audit as audit_mod
+    from lawrag.core.rag import audit as audit_mod
 
     llm = FakeLLM({"findings": [
         {"n": 1, "kind": "구조화오류", "reason": "제3조가 제1조 자식으로 매달림"}]})
@@ -227,7 +227,7 @@ def test_억제_간선은_참조_닫힘에서_빠진다(tmp_path, monkeypatch):
 
 def test_감사는_백그라운드에서_돌고_백로그에_남는다(tmp_path, monkeypatch):
     """답변 스레드는 기다리지 않는다 — 큐에 넣고 워커가 뒤에서 적재한다."""
-    from core.rag import audit as audit_mod
+    from lawrag.core.rag import audit as audit_mod
 
     _iso(tmp_path, monkeypatch)
     llm = FakeLLM({"findings": [

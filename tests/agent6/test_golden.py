@@ -38,7 +38,7 @@ from pathlib import Path
 
 import pytest
 
-from agents.agent6.src import schema
+from lawrag.agents.agent6.src import schema
 from tests.agent6.fakes import replay, row, verdicts
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
@@ -303,7 +303,7 @@ def test_violation_은_clean_에서_심은것만_다르다():
 
 def test_체크리스트_판본이_리포트에_박힌다(r_clean):
     """어떤 스펙으로 판정했는지 모르면 나중에 같은 판정을 재현할 수 없다(§7)."""
-    items_dir = Path(__file__).resolve().parents[2] / "agents/agent6/checklist/items"
+    items_dir = Path(__file__).resolve().parents[2] / "lawrag/agents/agent6/checklist/items"
     items = schema.load_items(items_dir, warn=False)
     assert r_clean.report.checklist_version.startswith(f"items{len(items)}-")
     assert r_clean.report.meta is not None

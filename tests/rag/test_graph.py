@@ -8,8 +8,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.rag.graph import Graph                   # noqa: E402
-from core.rag.index import Index, norm             # noqa: E402
+from lawrag.core.rag.graph import Graph                   # noqa: E402
+from lawrag.core.rag.index import Index, norm             # noqa: E402
 
 
 def _docs():

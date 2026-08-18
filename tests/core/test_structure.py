@@ -13,12 +13,12 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.structure import dp, family, fingerprint, pipeline, registry, scoring  # noqa: E402
-from core.structure import lexicon as lexicon_mod                          # noqa: E402
-from core.structure.global_inner import nesting, ordinal                   # noqa: E402
-from core.structure.global_outer import ladder as ladder_mod               # noqa: E402
-from core.structure.global_outer import reg_score                          # noqa: E402
-from core.structure.model import Block, ScopeStack                         # noqa: E402
+from lawrag.core.structure import dp, family, fingerprint, pipeline, registry, scoring  # noqa: E402
+from lawrag.core.structure import lexicon as lexicon_mod                          # noqa: E402
+from lawrag.core.structure.global_inner import nesting, ordinal                   # noqa: E402
+from lawrag.core.structure.global_outer import ladder as ladder_mod               # noqa: E402
+from lawrag.core.structure.global_outer import reg_score                          # noqa: E402
+from lawrag.core.structure.model import Block, ScopeStack                         # noqa: E402
 
 
 # ===========================================================================
@@ -315,7 +315,7 @@ def test_reset_alignment_is_the_primary_nesting_evidence():
 
 def test_single_reset_is_not_evidence():
     """리셋 1회로는 부모를 정하지 않는다 — 그 구간 안의 모든 계열이 후보가 된다."""
-    from core.structure.global_outer import ladder as lad
+    from lawrag.core.structure.global_outer import ladder as lad
     r = pipeline.interpret(_blocks([
         "제1장 총칙", "제1조(목적) 가", "제2조(정의) 나",
         "제2장 운용", "제1조(방법) 다", "제2조(제한) 라",
@@ -332,7 +332,7 @@ def test_single_reset_is_not_evidence():
 
 def test_cycle_break_is_reported_loudly():
     """순환을 만나면 층이 이름 순으로 정해진다 — 그 사실이 반드시 남아야 한다."""
-    from core.structure.global_outer import ladder as lad
+    from lawrag.core.structure.global_outer import ladder as lad
     layers, broken = lad._toposort(["a", "b", "c"], {("a", "b"), ("b", "c"), ("c", "a")})
     assert broken, "순환을 끊었는데 보고하지 않았다"
     cycles = lad._find_cycles(["a", "b", "c"], {("a", "b"), ("b", "c"), ("c", "a")})
@@ -341,7 +341,7 @@ def test_cycle_break_is_reported_loudly():
 
 def test_ladder_defects_lower_the_fitness_score():
     """사다리 결함이 적합도에 반영된다 (§4 S5)."""
-    from core.structure.model import Ladder, Rung
+    from lawrag.core.structure.model import Ladder, Rung
     clean = Ladder(rungs=[Rung(level=0, families=["a"]), Rung(level=1, families=["b"])],
                    n_pairs=1)
     broken = Ladder(rungs=[Rung(level=0, families=["a"]), Rung(level=1, families=["b"])],
@@ -639,7 +639,7 @@ def test_mention_verdict_kills_a_surviving_candidate():
     [손해활성]·[근소차] 잔여는 실제 문서에서만 드물게 나오므로(작은 픽스처에서는
     결정론이 전부 확신한다), 적용 로직만 `resolve()` 를 직접 불러 확인한다.
     """
-    from core.structure import resolve as resolve_mod
+    from lawrag.core.structure import resolve as resolve_mod
 
     r = pipeline.interpret(_blocks(
         ["제1조(목적) 가", "제2조(정의) 나", "제3조(적용) 다"]), doc="t")
@@ -655,7 +655,7 @@ def test_mention_verdict_kills_a_surviving_candidate():
 
 def test_verdict_change_rebuilds_the_ladder_and_tree():
     """판정이 바뀌면 사다리·DP·트리를 다시 세운다 — 트리만 손보면 앞뒤가 안 맞는다."""
-    from core.structure import resolve as resolve_mod
+    from lawrag.core.structure import resolve as resolve_mod
 
     r = pipeline.interpret(_blocks(
         ["제1조(목적) 가", "제2조(정의) 나", "제3조(적용) 다", "제4조(범위) 라"]), doc="t")
@@ -712,7 +712,7 @@ def test_llm_off_path_is_deterministic():
 
 def test_adjudicated_candidate_is_not_asked_twice():
     """배치가 판정한 후보는 다시 잔여로 올라오지 않는다 — 목록이 수렴해야 한다."""
-    from core.structure import resolve as resolve_mod
+    from lawrag.core.structure import resolve as resolve_mod
 
     r = pipeline.interpret(_residual_doc(), doc="t")
     ids = [x.split()[1] for x in r.residual]
@@ -736,7 +736,7 @@ def _boxed(lines):
 
 def test_indent_orders_sparse_families():
     """절 6건처럼 성긴 계열은 리셋·덮음·사이-끼임이 다 침묵한다 — 들여쓰기가 잡는다."""
-    from core.structure.global_outer import indent
+    from lawrag.core.structure.global_outer import indent
 
     blocks = _boxed([("제1장 총칙", 30), ("제1절 목적", 50),
                      ("제1조(목적) 가", 70), ("제2조(정의) 나", 70),
@@ -750,8 +750,8 @@ def test_indent_orders_sparse_families():
 
 def test_indent_stays_silent_on_a_tie():
     """같은 들여쓰기면 간선을 놓지 않는다 — 다른 증거에 넘긴다."""
-    from core.structure.global_outer import indent
-    from core.structure.model import Candidate
+    from lawrag.core.structure.global_outer import indent
+    from lawrag.core.structure.model import Candidate
 
     same = lambda fam, n: [Candidate(id=f"{fam}{i}", family=fam, page=1,
                                      bbox=[50, 0, 500, 0], offset=0, block_idx=i)
@@ -762,8 +762,8 @@ def test_indent_stays_silent_on_a_tie():
 
 def test_indent_ignores_mid_block_markers():
     """블록 중간 마커는 들여쓰기를 말하지 않는다 — 블록의 왼쪽 끝이 자기 위치가 아니다."""
-    from core.structure.global_outer import indent
-    from core.structure.model import Candidate
+    from lawrag.core.structure.global_outer import indent
+    from lawrag.core.structure.model import Candidate
 
     mid = [Candidate(id=f"x{i}", family="f", page=1, bbox=[50, 0, 500, 0],
                      offset=20, block_idx=i) for i in range(4)]
@@ -776,7 +776,7 @@ def test_indent_ignores_mid_block_markers():
 
 def test_succession_handles_branch_numbering():
     """한국 법령은 조를 삭제하지 않고 사이에 끼워 넣는다 — 자릿수가 섞인다."""
-    from core.structure.family.succession import follows
+    from lawrag.core.structure.family.succession import follows
 
     assert follows((16, 2), (16,)), "본조 → 첫 가지조"
     assert follows((16, 3), (16, 2)), "가지조 → 다음 가지조"

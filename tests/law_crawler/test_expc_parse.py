@@ -1,7 +1,7 @@
 """법령해석례(expc) 순수 파싱·질의 계획 — 실측 응답 픽스처 대상 (네트워크 없음)."""
 from pathlib import Path
 
-from sources.expc import case_text, cited_laws, parse_case, parse_search, plan_queries
+from lawrag.sources.expc import case_text, cited_laws, parse_case, parse_search, plan_queries
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures" / "law_crawler" / "expc"
 

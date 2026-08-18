@@ -52,19 +52,19 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("FORMATS_DIR", str(tmp_path / "formats"))
 
     for mod in [m for m in list(sys.modules)
-                if m.startswith(("api.routers", "api.structure_app"))]:
+                if m.startswith(("lawrag.api.routers", "lawrag.api.structure_app"))]:
         del sys.modules[mod]
 
     from fastapi.testclient import TestClient
 
-    from api.structure_app import app
+    from lawrag.api.structure_app import app
 
     # 등록부는 **사본**을 고치게 한다 — 시험이 저장소의 registry.yaml 을 건드리면 안 된다.
     reg_copy = tmp_path / "registry.yaml"
-    reg_copy.write_text((ROOT / "core" / "registry.yaml").read_text(encoding="utf-8"),
+    reg_copy.write_text((ROOT / "lawrag" / "core" / "registry.yaml").read_text(encoding="utf-8"),
                         encoding="utf-8")
 
-    from core import router as core_router
+    from lawrag.core import router as core_router
     monkeypatch.setattr(core_router, "DEFAULT_REGISTRY", reg_copy)
     core_router.load.cache_clear()
 
@@ -77,8 +77,8 @@ def client(tmp_path, monkeypatch):
 
 def _put_doc(client, doc_id: str, name: str, folder: str, body: str = SAMPLE) -> None:
     """스토어에 문서 하나를 손으로 놓는다 — 업로드는 docling/합성 PDF 를 부른다."""
-    from core import parse_adapter
-    from core.structure import synthpdf
+    from lawrag.core import parse_adapter
+    from lawrag.core.structure import synthpdf
 
     d = client._store / doc_id
     d.mkdir(parents=True, exist_ok=True)
@@ -395,7 +395,7 @@ def test_orphan_bindings_are_reported_not_hidden(client):
     client._registry.write_text(
         _re.sub(r"[ \t]*# --- ui-compiled: 시험규정 ---\n(?:.*\n)*?[ \t]*# --- /ui-compiled: 시험규정 ---\n?",
                 "", text), encoding="utf-8")
-    from core import router as core_router
+    from lawrag.core import router as core_router
     core_router.load.cache_clear()
     j = client.get("/v1/formats").json()
     assert j["orphans"] == [{"scope": "folder", "key": "시험폴더", "doc_type": "시험규정"}]

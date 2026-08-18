@@ -2,10 +2,10 @@
 
 ## 왜 이 테스트가 있는가
 
-`core/router.py` 는 형식·용어집 경로를 인자로 받지 않는다. 그래서 라우터를 **통해**
+`lawrag/core/router.py` 는 형식·용어집 경로를 인자로 받지 않는다. 그래서 라우터를 **통해**
 들어오는 한 같은 doc_type 은 누구에게나 같은 규칙으로 처리된다. 문제는 라우터를
 안 통하는 길이다 — 에이전트가 자기 폴더의 `*.format.json` 을 직접 실어 버리면
-강제는 없는 것과 같다. 실제로 이관 전 `agents/agent1/src/service.py` 가 그랬다.
+강제는 없는 것과 같다. 실제로 이관 전 `lawrag/agents/agent1/src/service.py` 가 그랬다.
 
     CONTRACT_FORMAT = AGENT_ROOT / "formats" / "trust_contract.format.json"
     fmt = format_model.load(CONTRACT_FORMAT)      # ← 등록부를 우회한 처리 규칙
@@ -38,7 +38,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-AGENTS = ROOT / "agents"
+AGENTS = ROOT / "lawrag" / "agents"
 
 # --- 예외 허용 목록 ---------------------------------------------------------
 # 경로(저장소 루트 기준) → **왜** 예외인지. 이유 없는 등재는 금지다. 여기에 한 줄
@@ -46,7 +46,7 @@ AGENTS = ROOT / "agents"
 # 컴파일 국면 도구(core.cli compile / core.format_induce 를 감싸는 스크립트)에만
 # 허용한다. 런타임 코드는 어떤 이유로도 여기 오면 안 된다.
 ALLOWED: dict[str, str] = {
-    # 예) "agents/agent1/tools/compile_trust_format.py":
+    # 예) "lawrag/agents/agent1/tools/compile_trust_format.py":
     #       "컴파일 국면 — 아직 등록부에 없는 유형의 형식을 만드는 도구 (§2.4)",
 }
 
@@ -55,13 +55,13 @@ _ROUTER_HINT = ("from core import router; "
                 "routed.doc / routed.fitness / routed.parsed")
 
 BANNED_CALLS: dict[str, tuple[str, str]] = {
-    "core.glossary.load": (
+    "lawrag.core.glossary.load": (
         "용어집을 직접 싣습니다 — 어느 용어집을 쓸지 에이전트가 고르게 됩니다",
         _ROUTER_HINT + " (route 가 실어 준 용어집은 router.assets(routed.route) 로 얻습니다)"),
-    "core.format_model.load": (
+    "lawrag.core.format_model.load": (
         "형식을 직접 싣습니다 — 같은 doc_type 이 호출자마다 다르게 잘립니다",
         _ROUTER_HINT),
-    "core.parse_adapter.parse": (
+    "lawrag.core.parse_adapter.parse": (
         "파서를 직접 부릅니다 — 등록부가 지정한 parser 플러그인을 건너뜁니다",
         _ROUTER_HINT),
 }
@@ -169,7 +169,7 @@ def check(path: Path, source: str) -> list[Violation]:
                     rel, node.lineno, f"자산 경로 리터럴 '{node.value}'",
                     "형식·용어집 파일을 코드가 짚습니다 — 등록부가 아니라 이 파일이 "
                     "처리 규칙을 정하게 됩니다",
-                    "core/registry.yaml 의 route 에 경로를 적고, 코드는 "
+                    "lawrag/core/registry.yaml 의 route 에 경로를 적고, 코드는 "
                     "doc_type 만 말하세요"))
     return out
 
@@ -210,8 +210,8 @@ def test_the_checker_actually_catches_a_bypass(tmp_path):
     bypass = tmp_path / "bypass.py"
     bypass.write_text(
         '"""설명문 안의 x.format.json 은 잡지 않는다."""\n'
-        "from core import format_model, parse_adapter\n"
-        "from core import glossary as glossary_mod\n"
+        "from lawrag.core import format_model, parse_adapter\n"
+        "from lawrag.core import glossary as glossary_mod\n"
         "from pathlib import Path\n"
         "F = Path('formats') / 'trust_contract.format.json'\n"
         "def go(p):\n"

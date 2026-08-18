@@ -49,18 +49,18 @@ def client(tmp_path, monkeypatch):
 
     # 경로 상수는 임포트 시점에 굳는다 — api.ops 까지 전부 다시 읽게 한다.
     for mod in [m for m in list(sys.modules)
-                if m.startswith(("api.routers", "api.structure_app", "api.ops"))]:
+                if m.startswith(("lawrag.api.routers", "lawrag.api.structure_app", "lawrag.api.ops"))]:
         del sys.modules[mod]
 
     from fastapi.testclient import TestClient
 
-    from api.structure_app import app
+    from lawrag.api.structure_app import app
 
     # 등록부는 사본 — 시험이 저장소의 registry.yaml 을 건드리면 안 된다.
     reg_copy = tmp_path / "registry.yaml"
-    reg_copy.write_text((ROOT / "core" / "registry.yaml").read_text(encoding="utf-8"),
+    reg_copy.write_text((ROOT / "lawrag" / "core" / "registry.yaml").read_text(encoding="utf-8"),
                         encoding="utf-8")
-    from core import router as core_router
+    from lawrag.core import router as core_router
     monkeypatch.setattr(core_router, "DEFAULT_REGISTRY", reg_copy)
     core_router.load.cache_clear()
 
@@ -182,7 +182,7 @@ def test_snapshot_restore_roundtrip(client):
 
 def test_restore_is_locked_by_default(client, monkeypatch):
     """OPS_ALLOW_RESTORE 없이는 403 — 정본 위에서 실수로 눌러도 안 덮인다."""
-    import api.ops as ops_mod
+    import lawrag.api.ops as ops_mod
     monkeypatch.setattr(ops_mod, "ALLOW_RESTORE", False)
     r = client.post("/v1/ops/restore",
                     files={"file": ("x.tar.gz", b"junk", "application/gzip")})

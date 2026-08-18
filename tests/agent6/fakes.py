@@ -27,7 +27,7 @@ import re
 from pathlib import Path
 from typing import Optional
 
-from agents.agent6.src import cli, judge as judge_mod, schema
+from lawrag.agents.agent6.src import cli, judge as judge_mod, schema
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 

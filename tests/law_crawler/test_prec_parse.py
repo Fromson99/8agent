@@ -1,8 +1,8 @@
 """판례(prec) 순수 파싱 + 평문 인용 경계 — 실측 응답 픽스처 대상."""
 from pathlib import Path
 
-from sources.cite import plain_mentions
-from sources.prec import case_text, parse_case, parse_search
+from lawrag.sources.cite import plain_mentions
+from lawrag.sources.prec import case_text, parse_case, parse_search
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures" / "law_crawler" / "prec"
 

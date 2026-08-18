@@ -6,15 +6,15 @@ LLM 위키로 정리한다. 조문 검색(RAG)과 층이 다르다 — 해석례
 으로 담는다.
 
 ```
- law.go.kr expc API ──collect_expc.py──▶ corpus/expc/           수집 정본 (XML)
+ law.go.kr expc API ──lawrag/pipeline/collect_expc.py──▶ data/corpus/expc/           수집 정본 (XML)
                                             cases/<일련번호>.xml · manifest.json
- corpus/expc ──ingest_expc.py──▶ data/expc/index.json           열람 색인 (기계)
+ data/corpus/expc ──lawrag/pipeline/ingest_expc.py──▶ data/expc/index.json           열람 색인 (기계)
                             └──▶ data/wiki/raw/expc/*.md        위키 raw 층 (결정적 이관)
- rag 문답 ──wiki_triage.py(LLM 판정)──▶ data/wiki/raw/conversations/*.md
+ rag 문답 ──lawrag/pipeline/wiki_triage.py(LLM 판정)──▶ data/wiki/raw/conversations/*.md
                                           └─ wiki/log.md "컴파일 대기"
  data/wiki/raw ──LLM 컴파일──▶ data/wiki/wiki/<주제>/*.md       위키 지식 층
                                 └─ scripts/expc_wiki_check.py   grounding 검사
- data/expc + data/wiki ──api/routers/expc.py──▶ /expc/ 화면 (위키·사례 두 판)
+ data/expc + data/wiki ──lawrag/api/routers/expc.py──▶ /expc/ 화면 (위키·사례 두 판)
 ```
 
 역할 분담: **법령 원문("무엇이라 쓰였나")은 구조 스토어·RAG 의 몫**이고,
@@ -36,9 +36,9 @@ LLM 위키로 정리한다. 조문 검색(RAG)과 층이 다르다 — 해석례
 - 공개 화면: `https://www.law.go.kr/LSW/expcInfoP.do?expcSeq=<일련번호>` (실측 200)
 - OC 는 law/admrul 수집과 같은 규약 — `LAW_OC` 환경변수, 기본 test.
 
-## 수집 규율 (collect_expc.py)
+## 수집 규율 (lawrag/pipeline/collect_expc.py)
 
-- 질의 집합은 선언이 아니라 **코퍼스가 결정** — corpus/law/manifest.json 의
+- 질의 집합은 선언이 아니라 **코퍼스가 결정** — data/corpus/law/manifest.json 의
   kind=law 명칭. 부분일치 특성상 다른 명칭을 품는 명칭은 축약된다
   ("상법"이 있으면 "상법 시행령" 질의는 불필요 — plan_queries).
 - 안건명 부분일치는 오탐이 실재한다: '상법' 질의가 「군인 재해**보상법**」·
@@ -47,12 +47,12 @@ LLM 위키로 정리한다. 조문 검색(RAG)과 층이 다르다 — 해석례
   공백은 무시한다(「개인정보보호법」 붙여쓰기 표기 실재). 문서 무관 신호만
   쓴다는 원칙 그대로다.
 - 멱등·부분 실패 허용·원문 보존·요청 규율(1초 간격·백오프·차단 감지)은
-  collect.py 와 같은 공통 기반(sources/common.py)이다. 인용이 없는 사례도
+  lawrag/pipeline/collect.py 와 같은 공통 기반(lawrag/sources/common.py)이다. 인용이 없는 사례도
   원문은 보존한다 — 판정 기준이 바뀌면 재판정할 원본이 있어야 한다.
 
 ## 정리 두 층 — 색인과 위키
 
-**색인(기계)**: `ingest_expc.py` 가 corpus/expc → `data/expc/index.json`.
+**색인(기계)**: `lawrag/pipeline/ingest_expc.py` 가 data/corpus/expc → `data/expc/index.json`.
 관련 법령은 저장값을 믿지 않고 지금 코퍼스 명칭으로 재판정하고, 인용 없는
 사례는 뺀다(`--keep-unrelated` 로 되살림). 이 파일이 /v1/expc API 의 정본.
 같은 실행이 `data/wiki/raw/expc/<해석일>-<안건번호>.md` 도 결정적으로
@@ -79,7 +79,7 @@ LLM 위키로 정리한다. 조문 검색(RAG)과 층이 다르다 — 해석례
   log.md 의 "컴파일 대기"를 보고 병합 — triage(이미 아는 내용이면 위키는 안
   건드림) → 아티클 수정 → index.md Updated 갱신 → log.md 한 줄 → 검사 통과.
 
-**대화 유입 관문**: `wiki_triage.py` — rag 문답 스트림을 LLM 이 판정
+**대화 유입 관문**: `lawrag/pipeline/wiki_triage.py` — rag 문답 스트림을 LLM 이 판정
 (New/Update/Disputed/No material)해서 통과분만 `raw/conversations/` 에
 소스로 남기고 log.md 에 "컴파일 대기"를 쌓는다. 정본 SKILL 과 달리 탈락분은
 raw 에 넣지 않는다(대화는 소스가 아니라 후보 스트림 — 판정 기록은
@@ -88,7 +88,7 @@ raw 에 넣지 않는다(대화는 소스가 아니라 후보 스트림 — 판�
 ## RAG 연결 — 답 합성의 배경 맥락
 
 질의응답(/v1/rag/ask)의 답 합성이 위키를 배경으로 끼운다
-(core/rag/wikictx.py → answer.synthesize):
+(lawrag/core/rag/wikictx.py → answer.synthesize):
 
 - 고르기는 코드 결정론 — 회수 구역의 문서명이 아티클 본문에 등장(강신호,
   가중 2) + 질의 낱말이 제목·요약에 등장(약신호, 가중 1). 점수 0 이면
@@ -171,14 +171,14 @@ raw 에 넣지 않는다(대화는 소스가 아니라 후보 스트림 — 판�
 ## 추가 소스 — 같은 틀의 세 갈래 (2026-08-14)
 
 expc 와 같은 규율(코퍼스가 질의를 결정 · 멱등 · 원문 보존 · 관련 판정)로
-세 소스를 더 받는다. 전부 창고는 corpus/<소스>(수집 정본) →
+세 소스를 더 받는다. 전부 창고는 data/corpus/<소스>(수집 정본) →
 data/wiki/raw/<소스>(위키 증거층)이고, 원장(lineage) 밖(phase_model 선언).
 
 | 소스 | 수집기 | 규모 실측 | 관련 판정 |
 |---|---|---|---|
-| 금융위 회신사례 (better.fsc.go.kr — 법령해석·비조치의견서) | collect_fsc.py → ingest_fsc.py | 전량 12,067 · 질의 합집합 629 | 평문 경계 (cite.plain_mentions) |
-| 판례 (law.go.kr prec) | collect_prec.py → ingest_prec.py | 질의 합집합 543 | 평문 경계 — 전문(방론)은 안 봄 |
-| 입안·심사 기준 (moleg.go.kr — 법령 880쪽 · 행정규칙 152쪽, 2026년판) | collect_moleg.py (이관 포함) | 2권 | — (교과서 원천) |
+| 금융위 회신사례 (better.fsc.go.kr — 법령해석·비조치의견서) | lawrag/pipeline/collect_fsc.py → lawrag/pipeline/ingest_fsc.py | 전량 12,067 · 질의 합집합 629 | 평문 경계 (cite.plain_mentions) |
+| 판례 (law.go.kr prec) | lawrag/pipeline/collect_prec.py → lawrag/pipeline/ingest_prec.py | 질의 합집합 543 | 평문 경계 — 전문(방론)은 안 봄 |
+| 입안·심사 기준 (moleg.go.kr — 법령 880쪽 · 행정규칙 152쪽, 2026년판) | lawrag/pipeline/collect_moleg.py (이관 포함) | 2권 | — (교과서 원천) |
 
 - 금융위 질의는 코퍼스 중 **소관부처에 '금융'이 든 문서만** — 이 포털은
   금융위 소관이라 상법·개인정보법은 이 소스의 것이 아니다(그쪽은 expc).
@@ -195,7 +195,7 @@ data/wiki/raw/<소스>(위키 증거층)이고, 원장(lineage) 밖(phase_model 
 
 llm-wiki 의 생애 장치(Status 블록·check_evidence·미참조 재고)에 이 저장소의
 공리 루프(4기준 보고서)를 접합한 것. 상태를 저장하지 않는다 — 보고서는
-언제나 파생이다 (core/rag/wikilife.py):
+언제나 파생이다 (lawrag/core/rag/wikilife.py):
 
 | 축 | 신호 | 출처 |
 |---|---|---|
@@ -208,7 +208,7 @@ llm-wiki 의 생애 장치(Status 블록·check_evidence·미참조 재고)에 �
 → 재컴파일 후보(오답≥2·오답>정답) → 재검증 필요(문답발만) → 유지.
 고치는 것은 위키 세션·사람 몫 — 규칙의 정착 승격과 같은 이유다.
 
-- **적중 원장** `data/wiki/ledger.jsonl` (core/rag/wikiledger, append-only):
+- **적중 원장** `data/wiki/ledger.jsonl` (lawrag/core/rag/wikiledger, append-only):
   답 합성에 아티클이 끼면 "주입", 그 질의에 피드백이 오면 "부검". 부검은
   그 질의에 끼었던 모든 아티클에 접힌다 — 개별 기여 분리는 추정이라 안 한다.
 - **자기수선 파이프**: wiki_triage 가 피드백 오답 > 감사 지문·교정

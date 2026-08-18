@@ -26,7 +26,7 @@ from pathlib import Path
 
 import pytest
 
-from agents.agent6.src import (aggregate, basis, cli, context_asm, judge as judge_mod,
+from lawrag.agents.agent6.src import (aggregate, basis, cli, context_asm, judge as judge_mod,
                                llm_cache, preprocess, schema)
 from tests.agent6.fakes import (고객발화판정기, 대본판정기, 맞장구판정기, 없는좌표판정기,
                                 이어붙인판정기, 지어내는판정기, 회차별판정기, row, run,
@@ -34,8 +34,8 @@ from tests.agent6.fakes import (고객발화판정기, 대본판정기, 맞장�
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
-SRC = ROOT / "agents/agent6/src"
-ITEMS_DIR = ROOT / "agents/agent6/checklist/items"
+SRC = ROOT / "lawrag/agents/agent6/src"
+ITEMS_DIR = ROOT / "lawrag/agents/agent6/checklist/items"
 
 픽스처들 = ["clean", "violation", "ambiguous"]
 
@@ -307,7 +307,7 @@ def test_런타임이_읽는_것은_사전_물질화된_발췌_파일뿐이다(�
     """§0 원칙 1: 런타임에 규정을 **찾지** 않는다. 좌표를 파일로 바꿔 읽을 뿐이다."""
     _, batches, loader = 배치들
     assert loader.source == "basis.load_ref"
-    발췌_뿌리 = (ROOT / "agents/agent6/corpus/excerpts").resolve()
+    발췌_뿌리 = (ROOT / "lawrag/agents/agent6/corpus/excerpts").resolve()
     실린 = [e for b in batches for c in b.contexts for e in c.excerpts if e.present]
     assert 실린
     for e in 실린:

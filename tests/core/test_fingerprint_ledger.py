@@ -12,8 +12,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.structure import fingerprint as fp_mod            # noqa: E402
-from core.structure.model import Fingerprint                # noqa: E402
+from lawrag.core.structure import fingerprint as fp_mod            # noqa: E402
+from lawrag.core.structure.model import Fingerprint                # noqa: E402
 
 FP = Fingerprint(families=["kr_장", "kr_article"],
                  order=[["kr_장"], ["kr_article"]])

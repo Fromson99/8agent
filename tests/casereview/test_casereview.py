@@ -15,10 +15,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.rag.index import Index                              # noqa: E402
-from core.casereview import binding as binding_mod                # noqa: E402
-from core.casereview import pipeline as rp                        # noqa: E402
-from core.casereview.model import (Fact, Issue, Norm, Req,        # noqa: E402
+from lawrag.core.rag.index import Index                              # noqa: E402
+from lawrag.core.casereview import binding as binding_mod                # noqa: E402
+from lawrag.core.casereview import pipeline as rp                        # noqa: E402
+from lawrag.core.casereview.model import (Fact, Issue, Norm, Req,        # noqa: E402
                                ReviewState, Sub, req_leaves)
 
 

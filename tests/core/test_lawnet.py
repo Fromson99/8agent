@@ -1,4 +1,4 @@
-"""법령 관계망 전사 — 조인·해소 규약 (core/lawnet.py).
+"""법령 관계망 전사 — 조인·해소 규약 (lawrag/core/lawnet.py).
 
 여기서 지키는 것 다섯:
   (1) 대상 법령은 명칭 완전일치로 잇는다 — 위임 데이터의 대상 MST 는 구판이라
@@ -20,7 +20,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core import lawnet  # noqa: E402
+from lawrag.core import lawnet  # noqa: E402
 
 
 def _sha(tag: str) -> str:

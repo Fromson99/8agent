@@ -1,6 +1,6 @@
 """범용 모듈 단위 테스트 — docling 없이 도는 것만 (빠르다).
 
-PDF 파싱이 필요한 검증은 tests/agent1/ 에 있다.
+PDF 파싱이 필요한 검증은 tests/core/test_structure*.py 에 있다.
 """
 from __future__ import annotations
 
@@ -14,10 +14,10 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core import fitness_gate, format_model, normalize, structurize   # noqa: E402
-from core import glossary as glossary_mod                             # noqa: E402
-from core import parse_adapter                                         # noqa: E402
-from core.parse_adapter import Cell, Element, ParseResult, Table      # noqa: E402
+from lawrag.core import fitness_gate, format_model, normalize, structurize   # noqa: E402
+from lawrag.core import glossary as glossary_mod                             # noqa: E402
+from lawrag.core import parse_adapter                                         # noqa: E402
+from lawrag.core.parse_adapter import Cell, Element, ParseResult, Table      # noqa: E402
 
 
 # ===========================================================================
@@ -508,7 +508,7 @@ def test_gate_warns_on_unmatched_headings():
 
 def test_review_payload_carries_the_unexplained(tmp_path):
     """잔여·미적중 제목이 페이지·텍스트와 함께 실린다 — 격리 문서 진단의 재료."""
-    from core import review
+    from lawrag.core import review
 
     md = tmp_path / "t.md"
     md.write_text("표지 문장이다.\n\n제1조(목적) 내용이다.\n\n# 부칙\n\n부칙 내용.\n",
@@ -534,7 +534,7 @@ def test_review_payload_carries_the_unexplained(tmp_path):
 
 def test_norm_bbox_flips_bottomleft_to_topleft():
     """PDF prov(BOTTOMLEFT)를 화면 좌표(0~1, TOPLEFT)로 — 렌더 배율 무관."""
-    from core.review import norm_bbox
+    from lawrag.core.review import norm_bbox
 
     # 100x200 페이지에서 아래에서 150~180 높이의 상자 = 위에서 20~50
     box = norm_bbox([10, 180, 90, 150], "BOTTOMLEFT", (100, 200))

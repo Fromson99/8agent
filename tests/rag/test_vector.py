@@ -18,9 +18,9 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.rag import vector as vector_mod                  # noqa: E402
-from core.rag.index import Index                           # noqa: E402
-from core.rag.search import search                         # noqa: E402
+from lawrag.core.rag import vector as vector_mod                  # noqa: E402
+from lawrag.core.rag.index import Index                           # noqa: E402
+from lawrag.core.rag.search import search                         # noqa: E402
 
 
 def _docs():
@@ -49,7 +49,7 @@ def _vector_store(tmp_path, monkeypatch, rows, vecs):
 
 
 def _fake_query_vec(monkeypatch, vec):
-    from core import embedding
+    from lawrag.core import embedding
 
     monkeypatch.setattr(embedding, "available", lambda: True)
     monkeypatch.setattr(embedding, "encode_one",

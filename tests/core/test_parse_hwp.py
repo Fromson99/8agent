@@ -14,8 +14,8 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core import parse_adapter                                     # noqa: E402
-from core.structure import synthpdf                                # noqa: E402
+from lawrag.core import parse_adapter                                     # noqa: E402
+from lawrag.core.structure import synthpdf                                # noqa: E402
 
 FIX = ROOT / "tests" / "fixtures" / "law_crawler"
 HWP5 = FIX / "hwp" / "byulji2.hwp"

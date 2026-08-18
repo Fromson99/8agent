@@ -1,10 +1,10 @@
-"""convert.py — XHTML→md 변환 로직은 합성 XHTML 로, 끝단은 실제 HWP 픽스처로 본다."""
+"""lawrag/core/hwp5_md.py — XHTML→md 변환 로직은 합성 XHTML 로, 끝단은 실제 HWP 픽스처로 본다."""
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
-import convert
+from lawrag.core import hwp5_md as convert
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "law_crawler" / "hwp"
 NS = "http://www.w3.org/1999/xhtml"
@@ -83,19 +83,19 @@ def test_manifest_index_maps_body_and_attachments(tmp_path):
         "collected_at": "2026-08-07 16:51:54",
         "items": [{
             "name": "규정A", "enforce": "2026-01-01", "revised": "2025-12-01",
-            "body_file": "corpus/kofia/규정A/전문.hwp", "body_sha256": "b" * 64,
+            "body_file": "data/corpus/kofia/규정A/전문.hwp", "body_sha256": "b" * 64,
             "attachments": [
                 {"title": "별표1", "role": "attachment", "url": "https://x/1",
-                 "file": "corpus/kofia/규정A/별표서식/별표1.hwp", "sha256": "a" * 64},
+                 "file": "data/corpus/kofia/규정A/별표서식/별표1.hwp", "sha256": "a" * 64},
                 {"title": "실패한 첨부", "role": "attachment", "file": None},
             ],
         }],
     }, ensure_ascii=False), encoding="utf-8")
     index = convert.manifest_index([tmp_path])
-    body = index[(convert.REPO_ROOT / "corpus/kofia/규정A/전문.hwp").resolve()]
+    body = index[(convert.REPO_ROOT / "data/corpus/kofia/규정A/전문.hwp").resolve()]
     assert body["role"] == "body" and body["regulation"] == "규정A"
     assert body["collected"] == "2026-08-07" and body["enforced"] == "2026-01-01"
-    att = index[(convert.REPO_ROOT / "corpus/kofia/규정A/별표서식/별표1.hwp").resolve()]
+    att = index[(convert.REPO_ROOT / "data/corpus/kofia/규정A/별표서식/별표1.hwp").resolve()]
     assert att["title"] == "별표1" and att["source"] == "https://x/1"
     assert len(index) == 2                    # file 없는 첨부(다운로드 실패)는 건너뛴다
 

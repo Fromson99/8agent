@@ -3,9 +3,9 @@ from __future__ import annotations
 
 import logging
 
-import collect
-from sources.base import DocumentRef
-from sources.common import HttpClient, sha256_file
+from lawrag.pipeline import collect
+from lawrag.sources.base import DocumentRef
+from lawrag.sources.common import HttpClient, sha256_file
 from tests.law_crawler.test_common import FakeResponse, FakeSession
 
 
@@ -46,7 +46,7 @@ def test_fetch_ref_falls_back_to_title_when_no_disposition(tmp_path):
 
 
 def test_item_files_intact_detects_missing_and_modified(tmp_path):
-    from sources.common import item_files_intact
+    from lawrag.sources.common import item_files_intact
     f = tmp_path / "corpus" / "kofia" / "규정" / "본문.hwp"
     f.parent.mkdir(parents=True)
     f.write_bytes(b"\xd0\xcf\x11\xe0data")

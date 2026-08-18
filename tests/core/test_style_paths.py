@@ -20,11 +20,11 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.parse_adapter import Element, ParseResult                    # noqa: E402
-from core.structure import from_styles, pipeline, registry, scoring    # noqa: E402
-from core.structure import lexicon as lexicon_mod                      # noqa: E402
-from core.structure.model import Block                                 # noqa: E402
-from core.structure.proposers import style_heading                     # noqa: E402
+from lawrag.core.parse_adapter import Element, ParseResult                    # noqa: E402
+from lawrag.core.structure import from_styles, pipeline, registry, scoring    # noqa: E402
+from lawrag.core.structure import lexicon as lexicon_mod                      # noqa: E402
+from lawrag.core.structure.model import Block                                 # noqa: E402
+from lawrag.core.structure.proposers import style_heading                     # noqa: E402
 
 
 def _block(idx: int, text: str, level: Optional[int] = None) -> Block:
@@ -203,7 +203,7 @@ def test_block_carries_the_declared_level():
 
 def test_structured_by_marks_the_engine():
     pytest.importorskip("fastapi", reason="FastAPI 필요")
-    from api.routers.structure import _structured_by
+    from lawrag.api.routers.structure import _structured_by
 
     assert _structured_by({"engine": "docxstyle"}, "docx") == "docxstyle"
     assert _structured_by({}, "docx") == "induce"

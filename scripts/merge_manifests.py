@@ -1,4 +1,4 @@
-"""소스별 manifest 를 corpus/manifest.json 하나로 병합한다.
+"""소스별 manifest 를 data/corpus/manifest.json 하나로 병합한다.
 
     python scripts/merge_manifests.py
 
@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-CORPUS = REPO_ROOT / "corpus"
+CORPUS = REPO_ROOT / "data" / "corpus"
 
 
 def main() -> None:

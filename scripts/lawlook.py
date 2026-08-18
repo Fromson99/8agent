@@ -24,13 +24,13 @@ os.environ.setdefault("STRUCTURE_STORE", str(ROOT / "data" / "structure"))
 
 
 def _idx():
-    from core.rag import index as index_mod
+    from lawrag.core.rag import index as index_mod
     return index_mod.current()
 
 
 def find_doc(idx, needle: str) -> list:
     """법령명 일부로 문서를 찾는다 — 공백·낫표는 무시한다(짧은 이름 우선)."""
-    from core.rag import wikictx
+    from lawrag.core.rag import wikictx
     key = wikictx._pack(needle)
     hits = [v for v in idx.docs.values() if key in wikictx._pack(v.name)]
     return sorted(hits, key=lambda v: len(v.name))

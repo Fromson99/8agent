@@ -25,7 +25,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
-from core.rag import wikictx                                   # noqa: E402
+from lawrag.core.rag import wikictx                                   # noqa: E402
 
 INDEX = REPO_ROOT / "data" / "expc" / "index.json"
 ISSUE_DIR = REPO_ROOT / "data" / "wiki" / "wiki" / "쟁점"
@@ -48,7 +48,7 @@ def main() -> int:
     args = ap.parse_args()
 
     if not INDEX.is_file():
-        print("색인이 없습니다 — ingest_expc.py 먼저", file=sys.stderr)
+        print("색인이 없습니다 — lawrag/pipeline/ingest_expc.py 먼저", file=sys.stderr)
         return 2
     cases = json.loads(INDEX.read_text("utf-8"))["cases"]
 
@@ -56,7 +56,7 @@ def main() -> int:
     if args.llm:
         import os
 
-        from core import llm as llm_mod
+        from lawrag.core import llm as llm_mod
         llm_mod.load_env()
         if not os.environ.get("ANTHROPIC_API_KEY"):
             print("LLM 없음 — ANTHROPIC_API_KEY 필요", file=sys.stderr)

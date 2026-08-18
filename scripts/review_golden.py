@@ -146,7 +146,7 @@ LABELS_V2 = OUT_DIR / "golden_labels_v2.json"    # 근거·확신도·물음별 
 
 
 def _llm():
-    from core import llm as llm_mod
+    from lawrag.core import llm as llm_mod
     llm_mod.load_env()
     if not os.environ.get("ANTHROPIC_API_KEY"):
         return None
@@ -301,7 +301,7 @@ def material_status(idx, case: dict) -> tuple:
     실측(2026-08-16 홀드아웃): 회답 근거 조문 145개 중 52%가 창고에 없는 법령이었고,
     창고에 전부 있는 25건은 조문 회수 90%였다 — 회수는 멀쩡, 재료가 없었다.
     """
-    from core.rag import wikictx
+    from lawrag.core.rag import wikictx
     wa = want_articles(case)
     if not wa:
         return ("근거없음", 0, 0)
@@ -344,7 +344,7 @@ def marked() -> dict:
 
 def _node_of(idx, law: str, node_id: str):
     """(법령명, node_id) → (DocView, 마디). 못 찾으면 (None, None)."""
-    from core.rag import wikictx
+    from lawrag.core.rag import wikictx
     key = wikictx._pack(law)
     for v in idx.docs.values():
         if wikictx._pack(v.name) == key:
@@ -386,7 +386,7 @@ def score_marked(case_no: str, st, idx) -> Optional[dict]:
     m = marked().get(case_no)
     if not m or not m.get("decisive_full"):
         return None
-    from core.rag import wikictx
+    from lawrag.core.rag import wikictx
 
     got_nodes = set()                       # 회수한 구역과 그 하위 전부
     # 정의 칸(state.glossary)도 회수로 센다 — 규범 상한 밖의 별도 칸이지만
@@ -441,7 +441,7 @@ def _basis_coords(b: str) -> set:
     "「개인정보 보호법」 제17조제1항 · 같은 법 시행령 제14조" 처럼 한 문자열에
     여러 조가 오면 각각 잡되 문서는 그 조 앞의 마지막 문서명이다.
     """
-    from core.rag import wikictx
+    from lawrag.core.rag import wikictx
     s = b.replace("▸", " ").replace("「", " ").replace("」", " ")
     out, doc, last = set(), "", 0
     for m in _JO.finditer(s):
@@ -465,7 +465,7 @@ def _basis_coords(b: str) -> set:
 
 def question_mode(idx, text: str) -> str:
     """질문의 종류 — A(문면에 「법령」제N조 인용 → 좌표로 펴진다) / B(없음 → 검색)."""
-    from core.casereview import pipeline as rp
+    from lawrag.core.casereview import pipeline as rp
     return "A" if rp._cite_coords(idx, text or "") else "B"
 
 
@@ -474,8 +474,8 @@ def run_one(llm, idx, case: dict, text: Optional[str] = None) -> dict:
 
     text 를 주면 질의요지 대신 그것으로 돈다(구어 골든) — 정답 라벨은 같다.
     """
-    from core.casereview import pipeline as rp
-    from core.rag import wikictx
+    from lawrag.core.casereview import pipeline as rp
+    from lawrag.core.rag import wikictx
 
     t0 = time.perf_counter()
     q_text = (text or case.get("issue") or "")[:2000]
@@ -750,7 +750,7 @@ def main() -> int:
     args = ap.parse_args()
 
     if not INDEX.is_file():
-        print("색인이 없습니다 — ingest_expc.py 먼저", file=sys.stderr)
+        print("색인이 없습니다 — lawrag/pipeline/ingest_expc.py 먼저", file=sys.stderr)
         return 2
     cases = _cases(drop_ipa=args.no_ipa)
     if args.no_ipa:
@@ -771,7 +771,7 @@ def main() -> int:
         label(llm, cases, force=args.force)
         return 0
 
-    from core.rag import index as index_mod
+    from lawrag.core.rag import index as index_mod
     idx = index_mod.current()
     if args.only:
         picked = [c for c in cases if c["case_no"] == args.only]

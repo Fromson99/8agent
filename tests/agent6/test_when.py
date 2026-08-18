@@ -7,7 +7,7 @@
 
 import pytest
 
-from agents.agent6.src.when import (ACTIVE, INACTIVE, UNKNOWN, WhenSyntaxError,
+from lawrag.agents.agent6.src.when import (ACTIVE, INACTIVE, UNKNOWN, WhenSyntaxError,
                                     describe, evaluate, fields, parse)
 
 
@@ -176,7 +176,7 @@ def test_같은_입력이면_같은_결과():
 
 
 def test_pydantic_메타도_받는다():
-    from agents.agent6.src.schema import TranscriptMeta
+    from lawrag.agents.agent6.src.schema import TranscriptMeta
     m = TranscriptMeta(customer_age=67)
     assert evaluate("customer_age >= 65", m).state == ACTIVE
     # 선언되지 않은 필드는 없는 것 → UNKNOWN (조용한 비활성 아님)
@@ -193,10 +193,10 @@ def test_사유는_중복_없이_한_번씩():
 def test_체크리스트_전체의_when_이_파싱된다():
     from pathlib import Path
 
-    from agents.agent6.src.schema import load_items
+    from lawrag.agents.agent6.src.schema import load_items
 
     root = Path(__file__).resolve().parents[2]
-    items = load_items(root / "agents/agent6/checklist/items")
+    items = load_items(root / "lawrag/agents/agent6/checklist/items")
     for item in items:
         r = item.activation({"customer_age": 67, "product_type": "ELS",
                              "is_high_difficulty": True, "is_suitable": False,
@@ -209,10 +209,10 @@ def test_메타가_전혀_없으면_모든_항목이_활성된다():
     """놓침 0 — 메타 미제출 호출에서 항목이 조용히 빠지지 않는지 확인한다."""
     from pathlib import Path
 
-    from agents.agent6.src.schema import load_items
+    from lawrag.agents.agent6.src.schema import load_items
 
     root = Path(__file__).resolve().parents[2]
-    items = load_items(root / "agents/agent6/checklist/items")
+    items = load_items(root / "lawrag/agents/agent6/checklist/items")
     inactive = [i.id for i in items if not i.activation({}).active]
     assert inactive == []
 
@@ -221,10 +221,10 @@ def test_나이_67이면_C_18_과_E_27_이_활성된다():
     """AGENT6 §9-3 의 when 평가 기준."""
     from pathlib import Path
 
-    from agents.agent6.src.schema import load_items
+    from lawrag.agents.agent6.src.schema import load_items
 
     root = Path(__file__).resolve().parents[2]
-    items = {i.id: i for i in load_items(root / "agents/agent6/checklist/items")}
+    items = {i.id: i for i in load_items(root / "lawrag/agents/agent6/checklist/items")}
     meta = {"customer_age": 67, "is_high_difficulty": False}
     for item_id in ("C-18", "E-27"):
         r = items[item_id].activation(meta)
@@ -243,10 +243,10 @@ def test_when_이_보는_필드는_전부_메타에_선언돼_있다():
     """
     from pathlib import Path
 
-    from agents.agent6.src.schema import TranscriptMeta, load_items
+    from lawrag.agents.agent6.src.schema import TranscriptMeta, load_items
 
     root = Path(__file__).resolve().parents[2]
-    items = load_items(root / "agents/agent6/checklist/items")
+    items = load_items(root / "lawrag/agents/agent6/checklist/items")
     선언된 = set(TranscriptMeta.model_fields)
     for item in items:
         모르는 = item.when_fields() - 선언된
@@ -258,7 +258,7 @@ def test_when_이_보는_필드는_전부_메타에_선언돼_있다():
 def _prepare(meta):
     from pathlib import Path
 
-    from agents.agent6.src import preprocess
+    from lawrag.agents.agent6.src import preprocess
 
     fixtures = Path(__file__).resolve().parent / "fixtures"
     return preprocess.prepare(fixtures / "clean.json", meta)

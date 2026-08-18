@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from core.structure import lawxml
+from lawrag.core.structure import lawxml
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures" / "law_crawler" / "lawgo"
 

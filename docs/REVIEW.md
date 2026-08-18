@@ -23,7 +23,7 @@
    회색지대이고, 시스템에선 그게 다음 라운드의 회수 목표가 된다.
 3. **회수의 목적이 바뀐다.** 조문을 모으는 게 목적이 아니라 **요건 트리를
    채우는 것**이 목적이다. 회복 루프의 진입 조건도 "빈손"이 아니라
-   "요건 미충족"이 된다 (core/rag/recover.py 와 접속하는 자리).
+   "요건 미충족"이 된다 (lawrag/core/rag/recover.py 와 접속하는 자리).
 
 ## 다섯 타입 — 필드는 최종 크기, 구현은 지금 크기
 
@@ -88,7 +88,7 @@ Binding { 자산(서비스·파이프라인·약관·모델) ↔ 규범 좌표(�
 - 조-항-호 논리 표지 — 도메인 파서
 - 위임·준용·배제 간선 — 도메인 관계망
 
-`core/rag/recover_domains.py` 의 등록부와 같은 방식이다.
+`lawrag/core/rag/recover_domains.py` 의 등록부와 같은 방식이다.
 
 ## 지금 접는 것 (필드만 두고 로직 없음)
 
@@ -113,14 +113,14 @@ Binding { 자산(서비스·파이프라인·약관·모델) ↔ 규범 좌표(�
 ## 코드 자리
 
 ```
-core/casereview/model.py      다섯 타입 + ReviewState (도메인 무관)
-core/casereview/pipeline.py   얇은 관통 — 단계 함수들
-core/casereview/binding.py    의존성 원장
-api/routers/review.py         POST /v1/review · GET /v1/review/{bindings,impacted}
+lawrag/core/casereview/model.py      다섯 타입 + ReviewState (도메인 무관)
+lawrag/core/casereview/pipeline.py   얇은 관통 — 단계 함수들
+lawrag/core/casereview/binding.py    의존성 원장
+lawrag/api/routers/review.py         POST /v1/review · GET /v1/review/{bindings,impacted}
 ```
 
-`core/review.py` 는 **다른 것**이다 — 문서 구조화의 검수(檢受) payload 다.
-사안 검토(檢討)는 `core/casereview` 로 간다(패키지가 모듈을 가려서 생긴
+`lawrag/core/review.py` 는 **다른 것**이다 — 문서 구조화의 검수(檢受) payload 다.
+사안 검토(檢討)는 `lawrag/core/casereview` 로 간다(패키지가 모듈을 가려서 생긴
 2026-08-14 충돌의 기록).
 
 스위치는 `review_binding`(원장 적재, 기본 켜짐).
@@ -243,7 +243,7 @@ api/routers/review.py         POST /v1/review · GET /v1/review/{bindings,impact
 다투어져서** 어렵다. "B는 C의 특수 사례"의 역은 성립하지 않는다 — C는 B가
 아니다.
 
-**네 수정** (구현 위치는 core/casereview/pipeline.py):
+**네 수정** (구현 위치는 lawrag/core/casereview/pipeline.py):
 
 1. **문면 인용 좌표 직행** (`_cite_coords`) — 질의요지 65/67건이 조문을 문면
    인용하는데, 회수가 LLM 재작성 질문으로 검색하며 그 좌표를 버리고 있었다

@@ -4,8 +4,8 @@
     .venv/bin/python scripts/golden_vlm.py --doc ddaecffe629c8f3c
     .venv/bin/python scripts/golden_vlm.py --doc ddaecffe629c8f3c --pages 1-3   # 맛보기
 
-산출: `bench/golden/<doc_id>.yaml` (형식은 손으로 적은 골든과 같다 —
-`scripts/golden_check.py` 가 그대로 채점한다) + `bench/golden/_raw/<doc_id>/pNN.json`
+산출: `data/bench/golden/<doc_id>.yaml` (형식은 손으로 적은 골든과 같다 —
+`scripts/golden_check.py` 가 그대로 채점한다) + `data/bench/golden/_raw/<doc_id>/pNN.json`
 (무엇을 묻고 무엇이 왔는지 사람이 볼 수 있어야 이 골든을 믿을 수 있다).
 
 ## 왜 VLM 인가 — 글자만으로는 계층이 안 보인다
@@ -56,7 +56,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 ROOT = Path(__file__).resolve().parent.parent
-GOLDEN = ROOT / "bench" / "golden"
+GOLDEN = ROOT / "data" / "bench" / "golden"
 
 # 계층을 여는 마디의 종류. 법령 인쇄본에서 실제로 쓰이는 것만 둔다 — 목록이 길수록
 # 판정이 흔들린다. 마지막 셋은 **마디가 아님**을 말하는 값이다.
@@ -233,7 +233,7 @@ def prompt_for(name: str, page: int, n_pages: int, mine: list[dict],
 def ask_page(llm, name: str, page: int, n_pages: int, mine: list[dict],
              chain: list[dict], blocks: dict[int, dict], pdf: Path,
              model: str, continuous: bool = True) -> list[dict]:
-    from core.structure import viewer as viewer_mod
+    from lawrag.core.structure import viewer as viewer_mod
 
     png = viewer_mod.page_png(pdf, page, scale=SCALE)
     user = prompt_for(name, page, n_pages, mine, chain, blocks, continuous)
@@ -301,7 +301,7 @@ def render(doc_id: str, meta: dict, items: list[dict], blocks: dict[int, dict],
         f"#   문서    {meta.get('name', '')}",
         f"#   원본    data/structure/{doc_id}/source.pdf  ({len(pages)}쪽)",
         f"#   읽은이  {model} (페이지 그림 {len(pages)}장, 쪽마다 한 번씩)",
-        f"#   만든것  scripts/golden_vlm.py · 물음과 답은 bench/golden/_raw/{doc_id}/ 에",
+        f"#   만든것  scripts/golden_vlm.py · 물음과 답은 data/bench/golden/_raw/{doc_id}/ 에",
         "#",
         "# ## 아직 골든이 아니다",
         "#",
@@ -374,10 +374,10 @@ def main() -> None:
     ap.add_argument("--doc", required=True, help="doc_id")
     ap.add_argument("--pages", default=None, help="예: 1-3 또는 1,5,7 (기본: 전부)")
     ap.add_argument("--model", default=MODEL)
-    ap.add_argument("--out", default=None, help="기본: bench/golden/<doc_id>.yaml")
+    ap.add_argument("--out", default=None, help="기본: data/bench/golden/<doc_id>.yaml")
     args = ap.parse_args()
 
-    from core.llm import LLM
+    from lawrag.core.llm import LLM
 
     result, blocks, pdf = load_doc(args.doc)
     meta_path = _store() / args.doc / "meta.json"
@@ -424,7 +424,7 @@ def main() -> None:
               f"{'  (답 없음)' if not got else ''}")
 
     if not items:
-        raise SystemExit("받은 답이 없습니다 — bench/golden/_raw/ 의 기록을 보세요")
+        raise SystemExit("받은 답이 없습니다 — data/bench/golden/_raw/ 의 기록을 보세요")
 
     got_map = compare(result, items)
     text = render(args.doc, meta, items, by_idx, got_map, args.model, pages)

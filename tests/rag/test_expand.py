@@ -1,4 +1,4 @@
-"""타입 간선 확장 — 결정론 바닥과 LLM 항해 (core/rag/expand.py).
+"""타입 간선 확장 — 결정론 바닥과 LLM 항해 (lawrag/core/rag/expand.py).
 
 여기서 지키는 것 넷:
   (1) 역방향 배제 — 착지 조문을 배제하는 조항이 **무조건** 실린다. 간선
@@ -18,9 +18,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.rag import delegation, expand                # noqa: E402
-from core.rag.answer import Section                    # noqa: E402
-from core.rag.index import Index                       # noqa: E402
+from lawrag.core.rag import delegation, expand                # noqa: E402
+from lawrag.core.rag.answer import Section                    # noqa: E402
+from lawrag.core.rag.index import Index                       # noqa: E402
 
 
 def _doc():

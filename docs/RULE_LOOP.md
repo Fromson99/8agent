@@ -189,11 +189,11 @@ data/rules/breaker.json: {"state": "정상"|"강하", "reason": "…", "ts": "�
 ## §7 구현 순서와 현황 (2026-08-12)
 
 ```
-1. core/rag/rules.py      ✅ 술어 어휘 3종 + 평가기 + mode() + 검증 + 원장 + 차단기
+1. lawrag/core/rag/rules.py      ✅ 술어 어휘 3종 + 평가기 + mode() + 검증 + 원장 + 차단기
                           (redirect 한 종. kind 추가는 어휘 등록만)
-2. core/rag/replay.py     ✅ 근거 재현 + 충돌 대조(억제재생·사례상충·정답피드백)
-   core/rag/induce.py     ✅ 군집화(결정적) → 기계/LLM 일반화(위반 1회 재시도) → replay
-                          CLI: python -m core.rag.induce · API: POST /v1/rag/rules/induce
+2. lawrag/core/rag/replay.py     ✅ 근거 재현 + 충돌 대조(억제재생·사례상충·정답피드백)
+   lawrag/core/rag/induce.py     ✅ 군집화(결정적) → 기계/LLM 일반화(위반 1회 재시도) → replay
+                          CLI: python -m lawrag.core.rag.induce · API: POST /v1/rag/rules/induce
 3. 원장·shadow·차단기     ✅ data/rag/rule_hits.jsonl + 3단 스위치 + 자동 강하
    색인 훅                ✅ cross_refs 마지막 단 + 서명에 파일 mtime·유효 모드
    API                    ✅ GET/POST /v1/rag/rules{,/resolve,/hits,/hits/resolve,/breaker}

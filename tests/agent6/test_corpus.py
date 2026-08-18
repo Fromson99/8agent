@@ -4,7 +4,7 @@
 그래서 "빌드가 돈다"보다 "빌드가 무엇을 거부하는가"에 더 많은 줄을 쓴다 —
 거부하지 못하는 게이트는 게이트가 아니다.
 
-합성 픽스처만 쓴다. 실제 법령 원문(agents/agent6/corpus/raw/KSB.pdf)은 docling 을
+합성 픽스처만 쓴다. 실제 법령 원문(lawrag/agents/agent6/corpus/raw/KSB.pdf)은 docling 을
 태워야 하므로 테스트에서 부르지 않는다. 대신 같은 라우터·같은 형식으로 도는 합성 txt 를
 쓴다 — 검증하는 것은 조문 내용이 아니라 파이프라인이다.
 """
@@ -16,14 +16,14 @@ from pathlib import Path
 
 import pytest
 
-from agents.agent6.src import basis, schema
-from agents.agent6.src import corpus_build as cb
+from lawrag.agents.agent6.src import basis, schema
+from lawrag.agents.agent6.src import corpus_build as cb
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = ROOT / "tests/agent6/fixtures/corpus"
 RAW = FIXTURES / "raw"
 BAD = FIXTURES / "bad"
-ITEMS = ROOT / "agents/agent6/checklist/items"
+ITEMS = ROOT / "lawrag/agents/agent6/checklist/items"
 
 
 @pytest.fixture(scope="module")
@@ -219,7 +219,7 @@ def test_조_결번이_보고된다(built):
 
 def test_조_마커가_없으면_그_사실이_남는다():
     """조 구조가 아닌 문서(예: 표준투자권유준칙)를 조/항/호로 자르면 여기서 드러난다."""
-    from core.structurize import Document
+    from lawrag.core.structurize import Document
     empty = Document(doc_type="x", format_version=1, source_file="x")
     assert cb._article_check(empty)["count"] == 0
 
@@ -425,7 +425,7 @@ def test_모호한_앵커는_발췌를_만들지_않고_AMBIGUOUS로_보고한�
 
 
 def test_실제_코퍼스의_모호한_앵커도_같은_방식으로_보고된다():
-    """운영 코퍼스(agents/agent6/corpus)의 manifest — 미해소는 전부 사유와 후보를 단다."""
+    """운영 코퍼스(lawrag/agents/agent6/corpus)의 manifest — 미해소는 전부 사유와 후보를 단다."""
     manifest = basis.load_manifest()
     미해소 = [r for r in manifest["basis"] if r["status"] != cb.RESOLVED]
     assert 미해소, "미해소가 하나도 없다면 이 시험은 공회전한다"

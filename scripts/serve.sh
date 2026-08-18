@@ -4,8 +4,8 @@
 #   scripts/serve.sh              # 포그라운드
 #   nohup scripts/serve.sh >/tmp/structure-serve.log 2>&1 &   # 백그라운드
 #
-# env 는 docker-compose.yml 이 컨테이너에 주던 것을 호스트 경로로 그대로 옮긴
-# 것이다. ANTHROPIC_API_KEY 는 .env 에서 core.llm.load_env() 가 읽는다.
+# env 는 예전 compose 가 주던 것을 호스트 경로로 그대로 옮긴
+# 것이다. ANTHROPIC_API_KEY 는 .env 에서 lawrag.core.llm.load_env() 가 읽는다.
 # 도클링 모델 캐시는 호스트 HF 기본 캐시(~/.cache/huggingface)를 쓴다 —
 # 첫 재해석 때 모델을 새로 받을 수 있다(RAG·링크·디버깅 화면은 무관).
 set -euo pipefail
@@ -19,4 +19,4 @@ export CORS_ORIGINS="${CORS_ORIGINS:-*}"
 export MAX_UPLOAD_MB="${MAX_UPLOAD_MB:-40}"
 export STRUCTURE_RENDER_SCALE="${STRUCTURE_RENDER_SCALE:-2.0}"
 
-exec .venv/bin/uvicorn api.structure_app:app --host 0.0.0.0 --port "${PORT:-5566}"
+exec .venv/bin/uvicorn lawrag.api.structure_app:app --host 0.0.0.0 --port "${PORT:-5566}"

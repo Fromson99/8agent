@@ -14,10 +14,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.rag import answer as answer_mod                   # noqa: E402
-from core.rag import verdicts                               # noqa: E402
-from core.rag.answer import Section                         # noqa: E402
-from core.rag.index import Index                            # noqa: E402
+from lawrag.core.rag import answer as answer_mod                   # noqa: E402
+from lawrag.core.rag import verdicts                               # noqa: E402
+from lawrag.core.rag.answer import Section                         # noqa: E402
+from lawrag.core.rag.index import Index                            # noqa: E402
 
 
 class FakeLLM:

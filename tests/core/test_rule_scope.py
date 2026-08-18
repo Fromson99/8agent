@@ -46,7 +46,7 @@ def test_규칙_시험은_파싱캐시가_있는_문서만_만진다(tmp_path, m
     # STORE 는 모듈 적재 때 굳는 상수라 env 만 바꿔서는 안 바뀐다. 그렇다고
     # importlib.reload 로 갈면 앱이 이미 등록해 둔 라우터 객체와 어긋나 **뒤에
     # 도는 시험들이 깨진다**(실측). 상수만 갈아 끼운다 — monkeypatch 가 되돌린다.
-    from api.routers import structure as mod
+    from lawrag.api.routers import structure as mod
     monkeypatch.setattr(mod, "STORE", store)
 
     assert mod._rule_scope() == [pdf_doc]      # XML 문서는 범위 밖

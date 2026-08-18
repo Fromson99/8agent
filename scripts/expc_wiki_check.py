@@ -44,7 +44,7 @@ META_LINE = re.compile(r"^>\s")
 
 def main() -> int:
     if not INDEX.is_file():
-        print("색인이 없습니다 — ingest_expc.py 먼저", file=sys.stderr)
+        print("색인이 없습니다 — lawrag/pipeline/ingest_expc.py 먼저", file=sys.stderr)
         return 2
     cases = {c["serial"]: c for c in json.loads(INDEX.read_text("utf-8"))["cases"]}
     problems: list[str] = []

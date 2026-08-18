@@ -12,9 +12,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.rag import answer as answer_mod          # noqa: E402
-from core.rag.index import DocView, Index, norm    # noqa: E402
-from core.rag.search import search, similarity     # noqa: E402
+from lawrag.core.rag import answer as answer_mod          # noqa: E402
+from lawrag.core.rag.index import DocView, Index, norm    # noqa: E402
+from lawrag.core.rag.search import search, similarity     # noqa: E402
 
 
 # ---------------------------------------------------------------- 재료
@@ -176,6 +176,6 @@ def test_회수_없음은_부재_단정이_아니다():
 
 def test_라우터가_두_앱에_실린다():
     sys.path.insert(0, str(ROOT))
-    from api.routers import rag as rag_router
+    from lawrag.api.routers import rag as rag_router
     paths = {r.path for r in rag_router.router.routes}
     assert "/v1/rag/search" in paths and "/v1/rag/ask" in paths

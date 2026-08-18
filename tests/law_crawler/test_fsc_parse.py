@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-from sources.fsc import DETAIL, case_text, parse_detail, parse_list
+from lawrag.sources.fsc import DETAIL, case_text, parse_detail, parse_list
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures" / "law_crawler" / "fsc"
 
