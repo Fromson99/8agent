@@ -2,7 +2,7 @@
 
 폐쇄망 플랫폼(GenOS)에 올라간 앱은 브라우저가 닿지 않는다 — 게이트웨이 JSON
 호출만 된다. 화면은 이쪽(로컬)에서 띄우고, **상태와 조작을 파일로 나른다**.
-구현은 `api/ops.py` + 진입점 `service.py`, 시험은 `tests/core/test_ops_api.py`
+구현은 `lawrag/api/ops.py` + 진입점 `service.py`, 시험은 `tests/core/test_ops_api.py`
 와 `tests/core/test_service_entry.py`.
 
 ## GenOS 계약 — 문은 하나다
@@ -13,7 +13,7 @@ GenOS 코드 서빙은 uvicorn 앱을 그대로 서빙하지 않는다. 계약�
     POST https://<GenOS>/api/gateway/code_serving/<번호>/json
     Authorization: Bearer <인증키>
 
-로 노출한다 (실측: v1.8.4 문서 usage_code_serving). 임의 경로도 정적 파일도
+로 노출한다 (실측: v1.8.4·v1.9.0 문서 usage_code_serving — 같다). 임의 경로도 정적 파일도
 그 문으로 못 나가므로, `service.py` 는 `data.op` 봉투로 전부를 태우는 터널이다:
 
 ```bash
@@ -36,6 +36,118 @@ curl -s <게이트웨이> -H "Authorization: Bearer $KEY" -H 'Content-Type: appl
 스페이스 터미널에서 게이트웨이를 curl 하고, 떨어진 파일을 IDE 로 내려받고
 올린다. 코드 스페이스와 서빙이 공유 볼륨을 같이 물면 `snapshot_to` /
 `apply_from` 으로 b64 부풀림 없이 파일이 오간다.
+
+## 첫 반입 — 이메일 45MB 조각으로 데이터를 나른다
+
+코드는 git 이 나르지만 정본 데이터(구조 스토어·용어·간선)는 .gitignore 라
+따로 가야 한다. **git 에 문서를 못 올리는 내부 저장소**라면 git 이 나르던 문서류
+(위키 raw·골든·해석례 색인·agent6 코퍼스·예시·질문셋)도 같이 실린다 — 목록의
+아래 절이 그것이다(중복돼도 해가 없다). 그때 내부 git 에는 문서를 뺀 판을 밀어라:
+`git rm -r --cached data/wiki data/review data/expc lawrag/agents/agent6/corpus examples bench`
+후 커밋한 가지를 push (이쪽 작업 사본은 그대로 남는다). 첨부 한도가 통당 50MB 라서 `scripts/data_ship.sh` 가 목록
+(`scripts/data_ship.list`)을 tar.gz 하나로 묶고 45MB 조각으로 잘라 **조각마다
+독립 zip**(+MANIFEST.json)으로 떨군다.
+
+```bash
+# 보내는 쪽
+scripts/data_ship.sh list                     # 무엇이 실리나
+scripts/data_ship.sh pack                     # var/out/ship/8agent-data-<날짜>/  *.p01-of-01.zip …
+scripts/data_ship.sh pack --size 35           # 서버가 base64 부풀림까지 셀 때
+scripts/data_ship.sh pack --vectors           # 벡터(123M)까지 — 그쪽이 같은 bge-m3 를 쓸 때만 의미
+scripts/data_ship.sh pack --pdf --pages       # 검수 화면용 합성 pdf·페이지 PNG 까지
+scripts/data_ship.sh pack --corpus            # 원본층(187M)까지
+
+# 받는 쪽 — 첨부 zip 을 한 폴더에 모아 두고 (메일이 이름을 바꿔도 된다)
+scripts/data_ship.sh verify ~/inbox           # 조각 sha256·이어붙인 tar 무결성만
+scripts/data_ship.sh unpack ~/inbox           # 저장소 뿌리에 제자리 배치 (덮어쓰기)
+scripts/data_ship.sh unpack ~/inbox --replace # 기존 것을 .data_ship_backup/<시각>/ 로 옮긴 뒤 교체
+scripts/data_ship.sh unpack ~/inbox --dry-run # 펼치지 않고 목록만
+```
+
+**무엇을 싣고 무엇을 안 싣나** (2026-08-18 결정·실측). 질의(RAG) 경로가 읽는
+것은 `result.json`·`meta.json`·벡터·용어집·간선·프레임·판정 지문이다.
+
+| | 크기 | 기본 | 이유 |
+|---|---|---|---|
+| `data/structure/*/{result,meta}.json` | 47.8M | 싣는다 | 구조 정본 — 이것 없이는 아무것도 안 된다 |
+| `data/structure/*/source.xml` | 23.1M | **싣는다** | law.go.kr 원문. 런타임은 안 읽지만 그쪽에서 재인제스트할 근거다 |
+| `data/glossary.json` · `delegation.json` · `law_index.json` · `rag/` · `rules/` · `frames/` | 35M | 싣는다 | 용어·간선·관측 |
+| `data/wiki/` · `data/review/` · `data/expc/` · `lawrag/agents/agent6/corpus/` · `examples/` · `data/bench/` | 22M | 싣는다 | git 추적 문서류 — 내부 git 에 문서를 못 올릴 때를 위해 |
+| `data/embeddings/` | 123M (압축 0) | **안 싣는다** | 벡터는 **그쪽 모델로 다시 만든다** — 질의 임베딩과 색인이 같은 모델이어야 하므로 이쪽 bge-m3 벡터는 그쪽 모델과 안 맞는다. `--vectors` |
+| `data/structure/*/source.pdf` · `parse.json` | 37.6M | 안 싣는다 | lawxml 문서의 pdf 는 검수용 **합성 지면**·파싱 캐시 — 뷰어 재해석·페이지 그림만 쓴다. `--pdf` |
+| `data/structure/*/pages/*.png` | 194M | 안 싣는다 | 페이지 렌더 — pdf 에서 재생성. `--pages` |
+| `data/corpus/` | 187M | 안 싣는다 | 원본층. 재수집·재인제스트·`core.lawnet` 재생성 때만. `--corpus` |
+| `*.bak` | 0.3M | 안 싣는다 | 항상 |
+
+기본값 실측: **압축 후 21.8MB → 1통** (문서류 포함). 새 데이터가 생기면 `scripts/data_ship.list`
+에 경로 한 줄. 조각이 하나라도 빠지거나 손상되면 어느 통인지 이름을 대고
+멈춘다 — 그 통만 다시 받으면 된다.
+
+**받은 뒤 벡터 만들기** — 그쪽에서 한 번:
+
+```bash
+# (a) 그쪽에 sentence-transformers 모델이 있으면
+EMBED_MODEL=<모델 이름> python -m lawrag.core.terms embed-sections
+# (b) GenOS 임베딩 서빙을 쓰면 (서비스 라우터 "서빙 - Embedding" 엔드포인트)
+GENOS_EMBED_URL=https://<GenOS>/api/gateway/rep/serving/<임베딩 서빙 ID> \
+GENOS_EMBED_KEY=<키> python -m lawrag.core.terms embed-sections
+```
+
+같은 환경변수를 서버에도 주면 질의가 같은 모델로 임베딩된다 — `lawrag/core/embedding.py`
+가 `EMBED_BACKEND=local|genos` 를 고른다(비우면 `GENOS_EMBED_URL` 유무로).
+GenOS 쪽은 `{URL}/v1/embeddings` 에 OpenAI 형식(`{"model","input":[…]}` →
+`{"data":[{"index","embedding"}]}`)으로 보낸다 — 문서(v1.9.0 "서비스 라우터")에
+경로만 있고 몸통 스키마는 없어서 **가정**이다. 첫 호출이 400 이면 그때 맞춘다.
+만들기 전까지는 벡터 채널만 빠지고 렉시컬·간선·용어·쟁점 채널은 다 돈다.
+색인을 다른 모델로 다시 만들 땐 옛 `vectors.npz` 를 지우고 만들어라 —
+embed_sections 는 sha1 이 같으면 옛 벡터를 재사용한다.
+
+## LLM — 폐쇄망에서는 GenOS 서빙을 부른다
+
+앱의 LLM 호출은 전부 `lawrag/core/llm.py` 의 `LLM.structured()` 하나를 지난다 (합성·
+판정·쟁점·검토·귀납). 그 뒤 백엔드가 둘이고, 환경변수로 갈린다:
+
+| 백엔드 | 언제 | 켜는 변수 |
+|---|---|---|
+| `anthropic` | 개발망. Anthropic SDK, json_schema 네이티브 | `ANTHROPIC_API_KEY` (`.env`) |
+| `genos` | 폐쇄망. GenOS **LLM 서빙**의 OpenAI 호환 REST | `GENOS_LLM_URL` + `GENOS_LLM_KEY` |
+
+고르는 규칙: `LLM_BACKEND=anthropic|genos` 가 있으면 그것, 없으면 `GENOS_LLM_URL`
+이 있을 때 genos. 실측 계약(genos-docs v1.9.0 "LLM 서빙 API 사용"):
+
+```
+GENOS_LLM_URL = https://<GenOS>/api/gateway/rep/serving/<LLM 서빙 ID>
+GET  {GENOS_LLM_URL}/v1/models                 → data[0].id 가 모델 이름
+POST {GENOS_LLM_URL}/v1/chat/completions       Authorization: Bearer <인증키>
+     {"model": …, "messages": [{"role":"system"…},{"role":"user"…}],
+      "stream": true, "response_format": {"type":"json_schema", …}}
+```
+
+```bash
+export GENOS_LLM_URL="https://<GenOS>/api/gateway/rep/serving/43"
+export GENOS_LLM_KEY="<LLM 서빙 인증키>"          # 코드 서빙 키와 다른 키다
+# 선택
+export GENOS_LLM_MODEL="…"        # 비우면 /v1/models 의 첫 모델
+export GENOS_LLM_JSON_MODE=json_schema   # json_schema | json_object | prompt
+export GENOS_LLM_TEMPERATURE=0
+export GENOS_USER_ID=653          # 이용 로그에 사람을 남기려면 (x-genos-user-id)
+```
+
+**JSON 을 받는 길** — 서빙 뒤 엔진(vLLM 계열)이 `response_format=json_schema`
+를 받으면 스키마가 강제된다. 400 으로 거부하면 스키마를 시스템 프롬프트에
+싣는 `prompt` 모드로 **자동으로 한 단계 내려가 그 프로세스 내내** 그 길로
+간다 (`<think>…</think>`·코드 울타리는 벗겨서 파싱). 어느 길이었는지는
+`LLM.log` 의 Exchange 와 서버 로그("… 모드로 내려간다")에 남는다.
+
+확인은 이 한 줄이면 된다 — LLM 이 잡히면 검색만이 아니라 답변 합성까지 돈다:
+
+```bash
+curl -s localhost:5566/v1/rag/ask -H 'Content-Type: application/json' \
+  -d '{"question":"신탁업자가 고유재산과 신탁재산을 구분해야 하는 근거는?"}' | jq .answer
+```
+
+시험: `tests/core/test_llm_genos.py` — 가짜 OpenAI 호환 서빙 앞에서 json_schema
+경로·400 강등·절단 명명·모델 조회를 지킨다.
 
 ## 가능성 확인 절차 — 어느 길이 열려 있나
 
@@ -126,7 +238,7 @@ kill %1
 스냅샷 키: `structure`(문서 스토어, pages/ 렌더 캐시 제외 — 원본에서 다시
 그려진다) · `glossary` · `links` · `bindings` · `canvas` · `ledger` · `fixes` ·
 `custom`(표면 규칙) · `rules`(간선 규칙) · `rag`(튜플·판정) · `embeddings` ·
-`formats` · `registry`(core/registry.yaml — 런타임에 컴파일이 고치는 파일) ·
+`formats` · `registry`(lawrag/core/registry.yaml — 런타임에 컴파일이 고치는 파일) ·
 `agent6_items`. 경로의 정본은 각 소유 모듈이고 ops 는 빌려 읽는다
 (`_state_targets()`).
 
@@ -190,3 +302,16 @@ curl -s localhost:5566/v1/ops/report > 현황.html
 | `OPS_ALLOW_RESTORE` | 꺼짐 | 1 이어야 `/v1/ops/restore` 가 열린다 (이쪽 전용) |
 | `OPS_INBOX_DIR` | 없음 | 반입 폴더 감시 경로 (그쪽 선택) |
 | `OPS_INBOX_POLL` | 10 | 감시 주기(초) |
+| `LLM_BACKEND` | 자동 | `anthropic` \| `genos` — 비우면 `GENOS_LLM_URL` 유무로 |
+| `GENOS_LLM_URL` | 없음 | GenOS LLM 서빙 게이트웨이 (`…/api/gateway/rep/serving/<ID>`) |
+| `GENOS_LLM_KEY` | 없음 | 그 서빙의 인증키 (Bearer) |
+| `GENOS_LLM_MODEL` | `/v1/models` 첫 모델 | 모델 이름 고정 |
+| `GENOS_LLM_JSON_MODE` | `json_schema` | `json_schema` \| `json_object` \| `prompt` — 400 이면 자동 강등 |
+| `GENOS_LLM_TEMPERATURE` | 0 | 결정성 |
+| `GENOS_USER_ID` | 없음 | `x-genos-user-id` — 이용 로그에 사람을 남긴다 |
+| `EMBED_BACKEND` | 자동 | `local` \| `genos` — 비우면 `GENOS_EMBED_URL` 유무로 |
+| `EMBED_MODEL` | `BAAI/bge-m3` | local 백엔드의 sentence-transformers 모델 |
+| `GENOS_EMBED_URL` | 없음 | GenOS 임베딩 서빙 엔드포인트 (`/v1/embeddings` 앞까지) |
+| `GENOS_EMBED_KEY` | `GENOS_LLM_KEY` | 그 서빙의 인증키 (비우면 LLM 키를 같이 쓴다) |
+| `GENOS_EMBED_MODEL` | `/v1/models` 첫 모델 | 모델 이름 고정 |
+| `GENOS_EMBED_BATCH` | 64 | 한 요청에 보내는 문장 수 |

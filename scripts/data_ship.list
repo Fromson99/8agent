@@ -1,0 +1,35 @@
+# data_ship.list — 이메일로 나를 데이터 (저장소 뿌리 기준 경로, 한 줄에 하나)
+#
+# git 이 나르는 것(data/wiki · data/review · data/expc · data/aliases.json · 코드)은
+# 적지 않는다. 새 데이터가 생기면 여기 한 줄 — pack 은 없는 경로를 경고만
+# 하고 건너뛴다. `#` 뒤는 주석.
+#
+# 크기는 2026-08-18 실측. 기본(벡터·pdf 제외) 압축 후 ≈ 15MB → 1통.
+
+data/structure/            # 구조 정본 42문서 — result.json·meta.json·source.xml (source.pdf·parse.json 은 --pdf, pages/*.png 는 --pages)
+data/embeddings/           # 구역 벡터 — 기본 제외, 그쪽 모델로 재생성 (python -m core.terms embed-sections). --vectors 로 포함
+data/glossary.json         # 용어 694 (20M)
+data/delegation.json       # 조문 간선 27,318 (11M) — data/corpus/law/relations 에서 재생성인데 그쪽엔 corpus 가 없다
+data/law_index.json        # 문서 42 + 갈래 11
+data/links.json            # 판정으로 고정된 참조 링크 (있으면)
+data/rag/                  # 판정 지문·튜플·후보 (append-only 관측)
+data/rules/                # 규칙 장부·엔진 스위치
+data/frames/               # 조문 프레임 jsonl
+data/custom/               # 사용자 정의 제안기
+data/structure_fixes.json
+data/structure_ledger.json
+data/format_bindings.json
+data/format_canvas.json
+
+# data/corpus/ (원본층 187M) 은 목록이 아니라 `pack --corpus` 로 — 그쪽에서 재수집·
+# 재인제스트·core.lawnet 재생성을 돌릴 때만 필요하다.
+
+# ── git 이 나르는 문서류 — 내부 git 에 문서를 못 올리는 경우를 위해 여기도 싣는다 ──
+# (코드만 git 으로 가고 문서는 메일로 갈 때. 중복돼도 해가 없다 — unpack 은 덮어쓴다.)
+data/wiki/                 # 해석 지식 llm-wiki — raw(해석례·회신·판례 1,175) + 컴파일 아티클 + 원장
+data/review/               # 골든 셋 라벨·회차 실측
+data/expc/                 # 해석례 열람 색인
+data/aliases.json          # 법령 약칭
+lawrag/agents/agent6/corpus/     # agent6 법령·준칙 원문·발췌
+docs/examples/             # 과제3·5 예시 Q&A·가상 내규
+data/bench/                     # 질문셋·골든 yaml
