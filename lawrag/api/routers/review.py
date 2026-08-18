@@ -35,8 +35,7 @@ class Review(BaseModel):
 
 
 def _llm():
-    llm_mod.load_env()
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+    if not llm_mod.available():
         return None
     return llm_mod.LLM()
 
@@ -52,7 +51,7 @@ def post_review(body: Review):
     llm = _llm()
     if llm is None:
         raise HTTPException(503, "LLM 없음 — 검토는 판단이라 LLM 이 필요합니다 "
-                                 "(ANTHROPIC_API_KEY). 검색은 /v1/rag 로.")
+                                 f"({llm_mod.MISSING_HINT}). 검색은 /v1/rag 로.")
     st = review_mod.run(llm, index_mod.current(), text, track=body.track)
     out = st.to_dict()
 

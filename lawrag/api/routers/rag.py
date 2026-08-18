@@ -115,8 +115,7 @@ class Ask(BaseModel):
 
 def _llm():
     """키가 없으면 None — 호출부가 검색까지만 내려간다."""
-    llm_mod.load_env()
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+    if not llm_mod.available():
         return None
     return llm_mod.LLM()
 
@@ -364,7 +363,7 @@ def rag_links_settle():
     idx = index_mod.current()
     llm = _llm()
     if llm is None:
-        raise HTTPException(503, "LLM 없음 — ANTHROPIC_API_KEY 를 설정해야 판정이 돕니다")
+        raise HTTPException(503, f"LLM 없음 — {llm_mod.MISSING_HINT} 를 설정해야 판정이 돕니다")
     links, meta = judge_mod.settle_cross(llm, idx)
     out = {**meta, "saved": _save_links(links) if links else 0}
     _record_settle_run({"via": "LLM", **meta, "saved": out["saved"]})
@@ -734,7 +733,7 @@ def rag_ask(body: Ask):
     idx = index_mod.current()
     llm = _llm()
     if llm is None:
-        log.warning("LLM 없음 — 검색까지만 내려간다 (ANTHROPIC_API_KEY 미설정)")
+        log.warning("LLM 없음 — 검색까지만 내려간다 (%s 미설정)", llm_mod.MISSING_HINT)
 
     # 쟁점 분해 두 시점 (wikictx 머리): ① 검색 전 — 트리거 매칭이 조문
     # 후보로 질의를 넓힌다(검색 보조, 결정론). ② 컨텍스트 확보 후 — LLM 이

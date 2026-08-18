@@ -216,8 +216,7 @@ def main() -> None:
     llm = None
     if not args.no_llm:
         from lawrag.core import llm as llm_mod
-        llm_mod.load_env()
-        if os.environ.get("ANTHROPIC_API_KEY"):
+        if llm_mod.available():
             llm = llm_mod.LLM()
     print(json.dumps(run(llm=llm), ensure_ascii=False, indent=2, default=str))
 

@@ -475,9 +475,9 @@ def synthesize(llm, question: str, sections: list[Section],
                              "다음 검색이 닿을 수 있습니다.",
                       answerable=False)
     if llm is None:
-        return Answer(answer="", error="LLM 없음 — ANTHROPIC_API_KEY 를 설정해야 "
-                                       "답변 합성이 동작합니다. 검색(/search)은 그대로 "
-                                       "쓸 수 있습니다.")
+        return Answer(answer="", error="LLM 없음 — ANTHROPIC_API_KEY(개발망) 또는 "
+                                       "GENOS_LLM_URL(GenOS)을 설정해야 답변 합성이 "
+                                       "동작합니다. 검색(/search)은 그대로 쓸 수 있습니다.")
     # 받은 것을 전부 본다 — 규모는 조립 단계(CANDIDATES_MAX)가 이미 지켰다.
     # 여기서 또 자르면 사용자에게 보여준 컨텍스트와 모델이 본 컨텍스트가 갈린다.
     use = sections

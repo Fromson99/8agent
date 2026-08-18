@@ -183,11 +183,10 @@ def main(argv: Optional[list[str]] = None) -> int:
         import os
 
         from lawrag.core import llm as llm_mod
-        llm_mod.load_env()
-        if os.environ.get("ANTHROPIC_API_KEY"):
+        if llm_mod.available():
             llm = llm_mod.LLM()
         else:
-            print("ANTHROPIC_API_KEY 없음 — LLM 판정을 건너뛴다")
+            print(f"LLM 없음({llm_mod.MISSING_HINT}) — LLM 판정을 건너뛴다")
 
     run(store=args.store, glossary=args.glossary, out_dir=args.out,
         top=args.top, min_tf=args.min_tf, use_embed=not args.no_embed,
