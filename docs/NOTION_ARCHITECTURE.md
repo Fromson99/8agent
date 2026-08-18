@@ -7,6 +7,10 @@
 > `···` → **Import** → **Markdown & CSV** 로 가져오세요.
 >
 > **시스템 구조만 보려면** — [ARCH_SYSTEM.md](ARCH_SYSTEM.md)
+>
+> **이 문서는 2026-08-17 스냅샷**이다. §6~9 의 골든셋·벤치 수치는 그날 실측이며,
+> 이후 회차의 정본은 [GOLDEN.md](GOLDEN.md)(채점 규칙·회차별 실측)와
+> [RETRIEVAL.md](RETRIEVAL.md)(회수 자·항호 마킹)다 — 숫자가 다르면 그쪽이 맞다.
 
 ---
 
