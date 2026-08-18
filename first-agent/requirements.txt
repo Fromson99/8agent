@@ -1,7 +1,0 @@
-# 문서 해석은 전부 LLM 이 하고, 코드는 구조화된 값만 다룬다.
-# 정규표현식은 쓰지 않는다 (dataset 9종 실측에서 오버피팅 확인 — ARCHITECTURE.md 참고).
-
-docling>=2.117        # P1 파싱: 레이아웃·표·출처. PDF/DOCX/PPTX/HTML 지원
-pdfplumber>=0.11      # 도클링이 표를 놓친 경우의 보완 (유안타 계약서에서 실제로 필요했다)
-anthropic>=0.60       # P2~P4 문서 해석
-pytest>=8.0

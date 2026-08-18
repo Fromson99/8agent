@@ -148,7 +148,7 @@ def test_human_route_is_not_overwritten(client):
     """사람이 손으로 등록한 route 는 UI 가 덮어쓰지 않는다 — 자산이 딸려 있다."""
     _put_doc(client, "a" * 16, "하나.md", "시험폴더")
     _put_doc(client, "b" * 16, "둘.md", "시험폴더")
-    r = _compile(client, doc_type="특정금전신탁", overwrite=True)
+    r = _compile(client, doc_type="금소법", overwrite=True)
     assert r.status_code == 409 and "사람이 등록한" in r.json()["detail"]
 
 
@@ -380,7 +380,7 @@ def test_format_delete_refuses_while_bound_then_cleans_up(client):
 
 
 def test_human_format_is_not_deletable(client):
-    r = client.delete("/v1/formats/특정금전신탁")
+    r = client.delete("/v1/formats/금소법")
     assert r.status_code == 409 and "사람이 등록한" in r.json()["detail"]
 
 
@@ -462,7 +462,7 @@ def test_cannot_empty_a_format(client):
 
 
 def test_human_format_rules_are_not_editable(client):
-    r = client.patch("/v1/formats/특정금전신탁/rules",
+    r = client.patch("/v1/formats/금소법/rules",
                      json={"markers": [{"id": "조", "level": 2}]})
     assert r.status_code == 409 and "사람이 관리하는" in r.json()["detail"]
 

@@ -22,22 +22,6 @@ parsers:
   transcript: agents.agent6.src.transcript:parse      # 발화턴 계열 (STT 전사 JSON)
 
 routes:
-  # --- 조/항/호 계열 -------------------------------------------------------
-  - doc_type: 특정금전신탁
-    parser: auto
-    format: agents/agent1/formats/trust_contract.format.json
-    glossary: agents/agent1/glossary/trust_contract.glossary.yaml
-    threshold: 0.70
-    owner: agent1
-
-  # --- 부/항목/세목 계열 ---------------------------------------------------
-  - doc_type: 투자설명서
-    parser: auto
-    format: agents/agent1/formats/prospectus.format.json
-    glossary: agents/agent1/glossary/prospectus.glossary.yaml
-    threshold: 0.70
-    owner: agent1
-
   # --- 법령 계열 (조/항/호/목) --------------------------------------------
   - doc_type: 금소법
     parser: auto

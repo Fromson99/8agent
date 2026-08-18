@@ -109,9 +109,9 @@ def test_unregistered_doc_type_is_refused_with_a_suggestion():
     """오타·유사어를 조용히 삼키지 않는다. 대신 비슷한 이름을 알려 준다."""
     reg = router.load()
     with pytest.raises(router.UnregisteredDocType) as e:
-        reg.get("특정금전신탁계약서")
+        reg.get("금소법 시행령")
     msg = str(e.value)
-    assert "특정금전신탁" in msg and "혹시" in msg
+    assert "금소법시행령" in msg and "혹시" in msg
     assert "registry.yaml" in msg          # 어떻게 고치는지까지 말한다
 
 
@@ -212,7 +212,7 @@ def test_glossary_load_is_not_how_agents_get_assets():
      tests/architecture/test_no_bypass.py 가 한다. 여기서는 route 가 실제로
      같은 파일을 준다는 것만 확인한다.)
     """
-    r = router.load().get("특정금전신탁")
+    r = router.load().get("금소법")
     g, _fmt = router.assets(r)
-    assert g.doc_type == "특정금전신탁"
+    assert g.doc_type == "금소법"
     assert glossary_mod.load(ROOT / r.glossary).terms.keys() == g.terms.keys()
