@@ -81,6 +81,31 @@ class _Fake:
         self.srv.shutdown(); self.srv.server_close()
 
 
+@pytest.fixture(autouse=True)
+def _restore_reloaded_modules():
+    """_fresh()·재적재가 갈아끼운 모듈을 테스트마다 되돌린다.
+
+    다른 파일의 fixture 는 **자기 import 시점의 모듈 객체**에 패치를 건다
+    (test_lexicon 의 fake_embed 가 embedding.encode 를 monkeypatch). 여기서
+    sys.modules 를 뽑고 재적재한 새 객체가 남으면 그 패치는 낡은 객체에 걸려
+    허공에 뜬다 — 실측(2026-08-20): 전체 스위트에서 lexicon 3건·switches 2건이
+    이 파일 뒤에서만 실패했다. 스냅샷을 되돌릴 때 부모 패키지 속성도 같이
+    되돌린다 — `from lawrag.core import embedding` 은 속성을 먼저 본다."""
+    import lawrag.core  # noqa: F401 — 스냅샷 대상 적재 보장
+    targets = lambda: [m for m in list(sys.modules)  # noqa: E731
+                       if m == "lawrag.core.embedding"
+                       or m.startswith(("lawrag.core.rag", "lawrag.core.terms"))]
+    saved = {m: sys.modules[m] for m in targets()}
+    yield
+    for m in targets():
+        del sys.modules[m]
+    sys.modules.update(saved)
+    for m, mod in saved.items():
+        parent, _, child = m.rpartition(".")
+        if parent in sys.modules:
+            setattr(sys.modules[parent], child, mod)
+
+
 @pytest.fixture()
 def emb(monkeypatch):
     def _set(url):

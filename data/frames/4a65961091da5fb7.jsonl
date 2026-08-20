@@ -1,0 +1,662 @@
+{"jo": 2, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 3, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 95, "node": 96, "actor": "상장신청인", "act": "상장신청할 수 없다", "target": "", "object": "상장하려는 특정한 종목의 증권 중에서 일부 수량", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 95, "node": 97, "actor": "법인", "act": "상장신청해야 한다", "target": "", "object": "해외증권시장에 상장되지 않은 수량의 전부", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 95, "node": 97, "actor": "거래소", "act": "상장요건을 적용한다", "target": "", "object": "유가증권시장에 상장하려는 증권의 수량을 기준으로 상장요건", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 77, "node": 78, "actor": "증권", "act": "상장한다", "target": "", "object": "", "mode": "절차", "function": "근거·권한", "proviso": false}
+{"jo": 77, "node": 79, "actor": "거래소", "act": "상장신청서의 접수를 거부할 수 있다", "target": "", "object": "상장신청서", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 77, "node": 83, "actor": "거래소", "act": "상장예비심사나 상장심사를 한다", "target": "", "object": "", "mode": "절차", "function": "근거·권한", "proviso": false}
+{"jo": 77, "node": 83, "actor": "", "act": "세칙으로 정할 수 있다", "target": "", "object": "그 절차·방법, 심사요건의 적용 등에 관하여 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 84, "node": 85, "actor": "다음 각 호의 법인", "act": "상장예비심사를 다시 신청할 수 없다", "target": "", "object": "해당 증권의 상장예비심사", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 84, "node": 93, "actor": "거래소", "act": "제1항을 준용한다", "target": "상장예비심사신청인", "object": "", "mode": "허용", "function": "기타", "proviso": false}
+{"jo": 84, "node": 94, "actor": "거래소", "act": "알려야 한다", "target": "상장예비심사신청인이나 상장법인", "object": "그 사실과 제한기간", "mode": "의무", "function": "기타", "proviso": false}
+{"jo": 68, "node": 69, "actor": "", "act": "적용한다", "target": "", "object": "감사보고서상 개별재무제표", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 68, "node": 69, "actor": "", "act": "적용한다", "target": "", "object": "감사보고서상 감사인의 감사의견이 적정인 재무제표", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 68, "node": 69, "actor": "", "act": "적용한다", "target": "", "object": "해당 한정사항을 반영한 수정된 재무 내용", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 68, "node": 70, "actor": "", "act": "적용한다", "target": "", "object": "감사보고서상 연결재무제표", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 68, "node": 70, "actor": "", "act": "적용한다", "target": "", "object": "감사보고서상 감사인의 감사의견이 적정인 재무제표", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 68, "node": 70, "actor": "", "act": "적용한다", "target": "", "object": "해당 한정 사항을 반영한 수정된 재무 내용", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 68, "node": 71, "actor": "", "act": "적용한다", "target": "", "object": "다음 각 호의 기준", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 115, "node": 115, "actor": "거래소", "act": "상장폐지할 수 있다", "target": "상장법인", "object": "해당 증권", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 116, "node": 117, "actor": "거래소", "act": "정하여 그 증권의 매매거래를 허용할 수 있다", "target": "", "object": "일정한 기간", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 116, "node": 118, "actor": "", "act": "하되 거래소가 달리 정하는 경우에는 그러지 아니한다", "target": "", "object": "제1항의 정리매매에 허용되는 기간", "mode": "의무", "function": "기타", "proviso": false}
+{"jo": 98, "node": 99, "actor": "상장법인", "act": "상장폐지를 신청할 수 있다", "target": "거래소", "object": "상장증권의 종목별로", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 98, "node": 99, "actor": "다음 각 호의 증권을 상장한 법인", "act": "상장폐지를 신청할 수 없다", "target": "", "object": "", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 98, "node": 103, "actor": "주식워런트증권 또는 상장지수증권", "act": "상장폐지를 신청할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 98, "node": 108, "actor": "상장법인", "act": "제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 상장폐지신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 98, "node": 109, "actor": "거래소", "act": "결정한다", "target": "", "object": "상장폐지 여부", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 98, "node": 109, "actor": "거래소", "act": "심의를 거치지 않을 수 있다", "target": "", "object": "상장공시위원회의", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 98, "node": 114, "actor": "상장공시위원회", "act": "심의한다", "target": "", "object": "상장폐지 신청", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 119, "node": 120, "actor": "상장신청인", "act": "제출한 서류는 반환하지 않는다", "target": "거래소", "object": "이 규정에 따라 거래소에 제출한 서류", "mode": "금지", "function": "효과", "proviso": false}
+{"jo": 119, "node": 121, "actor": "외국법인등 또는 그의 상장대리인", "act": "작성해야 한다", "target": "", "object": "서류", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 119, "node": 121, "actor": "거래소", "act": "작성할 수 있다", "target": "", "object": "해당 서류를 영어로", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 119, "node": 121, "actor": "", "act": "첨부해야 한다", "target": "", "object": "한국어 요약본", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 119, "node": 122, "actor": "", "act": "표시해야 한다", "target": "", "object": "금액에 관한 사항", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 123, "node": 124, "actor": "상장신청서에 첨부하는 재무제표", "act": "작성한", "target": "", "object": "국내회계기준에 따라", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 123, "node": 125, "actor": "상장신청서에 첨부하는 재무제표", "act": "작성한 것이어야", "target": "", "object": "다음 각 호의 어느 하나에 해당하는 회계처리기준에 따라", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 123, "node": 125, "actor": "상장신청인의 자회사 또는 종속회사인 외국기업", "act": "채택한", "target": "", "object": "본국의 법령에 따라 다음 각 호의 회계처리기준 이외의 국제회계처리기준", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 123, "node": 129, "actor": "외국주권등 상장법인", "act": "변경할 수 없다", "target": "", "object": "신규상장을 위하여 상장예비심사를 신청할 당시에 채택한 회계처리기준을 상장 이후에 다른 종류의 회계처리기준으로", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 123, "node": 129, "actor": "외국주권등 상장법인", "act": "변경할 수 있다", "target": "거래소", "object": "제2항 각 호의 회계처리기준 간 변경으로서 외국의 법령이 변경되는 등 불가피한 사유가 있다고 거래소가 인정하는 경우", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 152, "node": 153, "actor": "상장신청인", "act": "선임해야 한다", "target": "거래소", "object": "상장대리인", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 152, "node": 157, "actor": "상장대리인 선임계약", "act": "유지되어야 한다", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 152, "node": 158, "actor": "상장신청인", "act": "선임할 수 있다", "target": "거래소", "object": "상장대리인", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 152, "node": 158, "actor": "상장신청인", "act": "선임할 수 있다", "target": "거래소", "object": "상장대리인", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 152, "node": 162, "actor": "상장대리인", "act": "한정한다", "target": "", "object": "", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 152, "node": 166, "actor": "상장신청인", "act": "알려야 한다", "target": "거래소", "object": "사실", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 152, "node": 166, "actor": "상장법인", "act": "알려야 한다", "target": "거래소", "object": "사실", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 182, "node": 183, "actor": "상장신청인", "act": "증권을 상장하려면 거래소와 상장계약을 체결해야 한다", "target": "거래소", "object": "상장계약", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 182, "node": 183, "actor": "상장신청인", "act": "상장계약을 체결해야 한다", "target": "거래소", "object": "상장계약", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 182, "node": 186, "actor": "", "act": "증권이 상장되는 날부터 효력이 생긴다", "target": "", "object": "제1항의 상장계약", "mode": "기타", "function": "효과", "proviso": false}
+{"jo": 182, "node": 187, "actor": "제1항의 상장신청인", "act": "세칙으로 정하는 상장계약서를 거래소에 제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 상장계약서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 130, "node": 131, "actor": "상장신청인", "act": "상장주선인을 선임해야 한다", "target": "", "object": "상장주선인", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 130, "node": 131, "actor": "상장신청인", "act": "선임하지 않을 수 있다", "target": "", "object": "상장주선인", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 130, "node": 136, "actor": "상장주선인", "act": "수행한다", "target": "", "object": "상장예비심사신청서와 첨부서류 등 상장을 위하여 거래소에 제출하는 서류의 작성과 그 제출에 관한 사항, 주식분산 요건의 충족에 관한 사항, 의무보유에 관한 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 130, "node": 136, "actor": "거래소에 제출하는 서류", "act": "충족해야 한다", "target": "", "object": "세칙으로 정하는 요건", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 130, "node": 140, "actor": "상장주선인", "act": "이어야 한다", "target": "", "object": "증권을 대상으로 투자매매업(인수업이 포함된 것을 말한다)과 투자중개업을 모두 인가받은 금융투자회사", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 130, "node": 141, "actor": "대표주관회사", "act": "된다", "target": "", "object": "상장주선인", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 188, "node": 189, "actor": "상장신청인", "act": "작성하여 제출해야", "target": "거래소", "object": "상장명세서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 188, "node": 190, "actor": "거래소", "act": "공표한다", "target": "", "object": "상장명세서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 193, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 142, "node": 143, "actor": "상장주선인", "act": "심사해야 한다", "target": "", "object": "상장신청인의 재무상황, 영업활동, 지배구조, 내부통제제도 등이 상장요건에 맞는지를", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 142, "node": 144, "actor": "상장주선인", "act": "알려야 한다", "target": "거래소", "object": "그 사실을", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 142, "node": 145, "actor": "상장주선인", "act": "지켜야 한다", "target": "", "object": "다음 각 호의 사항을", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 142, "node": 145, "actor": "상장주선인", "act": "취득하여 보유하고 있을 것", "target": "", "object": "외국주권등의 100분의 5에 해당하는 수량의 증권을", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 142, "node": 145, "actor": "상장주선인", "act": "매각하지 않을 것", "target": "", "object": "제1호에 따라 취득한 증권을", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 142, "node": 145, "actor": "상장주선인", "act": "매각할 수 있다", "target": "", "object": "제1호에 따라 취득한 증권을", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 142, "node": 145, "actor": "상장주선인", "act": "제출할 것", "target": "거래소", "object": "제2호의 매각제한 의무를 지키겠다는 내용의 확인서를", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 142, "node": 145, "actor": "상장주선인", "act": "수행할 것", "target": "", "object": "상장 후 2년 동안 공시대리인으로서 해당 업무를", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 142, "node": 145, "actor": "상장주선인", "act": "수행하지 아니한다", "target": "", "object": "공시대리인으로서 해당 업무를", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 142, "node": 145, "actor": "상장주선인", "act": "작성하여 제출하고 게시할 것", "target": "거래소", "object": "상장 후 2년 동안 상장신청인에 대한 기업분석보고서를", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 142, "node": 145, "actor": "금융투자업자", "act": "공표하거나 제공할 수 없는 경우", "target": "", "object": "조사분석자료를", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 142, "node": 151, "actor": "", "act": "적용하지 않는다", "target": "", "object": "제3항제1호부터 제3호까지의 규정을", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 167, "node": 168, "actor": "외국주권등과 외국채무증권의 신규상장신청인", "act": "제출하는", "target": "", "object": "감사보고서와 검토보고서", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 167, "node": 168, "actor": "다음 각 호의 어느 하나에 해당하는 자", "act": "작성한 것이어야", "target": "", "object": "감사보고서와 검토보고서", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 167, "node": 171, "actor": "적격소재 외 외국지주회사", "act": "제출하는", "target": "", "object": "감사보고서 및 검토보고서", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 167, "node": 171, "actor": "다음 각 호의 어느 하나의 요건을 충족하는 자", "act": "작성한 것이어야", "target": "", "object": "감사보고서 및 검토보고서", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 167, "node": 174, "actor": "외국주권등 상장법인", "act": "선임하여야", "target": "", "object": "상장예비심사를 신청할 당시의 감사인을 상장예비심사 신청일이 속하는 사업연도를 포함하여 연속하는 3개 사업연도의 감사인", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 167, "node": 175, "actor": "외국주권등 상장법인", "act": "선임하여야", "target": "", "object": "매 연속하는 3개 사업연도의 감사인을 동일 감사인", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 167, "node": 175, "actor": "감사인 선임계약", "act": "체결하여야", "target": "", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 167, "node": 176, "actor": "외국주권등 상장법인", "act": "변경할 수 있다", "target": "", "object": "감사인을 각각 제1항 각 호 및 제2항 각 호의 어느 하나에 해당하는 자로", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 167, "node": 181, "actor": "외국주권등 상장법인", "act": "해임하여야", "target": "", "object": "감사인을", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 167, "node": 181, "actor": "외국주권등 상장법인", "act": "선임하여야", "target": "", "object": "각각 제1항 각 호 및 제2항 각 호의 어느 하나에 해당하는 자를 감사인으로", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 222, "node": 223, "actor": "", "act": "준용한다", "target": "외국기업지배지주회사", "object": "외국기업에 적용되는 규정으로서 상장주선인의 추가 의무에 관한 제13조제3항·제4항, 감사인의 감사보고서 제출에 관한 제21조제1항제4호 단서, 주식분산요건 적용 기준에 관한 제53조제1항제2호나목, 상장적격성 실질심사의 적용 방법에 관한 제58조제1항제11호, 내부회계관리제도 운영 서류에 관한 제79조제5항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 222, "node": 224, "actor": "", "act": "적용하지 않는다", "target": "", "object": "이 편", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 235, "node": 235, "actor": "상장신청인", "act": "협의해야", "target": "거래소", "object": "상장 절차, 상장 시기, 우회상장 해당 여부 등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 236, "node": 237, "actor": "상장예비심사신청인", "act": "서류를 거래소에 제출해야 한다", "target": "거래소", "object": "서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 236, "node": 237, "actor": "합병상장신청인 또는 우회상장신청인", "act": "제출하는 것", "target": "", "object": "서류", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 230, "node": 230, "actor": "복수의결권주식 발행기업의 최대주주와 최다의결권자", "act": "", "target": "", "object": "", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 230, "node": 230, "actor": "", "act": "다음 각 호의 기준을 따른다", "target": "의무보유에 관한 제27조, 제44조 및 제75조, 주권비상장법인과의 합병에 관한 제37조", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 230, "node": 230, "actor": "", "act": "포함하여 적용한다", "target": "제27조, 제44조 및 제75조, 제37조", "object": "최다의결권자, 최다의결권자등", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 230, "node": 230, "actor": "", "act": "포함하여 적용한다", "target": "의무보유의 대상", "object": "법령에 따라 전환된 주식", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 230, "node": 230, "actor": "", "act": "적용한다", "target": "복수의결권주식에 대한 제27조제1항에 따른 의무보유 기간", "object": "상장일부터 벤처기업법 제16조의12제4호에서 정하는 날의 전일과 제27조제1항 각 호에 따른 의무보유기간 종료일 중 나중에 도래하는 날까지", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 230, "node": 230, "actor": "", "act": "제외한다", "target": "제44조제1항제3호의 최대주주가 변경되는 경우", "object": "복수의결권주식을 발행한 기업의 최대주주와 최다의결권자가 다른 경우에 최다의결권자가 최대주주가 되거나 최대주주가 최다의결권자가 되는 경우", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 253, "node": 254, "actor": "거래소", "act": "서면으로 알린다", "target": "해당 상장예비심사신청인과 금융위원회", "object": "상장예비심사 결과", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 253, "node": 254, "actor": "거래소", "act": "통지기한을 달리 정할 수 있다", "target": "", "object": "통지기한", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 253, "node": 255, "actor": "거래소", "act": "통지기한을 연장할 수 있다", "target": "", "object": "통지기한", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 253, "node": 255, "actor": "거래소", "act": "서면으로 알린다", "target": "상장예비심사신청인", "object": "그 사유와 예상처리기한", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 253, "node": 256, "actor": "거래소", "act": "기각할 수 있다", "target": "", "object": "해당 상장예비심사의 신청", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 253, "node": 257, "actor": "거래소", "act": "심의를 거쳐 확정한다", "target": "", "object": "상장예비심사 결과", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 253, "node": 257, "actor": "거래소", "act": "심의를 거치지 않을 수 있다", "target": "", "object": "상장공시위원회의 심의", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 310, "node": 310, "actor": "보통주권의 신규상장신청인", "act": "상장예비심사신청서와 첨부서류를 거래소에 제출하여 상장예비심사를 받아야", "target": "거래소", "object": "상장예비심사신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 266, "node": 267, "actor": "거래소", "act": "상장예비심사 결과의 효력을 인정하지 않을 수 있다", "target": "", "object": "상장예비심사 결과", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 266, "node": 281, "actor": "상장신청인", "act": "상장예비심사신청서를 거래소에 제출하여 상장예비심사를 받아야 한다", "target": "거래소", "object": "상장예비심사신청서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 266, "node": 282, "actor": "거래소", "act": "그 사실을 공표하고 상장예비심사신청인과 금융위원회에 알려야 한다", "target": "상장예비심사신청인, 금융위원회", "object": "그 사실", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 283, "node": 284, "actor": "거래소", "act": "상장 승인 여부를 알려야", "target": "해당 상장신청인에게", "object": "상장 승인 여부", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 283, "node": 285, "actor": "거래소", "act": "상장을 유예할 수 있다", "target": "", "object": "상장", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 283, "node": 285, "actor": "거래소", "act": "그러지 아니한다", "target": "", "object": "", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 283, "node": 288, "actor": "거래소", "act": "서면으로 알려야", "target": "해당 상장신청인에게", "object": "상장유예의 사유와 근거, 상장유예에 대하여 이의신청을 할 수 있다는 내용, 그 밖에 거래소가 상장유예 및 이의신청과 관련하여 필요하다고 인정하는 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 283, "node": 292, "actor": "상장신청인", "act": "이의를 신청할 수 있다", "target": "거래소에", "object": "이의", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 283, "node": 293, "actor": "거래소", "act": "상장공시위원회의 심의를 거쳐 상장유예 여부 등을 결정한다", "target": "", "object": "상장유예 여부 등", "mode": "절차", "function": "근거·권한", "proviso": false}
+{"jo": 283, "node": 294, "actor": "", "act": "세칙으로 정한다", "target": "", "object": "이의신청의 방법과 절차, 상장공시위원회의 심의 등에 관하여 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 295, "node": 296, "actor": "거래소", "act": "서면으로 알린다", "target": "주권상장법인", "object": "상장폐지의 사유와 근거, 상장폐지에 대하여 이의신청을 할 수 있다는 내용, 그 밖에 거래소가 상장폐지 및 이의신청과 관련하여 필요하다고 인정하는 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 295, "node": 296, "actor": "거래소", "act": "서면으로 알린다", "target": "주권상장법인", "object": "상장폐지 사유", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 295, "node": 300, "actor": "주권상장법인", "act": "이의신청", "target": "거래소", "object": "해당 상장폐지", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 295, "node": 301, "actor": "거래소", "act": "심의를 거쳐 결정한다", "target": "", "object": "상장폐지 또는 개선기간 부여 여부", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 295, "node": 302, "actor": "거래소", "act": "심의를 거쳐 결정한다", "target": "", "object": "상장폐지 여부", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 295, "node": 302, "actor": "거래소", "act": "상장폐지 여부를 결정할 수 있다", "target": "", "object": "상장폐지", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 295, "node": 306, "actor": "거래소", "act": "개선기간을 부여하거나 상장유지 결정을 할 수 있다", "target": "", "object": "개선기간, 상장유지", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 295, "node": 307, "actor": "", "act": "세칙으로 정한다", "target": "", "object": "이의신청의 방법과 절차, 상장공시위원회의 심의", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 328, "node": 329, "actor": "보통주권의 신규상장신청인", "act": "신규상장신청서와 첨부서류를 거래소에 제출해야", "target": "거래소", "object": "신규상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 328, "node": 330, "actor": "신규상장신청인", "act": "해당 첨부서류의 제출을 생략할 수 있다", "target": "", "object": "해당 첨부서류", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 328, "node": 331, "actor": "신규상장신청인", "act": "신규상장신청서와 첨부서류를 거래소에 제출해야", "target": "거래소", "object": "신규상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 371, "node": 372, "actor": "거래소", "act": "심사한다", "target": "", "object": "제29조의 형식적 심사요건을 충족한 법인의 보통주권을 상장하는 것이 적합한지", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 371, "node": 378, "actor": "거래소", "act": "심사한다", "target": "", "object": "제1항제1호의 기업 계속성을 고려하지 않고", "mode": "절차", "function": "제한", "proviso": false}
+{"jo": 371, "node": 378, "actor": "거래소", "act": "그러지 아니한다", "target": "", "object": "", "mode": "절차", "function": "제한", "proviso": true}
+{"jo": 332, "node": 333, "actor": "보통주권의 신규상장신청인", "act": "충족해야", "target": "", "object": "형식적 심사요건", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 332, "node": 364, "actor": "거래소", "act": "요청할 수 있다", "target": "증권선물위원회", "object": "재무제표 감리", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 332, "node": 370, "actor": "", "act": "정한다", "target": "", "object": "세부 적용 방법", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 393, "node": 393, "actor": "거래소", "act": "우회상장으로 본다", "target": "", "object": "보통주권 상장법인의 경영권이 변동되고 주권비상장법인의 지분증권이 상장되는 효과가 있는 경우", "mode": "간주", "function": "정의", "proviso": false}
+{"jo": 402, "node": 403, "actor": "보통주권 상장법인", "act": "제출해야 한다", "target": "거래소", "object": "세칙으로 정한 우회상장 확인서와 첨부서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 402, "node": 404, "actor": "거래소", "act": "알려야 한다", "target": "해당 보통주권 상장법인", "object": "그 사실", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 402, "node": 405, "actor": "보통주권 상장법인", "act": "신청해야 한다", "target": "", "object": "상장예비심사", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 406, "node": 406, "actor": "주권비상장법인 또는 그 주요출자자와 우회상장에 해당하는 거래를 하려는 보통주권 상장법인", "act": "상장예비심사신청서와 첨부서류를 거래소에 제출하여 상장예비심사를 받아야", "target": "", "object": "상장예비심사신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 407, "node": 408, "actor": "보통주권의 우회상장과 관련하여 다음 각 호의 어느 하나에 해당하는 자", "act": "의무보유해야 한다", "target": "", "object": "자신이 소유하는 세칙으로 정하는 우회상장신청인과 우회상장 대상 법인의 주식등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 407, "node": 412, "actor": "", "act": "세칙으로 정하는 바에 따라 제27조를 준용한다", "target": "", "object": "제1항에 따른 의무보유의 범위와 기간, 첨부서류의 제출 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 382, "node": 383, "actor": "거래소", "act": "적용하지 않을 수 있다", "target": "해당 공공적법인등에 대하여", "object": "제29조와 제30조의 심사요건", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 382, "node": 383, "actor": "", "act": "적용한다", "target": "", "object": "다음 각 호의 구분에 따른 심사요건", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 382, "node": 386, "actor": "거래소", "act": "적용하지 않는다", "target": "지주회사에는", "object": "제29조제1항제1호의 영업활동기간 요건, 같은 항 제4호의 경영성과 요건", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 382, "node": 390, "actor": "", "act": "기준으로 한다", "target": "", "object": "지주회사의 개시재무상태표상 장부가액", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 382, "node": 390, "actor": "", "act": "기준으로 한다", "target": "", "object": "최근 사업연도의 재무상태표상 장부가액", "mode": "정의", "function": "정의", "proviso": true}
+{"jo": 382, "node": 391, "actor": "", "act": "한다", "target": "", "object": "제2항의 지주회사에 대하여는 기업규모 요건에 관한 제29조제1항제2호와 주식분산 요건에 관한 같은 항 제3호 본문의 \"상장예비심사 신청일\"을 \"신규상장신청일\"로", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 311, "node": 312, "actor": "신규상장신청인의 최대주주등", "act": "의무보유해야 한다", "target": "", "object": "자신이 소유하는 주식등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 311, "node": 312, "actor": "신규상장신청인의 최대주주", "act": "의무보유기간은 상장일부터 1년으로 한다", "target": "", "object": "주식등", "mode": "정의", "function": "제한", "proviso": true}
+{"jo": 311, "node": 312, "actor": "상장 후 주식매수선택권의 행사로 주식을 취득한 신규상장신청인의 최대주주등", "act": "의무보유해야 한다", "target": "", "object": "취득분", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 311, "node": 312, "actor": "상장예비심사 신청일 전 1년 이내에 신규상장신청인이 제3자 배정 방식으로 발행한 주식등을 취득한 자", "act": "의무보유해야 한다", "target": "", "object": "취득분", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 311, "node": 312, "actor": "상장예비심사 신청일 전 1년 이내에 신규상장신청인의 최대주주등이 소유하는 주식등을 취득한 자", "act": "의무보유해야 한다", "target": "", "object": "취득분", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 311, "node": 312, "actor": "거래소", "act": "협의하여 정하는", "target": "주주등", "object": "의무보유기간", "mode": "위임", "function": "근거·권한", "proviso": false}
+{"jo": 311, "node": 318, "actor": "거래소", "act": "협의하여 의무보유기간을 연장할 수 있다", "target": "의무보유대상자", "object": "의무보유기간", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 311, "node": 319, "actor": "거래소", "act": "의무보유를 요구하지 않을 수 있다", "target": "", "object": "의무보유", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 311, "node": 326, "actor": "", "act": "제외한다", "target": "", "object": "세칙으로 정하는 주식등의 수량", "mode": "기타", "function": "제한", "proviso": false}
+{"jo": 311, "node": 327, "actor": "", "act": "정한다", "target": "", "object": "제출 서류와 제출 시기 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 438, "node": 443, "actor": "", "act": "적용하지 않는다", "target": "", "object": "이 절", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 444, "node": 445, "actor": "일반재상장이나 분할재상장을 신청하는 자", "act": "제출하여 상장예비심사를 받아야", "target": "거래소", "object": "세칙으로 정하는 상장예비심사신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 444, "node": 446, "actor": "분할재상장을 위한 상장예비심사를 신청하는 자", "act": "해야", "target": "", "object": "분할이나 분할합병을 위한 이사회 결의 후에 지체 없이 신청", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 413, "node": 414, "actor": "우회상장 대상 법인", "act": "충족해야 한다", "target": "", "object": "형식적 심사요건", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 413, "node": 424, "actor": "거래소", "act": "심사한다", "target": "", "object": "질적 심사요건", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 413, "node": 425, "actor": "거래소", "act": "적용하지 않을 수 있다", "target": "", "object": "제1항과 제3항", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 413, "node": 426, "actor": "", "act": "준용한다", "target": "", "object": "신규상장의 심사에 관한 제29조제4항 및 제5항", "mode": "위임", "function": "절차", "proviso": false}
+{"jo": 413, "node": 427, "actor": "", "act": "정한다", "target": "", "object": "세부 적용 방법 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 447, "node": 448, "actor": "재상장신청인의 최대주주등", "act": "의무보유해야 한다", "target": "", "object": "자신이 소유하는 주식등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 447, "node": 448, "actor": "재상장신청인", "act": "취득한 주식을 포함한다", "target": "", "object": "주식배당으로", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 447, "node": 453, "actor": "", "act": "세칙으로 정하는 바에 따라 제27조를 준용한다", "target": "", "object": "의무보유의 범위와 기간, 첨부서류의 제출", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 454, "node": 455, "actor": "보통주권의 재상장신청인", "act": "재상장신청서와 첨부서류를 제출해야", "target": "거래소", "object": "세칙으로 정하는 재상장신청서와 첨부서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 454, "node": 455, "actor": "일반재상장과 분할재상장을 하려는 자", "act": "재상장신청서와 첨부서류를 제출해야", "target": "거래소", "object": "재상장신청서와 첨부서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 454, "node": 456, "actor": "재상장신청인", "act": "해당 첨부서류의 제출을 생략할 수 있다", "target": "", "object": "해당 첨부서류", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 454, "node": 457, "actor": "합병재상장신청인", "act": "추가서류를 제출", "target": "", "object": "추가서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 428, "node": 429, "actor": "주권비상장법인", "act": "충족해야", "target": "", "object": "다음 각 호의 요건", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 428, "node": 429, "actor": "주권비상장법인", "act": "충족할", "target": "", "object": "제29조제1항제4호가목(2)의 수익성 요건", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 428, "node": 429, "actor": "주권비상장법인", "act": "충족할", "target": "", "object": "제29조제1항제5호의 감사의견 요건", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 428, "node": 429, "actor": "최대주주", "act": "바뀌지 않았을", "target": "", "object": "", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 428, "node": 429, "actor": "거래소", "act": "인정하는", "target": "", "object": "최대주주의 변경이 기업 경영의 계속성을 해치지 않는다", "mode": "허용", "function": "기타", "proviso": true}
+{"jo": 428, "node": 429, "actor": "부도 발생 사유", "act": "해소되었을", "target": "", "object": "", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 428, "node": 429, "actor": "회사", "act": "없을", "target": "", "object": "회사 경영에 중대한 영향을 미칠 수 있는 소송 등 분쟁사건", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 428, "node": 435, "actor": "거래소", "act": "인정하는", "target": "", "object": "주권비상장법인이 상장예비심사를 받아야 할 필요", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 428, "node": 435, "actor": "보통주권 상장법인", "act": "본다", "target": "", "object": "제32조에 따른 우회상장", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 428, "node": 436, "actor": "", "act": "적용하지 않는다", "target": "", "object": "제1항", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 496, "node": 497, "actor": "보통주권 상장법인", "act": "세칙으로 정하는 추가상장신청서와 첨부서류를 거래소에 제출해야", "target": "거래소", "object": "세칙으로 정하는 추가상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 496, "node": 498, "actor": "보통주권 상장법인", "act": "추가상장 신청을 해야", "target": "", "object": "추가상장 신청", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 511, "node": 512, "actor": "보통주권 상장법인", "act": "일괄하여 추가상장을 신청할 수 있다", "target": "", "object": "신주인수권, 전환청구권, 주식매수선택권의 행사로 발행될 신주의 총수", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 511, "node": 512, "actor": "추가상장신청인", "act": "세칙으로 정하는 일괄상장신청서를 거래소에 제출해야 한다", "target": "거래소", "object": "일괄상장신청서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 511, "node": 513, "actor": "제1항의 일괄상장신청서를 제출한 보통주권 상장법인", "act": "세칙으로 정하는 바에 따라 신주발행통지서와 첨부서류를 거래소에 제출해야 한다", "target": "거래소", "object": "신주발행통지서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 499, "node": 500, "actor": "보통주권 상장법인의 신주나 주권 관련 사채권을 취득한 자", "act": "의무보유해야 한다", "target": "", "object": "그 증권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 499, "node": 500, "actor": "주권비상장법인이 공공적법인등인 경우", "act": "적용하지 않을 수 있다", "target": "", "object": "제1호와 제2호", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 499, "node": 506, "actor": "", "act": "의무보유를 하지 않을 수 있다", "target": "", "object": "", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 499, "node": 510, "actor": "추가상장신청인", "act": "제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 458, "node": 459, "actor": "보통주권을 일반재상장하려는 법인", "act": "형식적 심사요건을 모두 충족해야 한다", "target": "", "object": "형식적 심사요건", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 458, "node": 471, "actor": "보통주권을 분할재상장하려는 법인", "act": "형식적 심사요건을 모두 충족해야 한다", "target": "", "object": "형식적 심사요건", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 458, "node": 482, "actor": "보통주권을 합병재상장하려는 법인", "act": "요건을 모두 충족해야 한다", "target": "", "object": "요건", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 458, "node": 485, "actor": "보통주권 상장법인이 주권비상장법인과 합병하고 해당 합병등기일부터 3년 이내에 분할이나 분할합병에 관한 이사회 결의를 하는 경우로서 해당 분할이나 분할합병으로 설립되는 법인의 주된 영업 부문이 합병 당시 주권비상장법인의 영업 부문에 속하는 경우", "act": "요건을 모두 충족해야 한다", "target": "", "object": "요건", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 458, "node": 485, "actor": "보통주권 상장법인", "act": "제34조에 따라 우회상장을 위한 상장예비심사를 받은 경우", "target": "", "object": "", "mode": "절차", "function": "제한", "proviso": true}
+{"jo": 458, "node": 493, "actor": "거래소", "act": "심사한다", "target": "보통주권을 재상장하려는 법인", "object": "보통주권을 재상장하는 것", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 458, "node": 493, "actor": "거래소", "act": "준용하지 않는다", "target": "", "object": "제30조제1항제1호의 기업의 계속성 요건", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 514, "node": 515, "actor": "보통주권 상장법인", "act": "변경상장신청서와 첨부서류를 거래소에 제출해야", "target": "거래소", "object": "변경상장신청서와 첨부서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 514, "node": 515, "actor": "보통주권 상장법인", "act": "제출해야", "target": "거래소", "object": "변경상장신청서와 첨부서류", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 514, "node": 518, "actor": "", "act": "해당 변경사유의 효력이 생긴 후에 지체 없이 해야", "target": "", "object": "제1항의 변경상장 신청", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 514, "node": 519, "actor": "보통주권의 종목명, 액면금액 또는 수량이 바뀌어 변경상장을 신청하는 자", "act": "보통주권의 변경상장신청서에 해당 증권의 바뀐 사항을 적는 것으로 갈음할 수 있다", "target": "", "object": "변경상장 신청", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 525, "node": 526, "actor": "거래소", "act": "관리종목으로 지정한다", "target": "", "object": "해당 보통주권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 525, "node": 560, "actor": "거래소", "act": "관리종목지정을 해제한다", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 525, "node": 568, "actor": "거래소", "act": "적용한다", "target": "", "object": "제1항제4호가목 및 제7호", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 525, "node": 568, "actor": "거래소", "act": "적용한다", "target": "", "object": "제5호", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 525, "node": 569, "actor": "거래소", "act": "세칙으로 정한다", "target": "", "object": "관리종목지정 사유의 적용 방법, 관리종목 지정 및 해제 시기, 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 570, "node": 571, "actor": "거래소", "act": "상장폐지한다", "target": "해당 보통주권", "object": "보통주권 상장법인이 다음 각 호의 어느 하나에 해당하는 경우", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 570, "node": 603, "actor": "거래소", "act": "상장폐지한다", "target": "해당 보통주권", "object": "보통주권 상장법인", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 570, "node": 624, "actor": "보통주권 상장법인", "act": "이의신청을 할 수 있다", "target": "거래소", "object": "상장폐지에 대한", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 570, "node": 636, "actor": "", "act": "정한다", "target": "", "object": "제1항 및 제2항의 상장폐지 사유에 대한 적용 방법과 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 648, "node": 649, "actor": "거래소", "act": "적용하지 않을 수 있다", "target": "", "object": "주식분산 미달에 따른 제48조제1항제4호의 상장폐지 사유", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 648, "node": 650, "actor": "거래소", "act": "정하여", "target": "", "object": "일정한 기간", "mode": "절차", "function": "기타", "proviso": false}
+{"jo": 648, "node": 650, "actor": "거래소", "act": "적용하지 않을 수 있다", "target": "", "object": "시가총액 미달에 따른 제47조제1항제9호의 관리종목지정 사유와 제48조제1항제9호의 상장폐지 사유, 주가 미달에 따른 제47조제1항제9호의2의 관리종목지정 및 제48조제1항제9호의2의 상장폐지 사유", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 662, "node": 663, "actor": "", "act": "준용한다", "target": "", "object": "제26조, 제27조, 제28조", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 662, "node": 664, "actor": "거래소", "act": "의무보유를 요구하지 않을 수 있다", "target": "자", "object": "의무보유", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 651, "node": 652, "actor": "거래소", "act": "상장폐지를 유예할 수 있다", "target": "", "object": "상장폐지", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 651, "node": 653, "actor": "거래소", "act": "해당 상장폐지 사유가 해소된 것으로 본다", "target": "", "object": "상장폐지 사유", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 651, "node": 654, "actor": "거래소", "act": "상장폐지를 유예할 수 있다", "target": "", "object": "상장폐지", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 651, "node": 655, "actor": "거래소", "act": "상장폐지 사유가 해소된 것으로 본다", "target": "", "object": "상장폐지 사유", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 651, "node": 656, "actor": "거래소", "act": "상장폐지를 유예할 수 있다", "target": "", "object": "상장폐지", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 651, "node": 656, "actor": "거래소", "act": "진행하지 않는다", "target": "", "object": "제25조제1항부터 제5항까지의 절차", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 651, "node": 660, "actor": "거래소", "act": "해당 상장폐지 사유가 해소된 것으로 본다", "target": "", "object": "상장폐지 사유", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 685, "node": 685, "actor": "", "act": "준용한다", "target": "외국주권등 상장법인의 우회상장", "object": "보통주권의 우회상장에 관한 제32조부터 제36조까지와 외국주권등의 의무보유 면제에 관한 제52조제2항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 685, "node": 685, "actor": "", "act": "따른다", "target": "제36조의 우회상장 심사요건", "object": "외국주권등의 신규상장 심사요건에 관한 제53조제1항 각 호의 적용 방법", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 637, "node": 638, "actor": "거래소", "act": "결정해야 한다", "target": "", "object": "그 법인이 기업심사위원회의 심의 대상인지", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 637, "node": 638, "actor": "거래소", "act": "그 기간을 연장할 수 있다", "target": "", "object": "추가조사가 필요한 경우에는 15일 이내에서", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 637, "node": 639, "actor": "거래소", "act": "기업심사위원회를 개최하여 심의한다", "target": "", "object": "상장적격성 유지 여부 또는 개선기간 부여, 그 밖에 세칙으로 정하는 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 637, "node": 640, "actor": "거래소", "act": "제출 또는 의견진술을 요청하거나 현지조사를 실시할 수 있다", "target": "해당 보통주권 상장법인", "object": "관련 자료의 제출 또는 관계자의 의견진술", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 637, "node": 641, "actor": "거래소", "act": "기업심사위원회를 개최하여 심의한다", "target": "", "object": "개선계획의 이행 여부 등을 고려하여 상장적격성을 유지하고 있는지", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 637, "node": 641, "actor": "거래소", "act": "심의할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 637, "node": 645, "actor": "거래소", "act": "의무보유 하도록 할 수 있다", "target": "보통주권 상장법인의 주주등", "object": "주식등을 매매거래정지 해제일부터 3년 이내의 기간을 정하여", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 637, "node": 646, "actor": "", "act": "세칙으로 정한다", "target": "", "object": "상장적격성 실질심사의 기준, 절차, 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 637, "node": 647, "actor": "거래소", "act": "따로 정한다", "target": "", "object": "기업심사위원회의 구성과 운영에 관하여 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 668, "node": 669, "actor": "외국주권등", "act": "신규상장", "target": "", "object": "", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 668, "node": 669, "actor": "", "act": "준용한다", "target": "", "object": "", "mode": "의무", "function": "기타", "proviso": false}
+{"jo": 668, "node": 669, "actor": "", "act": "적용한다", "target": "", "object": "", "mode": "의무", "function": "기타", "proviso": true}
+{"jo": 668, "node": 669, "actor": "상장주선인", "act": "취득하는 증권", "target": "", "object": "", "mode": "기타", "function": "제한", "proviso": false}
+{"jo": 668, "node": 669, "actor": "신규상장신청인", "act": "작성한 경우", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false}
+{"jo": 668, "node": 669, "actor": "", "act": "적용한다", "target": "", "object": "", "mode": "의무", "function": "기타", "proviso": false}
+{"jo": 668, "node": 669, "actor": "", "act": "질적 심사를 할 수 있으며", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 668, "node": 677, "actor": "신규상장신청인", "act": "충족하는 경우", "target": "", "object": "", "mode": "기타", "function": "절차", "proviso": false}
+{"jo": 668, "node": 677, "actor": "", "act": "적용하지 않을 수 있으며", "target": "", "object": "", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 668, "node": 677, "actor": "", "act": "적용한다", "target": "", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 668, "node": 684, "actor": "외국지주회사", "act": "준용한다", "target": "", "object": "", "mode": "의무", "function": "기타", "proviso": false}
+{"jo": 686, "node": 687, "actor": "외국주권등의 추가상장", "act": "준용한다", "target": "", "object": "보통주권의 추가상장에 관한 제43조와 의무보유에 관한 제44조", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 686, "node": 687, "actor": "외국주권", "act": "전환되어 외국주식예탁증권이 추가로 상장되는 것", "target": "", "object": "외국주식예탁증권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 686, "node": 688, "actor": "외국주권등 상장법인", "act": "협의해야 한다", "target": "거래소", "object": "상장 절차, 상장 시기 등", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 689, "node": 690, "actor": "", "act": "준용한다", "target": "", "object": "보통주권의 변경상장에 관한 제46조", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 689, "node": 691, "actor": "", "act": "제외한다", "target": "", "object": "변경상장의 신청 대상", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 689, "node": 692, "actor": "외국주권등의 종목명이 바뀌어 변경상장을 신청하는 자", "act": "갈음할 수 있다", "target": "", "object": "외국주권등의 변경상장신청서에 그 외국채무증권의 바뀐 사항을 적는 것", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 735, "node": 735, "actor": "", "act": "준용한다", "target": "외국주권등", "object": "보통주권의 관리종목지정·상장폐지 특례에 관한 제50조제2항과 상장폐지 유예에 관한 제51조", "mode": "의무", "function": "위임", "proviso": false}
+{"jo": 713, "node": 714, "actor": "거래소", "act": "준용한다", "target": "", "object": "제48조와 제49조", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 713, "node": 730, "actor": "거래소", "act": "상장폐지한다", "target": "", "object": "해당 외국주권등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 713, "node": 730, "actor": "거래소", "act": "상장폐지한다", "target": "", "object": "해당 외국주권등", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 737, "node": 738, "actor": "", "act": "준용한다", "target": "", "object": "제26조, 제27조, 제28조", "mode": "절차", "function": "근거·권한", "proviso": false}
+{"jo": 737, "node": 738, "actor": "", "act": "준용하지 않을 수 있다", "target": "", "object": "제27조", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 737, "node": 742, "actor": "", "act": "준용한다", "target": "", "object": "제52조제2항", "mode": "절차", "function": "근거·권한", "proviso": false}
+{"jo": 758, "node": 758, "actor": "", "act": "준용한다", "target": "", "object": "보통주권의 추가상장에 관한 제43조, 의무보유에 관한 제44조, 외국주권등의 추가상장에 관한 제55조", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 693, "node": 694, "actor": "거래소", "act": "준용한다", "target": "", "object": "제47조를", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 693, "node": 710, "actor": "거래소", "act": "관리종목으로 지정한다", "target": "해당 외국주권등을", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 693, "node": 710, "actor": "거래소", "act": "관리종목지정을 해제한다", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 743, "node": 744, "actor": "종류주권의 신규상장신청인", "act": "충족해야", "target": "", "object": "다음 각 호의 요건을 모두", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 743, "node": 744, "actor": "거래소", "act": "인정하는", "target": "", "object": "그 제한이 유가증권시장의 매매거래를 해치지 않는다", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 743, "node": 757, "actor": "", "act": "적용한다", "target": "", "object": "제1항제1호와 제2호", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 789, "node": 789, "actor": "거래소", "act": "적용하지 않을 수 있다", "target": "", "object": "제64조제1항제5호의 관리종목지정 사유와 제65조제1항제5호의 상장폐지 사유", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 759, "node": 759, "actor": "", "act": "준용한다", "target": "", "object": "보통주권의 변경상장에 관한 제46조제1항 및 제2항", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 759, "node": 759, "actor": "", "act": "한다", "target": "", "object": "종류주식의 종류를 변경한 경우", "mode": "간주", "function": "정의", "proviso": true}
+{"jo": 760, "node": 761, "actor": "거래소", "act": "관리종목으로 지정한다", "target": "해당 종류주권", "object": "종류주권이 다음 각 호의 어느 하나에 해당하는 경우", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 760, "node": 770, "actor": "거래소", "act": "지체 없이 그 관리종목지정을 해제한다", "target": "", "object": "제1항에 따라 관리종목으로 지정 된 후 다음 각 호의 어느 하나에 해당하는 경우", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 760, "node": 773, "actor": "거래소", "act": "세칙으로 정한다", "target": "", "object": "관리종목지정 사유의 적용 방법, 관리종목 지정과 해제 시기, 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 774, "node": 775, "actor": "거래소", "act": "상장폐지한다", "target": "", "object": "해당 종류주권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 774, "node": 787, "actor": "종류주권 상장법인", "act": "상장폐지에 대한 이의신청을 할 수 있다", "target": "", "object": "상장폐지에 대한 이의신청", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 774, "node": 788, "actor": "", "act": "세칙으로 정한다", "target": "", "object": "제1항의 상장폐지 사유의 적용 방법, 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 792, "node": 793, "actor": "", "act": "준용한다", "target": "", "object": "보통주권의 상장예비심사에 관한 제26조와 신규상장 신청에 관한 제28조", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 792, "node": 794, "actor": "주주등", "act": "의무보유해야 한다", "target": "", "object": "자신이 소유하는 주식등", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 792, "node": 795, "actor": "거래소", "act": "연장할 수 있다", "target": "의무보유대상자", "object": "의무보유기간", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 792, "node": 796, "actor": "", "act": "정한다", "target": "", "object": "제출 서류와 제출 시기 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 818, "node": 818, "actor": "", "act": "준용한다", "target": "", "object": "기업인수목적회사주권의 추가상장", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 835, "node": 837, "actor": "거래소", "act": "상장을 폐지한다", "target": "", "object": "해당 기업인수목적회사주권", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 854, "node": 854, "actor": "", "act": "준용한다", "target": "기업인수목적회사주권에", "object": "보통주권의 관리종목지정·상장폐지 특례에 관한 제50조제2항의 규정과 상장폐지 유예에 관한 제51조제1항 및 제2항의 규정", "mode": "의무", "function": "위임", "proviso": false}
+{"jo": 820, "node": 822, "actor": "거래소", "act": "관리종목으로 지정한다", "target": "", "object": "해당 기업인수목적회사주권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 820, "node": 822, "actor": "거래소", "act": "관리종목지정을 해제한다", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 820, "node": 833, "actor": "거래소", "act": "관리종목지정 사유가 해소된 것으로 본다", "target": "", "object": "", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 820, "node": 834, "actor": "거래소", "act": "세칙으로 정한다", "target": "", "object": "관리종목지정 사유의 적용 방법, 관리종목 지정 및 해제 시기, 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 819, "node": 819, "actor": "", "act": "준용한다", "target": "", "object": "기업인수목적회사주권의 변경상장", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 856, "node": 856, "actor": "합병상장신청인", "act": "상장예비심사신청서와 첨부서류를 거래소에 제출하여 상장예비심사를 받아야", "target": "거래소", "object": "상장예비심사신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 857, "node": 858, "actor": "합병 대상 법인의 최대주주등, 상장 후 주식매수선택권의 행사로 주식을 취득한 합병 대상 법인의 최대주주등, 합병상장예비심사 신청일 전 1년 이내에 합병 대상 법인이 제3자 배정 방식으로 발행한 주식등을 취득하거나 같은 기간 동안 합병 대상 법인의 최대주주등이 소유하는 주식등을 취득한 자", "act": "의무보유해야 한다", "target": "", "object": "자신이 소유하는 주식등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 857, "node": 862, "actor": "", "act": "준용한다", "target": "", "object": "보통주권의 의무보유에 관한 제27조의 규정", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 877, "node": 878, "actor": "합병상장신청인", "act": "상장신청서와 첨부서류를 거래소에 제출해야", "target": "거래소", "object": "상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 877, "node": 882, "actor": "거래소", "act": "정한다", "target": "", "object": "합병상장 신청의 방법과 절차, 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 884, "node": 885, "actor": "주권상장법인", "act": "해야 한다", "target": "", "object": "사외이사의 수를 이사 총수의 4분의 1 이상이 되도록", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 884, "node": 885, "actor": "주권상장법인", "act": "해야 한다", "target": "", "object": "사외이사의 수를 3명 이상으로 하되, 이사 총수의 과반수가 되도록", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 884, "node": 886, "actor": "", "act": "준용한다", "target": "", "object": "「상법」 제542조의8제1항 본문, 같은 조 제2항부터 제5항까지, 법 제165조의17제2항·제3항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 884, "node": 886, "actor": "", "act": "준용한다", "target": "외국주권등 상장법인", "object": "「상법」 제542조의8제2항부터 제5항까지의 규정", "mode": "위임", "function": "위임", "proviso": true}
+{"jo": 884, "node": 887, "actor": "외국주권등 상장법인", "act": "본다", "target": "", "object": "이 조의 의무를 준수한 것으로", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 890, "node": 891, "actor": "최근 사업연도 말 현재 자산총액이 2조원 이상인 주권상장법인", "act": "설치해야 한다", "target": "", "object": "총 위원의 3분의 2 이상을 사외이사로 구성한 감사위원회", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 890, "node": 892, "actor": "", "act": "준용한다", "target": "", "object": "「상법」 제542조의11제1항부터 제4항까지의 규정", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 890, "node": 892, "actor": "", "act": "준용한다", "target": "외국주권등 상장법인", "object": "「상법」 제542조의11제2항부터 제4항까지의 규정", "mode": "위임", "function": "위임", "proviso": true}
+{"jo": 890, "node": 893, "actor": "외국주권등 상장법인(신규상장신청인을 포함한다)", "act": "본다", "target": "", "object": "이 조의 의무를 준수한 것", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 890, "node": 893, "actor": "외국주권등 상장법인(신규상장신청인을 포함한다)", "act": "지켜야 한다", "target": "", "object": "「상법」 제542조의11제4항 각 호 외의 부분 본문의 감사위원 미달시 충원시기에 관한 규정", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 863, "node": 864, "actor": "합병 대상 법인", "act": "상장예비심사 신청일 현재 다음 각 호의 형식적 심사요건을 모두 충족해야", "target": "", "object": "형식적 심사요건", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 863, "node": 864, "actor": "세칙", "act": "정한다", "target": "", "object": "심사요건의 자세한 적용기준", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 863, "node": 864, "actor": "합병 대상 법인", "act": "충족할 것", "target": "", "object": "제29조제1항제2호나목의 자기자본 요건", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 863, "node": 873, "actor": "거래소", "act": "심사한다", "target": "", "object": "제1항의 합병상장 심사요건을 충족한 법인의 합병상장이 적합한지", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 863, "node": 874, "actor": "거래소", "act": "적용하지 않을 수 있다", "target": "", "object": "제1항제1호부터 제5호까지와 제2항", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 863, "node": 875, "actor": "거래소", "act": "요청할 수 있다", "target": "증권선물위원회", "object": "재무제표 감리", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 863, "node": 876, "actor": "", "act": "준용한다", "target": "", "object": "제29조제5항", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 863, "node": 876, "actor": "", "act": "본다", "target": "", "object": "신규상장신청인", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 928, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 935, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 797, "node": 798, "actor": "기업인수목적회사주권의 신규상장신청인", "act": "형식적 심사요건을 모두 충족해야", "target": "", "object": "형식적 심사요건", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 797, "node": 798, "actor": "상장예정인 보통주식총수", "act": "100만주 이상일", "target": "", "object": "", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 797, "node": 798, "actor": "자기자본", "act": "100억원 이상일", "target": "", "object": "", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 797, "node": 798, "actor": "신규상장신청인", "act": "주식분산 요건을 충족할", "target": "", "object": "주식분산 요건", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 797, "node": 798, "actor": "같은 호 다목의 '500명'", "act": "'200명'으로 한다", "target": "", "object": "", "mode": "정의", "function": "정의", "proviso": true}
+{"jo": 797, "node": 798, "actor": "감사인", "act": "감사의견이 적정일", "target": "", "object": "개별재무제표에 대한 감사의견", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 797, "node": 798, "actor": "신규상장신청인", "act": "주식양도 제한 요건을 충족할", "target": "", "object": "주식양도 제한 요건", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 797, "node": 798, "actor": "신규상장신청인", "act": "사외이사 선임 의무를 충족하고 있을", "target": "", "object": "사외이사 선임 의무", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 797, "node": 798, "actor": "신규상장신청인", "act": "감사위원회 설치 의무를 충족하고 있을", "target": "", "object": "감사위원회 설치 의무", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 797, "node": 798, "actor": "금융투자업자가 신규상장신청일 현재 가지고 있는 주식등의 발행금액", "act": "기업인수목적회사가 발행한 주식등의 발행총액의 100분의 5 이상일", "target": "", "object": "", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 797, "node": 798, "actor": "임원", "act": "금융사지배구조법 제5조제1항 각 호의 어느 하나에 해당하지 않을", "target": "", "object": "", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 797, "node": 798, "actor": "신규상장신청인", "act": "정관에 정할", "target": "", "object": "정관", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 797, "node": 798, "actor": "기업인수목적회사", "act": "다른 법인과 합병하는 것을 유일한 사업목적으로 할", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 797, "node": 798, "actor": "기업인수목적회사", "act": "주권의 발행을 통하여 모은 금전의 100분의 90 이상을 주금납입일의 다음 날까지 예치기관등에 예치 또는 신탁할", "target": "예치기관등", "object": "주금납입일의 다음 날까지 예치 또는 신탁", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 797, "node": 798, "actor": "주권의 최초 모집 전에 증권을 취득한 자", "act": "예치기관등에 예치 또는 신탁된 자금의 지급대상에서 제외될", "target": "", "object": "", "mode": "절차", "function": "효과", "proviso": true}
+{"jo": 797, "node": 798, "actor": "기업인수목적회사", "act": "해산되고 예치기관등에 예치 또는 신탁된 자금을 주주에게 주권의 보유비율에 따라 지급할", "target": "주주", "object": "예치기관등에 예치 또는 신탁된 자금", "mode": "절차", "function": "효과", "proviso": false}
+{"jo": 797, "node": 798, "actor": "기업인수목적회사", "act": "차입, 채무보증, 담보제공 및 채무증권의 발행을 금지할", "target": "", "object": "차입, 채무보증, 담보제공 및 채무증권의 발행", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 797, "node": 798, "actor": "신규상장신청인", "act": "의결권 행사 제한, 주식매수청구권 행사 제한 등 세칙으로 정하는 사항에 대하여 약정을 체결할", "target": "", "object": "약정", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 797, "node": 817, "actor": "거래소", "act": "질적 심사요건을 준용하여 심사한다", "target": "기업인수목적회사의 주권", "object": "제30조제1항 각 호의 질적 심사요건", "mode": "절차", "function": "근거·권한", "proviso": false}
+{"jo": 929, "node": 930, "actor": "주권상장법인", "act": "명의개서대행계약을 유지해야", "target": "", "object": "명의개서대행계약", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 929, "node": 931, "actor": "주권상장법인", "act": "명의개서대행계약을 체결하지 않을 수 있다", "target": "", "object": "명의개서대행계약", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 900, "node": 901, "actor": "주권상장법인의 이사회", "act": "이행하여야 한다", "target": "", "object": "종속회사등의 상장이 주권상장법인의 주주에게 미치는 영향을 평가하고 결의", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 900, "node": 901, "actor": "주권상장법인의 이사회", "act": "이행하여야 한다", "target": "", "object": "주권상장법인의 주주에 대한 보호방안을 마련하고 결의", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 900, "node": 901, "actor": "주권상장법인의 이사회", "act": "이행하여야 한다", "target": "", "object": "주권상장법인의 주주와 소통하거나 주주총회 또는 그와 유사한 방법으로 해당 주주의 동의 여부를 확인", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 900, "node": 901, "actor": "주권상장법인의 이사회", "act": "이행하여야 한다", "target": "", "object": "제3호의 주주 소통 결과 또는 주주 동의 여부 등을 고려하여 종속회사등 상장에 대한 찬성 여부를 결의", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 900, "node": 901, "actor": "주권상장법인의 이사회", "act": "이행하여야 한다", "target": "종속회사등", "object": "제4호에 따라 결의한 찬성 여부를 통지", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 900, "node": 907, "actor": "주권상장법인의 이사회", "act": "설치하고 거쳐야 한다", "target": "", "object": "이사회에서 정하는 바에 따라 별도의 위원회를 설치하고 제1호, 제2호 및 제4호의 결의를 함에 있어 사전에 해당 위원회의 심의 절차", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 936, "node": 937, "actor": "주권상장법인", "act": "제출해야", "target": "거래소", "object": "최대주주의 소유주식변동신고서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 936, "node": 939, "actor": "주권상장법인", "act": "제출하지 않을 수 있다", "target": "", "object": "소유주식변동신고서", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 940, "node": 940, "actor": "주권상장법인", "act": "거래소의 임직원이 주주총회에 참석하는 것을 허용해야 한다", "target": "", "object": "거래소의 임직원의 주주총회 참석", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 967, "node": 968, "actor": "신규상장신청인", "act": "신규상장을 신청할 수 있다", "target": "거래소", "object": "그 해의 발행예정증권을 한데 묶어", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 967, "node": 968, "actor": "신규상장신청인", "act": "제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 일괄상장신청서를", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 967, "node": 969, "actor": "상장신청인", "act": "알려야 한다", "target": "거래소", "object": "매월의 발행 결과를", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 947, "node": 947, "actor": "", "act": "말한다", "target": "", "object": "채무증권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 947, "node": 947, "actor": "", "act": "말한다", "target": "", "object": "외국채무증권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 947, "node": 947, "actor": "", "act": "말한다", "target": "", "object": "보증사채권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 947, "node": 947, "actor": "", "act": "말한다", "target": "", "object": "담보부사채권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 947, "node": 947, "actor": "", "act": "말한다", "target": "", "object": "이중상환청구권부 채권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 947, "node": 947, "actor": "", "act": "말한다", "target": "", "object": "자산유동화채권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 947, "node": 947, "actor": "", "act": "말한다", "target": "", "object": "비정형 유동화채권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 947, "node": 947, "actor": "", "act": "말한다", "target": "", "object": "조건부자본증권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 947, "node": 947, "actor": "", "act": "말한다", "target": "", "object": "특수채증권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 947, "node": 947, "actor": "", "act": "말한다", "target": "", "object": "채무증권 재상장", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 962, "node": 963, "actor": "채무증권의 신규상장신청인", "act": "제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 신규상장신청서와 첨부서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 962, "node": 963, "actor": "", "act": "갈음한다", "target": "", "object": "국채증권의 신규상장신청서", "mode": "기타", "function": "효과", "proviso": false}
+{"jo": 962, "node": 964, "actor": "", "act": "제출해야 한다", "target": "", "object": "제1항의 신규상장신청서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 962, "node": 964, "actor": "", "act": "제출해야 한다", "target": "", "object": "신규상장신청서", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 962, "node": 965, "actor": "대표주관회사", "act": "대행할 수 있다", "target": "", "object": "신규상장 신청", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 962, "node": 966, "actor": "채무증권 신규상장신청인", "act": "상장할 수 있다", "target": "", "object": "발행조건이 다른 여러 종목의 채무증권", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 981, "node": 982, "actor": "채무증권 재상장신청인", "act": "재상장신청서와 첨부서류를 거래소에 제출해야", "target": "거래소", "object": "세칙으로 정하는 재상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 981, "node": 982, "actor": "", "act": "이 조를 적용하지 않는다", "target": "", "object": "외국기업지배지주회사의 채무증권", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 981, "node": 983, "actor": "", "act": "다음 각 호의 요건을 모두 충족해야", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 986, "node": 986, "actor": "채무증권 상장법인", "act": "추가상장신청서와 첨부서류를 거래소에 제출", "target": "거래소", "object": "세칙으로 정하는 추가상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 912, "node": 913, "actor": "주권상장법인", "act": "신고해야 한다", "target": "거래소", "object": "주주명부의 폐쇄일이나 기준일에 관한 결의·결정의 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 912, "node": 913, "actor": "주권상장법인", "act": "신고해야 한다", "target": "거래소", "object": "보통주권 상장법인의 주식예탁증권 발행과 관련하여 세칙으로 정하는 사실", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 912, "node": 913, "actor": "주권상장법인", "act": "신고해야 한다", "target": "거래소", "object": "세칙으로 정하는 명목회사의 최대주주가 변경된 사실", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 912, "node": 913, "actor": "주권상장법인", "act": "신고해야 한다", "target": "거래소", "object": "명의개서대행회사를 변경하거나 명의개서대행계약을 해지한 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 912, "node": 913, "actor": "주권상장법인", "act": "신고해야 한다", "target": "거래소", "object": "대표이사 또는 본점소재지의 변경시 그 등기부등본", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 912, "node": 913, "actor": "주권상장법인", "act": "신고해야 한다", "target": "거래소", "object": "업무규정 제20조의3제1항에 따라 유동성공급계약을 체결, 변경 또는 해지한 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 912, "node": 913, "actor": "보통주권 상장법인", "act": "신고해야 한다", "target": "거래소", "object": "보통주권의 외국상장주권으로 교체 또는 외국상장주권의 보통주권으로의 교체 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 912, "node": 913, "actor": "주권상장법인", "act": "신고해야 한다", "target": "거래소", "object": "거래소가 상장관리에 필요하다고 인정하는 사항으로서 세칙으로 정하는 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 912, "node": 923, "actor": "주권상장법인", "act": "신고해야 한다", "target": "거래소", "object": "다른 주권상장법인의 주주총회가 현저히 많이 개최되는 날에 주주총회를 개최하는 이유", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 912, "node": 924, "actor": "외국주권등 상장법인", "act": "공고해야 한다", "target": "전국을 대상으로 영업을 하는 1개 이상의 국내 일간신문", "object": "주주명부 폐쇄기간 또는 기준일의 사실", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 912, "node": 925, "actor": "외국주권등 상장법인", "act": "제출해야 한다", "target": "거래소", "object": "내부회계관리제도의 운영에 관하여 세칙으로 정하는 서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 912, "node": 926, "actor": "외국주권등 상장법인", "act": "신고하여야 한다", "target": "거래소", "object": "감사인을 선임, 변경 또는 해임한 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 912, "node": 927, "actor": "외국주권등 상장법인", "act": "신고하여야 한다", "target": "거래소", "object": "설립지의 변경", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1012, "node": 1013, "actor": "채무증권 상장법인", "act": "신고해야 한다", "target": "거래소", "object": "그 내용", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 987, "node": 987, "actor": "채무증권 상장법인", "act": "변경상장신청서와 첨부서류를 거래소에 제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 변경상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 987, "node": 987, "actor": "국채증권의 변경상장신청서", "act": "국채증권 변경상장의뢰서로 갈음한다", "target": "", "object": "", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 970, "node": 970, "actor": "신규상장신청인", "act": "신규상장하려면", "target": "채무증권을", "object": "다음 각 호의 심사요건을 모두 충족", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 970, "node": 970, "actor": "신규상장신청인", "act": "자본금이 5억원 이상일", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 970, "node": 970, "actor": "", "act": "이 호를 적용하지 않는", "target": "보증사채권, 담보부사채권, 커버드본드, 자산유동화채권과 비정형 유동화채권", "object": "", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 970, "node": 970, "actor": "해당 채무증권", "act": "모집·매출되었을", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 970, "node": 970, "actor": "해당 채무증권의 발행총액과 미상환발행총액", "act": "3억원 이상일", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 970, "node": 970, "actor": "보증사채권, 담보부사채권과 커버드본드", "act": "5천만원 이상으로 한", "target": "", "object": "", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 970, "node": 970, "actor": "해당 채무증권", "act": "비정형 유동화채권인 경우에는 다음 각 목의 요건을 모두 충족할", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 970, "node": 970, "actor": "자산보유자", "act": "세칙으로 정하는 자일", "target": "", "object": "", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 970, "node": 970, "actor": "", "act": "법 제335조의3에 따른 신용평가회사 중 둘 이상의 신용평가회사로부터 세칙에서 정한 등급을 받을", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 970, "node": 970, "actor": "자산양도의 방식", "act": "「자산유동화에 관한 법률」 제13조 각 호에 따를", "target": "", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 970, "node": 970, "actor": "발행총액", "act": "양도받은 유동화자산의 평가가액의 총액을 한도로 할", "target": "", "object": "", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 988, "node": 989, "actor": "거래소", "act": "상장을 폐지한다", "target": "해당 채무증권", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 988, "node": 989, "actor": "거래소", "act": "적용한다", "target": "", "object": "마목부터 사목까지", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 988, "node": 989, "actor": "거래소", "act": "적용하지 않는다", "target": "", "object": "이 목", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 988, "node": 989, "actor": "거래소", "act": "적용하지 않는다", "target": "", "object": "이 목", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 988, "node": 989, "actor": "거래소", "act": "적용하지 않는다", "target": "", "object": "이 목", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 988, "node": 1011, "actor": "세칙", "act": "정한다", "target": "", "object": "제1항의 상장폐지 사유에 관한 적용 방법 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1017, "node": 1018, "actor": "외국채무증권의 신규상장신청인", "act": "제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 신규상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1017, "node": 1019, "actor": "외국채무증권의 신규상장신청인", "act": "협의해야 한다", "target": "거래소", "object": "상장 절차, 상장 시기 등", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1029, "node": 1029, "actor": "", "act": "준용한다", "target": "", "object": "채무증권의 추가상장에 관한 제90조의 규정과 변경상장에 관한 제91조의 규정", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1030, "node": 1030, "actor": "거래소", "act": "상장폐지한다", "target": "해당 외국채무증권", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1030, "node": 1030, "actor": "", "act": "세칙으로 정한다", "target": "", "object": "상장폐지 사유의 적용에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1030, "node": 1030, "actor": "거래소", "act": "이 호를 적용하지 않는다", "target": "", "object": "", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 1035, "node": 1035, "actor": "외국채무증권 상장법인이나 그의 상장대리인", "act": "신고해야", "target": "거래소", "object": "그 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1020, "node": 1020, "actor": "외국채무증권을 신규상장하려는 자", "act": "충족해야 한다", "target": "", "object": "다음 각 호의 요건", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1020, "node": 1020, "actor": "신규상장신청인", "act": "있을 것", "target": "", "object": "최근 사업연도 말 현재 자기자본이 100억원 이상이고, 자본잠식이 없음", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1020, "node": 1020, "actor": "", "act": "적용하지 않는다", "target": "", "object": "이 호", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 1020, "node": 1020, "actor": "신규상장신청인", "act": "해당할 것", "target": "", "object": "다음 각 목의 어느 하나", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1020, "node": 1020, "actor": "", "act": "적용하지 않는다", "target": "", "object": "이 호", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 1020, "node": 1020, "actor": "해당 외국채무증권", "act": "받았을 것", "target": "신용평가회사로부터", "object": "투자적격 등급(BBB 이상)", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1020, "node": 1020, "actor": "해당 외국채무증권", "act": "충족할 것", "target": "", "object": "제88조제2호의 공모 요건과 같은 조 제3호의 발행총액 요건", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1065, "node": 1066, "actor": "투자회사주권 상장법인", "act": "제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 추가상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1065, "node": 1067, "actor": "투자회사주권 상장법인", "act": "해야 한다", "target": "", "object": "제1항의 추가상장 신청", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1051, "node": 1051, "actor": "집합투자증권의 신규상장신청인", "act": "서류를 거래소에 제출해야", "target": "거래소", "object": "서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1051, "node": 1051, "actor": "투자회사주권, 수익증권, 상장지수펀드수익증권, 외국상장지수펀드수익증권", "act": "제21조제1항제3호·제4호의 사유를 제외", "target": "", "object": "제21조제1항제3호·제4호의 사유", "mode": "기타", "function": "제한", "proviso": true}
+{"jo": 1051, "node": 1051, "actor": "선박투자회사주권", "act": "제4호의 사유를 제외", "target": "", "object": "제4호의 사유", "mode": "기타", "function": "제한", "proviso": true}
+{"jo": 1068, "node": 1069, "actor": "투자회사주권 상장법인", "act": "제출해야", "target": "거래소", "object": "세칙으로 정하는 변경상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1068, "node": 1070, "actor": "투자회사주권 상장법인", "act": "해야", "target": "", "object": "제1항의 변경상장 신청", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1071, "node": 1072, "actor": "거래소", "act": "상장폐지한다", "target": "", "object": "해당 투자회사주권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1071, "node": 1078, "actor": "거래소", "act": "상장폐지를 유예할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1053, "node": 1054, "actor": "투자회사주권의 신규상장신청인", "act": "제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 신규상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1053, "node": 1055, "actor": "투자회사주권의 신규상장신청인이 상장예정일 전 1년 이내에 사모로 발행한 주식을 취득한 자", "act": "의무보유해야 한다", "target": "", "object": "그 주식", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1053, "node": 1055, "actor": "신규상장신청인", "act": "제출해야 한다", "target": "거래소", "object": "의무보유와 관련하여 세칙으로 정하는 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1053, "node": 1056, "actor": "투자회사주권", "act": "신규상장하려면", "target": "", "object": "", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 1053, "node": 1062, "actor": "거래소", "act": "거부할 수 있다", "target": "", "object": "상장", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 1053, "node": 1063, "actor": "투자회사주권의 신규상장신청인", "act": "협의해야 한다", "target": "거래소", "object": "상장 절차, 상장 시기 등", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1053, "node": 1064, "actor": "", "act": "준용한다", "target": "", "object": "증권의 상장 승인 및 유예에 관한 제24조", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1088, "node": 1089, "actor": "수익증권의 신규상장신청인", "act": "신규상장신청서와 첨부서류를 거래소에 제출", "target": "거래소", "object": "신규상장신청서와 첨부서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1088, "node": 1090, "actor": "거래소", "act": "정하는", "target": "", "object": "수익증권", "mode": "위임", "function": "위임", "proviso": true}
+{"jo": 1088, "node": 1094, "actor": "거래소", "act": "상장을 거부할 수 있다", "target": "", "object": "수익증권", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1038, "node": 1038, "actor": "투자회사", "act": "발행한", "target": "", "object": "주권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1038, "node": 1038, "actor": "", "act": "제외한다", "target": "", "object": "상장지수펀드증권, 선박투자회사주권 및 부동산투자회사주권", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 1038, "node": 1038, "actor": "집합투자업자", "act": "발행한", "target": "", "object": "수익증권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1038, "node": 1038, "actor": "", "act": "제외한다", "target": "", "object": "상장지수펀드증권", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 1038, "node": 1038, "actor": "한국주택금융공사", "act": "발행한", "target": "", "object": "수익증권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1038, "node": 1038, "actor": "상장지수펀드", "act": "발행한", "target": "", "object": "주권 또는 수익증권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1038, "node": 1038, "actor": "외국상장지수펀드", "act": "발행한", "target": "", "object": "주권 또는 수익증권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1038, "node": 1038, "actor": "선박투자회사", "act": "발행한", "target": "", "object": "주권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1038, "node": 1038, "actor": "부동산투자회사", "act": "발행한", "target": "", "object": "보통주권과 종류주권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1038, "node": 1038, "actor": "집합투자업자", "act": "지정한", "target": "", "object": "자", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1038, "node": 1038, "actor": "회원", "act": "제출할 수 있는", "target": "", "object": "유동성공급호가", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1081, "node": 1082, "actor": "투자회사주권 상장법인", "act": "신고해야 한다", "target": "거래소", "object": "내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1081, "node": 1083, "actor": "투자회사주권 상장법인", "act": "신고하여야 한다", "target": "거래소", "object": "문서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1081, "node": 1083, "actor": "투자회사", "act": "해산하는 경우", "target": "", "object": "", "mode": "기타", "function": "제한", "proviso": true}
+{"jo": 1081, "node": 1084, "actor": "투자회사주권 상장법인", "act": "제출해야 한다", "target": "거래소", "object": "영업보고서와 결산서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1081, "node": 1085, "actor": "투자회사주권 상장법인", "act": "지정해야 하며", "target": "", "object": "신고책임자", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1081, "node": 1085, "actor": "투자회사주권 상장법인", "act": "알려야 한다", "target": "거래소", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1081, "node": 1086, "actor": "", "act": "준용한다", "target": "", "object": "제84조", "mode": "기타", "function": "기타", "proviso": false}
+{"jo": 1098, "node": 1099, "actor": "수익증권 상장법인", "act": "제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 변경상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1098, "node": 1100, "actor": "수익증권 상장법인", "act": "해야 한다", "target": "", "object": "변경상장 신청", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1095, "node": 1096, "actor": "수익증권 상장법인", "act": "제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 추가상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1095, "node": 1097, "actor": "해당 증권 발행인", "act": "해야 한다", "target": "", "object": "추가상장 신청", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1101, "node": 1101, "actor": "거래소", "act": "상장폐지한다", "target": "", "object": "해당 수익증권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1109, "node": 1109, "actor": "수익증권 중 이익금의 분배 방법, 투자원본의 보장 여부 등이 채무증권과 유사한 수익증권", "act": "적용한다", "target": "", "object": "제3편의 채무증권에 관한 규정", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1105, "node": 1106, "actor": "수익증권 상장법인", "act": "신고해야 한다", "target": "거래소", "object": "그 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1105, "node": 1107, "actor": "수익증권 상장법인", "act": "제출해야 한다", "target": "거래소", "object": "법에 따른 영업보고서와 결산서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1105, "node": 1108, "actor": "수익증권 상장법인", "act": "신고하여야 한다", "target": "거래소", "object": "수익증권의 이익금분배에 관한 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1105, "node": 1108, "actor": "수익증권 상장법인", "act": "신고하여야 한다", "target": "", "object": "", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 1155, "node": 1157, "actor": "상장지수펀드증권 상장법인", "act": "해당 신청서를 거래소에 제출해야", "target": "거래소", "object": "해당 신청서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1158, "node": 1159, "actor": "거래소", "act": "관리종목으로 지정한다", "target": "", "object": "해당 증권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1158, "node": 1162, "actor": "거래소", "act": "그 관리종목지정을 해제한다", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1158, "node": 1163, "actor": "거래소", "act": "세칙으로 정한다", "target": "", "object": "관리종목지정 해제 기준, 관리종목 지정 및 해제 시기, 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1164, "node": 1165, "actor": "거래소", "act": "상장폐지한다", "target": "", "object": "해당 상장지수펀드증권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1164, "node": 1184, "actor": "거래소", "act": "상장폐지를 유예할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1112, "node": 1113, "actor": "상장지수펀드증권의 신규상장신청인", "act": "상장예비심사신청서와 첨부서류를 거래소에 제출하여 상장예비심사를 받아야", "target": "", "object": "상장예비심사신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1112, "node": 1114, "actor": "상장지수펀드증권의 신규상장신청인", "act": "상장 절차, 상장 시기 등을 미리 거래소와 협의해야", "target": "", "object": "상장 절차, 상장 시기 등", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1112, "node": 1115, "actor": "거래소", "act": "심사한다", "target": "", "object": "상장예비심사신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1112, "node": 1116, "actor": "거래소", "act": "상장예비심사 결과를 해당 상장지수펀드증권의 신규상장신청인에게 서면으로 알린다", "target": "해당 상장지수펀드증권의 신규상장신청인", "object": "상장예비심사 결과", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1112, "node": 1116, "actor": "거래소", "act": "통지기한을 연장할 수 있으며, 이 경우 거래소는 그 사유와 예상처리기한을 명시하여 해당 상장신청인에게 통지하여야", "target": "해당 상장신청인", "object": "그 사유와 예상처리기한", "mode": "허용", "function": "절차", "proviso": true}
+{"jo": 1112, "node": 1117, "actor": "거래소", "act": "해당 상장예비심사 결과의 효력을 인정하지 않을 수 있다", "target": "", "object": "해당 상장예비심사 결과의 효력", "mode": "허용", "function": "효과", "proviso": false}
+{"jo": 1112, "node": 1121, "actor": "거래소", "act": "그 사실을 상장예비심사신청인에게 서면으로 알려야", "target": "상장예비심사신청인", "object": "그 사실", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1112, "node": 1122, "actor": "거래소", "act": "상장예비심사를 종료한다", "target": "", "object": "상장예비심사", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1123, "node": 1124, "actor": "상장지수펀드증권의 신규상장신청인", "act": "신규상장신청서와 첨부서류를 제출", "target": "거래소", "object": "신규상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1123, "node": 1124, "actor": "상장지수펀드증권의 신규상장신청인", "act": "제출기한의 연장을 요청", "target": "거래소", "object": "제출기한의 연장", "mode": "절차", "function": "절차", "proviso": true}
+{"jo": 1123, "node": 1124, "actor": "거래소", "act": "제출기한을 연장할 수 있다", "target": "상장지수펀드증권의 신규상장신청인", "object": "제출기한", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1123, "node": 1125, "actor": "상장지수펀드증권을 신규상장하려는 자", "act": "심사요건을 충족해야 한다", "target": "", "object": "심사요건", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1123, "node": 1148, "actor": "거래소", "act": "심사한다", "target": "", "object": "상장지수펀드증권의 상장 적합성", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1123, "node": 1153, "actor": "거래소", "act": "신규상장 승인 여부를 알려야 한다", "target": "신규상장신청인", "object": "신규상장 승인 여부", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1123, "node": 1154, "actor": "거래소", "act": "상장을 거부할 수 있다", "target": "", "object": "상장", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1200, "node": 1200, "actor": "외국상장지수펀드증권의 상장예비심사와 신규상장 신청", "act": "준용한다", "target": "", "object": "상장지수펀드증권의 상장예비심사에 관한 제112조와 신규상장 신청에 관한 제113조", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1201, "node": 1202, "actor": "외국상장지수펀드증권을 신규상장하려는 자", "act": "신규상장하려면", "target": "", "object": "외국상장지수펀드증권", "mode": "절차", "function": "제한", "proviso": false}
+{"jo": 1201, "node": 1202, "actor": "", "act": "충족해야 한다", "target": "", "object": "심사요건", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1201, "node": 1202, "actor": "", "act": "체결할 것", "target": "", "object": "유동성공급계약", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1201, "node": 1202, "actor": "외국상장지수펀드", "act": "등록되어 있을 것", "target": "금융위원회", "object": "", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1201, "node": 1202, "actor": "외국상장지수펀드증권", "act": "상장되어 있을 것", "target": "외국 거래소", "object": "", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1201, "node": 1211, "actor": "", "act": "준용한다", "target": "", "object": "종합적 심사 규정, 신규상장 승인 여부 통지, 상장거부 규정", "mode": "절차", "function": "위임", "proviso": false}
+{"jo": 1186, "node": 1187, "actor": "상장지수펀드증권 상장법인", "act": "신고해야 한다", "target": "거래소", "object": "이익금 분배, 순자산가치, 자산구성내역, 설정·환매에 필요한 자산구성내역, 거래상대방의 위험평가액, 거래상대방의 등급 변경 등, 편입자산의 신용평가등급별 자산구성 현황 등, 투자신탁의 해지사유, 상장지수펀드증권이 목표로 하는 가격 또는 지수의 산출기준에 변경, 그 밖에 거래소가 상장관리에 필요하다고 인정하는 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1186, "node": 1196, "actor": "상장지수펀드증권 상장법인", "act": "제출해야 한다", "target": "거래소", "object": "영업보고서와 결산서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1186, "node": 1197, "actor": "상장지수펀드증권 상장법인", "act": "정하고 지정해야 한다", "target": "", "object": "신고와 서류제출 업무를 담당하는 직원, 책임자", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1186, "node": 1197, "actor": "상장지수펀드증권 상장법인", "act": "알려야 한다", "target": "거래소", "object": "직원 또는 책임자를 지정·변경할 때의 내용", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 1186, "node": 1198, "actor": "", "act": "준용한다", "target": "", "object": "주권상장법인의 주주총회 참석에 관한 제84조", "mode": "절차", "function": "위임", "proviso": false}
+{"jo": 1212, "node": 1213, "actor": "", "act": "준용한다", "target": "", "object": "투자회사주권의 추가상장·변경상장에 관한 제102조·제103조와 수익증권의 추가상장·변경상장에 관한 제107조·제108조", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1212, "node": 1213, "actor": "", "act": "제외하고", "target": "", "object": "변경상장 사유 중 신탁원본액 변경", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 1212, "node": 1213, "actor": "", "act": "한정한다", "target": "", "object": "수량변경의 경우 환매에 따른 변경", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 1212, "node": 1214, "actor": "외국상장지수펀드증권 상장법인", "act": "제출해야 한다", "target": "거래소", "object": "해당 신청서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1215, "node": 1215, "actor": "", "act": "준용한다", "target": "", "object": "상장지수펀드증권의 관리종목지정에 관한 제115조", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 1215, "node": 1215, "actor": "", "act": "한다", "target": "", "object": "제115조제1항의 \"신탁원본액\"은 \"시가총액(제119조제1항제1호가목 후단의 시가총액을 말한다)\"으로", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1216, "node": 1217, "actor": "", "act": "준용한다", "target": "", "object": "상장지수펀드증권의 상장폐지에 관한 제116조", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 1216, "node": 1217, "actor": "", "act": "적용한다", "target": "", "object": "영업보고서 미제출 관련 상장폐지 사유", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 1216, "node": 1218, "actor": "거래소", "act": "상장폐지한다", "target": "", "object": "해당 외국상장지수펀드주권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1216, "node": 1218, "actor": "거래소", "act": "상장폐지를 유예할 수 있다", "target": "", "object": "상장폐지", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1216, "node": 1218, "actor": "", "act": "정한다", "target": "", "object": "상장폐지 유예와 관련하여 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1219, "node": 1220, "actor": "외국상장지수펀드증권 상장법인", "act": "신고해야 한다", "target": "거래소", "object": "사유의 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1219, "node": 1225, "actor": "외국상장지수펀드증권 상장법인", "act": "제출해야 한다", "target": "거래소", "object": "서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1219, "node": 1226, "actor": "외국상장지수펀드증권 상장법인", "act": "정하고 지정해야 한다", "target": "", "object": "직원과 책임자", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1219, "node": 1226, "actor": "외국상장지수펀드증권 상장법인", "act": "알려야 한다", "target": "거래소", "object": "직원과 책임자의 지정·변경 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1255, "node": 1256, "actor": "거래소", "act": "알린다", "target": "해당 상장예비심사신청인과 금융위원회", "object": "상장예비심사 결과", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1255, "node": 1257, "actor": "거래소", "act": "연장할 수 있다", "target": "", "object": "통지기한", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1255, "node": 1257, "actor": "거래소", "act": "알린다", "target": "상장예비심사신청인", "object": "그 사유와 예상처리기한을 명시하여", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 1255, "node": 1258, "actor": "거래소", "act": "기각할 수 있다", "target": "", "object": "해당 상장예비심사의 신청", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1255, "node": 1259, "actor": "거래소", "act": "확정한다", "target": "", "object": "상장예비심사 결과", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 1255, "node": 1259, "actor": "거래소", "act": "거치지 않을 수 있다", "target": "", "object": "상장공시위원회의 심의", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1292, "node": 1292, "actor": "", "act": "준용한다", "target": "", "object": "투자회사주권의 추가상장에 관한 제102조의 규정과 변경상장에 관한 제103조의 규정", "mode": "절차", "function": "위임", "proviso": false}
+{"jo": 1292, "node": 1292, "actor": "", "act": "한다", "target": "", "object": "액면금액의 변경과 액면주식을 무액면주식으로 전환하거나 무액면주식을 액면주식으로 전환한 경우", "mode": "기타", "function": "정의", "proviso": true}
+{"jo": 1262, "node": 1263, "actor": "거래소", "act": "인정하지 않을 수 있다", "target": "", "object": "상장예비심사 결과의 효력", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 1262, "node": 1263, "actor": "거래소", "act": "승인하는", "target": "해당 신규상장신청인", "object": "제출기한의 연장을 요청", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1262, "node": 1263, "actor": "거래소", "act": "연장할 수 있다", "target": "", "object": "제출기한", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1262, "node": 1270, "actor": "상장신청인", "act": "제출하여", "target": "거래소", "object": "상장예비심사신청서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1262, "node": 1270, "actor": "상장신청인", "act": "받아야 한다", "target": "", "object": "상장예비심사", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1262, "node": 1271, "actor": "거래소", "act": "공표하고", "target": "", "object": "그 사실", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1262, "node": 1271, "actor": "거래소", "act": "알려야 한다", "target": "상장예비심사신청인과 금융위원회", "object": "문서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1293, "node": 1294, "actor": "거래소", "act": "관리종목으로 지정한다", "target": "", "object": "해당 부동산투자회사주권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1293, "node": 1315, "actor": "거래소", "act": "그 관리종목지정을 해제한다", "target": "", "object": "관리종목지정", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1293, "node": 1316, "actor": "거래소", "act": "세칙으로 정한다", "target": "", "object": "관리종목지정 사유의 적용 방법, 관리종목 지정 및 해제 시기, 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1229, "node": 1230, "actor": "부동산투자회사주권의 신규상장신청인", "act": "상장예비심사신청서와 첨부서류를 거래소에 제출하여 상장예비심사를 받아야", "target": "", "object": "상장예비심사신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1229, "node": 1230, "actor": "신규상장신청인", "act": "해당하지 않는 경우에 한한다", "target": "", "object": "", "mode": "기타", "function": "제한", "proviso": true}
+{"jo": 1229, "node": 1231, "actor": "주주", "act": "의무보유해야", "target": "", "object": "주식등", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1229, "node": 1231, "actor": "", "act": "의무보유 기간을 연장한다", "target": "", "object": "", "mode": "기타", "function": "효과", "proviso": true}
+{"jo": 1229, "node": 1232, "actor": "신규상장신청인", "act": "첨부서류를 거래소에 제출해야", "target": "", "object": "세칙으로 정하는 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1229, "node": 1233, "actor": "신규상장신청인", "act": "미리 거래소와 협의해야", "target": "거래소", "object": "상장 절차, 상장 시기", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1229, "node": 1234, "actor": "신규상장신청인", "act": "충족해야", "target": "", "object": "형식적 심사요건", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1229, "node": 1250, "actor": "거래소", "act": "심사한다", "target": "", "object": "부동산투자회사주권을 신규상장 하는 것이 적합한지", "mode": "기타", "function": "절차", "proviso": false}
+{"jo": 1272, "node": 1273, "actor": "부동산투자회사주권의 신규상장신청인", "act": "신규상장신청서와 첨부서류를 거래소에 제출해야", "target": "거래소", "object": "신규상장신청서와 첨부서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1272, "node": 1273, "actor": "부동산투자회사주권의 신규상장신청인", "act": "신규상장을 신청", "target": "", "object": "신규상장", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 1272, "node": 1273, "actor": "부동산투자회사주권의 신규상장신청인", "act": "해당 첨부서류의 제출을 생략할 수 있다", "target": "", "object": "해당 첨부서류의 제출", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1272, "node": 1274, "actor": "부동산투자회사주권의 신규상장신청인", "act": "형식적 심사요건을 모두 충족해야", "target": "", "object": "형식적 심사요건", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1272, "node": 1290, "actor": "거래소", "act": "상장을 거부할 수 있다", "target": "", "object": "상장", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1272, "node": 1291, "actor": "", "act": "부동산투자회사주권의 신규상장에는 증권의 상장 승인 및 유예에 관한 제24조를 준용", "target": "", "object": "", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1359, "node": 1359, "actor": "거래소", "act": "적용하지 않을 수 있다", "target": "", "object": "시가총액 미달에 따른 제129조제1항제6호의 관리종목지정 사유와 제130조제1항제6호의 상장폐지 사유", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1360, "node": 1361, "actor": "부동산투자회사주권 상장법인", "act": "신고해야 한다", "target": "거래소", "object": "내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1364, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1372, "node": 1372, "actor": "", "act": "준용한다", "target": "", "object": "제64조(제1항제2호부터 제4호까지의 규정은 제외한다)", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1365, "node": 1366, "actor": "", "act": "준용한다", "target": "", "object": "종류주권의 신규상장에 관한 제61조의 신규상장 심사요건", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 1365, "node": 1366, "actor": "", "act": "준용한다", "target": "", "object": "다음 각 호에 따른다", "mode": "절차", "function": "절차", "proviso": true}
+{"jo": 1365, "node": 1370, "actor": "", "act": "준용한다", "target": "", "object": "증권의 상장 승인 및 유예에 관한 제24조", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 1371, "node": 1371, "actor": "", "act": "준용한다", "target": "", "object": "제62조 및 제63조", "mode": "위임", "function": "절차", "proviso": false}
+{"jo": 1373, "node": 1373, "actor": "", "act": "준용한다", "target": "", "object": "제65조(제1항제2호부터 제4호까지의 규정은 제외한다)", "mode": "절차", "function": "위임", "proviso": false}
+{"jo": 1317, "node": 1318, "actor": "거래소", "act": "상장폐지한다", "target": "", "object": "해당 부동산투자회사주권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1317, "node": 1338, "actor": "거래소", "act": "상장적격성 실질심사를 실시한 결과 기업의 계속성, 경영의 투명성, 그 밖에 공익 실현과 투자자 보호 등을 종합적으로 고려하여 필요하다고 인정하는 경우에는 해당 부동산투자회사주권을 상장폐지한다", "target": "", "object": "부동산투자회사주권 상장법인", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1317, "node": 1349, "actor": "부동산투자회사주권 상장법인", "act": "상장폐지에 대한 이의신청을 할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1317, "node": 1358, "actor": "", "act": "세칙으로 정한다", "target": "", "object": "제1항 및 제2항의 상장폐지 사유에 대한 적용 방법과 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1417, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1412, "node": 1413, "actor": "선박투자회사주권 상장법인", "act": "신고해야", "target": "거래소", "object": "그 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1388, "node": 1389, "actor": "거래소", "act": "관리종목으로 지정한다", "target": "", "object": "해당 선박투자회사주권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1388, "node": 1396, "actor": "거래소", "act": "그 관리종목지정을 해제한다", "target": "", "object": "관리종목지정", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1388, "node": 1397, "actor": "거래소", "act": "세칙으로 정한다", "target": "", "object": "관리종목지정 사유의 적용 방법, 관리종목지정 해제 기준, 관리종목 지정 및 해제 시기, 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1375, "node": 1376, "actor": "선박투자회사주권의 신규상장신청인", "act": "제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 신규상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1375, "node": 1377, "actor": "주주", "act": "의무보유해야 한다", "target": "", "object": "그 주식", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1375, "node": 1377, "actor": "신규상장신청인", "act": "제출해야 한다", "target": "거래소", "object": "의무보유와 관련하여 세칙으로 정하는 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1375, "node": 1378, "actor": "선박투자회사주권의 신규상장신청인", "act": "충족해야 한다", "target": "", "object": "다음 각 호의 심사요건", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1375, "node": 1385, "actor": "거래소", "act": "거부할 수 있다", "target": "", "object": "상장", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1375, "node": 1386, "actor": "", "act": "준용한다", "target": "", "object": "제24조", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1387, "node": 1387, "actor": "", "act": "준용한다", "target": "", "object": "투자회사주권의 추가상장에 관한 제102조의 규정과 변경상장에 관한 제103조의 규정", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1387, "node": 1387, "actor": "", "act": "한다", "target": "", "object": "액면금액의 변경과 액면주식을 무액면주식으로 전환하거나 무액면주식을 액면주식으로 전환한 경우", "mode": "기타", "function": "효과", "proviso": true}
+{"jo": 1398, "node": 1399, "actor": "거래소", "act": "상장폐지한다", "target": "", "object": "해당 선박투자회사주권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1398, "node": 1407, "actor": "거래소", "act": "상장폐지한다", "target": "", "object": "해당 선박투자회사주권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1398, "node": 1410, "actor": "선박투자회사주권 상장법인", "act": "상장폐지에 대한 이의신청을 할 수 있다", "target": "거래소", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1398, "node": 1411, "actor": "", "act": "세칙으로 정한다", "target": "", "object": "제1항 및 제2항의 상장폐지 사유에 대한 적용 방법과 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1451, "node": 1452, "actor": "주식워런트증권 상장법인", "act": "세칙으로 정하는 추가상장신청서와 첨부서류를 거래소에 제출해야", "target": "거래소", "object": "세칙으로 정하는 추가상장신청서와 첨부서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1460, "node": 1461, "actor": "주식워런트증권 상장법인", "act": "제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 변경상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1460, "node": 1462, "actor": "주식워런트증권 상장법인", "act": "해야 한다", "target": "", "object": "해당 변경사유의 효력이 생긴 후에 지체 없이 변경상장 신청", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1486, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1463, "node": 1464, "actor": "거래소", "act": "상장폐지한다", "target": "", "object": "해당 주식워런트증권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1463, "node": 1485, "actor": "거래소", "act": "상장폐지를 유예할 수 있다", "target": "", "object": "상장폐지", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1496, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1497, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1498, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1422, "node": 1423, "actor": "주식워런트증권의 신규상장신청인", "act": "상장예비심사신청서와 첨부서류를 거래소에 제출하여 상장예비심사를 받아야", "target": "거래소", "object": "상장예비심사신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1422, "node": 1424, "actor": "거래소", "act": "심사한다", "target": "", "object": "상장예비심사신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1422, "node": 1425, "actor": "거래소", "act": "서면으로 알린다", "target": "신규상장신청인과 금융위원회", "object": "상장예비심사 결과", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1422, "node": 1426, "actor": "거래소", "act": "연기할 수 있다", "target": "", "object": "상장예비심사와 결과 통지", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1422, "node": 1426, "actor": "거래소", "act": "서면으로 알린다", "target": "신규상장신청인", "object": "사유와 예상처리기간", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 1422, "node": 1427, "actor": "거래소", "act": "효력을 인정하지 않을 수 있다", "target": "", "object": "상장예비심사 결과", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1422, "node": 1431, "actor": "거래소", "act": "공표하고 알려야", "target": "상장예비심사신청인과 금융위원회", "object": "효력을 인정하지 않는 결정", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1422, "node": 1432, "actor": "주식워런트증권의 신규상장신청인", "act": "서류를 거래소에 제출해야", "target": "거래소", "object": "세칙으로 정하는 서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1499, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1433, "node": 1434, "actor": "주식워런트증권 신규상장신청인", "act": "신규상장신청서와 첨부서류를 거래소에 제출해야 한다", "target": "거래소", "object": "신규상장신청서와 첨부서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1433, "node": 1435, "actor": "주식워런트증권의 신규상장신청인", "act": "증권과 장외파생상품을 대상으로 하는 투자매매업 인가를 받은 금융투자회사일 것", "target": "", "object": "", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1433, "node": 1435, "actor": "신규상장신청인", "act": "해당 주가지수에 관한 법적 권한을 가진 자와 사전에 그 주가지수의 사용 등에 관하여 계약을 체결해야 한다", "target": "해당 주가지수에 관한 법적 권한을 가진 자", "object": "그 주가지수의 사용 등에 관한 계약", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1433, "node": 1435, "actor": "신규상장신청인", "act": "유동성공급계획을 제출할 것", "target": "", "object": "유동성공급계획", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1433, "node": 1435, "actor": "신규상장신청인", "act": "세칙으로 정하는 사항을 포함하는 유동성공급계약을 체결할 것", "target": "유동성공급자 중 1사 이상", "object": "유동성공급계약", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 1433, "node": 1446, "actor": "거래소", "act": "심사한다", "target": "", "object": "주식워런트증권", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 1433, "node": 1449, "actor": "거래소", "act": "신규상장 승인 여부를 알려야 한다", "target": "해당 신규상장신청인", "object": "신규상장 승인 여부", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1433, "node": 1450, "actor": "거래소", "act": "상장을 거부할 수 있다", "target": "", "object": "상장", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 1489, "node": 1490, "actor": "주식워런트증권 상장법인", "act": "신고해야 한다", "target": "거래소", "object": "내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1489, "node": 1491, "actor": "거래소", "act": "해명을 요구할 수 있다", "target": "주식워런트증권 상장법인", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1489, "node": 1492, "actor": "주식워런트증권 상장법인", "act": "변경할 수 있다", "target": "", "object": "주식워런트증권의 발행조건", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1489, "node": 1493, "actor": "주식워런트증권의 상장법인", "act": "정하고 지정해야 한다", "target": "", "object": "직원", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1489, "node": 1493, "actor": "주식워런트증권의 상장법인", "act": "알려야 한다", "target": "거래소", "object": "내용", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 1489, "node": 1494, "actor": "주식워런트증권 상장법인", "act": "준수해야 한다", "target": "", "object": "세칙으로 정하는 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1538, "node": 1539, "actor": "상장지수증권 상장법인", "act": "세칙으로 정하는 추가상장신청서와 첨부서류를 거래소에 제출해야", "target": "거래소", "object": "세칙으로 정하는 추가상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1501, "node": 1502, "actor": "상장지수증권의 신규상장신청인", "act": "상장예비심사신청서와 첨부서류를 거래소에 제출하여 상장예비심사를 받아야", "target": "거래소", "object": "상장예비심사신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1501, "node": 1503, "actor": "상장지수증권의 신규상장신청인", "act": "상장 절차, 상장 시기 등을 거래소와 미리 협의해야", "target": "거래소", "object": "상장 절차, 상장 시기 등", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1501, "node": 1504, "actor": "거래소", "act": "심사한다", "target": "", "object": "상장예비심사신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1501, "node": 1505, "actor": "거래소", "act": "상장예비심사 결과를 서면으로 알린다", "target": "상장지수증권의 신규상장신청인과 금융위원회", "object": "상장예비심사 결과", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1501, "node": 1507, "actor": "거래소", "act": "상장예비심사를 종료한다", "target": "", "object": "상장예비심사", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 1546, "node": 1547, "actor": "거래소", "act": "관리종목으로 지정한다", "target": "", "object": "해당 증권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1546, "node": 1550, "actor": "거래소", "act": "그 관리종목지정을 해제한다", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1546, "node": 1551, "actor": "거래소", "act": "세칙으로 정한다", "target": "", "object": "관리종목지정 해제 기준, 관리종목 지정 및 해제 시기, 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1542, "node": 1543, "actor": "상장지수증권 상장법인", "act": "변경상장신청서와 첨부서류를 거래소에 제출해야", "target": "거래소", "object": "변경상장신청서와 첨부서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1542, "node": 1544, "actor": "상장지수증권 상장법인", "act": "제1항의 변경상장 신청을 해야", "target": "", "object": "제1항의 변경상장 신청", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1542, "node": 1545, "actor": "상장지수증권 상장법인", "act": "수량을 변경하거나 증권을 병합 또는 분할하는 경우 변경상장 후 발행원본액이 70억원 이상이어야", "target": "", "object": "발행원본액", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1552, "node": 1552, "actor": "거래소", "act": "상장폐지한다", "target": "", "object": "해당 상장지수증권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1578, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1508, "node": 1509, "actor": "상장지수증권의 신규상장신청인", "act": "제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 신규상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1508, "node": 1509, "actor": "신규상장신청인", "act": "요청하여", "target": "거래소", "object": "제출기한의 연장", "mode": "허용", "function": "기타", "proviso": true}
+{"jo": 1508, "node": 1509, "actor": "거래소", "act": "승인하는 경우에는 연장할 수 있다", "target": "", "object": "제출기한", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1508, "node": 1510, "actor": "신규상장신청인", "act": "충족해야 한다", "target": "", "object": "다음 각 호의 요건을 모두", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1508, "node": 1531, "actor": "거래소", "act": "심사한다", "target": "", "object": "제2항의 요건을 충족하는 상장지수증권을 상장하는 것이 적합한지", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 1508, "node": 1536, "actor": "거래소", "act": "알려야 한다", "target": "해당 신규상장신청인에게", "object": "신규상장 승인 여부", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1508, "node": 1537, "actor": "거래소", "act": "거부할 수 있다", "target": "", "object": "상장", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 1607, "node": 1607, "actor": "", "act": "준용한다", "target": "", "object": "신주인수권증권과 신주인수권증서의 변경상장", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1593, "node": 1594, "actor": "신주인수권증권 또는 신주인수권증서의 신규상장신청인", "act": "제출해야 한다", "target": "거래소", "object": "세칙으로 정하는 신규상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1593, "node": 1595, "actor": "신규상장신청인", "act": "충족해야 한다", "target": "", "object": "다음 각 호의 심사요건을 모두", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1593, "node": 1601, "actor": "신규상장신청인", "act": "충족해야 한다", "target": "", "object": "다음 각 호의 심사요건을 모두", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1608, "node": 1609, "actor": "거래소", "act": "상장을 폐지한다", "target": "", "object": "해당 신주인수권증권", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1608, "node": 1613, "actor": "거래소", "act": "상장을 폐지한다", "target": "", "object": "해당 신주인수권증서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1608, "node": 1613, "actor": "", "act": "세칙으로 정하는", "target": "", "object": "신주인수권증서의 유통상황을 고려하여", "mode": "위임", "function": "위임", "proviso": true}
+{"jo": 1581, "node": 1582, "actor": "상장지수증권 상장법인", "act": "신고해야 한다", "target": "거래소", "object": "사유의 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1581, "node": 1589, "actor": "거래소", "act": "해명을 요구할 수 있다", "target": "상장지수증권 상장법인", "object": "풍문과 보도", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1581, "node": 1590, "actor": "상장지수증권 상장법인", "act": "정하고 지정해야 한다", "target": "", "object": "신고업무를 담당하는 직원과 책임자", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1581, "node": 1590, "actor": "상장지수증권 상장법인", "act": "알려야 한다", "target": "거래소", "object": "담당직원과 책임자의 지정 또는 변경 내용", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 1581, "node": 1591, "actor": "상장지수증권 상장법인", "act": "준수해야 한다", "target": "", "object": "세칙으로 정하는 사항", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1618, "node": 1619, "actor": "거래소", "act": "매매거래를 정지할 수 있다", "target": "", "object": "해당 증권의 매매거래", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1618, "node": 1670, "actor": "", "act": "준용하며", "target": "", "object": "제1항제1호와 제5호", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1706, "node": 1706, "actor": "거래소", "act": "공표할 수 있다", "target": "", "object": "그 사실", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1671, "node": 1672, "actor": "거래소", "act": "예고할 수 있다", "target": "", "object": "그 사실", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1671, "node": 1673, "actor": "거래소", "act": "공표한다", "target": "", "object": "그 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1671, "node": 1674, "actor": "거래소", "act": "실태파악을 할 수 있다", "target": "", "object": "상장관리를 위한 실태", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1707, "node": 1707, "actor": "거래소", "act": "공표할 수 있다", "target": "", "object": "상장법인이 이 규정에 따른 의무를 이행하지 않거나 서류제출을 하지 않은 경우 그 사실", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1708, "node": 1709, "actor": "거래소", "act": "선정하여 공표할 수 있다", "target": "", "object": "보통주권 상장법인", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1708, "node": 1710, "actor": "거래소", "act": "따로 정한다", "target": "", "object": "업종분류, 주가순자산비율 산정기준, 저PBR기업 공표방법 등 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1675, "node": 1676, "actor": "거래소", "act": "예고할 수 있다", "target": "", "object": "상장폐지 사유에 해당될 우려가 있다는 사실", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1675, "node": 1676, "actor": "", "act": "제외한다", "target": "", "object": "상장지수펀드증권, 외국상장지수펀드증권 또는 상장지수증권이 관리종목으로 지정되는 경우", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 1675, "node": 1703, "actor": "거래소", "act": "알린다", "target": "해당 법인", "object": "그 사실, 상장폐지의 방법·절차, 그 밖에 필요한 사항", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1675, "node": 1704, "actor": "거래소", "act": "공표할 수 있다", "target": "", "object": "상장폐지 사실", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1675, "node": 1705, "actor": "거래소", "act": "중단할 수 있다", "target": "", "object": "예고", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1711, "node": 1712, "actor": "거래소", "act": "상장계약위약금을 부과할 수 있다", "target": "주권상장법인", "object": "상장계약위약금", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1711, "node": 1713, "actor": "거래소", "act": "세칙으로 정한다", "target": "", "object": "부과기준, 부과금액, 부과절차 등 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1711, "node": 1714, "actor": "거래소", "act": "공표할 수 있다", "target": "", "object": "위반 내용 및 관련 규정 등", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1711, "node": 1715, "actor": "거래소", "act": "지급명령의 신청 등 필요한 절차를 취할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1717, "node": 1718, "actor": "증권의 상장신청인", "act": "상장수수료를 납부해야 하며", "target": "", "object": "상장수수료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1717, "node": 1718, "actor": "상장법인", "act": "연부과금을 납부해야 한다", "target": "", "object": "연부과금", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1717, "node": 1718, "actor": "거래소", "act": "상장수수료 또는 연부과금의 납부를 면제할 수 있다", "target": "", "object": "상장수수료 또는 연부과금의 납부", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1717, "node": 1719, "actor": "", "act": "세칙으로 정한다", "target": "", "object": "수수료율, 산출·납부 방법, 면제 범위, 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1721, "node": 1721, "actor": "상장법인", "act": "서면으로 작성하여 우편, 인편, 전자전달매체 또는 모사전송의 방법으로 제출해야", "target": "거래소", "object": "이 규정에 따라 거래소에 신고, 통지 또는 제출해야 할 사항", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1725, "node": 1725, "actor": "상장신청인 또는 상장법인", "act": "발행하는", "target": "", "object": "주권의 액면금액", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1720, "node": 1720, "actor": "의무보유대상자", "act": "거래소의 승인을 받아야", "target": "거래소", "object": "처분등", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 1720, "node": 1720, "actor": "주식등을 취득하거나 교부받은 자", "act": "의무보유하여야", "target": "", "object": "해당 주식등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1722, "node": 1723, "actor": "상장법인", "act": "알려야", "target": "거래소와 예탁결제원", "object": "사고증권에 관한 신고의 내용", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1722, "node": 1724, "actor": "상장법인", "act": "할 수 있다", "target": "명의개서대행회사", "object": "제1항의 통지", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1740, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1737, "node": 1738, "actor": "거래소", "act": "설치할 수 있다", "target": "", "object": "유가증권시장 상장공시위원회", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1737, "node": 1739, "actor": "거래소", "act": "따로 정한다", "target": "", "object": "유가증권시장 상장공시위원회의 구성과 운영에 관하여 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1741, "node": 1741, "actor": "거래소", "act": "업종을 분류할 수 있다", "target": "", "object": "주권상장법인의 업종", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1743, "node": 1743, "actor": "세칙", "act": "정한다", "target": "", "object": "이 규정의 시행에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1726, "node": 1727, "actor": "주권상장법인", "act": "추가상장신청서에 흡수합병 되는 회사가 발행한 해당 증권의 변경상장에 관한 사항을 적는 것으로 갈음할 수 있다", "target": "", "object": "상장신청", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1726, "node": 1732, "actor": "존속법인 또는 신설법인", "act": "세칙으로 정하는 변경상장신청서와 첨부서류를 거래소에 제출해야 한다", "target": "거래소", "object": "변경상장신청서와 첨부서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1742, "node": 1742, "actor": "", "act": "세칙으로 정하는 바에 따라 이해관계자들의 의견수렴을 거쳐야", "target": "", "object": "이 규정(세칙을 포함한다)", "mode": "의무", "function": "절차", "proviso": false}

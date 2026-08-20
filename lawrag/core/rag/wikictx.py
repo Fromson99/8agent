@@ -39,6 +39,10 @@ ARTICLE_MAX_CHARS = 4000     # 아티클 하나의 프롬프트 상한 — 위�
 PICK_LIMIT = 2               # 질의 하나에 아티클 최대 두 편
 ISSUE_DIR = "쟁점"           # 쟁점기 갈래 — spot 만 읽고 pick 은 건너뛴다
 SPOT_LIMIT = 2               # 질의 하나에 쟁점 카드 최대 두 장
+# 판정 콜 출력 예산 — 카드마다 slug+why(120자)+조문질의가 실리므로 300 은 애초에
+# 모자랐다(실측 2026-08-20: 하루 62콜 중 16콜 잘림, fail-open 이라 쟁점 확장 없이
+# 진행돼 실행 간 변동의 원인이 됐다). 잘리면 3배로 1회만 재시도한다(frames 와 동형).
+SPOT_MAX_TOKENS = int(os.environ.get("RAG_SPOT_MAX_TOKENS", "1000"))
 PROBE_MAX_CHARS = 300        # 조문질의 한 장의 상한 — 질의문이지 조문 원문이 아니다
 
 # index.md 표 행: | [제목](주제/파일.md) | 요약 | 날짜 |  (lawrag/api/routers/expc.py 와 같은 규약)
@@ -46,8 +50,10 @@ _ROW_RE = re.compile(
     r"^\|\s*\[(?P<title>[^\]]+)\]\((?P<file>[^)]+\.md)\)\s*\|"
     r"\s*(?P<summary>[^|]*)\|", re.M)
 _WORD_RE = re.compile(r"[가-힣A-Za-z0-9]{2,}")
-# 쟁점 카드 머리의 기계 가독 메타 — `> 트리거: a · b` 꼴 (가운뎃점 구분)
-_META_RE = re.compile(r"^>\s*(?P<key>트리거|판단 축|조문 후보):\s*(?P<val>.+)$", re.M)
+# 카드 머리의 기계 가독 메타 — `> 트리거: a · b` 꼴 (가운뎃점 구분).
+# `신호`는 방법 갈래의 라우팅 키다 — 질의 낱말이 아니라 **회수 결과의 성격**
+# (동반 kind: 정의·제재·위임·준용·배제·수임, 본문의 단서)이 깨운다.
+_META_RE = re.compile(r"^>\s*(?P<key>트리거|판단 축|조문 후보|신호):\s*(?P<val>.+)$", re.M)
 
 _cache: dict = {"key": None, "rows": []}       # key = (경로, mtime)
 
@@ -136,6 +142,55 @@ def _meta(text: str) -> dict[str, str]:
             for m in _META_RE.finditer(text)}
 
 
+# ---------------------------------------------------------------- 방법 갈래
+# 방법 아티클은 질의가 아니라 **회수 결과**가 깨운다 — 단서 있는 구역이
+# 실렸으면 단서 읽는 법을, 제재 동반이 실렸으면 제재 연결 읽는 법을 배경에
+# 끼운다. 외부 설계 검토(docs/TAGS.md 파이프라인 10-B: "spots +
+# condition_type + content_type 기반 선정")의 착지 — 선택은 코드 결정론이다
+# (pick 과 같은 이유: 라우팅 콜을 답변 지연에 얹지 않는다).
+METHOD_LIMIT = 2             # 질의 하나에 방법 아티클 최대 두 편
+_COMPANION_KINDS = {"정의", "제재", "위임", "수임", "준용", "배제"}
+
+
+def section_signals(sections) -> set[str]:
+    """회수 구역들이 내는 신호 — 동반 kind + 본문의 단서. 전부 결정론."""
+    sig: set[str] = set()
+    for s in sections:
+        kind = getattr(s, "kind", "") or ""
+        if kind in _COMPANION_KINDS:
+            sig.add(kind)
+        if "다만," in (getattr(s, "text", "") or ""):
+            sig.add("단서")
+    return sig
+
+
+def methods_for(sections, limit: int = METHOD_LIMIT) -> list[dict]:
+    """신호에 걸린 방법 아티클 — [{slug, title, text, why, score}] 겹침순.
+
+    `> 신호:` 메타를 단 아티클만 후보다(방법 갈래 + 신호를 단 해석원칙).
+    신호가 없으면 빈손 — 방법을 억지로 끼우지 않는다.
+    """
+    sig = section_signals(sections)
+    if not sig:
+        return []
+    scored = []
+    for row in _rows():
+        wants = {w.strip() for w in _meta(row["text"]).get("신호", "").split("·")
+                 if w.strip()}
+        hit = sorted(wants & sig)
+        if hit:
+            scored.append((len(hit), row, hit))
+    scored.sort(key=lambda t: -t[0])
+    out = []
+    for score, row, hit in scored[:limit]:
+        text = row["text"]
+        if len(text) > ARTICLE_MAX_CHARS:
+            text = text[:ARTICLE_MAX_CHARS] + "\n…(잘림 — 전문은 위키)"
+        out.append({"slug": row["slug"], "title": row["title"],
+                    "text": text, "why": hit[:6], "score": score})
+    return out
+
+
 def _issue_rows() -> list[dict]:
     return [r for r in _rows() if r["slug"].startswith(ISSUE_DIR + "/")]
 
@@ -165,7 +220,7 @@ def card_titles(index, rows: Optional[list] = None) -> dict[str, list[str]]:
     key = (id(index), tuple(r["slug"] for r in rows))
     if _titles_cache["key"] == key:
         return _titles_cache["map"]
-    docnames = {v.name: d for d, v in index.docs.items()}
+    docnames = {v.name: d for d, v in index.entry_docs.items()}   # 카드 후보도 진입 — 스코프 안만
     out: dict[str, list[str]] = {}
     for row in rows:
         titles: list[str] = []
@@ -320,9 +375,13 @@ def spot_llm(llm, question: str, sections: Optional[list] = None,
     kind = "rag.issue_spot" if sections else "rag.issue_spot_pre"
     system = SPOT_SYSTEM if sections else SPOT_SYSTEM_PRE
     via = "llm" if sections else "llm(검색전)"
-    out = llm.structured(kind, system,
-                         f"[질문]\n{question}{ctx}\n\n[쟁점 카드 목록]\n{menu}",
-                         SPOT_SCHEMA, max_tokens=300, effort="low")
+    user = f"[질문]\n{question}{ctx}\n\n[쟁점 카드 목록]\n{menu}"
+    out = llm.structured(kind, system, user, SPOT_SCHEMA,
+                         max_tokens=SPOT_MAX_TOKENS, effort="low")
+    _log = getattr(llm, "log", None)     # 테스트 대역은 log 가 없다
+    if out is None and _log and "잘림" in str(_log[-1].error or ""):
+        out = llm.structured(kind, system, user, SPOT_SCHEMA,
+                             max_tokens=SPOT_MAX_TOKENS * 3, effort="low")
     if out is None:
         return None
     by_slug = {r["slug"]: r for r in rows}
@@ -365,30 +424,30 @@ def vector_query(question: str, spots: list[dict]) -> str:
 
 
 def expand_query(question: str, spots: list[dict]) -> str:
-    """질의를 쟁점으로 넓힌다 — 두 갈래를 함께 붙인다.
+    """질의를 쟁점으로 넓힌다 — 조문질의(probe)만 붙인다.
 
-    ① 조문 후보(법령명+좌표)  — 어휘 사다리가 무는 자리.
-    ② 조문질의(probe)        — **벡터가 무는 자리**. 사용자의 구어는 조문
-       문체와 문체가 어긋나 벡터가 헛돈다(실측: 같은 질문이 구어면 코사인
-       0.58로 상법 회사해산에 착지, 조문 문체로 옮기면 0.68로 부칙 경과조치에
-       착지). 조문 **원문**은 넣지 않는다 — 그건 컨텍스트를 태운다.
+    쟁점 카드의 소임은 **질문을 조문 문체로 옮겨 벡터가 착지하게 하는 것**이다
+    (2026-08-18 사용자 결정). 사용자의 구어는 조문 문체와 어긋나 벡터가
+    헛돈다(실측: 같은 질문이 구어면 코사인 0.58로 상법 회사해산에 착지, 조문
+    문체로 옮기면 0.68로 부칙 경과조치에 착지). 조문 **원문**은 넣지 않는다 —
+    그건 컨텍스트를 태운다.
+
+    카드의 `조문 후보`는 **질의에 넣지 않는다.** 그것은 카드를 컴파일할 때 본
+    사례의 좌표라 사안이 다르면 다른 조를 가리킨다 — 실측 18-0124: 「다른
+    법률 근거의 문턱」 후보가 국세기본법 제81조의13(비밀 유지)인데 사안의
+    정답은 제84조(국세행정에 대한 협조). 후보를 질의에 실으면 어휘 사다리가
+    그 조를 물어 정답이 밀린다. 조문 후보는 사람이 읽는 참고이자 재작성의
+    어휘 재료(card_titles)일 뿐, 회수 좌표가 아니다. 사용자가 직접 또는
+    피드백 루프에서 승인한 연결만이 좌표가 될 수 있다 — 그 고리는 아직 없다.
 
     회수만 이 확장 질의로 간다. 합성·기록은 원 질의다.
     """
     pq = _pack(question)
-    provs, probes = [], []
+    probes = []
     for s in spots:
-        for p in s.get("provisions", []):
-            if _pack(p) not in pq and p not in provs:
-                provs.append(p)
         pr = (s.get("probe") or "").strip()
         if pr and _pack(pr) not in pq and pr not in probes:
             probes.append(pr)
-    if not provs and not probes:
+    if not probes:
         return question
-    out = question
-    if probes:
-        out += "\n[법률용어 질의] " + " ".join(probes)
-    if provs:
-        out += "\n[쟁점 조문 후보] " + " · ".join(provs)
-    return out
+    return question + "\n[법률용어 질의] " + " ".join(probes)

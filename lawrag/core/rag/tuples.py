@@ -99,6 +99,9 @@ def log_ask(out: dict, prompt: Optional[dict] = None,
     # 검수는 결론이 아니라 그 앞의 입력을 봐야 성립한다.
     if out.get("쟁점"):
         rec["쟁점"] = out["쟁점"]
+    if out.get("scope"):
+        # 질의 스코프 — 어느 문서 묶음만 봤나. 피드백·벤치가 스코프별로 갈린다.
+        rec["scope"] = {k: out["scope"].get(k) for k in ("name", "count", "out_of_scope")}
     if calls:
         rec["콜"] = calls
     if out.get("timing") is not None:
@@ -187,9 +190,14 @@ def record_candidates(query: str, coords: list[dict], cap: int = 3) -> int:
         k = (qkey, doc_id, node)
         row = by_key.get(k)
         if row is None:
+            # status: 잠정(자동 적재) → 활성(사람 승인) | tombstone(기각).
+            # 착지 한 번으로 굳히지 않는다 — 오답 착지도 착지다(18-0124 에서
+            # 벡터가 찾은 제81조의13 도 착지였다). 활성만 다음 회수의 직행
+            # 좌표·별칭·카드 연결이 된다 (용어 사전과 같은 승인형 규율).
             row = {"qkey": qkey, "surfaces": [query], "doc_id": doc_id,
                    "node": node, "via": c.get("via", ""),
-                   "count": 0, "first": now, "last": now}
+                   "count": 0, "first": now, "last": now, "status": "잠정",
+                   "cards": [], "issues": []}
             by_key[k] = row
             rows.append(row)
             fresh += 1
@@ -198,6 +206,12 @@ def record_candidates(query: str, coords: list[dict], cap: int = 3) -> int:
         row["count"] += 1
         row["last"] = now
         row["via"] = c.get("via", row.get("via", ""))
+        # 착지 때의 쟁점 카드·쟁점 문장 — 카드↔조문 승인 연결의 재료
+        for key, val in (("cards", c.get("card")), ("issues", c.get("issue"))):
+            if val:
+                row.setdefault(key, [])
+                if val not in row[key]:
+                    row[key].append(val)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({"candidates": rows}, ensure_ascii=False, indent=2),
                     encoding="utf-8")

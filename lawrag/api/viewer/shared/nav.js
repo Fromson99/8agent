@@ -22,6 +22,7 @@
     { key:"agent6",    href:"/agent6/",    label:"점검" },
     { gap:true },
     { key:"lineage",   href:"/lineage/",   label:"원장" },
+    { key:"pipeline",  href:"/pipeline/",  label:"파이프라인" },
     { key:"logs",      href:"/logs/",      label:"로그" },
   ];
 
@@ -47,8 +48,9 @@
     { key: "rag", jump: "/rag/#backlog",
       url: "/v1/rag/verdicts",
       pick: (d) => (d.edges || []).length + (d.fixes || []).length
-                 + (d.struct || []).length + (d.misses || []).length,
-      hint: "판정 백로그 — 승인하면 잘못된 간선을 억제합니다" },
+                 + (d.struct || []).length + (d.misses || []).length
+                 + (d.memory_pending || 0),
+      hint: "판정 백로그 — 승인하면 잘못된 간선을 억제하고, 질문 기억 후보를 승인하면 검색 없이 열립니다" },
     // 공리 루프 — 승격 결정을 기다리는 규칙(잠정 + 정착 후보 권고).
     { key: "rules", jump: "/rules/",
       url: "/v1/rag/rules",

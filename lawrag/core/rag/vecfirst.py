@@ -19,6 +19,7 @@ from __future__ import annotations
 import logging
 import os
 import time
+from typing import Optional
 
 from lawrag.core.rag import answer as answer_mod
 from lawrag.core.rag import vector as vector_mod
@@ -67,24 +68,49 @@ def _approved_hits(index: Index, query: str, cap: int = KEYWORD_ENTRY_CAP):
 
 def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
              cap: int = CANDIDATES_MAX, llm=None,
-             vec_query: str = "") -> tuple[list[Section], dict]:
-    """(구역들, 회수 경위). 진입: 승인 용어(정밀) → 벡터(의미). 확장: 결정론
-    바닥(배제·위임·준용 무조건) → 무차별 참조 닫힘 → 남은 자리는 LLM 항해.
+             vec_query: str = "", seeds: Optional[list] = None
+             ) -> tuple[list[Section], dict]:
+    """(구역들, 회수 경위). 진입: 질문 기억(승인 좌표) → 승인 용어(정밀) →
+    벡터(의미). 확장: 결정론 바닥(배제·위임·준용 무조건) → 무차별 참조 닫힘 →
+    남은 자리는 LLM 항해.
 
     vec_query 는 **벡터 채널 전용** 질의다(쟁점 재작성, wikictx.vector_query).
-    용어 진입은 여전히 query(원문)로 간다 — 채널마다 무는 것이 다르기
-    때문이다: 색인 용어는 사용자의 낱말과 겹쳐야 물고, 벡터는 조문 문체와
-    겹쳐야 문다. 합류는 순위·슬롯 기반이라 질의가 달라도 안전하다."""
+    용어 진입은 호출부가 넘긴 query 로 간다(라우터는 쟁점 확장 질의 qx 를
+    넘긴다) — 채널마다 무는 것이 다르기 때문이다: 색인 용어는 사용자의 낱말과
+    겹쳐야 물고, 벡터는 조문 문체와 겹쳐야 문다. 합류는 순위·슬롯 기반이라
+    질의가 달라도 안전하다.
+
+    seeds 는 검색 없이 여는 좌표(promote.direct_hits — 사람이 승인한 질문↔조문
+    연결)다. 진입보다 앞에 앉고 벡터 예산을 뺏지 않으며 진입 제외를 받지 않는다."""
     t0 = time.perf_counter()
-    vec = vector_mod.search(vec_query or query, topk=max(entry_k * 2, 8))
+    vec = vector_mod.search(vec_query or query, topk=max(entry_k * 2, 8),
+                            doc_ids=index.scope)          # 진입은 스코프 안만
     meta: dict = {"vector_hits": len(vec), "entries": [], "keywords": [],
-                  "depth": 0, "vec_query": vec_query or ""}
+                  "memory": [], "depth": 0, "vec_query": vec_query or ""}
 
     sections: list[Section] = []
     seen: set[tuple] = set()
     # 진입 제외 — "검색무관" 판정이 쌓여 사람이 승인한 좌표는 **진입으로는** 안
     # 데려온다. 참조를 타고는 여전히 온다(연결 지식을 지우는 것이 아니다).
     from lawrag.core.rag import verdicts as verdicts_mod
+
+    # ── 질문 기억 — 같은/비슷한 질문에 사람이 승인한 착지. 검색보다 앞선다.
+    for c in seeds or []:
+        v = index.docs.get(c.get("doc_id"))
+        node = c.get("node")
+        if v is None or node is None or (c["doc_id"], node) in seen:
+            continue
+        if not index.in_scope(c["doc_id"]):       # 기억도 진입이다 — 스코프 밖은 안 연다
+            continue
+        seen.add((c["doc_id"], node))
+        n = v.by_id.get(node)
+        sections.append(Section(
+            n=0, doc_id=c["doc_id"], doc=v.name, node=node,
+            path=v.path(node) or v.name, page=(n or {}).get("page"),
+            kind=c.get("via") or "질문 기억", matched=(c.get("why") or "")[:80],
+            text=v.section_text(n, cap=SECTION_CHARS) if n else ""))
+        meta["memory"].append({"doc_id": c["doc_id"], "node": node,
+                               "why": c.get("why", "")})
 
     # ── 승인 용어 진입 — 벡터보다 앞선다. 활성만 색인에 있으므로 일반어
     #    오염("가입" 선점)은 승인 단계가 이미 걸렀다.
@@ -100,12 +126,41 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
         sections.append(Section(
             n=0, doc_id=o["doc_id"], doc=v.name, node=node,
             path=v.path(node) or v.name, page=(n or {}).get("page"),
-            kind="용어", matched=f"승인 용어 '{value}'",
+            kind="용어", matched=f"승인 용어 '{value}'", term_key=term_key,
             text=v.section_text(n, cap=SECTION_CHARS) if n else ""))
         meta["keywords"].append({"용어": value, "key": term_key,
                                  "doc_id": o["doc_id"], "node": node})
 
-    budget = entry_k + len(meta["keywords"])      # 용어가 벡터 자리를 뺏지 않는다
+    # ── 프레임 진입 — 질문을 '누가·무엇을·한다' 슬롯으로 옮겨(LLM 1콜) 조문
+    #    프레임의 행위 어휘와 렉시컬로 맞춘다. 벡터가 낱말 겹침으로 이웃 조에
+    #    끌리는 자리(실측: '성과보수' → 제98조의2, 정답 제71조)를 행위 문형이
+    #    가른다. 스코프는 entry_docs 가 이미 걸렀다.
+    meta["frame_hits"] = []
+    from lawrag.core.rag import switches as switches_mod
+    if llm is not None and switches_mod.is_on("frame_entry"):
+        from lawrag.core.rag import framequery as framequery_mod
+        fhits, fmeta = framequery_mod.lex_hits(index, llm, query)
+        meta["frame_query"] = fmeta.get("frames") or []
+        for h in fhits:
+            v = index.docs.get(h["doc_id"])
+            node = h["node"]
+            if v is None or (h["doc_id"], node) in seen:
+                continue
+            if verdicts_mod.is_entry_blocked(h["doc_id"], node):
+                continue
+            seen.add((h["doc_id"], node))
+            n = v.by_id.get(node)
+            sections.append(Section(
+                n=0, doc_id=h["doc_id"], doc=v.name, node=node,
+                path=v.path(node) or v.name, page=(n or {}).get("page"),
+                kind="프레임", matched=h["why"][:80],
+                text=v.section_text(n, cap=SECTION_CHARS) if n else ""))
+            meta["frame_hits"].append({"doc_id": h["doc_id"], "node": node,
+                                       "score": h["score"]})
+
+    # 용어·기억·프레임이 벡터 자리를 뺏지 않는다
+    budget = (entry_k + len(meta["keywords"]) + len(meta["memory"])
+              + len(meta["frame_hits"]))
     for doc_id, node, cos in vec:
         if len(sections) >= budget:
             break
@@ -144,7 +199,6 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
 
     # ── LLM 항해 — 자리가 남고 판단자가 있으면, 간선 카드를 보고 고른다.
     #    걸음은 kind="항해" 로 남아 진단 튜플에 경로가 쌓인다(승격 루프의 연료).
-    from lawrag.core.rag import switches as switches_mod
     if llm is not None and switches_mod.is_on("navigate") and len(sections) < cap:
         sections, nav = expand_mod.navigate(llm, index, query, sections, cap=cap)
         if nav.get("hops"):

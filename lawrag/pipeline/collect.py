@@ -107,6 +107,20 @@ TARGETS: dict[str, list[Target]] = {
         Target("law", "국가를 당사자로 하는 계약에 관한 법률",
                "국가를 당사자로 하는 계약에 관한 법률", hints={"kind": "law"}),
         Target("law", "중소기업기본법", "중소기업기본법", hints={"kind": "law"}),
+        # CM본부 골든(from_samsung, 2026-08-19)이 인용하는데 스토어에 없던 8건 —
+        # 스톡옵션·주식평가·상장차익 과세 축. 공식 명칭 완전일치 (lawSearch 규약).
+        Target("law", "벤처기업육성에 관한 특별법", "벤처기업육성에 관한 특별법",
+               hints={"kind": "law"}),
+        Target("law", "벤처기업육성에 관한 특별법 시행령",
+               "벤처기업육성에 관한 특별법 시행령", hints={"kind": "law"}),
+        Target("law", "상속세 및 증여세법", "상속세 및 증여세법", hints={"kind": "law"}),
+        Target("law", "상속세 및 증여세법 시행령", "상속세 및 증여세법 시행령",
+               hints={"kind": "law"}),
+        Target("law", "조세특례제한법", "조세특례제한법", hints={"kind": "law"}),
+        Target("law", "소득세법", "소득세법", hints={"kind": "law"}),
+        Target("law", "소득세법 시행령", "소득세법 시행령", hints={"kind": "law"}),
+        Target("law", "중소기업창업 지원법 시행령", "중소기업창업 지원법 시행령",
+               hints={"kind": "law"}),
         # 공정거래법
         Target("law", "독점규제 및 공정거래에 관한 법률",
                "독점규제 및 공정거래에 관한 법률", hints={"kind": "law"}),

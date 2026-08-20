@@ -1,4 +1,8 @@
-"""lawrag/core/hwp5_md.py — XHTML→md 변환 로직은 합성 XHTML 로, 끝단은 실제 HWP 픽스처로 본다."""
+"""lawrag/core/hwp5_md.py — 변환 로직은 합성 XML/XHTML 로, 끝단은 실제 HWP 픽스처로 본다.
+
+기본 엔진은 레코드 XML 직독(xml_to_markdown); 옛 XSLT 경로(xhtml_to_markdown)는
+--engine html 로만 쓰이지만 출력 규약이 같아야 하므로 둘 다 본다.
+"""
 from __future__ import annotations
 
 import json
@@ -126,19 +130,35 @@ def test_convert_file_end_to_end(tmp_path):
     assert "기업탐방 신청서" in text
     assert "| 구분 | 내용 |" in text          # hwp5txt 였다면 통째로 사라졌을 내용
 
+    assert "md(xml)" in text.splitlines()[1]    # converted 줄이 엔진을 말한다
+
     # 멱등 — 사이드카가 더 새것이면 건너뛴다
     assert convert.convert_file(src, None, force=False)["status"] == convert.SKIP
     assert convert.convert_file(src, None, force=True)["status"] == convert.OK
 
 
-def test_html_timeout_falls_back_to_text(tmp_path, monkeypatch):
-    # fork 컨텍스트라 monkeypatch 가 자식에도 산다 — html 경로만 병적으로 느린 상황.
+def test_html_engine_still_works_and_agrees_on_content(tmp_path):
+    src = tmp_path / "byulji2.hwp"
+    src.write_bytes((FIXTURES / "byulji2.hwp").read_bytes())
+    row = convert.convert_file(src, None, force=True, engine="html")
+    assert row["status"] == convert.OK and row["mode"] == "html"
+    html_text = (tmp_path / "byulji2.hwp.md").read_text(encoding="utf-8")
+    assert "md(html)" in html_text.splitlines()[1]
+    row = convert.convert_file(src, None, force=True)          # 기본(xml)
+    xml_text = (tmp_path / "byulji2.hwp.md").read_text(encoding="utf-8")
+    # 두 엔진이 같은 글을 본다 — 표 행이 같은 칸으로 떨어진다
+    assert "| 구분 | 내용 |" in html_text and "| 구분 | 내용 |" in xml_text
+    assert "기업탐방 신청서" in xml_text
+
+
+def test_engine_timeout_falls_back_to_text(tmp_path, monkeypatch):
+    # fork 컨텍스트라 monkeypatch 가 자식에도 산다 — 기본 엔진만 병적으로 느린 상황.
     import time as _time
 
     def stuck(path):
         _time.sleep(30)
 
-    monkeypatch.setattr(convert, "hwp5_to_xhtml", stuck)
+    monkeypatch.setattr(convert, "hwp5_to_xml", stuck)
     src = tmp_path / "byulji2.hwp"
     src.write_bytes((FIXTURES / "byulji2.hwp").read_bytes())
 
@@ -157,7 +177,7 @@ def test_both_paths_timing_out_is_fail(tmp_path, monkeypatch):
     def stuck(path):
         _time.sleep(30)
 
-    monkeypatch.setattr(convert, "hwp5_to_xhtml", stuck)
+    monkeypatch.setattr(convert, "hwp5_to_xml", stuck)
     monkeypatch.setattr(convert, "hwp5_to_text", stuck)
     src = tmp_path / "byulji2.hwp"
     src.write_bytes((FIXTURES / "byulji2.hwp").read_bytes())
@@ -175,3 +195,114 @@ def test_convert_file_rejects_non_hwp5_magic(tmp_path):
     assert row["status"] == convert.FORMAT
     assert row["format"] == "hwpx(zip)"
     assert not (tmp_path / "fake.hwp.md").exists()
+
+
+# ---------------------------------------------------------------- 레코드 XML 엔진 (기본)
+
+def _para(*inner: str) -> str:
+    """Paragraph > LineSeg > (Text|ControlChar|컨트롤)…  — 문단 끝 PARAGRAPH_BREAK 포함."""
+    return ("<Paragraph><LineSeg>" + "".join(inner)
+            + '<ControlChar name="PARAGRAPH_BREAK" char="&#13;"/></LineSeg></Paragraph>')
+
+
+def _t(s: str) -> str:
+    return f"<Text>{s}</Text>"
+
+
+def _cell(row: int, col: int, text: str, rowspan: int = 1, colspan: int = 1) -> str:
+    return (f'<TableCell row="{row}" col="{col}" rowspan="{rowspan}" colspan="{colspan}">'
+            f"{_para(_t(text)) if text else _para()}</TableCell>")
+
+
+def _table(rows: int, cols: int, *trs: str) -> str:
+    return (f'<TableControl><TableBody rows="{rows}" cols="{cols}">'
+            + "".join(f"<TableRow>{tr}</TableRow>" for tr in trs)
+            + "</TableBody></TableControl>")
+
+
+def _doc(*paras: str) -> bytes:
+    return ("<HwpDoc><DocInfo/><BodyText><SectionDef><ColumnSet>"
+            + "".join(paras) + "</ColumnSet></SectionDef></BodyText></HwpDoc>").encode("utf-8")
+
+
+def test_xml_paragraphs_linebreak_tab_and_softwrap():
+    md, stats = convert.xml_to_markdown(_doc(
+        _para(_t("제1조"), '<ControlChar name="LINE_BREAK" char="&#10;"/>', _t("목적")),
+        # 소프트 랩 — LineSeg 둘은 한 문단이다. 줄을 끊지 않는다.
+        "<Paragraph><LineSeg>" + _t("이어지는 ") + "</LineSeg><LineSeg>" + _t("문장")
+        + '<ControlChar name="PARAGRAPH_BREAK" char="&#13;"/></LineSeg></Paragraph>',
+        _para(_t("가"), '<ControlChar name="TAB" char="&#9;"/>', _t("나")),
+    ))
+    assert md == "제1조\n목적\n\n이어지는 문장\n\n가\t나\n"
+    assert stats == {"tables": 0, "images": 0, "footnotes": 0}
+
+
+def test_xml_merged_cells_keep_grid_alignment():
+    # 2×3 — 첫 행은 (0,0)이 두 칸 병합, 둘째 행은 세 칸. html 엔진이 못 하던 정렬이다.
+    md, stats = convert.xml_to_markdown(_doc(_para(_table(
+        2, 3,
+        _cell(0, 0, "구분", colspan=2) + _cell(0, 2, "비고"),
+        _cell(1, 0, "가") + _cell(1, 1, "나") + _cell(1, 2, "다|라"),
+    ))))
+    lines = md.strip().splitlines()
+    assert lines[0] == "| 구분 |  | 비고 |"            # 덮인 칸은 빈 칸으로 남는다
+    assert lines[1] == "| --- | --- | --- |"
+    assert lines[2] == "| 가 | 나 | 다\\|라 |"
+    assert stats["tables"] == 1
+
+
+def test_xml_wrapper_1x1_table_is_unwrapped_without_duplication():
+    inner = _table(1, 2, _cell(0, 0, "a") + _cell(0, 1, "b"))
+    wrapper = ('<TableControl><TableBody rows="1" cols="1"><TableRow>'
+               '<TableCell row="0" col="0" rowspan="1" colspan="1">'
+               + _para(_t("머리글")) + _para(inner)
+               + "</TableCell></TableRow></TableBody></TableControl>")
+    md, stats = convert.xml_to_markdown(_doc(_para(wrapper)))
+    assert md.count("머리글") == 1
+    assert md.count("| a | b |") == 1
+    assert stats["tables"] == 1                 # 래퍼는 표로 세지 않는다
+
+
+def test_xml_nested_table_in_cell_is_flattened_once():
+    inner = _table(1, 2, _cell(0, 0, "x") + _cell(0, 1, "y"))
+    md, _ = convert.xml_to_markdown(_doc(_para(_table(
+        2, 2,
+        ('<TableCell row="0" col="0" rowspan="1" colspan="1">' + _para(_t("왼쪽"))
+         + _para(inner) + "</TableCell>") + _cell(0, 1, "오른쪽"),
+        _cell(1, 0, "아래1") + _cell(1, 1, "아래2"),
+    ))))
+    assert md.count("x") == 1 and md.count("y") == 1
+    assert "| 왼쪽 x y | 오른쪽 |" in md
+
+
+def test_xml_textbox_emits_blocks_and_pictures_are_counted():
+    gso = ('<GShapeObjectControl><ShapeComponent chid="$rec"><TextboxParagraphList>'
+           + _para(_t("제1장｜총칙")) + "</TextboxParagraphList></ShapeComponent>"
+           '</GShapeObjectControl>')
+    pic = ('<GShapeObjectControl><ShapeComponent chid="$pic"><ShapePicture/>'
+           "</ShapeComponent></GShapeObjectControl>")
+    md, stats = convert.xml_to_markdown(_doc(_para(gso), _para(_t("본문"), pic)))
+    assert md == "제1장｜총칙\n\n본문\n"
+    assert stats["images"] == 1
+
+
+def test_xml_footnote_becomes_quote_block_after_paragraph():
+    fn = ("<FootNote><ListHeader>" + _para('<AutoNumbering kind="footnote"/>',
+                                            _t(" 각주 내용")) + "</ListHeader></FootNote>")
+    md, stats = convert.xml_to_markdown(_doc(_para(_t("본문"), fn, _t(" 계속"))))
+    assert md == "본문 계속\n\n> 각주 내용\n"
+    assert stats["footnotes"] == 1
+
+
+def test_xml_header_footer_are_dropped_and_fields_keep_text():
+    hdr = ("<Header><HeaderParagraphList>" + _para(_t("쪽머리"))
+           + "</HeaderParagraphList></Header>")
+    link = '<FieldHyperLink chid="%hlk">' + _t("www.x.kr") + "</FieldHyperLink>"
+    md, _ = convert.xml_to_markdown(_doc(_para(hdr, _t("홈페이지 "), link)))
+    assert md == "홈페이지 www.x.kr\n"
+
+
+def test_xml_empty_decorative_table_is_dropped():
+    md, _ = convert.xml_to_markdown(_doc(
+        _para(_table(1, 2, _cell(0, 0, "") + _cell(0, 1, ""))), _para(_t("본문"))))
+    assert md.strip() == "본문"

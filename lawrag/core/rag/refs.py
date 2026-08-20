@@ -122,7 +122,10 @@ _REL_AFTER = (
     ("배제", re.compile(r"^\s*에도\s*불구하고")),
     ("배제", re.compile(r"^\s*(?:[은는을를이가]\s*)?적용(?:하지|되지)\s*아니")),
     ("의제", re.compile(r"^\s*(?:[은는을를이가]\s*)?.{0,12}?(?:으로|로)\s*본다")),
-    ("수임", re.compile(r"^\s*에서\s*[\"'“「『]")),
+    # "제26조제1항제1호 **단서**에서 '세칙으로 정하는 경우'란" — 단서·본문·전단·후단이
+    # 조 좌표와 '에서' 사이에 낄 수 있다(KRX 상장규정 시행세칙 실측, 2026-08-19).
+    # 이걸 못 물면 규정→세칙 역방향 동반(floor_reception)이 영영 안 선다.
+    ("수임", re.compile(r"^\s*(?:단서|본문|전단|후단)?\s*에서\s*[\"'“「『]")),
     ("근거", re.compile(r"^\s*에\s*(?:따라|따른|의하|의한|근거)")),
 )
 
@@ -562,9 +565,17 @@ def cross_resolve(docs: dict, declare: bool = True) -> tuple[list, list]:
                     # 제 이름을 부른 참조 — 이 문서 자신에서 찾는다
                     cands = [(doc_id, nid) for nid in keymaps[doc_id].get(key, [])]
                 elif named:
-                    cands = [(d, nid) for d, nm in names.items()
-                             if d != doc_id and nm and (hint in nm or nm in hint)
-                             for nid in keymaps[d].get(key, [])]
+                    # 정확 일치가 있으면 그것만 — 「소득세법」은 소득세법이지 소득세법
+                    # 시행령이 아니다. 부분 일치까지 후보에 넣으면 법·시행령이 둘 다
+                    # 그 조를 가져 "후보 둘 → 보류"가 된다 (2026-08-19 실측: 보류
+                    # 6,497건 중 1,696건이 이 모양 — 「자본시장과 금융투자업에 관한
+                    # 법률」 351 · 「소득세법」 324 …). 정확 일치가 없을 때만 부분
+                    # 일치(잘린 제목·약칭)로 넓힌다.
+                    exact_docs = [d for d, nm in names.items()
+                                  if d != doc_id and nm and nm == hint]
+                    pool = exact_docs or [d for d, nm in names.items()
+                                          if d != doc_id and nm and (hint in nm or nm in hint)]
+                    cands = [(d, nid) for d in pool for nid in keymaps[d].get(key, [])]
                 else:
                     # 대용어·잘린 제목 — 이름으로 못 정한다. 번호를 가진 문서 전부가
                     # 후보다. 다만 맨 총칭("법 제238조"의 '법')은 종별을 말한다 —

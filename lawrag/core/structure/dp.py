@@ -2,9 +2,11 @@
 
 후보를 읽기순으로 놓고 왼→오 **1회 훑기**(최단경로/Viterbi). 완전탐색이 아니라 exact 다.
 
-    상태 = 위치 + ScopeStack(레벨별 마지막 서수)
+    상태 = 위치 + ScopeStack(레벨별 마지막 서수 · 들여쓰기 · 연 계열)
     전이 = 각 후보 `reject | activate`
-             activate 허용: check_nesting != FORBID (서수 게이트는 벌점만 준다)
+             activate 허용: check_nesting != FORBID 이고 자기 계열 안이 아닐 것
+                            (nesting.self_nested — 제2조 는 제1조 의 자식이 아니다;
+                            서수 게이트는 벌점만 준다)
              activate 시 해당 레벨 서수↑, 하위 레벨 스코프 닫음
              reject 시 후보는 mention 으로 버려지고 스택 불변
     목적 = Σ 활성 s(cand) − Σ 벌점  최대 경로
@@ -85,6 +87,34 @@ def _levels_for(cand: Candidate, ladder: Ladder,
     return sorted(set(levels))
 
 
+def _freed_novelty(family_key: str, level: int, stack: ScopeStack, ladder: Ladder) -> float:
+    """층 해제된 계열의 novelty — 절대 층이 아니라 **바로 위 부모의 계열 순위**로 잰다.
+
+    사다리가 앉힌 층은 무효지만(열 자리가 없었다) 사다리의 **상대 순서**는 살아 있다:
+    "부칙 > 조 > 항". 실측(2026-08 내규, 장 없이 조만 있고 부칙이 둘): 조가 풀린 뒤
+
+        옛 층(L1)만 면제      → 제2조가 제1조 안으로 (self_nested 가 이제 막는다)
+        어디서도 novelty 없음  → 부칙의 제1조(시행일)가 부칙 밖 형제로 — L0 과 L1 이
+                                동점이라 얕은 쪽이 이겼다
+
+    그래서 부모를 본다. 부모가 사다리에서 나보다 위인 계열(부칙)이면 0 — 문서가
+    그리로 들어가라고 한 자리다. 부모가 없으면(최상위) 미세 감점 — 허용하되 위 계열
+    안보다 뒤. 부모가 나보다 아래이거나 순위를 모르면 novelty — 조가 ① 안에 앉는
+    뒤집힘이다.
+    """
+    parent = None
+    for i in range(min(level, len(stack.fams)) - 1, -1, -1):
+        if stack.last[i] is not None:
+            parent = stack.fams[i]
+            break
+    if parent is None:
+        return -scoring.FREED_DEPTH_BIAS
+    lp, lf = ladder.level_of(parent), ladder.level_of(family_key)
+    if lp is not None and lf is not None and lp < lf:
+        return 0.0
+    return scoring.LEVEL_NOVELTY
+
+
 def run(candidates: list[Candidate], ladder: Ladder) -> DPResult:
     """읽기순 1회 훑기. 후보의 `activated` / `decision_note` 를 채운다."""
     result = DPResult()
@@ -125,9 +155,13 @@ def run(candidates: list[Candidate], ladder: Ladder) -> DPResult:
                     continue
                 if nesting.check(level, stack) == nesting.FORBID:
                     continue
+                if nesting.self_nested(cand.family_key, level, stack, cand.x_norm):
+                    continue            # 제2조 는 제1조 의 자식이 아니다 — 경로 배제
                 penalty, why = ordinal_gate.check(level, cand.ordinal, stack)
                 novelty = 0.0
-                if ladder.level_of(cand.family_key) != level:
+                if cand.family_key in ladder.freed:
+                    novelty = _freed_novelty(cand.family_key, level, stack, ladder)
+                elif ladder.level_of(cand.family_key) != level:
                     novelty = scoring.LEVEL_NOVELTY
                 # 들여쓰기 모순 — 이 자리에 앉으면 나보다 얕게 그려진 구간을
                 # 닫게 되는가. 그렇다면 문서가 그린 안팎을 뒤집는 배치다.
@@ -143,9 +177,10 @@ def run(candidates: list[Candidate], ladder: Ladder) -> DPResult:
                     note += f" 들여쓰기모순({contra:+.2f})"
                 if penalty:
                     note += f" {why}({penalty:+.2f})"
-                if novelty:
+                if novelty <= scoring.LEVEL_NOVELTY:
                     note += f" novelty({novelty:+.2f})"
-                nxt_stack = stack.activate(level, cand.ordinal, cand.x_norm)
+                nxt_stack = stack.activate(level, cand.ordinal, cand.x_norm,
+                                           cand.family_key)
                 _offer(nxt_stack,
                        _Path(path.score + gain, nxt_stack,
                              path.steps + [(i, level, gain, note)]))

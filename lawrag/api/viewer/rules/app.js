@@ -27,6 +27,9 @@ async function load() {
   loadSwitches();
 }
 
+/* 귀납 버튼은 상단바에 늘 있다 — 규칙이 생긴 뒤에야 "한 바퀴 더"가 필요하다 */
+$("induceBtn").onclick = induce;
+
 /* ── 엔진 규칙 스위치 — 해소(선언·본문우선·추정)와 회수(동반·항해)의 자동
  * 규칙 등록부. 규칙은 코드가 갖고 있지만 켜짐/꺼짐은 사용자 소유다.
  * 끄면 다음 질의부터: 확정 규칙의 간선은 보류로, 동반 규칙은 회수에서 빠진다. */
@@ -141,7 +144,6 @@ function render() {
   });
 
   $("empty").classList.toggle("hidden", rules.length > 0);
-  if (!rules.length) $("induceBtn").onclick = induce;
   if (S.sel && !rules.some((r) => r.id === S.sel)) S.sel = null;
   if (!S.sel) $("detail").classList.add("hidden");
 }

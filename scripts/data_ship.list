@@ -22,7 +22,11 @@ data/format_bindings.json
 data/format_canvas.json
 
 # data/corpus/ (원본층 187M) 은 목록이 아니라 `pack --corpus` 로 — 그쪽에서 재수집·
-# 재인제스트·core.lawnet 재생성을 돌릴 때만 필요하다.
+# 재인제스트·core.lawnet 재생성을 돌릴 때만 필요하다. 단 **손 반입·업로드 원본**은
+# 작고(수 MB) 그쪽에 원본이 없으면 다시 못 만드니 기본으로 싣는다 — 출처별 manifest 포함.
+data/corpus/forms/         # KRX 서식·표준정관 원본 + manifest (옛 from_samsung/)
+data/corpus/internal/      # 내규 docx + 검토요청서 + manifest
+data/corpus/uploads/       # 화면·inbox 업로드 원본 사본 + manifest (core.ingest 가 자동 등록)
 
 # ── git 이 나르는 문서류 — 내부 git 에 문서를 못 올리는 경우를 위해 여기도 싣는다 ──
 # (코드만 git 으로 가고 문서는 메일로 갈 때. 중복돼도 해가 없다 — unpack 은 덮어쓴다.)

@@ -253,7 +253,7 @@ def rung_funnel(llm, g: Graph, query: str,
     if llm is None:
         return [], {}
     import json
-    v_docs = [d for d in (docs or list(g.index.docs)) if d in g.index.docs]
+    v_docs = [d for d in (docs or list(g.index.entry_docs)) if d in g.index.docs]
     catalog: dict[str, dict] = {}
     for doc_id in v_docs:
         v = g.index.docs[doc_id]
@@ -342,7 +342,7 @@ def rung_fulltext(index: Index, query: str) -> tuple[list, dict]:
     if not toks:
         return [], {}
     scores: dict[tuple, int] = {}
-    for doc_id, v in index.docs.items():
+    for doc_id, v in index.entry_docs.items():       # 진입 — 스코프 안만
         for b in v.blocks:
             t = norm(b.get("text") or "")
             hits = sum(1 for tok in toks if tok in t)

@@ -92,17 +92,19 @@ def test_쟁점_무매칭이면_빈손(tmp_path, monkeypatch):
     assert wikictx.spot("오늘 날씨 어때") == []
 
 
-def test_조문_후보가_질의를_넓힌다(tmp_path, monkeypatch):
+def test_확장_질의는_조문질의만_붙이고_조문_후보는_안_붙인다(tmp_path, monkeypatch):
+    """카드의 소임은 문체 번역이지 좌표 연결이 아니다 (2026-08-18 결정) —
+    조문 후보는 컴파일 사례의 좌표라 사안이 다르면 다른 조를 가리킨다(18-0124)."""
     monkeypatch.setenv("WIKI_STORE", str(_wiki(tmp_path)))
     q = "실권주 처리 절차는?"
-    spots = wikictx.spot(q)
+    spots = wikictx.spot(q)                       # 트리거 판 — probe 없음
+    assert spots and spots[0]["provisions"]       # 메타는 읽히지만
+    assert wikictx.expand_query(q, spots) == q    # 질의에는 안 실린다
+    # LLM 판이 probe 를 달면 그것만 붙는다
+    spots[0]["probe"] = "실권주의 제3자 배정에 관한 투자매매업자의 인수"
     qx = wikictx.expand_query(q, spots)
-    assert qx.startswith(q)
-    assert "제165조의6" in qx and "「상법」 제418조" in qx
-    # 질문에 이미 있는 후보는 더하지 않는다
-    q2 = "실권주와 「상법」 제418조의 관계는?"
-    qx2 = wikictx.expand_query(q2, wikictx.spot(q2))
-    assert qx2.count("제418조") == 1
+    assert qx.startswith(q) and "[법률용어 질의]" in qx
+    assert "제165조의6" not in qx and "제418조" not in qx
 
 
 def test_pick은_쟁점_카드를_건너뛴다(tmp_path, monkeypatch):
@@ -156,3 +158,53 @@ def test_spot_llm은_판정_불가면_None(tmp_path, monkeypatch):
     q = "유상증자에서 실권주가 생기면?"
     for llm in (None, _FakeLLM(None)):             # 무LLM · 콜 실패
         assert wikictx.spot_llm(llm, q) is None    # 폴백은 호출자(라우터) 몫
+
+
+# ===========================================================================
+# 방법 갈래 — 질의가 아니라 회수 결과의 성격(신호)이 깨운다
+# ===========================================================================
+
+class _Sec:
+    """Section 축소판 — methods_for 는 kind·text 만 본다."""
+    def __init__(self, kind="벡터", text=""):
+        self.kind, self.text = kind, text
+
+
+def _wiki_with_methods(tmp_path, monkeypatch):
+    w = _wiki(tmp_path)
+    (w / "wiki" / "방법").mkdir()
+    (w / "wiki" / "방법" / "단서-읽기.md").write_text(
+        "# 단서 읽기\n\n> 신호: 단서\n\n본문과 단서는 한 세트다.\n", "utf-8")
+    (w / "wiki" / "방법" / "제재-연결.md").write_text(
+        "# 제재 연결\n\n> 신호: 제재\n\n법정형은 그대로 인용한다.\n", "utf-8")
+    idx = w / "wiki" / "index.md"
+    idx.write_text(idx.read_text("utf-8")
+                   + "| [단서 읽기](방법/단서-읽기.md) | 단서 | 2026-08-18 |\n"
+                   + "| [제재 연결](방법/제재-연결.md) | 제재 | 2026-08-18 |\n",
+                   "utf-8")
+    monkeypatch.setenv("WIKI_STORE", str(w))
+    wikictx._cache.update(key=None, rows=[])
+    return w
+
+
+def test_방법은_회수_성격이_깨운다(tmp_path, monkeypatch):
+    _wiki_with_methods(tmp_path, monkeypatch)
+    # 제재 동반 + 본문에 단서 — 두 신호가 각자의 방법을 깨운다
+    secs = [_Sec(kind="벡터", text="① 은행은 하여야 한다. 다만, 예외가 있다."),
+            _Sec(kind="제재", text="위반한 자는 벌금에 처한다.")]
+    picks = wikictx.methods_for(secs)
+    assert {p["slug"] for p in picks} == {"방법/단서-읽기", "방법/제재-연결"}
+    # why 에 어느 신호가 물었는지 남는다 — 관측
+    assert ["단서"] in [p["why"] for p in picks]
+
+
+def test_방법은_무신호면_빈손(tmp_path, monkeypatch):
+    _wiki_with_methods(tmp_path, monkeypatch)
+    assert wikictx.methods_for([_Sec(kind="벡터", text="평범한 조문")]) == []
+
+
+def test_방법은_일반_pick_경쟁에도_남는다(tmp_path, monkeypatch):
+    """신호 메타는 추가 경로지 pick 박탈이 아니다 — 이중 경로, 중복은 합성이 걸러낸다."""
+    _wiki_with_methods(tmp_path, monkeypatch)
+    picks = wikictx.pick("단서 읽기가 뭐야", set())
+    assert any(p["slug"] == "방법/단서-읽기" for p in picks)

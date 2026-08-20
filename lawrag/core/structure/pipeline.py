@@ -184,6 +184,11 @@ def s4_unlock(cands: list[Candidate], ladder, dpr) -> list[str]:
 
     푸는 것은 **층뿐이고 판정이 아니다.** 여전히 가드·서수 게이트·계층성이 그대로
     적용되며, 풀린 계열이 아무 데나 앉지 않는다.
+
+    풀린 계열의 novelty 는 **절대 층이 아니라 부모의 계열 순위**로 잰다
+    (`ladder.freed` → `dp._freed_novelty`). 사다리의 그 층은 무효지만 상대 순서
+    (부칙 > 조 > 항)는 살아 있다 — 옛 층만 면제해 두면 DP 가 그 층으로 되끌려
+    같은 계열 안에 중첩하는 트리를 만들었다(실측 2026-08 내규).
     """
     blocked: dict[str, int] = {}
     for c in cands:
@@ -200,6 +205,11 @@ def s4_unlock(cands: list[Candidate], ladder, dpr) -> list[str]:
         return []
 
     freed = sorted(blocked)
+    # 사다리에 기록한다 — 두 번째 DP 는 풀린 계열에 novelty 를 물리지 않는다.
+    # 풀기 전에는 옛 층(막힌 그 층)만 novelty 면제라, 풀린 뒤에도 DP 가 그 층으로
+    # 끌렸다. 실측(2026-08 내규, 장 없이 조만 있고 부칙이 둘): 조가 L1 로 풀렸는데
+    # 제2조·제3조·제4조가 novelty 면제인 L1 — 즉 제1조 안 — 으로 들어갔다.
+    ladder.freed = freed
     for c in cands:
         if c.family_key in blocked:
             c.level, c.unassigned = None, True

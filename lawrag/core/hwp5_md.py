@@ -13,12 +13,16 @@
 - 멱등: 사이드카가 존재하고 원본보다 새로우면 skip (--force 로 무시).
 - 부분 실패 허용: 파일 하나의 실패는 기록하고 계속한다. 실패가 있으면 종료코드 1.
 - 표 보존: hwp5txt 는 표 내용을 `<표>` 로 버린다 — 별표서식은 내용이 통째로
-  사라진다. 그래서 XHTML 을 거쳐 표를 markdown 표로 굳힌다. 이 스크립트의 존재 이유다.
-- 시간 초과 → 텍스트 폴백: 수 MB 급 문서(컴플라이언스 매뉴얼 합본)에서 pyhwp 의
-  HTML XSLT 가 병적으로 느리다(실측 30분+). 변환은 파일마다 자식 프로세스에서
-  돌리고, --timeout 을 넘기면 죽인 뒤 같은 시한으로 텍스트 경로(hwp5txt 와 동일)로
-  다시 뽑는다. 표는 잃지만 전문은 확보된다 — report 에 mode=text 로 남는 것이
-  그 손실의 기록이다.
+  사라진다. 그래서 레코드 모델을 읽어 표를 markdown 표로 굳힌다. 이 스크립트의 존재 이유다.
+- 엔진 둘, 기본은 xml 직독: pyhwp 의 레코드 XML(`hwp5proc xml` 과 같은 모델)을
+  메모리에서 받아 Paragraph/TableCell 을 직접 걷는다 — XSLT 가 없어 빠르고
+  (실측: XSLT 로 120초를 두 번 넘긴 서식 파일이 5초), `TableCell(col,row,colspan,
+  rowspan)` 이 그대로 있어 병합 셀 정렬을 보존한다. 옛 XSLT(html) 경로는
+  `--engine html` 로 남겨 둔다 — 출력 대조용이지 기본이 아니다.
+- 시간 초과 → 텍스트 폴백: 변환은 파일마다 자식 프로세스에서 돌리고, --timeout 을
+  넘기면 죽인 뒤 같은 시한으로 텍스트 경로(hwp5txt 와 동일)로 다시 뽑는다. 표는
+  잃지만 전문은 확보된다 — report 에 mode=text 로 남는 것이 그 손실의 기록이다.
+  (xml 엔진으로 바꾼 뒤 실측 폴백은 없다 — 남겨 둔 이유는 손상 파일 방어다.)
 - 확장자를 믿지 않는다: 매직바이트로 hwp5(ole) 만 변환한다. `.hwp` 로 내려받은
   hwpx·pdf 는 FORMAT 으로 보고만 하고 건드리지 않는다 (§8-5 와 같은 원칙).
 - 출처 표기: 코퍼스 manifest.json 에서 찾은 출처를 첫머리 `# key: value` 주석으로
@@ -26,11 +30,27 @@
   doc_id 와 verification 은 넣지 않는다. 그것은 큐레이션의 결정이지 변환기의
   결정이 아니다 (없으면 corpus_build 가 거부한다 — 그 거부가 게이트다).
 
+레코드 XML 실측 (from_samsung 서식 9건 + 코퍼스 표본 692건):
+- 본문 흐름: HwpDoc > BodyText > SectionDef > ColumnSet > Paragraph. 문단은
+  LineSeg(시각 줄, 소프트 랩이라 이어 붙인다) > Text | ControlChar | 컨트롤.
+- ControlChar: PARAGRAPH_BREAK(무시) · LINE_BREAK(\n) · TAB(\t) · FIXWIDTH_SPACE(버림, html 과 동일).
+- TableControl > TableBody(rows,cols) > TableRow > TableCell(col,row,colspan,rowspan)
+  > Paragraph… — 병합 셀은 앵커 칸에만 내용, 덮인 칸은 빈 칸(hwpx_md 와 같은 규약).
+- GShapeObjectControl: ShapeComponent($rec) 의 TextboxParagraphList 는 글상자 —
+  제자리에 블록으로 낸다. ShapeComponent($pic)/ShapePicture 는 그림 — 개수만 센다.
+- FootNote/EndNote > ListHeader > Paragraph: 각주 — 문단 뒤에 `> ` 블록으로 낸다
+  (parse_adapter._markdown_elements 가 `>` 줄을 footnote 로 읽는다).
+- Header/Footer(ParagraphList): 쪽 머리·꼬리 — 버린다. (표준정관의 "제1장｜총칙" 옆탭
+  글상자가 여기 산다 — html 엔진은 쪽마다 3번씩 중복해 냈고, 본문에 진짜 장 제목이
+  따로 있으므로 버리는 게 맞다.)
+- Field*(하이퍼링크·상호참조)·Control(수식) 안의 Text 는 본문 글이다 — 그대로 잇는다.
+
 한계(알고 두기):
-- 셀 병합(rowspan/colspan)은 펴지 않는다 — 병합 셀 뒤 칸이 왼쪽으로 당겨진다.
-  내용은 보존되고 칸 정렬만 달라진다.
+- html 엔진은 셀 병합을 펴지 않는다 — 병합 셀 뒤 칸이 왼쪽으로 당겨진다.
+  (xml 엔진은 보존한다.)
 - 그림은 버리고 개수만 센다. 본문에 자리표시자를 남기면 구조화 잔여로 잡힌다.
   (텍스트 폴백은 hwp5txt 그대로 `<그림>`·`<표>` 자리표시자가 남는다.)
+- 수식(EqEdit)은 본문 글이 아니라 버려진다.
 """
 from __future__ import annotations
 
@@ -90,6 +110,209 @@ def hwp5_to_text(path: Path) -> str:
     with closing(Hwp5File(str(path))) as hwp5file:
         TextTransform().transform_hwp5_to_text(hwp5file, buf)
     return buf.getvalue().decode("utf-8")
+
+
+def hwp5_to_xml(path: Path) -> bytes:
+    """레코드 모델 XML — `hwp5proc xml` 이 찍는 것과 같은 문서를 메모리로.
+
+    xmllint 를 거치지 않는다(없는 환경이 많고, 있어도 c14n 만 할 뿐이다).
+    embedbin=False — 그림 바이트는 싣지 않는다(어차피 버린다).
+    """
+    import logging
+    from hwp5.xmlmodel import Hwp5File
+
+    # pyhwp 가 모르는 enum 값(UnderlineStyle 15 등)을 만나면 WARNING 을 줄줄 찍는다 —
+    # 변환에는 영향이 없는 소음이라 자식 프로세스 안에서만 낮춘다.
+    logging.getLogger("hwp5").setLevel(logging.ERROR)
+    buf = io.BytesIO()
+    with closing(Hwp5File(str(path))) as hwp5file:
+        for chunk in hwp5file.xmlevents(embedbin=False).bytechunks():
+            buf.write(chunk)
+    return buf.getvalue()
+
+
+# ===========================================================================
+# 레코드 XML → markdown — 기본 엔진. 문단은 줄로, 표는 병합 정렬을 지킨 markdown 표로
+# ===========================================================================
+
+# LineSeg 아래 컨트롤 처리 규칙 — 모듈 머리의 실측 표와 한 몸이다.
+# html XSLT 와 같은 규약: ControlChar 는 @char 만 글이다 — FIXWIDTH_SPACE(고정폭 빈칸,
+# char 없음)는 정렬용이라 버린다("1984. 7.13." 이 아니라 "1984.7.13."). 문단 끝
+# PARAGRAPH_BREAK 는 블록 경계가 대신한다.
+_CTRL_CHAR_MAP = {"LINE_BREAK": "\n", "TAB": "\t", "FIXWIDTH_SPACE": "",
+                  "PARAGRAPH_BREAK": ""}
+_SKIP_CONTROLS = frozenset({"Header", "Footer", "AutoNumbering", "NewNumbering",
+                            "PageHide", "PageNumberPosition", "ColumnsDef",
+                            "BookmarkControl", "TCPSControl", "PageDef",
+                            "PageBorderFill", "FootnoteShape"})
+_NOTE_CONTROLS = frozenset({"FootNote", "EndNote"})
+
+
+def xml_to_markdown(xml: bytes) -> tuple[str, dict]:
+    """반환: (markdown, {"tables": n, "images": n, "footnotes": n}).
+
+    xhtml_to_markdown 과 같은 출력 규약 — 블록은 빈 줄로, 표는 파이프 표,
+    첫 행 뒤 구분선. 차이는 병합 셀 정렬 보존뿐이다.
+    """
+    root = ET.fromstring(xml)
+    body = root.find("BodyText")
+    if body is None:
+        raise ValueError("레코드 XML 에 BodyText 가 없습니다")
+    stats = {"tables": 0, "images": 0, "footnotes": 0}
+    blocks: list[str] = []
+    _xml_blocks(body, blocks, stats)
+    md = "\n\n".join(blocks)
+    md = re.sub(r"\n{3,}", "\n\n", md).strip() + "\n"
+    return md, stats
+
+
+def _flow_paragraphs(container: ET.Element):
+    """흐름 문단 — 컨테이너 아래 Paragraph 를 문서 순서로, 문단 안으로는 안 들어간다.
+
+    (셀·글상자·각주 속 문단은 그 문단을 처리하는 쪽이 따로 걷는다.)
+    """
+    for child in container:
+        if child.tag == "Paragraph":
+            yield child
+        else:
+            yield from _flow_paragraphs(child)
+
+
+def _xml_blocks(container: ET.Element, blocks: list[str], stats: dict) -> None:
+    for para in _flow_paragraphs(container):
+        _xml_blocks_from_paragraph(para, blocks, stats)
+
+
+def _xml_blocks_from_paragraph(para: ET.Element, blocks: list[str], stats: dict) -> None:
+    """문단 하나 → 글 블록(+ 제자리 표·글상자 블록, 뒤따르는 각주 블록)."""
+    buf: list[str] = []
+    notes: list[str] = []
+
+    def flush() -> None:
+        text = _norm_para("".join(buf))
+        buf.clear()
+        if text:
+            blocks.append(text)
+
+    def walk(e: ET.Element) -> None:
+        for c in e:
+            tag = c.tag
+            if tag == "Text":
+                buf.append(c.text or "")
+            elif tag == "ControlChar":
+                name = c.get("name", "")
+                buf.append(_CTRL_CHAR_MAP.get(name, c.get("char") or ""))
+            elif tag == "TableControl":
+                flush()
+                md = _xml_table_md(c, stats)
+                if md:
+                    blocks.append(md)
+            elif tag == "GShapeObjectControl":
+                stats["images"] += sum(1 for _ in c.iter("ShapePicture"))
+                boxes = list(c.iter("TextboxParagraphList"))
+                if boxes:
+                    flush()
+                    for box in boxes:
+                        _xml_blocks(box, blocks, stats)
+            elif tag in _NOTE_CONTROLS:
+                for p in _flow_paragraphs(c):
+                    text = _xml_inline_text(p, stats)
+                    if text:
+                        notes.append(text)
+                        stats["footnotes"] += 1
+            elif tag in _SKIP_CONTROLS:
+                continue
+            else:                               # LineSeg·Field*·Control 등 — 안의 글은 본문이다
+                walk(c)
+
+    walk(para)
+    flush()
+    for n in notes:
+        blocks.append("> " + n)
+
+
+def _xml_inline_text(para: ET.Element, stats: dict) -> str:
+    """문단을 한 줄 글로 — 셀·각주용. 안의 표는 행을 ' / ' 로 이어 평문화한다."""
+    parts: list[str] = []
+
+    def walk(e: ET.Element) -> None:
+        for c in e:
+            tag = c.tag
+            if tag == "Text":
+                parts.append(c.text or "")
+            elif tag == "ControlChar":
+                parts.append(_CTRL_CHAR_MAP.get(c.get("name", ""), c.get("char") or ""))
+            elif tag == "TableControl":
+                rows = _xml_table_grid(c, stats)
+                flat = [" ".join(filter(None, r)) for r in rows]
+                parts.append(" " + " / ".join(filter(None, flat)) + " ")
+            elif tag == "GShapeObjectControl":
+                stats["images"] += sum(1 for _ in c.iter("ShapePicture"))
+                for box in c.iter("TextboxParagraphList"):
+                    for p in _flow_paragraphs(box):
+                        parts.append(" " + _xml_inline_text(p, stats) + " ")
+            elif tag in _NOTE_CONTROLS or tag in _SKIP_CONTROLS:
+                continue
+            else:
+                walk(c)
+
+    walk(para)
+    return re.sub(r"\s+", " ", "".join(parts)).strip()
+
+
+def _xml_cell_text(cell: ET.Element, stats: dict) -> str:
+    """셀 텍스트 — 문단 경계는 공백 하나(markdown 셀은 한 줄이다), 파이프는 이스케이프."""
+    texts = [_xml_inline_text(p, stats) for p in _flow_paragraphs(cell)]
+    return " ".join(t for t in texts if t).replace("|", "\\|")
+
+
+def _xml_table_grid(table: ET.Element, stats: dict) -> list[list[str]]:
+    """TableControl → 행렬. 병합 셀은 앵커 칸(row,col)에만 내용, 덮인 칸은 빈 칸."""
+    body = table.find("TableBody")
+    if body is None:
+        return []
+    n_rows = int(body.get("rows", 0) or 0)
+    n_cols = int(body.get("cols", 0) or 0)
+    cells: list[tuple[int, int, ET.Element]] = []
+    # 직계만 — iter() 로 내려가면 셀 속 중첩 표의 칸이 바깥 격자를 덮어쓴다
+    for tr in body.findall("TableRow"):
+        for tc in tr.findall("TableCell"):
+            r, c = int(tc.get("row", 0)), int(tc.get("col", 0))
+            rs, cs = int(tc.get("rowspan", 1) or 1), int(tc.get("colspan", 1) or 1)
+            cells.append((r, c, tc))
+            n_rows, n_cols = max(n_rows, r + rs), max(n_cols, c + cs)
+    grid = [["" for _ in range(n_cols)] for _ in range(n_rows)]
+    for r, c, tc in cells:
+        grid[r][c] = _xml_cell_text(tc, stats)
+    return grid
+
+
+def _xml_table_md(table: ET.Element, stats: dict) -> str:
+    body = table.find("TableBody")
+    if body is None:
+        return ""
+    # HWP 서식은 내용 전체를 1×1 "테두리 박스" 표로 감싸는 일이 많다(xhtml 경로와
+    # 같은 처리). 그대로 표로 굳히면 문서 전체가 셀 하나가 된다 — 풀어서 안쪽을
+    # 다시 블록으로 처리한다(여러 겹이면 재귀로 다 풀린다).
+    cells = [tc for tr in body.findall("TableRow") for tc in tr.findall("TableCell")]
+    if len(cells) == 1:
+        blocks: list[str] = []
+        _xml_blocks(cells[0], blocks, stats)
+        return "\n\n".join(blocks)
+
+    rows = _xml_table_grid(table, stats)
+    rows = [r for r in rows if any(r)]
+    if not rows:
+        return ""                                  # 내용 없는 장식 표
+    stats["tables"] += 1
+    width = max(len(r) for r in rows)
+    lines = []
+    for i, r in enumerate(rows):
+        r = r + [""] * (width - len(r))
+        lines.append("| " + " | ".join(r) + " |")
+        if i == 0:
+            lines.append("|" + " --- |" * width)
+    return "\n".join(lines)
 
 
 # ===========================================================================
@@ -236,7 +459,13 @@ class ExtractError(Exception):
     pass
 
 
+ENGINES = ("xml", "html")                      # 표를 살리는 엔진들 — 기본은 첫 번째
+DEFAULT_ENGINE = ENGINES[0]
+
+
 def _extract(src: Path, mode: str) -> tuple[str, dict]:
+    if mode == "xml":
+        return xml_to_markdown(hwp5_to_xml(src))
     if mode == "html":
         return xhtml_to_markdown(hwp5_to_xhtml(src))
     return hwp5_to_text(src).strip() + "\n", {"tables": 0, "images": 0}
@@ -327,8 +556,12 @@ def manifest_index(paths: list[Path]) -> dict[Path, dict]:
     return index
 
 
-def provenance_header(src: Path, info: dict | None, mode: str = "html") -> str:
-    """첫머리 `# key: value` 블록 — corpus_build._header_comments 가 읽는 형태."""
+def provenance_header(src: Path, info: dict | None, mode: str = DEFAULT_ENGINE) -> str:
+    """첫머리 `# key: value` 블록 — corpus_build._header_comments 가 읽는 형태.
+
+    converted 줄이 엔진을 말한다: `md(xml)` / `md(html)` / `md(text 폴백 — 표 손실)`.
+    사이드카만 보고 어느 경로로 나왔는지 알 수 있어야 재변환 대상을 고를 수 있다.
+    """
     lines = []
     if info:
         for key in ("title", "regulation", "role", "source", "collected",
@@ -337,7 +570,7 @@ def provenance_header(src: Path, info: dict | None, mode: str = "html") -> str:
                 lines.append(f"# {key}: {info[key]}")
     else:
         lines.append(f"# title: {src.stem}")
-    how = "md" if mode == "html" else "md(text 폴백 — 표 손실)"
+    how = f"md({mode})" if mode in ENGINES else "md(text 폴백 — 표 손실)"
     lines.append(f"# converted: hwp5(ole) → {how}, lawrag/core/hwp5_md.py(pyhwp)")
     return "\n".join(lines) + "\n\n"
 
@@ -347,7 +580,9 @@ def provenance_header(src: Path, info: dict | None, mode: str = "html") -> str:
 # ===========================================================================
 
 def convert_file(src: Path, info: dict | None, force: bool,
-                 timeout: float = DEFAULT_TIMEOUT) -> dict:
+                 timeout: float = DEFAULT_TIMEOUT, engine: str = DEFAULT_ENGINE) -> dict:
+    if engine not in ENGINES:
+        raise ValueError(f"모르는 엔진 {engine!r} — {ENGINES} 중 하나")
     out = src.with_name(src.name + ".md")
     row = {"file": str(src.relative_to(REPO_ROOT) if src.is_relative_to(REPO_ROOT) else src),
            "status": OK}
@@ -361,8 +596,8 @@ def convert_file(src: Path, info: dict | None, force: bool,
         return row
     try:
         try:
-            md, stats = extract_in_child(src, "html", timeout)
-            mode = "html"
+            md, stats = extract_in_child(src, engine, timeout)
+            mode = engine
         except ExtractTimeout:
             md, stats = extract_in_child(src, "text", timeout)
             mode = "text"
@@ -394,6 +629,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT,
                     help=f"파일당 변환 시한(초, 기본 {DEFAULT_TIMEOUT:.0f}) — "
                          "넘기면 텍스트 폴백")
+    ap.add_argument("--engine", choices=ENGINES, default=DEFAULT_ENGINE,
+                    help="표를 살리는 엔진 — xml(레코드 직독, 기본)·html(옛 XSLT, 대조용)")
     ap.add_argument("--report", type=Path, help="파일별 결과를 JSON 으로 남길 경로")
     args = ap.parse_args(argv)
 
@@ -409,7 +646,7 @@ def main(argv: list[str] | None = None) -> int:
     rows = []
     for src in files:
         row = convert_file(src.resolve(), index.get(src.resolve()), args.force,
-                           timeout=args.timeout)
+                           timeout=args.timeout, engine=args.engine)
         rows.append(row)
         if row["status"] != SKIP:
             if row["status"] == OK:
@@ -435,7 +672,8 @@ def main(argv: list[str] | None = None) -> int:
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.report.write_text(json.dumps({
             "converted_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "argv": [str(p) for p in args.paths], "counts": counts, "rows": rows,
+            "argv": [str(p) for p in args.paths], "engine": args.engine,
+            "counts": counts, "rows": rows,
         }, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"report → {args.report}")
 

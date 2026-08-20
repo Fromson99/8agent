@@ -129,7 +129,7 @@ class Graph:
         """문서마다 최상위 구역들 — 의미 회수 LLM 에게 주는 "이 시스템이 실제로
         보유한 구역" 지도. 원본의 지형도(ooc class 그룹) 대응."""
         out = []
-        for doc_id, v in self.index.docs.items():
+        for doc_id, v in self.index.entry_docs.items():   # 지형도는 스코프 안만
             tops = [n for n in v.nodes if n.get("parent") is None][:cap_per_doc]
             out.append({
                 "doc_id": doc_id, "doc": v.name,

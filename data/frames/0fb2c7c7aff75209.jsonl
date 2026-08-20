@@ -1,0 +1,578 @@
+{"jo": 2, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 47, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 43, "node": 44, "actor": "", "act": "정하는 바에 따른다", "target": "", "object": "국세", "mode": "절차", "function": "제한", "proviso": false}
+{"jo": 43, "node": 45, "actor": "", "act": "정하는 바에 따른다", "target": "", "object": "국세", "mode": "절차", "function": "제한", "proviso": false}
+{"jo": 48, "node": 54, "actor": "", "act": "전자신고나 전자납부를 할 수 없는", "target": "", "object": "", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 55, "node": 56, "actor": "", "act": "신고되거나 청구된 것으로 본다", "target": "", "object": "우편으로 과세표준신고서, 과세표준수정신고서, 경정청구서 또는 과세표준신고ㆍ과세표준수정신고ㆍ경정청구와 관련된 서류", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 55, "node": 57, "actor": "", "act": "신고되거나 청구된 것으로 본다", "target": "국세청장", "object": "제1항의 신고서 등", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 55, "node": 58, "actor": "", "act": "제출기한을 연장할 수 있다", "target": "", "object": "대통령령으로 정하는 서류", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 55, "node": 59, "actor": "재정경제부", "act": "정한다", "target": "", "object": "전자신고에 의한 과세표준 등의 신고 절차 등에 관한 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 60, "node": 60, "actor": "관할 세무서장", "act": "기한을 연장할 수 있다", "target": "", "object": "기한", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 61, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 62, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 70, "node": 70, "actor": "송달을 받을 자", "act": "신고한", "target": "정부", "object": "주소 또는 영업소 중에서 송달받을 장소", "mode": "절차", "function": "근거·권한", "proviso": false}
+{"jo": 70, "node": 70, "actor": "", "act": "송달하여야 한다", "target": "", "object": "서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 64, "node": 65, "actor": "", "act": "송달한다", "target": "명의인", "object": "서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 64, "node": 66, "actor": "", "act": "송달한다", "target": "대표자", "object": "서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 64, "node": 66, "actor": "", "act": "송달한다", "target": "연대납세의무자 중 국세를 징수하기에 유리한 자", "object": "서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 64, "node": 66, "actor": "", "act": "송달하여야 한다", "target": "연대납세의무자 모두", "object": "납부의 고지와 독촉에 관한 서류", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 64, "node": 67, "actor": "", "act": "송달한다", "target": "상속재산관리인", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 64, "node": 68, "actor": "", "act": "송달한다", "target": "납세관리인", "object": "납부의 고지와 독촉에 관한 서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 64, "node": 69, "actor": "", "act": "송달한다", "target": "교정시설의 장 또는 국가경찰관서의 장", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 3, "node": 3, "actor": "국가", "act": "부과하는", "target": "", "object": "조세", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 3, "node": 3, "actor": "원천징수의무자", "act": "징수하는", "target": "", "object": "국세", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 102, "node": 103, "actor": "", "act": "송달하는 서류는 송달받아야 할 자에게 도달한 때부터 효력이 발생한다", "target": "", "object": "서류", "mode": "정의", "function": "효과", "proviso": false}
+{"jo": 102, "node": 103, "actor": "", "act": "전자송달의 경우에는 송달받을 자가 지정한 전자우편주소에 입력된 때(국세정보통신망에 저장하는 경우에는 저장된 때)에 그 송달을 받아야 할 자에게 도달한 것으로 본다", "target": "", "object": "", "mode": "간주", "function": "효과", "proviso": true}
+{"jo": 92, "node": 93, "actor": "", "act": "공고한", "target": "", "object": "서류의 주요 내용", "mode": "절차", "function": "효과", "proviso": false}
+{"jo": 92, "node": 93, "actor": "", "act": "본다", "target": "", "object": "서류의 주요 내용을 공고한 날부터 14일이 지나면 제8조에 따른 서류 송달이 된 것", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 92, "node": 97, "actor": "", "act": "게시하거나 게재하여야 한다", "target": "", "object": "제1항에 따른 공고", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 92, "node": 97, "actor": "", "act": "하여야 한다", "target": "", "object": "국세정보통신망을 이용하여 공시송달을 할 때에는 다른 공시송달 방법과 함께", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 125, "node": 125, "actor": "납세자", "act": "그 의무를 이행", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 125, "node": 125, "actor": "세무공무원", "act": "직무를 수행", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 121, "node": 122, "actor": "", "act": "세법을 적용한다", "target": "", "object": "사실상 귀속되는 자", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 121, "node": 123, "actor": "", "act": "적용한다", "target": "", "object": "소득, 수익, 재산, 행위 또는 거래의 실질 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 121, "node": 124, "actor": "", "act": "보거나 보아 이 법 또는 세법을 적용한다", "target": "", "object": "당사자가 직접 거래를 한 것 또는 연속된 하나의 행위 또는 거래를 한 것", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 132, "node": 133, "actor": "정부", "act": "운용 범위를 정할 수 있다", "target": "", "object": "감면한 세액에 상당하는 자금 또는 자산", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 132, "node": 134, "actor": "", "act": "감면을 취소하고 징수할 수 있다", "target": "", "object": "운용 범위를 벗어난 자금 또는 자산에 상당하는 감면세액", "mode": "허용", "function": "효과", "proviso": false}
+{"jo": 105, "node": 109, "actor": "대표자나 관리인", "act": "신청하여 승인을 받은", "target": "관할 세무서장", "object": "", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 105, "node": 113, "actor": "법인으로 보는 법인 아닌 단체", "act": "변경할 수 없다", "target": "", "object": "거주자 또는 비거주자", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 105, "node": 114, "actor": "대표자나 관리인", "act": "이행하여야 한다", "target": "", "object": "국세에 관한 의무", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 105, "node": 115, "actor": "법인으로 보는 단체", "act": "신고하여야 한다", "target": "관할 세무서장", "object": "대표자나 관리인", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 105, "node": 116, "actor": "관할 세무서장", "act": "지정할 수 있다", "target": "", "object": "국세에 관한 의무를 이행하는 사람", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 105, "node": 118, "actor": "", "act": "보지 아니하고", "target": "", "object": "전환 국립대학 법인", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 126, "node": 127, "actor": "납세의무자", "act": "장부를 갖추어 기록하고 있는 경우", "target": "", "object": "", "mode": "절차", "function": "근거·권한", "proviso": false}
+{"jo": 126, "node": 127, "actor": "", "act": "조사와 결정은 그 장부와 이와 관계되는 증거자료에 의하여야 한다", "target": "", "object": "해당 국세 과세표준", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 126, "node": 128, "actor": "정부", "act": "결정할 수 있다", "target": "", "object": "그 부분", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 126, "node": 129, "actor": "정부", "act": "조사한 사실과 결정의 근거를 결정서에 적어야 한다", "target": "", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 126, "node": 130, "actor": "행정기관의 장", "act": "열람 또는 복사하게 하거나 그 등본 또는 초본이 원본과 일치함을 확인하여야 한다", "target": "해당 납세의무자 또는 그 대리인", "object": "제3항의 결정서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 126, "node": 131, "actor": "제4항의 요구", "act": "구술로 한다", "target": "", "object": "", "mode": "절차", "function": "정의", "proviso": false}
+{"jo": 126, "node": 131, "actor": "해당 행정기관의 장", "act": "서명을 요구할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 148, "node": 148, "actor": "세무공무원", "act": "일반적으로 적당하다고 인정되는 한계를 엄수하여야", "target": "", "object": "재량으로 직무를 수행할 때", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 136, "node": 137, "actor": "세법을", "act": "해석ㆍ적용할 때에는", "target": "", "object": "납세자의 재산권이 부당하게 침해되지 아니하도록", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 136, "node": 138, "actor": "", "act": "소급하여 과세하지 아니한다", "target": "", "object": "국세를 납부할 의무가 성립한 소득, 수익, 재산, 행위 또는 거래", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 136, "node": 139, "actor": "그 해석이나 관행에 의한 행위 또는 계산은", "act": "정당한 것으로 보며", "target": "", "object": "", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 136, "node": 139, "actor": "", "act": "소급하여 과세되지 아니한다", "target": "", "object": "새로운 해석이나 관행에 의하여", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 136, "node": 141, "actor": "", "act": "본다", "target": "", "object": "세법 외의 법률 중 국세의 부과ㆍ징수ㆍ감면 또는 그 절차에 관하여 규정하고 있는 조항은", "mode": "간주", "function": "정의", "proviso": false}
+{"jo": 142, "node": 143, "actor": "재정경제부", "act": "국세예규심사위원회를 둔다", "target": "", "object": "국세예규심사위원회", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 142, "node": 146, "actor": "국세예규심사위원회의 위원", "act": "제척되거나 회피하여야 한다", "target": "위원회 회의", "object": "", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 142, "node": 147, "actor": "대통령령", "act": "정한다", "target": "", "object": "국세예규심사위원회의 설치ㆍ구성 및 운영방법, 세법 해석에 관한 질의회신의 처리 절차 및 방법 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 71, "node": 72, "actor": "", "act": "서류 송달은 교부, 우편 또는 전자송달의 방법으로 한다", "target": "", "object": "서류", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 71, "node": 73, "actor": "", "act": "등기우편으로 하여야 한다", "target": "", "object": "납부의 고지, 독촉, 강제징수 또는 세법에 따른 정부의 명령과 관계되는 서류의 송달", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 71, "node": 73, "actor": "", "act": "일반우편으로 송달할 수 있다", "target": "", "object": "다음 각 호의 어느 하나에 해당하는 납부고지서로서 그 고지금액이 대통령령으로 정하는 금액 미만인 납부고지서", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 71, "node": 78, "actor": "해당 행정기관의 소속 공무원", "act": "서류를 교부하는", "target": "송달받아야 할 자", "object": "서류", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 71, "node": 78, "actor": "", "act": "다른 장소에서 교부할 수 있다", "target": "", "object": "서류", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 71, "node": 79, "actor": "", "act": "서류를 송달할 수 있으며", "target": "그 사용인이나 그 밖의 종업원 또는 동거인으로서 사리를 판별할 수 있는 사람", "object": "서류", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 71, "node": 79, "actor": "", "act": "송달할 장소에 서류를 둘 수 있다", "target": "", "object": "서류", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 71, "node": 80, "actor": "", "act": "이전한 장소에 송달하여야 한다", "target": "", "object": "서류", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 71, "node": 81, "actor": "해당 행정기관", "act": "수령인이 서명 또는 날인하게 하여야 한다", "target": "수령인", "object": "송달서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 71, "node": 81, "actor": "", "act": "그 사실을 송달서에 적어야 한다", "target": "", "object": "그 사실", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 71, "node": 82, "actor": "해당 행정기관의 장", "act": "기록을 작성하여 갖춰 두어야 한다", "target": "", "object": "다음 각 호의 사항을 확인할 수 있는 기록", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 71, "node": 88, "actor": "", "act": "전자송달은 대통령령으로 정하는 바에 따라 서류를 송달받아야 할 자가 신청한 경우에만 한다", "target": "", "object": "서류", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 71, "node": 88, "actor": "", "act": "자진납부한 시점에 전자송달을 신청한 것으로 본다", "target": "", "object": "자진납부한 세액", "mode": "간주", "function": "효과", "proviso": true}
+{"jo": 71, "node": 89, "actor": "", "act": "전자송달의 신청을 철회한 것으로 본다", "target": "", "object": "", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 71, "node": 89, "actor": "", "act": "그러하지 아니하다", "target": "", "object": "", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 71, "node": 90, "actor": "", "act": "교부 또는 우편의 방법으로 송달할 수 있다", "target": "", "object": "서류", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 71, "node": 91, "actor": "", "act": "대통령령으로 정한다", "target": "", "object": "제8항에 따라 전자송달을 할 수 있는 서류의 구체적인 범위 및 송달 방법 등에 관하여 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 164, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 149, "node": 149, "actor": "세무공무원", "act": "존중하여야 한다", "target": "", "object": "해당 납세의무자가 계속하여 적용하고 있는 기업회계의 기준 또는 관행으로서 일반적으로 공정ㆍ타당하다고 인정되는 것", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 149, "node": 149, "actor": "", "act": "그러하지 아니하다", "target": "", "object": "세법에 특별한 규정이 있는 것", "mode": "기타", "function": "기타", "proviso": true}
+{"jo": 151, "node": 152, "actor": "재정경제부장관", "act": "수립하여야 한다", "target": "", "object": "매년 해당 연도부터 5개 연도 이상의 기간에 대한 중장기 조세정책운용계획", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 151, "node": 152, "actor": "중장기 조세정책운용계획", "act": "연계되어야 한다", "target": "", "object": "「국가재정법」 제7조에 따른 국가재정운용계획과", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 151, "node": 159, "actor": "재정경제부장관", "act": "협의하여야 한다", "target": "관계 중앙관서의 장과", "object": "중장기 조세정책운용계획을 수립할 때", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 151, "node": 160, "actor": "재정경제부장관", "act": "보고하여야 한다", "target": "국회 소관 상임위원회에", "object": "수립한 중장기 조세정책운용계획을", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 151, "node": 161, "actor": "대통령령", "act": "정한다", "target": "", "object": "중장기 조세정책운용계획의 수립에 관하여 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 210, "node": 211, "actor": "제22조제2항 각 호에 따른 국세의 수정신고", "act": "확정하는 효력을 가진다", "target": "", "object": "과세표준과 세액", "mode": "기타", "function": "효과", "proviso": false}
+{"jo": 210, "node": 212, "actor": "제1항에 따른 국세의 수정신고", "act": "영향을 미치지 아니한다", "target": "", "object": "당초 신고에 따라 확정된 세액에 관한 이 법 또는 세법에서 규정하는 권리ㆍ의무관계", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 191, "node": 192, "actor": "", "act": "확정된다", "target": "", "object": "국세", "mode": "절차", "function": "정의", "proviso": false}
+{"jo": 191, "node": 193, "actor": "납세의무자", "act": "신고했을 때에 확정된다", "target": "정부", "object": "과세표준과 세액", "mode": "절차", "function": "효과", "proviso": false}
+{"jo": 191, "node": 193, "actor": "정부", "act": "결정하거나 경정하는 때에 확정된다", "target": "", "object": "과세표준과 세액", "mode": "절차", "function": "효과", "proviso": true}
+{"jo": 191, "node": 203, "actor": "정부", "act": "결정하는 때에 확정된다", "target": "", "object": "과세표준과 세액", "mode": "절차", "function": "효과", "proviso": false}
+{"jo": 191, "node": 204, "actor": "", "act": "확정된다", "target": "", "object": "세액", "mode": "절차", "function": "효과", "proviso": false}
+{"jo": 213, "node": 214, "actor": "", "act": "영향을 미치지 아니한다", "target": "", "object": "당초 확정된 세액에 관한 이 법 또는 세법에서 규정하는 권리ㆍ의무관계", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 213, "node": 215, "actor": "", "act": "영향을 미치지 아니한다", "target": "", "object": "그 경정으로 감소되는 세액 외의 세액에 관한 이 법 또는 세법에서 규정하는 권리ㆍ의무관계", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 217, "node": 217, "actor": "합병 후 존속하는 법인 또는 합병으로 설립된 법인", "act": "납부할 의무를 진다", "target": "", "object": "합병으로 소멸된 법인에 부과되거나 그 법인이 납부할 국세 및 강제징수비", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 242, "node": 242, "actor": "", "act": "준용한다", "target": "", "object": "「민법」 제413조부터 제416조까지, 제419조, 제421조, 제423조 및 제425조부터 제427조까지의 규정", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 244, "node": 244, "actor": "", "act": "소멸한다", "target": "", "object": "국세 및 강제징수비를 납부할 의무", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 289, "node": 290, "actor": "국가", "act": "행사하지 아니하면", "target": "", "object": "국세징수권", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 289, "node": 293, "actor": "", "act": "따른다", "target": "", "object": "「민법」", "mode": "의무", "function": "기타", "proviso": false}
+{"jo": 289, "node": 294, "actor": "", "act": "말한다", "target": "", "object": "국세징수권을 행사할 수 있는 때", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 289, "node": 297, "actor": "", "act": "본다", "target": "", "object": "다음 각 호의 날", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 321, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 301, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 218, "node": 219, "actor": "상속인 또는 상속재산관리인", "act": "납부할 의무를 진다", "target": "", "object": "피상속인에게 부과되거나 그 피상속인이 납부할 국세 및 강제징수비", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 218, "node": 220, "actor": "상속인", "act": "상속받은 재산으로 본다", "target": "", "object": "다음 각 호의 구분에 따른 금액", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 218, "node": 223, "actor": "각 상속인", "act": "연대하여 납부할 의무를 진다", "target": "", "object": "피상속인에게 부과되거나 그 피상속인이 납부할 국세 및 강제징수비", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 218, "node": 223, "actor": "각 상속인", "act": "신고하여야 한다", "target": "관할 세무서장", "object": "피상속인의 국세 및 강제징수비를 납부할 대표자", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 218, "node": 228, "actor": "세무서장", "act": "하여야 한다", "target": "상속재산관리인", "object": "납부의 고지ㆍ독촉이나 그 밖에 필요한 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 218, "node": 229, "actor": "세무서장", "act": "청구할 수 있다", "target": "상속개시지를 관할하는 법원", "object": "상속재산관리인의 선임", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 218, "node": 230, "actor": "피상속인에게 한 처분 또는 절차", "act": "효력이 있다", "target": "상속인이나 상속재산관리인", "object": "", "mode": "기타", "function": "효과", "proviso": false}
+{"jo": 232, "node": 233, "actor": "공유자 또는 공동사업자", "act": "납부할 의무를 진다", "target": "", "object": "공유물(共有物), 공동사업 또는 그 공동사업에 속하는 재산과 관계되는 국세 및 강제징수비", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 232, "node": 234, "actor": "분할법인", "act": "연대하여 납부할 의무가 있다", "target": "", "object": "분할등기일 이전에 분할법인에 부과되거나 납세의무가 성립한 국세 및 강제징수비", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 232, "node": 234, "actor": "분할신설법인", "act": "연대하여 납부할 의무가 있다", "target": "", "object": "분할등기일 이전에 분할법인에 부과되거나 납세의무가 성립한 국세 및 강제징수비", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 232, "node": 234, "actor": "분할합병의 상대방 법인", "act": "연대하여 납부할 의무가 있다", "target": "", "object": "분할등기일 이전에 분할법인에 부과되거나 납세의무가 성립한 국세 및 강제징수비", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 232, "node": 238, "actor": "분할신설법인", "act": "연대하여 납부할 의무가 있다", "target": "", "object": "분할법인에 부과되거나 분할법인이 납부하여야 할 국세 및 강제징수비", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 232, "node": 238, "actor": "분할합병의 상대방 법인", "act": "연대하여 납부할 의무가 있다", "target": "", "object": "분할법인에 부과되거나 분할법인이 납부하여야 할 국세 및 강제징수비", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 232, "node": 241, "actor": "신회사", "act": "연대하여 납부할 의무를 진다", "target": "", "object": "기존의 법인에 부과되거나 납세의무가 성립한 국세 및 강제징수비", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 323, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 322, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 248, "node": 264, "actor": "과세관청", "act": "부과할 수 있다", "target": "", "object": "상속세 및 증여세", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 248, "node": 273, "actor": "지방국세청장 또는 세무서장", "act": "할 수 있다", "target": "", "object": "경정이나 그 밖에 필요한 처분", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 248, "node": 283, "actor": "", "act": "할 수 있다", "target": "", "object": "경정이나 그 밖에 필요한 처분", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 248, "node": 288, "actor": "대통령령", "act": "정한다", "target": "", "object": "국세를 부과할 수 있는 날", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 324, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 325, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 326, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 361, "node": 361, "actor": "", "act": "징수한다", "target": "", "object": "그 국세 및 강제징수비", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 361, "node": 361, "actor": "", "act": "우선하여 징수한다", "target": "", "object": "그 국세 및 강제징수비", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 363, "node": 364, "actor": "청산인 또는 잔여재산을 분배받거나 인도받은 자", "act": "제2차 납세의무를 진다", "target": "", "object": "그 부족한 금액에 대하여", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 358, "node": 359, "actor": "", "act": "징수한다", "target": "", "object": "압류와 관계되는 국세 및 강제징수비", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 358, "node": 360, "actor": "", "act": "징수한다", "target": "", "object": "교부청구된 국세 및 강제징수비", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 368, "node": 368, "actor": "무한책임사원으로서 합명회사의 사원 또는 합자회사의 무한책임사원", "act": "제2차 납세의무를 진다", "target": "", "object": "그 부족한 금액", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 368, "node": 368, "actor": "과점주주", "act": "제2차 납세의무를 진다", "target": "", "object": "그 부족한 금액에 대하여", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 368, "node": 368, "actor": "과점조합원", "act": "제2차 납세의무를 진다", "target": "", "object": "그 부족한 금액에 대하여", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 377, "node": 378, "actor": "법인", "act": "제2차 납세의무를 진다", "target": "", "object": "부족한 금액", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 329, "node": 330, "actor": "", "act": "징수한다", "target": "", "object": "국세 및 강제징수비", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 329, "node": 350, "actor": "", "act": "우선한다", "target": "", "object": "그 국세", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 329, "node": 351, "actor": "세무서장", "act": "통지하여야 한다", "target": "가등기권리자", "object": "그 사실", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 329, "node": 352, "actor": "세무서장", "act": "청구할 수 있다", "target": "법원", "object": "그 행위의 취소", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 329, "node": 357, "actor": "", "act": "변제될 수 있다", "target": "", "object": "임대차보증금반환채권등", "mode": "허용", "function": "효과", "proviso": false}
+{"jo": 383, "node": 384, "actor": "양수인", "act": "제2차 납세의무를 진다", "target": "", "object": "그 부족한 금액", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 396, "node": 396, "actor": "그 처분 당시 그 국세의 납세지를 관할하는 세무서장", "act": "결정 또는 경정결정을 한다", "target": "", "object": "국세의 과세표준과 세액", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 393, "node": 394, "actor": "", "act": "과세표준신고서는 신고 당시 해당 국세의 납세지를 관할하는 세무서장에게 제출하여야", "target": "세무서장", "object": "과세표준신고서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 393, "node": 394, "actor": "", "act": "전자신고를 하는 경우에는 지방국세청장이나 국세청장에게 제출할 수 있다", "target": "지방국세청장이나 국세청장", "object": "과세표준신고서", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 393, "node": 395, "actor": "", "act": "그 신고의 효력에는 영향이 없다", "target": "", "object": "그 신고의 효력", "mode": "기타", "function": "효과", "proviso": false}
+{"jo": 387, "node": 388, "actor": "", "act": "강제징수를 하여도 징수할 금액에 미치지 못하는 경우에만 「국세징수법」에서 정하는 바에 따라 그 양도담보재산으로써 납세자의 국세 및 강제징수비를 징수할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 387, "node": 389, "actor": "", "act": "납부고지 당시의 양도담보재산이 계속하여 양도담보재산으로서 존속하는 것으로 본다", "target": "", "object": "", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 432, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 428, "node": 429, "actor": "납세자", "act": "추가하여 납부하여야", "target": "", "object": "그 부족한 금액과 이 법 또는 세법에서 정하는 가산세", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 428, "node": 431, "actor": "자", "act": "납부할 수 있다", "target": "", "object": "그 세액과 이 법 또는 세법에서 정하는 가산세", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 423, "node": 424, "actor": "법정신고기한까지 과세표준신고서를 제출하지 아니한 자", "act": "기한후과세표준신고서를 제출할 수 있다", "target": "", "object": "기한후과세표준신고서", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 423, "node": 425, "actor": "제1항에 따라 기한후과세표준신고서를 제출한 자로서 세법에 따라 납부하여야 할 세액이 있는 자", "act": "납부하여야 한다", "target": "", "object": "그 세액", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 423, "node": 426, "actor": "관할 세무서장", "act": "결정 또는 경정하여 신고인에게 통지하여야 한다", "target": "신고인", "object": "해당 국세의 과세표준과 세액", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 423, "node": 426, "actor": "관할 세무서장", "act": "그 사유를 신고인에게 통지하여야 한다", "target": "신고인", "object": "그 사유", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 423, "node": 427, "actor": "대통령령", "act": "정한다", "target": "", "object": "기한후과세표준신고서의 기재사항 및 신고 절차 등에 관하여 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 398, "node": 399, "actor": "과세표준신고서를 법정신고기한까지 제출한 자 및 제45조의3제1항에 따른 기한후과세표준신고서를 제출한 자", "act": "과세표준수정신고서를 제출할 수 있다", "target": "", "object": "과세표준수정신고서", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 398, "node": 399, "actor": "관할 세무서장", "act": "각 세법에 따라 해당 국세의 과세표준과 세액을 결정 또는 경정하여 통지", "target": "", "object": "해당 국세의 과세표준과 세액", "mode": "절차", "function": "효과", "proviso": false}
+{"jo": 398, "node": 404, "actor": "", "act": "과세표준수정신고서의 기재사항 및 신고 절차에 관한 사항은 대통령령으로 정한다", "target": "", "object": "과세표준수정신고서의 기재사항 및 신고 절차에 관한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 434, "node": 435, "actor": "정부", "act": "가산세를 부과할 수 있다", "target": "세법에서 규정한 의무를 위반한 자", "object": "가산세", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 434, "node": 437, "actor": "", "act": "가산세는 납부할 세액에 가산하거나 환급받을 세액에서 공제한다", "target": "", "object": "가산세", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 521, "node": 522, "actor": "정부", "act": "부과하지 아니한다", "target": "", "object": "해당 가산세", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 521, "node": 526, "actor": "정부", "act": "감면한다", "target": "", "object": "해당 가산세액에서 다음 각 호에서 정하는 금액", "mode": "허용", "function": "효과", "proviso": false}
+{"jo": 521, "node": 543, "actor": "자", "act": "감면 등을 신청할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 438, "node": 439, "actor": "납세의무자", "act": "세법에 따른 국세의 과세표준 신고를 하지 아니한", "target": "", "object": "세법에 따른 국세의 과세표준 신고", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 438, "node": 439, "actor": "", "act": "가산세로 한다", "target": "", "object": "무신고납부세액에 다음 각 호의 구분에 따른 비율을 곱한 금액", "mode": "정의", "function": "효과", "proviso": false}
+{"jo": 438, "node": 442, "actor": "", "act": "해당 호에 따른 금액을 가산세로 한다", "target": "", "object": "금액", "mode": "정의", "function": "효과", "proviso": false}
+{"jo": 438, "node": 447, "actor": "", "act": "제1항 및 제2항을 적용하지 아니한다", "target": "", "object": "제1항 및 제2항", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 438, "node": 450, "actor": "", "act": "제1항 또는 제2항에 따른 가산세를 적용하지 아니한다", "target": "", "object": "대손세액에 상당하는 부분", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 438, "node": 451, "actor": "", "act": "제1항 또는 제2항에 따른 가산세를 적용하지 아니한다", "target": "", "object": "예정신고 및 중간신고와 관련하여 이 조 또는 제47조의3에 따라 가산세가 부과되는 부분", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 438, "node": 452, "actor": "", "act": "그 중 가산세액이 큰 가산세만 적용하고, 가산세액이 같은 경우에는 제1항 또는 제2항의 가산세만 적용한다", "target": "", "object": "가산세", "mode": "절차", "function": "제한", "proviso": true}
+{"jo": 438, "node": 453, "actor": "대통령령", "act": "정한다", "target": "", "object": "가산세 부과에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 405, "node": 406, "actor": "과세표준신고서를 법정신고기한까지 제출한 자 및 제45조의3제1항에 따른 기한후과세표준신고서를 제출한 자", "act": "결정 또는 경정을 청구할 수 있다", "target": "관할 세무서장", "object": "최초신고 및 수정신고한 국세의 과세표준 및 세액의 결정 또는 경정", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 405, "node": 406, "actor": "결정 또는 경정으로 인하여 증가된 과세표준 및 세액에 대하여는 해당 처분이 있음을 안 자", "act": "경정을 청구할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 405, "node": 409, "actor": "과세표준신고서를 법정신고기한까지 제출한 자 또는 국세의 과세표준 및 세액의 결정을 받은 자", "act": "결정 또는 경정을 청구할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 405, "node": 415, "actor": "세무서장", "act": "과세표준 및 세액을 결정 또는 경정하거나 결정 또는 경정하여야 할 이유가 없다는 뜻을 통지하여야 한다", "target": "청구를 한 자", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 405, "node": 415, "actor": "청구를 한 자가 2개월 이내에 아무런 통지를 받지 못한 경우", "act": "이의신청, 심사청구, 심판청구 또는 감사원법에 따른 심사청구를 할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 405, "node": 416, "actor": "세무서장", "act": "관련 진행상황 및 이의신청, 심사청구, 심판청구 또는 감사원법에 따른 심사청구를 할 수 있다는 사실을 통지하여야 한다", "target": "청구를 한 자", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 405, "node": 417, "actor": "원천징수대상자", "act": "제1항부터 제4항까지의 규정을 준용한다", "target": "", "object": "", "mode": "기타", "function": "절차", "proviso": false}
+{"jo": 405, "node": 421, "actor": "종합부동산세법 제7조 및 제12조에 따른 납세의무자로서 종합부동산세를 부과·고지받은 자", "act": "제1항부터 제4항까지의 규정을 준용한다", "target": "", "object": "", "mode": "기타", "function": "절차", "proviso": false}
+{"jo": 405, "node": 422, "actor": "", "act": "결정 또는 경정의 청구 및 통지 절차에 관하여 필요한 사항은 대통령령으로 정한다", "target": "", "object": "", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 504, "node": 505, "actor": "국세를 징수하여 납부할 의무를 지는 자", "act": "납부하지 아니하거나 과소납부한 경우에는 가산세로 한다", "target": "", "object": "세액", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 504, "node": 510, "actor": "", "act": "이란 다음 각 호의 어느 하나에 해당하는 의무를 말한다", "target": "", "object": "국세를 징수하여 납부할 의무", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 504, "node": 514, "actor": "", "act": "제1항을 적용하지 아니한다", "target": "", "object": "", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 504, "node": 518, "actor": "", "act": "그 기간은 5년으로 한다", "target": "", "object": "기간", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 504, "node": 519, "actor": "", "act": "제1항제3호 및 제4호의 가산세를 적용하지 아니한다", "target": "", "object": "", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 454, "node": 455, "actor": "납세의무자", "act": "과세표준 신고", "target": "", "object": "국세", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 454, "node": 455, "actor": "", "act": "가산세로 한다", "target": "", "object": "과소신고납부세액등", "mode": "정의", "function": "효과", "proviso": false}
+{"jo": 454, "node": 460, "actor": "부정행위로 과소신고한 자", "act": "", "target": "", "object": "신고", "mode": "기타", "function": "제한", "proviso": false}
+{"jo": 454, "node": 465, "actor": "부가가치세법에 따른 사업자가 아닌 자", "act": "환급세액을 신고", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 454, "node": 466, "actor": "", "act": "가산세를 적용하지 아니한다", "target": "", "object": "과소신고하거나 초과신고한 부분", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 454, "node": 477, "actor": "", "act": "준용한다", "target": "", "object": "제47조의2제5항 및 제6항", "mode": "절차", "function": "위임", "proviso": false}
+{"jo": 454, "node": 478, "actor": "", "act": "정한다", "target": "대통령령", "object": "부정행위로 인한 과소신고납부세액등의 계산과 그 밖에 가산세의 부과에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 552, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 479, "node": 480, "actor": "납세의무자", "act": "납부를 하지 아니하거나 납부하여야 할 세액보다 적게 납부하거나 환급받아야 할 세액보다 많이 환급받은", "target": "", "object": "국세", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 479, "node": 487, "actor": "「부가가치세법」에 따른 사업자가 아닌 자", "act": "부가가치세액을 환급받은", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 479, "node": 488, "actor": "", "act": "적용하지 아니한다", "target": "", "object": "제1항제1호 및 제2호의 가산세", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 479, "node": 496, "actor": "", "act": "부과하지 아니한다", "target": "", "object": "국세의 납부와 관련하여 제1항에 따른 가산세", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 479, "node": 497, "actor": "", "act": "부과하지 아니한다", "target": "", "object": "확정신고납부와 관련하여 제1항에 따른 가산세", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 479, "node": 498, "actor": "", "act": "자진납부한 것으로 본다", "target": "", "object": "당초 신고납부하였어야 할 과세기간에 대한 국세", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 479, "node": 498, "actor": "", "act": "그러하지 아니하다", "target": "", "object": "", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 479, "node": 499, "actor": "", "act": "5년으로 한다", "target": "", "object": "지정납부기한의 다음 날부터 납부일까지의 기간", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 479, "node": 500, "actor": "", "act": "적용하지 아니한다", "target": "", "object": "제1항제1호의2·제2호의2 및 제4호의 가산세", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 479, "node": 501, "actor": "", "act": "가산세로 한다", "target": "", "object": "납부하지 아니한 세액 또는 과소납부분 세액의 100분의 300에 상당하는 금액", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 479, "node": 501, "actor": "", "act": "가산세로 한다", "target": "", "object": "해당 호에 따른 금액", "mode": "의무", "function": "효과", "proviso": true}
+{"jo": 544, "node": 545, "actor": "", "act": "한도로 한다", "target": "가산세", "object": "5천만원(중소기업이 아닌 기업은 1억원)", "mode": "절차", "function": "제한", "proviso": false}
+{"jo": 544, "node": 545, "actor": "", "act": "그러하지 아니하다", "target": "", "object": "가산세 한도", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 544, "node": 551, "actor": "대통령령", "act": "정한다", "target": "", "object": "의무위반의 구분, 가산세 한도의 적용기간 및 적용 방법, 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 573, "node": 574, "actor": "세무서장", "act": "가산하여야 한다", "target": "", "object": "국세환급가산금을 국세환급금에", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 573, "node": 576, "actor": "", "act": "가산하지 아니한다", "target": "", "object": "국세환급가산금을", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 569, "node": 570, "actor": "납세자", "act": "환급하는", "target": "", "object": "해당 물납재산", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 569, "node": 570, "actor": "", "act": "지급하지 아니한다", "target": "", "object": "국세환급가산금", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 569, "node": 571, "actor": "", "act": "환급하여야 한다", "target": "", "object": "금전", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 569, "node": 572, "actor": "대통령령", "act": "정한다", "target": "", "object": "물납재산의 환급 순서, 물납재산을 수납할 때부터 환급할 때까지의 관리비용 부담 주체 등 물납재산의 환급에 관한 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 579, "node": 580, "actor": "납세자", "act": "양도할 수 있다", "target": "타인", "object": "국세환급금에 관한 권리", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 579, "node": 581, "actor": "세무서장", "act": "충당하고", "target": "", "object": "그 국세 및 강제징수비", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 579, "node": 581, "actor": "세무서장", "act": "따라야 한다", "target": "", "object": "양도의 요구", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 607, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 582, "node": 583, "actor": "납세자의 국세환급금과 국세환급가산금에 관한 권리", "act": "행사하지 아니하면", "target": "", "object": "", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 582, "node": 584, "actor": "", "act": "따른다", "target": "", "object": "이 법 또는 세법에 특별한 규정이 있는 것을 제외하고는 「민법」에", "mode": "기타", "function": "기타", "proviso": false}
+{"jo": 582, "node": 584, "actor": "", "act": "본다", "target": "", "object": "국세환급금과 국세환급가산금을 과세처분의 취소 또는 무효확인청구의 소 등 행정소송으로 청구한 경우 시효의 중단에 관하여 「민법」 제168조제1호에 따른 청구를 한 것으로", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 582, "node": 585, "actor": "제1항의 소멸시효", "act": "중단되지 아니한다", "target": "", "object": "", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 617, "node": 618, "actor": "이의신청, 심사청구 또는 심판청구", "act": "미치지 아니한다", "target": "해당 처분의 집행", "object": "효력", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 617, "node": 618, "actor": "해당 재결청", "act": "결정할 수 있다", "target": "이의신청인, 심사청구인 또는 심판청구인", "object": "처분의 집행 또는 절차 속행의 전부 또는 일부의 정지", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 617, "node": 619, "actor": "재결청", "act": "통지하여야 한다", "target": "당사자", "object": "집행정지 또는 집행정지의 취소에 관하여 심리ㆍ결정", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 620, "node": 620, "actor": "이의신청인, 심사청구인, 심판청구인 또는 처분청", "act": "열람할 수 있으며", "target": "", "object": "그 신청 또는 청구에 관계되는 서류", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 620, "node": 620, "actor": "이의신청인, 심사청구인, 심판청구인 또는 처분청", "act": "의견을 진술할 수 있다", "target": "해당 재결청", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 554, "node": 555, "actor": "세무서장", "act": "결정하여야 한다", "target": "", "object": "국세환급금", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 554, "node": 556, "actor": "세무서장", "act": "충당하여야 한다", "target": "", "object": "국세환급금으로 결정한 금액", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 554, "node": 556, "actor": "세무서장", "act": "충당", "target": "", "object": "국세환급금으로 결정한 금액", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 554, "node": 560, "actor": "", "act": "소멸한 것으로 본다", "target": "", "object": "체납된 국세 및 강제징수비와 국세환급금", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 554, "node": 561, "actor": "납세자", "act": "청구할 수 있다", "target": "", "object": "환급세액을 제2항제1호 및 제3호의 국세에 충당할 것", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 554, "node": 561, "actor": "", "act": "본다", "target": "", "object": "충당된 세액의 충당청구를 한 날에 해당 국세를 납부한 것", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 554, "node": 562, "actor": "원천징수의무자", "act": "충당하고 남은 금액을 환급한다", "target": "", "object": "환급세액", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 554, "node": 562, "actor": "원천징수의무자", "act": "환급한다", "target": "", "object": "환급액", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 554, "node": 563, "actor": "세무서장", "act": "지급하여야 한다", "target": "납세자", "object": "국세환급금 중 제2항에 따라 충당한 후 남은 금액", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 554, "node": 564, "actor": "한국은행", "act": "지급한다", "target": "", "object": "국세환급금", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 554, "node": 565, "actor": "세무서장", "act": "충당할 수 있다", "target": "", "object": "국세환급금 중 제2항에 따라 충당한 후 남은 금액", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 554, "node": 565, "actor": "", "act": "본다", "target": "", "object": "제2항 단서의 동의가 있는 것", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 554, "node": 566, "actor": "세무서장", "act": "준용한다", "target": "", "object": "「국세징수법」의 고지ㆍ독촉 및 강제징수의 규정", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 554, "node": 568, "actor": "", "act": "공제하고 남은 금액이 있는 경우에는 환급한다", "target": "실질귀속자", "object": "실질귀속자가 납부한 것으로 확인된 금액", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 588, "node": 589, "actor": "권리나 이익을 침해당한 자", "act": "청구할 수 있다", "target": "", "object": "그 처분의 취소 또는 변경을 청구하거나 필요한 처분을", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 588, "node": 593, "actor": "이해관계인", "act": "청구할 수 있다", "target": "", "object": "그 처분의 취소 또는 변경을 청구하거나 그 밖에 필요한 처분을", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 588, "node": 600, "actor": "", "act": "할 수 있다", "target": "", "object": "이의신청을", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 588, "node": 602, "actor": "", "act": "제기할 수 없다", "target": "", "object": "이의신청, 심사청구 또는 심판청구를", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 588, "node": 602, "actor": "", "act": "제기할 수 있다", "target": "해당 재조사 결정을 한 재결청에", "object": "심사청구 또는 심판청구를", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 588, "node": 603, "actor": "", "act": "할 수 없다", "target": "", "object": "이의신청을", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 588, "node": 606, "actor": "", "act": "제기할 수 없다", "target": "", "object": "심사청구와 심판청구를 중복하여", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 608, "node": 609, "actor": "", "act": "적용하지 아니한다", "target": "", "object": "「행정심판법」의 규정", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 608, "node": 609, "actor": "", "act": "준용하며", "target": "", "object": "「행정심판법」 제15조, 제16조, 제20조부터 제22조까지, 제29조, 제36조제1항, 제39조, 제40조, 제42조 및 제51조", "mode": "절차", "function": "절차", "proviso": true}
+{"jo": 608, "node": 609, "actor": "", "act": "본다", "target": "", "object": "\"위원회\"는 \"국세심사위원회\", \"조세심판관회의\" 또는 \"조세심판관합동회의\"", "mode": "간주", "function": "효과", "proviso": true}
+{"jo": 608, "node": 610, "actor": "", "act": "제기할 수 없다", "target": "", "object": "행정소송", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 608, "node": 610, "actor": "", "act": "제기할 수 없다", "target": "", "object": "행정소송", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 608, "node": 611, "actor": "", "act": "제기하여야 한다", "target": "", "object": "행정소송", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 608, "node": 611, "actor": "", "act": "제기할 수 있다", "target": "", "object": "행정소송", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 608, "node": 612, "actor": "", "act": "제기하여야 한다", "target": "", "object": "행정소송", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 608, "node": 615, "actor": "", "act": "보고", "target": "", "object": "이 법에 따른 심사청구 또는 심판청구를 거친 것", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 608, "node": 615, "actor": "", "act": "준용한다", "target": "", "object": "제2항", "mode": "위임", "function": "절차", "proviso": false}
+{"jo": 608, "node": 616, "actor": "", "act": "한다", "target": "", "object": "제3항의 기간", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 621, "node": 622, "actor": "이의신청인, 심사청구인 또는 심판청구인과 처분청", "act": "선임할 수 있다", "target": "", "object": "변호사, 세무사 또는 「세무사법」에 따른 세무사등록부 또는 공인회계사 세무대리업무등록부에 등록한 공인회계사를 대리인으로", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 621, "node": 623, "actor": "이의신청인, 심사청구인 또는 심판청구인", "act": "선임할 수 있다", "target": "", "object": "그 배우자, 4촌 이내의 혈족 또는 그 배우자의 4촌 이내의 혈족을 대리인으로", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 621, "node": 624, "actor": "대리인의 권한", "act": "증명하여야 한다", "target": "", "object": "서면으로", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 621, "node": 625, "actor": "대리인", "act": "할 수 있다", "target": "본인을 위하여", "object": "그 신청 또는 청구에 관한 모든 행위를", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 621, "node": 625, "actor": "대리인", "act": "할 수 있다", "target": "", "object": "그 신청 또는 청구의 취하를", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 621, "node": 626, "actor": "대리인을 해임하였을 때", "act": "신고하여야 한다", "target": "해당 재결청에", "object": "그 사실을 서면으로", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 638, "node": 639, "actor": "재결청", "act": "적어야 한다", "target": "결정서", "object": "그 결정서를 받은 날부터 90일 이내에 이의신청인은 심사청구 또는 심판청구를, 심사청구인 또는 심판청구인은 행정소송을 제기할 수 있다는 내용", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 638, "node": 640, "actor": "재결청", "act": "통지하여야 한다", "target": "그 신청인 또는 청구인", "object": "그 신청 또는 청구에 대한 결정기간이 지나도 결정을 하지 못하였을 때에는 이의신청인은 심사청구 또는 심판청구를, 심사청구인 또는 심판청구인은 행정소송 제기를 결정의 통지를 받기 전이라도 그 결정기간이 지난 날부터 할 수 있다는 내용을 서면으로 지체 없이", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 641, "node": 642, "actor": "이의신청인, 심사청구인 또는 심판청구인", "act": "제출할 수 있다", "target": "", "object": "이의신청서, 심사청구서 또는 심판청구서", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 641, "node": 643, "actor": "", "act": "본다", "target": "", "object": "이의신청서, 심사청구서 또는 심판청구서", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 627, "node": 628, "actor": "이의신청인등", "act": "변호사, 세무사 또는 「세무사법」에 따른 세무사등록부 또는 공인회계사 세무대리업무등록부에 등록한 공인회계사를 대리인으로 선정하여 줄 것을 신청할 수 있다", "target": "재결청", "object": "변호사, 세무사 또는 「세무사법」에 따른 세무사등록부 또는 공인회계사 세무대리업무등록부에 등록한 공인회계사를 대리인", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 627, "node": 635, "actor": "재결청", "act": "국선대리인을 선정하고, 신청을 받은 날부터 5일 이내에 그 결과를 이의신청인등과 국선대리인에게 각각 통지하여야 한다", "target": "이의신청인등과 국선대리인", "object": "국선대리인 선정 결과", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 627, "node": 636, "actor": "", "act": "국선대리인의 권한에 관하여는 대리인에 관한 제59조제4항을 준용한다", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false}
+{"jo": 627, "node": 637, "actor": "", "act": "국선대리인의 자격, 관리 등 국선대리인 제도의 운영에 필요한 사항은 대통령령으로 정한다", "target": "", "object": "", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 645, "node": 646, "actor": "", "act": "제기하여야 한다", "target": "", "object": "심사청구", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 645, "node": 647, "actor": "", "act": "제기하여야 한다", "target": "", "object": "심사청구", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 645, "node": 647, "actor": "", "act": "심사청구를 할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 645, "node": 650, "actor": "", "act": "본다", "target": "", "object": "적법한 청구", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 645, "node": 651, "actor": "", "act": "심사청구를 할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 645, "node": 651, "actor": "심사청구인", "act": "제출하여야 한다", "target": "", "object": "문서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 663, "node": 664, "actor": "심사청구인", "act": "제출할 수 있다", "target": "국세청장", "object": "증거서류나 증거물", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 663, "node": 665, "actor": "심사청구인", "act": "제출하여야 한다", "target": "", "object": "해당 증거서류 또는 증거물", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 663, "node": 666, "actor": "국세청장", "act": "송부하여야 한다", "target": "해당 세무서장 및 지방국세청장", "object": "증거서류의 부본", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 659, "node": 660, "actor": "국세청장", "act": "보정할 것을 요구할 수 있다", "target": "심사청구인", "object": "심사청구의 내용이나 절차", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 659, "node": 660, "actor": "국세청장", "act": "직권으로 보정할 수 있다", "target": "", "object": "보정할 사항", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 659, "node": 661, "actor": "심사청구인", "act": "보정할 사항을 서면으로 작성하여 국세청장에게 제출하거나, 국세청에 출석하여 보정할 사항을 말하고 그 말한 내용을 국세청 소속 공무원이 기록한 서면에 서명 또는 날인함으로써 보정할 수 있다", "target": "국세청장", "object": "보정할 사항", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 659, "node": 662, "actor": "", "act": "산입하지 아니한다", "target": "", "object": "제1항의 보정기간", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 667, "node": 668, "actor": "국세청장", "act": "결정을 하여야", "target": "", "object": "심사청구", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 667, "node": 668, "actor": "", "act": "제기된", "target": "", "object": "심사청구", "mode": "기타", "function": "제한", "proviso": true}
+{"jo": 667, "node": 669, "actor": "국세청장", "act": "요청할 수 있다", "target": "국세심사위원회", "object": "다시 심의할 것", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 667, "node": 670, "actor": "국세심사위원회의 회의", "act": "공개하지 아니한다", "target": "", "object": "", "mode": "금지", "function": "근거·권한", "proviso": false}
+{"jo": 667, "node": 670, "actor": "국세심사위원회 위원장", "act": "공개할 수 있다", "target": "", "object": "국세심사위원회의 회의", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 687, "node": 688, "actor": "국세청장", "act": "경정할 수 있다", "target": "", "object": "심사청구에 대한 결정", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 687, "node": 689, "actor": "대통령령", "act": "정한다", "target": "", "object": "제1항에 따른 경정의 세부적인 절차", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 652, "node": 653, "actor": "심사청구", "act": "하여야 한다", "target": "국세청장", "object": "불복의 사유를 갖추어 해당 처분을 하였거나 하였어야 할 세무서장을 거쳐", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 652, "node": 654, "actor": "해당 청구서", "act": "제출된 때에 심사청구를 한 것으로 한다", "target": "", "object": "세무서장", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 652, "node": 654, "actor": "해당 청구서", "act": "제출된 때에도 또한 같다", "target": "", "object": "제1항의 세무서장 외의 세무서장, 지방국세청장 또는 국세청장", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 652, "node": 655, "actor": "세무서장", "act": "송부하여야 한다", "target": "국세청장", "object": "그 청구서에 처분의 근거ㆍ이유, 처분의 이유가 된 사실 등이 구체적으로 기재된 의견서를 첨부하여", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 652, "node": 655, "actor": "세무서장", "act": "첨부하여야 한다", "target": "국세청장", "object": "그 지방국세청장의 의견서를", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 652, "node": 658, "actor": "국세청장", "act": "송부하여야 한다", "target": "심사청구인", "object": "해당 의견서를", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 690, "node": 691, "actor": "국세청장", "act": "취소 또는 변경하거나 새로운 처분의 결정을 하", "target": "", "object": "심사청구를 한 처분 외의 처분", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 690, "node": 692, "actor": "국세청장", "act": "불리한 결정을 하", "target": "청구인", "object": "심사청구를 한 처분보다", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 671, "node": 672, "actor": "", "act": "각하하는 결정을 한다", "target": "", "object": "심사청구", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 671, "node": 672, "actor": "", "act": "기각하는 결정을 한다", "target": "", "object": "심사청구", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 671, "node": 672, "actor": "", "act": "취소ㆍ경정 결정을 하거나 필요한 처분의 결정을 한다", "target": "", "object": "그 청구의 대상이 된 처분", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 671, "node": 672, "actor": "", "act": "재조사 결정을 할 수 있다", "target": "", "object": "", "mode": "허용", "function": "효과", "proviso": true}
+{"jo": 671, "node": 672, "actor": "처분청", "act": "이를 재조사하여 그 결과에 따라 취소ㆍ경정하거나 필요한 처분을 하도록 하는", "target": "", "object": "", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 671, "node": 681, "actor": "", "act": "하여야 한다", "target": "", "object": "제1항의 결정", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 671, "node": 682, "actor": "", "act": "통지하여야 한다", "target": "심사청구인", "object": "그 이유를 기재한 결정서", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 671, "node": 683, "actor": "", "act": "산입하지 아니한다", "target": "", "object": "제63조제1항에 규정된 보정기간", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 671, "node": 684, "actor": "처분청", "act": "조사하고, 그 결과에 따라 취소ㆍ경정하거나 필요한 처분을 하여야 한다", "target": "", "object": "", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 671, "node": 684, "actor": "처분청", "act": "조사를 연기하거나 조사기간을 연장하거나 조사를 중지할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 671, "node": 685, "actor": "처분청", "act": "취소ㆍ경정하지 아니할 수 있다", "target": "", "object": "해당 심사청구의 대상이 된 당초의 처분", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 671, "node": 686, "actor": "", "act": "정한다", "target": "", "object": "재조사 결정에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 729, "node": 730, "actor": "심판청구", "act": "제기하여야", "target": "", "object": "해당 처분이 있음을 안 날(처분의 통지를 받은 때에는 그 받은 날)부터 90일 이내에", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 729, "node": 731, "actor": "", "act": "준용한다", "target": "", "object": "제61조제2항을", "mode": "기타", "function": "위임", "proviso": false}
+{"jo": 704, "node": 705, "actor": "세무서, 지방국세청 및 국세청", "act": "국세심사위원회를 둔다", "target": "", "object": "", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 704, "node": 706, "actor": "지방국세청장", "act": "위촉하는", "target": "", "object": "사람", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 704, "node": 706, "actor": "국세청장", "act": "위촉하는", "target": "", "object": "사람", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 704, "node": 709, "actor": "", "act": "공무원으로 본다", "target": "국세심사위원회의 위원 중 공무원이 아닌 위원", "object": "", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 704, "node": 710, "actor": "국세심사위원회의 위원", "act": "제척되거나 회피하여야 한다", "target": "", "object": "", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 704, "node": 711, "actor": "", "act": "대통령령으로 정한다", "target": "", "object": "", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 693, "node": 694, "actor": "이의신청인", "act": "하여야 한다", "target": "세무서장", "object": "이의신청", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 693, "node": 694, "actor": "이의신청인", "act": "하여야 한다", "target": "관할 지방국세청장", "object": "이의신청", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 693, "node": 694, "actor": "", "act": "본다", "target": "", "object": "세무서장에게 한 이의신청", "mode": "간주", "function": "효과", "proviso": true}
+{"jo": 693, "node": 697, "actor": "세무서장", "act": "송부하고 통지하여야 한다", "target": "지방국세청장", "object": "신청서에 의견서를 첨부", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 693, "node": 698, "actor": "세무서장", "act": "송부하여야 한다", "target": "지방국세청장", "object": "신청서에 의견서를 첨부", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 693, "node": 699, "actor": "세무서장과 지방국세청장", "act": "결정하여야 한다", "target": "", "object": "국세심사위원회의 심의를 거쳐", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 693, "node": 702, "actor": "", "act": "하여야 한다", "target": "", "object": "결정", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 693, "node": 702, "actor": "", "act": "하여야 한다", "target": "", "object": "결정", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 693, "node": 703, "actor": "세무서장 또는 지방국세청장", "act": "송부하여야 한다", "target": "이의신청인", "object": "의견서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 741, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 713, "node": 714, "actor": "국무총리", "act": "조세심판원을 둔다", "target": "", "object": "조세심판원", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 713, "node": 715, "actor": "조세심판원", "act": "그 권한에 속하는 사무를 독립적으로 수행한다", "target": "", "object": "그 권한에 속하는 사무", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 713, "node": 716, "actor": "대통령", "act": "임명하고", "target": "원장과 원장이 아닌 상임조세심판관", "object": "", "mode": "절차", "function": "근거·권한", "proviso": false}
+{"jo": 713, "node": 716, "actor": "대통령", "act": "위촉한다", "target": "비상임조세심판관", "object": "", "mode": "절차", "function": "근거·권한", "proviso": false}
+{"jo": 713, "node": 716, "actor": "", "act": "임용한다", "target": "원장이 아닌 상임조세심판관", "object": "", "mode": "정의", "function": "정의", "proviso": true}
+{"jo": 713, "node": 720, "actor": "", "act": "임명을 철회하거나 해촉할 수 없다", "target": "조세심판관", "object": "", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 713, "node": 726, "actor": "", "act": "적용할 때에는 공무원으로 본다", "target": "조세심판관 중 공무원이 아닌 사람", "object": "", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 713, "node": 727, "actor": "조세심판원", "act": "두며", "target": "", "object": "심판조사관 및 이를 보조하는 직원", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 713, "node": 728, "actor": "대통령", "act": "정한다", "target": "", "object": "조세심판원의 정원, 조직, 운영, 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 742, "node": 743, "actor": "심판청구인", "act": "제출할 수 있다", "target": "조세심판원장", "object": "증거서류나 증거물", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 742, "node": 744, "actor": "조세심판원장", "act": "요구하면", "target": "심판청구인", "object": "증거서류나 증거물을 기한을 정하여 제출할 것", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 742, "node": 744, "actor": "심판청구인", "act": "제출하여야 한다", "target": "", "object": "증거서류나 증거물", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 742, "node": 745, "actor": "조세심판원장", "act": "송부하여야 한다", "target": "피청구인", "object": "증거서류의 부본", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 752, "node": 753, "actor": "조세심판관", "act": "제척된다", "target": "", "object": "심판관여", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 752, "node": 761, "actor": "조세심판관", "act": "회피하여야 한다", "target": "", "object": "주심조세심판관 또는 배석조세심판관의 지정", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 732, "node": 733, "actor": "심판청구를 하려는 자", "act": "심판청구서를 제출하여야", "target": "그 처분을 하였거나 하였어야 할 세무서장이나 조세심판원장", "object": "불복의 사유 등이 기재된 심판청구서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 732, "node": 733, "actor": "세무서장", "act": "이를 지체 없이 조세심판원장에게 송부하여야", "target": "조세심판원장", "object": "심판청구서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 732, "node": 734, "actor": "세무서장, 지방국세청장 또는 국세청장", "act": "이를 지체 없이 조세심판원장에게 송부하여야", "target": "조세심판원장", "object": "심판청구서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 732, "node": 735, "actor": "조세심판원장", "act": "지체 없이 그 부본을 그 처분을 하였거나 하였어야 할 세무서장에게 송부하여야", "target": "그 처분을 하였거나 하였어야 할 세무서장", "object": "심판청구서의 부본", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 732, "node": 736, "actor": "세무서장", "act": "그 심판청구서에 대한 답변서를 조세심판원장에게 제출하여야", "target": "조세심판원장", "object": "답변서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 732, "node": 736, "actor": "세무서장", "act": "국세청장 또는 지방국세청장의 답변서를 첨부하여야", "target": "", "object": "답변서", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 732, "node": 737, "actor": "", "act": "첨부하여야", "target": "", "object": "이의신청에 대한 결정서, 처분의 근거·이유 및 처분의 이유가 된 사실을 증명할 서류, 청구인이 제출한 증거서류 및 증거물, 그 밖의 심리자료 전부", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 732, "node": 738, "actor": "조세심판원장", "act": "지체 없이 그 부본을 해당 심판청구인에게 송부하여야", "target": "해당 심판청구인", "object": "부본", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 732, "node": 739, "actor": "조세심판원장", "act": "기한을 정하여 답변서 제출을 촉구할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 732, "node": 740, "actor": "조세심판원장", "act": "심리절차를 진행하도록 할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 762, "node": 763, "actor": "심판청구인", "act": "기피를 신청할 수 있다", "target": "", "object": "담당 조세심판관의 기피", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 762, "node": 764, "actor": "심판청구인", "act": "기피 신청을 하여야 한다", "target": "조세심판원장", "object": "제1항의 기피 신청", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 762, "node": 765, "actor": "조세심판원장", "act": "기피 신청을 승인하여야 한다", "target": "", "object": "기피 신청", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 766, "node": 766, "actor": "", "act": "준용한다", "target": "심판에 관여하는 심판조사관", "object": "제73조 및 제74조", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 767, "node": 767, "actor": "담당 조세심판관", "act": "병합하거나 분리할 수 있다", "target": "", "object": "여러 개의 심판사항", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 746, "node": 747, "actor": "조세심판원장", "act": "지정하여 조세심판관회의를 구성하게 한다", "target": "", "object": "주심조세심판관 1명과 배석조세심판관 2명 이상", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 746, "node": 748, "actor": "주심조세심판관", "act": "그 의장이 되며", "target": "", "object": "조세심판관회의", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 746, "node": 748, "actor": "의장", "act": "총괄한다", "target": "", "object": "그 심판사건에 관한 사무", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 746, "node": 748, "actor": "조세심판원장", "act": "지정한다", "target": "", "object": "그 직무를 대행할 사람", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 746, "node": 749, "actor": "조세심판관회의", "act": "개의하고", "target": "", "object": "", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 746, "node": 749, "actor": "조세심판관회의", "act": "의결한다", "target": "", "object": "", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 746, "node": 750, "actor": "조세심판관회의", "act": "공개하지 아니한다", "target": "", "object": "", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 746, "node": 750, "actor": "조세심판관회의 의장", "act": "공개할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 746, "node": 751, "actor": "대통령령", "act": "정한다", "target": "", "object": "조세심판관회의의 운영과 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 776, "node": 776, "actor": "조세심판관", "act": "사실을 판단한다", "target": "", "object": "사실", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 791, "node": 792, "actor": "제80조의2에서 준용하는 제65조에 따른 결정", "act": "기속한다", "target": "관계 행정청", "object": "", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 791, "node": 793, "actor": "해당 행정청", "act": "필요한 처분을 하여야 한다", "target": "", "object": "필요한 처분", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 788, "node": 789, "actor": "조세심판관회의 또는 조세심판관합동회의", "act": "취소 또는 변경하거나 새로운 처분의 결정을 하지 못한다", "target": "", "object": "심판청구를 한 처분 외의 처분", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 788, "node": 790, "actor": "조세심판관회의 또는 조세심판관합동회의", "act": "불리한 결정을 하지 못한다", "target": "청구인", "object": "심판청구를 한 처분보다 불리한 결정", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 794, "node": 794, "actor": "", "act": "준용한다", "target": "", "object": "제61조제3항ㆍ제4항, 제63조, 제65조(제1항제1호가목 중 심사청구와 심판청구를 같은 날 제기한 경우는 제외한다) 및 제65조의2", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 794, "node": 794, "actor": "", "act": "본다", "target": "", "object": "제63조제1항 중 \"20일 이내의 기간\"", "mode": "간주", "function": "효과", "proviso": true}
+{"jo": 768, "node": 769, "actor": "담당 조세심판관", "act": "질문을 할 수 있다", "target": "심판청구인, 처분청, 관계인 또는 참고인", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 768, "node": 769, "actor": "담당 조세심판관", "act": "제출 요구를 할 수 있다", "target": "", "object": "제1호에 열거한 자의 장부, 서류, 그 밖의 물건", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 768, "node": 769, "actor": "담당 조세심판관", "act": "검사 또는 감정 의뢰를 할 수 있다", "target": "감정기관", "object": "제1호에 열거한 자의 장부, 서류, 그 밖의 물건", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 768, "node": 773, "actor": "담당 조세심판관 외의 조세심판원 소속 공무원", "act": "행위를 할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 768, "node": 774, "actor": "조세심판관이나 그 밖의 조세심판원 소속 공무원", "act": "신분을 표시하는 증표를 지니고 보여야 한다", "target": "관계자", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 768, "node": 775, "actor": "담당 조세심판관", "act": "심판청구인의 주장을 인용하지 아니할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 777, "node": 778, "actor": "조세심판관회의", "act": "심리를 거쳐 결정한다", "target": "", "object": "심판청구", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 777, "node": 778, "actor": "주심조세심판관", "act": "심리하여 결정할 수 있다", "target": "", "object": "심판청구", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 777, "node": 779, "actor": "조세심판관합동회의", "act": "심리를 거쳐 결정한다", "target": "", "object": "", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 777, "node": 786, "actor": "심판결정", "act": "문서로 하여야 하고", "target": "해당 심판청구인과 세무서장", "object": "결정서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 795, "node": 795, "actor": "국세청장, 지방국세청장, 세무서장", "act": "알려야 한다", "target": "조세심판원장", "object": "그 내용이나 결과 등 대통령령으로 정하는 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 805, "node": 805, "actor": "세무공무원", "act": "추정하여야 한다", "target": "", "object": "납세자가 성실하며 납세자가 제출한 신고서 등이 진실한 것", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 818, "node": 818, "actor": "납세자", "act": "변호사, 공인회계사, 세무사로 하여금 조사에 참여하게 하거나 의견을 진술하게 할 수 있다", "target": "", "object": "변호사, 공인회계사, 세무사", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 797, "node": 798, "actor": "국세청장", "act": "제정하여 고시하여야 한다", "target": "", "object": "납세자권리헌장", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 797, "node": 799, "actor": "세무공무원", "act": "내주어야 한다", "target": "납세자", "object": "납세자권리헌장의 내용이 수록된 문서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 797, "node": 804, "actor": "세무공무원", "act": "제시한 후 교부하고 낭독해 주어야 하며", "target": "납세자 또는 관련인", "object": "조사원증, 납세자권리헌장", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 797, "node": 804, "actor": "세무공무원", "act": "설명하여야 한다", "target": "납세자", "object": "조사사유, 조사기간, 심의 요청사항·절차 및 권리구제 절차 등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 806, "node": 807, "actor": "세무공무원", "act": "세무조사를 하여야 하며", "target": "", "object": "세무조사", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 806, "node": 807, "actor": "세무공무원", "act": "조사권을 남용해서는 아니 된다", "target": "", "object": "조사권", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 806, "node": 808, "actor": "세무공무원", "act": "재조사를 할 수 없다", "target": "", "object": "재조사", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 806, "node": 816, "actor": "세무공무원", "act": "장부등의 제출을 요구하여야 하며", "target": "", "object": "장부등의 제출", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 806, "node": 816, "actor": "세무공무원", "act": "장부등의 제출을 요구해서는 아니 된다", "target": "", "object": "장부등의 제출", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 806, "node": 817, "actor": "누구든지", "act": "공정한 세무조사를 저해하는 행위를 하여서는 아니 된다", "target": "세무공무원", "object": "공정한 세무조사를 저해하는 행위", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 869, "node": 870, "actor": "세무공무원", "act": "세무조사의 범위를 확대할", "target": "", "object": "세무조사의 범위", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 869, "node": 870, "actor": "", "act": "대통령령으로 정하는", "target": "", "object": "", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 869, "node": 871, "actor": "세무공무원", "act": "문서로 통지하여야", "target": "납세자", "object": "그 사유와 범위", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 819, "node": 820, "actor": "납세지 관할 세무서장 또는 지방국세청장", "act": "수행한다", "target": "", "object": "세무조사", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 819, "node": 820, "actor": "국세청장(같은 지방국세청 소관 세무서 관할 조정의 경우에는 지방국세청장)", "act": "조정할 수 있다", "target": "", "object": "관할", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 819, "node": 821, "actor": "세무공무원", "act": "선정하여 세무조사를 할 수 있다", "target": "", "object": "대상", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 819, "node": 821, "actor": "세무공무원", "act": "선정하여야 한다", "target": "", "object": "대상", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 819, "node": 825, "actor": "세무공무원", "act": "할 수 있다", "target": "", "object": "세무조사", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 819, "node": 831, "actor": "세무공무원", "act": "할 수 있다", "target": "", "object": "세무조사", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 819, "node": 832, "actor": "세무공무원", "act": "하지 아니할 수 있다", "target": "", "object": "제2항에 따른 세무조사", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 819, "node": 832, "actor": "세무공무원", "act": "하지 아니할 수 없다", "target": "", "object": "제2항에 따른 세무조사", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 835, "node": 836, "actor": "세무공무원", "act": "통지하여야 한다", "target": "납세자", "object": "조사대상 세목, 조사기간 및 조사 사유, 그 밖에 대통령령으로 정하는 사항", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 835, "node": 836, "actor": "세무공무원", "act": "조사를 하면 증거인멸 등으로 조사 목적을 달성할 수 없다고 인정되는 경우", "target": "", "object": "사전통지", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 835, "node": 837, "actor": "납세자", "act": "신청할 수 있다", "target": "관할 세무관서의 장", "object": "조사를 연기해 줄 것", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 835, "node": 841, "actor": "관할 세무관서의 장", "act": "결정하고 통지하여야 한다", "target": "납세자", "object": "연기신청 승인 여부와 그 결과", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 835, "node": 842, "actor": "관할 세무관서의 장", "act": "개시할 수 있다", "target": "", "object": "조사", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 835, "node": 845, "actor": "관할 세무관서의 장", "act": "통지하여야 한다", "target": "납세자", "object": "연기 사유가 소멸한 사실과 조사기간", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 835, "node": 846, "actor": "세무공무원", "act": "교부하여야 한다", "target": "납세자", "object": "세무조사통지서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 880, "node": 881, "actor": "세무조사", "act": "실시하는 것", "target": "", "object": "납세자의 사업과 관련하여 세법에 따라 신고ㆍ납부의무가 있는 세목을 통합하여", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 880, "node": 882, "actor": "", "act": "조사할 수 있다", "target": "", "object": "특정한 세목만", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 880, "node": 886, "actor": "", "act": "실시할 수 있다", "target": "", "object": "부분조사", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 880, "node": 893, "actor": "부분조사", "act": "실시할 수 없다", "target": "", "object": "같은 세목 및 같은 과세기간에 대하여 2회를 초과하여", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 894, "node": 895, "actor": "세무공무원", "act": "설명하고, 이를 서면으로 통지하여야 한다", "target": "납세자", "object": "조사결과", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 894, "node": 899, "actor": "세무공무원", "act": "설명하고, 이를 서면으로 통지할 수 있다", "target": "납세자", "object": "조사결과를 통지할 수 없는 부분을 제외한 조사결과", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 894, "node": 902, "actor": "세무공무원", "act": "설명하고, 이를 서면으로 통지하여야 한다", "target": "납세자", "object": "조사결과", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 919, "node": 920, "actor": "세무공무원", "act": "정보를 제공하여야", "target": "납세자(세무사 등 납세자로부터 세무업무를 위임받은 자를 포함한다)", "object": "납세자 본인의 권리 행사에 필요한 정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 919, "node": 921, "actor": "", "act": "대통령령으로 정한다", "target": "", "object": "제1항에 따라 제공하는 정보의 범위와 수임대상자 등 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 872, "node": 873, "actor": "세무공무원", "act": "보관할 수 없다", "target": "", "object": "납세자의 장부등을", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 872, "node": 874, "actor": "세무공무원", "act": "일시 보관할 수 있다", "target": "", "object": "납세자, 소지자 또는 보관자 등 정당한 권한이 있는 자가 임의로 제출한 장부등을", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 872, "node": 875, "actor": "세무공무원", "act": "받아야 하며", "target": "납세자로부터", "object": "일시 보관 동의서를", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 872, "node": 875, "actor": "세무공무원", "act": "교부하여야 한다", "target": "", "object": "일시 보관증을", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 872, "node": 876, "actor": "세무공무원", "act": "반환하여야 한다", "target": "", "object": "장부등을", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 872, "node": 876, "actor": "세무공무원", "act": "연장할 수 있다", "target": "", "object": "보관 기간을", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 872, "node": 877, "actor": "세무공무원", "act": "반환하여야 한다", "target": "", "object": "요청한 장부등을", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 872, "node": 878, "actor": "세무공무원", "act": "보관할 수 있고", "target": "", "object": "장부등의 사본을", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 872, "node": 878, "actor": "세무공무원", "act": "요구할 수 있다", "target": "", "object": "그 사본이 원본과 다름없다는 사실을 확인하는 납세자의 서명 또는 날인을", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 872, "node": 879, "actor": "", "act": "정한다", "target": "", "object": "장부등의 일시 보관 방법 및 절차 등에 관하여 필요한 사항을", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 849, "node": 850, "actor": "세무공무원", "act": "세무조사 기간이 최소한이 되도록 하여야", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 849, "node": 850, "actor": "세무공무원", "act": "세무조사 기간을 연장할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 849, "node": 857, "actor": "세무공무원", "act": "세무조사 기간은 20일 이내로 한다", "target": "", "object": "", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 849, "node": 858, "actor": "세무공무원", "act": "관할 세무관서의 장의 승인을 받아야", "target": "관할 세무관서의 장", "object": "", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 849, "node": 858, "actor": "세무공무원", "act": "관할 상급 세무관서의 장의 승인을 받아 각각 20일 이내에서 연장할 수 있다", "target": "관할 상급 세무관서의 장", "object": "", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 849, "node": 864, "actor": "세무공무원", "act": "세무조사를 중지할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 849, "node": 865, "actor": "세무공무원", "act": "납세자에 대하여 국세의 과세표준과 세액을 결정 또는 경정하기 위한 질문을 하거나 장부등의 검사ㆍ조사 또는 그 제출을 요구할 수 없다", "target": "납세자", "object": "", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 849, "node": 866, "actor": "세무공무원", "act": "조사를 재개하여야", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 849, "node": 866, "actor": "세무공무원", "act": "세무조사를 재개할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 849, "node": 867, "actor": "세무공무원", "act": "그 사유와 기간을 납세자에게 문서로 통지하여야", "target": "납세자", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 849, "node": 867, "actor": "세무공무원", "act": "그 사유를 문서로 통지하여야", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 849, "node": 868, "actor": "세무공무원", "act": "세무조사 기간을 단축하기 위하여 노력하여야", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 849, "node": 868, "actor": "세무공무원", "act": "조사를 조기에 종결할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 903, "node": 904, "actor": "세무공무원", "act": "제공 또는 누설하거나 목적 외의 용도로 사용", "target": "", "object": "과세정보", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 903, "node": 904, "actor": "국가행정기관, 지방자치단체 등", "act": "사용할 목적으로 과세정보를 요구", "target": "", "object": "과세정보", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 903, "node": 904, "actor": "국가기관", "act": "과세정보를 요구", "target": "", "object": "과세정보", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 903, "node": 904, "actor": "법원", "act": "과세정보를 요구", "target": "", "object": "과세정보", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 903, "node": 904, "actor": "세무공무원 간에", "act": "과세정보를 요구", "target": "", "object": "과세정보", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 903, "node": 904, "actor": "국가데이터처장", "act": "과세정보를 요구", "target": "", "object": "과세정보", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 903, "node": 904, "actor": "사회보험의 운영을 목적으로 설립된 기관", "act": "과세정보를 요구", "target": "", "object": "과세정보", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 903, "node": 904, "actor": "국가행정기관, 지방자치단체 또는 공공기관", "act": "과세정보를 당사자의 동의를 받아 요구", "target": "", "object": "과세정보", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 903, "node": 904, "actor": "조사위원회", "act": "과세정보의 제공을 요청", "target": "", "object": "과세정보", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 903, "node": 914, "actor": "제1항제1호ㆍ제2호 및 제5호부터 제9호까지의 규정에 따라 과세정보의 제공을 요구하는 자", "act": "문서로 해당 세무관서의 장에게 요구", "target": "해당 세무관서의 장", "object": "과세정보", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 903, "node": 915, "actor": "세무공무원", "act": "요구를 거부", "target": "", "object": "", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 903, "node": 916, "actor": "제1항에 따라 과세정보를 알게 된 사람", "act": "제공 또는 누설하거나 그 목적 외의 용도로 사용", "target": "", "object": "과세정보", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 903, "node": 917, "actor": "이 조에 따라 과세정보를 제공받아 알게 된 사람 중 공무원이 아닌 사람", "act": "로 본다", "target": "", "object": "공무원", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 903, "node": 918, "actor": "제1항 단서에 따라 과세정보를 제공받은 자", "act": "조치를 하여야", "target": "", "object": "과세정보의 안전성 확보를 위한 조치", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 957, "node": 957, "actor": "납세자", "act": "성실하게 협력하여야 한다", "target": "", "object": "세무공무원의 적법한 질문ㆍ조사, 제출명령", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 949, "node": 950, "actor": "국세청장", "act": "성실하게 노력하여야 한다", "target": "", "object": "납세자의 권리가 보호되고 실현될 수 있도록", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 949, "node": 951, "actor": "국세청", "act": "두고", "target": "", "object": "납세자 권리보호업무를 총괄하는 납세자보호관", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 949, "node": 951, "actor": "세무서 및 지방국세청", "act": "둔다", "target": "", "object": "납세자 권리보호업무를 수행하는 담당관을 각각 1인", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 949, "node": 952, "actor": "국세청장", "act": "운영하고 하여야 한다", "target": "", "object": "제2항에 따른 납세자보호관을 개방형직위로", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 949, "node": 952, "actor": "국세청장", "act": "하여야 한다", "target": "", "object": "납세자보호관 및 담당관이 업무를 수행할 때에 독립성이 보장될 수 있도록", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 949, "node": 952, "actor": "국세청장", "act": "공개모집한다", "target": "", "object": "다음 각 호의 어느 하나에 해당하지 아니하는 사람", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 949, "node": 955, "actor": "국세청장", "act": "공개하여야 한다", "target": "일반 국민", "object": "납세자 권리보호업무의 추진실적 등의 자료를", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 949, "node": 956, "actor": "대통령령", "act": "정한다", "target": "", "object": "납세자보호관 및 담당관의 자격ㆍ직무ㆍ권한 등 납세자보호관 제도의 운영에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 922, "node": 923, "actor": "세무서장 또는 지방국세청장", "act": "서면으로 통지", "target": "납세자", "object": "그 내용", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 922, "node": 929, "actor": "통지를 받은 자", "act": "과세전적부심사를 청구", "target": "통지를 한 세무서장이나 지방국세청장", "object": "통지 내용의 적법성에 관한 심사", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 922, "node": 929, "actor": "통지를 받은 자", "act": "청구", "target": "국세청장", "object": "과세전적부심사", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 922, "node": 932, "actor": "", "act": "제2항을 적용하지 아니한다", "target": "", "object": "", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 922, "node": 937, "actor": "세무서장, 지방국세청장 또는 국세청장", "act": "결정을 하고 그 결과를 통지", "target": "청구인", "object": "과세전적부심사 청구에 대한 결정", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 922, "node": 938, "actor": "세무서장이나 지방국세청장", "act": "재조사하여 그 결과에 따라 당초 통지 내용을 수정하여 통지", "target": "", "object": "", "mode": "위임", "function": "절차", "proviso": true}
+{"jo": 922, "node": 945, "actor": "", "act": "준용", "target": "", "object": "제58조, 제59조, 제60조의2, 제61조제3항, 제62조제2항, 제63조, 제64조제1항 단서, 제64조제3항 및 제65조제4항부터 제7항까지의 규정", "mode": "위임", "function": "근거·권한", "proviso": false}
+{"jo": 922, "node": 946, "actor": "", "act": "준용", "target": "", "object": "「행정심판법」 제15조ㆍ제16조ㆍ제20조부터 제22조까지ㆍ제29조ㆍ제36조제1항ㆍ제39조ㆍ제40조 및 제42조", "mode": "위임", "function": "근거·권한", "proviso": false}
+{"jo": 922, "node": 947, "actor": "통지를 받은 자", "act": "신청", "target": "세무서장이나 지방국세청장", "object": "과세표준 및 세액을 조기에 결정하거나 경정결정", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 922, "node": 947, "actor": "세무서장이나 지방국세청장", "act": "결정이나 경정결정을 하여야", "target": "", "object": "신청받은 내용", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 922, "node": 948, "actor": "", "act": "정한다", "target": "", "object": "과세전적부심사의 신청, 방법, 그 밖에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1001, "node": 1001, "actor": "", "act": "고지할", "target": "", "object": "국세(인지세는 제외한다) 및 강제징수비를 합친 금액", "mode": "간주", "function": "정의", "proviso": false}
+{"jo": 1001, "node": 1001, "actor": "", "act": "정하는", "target": "", "object": "금액", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1002, "node": 1003, "actor": "세무공무원", "act": "협조를 요청할 수 있다", "target": "국가기관, 지방자치단체 또는 그 소속 공무원", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1002, "node": 1004, "actor": "제1항의 요청을 받은 자", "act": "협조하여야 한다", "target": "", "object": "", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 1002, "node": 1005, "actor": "정부", "act": "교부금으로 지급할 수 있다", "target": "납세지도를 담당하는 단체", "object": "그 납세지도 경비의 전부 또는 일부", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 958, "node": 960, "actor": "세무서 납세자보호위원회 및 지방국세청 납세자보호위원회", "act": "심의한다", "target": "", "object": "세무조사 기간의 연장, 세무조사 범위의 확대, 세무조사 일시중지 및 중지 요청, 위법·부당한 행위에 대한 요청, 장부등의 일시 보관 기간 연장, 권리보호를 위한 안건", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 958, "node": 967, "actor": "국세청 납세자보호위원회", "act": "심의한다", "target": "", "object": "납세자의 취소 또는 변경 요청, 국세행정의 제도 및 절차 개선", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 958, "node": 971, "actor": "지방국세청장, 국세청장, 국세청장", "act": "위촉하는", "target": "", "object": "세무서 납세자보호위원회의 위원장, 지방국세청 납세자보호위원회의 위원장, 국세청 납세자보호위원회의 위원장", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 958, "node": 975, "actor": "국세청장(세무서 납세자보호위원회의 위원은 지방국세청장)", "act": "임명 또는 위촉한다", "target": "", "object": "위원", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 958, "node": 976, "actor": "납세자보호위원회의 위원", "act": "제공 또는 누설하거나 목적 외의 용도로 사용해서는 아니 된다", "target": "", "object": "과세정보", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 958, "node": 977, "actor": "납세자보호위원회의 위원", "act": "제척되거나 회피하여야 한다", "target": "", "object": "", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 958, "node": 980, "actor": "납세자보호관", "act": "감독한다", "target": "", "object": "의결사항에 대한 이행여부", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1038, "node": 1039, "actor": "국세청장", "act": "포상금을 지급할 수 있다", "target": "사람", "object": "포상금", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1038, "node": 1040, "actor": "대통령령", "act": "정한다", "target": "", "object": "포상금의 지급 대상, 지급 한도, 선정 기준 및 지급 방법 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 994, "node": 995, "actor": "납세자", "act": "정하여야 한다", "target": "", "object": "납세관리인", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 994, "node": 996, "actor": "납세자", "act": "둘 수 있다", "target": "", "object": "변호사, 세무사 또는 「세무사법」에 따른 세무사등록부 또는 공인회계사 세무대리업무등록부에 등록한 공인회계사를 납세관리인", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 994, "node": 997, "actor": "납세자", "act": "신고하여야 한다", "target": "관할 세무서장", "object": "납세관리인", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 994, "node": 997, "actor": "납세자", "act": "신고하여야 한다", "target": "관할 세무서장", "object": "납세관리인 변경 또는 해임", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 994, "node": 998, "actor": "관할 세무서장", "act": "정할 수 있다", "target": "", "object": "납세자의 재산이나 사업의 관리인을 납세관리인", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 994, "node": 999, "actor": "세무서장이나 지방국세청장", "act": "적용할 수 있다", "target": "추정상속인, 유언집행자 또는 상속재산관리인", "object": "「상속세 및 증여세법」 중 상속인 또는 수유자(受遺者)에 관한 규정", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 994, "node": 1000, "actor": "비거주자인 상속인", "act": "정하여 신고하고 확인서를 발급받아 제출하여야 한다", "target": "납세지 관할 세무서장", "object": "납세관리인", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 981, "node": 982, "actor": "납세자", "act": "심의를 요청할 수 있다", "target": "세무서장 또는 지방국세청장", "object": "제81조의18제2항제3호 또는 제4호에 해당하는 사항", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 981, "node": 983, "actor": "세무서장 또는 지방국세청장", "act": "보완을 요청할 수 있다", "target": "", "object": "보완하여야 할 내용을 명시하고 10일 이내의 기간을 정하여", "mode": "허용", "function": "절차", "proviso": false}
+{"jo": 981, "node": 983, "actor": "세무서장 또는 지방국세청장", "act": "직권으로 보완할 수 있다", "target": "", "object": "보완하여야 할 내용이 경미한 경우", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 981, "node": 984, "actor": "세무서장 또는 지방국세청장", "act": "심의를 거쳐 결정을 하고, 납세자에게 그 결과를 통지하여야 한다", "target": "납세자", "object": "제81조의18제2항제1호부터 제5호까지의 사항", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 981, "node": 984, "actor": "세무서장 또는 지방국세청장", "act": "통지하여야 한다", "target": "", "object": "제81조의18제2항제3호 또는 제4호에 대한 결과", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 981, "node": 985, "actor": "세무서장 또는 지방국세청장", "act": "한 차례만 연장할 수 있다", "target": "", "object": "그 기간을 5일의 범위에서", "mode": "허용", "function": "절차", "proviso": false}
+{"jo": 981, "node": 985, "actor": "세무서장 또는 지방국세청장", "act": "통지하여야 한다", "target": "납세자", "object": "연장하려는 사실과 그 사유를", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 981, "node": 986, "actor": "납세자", "act": "취소 또는 변경을 요청할 수 있다", "target": "국세청장", "object": "세무서 납세자보호위원회 또는 지방국세청 납세자보호위원회의 심의를 거친 세무서장 또는 지방국세청장의 결정", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 981, "node": 987, "actor": "국세청장", "act": "취소하거나 변경할 수 있다", "target": "", "object": "세무서장 및 지방국세청장의 결정을", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 981, "node": 987, "actor": "국세청장", "act": "통지하여야 한다", "target": "납세자", "object": "그 결과를", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 981, "node": 989, "actor": "납세자보호관 또는 담당관", "act": "요구할 수 있다", "target": "세무공무원", "object": "세무조사의 일시중지 등을", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 981, "node": 990, "actor": "납세자보호위원회", "act": "요구할 수 있다", "target": "세무공무원", "object": "세무조사의 일시중지 및 중지를", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 981, "node": 990, "actor": "납세자보호위원회", "act": "건의할 수 있다", "target": "국세청장", "object": "정당한 사유 없이 위원회의 요구에 따르지 아니하는 세무공무원에 대하여 징계를", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 981, "node": 991, "actor": "납세자", "act": "진술할 수 있다", "target": "세무서장, 지방국세청장 또는 국세청장", "object": "의견을", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1006, "node": 1007, "actor": "국세청장", "act": "포상금을 지급할 수 있다", "target": "다음 각 호의 어느 하나에 해당하는 자", "object": "20억원(제1호에 해당하는 자에게는 40억원으로 하고, 제2호에 해당하는 자에게는 30억원으로 한다)의 범위에서 포상금", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1006, "node": 1007, "actor": "", "act": "포상금을 지급하지 아니한다", "target": "", "object": "", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 1006, "node": 1032, "actor": "", "act": "자료 제공 또는 신고는 문서, 팩스, 전화자동응답시스템 또는 인터넷 홈페이지를 통하여 하여야 한다", "target": "", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1006, "node": 1036, "actor": "제1항에 따른 포상금 지급과 관련된 업무를 담당하는 공무원", "act": "신원 등 신고 또는 제보와 관련된 사항을 그 목적 외의 용도로 사용하거나 타인에게 제공 또는 누설해서는 아니 된다", "target": "", "object": "", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1053, "node": 1054, "actor": "세무공무원", "act": "접수증을 발급하여야", "target": "납세자등", "object": "접수증", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1053, "node": 1054, "actor": "세무공무원", "act": "접수증을 발급하지 아니할 수 있다", "target": "", "object": "접수증", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1053, "node": 1055, "actor": "세무공무원", "act": "그 접수사실을 전자적 형태로 통보할 수 있다", "target": "", "object": "접수사실", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1041, "node": 1042, "actor": "세법에 따라 과세자료를 제출할 의무가 있는 자", "act": "과세자료를 성실하게 작성하여 정해진 기한까지 소관 세무서장에게 제출하여야", "target": "소관 세무서장", "object": "과세자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1041, "node": 1042, "actor": "세법에 따라 과세자료를 제출할 의무가 있는 자", "act": "제출할 수 있다", "target": "지방국세청장이나 국세청장", "object": "과세자료", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1041, "node": 1043, "actor": "국가기관, 지방자치단체, 금융회사 등 또는 전자계산ㆍ정보처리시설을 보유한 자", "act": "통보하여야", "target": "국세청장", "object": "과세와 관계되는 자료 또는 통계", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1044, "node": 1044, "actor": "세무서장(지방국세청장, 국세청장을 포함한다)", "act": "이용할 수 있다", "target": "", "object": "「소득세법」 제164조 및 「법인세법」 제120조에 따라 제출받은 이자소득 또는 배당소득에 대한 지급명세서", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1048, "node": 1049, "actor": "납세자", "act": "작성하여 갖춰 두어야", "target": "", "object": "모든 거래에 관한 장부 및 증거서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1048, "node": 1049, "actor": "납세자", "act": "갖춰 두어야", "target": "", "object": "과세당국이 납세의무자에게 제출하도록 요구할 수 있는 자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1048, "node": 1050, "actor": "납세자", "act": "보존하여야", "target": "", "object": "장부 및 증거서류", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1048, "node": 1050, "actor": "납세자", "act": "보존하여야", "target": "", "object": "장부 및 증거서류", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 1048, "node": 1051, "actor": "납세자", "act": "작성할 수 있다", "target": "", "object": "장부와 증거서류의 전부 또는 일부", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1048, "node": 1051, "actor": "납세자", "act": "보존하여야", "target": "", "object": "자기테이프, 디스켓 또는 그 밖의 정보보존 장치", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1048, "node": 1052, "actor": "", "act": "본다", "target": "", "object": "장부 및 증거서류를 갖춘 것", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 1048, "node": 1052, "actor": "", "act": "그러하지 아니하다", "target": "", "object": "위조ㆍ변조하기 쉬운 장부 및 증거서류", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 1056, "node": 1057, "actor": "국세청장", "act": "공개할 수 있다", "target": "", "object": "인적사항 등", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1056, "node": 1063, "actor": "국세청", "act": "두다", "target": "", "object": "국세정보위원회", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1056, "node": 1064, "actor": "위원회의 위원", "act": "제척되거나 회피하여야 한다", "target": "", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1056, "node": 1065, "actor": "국세청장", "act": "통지하여 소명 기회를 주어야 하며", "target": "공개 대상자", "object": "불성실기부금수령단체 또는 해외금융계좌신고의무위반자 명단 공개 대상자임", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1056, "node": 1065, "actor": "국세청장", "act": "위원회로 하여금 재심의하게 한 후 공개대상자를 선정한다", "target": "", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1097, "node": 1097, "actor": "국세청장, 지방국세청장, 세무서장 및 조세심판원장", "act": "전산정보자료를 공동이용할 수 있다", "target": "", "object": "「가족관계의 등록 등에 관한 법률」 제11조제4항에 따른 전산정보자료", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1092, "node": 1093, "actor": "", "act": "둔다", "target": "지방국세청", "object": "이행강제금심의위원회", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 1092, "node": 1094, "actor": "이행강제금심의위원회", "act": "구성한다", "target": "", "object": "위원장 1명을 포함하여 20명 이내의 위원", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 1092, "node": 1095, "actor": "", "act": "본다", "target": "", "object": "이행강제금심의위원회의 위원 중 공무원이 아닌 사람", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 1092, "node": 1096, "actor": "대통령령", "act": "정한다", "target": "", "object": "이행강제금심의위원회의 구성 및 운영 등에 필요한 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1086, "node": 1087, "actor": "관할 지방국세청장", "act": "이행강제금을 부과할 수 있다", "target": "해당 납세자", "object": "이행강제금", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1086, "node": 1088, "actor": "관할 지방국세청장", "act": "상당한 이행기한을 정하고", "target": "", "object": "이행기한", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1086, "node": 1088, "actor": "관할 지방국세청장", "act": "통지하여야 한다", "target": "납세자", "object": "이행강제금이 부과될 수 있음", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1086, "node": 1089, "actor": "관할 지방국세청장", "act": "이행강제금을 부과할 수 있다", "target": "납세자", "object": "이행강제금", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1086, "node": 1090, "actor": "관할 지방국세청장", "act": "이행강제금 부과금액을 감경하거나 면제할 수 있다", "target": "", "object": "이행강제금 부과금액", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1086, "node": 1091, "actor": "", "act": "대통령령으로 정한다", "target": "", "object": "이행강제금의 부과·납부·징수·환급 및 감면 절차 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1104, "node": 1105, "actor": "관할 세무서장", "act": "과태료를 부과ㆍ징수한다", "target": "거짓으로 진술하거나 그 직무집행을 거부 또는 기피한 자", "object": "5천만원 이하의 과태료", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 1104, "node": 1106, "actor": "대통령령", "act": "정한다", "target": "", "object": "제1항에 따른 과태료의 부과기준", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1098, "node": 1099, "actor": "세무공무원", "act": "금품을 수수하였을 때에는 … 징계부가금 부과 의결을 … 요구하여야", "target": "징계위원회", "object": "그 금품 수수액의 5배 이내의 징계부가금 부과 의결", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1098, "node": 1100, "actor": "징계대상 세무공무원", "act": "금품 수수를 이유로 다른 법률에 따라 형사처벌을 받거나 변상책임 등을 이행한 경우에는 … 감경된 징계부가금 부과 의결 또는 징계부가금 감면을 요구하여야", "target": "징계위원회", "object": "감경된 징계부가금 부과 의결 또는 징계부가금 감면", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1098, "node": 1101, "actor": "국세청장(세법에 따라 국세에 관한 사무를 세관장이 관장하는 경우에는 관세청장) 또는 소속 기관의 장 또는 소속 상급기관의 장", "act": "징계부가금 부과 의결의 요구를 한다", "target": "", "object": "징계부가금 부과 의결의 요구", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1098, "node": 1102, "actor": "징계권자", "act": "징계부가금을 납부하지 아니한 때에는 국세강제징수의 예에 따라 징수할 수 있다", "target": "", "object": "징계부가금", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1107, "node": 1108, "actor": "관할 세무서장 또는 세관장", "act": "과태료를 부과ㆍ징수한다", "target": "세무공무원에게 금품을 공여한 자", "object": "그 금품 상당액의 2배 이상 5배 이하의 과태료", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 1107, "node": 1108, "actor": "관할 세무서장 또는 세관장", "act": "과태료를 부과하지 아니한다", "target": "", "object": "과태료", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 1107, "node": 1108, "actor": "관할 세무서장 또는 세관장", "act": "과태료 부과를 취소한다", "target": "", "object": "과태료 부과", "mode": "의무", "function": "효과", "proviso": true}
+{"jo": 1107, "node": 1109, "actor": "대통령령", "act": "정한다", "target": "", "object": "제1항 본문에 따른 과태료의 부과기준", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1110, "node": 1111, "actor": "국세청장", "act": "부과ㆍ징수한다", "target": "", "object": "과태료", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 1110, "node": 1111, "actor": "", "act": "부과하지 아니하고", "target": "", "object": "과태료", "mode": "금지", "function": "효과", "proviso": true}
+{"jo": 1110, "node": 1111, "actor": "", "act": "취소한다", "target": "", "object": "과태료 부과", "mode": "의무", "function": "효과", "proviso": true}
+{"jo": 1110, "node": 1112, "actor": "", "act": "정한다", "target": "", "object": "과태료의 부과기준", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1068, "node": 1069, "actor": "국세청장", "act": "작성ㆍ관리하여야", "target": "", "object": "통계자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1068, "node": 1069, "actor": "", "act": "작성되어야", "target": "", "object": "통계자료", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1068, "node": 1070, "actor": "국세청장", "act": "공개하여야", "target": "일반 국민", "object": "통계자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1068, "node": 1071, "actor": "국세청장", "act": "구축ㆍ운용할 수 있다", "target": "", "object": "국세정보시스템", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1068, "node": 1072, "actor": "국세청장", "act": "제공하여야 하고 송부하여야", "target": "재정경제부장관", "object": "통계자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1068, "node": 1075, "actor": "국세청장", "act": "제공하여야", "target": "국회 소관 상임위원회", "object": "과세정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1068, "node": 1076, "actor": "국세청장", "act": "제공할 수 있다", "target": "연구기관의 장", "object": "통계자료", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1068, "node": 1077, "actor": "국세청장", "act": "제공할 수 있다", "target": "", "object": "기초자료", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1068, "node": 1077, "actor": "", "act": "제공하여야", "target": "", "object": "기초자료", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 1068, "node": 1083, "actor": "국세청장", "act": "제공할 수 있다", "target": "", "object": "표본자료", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1068, "node": 1083, "actor": "", "act": "제공하여야", "target": "", "object": "표본자료", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 1068, "node": 1084, "actor": "", "act": "사용해서는 아니 된다", "target": "", "object": "통계자료, 기초자료 및 표본자료", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1068, "node": 1085, "actor": "", "act": "정한다", "target": "", "object": "", "mode": "위임", "function": "위임", "proviso": false}

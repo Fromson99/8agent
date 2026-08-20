@@ -48,7 +48,11 @@ class StubLLM:
 
 
 # ---------------------------------------------------------------- 단별
-def test_의미해석이_잡으면_거기서_멈춘다():
+def test_의미해석이_잡으면_거기서_멈춘다(tmp_path, monkeypatch):
+    # 위키·약칭 격리 — 도메인 단(쟁점 재회수)이 실제 카드로 LLM 을 부르면
+    # 이 시험의 과녁(범용 사다리 첫 성공 정지)이 흐려진다.
+    monkeypatch.setenv("WIKI_STORE", str(tmp_path / "빈위키"))
+    monkeypatch.setenv("RAG_ALIASES", str(tmp_path / "없음.json"))
     llm = StubLLM({"rag.recover.sense": [{
         "route": "use_terms", "reason": "의미 연결",
         "selected": [{"id": 0, "confidence": 0.9, "reason": "같은 제도"}],
@@ -56,7 +60,9 @@ def test_의미해석이_잡으면_거기서_멈춘다():
     rec = recover.run(llm, _index(), "고객에게 상품을 알릴 의무")
     assert rec.rungs_fired == ["의미해석"]
     assert rec.coords and all(c["via"] == "의미해석" for c in rec.coords)
-    assert llm.calls == ["rag.recover.sense"]           # 아래 단은 돌지 않았다
+    # 도메인 단(법 스코프 깔때기)의 문서 선택 콜이 먼저 서고(법령명 없는 질문 —
+    # 스텁이 빈손), 의미해석이 잡으면 아래 단(깔때기·수색대…)은 돌지 않는다
+    assert llm.calls == ["rag.recover.pickdocs", "rag.recover.sense"]
 
 
 def test_의미해석_신뢰_문턱_미만은_버려진다():
@@ -131,7 +137,7 @@ def test_사다리_기록이_남는다(tmp_path, monkeypatch):
     monkeypatch.setenv("RAG_ALIASES", str(tmp_path / "없음.json"))
     rec = recover.run(None, _index(), "존재하지않는말")
     stages = [t["stage"] for t in rec.trail]
-    assert stages == ["쟁점 재회수", "명칭 확장",          # ⓪ 도메인 단 (법령판)
+    assert stages == ["쟁점 재회수", "명칭 확장", "법 스코프 깔때기",   # ⓪ 도메인 단 (법령판)
                       "의미해석", "깔때기", "원문", "수색대", "둘러보기"]
 
 

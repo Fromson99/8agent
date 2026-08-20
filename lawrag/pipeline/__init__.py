@@ -12,6 +12,8 @@
     convert          HWP5 → md 사이드카 (core.hwp5_md)               → data/corpus/**/*.md
     ingest_lawxml    law.go.kr XML → 구조 스토어                      → data/structure/
     ingest_rulehtml  조문 HTML(KRX·KOFIA) → 구조 스토어               → data/structure/
+    ingest_naegyu    내규 docx → 구조 스토어 (유도 경로+내규 프로파일)  → data/structure/
+    ingest_files     문서 파일 묶음(hwp·docx·pdf) → 구조 스토어 (범용)   → data/structure/
     ingest_expc      해석례 → 열람 색인 + 위키 raw                    → data/expc/, data/wiki/raw/expc/
     ingest_fsc       회신사례 → 위키 raw                              → data/wiki/raw/fsc/
     ingest_prec      판례 → 위키 raw                                  → data/wiki/raw/prec/

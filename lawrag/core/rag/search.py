@@ -211,7 +211,7 @@ def search(index: Index, query: str) -> SearchResult:
 
     from lawrag.core.rag import vector as vector_mod          # 지연 — 없으면 빈 목록
     try:
-        vec_nodes = vector_mod.search(q)               # [(doc_id, node, cos)]
+        vec_nodes = vector_mod.search(q, doc_ids=index.scope)   # [(doc_id, node, cos)] — 스코프 안만
     except Exception as exc:
         log.warning("벡터 단 실패 — 렉시컬만으로 간다: %s", exc)
         vec_nodes = []

@@ -121,9 +121,10 @@
 .path b { color: var(--ink); font-weight: 600; }
 .mv { color: var(--warn); }
 
+.induce { margin-left: 8px; }
+.induce-out { max-width: 720px; margin: 8px auto 0; font-size: 12px; overflow: auto; }
 .empty { margin-top: 24px; text-align: center; color: var(--dim); }
 .empty h2 { color: var(--ink); }
-.empty button { margin-top: 8px; }
 .empty pre { text-align: left; max-width: 720px; margin: 12px auto;
              background: var(--pane); border: 1px solid var(--line);
              border-radius: var(--r); padding: 10px; font-size: 11px;

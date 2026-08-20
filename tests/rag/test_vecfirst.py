@@ -24,8 +24,10 @@ def _docs():
     nodes = [
         {"id": 1, "parent": None, "level": 1, "surface": "제1조",
          "title": "총칙", "page": 1, "span": [0, 1]},
+        # 제목을 '정의'로 두면 정의 동반(floor_definition)이 참조 닫힘보다
+        # 먼저 물어가 이 시험의 과녁(닫힘)이 흐려진다 — 중립 제목으로 둔다.
         {"id": 2, "parent": None, "level": 1, "surface": "제2조",
-         "title": "정의", "page": 1, "span": [1, 2]},
+         "title": "기준", "page": 1, "span": [1, 2]},
         {"id": 3, "parent": None, "level": 1, "surface": "제3조",
          "title": "벌칙", "page": 2, "span": [2, 3]},
     ]

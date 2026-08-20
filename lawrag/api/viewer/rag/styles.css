@@ -21,6 +21,8 @@
 .askopts .chk { padding:2px 9px; border:1px solid var(--line); border-radius:999px; }
 .askopts .chk:hover { color:var(--ink); border-color:var(--accent); }
 .askopts .chk input { margin:0; accent-color:var(--accent); }
+.askopts .chk.scope select { border:0; background:transparent; color:inherit; font:inherit; max-width:220px; }
+.askopts .chk.scope:has(select:not([value=""])) { color:var(--accent); }
 .askopts .chk:has(input:checked) { color:var(--accent);
         border-color:color-mix(in srgb,var(--accent) 55%,var(--line)); }
 button { padding:7px 14px; background:var(--accent); color:#fff; border:0;
@@ -186,6 +188,7 @@ body.haspp .wrap { max-width:none; margin-left:0; margin-right:536px; }
       font-size:12px; overflow:hidden; }
 .bk.sup { border-left:3px solid var(--bad); }
 .bk.fix { border-left:3px solid var(--accent); }
+.bk.mem { border-left:3px solid var(--ok); }
 .bkhead { display:flex; gap:8px; align-items:center; padding:7px 11px;
           cursor:pointer; min-width:0; }
 .bkhead:hover { background:color-mix(in srgb,var(--accent) 7%,transparent); }

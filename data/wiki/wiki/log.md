@@ -3,7 +3,7 @@
 ## [2026-08-13] ingest | 법령해석례 최초 컴파일 — 67건 → 아티클 7편
 
 - Disposition: New
-- Raw: raw/expc/ (67건 — collect_expc.py 수집분, ingest_expc.py 가 XML 에서 이관)
+- Raw: raw/expc/ (67건 — lawrag/pipeline/collect_expc.py 수집분, lawrag/pipeline/ingest_expc.py 가 XML 에서 이관)
 - 컴파일: Claude (Fable 5) 가 질의요지·회답·이유를 읽고 작성
 - 아티클: 해석원칙 2 (다른-법률의-특별한-규정 · 준용과-경과조치)
   + 법령갈래 5 (개인정보 · 자본시장 · 공정거래 · 공공기관/상법 · 신용정보/감독)
@@ -241,3 +241,8 @@
 ## [2026-08-17] rule | 재심: 정착 강등 rule:gr-0001 → 보류
 - Disposition: Disputed
 - 요지: 이 규칙을 rule:gr-0001 로 인용한 아티클은 생애 보고서가 '분쟁 중'으로 표시한다 — Status: Disputed 블록 검토 (by 사람)
+
+## [2026-08-18] compile | 신규 갈래: 방법 (단서-읽기·정의-우선·제재-연결)
+- Disposition: New
+- 근거: 외부 설계 검토(docs/TAGS.md 10-B — "spots+condition_type+content_type 기반 위키 선정")의 착지. 회수 성격 태그층(lawrag/core/rag/tags) 완성으로 신호가 생김
+- 요지: 회수 결과가 깨우는 읽는 법 — `> 신호:` 메타(단서·정의·제재·준용·위임·수임)를 wikictx.methods_for 가 결정론으로 라우팅해 합성 배경에 끼운다. 해석원칙 두 편(준용과-경과조치·위임과-법령보충)에도 신호를 달아 같은 길로 온다. grounding: 25-0152(단서)·입안 기준 p.123~124(정의)·p.570~571(벌칙 배치·훈시적 규정)

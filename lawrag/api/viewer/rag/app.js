@@ -19,6 +19,28 @@ async function api(path, opts) {
   return r.json();
 }
 
+/* ---------------------------------------------------------------- 스코프 */
+// 스코프 목록 — yml 정의(해석 결과·못 찾은 이름) + 내장. 비어 있는 스코프는
+// 고를 수 있되 표시해 둔다(질의가 400 으로 바로 알려 준다).
+(async () => {
+  try {
+    const r = await api("/v1/rag/scopes");
+    const sel = $("optScope");
+    for (const s of r.scopes || []) {
+      const o = document.createElement("option");
+      o.value = s.name;
+      o.textContent = `${s.name} (${s.count})` + (s.missing && s.missing.length ? " ⚠" : "");
+      o.title = (s.description || "") + (s.missing && s.missing.length
+        ? `\n못 찾은 이름: ${s.missing.join(", ")}` : "")
+        + (s.documents && s.documents.length ? `\n${s.documents.slice(0, 12).join("\n")}` : "");
+      sel.appendChild(o);
+    }
+    const saved = localStorage.getItem("rag.scope") || "";
+    if (saved && [...sel.options].some((o) => o.value === saved)) sel.value = saved;
+    sel.addEventListener("change", () => localStorage.setItem("rag.scope", sel.value));
+  } catch (_) { /* 스코프 목록이 없어도 질의는 된다 */ }
+})();
+
 /* ---------------------------------------------------------------- 묻기 */
 $("askForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -39,7 +61,8 @@ $("askForm").addEventListener("submit", async (e) => {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ question: q, filter: $("optFilter").checked,
                              recover: $("optRecover").checked,
-                             mode: $("optVector").checked ? "vector" : "auto" }),
+                             mode: $("optVector").checked ? "vector" : "auto",
+                             scope: $("optScope").value || "" }),
     });
     render(out);
   } catch (err) {
@@ -67,6 +90,7 @@ function render(out) {
     <div class="ref"><span class="n">[${r.n ?? ""}]</span>
       ${r.kind ? `<span class="badge ${r.kind === "벡터" ? "warn" : ""}"
                    title="${esc(r.matched || "")}">${esc(r.kind)}</span>` : ""}
+      ${r.scope_out ? `<span class="badge warn" title="질의 범위 밖 문서 — 간선(배제·위임·준용…)으로 동반됨">범위 밖</span>` : ""}
       ${r.node != null ? `<a class="pplink" data-pp data-doc="${esc(r.doc_id)}"
            data-node="${r.node}" data-label="${esc(pathTail(r.path || ""))}"
            title="누르면 오른쪽에 원문 PDF 가 뜹니다">${esc(r.doc || r.doc_id)} ▸ ${esc(r.path || `구역 ${r.node}`)}</a>`
@@ -77,7 +101,11 @@ function render(out) {
   // 경로 — 사다리 단마다 몇 건이 잡혔나. 탐험이 돌았으면 발화 단이 표시된다.
   const rungs = (out.recovery && out.recovery.rungs_fired) || [];
   $("trailPane").classList.remove("hidden");
-  $("trailMode").textContent = out.mode ? `검색 모드: ${out.mode}` : "";
+  $("trailMode").textContent = (out.mode ? `검색 모드: ${out.mode}` : "")
+    + (out.scope ? ` · 범위: ${out.scope.name} (${out.scope.count}문서`
+        + (out.scope.out_of_scope ? `, 밖 동반 ${out.scope.out_of_scope}` : "")
+        + (out.scope.dropped && out.scope.dropped.length ? `, 밖 진입 ${out.scope.dropped.length} 버림` : "")
+        + ")" : "");
   $("trail").innerHTML = (out.ladder || []).map((step) => {
     const stage = step.stage || step.단 || step.mode || JSON.stringify(step);
     const cnt = step.count ?? step.hits ?? "";

@@ -250,11 +250,45 @@ function bkMount(els) {
     </div>`;
   }
 
+  /* 질문 기억 후보 — 벡터·깔때기·회복이 어렵게 찾아 답에 실린 착지. 승인하면
+   * 같은/비슷한 질문에서 **검색 없이** 그 좌표를 연다(promote.direct_hits).
+   * 잠정은 열지 않는다 — 오답 착지도 착지였다. */
+  function memoryCard(r, i) {
+    const surfaces = (r.surfaces || []).slice(-3);
+    return `<div class="bk mem" data-mmi="${i}">
+      <div class="bkhead">
+        <span class="badge">${esc(r.via || "착지")}</span>
+        <span class="q">${esc(bkClip(surfaces[0] || r.qkey || "", 48))}
+          <i class="sub">→ ${esc(r.doc || "?")} ▸ ${esc(ppTail(r.path || ""))}</i></span>
+        <span class="sub">${r.count || 1}회 · ▾ 펼치기</span>
+      </div>
+      <div class="bkbody hidden">
+        <div class="bkhint"><b>승인</b> = 같은 질문(정규형 일치)이나 비슷한 질문(임베딩
+          코사인)이 오면 이 구역을 검색 없이 근거 후보로 연다. <b>기각</b> = 다시
+          안 올라온다. 오답 착지는 기각하라 — 승인은 굳힘이다.</div>
+        <div class="bkpath">
+          <span class="plabel">질문${surfaces.length > 1 ? `(${surfaces.length}건)` : ""}</span>
+          ${surfaces.map((q) => `<span class="sub">· ${esc(q)}</span>`).join("")}
+          <span class="plabel">착지 구역</span>
+          ${r.exists
+            ? pathLink(r.doc_id, r.node, `${r.doc || ""} ▸ ${r.path || ""}`, "", "누르면 PDF 로")
+            : `<span class="sub">(구역이 색인에 없음 — 기각 대상)</span>`}
+          ${r.issue ? `<span class="sub">쟁점: ${esc(r.issue)}</span>` : ""}
+        </div>
+        <div class="acts">
+          <button class="yes" data-mmact="승인" ${r.exists ? "" : "disabled"}>승인 — 질문 기억으로</button>
+          <button class="no" data-mmact="기각">기각</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
   /* ---------------------------------------------------------- 그리기 */
   function render() {
     const bl = BK.data;
     const edges = bl.edges || [], fixes = bl.fixes || [];
     const struct = bl.struct || [], misses = bl.misses || [], miss = bl.miss || {};
+    const memory = bl.memory || [], mc = bl.memory_counts || {};
 
     if (els.stats) els.stats.textContent =
       `오참조 ${edges.length} · 구조화오류 ${struct.length} · 회수 결함 ${misses.length}`
@@ -262,7 +296,8 @@ function bkMount(els) {
          ? ` (검색 ${miss.검색무관 || 0} · 참조 ${miss.참조무관 || 0})` : "")
       + ` │ 규칙 — 억제 ${bl.suppressed ?? 0} · 재지정 ${bl.redirected ?? 0}`
       + ` · 후순위 ${bl.demoted ?? 0} · 진입제외 ${bl.entry_blocked ?? 0}`
-      + ` · 처리 ${bl.resolved ?? 0}`;
+      + ` · 처리 ${bl.resolved ?? 0}`
+      + ` │ 질문 기억 — 후보 ${mc.잠정 ?? memory.length} · 활성 ${mc.활성 ?? 0}`;
     if (els.fixStats) els.fixStats.textContent =
       `대기 ${fixes.length}건 · 재지정 규칙 ${bl.redirected ?? 0}`;
 
@@ -270,7 +305,8 @@ function bkMount(els) {
       (edges.length
         ? `<div class="sub" style="margin:0 0 5px">오참조 — 참조 해소가 좌표를 틀렸다는
              판정. 승인하면 그 연결을 안 쓴다 — 억제된 간선은
-             <a class="qlink" href="/links/">참조 화면</a>과 질의 확장에서 빠진다.</div>`
+             <a class="qlink" href="/links/">참조 화면</a>과 질의 확장에서 빠지고,
+             승인 사례가 쌓이면 <a class="qlink" href="/rules/">공리 루프</a>의 귀납이 규칙 후보로 묶는다.</div>`
           + edges.map(edgeCard).join("")
         : `<span class="sub">억제 대기 중인 오참조 간선이 없습니다</span>`)
       + (struct.length ? `<div class="sub" style="margin:12px 0 5px">구조화오류 —
@@ -280,7 +316,11 @@ function bkMount(els) {
       + (misses.length ? `<div class="sub" style="margin:12px 0 5px">회수 결함 —
           좌표는 맞는데 이번 질문에 안 맞은 것 (${misses.length}곳) · 연결은 지우지 않는다.
           <b>검색무관</b>은 진입 검색(벡터·용어)이, <b>참조무관</b>은 참조 확장이 빗나간 것이다</div>`
-          + misses.map(missCard).join("") : "");
+          + misses.map(missCard).join("") : "")
+      + (memory.length ? `<div class="sub" style="margin:12px 0 5px">질문 기억 후보 —
+          어렵게 찾아 답에 실린 착지 (잠정 ${mc.잠정 ?? memory.length} · 활성 ${mc.활성 ?? 0}).
+          승인한 것만 같은/비슷한 질문에서 검색 없이 열린다</div>`
+          + memory.map(memoryCard).join("") : "");
     const fixesHtml =
       fixes.map(fixCard).join("") || `<span class="sub">대기 중인 교정 제안이 없습니다</span>`;
 
@@ -331,6 +371,15 @@ function bkMount(els) {
           const g = struct[+b.closest(".bk").dataset.si];
           act("/v1/rag/verdicts/struct",
               { 구역: g.구역, action: b.dataset.sact }, b);
+        };
+      });
+      // 질문 기억 — 승인(활성)/기각(tombstone)
+      box.querySelectorAll(".bk.mem button[data-mmact]").forEach((b) => {
+        b.onclick = () => {
+          const r = memory[+b.closest(".bk").dataset.mmi];
+          act("/v1/rag/memory/resolve",
+              { qkey: r.qkey, doc_id: r.doc_id, node: r.node,
+                action: b.dataset.mmact }, b);
         };
       });
     });

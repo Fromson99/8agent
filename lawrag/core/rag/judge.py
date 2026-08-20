@@ -17,7 +17,7 @@ fail-closed: LLM 없음 · 저신뢰(<0.5) · 목록 밖 cid 는 전부 버린�
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:                      # 실행 시 의존을 만들지 않는다 — 타입만
     from lawrag.core.rag.index import Index
@@ -48,19 +48,23 @@ JUDGE_SCHEMA = {
 }
 
 
-def judge(llm, items: list[dict], kind: str = "rag.link.judge") -> dict:
+def judge(llm, items: list[dict], kind: str = "rag.link.judge",
+          max_tokens: Optional[int] = None) -> dict:
     """항목들을 한 번에 판정한다 — {id: {"cid","confidence","reason"}}.
 
     확신 있는 선택만 남는다. LLM 이 없거나 실패하면 빈 dict — 호출자는 그
-    항목들을 보류로 유지하면 된다(없는 링크가 잘못 이은 링크보다 낫다)."""
+    항목들을 보류로 유지하면 된다(없는 링크가 잘못 이은 링크보다 낫다).
+    출력 예산은 항목 수에 비례한다(픽 하나가 이유 200자까지 ~150토큰) —
+    고정 2000 이면 항목 15개부터 뒤가 잘려 조용히 보류로 남았다."""
     if llm is None or not items:
         return {}
     view = [{"id": it["id"], "ask": it.get("ask", ""),
              "context": it.get("context", ""), "candidates": it["candidates"]}
             for it in items]
+    budget = max_tokens or max(2000, 300 + 160 * len(items))
     out = llm.structured(kind, JUDGE_SYSTEM,
                          f"[판정 항목(JSON)]\n{json.dumps(view, ensure_ascii=False)}",
-                         JUDGE_SCHEMA, max_tokens=2000, effort="low")
+                         JUDGE_SCHEMA, max_tokens=budget, effort="low")
     if out is None:
         return {}
     valid = {it["id"]: {c["cid"] for c in it["candidates"]} for it in items}
@@ -76,13 +80,45 @@ def judge(llm, items: list[dict], kind: str = "rag.link.judge") -> dict:
     return picked
 
 
-def settle_cross(llm, index: "Index") -> tuple[list, dict]:
+SETTLE_BATCH = 20        # 한 콜에 넣는 보류 수 상한
+SETTLE_CHARS = 80_000    # 한 콜의 항목 JSON 글자 예산 — 후보 수백 개짜리 보류("동시행령 제3조"
+#                          처럼 문서명 없는 것은 후보가 600 개, 6만 자)가 몇 개만 모여도 20만
+#                          토큰 입력 상한을 넘는 실측(2026-08-19)이라 개수가 아니라 글자로 자른다
+
+
+def _batches(items: list[dict]) -> list[list[dict]]:
+    """개수·글자 예산 둘 다 지키는 묶음. 혼자서 예산을 넘는 항목은 혼자 간다."""
+    out: list[list[dict]] = []
+    cur: list[dict] = []
+    size = 0
+    for it in items:
+        n = len(json.dumps(it, ensure_ascii=False))
+        if cur and (len(cur) >= SETTLE_BATCH or size + n > SETTLE_CHARS):
+            out.append(cur)
+            cur, size = [], 0
+        cur.append(it)
+        size += n
+    if cur:
+        out.append(cur)
+    return out
+
+
+def settle_cross(llm, index: "Index",
+                 src_docs: Optional[set[str]] = None) -> tuple[list, dict]:
     """보류된 문서 간 참조를 판정해 확정 링크로 만든다.
 
     저장은 호출자가 한다(links.json) — 여기서는 좌표만 만든다. 후보 라벨은
     "문서명 ▸ 경로" 라서 모델이 문서 내용을 몰라도 이름과 원문 문맥으로
-    고를 수 있다."""
+    고를 수 있다.
+
+    src_docs 를 주면 그 문서에서 **출발하는** 보류만 판정한다 — 새 문서 몇 건을
+    넣고 그 참조만 굳히는 일이 전체(수천 건)를 다시 판정하는 일이 되면 안 된다.
+    판정은 개수(SETTLE_BATCH)·글자(SETTLE_CHARS) 예산으로 나눠 부른다 — 한 콜에
+    전부 넣으면 입력이 상한을 넘거나 응답이 잘려 뒤쪽 보류는 영영 판정되지 않는다.
+    """
     _, pending = index.cross_refs()
+    if src_docs is not None:
+        pending = [p for p in pending if p.get("src_doc") in src_docs]
     items: list[dict] = []
     for i, p in enumerate(pending):
         # 후보는 자르지 않는다 — 닫힌 목록에서 정답이 빠지면 판정 자체가 무효다.
@@ -100,7 +136,9 @@ def settle_cross(llm, index: "Index") -> tuple[list, dict]:
                       "ask": f"'{p['surface']}' (단서: {p['hint'] or '없음'}) 가 "
                              "가리키는 문서·구역은?",
                       "context": p.get("context", ""), "candidates": cands})
-    picks = judge(llm, items)
+    picks: dict = {}
+    for batch in _batches(items):
+        picks.update(judge(llm, batch))
     links: list[dict] = []
     for i, p in enumerate(pending):
         got = picks.get(f"p{i}")

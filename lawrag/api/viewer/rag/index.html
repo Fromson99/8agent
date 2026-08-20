@@ -37,6 +37,10 @@
         <input type="checkbox" id="optRecover" checked> 탐험</label>
       <label class="chk" title="기본: 벡터로 진입 → 참조 간선을 따라 연결 구역을 전부 싣는다. 출처는 회수 집합 그대로(정적). 끄면 용어 사다리">
         <input type="checkbox" id="optVector" checked> 벡터 우선</label>
+      <!-- 질의 스코프 — "이 문서들만 대상으로". 목록은 data/rag/scopes.yml (+ 내장 외규·내규·서식).
+           진입은 스코프 안에서만, 동반(배제·위임·준용…)은 밖으로 나가되 표식이 붙는다. -->
+      <label class="chk scope" title="질의 스코프 — 이 문서 묶음만 검색한다 (정의: data/rag/scopes.yml · 목록 /v1/rag/scopes)">
+        범위 <select id="optScope"><option value="">전체</option></select></label>
     </div>
   </section>
 

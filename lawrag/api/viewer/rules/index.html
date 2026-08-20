@@ -15,7 +15,9 @@
   <span class="ui-meta" id="summary">불러오는 중…</span>
   <span class="grow"></span>
   <span id="modePill" class="mode"></span>
+  <button id="induceBtn" class="induce" title="승인 사례를 군집화 → 일반화 → replay 검증 → 잠정 등재. 발동은 없다">귀납 실행</button>
 </header>
+<pre id="induceOut" class="induce-out hidden"></pre>
 <h1 class="sr">공리 루프 — 규칙의 생애</h1>
 
 <div id="breaker" class="banner hidden"></div>
@@ -62,10 +64,9 @@
 
   <section class="empty hidden" id="empty">
     <h2>아직 규칙이 없습니다</h2>
-    <p>루프의 첫 바퀴: 질의응답 백로그에서 <b>교정을 3건 이상 승인</b>하면
-       귀납이 사례를 묶어 잠정 규칙을 만들 수 있습니다.</p>
-    <button id="induceBtn">귀납 실행 — 승인 사례를 규칙 후보로</button>
-    <pre id="induceOut" class="hidden"></pre>
+    <p>루프의 첫 바퀴: <a href="/rag/#backlog">질의응답 백로그</a>에서
+       <b>교정을 3건 이상 승인</b>하면 상단의 <b>귀납 실행</b>이 사례를 묶어
+       잠정 규칙을 만들 수 있습니다.</p>
   </section>
 </main>
 </body>

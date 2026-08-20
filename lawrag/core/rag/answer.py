@@ -60,27 +60,82 @@ class Section:
     # 참조 확장으로 끌려온 구역이면 — 어느 간선이 데려왔나. 판정 지문이
     # "이 간선이 잘못됐다"를 좌표로 찍으려면 출발점이 남아 있어야 한다.
     ref_src: Optional[dict] = None
+    # 용어 진입이면 — 어느 용어(키)가 데려왔나. 실적(hits·misses)은 표면형이
+    # 아니라 용어 행에 쌓여야 한다("PSV" 진입도 안전밸브의 실적).
+    term_key: Optional[str] = None
+    # 질의 스코프 밖에서 동반(배제·위임·준용·수임·정의·제재·참조·항해)으로
+    # 끌려온 구역 — 진입은 스코프 안에서만 일어나므로 이 표식이 붙은 구역은
+    # 반드시 ref_src 가 있다. 답변·출처에 "스코프 밖 동반" 으로 보인다.
+    scope_out: bool = False
+
+    @property
+    def is_companion(self) -> bool:
+        """동반으로 왔나(진입이 아니라) — 간선 출발점(ref_src)이 있으면 동반이다."""
+        return self.ref_src is not None
 
     def cite(self) -> dict:
-        return {"n": self.n, "doc_id": self.doc_id, "doc": self.doc,
-                "node": self.node, "path": self.path, "page": self.page,
-                "block": self.block}
+        d = {"n": self.n, "doc_id": self.doc_id, "doc": self.doc,
+             "node": self.node, "path": self.path, "page": self.page,
+             "block": self.block}
+        if self.scope_out:
+            d["scope_out"] = True
+        return d
+
+
+# ------------------------------------------------------------------ 스코프
+def enforce_scope(index: Index, sections: list[Section]) -> tuple[list[Section], dict]:
+    """질의 스코프의 마지막 보루 — 채널이 무엇을 놓쳤든 여기서 불변식이 선다.
+
+    - 스코프 밖 **진입**(ref_src 없음 — 벡터·용어·본문·기억·회복·카드)은 버린다
+    - 스코프 밖 **동반**(ref_src 있음 — 배제·위임·준용·수임·정의·제재·참조·항해)은
+      남기되 scope_out 표식을 붙인다 (2026-08-19 결정: 동반은 밖으로 나가도 된다)
+    반환 (구역들, {"dropped": [...], "out": n}) — 번호는 다시 매긴다."""
+    if index.scope is None:
+        return sections, {"dropped": [], "out": 0}
+    kept: list[Section] = []
+    dropped: list[dict] = []
+    n_out = 0
+    for s in sections:
+        if index.in_scope(s.doc_id):
+            kept.append(s)
+            continue
+        if s.is_companion:
+            s.scope_out = True
+            n_out += 1
+            kept.append(s)
+        else:
+            dropped.append({"doc_id": s.doc_id, "doc": s.doc, "node": s.node,
+                            "kind": s.kind, "path": s.path})
+    for i, s in enumerate(kept, start=1):
+        s.n = i
+    return kept, {"dropped": dropped, "out": n_out}
 
 
 # ------------------------------------------------------------------ 조립
-def assemble(index: Index, result: SearchResult) -> list[Section]:
+def assemble(index: Index, result: SearchResult,
+             seeds: Optional[list] = None) -> list[Section]:
     """히트 → 구역. 같은 (문서, 마디) 는 한 번만 싣는다 — 용어와 제목이 같은
-    자리를 가리키면 그것은 근거 하나지 둘이 아니다."""
+    자리를 가리키면 그것은 근거 하나지 둘이 아니다.
+
+    seeds 는 검색 없이 여는 좌표(질문 기억 — promote.direct_hits)다. 사람이
+    승인한 연결이라 히트보다 앞에 앉고 진입 제외를 받지 않는다. 히트는
+    **진입 제외**(검색무관 판정을 사람이 승인한 좌표)를 거른다 — 벡터 우선
+    경로(vecfirst)와 같은 규율이다. 참조 확장으로는 여전히 온다."""
+    from lawrag.core.rag import verdicts as verdicts_mod
+
     out: list[Section] = []
     seen: set[tuple] = set()
 
     def push(doc_id: str, node_id: Optional[int], kind: str, matched: str,
-             block: Optional[int] = None, page: Optional[int] = None) -> None:
+             block: Optional[int] = None, page: Optional[int] = None,
+             term_key: Optional[str] = None, entry: bool = True) -> None:
         v = index.docs.get(doc_id)
         if v is None:
             return
         key = (doc_id, node_id)
         if key in seen:
+            return
+        if entry and verdicts_mod.is_entry_blocked(doc_id, node_id):
             return
         seen.add(key)
         n = v.by_id.get(node_id)
@@ -90,8 +145,14 @@ def assemble(index: Index, result: SearchResult) -> list[Section]:
             n=0, doc_id=doc_id, doc=v.name, node=node_id,
             path=v.path(node_id) or v.name,
             page=page if page is not None else (n or {}).get("page"),
-            kind=kind, matched=matched, block=block,
+            kind=kind, matched=matched, block=block, term_key=term_key,
             text=v.section_outline(n, cap=SECTION_CHARS) if n else ""))
+
+    for c in seeds or []:
+        if not index.in_scope(c.get("doc_id", "")):    # 기억도 진입 — 스코프 밖은 안 연다
+            continue
+        push(c.get("doc_id", ""), c.get("node"), c.get("via") or "질문 기억",
+             (c.get("why") or "")[:80], entry=False)
 
     for h in result.hits:
         if len(out) >= CANDIDATES_MAX:
@@ -101,9 +162,10 @@ def assemble(index: Index, result: SearchResult) -> list[Section]:
             # **다루는** 자리)을 먼저, 본문 언급을 나중에.
             occ = sorted(h.occurrences,
                          key=lambda o: 0 if o.get("via") == "제목" else 1)
+            tkey = h.target.partition(":")[2] if h.target.startswith("term:") else None
             for o in occ[:TERM_SECTIONS]:
                 push(o.get("doc_id", ""), o.get("node"), "용어", h.value,
-                     block=o.get("block"), page=o.get("page"))
+                     block=o.get("block"), page=o.get("page"), term_key=tkey)
         else:
             # 값만 남기면 "무엇이 걸렸나"는 알아도 "어떻게 걸렸나"(정확·부분·
             # 하이브리드)를 모른다 — 검수는 그 둘이 다 있어야 선다.
@@ -126,6 +188,8 @@ def sections_from_coords(index: Index, coords: list[dict]) -> list[Section]:
         v = index.docs.get(c.get("doc_id"))
         node_id = c.get("node")
         if v is None or node_id is None or (c["doc_id"], node_id) in seen:
+            continue
+        if not index.in_scope(c["doc_id"]):         # 회복 착지도 진입 — 스코프 밖은 버린다
             continue
         seen.add((c["doc_id"], node_id))
         n = v.by_id.get(node_id)
@@ -446,6 +510,10 @@ def _context_text(sections: list[Section]) -> str:
         if s.kind.startswith("참조") and s.ref_src:
             head += (f"  ← 참조로 옴: 「{s.ref_src.get('path', '')}」 본문의 "
                      f"'{s.ref_src.get('surface', '')}'")
+        if s.scope_out:
+            # 질문이 정한 문서 범위 밖 — 간선(배제·위임·준용…)이 데려온 것이다.
+            # 모델이 이것을 "범위 안 조문" 처럼 근거의 중심에 세우지 않게 알린다.
+            head += "  ⟨질의 범위 밖 문서 — 간선으로 동반됨⟩"
         parts.append(f"{head}\n{s.text}")
     return "\n\n".join(parts)
 
@@ -484,10 +552,15 @@ def synthesize(llm, question: str, sections: list[Section],
     t0 = time.perf_counter()
     # 위키 맥락 — "어떻게 읽는가"의 배경 (wikictx.py 머리). 조문이 근거,
     # 위키는 방향이다 (ANSWER_SYSTEM ⑥). 끄면 기존 프롬프트 그대로다.
-    # 쟁점 카드(spots)가 먼저 선다 — 검색을 이끈 카드가 답의 방향도 안다.
+    # 순서: 쟁점 카드(검색을 이끈 카드) → 방법(회수 결과의 성격 — 단서·제재·
+    # 정의 동반이 깨운다) → 일반 아티클(문서명·낱말). 셋 다 코드 결정론이다.
     picks = list(spots or [])
     if switches.is_on("wiki_context"):
         have = {p["slug"] for p in picks}
+        for p in wikictx.methods_for(use):
+            if p["slug"] not in have:
+                picks.append(p)
+                have.add(p["slug"])
         picks += [p for p in wikictx.pick(question, {s.doc for s in use})
                   if p["slug"] not in have]
     user = (f"[질문]\n{question}\n\n[컨텍스트]\n{_context_text(use)}"

@@ -22,9 +22,12 @@ import re
 import time
 from typing import Optional
 
+from lawrag.core.rag import definitions as definitions_mod
 from lawrag.core.rag import expand as expand_mod
+from lawrag.core.rag import promote as promote_mod
+from lawrag.core.rag import termretrieve as termretrieve_mod
 from lawrag.core.rag import wikictx
-from lawrag.core.rag.answer import assemble, sections_from_coords
+from lawrag.core.rag.answer import assemble, enforce_scope, sections_from_coords
 from lawrag.core.rag.search import search as run_search
 from lawrag.core.casereview.model import (Fact, Issue, Norm, Req, ReviewState, Sub,
                                Verdict, req_leaves)
@@ -115,7 +118,18 @@ ISSUE_SYSTEM = (
     "배경 서술(지정·해당·설립 등)만 남으면 그 배경의 조문이 회수된다.\n"
     "⑥ 쟁점마다 why 에 **왜 이 사안에 이 쟁점이 걸리는지, 왜 이 카드인지**를 한두 "
     "문장으로 적고, confidence 에 핵심(질문이 직접 묻는 것)/부수(딸려 오는 것)를 "
-    "가른다 — 부수 쟁점은 뒤에서 판정의 무게를 낮춘다."
+    "가른다 — 부수 쟁점은 뒤에서 판정의 무게를 낮춘다.\n"
+    "⑦ 쟁점마다 `조문질의`를 1~2개 쓴다 — **이 쟁점이 찾는 조문이 실제로 쓰였을 "
+    "법한 문체의 서술문**이다. question·gate 는 판정의 언어(\"…에 해당하는가\", "
+    "\"…요건을 명시하는가\")라 조문 검색에 독이 된다(실측: 심사 언어로 국세기본법을 "
+    "뒤지니 정답 '국세행정에 대한 협조' 조는 40위 밖, 조문 문체 한 문장이면 1위). "
+    "규칙: · 조문이 쓰는 표현 — '…할 수 있다', '…하여야 한다', '…요청할 수 있다', "
+    "'…에 관하여는 …을 준용한다', '이 법 시행 당시'. · 구어·질문형·심사 언어 금지 — "
+    "'해당하는가', '명시되어 있는가', '요건을 갖추었는가'를 쓰지 않는다. · 사안의 "
+    "주체와 핵심 행위를 조문의 낱말로 넣는다(국세청→세무공무원, 넘겨줌→제공·협조 요청). "
+    "· 카드의 판단 축을 베끼지 마라 — 판단 축은 심사 기준이지 조문 문장이 아니다. "
+    "· 법령명·조번호는 넣지 마라(어휘 채널이 따로 문다) — 지어내면 엉뚱한 데 착지한다. "
+    "· 두 개를 쓸 때는 하나는 조문 직역형, 하나는 핵심 행위·주체만 남긴 짧은 형으로."
 )
 ISSUE_SCHEMA = {
     "type": "object",
@@ -126,8 +140,12 @@ ISSUE_SCHEMA = {
                        "regulation": {"type": "string",
                                       "enum": ["수평", "수직", "충돌", ""]},
                        "why": {"type": "string"},
-                       "confidence": {"type": "string", "enum": ["핵심", "부수"]}},
-        "required": ["question", "gate", "card", "regulation", "why", "confidence"],
+                       "confidence": {"type": "string", "enum": ["핵심", "부수"]},
+                       # 회수용 조문 문체 서술문 1~2개 — 벡터 채널 전용 (Issue.probes)
+                       # (maxItems 는 구조화 출력 스키마가 거부한다 — 파서가 [:2] 로 자른다)
+                       "조문질의": {"type": "array", "items": {"type": "string"}}},
+        "required": ["question", "gate", "card", "regulation", "why", "confidence",
+                     "조문질의"],
         "additionalProperties": False}}},
     "required": ["issues"], "additionalProperties": False,
 }
@@ -202,7 +220,9 @@ def spot_issues(llm, facts: list, limit: int = ISSUE_MAX) -> list:
             regulation=reg if reg in ("수평", "수직", "충돌") else None,
             card=row["slug"] if row else None,
             why=str(it.get("why", ""))[:300],
-            core=(it.get("confidence") != "부수")))
+            core=(it.get("confidence") != "부수"),
+            probes=[str(x).strip()[:wikictx.PROBE_MAX_CHARS]
+                    for x in (it.get("조문질의") or [])[:2] if str(x).strip()]))
     if issues:
         return issues
     net = _issues_from_cards(facts, limit)
@@ -338,12 +358,18 @@ def _is_deleted(text: str) -> bool:
     return bool(_DELETED.match((text or "").strip()[:40]))
 
 
+# ── 카드 조문 후보 → 좌표 (퇴역, 2026-08-18) ────────────────────────────
+# 아래 둘은 회수 경로에서 뺐다 — 카드 조문 후보는 컴파일 사례의 좌표라 사안이
+# 다르면 다른 조를 가리킨다(build_norms 머리의 18-0124 실측). 코드는 남긴다:
+# 사용자·피드백 루프가 **승인한** 쟁점↔조문 연결을 좌표로 여는 고리가 생기면
+# 그때 이 함수들이 그 연결(카드 메타가 아니라 승인 원장)을 읽어 되살아난다.
+
+
 def _target_laws(spots: list) -> set:
     """쟁점 카드의 조문 후보에서 **법령명만** 추린다 (조문 번호는 버린다).
 
-    회수 순위가 사안의 배경 법(증권사 사안이면 자본시장법)에 쏠려, 정작
-    쟁점이 지목한 법(개인정보 보호법)이 상한에 밀려 안 들어오는 일이 있었다.
-    법령명을 알아 두면 그 법의 구역을 앞자리에 세울 수 있다.
+    (퇴역 — 회수 경로 밖. 위 블록 머리.) 회수 순위가 사안의 배경 법에 쏠려
+    쟁점이 지목한 법이 상한에 밀리던 시절의 앞자리 승격 장치였다.
     """
     out = set()
     for s in spots:
@@ -355,7 +381,7 @@ def _target_laws(spots: list) -> set:
 
 
 def _coords_of(idx, spots: list) -> list:
-    """조문 후보 문자열을 구조 스토어의 좌표로 해석한다.
+    """조문 후보 문자열을 구조 스토어의 좌표로 해석한다. (퇴역 — 회수 경로 밖.)
 
     "「개인정보 보호법」 제17조제1항" → (그 문서, 제17조 마디). 검색은 색인값
     (조문 제목·용어)이 질의 **안에** 있는지를 보므로 이런 인용 문자열을 못 문다
@@ -401,8 +427,9 @@ def _cite_coords(idx, text: str) -> list:
     인용만 좌표로 열어도 잡힌다(2026-08-16 결정론 실측). 그런데 회수가
     LLM 이 재작성한 쟁점 질문으로 검색하면서 원문에 있던 좌표가 증발했다
     (실측 26-0271: "같은 법 시행령 제41조제2항"이라 써 있는데 못 데려옴).
-    카드 조문 후보를 좌표로 여는 _coords_of 와 같은 원리다 — **입력이 법과
-    조를 이미 알려 준 이상 찾을 것이 아니라 펼 것이다.**
+    **입력이 법과 조를 이미 알려 준 이상 찾을 것이 아니라 펼 것이다.** 이것이
+    좌표를 여는 유일한 통로다 — 사안 **자신**이 쓴 좌표라 사안과 어긋날 수 없다
+    (카드 조문 후보는 남의 사례 좌표라 여기서 뺐다, build_norms 머리).
 
     대용어(같은 법·동법)는 직전 「법령명」으로 해소한다 — 회답 문체의 관례.
     단 그 표는 문서 선언이 아니라 문맥이라, 낫표 인용이 하나도 없으면 풀지
@@ -445,7 +472,10 @@ def _spot_for(issue: Issue, q: str) -> list:
         for r in wikictx._rows():
             if r["slug"] == issue.card:
                 return [wikictx._card_pick(r, ["쟁점 도출이 지목"], 0, "쟁점")]
-    return wikictx.spot(q)
+    # 엔진 스위치(issue_spot)는 질의응답과 검토가 같이 본다 — 사용자가 끄면
+    # 트리거 매칭도 검토 트랙에서 빠진다(카드 직접 지목은 스위치 밖이다).
+    from lawrag.core.rag import switches as switches_mod
+    return wikictx.spot(q) if switches_mod.is_on("issue_spot") else []
 
 
 _ART_SURFACE = re.compile(r"^제\d+(?:-\d+)?조(?:의\d+)?$")
@@ -478,9 +508,10 @@ def _vector_sections(idx, query: str, exclude: set, topk: int = 12) -> list:
     목록 — 호출부는 벡터가 없다와 못 한다를 구별할 필요가 없다.
     """
     from lawrag.core.rag import vector as vector_mod
+    from lawrag.core.rag import verdicts as verdicts_mod
     from lawrag.core.rag.answer import SECTION_CHARS, Section
     try:
-        nodes = vector_mod.search(query, topk=topk)
+        nodes = vector_mod.search(query, topk=topk, doc_ids=idx.scope)   # 진입은 스코프 안만
     except Exception as exc:                          # 모델·색인 부재
         log.warning("벡터 채널 실패 — 어휘만으로 간다: %s", exc)
         return []
@@ -492,6 +523,11 @@ def _vector_sections(idx, query: str, exclude: set, topk: int = 12) -> list:
         art = _article_of(v, node)
         key = (doc_id, art)
         if key in seen or key in exclude:
+            continue
+        # 진입 제외 — 질의응답 백로그에서 "검색무관→진입제외"로 승인된 좌표는
+        # 검토 트랙의 벡터 진입에서도 뺀다(같은 규율, 참조 동반으로는 온다).
+        if (verdicts_mod.is_entry_blocked(doc_id, node)
+                or verdicts_mod.is_entry_blocked(doc_id, art)):
             continue
         seen.add(key)
         n = v.by_id.get(art)
@@ -672,7 +708,24 @@ def _sibling_and_defn(idx, secs: list, cap: int = 8) -> list:
                         path=v.path(ids[j]) or v.name, page=sib.get("page"),
                         kind="이웃", matched=sib.get("surface") or "",
                         text=v.section_outline(sib, cap=SECTION_CHARS) if sib else ""))
-        # ── 정의 조 — 그 법에 하나만
+        # ── 정의 — 이 조문에 **쓰인** 정의어의 호만 (definitions.terms_in, 2026-08-18).
+        #    옛 판은 그 법의 "용어의 뜻" 조 하나를 통째로 열었다 — 개보법이면 호
+        #    열 개가 실려 판정이 그 안에서 스스로 찾아야 했다. 이제 개보법
+        #    제17조엔 개인정보처리자(5호)·개인정보(1호)·정보주체(3호)·처리(2호)만.
+        #    쓰인 정의어가 하나도 없으면 옛 판처럼 관할 정의 조 하나로 폴백.
+        used = definitions_mod.terms_in(v, s.node)
+        if used:
+            for d in used:
+                if (s.doc_id, d["node"]) in have:
+                    continue
+                have.add((s.doc_id, d["node"]))
+                dn = v.by_id.get(d["node"]) or {}
+                out.append(Section(
+                    n=0, doc_id=s.doc_id, doc=v.name, node=d["node"],
+                    path=v.path(d["node"]) or v.name, page=dn.get("page"),
+                    kind="정의", matched=f"'{d['term']}'",
+                    text=v.section_outline(dn, cap=SECTION_CHARS) if dn else ""))
+            continue
         if s.doc_id in seen_defn:
             continue
         seen_defn.add(s.doc_id)
@@ -718,33 +771,20 @@ def build_norms(idx, issue: Issue, state: ReviewState,
 
     # 지목 조문은 **좌표로 연다** — 검색을 거치지 않는다. 색인값은 조문 제목이라
     # "「개인정보 보호법」 제17조제1항" 같은 문자열은 검색으로 안 물린다(실측).
-    # ① 입력 문면의 인용(사안 자신의 좌표 — 가장 강한 신호)이 맨 앞,
-    # ② 카드의 조문 후보는 **질문이 그 법령을 언급할 때만** 연다 — 카드의 조문 후보는
-    #    그 카드를 컴파일할 때 본 사례들의 조문이라 사안이 다르면 무관하다(실측
-    #    15-0720: 정보공개법 질문에 「포섭의 경계」 카드가 개인정보법 제2조·공정거래법
-    #    제47조를, 「다른 법률 근거의 문턱」이 개인정보법 제18조·국세기본법을 끌어와
-    #    규범 12개 중 7개가 잡음이었다). 카드의 판단 축은 일반화되지만 조문 후보는
-    #    그렇지 않다.
-    # 스코프 = 질문 원문 + 이 쟁점의 문장·관문. 쟁점이 "개인정보를 넘겨도 되는가"라고
-    # 법령명 없이 물어도 카드 조문 후보의 법령명이 쟁점 문장에 없으면 안 연다 — 대신
-    # 그 법은 어휘 사다리·회수 바닥이 스스로 찾아온다(밑의 pool). 카드가 조문을
-    # **밀어 넣는** 길만 막는 것이지, 그 법이 오는 길을 막는 게 아니다.
-    scope = wikictx._pack((state.question or "") + " " + issue.question + " " + issue.gate)
-    spots_scoped = []
-    for sp in spots or []:
-        provs = []
-        for pv in sp.get("provisions", []):
-            m = _PROVISION.search(pv)
-            law = wikictx._pack((m.group("a") or m.group("b") or "")) if m else ""
-            # 법령 정식명은 길다 — 핵심 두 어절(예: "개인정보보호법")이 스코프에 있으면 연다
-            key = law.replace("에관한법률", "").replace("법률", "법")
-            if law and (law in scope or (len(key) >= 4 and key in scope)):
-                provs.append(pv)
-        if provs:
-            spots_scoped.append({**sp, "provisions": provs})
-    targets = _target_laws(spots_scoped)   # 앞자리 승격도 스코프 안의 법만
-    coords = _cite_coords(idx, state.question) \
-        + (_coords_of(idx, spots_scoped) if spots_scoped else [])
+    # 좌표를 여는 것은 **입력 문면의 인용**(사안 자신의 좌표 — 가장 강한 신호)
+    # 하나뿐이다. 카드의 조문 후보는 열지 않는다(2026-08-18 사용자 결정) —
+    # 그것은 카드를 컴파일할 때 본 사례들의 좌표라 사안이 다르면 다른 조를
+    # 가리킨다. 실측 18-0124: 쟁점기가 국세기본법을 정확히 지목했는데 카드
+    # 후보(제81조의13 비밀 유지)가 좌표로 열려 앞자리를 잡고, 그 동반(벌칙·정의)
+    # 까지 딸려 와 규범 6칸을 채우는 바람에 벡터가 찾을 정답(제84조 국세행정에
+    # 대한 협조)이 실릴 자리가 없었다. 카드의 소임은 질문을 조문 문체로 옮기는
+    # 것(probe → 벡터)이지 좌표 연결이 아니다. 사용자·피드백 루프가 승인한
+    # 연결만 좌표가 될 수 있고, 그 고리는 아직 없다.
+    coords = _cite_coords(idx, state.question)
+    # 승인 원장의 **활성** 연결 — 어렵게(깔때기) 찾아 사람이 승인한 착지는 다음
+    # 질의에서 검색 없이 연다(promote.direct_hits: 같은 질문 → 비슷한 질문).
+    # 잠정은 안 연다 — 오답 착지도 착지다.
+    coords += promote_mod.direct_hits(state.question)
     prior = sections_from_coords(idx, coords) if coords else []
     prior = [s for s in prior if not _is_deleted(s.text)]
     # ③ 필수 동반 — 착지 조문의 위임·배제·수임·준용을 판단 없이 동반한다.
@@ -762,16 +802,30 @@ def build_norms(idx, issue: Issue, state: ReviewState,
     #    벡터이고, 어휘 앵커는 우연한 제목 일치일 때가 많다(도크스트링 실측).
     lex = [s for s in assemble(idx, run_search(idx, qx))
            if not _is_deleted(s.text) and (s.doc_id, s.node) not in have]
-    vec = [s for s in _vector_sections(idx, qx, have, topk=limit * 2)
-           if not _is_deleted(s.text)]
+    # 벡터 채널은 **조문 문체 서술문(probes)** 으로 간다 — question·gate 는
+    # 판정의 언어(심사)라 벡터가 엉뚱한 조를 문다(실측 18-0124: 심사 언어로는
+    # 정답 제84조가 40위 밖, 조문 문체 한 문장이면 1위). 어휘 채널은 여전히
+    # question·gate·법령명을 문다 — 채널마다 무는 문장이 다르다(wikictx.vector_query
+    # 실측: 법령명 섞은 질의가 코사인은 높고 내용은 최악). probes 가 없으면(옛
+    # 쟁점·안전망 쟁점) qx 로 폴백. probe 둘이면 둘 다 돌려 순위 번갈아 합류.
+    vqs = [pr for pr in (issue.probes or []) if pr] or [qx]
+    vec_runs = [[s for s in _vector_sections(idx, vq, have, topk=limit * 2)
+                 if not _is_deleted(s.text)] for vq in vqs]
+    vec = vec_runs[0] if len(vec_runs) == 1 else _interleave(vec_runs[0], vec_runs[1])
     pool = _interleave(vec, lex)
-    # 좌표로 못 연 지목 법이 검색 결과에 있으면 그것도 앞자리로 올린다
-    prior += [s for s in pool if wikictx._pack(s.doc) in targets]
     rest = [s for s in pool if s not in prior]
     norms = []
     # 정의 마디 — 상한 밖의 별도 칸으로 뺀다(ReviewState.glossary). 회수한 법의
     # "용어의 뜻" 조 하나씩이고, 규범 6칸을 잡아먹지 않는다.
     picked = (prior + rest)[:limit]
+    # ③′ 필수 동반을 **검색으로 찾은 조문에도** 건다 (2026-08-18 발견 — 그전엔
+    #    문면 인용 좌표(prior)에만 걸려, 좌표 없는 구어 질문(B트랙)에선 배제·위임·
+    #    수임·준용·제재 동반이 검토 경로에서 한 번도 안 돌았다). 동반은 상한 밖
+    #    +4 까지, 정의는 여기서 빼고 아래 glossary 칸(호 단위)이 맡는다.
+    picked = [x for x in expand_mod.expand_floor(idx, picked, cap=limit + 4)
+              if x.kind != "정의" and not _is_deleted(x.text)]
+    # 질의 스코프 보루 — 진입이 밖으로 샜으면 버리고 동반은 표식(scope_out).
+    picked, _ = enforce_scope(idx, picked)
     used = {(x.doc_id, x.node) for x in picked}
     state.glossary += [x for x in _sibling_and_defn(idx, picked, cap=limit)
                        if x.kind == "정의" and not _is_deleted(x.text)
@@ -1123,6 +1177,254 @@ def interpret_case(llm, st: ReviewState, idx=None) -> Optional[dict]:
 
 
 # ---------------------------------------------------------------- 관통
+# ====================================================================
+# 회수 먼저, 쟁점은 뒤 (2026-08-18 재구조화)
+#
+# 옛 순서는 사실 → 쟁점(최대 4) → 쟁점마다 회수 6 → 포섭 이었다. 쟁점이
+# **회수 단위**였고 그게 문제였다: (a) 쟁점 문장은 판단 축의 언어(심사)라
+# 벡터를 엉뚱한 데로 보내고(18-0124: 정답 40위 밖), (b) 쟁점 3~4개가 각자
+# 회수해 규범이 23~31개로 불어 판정이 흐려지며(2026-08-18 예시 4건: 회수는
+# 6/12→10/12 올랐는데 판정 둘이 유보로 물러남), (c) 쟁점 재현율 41%가
+# 회수 입력의 요동이 됐다. 오늘 회수를 올린 것들(원장 직행·정의어 호·법
+# 스코프 깔때기·동반·probe)은 하나도 쟁점을 필요로 하지 않았다.
+#
+# 새 순서: 사실 → 재작성 1회 → **회수 1회**(검토 전체) → 회수된 조문을 **보고**
+# 쟁점 판정 → 요건 → 포섭 → (부족하면 깔때기 1회) → 판정. 쟁점의 진짜 값은
+# "무엇을 따질 것인가"(판정 골격·카드·판단 축)이고 그건 조문을 본 뒤가 제자리다
+# — 질의응답 경로의 issue_spot_llm 이 이미 이 순서였고, 실무 순서이기도 하다.
+# ====================================================================
+REVIEW_NORMS = 8          # 검토 전체의 규범 상한 (옛: 쟁점당 6 × 최대 4)
+PROBE_SYSTEM = (
+    "너는 법령 검색용 질의 번역기다. 사용자 질문을 받아, 그 답이 될 조문이 **실제로 "
+    "쓰였을 법한 문체**의 서술문 2개를 쓴다 — 하나는 조문 직역형, 하나는 핵심 "
+    "주체·행위만 남긴 짧은 형. 규칙: 조문 문체('…할 수 있다'·'…하여야 한다'·"
+    "'…요청할 수 있다'·'이 법 시행 당시') · 구어·질문형·심사 언어('해당하는가'·"
+    "'명시되어 있는가'·'요건')는 쓰지 않는다 · 사안의 주체·행위를 조문의 낱말로 옮긴다"
+    "(국세청→세무공무원, 넘겨줌→제공·협조 요청) · 법령명·조번호는 넣지 않는다 — "
+    "지어내면 엉뚱한 데 착지한다."
+)
+PROBE_SCHEMA = {"type": "object",
+                "properties": {"probes": {"type": "array", "items": {"type": "string"}}},
+                "required": ["probes"], "additionalProperties": False}
+
+
+def write_probes(llm, question: str) -> list:
+    """재작성 1회 — 질문 → 조문 문체 1~2문장 (벡터 채널 전용). 실패면 빈 목록
+    (호출부가 원문으로 폴백). 44마디 실측: probe 가 top1 을 두 배로 올린다."""
+    if llm is None:
+        return []
+    out = llm.structured("review.probes", PROBE_SYSTEM, f"[질문]\n{question}",
+                         PROBE_SCHEMA, max_tokens=300, effort="low")
+    if not out:
+        return []
+    return [str(x).strip()[:wikictx.PROBE_MAX_CHARS]
+            for x in (out.get("probes") or [])[:2] if str(x).strip()]
+
+
+def _norms_from_sections(idx, secs: list, state: ReviewState) -> list:
+    """구역 → Norm (요건은 마디에서). 상태에 누적."""
+    out = []
+    for s in secs:
+        v = idx.docs.get(s.doc_id)
+        reqs = _reqs_from_nodes(v, s.doc_id, s.node) if v is not None else []
+        if not reqs:
+            body = re.sub(r"\s+", " ", s.text or "").strip()
+            if not body:
+                continue
+            reqs = [Req(text=body[:REQ_STEM_CHARS], node=s.node,
+                        id=Req.coord_id(s.doc_id, s.node))]
+        n = Norm(doc=s.doc, doc_id=s.doc_id, node=s.node, path=s.path,
+                 reqs=reqs, effect="")
+        out.append(n)
+        state.norms.append(n)
+    return out
+
+
+def _query_definitions(idx, question: str, cap: int = 3) -> list:
+    """질문에 쓰인 정의어 → 정의 호 (좌표 직행, 결정론). 긴 낱말 우선."""
+    from lawrag.core.rag import definitions as definitions_mod
+    from lawrag.core.rag.answer import SECTION_CHARS, Section
+    pq = wikictx._pack(question)
+    hits = []
+    for did, v in idx.docs.items():
+        for d in definitions_mod.defs(v):
+            t = wikictx._pack(d["term"])
+            if len(t) >= 3 and t in pq and d["scope"] == "doc":
+                hits.append((did, d))
+    hits.sort(key=lambda x: -len(x[1]["term"]))
+    out, seen = [], set()
+    for did, d in hits:
+        if (did, d["node"]) in seen:
+            continue
+        seen.add((did, d["node"]))
+        v = idx.docs[did]; dn = v.by_id.get(d["node"]) or {}
+        out.append(Section(n=0, doc_id=did, doc=v.name, node=d["node"],
+                           path=v.path(d["node"]) or v.name, page=dn.get("page"),
+                           kind="정의", matched=f"질문의 '{d['term']}'",
+                           text=v.section_outline(dn, cap=SECTION_CHARS) if dn else ""))
+        if len(out) >= cap:
+            break
+    return out
+
+
+def retrieve_once(idx, state: ReviewState, probes: list,
+                  limit: int = REVIEW_NORMS, llm=None) -> list:
+    """검토 전체에 **한 번** 회수한다 — 질문에서. 쟁점은 이 뒤에 온다.
+
+    통로 (2026-08-18 회수 전략): ① 좌표 직행 — 문면 인용 · 원장 활성 · **용어집
+    회수**(질문 → 용어 정확/이웃 → LLM 판별·조립 → 프레임 일치 조문, termretrieve)
+    ② 검색으로 채움(벡터=probe, 어휘=원문) ③ 필수 동반(배제·위임·수임·준용·제재;
+    정의는 호 단위로 glossary). 상한 limit(+동반 4). 용어집이 빈손이면 trail 에
+    남기고 되먹임(깔때기)이 받는다."""
+    q = state.question or ""
+    coords = _cite_coords(idx, q) + promote_mod.direct_hits(q)
+    tcoords, tmeta = termretrieve_mod.retrieve(llm, idx, q)
+    coords += tcoords
+    state.step("용어집", len(tcoords),
+               ("정확 " + " · ".join(tmeta.get("exact", [])[:5])
+                + (" | 프레임 " + " / ".join(
+                    "→".join(f.get(k, "") for k in ("actor", "act", "target", "object"))
+                    for f in tmeta.get("frames", [])) if tmeta.get("frames") else f" | {tmeta.get('narrow', '')} → 메뉴 {tmeta.get('menu', 0)} → 선택 {len(tcoords)}"))[:160])
+    prior = sections_from_coords(idx, coords) if coords else []
+    prior = [s for s in prior if not _is_deleted(s.text)]
+    have = {(s.doc_id, s.node) for s in prior}
+    lex = [s for s in assemble(idx, run_search(idx, q))
+           if not _is_deleted(s.text) and (s.doc_id, s.node) not in have]
+    vqs = [p for p in (probes or []) if p] or [q]
+    runs = [[s for s in _vector_sections(idx, vq, have, topk=limit * 2)
+             if not _is_deleted(s.text)] for vq in vqs]
+    vec = runs[0] if len(runs) == 1 else _interleave(runs[0], runs[1])
+    pool = _interleave(vec, lex)
+    picked = (prior + [s for s in pool if s not in prior])[:limit]
+    picked = [x for x in expand_mod.expand_floor(idx, picked, cap=limit + 4)
+              if x.kind != "정의" and not _is_deleted(x.text)]
+    # 질의 스코프 보루 — 진입이 밖으로 샜으면 버리고 동반은 표식(scope_out).
+    picked, _ = enforce_scope(idx, picked)
+    used = {(x.doc_id, x.node) for x in picked}
+    gl_have = {(g.doc_id, g.node) for g in state.glossary}
+    for x in _query_definitions(idx, q) + _sibling_and_defn(idx, picked, cap=limit):
+        if x.kind == "정의" and not _is_deleted(x.text) \
+                and (x.doc_id, x.node) not in used and (x.doc_id, x.node) not in gl_have:
+            gl_have.add((x.doc_id, x.node))
+            state.glossary.append(x)
+    return _norms_from_sections(idx, picked, state)
+
+
+ISSUE_SYSTEM_AFTER = (
+    ISSUE_SYSTEM[:ISSUE_SYSTEM.index("⑦ 쟁점마다 `조문질의`")].rstrip()
+    + "\n⑦ [회수된 조문]이 함께 온다 — **조문을 읽고** 이 사안에 실제로 걸린 쟁점만 "
+      "세운다(조문이 드러낸 준용·부칙·배제 구조가 쟁점이 되기도 한다). 쟁점마다 "
+      "관련 조문의 번호를 norms 에 적는다(없으면 빈 배열 = 회수가 못 데려온 쟁점 — "
+      "그것도 발견이다). 카드의 판단 축을 question·gate 에 베끼지 마라 — 사안의 말로 써라."
+)
+ISSUE_SCHEMA_AFTER = {
+    "type": "object",
+    "properties": {"issues": {"type": "array", "items": {
+        "type": "object",
+        "properties": {"question": {"type": "string"}, "gate": {"type": "string"},
+                       "card": {"type": "string"},
+                       "regulation": {"type": "string", "enum": ["수평", "수직", "충돌", ""]},
+                       "why": {"type": "string"},
+                       "confidence": {"type": "string", "enum": ["핵심", "부수"]},
+                       "norms": {"type": "array", "items": {"type": "integer"}}},
+        "required": ["question", "gate", "card", "regulation", "why", "confidence", "norms"],
+        "additionalProperties": False}}},
+    "required": ["issues"], "additionalProperties": False,
+}
+
+
+def spot_issues_after(llm, facts: list, norms: list, limit: int = ISSUE_MAX) -> list:
+    """② 쟁점 판정 — **회수된 조문을 보고** 세운다. LLM 이 없거나 빈손이면 트리거
+    안전망(_issues_from_cards). 쟁점마다 참조한 규범 id 를 Issue.norms 에 단다
+    (빈 목록이면 전부)."""
+    rows = [r for r in wikictx._rows() if r["slug"].startswith("쟁점/")]
+    if llm is None or not rows:
+        return _issues_from_cards(facts, limit)
+    menu = "\n".join(f"- {r['slug']} | {r['title']} | 판단 축: "
+                     f"{wikictx._meta(r['text']).get('판단 축', '')}" for r in rows)
+    fact_txt = "\n".join(f"- [{f.id}] {f.subject} / {f.action} / {f.object}"
+                         f" ({f.tense}) — {f.text}" for f in facts)
+    norm_txt = "\n".join(
+        f"[{i}] {n.doc} ▸ {n.path.split(' ▸ ')[-1]} — "
+        f"{re.sub(r'\s+', ' ', (n.reqs[0].text if n.reqs else ''))[:120]}"
+        for i, n in enumerate(norms, start=1))
+    user = (f"[정리된 사실]\n{fact_txt}\n\n[회수된 조문]\n{norm_txt}\n\n"
+            f"[쟁점 카드 목록]\n{menu}")
+    out = llm.structured("review.issues", ISSUE_SYSTEM_AFTER, user, ISSUE_SCHEMA_AFTER,
+                         max_tokens=_ISSUE_MAX_TOKENS, effort="medium")
+    if out is None or not out.get("issues"):
+        log.info("쟁점(회수 후) 빈손 — 재시도")
+        out = llm.structured("review.issues", ISSUE_SYSTEM_AFTER,
+                             user + "\n\n[재시도] 조문에 규제 대상 행위가 있으면 반드시 쟁점을 세워라.",
+                             ISSUE_SCHEMA_AFTER, max_tokens=_ISSUE_MAX_TOKENS, effort="medium")
+    if out is None:
+        return _issues_from_cards(facts, limit)
+    by_slug = {r["slug"]: r for r in rows}
+    issues = []
+    for it in out.get("issues", [])[:limit]:
+        row = by_slug.get(str(it.get("card") or "").strip())
+        reg = str(it.get("regulation") or "") or None
+        refs = [norms[i - 1].id for i in (it.get("norms") or [])
+                if isinstance(i, int) and 1 <= i <= len(norms)]
+        issues.append(Issue(
+            question=str(it.get("question", ""))[:200], gate=str(it.get("gate", ""))[:200],
+            axis=(wikictx._meta(row["text"]).get("판단 축", "") if row else ""),
+            regulation=reg if reg in ("수평", "수직", "충돌") else None,
+            card=row["slug"] if row else None, why=str(it.get("why", ""))[:300],
+            core=(it.get("confidence") != "부수"), norms=refs))
+    return issues or _issues_from_cards(facts, limit)
+
+
+INADEQUATE_RATIO = 0.8    # 불명·해당없음이 이 비율 이상이면 회수가 엉뚱했다고 본다
+REFETCH_MAX = 3           # 되먹임이 보충하는 규범 상한 — 보충이 본 회수를 밀어내면 안 된다
+
+
+def _inadequate(subs: list) -> bool:
+    """포섭 결과가 '이거 아닌데'인가 — 판정된 요건이 있는데 거의 전부 불명·해당없음."""
+    if not subs:
+        return True
+    off = sum(1 for x in subs if x.judgment in ("불명", "해당없음"))
+    return off / len(subs) >= INADEQUATE_RATIO
+
+
+def _refetch_by_funnel(llm, idx, issue: Issue, st: ReviewState,
+                       exclude: list) -> list:
+    """법 스코프 깔때기로 다시 찾아 규범을 보충한다 — 찾은 좌표는 승격 후보
+    (잠정)로 원장에 적는다(사람 승인 뒤에야 다음 회수의 직행 좌표가 된다)."""
+    from lawrag.core.rag import recover_domains, tuples as tuples_mod
+    q = " ".join(x for x in (st.question, issue.question, issue.gate) if x)
+    coords, meta = recover_domains.law_scoped_funnel(llm, idx, q)
+    st.step("되먹임(깔때기)", len(coords), meta.get("note", ""))
+    if not coords:
+        return []
+    have = {(n.doc_id, n.node) for n in exclude}
+    secs = [x for x in sections_from_coords(idx, coords)
+            if (x.doc_id, x.node) not in have and not _is_deleted(x.text)]
+    out = []
+    for x in secs[:REFETCH_MAX]:
+        v = idx.docs.get(x.doc_id)
+        reqs = _reqs_from_nodes(v, x.doc_id, x.node) if v is not None else []
+        if not reqs:
+            body = re.sub(r"\s+", " ", x.text or "").strip()
+            if not body:
+                continue
+            reqs = [Req(text=body[:REQ_STEM_CHARS], node=x.node,
+                        id=Req.coord_id(x.doc_id, x.node))]
+        n = Norm(doc=x.doc, doc_id=x.doc_id, node=x.node, path=x.path,
+                 reqs=reqs, effect="")
+        out.append(n)
+        st.norms.append(n)
+        issue.norms.append(n.id)
+    try:
+        tuples_mod.record_candidates(
+            st.question,
+            [{"doc_id": n.doc_id, "node": n.node, "via": "법 스코프 깔때기",
+              "card": issue.card or "", "issue": issue.question[:120]} for n in out])
+    except Exception:                                    # pragma: no cover
+        log.exception("깔때기 착지 원장 적재 실패 — 검토는 그대로 간다")
+    return out
+
+
 def run(llm, idx, text: str, track: str = "해석") -> ReviewState:
     """다섯 단계를 얇게 관통한다 — 상태 하나를 단계들이 갱신한다."""
     t0 = time.perf_counter()
@@ -1132,15 +1434,40 @@ def run(llm, idx, text: str, track: str = "해석") -> ReviewState:
     st.step("사실 확정", len(st.facts),
             " · ".join(f"{f.subject}:{f.action}" for f in st.facts[:3]))
 
-    st.issues = spot_issues(llm, st.facts)
-    st.step("쟁점 도출", len(st.issues),
+    # ② 재작성 1회 + 회수 1회 — 질문에서. 쟁점은 뒤다 (블록 머리).
+    probes = write_probes(llm, text)
+    all_norms = retrieve_once(idx, st, probes, llm=llm)
+    st.step("회수", len(all_norms),
+            (" · ".join(sorted({n.doc for n in all_norms}))[:70]
+             + (f" · probe {len(probes)}" if probes else " · probe 없음(원문)")))
+    if not all_norms:
+        # 아무것도 못 찾았으면 법 스코프 깔때기를 여기서 한 번 (빈손 트리거)
+        added = _refetch_by_funnel(llm, idx, Issue(question=text, gate=""), st,
+                                   exclude=[]) if llm is not None else []
+        all_norms = list(added)
+
+    # ③ 쟁점 판정 — 회수된 조문을 보고
+    st.issues = spot_issues_after(llm, st.facts, all_norms)
+    st.step("쟁점 판정", len(st.issues),
             " · ".join(i.question[:28] for i in st.issues) or "걸린 쟁점 없음")
     if not st.issues:
         return st
 
+    by_id = {n.id: n for n in all_norms}
+    refetched = False                     # 되먹임은 검토당 1회 — 규범 팽창 방지
     for issue in st.issues:
-        norms = build_norms(idx, issue, st)
+        norms = [by_id[i] for i in issue.norms if i in by_id] or list(all_norms)
         subs = subsume(llm, issue, norms, st.facts)
+        # 되먹임 — 포섭이 "이거 아닌데"면 법 스코프 깔때기로 직접 찾는다. 검토당
+        # 한 번만: 쟁점마다 되돌면 규범이 30개로 불어 판정이 흐려진다(예시 4건 실측).
+        if _inadequate(subs) and llm is not None and not refetched:
+            refetched = True
+            added = _refetch_by_funnel(llm, idx, issue, st, exclude=all_norms)
+            if added:
+                all_norms = all_norms + added
+                by_id.update({n.id: n for n in added})
+                subs = subs + subsume(llm, issue, added, st.facts)
+                norms = norms + added
         st.subs.extend(subs)
         st.verdicts.append(conclude(issue, subs, norms))
         issue.status = "해결" if subs else "미해결"

@@ -70,6 +70,11 @@ def store(monkeypatch, tmp_path):
     """규칙·원장을 임시 자리로 — 모듈 캐시도 함께 비운다."""
     monkeypatch.setenv("RAG_RULES_DIR", str(tmp_path / "rules"))
     monkeypatch.setenv("RAG_LOG_DIR", str(tmp_path / "rag"))
+    # 위키도 격리 — 정착·강등 전이는 위키 연대기(log.md)에 부가 기록되는데
+    # (rules.set_status → wikilife.note_rule_transition), 이걸 안 가리면
+    # 시험이 돌 때마다 **실제** data/wiki/wiki/log.md 에 gr-0001 항목이
+    # 쌓인다 (2026-08-16~18 실측 — 컴파일 대기가 시험 산물로 오염됐다).
+    monkeypatch.setenv("WIKI_STORE", str(tmp_path / "wiki"))
     monkeypatch.delenv("RAG_RULES_MODE", raising=False)
     monkeypatch.delenv("RAG_RULES_AUTOPROMOTE", raising=False)
     from lawrag.core.rag import verdicts as verdicts_mod

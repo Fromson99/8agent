@@ -40,7 +40,42 @@ def section_text(v, n) -> str:
     return f"{path}\n{body}".strip()
 
 
-def run(store: Optional[Path] = None, out: Optional[Path] = None) -> dict:
+def plan(store: Optional[Path] = None, out: Optional[Path] = None) -> dict:
+    """돌리기 전에 세어 본다 — (전체 구역, 새로 임베딩할 구역, 문서별 신규 수).
+    배치 파이프라인의 라인업 표가 이걸 보인다. 모델을 부르지 않는다."""
+    out = out or sections_dir()
+    views = _load_docs(store)
+    old_idx: set = set()
+    meta = out / "meta.jsonl"
+    if meta.exists():
+        for line in meta.read_text(encoding="utf-8").splitlines():
+            try:
+                old_idx.add(json.loads(line)["sha1"])
+            except Exception:
+                pass
+    total = fresh = 0
+    per_doc: dict[str, dict] = {}
+    for v in views:
+        n_doc = n_fresh = 0
+        for n in v.nodes:
+            t = section_text(v, n)
+            if len(t) < 4:
+                continue
+            n_doc += 1
+            if _sha1(t) not in old_idx:
+                n_fresh += 1
+        total += n_doc
+        fresh += n_fresh
+        if n_fresh:
+            per_doc[v.doc_id] = {"name": v.name, "fresh": n_fresh, "sections": n_doc}
+    return {"sections": total, "fresh": fresh, "docs_pending": per_doc,
+            "store": str(out)}
+
+
+def run(store: Optional[Path] = None, out: Optional[Path] = None,
+        progress=None, chunk: int = 256) -> dict:
+    """progress(done, total) 를 주면 새 임베딩을 chunk 씩 나눠 계산하며 알린다 —
+    CPU 에서 수십 분 걸리는 단계라 진행이 밖에서 보여야 한다."""
     import numpy as np
 
     from lawrag.core import embedding
@@ -74,9 +109,19 @@ def run(store: Optional[Path] = None, out: Optional[Path] = None) -> dict:
     fresh_texts = [t for r, t in zip(rows, texts) if r["sha1"] not in old_idx]
     fresh_vecs = None
     if fresh_texts:
-        fresh_vecs = embedding.encode(fresh_texts)
-        if fresh_vecs is None:
-            raise RuntimeError("임베딩 모델을 부르지 못했습니다")
+        if progress is None:
+            fresh_vecs = embedding.encode(fresh_texts)
+            if fresh_vecs is None:
+                raise RuntimeError("임베딩 모델을 부르지 못했습니다")
+        else:
+            parts = []
+            for i in range(0, len(fresh_texts), max(chunk, 1)):
+                part = embedding.encode(fresh_texts[i:i + chunk])
+                if part is None:
+                    raise RuntimeError("임베딩 모델을 부르지 못했습니다")
+                parts.append(np.asarray(part))
+                progress(min(i + chunk, len(fresh_texts)), len(fresh_texts))
+            fresh_vecs = np.concatenate(parts, axis=0)
 
     mat = []
     fi = 0

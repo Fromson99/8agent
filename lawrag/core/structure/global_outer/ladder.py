@@ -230,17 +230,37 @@ def induce_ladder(survivors: list[Candidate], root: str | None = None,
                   문서가 들어왔을 수 있기 때문이다.
     partial_order 특정 쌍의 순서만 못박는다(`[("kr_장","kr_article")]`). 증거가 얇아
                   못 정하는 쌍(절 6건/리셋 1회 같은)에 한 줄 찍어 주는 용도다.
+                  **지정에 이름이 오른 계열은 등재 점수와 무관하게 등재한다** — 등재
+                  점수는 "번호가 이어지는가"(런의 결)라서 한 번 나오는 계열(짧은
+                  내규의 `부칙` 하나, `[별표 1]` 하나)은 영영 0 이다. 사람이 "이 문서군
+                  에서 그것은 구조다"라고 쌍을 찍어 준 것이 곧 등재 근거다. 실측
+                  (2026-08 내규 변형 3종): 부칙·별표가 미등재 → 문맥판정으로 자리는
+                  맞게 잡았지만 사다리 결함 감점으로 warm 에 머물렀다.
     """
     fams: dict[str, list[Candidate]] = defaultdict(list)
     for c in survivors:
         fams[c.family_key].append(c)
 
+    declared = {k for pair in (partial_order or []) for k in pair}
     ladder = Ladder()
     fired: dict[str, list[Candidate]] = {}
     for key in sorted(fams):
         s = reg.score(key, fams[key])
         if reg.registered(key, fams[key]):
             fired[key] = fams[key]
+        elif key in declared:
+            fired[key] = fams[key]
+            ladder.notes.append(
+                f"{key}: 생존 {len(fams[key])}건, 등재점수 {s:.2f} — 지정 순서에 이름이 "
+                f"올라 등재")
+        elif len(fams[key]) < 2:
+            # 하나짜리 — 런의 결을 잴 수 없다. 결함이 아니라 표본 부족이므로 감점
+            # 목록(unregistered)이 아니라 따로 둔다. 자리는 문맥판정(S4)이 잡는다.
+            # 실측(2026-08 내규 3종): `부칙` 하나·`[별표 1]` 하나가 미등재로 잡혀
+            # 사다리 결함 감점을 받았지만 트리는 전부 맞았다 — 감점할 결함이 없었다.
+            ladder.singletons.append(key)
+            ladder.notes.append(
+                f"{key}: 생존 1건 — 계열이 아니라 하나짜리, 문맥판정으로 (감점 없음)")
         else:
             ladder.unregistered.append(key)
             ladder.notes.append(

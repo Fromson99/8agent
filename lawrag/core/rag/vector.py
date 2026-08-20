@@ -37,12 +37,29 @@ class VectorIndex:
     def __init__(self, rows: list[dict], mat) -> None:
         self.rows = rows
         self.mat = mat                      # float32, 정규화됨
+        self._masks: dict = {}              # 스코프(frozenset) → 행 마스크 캐시
+
+    def _mask(self, doc_ids: frozenset):
+        m = self._masks.get(doc_ids)
+        if m is None:
+            import numpy as np
+            m = np.fromiter((r.get("doc_id") in doc_ids for r in self.rows),
+                            dtype=bool, count=len(self.rows))
+            if len(self._masks) > 32:       # 스코프는 몇 개 안 된다 — 폭주만 막는다
+                self._masks.clear()
+            self._masks[doc_ids] = m
+        return m
 
     def search(self, qvec, topk: int = TOPK,
-               minimum: float = VECTOR_MIN) -> list[tuple]:
+               minimum: float = VECTOR_MIN,
+               doc_ids: Optional[frozenset] = None) -> list[tuple]:
+        """doc_ids 가 있으면 그 문서의 행만 경쟁한다 — 스코프 밖 행이 상위를
+        차지해 topk 를 먹는 일이 없어야 "그 문서들만 대상으로" 가 선다."""
         import numpy as np
 
         sims = self.mat @ qvec
+        if doc_ids is not None:
+            sims = np.where(self._mask(frozenset(doc_ids)), sims, -np.inf)
         order = np.argsort(-sims)[:topk]
         out = []
         for i in order:
@@ -84,9 +101,11 @@ def current() -> Optional[VectorIndex]:
     return _cache.get("index")
 
 
-def search(query: str, topk: int = TOPK) -> list[tuple]:
+def search(query: str, topk: int = TOPK,
+           doc_ids: Optional[frozenset] = None) -> list[tuple]:
     """질의 → [(doc_id, node, cosine)]. 어떤 이유로든 못 하면 빈 목록 —
-    호출부(search.py)는 벡터가 '없다'와 '못 한다'를 구별할 필요가 없다."""
+    호출부(search.py)는 벡터가 '없다'와 '못 한다'를 구별할 필요가 없다.
+    doc_ids 는 질의 스코프(Index.scope) — 진입은 그 안에서만."""
     from lawrag.core import embedding
 
     if not embedding.available():
@@ -100,6 +119,6 @@ def search(query: str, topk: int = TOPK) -> list[tuple]:
     if qv is None:
         log.debug("질의 임베딩 실패 — 벡터 단 생략")
         return []
-    out = idx.search(qv, topk=topk)
+    out = idx.search(qv, topk=topk, doc_ids=doc_ids)
     log.debug("벡터 검색 '%s' → %d건 (문턱 %.2f)", query[:40], len(out), VECTOR_MIN)
     return out

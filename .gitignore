@@ -47,6 +47,11 @@ data/links.json
 # structure_fixes      사람이 옮긴 계층 교정
 # structure_ledger     fingerprint 원장 — 관측 누적
 data/rag/
+# 예외 — 질의 스코프 정의는 관측이 아니라 사람이 쓰는 정의라 같이 간다
+!data/rag/scopes.yml
+# 배치 파이프라인 — 실행 상태·로그(관측)와 반입함(원본은 스토어로 옮겨진다)
+data/pipeline/
+data/inbox/
 data/rules/
 data/embeddings/
 # 법령 관계망 파생 — corpus/law/relations 원본에서 python -m core.lawnet 로 재생성
@@ -61,3 +66,5 @@ data/structure_ledger.json
 
 # 벤치 실행 결과. 질문셋(data/bench/questions.yaml)만 이력에 둡니다.
 data/bench/last_results.json
+# 파생층 초기화 보관함 — 되돌리기용, 나르지 않는다
+data/_archive/

@@ -18,6 +18,8 @@
 
 **1. 마커 직후 괄호.** `제7조(금융소비자의 기본적 권리)` — 한국 법령의 조 제목 규약이다.
    괄호가 마커에 **바로 붙어** 있어야 한다. 문장 중간의 괄호는 이름이 아니다.
+   내규는 `제 1 조 【목적】` · `제1조 [목적]` 로도 쓴다 — 여닫는 짝만 다른 같은 규약이라
+   같이 받는다(실측 2026-08: 회사 지침·세칙 변형 3종).
 
 **2. 같은 블록의 다음 마커 앞까지.** `제4장 금융상품판매업자등의 … 제1절 영업행위 …`
    처럼 원문이 한 줄이면, 각 마커의 이름은 다음 마커 직전까지다.
@@ -68,8 +70,17 @@ MAX_TITLE = 60
 # 다음 블록을 이름으로 삼을 때의 길이 상한 (규칙 4)
 MAX_NEXT_BLOCK = 40
 
-# 마커에 바로 붙은 괄호. 반각·전각 둘 다.
-_PAREN = re.compile(r"^\s*[(（]\s*([^)）]{1,%d})\s*[)）]" % MAX_TITLE)
+# 마커에 바로 붙은 괄호. 반각·전각 소괄호가 법령의 규약이고, 내규(회사 규정·지침·
+# 세칙)는 `제 1 조 【목적】` · `제1조 [목적]` · `제1조 〔목적〕` 로도 쓴다 — 여닫는
+# 짝만 다르고 "마커 직후의 괄호가 이름"이라는 문법은 같다. 짝은 맞아야 한다:
+# `제1조 (목적]` 처럼 어긋난 것은 괄호가 아니다.
+_PAREN = re.compile(
+    r"^\s*(?:"
+    r"[(（]\s*([^)）]{1,%d})\s*[)）]"        # ( … )  ( … ）
+    r"|【\s*([^】]{1,%d})\s*】"               # 【 … 】
+    r"|\[\s*([^\]]{1,%d})\s*\]"             # [ … ]
+    r"|〔\s*([^〕]{1,%d})\s*〕"               # 〔 … 〕
+    r")" % ((MAX_TITLE,) * 4))
 # 종결부호가 있으면 문장이지 제목이 아니다.
 _SENTENCE_END = ("다.", "요.", "함.", "음.", ".", "?", "!", ";", "…")
 
@@ -98,7 +109,7 @@ def of(cand: Candidate, block_cands: list[Candidate], next_block: Optional[Block
     #    내용이 따로 없어도 인정한다.
     m = _PAREN.match(tail)
     if m:
-        return _clean(m.group(1)), "마커 직후 괄호"
+        return _clean(next(g for g in m.groups() if g is not None)), "마커 직후 괄호"
 
     if not has_content:
         return "", "이름 없음 (꼬리가 곧 이 마디의 본문)"
@@ -149,6 +160,13 @@ def extract(roots, candidates: list[Candidate], blocks: list[Block]) -> int:
         # 그 구역의 **내용**이지 이름이 아니다.
         nxt = blocks[n.block_idx + 1] if n.block_idx + 1 < len(blocks) else None
         if nxt is not None and not nxt.proposes:
+            nxt = None
+        # 다음 블록이 **자기 마디를 여는 마커 줄**이면 그것도 이름이 아니다 —
+        # `부칙` 다음 줄 `제1조(시행일)` 은 부칙의 이름이 아니라 부칙의 첫 조다.
+        # 실측(2026-08 내규 지침): 부칙 마디의 title 이 "제1조(시행일)" 로 잡혀
+        # 색인에 그 이름으로 올랐다.
+        if nxt is not None and any(o.activated and o.offset == 0
+                                   for o in by_block.get(nxt.idx, [])):
             nxt = None
         has_content = bool(n.children) or (n.span[1] - n.span[0]) > 1
         n.title, n.title_reason = of(c, by_block[n.block_idx], nxt, has_content)

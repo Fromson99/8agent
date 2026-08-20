@@ -807,9 +807,9 @@ def _convert_module():
 def parse_hwp(path: str | Path) -> ParseResult:
     """HWP → markdown → 같은 Element 그릇. 지면 좌표가 없는 경로다(DOCX 와 같은 제약).
 
-    - hwp5(ole): lawrag/core/hwp5_md.py 경로 그대로 — 자식 프로세스에서 XSLT(html)로 표를
-      md 표로 굳히고, 시한을 넘기면 텍스트 폴백으로 전문만 건진다(수 MB 합본에서
-      XSLT 가 병적으로 느린 실측). 그림은 변환이 버린다 — 개수만 경고로 남긴다.
+    - hwp5(ole): lawrag/core/hwp5_md.py 경로 그대로 — 자식 프로세스에서 레코드 XML 을
+      직독해 표를 md 표로 굳히고(병합 셀 정렬 보존), 시한을 넘기면 텍스트 폴백으로
+      전문만 건진다. 그림은 변환이 버린다 — 개수만 경고로 남긴다.
     - hwpx(zip): core.hwpx_md 가 OWPML 태그를 직독한다. 추론이 없다.
 
     HWP 실측(KOFIA): 개요/named 스타일이 전무해 DOCX 경유로도 제목 계층은 오지
@@ -832,17 +832,18 @@ def parse_hwp(path: str | Path) -> ParseResult:
         convert = _convert_module()
         try:
             try:
-                md, conv = convert.extract_in_child(p, "html", convert.DEFAULT_TIMEOUT)
+                md, conv = convert.extract_in_child(p, convert.DEFAULT_ENGINE,
+                                                    convert.DEFAULT_TIMEOUT)
             except convert.ExtractTimeout:
                 md, conv = convert.extract_in_child(p, "text", convert.DEFAULT_TIMEOUT)
-                warnings.append("HWP XSLT 변환이 시한을 넘겨 텍스트 폴백으로 뽑았습니다 — "
+                warnings.append("HWP 변환이 시한을 넘겨 텍스트 폴백으로 뽑았습니다 — "
                                 "표가 <표> 자리표시자로 남습니다")
         except convert.ExtractError as exc:
             raise ValueError(
                 f"'{p.name}' 을 HWP5 로 읽지 못했습니다 — {exc} "
                 f"(OLE 파일이지만 한글 문서가 아닐 수 있습니다. 구형 Word .doc 이면 "
                 f".docx 나 PDF 로 다시 저장해 주세요)") from exc
-        parser = "hwp5(ole) → md (pyhwp/convert.py)"
+        parser = f"hwp5(ole) → md (core.hwp5_md, {convert.DEFAULT_ENGINE})"
         if conv.get("images"):
             warnings.append(f"그림 {conv['images']}개는 HWP 변환이 버립니다 — 개수만 남습니다")
     else:

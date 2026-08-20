@@ -1,0 +1,925 @@
+{"jo": 1, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 5, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 2, "node": 2, "actor": "", "act": "정하는", "target": "", "object": "용어의 정의", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 12, "node": 13, "actor": "금융투자회사", "act": "확인하고", "target": "", "object": "일반투자자의 투자목적, 재산상황 및 투자경험 등의 정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 12, "node": 13, "actor": "금융투자회사", "act": "확인받아", "target": "일반투자자", "object": "서명 등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 12, "node": 13, "actor": "금융투자회사", "act": "유지·관리하여야 한다", "target": "", "object": "투자자정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 12, "node": 15, "actor": "금융투자회사", "act": "제공하여야 한다", "target": "해당 일반투자자", "object": "제1항에 따라 확인한 투자자정보의 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 6, "node": 6, "actor": "", "act": "말한다", "target": "", "object": "일중매매거래", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 6, "node": 6, "actor": "", "act": "말한다", "target": "", "object": "시스템매매", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 6, "node": 6, "actor": "", "act": "본다", "target": "", "object": "해당 소프트웨어에 의한 금융투자상품의 매매", "mode": "간주", "function": "효과", "proviso": true}
+{"jo": 6, "node": 6, "actor": "", "act": "말한다", "target": "", "object": "온라인거래", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 6, "node": 6, "actor": "", "act": "말한다", "target": "", "object": "상장지수증권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 16, "node": 17, "actor": "금융투자회사", "act": "적합하지 아니하다고 인정되는 투자권유를 하여서는 아니 된다", "target": "일반투자자", "object": "투자권유", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 16, "node": 19, "actor": "금융투자회사", "act": "면담ㆍ질문 등을 통하여 그 일반투자자의 투자자정보를 파악하여야 한다", "target": "일반투자자", "object": "투자자정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 16, "node": 20, "actor": "금융투자회사", "act": "그 사실을 알리고, 일반투자자로부터 서명등의 방법으로 확인을 받아야 한다", "target": "일반투자자", "object": "사실", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 16, "node": 21, "actor": "금융투자회사", "act": "상품을 판매한 실적을 협회의 인터넷 홈페이지에 공시하여야 한다", "target": "협회", "object": "상품을 판매한 실적", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 16, "node": 22, "actor": "자율규제위원장", "act": "세부사항은 정한다", "target": "", "object": "제5항에 따른 공시 대상·시기·방법 등 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 41, "node": 42, "actor": "금융투자회사", "act": "확인하여야 한다", "target": "투자자", "object": "판매절차가 관계법규 및 당해 회사가 마련한 투자권유준칙에서 정하는 방법과 절차에 따라 적정하게 이행되었는지 여부", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 41, "node": 42, "actor": "금융투자회사", "act": "조정할 수 있다", "target": "", "object": "확인하고자 하는 금융투자상품 또는 투자자의 범위 등", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 41, "node": 43, "actor": "금융투자회사", "act": "기록ㆍ보관하여야 한다", "target": "", "object": "제1항에 따른 확인결과", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 80, "node": 81, "actor": "금융투자회사", "act": "설명서를 교부하고 이를 충분히 설명한 후 서명 또는 기명날인을 받아야", "target": "일반투자자", "object": "설명서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 80, "node": 82, "actor": "금융투자회사", "act": "게시하여야", "target": "", "object": "제1항의 설명서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 65, "node": 66, "actor": "금융투자회사", "act": "통지하여야 한다", "target": "일반투자자", "object": "원금손실 조건에 해당되었다는 사실, 기초자산의 현재 가격, 자동조기상환조건 및 자동조기상환시 예상수익률, 만기상환조건 및 만기상환시 예상수익률, 중도상환 청구 관련 사항, 공정가액, 그 밖에 금융투자회사가 필요하다고 인정하는 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 65, "node": 74, "actor": "금융투자회사", "act": "통지하여야 한다", "target": "일반투자자", "object": "최초 기준가격 및 원금손실 조건에 해당하는 기초자산의 가격, 자동조기상환의 순연사실, 신용등급의 변동내역", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 65, "node": 78, "actor": "금융투자회사", "act": "정기적으로 통지하여야 한다", "target": "일반투자자", "object": "공정가액 및 기초자산의 가격 등에 관한 정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 65, "node": 79, "actor": "금융투자회사", "act": "통지", "target": "일반투자자", "object": "", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 65, "node": 79, "actor": "일반투자자", "act": "수령을 거부한 경우", "target": "금융투자회사", "object": "통지", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 23, "node": 24, "actor": "금융투자회사", "act": "설명하고, 확인받아야", "target": "일반투자자", "object": "투자설명사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 23, "node": 25, "actor": "금융투자회사", "act": "제공하여야", "target": "일반투자자", "object": "설명서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 23, "node": 25, "actor": "일반투자자", "act": "수령을 거부하는", "target": "", "object": "투자설명서, 간이투자설명서, 핵심상품설명서", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 23, "node": 25, "actor": "금융투자회사", "act": "사전심의를 받아야", "target": "준법감시인 또는 금융소비자보호 총괄책임자", "object": "설명서 및 핵심상품설명서", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 23, "node": 25, "actor": "금융투자회사", "act": "명확하게 표시하여 작성하여야", "target": "", "object": "설명서 및 핵심상품설명서의 중요한 내용", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 23, "node": 34, "actor": "금융투자회사", "act": "교부하고 설명하여야", "target": "일반투자자", "object": "핵심설명서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 23, "node": 39, "actor": "금융투자회사", "act": "확인하여야", "target": "일반투자자", "object": "매매의사", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 23, "node": 39, "actor": "금융투자회사", "act": "고지하고 확인하여야", "target": "일반투자자", "object": "위험", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 23, "node": 40, "actor": "금융투자회사", "act": "고지하고 확인받아야", "target": "일반투자자", "object": "코넥스시장의 특성 및 투자위험성", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 83, "node": 84, "actor": "금융투자회사", "act": "유의사항을 고지하여야 하며, 해당 금융투자회사가 자율적으로 정한 설명서를 교부하고 충분히 설명한 후 서명 또는 기명날인을 받아야 한다", "target": "일반투자자", "object": "시스템매매 프로그램에 의한 매매거래", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 83, "node": 87, "actor": "금융투자회사", "act": "사전교육 이수여부를 확인하여야 한다", "target": "", "object": "프로그램에 내재된 가격예측이론 및 사용방법 등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 83, "node": 88, "actor": "금융투자회사", "act": "게시하여야 한다", "target": "", "object": "제1항의 설명서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 83, "node": 89, "actor": "금융투자회사", "act": "별도의 신청서에 의하여 처리하여야 한다", "target": "", "object": "일반투자자가 시스템매매 프로그램에 의한 매매거래를 신청하는 경우", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 130, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 44, "node": 45, "actor": "금융투자회사", "act": "협회가 인정하는 교육을 사전에 이수하도록 하고 그 이수 여부를 확인하여야 한다", "target": "일반투자자", "object": "협회가 인정하는 교육", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 44, "node": 48, "actor": "금융투자회사", "act": "1시간 이상의 파생상품교육과정과 3시간 이상의 파생상품 모의거래과정을 사전에 이수하도록 하고 그 이수 여부를 확인하여야 한다", "target": "일반개인투자자", "object": "1시간 이상의 파생상품교육과정과 3시간 이상의 파생상품 모의거래과정", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 44, "node": 52, "actor": "금융투자회사", "act": "1시간 이상의 파생상품교육과정과 자율규제위원회 위원장이 정하는 3시간 이상의 해외 파생상품 모의거래과정을 사전에 이수하도록 하고 그 이수 여부를 확인하여야 한다", "target": "일반개인투자자", "object": "1시간 이상의 파생상품교육과정과 자율규제위원회 위원장이 정하는 3시간 이상의 해외 파생상품 모의거래과정", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 44, "node": 53, "actor": "", "act": "해당 통합 교육과정을 이수한 자는 제2항 및 제3항에 따른 파생상품교육과정을 모두 이수한 것으로 본다", "target": "", "object": "", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 44, "node": 54, "actor": "", "act": "사전에 제2항 및 제3항의 파생상품교육과정을 이수한 것으로 본다", "target": "", "object": "", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 44, "node": 62, "actor": "금융투자회사", "act": "내부기준을 마련하여야 한다", "target": "", "object": "내부기준", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 44, "node": 63, "actor": "금융투자회사", "act": "수탁을 거부하여야 한다", "target": "", "object": "한국거래소 또는 외국 거래소의 선물 및 옵션 신규거래의 위탁", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 44, "node": 64, "actor": "금융투자회사", "act": "공매도 교육과정과 공매도 모의거래과정을 사전에 이수하도록 하고 그 이수 여부를 확인하여야 한다", "target": "개인투자자", "object": "공매도 교육과정과 공매도 모의거래과정", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 119, "node": 120, "actor": "집합투자업자", "act": "판단하여야 한다", "target": "", "object": "자신이 운용하는 집합투자증권의 고난도금융투자상품 해당 여부", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 119, "node": 121, "actor": "자율규제위원회 위원장", "act": "정하는", "target": "", "object": "최대손실 가능금액 및 파생상품 위험평가액 산정 제외 대상 등에 관한 산정방법 및 세부기준 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 122, "node": 123, "actor": "판매회사", "act": "판매하여야", "target": "투자자", "object": "온라인 전용 집합투자증권", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 122, "node": 123, "actor": "판매회사", "act": "안내하여야", "target": "투자자", "object": "저렴한 온라인 전용 집합투자증권이 있음", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 122, "node": 126, "actor": "판매회사", "act": "판매하여야", "target": "", "object": "온라인 전용 집합투자증권", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 134, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 131, "node": 132, "actor": "금융투자회사", "act": "정하여야 한다", "target": "", "object": "투자권유를 함에 있어서 해당 임직원이 준수하여야 할 구체적인 기준 및 절차", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 131, "node": 133, "actor": "자율규제위원회 위원장", "act": "제정할 수 있다", "target": "", "object": "표준투자권유준칙", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 145, "node": 146, "actor": "금융투자회사", "act": "작성하고 이를 유지·관리하여야", "target": "", "object": "방문판매인력에 대한 명부", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 145, "node": 150, "actor": "금융투자회사", "act": "확인할 수 있도록 하여야", "target": "", "object": "방문판매인력에 대하여 고객이 신원확인을 요청하는 경우 언제든지", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 135, "node": 140, "actor": "방문판매인력", "act": "갖추어야 한다", "target": "", "object": "다음 각 호의 요건을 모두", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 135, "node": 140, "actor": "", "act": "적용하지 아니한다", "target": "", "object": "제2호", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 101, "node": 102, "actor": "판매회사", "act": "표시를 하여야", "target": "", "object": "영업점에 별도의 표시", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 101, "node": 102, "actor": "판매회사", "act": "표시하는 경우", "target": "", "object": "펀드투자권유자문인력으로 등록된 자임을 투자자가 확인할 수 있도록 표시", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 101, "node": 103, "actor": "판매회사", "act": "준수하여야", "target": "", "object": "다음 각 호의 사항", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 101, "node": 110, "actor": "판매회사", "act": "반영하여야", "target": "", "object": "관계법규등의 준수 여부 및 민원발생 여부 등", "mode": "의무", "function": "기타", "proviso": false}
+{"jo": 101, "node": 111, "actor": "판매회사", "act": "마련하여야", "target": "", "object": "일반투자자가 원하는 경우 해당 투자의 적합 또는 적정 여부를 확인할 수 있는 절차", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 101, "node": 112, "actor": "판매회사", "act": "투자권유하여야", "target": "일반투자자에게", "object": "계열회사등이 아닌 집합투자회사가 운용하는 집합투자기구의 집합투자증권", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 101, "node": 113, "actor": "판매회사", "act": "고지하여야", "target": "일반투자자에게", "object": "그 집합투자회사가 자기의 계열회사등이라는 사실", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 101, "node": 114, "actor": "판매회사", "act": "공시하여야", "target": "", "object": "다음 각 호의 사항을 해당 판매회사 및 협회의 인터넷 홈페이지에", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 101, "node": 118, "actor": "자율규제위원회 위원장", "act": "정하는 바에 따른다", "target": "", "object": "제9항에 따른 공시의 세부항목 및 서식 등 그 밖의 내용", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 90, "node": 90, "actor": "판매회사와 그 임직원", "act": "이용하는 행위", "target": "", "object": "자기가 판매하는 집합투자기구의 집합투자재산에 관한 정보", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 90, "node": 90, "actor": "판매회사와 그 임직원", "act": "유포하는 행위", "target": "", "object": "허위의 사실, 그 밖에 근거 없는 소문", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 90, "node": 90, "actor": "판매회사와 그 임직원", "act": "제시하는 행위", "target": "", "object": "집합투자기구의 수익률에 대하여 단정적인 판단", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 90, "node": 90, "actor": "집합투자회사", "act": "직접 판매하는 행위", "target": "", "object": "집합투자기구의 집합투자증권", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 90, "node": 90, "actor": "집합투자회사", "act": "그러하지 아니하다", "target": "", "object": "동법 제48조의2제2항의 정보", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 90, "node": 90, "actor": "판매회사의 직원", "act": "겸직하는 행위", "target": "", "object": "집합투자업과 관련된 수탁업무ㆍ자산보관업무ㆍ일반사무관리업무 또는 고유재산 운용업무", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 90, "node": 90, "actor": "판매회사", "act": "해하거나, 그 임직원 또는 투자권유대행인으로 하여금 이를 행하도록 하는 행위", "target": "", "object": "공정한 거래질서", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 90, "node": 90, "actor": "판매회사", "act": "거부하는 행위", "target": "", "object": "공모로 발행되는 집합투자증권의 판매", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 90, "node": 90, "actor": "판매회사", "act": "요구하거나, 유사한 다른 투자자의 매매거래보다 부당하게 높은 거래 수수료를 요구하는 행위", "target": "집합투자회사", "object": "집합투자재산의 매매주문을 회사나 제3자에게 배정하도록", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 90, "node": 90, "actor": "판매회사", "act": "받는 행위", "target": "", "object": "투자자로부터 집합투자증권취득자금", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 90, "node": 90, "actor": "판매회사", "act": "하도록 하거나 판매회사 또는 임직원이 선납하는 행위", "target": "", "object": "판매대금", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 90, "node": 90, "actor": "판매회사 또는 임직원", "act": "처리하는 행위", "target": "", "object": "자금의 실제 납입이 이루어지기 전에 납입이 이루어 진 것으로", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 90, "node": 90, "actor": "판매회사", "act": "투자권유하거나 안내하는 행위", "target": "일반투자자", "object": "계열회사등인 집합투자회사가 운용하는 집합투자기구의 집합투자증권", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 162, "node": 162, "actor": "협회", "act": "정하는", "target": "", "object": "자", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 151, "node": 152, "actor": "영 제10조제3항제16호에 해당하는 자(이에 준하는 외국인을 포함한다)", "act": "다음 각 호의 서류를 협회에 제출하여야 한다", "target": "협회", "object": "다음 각 호의 서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 151, "node": 159, "actor": "전문투자자로 지정받고자 하는 자", "act": "그 잔고는 「외국환거래규정」 제1-2조제7호에 따른 \"매매기준율\" 또는 \"재정된 매매기준율\"에 따라 제출일 직전 영업일의 원화로 환산하여 산정한다", "target": "", "object": "외화표시 금융투자상품의 잔고", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 151, "node": 160, "actor": "외국인", "act": "국내에 주소를 가진 자로 제1항에 따른 제출에 관한 일체의 행위에 대하여 대리할 권한이 있는 자를 정하여야 한다", "target": "", "object": "국내에 주소를 가진 자로 제1항에 따른 제출에 관한 일체의 행위에 대하여 대리할 권한이 있는 자", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 151, "node": 161, "actor": "금융투자회사 또는 제3항에 따라 대리할 권한이 있는 자", "act": "전문투자자로 지정받고자 하는 자가 전문투자자 지정신청 및 제2-16조에 따른 확인증 재발급 신청사무의 대리을 요청하는 경우 이에 성실히 응하여야 한다", "target": "", "object": "전문투자자 지정신청 및 제2-16조에 따른 확인증 재발급 신청사무의 대리", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 187, "node": 187, "actor": "금융투자회사", "act": "기록ㆍ유지하여야", "target": "", "object": "전문투자자 관리대장", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 192, "node": 192, "actor": "전문투자자", "act": "별지 제5호의 \"전문투자자 확인증 재발급 신청서\"를 작성하여 협회에 재발급을 신청", "target": "협회", "object": "확인증", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 165, "node": 166, "actor": "협회", "act": "확인하여 기재하고, 부여한 후 발급한다", "target": "", "object": "제2-12조에 따라 전문투자자 지정신청서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 165, "node": 169, "actor": "협회의 전문투자자 지정", "act": "의 효력은", "target": "", "object": "지정된 날부터 2년", "mode": "정의", "function": "효과", "proviso": false}
+{"jo": 165, "node": 170, "actor": "전문투자자", "act": "신청할 수 있다", "target": "협회", "object": "전문투자자 지정", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 165, "node": 171, "actor": "협회", "act": "거부할 수 있다", "target": "", "object": "지정", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 165, "node": 172, "actor": "협회", "act": "말소한다", "target": "", "object": "전문투자자 지정", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 173, "node": 174, "actor": "금융투자회사", "act": "설명하고, 설명한 내용을 해당 투자자가 이해하였음을 녹취 또는 녹화로 확인받아야", "target": "해당 투자자", "object": "향후 금융소비자보호법 제17조, 제18조, 제19조등이 적용되지 아니한다는 사실과 투자자가 요청하는 경우에는 일반투자자와 같은 대우를 받을 수 있다는 사실", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 173, "node": 176, "actor": "금융투자회사", "act": "보고하여야", "target": "협회", "object": "전문투자자 지정일자 및 지정의 효력기간, 영 제10조제3항제17호다목에 따른 요건의 충족 여부", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 173, "node": 180, "actor": "자율규제위원장", "act": "정한다", "target": "", "object": "제3항에 따른 보고 시기·방법 등 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 215, "node": 215, "actor": "기관전용 사모집합투자기구의 유한책임사원", "act": "별지 제25호의 \"기관전용 사모집합투자기구의 유한책임사원 확인증 재발급 신청서\"를 작성하여 협회에 재발급을 신청", "target": "협회", "object": "확인증", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 196, "node": 197, "actor": "제출인", "act": "제출하여야 한다", "target": "협회", "object": "다음 각 호의 서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 196, "node": 206, "actor": "", "act": "환산하여 산정한다", "target": "", "object": "그 잔고", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 181, "node": 182, "actor": "전문투자자로 지정을 받은 자", "act": "전문투자자 확인증을 제시하고 전문투자자로 분류해 줄 것을 요청", "target": "금융투자회사", "object": "전문투자자 확인증", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 181, "node": 183, "actor": "금융투자회사", "act": "전문투자자 지정여부 및 잔존 효력기간 등을 확인", "target": "", "object": "전문투자자 지정여부 및 잔존 효력기간", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 181, "node": 184, "actor": "금융투자회사", "act": "설명하여야 한다", "target": "해당 전문투자자", "object": "향후 금융소비자보호법 제17조, 제18조, 제19조등이 적용되지 아니한다는 사실과 투자자가 요청하는 경우에는 일반투자자와 같은 대우를 받을 수 있다는 사실", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 181, "node": 184, "actor": "금융투자회사", "act": "서면으로 확인받아야 한다", "target": "해당 투자자", "object": "설명한 내용을 해당 투자자가 이해하였음", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 181, "node": 185, "actor": "금융투자회사", "act": "해당 전문투자자를 일반투자자로 분류하고 그 사실을 해당 전문투자자에게 즉시 통보하여야 한다", "target": "해당 전문투자자", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 181, "node": 186, "actor": "금융투자회사", "act": "설명하고, 설명한 내용을 해당 투자자가 이해하였음을 서면으로 확인받아야 한다", "target": "해당 투자자", "object": "금융소비자보호법 제17조, 제18조, 제19조등이 적용되지 아니한다는 사실과 투자자가 요청하는 경우에는 일반투자자와 같은 대우를 받을 수 있다는 사실", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 193, "node": 193, "actor": "협회", "act": "정하는", "target": "", "object": "기준", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 193, "node": 193, "actor": "", "act": "합격한", "target": "", "object": "시험", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 193, "node": 193, "actor": "", "act": "등록되어 있는", "target": "협회", "object": "금융투자전문인력", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 216, "node": 216, "actor": "자율규제위원회 위원장", "act": "정한다", "target": "", "object": "서류의 서식 및 작성방법", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 207, "node": 208, "actor": "협회", "act": "확인하여 기재하고 부여한 후 발급한다", "target": "", "object": "지정신청서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 207, "node": 211, "actor": "협회", "act": "한다", "target": "", "object": "기관전용 사모집합투자기구의 유한책임사원 지정의 효력", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 207, "node": 212, "actor": "기관전용 사모집합투자기구의 유한책립사원", "act": "신청할 수 있다", "target": "협회", "object": "기관전용 사모집합투자기구의 유한책임사원 지정", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 207, "node": 213, "actor": "협회", "act": "거부할 수 있다", "target": "", "object": "지정", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 207, "node": 214, "actor": "협회", "act": "말소한다", "target": "", "object": "해당 지정", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 227, "node": 228, "actor": "금융투자회사", "act": "협회에 투자권유대행인 등록을 신청하여야", "target": "협회", "object": "투자권유대행인 등록", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 227, "node": 236, "actor": "금융투자회사", "act": "협회에 투자권유대행인 변경 등록을 신청하여야", "target": "협회", "object": "투자권유대행인 변경 등록", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 217, "node": 217, "actor": "펀드투자권유대행인", "act": "권유하거나 체결을 권유하는", "target": "", "object": "집합투자증권(파생상품등을 제외한다)의 매매, 투자자문계약, 투자일임계약 또는 신탁계약(파생상품등에 투자하는 특정금전신탁계약, 고난도금전신탁계약 및 고난도투자일임계약은 제외한다)의 체결", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 217, "node": 217, "actor": "증권투자권유대행인", "act": "권유하거나 체결을 권유하는", "target": "", "object": "증권(집합투자증권 및 파생상품등을 제외한다.) 및 영 제7조제3항제4호에 해당하는 방법으로 단기금융집합투자기구의 집합투자증권의 매매, 투자자문계약, 투자일임계약 또는 신탁계약의 체결", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 249, "node": 250, "actor": "협회", "act": "등록의 효력을 정지할 수 있다", "target": "투자권유대행인", "object": "등록의 효력", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 249, "node": 253, "actor": "협회", "act": "등록을 말소한다", "target": "투자권유대행인", "object": "등록", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 257, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 254, "node": 254, "actor": "금융투자회사", "act": "보고하여야", "target": "협회", "object": "투자권유대행인 변동보고서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 259, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 221, "node": 222, "actor": "펀드투자권유대행인", "act": "갖춘자", "target": "", "object": "펀드투자권유자문인력 적격성 인증 시험 또는 펀드투자권유대행인 시험에 합격", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 221, "node": 222, "actor": "펀드투자권유대행인", "act": "이수한자", "target": "", "object": "펀드투자권유자문인력 투자자 보호 교육 또는 펀드투자권유대행인 등록교육", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 221, "node": 222, "actor": "증권투자권유대행인", "act": "갖춘자", "target": "", "object": "증권투자권유자문인력 적격성 인증 시험, 투자자산운용사 시험 또는 증권투자권유대행인 시험에 합격", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 221, "node": 222, "actor": "증권투자권유대행인", "act": "이수한자", "target": "", "object": "증권투자권유자문인력 투자자 보호 교육 또는 증권투자권유대행인 등록교육", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 221, "node": 226, "actor": "투자자문계약 또는 투자일임계약의 체결을 권유하고자 하는 자", "act": "이수할것", "target": "", "object": "협회가 실시하는 별표 8-1의 투자자문ㆍ투자일임 등록교육", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 221, "node": 226, "actor": "신탁계약의 체결을 권유하고자 하는 자", "act": "이수할것", "target": "", "object": "협회가 실시하는 별표 8-1의 신탁 등록교육", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 260, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 237, "node": 238, "actor": "협회", "act": "확인하여 기재하고 발급한다", "target": "", "object": "제2-19조 제1항 각 호 서류의 누락 여부, 투자권유가 가능한 해당 자격요건의 구비 여부, 제2항 각 호의 사유에 해당하는지 여부", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 237, "node": 242, "actor": "협회", "act": "등록을 거부할 수 있다", "target": "", "object": "투자권유대행인 등록", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 237, "node": 245, "actor": "협회", "act": "조회할 수 있도록 할 수 있다", "target": "", "object": "투자권유대행인의 성명, 투자권유업무 위탁계약을 체결한 금융투자회사, 투자권유가 가능한 범위", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 237, "node": 246, "actor": "투자권유대행인", "act": "이수하여야 한다", "target": "협회", "object": "별표 8-2의 \"투자권유대행인 보수교육 세부기준\"에 따른 해당 보수교육", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 237, "node": 246, "actor": "투자권유대행인", "act": "면제한다", "target": "", "object": "보수교육", "mode": "절차", "function": "효과", "proviso": true}
+{"jo": 266, "node": 267, "actor": "금융투자회사 및 금융투자분석사", "act": "주의의무를 다하여야", "target": "", "object": "조사분석업무를 수행함에 있어 선량한 관리자로서의", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 266, "node": 268, "actor": "금융투자회사 및 금융투자분석사", "act": "부당한 재산적 이득을 제공받아서는 아니 된다", "target": "", "object": "조사분석의 대가로 조사분석 대상법인 등 이해관계자로부터", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 266, "node": 269, "actor": "금융투자회사 및 금융투자분석사", "act": "해당 자료의 신뢰도를 철저히 검증하여야", "target": "", "object": "조사분석 대상법인 등 외부로부터 취득한 자료를 인용하는 경우", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 266, "node": 270, "actor": "금융투자회사 및 금융투자분석사", "act": "공정성을 현저하게 결여하거나 합리적 근거가 없는 조사분석자료를 작성하거나 이를 공표하여서는 아니 된다", "target": "", "object": "", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 271, "node": 272, "actor": "금융투자분석사", "act": "그 사실을 조사분석자료에 명시하여야", "target": "", "object": "조사분석자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 271, "node": 272, "actor": "해당 조사분석자료의 작성에 실질적으로 관여하지 아니한 자", "act": "그러하지 아니하다", "target": "", "object": "", "mode": "기타", "function": "제한", "proviso": true}
+{"jo": 271, "node": 273, "actor": "금융투자회사", "act": "조사분석자료를 공표하거나 제3자에게 제공하여서는 아니 된다", "target": "", "object": "조사분석자료", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 271, "node": 274, "actor": "금융투자회사", "act": "해당 제3자의 성명(법인의 경우 법인명)을 조사분석자료에 기재하여야", "target": "", "object": "조사분석자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 287, "node": 288, "actor": "금융투자회사", "act": "공표하거나 특정인에게 제공하여서는 아니 된다", "target": "", "object": "조사분석자료", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 287, "node": 288, "actor": "금융투자회사", "act": "기업현황보고서를 제출하고 공시하는", "target": "", "object": "기업현황보고서", "mode": "절차", "function": "근거·권한", "proviso": true}
+{"jo": 287, "node": 294, "actor": "금융투자회사", "act": "명시하여야 한다", "target": "조사분석자료", "object": "자신과의 이해 관계", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 287, "node": 303, "actor": "금융투자분석사", "act": "입증하는", "target": "", "object": "그 사실을 알지 못하였음", "mode": "절차", "function": "근거·권한", "proviso": false}
+{"jo": 311, "node": 312, "actor": "금융투자회사 및 금융투자분석사", "act": "조사분석과정 중 지득한 정보를 이용하여 금융투자상품을 매매하거나 타인으로 하여금 이를 이용하도록 하", "target": "", "object": "조사분석과정 중 지득한 정보", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 311, "node": 312, "actor": "금융투자회사 및 금융투자분석사", "act": "조사분석자료를 공표하거나 특정인에게 제공", "target": "특정인", "object": "조사분석자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 311, "node": 313, "actor": "금융투자분석사", "act": "누구의 명의로 하든지 본인의 계산으로 다음 각 호의 어느 하나에 해당하는 금융투자상품을 매매", "target": "", "object": "자신이 담당하는 업종에 속하는 법인이 발행한 주식, 주권관련사채권 및 신주인수권이 표시된 것", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 311, "node": 316, "actor": "금융투자분석사", "act": "제2항 각 호의 금융투자상품을 본인의 계산으로 매매할 수", "target": "", "object": "제2항 각 호의 금융투자상품", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 311, "node": 323, "actor": "금융투자분석사", "act": "공표 후 24시간이 경과하여야 하며, 해당 조사분석자료의 공표일부터 7일이 경과하지 아니한 때에는 공표내용과 같은 방향으로 매매", "target": "", "object": "소속 금융투자회사에서 조사분석자료를 공표한 금융투자상품 및 해당 상품과 기초자산이 동일한 주식·주식관련사채·신주인수권·주식선물·주식옵션·주식워런트증권·단일종목상장지수펀드증권·단일종목상장지수증권", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 311, "node": 323, "actor": "금융투자분석사", "act": "법 시행령 제68조제1항제2호 각 목의 어느 하나에 해당되는 경우에는 그러하지 아니하", "target": "", "object": "", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 304, "node": 305, "actor": "협회의 \"증권 인수 업무 등에 관한 규정\" 제2조제5호의 대표주관회사에 해당하는 금융투자회사", "act": "공표하여야 한다", "target": "", "object": "자신이 대표주관업무를 수행한 법인이 발행한 주식의 가치 등에 관한 조사분석자료를 해당 법인이 발행한 주식이 증권시장에서 매매거래가 이루어진 날부터 1년간 2회 이상", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 304, "node": 305, "actor": "협회", "act": "인정하는 경우", "target": "", "object": "조사분석업무의 중단 등 불가피한 사유로 조사분석자료의 작성 및 공표가 불가능", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 304, "node": 309, "actor": "금융투자회사", "act": "하여야 한다", "target": "투자자들", "object": "제1항에 따라 공표하는 조사분석자료를 무료로 열람할 수 있도록", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 304, "node": 310, "actor": "금융투자회사", "act": "공표하여야 하며", "target": "", "object": "최종 공표일이 속하는 월말로부터 6개월 이내에 해당 주식의 가치 등에 관한 조사분석자료를 추가로", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 304, "node": 310, "actor": "금융투자회사", "act": "고지하여야 한다", "target": "", "object": "추가로 공표하지 않고자 하는 경우에는 그 사실과 사유를 자신이 공표하는 조사분석자료 또는 자신의 인터넷 홈페이지에 게시하는 등의 방법으로", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 304, "node": 310, "actor": "금융투자회사", "act": "고지하지 아니할 수 있다", "target": "", "object": "투자의견이 포함된 최종보고서를 공표하거나 제2-29조제1항제3호나목 또는 다목의 사유로 공표를 중단하는 경우에는", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 324, "node": 325, "actor": "금융투자회사", "act": "재산적 이해관계를 고지하도록 하여야", "target": "", "object": "금융투자분석사 또는 조사분석자료의 작성에 영향력을 행사하는 자", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 324, "node": 334, "actor": "금융투자회사", "act": "재산적 이해관계를 고지하여야", "target": "일반투자자", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 324, "node": 338, "actor": "", "act": "고지대상에서 제외할 수 있다", "target": "", "object": "제2항제1호 및 제2호에 해당하는 금융투자상품 및 주식매수선택권의 보유가액의 합계가 3백만원 이하인 경우", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 324, "node": 338, "actor": "", "act": "고지하여야", "target": "", "object": "제2항제3호의 주식선물·주식옵션·주식워런트증권 및 단일종목상장지수펀드증권·단일종목상장지수증권", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 379, "node": 380, "actor": "금융투자회사", "act": "널리 알리는 행위", "target": "", "object": "금융투자회사의 영위업무 또는 투자성 상품(이하 이 장에서 '금융투자상품'이라 한다), 대출성 상품 등", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 378, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 360, "node": 361, "actor": "협회", "act": "공시한다", "target": "", "object": "금융투자분석사의 성명, 협회 등록번호, 현재 소속 금융투자회사명, 현재 소속된 금융투자회사에서의 근무 월수, 협회 등록 총 월수 및 금융투자회사당 등록 기간, 금융투자회사별 금융투자분석사 현황 및 인원수, 금융투자회사별 제2-33조제7항에 따른 투자등급별 금융투자상품의 비율", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 360, "node": 361, "actor": "협회", "act": "표기하지 아니할 수 있다", "target": "", "object": "금융투자회사명", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 360, "node": 369, "actor": "금융투자회사", "act": "공시하여야 한다", "target": "투자자", "object": "조사분석자료의 제목, 분석대상 법인명, 작성한 금융투자분석사의 성명, 공표일자, 주요내용, 전자문서 사본", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 360, "node": 376, "actor": "협회와 금융투자회사", "act": "연결되도록 하여야 한다", "target": "", "object": "인터넷 홈페이지", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 360, "node": 376, "actor": "외국 금융투자회사의 지점, 그 밖의 영업소", "act": "연결하는 경우는 그러하지 아니하다", "target": "", "object": "협회의 인터넷 홈페이지", "mode": "기타", "function": "제한", "proviso": true}
+{"jo": 275, "node": 276, "actor": "금융투자회사 및 그 임직원", "act": "부당한 압력이나 권한을 행사하여서는 아니 된다", "target": "금융투자분석사", "object": "부당한 압력이나 권한", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 275, "node": 277, "actor": "금융투자회사", "act": "내부통제기준 및 보수 산정 기준을 제정ㆍ운영하여야 한다", "target": "", "object": "내부통제기준 및 보수 산정 기준", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 275, "node": 280, "actor": "금융투자회사 및 금융투자분석사", "act": "내부기준에 따른 승인 절차를 거치지 아니하고 제3자에게 조사분석자료 또는 그 주된 내용을 제공하여서는 아니 된다", "target": "제3자", "object": "조사분석자료 또는 그 주된 내용", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 275, "node": 281, "actor": "금융투자회사 및 금융투자분석사", "act": "조사분석자료 또는 그 주된 내용을 제공하여서는 아니 된다", "target": "조사분석 대상법인 및 조사분석자료의 작성·심의에 관여하지 않은 임직원", "object": "조사분석자료 또는 그 주된 내용", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 275, "node": 282, "actor": "금융투자분석사", "act": "기업금융업무 관련부서와 협의하고자 하는 경우 다음 각 호의 조건을 모두 충족하여야 한다", "target": "", "object": "기업금융업무 관련부서와의 협의", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 275, "node": 282, "actor": "금융투자분석사", "act": "협의할 수 없다", "target": "", "object": "조사분석 대상법인이 발행한 금융투자상품의 투자등급이나 목표가격 변경 등 금융투자상품의 가치에 대한 평가와 직접적으로 관련된 부분", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 275, "node": 285, "actor": "금융투자회사", "act": "조사분석 담당부서의 임원이 기업금융ㆍ법인영업 및 고유계정 운용업무를 겸직하도록 하여서는 아니 된다", "target": "", "object": "조사분석 담당부서의 임원의 겸직", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 275, "node": 285, "actor": "금융투자회사", "act": "그러하지 아니하다", "target": "", "object": "겸직", "mode": "허용", "function": "기타", "proviso": true}
+{"jo": 275, "node": 286, "actor": "준법감시인", "act": "조사분석 담당부서와 기업금융업무 관련부서간의 회의내용의 적정성을 조사하고 회의내용이 협회의 정관 및 규정, 관계법규 등에 위반된 경우 필요한 조치를 취하여야 한다", "target": "", "object": "조사분석 담당부서와 기업금융업무 관련부서간의 회의내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 387, "node": 388, "actor": "금융투자회사", "act": "신의성실의 원칙을 준수하고 품위를 유지하여야", "target": "", "object": "투자광고", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 387, "node": 389, "actor": "금융투자회사", "act": "공정한 거래질서를 해하거나 사실과 다른 표현을 사용하여서는 아니 되며", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 387, "node": 389, "actor": "금융투자회사", "act": "건전한 투자문화 조성에 필요한 내용이 포함되도록 최대한 노력하여야", "target": "", "object": "투자광고", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 437, "node": 437, "actor": "금융투자회사", "act": "별표 10-1의 \"온라인 투자광고 심사기준\"을 준수하여야", "target": "", "object": "인터넷 매체 등 온라인을 이용하여 투자광고", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 342, "node": 343, "actor": "금융투자회사", "act": "심의하여야 한다", "target": "", "object": "조사분석자료를 공표하거나 특정인에게 제공하는 경우 다음 각 호의 사항", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 342, "node": 348, "actor": "금융투자회사", "act": "수립ㆍ운영하여야 한다", "target": "", "object": "조사분석자료의 작성 및 공표, 특정인에 대한 제공 등과 관련하여 다음 각 호의 사항이 포함된 내부기준", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 342, "node": 352, "actor": "금융투자회사", "act": "게재하여야 한다", "target": "", "object": "다음 각 호의 사항", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 342, "node": 352, "actor": "금융투자회사", "act": "게재하지 아니한다", "target": "", "object": "투자등급 및 목표가격 등의 구체적 내용 없이 매수ㆍ매도 등의 단순한 투자의견만 제시한 조사분석자료", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 342, "node": 356, "actor": "금융투자회사", "act": "명기하여야 한다", "target": "", "object": "조사분석자료에 해당 조사분석자료의 작성에 관여한 금융투자분석사의 성명, 재산적 이해관계, 외부자료를 인용한 경우 해당 자료의 출처 등", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 342, "node": 357, "actor": "금융투자회사", "act": "명시하여야 하며", "target": "", "object": "조사분석자료에 기준일로부터 과거 1년간 금융투자상품에 대하여 공표한 최근일 투자등급의 비율을 3단계로 구분하여 기준일과 함께", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 342, "node": 357, "actor": "금융투자회사", "act": "갱신하여야 한다", "target": "", "object": "해당 비율", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 342, "node": 358, "actor": "금융투자회사", "act": "제외하거나 포함시킬 수 있으며", "target": "", "object": "금융투자회사 및 그 임직원이 아닌 계열회사 등 제3자가 작성하거나 공표한 조사분석자료의 투자등급", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 342, "node": 358, "actor": "금융투자회사", "act": "명시하여야 한다", "target": "", "object": "산정 대상", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 342, "node": 359, "actor": "금융투자회사", "act": "제출하여야 한다", "target": "협회", "object": "조사분석자료를 통하여 제시한 투자등급별 분포 건수 및 비율을 별지 제10-1호의 \"조사분석자료 투자등급 통계\" 서식에 따라", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 438, "node": 438, "actor": "금융투자회사", "act": "준수하여야 한다", "target": "", "object": "텔레비전 홈쇼핑을 통하여 투자광고를 하는 경우 다음 각 호의 사항", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 438, "node": 438, "actor": "금융투자회사", "act": "제작·집행할 것", "target": "", "object": "녹화방송의 형태", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 438, "node": 438, "actor": "해당 금융투자회사의 임직원", "act": "직접 할 것", "target": "", "object": "금융투자상품 및 금융투자업에 관한 설명", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 438, "node": 438, "actor": "금융투자회사", "act": "고지할 것", "target": "", "object": "투자자의 전화문의에 대한 응대는 해당 금융투자상품 또는 금융투자업과 관련된 자격을 보유하고 있는 해당 금융투자회사의 임직원이 한다는 사실", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 438, "node": 438, "actor": "금융투자회사", "act": "포함하지 말 것", "target": "", "object": "운용실적이나 수익률 등에 관한 사항", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 438, "node": 438, "actor": "금융투자회사", "act": "고지할 것", "target": "", "object": "제2-37조제6항에 따른 위험고지 사항", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 438, "node": 438, "actor": "금융투자회사", "act": "충분히 설명할 것", "target": "", "object": "환매청구방법, 환매대금의 지급시기, 환매청구시 적용되는 기준가격, 그 밖에 환매수수료 등 환매관련 사항", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 476, "node": 476, "actor": "금융투자회사", "act": "준수하여야 한다", "target": "", "object": "비교광고 요건", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 476, "node": 476, "actor": "금융투자회사", "act": "사용할 것", "target": "", "object": "협회 등 증권유관기관의 공시자료 또는 집합투자기구평가회사의 평가자료", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 476, "node": 476, "actor": "금융투자회사", "act": "표시하되", "target": "", "object": "기준일로부터 과거 1년, 2년 및 3년 수익률과 설정일 또는 설립일로부터 기준일까지의 수익률", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 476, "node": 476, "actor": "금융투자회사", "act": "병기할 것", "target": "", "object": "연 단위 비교대상 내의 백분위 순위 또는 서열 순위 등", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 476, "node": 476, "actor": "금융투자회사", "act": "근접 기재하여야 한다", "target": "", "object": "평가자료에 포함된 전체 비교대상의 수", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 476, "node": 476, "actor": "금융투자회사", "act": "표시할 것", "target": "", "object": "평가자료의 출처 및 공표일", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 445, "node": 446, "actor": "금융투자회사", "act": "준수하여야 한다", "target": "", "object": "다음 각 호의 사항", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 445, "node": 453, "actor": "", "act": "표시하여야 한다", "target": "", "object": "종류별 집합투자증권에 부과되는 보수·수수료의 차이로 운용실적이 달라질 수 있다는 사실", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 445, "node": 454, "actor": "금융투자회사", "act": "준수하여야 한다", "target": "", "object": "다음 각 호의 사항", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 445, "node": 458, "actor": "금융투자회사", "act": "준수하여야 한다", "target": "", "object": "다음 각 호의 사항", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 445, "node": 466, "actor": "금융투자회사", "act": "준수하여야 한다", "target": "", "object": "다음 각 호의 사항", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 445, "node": 470, "actor": "금융투자회사", "act": "준수하여야 한다", "target": "", "object": "다음 각 호의 사항", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 390, "node": 391, "actor": "금융투자회사", "act": "포함하여야 한다", "target": "", "object": "투자광고에 다음 각 호의 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 390, "node": 395, "actor": "금융투자회사", "act": "포함하여야 한다", "target": "", "object": "집합투자증권에 관한 투자광고에 다음 각 호의 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 390, "node": 395, "actor": "협회", "act": "적용하지 아니할 수 있다", "target": "", "object": "제3호부터 제6호까지의 사항 중 전부 또는 일부", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 390, "node": 402, "actor": "금융투자회사", "act": "포함하여야 한다", "target": "", "object": "대출성상품에 관한 투자광고에 다음 각 호의 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 390, "node": 406, "actor": "", "act": "적용하지 아니할 수 있다", "target": "", "object": "제1항 내지 제3항의 규정", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 390, "node": 406, "actor": "협회", "act": "표시하도록 할 수 있다", "target": "", "object": "제1항 내지 제3항 각 호의 사항 중 일부", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 390, "node": 407, "actor": "협회", "act": "요구할 수 있다", "target": "금융투자회사", "object": "건전한 투자문화를 조성하고 위험을 알리는 데에 필요한 내용을 투자광고에 표시하도록", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 390, "node": 407, "actor": "금융투자회사", "act": "표시하여야 한다", "target": "", "object": "해당 내용", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 390, "node": 408, "actor": "금융투자회사", "act": "표시하여야 한다", "target": "", "object": "의무표시사항 중 위험고지와 관련된 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 390, "node": 408, "actor": "금융투자회사", "act": "표시할 것", "target": "", "object": "위험고지내용", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 483, "node": 484, "actor": "금융투자회사", "act": "투자광고를 하고자 하는 경우 준법감시인의 사전 승인을 받아 협회에 심사를 청구하여야", "target": "협회", "object": "투자광고", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 483, "node": 484, "actor": "금융투자회사", "act": "준법감시인의 사전 승인만으로 투자광고를 할 수 있다", "target": "", "object": "투자광고", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 483, "node": 496, "actor": "준법감시인", "act": "사전 승인을 하여야", "target": "", "object": "투자광고", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 483, "node": 497, "actor": "금융투자회사", "act": "준법감시인의 월별 사전 승인 내역을 별지 제11호의 \"광고물에 대한 준법감시인 사전승인 결과보고서\" 서식에 따라 다음 달 15일까지 협회에 제출하여야", "target": "협회", "object": "광고물에 대한 준법감시인 사전승인 결과보고서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 483, "node": 498, "actor": "금융투자회사", "act": "별지 제12호의 \"광고책임자 및 사전승인결과보고자(지정·변경) 통보서\" 서식에 따라 지체 없이 협회에 통보하여야", "target": "협회", "object": "광고책임자 및 사전승인결과보고자(지정·변경) 통보서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 503, "node": 504, "actor": "금융투자회사", "act": "신고서와 투자광고안을 함께 제출하여야", "target": "협회", "object": "신고서와 투자광고안", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 503, "node": 505, "actor": "금융투자회사", "act": "신고서를 별표 11의 \"투자광고계획신고서 작성요령\"에 따라 작성하여야", "target": "", "object": "신고서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 503, "node": 505, "actor": "금융투자회사", "act": "관련 자료를 첨부하여 제출하여야", "target": "", "object": "관련 자료", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 499, "node": 500, "actor": "금융투자회사", "act": "현장점검을 실시하고", "target": "협회", "object": "점검결과", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 499, "node": 500, "actor": "금융투자회사", "act": "보고하여야 한다", "target": "협회", "object": "점검결과", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 499, "node": 500, "actor": "금융투자회사", "act": "조정할 수 있다", "target": "", "object": "점검하고자 하는 영업점의 범위", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 499, "node": 501, "actor": "협회", "act": "요구할 수 있다", "target": "금융투자회사", "object": "광고물의 제출", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 499, "node": 501, "actor": "금융투자회사", "act": "제출하여야 한다", "target": "협회", "object": "해당 광고물", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 499, "node": 502, "actor": "협회", "act": "운영할 수 있다", "target": "", "object": "허위·과장광고 신고센터", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 506, "node": 507, "actor": "협회", "act": "심사결과를 별지 제14호의 \"투자광고 심사결과 통보서\" 서식에 따라 통보하여야", "target": "금융투자회사", "object": "심사결과", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 506, "node": 512, "actor": "협회", "act": "통보하여야", "target": "금융투자회사", "object": "투자광고의 심사결과", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 506, "node": 516, "actor": "협회", "act": "투자광고를 수정하게 하거나 추가 자료를 제출하도록 요구할 수 있다", "target": "금융투자회사", "object": "투자광고 또는 추가 자료", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 506, "node": 516, "actor": "금융투자회사", "act": "협회의 요구에 성실히 따라야", "target": "협회", "object": "", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 524, "node": 525, "actor": "협회", "act": "심사필 번호가 부여", "target": "금융투자회사", "object": "투자광고", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 524, "node": 529, "actor": "금융투자회사", "act": "사용하여서는 아니 된다", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 548, "node": 549, "actor": "협회", "act": "심사수수료를 징구할 수 있다", "target": "금융투자회사", "object": "심사수수료", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 548, "node": 550, "actor": "자율규제위원회 위원장", "act": "정한다", "target": "", "object": "심사수수료의 징구 기준 및 금액", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 534, "node": 535, "actor": "금융투자회사", "act": "표시하여야 한다", "target": "", "object": "투자광고물의 적절한 위치에 협회 또는 준법감시인으로부터 사전 심사를 받은 사실과 제2-46조에 따른 유효기간의 시작일과 종료일", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 534, "node": 543, "actor": "협회가 인정하는 광고물은", "act": "생략할 수 있다", "target": "", "object": "제1항에 따른 표시", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 544, "node": 545, "actor": "금융투자회사", "act": "재심사를 청구할 수", "target": "협회에", "object": "투자광고", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 544, "node": 546, "actor": "자율규제위원회", "act": "심사한다", "target": "", "object": "투자광고", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 544, "node": 547, "actor": "금융투자회사", "act": "재심사를 청구할 수 없다", "target": "", "object": "", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 517, "node": 517, "actor": "금융투자회사", "act": "사용하여서는 아니 된다", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 517, "node": 517, "actor": "금융투자회사", "act": "받지 아니한", "target": "협회", "object": "적격통보", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 517, "node": 517, "actor": "협회", "act": "임의로 변경한", "target": "", "object": "투자광고의 내용", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 517, "node": 517, "actor": "금융투자회사", "act": "변경하는", "target": "", "object": "규격, 색상, 명칭, 로고, 번호, 주소, 우편번호, 인터넷 홈페이지 주소, 이메일 주소, 명칭, 약도", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 517, "node": 517, "actor": "금융투자회사", "act": "변경하는", "target": "협회", "object": "변경될 수 있는 부분", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 517, "node": 517, "actor": "금융투자회사", "act": "받지 아니한", "target": "준법감시인", "object": "사전 승인", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 517, "node": 517, "actor": "금융투자회사", "act": "사용하는", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 517, "node": 517, "actor": "협회", "act": "요구받은", "target": "금융투자회사", "object": "사용중단", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 556, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 551, "node": 552, "actor": "협회", "act": "주의촉구 또는 해당 투자광고의 시정이나 사용중단을 요구할 수 있으며", "target": "해당 금융투자회사", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 551, "node": 552, "actor": "금융투자회사", "act": "협회의 요구에 성실히 응하여야 한다", "target": "협회", "object": "", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 554, "node": 554, "actor": "자율규제위원회", "act": "제재할 수 있다", "target": "", "object": "금융투자회사", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 557, "node": 557, "actor": "금융투자회사의 대표이사", "act": "영업보고서에 서명 또는 기명날인하여야", "target": "", "object": "영업보고서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 558, "node": 558, "actor": "협회장", "act": "정하는", "target": "", "object": "영업보고서의 항목 및 서식 등 그 밖의 내용", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 566, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 565, "node": 565, "actor": "협회", "act": "제출을 요구할 수 있다", "target": "해당 금융투자회사", "object": "관련 자료", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 562, "node": 563, "actor": "금융투자회사", "act": "영업보고서를 매분기 종료 후 45일(사업연도 경과 후 확정된 재무제표를 기준으로 재작성된 결산기 영업보고서의 경우 결산기 종료 후 90일) 이내에 전산파일과 함께 협회에 제출하여야", "target": "협회", "object": "영업보고서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 562, "node": 563, "actor": "법 제159조제1항에 따른 사업보고서 제출대상법인인 금융투자회사", "act": "법 제160조에 따른 반기보고서와 분기보고서를 전산파일과 함께 제출한 경우에는 해당 분기의 영업보고서를 제출한 것으로", "target": "", "object": "영업보고서", "mode": "간주", "function": "효과", "proviso": true}
+{"jo": 562, "node": 564, "actor": "금융투자회사", "act": "협회에 제출한 영업보고서에 오류 또는 변동사항이 있는 경우 당초의 기재사항과 정정사항을 비교한 내용을 문서로 작성하여 협회에 즉시 제출하여야", "target": "협회", "object": "내용을 문서로 작성한 것", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 559, "node": 560, "actor": "금융투자회사", "act": "분기별 업무보고서를 금융위원회에 제출한 날부터 1년간 영업보고서를 본점과 지점, 그 밖의 영업소에 비치하고, 해당 금융투자회사의 인터넷 홈페이지 등을 이용하여 공시하여야", "target": "", "object": "영업보고서", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 559, "node": 560, "actor": "금융투자회사", "act": "인터넷 홈페이지가 없는 경우 협회의 인터넷 홈페이지를 이용하여 공시하여야", "target": "", "object": "영업보고서", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 559, "node": 560, "actor": "법 제159조제1항에 따른 사업보고서 제출대상법인인 금융투자회사", "act": "법 제160조에 따른 반기보고서와 분기보고서를 공시한 경우 해당 분기의 영업보고서를 공시한 것으로 본다", "target": "", "object": "영업보고서", "mode": "간주", "function": "효과", "proviso": true}
+{"jo": 559, "node": 561, "actor": "금융투자회사", "act": "주주ㆍ투자자 및 그 밖에 이해관계자 등으로부터 영업보고서의 교부를 요청받은 경우 이를 실비 또는 무상으로 제공하거나 컴퓨터 등 유ㆍ무선 전자통신수단을 통해 열람할 수 있도록 하여야", "target": "주주ㆍ투자자 및 그 밖에 이해관계자 등", "object": "영업보고서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 577, "node": 578, "actor": "금융투자회사", "act": "정하여야 한다", "target": "", "object": "주요경영사항의 공시책임자", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 577, "node": 579, "actor": "금융투자회사", "act": "보고하여야 한다", "target": "협회", "object": "주요경영사항의 공시책임자를 정하거나 변경한 것", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 580, "node": 581, "actor": "사업보고서 제출대상 금융투자회사", "act": "제출하여야 한다", "target": "협회", "object": "반기보고서와 분기보고서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 580, "node": 582, "actor": "금융투자회사", "act": "제출하여야 한다", "target": "협회", "object": "당초의 기재사항과 정정사항을 비교한 내용을 문서로 작성하여", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 567, "node": 568, "actor": "금융투자회사", "act": "공시하여야 한다", "target": "해당 금융투자회사 및 협회의 인터넷 홈페이지", "object": "금융투자업규정 제3-70조제1항제1호부터 제6호까지에 해당하는 공시사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 567, "node": 568, "actor": "금융투자회사", "act": "공시하여야 한다", "target": "유가증권시장 또는 코스닥시장", "object": "금융투자업규정 제3-70조제1항제1호부터 제6호까지에 해당하는 공시사항", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 567, "node": 575, "actor": "비상장 금융투자회사", "act": "공시하여야 한다", "target": "해당 금융투자회사 및 협회의 인터넷 홈페이지", "object": "금융투자업규정 제3-70조제1항제7호 각 목의 어느 하나에 해당하는 경우의 사실 또는 결정", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 567, "node": 575, "actor": "비상장 금융투자회사", "act": "공시에 갈음할 수 있다", "target": "", "object": "해당 지주회사가 한국거래소의 유가증권시장공시규정 제8조 또는 코스닥시장공시규정 제7조의 규정에 따라 신고한 경우의 신고", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 567, "node": 576, "actor": "협회장", "act": "정한다", "target": "", "object": "제1항 및 제2항의 공시항목 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 583, "node": 584, "actor": "금융투자회사", "act": "통보하여야", "target": "협회", "object": "수수료 부과기준 및 절차에 관한 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 583, "node": 585, "actor": "협회", "act": "제출을 요구할 수 있으며", "target": "금융투자회사", "object": "필요한 공시사항", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 583, "node": 585, "actor": "금융투자회사", "act": "제출하여야", "target": "협회", "object": "공시사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 583, "node": 586, "actor": "협회장", "act": "정한다", "target": "", "object": "공시사항의 제출방법 등 그 밖의 내용", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 590, "node": 590, "actor": "협회장", "act": "정한다", "target": "", "object": "종합투자계좌의 자산운용현황 공시 관련 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 587, "node": 588, "actor": "금융투자회사", "act": "거래내역을 작성하여 매분기 종료 후 1개월 이내에 협회에 제출하여야", "target": "협회", "object": "채권의 종목, 수량 등 거래내역", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 587, "node": 589, "actor": "협회장", "act": "정한다", "target": "", "object": "관계인수인과의 거래에 관한 자료의 제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 592, "node": 593, "actor": "금융투자회사 및 신용평가회사", "act": "준수하여야 할", "target": "", "object": "절차 및 한도", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 592, "node": 598, "actor": "", "act": "보지 아니한다", "target": "", "object": "재산상 이익", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 592, "node": 598, "actor": "대표이사 또는 준법감시인", "act": "확인하여야 한다", "target": "", "object": "비용의 적정성", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 592, "node": 598, "actor": "", "act": "제외한다", "target": "", "object": "유관기관 수수료 등", "mode": "기타", "function": "제한", "proviso": true}
+{"jo": 592, "node": 606, "actor": "", "act": "말한다", "target": "", "object": "협회가 정하는 경미한 재산상 이익", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 607, "node": 607, "actor": "", "act": "산정한다", "target": "", "object": "재산상 이익의 가치", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 607, "node": 607, "actor": "", "act": "산정한다", "target": "", "object": "금전의 경우 해당 금액", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 607, "node": 607, "actor": "", "act": "산정한다", "target": "", "object": "물품의 경우 구입비용", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 607, "node": 607, "actor": "", "act": "산정한다", "target": "", "object": "접대의 경우 해당 접대에 소요된 비용", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 607, "node": 607, "actor": "", "act": "산정된다", "target": "", "object": "해당 비용", "mode": "정의", "function": "정의", "proviso": true}
+{"jo": 607, "node": 607, "actor": "", "act": "제공되었거나 제공받은", "target": "거래상대방", "object": "비용", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 607, "node": 607, "actor": "", "act": "소요된", "target": "", "object": "실비", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 613, "node": 614, "actor": "금융투자회사", "act": "공시를 하는 경우 다음 각 호의 사항을 포함하여야", "target": "", "object": "재산상 이익의 제공 또는 수령에 관한 공시", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 613, "node": 622, "actor": "금융투자회사", "act": "제공할 수 있는", "target": "동일 일반투자자", "object": "재산상 이익", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 613, "node": 622, "actor": "금융투자회사", "act": "재산상 이익을 제공할 수 없다", "target": "일반투자자", "object": "재산상 이익", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 613, "node": 623, "actor": "신탁회사", "act": "선지급할 경우에는 초과할 수 없다", "target": "수익자", "object": "신탁수익", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 624, "node": 625, "actor": "금융투자회사", "act": "한도를 정하여야", "target": "", "object": "거래상대방으로부터 1회당 및 연간 또는 동일 회계연도 기간 중 제공받을 수 있는 재산상 이익의 한도", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 624, "node": 625, "actor": "재산상 이익의 한도", "act": "초과하여서는 아니 된다", "target": "", "object": "일반적으로 용인되는 사회적 상규", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 624, "node": 626, "actor": "금융투자회사", "act": "제외할 수 있다", "target": "", "object": "거래상대방으로부터 제공받은 교통비 및 숙박비", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "투자자가 손실보전 또는 이익보장으로 잘못 인식할 우려가 있는 표시를 하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "좋은 기간의 수익률이나 운용실적 만을 표시하거나 강조하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "세전ㆍ세후 여부를 누락하여 표시하는 행위", "target": "", "object": "수익률이나 운용실적", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "파생결합증권 또는 파생결합증권을 투자대상으로 하는 집합투자기구의 상환조건별 예상수익률을 표시하면서 예상손실률을 근접 기재하지 않거나 크기, 색상, 배열 등에 있어 동등하지 않은 수준으로 표시하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "수수료를 일(日) 단위로 표시하는 등 금융소비자의 경제적 부담이 작아보이도록 하거나 계약체결에 따른 이익을 크게 인지하도록 하여 금융상품을 오인하게끔 표현하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "예상수익률 또는 목표수익률 등 실현되지 아니한 수익률을 표시하거나 구성자산 중 일부의 수익률만을 표시하는 행위", "target": "", "object": "집합투자기구 등 운용실적에 따라 수익이 결정되는 금융투자상품, 투자일임계약 및 신탁계약 등", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "집합투자증권에 관한 투자광고에 다음 각 목 이외의 사항을 표시하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "사모의 방법으로 발행하거나 발행된 금융투자상품에 관한 내용을 표시하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "비교대상 및 기준을 분명하게 밝히지 않거나 객관적인 근거 없이 다른 금융상품 등과 비교하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "투자일임재산을 각각의 투자자별로 운용하지 아니하고 여러 투자자의 자산을 집합하여 운용하는 것처럼 표시하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "여러 신탁재산을 집합하여 운용한다는 내용을 표시하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "특정금전신탁의 특정한 상품에 대한 내용을 표시하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "금융투자회사의 경영실태 및 위험에 대한 평가의 결과를 다른 금융투자회사의 그것과 비교하여 표시하는 행위", "target": "", "object": "금융투자상품 관련 투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "다른 종류의 금융투자상품 또는 영위업무에 대한 광고내용을 형식적으로 분리하지 않아 투자자의 투자판단에 오해를 주는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "수익률, 수수료 등을 특별히 우대하여 제시하면서 우대조건·기간 등을 수익률등의 글자 크기의 3분의 1 미만으로 표시하거나 이를 수익률등과 분리하여 표시하는 행위", "target": "", "object": "수익률, 수수료, 수상실적 및 통계수치 관련 투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "집합투자기구의 운용실적 또는 운용실적의 비교 표시를 하면서 기준일, 산출기간 또는 집합투자기구의 유형, 비교대상의 수를 운용실적등의 글자 크기의 3분의 1 미만으로 표시하거나 이를 운용실적등과 분리하여 표시하는 행위 및 기준일을 투자자가 쉽게 인식할 수 있도록 표시하지 않는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "수상실적 또는 통계수치를 특별히 강조하여 표시하면서 그 출처, 시기, 조건 등을 수상실적등의 글자 크기의 3분의 1 미만으로 표시하거나 이를 수상실적등과 분리하여 표시하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "사진·문자·그림 등을 이용하여 법인·단체를 포함한 타인의 명예를 훼손하거나 초상권을 침해할 우려가 있는 표시 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "계약 체결 여부나 금융소비자의 권리·의무에 중대한 영향을 미치는 사항을 사실과 다르게 알리거나 분명하지 않게 표현하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "별표 10의 \"금융투자회사의 투자광고관련 금지행위\"에서 열거하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "휴대전화 메시지·메신저·알람, 이메일 광고에 파생결합증권등의 수익률, 만기, 조기상환조건을 기재하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "대출이자율의 범위·산정방법, 대출이자의 지급·부과 시기 및 부수적 혜택·비용을 명확히 표시하지 아니하여 금융소비자가 오인하게 하는 행위", "target": "", "object": "대출성 상품의 광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "대출이자를 일 단위로 표시하여 대출이자가 저렴한 것으로 오인하게 하는 행위", "target": "", "object": "대출성 상품의 광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "불확실한 사항에 대해 단정적 판단을 제공하거나 확실하다고 오인하게 할 소지가 있는 내용을 알리는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "투자광고에서 금융상품과 관련하여 해당 광고매체 또는 금융상품판매대리·중개업자의 상호를 부각시키는 등 금융소비자가 금융상품직접판매업자를 올바르게 인지하는 것을 방해하는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "금융소비자에 따라 달라질 수 있는 거래조건을 누구에게나 적용될 수 있는 것처럼 오인하게 만드는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 415, "node": 415, "actor": "금융투자회사", "act": "투자광고에서 글자의 색깔·크기 또는 음성의 속도·크기 등이 해당 금융상품으로 인해 금융소비자가 받을 수 있는 혜택과 불이익을 균형 있게 전달하지 않는 행위", "target": "", "object": "투자광고", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 627, "node": 628, "actor": "금융투자회사", "act": "기록ㆍ보관 하여야", "target": "", "object": "제공목적, 제공내용, 제공일자, 거래상대방, 경제적 가치", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 627, "node": 629, "actor": "금융투자회사", "act": "제공하고자 하는 경우에는 미리 이사회의 의결을 거쳐야", "target": "", "object": "재산상 이익", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 627, "node": 630, "actor": "금융투자회사", "act": "제공하고자 하는 경우에는 준법감시인의 사전 승인을 받아야", "target": "", "object": "재산상 이익", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 627, "node": 630, "actor": "준법감시인", "act": "심사하여야", "target": "", "object": "부당한 재산상 이익 해당 여부", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 627, "node": 631, "actor": "금융투자회사", "act": "제정ㆍ운영하여야", "target": "", "object": "내부통제기준", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 627, "node": 632, "actor": "금융투자회사", "act": "점검하여 매년 이사회에 보고하여야", "target": "이사회", "object": "재산상 이익의 제공 현황, 제공절차 준수 여부, 부당한 재산상 이익 여부, 공시 및 기록ㆍ보관의 적정성", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 627, "node": 633, "actor": "금융투자회사", "act": "응하여야", "target": "거래상대방 소속 기관의 장", "object": "재산상 이익의 제공 내역", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 627, "node": 633, "actor": "금융투자회사", "act": "응하지 아니하여야", "target": "", "object": "재산상 이익의 제공 내역 요청", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 634, "node": 635, "actor": "금융투자회사", "act": "재산상 이익을 제공하거나 제공받아서는 아니 된다", "target": "", "object": "재산상 이익", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 634, "node": 646, "actor": "금융투자회사", "act": "비정상적인 조건의 금융투자상품의 매매거래나 투자자문계약, 투자일임계약 또는 신탁계약의 체결 등을 요구하여서는 아니 된다", "target": "거래상대방", "object": "비정상적인 조건의 금융투자상품의 매매거래나 투자자문계약, 투자일임계약 또는 신탁계약의 체결 등", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 634, "node": 647, "actor": "금융투자회사", "act": "보전하여 주어서는 아니 된다", "target": "", "object": "임직원 및 투자권유대행인이 이 장의 규정을 위반하여 제공한 재산상 이익", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 634, "node": 648, "actor": "금융투자회사(그 임직원 및 투자권유대행인을 포함한다)", "act": "반환하여야 한다", "target": "", "object": "제1항의 재산상 이익", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 634, "node": 648, "actor": "금융투자회사(그 임직원 및 투자권유대행인을 포함한다)", "act": "회사가 정한 절차대로 처리하여야 하며, 이 경우 부당한 재산상 이익 수령으로 보지 아니한다", "target": "", "object": "반환이 불가능한 경우", "mode": "의무", "function": "효과", "proviso": true}
+{"jo": 665, "node": 667, "actor": "", "act": "적용한다", "target": "겸영금융투자회사의 임직원(퇴직자를 포함한다)", "object": "제2-81조 제4항", "mode": "의무", "function": "기타", "proviso": true}
+{"jo": 665, "node": 668, "actor": "겸영금융투자회사, 법 제5편 제9장에 따른 일반사무관리회사, 집합투자기구평가회사, 채권평가회사 또는 법 제9조에 따른 신용평가회사", "act": "징계처분을 부과하는", "target": "전문인력규정 제1-3조 각 호의 금융투자전문인력 또는 같은 규정 제3-17조 각 호의 펀드관계회사인력", "object": "전문인력규정 제3-13조제1항 각 호의 어느 하나에 해당하는 사유", "mode": "기타", "function": "기타", "proviso": false}
+{"jo": 669, "node": 670, "actor": "금융투자회사", "act": "협회에 조회하여야", "target": "협회", "object": "채용예정자가 제2-71조제2항 각 호의 어느 하나에 해당하는 지의 여부와 전문인력규정 제3-13조제1항 또는 제3-15조제1항에 따른 금융투자전문인력 자격시험응시 제한기간 또는 금융투자전문인력 등록거부기간 경과여부", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 669, "node": 671, "actor": "협회", "act": "통지하여야", "target": "금융투자회사", "object": "조회결과", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 672, "node": 673, "actor": "금융투자회사", "act": "심사하여 채용여부를 결정하여야", "target": "", "object": "채용하고자 하는 자에 대하여 다른 금융투자회사와의 근로계약 종료, 직무 전문성, 윤리 및 준법의식 등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 672, "node": 674, "actor": "금융투자회사", "act": "고려할 수 있다", "target": "", "object": "제1항에 따른 채용심사를 할 경우 다음 각 호의 사항", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 677, "node": 677, "actor": "금융투자회사의 직원", "act": "직무를 수행함에 있어 관계법규를 준수하며, 선량한 관리자로서의 주의의무를 다하여야", "target": "", "object": "", "mode": "의무", "function": "기타", "proviso": false}
+{"jo": 690, "node": 690, "actor": "금융투자회사", "act": "승인절차 및 내부통제기준을 제정ㆍ운영하여야", "target": "", "object": "직원이 금융투자상품의 발행 및 매매거래, 투자상담 등과 관련된 다른 법인 또는 단체에 종사하고자 하거나 해당 사업을 영위하고자 하는 경우", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 691, "node": 691, "actor": "금융투자회사", "act": "해당 직원의 동의서를 첨부하여 별지 제18호의\"징계내역 열람신청서\"를 협회에 제출하여야", "target": "협회", "object": "별지 제18호의\"징계내역 열람신청서\"", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 691, "node": 691, "actor": "금융투자회사", "act": "해당 직원이 징계내역 열람에 동의하지 않는다는 사실을 통보하여야", "target": "조회를 신청한 투자자", "object": "해당 직원이 징계내역 열람에 동의하지 않는다는 사실", "mode": "의무", "function": "효과", "proviso": true}
+{"jo": 652, "node": 653, "actor": "신용평가회사", "act": "재산상 이익을 제공하거나 제공받아서는 아니 된다", "target": "", "object": "재산상 이익", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 652, "node": 654, "actor": "신용평가회사", "act": "비정상적인 조건의 신용평가계약의 체결 등을 요구하여서는 아니 된다", "target": "거래상대방", "object": "비정상적인 조건의 신용평가계약의 체결 등", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 652, "node": 655, "actor": "신용평가회사", "act": "금전, 상품권, 금융투자상품을 제공하거나 제공받아서는 아니된다", "target": "거래상대방", "object": "금전, 상품권, 금융투자상품", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 652, "node": 656, "actor": "신용평가회사", "act": "보고하여야 한다", "target": "준법감시인", "object": "제공목적, 제공내용, 제공일자, 거래상대방, 경제적 가치 등이 기재된 문서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 652, "node": 656, "actor": "신용평가회사", "act": "보고할 수 있다", "target": "준법감시인", "object": "제공목적, 제공내용, 제공일자, 거래상대방, 경제적 가치 등이 기재된 문서", "mode": "허용", "function": "절차", "proviso": true}
+{"jo": 652, "node": 657, "actor": "신용평가회사", "act": "기록ㆍ보관하여야 하며", "target": "", "object": "거래상대방에게 제공하였거나 거래상대방으로부터 제공받은 재산상 이익의 내역", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 652, "node": 657, "actor": "신용평가회사", "act": "응하고자 하는 경우 해당 임직원의 동의를 득하여야 한다", "target": "거래상대방 소속 기관의 장", "object": "소속 임직원에 대한 재산상 이익의 제공내역", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 652, "node": 658, "actor": "신용평가회사", "act": "제공할 수 없다", "target": "거래상대방", "object": "재산상 이익", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 652, "node": 658, "actor": "신용평가회사", "act": "제공할 수 있다", "target": "거래상대방", "object": "재산상 이익", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 652, "node": 659, "actor": "신용평가회사", "act": "제공하는", "target": "거래상대방", "object": "재산상 이익", "mode": "기타", "function": "기타", "proviso": false}
+{"jo": 652, "node": 660, "actor": "신용평가회사", "act": "제공할 수 없다", "target": "거래상대방", "object": "재산상 이익", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 652, "node": 663, "actor": "", "act": "준용한다", "target": "신용평가회사", "object": "제2-63조, 제2-64조, 제2-66조, 제2-68조", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 684, "node": 685, "actor": "금융투자회사", "act": "보고하여야", "target": "협회", "object": "징계내역보고서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 684, "node": 685, "actor": "금융투자회사", "act": "적시하여야", "target": "", "object": "주된 위법ㆍ부당행위", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 684, "node": 685, "actor": "금융투자회사", "act": "보고", "target": "협회", "object": "징계처분", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 684, "node": 686, "actor": "협회", "act": "작성ㆍ비치하여야", "target": "", "object": "비위행위자 명부", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 684, "node": 687, "actor": "금융투자회사", "act": "보고하여야", "target": "협회", "object": "변동 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 684, "node": 688, "actor": "협회", "act": "보고토록 할 수 있다", "target": "", "object": "징계내역보고서", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 684, "node": 689, "actor": "협회", "act": "거부할 수 있다", "target": "", "object": "징계내역보고서의 접수", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 678, "node": 678, "actor": "금융투자회사의 직원", "act": "관계법규를 위반하는 행위를 하여서는 아니 된다", "target": "", "object": "관계법규를 위반하는 행위", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 678, "node": 678, "actor": "금융투자회사의 직원", "act": "투자자에게 금융투자상품의 매매거래, 투자자문계약, 투자일임계약 또는 신탁계약의 체결 등과 관련하여 본인 또는 제3자의 명의나 주소를 사용토록 하는 행위를 하여서는 아니 된다", "target": "투자자", "object": "본인 또는 제3자의 명의나 주소를 사용", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 678, "node": 678, "actor": "금융투자회사의 직원", "act": "본인의 계산으로 금융투자상품의 매매거래, 투자자문계약, 투자일임계약 또는 신탁계약을 체결함에 있어 타인의 명의나 주소 등을 사용하는 행위를 하여서는 아니 된다", "target": "", "object": "타인의 명의나 주소 등을 사용", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 678, "node": 678, "actor": "금융투자회사의 직원", "act": "금융투자상품의 매매거래, 투자자문계약, 투자일임계약 또는 신탁계약의 체결 등과 관련하여 투자자와 금전의 대차를 하거나 소속 금융투자회사와 제휴관계를 맺지 아니한 제3자와의 금전의 대차 등을 중개ㆍ주선 또는 대리하는 행위를 하여서는 아니 된다", "target": "투자자", "object": "금전의 대차를 하거나 금전의 대차 등을 중개ㆍ주선 또는 대리", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 678, "node": 678, "actor": "금융투자회사의 직원", "act": "사회적 상규에 반하거나 투자자 보호에 배치되는 행위를 하여서는 아니 된다", "target": "", "object": "사회적 상규에 반하거나 투자자 보호에 배치되는 행위", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 692, "node": 693, "actor": "협회", "act": "작성하여 해당 금융투자회사에게 지체 없이 통보하여야", "target": "해당 금융투자회사", "object": "해당 직원에 대한 징계내역", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 692, "node": 694, "actor": "협회", "act": "통보하는", "target": "금융투자회사", "object": "징계내역", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 692, "node": 695, "actor": "협회", "act": "제외할 수 있다", "target": "", "object": "통보대상", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 699, "node": 700, "actor": "금융투자회사", "act": "교부하여야", "target": "조회를 신청한 투자자", "object": "징계내역 통보서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 699, "node": 701, "actor": "금융투자회사", "act": "사용하거나 제3자에게 누설하여서는 아니 된다", "target": "", "object": "협회로부터 통보받은 징계내역과 관련된 일체의 정보", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 702, "node": 702, "actor": "금융투자회사", "act": "별표 12의 \"징계내역 열람제도 이용안내\"를 교부하고, 징계내역 열람제도의 이용절차 및 방법 등을 충분히 설명하여야", "target": "투자자", "object": "별표 12의 \"징계내역 열람제도 이용안내\"", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 714, "node": 714, "actor": "협회", "act": "표창하고 부상을 수여할 수", "target": "", "object": "금융투자회사의 임직원 또는 임직원이었던 자로서 자본시장 및 금융투자업의 발전에 기여한 공적이 현저하다고 인정되는 자", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 721, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 720, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 703, "node": 704, "actor": "금융투자회사의 임직원", "act": "협회에 대하여 자신의 징계내역 열람을 신청", "target": "협회", "object": "자신의 징계내역 열람", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 703, "node": 704, "actor": "해당 임직원", "act": "제출하여야", "target": "협회", "object": "별지 제18호의\"징계내역 열람신청서\"", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 703, "node": 705, "actor": "협회", "act": "작성하여 해당 금융투자회사에게 통보하여야", "target": "해당 금융투자회사", "object": "별지 제19호의\"징계내역 통보서\"에 따라 작성한 징계내역", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 703, "node": 706, "actor": "해당 임직원", "act": "협회에 정정을 신청할 수 있다", "target": "협회", "object": "정정", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 703, "node": 706, "actor": "해당 임직원", "act": "제출하여야 하며, 증거서류 등을 첨부하여야", "target": "", "object": "정정신청의 이유를 구체적으로 기술한 정정신청서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 703, "node": 707, "actor": "협회", "act": "통보하여야", "target": "해당 금융투자회사", "object": "정정여부 및 정정내용", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 703, "node": 708, "actor": "", "act": "준용한다", "target": "", "object": "제2-77조제2항 및 제3항, 제2-78조제2항", "mode": "기타", "function": "기타", "proviso": false}
+{"jo": 715, "node": 715, "actor": "협회", "act": "요구할 수 있으며", "target": "금융투자회사", "object": "임직원의 연령, 성별, 학력, 근속연수, 전문자격, 고용계획 등의 통계자료", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 715, "node": 715, "actor": "금융투자회사", "act": "응하여야 한다", "target": "협회", "object": "협회의 요구에 성실히", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 725, "node": 725, "actor": "협회", "act": "신상품심의위원회를 둔다", "target": "", "object": "신상품심의위원회", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 709, "node": 710, "actor": "금융투자회사", "act": "임직원 교육에 최선을 다하여야", "target": "", "object": "임직원의 자질향상과 건전한 윤리관 정립, 준법의식 함양", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 709, "node": 711, "actor": "금융투자회사", "act": "자체 윤리교육을 실시하여야", "target": "소속 금융투자분석사", "object": "연간 2시간 이상의 자체 윤리교육", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 709, "node": 711, "actor": "소속 금융투자분석사", "act": "협회가 개설한 윤리교육, 전문인력규정 제5-3조에 따른 보수교육, 동 규정 제2-7조제1항에 따라 금융투자분석사 등록을 위해 준법 및 윤리교육을 이수한 경우", "target": "", "object": "해당 연도의 자체 윤리교육을 실시한 것", "mode": "간주", "function": "효과", "proviso": true}
+{"jo": 709, "node": 712, "actor": "금융투자회사", "act": "보고하여야", "target": "협회", "object": "제2항의 교육실시 결과", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 709, "node": 712, "actor": "", "act": "보고 대상에서 제외한다", "target": "", "object": "협회가 개설한 윤리교육 및 보수교육 이수 내역", "mode": "기타", "function": "제한", "proviso": true}
+{"jo": 709, "node": 713, "actor": "전문인력규정 제3-13조제1항 또는 같은 규정 제3-15조제1항에 따른 제재를 받은 임직원(퇴직자를 포함한다)", "act": "자율규제위원장이 정하는 준법교육을 이수하여야", "target": "", "object": "자율규제위원장이 정하는 준법교육", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 743, "node": 744, "actor": "위원장", "act": "소집한다", "target": "", "object": "심의위원회", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 743, "node": 748, "actor": "위원장", "act": "통보하여야 한다", "target": "위원", "object": "회의안건, 소집일시, 장소", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 743, "node": 748, "actor": "위원장", "act": "소집할 필요가 있다고 인정하는 경우에는 그러하지 아니하다", "target": "", "object": "", "mode": "기타", "function": "제한", "proviso": true}
+{"jo": 743, "node": 749, "actor": "협회", "act": "지급할 수 있다", "target": "심의위원회에 참석한 위원 및 외부전문가", "object": "수당 및 그 밖에 필요한 제 경비", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 743, "node": 750, "actor": "심의위원회", "act": "둔다", "target": "", "object": "간사", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 743, "node": 751, "actor": "간사", "act": "작성하며", "target": "", "object": "의사록", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 743, "node": 751, "actor": "간사", "act": "받아 이를 보관하여야 한다", "target": "위원장 및 출석한 위원 중 1인 이상", "object": "서명", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 759, "node": 760, "actor": "위원 및 협회 임직원", "act": "누설하여서는 아니된다", "target": "제3자", "object": "제2-91조제1항에 따른 신청회사의 사전 동의 없이 심의 대상 신상품에 관한 정보 등", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 759, "node": 762, "actor": "위원 및 협회 임직원", "act": "사용하여서는 아니된다", "target": "", "object": "심의업무와 관련하여 지득한 정보", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 730, "node": 731, "actor": "자율규제위원회 위원장", "act": "위촉하는", "target": "", "object": "다음 각 호의 6인 이내의 위원", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 730, "node": 734, "actor": "위원장", "act": "주재하고", "target": "", "object": "회의", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 730, "node": 734, "actor": "위원장", "act": "총괄한다", "target": "", "object": "관련 사무", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 730, "node": 735, "actor": "자율규제위원회 위원장이 지명하는 위원", "act": "대행한다", "target": "", "object": "그 직무", "mode": "절차", "function": "근거·권한", "proviso": true}
+{"jo": 730, "node": 737, "actor": "위원장", "act": "해촉할 수 있다", "target": "", "object": "그 위원", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 730, "node": 741, "actor": "위원장", "act": "위촉하여", "target": "", "object": "3인 이내의 전문가", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 730, "node": 741, "actor": "위원장", "act": "구할 수 있고", "target": "", "object": "심의업무에 대한 조언", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 730, "node": 741, "actor": "외부전문가", "act": "진술할 수 있다", "target": "", "object": "의견", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 730, "node": 742, "actor": "위원장", "act": "정한다", "target": "", "object": "그 인원 및 위촉기간", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 763, "node": 764, "actor": "신청회사", "act": "제출하여야 한다", "target": "협회", "object": "신상품 배타적 사용권 신청서, 신상품 설명서, 준법감시인의 법률의견서, 심의위원회에서 정한 자료", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 763, "node": 769, "actor": "협회", "act": "발생하며", "target": "", "object": "제1항 각 호의 서류가 협회에 접수된 때", "mode": "정의", "function": "효과", "proviso": false}
+{"jo": 763, "node": 770, "actor": "협회", "act": "요구할 수 있으며", "target": "신청회사", "object": "제1항의 서류 이외에 추가로 필요한 서류의 제출", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 763, "node": 770, "actor": "신청회사", "act": "제출하여야 한다", "target": "", "object": "요구받은 서류", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 763, "node": 771, "actor": "협회", "act": "반려할 수 있다", "target": "", "object": "배타적 사용권 부여 신청", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 752, "node": 753, "actor": "심의위원회", "act": "의결하다", "target": "", "object": "제2-86조제1호의 사항 중 배타적 사용권을 부여받을 수 있는 신상품인지 여부", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 752, "node": 753, "actor": "심의위원회", "act": "심의함에 있어서는 출석위원 과반수의 찬성에 의한 방법", "target": "", "object": "제2-86조제1호의 사항 중 배타적 사용권을 부여받을 수 있는 신상품인지 여부", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 752, "node": 753, "actor": "심의위원회", "act": "심의함에 있어서는 제2-100조제1항의 규정에 의한 심의기준에 의한 방법", "target": "", "object": "제2-86조제1호의 사항 중 배타적 사용권 부여기간", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 752, "node": 753, "actor": "심의위원회", "act": "심의함에 있어서는 출석위원 과반수의 찬성에 의한 방법", "target": "", "object": "제2-86조제2호 내지 제4호까지의 사항", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 752, "node": 757, "actor": "위원", "act": "참석하지 못한다", "target": "해당 안건에 대한 심의 및 의결", "object": "심의위원회의 안건과 직접적인 이해관계가 있는", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 752, "node": 758, "actor": "신청회사", "act": "기피신청을 할 수 있다", "target": "위원장", "object": "심의 및 의결의 공정성을 기대하기 곤란한 사정이 있는 위원", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 752, "node": 758, "actor": "위원장", "act": "기피여부를 결정한다", "target": "", "object": "해당 위원", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 782, "node": 782, "actor": "협회", "act": "서면으로 통지하고, 협회 인터넷 홈페이지 등을 통하여 공시한다", "target": "모든 금융투자회사", "object": "심의위원회에서 신상품의 배타적 사용권을 부여하는 결정을 한 경우 그 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 775, "node": 776, "actor": "위원장", "act": "심의위원회를 소집하여 배타적 사용권을 부여받을 수 있는 신상품인지 여부 및 배타적 사용권 부여기간에 관하여 심의하여야", "target": "", "object": "심의위원회", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 775, "node": 776, "actor": "협회", "act": "추가서류의 제출을 요구한 경우 요구일로부터 추가서류가 협회에 도달한 날까지의 기간은 심의기간에 산입하지 아니한다", "target": "신청회사", "object": "", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 775, "node": 777, "actor": "심의위원회", "act": "신청회사에 대하여 회의에 참석하여 설명할 기회를 부여할 수 있다", "target": "신청회사", "object": "회의에 참석하여 설명할 기회", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 775, "node": 778, "actor": "위원장", "act": "추가회의를 소집할 수 있다", "target": "", "object": "추가회의", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 775, "node": 778, "actor": "위원장", "act": "추가회의 소집 사실을 신청회사에 통보하여야", "target": "신청회사", "object": "추가회의 소집 사실", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 775, "node": 779, "actor": "심의위원회", "act": "배타적 사용권을 부여할 수 있다", "target": "", "object": "배타적 사용권", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 775, "node": 780, "actor": "", "act": "배타적 사용권의 효력발생일은 심의위원회의 배타적 사용권 부여결정이 있는 날로부터 8영업일째 되는 날로 한다", "target": "", "object": "", "mode": "정의", "function": "효과", "proviso": false}
+{"jo": 775, "node": 781, "actor": "심의위원회", "act": "의결 후 지체없이 의결내용 및 그 사유를 신청회사에 서면으로 통지하여야", "target": "신청회사", "object": "의결내용 및 그 사유", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 786, "node": 787, "actor": "금융투자회사", "act": "이의신청을 할 수 있다", "target": "심의위원회", "object": "배타적 사용권 부여결정", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 786, "node": 788, "actor": "", "act": "이의가 없는 것으로 본다", "target": "", "object": "심의위원회의 배타적 사용권 부여", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 786, "node": 789, "actor": "협회", "act": "서면으로 통지하고 공시한다", "target": "배타적 사용권을 부여받은 금융투자회사", "object": "그 사실", "mode": "의무", "function": "기타", "proviso": false}
+{"jo": 797, "node": 797, "actor": "배타적 사용권을 부여받은 금융투자회사", "act": "침해배제를 신청할 수 있다", "target": "", "object": "배타적 사용권에 대한 직접적인 침해", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 783, "node": 784, "actor": "배타적 사용권을 부여받은 금융투자회사 외의 금융투자회사", "act": "판매하지 못한다", "target": "", "object": "배타적 사용권이 부여된 상품 또는 서비스와 동일하거나 유사한 상품 또는 서비스", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 783, "node": 785, "actor": "금융투자회사", "act": "서면에 의한 동의를 받아야", "target": "배타적 사용권을 부여받은 금융투자회사", "object": "", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 783, "node": 785, "actor": "동의를 받은 금융투자회사", "act": "제출하여야", "target": "협회", "object": "동의서", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 814, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 811, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 790, "node": 791, "actor": "위원장", "act": "심의위원회를 소집하여 이의신청에 대하여 심의하여야", "target": "", "object": "이의신청", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 790, "node": 792, "actor": "심의위원회", "act": "의견을 진술할 기회를 부여할 수 있다", "target": "배타적 사용권을 부여받은 금융투자회사 및 이의신청회사", "object": "의견을 진술할 기회", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 790, "node": 793, "actor": "심의위원회", "act": "취소한다", "target": "", "object": "배타적 사용권", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 790, "node": 794, "actor": "", "act": "발생한다", "target": "", "object": "배타적 사용권의 효력", "mode": "기타", "function": "효과", "proviso": false}
+{"jo": 790, "node": 795, "actor": "협회", "act": "서면으로 통지하고, 협회 인터넷 홈페이지 등을 통하여 공시한다", "target": "모든 금융투자회사", "object": "심의위원회의 결정사항", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 790, "node": 796, "actor": "이의신청회사", "act": "재심을 청구할 수 없다", "target": "", "object": "재심", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 808, "node": 809, "actor": "심의위원회", "act": "정할 수 있다", "target": "", "object": "구체적인 심의기준 및 서식 등", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 808, "node": 810, "actor": "협회", "act": "통지하고", "target": "모든 금융투자회사", "object": "심의기준 및 서식 등", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 808, "node": 810, "actor": "협회", "act": "공시한다", "target": "", "object": "심의기준 및 서식 등", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 802, "node": 803, "actor": "금융투자회사 및 금융투자회사 임직원", "act": "하여서는 아니된다", "target": "", "object": "타 금융투자회사의 배타적 사용권을 침해하는 행위", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 802, "node": 803, "actor": "금융투자회사 및 금융투자회사 임직원", "act": "하여서는 아니된다", "target": "", "object": "심의위원회에 제출하는 자료의 고의적인 조작행위", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 802, "node": 803, "actor": "금융투자회사 및 금융투자회사 임직원", "act": "하여서는 아니된다", "target": "", "object": "타당성이 없는 빈번한 이의신청 등으로 심의위원회의 업무 또는 배타적 사용권의 행사를 방해하는 행위", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 802, "node": 807, "actor": "협회", "act": "공시하고", "target": "", "object": "그 위반내용 등", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 802, "node": 807, "actor": "심의위원회", "act": "제재를 요청할 수 있다", "target": "자율규제위원회", "object": "제재", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 798, "node": 799, "actor": "위원장", "act": "심의하여야 한다", "target": "", "object": "배타적 사용권 침해배제 신청", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 798, "node": 800, "actor": "심의위원회", "act": "침해의 정지를 명할 수 있다", "target": "침해회사", "object": "침해의 정지", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 798, "node": 801, "actor": "협회", "act": "통지하고", "target": "침해배제를 신청한 금융투자회사", "object": "심의위원회의 결정사항", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 798, "node": 801, "actor": "협회", "act": "공시한다", "target": "", "object": "심의위원회의 결정사항", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 829, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 823, "node": 824, "actor": "금융투자회사", "act": "폐쇄할 수 있다", "target": "", "object": "투자자의 계좌", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 823, "node": 827, "actor": "금융투자회사", "act": "본인확인 절차를 거친 후 처리하여야 한다", "target": "", "object": "배당금(주식) 등의 출금(고)", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 823, "node": 828, "actor": "금융투자회사", "act": "부여할 수 있다", "target": "새로운 투자자", "object": "계좌번호", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 830, "node": 830, "actor": "금융투자회사", "act": "이용료를 지급하여야", "target": "투자자", "object": "투자자예탁금", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 830, "node": 830, "actor": "금융투자회사", "act": "제외할 수 있다", "target": "", "object": "현금예탁필요액", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 834, "node": 834, "actor": "금융투자회사", "act": "투자자예탁금 이용료를 투자자계좌에 입금하는 방법으로 지급하여야 한다", "target": "", "object": "투자자예탁금 이용료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 815, "node": 816, "actor": "금융투자회사", "act": "통합계좌로 별도 관리할 수 있다", "target": "", "object": "현금 및 금융투자상품 등 예탁자산의 평가액이 10만원 이하이고 최근 6개월간 투자자의 매매거래 및 입출금ㆍ입출고 등이 발생하지 아니한 계좌", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 815, "node": 816, "actor": "금융투자회사", "act": "산정하며", "target": "", "object": "예탁자산의 평가", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 815, "node": 816, "actor": "금융투자회사", "act": "산정한다", "target": "", "object": "그 밖의 금융투자상품", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 815, "node": 821, "actor": "금융투자회사", "act": "취하여야 한다", "target": "", "object": "입ㆍ출금(고) 및 매매거래 정지 조치", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 815, "node": 822, "actor": "금융투자회사", "act": "처리하여야 한다", "target": "", "object": "입ㆍ출금(고) 또는 매매거래의 재개 등", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 849, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 848, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 854, "node": 855, "actor": "금융투자회사", "act": "담보로 징구하여서는 아니 된다", "target": "", "object": "가치산정이 곤란하거나 담보권의 행사를 통한 대출금의 회수가 곤란한 증권", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 854, "node": 856, "actor": "금융투자회사", "act": "마련하여야 하며", "target": "", "object": "담보증권의 제한에 관한 구체적인 기준", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 854, "node": 856, "actor": "금융투자회사", "act": "점검하여야 한다", "target": "", "object": "그 적정성", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 857, "node": 857, "actor": "금융투자회사", "act": "환매청구", "target": "해당 집합투자증권을 운용하는 금융투자회사 또는 해당 집합투자증권을 판매한 금융투자회사", "object": "상장지수집합투자기구 이외의 집합투자증권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 857, "node": 857, "actor": "금융투자회사", "act": "상환청구", "target": "발행회사", "object": "파생결합증권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 857, "node": 857, "actor": "금융투자회사와 투자자", "act": "합의한 방법", "target": "", "object": "그 밖에 증권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 835, "node": 836, "actor": "금융투자회사", "act": "제정ㆍ운영하여야 한다", "target": "", "object": "투자자예탁금 이용료 지급에 관한 내부기준", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 835, "node": 837, "actor": "금융투자회사", "act": "정하여야 한다", "target": "", "object": "투자자예탁금 이용료 지급기준", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 835, "node": 837, "actor": "금융투자회사", "act": "반영하거나 차등을 두어서는 아니 된다", "target": "", "object": "예탁금 관련 비용 또는 투자자별 이용료율", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 835, "node": 844, "actor": "금융투자회사", "act": "점검하여 반영하여야 한다", "target": "", "object": "투자자예탁금 이용료 지급기준", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 835, "node": 845, "actor": "금융투자회사", "act": "보고하여야 한다", "target": "협회", "object": "투자자예탁금 이용료 지급기준의 제정 또는 변경 내용", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 835, "node": 846, "actor": "금융투자회사", "act": "게시하여야 하며", "target": "", "object": "투자자예탁금 이용료 지급기준", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 835, "node": 846, "actor": "금융투자회사", "act": "게시하고 통지하여야 한다", "target": "투자자", "object": "변경내역", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 871, "node": 871, "actor": "금융투자회사", "act": "담보증권 처분방법 및 담보가격 산정방법 등을 투자자에게 충분히 설명하여야", "target": "투자자", "object": "담보증권 처분방법 및 담보가격 산정방법 등", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 861, "node": 862, "actor": "금융투자회사", "act": "산정한다", "target": "", "object": "담보가격", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 861, "node": 867, "actor": "금융투자회사", "act": "따른다", "target": "", "object": "제1항 및 금융투자업규정 제4-26조제1항", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 861, "node": 870, "actor": "금융투자회사", "act": "평가할 수 있다", "target": "", "object": "담보증권", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 875, "node": 875, "actor": "신용거래대주 업무를 영위하는 금융투자회사", "act": "신용거래대주 전용계좌를 제공하여야 한다", "target": "고객", "object": "신용거래대주 전용계좌", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 879, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 872, "node": 873, "actor": "금융투자회사", "act": "신용거래대주를 하는 경우 증권의 상환기간은 90일 이내로 하되 연장을 포함한 전체 상환기간은 12개월을 초과하여서는 아니 된다", "target": "", "object": "신용거래대주", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 872, "node": 873, "actor": "", "act": "12개월을 초과할 수 있다", "target": "", "object": "상환기간", "mode": "허용", "function": "제한", "proviso": true}
+{"jo": 872, "node": 874, "actor": "", "act": "순연한다", "target": "", "object": "상환만기일", "mode": "절차", "function": "효과", "proviso": false}
+{"jo": 876, "node": 876, "actor": "금융투자회사", "act": "제출", "target": "", "object": "매일의 신용공여 상황", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 876, "node": 876, "actor": "자율규제위원회 위원장", "act": "정한다", "target": "", "object": "신용공여 상황의 제출방법", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 893, "node": 893, "actor": "금융투자회사", "act": "제2-5조제1항 및 제2항에 따른 절차를 준수하여야", "target": "", "object": "일반투자자가 유사해외통화선물거래를 하고자 하는 경우", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 887, "node": 888, "actor": "금융투자회사", "act": "호가를 제공받아 투자자에게 제시하여야 한다", "target": "투자자", "object": "호가", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 887, "node": 889, "actor": "금융투자회사", "act": "선량한 관리자로서의 주의의무를 다하여야 한다", "target": "", "object": "주의의무", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 890, "node": 890, "actor": "금융투자회사", "act": "투자경험, 금융지식 및 재산상황 등의 정보를 서명 등의 방법으로 확인", "target": "일반투자자", "object": "유사해외통화선물에 대한 교육·설명회를 하거나 모의거래를 하는 경우", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 890, "node": 890, "actor": "금융투자회사", "act": "알린 후 서명 등의 방법으로 확인을 받아야", "target": "일반투자자", "object": "유사해외통화선물거래에 따르는 위험", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 890, "node": 890, "actor": "금융투자회사", "act": "알린 후 서명 등의 방법으로 확인을 받아야", "target": "일반투자자", "object": "유사해외통화선물거래가 일반투자자의 투자목적·재산상황 및 투자경험 등에 비추어 그 일반투자자에게 적합하지 아니하다는 사실", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 899, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 900, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 894, "node": 894, "actor": "금융투자회사", "act": "공시하여야 한다", "target": "", "object": "해외파생상품시장회원의 분기별 재무현황", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 894, "node": 894, "actor": "금융투자회사", "act": "공시하여야 한다", "target": "", "object": "해당 사유가 해소된 후 해외파생상품시장회원의 재무현황", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 880, "node": 883, "actor": "금융투자회사", "act": "예탁받아야", "target": "투자자", "object": "거래단위당 미화 1만달러 이상을 위탁증거금으로", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 880, "node": 883, "actor": "위탁증거금", "act": "사용할 수 없다", "target": "", "object": "법 제74조제1항에 따른 예치·신탁 또는 금융투자업규정 제4-39조제1항제1호 각 목 이외의 용도", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 880, "node": 884, "actor": "금융투자회사", "act": "소멸시키는 거래를 할 수 있다", "target": "", "object": "투자자의 미결제약정", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 880, "node": 884, "actor": "유지증거금", "act": "이어야", "target": "", "object": "위탁증거금의 100분의 50 이상의 미화", "mode": "의무", "function": "정의", "proviso": true}
+{"jo": 880, "node": 885, "actor": "금융투자회사", "act": "하도록 하여야 한다", "target": "투자자", "object": "금융투자회사의 명의와 투자자의 계산으로 유사해외통화선물거래를", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 880, "node": 886, "actor": "금융투자회사", "act": "소멸시켜야 한다", "target": "", "object": "투자자의 계좌별로 동일한 유사해외통화선물 종목에 대하여 매도와 매수의 약정수량 중 대등한 수량을 상계한 것으로", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 895, "node": 896, "actor": "금융투자회사", "act": "제출하여야", "target": "협회", "object": "직전 4개 분기에 대한 유사해외통화선물거래의 손실계좌비율과 이익계좌비율", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 895, "node": 896, "actor": "협회", "act": "공시한다", "target": "", "object": "동 비율", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 895, "node": 897, "actor": "협회", "act": "정한다", "target": "", "object": "손실계좌비율과 이익계좌비율의 산정기준, 제출 절차 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 907, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 914, "node": 914, "actor": "금융투자회사", "act": "구분하여 발행하여야 한다", "target": "", "object": "파생결합증권 및 파생결합사채", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 917, "node": 917, "actor": "금융투자회사", "act": "발행대금을 헤지자산의 운용에 사용하여야 하며", "target": "", "object": "파생결합증권 및 파생결합사채의 발행대금", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 917, "node": 917, "actor": "금융투자회사", "act": "헤지자산을 고유재산과 구분하여 관리하여야 한다", "target": "", "object": "헤지자산", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 908, "node": 908, "actor": "금융투자회사", "act": "만기를 3개월 이상으로 하여야", "target": "", "object": "파생결합증권 및 파생결합사채", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 908, "node": 908, "actor": "금융투자회사", "act": "최초조기상환 기간을 3개월 이상으로 설정하여야", "target": "", "object": "조기상환조건이 있는 파생결합증권 및 파생결합사채", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 908, "node": 908, "actor": "금융투자회사", "act": "발행은 가능", "target": "", "object": "즉시지급조건의 달성에 의해 발행일로부터 상환금이 지급되는 날까지의 기간이 3개월 미만이 될 수 있는 파생결합증권 및 파생결합사채", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 908, "node": 908, "actor": "금융투자회사", "act": "최초조기상환 기간을 3개월 이상으로 설정하여야", "target": "", "object": "조기상환조건이 있는 해당 파생결합증권 및 파생결합사채", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 918, "node": 918, "actor": "금융투자회사", "act": "전산시스템을 구축·운영하여야", "target": "", "object": "파생결합증권등 및 헤지자산 현황을 일별로 점검할 수 있는 전산시스템", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 942, "node": 943, "actor": "금융투자회사", "act": "공시하여야 한다", "target": "협회", "object": "해당 공모파생결합증권등의 청약정보", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 942, "node": 944, "actor": "협회장", "act": "정하는 바에 따른다", "target": "", "object": "공모파생결합증권등의 범위, 세부항목, 시기 및 서식 등 그 밖의 내용", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 909, "node": 909, "actor": "파생결합증권 및 파생결합사채의 기초자산", "act": "충족하여야", "target": "", "object": "다음 각 호의 요건을 모두", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 909, "node": 909, "actor": "기초자산의 유동성", "act": "풍부할", "target": "", "object": "", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 909, "node": 909, "actor": "국내외 거래소 또는 협회 등 공신력 있는 기관", "act": "산출·공표한", "target": "지수", "object": "합리적이고 적정한 방법에 의해", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 909, "node": 909, "actor": "지수 또는 동 지수를 기초자산으로 한 파생상품", "act": "거래되고 있는", "target": "국내외 거래소에서", "object": "", "mode": "허용", "function": "효과", "proviso": true}
+{"jo": 909, "node": 909, "actor": "지수의 구성종목에 대한 교체 기준 및 방식", "act": "공정하고 명확하여", "target": "", "object": "", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 909, "node": 909, "actor": "일반투자자", "act": "확인할 수 있을", "target": "", "object": "기초자산에 대한 정보를 당해 금융투자회사의 인터넷 홈페이지 등을 통해 쉽게", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 909, "node": 909, "actor": "일반투자자", "act": "이해할 수 있을", "target": "", "object": "당해 기초자산의 특성을 충분한 설명을 통해", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 919, "node": 920, "actor": "금융투자회사", "act": "헤지자산 운용에 관한 다음 각 호의 사항을 내부규정에 반영하고 이를 준수하여야", "target": "", "object": "헤지자산 운용에 관한 다음 각 호의 사항", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 919, "node": 928, "actor": "금융투자회사", "act": "별도의 승인절차를 마련하고 이를 준수하여야", "target": "", "object": "별도의 승인절차", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 919, "node": 929, "actor": "금융투자회사", "act": "헤지자산을 운용하여서는 아니 된다", "target": "", "object": "계열회사가 발행한 증권(상장주식은 제외한다) 및 계열회사의 자산을 기초로 하여 발행된 유동화증권", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 919, "node": 929, "actor": "금융투자회사", "act": "헤지자산을 운용할 수 있다", "target": "", "object": "관련법령을 준수하는 경우로서 해당 증권 및 유동화증권이 제1항제1호의 투자가능등급 이상인 경우", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 919, "node": 930, "actor": "금융투자회사", "act": "파생결합증권등의 자금흐름, 만기, 유동성 등을 충분히 고려하여야", "target": "", "object": "파생결합증권등의 자금흐름, 만기, 유동성 등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 919, "node": 930, "actor": "금융투자회사", "act": "담보로 제공하는 자산에 대한 담보제공목적 및 담보권자의 목록을 작성하고 이를 유지·관리하여야", "target": "", "object": "담보로 제공하는 자산에 대한 담보제공목적 및 담보권자의 목록", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 945, "node": 946, "actor": "금융투자회사", "act": "협회의 인터넷 홈페이지에 공시하여야 한다", "target": "", "object": "파생결합증권(주식워런트증권은 제외한다) 및 파생결합사채의 투자자 요청에 의한 중도상환가격비율", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 945, "node": 947, "actor": "협회장", "act": "정하는 바에 따른다", "target": "", "object": "중도상환가격비율의 범위, 세부항목, 시기 및 서식 등 그 밖의 내용", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 949, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 939, "node": 939, "actor": "금융투자회사", "act": "준수하여야 한다", "target": "", "object": "주식을 기초자산으로 하는 공모파생결합증권을 발행하는 경우 다음 각 호", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 939, "node": 939, "actor": "", "act": "할 것", "target": "", "object": "공모파생결합증권이 다음 각 목의 어느 하나에 해당하는 경우 만기평가가격을 만기평가일을 포함한 직전 3영업일 이상의 종가를 평균한 값 또는 만기평가일의 거래량가중평균가격으로", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 939, "node": 939, "actor": "금융투자회사", "act": "명시할 것", "target": "당해 공모파생결합증권의 신고서등 및 투자설명서", "object": "헤지운용사의 명칭", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 931, "node": 932, "actor": "금융투자회사", "act": "제정하고 이를 준수하여야", "target": "", "object": "이 장의 규정을 반영한 파생결합증권등의 발행 및 헤지자산 운용에 관한 별도의 내부규정", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 931, "node": 933, "actor": "금융투자회사", "act": "점검하여야", "target": "", "object": "제1항에 따른 내부규정 준수 여부", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 931, "node": 933, "actor": "금융투자회사", "act": "제출하여야", "target": "협회", "object": "그 점검결과와 내부규정 위반시 개선방안 및 계획", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 931, "node": 934, "actor": "금융투자회사", "act": "점검하여야", "target": "", "object": "헤지자산의 운용 현황 및 적정성, 위험의 종류별 한도 준수 여부 등", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 931, "node": 935, "actor": "자체적으로 헤지자산을 운용하는 금융투자회사", "act": "제정·운영하여야", "target": "", "object": "다음 각 호를 포함한 헤지자산 운용지침", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 931, "node": 935, "actor": "백투백거래를 이용하는 금융투자회사", "act": "확인하여야", "target": "", "object": "헤지운용사가 동 운용지침을 제정·운영하고 있는지 여부", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 950, "node": 950, "actor": "자율규제위원회 위원장", "act": "정한다", "target": "", "object": "매일의 차액결제거래 상황의 제출방법", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 968, "node": 969, "actor": "금융투자회사", "act": "제출하여야", "target": "협회", "object": "투자설명서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 968, "node": 970, "actor": "협회", "act": "게시하여야", "target": "", "object": "투자설명서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 971, "node": 971, "actor": "협회장", "act": "정하는", "target": "", "object": "자산운용보고서 표준서식 및 제공요령 등에 관한 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 953, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 973, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 974, "node": 975, "actor": "채권평가회사", "act": "입수한", "target": "", "object": "평가대상자산 목록 및 계약서 등 기초자료", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 974, "node": 976, "actor": "채권평가회사", "act": "송신한", "target": "", "object": "기초자료", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 974, "node": 977, "actor": "일반사무관리회사", "act": "수신한", "target": "", "object": "기초자료", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 974, "node": 977, "actor": "일반사무관리회사", "act": "입수한", "target": "", "object": "운용지시서", "mode": "정의", "function": "정의", "proviso": true}
+{"jo": 978, "node": 979, "actor": "집합투자회사", "act": "반영할 수 있다", "target": "", "object": "컷오프 시간 이후 입수된 기초자료를 당일 평가 및 기준가격 산정에", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 978, "node": 980, "actor": "집합투자회사", "act": "반영할 수 있다", "target": "", "object": "기초자료를 당일 평가 및 기준가격 산정에", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 991, "node": 992, "actor": "협회", "act": "운영할 수 있다", "target": "", "object": "펀드기준가격실무협의체", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 991, "node": 993, "actor": "펀드기준가격실무협의체", "act": "논의한다", "target": "", "object": "펀드 기준가격 산정과 관련하여 펀드시장의 운영상황에 대한 모니터링 및 평가, 개선방안 등", "mode": "의무", "function": "기타", "proviso": false}
+{"jo": 986, "node": 987, "actor": "집합투자회사", "act": "평가 및 기준가격 산정에 반영한다", "target": "", "object": "해외 장내자산과 해외 장외자산", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 986, "node": 988, "actor": "집합투자회사", "act": "평가 및 기준가격 산정에 반영할 수 있다", "target": "", "object": "해외 장외자산(외화채권, 선도환, FX옵션, 금리스왑, 통화스왑 등)", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 986, "node": 989, "actor": "집합투자회사", "act": "컷오프 시간을 준수하여야 하고, 기초자료는 익영업일에 평가 및 기준가격 산정에 반영한다", "target": "", "object": "금융투자업규정 제7-36조의2에서 정한 컷오프 시간", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 990, "node": 990, "actor": "금융투자회사", "act": "당일에 평가한다", "target": "국내 상장지수집합투자기구", "object": "컷오프 시간 이후에 기초자료를 입수한 때", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 990, "node": 990, "actor": "금융투자회사", "act": "협회 홈페이지를 통해 공시하여야 한다", "target": "", "object": "컷오프 시간 이후에 입수된 사실을 준법감시인의 확인을 받아", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 1007, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1001, "node": 1001, "actor": "금융투자회사", "act": "기본예탁금을 예탁받아야", "target": "", "object": "기본예탁금", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1008, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 998, "node": 999, "actor": "금융투자회사", "act": "협회가 인정하는 교육을 사전에 이수하도록 하고 그 이수 여부를 확인하여야", "target": "일반투자자", "object": "협회가 인정하는 교육", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 998, "node": 999, "actor": "금융투자회사", "act": "그러하지 아니하다", "target": "", "object": "법인·단체, 외국인, 투자일임계약 또는 금전신탁계약에 따라 거래하려는 자", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 1019, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 995, "node": 996, "actor": "집합투자회사", "act": "명칭에 \"단일종목\"을 포함하여야 한다", "target": "", "object": "단일한 주식종목을 기초자산으로 하며, 목표로 하는 기초자산의 가격 또는 지수 변화에 1배를 초과한 배율(음의 배율을 포함하며, 음의 배율의 경우 1배 이상으로 한다)로 연동하는 상장지수집합투자기구", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 995, "node": 997, "actor": "금융투자회사", "act": "\"펀드\", \"Fund\", \"ETF\", \"Exchange Traded Fund\" 등의 명칭을 사용하여서는 아니 된다", "target": "", "object": "제1항에 따른 상장지수집합투자기구 집합투자증권의 투자권유 또는 광고선전 등", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1021, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1020, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1029, "node": 1030, "actor": "투자신탁 등", "act": "내역을 협회에 제출하여야", "target": "협회", "object": "내역", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1029, "node": 1031, "actor": "협회장", "act": "정한다", "target": "", "object": "집합투자규약, 투자설명서의 제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 954, "node": 955, "actor": "집합투자회사", "act": "준수하여야", "target": "", "object": "집합투자기구의 명칭을 사용함에 있어 다음 각 호의 사항", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 954, "node": 955, "actor": "집합투자회사", "act": "사용할 것", "target": "", "object": "집합투자기구의 명칭에 법 제229조 각 호의 집합투자기구의 종류를 표시하는 문자(증권ㆍ부동산ㆍ특별자산ㆍ혼합자산ㆍ단기금융 및 기업성장을 말한다)", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 954, "node": 955, "actor": "집합투자회사", "act": "표기할 것", "target": "", "object": "집합투자기구의 명칭에 집합투자회사의 회사명", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 954, "node": 955, "actor": "집합투자회사", "act": "생략ㆍ조정하여 표기할 수 있다", "target": "", "object": "회사명칭", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 954, "node": 955, "actor": "집합투자회사", "act": "사용하지 아니할 것", "target": "", "object": "판매회사의 명칭", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 954, "node": 955, "actor": "집합투자회사", "act": "사용하지 아니할 것", "target": "", "object": "집합투자기구의 투자대상ㆍ운용전략 등 상품내용과 다르거나 투자자를 오인케 할 우려가 있는 명칭", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 954, "node": 955, "actor": "집합투자회사", "act": "사용하지 아니할 것", "target": "", "object": "다른 금융투자회사가 사용하고 있는 명칭과 동일하거나 유사한 명칭", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 954, "node": 955, "actor": "집합투자회사", "act": "사용할 수 있다", "target": "", "object": "그 주된 내용이 동일한 경우에는 동일하거나 유사한 명칭", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 954, "node": 955, "actor": "집합투자회사", "act": "사용하지 아니할 것", "target": "", "object": "실적배당형 상품의 특성과 다르게 수식어를 부가함으로써 투자자의 오해를 야기할 우려가 있는 집합투자기구의 명칭", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 954, "node": 955, "actor": "집합투자회사", "act": "포함할 것", "target": "", "object": "사모집합투자기구의 경우 집합투자기구명칭에 '사모'", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 954, "node": 955, "actor": "집합투자회사", "act": "사용하지 아니할 것", "target": "", "object": "운용전문인력의 이름", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 954, "node": 955, "actor": "집합투자회사", "act": "포함할 것", "target": "", "object": "「퇴직연금감독규정 시행세칙」 제5조의2에 따른 적격 집합투자증권의 경우 집합투자기구명칭에 '적격'", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 954, "node": 965, "actor": "집합투자회사", "act": "포함할 수 있다", "target": "", "object": "집합투자재산 총액의 60% 이상을 특정 종류의 증권 또는 특정 국가ㆍ지역에 투자하는 경우 그 사실을 집합투자기구의 명칭에", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 954, "node": 965, "actor": "집합투자회사", "act": "포함할 수 없다", "target": "", "object": "그 이외의 자산이 집중투자자산(60%)의 성격에 큰 영향을 미치거나 부합하지 않는 경우 그 사실을 집합투자기구의 명칭에", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 954, "node": 966, "actor": "판매회사", "act": "사용하여야", "target": "", "object": "집합투자규약에서 정한 집합투자기구의 명칭을 집합투자기구를 판매(광고선전, 통장인자 등을 포함한다)함에 있어", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 954, "node": 966, "actor": "판매회사", "act": "생략ㆍ조정하여 사용할 수 있다", "target": "", "object": "집합투자기구 명칭과 크게 다르지 아니한 범위 내에서 명칭을", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 954, "node": 967, "actor": "협회", "act": "요구할 수 있다", "target": "집합투자회사", "object": "시정을", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1022, "node": 1023, "actor": "투자신탁 등", "act": "제출하여야 한다", "target": "협회", "object": "집합투자재산에 관한 매 분기의 영업보고서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1022, "node": 1024, "actor": "협회장", "act": "정한다", "target": "", "object": "영업보고서의 제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1025, "node": 1026, "actor": "투자신탁 등", "act": "제출하여야 한다", "target": "협회", "object": "결산서류", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1025, "node": 1027, "actor": "청산인", "act": "작성하여", "target": "", "object": "결산보고서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1025, "node": 1027, "actor": "청산인", "act": "받고", "target": "주주총회(투자유한회사, 투자합자회사, 투자유한책임회사는 사원총회, 투자합자조합은 조합원총회, 투자익명조합은 익명조합원총회)", "object": "승인", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 1025, "node": 1027, "actor": "청산인", "act": "제출하여야 한다", "target": "협회", "object": "결산보고서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1025, "node": 1028, "actor": "협회장", "act": "정한다", "target": "", "object": "결산서류 등의 제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1032, "node": 1033, "actor": "투자신탁 등", "act": "발생 내역을 지체 없이 협회에 제출하여야 한다", "target": "협회", "object": "발생 내역", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1032, "node": 1034, "actor": "협회장", "act": "정한다", "target": "", "object": "수시공시 내역의 제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1035, "node": 1036, "actor": "집합투자회사", "act": "제출하여야", "target": "협회", "object": "집합투자기구의 자산운용보고서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1035, "node": 1037, "actor": "투자신탁 등", "act": "제출하여 공시할 수 있다", "target": "협회", "object": "자산운용보고서", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1035, "node": 1039, "actor": "협회장", "act": "정한다", "target": "", "object": "자산운용보고서의 제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1043, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1040, "node": 1041, "actor": "투자신탁 등", "act": "제출하여야 한다", "target": "협회", "object": "회계감사보고서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1040, "node": 1042, "actor": "협회장", "act": "정한다", "target": "", "object": "회계감사보고서의 제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1044, "node": 1045, "actor": "집합투자회사 또는 투자회사의 감독이사", "act": "이 내역을 지체 없이 협회에 제출해야", "target": "협회", "object": "기준가격편차가 1,000분의 3을 초과하는 경우 이 내역", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1044, "node": 1046, "actor": "협회장", "act": "정한다", "target": "", "object": "기준가격편차 허용범위 초과시 공시사항의 제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1051, "node": 1052, "actor": "투자신탁 등", "act": "작성하여 제출하여야", "target": "협회", "object": "영 제94조제3항에 따라 각 집합투자기구에 대한 기타비용에 관한 자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1051, "node": 1053, "actor": "협회장", "act": "정한다", "target": "", "object": "집합투자기구비용에 관한 자료의 제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1054, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1064, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1047, "node": 1048, "actor": "투자신탁 등", "act": "제출하여야 한다", "target": "협회", "object": "각 집합투자기구의 기준가격에 관한 자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1047, "node": 1049, "actor": "협회", "act": "공시하지 아니한다", "target": "", "object": "일반 사모집합투자기구의 가격정보", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1047, "node": 1049, "actor": "협회", "act": "공시하지 아니하다", "target": "", "object": "가격정보", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 1047, "node": 1050, "actor": "협회장", "act": "정한다", "target": "", "object": "기준가격에 대한 자료의 제출방법 등 그 밖의 내용의 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1060, "node": 1061, "actor": "판매회사", "act": "선정원칙을 정하여 그 내용을 협회에 지체없이 제출하여야", "target": "협회", "object": "추천펀드의 선정원칙", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1060, "node": 1062, "actor": "판매회사", "act": "해당 사업연도의 추천펀드 명칭과 선정사유 등 관련 자료를 해당 사업연도 마지막 영업일까지 협회에 제출하여야", "target": "협회", "object": "추천펀드 명칭과 선정사유 등 관련 자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1060, "node": 1063, "actor": "협회장", "act": "정한다", "target": "", "object": "제출, 공시방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1065, "node": 1066, "actor": "판매회사", "act": "작성하여 협회에 제출해야", "target": "협회", "object": "국내집합투자기구의 투자자별 매각규모 등 관련 자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1065, "node": 1067, "actor": "협회장", "act": "정한다", "target": "", "object": "국내집합투자증권판매현황의 제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1055, "node": 1056, "actor": "집합투자회사", "act": "산정하여 제출하여야", "target": "협회", "object": "연금저축펀드별 수익률 및 수수료율과 상장지수집합투자기구별 수익률 및 수수료율", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1055, "node": 1056, "actor": "협회", "act": "공시하여야", "target": "", "object": "자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1055, "node": 1056, "actor": "", "act": "제외하고 산정하여야", "target": "", "object": "협회장이 정하는 상품", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 1055, "node": 1057, "actor": "연금저축펀드 판매회사", "act": "작성하여 제출하여야", "target": "협회", "object": "연금저축펀드 판매 정보, 연금저축판매회사별 적립금과 연금저축계좌 내 상장지수집합투자기구별 적립금", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1055, "node": 1057, "actor": "", "act": "제외하고 산정하여야", "target": "", "object": "협회장이 정하는 상품", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 1055, "node": 1059, "actor": "협회장", "act": "정하는", "target": "", "object": "자료제출 및 공시의 범위, 세부항목 및 서식 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1072, "node": 1073, "actor": "투자신탁 등", "act": "작성하여 제출하여야", "target": "협회", "object": "집합투자기구의 보수 및 수수료, 투자증권편입비율 등 관련 정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1072, "node": 1074, "actor": "협회장", "act": "정한다", "target": "", "object": "집합투자기구 상시정보 제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1075, "node": 1076, "actor": "투자신탁 등", "act": "작성하여 제출하여야 한다", "target": "협회", "object": "집합투자기구의 증권매매정보 등 관련 정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1075, "node": 1077, "actor": "협회장", "act": "정한다", "target": "", "object": "집합투자기구의 증권매매정보 등 관련정보의 제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1081, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1078, "node": 1079, "actor": "투자신탁 등", "act": "작성하여 다음 날 오전 10시까지 협회에 제출하여야", "target": "협회", "object": "해외투자형과 국내외혼합투자형의 투자지역, 통화 등 관련 자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1078, "node": 1080, "actor": "협회장", "act": "정한다", "target": "", "object": "해외투자 지역별 현황 자료의 제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1082, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1068, "node": 1069, "actor": "판매회사", "act": "제출하여야 한다", "target": "협회", "object": "수익자등의 총수가 1인이 되는 경우를 확인하기 위한 관련 자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1068, "node": 1070, "actor": "협회", "act": "게시할 수 있다", "target": "", "object": "제출된 자료", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1068, "node": 1071, "actor": "협회장", "act": "정한다", "target": "", "object": "제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1092, "node": 1094, "actor": "협회장", "act": "정한다", "target": "", "object": "제1항의 세부적인 구분기준", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1083, "node": 1084, "actor": "협회", "act": "공시한다", "target": "", "object": "운용실적", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 1083, "node": 1091, "actor": "협회장", "act": "정한다", "target": "", "object": "제1항 각호의 세부적인 구분기준", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1102, "node": 1104, "actor": "", "act": "할 수 있다", "target": "", "object": "별도의 운용실적 비교ㆍ공시", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1102, "node": 1104, "actor": "", "act": "판단한다", "target": "", "object": "집합투자기구를 기준으로 대상여부", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 1098, "node": 1099, "actor": "운용실적 비교ㆍ공시", "act": "공시주기는 1개월로 하며", "target": "", "object": "", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1098, "node": 1099, "actor": "투자신탁 등", "act": "수정을 요구할 수 없다", "target": "", "object": "수정", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 1098, "node": 1100, "actor": "", "act": "공시한다", "target": "", "object": "상환된 집합투자기구", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1098, "node": 1101, "actor": "협회장", "act": "정한다", "target": "", "object": "공시기준일과 발표일자 등의 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1105, "node": 1108, "actor": "협회장", "act": "정하여 공시할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1118, "node": 1118, "actor": "운용실적분류기준에 따른 순위표시대상", "act": "표시한다", "target": "", "object": "제4-85조의 순위표시대상에 대한 순위", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 1110, "node": 1117, "actor": "협회장", "act": "정한", "target": "", "object": "제1항의 구분", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1095, "node": 1097, "actor": "협회장", "act": "정한다", "target": "", "object": "제1항의 세부적인 분류기준", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1124, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1125, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1123, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1126, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1122, "node": 1122, "actor": "협회", "act": "공시한다", "target": "", "object": "운용실적 공시자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1131, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1127, "node": 1129, "actor": "협회장", "act": "정하는", "target": "", "object": "공시ㆍ통계자료 등의 공시 및 발표에 관한 세부기준 및 방법 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1119, "node": 1120, "actor": "협회", "act": "공시할 수 있다", "target": "", "object": "기본자료를 가공하여 일간, 주간, 월간, 분기 등의 운용실적 등락폭, 등락률 등", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1119, "node": 1121, "actor": "협회", "act": "공시할 수 있다", "target": "", "object": "자료를 가공하여 집합투자기구의 주요정보", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1132, "node": 1132, "actor": "일반사무관리회사", "act": "내부통제기준을 제정·운영", "target": "", "object": "전산관리, 준법감시, 그 밖에 업무수행에 필요한 내부통제기준", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1132, "node": 1132, "actor": "일반사무관리회사", "act": "확보하여야", "target": "", "object": "이에 필요한 물적 설비 및 인력", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1143, "node": 1144, "actor": "일반사무관리회사", "act": "관리기준을 정하고 정보교류차단장치를 구축ㆍ운영하여야 한다", "target": "", "object": "비밀정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1143, "node": 1145, "actor": "일반사무관리회사", "act": "보안장치를 구비하여 관리하여야 한다", "target": "", "object": "비밀정보가 보관되어 있는 전산시스템", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1143, "node": 1146, "actor": "일반사무관리회사 및 그 임직원", "act": "제공하여야 한다", "target": "제3자", "object": "비밀정보", "mode": "절차", "function": "제한", "proviso": false}
+{"jo": 1150, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1147, "node": 1148, "actor": "일반사무관리회사", "act": "사용하거나 대외에 유출하여서는 아니 된다", "target": "", "object": "제공받은 집합투자재산명세 정보", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1147, "node": 1149, "actor": "일반사무관리회사에서 집합투자재산명세 정보를 취급하는 임직원", "act": "신고하여야 한다", "target": "준법감시인 부서", "object": "그 매배내역", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1151, "node": 1151, "actor": "집합투자기구평가회사", "act": "내부통제기준을 제정·운영하고 이에 필요한 물적 설비 및 인력을 확보하여야", "target": "", "object": "집합투자기구평가업무에 필요한 전산관리, 집합투자기구의 평가, 준법감시, 그 밖에 업무수행에 필요한 내부통제기준", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1133, "node": 1134, "actor": "일반사무관리회사", "act": "보유하고, 승인된 지침에 의해서 계산업무가 이루어지도록 하여야", "target": "", "object": "집합투자재산계산 업무와 관련하여 증권 회계처리지침을 문서 형태로", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1133, "node": 1135, "actor": "일반사무관리회사", "act": "수행하도록 하여야", "target": "", "object": "다음 각 호의 자료 입력(전산으로 처리된 경우를 포함한다)과 결과물의 대사는 별도의 담당자가", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1133, "node": 1140, "actor": "일반사무관리회사", "act": "제한하여야", "target": "", "object": "회계내역을 수정할 수 없도록 시스템을", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1133, "node": 1141, "actor": "일반사무관리회사", "act": "점검하고, 그 관련자료를 보관하여야", "target": "", "object": "해당 집합투자기구의 운용지시 내역이 집합투자재산 명세서 및 재무상태표 등 회계자료에 적정하게 반영(기준가격 산정의 적정성을 포함한다) 되었는지 여부를", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1133, "node": 1142, "actor": "일반사무관리회사", "act": "비밀로 취급하여야", "target": "", "object": "집합투자재산의 계산업무와 관련하여 직접 또는 간접으로 취득한 모든 투자자정보와 운용정보는", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1156, "node": 1157, "actor": "집합투자기구평가회사", "act": "협회에 보고하여야", "target": "협회", "object": "평가기준", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1156, "node": 1158, "actor": "협회장", "act": "정한다", "target": "", "object": "집합투자기구평가기준의 공시, 제출에 관한 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1152, "node": 1152, "actor": "집합투자기구평가회사", "act": "준수하여야 한다", "target": "", "object": "집합투자기구 평가와 관련된 정보를 외부에 제공하고자 하는 경우 다음 각 호의 사항", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1152, "node": 1152, "actor": "집합투자기구평가회사", "act": "준수할 것", "target": "", "object": "정보제공과 관련하여 사전에 정한 방법과 표현", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1152, "node": 1152, "actor": "집합투자기구평가회사", "act": "표현하지 아니할 것", "target": "", "object": "특정 집합투자회사나 특정 판매회사를 유리 또는 불리하도록", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1152, "node": 1152, "actor": "집합투자기구평가회사", "act": "전달할 것", "target": "정보를 제공받는 자", "object": "평가방법을 적절히", "mode": "의무", "function": "기타", "proviso": false}
+{"jo": 1170, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1166, "node": 1167, "actor": "집합투자기구평가회사", "act": "관리기준을 정하고 정보교류차단장치를 구축ㆍ운영하여야", "target": "", "object": "비밀정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1166, "node": 1168, "actor": "집합투자기구평가회사", "act": "관리하여야", "target": "", "object": "비밀정보가 보관되어 있는 전산시스템", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1166, "node": 1169, "actor": "집합투자기구평가회사 및 임직원", "act": "제공하여야", "target": "제3자", "object": "비밀정보", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1171, "node": 1171, "actor": "채권평가회사", "act": "내부통제기준을 제정·운영하고 이에 필요한 물적 설비 및 인력을 확보하여야", "target": "", "object": "채권평가업무에 필요한 전산관리, 집합투자기구의 평가, 준법감시, 그 밖에 업무수행에 필요한 내부통제기준", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1159, "node": 1160, "actor": "집합투자회사", "act": "제공할 수 있다", "target": "집합투자기구평가회사", "object": "집합투자재산의 명세", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1159, "node": 1161, "actor": "집합투자회사", "act": "제출한다", "target": "협회", "object": "집합투자재산의 명세", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1159, "node": 1162, "actor": "협회", "act": "제공할 수 있다", "target": "집합투자기구평가회사", "object": "집합투자재산의 명세 등 집합투자기구 운용정보", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1159, "node": 1163, "actor": "협회", "act": "제공하지 아니할 수 있다", "target": "", "object": "해당 정보", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1159, "node": 1164, "actor": "집합투자기구평가회사에서 채권 등 집합투자재산의 가격평가 업무를 위한 정보를 취급하는 임직원", "act": "신고하여야 한다", "target": "준법감시인 부서", "object": "그 매매내역", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1159, "node": 1165, "actor": "협회장", "act": "정할 수 있다", "target": "", "object": "제2항부터 제4항까지에 관한 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1172, "node": 1173, "actor": "채권평가회사", "act": "제출하여야", "target": "협회", "object": "증권평가기준", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1172, "node": 1174, "actor": "협회장", "act": "정한다", "target": "", "object": "증권평가기준의 공시, 제출에 관한 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1186, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1175, "node": 1176, "actor": "채권평가회사", "act": "관리기준을 정하고 정보교류차단장치를 구축ㆍ운영하여야", "target": "", "object": "비밀정보에 대한 관리기준", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1175, "node": 1177, "actor": "채권평가회사", "act": "적절한 보안장치를 구비하여 관리하여야", "target": "", "object": "비밀정보가 보관되어 있는 전산시스템", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1175, "node": 1178, "actor": "채권평가회사 및 임직원", "act": "제공하여야", "target": "제3자", "object": "비밀정보", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1187, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1192, "node": 1192, "actor": "", "act": "적용함", "target": "", "object": "이 장", "mode": "의무", "function": "정의", "proviso": false}
+{"jo": 1192, "node": 1192, "actor": "협회장", "act": "정하는", "target": "", "object": "경우", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1179, "node": 1180, "actor": "채권평가회사", "act": "제공받을 수 있다", "target": "집합투자회사 또는 협회", "object": "집합투자재산의 명세", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1179, "node": 1181, "actor": "채권평가회사", "act": "사용하거나 대외에 유출하여서는 아니 된다", "target": "", "object": "제1항에 따라 제공받은 집합투자재산명세 정보", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1179, "node": 1182, "actor": "임직원", "act": "도모하여서는 아니 된다", "target": "", "object": "자신 또는 제3자의 이익", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1179, "node": 1183, "actor": "임직원", "act": "신고하여야 한다", "target": "준법감시인 부서", "object": "그 매매내역", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1179, "node": 1184, "actor": "협회장", "act": "정할 수 있다", "target": "", "object": "제1항에 관한 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1210, "node": 1210, "actor": "판매회사", "act": "별도의 비용을 징구할 수 없다", "target": "투자자", "object": "판매회사 변경의 절차를 이행하는 대가", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1207, "node": 1208, "actor": "변경판매회사", "act": "그 절차를 이행하여야", "target": "", "object": "투자자가 펀드 판매회사의 변경을 위한 계좌정보 확인을 위하여 해당 펀드의 계좌정보확인서 발급을 신청하거나 변경대상판매회사를 통해 해당 펀드의 계좌정보 확인을 요청하는 경우", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1207, "node": 1209, "actor": "변경대상판매회사", "act": "변경판매회사가 제공한 해당 펀드의 계좌정보를 확인하고, 투자자가 해당 펀드를 거래할 수 있는 계좌가 없는 경우에는 펀드 판매회사 변경을 위한 별도의 계좌를 개설토록 하여야", "target": "", "object": "투자자가 펀드 판매회사의 변경을 신청하는 경우", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1211, "node": 1212, "actor": "판매회사", "act": "환매수수료를 징구할 수 없다", "target": "투자자", "object": "환매수수료", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1211, "node": 1213, "actor": "", "act": "계산한다", "target": "", "object": "기산일", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1193, "node": 1194, "actor": "판매회사", "act": "되어야 한다", "target": "", "object": "위탁판매계약이 체결된 모든 펀드에 대하여 변경판매회사 또는 변경대상판매회사", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1193, "node": 1195, "actor": "변경판매회사", "act": "이행하여야 한다", "target": "", "object": "해당 펀드의 판매회사 변경절차", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1193, "node": 1201, "actor": "변경대상판매회사", "act": "이행하여야 한다", "target": "", "object": "판매회사 변경절차", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1193, "node": 1205, "actor": "변경판매회사 또는 변경대상판매회사", "act": "설명하여야 한다", "target": "투자자", "object": "그 변경이 불가능한 사유", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1193, "node": 1205, "actor": "변경판매회사 또는 변경대상판매회사", "act": "통지하여야 한다", "target": "투자자", "object": "변경 불가능사유", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 1193, "node": 1206, "actor": "협회장", "act": "정할 수 있다", "target": "", "object": "제2항부터 제4항까지의 변경절차 등에 관한 세부사항", "mode": "허용", "function": "위임", "proviso": false}
+{"jo": 1214, "node": 1215, "actor": "판매회사", "act": "판매수수료 등에 관한 자료를 협회에 제출하여야", "target": "협회", "object": "판매수수료 등에 관한 자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1214, "node": 1216, "actor": "협회장", "act": "정하는", "target": "", "object": "자료의 보고범위 등 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1230, "node": 1230, "actor": "협회장", "act": "정한다", "target": "", "object": "의결권 행사 관련 투자일임회사의 공시방법 및 절차 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1227, "node": 1228, "actor": "투자자문업 및 투자일임업을 영위하는 자", "act": "작성하여 협회에 보고하여야 한다", "target": "협회", "object": "투자자문과 투자일임에 대한 계약규모 등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1227, "node": 1229, "actor": "협회장", "act": "정한다", "target": "", "object": "제1항에 따른 보고 대상·시기·방법 등 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1218, "node": 1218, "actor": "투자자문회사", "act": "하여서는 아니 된다", "target": "", "object": "투자자문ㆍ투자일임 관련 비밀정보를 이용하여 자신, 가족 또는 제3자의 이익을 도모하는 행위", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1218, "node": 1218, "actor": "투자일임회사", "act": "하여서는 아니 된다", "target": "", "object": "투자자문ㆍ투자일임 관련 비밀정보를 이용하여 자신, 가족 또는 제3자의 이익을 도모하는 행위", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1218, "node": 1218, "actor": "투자자문회사", "act": "하여서는 아니 된다", "target": "", "object": "투자자문재산 및 투자일임재산으로 투자하고자 증권을 발행한 회사의 임직원과의 담합 등에 의하여 매매하는 행위", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1218, "node": 1218, "actor": "투자일임회사", "act": "하여서는 아니 된다", "target": "", "object": "투자자문재산 및 투자일임재산으로 투자하고자 증권을 발행한 회사의 임직원과의 담합 등에 의하여 매매하는 행위", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1218, "node": 1218, "actor": "투자자문회사", "act": "하여서는 아니 된다", "target": "", "object": "다른 투자자문회사 또는 투자일임회사 등과 서로 짠 후 매매정보를 공유하여 매매하는 행위", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1218, "node": 1218, "actor": "투자일임회사", "act": "하여서는 아니 된다", "target": "", "object": "다른 투자자문회사 또는 투자일임회사 등과 서로 짠 후 매매정보를 공유하여 매매하는 행위", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1235, "node": 1239, "actor": "협회장", "act": "정할 수 있다", "target": "", "object": "제1항에 관한 세부적인 사항", "mode": "허용", "function": "위임", "proviso": false}
+{"jo": 1251, "node": 1251, "actor": "협회", "act": "모범기준을 제정할 수 있다", "target": "", "object": "신탁재산의 설정·해지, 운용, 평가등과 관련한 회계처리 업무에 대한 모범기준", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1240, "node": 1241, "actor": "금융투자회사", "act": "해지 처리할 것", "target": "", "object": "신탁재산의 일부 또는 전부", "mode": "절차", "function": "절차", "proviso": false}
+{"jo": 1240, "node": 1244, "actor": "협회장", "act": "정할 수 있다", "target": "", "object": "제1항에 관한 세부적인 사항", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1245, "node": 1246, "actor": "신탁회사", "act": "작성하여 협회에 제출하여야", "target": "협회", "object": "자산보관ㆍ관리보고서", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1245, "node": 1247, "actor": "협회장", "act": "정한다", "target": "", "object": "제1항에 따른 보고서 제출방법 등 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1248, "node": 1249, "actor": "신탁회사", "act": "작성하여 제출하여야 한다", "target": "협회", "object": "원천징수세액 관련 자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1248, "node": 1250, "actor": "협회장", "act": "정한다", "target": "", "object": "신탁재산원천징수에 관한 자료 제출방법 등 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1231, "node": 1231, "actor": "투자일임업자", "act": "준수하여야 한다", "target": "", "object": "투자일임계약 체결 후 그 운용대상 상품을 변경할 경우 다음 각 호의 사항", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1231, "node": 1231, "actor": "투자일임업자", "act": "변경하는 경우 금지되는 행위는 영 제68조제5항제2호의2 각 목을 준용한다", "target": "개인인 일반투자자 중 금융소비자보호법 제17조제2항 또는 제18조제1항에 따라 투자목적ㆍ재산상황 및 투자경험 등의 정보를 파악한 결과 변경할 운용대상 상품이 적합하지 않거나 적정하지 않다고 판단되는 사람 또는 65세 이상인 사람", "object": "영 제68조제5항제2호의2 각 목 외의 부분에 따른 금융투자상품으로 운용대상 상품", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1231, "node": 1231, "actor": "투자일임업자", "act": "하지 아니한 경우는 그러하지 아니하다", "target": "", "object": "최초 일임계약 체결 시 영 제99조제4항제1호의2 각 목의 행위", "mode": "기타", "function": "기타", "proviso": true}
+{"jo": 1231, "node": 1231, "actor": "투자일임업자", "act": "변경하는 경우 금지되는 행위는 영 제68조제5항제2호의3 각 목을 준용한다", "target": "", "object": "운용대상 상품을 영 제68조제5항제2호의3 각 목 외의 부분에 따른 고난도 금융투자상품", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1231, "node": 1231, "actor": "투자일임업자", "act": "하지 아니한 경우는 그러하지 아니하다", "target": "", "object": "최초 일임계약 체결 시 영 제99조제4항제1호의3 각 목의 행위", "mode": "기타", "function": "기타", "proviso": true}
+{"jo": 1252, "node": 1252, "actor": "협회", "act": "위원회를 설치하여 운영할", "target": "", "object": "위원회", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "포함하여야 한다", "target": "", "object": "서면자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "기재할 것", "target": "", "object": "투자자문의 범위를 주식, 채권, 증권 관련 지수 파생상품 등 구체적으로", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "기재할 것", "target": "", "object": "투자자문의 방법을 구술, 문서 그 밖의 방법으로 구분하고 구체적인 방법 및 시기를", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "기재할 것", "target": "", "object": "투자자에게 미리 그 사실을 통보한다는 내용을", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "기재할 것", "target": "", "object": "투자자에게 미리 그 사실을 통보한다는 내용을", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "기재할 것", "target": "", "object": "투자자의 투자자문 요구 방법이나 시기에 특별한 제한이 있는 경우 그 내용을", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "기재할 것", "target": "", "object": "투자일임의 범위를 구체적으로", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "기재할 것", "target": "", "object": "투자일임의 대상이 되는 금융투자상품의 범위를", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "기재할 것", "target": "", "object": "투자자에게 동의를 얻어 매매한다는 내용을", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "기재할 것", "target": "", "object": "주로 거래하는 투자중개회사가 있는 경우 그 명칭 및 해당 투자일임회사와의 관계를", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "기재할 것", "target": "", "object": "일반적인 수수료 체계를", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "기재할 것", "target": "", "object": "해당 투자자문계약 또는 투자일임계약에 적용되는 수수료 산정방법, 수수료 지급시기 및 방법 등을 구체적으로", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "기재할 것", "target": "", "object": "투자일임계약의 중도해지시 수수료 산출방식 및 환급 또는 징수절차를", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "기재할 것", "target": "", "object": "투자실적 평가방법을 구체적으로", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1222, "node": 1222, "actor": "투자자문회사 또는 투자일임회사", "act": "기재할 것", "target": "", "object": "투자실적 평가결과의 통보시기, 통보방법, 통보내용 등을 구체적으로", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1256, "node": 1257, "actor": "신탁업을 영위하는 자", "act": "보고하여야 한다", "target": "협회", "object": "신탁업에 대한 계약규모 등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1256, "node": 1258, "actor": "협회장", "act": "정한다", "target": "", "object": "보고 대상ㆍ시기ㆍ방법 등 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1259, "node": 1260, "actor": "신탁업자", "act": "제출하여야 한다", "target": "협회", "object": "신탁재산에 속하는 주식의 의결권 행사내용 등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1259, "node": 1261, "actor": "협회장", "act": "정한다", "target": "", "object": "의결권행사에 관한 공시사항의 제출방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1253, "node": 1254, "actor": "신탁회사", "act": "업무의 일부를 제3자에게 위탁할 수", "target": "", "object": "신탁재산", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1253, "node": 1255, "actor": "협회장", "act": "정할 수", "target": "", "object": "세부사항", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1262, "node": 1262, "actor": "협회장", "act": "정한다", "target": "", "object": "보수율 관련 공시방법 등 세부적인 사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1266, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1263, "node": 1263, "actor": "신탁회사", "act": "명시하여야 한다", "target": "", "object": "계약당사자의 계정이 신탁회사의 신탁계정이며 신탁회사는 수탁자의 위치에서 거래한다는 사실", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1280, "node": 1280, "actor": "협회", "act": "보고방법 및 시간을 달리 정할 수 있으며, 이에 연동하여 공시방법 및 시간을 달리 정할 수 있다", "target": "", "object": "제7편의 각 보고사항에 대한 보고", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1282, "node": 1283, "actor": "채권거래 금융투자회사", "act": "보고하여야", "target": "협회", "object": "호가정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1282, "node": 1284, "actor": "채권거래 금융투자회사", "act": "보고하는 것으로 갈음할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1282, "node": 1286, "actor": "협회장", "act": "정하는", "target": "", "object": "호가정보의 보고범위 등 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1307, "node": 1308, "actor": "협회", "act": "공시한다", "target": "", "object": "장외거래 대표수익률, 종류별ㆍ잔존기간별 가중평균수익률, 거래량, 거래대금, 종목별 수익률, 거래량, 거래대금, 기관 간 조건부매매의 중개내역, 그 밖에 채권장외거래 및 조건부매매 관련 정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1307, "node": 1314, "actor": "협회장", "act": "정할 수 있다", "target": "", "object": "공시대상 채권", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1287, "node": 1288, "actor": "협회", "act": "공시한다", "target": "", "object": "호가정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1287, "node": 1289, "actor": "채권거래 금융투자회사", "act": "응하여야 한다", "target": "협회", "object": "호가정보의 확인을 요청", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1287, "node": 1290, "actor": "협회장", "act": "정하는", "target": "", "object": "호가정보의 공시에 관한 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1267, "node": 1267, "actor": "", "act": "이란", "target": "", "object": "채권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1267, "node": 1267, "actor": "", "act": "이란", "target": "", "object": "대표수익률", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1267, "node": 1267, "actor": "", "act": "이란", "target": "", "object": "호가정보", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1267, "node": 1267, "actor": "", "act": "이란", "target": "", "object": "최종호가수익률", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1267, "node": 1267, "actor": "", "act": "이란", "target": "", "object": "시가평가기준수익률", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1267, "node": 1267, "actor": "", "act": "이란", "target": "", "object": "발행정보", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1267, "node": 1267, "actor": "", "act": "이란", "target": "", "object": "채권중개전문회사", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1267, "node": 1267, "actor": "", "act": "이란", "target": "", "object": "채권거래전용시스템", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1267, "node": 1267, "actor": "", "act": "이란", "target": "", "object": "채권거래인력", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1267, "node": 1267, "actor": "", "act": "이란", "target": "", "object": "단기사채등", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1267, "node": 1267, "actor": "", "act": "이란", "target": "", "object": "외화채권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1267, "node": 1267, "actor": "", "act": "이란", "target": "", "object": "신용평가회사", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1315, "node": 1316, "actor": "금융투자업규정 제5-11조에 따라 채권전문자기매매업자로 지정된 투자매매회사 등", "act": "보고하여야 한다", "target": "협회", "object": "매매수익률 호가를 매도ㆍ매수별로 매일 전산매체 등을 통하여", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1315, "node": 1317, "actor": "협회", "act": "공시한다", "target": "", "object": "제1항에 따라 채권전문자기매매업자가 제출한 매매수익률 호가를 전산매체 등을 통하여", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1292, "node": 1293, "actor": "채권거래 금융투자회사", "act": "보고하여야 한다", "target": "협회", "object": "건별 매매·중개거래 내역", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1292, "node": 1294, "actor": "", "act": "정하는 바에 따른다", "target": "", "object": "보고범위 등 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1292, "node": 1294, "actor": "전환사채 등 주식관련 사채", "act": "정할 수 있다", "target": "", "object": "매매당사자간의 합의에 의한 방법", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1292, "node": 1304, "actor": "", "act": "정하는 바에 따른다", "target": "", "object": "대투자자조건부매매 현황 및 기관간조건부매매 중개내역의 보고범위 등 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1292, "node": 1305, "actor": "", "act": "정하는 바에 따른다", "target": "", "object": "채권의 장외거래 또는 매매거래의 중개내역의 보고범위 등 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1292, "node": 1306, "actor": "회사", "act": "보고할 수 있다", "target": "", "object": "매매거래내역", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1326, "node": 1326, "actor": "협회", "act": "채권발행정보를 체계적으로 관리하여야 한다", "target": "", "object": "채권발행정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1326, "node": 1326, "actor": "협회", "act": "채권발행정보를 전산파일 등으로 보관ㆍ관리할 수 있다", "target": "", "object": "채권발행정보", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1318, "node": 1319, "actor": "협회", "act": "공시한다", "target": "", "object": "채권의 최종호가수익률 및 시가평가기준수익률", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1318, "node": 1323, "actor": "금융투자회사", "act": "보고하여야 하는", "target": "", "object": "수익률", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1318, "node": 1323, "actor": "협회장", "act": "정하는", "target": "", "object": "채권거래 금융투자회사의 선정기준 및 수익률 공시방법 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1318, "node": 1324, "actor": "채권평가회사", "act": "보고하여야 한다", "target": "", "object": "수익률", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1328, "node": 1328, "actor": "협회", "act": "공시한다", "target": "", "object": "채권발행정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1338, "node": 1338, "actor": "채권거래 금융투자회사", "act": "보고하여야 한다", "target": "협회", "object": "기업어음증권 또는 단기사채등을 거래한 경우 해당 거래와 관련된 내역", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1338, "node": 1338, "actor": "협회장", "act": "정하는", "target": "", "object": "보고범위 등 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1339, "node": 1339, "actor": "협회", "act": "공시한다", "target": "", "object": "대표수익률 등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1339, "node": 1339, "actor": "협회장", "act": "정하는", "target": "", "object": "공시범위 등 세부사항", "mode": "위임", "function": "위임", "proviso": true}
+{"jo": 1327, "node": 1327, "actor": "협회", "act": "채권발행정보의 확인을 요청할 수 있으며", "target": "당해 채권의 발행인 또는 채권거래 금융투자회사", "object": "채권발행정보", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1327, "node": 1327, "actor": "해당 채권거래 금융투자회사", "act": "협회의 요구에 성실히 응하여야 한다", "target": "협회", "object": "채권발행정보의 확인 요구", "mode": "의무", "function": "절차", "proviso": true}
+{"jo": 1334, "node": 1335, "actor": "기업어음증권의 매매단가", "act": "산정한다", "target": "", "object": "", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1334, "node": 1336, "actor": "채권거래 금융투자회사", "act": "응할 수 있다", "target": "투자자", "object": "재매입을 청구하는 경우", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1334, "node": 1336, "actor": "", "act": "제1항을 준용한다", "target": "", "object": "매입단가의 산정", "mode": "위임", "function": "절차", "proviso": false}
+{"jo": 1334, "node": 1337, "actor": "채권거래 금융투자회사", "act": "상환된 것으로 처리하고 잔존기간에 해당하는 이자를 환급하여야 한다", "target": "", "object": "해당 기업어음증권", "mode": "의무", "function": "효과", "proviso": false}
+{"jo": 1330, "node": 1331, "actor": "채권거래 금융투자회사", "act": "매매 또는 중개하며", "target": "", "object": "기업어음증권을 실물 또는 통장(증권카드를 포함한다) 거래방식으로", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1330, "node": 1331, "actor": "채권거래 금융투자회사", "act": "주의의무를 다하여야 한다", "target": "", "object": "기업어음증권 실물을 보관ㆍ관리하는 경우", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1330, "node": 1332, "actor": "채권거래 금융투자회사", "act": "표시하여야 한다", "target": "", "object": "통장 또는 해당 기업어음증권의 여백에 복수신용평가등급을", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1330, "node": 1333, "actor": "채권거래 금융투자회사", "act": "게시하여야 하며", "target": "", "object": "복수신용평가등급과 수익률 등을 영업점 등에", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1330, "node": 1333, "actor": "채권거래 금융투자회사", "act": "게시하여야 한다", "target": "", "object": "그 사실을", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 1340, "node": 1341, "actor": "협회", "act": "공시한다", "target": "", "object": "기업어음증권의 최종호가수익률 및 시가평가기준수익률을", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1340, "node": 1342, "actor": "채권거래 금융투자회사", "act": "보고하여야 하는", "target": "", "object": "수익률을", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1340, "node": 1343, "actor": "채권평가회사", "act": "보고하여야 한다", "target": "", "object": "수익률을", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1345, "node": 1346, "actor": "협회", "act": "관리한다", "target": "", "object": "기업어음증권의 발행정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1345, "node": 1347, "actor": "협회", "act": "확인을 요청할 수 있으며", "target": "발행인 또는 채권거래 금융투자회사", "object": "발행정보", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1345, "node": 1347, "actor": "채권거래 금융투자회사", "act": "응하여야 한다", "target": "협회", "object": "요구", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 1355, "node": 1356, "actor": "한국거래소", "act": "지정한", "target": "", "object": "국채선물의 최종결제기준채권", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1349, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1344, "node": 1344, "actor": "채권거래 금융투자회사", "act": "관련정보를 전산매체 등을 통하여 협회에 보고하여야", "target": "협회", "object": "관련정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1344, "node": 1344, "actor": "협회장", "act": "정하는", "target": "", "object": "보고범위 등 세부사항", "mode": "위임", "function": "위임", "proviso": true}
+{"jo": 1350, "node": 1351, "actor": "기획재정부장관", "act": "고시한", "target": "", "object": "\"국고채권의 발행 및 국고채권 전문딜러 운영에 관한 규정\"", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1350, "node": 1353, "actor": "협회", "act": "지정을 취소하거나 변경할 수 있다", "target": "수익률 보고회사", "object": "지정", "mode": "허용", "function": "제한", "proviso": false}
+{"jo": 1350, "node": 1354, "actor": "수익률 보고회사", "act": "보고하여야 한다", "target": "협회장", "object": "수익률 보고책임자를 지정하거나 변경한 경우", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1363, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1368, "node": 1368, "actor": "협회", "act": "조회할 수 있으며", "target": "채권평가회사", "object": "채권평가가격 등의 확인을 위하여 필요한 사항", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1368, "node": 1368, "actor": "채권평가회사", "act": "응하여야 한다", "target": "협회", "object": "조회 요구에 성실히", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1364, "node": 1365, "actor": "채권평가회사", "act": "제출하여야 한다", "target": "협회", "object": "매일의 채권평가가격 등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1364, "node": 1366, "actor": "채권평가가격 등", "act": "포함되어야 한다", "target": "", "object": "평가일자, 종목명, 표준코드 등 채권의 식별에 필요한 자료", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1364, "node": 1366, "actor": "협회장", "act": "정할 수 있다", "target": "", "object": "채권평가가격 등의 제출과 관련된 세부사항", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1364, "node": 1367, "actor": "협회", "act": "공시할 수 있다", "target": "", "object": "채권평가가격", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1369, "node": 1370, "actor": "협회", "act": "설치한다", "target": "", "object": "채권평가 모니터링 협의회", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1369, "node": 1374, "actor": "협회장", "act": "정할 수 있다", "target": "", "object": "협의회 구성 및 운영 등에 관한 세부사항", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1375, "node": 1376, "actor": "협회", "act": "자료제출을 요구할 수", "target": "채권평가회사", "object": "채권가격평가와 관련한 자료", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1375, "node": 1376, "actor": "채권평가회사", "act": "제출하여야", "target": "협회", "object": "관련 자료", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1375, "node": 1377, "actor": "협회", "act": "보고하고", "target": "금융감독원장", "object": "채권평가가격 모니터링 결과", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1375, "node": 1377, "actor": "협회", "act": "통보할 수", "target": "채권평가회사", "object": "채권평가가격 모니터링 결과", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1358, "node": 1359, "actor": "수익률 보고회사", "act": "보고한다", "target": "협회", "object": "매 영업일(거래소 휴장일은 제외한다) 11시 30분, 16시 현재의 수익률", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1358, "node": 1359, "actor": "수익률 보고회사", "act": "추가로 보고한다", "target": "협회", "object": "금리선물 최종거래일에는 10시, 10시 30분, 11시 현재의 수익률", "mode": "의무", "function": "근거·권한", "proviso": true}
+{"jo": 1358, "node": 1361, "actor": "협회", "act": "산정하고", "target": "", "object": "기준수익률", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1358, "node": 1361, "actor": "협회", "act": "발표한다", "target": "", "object": "동 수익률", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1378, "node": 1379, "actor": "협회", "act": "시정을 권고할", "target": "채권평가회사에", "object": "채권평가가격의 모니터링 결과 명백한 오류로 판단되는 경우", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1378, "node": 1380, "actor": "채권평가회사는", "act": "제출하여야", "target": "협회에", "object": "조치결과 또는 이행계획", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1385, "node": 1386, "actor": "협회", "act": "공표할 수 있다", "target": "", "object": "채권평가가격 모니터링 기준", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1385, "node": 1387, "actor": "협회", "act": "공표할 수 있다", "target": "", "object": "채권평가가격 모니터링 결과", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1381, "node": 1382, "actor": "채권평가회사", "act": "이의를 신청할 수 있다", "target": "협회", "object": "협회의 시정권고, 모니터링 결과", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1381, "node": 1383, "actor": "협회", "act": "심의한 후 그 결과를 통보하여야 한다", "target": "채권평가회사", "object": "채권평가회사의 이의신청 내용", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1381, "node": 1383, "actor": "채권평가회사", "act": "이의신청할 수 없다", "target": "협의회", "object": "협의회에서 결정한 심의결과", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 1381, "node": 1384, "actor": "채권평가회사", "act": "제출하여야 한다", "target": "협회", "object": "조치결과 또는 이행계획", "mode": "의무", "function": "절차", "proviso": false}
+{"jo": 1392, "node": 1392, "actor": "채권거래 금융투자회사", "act": "보고하여야", "target": "협회", "object": "해외에서 발행된 외화채권을 거래한 경우 해당 채권의 거래와 관련된 내역", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1389, "node": 1390, "actor": "금융투자회사 등", "act": "보고하여야", "target": "협회", "object": "당일 중 발생한 증권의 대여현황과 체결된 대차거래증권의 종목, 수량 등의 거래내역", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1389, "node": 1391, "actor": "협회장", "act": "정한다", "target": "", "object": "대차거래내역 공시사항의 세부항목 및 방법 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1396, "node": 1396, "actor": "채권거래 금융투자회사", "act": "보고하여야 한다", "target": "협회", "object": "양도성정기예금증서의 거래와 관련된 내역", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1396, "node": 1396, "actor": "협회장", "act": "정하는 바에 따른다", "target": "", "object": "보고 및 공시범위 등 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1393, "node": 1394, "actor": "협회", "act": "게재하는", "target": "", "object": "국채증권, 법 제9조제16항제5호에 해당하는 자가 발행한 채무증권 또는 「증권의 발행 및 공시 등에 관한 규정」제2-4조의2제2항에 따른 사채권의 시세를 포함한 시장동향 정보 및 발행인에 관한 정보 등", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1393, "node": 1395, "actor": "협회장", "act": "정하는", "target": "", "object": "제1항에 따라 게재하는 정보의 범위 등 세부사항", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1411, "node": null, "actor": "", "act": "", "target": "", "object": "", "mode": "기타", "function": "기타", "proviso": false, "empty": true}
+{"jo": 1397, "node": 1398, "actor": "협회", "act": "공시한다", "target": "", "object": "양도성예금증서의 시가평가기준수익률", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1397, "node": 1400, "actor": "채권평가회사", "act": "수익률을 보고하여야 한다", "target": "", "object": "수익률", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1407, "node": 1408, "actor": "협회", "act": "제출을 요구할 수 있으며", "target": "채권거래전용시스템 이용자의 소속 금융투자회사", "object": "관련 자료", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1407, "node": 1408, "actor": "해당 금융투자회사", "act": "성실히 응하여야 한다", "target": "협회", "object": "요구", "mode": "의무", "function": "제한", "proviso": true}
+{"jo": 1407, "node": 1409, "actor": "협회장", "act": "정할 수 있다", "target": "", "object": "이 장의 시행에 필요한 세부적인 사항", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1415, "node": 1415, "actor": "협회", "act": "설치하여 운영할 수 있다", "target": "", "object": "실무협의회", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1412, "node": 1413, "actor": "신용평가회사", "act": "제출하여야 한다", "target": "협회", "object": "신용평가방법, 신용평가서 및 신용평가의 적정성에 관한 서류 등", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1412, "node": 1414, "actor": "신용평가회사", "act": "제출하여야 한다", "target": "협회", "object": "협회장이 별도로 정하는 신용평가 관련 정보", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1416, "node": 1416, "actor": "협회", "act": "공시할 수 있다", "target": "", "object": "신용평가정보와 이를 가공한 정보", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1418, "node": 1418, "actor": "금융투자회사", "act": "협회장이 정하는 표준내부통제기준을 참조하여 내부통제기준을 제정하고 이의 효율적 수행을 위한 내부통제체제를 구축ㆍ운용하여야", "target": "", "object": "내부통제기준, 내부통제체제", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1419, "node": 1420, "actor": "협회", "act": "조사할 수 있다", "target": "", "object": "금융투자회사 및 그 임직원의 규정 준수 여부 및 내부통제의 적정성 등", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1419, "node": 1421, "actor": "협회", "act": "제재를 부과할 수 있다", "target": "", "object": "금융투자회사 및 그 임직원", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1426, "node": 1426, "actor": "금융투자회사", "act": "신고하여야", "target": "협회", "object": "위조 또는 변조된 증권 또는 도난된 증권의 내용", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1422, "node": 1423, "actor": "협회", "act": "제출을 요구할 수 있으며", "target": "금융투자회사", "object": "필요한 자료", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1422, "node": 1423, "actor": "금융투자회사", "act": "응하여야 한다", "target": "협회", "object": "요구에 성실히", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1422, "node": 1424, "actor": "협회장", "act": "정하는", "target": "", "object": "자료의 내용 및 서식, 제출주기 등", "mode": "위임", "function": "위임", "proviso": false}
+{"jo": 1422, "node": 1424, "actor": "자율규제위원회 위원장", "act": "정하는", "target": "", "object": "바", "mode": "위임", "function": "위임", "proviso": true}
+{"jo": 1428, "node": 1428, "actor": "협회장", "act": "정할 수 있다", "target": "", "object": "법 제42조에 따라 금융투자회사가 영위하는 업무의 일부를 제3자에게 위탁함에 있어서 필요한 사항", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1425, "node": 1425, "actor": "집합투자회사", "act": "협회장이 정하는 표준단기금융집합투자기구위험관리기준에 참고하여 위험관리기준을 제정하고 이를 준수할 수 있는 내부통제제도를 갖추어야", "target": "", "object": "", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1429, "node": 1429, "actor": "협회", "act": "발표 및 제공하는", "target": "", "object": "모든 정보의 저작권", "mode": "간주", "function": "효과", "proviso": false}
+{"jo": 1429, "node": 1429, "actor": "", "act": "따른다", "target": "", "object": "이 규정에서 정하지 아니한 저작권에 대한 내용", "mode": "기타", "function": "기타", "proviso": false}
+{"jo": 1427, "node": 1427, "actor": "협회", "act": "설치할 수 있다", "target": "", "object": "준법감시인협의회", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1438, "node": 1438, "actor": "협회장 또는 자율규제위원회 위원장", "act": "세부사항을 정할 수 있다", "target": "", "object": "이 규정의 시행에 필요한 세부사항", "mode": "허용", "function": "위임", "proviso": false}
+{"jo": 1439, "node": 1439, "actor": "협회장", "act": "정할 수 있다", "target": "", "object": "교육이수기준, 교육과목, 교육이수증 발급, 교육을 받은 자에 대한 정보 보존 등 유사투자자문업 교육에 필요한 사항", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1434, "node": 1435, "actor": "협회", "act": "확인서를 요구할 수 있다", "target": "상업적으로 정보를 이용하는 자", "object": "관계법령 및 이 규정에 따라 올바르게 사용하고 있는지 여부에 대한 확인서", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1434, "node": 1436, "actor": "협회", "act": "중단ㆍ변경ㆍ시정을 요구할 수 있다", "target": "제출자", "object": "해당 행위의 중단ㆍ변경ㆍ시정", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1434, "node": 1437, "actor": "협회", "act": "정보제공을 중단할 수 있다", "target": "요구받은 자", "object": "정보제공", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1430, "node": 1431, "actor": "협회 임직원", "act": "외부로 유출하거나 이를 가공하여 임의적으로 사용하는 행위를 하", "target": "", "object": "공시ㆍ통계자료(이하 이 편에서 \"정보\"라 한다)", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1430, "node": 1432, "actor": "누구든지", "act": "사용하고자 할 경우에는 그 출처를 명확히 밝히고, 이를 상업적 혹은 언론 보도용으로 사용하고자 할 경우에는 협회장의 사전 승인을 받아야", "target": "", "object": "협회의 인터넷 사이트를 통해 일반인에게 공개되는 정보", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1430, "node": 1432, "actor": "언론기관", "act": "보도를 위해 사용하는", "target": "", "object": "정보", "mode": "허용", "function": "근거·권한", "proviso": true}
+{"jo": 1430, "node": 1433, "actor": "정보를 제공받은 자", "act": "가공하거나 임의로 배포할 수 없다", "target": "", "object": "자료", "mode": "금지", "function": "제한", "proviso": false}
+{"jo": 1444, "node": 1444, "actor": "같은 규정 제2조제8호의 기관투자자", "act": "작성하여 제출하여야 한다", "target": "협회", "object": "고위험고수익투자신탁등 운용현황", "mode": "의무", "function": "근거·권한", "proviso": false}
+{"jo": 1445, "node": 1445, "actor": "협회", "act": "정하는", "target": "", "object": "교육", "mode": "정의", "function": "정의", "proviso": false}
+{"jo": 1445, "node": 1445, "actor": "", "act": "인정되는", "target": "교육이수자", "object": "이 교육을 이수한 것", "mode": "정의", "function": "효과", "proviso": false}
+{"jo": 1440, "node": 1441, "actor": "집합투자회사", "act": "초과하지 않도록 하여야 한다", "target": "", "object": "집합투자재산(부동산 및 특별자산을 제외한다)의 가중평균잔존만기", "mode": "의무", "function": "제한", "proviso": false}
+{"jo": 1440, "node": 1442, "actor": "협회장이 정하는 자산등", "act": "협회장이 정하는 날을 만기일로 할 수 있다", "target": "", "object": "", "mode": "허용", "function": "근거·권한", "proviso": false}
+{"jo": 1440, "node": 1443, "actor": "", "act": "적용한다", "target": "공모집합투자기구, 적격투자자 중 일반투자자가 투자자인 일반 사모집합투자기구", "object": "제1항의 규정", "mode": "의무", "function": "기타", "proviso": false}
+{"jo": 1440, "node": 1443, "actor": "", "act": "그러하지 아니하다", "target": "부동산집합투자기구 등 협회장이 정하는 집합투자기구", "object": "제1항의 규정", "mode": "금지", "function": "제한", "proviso": true}
+{"jo": 1446, "node": 1446, "actor": "협회", "act": "정하는", "target": "", "object": "외부 전문기관의 평가가 곤란한 자산", "mode": "정의", "function": "정의", "proviso": false}

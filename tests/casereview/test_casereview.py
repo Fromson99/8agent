@@ -123,8 +123,9 @@ def test_얇은_관통이_다섯_단계를_지난다(tmp_path, monkeypatch):
     assert st.norms and st.norms[0].doc == "개인정보 보호법"   # ③ 회수가 규범이 된다
     assert st.subs and all(s.req_id != "r000000" for s in st.subs)  # ④ 환각 id 는 버린다
     assert st.verdicts[0].conclusion in ("가능", "조건부")    # ⑤ 결론이 선다
+    # 2026-08-18 재구조화 — 회수가 쟁점보다 앞이다 (회수 1회 → 조문을 보고 쟁점 판정)
     assert [t["stage"] for t in st.trail] == [
-        "사실 확정", "쟁점 도출", "규범 조립", "포섭", "결론"]
+        "사실 확정", "용어집", "회수", "쟁점 판정", "규범 조립", "포섭", "결론"]
     assert st.to_dict()["rid"] == st.rid                     # 직렬화가 돈다
 
 
@@ -158,8 +159,14 @@ def test_삭제된_조문은_규범이_되지_않는다():
     assert not rp._is_deleted("제17조(개인정보의 제공) 개인정보처리자는 …")
 
 
-def test_쟁점이_지목한_법이_배경_법에_밀리지_않는다(tmp_path, monkeypatch):
-    """실측에서 개인정보 쟁점에 개보법이 안 와 '판단보류'가 났다 — 그 자리의 시험."""
+def test_카드_조문_후보는_좌표로_열리지_않는다_검색이_찾는다(tmp_path, monkeypatch):
+    """카드의 소임은 문체 번역이지 좌표 연결이 아니다 (2026-08-18 결정).
+
+    옛 판은 카드 조문 후보(개보법 제17조)를 좌표로 열어 앞자리에 세웠다. 이제
+    그 길이 없고, 개보법은 **검색이 스스로** 찾아야 한다 — 쟁점 문장에 그 법의
+    조 제목 낱말('개인정보', '제공')이 있으니 어휘 사다리가 문다. 카드가 좌표를
+    밀어 넣던 실측 오탐(18-0124: 후보 제81조의13이 정답 제84조를 밀어냄)이 이
+    바뀜의 이유다."""
     w = tmp_path / "wiki"
     (w / "쟁점").mkdir(parents=True)
     (w / "쟁점" / "동의와-정보이용.md").write_text(
@@ -175,12 +182,21 @@ def test_쟁점이_지목한_법이_배경_법에_밀리지_않는다(tmp_path, 
     # 질문은 증권사 배경이라 트리거("동의"·"제공")가 안 물지만, 카드가 지목돼 있고
     # 쟁점 문장이 개인정보 보호법을 언급한다 — 카드 조문 후보는 쟁점·질문이 그 법을
     # 말할 때만 열린다(15-0720 실측: 안 그러면 카드 컴파일 사례의 조문이 무관하게 딸려 온다)
-    issue = Issue(question="증권사가 투자성향 정보를 제휴사에 넘기는 것이 개인정보 보호법상 허용되는가",
+    # ① 쟁점 문장에 조 제목 낱말이 없고 벡터도 없는 픽스처 — 카드가 지목돼
+    #    있어도 개보법은 **오지 않는다**. 카드 좌표 직행이 사라졌다는 증거다.
+    issue = Issue(question="증권사가 투자성향 정보를 제휴사에 넘기는 것이 허용되는가",
                   gate="금융투자업 관련 정보인가", card="쟁점/동의와-정보이용")
     norms = rp.build_norms(idx, issue, st)
-    assert norms, "규범이 하나도 안 섰다"
-    assert norms[0].doc == "개인정보 보호법", "지목한 법이 앞자리에 서야 한다"
-    assert all("삭제" not in n.reqs[0].text for n in norms)   # 삭제 조문은 빠진다
+    assert norms and all(n.doc != "개인정보 보호법" for n in norms)
+    # ② 쟁점 문장이 조 제목 낱말("개인정보의 제공")을 품으면 어휘 사다리가 문다 —
+    #    개보법은 카드가 아니라 **검색**이 데려온다. (실전에선 벡터가 이 자리를
+    #    맡는다 — 쟁점기의 probe 가 조문 문체라 코사인이 문다.)
+    st2 = ReviewState(question="q")
+    issue2 = Issue(question="증권사의 제휴사에 대한 개인정보의 제공이 허용되는가",
+                   gate="금융투자업 관련 정보인가", card="쟁점/동의와-정보이용")
+    norms2 = rp.build_norms(idx, issue2, st2)
+    assert any(n.doc == "개인정보 보호법" and "제17조" in n.path for n in norms2)
+    assert all("삭제" not in n.reqs[0].text for n in norms2)   # 삭제 조문은 빠진다
 
 
 def test_카드가_있으면_트리거_재발견_없이_그대로_쓴다(tmp_path, monkeypatch):
@@ -195,7 +211,6 @@ def test_카드가_있으면_트리거_재발견_없이_그대로_쓴다(tmp_pat
     monkeypatch.setenv("WIKI_STORE", str(tmp_path))
     picks = rp._spot_for(Issue(question="아무 말", card="쟁점/카드A"), "아무 말")
     assert [p["slug"] for p in picks] == ["쟁점/카드A"]      # 트리거 무매칭이어도 선다
-    assert rp._target_laws(picks) == {"개인정보보호법"}       # 법령명만 추린다
 
 
 def test_쟁점이_없으면_거기서_멈춘다(tmp_path, monkeypatch):

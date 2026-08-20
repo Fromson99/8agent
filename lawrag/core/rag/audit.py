@@ -155,6 +155,15 @@ def _run_one(job: dict) -> None:
                      job["sections"], job["cited"])
     if findings:
         verdicts_mod.log(job["qid"], job["question"], findings)
+        # 용어 실적의 misses — 용어 진입으로 온 구역이 "검색무관" 지문을 받으면
+        # 그 용어의 miss 다(hits 는 답변 직후 라우터가 센다). 표면형이 아니라
+        # 용어 행(term_key)에 쌓인다.
+        by_n = {s.n: s for s in job["sections"]}
+        miss_keys = [by_n[f["n"]].term_key for f in findings
+                     if f.get("kind") == "검색무관" and f.get("n") in by_n
+                     and getattr(by_n[f["n"]], "term_key", None)]
+        if miss_keys:
+            verdicts_mod.score_terms([], miss_keys)
 
 
 def _loop() -> None:

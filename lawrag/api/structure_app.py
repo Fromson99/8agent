@@ -160,6 +160,12 @@ from lawrag.api.routers import lineage as lineage_router         # noqa: E402
 
 app.include_router(lineage_router.router)
 
+# 배치 파이프라인 — 라인업·딸깍·진행 (lawrag/core/batch.py). 모델이 없으면 그
+# 단계만 건너뛰므로 core 만 전제한다 — 선택이 아니다.
+from lawrag.api.routers import pipeline as pipeline_router       # noqa: E402
+
+app.include_router(pipeline_router.router)
+
 # 법적 검토 — 사실을 요건에 대는 층 (docs/REVIEW.md). rag 회수 위에 얹히므로
 # rag 라우터와 같은 조건에서만 선다(LLM·색인 전제).
 if rag_router is not None:
@@ -308,6 +314,12 @@ _LINEAGE_VIEWER = Path(__file__).resolve().parent / "viewer" / "lineage"
 if _LINEAGE_VIEWER.is_dir():
     app.mount("/lineage", StaticFiles(directory=str(_LINEAGE_VIEWER), html=True),
               name="lineage-viewer")
+
+# 배치 파이프라인 — 라인업 표 · 딸깍 · 진행 막대
+_PIPELINE_VIEWER = Path(__file__).resolve().parent / "viewer" / "pipeline"
+if _PIPELINE_VIEWER.is_dir():
+    app.mount("/pipeline", StaticFiles(directory=str(_PIPELINE_VIEWER), html=True),
+              name="pipeline-viewer")
 
 _VIEWER = Path(__file__).resolve().parent / "viewer" / "structure"
 if _VIEWER.is_dir():

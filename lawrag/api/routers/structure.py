@@ -68,8 +68,16 @@ def _ledger_path() -> Path:
 
 
 def _interpret(pdf: Path, **kw) -> dict:
-    """lawrag.core.ingest.interpret_doc — 이 라우터가 쥔 스토어·틀 연결 조회만 얹는다."""
+    """lawrag.core.ingest.interpret_doc — 이 라우터가 쥔 스토어·틀 연결 조회만 얹는다.
+
+    내규(meta.kind=internal)는 재해석 때도 문서군 프로파일(장>절>조)을 다시
+    건다 — 업로드 때 걸린 힌트가 재해석에서 빠지면 같은 문서가 다른 트리로
+    잘린다. 사람이 순서 힌트를 명시하면 그것이 이긴다."""
     from lawrag.api.routers.formats import binding_for
+    from lawrag.core import internal_rules
+    meta = _meta(pdf.parent) if (pdf.parent / "meta.json").exists() else {}
+    if meta.get("kind") == internal_rules.KIND and not kw.get("partial_order"):
+        kw = {**kw, **internal_rules.PROFILE}
     return ingest_mod.interpret_doc(pdf, store=STORE, binding_of=binding_for, **kw)
 
 
@@ -144,6 +152,8 @@ async def upload(
     use_llm: bool = Form(False, description="잔여를 배치 1콜로 해소"),
     folder: Optional[str] = Form(None, description="묶어 둘 폴더 라벨 (예: 법령문서)"),
     engine: Optional[str] = Form(None, description="빈값=유도/형식 · docxstyle=Word 스타일 통짜(docx 전용)"),
+    status: Optional[str] = Form(None, description="내규 폴더일 때 — 현행(기본) | 구판"),
+    series: Optional[str] = Form(None, description="내규 폴더일 때 — 문서군 키(기본: 이름에서 _vN_YYYY 꼬리를 뗀 것)"),
 ):
     eng = (engine or "").strip()
     if eng not in ("", "auto", "induce", "docxstyle"):
@@ -168,12 +178,28 @@ async def upload(
         name = re.sub(r"\s*본문$", "", stem) or stem
 
     from lawrag.api.routers.formats import binding_for
+    from lawrag.core import internal_rules
     try:
-        r = ingest_mod.ingest(
-            raw, file.filename or name, store=STORE, name=name,
-            folder=(folder or "").strip(), use_llm=use_llm, engine=eng,
-            hints=_hint_kwargs(root, families, ladder, order),
-            binding_of=binding_for)
+        if (folder or "").strip() == internal_rules.FOLDER:
+            # 내규 폴더 — CLI(ingest_naegyu)와 같은 문. 유도 경로 + 문서군
+            # 프로파일 + 머리 meta(제정·개정·kind=internal·status·series).
+            if eng:
+                raise ValueError("내규는 유도 경로로만 구조화합니다 — docxstyle 은 "
+                                 "항·호를 조 본문에 뭉갭니다(실측 28 vs 73마디)")
+            st = (status or "현행").strip()
+            if st not in ("현행", "구판"):
+                raise ValueError("status 는 현행 또는 구판입니다")
+            r = internal_rules.ingest_internal_rule(
+                raw, file.filename or name, store=STORE,
+                name=Path(name).stem,          # 표시 이름은 확장자 없이 — series 꼬리 해석도 이걸 본다
+                folder=internal_rules.FOLDER, status=st,
+                series=(series or "").strip())
+        else:
+            r = ingest_mod.ingest(
+                raw, file.filename or name, store=STORE, name=name,
+                folder=(folder or "").strip(), use_llm=use_llm, engine=eng,
+                hints=_hint_kwargs(root, families, ladder, order),
+                binding_of=binding_for)
     except ValueError as exc:            # 위장 포맷 등 — 사용자가 고칠 수 있는 실패
         raise HTTPException(400, f"법령 본문 XML 이 아닙니다: {exc}"
                             if family == "xml" else str(exc))

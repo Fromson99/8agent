@@ -65,6 +65,24 @@ def _is_name(text: str) -> bool:
     return bool(re.search(r"[가-힣A-Za-z]", t))
 
 
+# 내규·외규·서식 축 — kind(인제스트 출처별 값)를 접는 표. kind 는 출처가
+# 늘 때마다 값이 느는데(law·admrul·krx-rule·kofia-rule·krx-form·klca-model·
+# internal…) 스코프·비교가 보는 축은 셋뿐이다. 새 kind 가 오면 여기 한 줄.
+INTERNAL_KINDS = frozenset({"internal"})
+FORM_KINDS = frozenset({"krx-form", "klca-model"})
+
+
+def scope_kind_of(kind: str) -> str:
+    """kind → "내규" | "서식" | "외규". 모르는 kind(빈 값 포함)는 외규로 본다 —
+    법령·규정이 이 스토어의 기본 재료라서다."""
+    k = (kind or "").strip()
+    if k in INTERNAL_KINDS:
+        return "내규"
+    if k in FORM_KINDS or k.endswith("-form"):
+        return "서식"
+    return "외규"
+
+
 @dataclass
 class Entry:
     """색인 한 줄. `target` 이 병합 단위다 — 같은 대상을 다른 표면형으로
@@ -89,6 +107,29 @@ class DocView:
     by_id: dict = field(default_factory=dict)
     block_by_idx: dict = field(default_factory=dict)
     _owner: dict = field(default_factory=dict)
+    # 문서 수준 시간 메타 — 관측용(응답 context 행의 시행일). 조문 수준
+    # 이력은 구법 원문이 코퍼스에 없어 아직 자리만 있다 (docs/REVIEW.md
+    # "필드는 최종 크기, 구현은 지금 크기").
+    enforce: str = ""              # 시행일 YYYYMMDD (law.go.kr 메타)
+    revised: str = ""              # 최종 개정일 YYYYMMDD
+    # 문서 태그 — 인제스트가 meta.json 에 찍은 것을 그대로 든다. 색인이 이걸
+    # 읽어야 "내규만 / 이 외규들만" 스코프와 컨텍스트의 내규·외규 표식이 선다.
+    kind: str = ""                 # law·admrul·krx-rule·kofia-rule·krx-form·internal …
+    folder: str = ""               # 관리 라벨 (스코프의 단위가 아니다 — 스코프는 scopes.yml)
+    status: str = ""               # 내규: 현행 | 구판 (빈 값 = 현행으로 본다)
+    series: str = ""               # 내규 문서군 키 — 신구 대비의 짝
+    version: str = ""              # 내규 판 표식 (v1·v2 …)
+
+    @property
+    def scope_kind(self) -> str:
+        """내규·외규·서식 — kind(출처별 값)를 한 단계 위 축으로 접는다.
+        비교·스코프 코드는 kind 문자열을 직접 보지 말고 이 축을 본다."""
+        return scope_kind_of(self.kind)
+
+    @property
+    def is_current(self) -> bool:
+        """구판이 아닌가 — status 가 비어 있으면 현행이다(외규는 status 가 없다)."""
+        return (self.status or "현행") != "구판"
 
     @classmethod
     def build(cls, doc_id: str, meta: dict, res: dict) -> "DocView":
@@ -98,7 +139,14 @@ class DocView:
         # 제자리에 있어야 한다(경로·회수·참조 해소가 전부 이 트리를 본다).
         nodes = structure_fixes.apply(doc_id, res.get("nodes", []))
         v = cls(doc_id=doc_id, name=meta.get("name", doc_id),
-                nodes=nodes, blocks=res.get("blocks", []))
+                nodes=nodes, blocks=res.get("blocks", []),
+                enforce=str(meta.get("enforce") or ""),
+                revised=str(meta.get("revised") or ""),
+                kind=str(meta.get("kind") or ""),
+                folder=str(meta.get("folder") or ""),
+                status=str(meta.get("status") or ""),
+                series=str(meta.get("series") or ""),
+                version=str(meta.get("version") or ""))
         v.by_id = {n.get("id"): n for n in v.nodes}
         v.block_by_idx = {b.get("idx"): b for b in v.blocks}
         # 블록 → 그 블록을 덮는 가장 깊은 마디 (glossary._scan 과 같은 규칙)
@@ -270,7 +318,7 @@ class DocView:
 
 
 def _lex_terms(text: str) -> list[str]:
-    """본문 색인용 토큰 — archive/trust-parser-v1 chunk_search 와 같은 꼴.
+    """본문 색인용 토큰 — 옛 v1 chunk_search 와 같은 꼴.
     한글·영숫자 연속만 남기고, 한 글자는 버린다."""
     out, buf = [], ""
     for ch in text:
@@ -287,14 +335,75 @@ def _lex_terms(text: str) -> list[str]:
 
 @dataclass
 class Index:
-    docs: dict                     # doc_id -> DocView
-    entries: list                  # Entry 목록 (제목 + 용어)
+    docs: dict                     # doc_id -> DocView — **스토어 전부** (스코프와 무관)
+    entries: list                  # Entry 목록 (제목 + 용어) — 스코프가 있으면 그 안만
     saved_links: list = field(default_factory=list)   # links.json — 판정으로 고정된 링크
     rel_fixes: list = field(default_factory=list)     # links.json — 사람이 고친 관계 라벨
+    # 질의 스코프 — None 이면 전부. 있으면 **진입**(제목·용어·본문·벡터·기억·
+    # 회복)은 이 안에서만 일어나고, 동반(배제·위임·준용·수임·정의·제재)과 참조
+    # 확장은 밖으로 나갈 수 있다(2026-08-19 사용자 결정 — 배제를 놓치면 반대
+    # 답이 나가므로). 밖으로 나간 구역은 호출부가 표식을 붙인다(scope_out).
+    scope: Optional[frozenset] = None
+    scope_name: str = ""           # 표시용 — 어느 스코프였나 (응답·튜플에 남는다)
     _postings: Optional[dict] = None
     _n_blocks: int = 0
     _refs: Optional[dict] = None
     _cross: Optional[tuple] = None
+    _scoped: dict = field(default_factory=dict)     # frozenset → 스코프 사본 (본문 색인 재사용)
+
+    # ------------------------------------------------------------- 스코프
+    def in_scope(self, doc_id: str) -> bool:
+        return self.scope is None or doc_id in self.scope
+
+    @property
+    def entry_docs(self) -> dict:
+        """진입 후보 문서 — 스코프 안(없으면 전부). **문서를 훑는 채널은 이것을
+        돌아야 한다**(용어집·프레임·정의·회복·둘러보기). docs 는 좌표 되짚기용이다."""
+        if self.scope is None:
+            return self.docs
+        return {d: v for d, v in self.docs.items() if d in self.scope}
+
+    def default_scope(self) -> Optional[frozenset]:
+        """명시 스코프가 없을 때의 기본 진입 범위 — 구판(내규 status=구판)은
+        뺀다. 신구 대비는 구판을 스코프로 **명시**해서 연다. 구판이 없으면
+        None(제한 없음) — 비용 0."""
+        old = [d for d, v in self.docs.items() if not v.is_current]
+        if not old:
+            return None
+        return frozenset(d for d in self.docs if d not in set(old))
+
+    def scoped(self, doc_ids: Optional[set], name: str = "") -> "Index":
+        """스코프를 씌운 얕은 사본 — docs·간선·링크는 공유하고 entries 만
+        거른다(진입 표면형). postings 는 새로 세워 스코프 안만 든다.
+        doc_ids 가 None 이면 기본 스코프(구판 제외)를 쓴다."""
+        if doc_ids is None:
+            doc_ids = self.default_scope()
+            if doc_ids is None:
+                return self
+        ids = frozenset(doc_ids)
+        hit = self._scoped.get(ids)
+        if hit is not None:                     # 같은 스코프의 다음 질의 — postings 가 살아 있다
+            hit.scope_name = name or hit.scope_name
+            return hit
+        ents: list = []
+        for e in self.entries:
+            if e.kind == "용어":
+                occ = [o for o in e.occurrences if o.get("doc_id") in ids]
+                if occ:
+                    ents.append(Entry(value=e.value, key=e.key, kind=e.kind,
+                                      target=e.target, occurrences=occ))
+            elif e.doc_id in ids:
+                ents.append(e)
+        sub = Index(docs=self.docs, entries=ents, saved_links=self.saved_links,
+                    rel_fixes=self.rel_fixes, scope=ids, scope_name=name)
+        # 간선은 스토어 전체 것을 그대로 — 동반이 스코프 밖으로 나갈 수 있어야
+        # 한다. 원본에서 한 번 세워 공유한다(사본마다 다시 세우면 질의마다 값).
+        self.ref_edges(); self.cross_refs()
+        sub._refs, sub._cross = self._refs, self._cross
+        if len(self._scoped) >= 16:             # 스코프는 몇 개 안 된다 — 폭주만 막는다
+            self._scoped.clear()
+        self._scoped[ids] = sub
+        return sub
 
     # ------------------------------------------------------------- 구성
     @classmethod
@@ -385,7 +494,7 @@ class Index:
         if self._postings is None:
             self._postings = {}
             n = 0
-            for doc_id, v in self.docs.items():
+            for doc_id, v in self.entry_docs.items():
                 for b in v.blocks:
                     n += 1
                     for t in _lex_terms(b.get("text") or ""):

@@ -429,17 +429,31 @@ def ingest(raw: bytes, filename: str, *, store: Path, name: str = "",
            hints: Optional[dict] = None,
            binding_of: Optional[Callable[[str, str], Optional[str]]] = None,
            extra_meta: Optional[dict] = None,
-           manifest_item: Optional[dict] = None) -> dict:
+           manifest_item: Optional[dict] = None,
+           raw_via: str = "upload") -> dict:
     """문서 하나를 형식에 맞는 길로 구조화 스토어에 넣는다 — 유일한 문.
 
     반환은 {"doc_id", "meta"} (+xml 은 "detail" 에 이관 요약). 사용자가 고칠 수
     있는 실패(모르는 형식·위장 포맷·엔진-형식 불일치)는 ValueError 로 올린다 —
     HTTP 로 옮기는 일은 호출부(라우터) 몫이다.
+
+    원본은 스토어(파생층) 밖 **raw 층(data/corpus)** 에도 한 번 남는다 — 어느
+    manifest 에도 없는 sha 면 corpus/uploads/ 에 사본 + 등록 한 줄
+    (lawrag/core/rawstore.py). 수집 manifest 에서 온 것은 이미 raw 라 안 남긴다.
+    등록 실패는 구조화를 막지 않는다(fail-open, 로그).
     """
     family = family_of(filename)
     if family is None:
         raise ValueError("PDF·HWP(X)·DOCX 또는 법령 본문 XML·조문 HTML 만 받습니다")
     name = name or Path(filename).stem
+    try:
+        from lawrag.core import rawstore
+        rawstore.ensure(raw, filename, name=name, kind=str((extra_meta or {}).get("kind") or ""),
+                        folder=(folder or "").strip(), via=raw_via,
+                        corpus=rawstore.corpus_for(store))
+    except Exception:                                   # pragma: no cover
+        import logging
+        logging.getLogger("lawrag.core.ingest").exception("raw 등록 실패 — 구조화는 계속")
 
     if family == "xml":
         r = ingest_lawxml_bytes(raw, name, store, (folder or "").strip(),

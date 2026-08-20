@@ -25,7 +25,7 @@ import time
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 
 from lawrag.core import llm as llm_mod
@@ -34,7 +34,9 @@ from lawrag.core.rag import answer as answer_mod
 from lawrag.core.rag import audit as audit_mod
 from lawrag.core.rag import index as index_mod
 from lawrag.core.rag import judge as judge_mod
+from lawrag.core.rag import promote as promote_mod
 from lawrag.core.rag import recover as recover_mod
+from lawrag.core.rag import scopes as scopes_mod
 from lawrag.core.rag import switches as switches_mod
 from lawrag.core.rag import tuples as tuples_mod
 from lawrag.core.rag import wikictx
@@ -79,26 +81,34 @@ def _hit_row(h) -> dict:
 
 @router.get("/search", summary="검색만 — LLM 없음 (mode=vector: 벡터 우선 회수)")
 def rag_search(q: str = Query(..., description="질의"),
-               mode: str = Query("auto", description="auto | vector")):
+               mode: str = Query("auto", description="auto | vector"),
+               scope: str = Query("", description="스코프 이름 (scopes.yml · 외규/내규/서식)")):
     t0 = time.perf_counter()
     idx = index_mod.current()
+    try:
+        idx, scope_info = scopes_mod.apply(idx, scope, None)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    n_docs = len(idx.scope) if idx.scope is not None else len(idx.docs)
     if mode == "vector":
         from lawrag.core.rag import vecfirst
 
         sections, vmeta = vecfirst.retrieve(idx, q)
+        sections, smeta = answer_mod.enforce_scope(idx, sections)
         logbook.rag_event("search", q=q, mode="벡터우선",
                           n_hits=len(sections), dur_ms=logbook.ms(t0),
                           vector_hits=vmeta.get("vector_hits"),
                           depth=vmeta.get("depth"))
         return {"query": q, "mode": "벡터우선",
                 "refs": vecfirst.static_refs(sections), **vmeta,
-                "documents": len(idx.docs)}
+                "scope": _scope_out(idx, smeta), "documents": n_docs}
     res = run_search(idx, q)
     logbook.rag_event("search", q=q, mode=res.mode, n_hits=len(res.hits),
                       ladder=res.ladder, dur_ms=logbook.ms(t0))
     return {"query": res.query, "mode": res.mode, "ladder": res.ladder,
             "hits": [_hit_row(h) for h in res.hits],
-            "documents": len(idx.docs), "entries": len(idx.entries)}
+            "scope": _scope_out(idx, {"dropped": [], "out": 0}),
+            "documents": n_docs, "entries": len(idx.entries)}
 
 
 class Ask(BaseModel):
@@ -111,6 +121,12 @@ class Ask(BaseModel):
     # 벤치 실측(2026-08-10)에서 패러프레이즈 질의는 벡터가 뚜렷이 우세해
     # 기본이 됐다. 벡터가 빈손이면 용어 사다리로 자동 폴백한다.
     mode: str = "vector"
+    # 질의 스코프 — "이 문서들만 대상으로". scope 는 scopes.yml 의 이름(또는
+    # 내장 외규·내규·서식), documents 는 즉석 파일명 목록. 합집합. 진입은 이
+    # 안에서만, 동반(배제·위임·준용…)은 밖으로 나가되 표식이 붙는다
+    # (lawrag/core/rag/scopes.py 머리). 둘 다 비면 기본 스코프(구판 제외).
+    scope: str = ""
+    documents: Optional[list[str]] = None
 
 
 def _llm():
@@ -357,14 +373,20 @@ def _record_settle_run(run: dict) -> None:
 
 
 @router.post("/links/settle", summary="보류 참조를 LLM 판정으로 확정 — links.json 에 고정")
-def rag_links_settle():
+def rag_links_settle(src_doc: Optional[list[str]] = Query(
+        None, description="출발 문서 doc_id — 주면 그 문서들의 보류만 판정 (반복 가능)")):
     """컴파일 국면의 걸음이다 — 한 번 판정해 links.json 에 고정하고, 질의마다
-    재판단하지 않는다. fail-closed: 저신뢰 판정은 보류로 남는다."""
+    재판단하지 않는다. fail-closed: 저신뢰 판정은 보류로 남는다.
+    src_doc 을 주면 새로 넣은 문서 몇 건의 참조만 굳힐 수 있다 — 전체 보류
+    수천 건을 매번 다시 판정하는 비용을 피한다."""
     idx = index_mod.current()
     llm = _llm()
     if llm is None:
         raise HTTPException(503, f"LLM 없음 — {llm_mod.MISSING_HINT} 를 설정해야 판정이 돕니다")
-    links, meta = judge_mod.settle_cross(llm, idx)
+    scope = set(src_doc) if src_doc else None
+    links, meta = judge_mod.settle_cross(llm, idx, src_docs=scope)
+    if scope:
+        meta["src_docs"] = sorted(scope)
     out = {**meta, "saved": _save_links(links) if links else 0}
     _record_settle_run({"via": "LLM", **meta, "saved": out["saved"]})
     if llm.log:
@@ -513,12 +535,73 @@ def _addendum(idx, sec) -> str:
     return v.addendum_kind(sec.node) if v is not None else ""
 
 
+def _ctx_row(idx, s) -> dict:
+    """응답 context 한 행 — 두 경로(auto·벡터)가 같은 모양을 내야 검수 화면이
+    한 벌로 선다. 부칙 종류·성격 태그·시행일은 전부 **관측**이다 — 회수·순위에
+    관여하지 않는다(태그층 규율: 이름표만 붙인다, lawrag/core/rag/tags.py 머리)."""
+    from lawrag.core.rag import tags as tags_mod
+
+    row = {"n": s.n, "doc": s.doc, "doc_id": s.doc_id,
+           "node": s.node, "path": s.path,
+           "page": s.page, "kind": s.kind, "matched": s.matched}
+    add = _addendum(idx, s)
+    if add:
+        row["부칙"] = add
+    if getattr(s, "scope_out", False):
+        row["scope_out"] = True            # 질의 범위 밖 — 간선으로 동반된 구역
+    v = idx.docs.get(s.doc_id)
+    if v is not None:
+        marks = tags_mod.node_marks(v, s.node)
+        if marks:
+            row["성격"] = marks
+        if v.enforce:
+            row["시행일"] = v.enforce
+        # 내규·외규·서식 — 답변 화면이 "이건 사내 규정, 저건 법령" 을 가를 표식.
+        # 내규는 판(status)·문서군(series)도 함께 — 신구 대비의 좌표다.
+        row["문서군"] = v.scope_kind
+        if v.scope_kind == "내규":
+            row["판"] = v.status or "현행"
+            if v.series:
+                row["series"] = v.series
+    return row
+
+
+def _scope_rung(idx, smeta: dict) -> dict:
+    """사다리 한 칸 — 스코프가 무엇을 막고 무엇을 밖에서 데려왔나."""
+    n_drop = len(smeta.get("dropped") or [])
+    n_out = smeta.get("out", 0)
+    note = f"'{idx.scope_name or '기본'}' 문서 {len(idx.scope)} — 진입은 이 안에서만"
+    if n_drop:
+        note += f" · 밖 진입 {n_drop} 버림"
+    if n_out:
+        note += f" · 밖 동반 {n_out} (표식)"
+    return {"stage": "스코프", "count": len(idx.scope), "note": note}
+
+
+def _scope_out(idx, smeta: dict) -> Optional[dict]:
+    """응답의 scope 칸 — 화면이 "어느 문서들만 봤나·무엇이 밖에서 왔나" 를 보인다.
+    스코프가 없으면 None(키는 둔다 — 화면이 분기하기 쉽게)."""
+    if idx.scope is None:
+        return None
+    return {"name": idx.scope_name or "기본",
+            "documents": sorted(idx.docs[d].name for d in idx.scope
+                                if d in idx.docs),
+            "count": len(idx.scope),
+            "dropped": smeta.get("dropped") or [],
+            "out_of_scope": smeta.get("out", 0)}
+
+
+def _memory_note(mem: list) -> str:
+    """질문 기억 사다리 note — 왜 열렸나(같은 질문/비슷한 질문)."""
+    return " · ".join((m.get("why") or "승인 연결") for m in mem[:4])
+
+
 def _spot_note(spots: list, expanded: bool) -> str:
     """사다리 note — 어느 판정기가 골랐는지(트리거/LLM)를 제목 앞에 박는다."""
     via = (spots[0].get("via") or "트리거") if spots else "트리거"
     head = "LLM(검색 전) — " if via.startswith("llm") else "트리거 — "
     return (head + " · ".join(s["title"] for s in spots)
-            + (" · 조문 후보로 질의 확장" if expanded else ""))
+            + (" · 조문질의로 확장" if expanded else ""))
 
 
 def _spot_dump(spots: list, via: str) -> list:
@@ -571,23 +654,66 @@ def _respot(idx, q: str, spots: list, sections: list) -> list:
     return out
 
 
+def _after_answer(out: dict, q: str, llm, sections: list, ans, fixes: list,
+                  cand_coords: Optional[list] = None) -> None:
+    """답을 만든 **뒤**의 기록 — 두 질의 경로(auto·벡터)가 같은 순서로 같은
+    원장에 적는다. 여기가 피드백 루프의 트리거 자리다:
+
+        진단 튜플(qid)  → /feedback 이 정답·오답을 붙일 자리
+        사후 감사 큐    → 판정 지문 → 백로그(verdicts.jsonl)
+        위키 적중 원장  → 부검(피드백)이 붙을 자리
+        착지 교정 로그  → 교정 백로그
+        용어 실적       → 인용된 용어 진입은 hits (misses 는 감사가 적는다)
+        승격 후보       → candidates.json (사람 승인 뒤에야 질문 기억이 된다)
+
+    기록 실패로 질의응답이 죽으면 안 된다 — 전부 fail-open. out["qid"] 를 채운다."""
+    try:
+        out["qid"] = tuples_mod.log_ask(out, prompt=_answer_prompt(llm),
+                                       calls=_calls(llm))
+        # 사후 감사 — 응답을 만든 뒤 큐에 넣는다(여기서 기다리지 않는다).
+        audit_mod.submit(llm, out["qid"], q, ans.answer, sections,
+                         {r.get("n") for r in ans.refs})
+        if ans.wiki:
+            # 위키 적중 원장 — 어떤 아티클이 끼었나. 피드백이 오면 부검이 붙는다.
+            wikiledger.record(out["qid"], q, [w["slug"] for w in ans.wiki],
+                              ans.answerable)
+        if fixes:
+            verdicts_mod.log_fixes(out["qid"], q, fixes)
+        # 용어 진입의 실적 — 인용되면 hits. misses(검색무관)는 사후 감사가
+        # 백로그에 적을 때 함께 센다(audit._run_one). 중립은 세지 않는다.
+        cited_n = {r.get("n") for r in ans.refs}
+        hit_keys = [s.term_key for s in sections
+                    if s.term_key and s.n in cited_n]
+        if hit_keys:
+            verdicts_mod.score_terms(hit_keys, [])
+        if cand_coords and ans.answerable:
+            tuples_mod.record_candidates(q, cand_coords)
+    except Exception:                                    # pragma: no cover
+        log.exception("진단 튜플 적재 실패 — 질의응답은 그대로 낸다")
+
+
 def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
                 qx: Optional[str] = None,
                 spots_trig: Optional[list] = None,
-                qv: str = "") -> Optional[dict]:
+                qv: str = "", memory: Optional[list] = None) -> Optional[dict]:
     """벡터 우선 모드 — 진입은 벡터, 연결은 참조 닫힘, 출처는 정적.
     LLM 은 답변 문장 합성에만 쓰인다. 필터도 없다 — 회수가 곧 출처다.
     벡터가 빈손이면 None — 호출부가 용어 사다리로 폴백한다.
     spots·qx 는 검색 전 쟁점 분해의 산물 — 회수는 확장 질의(qx)로,
-    합성·기록은 원 질의(q)로 간다."""
+    합성·기록은 원 질의(q)로 간다. memory 는 질문 기억(승인 좌표) — 진입 앞에 앉는다."""
     from lawrag.core.rag import vecfirst
 
     spots = spots or []
-    sections, vmeta = vecfirst.retrieve(idx, qx or q, llm=llm, vec_query=qv)
+    sections, vmeta = vecfirst.retrieve(idx, qx or q, llm=llm, vec_query=qv,
+                                        seeds=memory)
+    # 스코프 보루 — 진입이 밖으로 샜으면 버리고, 동반은 표식을 붙인다.
+    sections, smeta = answer_mod.enforce_scope(idx, sections)
     if not sections:
         return None
     n_kw = len(vmeta.get("keywords", []))
     n_entry = len(vmeta["entries"])
+    n_mem = len(vmeta.get("memory") or [])
+    n_frame = len(vmeta.get("frame_hits") or [])
     ladder = [
         {"stage": "승인 용어", "count": n_kw,
          "note": (" · ".join(k["용어"] for k in vmeta["keywords"])
@@ -600,9 +726,18 @@ def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
         # 필수 동반(floor)도 sections 에 들어 있다 — 빼지 않으면 겹쳐 센다
         # (실측: 보고 8 vs 실제 5, floor 3).
         {"stage": "참조 확장",
-         "count": len(sections) - n_entry - n_kw - len(vmeta.get("floor") or []),
+         "count": len(sections) - n_entry - n_kw - n_mem - n_frame
+                  - len(vmeta.get("floor") or []),
          "note": f"참조 간선 닫힘, 깊이 {vmeta['depth']}"},
     ]
+    if n_frame:
+        fq = vmeta.get("frame_query") or []
+        ladder.insert(1, {"stage": "프레임 진입", "count": n_frame,
+                          "note": "행위 어휘 대조 — " + " · ".join(
+                              (f.get("act") or f.get("object") or "?") for f in fq)})
+    if n_mem:
+        ladder.insert(0, {"stage": "질문 기억", "count": n_mem,
+                          "note": _memory_note(vmeta["memory"])})
     floor = vmeta.get("floor") or []
     if floor:
         kinds = {}
@@ -610,11 +745,13 @@ def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
             kinds[f["kind"]] = kinds.get(f["kind"], 0) + 1
         ladder.insert(2, {"stage": "필수 동반", "count": len(floor),
                           "note": " · ".join(f"{k} {c}" for k, c in kinds.items())
-                                  + " (배제·위임·준용은 판단 없이 동반)"})
+                                  + " (배제·위임·준용·정의·제재는 판단 없이 동반)"})
     nav = vmeta.get("nav")
     if nav:
         ladder.append({"stage": "간선 항해", "count": len(nav.get("picked", [])),
                        "note": f"LLM 이 간선 카드에서 고름, {nav['hops']}홉"})
+    if idx.scope is not None:
+        ladder.append(_scope_rung(idx, smeta))
     if spots:
         # 쟁점 분해(트리거·확장)는 검색 전의 일이라 사다리 맨 앞에 선다.
         ladder.insert(0, {"stage": "쟁점 분해", "count": len(spots),
@@ -636,6 +773,7 @@ def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
             added = _respot(idx, q, spots, sections) if spots else []
             if added:
                 sections = sections + added
+                sections, _ = answer_mod.enforce_scope(idx, sections)
                 for i, s in enumerate(sections, start=1):
                     s.n = i
                 ladder.append({"stage": "판정 재회수", "count": len(added),
@@ -650,6 +788,7 @@ def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
         ladder.append({"stage": "위키 맥락", "count": len(ans.wiki),
                        "note": " · ".join(w["title"] for w in ans.wiki)})
     out = {"question": q, "mode": "벡터우선", "ladder": ladder,
+           "scope": _scope_out(idx, smeta),
            "쟁점": {"트리거": _spot_dump(spots_trig, "트리거"),
                     "분해": _spot_dump(spots, "llm(검색전)")
                             if (spots and spots[0].get("via", "").startswith("llm")) else None,
@@ -657,13 +796,7 @@ def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
                     "벡터질의": vmeta.get("vec_query") or ""},
            "filter": {"in": len(sections), "out": len(sections),
                       "applied": False, "reason": "벡터 모드 — 필터 없음(출처는 정적)"},
-           "context": [{"n": s.n, "doc": s.doc, "doc_id": s.doc_id,
-                        "node": s.node, "path": s.path,
-                        "page": s.page, "kind": s.kind, "matched": s.matched,
-                        # 부칙 조의 종류 이름표 — 걸러내지 않는다, 관측만 한다
-                        # (어떤 질문에 어떤 종류가 답인지는 아직 데이터가 없다)
-                        **({"부칙": _addendum(idx, s)} if _addendum(idx, s) else {})}
-                       for s in sections],
+           "context": [_ctx_row(idx, s) for s in sections],
            "answer": ans.answer, "answerable": ans.answerable,
            # 출처는 회수 집합 그대로 — 모델 인용은 cited 로 따로 준다.
            "refs": vecfirst.static_refs(sections),
@@ -680,46 +813,43 @@ def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
     if llm is not None and llm.log:
         out["usage"] = llm.totals()
         out["timing"] = _timing(llm)
-    try:
-        out["qid"] = tuples_mod.log_ask(out, prompt=_answer_prompt(llm),
-                                       calls=_calls(llm))
-        # 사후 감사 — 응답을 만든 **뒤** 큐에 넣는다(여기서 기다리지 않는다).
-        audit_mod.submit(llm, out["qid"], q, ans.answer, sections,
-                         {r.get("n") for r in ans.refs})
-        if ans.wiki:
-            # 위키 적중 원장 — 어떤 아티클이 끼었나. 피드백이 오면 부검이 붙는다.
-            wikiledger.record(out["qid"], q, [w["slug"] for w in ans.wiki],
-                              ans.answerable)
-        if fixes:
-            verdicts_mod.log_fixes(out["qid"], q, fixes)
-        # 용어 진입의 실적 — 인용되면 hits, 무관 지문이면 misses. 중립(인용도
-        # 지문도 아님)은 세지 않는다 — 애매함을 실적으로 굳히지 않는다.
-        if vmeta.get("keywords"):
-            kw_by_coord = {(k["doc_id"], k["node"]): k["key"]
-                           for k in vmeta["keywords"]}
-            cited_n = {r.get("n") for r in ans.refs}
-            # 무관 지문은 이제 사후 감사가 남긴다 — 이 시점에 아직 없다.
-            # 인용된 것만 hits 로 세고, miss 는 감사가 백로그에 적는다.
-            miss_n = set()
-            hit_keys, miss_keys = [], []
-            for s in sections:
-                if s.kind != "용어":
-                    continue
-                key = kw_by_coord.get((s.doc_id, s.node))
-                if key is None:
-                    continue
-                if s.n in cited_n:
-                    hit_keys.append(key)
-                elif s.n in miss_n:
-                    miss_keys.append(key)
-            verdicts_mod.score_terms(hit_keys, miss_keys)
-        if vmeta["entries"] and ans.answerable:
-            tuples_mod.record_candidates(
-                q, [{"doc_id": e["doc_id"], "node": e["node"], "via": "벡터"}
-                    for e in vmeta["entries"]])
-    except Exception:                                    # pragma: no cover
-        log.exception("진단 튜플 적재 실패 — 질의응답은 그대로 낸다")
+    # 벡터 진입은 종착이 아니라 용어의 씨앗 — 승격 후보(잠정)로 적는다.
+    _after_answer(out, q, llm, sections, ans, fixes,
+                  cand_coords=[{"doc_id": e["doc_id"], "node": e["node"],
+                                "via": "벡터"} for e in vmeta["entries"]])
     return out
+
+
+@router.get("/scopes", summary="질의 스코프 목록 — scopes.yml 정의(해석 결과) + 내장")
+def rag_scopes():
+    """사용자가 yml 로 정의한 문서 묶음이 스토어의 어느 문서로 해석됐는지 — 못
+    찾은 이름(missing)이 같이 나온다. 빈 스코프·오타가 조용히 전체 검색으로
+    새지 않게 하는 관측 창."""
+    idx = index_mod.current()
+    return {"path": str(scopes_mod.scopes_path()),
+            "exists": scopes_mod.scopes_path().exists(),
+            "scopes": scopes_mod.listing(idx)}
+
+
+@router.post("/scopes/file", summary="scopes.yml 교체 — yml 본문을 올린다")
+async def rag_scopes_upload(file: UploadFile = File(...)):
+    """화면이나 curl 로 yml 을 올리면 정본 자리에 쓴다. 쓰기 전에 파싱·해석해
+    모양이 틀리면 400 — 깨진 파일로 스코프를 전부 잃지 않는다."""
+    import yaml
+    raw = await file.read()
+    try:
+        data = yaml.safe_load(raw.decode("utf-8")) or {}
+    except Exception as exc:
+        raise HTTPException(400, f"yml 을 읽지 못했습니다: {exc}")
+    if isinstance(data, list):
+        data = {"scopes": data}
+    if not isinstance(data, dict) or not isinstance(data.get("scopes"), list):
+        raise HTTPException(400, "꼭대기에 scopes: [ {name, documents…}, … ] 목록이 있어야 합니다")
+    for row in data["scopes"]:
+        if not isinstance(row, dict) or not str(row.get("name") or "").strip():
+            raise HTTPException(400, f"name 이 없는 스코프 항목: {row!r}"[:200])
+    path = scopes_mod.save(data)
+    return {"path": str(path), "scopes": scopes_mod.listing(index_mod.current())}
 
 
 @router.post("/ask", summary="질의응답 — 검색 → 필터 → 합성 (mode=vector: 벡터 우선)")
@@ -731,6 +861,15 @@ def rag_ask(body: Ask):
     log.info("질의 시작 — '%s' (mode=%s, filter=%s, recover=%s)",
              q[:60], body.mode, body.filter, body.recover)
     idx = index_mod.current()
+    # 질의 스코프 — "이 문서들만". 이름을 모르거나 비면 400 — 조용히 전체를
+    # 뒤지는 것이 과제 1 의 정반대다.
+    try:
+        idx, scope_info = scopes_mod.apply(idx, body.scope, body.documents)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    if idx.scope is not None:
+        log.info("스코프 '%s' — 문서 %d (못 찾음 %d)", idx.scope_name,
+                 len(idx.scope), len(scope_info.get("missing") or []))
     llm = _llm()
     if llm is None:
         log.warning("LLM 없음 — 검색까지만 내려간다 (%s 미설정)", llm_mod.MISSING_HINT)
@@ -754,10 +893,14 @@ def rag_ask(body: Ask):
     # 어휘 사다리는 원문(qx)을 그대로 쓴다: 채널마다 무는 어휘가 다르다.
     qv = wikictx.vector_query(q, spots) if spots else ""
 
+    # 질문 기억 — 같은/비슷한 질문에 사람이 승인한 착지(candidates 활성).
+    # 검색 없이 열며 두 경로 모두 진입 앞에 앉는다. 잠정은 안 연다.
+    memory = promote_mod.direct_hits(q)
+
     vector_missed = False
     if body.mode == "vector":
         out_v = _ask_vector(idx, q, llm, spots=spots, qx=qx,
-                            spots_trig=spots_trig, qv=qv)
+                            spots_trig=spots_trig, qv=qv, memory=memory)
         if out_v is not None:
             _ask_event(out_v, logbook.ms(t0))
             return out_v
@@ -767,10 +910,14 @@ def rag_ask(body: Ask):
     if vector_missed:
         res.ladder.insert(0, {"stage": "벡터 진입", "count": 0,
                               "note": "미스(색인·모델 부재 포함) — 용어 사다리로 폴백"})
+    if memory:
+        res.ladder.insert(0, {"stage": "질문 기억", "count": len(memory),
+                              "note": _memory_note(memory)})
     if spots:
         res.ladder.insert(0, {"stage": "쟁점 분해", "count": len(spots),
                               "note": _spot_note(spots, qx != q)})
-    sections = answer_mod.assemble(idx, res)
+    sections = answer_mod.assemble(idx, res, seeds=memory)
+    sections, smeta = answer_mod.enforce_scope(idx, sections)
     fmeta = {"in": len(sections), "out": len(sections), "applied": False, "reason": ""}
     if body.filter:
         sections, fmeta = answer_mod.filter_sections(llm, q, sections)
@@ -812,6 +959,13 @@ def rag_ask(body: Ask):
                                    "note": "쟁점 조문 후보 재검색 — "
                                            + " · ".join(sorted({s.doc for s in added}))})
 
+    # 스코프 보루 — 회복·판정 재회수·참조 확장이 무엇을 데려왔든 진입은 안,
+    # 동반은 표식. 합성 직전이 마지막 자리다.
+    if idx.scope is not None:
+        sections, smeta2 = answer_mod.enforce_scope(idx, sections)
+        smeta = {"dropped": smeta["dropped"] + smeta2["dropped"],
+                 "out": smeta2["out"]}
+        res.ladder.append(_scope_rung(idx, smeta))
     # 착지 교정 — "제2조제3항"을 가리키고 조에 머문 참조를, 답변 전에 자손
     # 후보에서 고쳐 앉힌다. 고친 구역이 곧 이번 답변의 근거다.
     fixes = answer_mod.repair_landings(llm, idx, sections)
@@ -831,6 +985,7 @@ def rag_ask(body: Ask):
         r["link"] = link
 
     out = {"question": q, "mode": res.mode, "ladder": res.ladder,
+           "scope": _scope_out(idx, smeta),
            # 쟁점기의 전모 — 트리거가 무엇을 물었고(왜), 판정이 무엇으로
            # 고쳤고, 질의가 어떻게 넓어졌는지. 사다리 note 는 제목뿐이다.
            "쟁점": {"트리거": _spot_dump(spots_trig, "트리거"),
@@ -838,13 +993,7 @@ def rag_ask(body: Ask):
                     "판정": spots_judged, "질의확장": qx if qx != q else "",
                     "벡터질의": qv},
            "filter": fmeta,
-           "context": [{"n": s.n, "doc": s.doc, "doc_id": s.doc_id,
-                        "node": s.node, "path": s.path,
-                        "page": s.page, "kind": s.kind, "matched": s.matched,
-                        # 부칙 조의 종류 이름표 — 걸러내지 않는다, 관측만 한다
-                        # (어떤 질문에 어떤 종류가 답인지는 아직 데이터가 없다)
-                        **({"부칙": _addendum(idx, s)} if _addendum(idx, s) else {})}
-                       for s in sections],
+           "context": [_ctx_row(idx, s) for s in sections],
            "answer": ans.answer, "answerable": ans.answerable, "refs": ans.refs,
            "discards": [], "fixes": fixes}
     if ans.wiki:
@@ -859,31 +1008,17 @@ def rag_ask(body: Ask):
         out["usage"] = llm.totals()
         out["timing"] = _timing(llm)
 
-    # 진단 튜플 — 응답에 실어 보내고 버리던 것을 적재한다(ontology_kg §5.2).
-    # 탐험 성공은 승격 후보로도 센다. 기록 실패로 질의응답이 죽으면 안 된다.
-    try:
-        out["qid"] = tuples_mod.log_ask(out, prompt=_answer_prompt(llm),
-                                       calls=_calls(llm))
-        audit_mod.submit(llm, out["qid"], q, ans.answer, sections,
-                         {r.get("n") for r in ans.refs})
-        if ans.wiki:
-            wikiledger.record(out["qid"], q, [w["slug"] for w in ans.wiki],
-                              ans.answerable)
-        if fixes:
-            verdicts_mod.log_fixes(out["qid"], q, fixes)
-        if recovery is not None and recovery.coords:
-            tuples_mod.record_candidates(q, recovery.coords)
-        # 벡터 단이 찾아 실제 답변에 실린 착지도 승격 후보다 — 벡터 히트는
-        # 종착이 아니라 용어의 씨앗이다 (하이브리드 결정, vector.py 머리).
-        vec_nodes = {(h.doc_id, h.node) for h in res.hits if h.kind == "벡터"}
-        if vec_nodes and ans.answerable:
-            coords = [{"doc_id": r["doc_id"], "node": r["node"], "via": "벡터"}
-                      for r in ans.refs
-                      if (r.get("doc_id"), r.get("node")) in vec_nodes]
-            if coords:
-                tuples_mod.record_candidates(q, coords)
-    except Exception:                                    # pragma: no cover
-        log.exception("진단 튜플 적재 실패 — 질의응답은 그대로 낸다")
+    # 승격 후보 — 탐험(회복) 착지와, 벡터 단이 찾아 실제 답변에 실린 착지.
+    # 벡터 히트는 종착이 아니라 용어의 씨앗이다 (하이브리드 결정, vector.py 머리).
+    cand: list = []
+    if recovery is not None and recovery.coords:
+        cand += recovery.coords
+    vec_nodes = {(h.doc_id, h.node) for h in res.hits if h.kind == "벡터"}
+    if vec_nodes:
+        cand += [{"doc_id": r["doc_id"], "node": r["node"], "via": "벡터"}
+                 for r in ans.refs
+                 if (r.get("doc_id"), r.get("node")) in vec_nodes]
+    _after_answer(out, q, llm, sections, ans, fixes, cand_coords=cand)
     _ask_event(out, logbook.ms(t0))
     return out
 
@@ -935,8 +1070,9 @@ def rag_tuples(limit: int = Query(100, ge=1, le=1000)):
 @router.get("/verdicts", summary="판정 백로그 — 잘못 끌려온 간선의 지문 묶음")
 def rag_verdicts():
     """답변 시점 LLM 이 찍은 '오참조·무관' 지문을 간선별로 묶어 준다.
-    승인 전까지는 아무것도 안 바뀐다 — 이 화면의 승인이 억제 규칙을 만든다."""
-    return verdicts_mod.backlog()
+    승인 전까지는 아무것도 안 바뀐다 — 이 화면의 승인이 억제 규칙을 만든다.
+    질문 기억 후보(승격 원장 잠정) 수도 함께 — 상단바 배지가 백로그 하나로 센다."""
+    return {**verdicts_mod.backlog(), "memory_pending": len(promote_mod.queue("잠정"))}
 
 
 class EdgeResolve(BaseModel):
@@ -1093,6 +1229,10 @@ def rag_debug(limit: int = Query(50, ge=1, le=500)):
             r["지문"] = m["지문"]
             r["교정"] = m["교정"]
     bl = verdicts_mod.backlog()
+    # 질문 기억 후보 — 승인형 원장(candidates.json)의 잠정 행. 백로그 화면이
+    # 같은 자리에서 승인/기각한다(용어 사전과 같은 규율: 활성만 채널에 실린다).
+    bl["memory"] = _memory_rows("잠정")[:50]
+    bl["memory_counts"] = _memory_counts()
     fb = [r for r in rows if r.get("피드백")]
     good = sum(1 for r in fb if (r["피드백"] or {}).get("판정") == "정답")
     stats = {
@@ -1108,6 +1248,67 @@ def rag_debug(limit: int = Query(50, ge=1, le=500)):
         "승격_후보": len(tuples_mod.candidates()),
     }
     return {"stats": stats, "tuples": rows, "backlog": bl}
+
+
+def _memory_counts() -> dict:
+    out = {"잠정": 0, "활성": 0, "tombstone": 0}
+    for r in promote_mod._load():
+        out[(r.get("status") or "잠정")] = out.get(r.get("status") or "잠정", 0) + 1
+    return out
+
+
+def _memory_rows(status: str) -> list[dict]:
+    """승격 원장 행에 사람이 읽는 좌표(문서명·경로)를 붙인다 — 원장은 좌표만
+    적는다. 없는 문서(삭제·재색인)는 '?' 로 남겨 화면이 기각할 수 있게 한다."""
+    idx = index_mod.current()
+    rows = promote_mod.queue(status) if status != "전부" else promote_mod._load()
+    out = []
+    for r in rows:
+        v = idx.docs.get(r.get("doc_id"))
+        out.append({**r, "status": r.get("status") or "잠정",
+                    "doc": v.name if v else "?",
+                    "path": v.path(r.get("node")) if v else "",
+                    "exists": v is not None and v.by_id.get(r.get("node")) is not None})
+    return out
+
+
+@router.get("/memory", summary="질문 기억 — 승격 원장(잠정·활성·기각) 목록")
+def rag_memory(status: str = Query("잠정", description="잠정|활성|tombstone|전부"),
+               limit: int = Query(200, ge=1, le=2000)):
+    """candidates.json 의 읽는 쪽. 잠정은 자동 적재(벡터·깔때기·회복 착지),
+    활성만 다음 질의의 직행 좌표(promote.direct_hits)가 된다."""
+    if status not in ("잠정", "활성", "tombstone", "전부"):
+        raise HTTPException(400, "status 는 잠정|활성|tombstone|전부")
+    rows = _memory_rows(status)
+    return {"rows": rows[:limit], "count": len(rows), "counts": _memory_counts()}
+
+
+class MemoryResolve(BaseModel):
+    """승격 원장 처리 — 화면의 후보 카드가 그대로 보낸다.
+    승인=활성(직행 좌표가 된다) · 기각=tombstone · 보류=잠정 복귀."""
+    qkey: str
+    doc_id: str
+    node: int
+    action: str                        # "승인" | "기각" | "보류"
+    note: str = ""
+
+
+@router.post("/memory/resolve", summary="질문 기억 처리 — 승인은 다음 질의의 직행 좌표가 된다")
+def rag_memory_resolve(body: MemoryResolve):
+    status = {"승인": "활성", "기각": "tombstone", "보류": "잠정"}.get(body.action)
+    if status is None:
+        raise HTTPException(400, "action 은 승인|기각|보류")
+    if status == "활성":
+        # 활성은 검색 없이 열리는 좌표다 — 실재하는 구역만 (닫힌 후보 규율).
+        v = index_mod.current().docs.get(body.doc_id)
+        if v is None or v.by_id.get(body.node) is None:
+            raise HTTPException(400, "좌표가 유효하지 않습니다 — 문서나 구역이 없습니다")
+    if not promote_mod.set_status(body.qkey, body.doc_id, body.node, status,
+                                  body.note):
+        raise HTTPException(404, "원장에 그 행이 없습니다")
+    logbook.rag_event("memory", qkey=body.qkey, doc_id=body.doc_id,
+                      node=body.node, action=body.action, note=body.note[:200])
+    return {"saved": True, "status": status, "counts": _memory_counts()}
 
 
 @router.get("/nodes", summary="문서의 구역 목록 — 좌표 선택용 (가벼운 형태)")

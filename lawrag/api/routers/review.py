@@ -32,6 +32,8 @@ class Review(BaseModel):
     text: str                                  # 사실관계 또는 서비스 설계
     track: str = "해석"                        # 해석 | 적법성 | 개정
     asset: Optional[str] = None                # 자산명 — 주면 원장에 적재된다
+    scope: str = ""                            # 질의 스코프 (scopes.yml 이름 · 외규/내규/서식)
+    documents: Optional[list[str]] = None      # 즉석 파일명 목록 — scope 와 합집합
 
 
 def _llm():
@@ -52,8 +54,16 @@ def post_review(body: Review):
     if llm is None:
         raise HTTPException(503, "LLM 없음 — 검토는 판단이라 LLM 이 필요합니다 "
                                  f"({llm_mod.MISSING_HINT}). 검색은 /v1/rag 로.")
-    st = review_mod.run(llm, index_mod.current(), text, track=body.track)
+    from lawrag.core.rag import scopes as scopes_mod
+    try:
+        idx, scope_info = scopes_mod.apply(index_mod.current(), body.scope, body.documents)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    st = review_mod.run(llm, idx, text, track=body.track)
     out = st.to_dict()
+    if idx.scope is not None:
+        out["scope"] = {"name": idx.scope_name, "count": len(idx.scope),
+                        "missing": scope_info.get("missing") or []}
 
     # 원장 적재 — 자산명이 있을 때만. 원장은 "무엇이 무엇에 매였나"의 기록이지
     # 질의 로그가 아니다 (binding.py 머리).

@@ -244,6 +244,13 @@ class Ladder:
     """레벨 사다리 (SPEC §2). `[L0, L1, L2 …]`."""
     rungs: list[Rung] = field(default_factory=list)
     unregistered: list[str] = field(default_factory=list)   # 문지기에 걸린 계열
+    # 생존이 하나뿐인 계열 — 등재 점수(런의 결)가 정의되지 않는다. 미등재와 다르다:
+    # 미등재는 "여럿인데 안 이어졌다"(결함), 하나짜리는 "이어질 것이 없다"(짧은 규정의
+    # `부칙` 하나·`[별표 1]` 하나). 둘 다 문맥판정으로 가지만 감점은 미등재만 받는다.
+    singletons: list[str] = field(default_factory=list)
+    # S4 층 해제로 풀린 계열 — 사다리가 앉힌 층을 열 자리가 문서에 없었다. 이 계열의
+    # 층은 무효라 DP 가 novelty 를 물리지 않는다(dp.run). 감사용으로 남긴다.
+    freed: list[str] = field(default_factory=list)
     # 순환 때문에 증거가 아니라 **임의 규칙으로** 층이 정해진 계열. 비어 있어야 정상이다.
     cycle_broken: list[str] = field(default_factory=list)
     unordered_pairs: list[str] = field(default_factory=list)
@@ -265,6 +272,8 @@ class Ladder:
     def dump(self) -> dict:
         return {"depth": self.depth, "rungs": [r.dump() for r in self.rungs],
                 "unregistered": sorted(self.unregistered),
+                "singletons": sorted(self.singletons),
+                "freed": sorted(self.freed),
                 "cycle_broken": sorted(self.cycle_broken),
                 "unordered_pairs": sorted(self.unordered_pairs), "n_pairs": self.n_pairs,
                 "root": self.root, "flattened": sorted(self.flattened),
@@ -282,29 +291,39 @@ class ScopeStack:
     # **지금 열려 있는 구간과의 관계**로도 읽힌다 — 부모보다 더 들여쓴 것은
     # 자식이지 형제가 아니다. 상태에 실어야 DP 가 그걸 볼 수 있다.
     xs: tuple[Optional[float], ...] = ()
+    # 그 레벨을 연 후보의 계열(family_key). "제2조 가 제1조 안에" 같은 **자기 계열
+    # 중첩**을 DP 가 보고 막으려면 누가 열었는지가 상태에 있어야 한다
+    # (global_inner/nesting.py `self_nested`).
+    fams: tuple[Optional[str], ...] = ()
 
     def __post_init__(self) -> None:
         if not self.xs:
             object.__setattr__(self, "xs", tuple([None] * len(self.last)))
+        if not self.fams:
+            object.__setattr__(self, "fams", tuple([None] * len(self.last)))
 
     @classmethod
     def empty(cls, depth: int) -> "ScopeStack":
-        return cls(tuple([None] * depth), tuple([None] * depth))
+        return cls(tuple([None] * depth), tuple([None] * depth), tuple([None] * depth))
 
     def open_levels(self) -> list[int]:
         return [i for i, v in enumerate(self.last) if v is not None]
 
     def activate(self, level: int, ordinal: Optional[Ordinal],
-                 x: Optional[float] = None) -> "ScopeStack":
+                 x: Optional[float] = None,
+                 family: Optional[str] = None) -> "ScopeStack":
         """해당 레벨을 갱신하고 **하위 레벨 스코프를 닫는다**(SPEC §4 S3)."""
         nxt = list(self.last)
         nxt[level] = ordinal if ordinal is not None else ()
         xs = list(self.xs)
         xs[level] = x
+        fams = list(self.fams)
+        fams[level] = family
         for deeper in range(level + 1, len(nxt)):
             nxt[deeper] = None
             xs[deeper] = None
-        return ScopeStack(tuple(nxt), tuple(xs))
+            fams[deeper] = None
+        return ScopeStack(tuple(nxt), tuple(xs), tuple(fams))
 
 
 @dataclass

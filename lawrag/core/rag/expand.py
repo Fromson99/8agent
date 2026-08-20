@@ -31,13 +31,17 @@ import logging
 import re
 from typing import Optional
 
+from lawrag.core.rag import definitions as definitions_mod
 from lawrag.core.rag import delegation as delegation_mod
+from lawrag.core.rag import tags as tags_mod
 from lawrag.core.rag.answer import CANDIDATES_MAX, SECTION_CHARS, Section
 from lawrag.core.rag.index import Index
 
 log = logging.getLogger("lawrag.core.rag.expand")
 
-_JO_SURFACE = re.compile(r"^제\d+조(의\d+)?$")
+# 편-조 체계(제4-19조)까지 문다 — 좁게 잡으면 규정·세칙류에서 조용히 빠진다
+# (docs/LEGAL_DOMAIN §2 함정 ①, wikictx._ART_RE 와 같은 교훈).
+_JO_SURFACE = re.compile(r"^제\d+(?:-\d+)?조(?:의\d+)?$")
 DELEG_PER_SECTION = 3                   # 조 하나의 위임 동반 상한 — 꼬리는 항해 몫
 NAV_HOPS = 2
 NAV_PICKS = 6
@@ -78,13 +82,24 @@ def expand_floor(index: Index, sections: list[Section],
     on_deleg = switches_mod.is_on("floor_delegation")
     on_jun = switches_mod.is_on("floor_junyong")
     on_recv = switches_mod.is_on("floor_reception")
+    on_def = switches_mod.is_on("floor_definition")
+    on_sanc = switches_mod.is_on("floor_sanction")
 
     out = list(sections)
     seen = {(s.doc_id, s.node) for s in sections}
     cross = index.cross_ref_edges()
+    # 후순위(demote) — "참조무관" 판정을 사람이 승인한 간선은 지우지 않고
+    # **자리 경쟁에서 뒤로** 민다. 바닥은 무조건 동반이라 cap 을 먼저 먹으므로,
+    # 여기서 안 밀면 expand_refs 의 후순위는 관측되지 않는다(2026-08-18 감사).
+    deferred: list[tuple] = []
 
-    def push(doc_id, node, kind, matched, ref_src=None) -> None:
+    def push(doc_id, node, kind, matched, ref_src=None, _late=False) -> None:
         if (doc_id, node) in seen or len(out) >= cap:
+            return
+        if (not _late and ref_src
+                and verdicts_mod.is_demoted(ref_src["doc_id"], ref_src["node"],
+                                            doc_id, node)):
+            deferred.append((doc_id, node, kind, matched, ref_src))
             return
         s = _mk(index, doc_id, node, kind, matched, ref_src)
         if s is not None:
@@ -113,26 +128,49 @@ def expand_floor(index: Index, sections: list[Section],
             REV["배제"] = "{tail}의 적용을 배제·제한 — '{surface}'"
         if on_recv:
             REV["수임"] = "{tail}의 위임을 받은 조문 — '{surface}'"
-        rev_caps = {"배제": cap, "수임": 3}      # 배제는 전부, 수임은 조문당 3
-        rev_n = {"배제": 0, "수임": 0}
+        # 제재: 착지가 의무·금지 조문일 때만(성격 태그), 벌칙 조에서 이 조를
+        # 겨누는 역간선("제N조를 위반한 자는…")을 싣는다. rel 이 아니라
+        # **출발점의 성격**(벌칙 조인가)이 가르는 유일한 동반이다 — 벌칙 조의
+        # 인용은 rel 분류가 없어 이 검사 없이는 영영 안 온다.
+        sanc_ok = (on_sanc
+                   and tags_mod.has_condition(v, s.node, ("의무", "금지")))
+        if sanc_ok:
+            REV["제재"] = "{tail} 위반의 벌칙·과태료 — '{surface}'"
+        rev_caps = {"배제": cap, "수임": 3, "제재": 2}   # 배제는 전부
+        rev_n = {"배제": 0, "수임": 0, "제재": 0}
+
+        def hits_here(dst: int) -> bool:
+            """역간선의 도착이 이 착지인가 — 역간선은 "제26조제1항제1호 단서에서"
+            (세칙 수임)·"제17조제1항을 위반한 자"(벌칙)처럼 착지 조의 **항·호**를
+            겨눈다. 도착의 소속 조까지 올려 대조한다 (2026-08-19: 처음엔 제재만
+            완화했는데 KRX 규정→세칙 수임이 같은 이유로 안 서서 전부 완화)."""
+            if dst in targets:
+                return True
+            return jo is not None and _enclosing_jo(v, dst) == jo
+
         for src_doc, src_node, rel, surface, e_dst in (
                 [(s.doc_id, e["src"], e.get("rel"), e["surface"], e["dst"])
                  for e in index.ref_edges().get(s.doc_id, [])
-                 if e["dst"] in targets]
+                 if hits_here(e["dst"])]
                 + [(e["src_doc"], e["src"], e.get("rel"), e["surface"], e["dst"])
                    for e in cross
-                   if e.get("dst_doc") == s.doc_id and e["dst"] in targets]):
-            if rel not in REV or rev_n[rel] >= rev_caps[rel]:
+                   if e.get("dst_doc") == s.doc_id and hits_here(e["dst"])]):
+            lab = rel if rel in REV else None
+            if lab is None and sanc_ok:
+                sv = index.docs.get(src_doc)
+                if sv is not None and tags_mod.is_sanction(sv, src_node):
+                    lab = "제재"
+            if lab is None or rev_n[lab] >= rev_caps[lab]:
                 continue
             if verdicts_mod.is_suppressed(src_doc, src_node, s.doc_id, e_dst):
                 continue
             before = len(out)
-            push(src_doc, src_node, rel,
-                 REV[rel].format(tail=tail, surface=surface),
+            push(src_doc, src_node, lab,
+                 REV[lab].format(tail=tail, surface=surface),
                  ref_src={"doc_id": s.doc_id, "node": s.node,
                           "path": s.path, "surface": surface})
             if len(out) > before:
-                rev_n[rel] += 1
+                rev_n[lab] += 1
 
         # ── 순방향 배제·준용 — 이 구역 본문의 문면 간선 중 바닥 관계
         fwd_kinds = ({"배제"} if on_excl else set()) | ({"준용"} if on_jun else set())
@@ -161,6 +199,34 @@ def expand_floor(index: Index, sections: list[Section],
                  f"{tail}의 위임({d['kind']}) — '{d['link']}'",
                  ref_src={"doc_id": s.doc_id, "node": s.node,
                           "path": s.path, "surface": d["link"] or d["kind"]})
+
+        # ── 정의 동반 — 착지 조문의 관할 정의 조(최근접 스코프 + 문서 대표).
+        #    실체 조문만 잡고 정의를 놓치는 실측(casereview: 미회수 4건)의
+        #    질의응답판. 관할 계산은 tags.governing_definitions — 편마다 제
+        #    정의 조를 두는 규정류(금융투자업규정 11개)에서 엉뚱한 편의
+        #    용어를 끌고 오지 않는다.
+        #    정의 **호** 우선 — 착지 본문에 실제로 쓰인 정의어의 호만 동반한다
+        #    (definitions.terms_in: 개보법 제17조 → 제2조 5호·1호·3호·2호). 조
+        #    통째(호 열 개)를 싣던 것보다 좁고 정확하다. 쓰인 정의어가 하나도
+        #    안 물리면 관할 정의 조로 폴백 — 정의는 있는데 낱말 대조가 안 된
+        #    경우(별칭 표기 등)를 잃지 않기 위해서다.
+        if on_def:
+            used = definitions_mod.terms_in(v, s.node)
+            if used:
+                for d in used:
+                    push(s.doc_id, d["node"], "정의",
+                         f"{tail}의 '{d['term']}' 정의",
+                         ref_src={"doc_id": s.doc_id, "node": s.node,
+                                  "path": s.path, "surface": d["term"]})
+            else:
+                for d_node in tags_mod.governing_definitions(v, s.node):
+                    push(s.doc_id, d_node, "정의",
+                         f"{tail} 용어의 관할 정의 조",
+                         ref_src={"doc_id": s.doc_id, "node": s.node,
+                                  "path": s.path, "surface": "용어의 뜻"})
+    # 후순위 간선은 남은 자리에만 앉는다 — 연결은 살아 있고 순서만 뒤다.
+    for doc_id, node, kind, matched, ref_src in deferred:
+        push(doc_id, node, kind, matched + " (후순위)", ref_src, _late=True)
     return out
 
 

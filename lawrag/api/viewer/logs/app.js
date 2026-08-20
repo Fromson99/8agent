@@ -61,7 +61,7 @@ function flagBadges(e) {
 function evDetail(e) {
   const parts = [];
   const kv = [];
-  if (e.qid) kv.push(`qid <b>${esc(e.qid)}</b>`);
+  if (e.qid) kv.push(`qid <a href="/rag/debug.html?qid=${encodeURIComponent(e.qid)}"><b>${esc(e.qid)}</b></a>`);
   if (e.dur_ms != null) kv.push(`소요 <b>${esc(e.dur_ms)}ms</b>`);
   if (e.n_context != null) kv.push(`컨텍스트 <b>${esc(e.n_context)}</b>구역`);
   if (e.n_refs != null) kv.push(`인용 <b>${esc(e.n_refs)}</b>`);

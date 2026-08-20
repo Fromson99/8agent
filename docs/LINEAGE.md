@@ -49,8 +49,9 @@ hwp 는 md 사이드카를 거치고, PDF·DOCX 는 업로드 해석 직행. 이
 | 계열 | 변환 요구 | 구조화로 가는 길 |
 |---|---|---|
 | xml | 없음 | lawxml 결정적 이관 (lawrag/pipeline/ingest_lawxml.py) |
-| hwp | md 사이드카 | lawrag/core/hwp5_md.py → 구조화(경로 공사 중) |
-| pdf · docx | 없음 | 업로드 해석 직행 (POST /v1/structure/documents) |
+| hwp | md 사이드카 | lawrag/core/hwp5_md.py(레코드 XML 직독) → 구조화 — 파일 묶음은 lawrag/pipeline/ingest_files.py |
+| pdf · docx | 없음 | 업로드 해석 직행 (POST /v1/structure/documents · lawrag/pipeline/ingest_files.py) |
+| docx (내규) | 없음 | 유도 경로 + 내규 프로파일 (lawrag/pipeline/ingest_naegyu.py → core/internal_rules.py) |
 
 새 형식이 오면 이 표에 한 줄이 늘 뿐, 단계 모델·조인 키(sha256)·화면은
 그대로다. 선언은 형식 단위다 — 문서별 상수는 금지. 미선언 형식은 경로
@@ -132,8 +133,16 @@ kofia·krx 의 hwp 본문 76건은 md 변환까지만 가 있다 — 구조화�
 
 ## 다음
 
-- 코퍼스 배치 러너 — hwp 본문 76건의 낙차 해소. 문(core.ingest.ingest)은
-  이미 hwp 를 받으므로(업로드와 같은 parse_adapter+합성 지면 길), 남은 것은
-  manifest 본문을 돌며 문을 부르는 러너와 KOFIA 무스타일 문서의 구조화
-  품질 검증이다.
+- 코퍼스 배치 러너 — hwp 본문 76건의 낙차 해소. 파일 묶음 러너는 생겼다
+  (lawrag/pipeline/ingest_files.py — 2026-08-19 KRX 상장 서식 9건·상장회사
+  표준정관 1건을 이것으로 넣었다, kind=krx-form·klca-model). 남은 것은
+  manifest 본문을 돌며 출처를 실어 문을 부르는 걸음과 KOFIA 무스타일 문서의
+  구조화 품질 검증이다.
+- hwp 변환은 2026-08-19 부터 레코드 XML 직독이 기본이다(lawrag/core/hwp5_md.py
+  --engine xml). XSLT 로 120초를 두 번 넘겨 텍스트 폴백(표 전부 손실)으로
+  떨어지던 상장 신청서 서식 3건이 5초 안에 표 120~307개를 살려 나왔고, 병합 셀
+  정렬도 보존된다. 옛 XSLT 는 --engine html 로 대조용으로만 남는다.
+- settle 은 `POST /v1/rag/links/settle?src_doc=<id>&src_doc=…` 로 출발 문서를
+  좁힐 수 있다 — 새 문서 몇 건의 보류만 굳히는 비용(위 10건: 보류 150 → 확정
+  131, haiku 23콜)으로 끝난다. 판정은 개수·글자 예산으로 묶어 부른다.
 - 홈 화면에도 `/v1/lineage/summary` 요약 칩 하나 (자세한 감독은 /lineage/).
