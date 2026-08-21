@@ -595,3 +595,68 @@ def test_같은_문서의_경과조치_조는_평소대로_참조한다():
     edges = refs.resolve(view)
     assert [e for e in edges if e["src"] == 3 and e["dst"] == 4], \
         "경과조치 조의 참조가 사라졌다"
+
+
+def test_선언_별칭은_정확_일치_문서만_확정한다():
+    """선언("이하 '자본시장법'이라 한다")된 약칭 인용은 선언된 그 문서로만 —
+    부분 일치까지 후보에 넣으면 법·시행령이 둘 다 후보가 되어 보류가 된다
+    (실측 2026-08-20: 보류 5,610건 중 1,663건이 법+그 시행령 짝이었다)."""
+    caller = ("a1", {"name": "모범기준.pdf"}, {"nodes": [
+        {"id": 1, "parent": None, "level": 1, "surface": "제1조",
+         "title": "", "page": 1, "span": [0, 2]},
+    ], "blocks": [
+        {"idx": 0, "page": 1, "kind": "text",
+         "text": "「자본시장과 금융투자업에 관한 법률」(이하 \"자본시장법\"이라 한다)에 따른다."},
+        {"idx": 1, "page": 1, "kind": "text",
+         "text": "현행 자본시장법 제125조에서는 배상책임을 정한다."},
+    ]})
+    law = ("a2", {"name": "자본시장과 금융투자업에 관한 법률.pdf"}, {"nodes": [
+        {"id": 1, "parent": None, "level": 1, "surface": "제125조",
+         "title": "거짓의 기재 등으로 인한 배상책임", "page": 1, "span": [0, 1]},
+    ], "blocks": [{"idx": 0, "page": 1, "text": "제125조(배상책임)", "kind": "text"}]})
+    decree = ("a3", {"name": "자본시장과 금융투자업에 관한 법률 시행령.pdf"}, {"nodes": [
+        {"id": 1, "parent": None, "level": 1, "surface": "제125조",
+         "title": "다른 조", "page": 1, "span": [0, 1]},
+    ], "blocks": [{"idx": 0, "page": 1, "text": "제125조(다른 조)", "kind": "text"}]})
+    edges, pending = refs.cross_resolve(Index.from_docs([caller, law, decree]).docs)
+    mine = [e for e in edges if e["src_doc"] == "a1" and e["surface"] == "제125조"]
+    assert mine and mine[0]["dst_doc"] == "a2" and mine[0]["via"] == "선언", (mine, pending)
+
+
+def test_사전_별칭은_선언_없는_문서의_약칭을_잇는다(tmp_path, monkeypatch):
+    """선언이 없어도 data/aliases.json 의 관용 약칭이면 정식 이름 문서로 확정 —
+    "금소법시행령"처럼 종별 접미가 붙은 합성도 푼다. 사전에 없는 약칭은 그대로
+    보류·버림(조용히 잇지 않는다)."""
+    import json as _json
+    monkeypatch.setenv("STRUCTURE_STORE", str(tmp_path / "structure"))
+    (tmp_path / "aliases.json").write_text(_json.dumps(
+        {"금소법": "금융소비자 보호에 관한 법률"}, ensure_ascii=False), "utf-8")
+    refs._ALIAS_CACHE.update(sig=None, map={})
+    caller = ("b1", {"name": "내규.pdf"}, {"nodes": [
+        {"id": 1, "parent": None, "level": 1, "surface": "제1조",
+         "title": "", "page": 1, "span": [0, 2]},
+    ], "blocks": [
+        {"idx": 0, "page": 1, "kind": "text",
+         "text": "금소법 제19조에 따른 설명의무를 진다."},
+        {"idx": 1, "page": 1, "kind": "text",
+         "text": "금소법시행령 제13조를 따른다. 미등재약칭법 제3조는 못 잇는다."},
+    ]})
+    law = ("b2", {"name": "금융소비자 보호에 관한 법률.pdf"}, {"nodes": [
+        {"id": 1, "parent": None, "level": 1, "surface": "제19조",
+         "title": "설명의무", "page": 1, "span": [0, 1]},
+    ], "blocks": [{"idx": 0, "page": 1, "text": "제19조(설명의무)", "kind": "text"}]})
+    decree = ("b3", {"name": "금융소비자 보호에 관한 법률 시행령.pdf"}, {"nodes": [
+        {"id": 1, "parent": None, "level": 1, "surface": "제13조",
+         "title": "설명의무의 방법", "page": 1, "span": [0, 1]},
+    ], "blocks": [{"idx": 0, "page": 1, "text": "제13조(방법)", "kind": "text"}]})
+    other = ("b4", {"name": "미등재 약칭의 원본 법률.pdf"}, {"nodes": [
+        {"id": 1, "parent": None, "level": 1, "surface": "제3조",
+         "title": "", "page": 1, "span": [0, 1]},
+    ], "blocks": [{"idx": 0, "page": 1, "text": "제3조", "kind": "text"}]})
+    edges, pending = refs.cross_resolve(
+        Index.from_docs([caller, law, decree, other]).docs)
+    got = {(e["surface"], e["dst_doc"], e["via"]) for e in edges
+           if e["src_doc"] == "b1"}
+    assert ("제19조", "b2", "별칭") in got, (got, pending)
+    assert ("제13조", "b3", "별칭") in got, (got, pending)
+    assert not any(e["surface"] == "제3조" for e in edges if e["src_doc"] == "b1")

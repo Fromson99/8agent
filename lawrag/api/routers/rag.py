@@ -705,7 +705,7 @@ def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
 
     spots = spots or []
     sections, vmeta = vecfirst.retrieve(idx, qx or q, llm=llm, vec_query=qv,
-                                        seeds=memory)
+                                        seeds=memory, raw_query=q)
     # 스코프 보루 — 진입이 밖으로 샜으면 버리고, 동반은 표식을 붙인다.
     sections, smeta = answer_mod.enforce_scope(idx, sections)
     if not sections:
@@ -714,6 +714,8 @@ def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
     n_entry = len(vmeta["entries"])
     n_mem = len(vmeta.get("memory") or [])
     n_frame = len(vmeta.get("frame_hits") or [])
+    n_concept = len(vmeta.get("concept_hits") or [])
+    n_dc = len(vmeta.get("doc_companion") or [])
     ladder = [
         {"stage": "승인 용어", "count": n_kw,
          "note": (" · ".join(k["용어"] for k in vmeta["keywords"])
@@ -726,17 +728,28 @@ def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
         # 필수 동반(floor)도 sections 에 들어 있다 — 빼지 않으면 겹쳐 센다
         # (실측: 보고 8 vs 실제 5, floor 3).
         {"stage": "참조 확장",
-         "count": len(sections) - n_entry - n_kw - n_mem - n_frame
+         "count": len(sections) - n_entry - n_kw - n_mem - n_frame - n_concept - n_dc
                   - len(vmeta.get("floor") or []),
          "note": f"참조 간선 닫힘, 깊이 {vmeta['depth']}"},
     ]
+    if n_dc:
+        srcs = sorted({idx.docs[d["src"]].name[:18] for d in vmeta["doc_companion"]
+                       if d["src"] in idx.docs})
+        ladder.insert(2, {"stage": "문서 동반", "count": n_dc,
+                          "note": "밖 인용 전부 — " + " · ".join(srcs)})
     if n_frame:
         fq = vmeta.get("frame_query") or []
         ladder.insert(1, {"stage": "프레임 진입", "count": n_frame,
                           "note": "행위 어휘 대조 — " + " · ".join(
                               (f.get("act") or f.get("object") or "?") for f in fq)})
+    if n_concept:
+        alignment = (vmeta.get("concept") or {}).get("alignment") or {}
+        labels = [c.get("label", "") for c in alignment.get("selected") or []]
+        ladder.insert(0, {"stage": "1급 Concept", "count": n_concept,
+                          "note": "OQL 고정 패턴 — " + " · ".join(labels)})
     if n_mem:
-        ladder.insert(0, {"stage": "질문 기억", "count": n_mem,
+        ladder.insert(1 if n_concept else 0,
+                      {"stage": "질문 기억", "count": n_mem,
                           "note": _memory_note(vmeta["memory"])})
     floor = vmeta.get("floor") or []
     if floor:
@@ -770,7 +783,8 @@ def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
                            "note": "LLM — " + (" · ".join(
                                s["title"] for s in spots)
                                if spots else "걸린 쟁점 없음")})
-            added = _respot(idx, q, spots, sections) if spots else []
+            added = (_respot(idx, q, spots, sections)
+                     if spots and switches_mod.is_on("issue_respot") else [])
             if added:
                 sections = sections + added
                 sections, _ = answer_mod.enforce_scope(idx, sections)
@@ -898,6 +912,7 @@ def rag_ask(body: Ask):
     memory = promote_mod.direct_hits(q)
 
     vector_missed = False
+    auto_concept_sections, auto_concept_meta = [], {}
     if body.mode == "vector":
         out_v = _ask_vector(idx, q, llm, spots=spots, qx=qx,
                             spots_trig=spots_trig, qv=qv, memory=memory)
@@ -905,6 +920,10 @@ def rag_ask(body: Ask):
             _ask_event(out_v, logbook.ms(t0))
             return out_v
         vector_missed = True          # 색인·모델 부재 포함 — 사다리가 받는다
+    elif switches_mod.is_on("concept_entry"):
+        from lawrag.core.rag import conceptfirst as conceptfirst_mod
+        auto_concept_sections, auto_concept_meta = conceptfirst_mod.retrieve(
+            idx, q, llm=llm)
 
     res = run_search(idx, qx)
     if vector_missed:
@@ -917,6 +936,19 @@ def rag_ask(body: Ask):
         res.ladder.insert(0, {"stage": "쟁점 분해", "count": len(spots),
                               "note": _spot_note(spots, qx != q)})
     sections = answer_mod.assemble(idx, res, seeds=memory)
+    if auto_concept_sections:
+        seen_concept = {(s.doc_id, s.node) for s in auto_concept_sections}
+        sections = (auto_concept_sections
+                    + [s for s in sections if (s.doc_id, s.node) not in seen_concept])[
+                        :answer_mod.CANDIDATES_MAX]
+        sections = answer_mod.expand_refs(idx, sections, cap=answer_mod.CANDIDATES_MAX)
+        for i, section in enumerate(sections, 1):
+            section.n = i
+        labels = [c.get("label", "") for c in
+                  (auto_concept_meta.get("alignment") or {}).get("selected") or []]
+        res.ladder.insert(0, {"stage": "1급 Concept",
+                              "count": len(auto_concept_sections),
+                              "note": "OQL 고정 패턴 — " + " · ".join(labels)})
     sections, smeta = answer_mod.enforce_scope(idx, sections)
     fmeta = {"in": len(sections), "out": len(sections), "applied": False, "reason": ""}
     if body.filter:
@@ -950,7 +982,8 @@ def rag_ask(body: Ask):
                                "note": "LLM — " + (" · ".join(
                                    s["title"] for s in spots)
                                    if spots else "걸린 쟁점 없음")})
-            added = _respot(idx, q, spots, sections) if spots else []
+            added = (_respot(idx, q, spots, sections)
+                     if spots and switches_mod.is_on("issue_respot") else [])
             if added:
                 sections = sections + added
                 for i, s in enumerate(sections, start=1):
@@ -996,6 +1029,8 @@ def rag_ask(body: Ask):
            "context": [_ctx_row(idx, s) for s in sections],
            "answer": ans.answer, "answerable": ans.answerable, "refs": ans.refs,
            "discards": [], "fixes": fixes}
+    if auto_concept_meta:
+        out["concept"] = auto_concept_meta
     if ans.wiki:
         out["wiki"] = ans.wiki
     if recovery is not None:
@@ -1020,6 +1055,49 @@ def rag_ask(body: Ask):
                  if (r.get("doc_id"), r.get("node")) in vec_nodes]
     _after_answer(out, q, llm, sections, ans, fixes, cand_coords=cand)
     _ask_event(out, logbook.ms(t0))
+    return out
+
+
+class Compare(BaseModel):
+    """내규 조 하나를 외규와 비교 — verdict 상충/부합/재검토와 근거 좌표.
+
+    doc 은 내규 문서 이름(부분 일치), article 은 조 표면형('제12조' —
+    '제12조제2항'을 줘도 조로 접는다). 흐름·판정 규칙의 정본은
+    docs/COMPARE_INTERNAL_EXTERNAL.md, 엔진은 lawrag/core/rag/compare.py."""
+    doc: str
+    article: str
+    scope: str = "외규"
+
+
+@router.post("/compare", summary="내규↔외규 비교 — 값비교(결정론)+쌍판정(LLM)")
+def rag_compare(body: Compare):
+    import re as _re
+
+    from lawrag.core.rag import compare as compare_mod
+
+    t0 = time.perf_counter()
+    idx = index_mod.current()
+    name = (body.doc or "").strip()
+    hits = [v for v in idx.docs.values() if name and name in v.name]
+    if not hits:
+        raise HTTPException(404, f"문서를 못 찾았습니다: {name}")
+    if len(hits) > 1:
+        # 현행 우선 — 신·구판이 같이 걸리면 개정일이 최신인 판. 이름순이면
+        # '…_v1_2024' 가 '…_v2_2026' 보다 앞서 구판이 잡힌다.
+        hits.sort(key=lambda v: v.revised or "", reverse=True)
+    v = hits[0]
+    jo = _re.match(r"제\s*[\d\-]+\s*조(의\s*\d+)?", (body.article or "").replace(" ", ""))
+    if not jo:
+        raise HTTPException(400, f"조 표면형이 아닙니다: {body.article}")
+    jo_s = jo.group(0)
+    node = next((n["id"] for n in v.nodes
+                 if (n.get("surface") or "").replace(" ", "") == jo_s
+                 and "부칙" not in v.path(n["id"])), None)
+    if node is None:
+        raise HTTPException(404, f"{v.name} 에 {jo_s} 가 없습니다")
+    out = compare_mod.compare_article(_llm(), idx, v.doc_id, node,
+                                      scope=body.scope or "외규")
+    out["ms"] = int((time.perf_counter() - t0) * 1000)
     return out
 
 

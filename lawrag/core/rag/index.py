@@ -699,6 +699,10 @@ def _signature(store: Path, terms_file: Path, links_file: Path) -> tuple:
         sig.append(("__terms__", terms_file.stat().st_mtime_ns))
     if links_file.exists():
         sig.append(("__links__", links_file.stat().st_mtime_ns))
+    aliases_file = store.parent / "aliases.json"
+    if aliases_file.exists():
+        # 별칭 사전도 간선을 움직인다 — 사전을 채우면 다음 질의부터 보여야 한다.
+        sig.append(("__aliases__", aliases_file.stat().st_mtime_ns))
     # 간선 규칙(억제·재지정)도 서명에 든다 — 승인 즉시 간선이 옮겨 앉아야
     # "딸깍 수정"이 다음 질의부터 보인다. 재시작을 기다리게 하면 안 된다.
     from lawrag.core.rag import verdicts as verdicts_mod       # 순환 의존 회피 — 지연

@@ -50,6 +50,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
@@ -500,6 +501,48 @@ def declared_aliases(view: "DocView") -> dict[str, str]:
     return out
 
 
+_ALIAS_CACHE: dict = {"sig": None, "map": {}}
+_COMPOUND_SUFFIX = ("시행세칙", "시행규칙", "시행령")
+
+
+def alias_map() -> dict[str, str]:
+    """data/aliases.json — 관용 약칭 → 정식 문서명 (양쪽 다 접힌 형태).
+
+    선언(declared_aliases)이 **문서 안의** 지식이라면 이것은 **실무 공동체의**
+    지식이다 — 법제처가 고시하는 공식 약칭 관례("자본시장법"·"금소법")를 사람이
+    채워 두면, 선언 없이 약칭으로 인용하는 문서(협회 모범기준·내규류)의 참조가
+    결정론으로 이어진다. 코드는 사전을 읽을 뿐 항목을 모른다(지식은 데이터로)."""
+    from lawrag.core.rag.index import store_path
+    f = store_path().parent / "aliases.json"
+    try:
+        sig = f.stat().st_mtime_ns
+    except OSError:
+        return {}
+    if _ALIAS_CACHE["sig"] != sig:
+        try:
+            raw = json.loads(f.read_text("utf-8"))
+        except Exception:
+            raw = {}
+        _ALIAS_CACHE.update(sig=sig, map={_fold_name(k): _fold_name(v)
+                                          for k, v in raw.items()
+                                          if isinstance(v, str)})
+    return _ALIAS_CACHE["map"]
+
+
+def _alias_official(hint_folded: str) -> str:
+    """약칭(접힘) → 정식 이름(접힘). "금소법시행령"처럼 종별 접미가 붙은 합성은
+    접미를 떼어 머리를 사전에서 찾고 정식 이름에 접미를 되붙인다 — "…법률 시행령"
+    문서명이 접히면 정확히 그 꼴이다. 사전에 없으면 ""."""
+    am = alias_map()
+    if hint_folded in am:
+        return am[hint_folded]
+    for suf in _COMPOUND_SUFFIX:
+        head = hint_folded[:-len(suf)]
+        if hint_folded.endswith(suf) and head in am:
+            return am[head] + suf
+    return ""
+
+
 def cross_resolve(docs: dict, declare: bool = True) -> tuple[list, list]:
     """문서 사이의 참조 — (확정 간선, 보류 목록). declare=False 면 선언
     별칭 확정을 끈다(엔진 스위치) — 그 참조들은 보류로 내려간다.
@@ -554,12 +597,30 @@ def cross_resolve(docs: dict, declare: bool = True) -> tuple[list, list]:
                 decl_hit = False
                 if decl is not None:
                     dn = _fold_name(decl)
-                    tgts = [d for d, nm in names.items()
-                            if d != doc_id and nm and (dn == nm or dn in nm or nm in dn)]
+                    # 정확 일치가 있으면 그것만 — named 분기의 2026-08-19 수리와
+                    # 같은 병이 여기 남아 있었다: 부분 일치까지 넣으면 선언된
+                    # 법("자본시장법")의 조가 법·시행령 둘 다의 후보가 되어
+                    # "후보 둘 → 보류"가 된다 (실측 2026-08-20: 보류 5,610건 중
+                    # 1,663건이 법+그 시행령 짝).
+                    exact = [d for d, nm in names.items()
+                             if d != doc_id and nm and nm == dn]
+                    tgts = exact or [d for d, nm in names.items()
+                                     if d != doc_id and nm and (dn in nm or nm in dn)]
                     dc = [(d, nid) for d in tgts for nid in keymaps[d].get(key, [])]
                     if dc:
                         cands, decl_hit = dc, True
-                if decl_hit:
+                # 사전 별칭 — 선언이 없는 문서의 관용 약칭("금소법"·"외부감사법").
+                # 정확 일치만 받는다: 사전 값이 정식 이름 전체이기 때문이다.
+                alias_hit = False
+                if not decl_hit and named:
+                    ali = _alias_official(hint)
+                    if ali:
+                        ac = [(d, nid) for d, nm in names.items()
+                              if d != doc_id and nm == ali
+                              for nid in keymaps[d].get(key, [])]
+                        if ac:
+                            cands, alias_hit = ac, True
+                if decl_hit or alias_hit:
                     pass
                 elif named and (hint in names[doc_id] or names[doc_id] in hint):
                     # 제 이름을 부른 참조 — 이 문서 자신에서 찾는다
@@ -590,7 +651,7 @@ def cross_resolve(docs: dict, declare: bool = True) -> tuple[list, list]:
                 cands = [c for c in cands if c != (doc_id, src_id)]
                 if not cands:
                     continue
-                if (named or decl_hit) and len(cands) == 1:
+                if (named or decl_hit or alias_hit) and len(cands) == 1:
                     dst_doc, dst = cands[0]
                     if ref.chain:
                         dst = _descend(docs[dst_doc], kidmaps[dst_doc], dst,
@@ -603,7 +664,8 @@ def cross_resolve(docs: dict, declare: bool = True) -> tuple[list, list]:
                                   "dst_doc": dst_doc, "dst": dst,
                                   "surface": ref.surface.strip(), "hint": ref.hint,
                                   "block": b.get("idx"),
-                                  "via": "선언" if decl_hit else "이름대조",
+                                  "via": ("선언" if decl_hit
+                                          else "별칭" if alias_hit else "이름대조"),
                                   "rel": rel_of(text, ref.start + len(ref.surface))})
                 else:
                     pk = (doc_id, src_id, key, ref.hint)

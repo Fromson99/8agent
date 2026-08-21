@@ -54,6 +54,9 @@ data/pipeline/
 data/inbox/
 data/rules/
 data/embeddings/
+# 구조·프레임·용어에서 재생성하는 로컬 property graph
+data/domain_graph/graph.sqlite
+data/domain_graph/.graph.sqlite.building
 # 법령 관계망 파생 — corpus/law/relations 원본에서 python -m core.lawnet 로 재생성
 data/delegation.json
 data/law_index.json

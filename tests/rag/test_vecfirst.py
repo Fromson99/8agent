@@ -119,3 +119,53 @@ def test_승인_용어가_벡터보다_먼저_진입한다(tmp_path, monkeypatch
     assert meta["keywords"][0]["용어"] == "벌칙"
     # 벡터 진입도 그대로 산다 — 용어가 자리를 뺏지 않는다
     assert any(s.kind == "벡터" and s.node == 1 for s in sections)
+
+
+def test_문서_동반은_밖인용이_적은_문서만_태운다(monkeypatch, tmp_path):
+    """착지 문서의 밖 인용 전부를 동반 — 단 게이트(≤FANOUT) 안의 문서만.
+
+    참조 닫힘은 착지 마디에서만 출발하므로, 인용 마디가 착지하지 않으면 확정
+    간선이 있어도 못 탄다(실측 2026-08-20 t3-16). 실무문서(밖 인용 한 자릿수)의
+    처방이고, 법령(수백~1,795)은 게이트가 배제한다."""
+    monkeypatch.setenv("STRUCTURE_STORE", str(tmp_path))
+    caller = ("c1", {"name": "모범기준.pdf"}, {"nodes": [
+        {"id": 1, "parent": None, "level": 1, "surface": "제1조",
+         "title": "체크리스트", "page": 1, "span": [0, 1]},
+        {"id": 2, "parent": None, "level": 1, "surface": "제2조",
+         "title": "배경", "page": 1, "span": [1, 2]},
+    ], "blocks": [
+        {"idx": 0, "page": 1, "text": "실사 항목을 정한다", "kind": "text"},
+        {"idx": 1, "page": 1, "text": "자본시장법 제125조에 따른다", "kind": "text"},
+    ]})
+    law = ("c2", {"name": "자본시장법.pdf"}, {"nodes": [
+        {"id": 9, "parent": None, "level": 1, "surface": "제125조",
+         "title": "배상책임", "page": 1, "span": [0, 1]},
+    ], "blocks": [{"idx": 0, "page": 1, "text": "배상책임을 진다", "kind": "text"}]})
+    idx = Index.from_docs([caller, law])
+    idx._cross = ([{"src_doc": "c1", "src": 2, "dst_doc": "c2", "dst": 9,
+                    "surface": "제125조", "hint": "자본시장법", "block": 1,
+                    "via": "선언", "rel": "인용"}], [])
+    # 진입은 체크리스트 마디(1)만 — 인용 마디(2)는 착지하지 않는다
+    monkeypatch.setattr(vecfirst.vector_mod, "search",
+                        lambda *a, **k: [("c1", 1, 0.9)])
+    sections, meta = vecfirst.retrieve(idx, "실사 기준?")
+    dc = [s for s in sections if s.kind == "문서 동반"]
+    assert dc and dc[0].doc_id == "c2" and dc[0].node == 9, \
+        [(s.kind, s.doc_id, s.node) for s in sections]
+    assert dc[0].is_companion, "ref_src 가 있어야 스코프 밖에서도 표식으로 남는다"
+    assert meta["doc_companion"] == [{"src": "c1", "doc_id": "c2", "node": 9}]
+
+    # 게이트 — 밖 인용이 문턱을 넘는 문서는 안 태운다
+    monkeypatch.setattr(vecfirst, "DOC_COMPANION_FANOUT", 0)
+    sections2, meta2 = vecfirst.retrieve(idx, "실사 기준?")
+    assert not [s for s in sections2 if s.kind == "문서 동반"], meta2
+
+    # 스위치 — 끄면 돌지 않는다
+    monkeypatch.setattr(vecfirst, "DOC_COMPANION_FANOUT", 20)
+    from lawrag.core.rag import switches
+    switches.set_switch("doc_companion", False)
+    try:
+        sections3, _ = vecfirst.retrieve(idx, "실사 기준?")
+        assert not [s for s in sections3 if s.kind == "문서 동반"]
+    finally:
+        switches.set_switch("doc_companion", True)

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "concepts": [
+    {
+      "id": "financial_investment_business_operator",
+      "label": "금융투자업자",
+      "type": "organization_role",
+      "aliases": ["금투업자", "금투사", "금융투자회사"],
+      "definitions": ["금융투자업을 영위하는 자"],
+      "status": "active",
+      "version": 1,
+      "approved_by": "bootstrap:source-verified"
+    },
+    {
+      "id": "investment_prospectus",
+      "label": "투자설명서",
+      "type": "document",
+      "aliases": ["투자 설명서"],
+      "status": "active",
+      "version": 1,
+      "approved_by": "bootstrap:source-verified"
+    },
+    {
+      "id": "investor",
+      "label": "투자자",
+      "type": "person_role",
+      "status": "active",
+      "version": 1,
+      "approved_by": "bootstrap:source-verified"
+    },
+    {
+      "id": "bear_liability_for_damages",
+      "label": "손해배상책임을 부담하다",
+      "type": "action",
+      "aliases": ["손해를 배상할 책임이 있다", "손해배상책임을 지다"],
+      "status": "active",
+      "version": 1,
+      "approved_by": "bootstrap:source-verified"
+    }
+  ],
+  "relations": [],
+  "assertions": [
+    {
+      "id": "capital-markets-act-64-1-liability",
+      "status": "active",
+      "roles": {
+        "ACTOR": "financial_investment_business_operator",
+        "PREDICATE": "bear_liability_for_damages",
+        "SUBJECT": "investment_prospectus",
+        "TARGET": "investor"
+      },
+      "source": {
+        "doc_id": "9a51fdb8028417bf",
+        "node": 575
+      },
+      "confidence": 0.98,
+      "approved_by": "bootstrap:source-verified",
+      "version": 1,
+      "query_cues": ["손해", "배상", "책임", "위반", "업무 소홀"],
+      "note": "투자설명서 위반 또는 업무 소홀로 투자자에게 손해를 발생시킨 금융투자업자의 손해배상책임"
+    }
+  ]
+}

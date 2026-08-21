@@ -29,6 +29,7 @@ from lawrag.core.rag.search import _ascii_only, _token_in_query
 
 log = logging.getLogger("lawrag.core.rag.vecfirst")
 
+DOC_COMPANION_FANOUT = 20   # 문서 동반 게이트 — 밖 인용(중복 접음)이 이보다 많으면 안 태운다
 ENTRY_K = 4             # 진입 구역 수 — 너무 많으면 확장 자리가 없다
 # 참조 닫힘의 깊이 — 법령 참조망은 얕고 넓다. 바닥(배제·위임·준용)과 항해가
 # 생기면서 이 무차별 닫힘은 보수화 후보다 — golden A/B 로 정할 손잡이.
@@ -68,7 +69,8 @@ def _approved_hits(index: Index, query: str, cap: int = KEYWORD_ENTRY_CAP):
 
 def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
              cap: int = CANDIDATES_MAX, llm=None,
-             vec_query: str = "", seeds: Optional[list] = None
+             vec_query: str = "", seeds: Optional[list] = None,
+             raw_query: str = ""
              ) -> tuple[list[Section], dict]:
     """(구역들, 회수 경위). 진입: 질문 기억(승인 좌표) → 승인 용어(정밀) →
     벡터(의미). 확장: 결정론 바닥(배제·위임·준용 무조건) → 무차별 참조 닫힘 →
@@ -86,13 +88,33 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
     vec = vector_mod.search(vec_query or query, topk=max(entry_k * 2, 8),
                             doc_ids=index.scope)          # 진입은 스코프 안만
     meta: dict = {"vector_hits": len(vec), "entries": [], "keywords": [],
-                  "memory": [], "depth": 0, "vec_query": vec_query or ""}
+                  "memory": [], "concept_hits": [], "depth": 0,
+                  "vec_query": vec_query or ""}
 
     sections: list[Section] = []
     seen: set[tuple] = set()
     # 진입 제외 — "검색무관" 판정이 쌓여 사람이 승인한 좌표는 **진입으로는** 안
     # 데려온다. 참조를 타고는 여전히 온다(연결 지식을 지우는 것이 아니다).
     from lawrag.core.rag import verdicts as verdicts_mod
+
+    # ── 1급 Concept/Assertion — 자연어를 직접 Cypher로 바꾸지 않는다. 승인
+    #    Concept 메뉴 정렬 → 고정 OQL pattern → ID 파라미터 바인딩만 허용한다.
+    from lawrag.core.rag import switches as switches_mod
+    meta["concept"] = {}
+    if switches_mod.is_on("concept_entry"):
+        from lawrag.core.rag import conceptfirst as conceptfirst_mod
+        concept_sections, cmeta = conceptfirst_mod.retrieve(
+            index, raw_query or query, llm=llm)
+        meta["concept"] = cmeta
+        for section in concept_sections:
+            key = (section.doc_id, section.node)
+            if key in seen or verdicts_mod.is_entry_blocked(*key):
+                continue
+            seen.add(key)
+            sections.append(section)
+            meta["concept_hits"].append({"doc_id": section.doc_id,
+                                         "node": section.node,
+                                         "matched": section.matched})
 
     # ── 질문 기억 — 같은/비슷한 질문에 사람이 승인한 착지. 검색보다 앞선다.
     for c in seeds or []:
@@ -136,7 +158,6 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
     #    끌리는 자리(실측: '성과보수' → 제98조의2, 정답 제71조)를 행위 문형이
     #    가른다. 스코프는 entry_docs 가 이미 걸렀다.
     meta["frame_hits"] = []
-    from lawrag.core.rag import switches as switches_mod
     if llm is not None and switches_mod.is_on("frame_entry"):
         from lawrag.core.rag import framequery as framequery_mod
         fhits, fmeta = framequery_mod.lex_hits(index, llm, query)
@@ -158,9 +179,9 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
             meta["frame_hits"].append({"doc_id": h["doc_id"], "node": node,
                                        "score": h["score"]})
 
-    # 용어·기억·프레임이 벡터 자리를 뺏지 않는다
+    # Concept·용어·기억·프레임이 벡터 자리를 뺏지 않는다
     budget = (entry_k + len(meta["keywords"]) + len(meta["memory"])
-              + len(meta["frame_hits"]))
+              + len(meta["frame_hits"]) + len(meta["concept_hits"]))
     for doc_id, node, cos in vec:
         if len(sections) >= budget:
             break
@@ -185,6 +206,50 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
     sections = expand_mod.expand_floor(index, sections, cap=cap)
     meta["floor"] = [{"kind": s.kind, "path": s.path, "matched": s.matched}
                      for s in sections[n0:]]
+
+    # ── 문서 동반 — 밖 인용이 적은 실무문서가 착지하면 그 문서의 밖 인용 전부를
+    #    동반한다. 모범규준·가이드·내규는 법령 요약·인용 모음이라 밖 인용 목록이
+    #    곧 그 주제의 법령 지도인데, 참조 닫힘은 **착지한 마디**에서만 출발하므로
+    #    인용 마디가 착지하지 않으면 다리가 있어도 못 탄다(실측 2026-08-20 t3-16:
+    #    §125 간선 확정 후에도 체크리스트 구역만 착지해 미회수). 게이트는 문서의
+    #    중복 접은 목적지 수 ≤ FANOUT — 실측 분포(중앙값 9 · 최대 1,795)에서 법령·
+    #    시행령(수백~)은 자동 배제되고 실무문서(0~86)만 든다. 문서별 상수가 아니라
+    #    관측 게이트다.
+    meta["doc_companion"] = []
+    if switches_mod.is_on("doc_companion"):
+        landed = {s.doc_id for s in sections}
+        fan: dict = {}
+        for e in index.cross_ref_edges():
+            if e.get("src_doc") in landed:
+                fan.setdefault(e["src_doc"], {}).setdefault(
+                    (e["dst_doc"], e["dst"]), e["src"])
+        for did in sorted(landed):
+            tgts = fan.get(did) or {}
+            if not tgts or len(tgts) > DOC_COMPANION_FANOUT:
+                continue
+            src_name = index.docs[did].name if did in index.docs else did
+            for (dst_doc, dst), src_node in sorted(tgts.items()):
+                # cap 밖 전용 예산 — 동반은 자리 경쟁보다 먼저다(배제 동반과 같은
+                # 원리). cap 안에서 겨루게 하면 벡터·바닥이 채운 뒤 남는 자리가
+                # 없어 7개 중 3개만 타고 §125 가 잘렸다(실측 2026-08-20 t3-16,
+                # doc_id 정렬 6번째). 총량은 게이트 문턱(≤20)이 그대로 막는다.
+                if len(meta["doc_companion"]) >= DOC_COMPANION_FANOUT:
+                    break
+                if (dst_doc, dst) in seen:
+                    continue
+                tv = index.docs.get(dst_doc)
+                if tv is None or verdicts_mod.is_entry_blocked(dst_doc, dst):
+                    continue
+                seen.add((dst_doc, dst))
+                n = tv.by_id.get(dst)
+                sections.append(Section(
+                    n=0, doc_id=dst_doc, doc=tv.name, node=dst,
+                    path=tv.path(dst) or tv.name, page=(n or {}).get("page"),
+                    kind="문서 동반", matched=f"{src_name[:24]} 의 밖 인용",
+                    ref_src={"doc_id": did, "node": src_node},
+                    text=tv.section_text(n, cap=SECTION_CHARS) if n else ""))
+                meta["doc_companion"].append(
+                    {"src": did, "doc_id": dst_doc, "node": dst})
 
     # 연결 닫힘 — expand_refs(1-hop 결정론)를 새 구역이 안 늘 때까지.
     # 매 회전마다 직전 회전의 신규 구역이 확장 출발점이 된다.
