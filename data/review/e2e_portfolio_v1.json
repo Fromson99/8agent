@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "name": "rag-full-process-canary-v1",
+  "role": "full_process_release_gate",
+  "primary_artifact_id": "ask_cm_field_core",
+  "artifacts": [
+    {
+      "id": "ask_cm_field_core",
+      "flow": "ask",
+      "path": "var/eval/e2e/cm_core_baseline.manifest.json",
+      "gates": {
+        "semantic_accuracy": {"min": 0.8},
+        "article_recall": {"min": 0.9},
+        "basis_recall": {"min": 0.8},
+        "semantic_basis_rate": {"min": 0.7},
+        "basis_stray_rate": {"max": 0.3}
+      }
+    },
+    {
+      "id": "ask_legal_cases",
+      "flow": "ask",
+      "path": "var/eval/e2e/ask_baseline.final.manifest.json",
+      "gates": {
+        "direction_accuracy": {"min": 0.8},
+        "article_recall": {"min": 0.9},
+        "basis_recall": {"min": 0.9},
+        "basis_stray_rate": {"max": 0.3}
+      }
+    },
+    {
+      "id": "ask_fixed_claims",
+      "flow": "ask",
+      "path": "var/eval/e2e/concept_answer_baseline.manifest.json",
+      "gates": {
+        "semantic_accuracy": {"min": 1.0},
+        "semantic_basis_rate": {"min": 1.0},
+        "basis_stray_rate": {"max": 0.5}
+      }
+    },
+    {
+      "id": "legal_review_cases",
+      "flow": "legal_review",
+      "path": "var/eval/e2e/legal_review_baseline.manifest.json",
+      "gates": {
+        "direction_accuracy": {"min": 0.8},
+        "article_recall": {"min": 0.9},
+        "basis_recall": {"min": 0.9},
+        "basis_stray_rate": {"max": 0.3}
+      }
+    }
+  ],
+  "required_flows": ["ask", "legal_review"],
+  "required_channels": {
+    "ask": ["concept", "memory", "keyword", "frame", "vector", "floor", "doc_companion"]
+  },
+  "required_stages": {
+    "ask": ["issue_spot", "retrieval", "answer_synthesis", "final_citation"],
+    "legal_review": ["fact_extraction", "issue_spot", "norm_retrieval", "subsumption", "final_decision"]
+  },
+  "canary_minimum_unique_cases": {"ask": 18, "legal_review": 8},
+  "release_minimum_unique_cases": {"ask": 51, "legal_review": 51},
+  "release_minimum_trials": 3,
+  "readiness_gates": {
+    "memory_active_rows": {"min": 1},
+    "lexicon_cache_coverage": {"min": 1.0}
+  }
+}

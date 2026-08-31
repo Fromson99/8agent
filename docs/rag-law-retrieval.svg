@@ -1,0 +1,200 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="2050" viewBox="0 0 1800 2050" role="img" aria-labelledby="title desc">
+  <title id="title">현재 RAG 법령 회수 흐름</title>
+  <desc id="desc">질문을 구조 좌표, 승인 기억, 용어, 행위 프레임, 벡터 검색으로 법령 조문에 착지한 다음 법적 관계와 참조를 확장하고 답변과 좌표 인용을 만드는 흐름</desc>
+
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 z" fill="#2563eb"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .title { font: 700 42px 'Noto Sans CJK KR', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 22px 'Noto Sans CJK KR', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill: #475569; }
+      .section { font: 700 25px 'Noto Sans CJK KR', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill: #0f172a; }
+      .label { font: 700 21px 'Noto Sans CJK KR', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill: #0f172a; text-anchor: middle; }
+      .body { font: 400 18px 'Noto Sans CJK KR', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill: #334155; text-anchor: middle; }
+      .small { font: 400 16px 'Noto Sans CJK KR', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill: #475569; text-anchor: middle; }
+      .note { font: 600 18px 'Noto Sans CJK KR', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill: #7c2d12; }
+      .edge { fill: none; stroke: #475569; stroke-width: 3; marker-end: url(#arrow); }
+      .edge-blue { fill: none; stroke: #2563eb; stroke-width: 3; marker-end: url(#arrowBlue); }
+      .edge-dash { fill: none; stroke: #64748b; stroke-width: 2.5; stroke-dasharray: 9 8; marker-end: url(#arrow); }
+      .node { filter: url(#shadow); stroke-width: 2.5; }
+    </style>
+  </defs>
+
+  <rect width="1800" height="2050" fill="#f8fafc"/>
+  <rect x="0" y="0" width="1800" height="118" fill="#0f172a"/>
+  <text x="70" y="62" class="title" style="fill:#ffffff">현재 RAG가 법령을 가져오는 방식</text>
+  <text x="72" y="96" class="subtitle" style="fill:#cbd5e1">현행 기본 경로: POST /v1/rag/ask · mode=vector</text>
+
+  <!-- Knowledge stores -->
+  <rect x="55" y="165" width="330" height="1110" rx="24" fill="#ffffff" stroke="#94a3b8" stroke-width="2.5" stroke-dasharray="10 8"/>
+  <text x="220" y="210" class="section" text-anchor="middle">법령 지식 저장소</text>
+
+  <rect class="node" x="85" y="250" width="270" height="145" rx="18" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="220" y="292" class="label">구조화 법령 원문</text>
+  <text x="220" y="326" class="body">법령 → 조 → 항</text>
+  <text x="220" y="353" class="body">→ 호 → 목 좌표</text>
+  <text x="220" y="379" class="small">doc_id + node + 원문</text>
+
+  <rect class="node" x="85" y="440" width="270" height="125" rx="18" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="220" y="482" class="label">구역 임베딩 색인</text>
+  <text x="220" y="516" class="body">조문 의미 벡터</text>
+  <text x="220" y="543" class="small">cosine 검색</text>
+
+  <rect class="node" x="85" y="610" width="270" height="160" rx="18" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="220" y="652" class="label">승인 지식</text>
+  <text x="220" y="686" class="body">Concept · 용어</text>
+  <text x="220" y="715" class="body">질문 기억 · Frame</text>
+  <text x="220" y="745" class="small">검수된 좌표만 직행</text>
+
+  <rect class="node" x="85" y="815" width="270" height="165" rx="18" fill="#fef3c7" stroke="#d97706"/>
+  <text x="220" y="857" class="label">법령 관계 그래프</text>
+  <text x="220" y="891" class="body">인용 · 배제 · 위임</text>
+  <text x="220" y="920" class="body">수임 · 준용 · 제재</text>
+  <text x="220" y="950" class="small">법률 ↔ 시행령 ↔ 규정</text>
+
+  <rect x="85" y="1030" width="270" height="190" rx="18" fill="#fff7ed" stroke="#fb923c" stroke-width="2"/>
+  <text x="112" y="1070" class="note">중요</text>
+  <text x="112" y="1104" class="subtitle" style="font-size:17px;fill:#7c2d12">법령명만 검색하는 것이 아니라</text>
+  <text x="112" y="1134" class="subtitle" style="font-size:17px;fill:#7c2d12">원문 좌표에 먼저 착지하고,</text>
+  <text x="112" y="1164" class="subtitle" style="font-size:17px;fill:#7c2d12">관계 그래프로 필요한 법을</text>
+  <text x="112" y="1194" class="subtitle" style="font-size:17px;fill:#7c2d12">추가 동반한다.</text>
+
+  <!-- Main query flow -->
+  <text x="1080" y="174" class="section" text-anchor="middle">질의응답 회수 경로</text>
+
+  <rect class="node" x="855" y="205" width="450" height="82" rx="41" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="1080" y="255" class="label">사용자 질문</text>
+
+  <path class="edge-blue" d="M1080 287 L1080 330"/>
+  <rect class="node" x="820" y="330" width="520" height="102" rx="18" fill="#ffffff" stroke="#2563eb"/>
+  <text x="1080" y="369" class="label">① 검색 범위 확정</text>
+  <text x="1080" y="400" class="body">기본 문서군 · 외규 · 내규 · 지정 문서</text>
+
+  <path class="edge" d="M1080 432 L1080 475"/>
+  <rect class="node" x="820" y="475" width="520" height="115" rx="18" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="1080" y="516" class="label">② 검색 전 쟁점 분해</text>
+  <text x="1080" y="548" class="body">구어 질문을 조문 문체 probe로 재작성</text>
+  <text x="1080" y="575" class="small">법령명·조번호를 벡터 문장에 섞지 않음</text>
+
+  <!-- Three query signals -->
+  <path class="edge" d="M1080 590 L1080 620 L625 620 L625 654"/>
+  <path class="edge" d="M1080 590 L1080 654"/>
+  <path class="edge" d="M1080 590 L1080 620 L1535 620 L1535 654"/>
+
+  <rect class="node" x="490" y="654" width="270" height="118" rx="18" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="625" y="696" class="label">원 질문</text>
+  <text x="625" y="729" class="body">구조·역할 착지</text>
+  <text x="625" y="755" class="small">질문 기억</text>
+
+  <rect class="node" x="945" y="654" width="270" height="118" rx="18" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="1080" y="696" class="label">어휘 질의 qx</text>
+  <text x="1080" y="729" class="body">원문 + 법률용어</text>
+  <text x="1080" y="755" class="small">승인 용어 · Frame</text>
+
+  <rect class="node" x="1400" y="654" width="270" height="118" rx="18" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="1535" y="696" class="label">벡터 질의 qv</text>
+  <text x="1535" y="729" class="body">조문 문체 probe만</text>
+  <text x="1535" y="755" class="small">구역 임베딩 검색</text>
+
+  <!-- Coordinate first -->
+  <path class="edge" d="M625 772 L625 815"/>
+  <rect class="node" x="475" y="815" width="300" height="145" rx="18" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="625" y="855" class="label">③ 구조·역할 좌표 착지</text>
+  <text x="625" y="888" class="body">법령명 · 조문 · Heading</text>
+  <text x="625" y="918" class="body">행위자 · 행위 · 조건 · 효과</text>
+  <text x="625" y="946" class="small">실제 원문 좌표들의 교집합</text>
+
+  <path class="edge" d="M775 887 L835 887"/>
+  <polygon class="node" points="930,805 1025,887 930,969 835,887" fill="#fef3c7" stroke="#d97706"/>
+  <text x="930" y="875" class="label">좌표가</text>
+  <text x="930" y="905" class="label">명확한가?</text>
+
+  <path class="edge" d="M930 969 L930 1005 L625 1005 L625 1040"/>
+  <text x="850" y="995" class="small" style="fill:#15803d">예</text>
+  <rect class="node" x="470" y="1040" width="310" height="122" rx="18" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="625" y="1082" class="label">원문 조문 직행</text>
+  <text x="625" y="1115" class="body">최대 4구역</text>
+  <text x="625" y="1143" class="small">다른 진입 채널 차단</text>
+
+  <!-- Fallback channels -->
+  <path class="edge" d="M1025 887 L1075 887"/>
+  <text x="1048" y="875" class="small" style="fill:#b45309">아니오</text>
+  <rect class="node" x="1075" y="815" width="575" height="145" rx="18" fill="#fff7ed" stroke="#f97316"/>
+  <text x="1362" y="852" class="label">④ 보조 진입 채널을 가산 합류</text>
+
+  <rect x="1095" y="877" width="125" height="62" rx="13" fill="#ffffff" stroke="#16a34a" stroke-width="2"/>
+  <text x="1158" y="902" class="small" style="font-weight:700">질문 기억</text>
+  <text x="1158" y="925" class="small">≤4</text>
+  <rect x="1230" y="877" width="125" height="62" rx="13" fill="#ffffff" stroke="#16a34a" stroke-width="2"/>
+  <text x="1292" y="902" class="small" style="font-weight:700">승인 용어</text>
+  <text x="1292" y="925" class="small">≤2</text>
+  <rect x="1365" y="877" width="125" height="62" rx="13" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+  <text x="1428" y="902" class="small" style="font-weight:700">Frame</text>
+  <text x="1428" y="925" class="small">행위 문형</text>
+  <rect x="1500" y="877" width="125" height="62" rx="13" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+  <text x="1562" y="902" class="small" style="font-weight:700">Vector</text>
+  <text x="1562" y="925" class="small">4 · cos≥.45</text>
+
+  <path class="edge-dash" d="M1080 772 L1080 790 L1292 790 L1292 815"/>
+  <path class="edge-dash" d="M1535 772 L1535 815"/>
+
+  <!-- Merge and legal expansion -->
+  <path class="edge" d="M625 1162 L625 1200 L1080 1200 L1080 1230"/>
+  <path class="edge" d="M1362 960 L1362 1200 L1080 1200 L1080 1230"/>
+  <rect class="node" x="850" y="1230" width="460" height="94" rx="18" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="1080" y="1268" class="label">최초 착지 조문 집합</text>
+  <text x="1080" y="1298" class="body">검색 결과가 아니라 확장의 출발점</text>
+
+  <path class="edge" d="M1080 1324 L1080 1365"/>
+  <rect class="node" x="760" y="1365" width="640" height="126" rx="18" fill="#fef3c7" stroke="#d97706"/>
+  <text x="1080" y="1406" class="label">⑤ 법적 필수 동반</text>
+  <text x="1080" y="1440" class="body">배제·예외 │ 위임·수임 │ 준용 │ 정의 │ 제재</text>
+  <text x="1080" y="1470" class="small">판단에 맡기지 않고 관계 그래프에서 원문 좌표를 추가</text>
+
+  <path class="edge" d="M1080 1491 L1080 1532"/>
+  <rect class="node" x="715" y="1532" width="730" height="112" rx="18" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="1080" y="1570" class="label">⑥ 근거 확장</text>
+  <text x="1080" y="1602" class="body">문서의 외부 법령 인용 동반 ≤20 · 참조 닫힘 ≤3홉</text>
+  <text x="1080" y="1630" class="small">일반 공유 목표 12구역과 문서 동반 별도 예산</text>
+
+  <path class="edge" d="M1080 1644 L1080 1685"/>
+  <rect class="node" x="755" y="1685" width="650" height="104" rx="18" fill="#ffffff" stroke="#475569"/>
+  <text x="1080" y="1724" class="label">⑦ 최종 검문과 착지 교정</text>
+  <text x="1080" y="1756" class="body">스코프 확인 · 조 → 정확한 항·호·목 좌표</text>
+
+  <path class="edge-blue" d="M1080 1789 L1080 1830"/>
+  <rect class="node" x="720" y="1830" width="720" height="120" rx="22" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="1080" y="1871" class="label">답변 + 법령 원문 근거</text>
+  <text x="1080" y="1905" class="body">doc_id · node · 인용 번호 · 구조 뷰어 딥링크</text>
+  <text x="1080" y="1935" class="small">기본 vector 모드: 회수 집합 전체가 refs, 실제 인용은 cited</text>
+
+  <!-- Store links -->
+  <path class="edge-dash" d="M355 322 L430 322 L430 852 L475 852"/>
+  <path class="edge-dash" d="M355 502 L420 502 L420 735 L1400 735"/>
+  <path class="edge-dash" d="M355 690 L405 690 L405 1110 L470 1110"/>
+  <path class="edge-dash" d="M355 897 L450 897 L450 1428 L760 1428"/>
+
+  <!-- Empty-result fallback -->
+  <path class="edge-dash" d="M850 1277 L470 1277 L470 1350"/>
+  <rect x="410" y="1350" width="285" height="245" rx="18" fill="#fff7ed" stroke="#f97316" stroke-width="2.5"/>
+  <text x="552" y="1390" class="label">전부 빈손일 때만</text>
+  <text x="552" y="1430" class="body">용어 검색 사다리</text>
+  <text x="552" y="1460" class="small">정확 → 부분 → 본문 → 벡터</text>
+  <text x="552" y="1500" class="body">관련성 필터</text>
+  <text x="552" y="1540" class="body">회복 사다리</text>
+  <text x="552" y="1570" class="small">구조 깔때기 · 원문 · 그래프</text>
+  <path class="edge-dash" d="M552 1595 L552 1737 L755 1737"/>
+
+  <!-- Review path footer -->
+  <rect x="45" y="1980" width="1710" height="48" rx="14" fill="#0f172a"/>
+  <text x="900" y="2012" class="subtitle" text-anchor="middle" style="fill:#e2e8f0;font-size:18px">
+    /review 법률검토는 별도 배선: 사실 추출 → probe ≤2 → 명시 인용·용어집·어휘·벡터 전용 회수 → 법적 동반 → 쟁점·요건·포섭
+  </text>
+</svg>

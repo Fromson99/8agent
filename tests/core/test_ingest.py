@@ -21,7 +21,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from lawrag.core import ingest, lineage  # noqa: E402
+from lawrag.core import ingest, legal_generation, lineage  # noqa: E402
 
 FIX = ROOT / "tests" / "fixtures" / "law_crawler" / "lawgo"
 
@@ -64,6 +64,18 @@ def test_xml_이_문을_지나면_스토어_규약이_성립한다(tmp_path):
     assert meta["source_kind"] == "lawxml"
     assert meta["name"] == "자본시장법"
     assert meta["folder"] == "법령"
+    result = json.loads((d / "result.json").read_text("utf-8"))
+    assert result["coordinate_schema_version"] == "legal-coordinate-v2"
+    article = next(node for node in result["nodes"]
+                   if node.get("family") == "kr_article"
+                   and node.get("coordinate_scope") == "body")
+    assert article["legal_coordinate"]["surface"] == article["surface"]
+    assert article["coordinate_key"] == f"body:{article['surface']}"
+    descendant = next(node for node in result["nodes"]
+                      if node.get("coordinate_scope") == "body"
+                      and (node.get("legal_coordinate") or {}).get("chain"))
+    assert descendant["coordinate_key"] == (
+        f"body:{descendant['legal_coordinate']['surface']}")
     # 폴더 등록부 — 업로드·CLI·PATCH 가 같은 파일을 쓴다 (register_folder 하나)
     folders = json.loads((store / "folders.json").read_text("utf-8"))["folders"]
     assert "법령" in folders
@@ -75,3 +87,37 @@ def test_xml_이_문을_지나면_스토어_규약이_성립한다(tmp_path):
                        store=store, name="자본시장법")
     assert r2["doc_id"] == doc_id
     assert r2["meta"]["name"] == "사람이 고친 이름"
+
+
+def test_공식_법령의_현행은_인제스트_순서가_아니라_generation이_정한다(tmp_path):
+    raw = (FIX / "law_body_full_excerpt.xml").read_bytes()
+    store = tmp_path / "store"
+    old = ingest.ingest_lawxml_bytes(
+        raw, "시험법", store, "법령", {"kind": "law", "law_serial": "1"})
+    # XML 파서가 받아들일 수 있는 범위에서 내용을 바꿔 새 해시를 만든다.
+    newer_raw = raw.replace(b"</\xeb\xb2\x95\xeb\xa0\xb9>", b"<!-- revision --></\xeb\xb2\x95\xeb\xa0\xb9>")
+    new = ingest.ingest_lawxml_bytes(
+        newer_raw, "시험법", store, "법령", {"kind": "law", "law_serial": "2"})
+
+    old_meta = json.loads((store / old["doc_id"] / "meta.json").read_text("utf-8"))
+    new_meta = json.loads((store / new["doc_id"] / "meta.json").read_text("utf-8"))
+    assert old_meta["status"] == new_meta["status"] == "미확정"
+    assert old_meta["series"] == new_meta["series"] == "시험법"
+
+    # 나중에 들어온 파일이 아니라 manifest가 고른 old를 canonical로 삼는다.
+    contract = legal_generation.build_contract({
+        "authority_as_of": "20260827",
+        "items": [{
+            "name": "시험법", "kind": "law", "status": "ok",
+            "body_sha256": hashlib.sha256(raw).hexdigest(),
+            "authority_mode": "effective-current",
+            "authority_as_of": "20260827",
+        }],
+    })
+    sync = legal_generation.synchronize_structure(store, contract)
+    old_meta = json.loads((store / old["doc_id"] / "meta.json").read_text("utf-8"))
+    new_meta = json.loads((store / new["doc_id"] / "meta.json").read_text("utf-8"))
+    assert old_meta["status"] == "현행" and old_meta["canonical"] is True
+    assert new_meta["status"] == "구판" and new_meta["canonical"] is False
+    assert old_meta["authority_generation"] == new_meta["authority_generation"]
+    assert sync["current"] == 1 and sync["old"] == 1

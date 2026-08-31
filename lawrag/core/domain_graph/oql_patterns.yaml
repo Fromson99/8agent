@@ -2,12 +2,31 @@ version: 1
 name: tier1_concept_oql
 patterns:
 
+- id: assertion_by_parts
+  intent: ASSERTION_BY_PARTS
+  handler: assertion_by_parts
+  parameters:
+  - {name: actor_concept_ids, type: concept_ids, required: false}
+  - {name: predicate_concept_ids, type: concept_ids, required: false}
+  - {name: object_concept_ids, type: concept_ids, required: false}
+  - {name: target_concept_ids, type: concept_ids, required: false}
+  - {name: method_concept_ids, type: concept_ids, required: false}
+  - {name: modality_concept_ids, type: concept_ids, required: false}
+  - {name: condition_concept_ids, type: concept_ids, required: false}
+  - {name: effect_concept_ids, type: concept_ids, required: false}
+  - {name: subject_concept_ids, type: concept_ids, required: false}
+  - {name: source_doc_ids, type: doc_ids, required: false}
+  - {name: source_coordinates, type: source_coordinates, required: false}
+  limit: 12
+
 - id: relation_between_concepts
   intent: RELATION_BETWEEN_CONCEPTS
   handler: relation_between_concepts
   parameters:
   - {name: left_concept_ids, type: concept_ids, required: true}
   - {name: right_concept_ids, type: concept_ids, required: true}
+  - {name: source_doc_ids, type: doc_ids, required: false}
+  - {name: source_coordinates, type: source_coordinates, required: false}
   limit: 12
 
 - id: assertions_for_concept
@@ -15,6 +34,8 @@ patterns:
   handler: assertions_for_concept
   parameters:
   - {name: concept_ids, type: concept_ids, required: true}
+  - {name: source_doc_ids, type: doc_ids, required: false}
+  - {name: source_coordinates, type: source_coordinates, required: false}
   limit: 12
 
 - id: actor_obligations
@@ -22,6 +43,8 @@ patterns:
   handler: actor_obligations
   parameters:
   - {name: actor_concept_ids, type: concept_ids, required: true}
+  - {name: source_doc_ids, type: doc_ids, required: false}
+  - {name: source_coordinates, type: source_coordinates, required: false}
   limit: 12
 
 - id: actions_on_object
@@ -29,6 +52,8 @@ patterns:
   handler: actions_on_object
   parameters:
   - {name: object_concept_ids, type: concept_ids, required: true}
+  - {name: source_doc_ids, type: doc_ids, required: false}
+  - {name: source_coordinates, type: source_coordinates, required: false}
   limit: 12
 
 - id: concept_definition

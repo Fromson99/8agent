@@ -38,9 +38,15 @@ def _np():
     return numpy
 
 from lawrag.core.rag import frames as frames_mod
+from lawrag.core.rag.controls import value as control_value
 from lawrag.core.rag.index import Index
 
 log = logging.getLogger("lawrag.core.rag.framequery")
+
+FRAME_QUERIES_MAX = int(control_value("entry.frame_queries_max"))
+FRAME_PICKS_MAX = int(control_value("entry.frame_picks_max"))
+FRAME_SECTIONS_PER_QUERY_MAX = int(
+    control_value("entry.frame_sections_per_query_max"))
 
 MODES = ["의무", "금지", "허용", "절차", "위임", "간주", "정의", "기타"]
 FUNCS = ["근거·권한", "제한", "절차", "위임", "정의", "효과", "기타"]
@@ -119,10 +125,11 @@ def to_frames(llm, question: str, menu: Optional[list[str]] = None) -> list[dict
     if out is None:
         return []
     frames = []
-    for f in out.get("frames", [])[:2]:
+    for f in out.get("frames", [])[:FRAME_QUERIES_MAX]:
         if "picks" in f:
             f = {**f, "picks": [n for n in f.get("picks") or []
-                                if isinstance(n, int) and 1 <= n <= len(menu or [])][:3],
+                                if isinstance(n, int) and 1 <= n <= len(menu or [])]
+                               [:FRAME_PICKS_MAX],
                  "act": ""}          # 좌표는 picks 가 정한다 — act 는 표시용
         if f.get("picks") or any((f.get(k) or "").strip()
                                  for k in ("actor", "act", "target", "object")):
@@ -284,8 +291,8 @@ def score_rows(qf: dict, rows: list[dict]) -> list[tuple[float, dict]]:
     return out
 
 
-MENU_CAP = 60             # 메뉴에 올릴 행위 어휘 수 상한
-MENU_ROWS_MAX = 8         # 이보다 여러 행에 나오는 행위는 좌표가 아니라 상투구다
+MENU_CAP = int(control_value("entry.frame_menu_max"))
+MENU_ROWS_MAX = int(control_value("entry.frame_menu_occurrences_max"))
 
 
 def _grams2(s: str) -> frozenset:
@@ -338,7 +345,8 @@ def act_menu(question: str, rows: list[dict], cap: int = MENU_CAP,
     return out
 
 
-def lex_hits(index: Index, llm, question: str, per_frame: int = 2,
+def lex_hits(index: Index, llm, question: str,
+             per_frame: int = FRAME_SECTIONS_PER_QUERY_MAX,
              cap: int = 3) -> tuple[list[dict], dict]:
     """질문 → 행위 어휘 메뉴 → 프레임 슬롯(LLM 1콜, 닫힌 선택) → 조 좌표.
 
@@ -378,7 +386,7 @@ def lex_hits(index: Index, llm, question: str, per_frame: int = 2,
                          "why": f"행위({tag}) '{(r.get('act') or '')[:44]}'"}
 
     for qf in qframes:
-        for ai, num in enumerate((qf.get("picks") or [])[:3]):
+        for ai, num in enumerate((qf.get("picks") or [])[:FRAME_PICKS_MAX]):
             for r in menu[num - 1][1]:
                 sc = 1.0 - 0.05 * ai            # 확실한 것부터 — 순서가 순위다
                 for k, w in (("actor", 0.1), ("object", 0.1)):

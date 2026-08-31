@@ -1,5 +1,9 @@
 # 망분리 운반 — 스냅샷 · 아웃박스 · 재생
 
+GenOS 코드 서빙을 처음 생성·배포하고 카나리·롤백하는 순서는
+[GENOS_DEPLOY.md](GENOS_DEPLOY.md)를 먼저 본다. 이 문서는 배포된 두 망 사이에서
+상태와 조작을 나르는 상세 규약이다.
+
 폐쇄망 플랫폼(GenOS)에 올라간 앱은 브라우저가 닿지 않는다 — 게이트웨이 JSON
 호출만 된다. 화면은 이쪽(로컬)에서 띄우고, **상태와 조작을 파일로 나른다**.
 구현은 `lawrag/api/ops.py` + 진입점 `service.py`, 시험은 `tests/core/test_ops_api.py`
@@ -79,9 +83,9 @@ scripts/data_ship.sh unpack ~/inbox --dry-run # 펼치지 않고 목록만
 | `data/corpus/` | 187M | 안 싣는다 | 원본층. 재수집·재인제스트·`core.lawnet` 재생성 때만. `--corpus` |
 | `*.bak` | 0.3M | 안 싣는다 | 항상 |
 
-기본값 실측: **압축 후 21.8MB → 1통** (문서류 포함). 새 데이터가 생기면 `scripts/data_ship.list`
-에 경로 한 줄. 조각이 하나라도 빠지거나 손상되면 어느 통인지 이름을 대고
-멈춘다 — 그 통만 다시 받으면 된다.
+현재 크기는 `scripts/data_ship.sh list` 출력이 정본이다. 새 데이터가 생기면
+`scripts/data_ship.list`에 경로 한 줄을 더한다. 조각이 하나라도 빠지거나 손상되면
+어느 통인지 이름을 대고 멈춘다 — 그 통만 다시 받으면 된다.
 
 **받은 뒤 벡터 만들기** — 그쪽에서 한 번:
 
@@ -129,6 +133,7 @@ export GENOS_LLM_KEY="<LLM 서빙 인증키>"          # 코드 서빙 키와 �
 # 선택
 export GENOS_LLM_MODEL="…"        # 비우면 /v1/models 의 첫 모델
 export GENOS_LLM_JSON_MODE=json_schema   # json_schema | json_object | prompt
+export GENOS_LLM_SCHEMA_PROFILE=reduced  # reduced(Qwen/vLLM 기본) | native
 export GENOS_LLM_TEMPERATURE=0
 export GENOS_USER_ID=653          # 이용 로그에 사람을 남기려면 (x-genos-user-id)
 ```
@@ -307,6 +312,7 @@ curl -s localhost:5566/v1/ops/report > 현황.html
 | `GENOS_LLM_KEY` | 없음 | 그 서빙의 인증키 (Bearer) |
 | `GENOS_LLM_MODEL` | `/v1/models` 첫 모델 | 모델 이름 고정 |
 | `GENOS_LLM_JSON_MODE` | `json_schema` | `json_schema` \| `json_object` \| `prompt` — 400 이면 자동 강등 |
+| `GENOS_LLM_SCHEMA_PROFILE` | `reduced` | 법률 조사 selector의 Qwen schema projection. 전체 지원 engine만 `native` |
 | `GENOS_LLM_TEMPERATURE` | 0 | 결정성 |
 | `GENOS_USER_ID` | 없음 | `x-genos-user-id` — 이용 로그에 사람을 남긴다 |
 | `EMBED_BACKEND` | 자동 | `local` \| `genos` — 비우면 `GENOS_EMBED_URL` 유무로 |

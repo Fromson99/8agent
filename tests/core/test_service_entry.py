@@ -13,6 +13,7 @@ import io
 import json
 import sys
 import tarfile
+from types import SimpleNamespace
 from pathlib import Path
 
 import pytest
@@ -89,6 +90,50 @@ def test_call_mutates_and_reads_back(svc):
     denied = _run(svc, {"op": "call", "method": "POST",
                         "path": "/v1/structure/folders", "json": {"name": ""}})
     assert denied["status"] == 400 and not denied["ok"]   # 실패도 JSON 봉투다
+
+
+def test_call_params_are_urlencoded(svc, monkeypatch):
+    seen = {}
+
+    async def fake_call(_app, method, path, query, content_type, body):
+        seen.update(method=method, path=path, query=query,
+                    content_type=content_type, body=body)
+        return 200, b'{"ok":true}'
+
+    monkeypatch.setattr(svc, "_ops", lambda: SimpleNamespace(_call_self=fake_call))
+    monkeypatch.setattr(svc, "_app", lambda: object())
+    out = _run(svc, {"op": "call", "method": "GET", "path": "/search",
+                     "params": {"q": "설명의무 & 적합성", "tag": ["가", "나"]}})
+    assert out["ok"]
+    assert seen["query"] == ("q=%EC%84%A4%EB%AA%85%EC%9D%98%EB%AC%B4+%26+"
+                             "%EC%A0%81%ED%95%A9%EC%84%B1&tag=%EA%B0%80&tag=%EB%82%98")
+
+
+def test_upload_builds_multipart(svc, monkeypatch):
+    seen = {}
+
+    async def fake_call(_app, method, path, query, content_type, body):
+        seen.update(method=method, path=path, query=query,
+                    content_type=content_type, body=body)
+        return 201, b'{"doc_id":"d1"}'
+
+    monkeypatch.setattr(svc, "_ops", lambda: SimpleNamespace(_call_self=fake_call))
+    monkeypatch.setattr(svc, "_app", lambda: object())
+    out = _run(svc, {"op": "upload", "filename": "../내규.pdf",
+                     "file_b64": base64.b64encode(b"PDF-BYTES").decode(),
+                     "form": {"folder": "내규", "use_llm": False}})
+    assert out == {"status": 201, "ok": True, "json": {"doc_id": "d1"}}
+    assert seen["method"] == "POST" and seen["path"] == "/v1/structure/documents"
+    assert seen["content_type"].startswith("multipart/form-data; boundary=")
+    assert b'filename="' in seen["body"] and "내규.pdf".encode() in seen["body"]
+    assert b"PDF-BYTES" in seen["body"] and b'name="folder"' in seen["body"]
+
+
+def test_upload_rejects_unknown_form_field(svc):
+    out = _run(svc, {"op": "upload", "filename": "x.pdf",
+                     "file_b64": base64.b64encode(b"x").decode(),
+                     "form": {"admin": True}})
+    assert "허용하지 않는 form 필드" in out["error"]
 
 
 def test_report_is_selfcontained_html(svc, tmp_path):

@@ -1,0 +1,311 @@
+version: 1
+name: tier1-concept-oql-blind
+expected_count: 50
+description: >-
+  concept_golden.yaml 및 concept_holdout.yaml과 질문과 양성 근거 좌표가 겹치지
+  않도록 동결한 신규 블라인드셋이다. 양성 25건은 서로 다른 미사용 문서의 승인
+  Frame Assertion을 자연스러운 변형 표현으로 묻는다. 음성 25건은 술어 반전,
+  좌표 이동, 다른 문서명, 무좌표 중의성, 교차 도메인 오염을 각각 5건 검사한다.
+  최초 실제 LLM 실행 뒤에는 구현 튜닝에 사용하지 않는다.
+axis_order: [outcome, source_tier, scope, expression, challenge, domain]
+
+cases:
+  - id: blind-conduct-discipline-history
+    question: 금융투자회사의 영업행위 표준윤리준칙 제19조제2항상 금융소비자보호 총괄 책임자는 최근 5년 동안 금융위원회나 금융감독원장에게 문책경고 또는 감봉요구 이상의 조치를 받은 전력이 없어야 하나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 62dbe44a71437e81, node: 71}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: paraphrase, challenge: unseen_paraphrase, domain: consumer_finance}
+
+  - id: blind-credit-notify-commission
+    question: 신용정보의 이용 및 보호에 관한 법률 시행령 제35조의2제6항에서 신용정보제공ㆍ이용자는 확인한 사실을 금융위원회에도 알려야 하나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 36bb9d6beb902fa9, node: 1195}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: credit_information}
+
+  - id: blind-risk-retain-materials
+    question: 위험관리기준시행세칙_v1_2024 제12조제3항에 따르면 담당 부서는 회피하려는 위험의 종류와 금액을 확인하고 관련 자료를 계속 간직해야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 38803e534c832e19, node: 47}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: paraphrase, challenge: unseen_paraphrase, domain: risk_management}
+
+  - id: blind-door-sales-fee-ban
+    question: 방문판매 모범규준 제15조제3항에서 방문판매인력은 타인에게 계약 권유나 중개를 시키고 수수료를 받아서는 안 되나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: d7fd9574d1ba0629, node: 105}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: colloquial, challenge: unseen_paraphrase, domain: sales_practice}
+
+  - id: blind-risk-committee-ad-hoc
+    question: 위험관리기준시행세칙_v2_2026 제4조제4항에서 위원장은 필요하다고 판단하면 위원회를 수시로 열 수 있나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 3bad39ac4c01eec6, node: 17}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: colloquial, challenge: unseen_paraphrase, domain: risk_management}
+
+  - id: blind-electronic-report-method
+    question: 금융투자업규정시행세칙 제4-7조제2항에 따라 보고자는 보고서를 낼 때 인터넷망 등을 이용한 전자통신 방식을 따라야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: c6d784d914932b53, node: 278}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: paraphrase, challenge: unseen_paraphrase, domain: securities_rule}
+
+  - id: blind-mediation-chair-designation
+    question: 금융소비자 보호에 관한 법률 제34조제2항에서는 금융감독원장이 소속 부원장 가운데 조정위원회 위원장을 뽑는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: a6290be4f60968b4, node: 339}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: colloquial, challenge: unseen_paraphrase, domain: consumer_finance}
+
+  - id: blind-compliance-delegation
+    question: 집합투자기구평가회사 표준내부통제기준 제19조에서 준법감시인은 내부통제업무 일부를 담당 임직원에게 맡길 수 있는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: ef8f9b3ee9502ac4, node: 87}
+    axes: {outcome: positive, source_tier: frame, scope: article, expression: paraphrase, challenge: unseen_paraphrase, domain: internal_control}
+
+  - id: blind-periodic-report-attachments
+    question: 증권의 발행 및 공시 등에 관한 규정 제4-11조제2항에서 발행인은 사업보고서ㆍ반기보고서ㆍ분기보고서에 정해진 서류를 붙여야 하나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 00f033fddcef6be2, node: 970}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: colloquial, challenge: unseen_paraphrase, domain: disclosure}
+
+  - id: blind-credit-limit-offer
+    question: 금융투자회사의 리스크관리 모범규준 제3-2조제2항에 따르면 회사는 고객에게 상환능력과 신용도 등을 고려한 합리적인 신용거래 한도를 제공해야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 5c292593a5e4e4e4, node: 186}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: risk_management}
+
+  - id: blind-kosdaq-review-committee
+    question: 코스닥시장 상장규정 시행세칙 제41조제5항에서 거래소는 이의신청을 받은 날부터 15영업일 안에 상장위원회를 열어 상장유예 여부를 심의ㆍ의결해야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: eae25aa6e8a83c58, node: 401}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: paraphrase, challenge: unseen_paraphrase, domain: securities_rule}
+
+  - id: blind-alternative-risk-document
+    question: 대체투자펀드 리스크관리 모범규준 제7조제3항에서 회사는 주기적인 사업성 및 리스크 분석 결과를 문서로 남겨야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 85fb41de5b7df3c8, node: 46}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: paraphrase, challenge: unseen_paraphrase, domain: risk_management}
+
+  - id: blind-fx-supervision-order
+    question: 외국환거래법 제11조제1항상 재정경제부장관은 외국환업무취급기관등을 감독하고 필요한 명령도 내릴 수 있나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: f3e7e90f77f145a9, node: 109}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: colloquial, challenge: unseen_paraphrase, domain: foreign_exchange}
+
+  - id: blind-tax-installment-permission
+    question: 상속세 및 증여세법 제71조제1항에서 납세지 관할세무서장은 납세의무자의 신청을 받아 연부연납을 허가할 수 있는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 5ecded8eac7bc4a9, node: 694}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: tax}
+
+  - id: blind-konex-objection-documents
+    question: 코넥스시장 상장규정 시행세칙 제27조제2항에 따라 코넥스시장상장법인은 이의신청서에 필요한 서류를 첨부해서 제출해야 하나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 7869153f82a0885e, node: 356}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: paraphrase, challenge: unseen_paraphrase, domain: securities_rule}
+
+  - id: blind-council-chair-rules
+    question: 독점규제 및 공정거래에 관한 법률 시행령 제70조에서는 협의회 위원장이 협의회 의결을 거쳐 운영과 조직에 필요한 사항을 정하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 73426977c9bb4b18, node: 674}
+    axes: {outcome: positive, source_tier: frame, scope: article, expression: formal, challenge: unseen_binding, domain: competition}
+
+  - id: blind-short-sale-controls
+    question: 금융투자회사의 증권 대차 및 공매도 업무처리 모범규준 제6조에서 회사는 대차업무 관련 내부통제장치를 마련하고 운영해야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 250b67d8ec2af11f, node: 26}
+    axes: {outcome: positive, source_tier: frame, scope: article, expression: formal, challenge: unseen_binding, domain: short_selling}
+
+  - id: blind-venture-stock-option
+    question: 벤처기업육성에 관한 특별법 제16조의3제1항에서 주식회사인 벤처기업은 주식매수선택권을 부여할 수 있나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: ada543ab1a11ae54, node: 245}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: colloquial, challenge: unseen_binding, domain: venture}
+
+  - id: blind-audit-penalty
+    question: 주식회사 등의 외부감사에 관한 법률 제35조제2항에서 금융위원회는 회계감사기준을 중대하게 어긴 감사인에게 과징금을 매길 수 있는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 8e6b9251fdfba8f4, node: 302}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: paraphrase, challenge: unseen_paraphrase, domain: accounting}
+
+  - id: blind-whistleblower-protection
+    question: 신용평가회사 표준내부통제기준 제22조제3항에서 회사는 정당한 내부고발자에게 부당한 인사 불이익을 줘서는 안 되는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 5e5225d30d0aa041, node: 116}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: colloquial, challenge: unseen_paraphrase, domain: internal_control}
+
+  - id: blind-contract-good-faith
+    question: 국가를 당사자로 하는 계약에 관한 법률 제5조제1항에 따르면 당사자는 계약 내용을 신의성실 원칙에 맞게 이행해야 하나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: adbf5a191e27743c, node: 12}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: paraphrase, challenge: unseen_paraphrase, domain: public_contract}
+
+  - id: blind-balance-sheet-announcement
+    question: 상장회사 표준정관(2025) 제43조제7항에서 대표이사는 승인 뒤 대차대조표와 외부감사인의 감사의견을 지체 없이 공고해야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 7c2875fa7de1718f, node: 411}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: corporate_governance}
+
+  - id: blind-currency-conversion-method
+    question: 장외파생상품거래 한글약정서 권고안 제12조제4항에서 지급받은 당사자는 통화를 신의성실 원칙에 따른 합리적인 방식으로 환산하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: ee591cd96f494566, node: 97}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: paraphrase, challenge: unseen_paraphrase, domain: derivatives}
+
+  - id: blind-feasibility-disclosure
+    question: 공공기관의 운영에 관한 법률 제40조의3제2항에서 기관장은 타당성재조사 결과 자료를 정보공개법에 따라 공개해야 하나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: d04ab944a028b479, node: 348}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: public_institution}
+
+  - id: blind-allocation-compliance-check
+    question: 집합투자업자의 사전자산배분 가이드라인 제6조제3항상 준법감시인은 주문서와 자산배분명세서가 적정한지와 실제 이행 내용을 확인해야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: f387fb8aeaac93cd, node: 20}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: paraphrase, challenge: unseen_paraphrase, domain: asset_management}
+
+  - id: blind-discipline-required
+    question: 금융투자회사의 영업행위 표준윤리준칙 제19조제2항에서 금융소비자보호 총괄 책임자는 최근 5년간 문책경고 이상의 조치를 반드시 받은 사실이 있어야 하나?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: adversarial, challenge: wrong_predicate, domain: consumer_finance}
+
+  - id: blind-credit-conceal-commission
+    question: 신용정보의 이용 및 보호에 관한 법률 시행령 제35조의2제6항에서 신용정보제공ㆍ이용자는 확인한 사실을 금융위원회에 숨겨야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: adversarial, challenge: wrong_predicate, domain: credit_information}
+
+  - id: blind-risk-delete-materials
+    question: 위험관리기준시행세칙_v1_2024 제12조제3항에서 담당 부서는 회피 위험 관련 자료를 즉시 폐기해야 하나?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: adversarial, challenge: wrong_predicate, domain: risk_management}
+
+  - id: blind-door-sales-fee-permitted
+    question: 방문판매 모범규준 제15조제3항에서 방문판매인력은 타인에게 중개하도록 하고 그 대가로 수수료를 받아도 되는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: adversarial, challenge: wrong_predicate, domain: sales_practice}
+
+  - id: blind-risk-committee-dissolution
+    question: 위험관리기준시행세칙_v2_2026 제4조제4항에서 위원장은 필요하다고 판단하면 위원회를 영구 해산해야 하나?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: adversarial, challenge: wrong_predicate, domain: risk_management}
+
+  - id: blind-credit-wrong-paragraph
+    question: 신용정보의 이용 및 보호에 관한 법률 시행령 제35조의2제5항에서 신용정보제공ㆍ이용자는 확인한 사실을 금융위원회에도 알려야 하나?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: coordinate_exclusion, domain: credit_information}
+
+  - id: blind-fx-wrong-paragraph
+    question: 외국환거래법 제11조제2항에서 재정경제부장관은 외국환업무취급기관등을 감독하고 필요한 명령을 할 수 있는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: coordinate_exclusion, domain: foreign_exchange}
+
+  - id: blind-whistleblower-wrong-paragraph
+    question: 신용평가회사 표준내부통제기준 제22조제2항에서 회사는 정당한 내부고발자에게 부당한 인사 불이익을 주어서는 안 되는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: coordinate_exclusion, domain: internal_control}
+
+  - id: blind-feasibility-wrong-paragraph
+    question: 공공기관의 운영에 관한 법률 제40조의3제1항에서 기관장은 타당성재조사 결과 자료를 공개해야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: coordinate_exclusion, domain: public_institution}
+
+  - id: blind-allocation-wrong-paragraph
+    question: 집합투자업자의 사전자산배분 가이드라인 제6조제2항에서 준법감시인은 주문서와 자산배분명세서의 적정성과 이행내용을 확인해야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: coordinate_exclusion, domain: asset_management}
+
+  - id: blind-wrong-law-credit
+    question: 상법 시행령 제35조의2제6항에서 신용정보제공ㆍ이용자는 확인한 사실을 금융위원회에도 알려야 하나?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: wrong_document, domain: cross_domain}
+
+  - id: blind-wrong-law-chair
+    question: 개인정보 보호법 제34조제2항에서 금융감독원장이 부원장 중 조정위원회 위원장을 지명하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: wrong_document, domain: cross_domain}
+
+  - id: blind-wrong-rule-short-sale
+    question: 은행업감독규정 제6조에서 회사는 증권 대차업무 내부통제장치를 마련ㆍ운영해야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: article, expression: formal, challenge: wrong_document, domain: cross_domain}
+
+  - id: blind-wrong-law-audit-penalty
+    question: 벤처기업육성에 관한 특별법 제35조제2항에서 금융위원회는 감사인에게 과징금을 부과할 수 있는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: wrong_document, domain: cross_domain}
+
+  - id: blind-wrong-guideline-allocation
+    question: 방문판매 모범규준 제6조제3항에서 준법감시인은 주문서와 자산배분명세서의 적정성을 확인해야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: wrong_document, domain: cross_domain}
+
+  - id: blind-unscoped-commission-notice
+    question: 확인한 사실을 위원회에도 알려야 하는 사람은 누구인가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: ambiguous, challenge: missing_structure, domain: generic}
+
+  - id: blind-unscoped-control-device
+    question: 회사가 내부통제장치를 마련해서 운영해야 한다는 말이 맞나?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: colloquial, challenge: missing_structure, domain: generic}
+
+  - id: blind-unscoped-penalty
+    question: 위원회가 감사인에게 과징금을 매길 수 있어?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: colloquial, challenge: missing_structure, domain: generic}
+
+  - id: blind-unscoped-good-faith
+    question: 당사자는 계약 내용을 성실하게 지켜야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: ambiguous, challenge: missing_structure, domain: generic}
+
+  - id: blind-unscoped-document-results
+    question: 분석 결과를 문서로 남겨야 하는 주체가 회사인가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: ambiguous, challenge: missing_structure, domain: generic}
+
+  - id: blind-cross-crypto-discipline
+    question: 금융투자회사의 영업행위 표준윤리준칙 제19조제2항에서 블록체인 검증자는 암호화폐 거래를 승인해야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: adversarial, challenge: domain_contamination, domain: cross_domain}
+
+  - id: blind-cross-medical-credit
+    question: 신용정보의 이용 및 보호에 관한 법률 시행령 제35조의2제6항에서 주치의는 환자의 수술 결과를 금융위원회에 보고해야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: adversarial, challenge: domain_contamination, domain: cross_domain}
+
+  - id: blind-cross-logistics-risk
+    question: 위험관리기준시행세칙_v1_2024 제12조제3항에서 선장은 화물선의 항로를 항만공사에 제출해야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: adversarial, challenge: domain_contamination, domain: cross_domain}
+
+  - id: blind-cross-school-venture
+    question: 벤처기업육성에 관한 특별법 제16조의3제1항에서 교장은 학생에게 대학 입학허가서를 발급할 수 있는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: adversarial, challenge: domain_contamination, domain: cross_domain}
+
+  - id: blind-cross-weather-contract
+    question: 국가를 당사자로 하는 계약에 관한 법률 제5조제1항에서 기상청장은 태풍의 이동 경로를 변경해야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: adversarial, challenge: domain_contamination, domain: cross_domain}

@@ -39,6 +39,32 @@ BACKENDS = ("local", "genos")
 _model = None
 _failed = False
 _genos = None            # (session, url, model) — 첫 호출 때 세운다
+_local_runtime_configured = False
+
+
+def _configure_local_runtime() -> None:
+    """WSL/CPU에서 과도한 BLAS·Torch 스레드 경쟁을 피한다.
+
+    실측상 기본 스레드 자동 선택은 BGE-M3 첫 질의를 7분 이상 끌었고, 4개로
+    제한하면 같은 입력이 10.5초였다. 명시한 OMP/MKL 값은 존중한다.
+    """
+    global _local_runtime_configured
+    if _local_runtime_configured:
+        return
+    threads = max(1, int(os.environ.get("EMBED_CPU_THREADS", "4")))
+    os.environ.setdefault("OMP_NUM_THREADS", str(threads))
+    os.environ.setdefault("MKL_NUM_THREADS", str(threads))
+    try:
+        import torch
+
+        torch.set_num_threads(threads)
+        try:
+            torch.set_num_interop_threads(1)
+        except RuntimeError:
+            pass
+    except Exception:
+        pass
+    _local_runtime_configured = True
 
 
 def backend() -> str:
@@ -59,6 +85,7 @@ def available() -> bool:
     if backend() == "genos":
         return bool(os.environ.get("GENOS_EMBED_URL"))
     try:
+        _configure_local_runtime()
         import sentence_transformers  # noqa: F401
         return True
     except Exception:
@@ -67,9 +94,13 @@ def available() -> bool:
 
 def _encode_local(texts: list[str], batch_size: int):
     global _model
+    _configure_local_runtime()
     if _model is None:
         from sentence_transformers import SentenceTransformer
-        _model = SentenceTransformer(MODEL, device="cpu")
+        kwargs = {"device": os.environ.get("EMBED_DEVICE", "cpu")}
+        if os.environ.get("EMBED_LOCAL_FILES_ONLY", "0") == "1":
+            kwargs["local_files_only"] = True
+        _model = SentenceTransformer(MODEL, **kwargs)
     return _model.encode(texts, normalize_embeddings=True,
                          batch_size=batch_size,
                          show_progress_bar=False).astype("float32")

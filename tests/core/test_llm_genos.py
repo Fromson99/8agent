@@ -106,6 +106,7 @@ class _Fake:
 def genos_env(monkeypatch):
     def _set(url):
         monkeypatch.delenv("LLM_BACKEND", raising=False)
+        monkeypatch.delenv("LOCAL_LLM_URL", raising=False)
         monkeypatch.delenv("GENOS_LLM_MODEL", raising=False)
         monkeypatch.delenv("GENOS_LLM_JSON_MODE", raising=False)
         monkeypatch.setenv("GENOS_LLM_URL", url)
@@ -118,6 +119,7 @@ def test_backend_selection(monkeypatch):
     llm_mod = _fresh()
     monkeypatch.setattr(llm_mod, "load_env", lambda: None)   # .env 의 진짜 키 차단
     monkeypatch.delenv("LLM_BACKEND", raising=False)
+    monkeypatch.delenv("LOCAL_LLM_URL", raising=False)
     monkeypatch.delenv("GENOS_LLM_URL", raising=False)
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     assert llm_mod.backend() == "anthropic" and not llm_mod.available()
@@ -125,6 +127,52 @@ def test_backend_selection(monkeypatch):
     assert llm_mod.backend() == "genos" and llm_mod.available()
     monkeypatch.setenv("LLM_BACKEND", "anthropic")      # 명시가 이긴다
     assert llm_mod.backend() == "anthropic" and not llm_mod.available()
+
+
+def test_openrouter_uses_saved_key_and_qwen_default(monkeypatch):
+    fake = _Fake("schema")
+    try:
+        llm_mod = _fresh()
+        monkeypatch.setattr(llm_mod, "load_env", lambda: None)
+        monkeypatch.setenv("LLM_BACKEND", "openrouter")
+        monkeypatch.setenv("OPEN_ROUTER", "openrouter-test-key")
+        monkeypatch.setenv("OPENROUTER_URL", fake.url)
+        monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+        monkeypatch.delenv("OPENROUTER_MODEL", raising=False)
+
+        assert llm_mod.backend() == "openrouter" and llm_mod.available()
+        llm = llm_mod.LLM()
+        assert llm.backend == "openrouter"
+        assert llm.model == "qwen/qwen3.8-27b"
+        assert llm.structured("t.openrouter", "시스템", "질문", SCHEMA,
+                              max_tokens=64) == {"answer": "스키마 그대로"}
+        req = fake.requests[-1]
+        assert req["_auth"] == "Bearer openrouter-test-key"
+        assert req["model"] == "qwen/qwen3.8-27b"
+        assert req["response_format"]["type"] == "json_schema"
+    finally:
+        fake.close()
+
+
+def test_local_openai_compatible_backend(monkeypatch):
+    fake = _Fake("schema")
+    try:
+        llm_mod = _fresh()
+        monkeypatch.setattr(llm_mod, "load_env", lambda: None)
+        monkeypatch.delenv("LLM_BACKEND", raising=False)
+        monkeypatch.delenv("GENOS_LLM_URL", raising=False)
+        monkeypatch.setenv("LOCAL_LLM_URL", fake.url)
+        monkeypatch.setenv("LOCAL_LLM_MODEL", "onsite-test-model")
+        monkeypatch.setenv("LOCAL_LLM_KEY", "local-key")
+
+        assert llm_mod.backend() == "local" and llm_mod.available()
+        llm = llm_mod.LLM()
+        assert llm.structured("t.local", "시스템", "질문", SCHEMA,
+                              max_tokens=64) == {"answer": "스키마 그대로"}
+        assert fake.requests[-1]["model"] == "onsite-test-model"
+        assert fake.requests[-1]["_auth"] == "Bearer local-key"
+    finally:
+        fake.close()
 
 
 def test_json_schema_engine(genos_env):

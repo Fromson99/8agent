@@ -1,0 +1,23 @@
+id: LC-002
+name: 지배 근거와 효력상태 확인
+scope: core
+severity: blocker
+status: trial
+triggers: []
+basis:
+  - path: docs/adr/0032-haiku-final-answer-reliability-gates.md
+    anchor: 기관 권한
+    note: 정확한 조문이 있어도 규범의 권한과 효력을 잘못 적용하는 오류가 관찰됐다.
+operational_definition: >-
+  답변의 결론이 회수 근거 중 질문을 직접 지배하는 법령·규정·해석례에 기대고 있는지 검사한다.
+  설명자료나 체크리스트를 법규상 의무로 승격하거나, 폐지·개정 여부가 근거에 표시됐는데 다른 시점의 규범을 현행처럼 쓰면 FAIL이다.
+  효력상태 정보 자체가 근거에 없고 답변도 특정 현행성을 단정하지 않으면 그 이유만으로 실패시키지 않는다.
+examples:
+  pass:
+    - 답변이 규정 조문을 결론 근거로 쓰고 체크리스트는 보조자료로만 구분한다.
+  fail:
+    - 실사 체크리스트의 기재항목을 법규상 제정기한이라고 단정한다.
+  unclear:
+    - 근거에 개정일이나 적용시점이 없는데 답변이 현행 규정이라고 명시한다.
+learned_from:
+  - ADR-0049-legal-minimal-pairs-v1/norm-vs-checklist

@@ -1,0 +1,310 @@
+version: 1
+name: tier1-concept-oql-holdout
+expected_count: 50
+description: >-
+  기존 concept_golden.yaml의 질문과 양성 근거 좌표를 사용하지 않고 만든 독립
+  holdout이다. 양성 25건은 서로 다른 새 문서·조문 좌표의 승인 Frame Assertion을,
+  음성 25건은 술어 변조·좌표 변조·법령 교차·무좌표 중의성·도메인 오염을 검사한다.
+  검색 구현을 수정하지 않은 상태의 최초 실행 성적을 보존하기 위한 세트다.
+axis_order: [outcome, source_tier, scope, expression, challenge, domain]
+
+cases:
+  - id: holdout-tax-information-provision
+    question: 국세기본법 제85조의6제5항에서 국세청장은 과세정보를 국회 소관 상임위원회에 제공하여야 하나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 0fb2c7c7aff75209, node: 1075}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: tax}
+
+  - id: holdout-auditor-report-submission
+    question: 외부감사 및 회계 등에 관한 규정 제22조제4항에서 주권상장법인 감사인은 보고서를 증권선물위원회에 제출하여야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 4f00c314b5e4f459, node: 323}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: accounting}
+
+  - id: holdout-fx-brokerage-rules
+    question: 외국환거래규정 제2-42조제2항에서 한국은행총재는 외국환중개업무의 보고, 검사, 사후관리 및 제재 등에 관하여 필요한 사항을 정할 수 있나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 8e7cba2a7f896e2b, node: 537}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: colloquial, challenge: unseen_binding, domain: foreign_exchange}
+
+  - id: holdout-financial-registration-refusal
+    question: 금융소비자 보호에 관한 감독규정 제7조제5항에서 금융위원회는 등록을 신청인에게 거부할 수 있는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 3fa690991bbd4235, node: 123}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: consumer_finance}
+
+  - id: holdout-tax-saving-data-retention
+    question: 조세특례제한법 제89조의2제6항에서 세금우대저축자료 집중기관은 세금우대저축자료를 보관하여야 하나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: e37dce2adf0ea23d, node: 1709}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: tax}
+
+  - id: holdout-internal-control-records
+    question: 금융투자회사 표준내부통제기준 제85조제3항에서 회사는 보존자료를 관리하여야 하나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: fec886821bf597f9, node: 725}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: internal_control}
+
+  - id: holdout-commercial-dissolution-notice
+    question: 상법 제521조에서 이사는 해산을 주주에게 통지하여야 하나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: ec9179e002e9c347, node: 2157}
+    axes: {outcome: positive, source_tier: frame, scope: article, expression: formal, challenge: unseen_binding, domain: commercial}
+
+  - id: holdout-credit-information-coercion
+    question: 신용정보의 이용 및 보호에 관한 법률 제22조의9제1항에서 본인신용정보관리회사는 개인인 신용정보주체에게 개인신용정보의 전송요구를 강요하거나 부당하게 유도하는 행위를 하여서는 아니 되는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: d6285eaffb837ebc, node: 427}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: long_form, challenge: unseen_binding, domain: credit_information}
+
+  - id: holdout-inspection-result-notice
+    question: 외부감사 및 회계 등에 관한 규정 시행세칙 제19조제3항에서 감리담당부서장은 신청인 및 감사인지정담당부서장에게 확인 결과를 통보하여야 하나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 8db75dedfca6eacf, node: 72}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: accounting}
+
+  - id: holdout-privacy-proxy-submission
+    question: 개인정보 보호법 시행령 제45조제2항에서 대리인은 개인정보처리자에게 위임장을 제출하여야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 5e3777946349aad9, node: 928}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: privacy}
+
+  - id: holdout-compliance-staff-protection
+    question: 일반사무관리회사 표준내부통제기준 제14조제1항에서 회사는 준법감시인 및 준법감시부서의 직원에게 부당한 인사상의 불이익을 주어서는 아니 되는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: b68b3c1d10a60e36, node: 59}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: internal_control}
+
+  - id: holdout-committee-duty-substitution
+    question: 공공기관의 운영에 관한 법률 시행령 제12조제2항에서 위원장이 지명하는 위원은 직무를 대행하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: c943a64d60b1bb75, node: 85}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: public_institution}
+
+  - id: holdout-consumer-description-delivery
+    question: 금융소비자 보호에 관한 법률 시행령 제14조제3항에서 금융상품판매업자등은 설명서를 일반금융소비자에게 제공해야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 869dc504749e66fd, node: 319}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: consumer_finance}
+
+  - id: holdout-compliance-pledge
+    question: 채권평가회사 표준내부통제기준 제17조제1항에서 임직원은 회사가 정하는 준법서약서를 준법감시인에게 작성하여 제출하여야 하나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 4558d68534f24177, node: 85}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: internal_control}
+
+  - id: holdout-bank-terms-disclosure
+    question: 은행업감독업무시행세칙 제63조에서 은행은 약관을 계약이 종료한 후 3년까지 공시하여야 하나?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 6704e2a37623533d, node: 282}
+    axes: {outcome: positive, source_tier: frame, scope: article, expression: formal, challenge: unseen_binding, domain: banking}
+
+  - id: holdout-fx-deposit-certificate
+    question: 외국환거래법 시행령 제28조제2항에서 재정경제부장관은 예치증서를 발행ㆍ교부하여야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 9945629799a5e8ab, node: 402}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: foreign_exchange}
+
+  - id: holdout-information-disclosure-enforcement
+    question: 공공기관의 정보공개에 관한 법률 제27조에서 대통령은 이 법 시행에 필요한 사항을 령으로 정하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 86e6bcfb9d92e784, node: 167}
+    axes: {outcome: positive, source_tier: frame, scope: article, expression: exact, challenge: unseen_binding, domain: public_information}
+
+  - id: holdout-electronic-finance-committee
+    question: 전자금융감독규정 제44조제5항에서 금융감독원장은 평가위원회를 구성ㆍ운영할 수 있는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 342cfff1766f3631, node: 347}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: electronic_finance}
+
+  - id: holdout-auditor-designation
+    question: 주식회사 등의 외부감사에 관한 법률 시행령 제16조제1항에서 증권선물위원회는 회계법인을 감사인으로 지정하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 8116866e6d62f134, node: 248}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: accounting}
+
+  - id: holdout-sme-ombudsman-recommendation
+    question: 중소기업기본법 제22조제6항에서 중소기업 옴부즈만은 업무기관의 장에게 관련 사항의 개선을 권고할 수 있는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: ff02e1af688bfc95, node: 157}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: small_business}
+
+  - id: holdout-startup-burden-notice
+    question: 중소기업창업 지원법 시행령 제10조제4항에서 시장ㆍ군수ㆍ구청장은 신청인과 부담금 부과기관에 통보해야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 29d739a81881e29e, node: 93}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: small_business}
+
+  - id: holdout-governance-eligibility-report
+    question: 금융회사의 지배구조에 관한 법률 제32조제2항에서 금융회사는 적격성 심사대상이 적격성 유지요건을 충족하지 못하는 사유가 발생한 사실을 금융위원회에 보고하여야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: c4b33879c7dc5554, node: 308}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: long_form, challenge: unseen_binding, domain: governance}
+
+  - id: holdout-venture-stock-recovery
+    question: 벤처기업육성에 관한 특별법 시행령 제11조의12제2항에서 주식회사인 벤처기업은 이미 교부된 주식을 환수할 수 있는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: f67493d630cab3e6, node: 244}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: venture}
+
+  - id: holdout-konex-committee-installation
+    question: 코넥스시장 상장규정 제36조제1항에서 거래소는 코넥스시장 상장공시위원회를 설치할 수 있는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 66d913843b914268, node: 347}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: securities_rule}
+
+  - id: holdout-fine-opinion-opportunity
+    question: 상법 시행령 제44조제2항에서 법무부장관은 과태료 처분 대상자에게 의견을 진술할 기회를 주어야 하는가?
+    expect_hit: true
+    expect_pattern: relation_between_concepts
+    expect_source: {doc_id: 3e95a54341c48a48, node: 419}
+    axes: {outcome: positive, source_tier: frame, scope: paragraph, expression: formal, challenge: unseen_binding, domain: commercial}
+
+  - id: holdout-tax-information-delete
+    question: 국세기본법 제85조의6제5항에서 국세청장은 과세정보를 즉시 삭제하여야 하나?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: adversarial, challenge: wrong_predicate, domain: tax}
+
+  - id: holdout-auditor-report-conceal
+    question: 외부감사 및 회계 등에 관한 규정 제22조제4항에서 주권상장법인 감사인은 보고서를 증권선물위원회로부터 은폐하여야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: adversarial, challenge: wrong_predicate, domain: accounting}
+
+  - id: holdout-fx-rules-destroy
+    question: 외국환거래규정 제2-42조제2항에서 한국은행총재는 외국환중개업무의 보고와 검사 기준을 폐기할 수 있나?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: adversarial, challenge: wrong_predicate, domain: foreign_exchange}
+
+  - id: holdout-prime-broker-employment
+    question: 전담중개업무계약 표준서식 제8조에서 회사와 고객은 상대방을 고용하여야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: article, expression: adversarial, challenge: wrong_predicate, domain: contract}
+
+  - id: holdout-tax-saving-data-destroy
+    question: 조세특례제한법 제89조의2제6항에서 세금우대저축자료 집중기관은 세금우대저축자료를 즉시 파기하여야 하나?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: adversarial, challenge: wrong_predicate, domain: tax}
+
+  - id: holdout-tax-wrong-coordinate
+    question: 국세기본법 제85조의6제4항에서 국세청장은 과세정보를 국회 소관 상임위원회에 제공하여야 하나?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: coordinate_exclusion, domain: tax}
+
+  - id: holdout-auditor-wrong-coordinate
+    question: 외부감사 및 회계 등에 관한 규정 제21조제4항에서 주권상장법인 감사인은 보고서를 증권선물위원회에 제출하여야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: coordinate_exclusion, domain: accounting}
+
+  - id: holdout-fx-wrong-coordinate
+    question: 외국환거래규정 제2-41조제2항에서 한국은행총재는 외국환중개업무의 보고와 검사에 필요한 사항을 정할 수 있나?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: coordinate_exclusion, domain: foreign_exchange}
+
+  - id: holdout-contract-wrong-coordinate
+    question: 전담중개업무계약 표준서식 제9조에서 회사와 고객은 상대방에게 진술하고 진실함을 보장하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: article, expression: formal, challenge: coordinate_exclusion, domain: contract}
+
+  - id: holdout-tax-saving-wrong-coordinate
+    question: 조세특례제한법 제89조의2제5항에서 세금우대저축자료 집중기관은 세금우대저축자료를 보관하여야 하나?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: coordinate_exclusion, domain: tax}
+
+  - id: holdout-wrong-law-auditor
+    question: 상법 제22조제4항에서 주권상장법인 감사인은 보고서를 증권선물위원회에 제출하여야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: wrong_document, domain: cross_domain}
+
+  - id: holdout-wrong-law-dissolution
+    question: 국세기본법 제521조에서 이사는 해산을 주주에게 통지하여야 하나?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: article, expression: formal, challenge: wrong_document, domain: cross_domain}
+
+  - id: holdout-wrong-law-duty-substitution
+    question: 개인정보 보호법 시행령 제12조제2항에서 위원장이 지명하는 위원은 직무를 대행하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: wrong_document, domain: cross_domain}
+
+  - id: holdout-wrong-law-startup-notice
+    question: 전자금융감독규정 제10조제4항에서 시장ㆍ군수ㆍ구청장은 신청인과 부담금 부과기관에 통보해야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: wrong_document, domain: cross_domain}
+
+  - id: holdout-wrong-law-fine-opinion
+    question: 중소기업기본법 제44조제2항에서 법무부장관은 과태료 처분 대상자에게 의견을 진술할 기회를 주어야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: paragraph, expression: formal, challenge: wrong_document, domain: cross_domain}
+
+  - id: holdout-ambiguous-company-customer
+    question: 회사와 고객은 어떤 관계인가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: generic, challenge: ambiguity, domain: generic}
+
+  - id: holdout-ambiguous-commission-applicant
+    question: 금융위원회와 신청인은 어떤 관계인가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: generic, challenge: ambiguity, domain: generic}
+
+  - id: holdout-ambiguous-exchange-committee
+    question: 거래소와 위원회는 어떤 관계인가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: generic, challenge: ambiguity, domain: securities_rule}
+
+  - id: holdout-ambiguous-compliance-employees
+    question: 준법감시인과 임직원은 어떤 관계인가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: generic, challenge: ambiguity, domain: internal_control}
+
+  - id: holdout-ambiguous-president-decree
+    question: 대통령과 시행령은 어떤 관계인가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: generic, challenge: ambiguity, domain: generic}
+
+  - id: holdout-cross-medical-tax
+    question: 국세청장이 환자 진료기록을 국회에 제공하여야 하나?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: adversarial, challenge: contamination, domain: cross_domain}
+
+  - id: holdout-cross-streaming-audit
+    question: 주권상장법인 감사인이 보고서를 음악 스트리밍 업체에 제출하여야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: adversarial, challenge: contamination, domain: cross_domain}
+
+  - id: holdout-bank-contract-blockchain
+    question: 은행이 약관을 블록체인에서 영구 삭제하여야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: adversarial, challenge: contamination, domain: cross_domain}
+
+  - id: holdout-konex-committee-dissolution
+    question: 거래소가 코넥스시장 상장공시위원회를 해산할 수 있는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: adversarial, challenge: wrong_predicate, domain: securities_rule}
+
+  - id: holdout-fine-opinion-deprivation
+    question: 법무부장관이 과태료 처분 대상자의 의견을 진술할 기회를 박탈하여야 하는가?
+    expect_hit: false
+    axes: {outcome: negative, source_tier: none, scope: unscoped, expression: adversarial, challenge: wrong_predicate, domain: commercial}

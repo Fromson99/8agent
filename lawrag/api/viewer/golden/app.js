@@ -9,6 +9,7 @@ const el = (t, c, x) => { const n = document.createElement(t); if (c) n.classNam
                           if (x != null) n.textContent = x; return n; };
 
 let CASES = [], CUR = null, TAG = null, LAWNAME = "";
+let CM = null, CM_CUR = null, TAGGING_LOADED = false;
 
 async function api(path, opts) {
   const r = await fetch(path, opts);
@@ -155,8 +156,100 @@ async function save() {
   } catch (e) { fail(`저장 실패 — ${e.message}`); }
 }
 
-/* ── 시작 ─────────────────────────────────────────────────── */
-(async function init() {
+/* ── CM 현업 핵심 골든 ────────────────────────────────────── */
+function cmFiltered() {
+  if (!CM) return [];
+  const q = $("#cmQuery").value.trim().toLowerCase();
+  const domain = $("#cmDomain").value;
+  return CM.cases.filter((row) => {
+    if (domain && row.business_domain !== domain) return false;
+    const laws = (row.expected_articles || []).map((x) => `${x.law} ${x.article}`).join(" ");
+    return !q || `${row.id} ${row.topic} ${row.question} ${laws}`.toLowerCase().includes(q);
+  });
+}
+
+function renderCMList() {
+  const rows = cmFiltered();
+  $("#cmCount").textContent = `${rows.length}건`;
+  const box = $("#cmList"); box.innerHTML = "";
+  rows.forEach((row) => {
+    const button = el("button", "cm-case" + (CM_CUR === row.id ? " on" : ""));
+    const top = el("span", "cm-case-top");
+    top.append(el("b", null, row.id), el("i", null, row.business_domain || "미분류"));
+    button.append(top, el("strong", null, row.source_question || row.question),
+      el("small", null, `${row.question_kind === "additional" ? "추가질문" : "본질문"} · 정답조문 ${(row.expected_articles || []).length}개`));
+    button.onclick = () => openCM(row.id);
+    box.append(button);
+  });
+  if (!rows.length) box.append(el("div", "cm-empty small", "조건에 맞는 문항이 없습니다."));
+}
+
+function cmBlock(title, text, cls = "") {
+  const section = el("section", `cm-block ${cls}`.trim());
+  section.append(el("h3", null, title), el("div", "cm-text", text || "—"));
+  return section;
+}
+
+async function openCM(id) {
+  try {
+    CM_CUR = id; renderCMList();
+    const data = await api(`/v1/golden/cm/case/${encodeURIComponent(id)}`);
+    const row = data.case, axes = row.axes || {}, box = $("#cmDetail");
+    box.innerHTML = "";
+    const head = el("header", "cm-detail-head");
+    const meta = el("div", "cm-detail-meta");
+    meta.append(el("span", "cm-id", row.id), el("span", "cm-domain", axes.business_domain || "미분류"),
+      el("span", "cm-kind", row.question_kind === "additional" ? "추가질문" : "본질문"));
+    head.append(meta, el("h2", null, row.source_question || row.question), el("p", null, row.topic || ""));
+    box.append(head, cmBlock("단일턴 입력", row.question, "question"),
+      cmBlock("현업 기준답변", row.reference_answer, "answer"));
+
+    const evidence = el("section", "cm-block");
+    evidence.append(el("h3", null, `정답 조문 ${(row.expected_articles || []).length}개`));
+    const coords = el("div", "cm-coords");
+    (row.expected_articles || []).forEach((coord) => {
+      const card = el("div", "cm-coord");
+      card.append(el("b", null, `${coord.law} ${coord.article}`),
+        el("span", null, `doc ${coord.doc_id || "—"} · node ${coord.node || "—"}`),
+        el("small", null, `${coord.document_revision || "개정일 없음"} · 동결 ${coord.corpus_status || "—"}`));
+      coords.append(card);
+    });
+    evidence.append(coords); box.append(evidence);
+
+    const axis = el("section", "cm-block"); axis.append(el("h3", null, "평가 축"));
+    const chips = el("div", "cm-axis");
+    Object.entries(axes).forEach(([key, value]) => chips.append(el("span", null, `${key} · ${value}`)));
+    axis.append(chips); box.append(axis);
+  } catch (e) { fail(`CM 문항을 못 불러왔습니다 — ${e.message}`); }
+}
+
+async function loadCM() {
+  if (CM) { renderCMList(); return; }
+  try {
+    CM = await api("/v1/golden/cm");
+    const s = CM.summary, validation = CM.validation || {}, current = validation.current_material || {};
+    $("#cmCases").textContent = s.cases;
+    $("#cmArticles").textContent = s.expected_articles;
+    $("#cmDomains").textContent = s.business_domains;
+    $("#cmComplete").textContent = `${current.complete || 0}/${s.cases}`;
+    $("#cmDrift").textContent = `좌표 변화 ${(validation.corpus_drift || []).length}건`;
+    $("#cmValid").textContent = validation.valid ? "원문 검증 PASS" : "원문 검증 FAIL";
+    $("#cmValid").classList.toggle("bad", !validation.valid);
+    $("#cmFrozen").textContent = CM.frozen ? "FROZEN" : "DRAFT";
+    $("#cmSource").textContent = `${CM.source.organization_unit || "CM본부"} · ${CM.source.title || CM.name} · ${CM.source.date_from_filename || ""}`;
+    $("#summary").textContent = `CM 현업 ${s.cases}건 · 정답 조문 ${s.expected_articles}개 · 현재 재료 ${current.complete || 0}건`;
+    const domains = Object.keys(s.by_domain || {}).sort();
+    $("#cmDomain").innerHTML = '<option value="">모든 도메인</option>';
+    domains.forEach((domain) => { const option = el("option", null, domain); option.value = domain; $("#cmDomain").append(option); });
+    renderCMList();
+    if (CM.cases.length) openCM(CM.cases[0].id);
+  } catch (e) { fail(`CM 골든을 못 불러왔습니다 — ${e.message}`); }
+}
+
+/* ── 법령해석 태깅 지연 적재 ─────────────────────────────── */
+async function loadTagging() {
+  if (TAGGING_LOADED) { renderList(); return; }
+  TAGGING_LOADED = true;
   try {
     const d = await api("/v1/golden/cases?limit=60");
     CASES = d.cases; renderList();
@@ -170,4 +263,22 @@ async function save() {
     (b.onclick = () => { TAG.direction = TAG.direction === b.dataset.d ? null : b.dataset.d;
                          renderDirs(); }));
   $("#lawq").onchange = () => loadLaw($("#lawq").value.trim());
-})();
+}
+
+function setMode(mode) {
+  const cm = mode === "cm";
+  $("#cmView").classList.toggle("hidden", !cm);
+  $("#tagView").classList.toggle("hidden", cm);
+  $("#saveBtn").classList.toggle("hidden", cm);
+  $("#cmMode").classList.toggle("on", cm);
+  $("#tagMode").classList.toggle("on", !cm);
+  history.replaceState(null, "", cm ? "#cm" : "#tagging");
+  if (cm) loadCM(); else loadTagging();
+}
+
+/* ── 시작 ─────────────────────────────────────────────────── */
+$("#cmMode").onclick = () => setMode("cm");
+$("#tagMode").onclick = () => setMode("tagging");
+$("#cmQuery").oninput = renderCMList;
+$("#cmDomain").onchange = renderCMList;
+setMode(location.hash === "#tagging" ? "tagging" : "cm");

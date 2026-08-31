@@ -1,0 +1,2083 @@
+{
+  "cases": [
+    {
+      "answer_as_of": "20260407",
+      "answer_time_articles": [
+        {
+          "article": "제13조",
+          "authority_as_of": "20260407",
+          "authority_source": {
+            "effective_snapshot": "20260213",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=admrul&ID=2100000274812&type=XML",
+            "official_serial": "2100000274812",
+            "provider": "국가법령정보센터",
+            "sha256": "dc75a9dab2d748635e85051feb387045d16ba7762653a9e71297eb8e536c9eff"
+          },
+          "coordinate_key": "body:제13조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "dc75a9dab2d74863",
+          "document_enforcement": "20260213",
+          "document_revision": "20260213",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "전자금융감독규정",
+          "node": "116",
+          "source_text_sha256": "c5bdefc9ae992fb0ddd8506d095cf98d8c58aa41824691ae70bb003f55c3a012"
+        }
+      ],
+      "answer_time_evidence_articles": [
+        {
+          "article": "제13조",
+          "authority_as_of": "20260407",
+          "authority_source": {
+            "effective_snapshot": "20260213",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=admrul&ID=2100000274812&type=XML",
+            "official_serial": "2100000274812",
+            "provider": "국가법령정보센터",
+            "sha256": "dc75a9dab2d748635e85051feb387045d16ba7762653a9e71297eb8e536c9eff"
+          },
+          "coordinate_key": "body:제13조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "dc75a9dab2d74863",
+          "document_enforcement": "20260213",
+          "document_revision": "20260213",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "전자금융감독규정",
+          "node": "116",
+          "source_text_sha256": "c5bdefc9ae992fb0ddd8506d095cf98d8c58aa41824691ae70bb003f55c3a012"
+        }
+      ],
+      "answer_time_required_companions": [],
+      "axes": {
+        "answer_type": "conditional_permission",
+        "difficulty": "hard",
+        "legal_operation": "location_condition",
+        "provenance": "actual_fsc_reply",
+        "source_scope": "single_rule"
+      },
+      "current_articles": [
+        {
+          "article": "제13조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제13조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "342cfff1766f3631",
+          "document_enforcement": "20260715",
+          "document_revision": "20260715",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "전자금융감독규정",
+          "node": "116",
+          "source_text_sha256": "c5bdefc9ae992fb0ddd8506d095cf98d8c58aa41824691ae70bb003f55c3a012"
+        }
+      ],
+      "current_as_of": "20260827",
+      "current_evidence_articles": [
+        {
+          "article": "제13조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제13조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "342cfff1766f3631",
+          "document_enforcement": "20260715",
+          "document_revision": "20260715",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "전자금융감독규정",
+          "node": "116",
+          "source_text_sha256": "c5bdefc9ae992fb0ddd8506d095cf98d8c58aa41824691ae70bb003f55c3a012"
+        }
+      ],
+      "current_required_companions": [],
+      "evidence_audit": {
+        "answer_time_article_count": 1,
+        "current_article_count": 1,
+        "external_missing_count": 1,
+        "method": "manual official FSC reply/reason and article-root review",
+        "minimal_sufficient": false,
+        "status": "audited"
+      },
+      "expected_articles": [
+        {
+          "article": "제13조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제13조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "342cfff1766f3631",
+          "document_enforcement": "20260715",
+          "document_revision": "20260715",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "전자금융감독규정",
+          "node": "116",
+          "source_text_sha256": "c5bdefc9ae992fb0ddd8506d095cf98d8c58aa41824691ae70bb003f55c3a012"
+        }
+      ],
+      "id": "fsc-hard-001",
+      "published": "2026-04-07",
+      "question": "전자금융감독규정에 따라 전산자료를 원격 안전지역에 소산하는 경우, 재해복구센터에 소산할 수 있는지, 혹은 제3의 안전지역에 소산해야 하는지 여부",
+      "reference_answer": "금융회사등은 전산자료의 소산을 위한 원격 안전지역을 자율적으로 판단하여 선택할 수 있습니다.",
+      "required_external_evidence": [
+        {
+          "article": "제21조",
+          "authority_as_of": "20260407",
+          "corpus_status": "missing_document",
+          "evidence_role_v3": "DELEGATION_BRIDGE",
+          "law": "전자금융거래법",
+          "reason": "전자금융감독규정 제13조의 상위 안전성 확보의무와 금융위원회 기준 위임 근거다.",
+          "source_path": "data/wiki/raw/fsc/2026-04-07-1-5075.md",
+          "source_quote": "금융회사등은 전자금융거래의 안전성과 신뢰성을 확보할 수 있도록 전자적 전송이나 처리를 위한 인력, 시설, 전자적 장치, 소요경비 등의 정보기술부문, 전자금융업무 및 「전자서명법」에 의한 인증서의 사용 등 인증방법에 관하여 금융위원회가 정하는 기준을 준수하여야 한다.",
+          "source_quote_sha256": "2b3171ae7d1737ca95f50ac0daef748fee0c5c40bbf1d99232266f145a77228a",
+          "source_sha256": "17058005b1afc35908b92ef20a376bfbab686a47931a93d8d7c4b9c0abc87788"
+        }
+      ],
+      "source_file": "data/wiki/raw/fsc/2026-04-07-1-5075.md",
+      "source_record": "법령해석 1-5075",
+      "source_sha256": "17058005b1afc35908b92ef20a376bfbab686a47931a93d8d7c4b9c0abc87788"
+    },
+    {
+      "answer_as_of": "20260320",
+      "answer_time_articles": [
+        {
+          "article": "제10조",
+          "authority_as_of": "20260320",
+          "authority_source": {
+            "effective_snapshot": "20260102",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=277253&efYd=20260102&type=XML",
+            "official_serial": "277253",
+            "provider": "국가법령정보센터",
+            "sha256": "9ff3d75bd44e546bdd249300ce887838367a162ee12f34a6f35928d115c9c0b7"
+          },
+          "coordinate_key": "body:제10조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "9ff3d75bd44e546b",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "78",
+          "source_text_sha256": "ca7349dbc790788171fa8cd8b972ca4c65cf74f36627c6d6905c9503ba2d9792"
+        }
+      ],
+      "answer_time_evidence_articles": [
+        {
+          "article": "제10조",
+          "authority_as_of": "20260320",
+          "authority_source": {
+            "effective_snapshot": "20260102",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=277253&efYd=20260102&type=XML",
+            "official_serial": "277253",
+            "provider": "국가법령정보센터",
+            "sha256": "9ff3d75bd44e546bdd249300ce887838367a162ee12f34a6f35928d115c9c0b7"
+          },
+          "coordinate_key": "body:제10조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "9ff3d75bd44e546b",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "78",
+          "source_text_sha256": "ca7349dbc790788171fa8cd8b972ca4c65cf74f36627c6d6905c9503ba2d9792"
+        },
+        {
+          "addition_reason": "타 영리법인이 금융회사인 경우의 보고 요건을 보존한다.",
+          "article": "제11조",
+          "authority_as_of": "20260320",
+          "authority_source": {
+            "effective_snapshot": "20260102",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=277253&efYd=20260102&type=XML",
+            "official_serial": "277253",
+            "provider": "국가법령정보센터",
+            "sha256": "9ff3d75bd44e546bdd249300ce887838367a162ee12f34a6f35928d115c9c0b7"
+          },
+          "coordinate_key": "body:제11조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "9ff3d75bd44e546b",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "required_companion",
+          "evidence_role_v3": "CONDITION_EXCEPTION",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "95",
+          "source_text_sha256": "9380b4671b47e82cfca9ec212c68e33cafa1287bad2e1ec87656616782f21516"
+        },
+        {
+          "addition_reason": "비상근 겸직 보고의 세부 범위를 보존한다.",
+          "article": "제11조",
+          "authority_as_of": "20260320",
+          "authority_source": {
+            "effective_snapshot": "20241017",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=263173&efYd=20241017&type=XML",
+            "official_serial": "263173",
+            "provider": "국가법령정보센터",
+            "sha256": "08d272e8413aa7beb3aea2345ebfca69c18b550c6be4de9cb524e7dea2b306ab"
+          },
+          "coordinate_key": "body:제11조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "08d272e8413aa7be",
+          "document_enforcement": "20241017",
+          "document_revision": "20240618",
+          "evidence_role": "required_companion",
+          "evidence_role_v3": "CONDITION_EXCEPTION",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "198",
+          "source_text_sha256": "c76f2b6ff4d953ab36f87ad844fd51dbb121805cf39c04d3e5afbb9a9c4b2429"
+        }
+      ],
+      "answer_time_required_companions": [
+        {
+          "addition_reason": "타 영리법인이 금융회사인 경우의 보고 요건을 보존한다.",
+          "article": "제11조",
+          "authority_as_of": "20260320",
+          "authority_source": {
+            "effective_snapshot": "20260102",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=277253&efYd=20260102&type=XML",
+            "official_serial": "277253",
+            "provider": "국가법령정보센터",
+            "sha256": "9ff3d75bd44e546bdd249300ce887838367a162ee12f34a6f35928d115c9c0b7"
+          },
+          "coordinate_key": "body:제11조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "9ff3d75bd44e546b",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "required_companion",
+          "evidence_role_v3": "CONDITION_EXCEPTION",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "95",
+          "source_text_sha256": "9380b4671b47e82cfca9ec212c68e33cafa1287bad2e1ec87656616782f21516"
+        },
+        {
+          "addition_reason": "비상근 겸직 보고의 세부 범위를 보존한다.",
+          "article": "제11조",
+          "authority_as_of": "20260320",
+          "authority_source": {
+            "effective_snapshot": "20241017",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=263173&efYd=20241017&type=XML",
+            "official_serial": "263173",
+            "provider": "국가법령정보센터",
+            "sha256": "08d272e8413aa7beb3aea2345ebfca69c18b550c6be4de9cb524e7dea2b306ab"
+          },
+          "coordinate_key": "body:제11조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "08d272e8413aa7be",
+          "document_enforcement": "20241017",
+          "document_revision": "20240618",
+          "evidence_role": "required_companion",
+          "evidence_role_v3": "CONDITION_EXCEPTION",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "198",
+          "source_text_sha256": "c76f2b6ff4d953ab36f87ad844fd51dbb121805cf39c04d3e5afbb9a9c4b2429"
+        }
+      ],
+      "axes": {
+        "answer_type": "negative_violation",
+        "difficulty": "hard",
+        "legal_operation": "exception_by_role_nature",
+        "provenance": "actual_fsc_reply",
+        "source_scope": "single_law"
+      },
+      "current_articles": [
+        {
+          "article": "제10조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제10조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "c4b33879c7dc5554",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "78",
+          "source_text_sha256": "ca7349dbc790788171fa8cd8b972ca4c65cf74f36627c6d6905c9503ba2d9792"
+        }
+      ],
+      "current_as_of": "20260827",
+      "current_evidence_articles": [
+        {
+          "article": "제10조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제10조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "c4b33879c7dc5554",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "78",
+          "source_text_sha256": "ca7349dbc790788171fa8cd8b972ca4c65cf74f36627c6d6905c9503ba2d9792"
+        },
+        {
+          "addition_reason": "타 영리법인이 금융회사인 경우의 보고 요건을 보존한다.",
+          "article": "제11조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제11조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "c4b33879c7dc5554",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "required_companion",
+          "evidence_role_v3": "CONDITION_EXCEPTION",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "95",
+          "source_text_sha256": "9380b4671b47e82cfca9ec212c68e33cafa1287bad2e1ec87656616782f21516"
+        },
+        {
+          "addition_reason": "비상근 겸직 보고의 세부 범위를 보존한다.",
+          "article": "제11조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제11조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "33b5315a0bc2d899",
+          "document_enforcement": "20260324",
+          "document_revision": "20260324",
+          "evidence_role": "required_companion",
+          "evidence_role_v3": "CONDITION_EXCEPTION",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "198",
+          "source_text_sha256": "c76f2b6ff4d953ab36f87ad844fd51dbb121805cf39c04d3e5afbb9a9c4b2429"
+        }
+      ],
+      "current_required_companions": [
+        {
+          "addition_reason": "타 영리법인이 금융회사인 경우의 보고 요건을 보존한다.",
+          "article": "제11조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제11조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "c4b33879c7dc5554",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "required_companion",
+          "evidence_role_v3": "CONDITION_EXCEPTION",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "95",
+          "source_text_sha256": "9380b4671b47e82cfca9ec212c68e33cafa1287bad2e1ec87656616782f21516"
+        },
+        {
+          "addition_reason": "비상근 겸직 보고의 세부 범위를 보존한다.",
+          "article": "제11조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제11조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "33b5315a0bc2d899",
+          "document_enforcement": "20260324",
+          "document_revision": "20260324",
+          "evidence_role": "required_companion",
+          "evidence_role_v3": "CONDITION_EXCEPTION",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "198",
+          "source_text_sha256": "c76f2b6ff4d953ab36f87ad844fd51dbb121805cf39c04d3e5afbb9a9c4b2429"
+        }
+      ],
+      "evidence_audit": {
+        "answer_time_article_count": 3,
+        "current_article_count": 3,
+        "external_missing_count": 0,
+        "method": "manual official FSC reply/reason and article-root review",
+        "minimal_sufficient": true,
+        "status": "audited"
+      },
+      "expected_articles": [
+        {
+          "article": "제10조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제10조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "c4b33879c7dc5554",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "78",
+          "source_text_sha256": "ca7349dbc790788171fa8cd8b972ca4c65cf74f36627c6d6905c9503ba2d9792"
+        }
+      ],
+      "id": "fsc-hard-002",
+      "published": "2026-03-20",
+      "question": "금융회사의 상근임원이 자사 운용펀드가 투자하지 않은 SPAC의 비상근임원을 겸직하는 것이 「금융회사의 지배구조에 관한 법률」(이하 “지배구조법”)」에 따른 겸직제한에 위반되지 않는지?",
+      "reference_answer": "지배구조법 제10조제1항에서는 금융회사 상근임원이 다른 영리법인의 상시적인 업무에 종사하는 것을 원칙적으로 금지하고 있으나, 다른 영리법인의 비상시적인 업무에 종사하는 것은 별도로 금하고 있지 않으므로,\n타 영리법인의 비상근임원을 겸직하는 것은 지배구조법상 겸직제한에 해당하지 않습니다.",
+      "required_external_evidence": [],
+      "source_file": "data/wiki/raw/fsc/2026-03-20-1-5185.md",
+      "source_record": "법령해석 1-5185",
+      "source_sha256": "7a44c77190bca0731b94f30fef8ea5e851d5a9b5d013601000a9b2565d26c5fe"
+    },
+    {
+      "answer_as_of": "20250122",
+      "answer_time_articles": [
+        {
+          "article": "제29조",
+          "authority_as_of": "20250122",
+          "authority_source": {
+            "effective_snapshot": "20240703",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=257829&efYd=20240703&type=XML",
+            "official_serial": "257829",
+            "provider": "국가법령정보센터",
+            "sha256": "1ab2b728e6280db5b1c2af08b6cd50cdfe8bb1615b337e26ed31313c82e3fc42"
+          },
+          "coordinate_key": "body:제29조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "1ab2b728e6280db5",
+          "document_enforcement": "20240703",
+          "document_revision": "20240102",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "244",
+          "source_text_sha256": "6f989f9962260bd9420be4e5dc97d44eca8e06daa08eae8a521c08d267af04ac"
+        },
+        {
+          "article": "제24조",
+          "authority_as_of": "20250122",
+          "authority_source": {
+            "effective_snapshot": "20241017",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=263173&efYd=20241017&type=XML",
+            "official_serial": "263173",
+            "provider": "국가법령정보센터",
+            "sha256": "08d272e8413aa7beb3aea2345ebfca69c18b550c6be4de9cb524e7dea2b306ab"
+          },
+          "coordinate_key": "body:제24조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "08d272e8413aa7be",
+          "document_enforcement": "20241017",
+          "document_revision": "20240618",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "388",
+          "source_text_sha256": "68f9186a5d0c1e22106c03d35d64724d93b80ee4d227b26e720cfdc57ba3f399"
+        }
+      ],
+      "answer_time_evidence_articles": [
+        {
+          "article": "제29조",
+          "authority_as_of": "20250122",
+          "authority_source": {
+            "effective_snapshot": "20240703",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=257829&efYd=20240703&type=XML",
+            "official_serial": "257829",
+            "provider": "국가법령정보센터",
+            "sha256": "1ab2b728e6280db5b1c2af08b6cd50cdfe8bb1615b337e26ed31313c82e3fc42"
+          },
+          "coordinate_key": "body:제29조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "1ab2b728e6280db5",
+          "document_enforcement": "20240703",
+          "document_revision": "20240102",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "244",
+          "source_text_sha256": "6f989f9962260bd9420be4e5dc97d44eca8e06daa08eae8a521c08d267af04ac"
+        },
+        {
+          "article": "제24조",
+          "authority_as_of": "20250122",
+          "authority_source": {
+            "effective_snapshot": "20241017",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=263173&efYd=20241017&type=XML",
+            "official_serial": "263173",
+            "provider": "국가법령정보센터",
+            "sha256": "08d272e8413aa7beb3aea2345ebfca69c18b550c6be4de9cb524e7dea2b306ab"
+          },
+          "coordinate_key": "body:제24조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "08d272e8413aa7be",
+          "document_enforcement": "20241017",
+          "document_revision": "20240618",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "388",
+          "source_text_sha256": "68f9186a5d0c1e22106c03d35d64724d93b80ee4d227b26e720cfdc57ba3f399"
+        }
+      ],
+      "answer_time_required_companions": [],
+      "axes": {
+        "answer_type": "prohibited",
+        "difficulty": "hard",
+        "legal_operation": "cross_statute_function_classification",
+        "provenance": "actual_fsc_reply",
+        "source_scope": "law_and_decree"
+      },
+      "current_articles": [
+        {
+          "article": "제29조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제29조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "c4b33879c7dc5554",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "244",
+          "source_text_sha256": "6f989f9962260bd9420be4e5dc97d44eca8e06daa08eae8a521c08d267af04ac"
+        },
+        {
+          "article": "제24조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제24조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "33b5315a0bc2d899",
+          "document_enforcement": "20260324",
+          "document_revision": "20260324",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "388",
+          "source_text_sha256": "68f9186a5d0c1e22106c03d35d64724d93b80ee4d227b26e720cfdc57ba3f399"
+        }
+      ],
+      "current_as_of": "20260827",
+      "current_evidence_articles": [
+        {
+          "article": "제29조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제29조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "c4b33879c7dc5554",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "244",
+          "source_text_sha256": "6f989f9962260bd9420be4e5dc97d44eca8e06daa08eae8a521c08d267af04ac"
+        },
+        {
+          "article": "제24조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제24조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "33b5315a0bc2d899",
+          "document_enforcement": "20260324",
+          "document_revision": "20260324",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "388",
+          "source_text_sha256": "68f9186a5d0c1e22106c03d35d64724d93b80ee4d227b26e720cfdc57ba3f399"
+        }
+      ],
+      "current_required_companions": [],
+      "evidence_audit": {
+        "answer_time_article_count": 2,
+        "current_article_count": 2,
+        "external_missing_count": 2,
+        "method": "manual official FSC reply/reason and article-root review",
+        "minimal_sufficient": false,
+        "status": "audited"
+      },
+      "expected_articles": [
+        {
+          "article": "제29조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제29조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "c4b33879c7dc5554",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "244",
+          "source_text_sha256": "6f989f9962260bd9420be4e5dc97d44eca8e06daa08eae8a521c08d267af04ac"
+        },
+        {
+          "article": "제24조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제24조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "33b5315a0bc2d899",
+          "document_enforcement": "20260324",
+          "document_revision": "20260324",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "388",
+          "source_text_sha256": "68f9186a5d0c1e22106c03d35d64724d93b80ee4d227b26e720cfdc57ba3f399"
+        }
+      ],
+      "id": "fsc-hard-003",
+      "published": "2025-01-22",
+      "question": "상호저축은행의 준법감시인이 「개인금융채권의관리 및 개인금융채무자의 보호에 관한 법률」(이하 “개인채무자보호법”)상 채무조정 전담인력으로서의 업무를 수행할 수 있는지",
+      "reference_answer": "상호저축은행의 준법감시인이 개인채무자보호법상 채무조정 전담인력으로서의 업무를 수행하는 것은 「금융회사의 지배구조에 관한 법률」(이하 “지배구조법”) 제29조제2호에 따라 허용되지 않음을 알려드립니다.",
+      "required_external_evidence": [
+        {
+          "article": "제11조",
+          "authority_as_of": "20250122",
+          "corpus_status": "missing_document",
+          "evidence_role_v3": "INCORPORATED_RULE",
+          "law": "상호저축은행법",
+          "reason": "채무조정을 상호저축은행의 본질적·부수 업무인 자금 대출과 연결하는 규칙이다.",
+          "source_path": "data/wiki/raw/fsc/2025-01-22-1-4958.md",
+          "source_quote": "상호저축은행법 제11조제1항제4호는 “자금의 대출 업무”를 규정",
+          "source_quote_sha256": "3b2287274e00aa26f5abe70e2c365fb2dc292d4d6b22b221e73c5ed63381a77a",
+          "source_sha256": "1b3ecaeba12701c8f56ce9f900744e636436169fed3236dc9a124524194b714d"
+        },
+        {
+          "article": "제2조",
+          "authority_as_of": "20250122",
+          "corpus_status": "missing_document",
+          "evidence_role_v3": "DEFINITION",
+          "law": "개인금융채권의 관리 및 개인금융채무자의 보호에 관한 법률",
+          "reason": "채무조정이 원리금 감면·이자율 조정·새 대출에 의한 기존 채무 변제 등 채무 내용 변경임을 정한다.",
+          "source_path": "data/wiki/raw/fsc/2025-01-22-1-4958.md",
+          "source_quote": "‘채무조정’이란 채권금융회사등이 보유한 개인금융채권에 대하여 원리금 감면 또는 이자율 조정, 새로운 대출을 통한 기존 채무의 변제 등으로 그 채무의 내용을 변경하는 것을 의미합니다.",
+          "source_quote_sha256": "7e0dda9c47838388364b04279ac166d2ae838f02b64fe33e05608540748cf666",
+          "source_sha256": "1b3ecaeba12701c8f56ce9f900744e636436169fed3236dc9a124524194b714d"
+        }
+      ],
+      "source_file": "data/wiki/raw/fsc/2025-01-22-1-4958.md",
+      "source_record": "법령해석 1-4958",
+      "source_sha256": "1b3ecaeba12701c8f56ce9f900744e636436169fed3236dc9a124524194b714d"
+    },
+    {
+      "answer_as_of": "20250124",
+      "answer_time_articles": [
+        {
+          "article": "제6조",
+          "authority_as_of": "20250124",
+          "authority_source": {
+            "effective_snapshot": "20250121",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=268611&efYd=20250121&type=XML",
+            "official_serial": "268611",
+            "provider": "국가법령정보센터",
+            "sha256": "de7c8d08623b9397729a215f74e0e29c0545a0c19855cc8b32d02fd08dca6495"
+          },
+          "coordinate_key": "body:제6조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "de7c8d08623b9397",
+          "document_enforcement": "20250121",
+          "document_revision": "20250121",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "59",
+          "source_text_sha256": "1ba408e6b740f7150be356949c81b7af716f3063defce5ab5a24b68b6e6c7ef9"
+        }
+      ],
+      "answer_time_evidence_articles": [
+        {
+          "article": "제6조",
+          "authority_as_of": "20250124",
+          "authority_source": {
+            "effective_snapshot": "20250121",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=268611&efYd=20250121&type=XML",
+            "official_serial": "268611",
+            "provider": "국가법령정보센터",
+            "sha256": "de7c8d08623b9397729a215f74e0e29c0545a0c19855cc8b32d02fd08dca6495"
+          },
+          "coordinate_key": "body:제6조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "de7c8d08623b9397",
+          "document_enforcement": "20250121",
+          "document_revision": "20250121",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "59",
+          "source_text_sha256": "1ba408e6b740f7150be356949c81b7af716f3063defce5ab5a24b68b6e6c7ef9"
+        }
+      ],
+      "answer_time_required_companions": [],
+      "axes": {
+        "answer_type": "permitted_classification",
+        "difficulty": "hard",
+        "legal_operation": "dealer_broker_classification",
+        "provenance": "actual_fsc_reply",
+        "source_scope": "single_law"
+      },
+      "current_articles": [
+        {
+          "article": "제6조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제6조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "9a51fdb8028417bf",
+          "document_enforcement": "20260804",
+          "document_revision": "20260203",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "59",
+          "source_text_sha256": "1ba408e6b740f7150be356949c81b7af716f3063defce5ab5a24b68b6e6c7ef9"
+        }
+      ],
+      "current_as_of": "20260827",
+      "current_evidence_articles": [
+        {
+          "article": "제6조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제6조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "9a51fdb8028417bf",
+          "document_enforcement": "20260804",
+          "document_revision": "20260203",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "59",
+          "source_text_sha256": "1ba408e6b740f7150be356949c81b7af716f3063defce5ab5a24b68b6e6c7ef9"
+        }
+      ],
+      "current_required_companions": [],
+      "evidence_audit": {
+        "answer_time_article_count": 1,
+        "current_article_count": 1,
+        "external_missing_count": 0,
+        "method": "manual official FSC reply/reason and article-root review",
+        "minimal_sufficient": true,
+        "status": "audited"
+      },
+      "expected_articles": [
+        {
+          "article": "제6조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제6조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "9a51fdb8028417bf",
+          "document_enforcement": "20260804",
+          "document_revision": "20260203",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "59",
+          "source_text_sha256": "1ba408e6b740f7150be356949c81b7af716f3063defce5ab5a24b68b6e6c7ef9"
+        }
+      ],
+      "id": "fsc-hard-004",
+      "published": "2025-01-24",
+      "question": "은행이 국채통합계좌를 활용하는 외국인 투자자를 대상으로 국채 매매거래를 수행함에 있어, 보유한 국채 재원을 활용하여 매도하는 것을 원칙으로 하되, 외국인 투자자의 다양한 국채수요에 대응해 제한적으로 먼저 보유하지 아니한 국채를 매도하고 이후 해당 국채를 매수하여 매도에 대한 결제를 이행하는 방식이 국채 투자매매업자로서 은행이 수행 가능한 영업형태인지 (은행은 자기계좌를 이용해 모든 거래를 수행하고, 중개수수료를 받지 아니함)",
+      "reference_answer": "은행이 거래위험을 부담한다는 점, 기보유 재원을 우선 활용한다는 점, 국채통합계좌 이용 외국인만을 대상으로 제한적인 영업을 한다는 점, 중개수수료를 받지 않는다는 점 등을 종합적으로 고려할때 질의하신 거래구조는 은행이 국채 투자매매업자로서 수행할 수 있는 영업형태라고 판단됩니다.",
+      "required_external_evidence": [],
+      "source_file": "data/wiki/raw/fsc/2025-01-24-1-5050.md",
+      "source_record": "법령해석 1-5050",
+      "source_sha256": "c10097b0c43765fb5c1b764e256f034dd402f809b5494122dbdd3cc3fe1029f3"
+    },
+    {
+      "answer_as_of": "20241231",
+      "answer_time_articles": [
+        {
+          "article": "제29조",
+          "authority_as_of": "20241231",
+          "authority_source": {
+            "effective_snapshot": "20240703",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=257829&efYd=20240703&type=XML",
+            "official_serial": "257829",
+            "provider": "국가법령정보센터",
+            "sha256": "1ab2b728e6280db5b1c2af08b6cd50cdfe8bb1615b337e26ed31313c82e3fc42"
+          },
+          "coordinate_key": "body:제29조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "1ab2b728e6280db5",
+          "document_enforcement": "20240703",
+          "document_revision": "20240102",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "244",
+          "source_text_sha256": "6f989f9962260bd9420be4e5dc97d44eca8e06daa08eae8a521c08d267af04ac"
+        },
+        {
+          "article": "제24조",
+          "authority_as_of": "20241231",
+          "authority_source": {
+            "effective_snapshot": "20241017",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=263173&efYd=20241017&type=XML",
+            "official_serial": "263173",
+            "provider": "국가법령정보센터",
+            "sha256": "08d272e8413aa7beb3aea2345ebfca69c18b550c6be4de9cb524e7dea2b306ab"
+          },
+          "coordinate_key": "body:제24조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "08d272e8413aa7be",
+          "document_enforcement": "20241017",
+          "document_revision": "20240618",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "388",
+          "source_text_sha256": "68f9186a5d0c1e22106c03d35d64724d93b80ee4d227b26e720cfdc57ba3f399"
+        }
+      ],
+      "answer_time_evidence_articles": [
+        {
+          "article": "제29조",
+          "authority_as_of": "20241231",
+          "authority_source": {
+            "effective_snapshot": "20240703",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=257829&efYd=20240703&type=XML",
+            "official_serial": "257829",
+            "provider": "국가법령정보센터",
+            "sha256": "1ab2b728e6280db5b1c2af08b6cd50cdfe8bb1615b337e26ed31313c82e3fc42"
+          },
+          "coordinate_key": "body:제29조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "1ab2b728e6280db5",
+          "document_enforcement": "20240703",
+          "document_revision": "20240102",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "244",
+          "source_text_sha256": "6f989f9962260bd9420be4e5dc97d44eca8e06daa08eae8a521c08d267af04ac"
+        },
+        {
+          "article": "제24조",
+          "authority_as_of": "20241231",
+          "authority_source": {
+            "effective_snapshot": "20241017",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=263173&efYd=20241017&type=XML",
+            "official_serial": "263173",
+            "provider": "국가법령정보센터",
+            "sha256": "08d272e8413aa7beb3aea2345ebfca69c18b550c6be4de9cb524e7dea2b306ab"
+          },
+          "coordinate_key": "body:제24조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "08d272e8413aa7be",
+          "document_enforcement": "20241017",
+          "document_revision": "20240618",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "388",
+          "source_text_sha256": "68f9186a5d0c1e22106c03d35d64724d93b80ee4d227b26e720cfdc57ba3f399"
+        }
+      ],
+      "answer_time_required_companions": [],
+      "axes": {
+        "answer_type": "permitted",
+        "difficulty": "hard",
+        "legal_operation": "threshold_timing_exception",
+        "provenance": "actual_fsc_reply",
+        "source_scope": "law_and_decree"
+      },
+      "current_articles": [
+        {
+          "article": "제29조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제29조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "c4b33879c7dc5554",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "244",
+          "source_text_sha256": "6f989f9962260bd9420be4e5dc97d44eca8e06daa08eae8a521c08d267af04ac"
+        },
+        {
+          "article": "제24조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제24조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "33b5315a0bc2d899",
+          "document_enforcement": "20260324",
+          "document_revision": "20260324",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "388",
+          "source_text_sha256": "68f9186a5d0c1e22106c03d35d64724d93b80ee4d227b26e720cfdc57ba3f399"
+        }
+      ],
+      "current_as_of": "20260827",
+      "current_evidence_articles": [
+        {
+          "article": "제29조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제29조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "c4b33879c7dc5554",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "244",
+          "source_text_sha256": "6f989f9962260bd9420be4e5dc97d44eca8e06daa08eae8a521c08d267af04ac"
+        },
+        {
+          "article": "제24조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제24조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "33b5315a0bc2d899",
+          "document_enforcement": "20260324",
+          "document_revision": "20260324",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "388",
+          "source_text_sha256": "68f9186a5d0c1e22106c03d35d64724d93b80ee4d227b26e720cfdc57ba3f399"
+        }
+      ],
+      "current_required_companions": [],
+      "evidence_audit": {
+        "answer_time_article_count": 2,
+        "current_article_count": 2,
+        "external_missing_count": 0,
+        "method": "manual official FSC reply/reason and article-root review",
+        "minimal_sufficient": true,
+        "status": "audited"
+      },
+      "expected_articles": [
+        {
+          "article": "제29조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제29조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "c4b33879c7dc5554",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "244",
+          "source_text_sha256": "6f989f9962260bd9420be4e5dc97d44eca8e06daa08eae8a521c08d267af04ac"
+        },
+        {
+          "article": "제24조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제24조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "33b5315a0bc2d899",
+          "document_enforcement": "20260324",
+          "document_revision": "20260324",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "388",
+          "source_text_sha256": "68f9186a5d0c1e22106c03d35d64724d93b80ee4d227b26e720cfdc57ba3f399"
+        }
+      ],
+      "id": "fsc-hard-005",
+      "published": "2024-12-31",
+      "question": "외국금융회사 국내지점의 총자산이 사업연도 말 이전 6개월 중 7천억원을 초과한 사실이 있으나, 이후 총 자산이 7천억원 미만으로 유지되는 경우 준법감시인이 위험관리책임자를 겸직할 수 있는지",
+      "reference_answer": "외국금융회사 국내지점의 현재 자산총액이 7천억원 미만인 경우 준법감시인과 위험관리책임자의 겸직이 가능함을 알려드립니다.",
+      "required_external_evidence": [],
+      "source_file": "data/wiki/raw/fsc/2024-12-31-1-4998.md",
+      "source_record": "법령해석 1-4998",
+      "source_sha256": "2c42eb8b2ec62b33c44d8bd92f212b64d87ff5d0f64d1709521977154ca74f20"
+    },
+    {
+      "answer_as_of": "20240508",
+      "answer_time_articles": [
+        {
+          "article": "제2조",
+          "authority_as_of": "20240508",
+          "authority_source": {
+            "effective_snapshot": "20230914",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=254785&efYd=20230914&type=XML",
+            "official_serial": "254785",
+            "provider": "국가법령정보센터",
+            "sha256": "240dac7491eec3f8edb15e73183748194e4b5958162fc63b392a4d1dc06701d3"
+          },
+          "coordinate_key": "body:제2조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "240dac7491eec3f8",
+          "document_enforcement": "20230914",
+          "document_revision": "20230914",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DEFINITION",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "2",
+          "source_text_sha256": "7a9c4613b52132caee3a86528f516f90cb12424a02ea9359ca02a905b6f27271"
+        },
+        {
+          "article": "제4조",
+          "authority_as_of": "20240508",
+          "authority_source": {
+            "effective_snapshot": "20240423",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=261895&efYd=20240423&type=XML",
+            "official_serial": "261895",
+            "provider": "국가법령정보센터",
+            "sha256": "a85857dec80536f22123f1b20c01807bea0c366e2c5352690bfa008f2276b3e6"
+          },
+          "coordinate_key": "body:제4조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "a85857dec80536f2",
+          "document_enforcement": "20240423",
+          "document_revision": "20240423",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "28",
+          "source_text_sha256": "2b323f1c7ecd6db71be4d897b6b2e8bd193d2244961da90fd0f1135f902ac36a"
+        }
+      ],
+      "answer_time_evidence_articles": [
+        {
+          "article": "제2조",
+          "authority_as_of": "20240508",
+          "authority_source": {
+            "effective_snapshot": "20230914",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=254785&efYd=20230914&type=XML",
+            "official_serial": "254785",
+            "provider": "국가법령정보센터",
+            "sha256": "240dac7491eec3f8edb15e73183748194e4b5958162fc63b392a4d1dc06701d3"
+          },
+          "coordinate_key": "body:제2조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "240dac7491eec3f8",
+          "document_enforcement": "20230914",
+          "document_revision": "20230914",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DEFINITION",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "2",
+          "source_text_sha256": "7a9c4613b52132caee3a86528f516f90cb12424a02ea9359ca02a905b6f27271"
+        },
+        {
+          "article": "제4조",
+          "authority_as_of": "20240508",
+          "authority_source": {
+            "effective_snapshot": "20240423",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=261895&efYd=20240423&type=XML",
+            "official_serial": "261895",
+            "provider": "국가법령정보센터",
+            "sha256": "a85857dec80536f22123f1b20c01807bea0c366e2c5352690bfa008f2276b3e6"
+          },
+          "coordinate_key": "body:제4조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "a85857dec80536f2",
+          "document_enforcement": "20240423",
+          "document_revision": "20240423",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "28",
+          "source_text_sha256": "2b323f1c7ecd6db71be4d897b6b2e8bd193d2244961da90fd0f1135f902ac36a"
+        }
+      ],
+      "answer_time_required_companions": [],
+      "axes": {
+        "answer_type": "negative_classification",
+        "difficulty": "hard",
+        "legal_operation": "control_definition",
+        "provenance": "actual_fsc_reply",
+        "source_scope": "law_and_decree"
+      },
+      "current_articles": [
+        {
+          "article": "제2조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제2조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "c4b33879c7dc5554",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DEFINITION",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "2",
+          "source_text_sha256": "7a9c4613b52132caee3a86528f516f90cb12424a02ea9359ca02a905b6f27271"
+        },
+        {
+          "article": "제4조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제4조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "33b5315a0bc2d899",
+          "document_enforcement": "20260324",
+          "document_revision": "20260324",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "28",
+          "source_text_sha256": "c8bc92a4226125e34580719f6ef1123e93da1ccb572c1f85580a35b7034930ca"
+        }
+      ],
+      "current_as_of": "20260827",
+      "current_evidence_articles": [
+        {
+          "article": "제2조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제2조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "c4b33879c7dc5554",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DEFINITION",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "2",
+          "source_text_sha256": "7a9c4613b52132caee3a86528f516f90cb12424a02ea9359ca02a905b6f27271"
+        },
+        {
+          "article": "제4조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제4조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "33b5315a0bc2d899",
+          "document_enforcement": "20260324",
+          "document_revision": "20260324",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "28",
+          "source_text_sha256": "c8bc92a4226125e34580719f6ef1123e93da1ccb572c1f85580a35b7034930ca"
+        }
+      ],
+      "current_required_companions": [],
+      "evidence_audit": {
+        "answer_time_article_count": 2,
+        "current_article_count": 2,
+        "external_missing_count": 0,
+        "method": "manual official FSC reply/reason and article-root review",
+        "minimal_sufficient": true,
+        "status": "audited"
+      },
+      "expected_articles": [
+        {
+          "article": "제2조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제2조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "c4b33879c7dc5554",
+          "document_enforcement": "20260102",
+          "document_revision": "20251001",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DEFINITION",
+          "law": "금융회사의 지배구조에 관한 법률",
+          "node": "2",
+          "source_text_sha256": "7a9c4613b52132caee3a86528f516f90cb12424a02ea9359ca02a905b6f27271"
+        },
+        {
+          "article": "제4조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제4조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "33b5315a0bc2d899",
+          "document_enforcement": "20260324",
+          "document_revision": "20260324",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "node": "28",
+          "source_text_sha256": "c8bc92a4226125e34580719f6ef1123e93da1ccb572c1f85580a35b7034930ca"
+        }
+      ],
+      "id": "fsc-hard-006",
+      "published": "2024-05-08",
+      "question": "금융회사와 투자자간에 '투자금 용도 변경 및 신주발행 등을 위해 동의가 필요'하다는 내용 등의 투자계약을 체결한 경우, 해당 투자자가 「금융회사의 지배구조에 관한 법률」(이하 ‘지배구조법’)상 대주주(주요주주)에 해당하는지",
+      "reference_answer": "해당 투자자가 ① 의결권 있는 발행주식 10% 이상을 소유하거나 ② 혼자서 또는 다른 주주와 합의·계약 등으로 대표이사 또는 이사의 과반수를 선임하는 등의 사정이 없는 이상 금융회사의 대주주(주요주주)에 해당하지 않는 것으로 판단됩니다.",
+      "required_external_evidence": [],
+      "source_file": "data/wiki/raw/fsc/2024-05-08-1-4199.md",
+      "source_record": "법령해석 1-4199",
+      "source_sha256": "1df1006b067b5d41dbd9dc87586c62a20e569ef3f50eb12c5fecf05a32e6f87c"
+    },
+    {
+      "answer_as_of": "20170712",
+      "answer_time_articles": [
+        {
+          "article": "제72조",
+          "authority_as_of": "20170712",
+          "authority_source": {
+            "effective_snapshot": "20170418",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=193467&efYd=20170418&type=XML",
+            "official_serial": "193467",
+            "provider": "국가법령정보센터",
+            "sha256": "bb239f6ce1242e259e23234fb5b051a4ae50a5335d0980aa24958edde74c019e"
+          },
+          "coordinate_key": "body:제72조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "bb239f6ce1242e25",
+          "document_enforcement": "20170418",
+          "document_revision": "20170418",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "587",
+          "source_text_sha256": "cb0cd8a2c95fd363f373348f82f0a1c776403ba4252893a0279d61569361a741"
+        }
+      ],
+      "answer_time_evidence_articles": [
+        {
+          "article": "제72조",
+          "authority_as_of": "20170712",
+          "authority_source": {
+            "effective_snapshot": "20170418",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=193467&efYd=20170418&type=XML",
+            "official_serial": "193467",
+            "provider": "국가법령정보센터",
+            "sha256": "bb239f6ce1242e259e23234fb5b051a4ae50a5335d0980aa24958edde74c019e"
+          },
+          "coordinate_key": "body:제72조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "bb239f6ce1242e25",
+          "document_enforcement": "20170418",
+          "document_revision": "20170418",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "587",
+          "source_text_sha256": "cb0cd8a2c95fd363f373348f82f0a1c776403ba4252893a0279d61569361a741"
+        }
+      ],
+      "answer_time_required_companions": [],
+      "axes": {
+        "answer_type": "mixed_conditional",
+        "difficulty": "hard",
+        "legal_operation": "three_way_purpose_test",
+        "provenance": "actual_fsc_reply",
+        "source_scope": "single_law"
+      },
+      "current_articles": [
+        {
+          "article": "제72조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제72조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "9a51fdb8028417bf",
+          "document_enforcement": "20260804",
+          "document_revision": "20260203",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "611",
+          "source_text_sha256": "cb0cd8a2c95fd363f373348f82f0a1c776403ba4252893a0279d61569361a741"
+        }
+      ],
+      "current_as_of": "20260827",
+      "current_evidence_articles": [
+        {
+          "article": "제72조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제72조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "9a51fdb8028417bf",
+          "document_enforcement": "20260804",
+          "document_revision": "20260203",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "611",
+          "source_text_sha256": "cb0cd8a2c95fd363f373348f82f0a1c776403ba4252893a0279d61569361a741"
+        }
+      ],
+      "current_required_companions": [],
+      "evidence_audit": {
+        "answer_time_article_count": 1,
+        "current_article_count": 1,
+        "external_missing_count": 0,
+        "method": "manual official FSC reply/reason and article-root review",
+        "minimal_sufficient": true,
+        "status": "audited"
+      },
+      "expected_articles": [
+        {
+          "article": "제72조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제72조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "9a51fdb8028417bf",
+          "document_enforcement": "20260804",
+          "document_revision": "20260203",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "611",
+          "source_text_sha256": "cb0cd8a2c95fd363f373348f82f0a1c776403ba4252893a0279d61569361a741"
+        }
+      ],
+      "id": "fsc-hard-007",
+      "published": "2017-07-12",
+      "question": "투자매매업자는 인수한 증권에 대하여 인수일로부터 3개월 이내에는 투자자가 해당증권을 매수하게 하기 위하여 투자자에게 신용공여를 할 수 없음\n이와 관련하여 이미 주권이 상장되어 있는 회사가 추가로 유상증자를 추진하는 과정에서 다음과 같은 경우에는 인수일로부터 3개월 이내라고 하더라도 예탁증권 담보융자를 할 수 있는지 여부 ① 금번 유상증자로 발행된 신주가 아닌 구주를 인수일 이전부터 보유하고 있던 투자자에게 보유하고 있던 구주를 담보로 융자하는 경우 ② 금번 유상증자로 발행된 신주를 해당 증권회사에 청약하여 취득한 투자자에게 청약 ㆍ 배정 ㆍ 상장이 모두 마무리된 후 보유하고 있는 신주를 담보로 융자하는 경우 ③ 상장 이후 시장에서 해당 주식을 매수한 투자자에게 해당 주식을 담보로 융자하는 경우",
+      "reference_answer": "질의하신 ① , ③ 사례는 투자매매업자가 인수했던 증권을 투자자에게 매도한 것이 아닌 만큼 투자매매업자가 인수한 증권과 동종의 증권을 담보로 예탁증권담보융자를 했다는 사실만으로 「 자본시장과 금융투자업에 관한 법률 」 (이하 ‘ 자본시장법 ’ ) 제72조를 위반했다고 보기는 어렵습니다.\n② 사례의 경우 청약자가 해당증권을 매수하는 행위를 간접적으로 용이하게 해 주는 효과가 발생되는 만큼, 자본시장법 제72조를 준수하기 위해서는 해당 예탁증권 담보융자가 해당 증권을 매수하게 하기 위한 신용공여가 아니라는 사실을 입증할 수 있는 방안을 투자매매업자 스스로 마련해야할 것으로 판단됩니다.",
+      "required_external_evidence": [],
+      "source_file": "data/wiki/raw/fsc/2017-07-12-1-1559.md",
+      "source_record": "법령해석 1-1559",
+      "source_sha256": "2443b920e93c2420bfddf33c9f703b19ee64ac771eb04636827ec04ec9cb4d4a"
+    },
+    {
+      "answer_as_of": "20170519",
+      "answer_time_articles": [
+        {
+          "article": "제159조",
+          "authority_as_of": "20170519",
+          "authority_source": {
+            "effective_snapshot": "20170418",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=193467&efYd=20170418&type=XML",
+            "official_serial": "193467",
+            "provider": "국가법령정보센터",
+            "sha256": "bb239f6ce1242e259e23234fb5b051a4ae50a5335d0980aa24958edde74c019e"
+          },
+          "coordinate_key": "body:제159조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "bb239f6ce1242e25",
+          "document_enforcement": "20170418",
+          "document_revision": "20170418",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "1363",
+          "source_text_sha256": "eece2747261d1d8e6fecbe11b6921579b91d0702e06b0574b2a33d9cc98f7824"
+        },
+        {
+          "article": "제167조",
+          "authority_as_of": "20170519",
+          "authority_source": {
+            "effective_snapshot": "20170508",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=193724&efYd=20170508&type=XML",
+            "official_serial": "193724",
+            "provider": "국가법령정보센터",
+            "sha256": "2dd8f85d998ff29c5eb9b9f01252ca6f4b0923ce0b0e012200e9f1891b2f8501"
+          },
+          "coordinate_key": "body:제167조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "2dd8f85d998ff29c",
+          "document_enforcement": "20170508",
+          "document_revision": "20170508",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "CONDITION_EXCEPTION",
+          "law": "자본시장과 금융투자업에 관한 법률 시행령",
+          "node": "2801",
+          "source_text_sha256": "2b66cdd820055fbff3c1c5bc2996c7cfb037d97fdb8184c56136ef4f23f244a5"
+        }
+      ],
+      "answer_time_evidence_articles": [
+        {
+          "article": "제159조",
+          "authority_as_of": "20170519",
+          "authority_source": {
+            "effective_snapshot": "20170418",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=193467&efYd=20170418&type=XML",
+            "official_serial": "193467",
+            "provider": "국가법령정보센터",
+            "sha256": "bb239f6ce1242e259e23234fb5b051a4ae50a5335d0980aa24958edde74c019e"
+          },
+          "coordinate_key": "body:제159조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "bb239f6ce1242e25",
+          "document_enforcement": "20170418",
+          "document_revision": "20170418",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "1363",
+          "source_text_sha256": "eece2747261d1d8e6fecbe11b6921579b91d0702e06b0574b2a33d9cc98f7824"
+        },
+        {
+          "article": "제167조",
+          "authority_as_of": "20170519",
+          "authority_source": {
+            "effective_snapshot": "20170508",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=193724&efYd=20170508&type=XML",
+            "official_serial": "193724",
+            "provider": "국가법령정보센터",
+            "sha256": "2dd8f85d998ff29c5eb9b9f01252ca6f4b0923ce0b0e012200e9f1891b2f8501"
+          },
+          "coordinate_key": "body:제167조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "2dd8f85d998ff29c",
+          "document_enforcement": "20170508",
+          "document_revision": "20170508",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "CONDITION_EXCEPTION",
+          "law": "자본시장과 금융투자업에 관한 법률 시행령",
+          "node": "2801",
+          "source_text_sha256": "2b66cdd820055fbff3c1c5bc2996c7cfb037d97fdb8184c56136ef4f23f244a5"
+        }
+      ],
+      "answer_time_required_companions": [],
+      "axes": {
+        "answer_type": "negative_exception",
+        "difficulty": "hard",
+        "legal_operation": "population_denominator",
+        "provenance": "actual_fsc_reply",
+        "source_scope": "law_and_decree"
+      },
+      "current_articles": [
+        {
+          "article": "제159조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제159조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "9a51fdb8028417bf",
+          "document_enforcement": "20260804",
+          "document_revision": "20260203",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "1458",
+          "source_text_sha256": "fabf5f834190d896266809325d36e36a639ca4f21e73cbb57b5a4407aecba75f"
+        },
+        {
+          "article": "제167조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제167조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "2fc762b3b8ed81f0",
+          "document_enforcement": "20260804",
+          "document_revision": "20260728",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "CONDITION_EXCEPTION",
+          "law": "자본시장과 금융투자업에 관한 법률 시행령",
+          "node": "2990",
+          "source_text_sha256": "446dc3ae7590449cb8155a96b4b51f52ef8ecd5e85efa70496c244a9bd6a1d55"
+        }
+      ],
+      "current_as_of": "20260827",
+      "current_evidence_articles": [
+        {
+          "article": "제159조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제159조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "9a51fdb8028417bf",
+          "document_enforcement": "20260804",
+          "document_revision": "20260203",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "1458",
+          "source_text_sha256": "fabf5f834190d896266809325d36e36a639ca4f21e73cbb57b5a4407aecba75f"
+        },
+        {
+          "article": "제167조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제167조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "2fc762b3b8ed81f0",
+          "document_enforcement": "20260804",
+          "document_revision": "20260728",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "CONDITION_EXCEPTION",
+          "law": "자본시장과 금융투자업에 관한 법률 시행령",
+          "node": "2990",
+          "source_text_sha256": "446dc3ae7590449cb8155a96b4b51f52ef8ecd5e85efa70496c244a9bd6a1d55"
+        }
+      ],
+      "current_required_companions": [],
+      "evidence_audit": {
+        "answer_time_article_count": 2,
+        "current_article_count": 2,
+        "external_missing_count": 0,
+        "method": "manual official FSC reply/reason and article-root review",
+        "minimal_sufficient": true,
+        "status": "audited"
+      },
+      "expected_articles": [
+        {
+          "article": "제159조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제159조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "9a51fdb8028417bf",
+          "document_enforcement": "20260804",
+          "document_revision": "20260203",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "1458",
+          "source_text_sha256": "fabf5f834190d896266809325d36e36a639ca4f21e73cbb57b5a4407aecba75f"
+        },
+        {
+          "article": "제167조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제167조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "2fc762b3b8ed81f0",
+          "document_enforcement": "20260804",
+          "document_revision": "20260728",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "CONDITION_EXCEPTION",
+          "law": "자본시장과 금융투자업에 관한 법률 시행령",
+          "node": "2990",
+          "source_text_sha256": "446dc3ae7590449cb8155a96b4b51f52ef8ecd5e85efa70496c244a9bd6a1d55"
+        }
+      ],
+      "id": "fsc-hard-008",
+      "published": "2017-05-19",
+      "question": "모집 또는 매출 실적이 있는 법인의 경우 각각의 증권마다 소유자 수가 모두 25인 미만인 경우로서 금융위원회가 인정한 경우 사업보고서 제출이 면제되는데, 해당 증권의 총 소유자 수가 아니라 해당 모집 또는 매출을 통하여 증권을 취득한 소유자 수가 25인 미만인 경우에도 제출이 면제되는지 여부",
+      "reference_answer": "「자본시장과 금융투자업에 관한 법률」(이하 “자본시장법”) 제159조 제1항 및 같은 법 시행령 제167조에 따르면, 주권·주권 외의 지분증권·무보증사채권 등을 모집 또는 매출한 법인은 사업보고서를 제출하여야 하나, 이 경우 각각의 증권마다 소유자 수가 모두 25인 미만인 경우로서 금융위원회가 인정한 경우에는 사업보고서 제출의무를 면제하고 있습니다.\n사업보고서 등 정기공시 제도는 증권을 모집·매출하거나 상장한 법인 등의 사업내용, 재무상황 등 기업내용을 정기적으로 공시함으로써 일반투자자에게 합리적인 투자판단 자료를 제공하려는 것이 목적이므로, 사업보고서 등 제출의무를 면제하는 것은 신중히 판단되어야 합니다.\n사업보고서 제출의무 면제와 관련, 각 증권별 소유자 수가 25인 미만인지 여부를 판단하는 경우에는 모집 또는 매출을 통하여 증권을 취득하였는지 여부를 불문하고 해당 증권의 총 소유자 수를 기준으로 산정하여야 한다고 할 것입니다.",
+      "required_external_evidence": [],
+      "source_file": "data/wiki/raw/fsc/2017-05-19-1-1574.md",
+      "source_record": "법령해석 1-1574",
+      "source_sha256": "9048c9997d990ca46545753f8319a7b5757d8213add6760ad55935473d2a2104"
+    },
+    {
+      "answer_as_of": "20161215",
+      "answer_time_articles": [
+        {
+          "article": "제42조",
+          "authority_as_of": "20161215",
+          "authority_source": {
+            "effective_snapshot": "20161201",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=183694&efYd=20161201&type=XML",
+            "official_serial": "183694",
+            "provider": "국가법령정보센터",
+            "sha256": "d30366d87fa2fbd66ea47e78b4aa910da9c2d46ea265eb4f4eb801ba282ea6d5"
+          },
+          "coordinate_key": "body:제42조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "d30366d87fa2fbd6",
+          "document_enforcement": "20161201",
+          "document_revision": "20160529",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "367",
+          "source_text_sha256": "089d22adbb75a5cef07aad131cd1afcefcf43d7c663a5d080c13c852e1dc9a6e"
+        },
+        {
+          "article": "제46조",
+          "authority_as_of": "20161215",
+          "authority_source": {
+            "effective_snapshot": "20161201",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=187300&efYd=20161201&type=XML",
+            "official_serial": "187300",
+            "provider": "국가법령정보센터",
+            "sha256": "152d03d45292085b4b2b2ade49537c4942bdaa9debc741332f892c17354455da"
+          },
+          "coordinate_key": "body:제46조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "152d03d45292085b",
+          "document_enforcement": "20161201",
+          "document_revision": "20161025",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "자본시장과 금융투자업에 관한 법률 시행령",
+          "node": "711",
+          "source_text_sha256": "ac670680c6e6daed1236a8afb3ac4a3b07a4ea92f7c014e520bd67fd542c71df"
+        }
+      ],
+      "answer_time_evidence_articles": [
+        {
+          "article": "제42조",
+          "authority_as_of": "20161215",
+          "authority_source": {
+            "effective_snapshot": "20161201",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=183694&efYd=20161201&type=XML",
+            "official_serial": "183694",
+            "provider": "국가법령정보센터",
+            "sha256": "d30366d87fa2fbd66ea47e78b4aa910da9c2d46ea265eb4f4eb801ba282ea6d5"
+          },
+          "coordinate_key": "body:제42조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "d30366d87fa2fbd6",
+          "document_enforcement": "20161201",
+          "document_revision": "20160529",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "367",
+          "source_text_sha256": "089d22adbb75a5cef07aad131cd1afcefcf43d7c663a5d080c13c852e1dc9a6e"
+        },
+        {
+          "article": "제46조",
+          "authority_as_of": "20161215",
+          "authority_source": {
+            "effective_snapshot": "20161201",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=187300&efYd=20161201&type=XML",
+            "official_serial": "187300",
+            "provider": "국가법령정보센터",
+            "sha256": "152d03d45292085b4b2b2ade49537c4942bdaa9debc741332f892c17354455da"
+          },
+          "coordinate_key": "body:제46조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "152d03d45292085b",
+          "document_enforcement": "20161201",
+          "document_revision": "20161025",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "자본시장과 금융투자업에 관한 법률 시행령",
+          "node": "711",
+          "source_text_sha256": "ac670680c6e6daed1236a8afb3ac4a3b07a4ea92f7c014e520bd67fd542c71df"
+        }
+      ],
+      "answer_time_required_companions": [],
+      "axes": {
+        "answer_type": "classification_and_uncertainty",
+        "difficulty": "hard",
+        "legal_operation": "outsourcing_substance_test",
+        "provenance": "actual_fsc_reply",
+        "source_scope": "law_and_decree"
+      },
+      "current_articles": [
+        {
+          "article": "제42조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제42조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "9a51fdb8028417bf",
+          "document_enforcement": "20260804",
+          "document_revision": "20260203",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "426",
+          "source_text_sha256": "b0da34dda8f2151c60a114f3bdc3b5512a3d9f7ce7f3dfe06e414a1219ab7524"
+        },
+        {
+          "article": "제46조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제46조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "2fc762b3b8ed81f0",
+          "document_enforcement": "20260804",
+          "document_revision": "20260728",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "자본시장과 금융투자업에 관한 법률 시행령",
+          "node": "791",
+          "source_text_sha256": "bb883b58db05f95b0d33415ca1ccd1b535e3223ee7943a898c648b4bd0ff8deb"
+        }
+      ],
+      "current_as_of": "20260827",
+      "current_evidence_articles": [
+        {
+          "article": "제42조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제42조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "9a51fdb8028417bf",
+          "document_enforcement": "20260804",
+          "document_revision": "20260203",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "426",
+          "source_text_sha256": "b0da34dda8f2151c60a114f3bdc3b5512a3d9f7ce7f3dfe06e414a1219ab7524"
+        },
+        {
+          "article": "제46조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제46조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "2fc762b3b8ed81f0",
+          "document_enforcement": "20260804",
+          "document_revision": "20260728",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "자본시장과 금융투자업에 관한 법률 시행령",
+          "node": "791",
+          "source_text_sha256": "bb883b58db05f95b0d33415ca1ccd1b535e3223ee7943a898c648b4bd0ff8deb"
+        }
+      ],
+      "current_required_companions": [],
+      "evidence_audit": {
+        "answer_time_article_count": 2,
+        "current_article_count": 2,
+        "external_missing_count": 0,
+        "method": "manual official FSC reply/reason and article-root review",
+        "minimal_sufficient": true,
+        "status": "audited"
+      },
+      "expected_articles": [
+        {
+          "article": "제42조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제42조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "9a51fdb8028417bf",
+          "document_enforcement": "20260804",
+          "document_revision": "20260203",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "자본시장과 금융투자업에 관한 법률",
+          "node": "426",
+          "source_text_sha256": "b0da34dda8f2151c60a114f3bdc3b5512a3d9f7ce7f3dfe06e414a1219ab7524"
+        },
+        {
+          "article": "제46조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제46조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "2fc762b3b8ed81f0",
+          "document_enforcement": "20260804",
+          "document_revision": "20260728",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "DELEGATED_DETAIL",
+          "law": "자본시장과 금융투자업에 관한 법률 시행령",
+          "node": "791",
+          "source_text_sha256": "bb883b58db05f95b0d33415ca1ccd1b535e3223ee7943a898c648b4bd0ff8deb"
+        }
+      ],
+      "id": "fsc-hard-009",
+      "published": "2016-12-15",
+      "question": "<제목> 새로운 형태의 투자자문계약 가능 여부\n본 회사는 제3의 투자자문업자로부터 투자자문을 받은 후 선관의무 및 충실의무에 따라 당사 내부적인 투자판단과정을 거친 후 당사가 이를 참조하여 고객에게 투자자문을 하는 형태의 투자자문계약을 운영할 예정입니다.\n이 경우 제3의 투자자문업자로부터 받은 투자자문은 단지 참고사항일 뿐이며, 다만 계약권유문서 등에 제3의 투자자문업자로부터 받은 투자자문을 참조한다는 사실을 명시하려고 합니다. 투자자문사 ↔ ① 투자자문계약 당사 (증권사) ↔ ② 투자자문계약 투자자 위와 관련하여 다음의 사항을 질의드립니다. 1. 상기 투자자문 구조가 관련법규에 위배되는지 여부 2. 상기 투자자문계약 구조가 업무위수탁 계약에 해당하는지 여부 등",
+      "reference_answer": "상기 투자자문계약의 구조는 업무위수탁 계약에 해당합니다.\n상기 투자자문 구조와 관련된 구체적인 사실관계를 알기 곤란하여 법규위반 여부를 판단하기는 곤란합니다.",
+      "required_external_evidence": [],
+      "source_file": "data/wiki/raw/fsc/2016-12-15-1-1240.md",
+      "source_record": "법령해석 1-1240",
+      "source_sha256": "8d51f7648f26ae92a0fba455a4060b71da99a7e53cb4e5b91bfeda6667937597"
+    },
+    {
+      "answer_as_of": "20151016",
+      "answer_time_articles": [
+        {
+          "article": "제17조",
+          "authority_as_of": "20151016",
+          "authority_source": {
+            "effective_snapshot": "20150912",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=169195&efYd=20150912&type=XML",
+            "official_serial": "169195",
+            "provider": "국가법령정보센터",
+            "sha256": "6f85fb8ee86f76a0d46c4dbd7ee3be9ac7f148bf04801964cb249798fdc4cf2f"
+          },
+          "coordinate_key": "body:제17조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "6f85fb8ee86f76a0",
+          "document_enforcement": "20150912",
+          "document_revision": "20150311",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "신용정보의 이용 및 보호에 관한 법률",
+          "node": "126",
+          "source_text_sha256": "0327496169b6b6daea2f01e33242c887cf1db9ff72931a6fae7305355d11ba97"
+        }
+      ],
+      "answer_time_evidence_articles": [
+        {
+          "article": "제17조",
+          "authority_as_of": "20151016",
+          "authority_source": {
+            "effective_snapshot": "20150912",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=169195&efYd=20150912&type=XML",
+            "official_serial": "169195",
+            "provider": "국가법령정보센터",
+            "sha256": "6f85fb8ee86f76a0d46c4dbd7ee3be9ac7f148bf04801964cb249798fdc4cf2f"
+          },
+          "coordinate_key": "body:제17조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "6f85fb8ee86f76a0",
+          "document_enforcement": "20150912",
+          "document_revision": "20150311",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "신용정보의 이용 및 보호에 관한 법률",
+          "node": "126",
+          "source_text_sha256": "0327496169b6b6daea2f01e33242c887cf1db9ff72931a6fae7305355d11ba97"
+        },
+        {
+          "addition_reason": "익명화 일부만으로 신용정보 성격이 사라지는지 판단할 정의 근거다.",
+          "article": "제2조",
+          "authority_as_of": "20151016",
+          "authority_source": {
+            "effective_snapshot": "20150912",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=169195&efYd=20150912&type=XML",
+            "official_serial": "169195",
+            "provider": "국가법령정보센터",
+            "sha256": "6f85fb8ee86f76a0d46c4dbd7ee3be9ac7f148bf04801964cb249798fdc4cf2f"
+          },
+          "coordinate_key": "body:제2조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "6f85fb8ee86f76a0",
+          "document_enforcement": "20150912",
+          "document_revision": "20150311",
+          "evidence_role": "required_companion",
+          "evidence_role_v3": "DEFINITION",
+          "law": "신용정보의 이용 및 보호에 관한 법률",
+          "node": "2",
+          "source_text_sha256": "9676a17e136b959222d1250914496b17b92b28c3e889f4c666c99afa36924007"
+        }
+      ],
+      "answer_time_required_companions": [
+        {
+          "addition_reason": "익명화 일부만으로 신용정보 성격이 사라지는지 판단할 정의 근거다.",
+          "article": "제2조",
+          "authority_as_of": "20151016",
+          "authority_source": {
+            "effective_snapshot": "20150912",
+            "endpoint": "https://www.law.go.kr/DRF/lawService.do?OC=test&target=eflaw&MST=169195&efYd=20150912&type=XML",
+            "official_serial": "169195",
+            "provider": "국가법령정보센터",
+            "sha256": "6f85fb8ee86f76a0d46c4dbd7ee3be9ac7f148bf04801964cb249798fdc4cf2f"
+          },
+          "coordinate_key": "body:제2조",
+          "coordinate_scope": "body",
+          "corpus_status": "historical_present",
+          "doc_id": "6f85fb8ee86f76a0",
+          "document_enforcement": "20150912",
+          "document_revision": "20150311",
+          "evidence_role": "required_companion",
+          "evidence_role_v3": "DEFINITION",
+          "law": "신용정보의 이용 및 보호에 관한 법률",
+          "node": "2",
+          "source_text_sha256": "9676a17e136b959222d1250914496b17b92b28c3e889f4c666c99afa36924007"
+        }
+      ],
+      "axes": {
+        "answer_type": "classification",
+        "difficulty": "hard",
+        "legal_operation": "processing_vs_provision",
+        "provenance": "actual_fsc_reply",
+        "source_scope": "single_law"
+      },
+      "current_articles": [
+        {
+          "article": "제17조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제17조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "d6285eaffb837ebc",
+          "document_enforcement": "20240814",
+          "document_revision": "20240213",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "신용정보의 이용 및 보호에 관한 법률",
+          "node": "288",
+          "source_text_sha256": "86acffb921c7bed122c576c4ade3447bfc356a1e7de7c448b5e5511f401341e6"
+        }
+      ],
+      "current_as_of": "20260827",
+      "current_evidence_articles": [
+        {
+          "article": "제17조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제17조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "d6285eaffb837ebc",
+          "document_enforcement": "20240814",
+          "document_revision": "20240213",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "신용정보의 이용 및 보호에 관한 법률",
+          "node": "288",
+          "source_text_sha256": "86acffb921c7bed122c576c4ade3447bfc356a1e7de7c448b5e5511f401341e6"
+        },
+        {
+          "addition_reason": "익명화 일부만으로 신용정보 성격이 사라지는지 판단할 정의 근거다.",
+          "article": "제2조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제2조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "d6285eaffb837ebc",
+          "document_enforcement": "20240814",
+          "document_revision": "20240213",
+          "evidence_role": "required_companion",
+          "evidence_role_v3": "DEFINITION",
+          "law": "신용정보의 이용 및 보호에 관한 법률",
+          "node": "2",
+          "source_text_sha256": "de2a64c4163af38a2dd0b37c8d3c99d975389fc8403602e275227b5362c1cd5e"
+        }
+      ],
+      "current_required_companions": [
+        {
+          "addition_reason": "익명화 일부만으로 신용정보 성격이 사라지는지 판단할 정의 근거다.",
+          "article": "제2조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제2조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "d6285eaffb837ebc",
+          "document_enforcement": "20240814",
+          "document_revision": "20240213",
+          "evidence_role": "required_companion",
+          "evidence_role_v3": "DEFINITION",
+          "law": "신용정보의 이용 및 보호에 관한 법률",
+          "node": "2",
+          "source_text_sha256": "de2a64c4163af38a2dd0b37c8d3c99d975389fc8403602e275227b5362c1cd5e"
+        }
+      ],
+      "evidence_audit": {
+        "answer_time_article_count": 2,
+        "current_article_count": 2,
+        "external_missing_count": 0,
+        "method": "manual official FSC reply/reason and article-root review",
+        "minimal_sufficient": true,
+        "status": "audited"
+      },
+      "expected_articles": [
+        {
+          "article": "제17조",
+          "authority_as_of": "20260827",
+          "coordinate_key": "body:제17조",
+          "coordinate_scope": "body",
+          "corpus_status": "present",
+          "doc_id": "d6285eaffb837ebc",
+          "document_enforcement": "20240814",
+          "document_revision": "20240213",
+          "evidence_role": "decisive",
+          "evidence_role_v3": "MAIN",
+          "law": "신용정보의 이용 및 보호에 관한 법률",
+          "node": "288",
+          "source_text_sha256": "86acffb921c7bed122c576c4ade3447bfc356a1e7de7c448b5e5511f401341e6"
+        }
+      ],
+      "id": "fsc-hard-010",
+      "published": "2015-10-16",
+      "question": "투자일임·자문업자가 신용정보(소득, 재산규모 등)에서 고객의 이름과 계좌번호를 제거하고 서버매칭하는 방식으로 업무수탁자에게 제공하는 경우 신용정보의 제공에 해당하는지 여부",
+      "reference_answer": "질의하신 사안은 신용정보제공·이용자가 「신용정보의 이용 및 보호에 관한 법률」 제17조제2항에 따라 신용정보의 처리를 위탁하는 것으로 판단되며, 서버매칭 등을 통한 처리방식은 위탁자가 신용정보를 수탁자에게 제공하면서 신용정보 보호를 위하여 채택한 보호 조치 중 하나로 판단됩니다.",
+      "required_external_evidence": [],
+      "source_file": "data/wiki/raw/fsc/2015-10-16-1-620.md",
+      "source_record": "법령해석 1-620",
+      "source_sha256": "ed32c02949ac5d4731ef6d43e8d88cb5591b605bf2cc609ba7815688eeeaf893"
+    }
+  ],
+  "counts": {
+    "answer_time_article_instances": 15,
+    "answer_time_required_companion_instances": 3,
+    "cases": 10,
+    "current_article_instances": 15,
+    "current_required_companion_instances": 3,
+    "gold_article_instances": 15,
+    "historical_documents": 12,
+    "required_external_evidence_instances": 3,
+    "source_documents": 10,
+    "unique_gold_articles": 15
+  },
+  "created_at": "2026-08-26",
+  "evidence_role_contract_v3": {
+    "CONDITION_EXCEPTION": "condition, proviso, exclusion, displaced baseline, or material qualification",
+    "DEFINITION": "definition or legal-status provision needed to resolve an outcome-bearing term",
+    "DELEGATED_DETAIL": "decree, rule, or subordinate provision supplying delegated values or procedure",
+    "DELEGATION_BRIDGE": "higher-authority provision authorizing the detailed rule",
+    "INCORPORATED_RULE": "target rule whose substantive effect is used in the answer",
+    "INCORPORATION_BRIDGE": "article that expressly applies another provision mutatis mutandis",
+    "MAIN": "direct governing article necessary for the requested conclusion",
+    "TEMPORAL_TRANSITION": "effective-date, transitional, or answer-time version evidence"
+  },
+  "frozen": true,
+  "grading": {
+    "case_success": "해당 case의 expected_articles가 모두 최종 top 20에 포함",
+    "historical_provenance": "answer_time_articles is audited separately and never silently rebound to current_articles",
+    "match_key": "current_articles: doc_id + body article-root node",
+    "primary": "case-level all-gold recall@20",
+    "release_interpretation": "top-20 recall은 회수기의 후보축소 성능만 평가하며 답변 의미정확도나 인용정확도를 대신하지 않음",
+    "secondary": [
+      "article-instance recall@20",
+      "MRR@20",
+      "first-gold rank",
+      "selected evidence count",
+      "selection origin"
+    ]
+  },
+  "name": "fsc-hard-retrieval-v2",
+  "role": "retrieval_generalization_hard_holdout",
+  "schema_version": "fsc-hard-retrieval-v3",
+  "selection_policy": {
+    "difficulty_requirements": [
+      "사실관계에서 적용 법률 또는 조문을 추론해야 함",
+      "법률과 시행령을 함께 회수하거나 근접한 법적 분류를 구별함",
+      "예외·조건·부정 결론 중 하나 이상을 포함함"
+    ],
+    "gold_must_govern_reply_conclusion": true,
+    "material_must_exist_in_current_structure_store": true,
+    "question_must_not_expose_article_number": true,
+    "selected_before_first_run": true,
+    "temporal_drift_explicitly_split": true
+  },
+  "source": {
+    "answer_policy": "각 원문의 회답 본문을 앞뒤 공백 제거 외 내용 수정 없이 reference_answer로 보존",
+    "base_url": "https://better.fsc.go.kr",
+    "collection": "금융규제·법령해석포털 회신사례",
+    "local_root": "data/wiki/raw/fsc",
+    "publisher": "금융위원회",
+    "question_policy": "각 원문의 질의요지 본문을 앞뒤 공백 제거 외 내용 수정 없이 runtime question으로 사용",
+    "type": "actual_fsc_interpretation_reply"
+  },
+  "supersedes": "data/review/fsc_hard_retrieval_v2.json",
+  "task_contract": {
+    "no_answer_generation": true,
+    "no_reference_answer_in_runtime_context": true,
+    "no_source_metadata_in_runtime_context": true,
+    "retrieval_cap": 20,
+    "runtime_input_field": "question",
+    "task": "LegalClosure retrieval only"
+  },
+  "temporal_contract": {
+    "answer_time_articles": "official effective snapshot on or before published date",
+    "current_articles": "official canonical generation as of 20260827",
+    "expected_articles": "backward-compatible alias of current_articles for retrieval-only grading",
+    "no_silent_rebinding": true
+  },
+  "version": "v3-minimal-sufficient-evidence"
+}

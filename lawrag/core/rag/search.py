@@ -32,16 +32,17 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from lawrag.core.rag.index import Index, norm
+from lawrag.core.rag.controls import value as control_value
 
 log = logging.getLogger("lawrag.core.rag.search")
 
 # 원본의 실측 튜닝값을 그대로 둔다 — REVERSE_MATCH_TRIGRAM_THRESHOLD 0.5 는
 # 흔한 긴 토큰이 수백 건씩 잡히는 폭주와 정상 매칭 보존 사이의 균형점이었다.
-TRIGRAM_THRESHOLD = 0.5
+TRIGRAM_THRESHOLD = float(control_value("search.trigram_min"))
 MIN_TOKEN_LEN = 2
-MAIN_LIMIT = 50
-PARTIAL_LIMIT = 100
-BLOCK_LIMIT = 12
+MAIN_LIMIT = int(control_value("search.main_hits_max"))
+PARTIAL_LIMIT = int(control_value("search.partial_hits_max"))
+BLOCK_LIMIT = int(control_value("search.block_hits_max"))
 
 _TOKEN_RE = re.compile(r"[A-Za-z0-9]+|[가-힣]+")
 
@@ -215,6 +216,13 @@ def search(index: Index, query: str) -> SearchResult:
     except Exception as exc:
         log.warning("벡터 단 실패 — 렉시컬만으로 간다: %s", exc)
         vec_nodes = []
+    # 전역 vector cache가 다른 Index 인스턴스(테스트·스코프 교체 전 corpus)의
+    # 좌표를 들고 있을 수 있다. _fuse는 원래 이를 버리지만 n_vec는 버리기 전
+    # 길이를 세어 빈 결과를 '벡터/하이브리드'로 잘못 표시했다. 현재 index에서
+    # 실제로 열 수 있는 좌표만 채널 적중으로 센다.
+    vec_nodes = [row for row in vec_nodes
+                 if row[0] in index.docs
+                 and row[1] in index.docs[row[0]].by_id]
 
     hits = _fuse(index, lex_blocks, matched, vec_nodes)
     n_lex, n_vec = len(lex_blocks), len(vec_nodes)

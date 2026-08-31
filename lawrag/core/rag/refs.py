@@ -51,32 +51,21 @@
 from __future__ import annotations
 
 import json
+import os
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from pathlib import Path
 from typing import TYPE_CHECKING, Optional
+
+from lawrag.core.legal_coordinate import (
+    CONTINUATION_PATTERN,
+    LegalCoordinate,
+    find_coordinates,
+    parse_label,
+)
 
 if TYPE_CHECKING:                      # 실행 시 의존을 만들지 않는다 — 타입만
     from lawrag.core.rag.index import DocView
-
-_UNITS = "편장절관"
-
-# 본문 참조 — 자간 벌어짐(제 4 조)을 허용한다. 조는 의N(가지조문)까지 잡고,
-# 뒤따르는 항·호·목 사슬은 _tail() 이 이어 읽는다: "제4조의2제3항제2호나목".
-_ARTICLE = re.compile(r"제\s*(\d{1,3})\s*조(?:의\s*(\d{1,2}))?")
-_MOK_LETTERS = "가나다라마바사아자차카타파하"   # hangul_jamo 제안자와 같은 열
-
-# 조 뒤의 하강 토큰. 항·호는 공식 표기라 제- 를 요구하고, 목은 맨 숫자·글자
-# ("2목"·"나목")로도 쓰여 열어 둔다 — (?!적) 은 "다목적" 방지. 표면형 ①·(2) 는
-# 조에 붙어 있을 때만 참조다. 제목 괄호("제1조(목적)")는 숫자가 아니라 안 걸린다.
-_TAIL = (
-    ("항", re.compile(r"\s*제\s*(\d{1,2})\s*항")),
-    ("호", re.compile(r"\s*제\s*(\d{1,3})\s*호")),
-    ("목", re.compile(rf"\s*([{_MOK_LETTERS}]|\d{{1,2}})\s*목(?!적)")),
-    ("항", re.compile(r"\s?([①-⑳])")),
-    (None, re.compile(r"\s?\(\s*(\d{1,2})\s*\)")),
-)
-_DIVISION = re.compile(rf"제\s*(\d{{1,3}})\s*([{_UNITS}])")
-_ANNEX = re.compile(r"(별표|별지)\s*(?:제\s*)?(\d{1,3})(?:\s*호)?")
 
 # 다른 문서를 가리키는 앞말 — 「…」 인용부호, 또는 법령·규정 명사가 바로 앞에
 # 붙은 경우("신탁법 제10조", "동법 제12조"). 두 단어 이름("근로자퇴직급여보장법
@@ -100,8 +89,6 @@ _CONTEXT = 48                          # 앞말 창 — 「…」 최대 42자�
 # 단서 및 제234조제4항" — 법령 관례, 문서 무관). 이 낱말이 사이에 끼어도
 # 이음새가 끊기지 않아야 앞의 문서 이름('법')이 뒤 끝을 덮는다 — 끊기면
 # 뒤 참조가 이 문서 안의 같은 번호 조로 잘못 붙는다(시행령에서 실측된 오연결).
-_CONT = re.compile(r"\s*(?:(?:단서|본문|전단|후단)\s*)?(?:[ㆍ·,、]|및|또는|부터|와|과)\s*")
-
 # 관계 술어 — 표면형 **바로 뒤** 문면이 간선의 의미를 말한다. 법령 관용구라
 # 문서 무관이다(과적합 아님). 위임("대통령령으로 정하는")은 여기 없다 —
 # 문면에 좌표가 없어 refs 가 아니라 위임 데이터(delegation.json)의 몫이다.
@@ -140,40 +127,6 @@ def rel_of(text: str, end: int) -> str:
     return "인용"
 
 
-# 구역 제목 읽기 — 본문 패턴과 같은 문법을 앞머리 고정으로 쓴다.
-_LABEL_ARTICLE = re.compile(r"^제\s*(\d{1,3})\s*조(?:의\s*(\d{1,2}))?")
-_LABEL_DIVISION = re.compile(rf"^제\s*(\d{{1,3}})\s*([{_UNITS}])")
-_LABEL_ANNEX = re.compile(r"^(별표|별지)\s*(?:제\s*)?(\d{1,3})")
-_LABEL_CLAUSE = re.compile(r"^제\s*(\d{1,2})\s*항")
-_LABEL_HO = re.compile(r"^제\s*(\d{1,3})\s*호")
-_LABEL_ENUM = re.compile(r"^\(?(\d{1,3})[.)](?!\d)")          # 1. · (1) · 1) — 호의 표기 계열
-_LABEL_MOK = re.compile(rf"^([{_MOK_LETTERS}])\s*[.)]")       # 가. · 가) — 목의 표기 계열
-_CIRCLED = {chr(0x2460 + i): i + 1 for i in range(20)}        # ① … ⑳
-
-
-def _ord(token: str) -> int:
-    """하강 토큰의 번호 — ①·가·2 를 같은 서수 좌표로 읽는다."""
-    if token in _CIRCLED:
-        return _CIRCLED[token]
-    if token in _MOK_LETTERS:
-        return _MOK_LETTERS.index(token) + 1
-    return int(token)
-
-
-def _tail(text: str, pos: int) -> tuple[tuple, int]:
-    """조 매치 끝에서 하강 토큰을 잇는 대로 읽는다 — (사슬, 끝 위치)."""
-    chain: list[tuple] = []
-    while True:
-        for unit, pat in _TAIL:
-            m = pat.match(text, pos)
-            if m:
-                chain.append((unit, _ord(m.group(1))))
-                pos = m.end()
-                break
-        else:
-            return tuple(chain), pos
-
-
 @dataclass
 class Ref:
     """참조 출현 하나. key() 가 구역 제목의 키와 같은 좌표계다."""
@@ -186,9 +139,14 @@ class Ref:
     external: bool             # 다른 문서 참조 — 이 문서 안에서 잇지 않는다
     hint: str = ""             # 외부일 때 그 문서의 이름 단서 ("신탁법", "동법")
     quoted: bool = False       # 힌트가 「…」 로 명시된 제목인가 — 총칭('법')과 가른다
+    dash: Optional[int] = None # 제2-4조의 ``4`` — 제2조의4와 구별해 보존
+
+    @property
+    def coordinate(self) -> LegalCoordinate:
+        return LegalCoordinate(self.unit, self.n, self.sub, self.dash, self.chain)
 
     def key(self) -> tuple:
-        return (self.unit, self.n, self.sub)
+        return self.coordinate.key()
 
 
 def _doc_ref(text: str, start: int) -> tuple[bool, str, bool]:
@@ -215,88 +173,56 @@ def find(text: str) -> list[Ref]:
     text = text or ""
     prev_end: Optional[int] = None
     prev_ext, prev_hint, prev_q = False, "", False
-    for m in _ARTICLE.finditer(text):
-        chain, end = _tail(text, m.end())
-        ext, hint, quoted = _doc_ref(text, m.start())
-        if (not ext and prev_ext and prev_end is not None
-                and _CONT.fullmatch(text[prev_end:m.start()])):
+    for occurrence in find_coordinates(text):
+        coordinate = occurrence.coordinate
+        ext, hint, quoted = _doc_ref(text, occurrence.start)
+        if (coordinate.unit == "조" and not ext and prev_ext
+                and prev_end is not None
+                and CONTINUATION_PATTERN.fullmatch(
+                    text[prev_end:occurrence.start])):
             # "「형법」 제129조부터 제132조까지" — 앞의 이름이 뒤 끝도 덮는다
             ext, hint, quoted = True, prev_hint, prev_q
-        out.append(Ref(unit="조", n=int(m.group(1)),
-                       sub=int(m.group(2)) if m.group(2) else None,
-                       chain=chain, surface=text[m.start():end], start=m.start(),
-                       external=ext, hint=hint, quoted=quoted))
-        base = out[-1]
-        # 열거 연속 — "제19조제1항ㆍ제3항", "제2조제6호가목ㆍ다목ㆍ마목".
-        # 연결사 뒤 조 없는 항·호·목 토큰은 같은 조의 다른 가지다. 같은 단위는
-        # 갈아 끼우고 아랫단은 이어 읽는다. "같은 조 …" 는 토큰이 아니라 멈춘다.
-        pos = end
-        while True:
-            cm = _CONT.match(text, pos)
-            if not cm or _ARTICLE.match(text, cm.end()):
-                break                      # 다음 조 참조는 제 몫 — 저기서 잡힌다
-            tok = None
-            for unit, pat in _TAIL[:3]:    # 항·호·목 — 표면형(①·(2))은 열거하지 않는다
-                tm = pat.match(text, cm.end())
-                if tm:
-                    tok = (unit, _ord(tm.group(1)), tm.end())
-                    break
-            if tok is None:
-                break
-            unit, num, tend = tok
-            more, tend = _tail(text, tend)
-            cut = next((i for i, (u, _) in enumerate(chain) if u == unit),
-                       len(chain))
-            out.append(Ref(unit="조", n=base.n, sub=base.sub,
-                           chain=chain[:cut] + ((unit, num),) + more,
-                           surface=text[cm.end():tend], start=cm.end(),
-                           external=ext, hint=hint, quoted=quoted))
-            pos = tend
-        prev_end, prev_ext, prev_hint, prev_q = pos, ext, hint, quoted
-    for m in _DIVISION.finditer(text or ""):
-        ext, hint, quoted = _doc_ref(text, m.start())
-        out.append(Ref(unit=m.group(2), n=int(m.group(1)), sub=None, chain=(),
-                       surface=m.group(0), start=m.start(),
-                       external=ext, hint=hint, quoted=quoted))
-    for m in _ANNEX.finditer(text or ""):
-        ext, hint, quoted = _doc_ref(text, m.start())
-        out.append(Ref(unit=m.group(1), n=int(m.group(2)), sub=None, chain=(),
-                       surface=m.group(0), start=m.start(),
-                       external=ext, hint=hint, quoted=quoted))
+        out.append(Ref(unit=coordinate.unit, n=coordinate.n,
+                       sub=coordinate.sub, chain=coordinate.chain,
+                       surface=occurrence.surface, start=occurrence.start,
+                       external=ext, hint=hint, quoted=quoted,
+                       dash=coordinate.dash))
+        if coordinate.unit == "조":
+            prev_end = occurrence.end
+            prev_ext, prev_hint, prev_q = ext, hint, quoted
     return sorted(out, key=lambda r: r.start)
+
+
+def _block_refs(view: "DocView", block: dict, *, mutable: bool = False) -> list[Ref]:
+    """한 DocView 수명 동안 블록의 참조 파싱을 한 번만 한다.
+
+    문서 안(resolve)과 문서 사이(cross_resolve)가 같은 16만 블록을 각각 정규식
+    파싱하던 중복을 없앤다. cross_resolve가 일부 Ref의 external 힌트를 지역적으로
+    보정하므로 캐시 원본은 ``replace``한 얕은 사본으로 돌려준다.
+    """
+    cache = getattr(view, "_parsed_refs_cache", None)
+    if cache is None:
+        cache = {}
+        view._parsed_refs_cache = cache
+    idx = block.get("idx")
+    if idx not in cache:
+        cache[idx] = tuple(find(block.get("text") or ""))
+    rows = cache[idx]
+    return [replace(row) for row in rows] if mutable else list(rows)
 
 
 def label_key(label: str) -> Optional[tuple]:
     """구역 제목 → 참조 키. "제4조(신탁의 설정)" → ("조", 4, None),
     "①" → ("항", 1, None). 읽을 수 없으면 None — 그 구역은 번호로 지목되지 않는다."""
-    t = (label or "").strip()
-    if not t:
-        return None
-    if t[0] in _CIRCLED:
-        return ("항", _CIRCLED[t[0]], None)
-    m = _LABEL_ARTICLE.match(t)
-    if m:
-        return ("조", int(m.group(1)), int(m.group(2)) if m.group(2) else None)
-    m = _LABEL_DIVISION.match(t)
-    if m:
-        return (m.group(2), int(m.group(1)), None)
-    m = _LABEL_ANNEX.match(t)
-    if m:
-        return (m.group(1), int(m.group(2)), None)
-    m = _LABEL_CLAUSE.match(t)
-    if m:
-        return ("항", int(m.group(1)), None)
-    m = _LABEL_HO.match(t) or _LABEL_ENUM.match(t)
-    if m:
-        return ("호", int(m.group(1)), None)
-    m = _LABEL_MOK.match(t)
-    if m:
-        return ("목", _MOK_LETTERS.index(m.group(1)) + 1, None)
-    return None
+    coordinate = parse_label(label)
+    return coordinate.key() if coordinate is not None else None
 
 
 def _key_map(view: "DocView") -> dict[tuple, list]:
     """참조 키 → 그 번호를 제목에 단 구역들. surface 를 먼저 읽는다."""
+    cached = getattr(view, "_ref_key_map_cache", None)
+    if cached is not None:
+        return cached
     out: dict[tuple, list] = {}
     for n in view.nodes:
         for label in (n.get("surface"), n.get("title")):
@@ -304,6 +230,7 @@ def _key_map(view: "DocView") -> dict[tuple, list]:
             if k:
                 out.setdefault(k, []).append(n.get("id"))
                 break
+    view._ref_key_map_cache = out
     return out
 
 
@@ -334,12 +261,21 @@ def _kind(name: str) -> str:
 
 def _chain(view: "DocView", nid) -> list:
     """뿌리부터 nid 까지의 조상 사슬."""
+    cache = getattr(view, "_ref_chain_cache", None)
+    if cache is None:
+        cache = {}
+        view._ref_chain_cache = cache
+    if nid in cache:
+        return cache[nid]
+    original = nid
     out, seen = [], set()
     while nid is not None and nid not in seen:
         seen.add(nid)
         out.append(nid)
         nid = (view.by_id.get(nid) or {}).get("parent")
-    return list(reversed(out))
+    value = list(reversed(out))
+    cache[original] = value
+    return value
 
 
 def _nearest(view: "DocView", cands: list, src_chain: list,
@@ -364,10 +300,14 @@ def _nearest(view: "DocView", cands: list, src_chain: list,
 
 def _children(view: "DocView") -> dict:
     """부모 → 자식 목록."""
+    cached = getattr(view, "_ref_children_cache", None)
+    if cached is not None:
+        return cached
     out: dict = {}
     for n in view.nodes:
         if n.get("parent") is not None:
             out.setdefault(n.get("parent"), []).append(n.get("id"))
+    view._ref_children_cache = out
     return out
 
 
@@ -461,7 +401,7 @@ def resolve(view: "DocView") -> list[dict]:
         if _is_amendment_clause(view, src.get("id")):
             continue
         src_chain = _chain(view, src.get("id"))
-        for ref in find(b.get("text") or ""):
+        for ref in _block_refs(view, b):
             if ref.external:
                 continue
             cands = by_key.get(ref.key())
@@ -512,8 +452,15 @@ def alias_map() -> dict[str, str]:
     지식이다 — 법제처가 고시하는 공식 약칭 관례("자본시장법"·"금소법")를 사람이
     채워 두면, 선언 없이 약칭으로 인용하는 문서(협회 모범기준·내규류)의 참조가
     결정론으로 이어진다. 코드는 사전을 읽을 뿐 항목을 모른다(지식은 데이터로)."""
-    from lawrag.core.rag.index import store_path
-    f = store_path().parent / "aliases.json"
+    from lawrag.core.rag.index import ROOT, store_path
+    configured = os.environ.get("RAG_ALIASES_STORE")
+    generated = store_path().parent / "aliases.json"
+    repository = ROOT / "data" / "aliases.json"
+    # 저장소에서 CLI를 직접 실행할 때 structure는 data/structure로 폴백하지만
+    # 별칭만 var/out 아래를 보면 같은 데이터 묶음이 갈린다. 명시 env가 없고
+    # 생성 자리도 없을 때는 저장소 정본을 함께 사용한다.
+    f = Path(configured) if configured else (
+        generated if generated.exists() or not repository.exists() else repository)
     try:
         sig = f.stat().st_mtime_ns
     except OSError:
@@ -560,6 +507,7 @@ def cross_resolve(docs: dict, declare: bool = True) -> tuple[list, list]:
     keymaps = {d: _key_map(v) for d, v in docs.items()}
     kidmaps = {d: _children(v) for d, v in docs.items()}
     names = {d: _fold_name(v.name) for d, v in docs.items()}
+    kinds = {d: _kind(name) for d, name in names.items()}
     decls = {d: declared_aliases(v) for d, v in docs.items()}
     # 문서마다 제 조 번호의 지붕 — 이보다 큰 번호는 이 문서의 조가 아니다
     own_max = {d: max((k[1] for k in km if k[0] == "조"), default=0)
@@ -576,7 +524,7 @@ def cross_resolve(docs: dict, declare: bool = True) -> tuple[list, list]:
                 continue
             src_id = src.get("id")
             text = b.get("text") or ""
-            for ref in find(text):
+            for ref in _block_refs(v, b, mutable=True):
                 if (not ref.external and ref.unit == "조"
                         and own_max[doc_id] and ref.n > own_max[doc_id]):
                     # 이름 없이 쓴 남의 조("제279조" — 이 문서는 제51조까지다).
@@ -646,7 +594,7 @@ def cross_resolve(docs: dict, declare: bool = True) -> tuple[list, list]:
                     # 「수수료규정」 뒤에 '동법'을 쓰기도 한다.
                     k = _kind(hint) if hint and not _ANAPHORA.match(ref.hint) else ""
                     cands = [(d, nid) for d in docs if d != doc_id
-                             and (not k or _kind(names[d]) == k)
+                             and (not k or kinds[d] == k)
                              for nid in keymaps[d].get(key, [])]
                 cands = [c for c in cands if c != (doc_id, src_id)]
                 if not cands:

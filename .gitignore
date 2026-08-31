@@ -19,6 +19,10 @@ __pycache__/
 .ruff_cache/
 *.egg-info/
 
+# ADR 원장·실험 산출물은 로컬 운영 기록으로만 보존하고 Git에는 올리지 않는다.
+docs/adr/
+/ADR-[0-9]*/
+
 # 원본 은행 문서
 #
 # 이 브랜치(dev)는 내부 저장소(infoczAI/agent8) 전용이며 dataset/ 을 포함합니다.

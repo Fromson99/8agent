@@ -63,7 +63,9 @@ TARGETS: dict[str, list[Target]] = {
                "자본시장과 금융투자업에 관한 법률 시행규칙", hints={"kind": "law"}),
         Target("law", "외국환거래법", "외국환거래법", hints={"kind": "law"}),
         Target("law", "외국환거래법 시행령", "외국환거래법 시행령", hints={"kind": "law"}),
-        Target("law", "상법", "상법", hints={"kind": "law"}),
+        # 검색 API가 2025-07-22 공포 가지를 첫 현행으로 돌려주는 동안에도,
+        # CM 골든 기준일에 시행 중인 2026-03-06 개정본을 재현 가능하게 고정한다.
+        Target("law", "상법", "상법", hints={"kind": "law", "as_of": "current"}),
         # 위임 체인 중간 공백 보충 (2026-08-13 lsStmd 체계도 실측 — 법률은 보유,
         # 시행령이 없어 법률→규정 위임 간선이 끊기던 4건. 명칭은 체계도 XML 원문)
         Target("law", "상법 시행령", "상법 시행령", hints={"kind": "law"}),
@@ -245,7 +247,8 @@ def collect_target(adapter, client, target: Target, source_dir: Path,
     meta = adapter.metadata(target)
     item["doc_no"] = meta.get("seq", item["doc_no"])
     item.update({k: meta[k] for k in ("kind", "history_seq", "revised", "rev_kind",
-                                      "enforce", "promul_no", "dept") if k in meta})
+                                      "enforce", "promul_no", "dept", "law_id",
+                                      "authority_mode", "authority_as_of") if k in meta})
 
     if dry_run:
         item["status"] = "dry-run"
@@ -319,6 +322,10 @@ def main(argv: list[str] | None = None) -> int:
     manifest_path = source_dir / "manifest.json"
     manifest = load_manifest(manifest_path)
     manifest["source"] = SOURCE_LABELS.get(args.source, args.source)
+    if args.source == "law":
+        from datetime import date
+        manifest["authority_as_of"] = date.today().strftime("%Y%m%d")
+        manifest["authority_contract"] = "legal-authority-generation-v1"
 
     # 폴더형 대상 전개 + key 기준 중복 제거 (모범규준 분류에 이미 포함된 개별 대상)
     expanded: list[Target] = []
@@ -364,6 +371,12 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"\n완료: ok={ok} skipped={skipped} failed={failed}"
           f" 요청수={client.request_count}{' (중단됨)' if aborted else ''}")
+    if args.source == "law" and not args.dry_run:
+        from lawrag.core.legal_generation import build_contract
+        contract = build_contract(manifest)
+        manifest["generation_id"] = contract["generation_id"]
+        manifest["canonical_document_ids"] = contract["canonical_document_ids"]
+        save_manifest(manifest_path, manifest)
     return 2 if aborted else (1 if failed and not ok else 0)
 
 

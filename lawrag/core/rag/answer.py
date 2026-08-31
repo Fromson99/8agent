@@ -25,23 +25,22 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from lawrag.core.rag import switches, wikictx
+from lawrag.core.rag.controls import value as control_value
 from lawrag.core.rag.index import Index
 from lawrag.core.rag.search import SearchResult
 
 log = logging.getLogger("lawrag.core.rag.answer")
 
-# 컨텍스트 규모 — 원본의 field_limits 철학을 따라 이름 붙은 상수로 둔다.
-# 자름의 규율: 크기가 본질적으로 유한한 목록은 자르지 않고, 폭주 가능한 것만
-# 상한을 두되 잘렸음을 표시한다. 답변이 보는 구역 수의 상한은 CANDIDATES_MAX
-# 하나다 — 조립·회복·참조 확장이 전부 이 하나를 지키고, 합성은 받은 것을
-# 전부 본다(보여준 목록과 모델이 본 목록이 달라지면 인용이 거짓말이 된다).
-CANDIDATES_MAX = 12        # 컨텍스트에 싣는 구역 수 — 유일한 규모 상한
-SECTION_CHARS = 6000       # 구역 하나의 본문 길이 (p99 실측 5.7k — 넘으면 표시)
-SUMMARY_CHARS = 400        # 필터가 보는 요약 길이 — 판정 입력이라 짧으면 회수 손실
-TERM_SECTIONS = 4          # 용어 하나가 끌어오는 구역 수 — 한 용어의 독식 방지
-REF_SECTIONS = 3           # 구역 하나가 참조로 끌어오는 구역 수 — 같은 역할
-FILTER_MIN = 2             # 이 미만이면 필터 생략 — 1개는 고를 게 없다
-DISCARD_CHARS = 400        # 버려진 구역의 발췌 — 왜 버려졌는지 사람이 보려면 본문이 필요하다
+# 컨텍스트 규모. CANDIDATES_MAX는 일반 조립·바닥·참조 확장이 공유하는 예산이지
+# 최종 절대 상한이 아니다. vecfirst의 가산 진입과 문서 동반은 이 값을 넘을 수
+# 있다. controls.audit가 그 구조 충돌을 상시 보고하고 평가 manifest가 실제 수를 잰다.
+CANDIDATES_MAX = int(control_value("context.shared_sections_max"))
+SECTION_CHARS = int(control_value("context.section_chars"))
+SUMMARY_CHARS = int(control_value("context.filter_summary_chars"))
+TERM_SECTIONS = int(control_value("context.term_sections_max"))
+REF_SECTIONS = int(control_value("context.refs_per_section_max"))
+FILTER_MIN = int(control_value("context.filter_min_sections"))
+DISCARD_CHARS = int(control_value("context.discard_excerpt_chars"))
 
 
 @dataclass
@@ -67,6 +66,15 @@ class Section:
     # 끌려온 구역 — 진입은 스코프 안에서만 일어나므로 이 표식이 붙은 구역은
     # 반드시 ref_src 가 있다. 답변·출처에 "스코프 밖 동반" 으로 보인다.
     scope_out: bool = False
+    # 계층 탐색에서 이 조·항을 선택할 때 함께 확정된 실제 DB 간선. LLM이 만든
+    # 설명이 아니라 코드가 좌표로 고정한 E 행이다.
+    edges: list[dict] = field(default_factory=list)
+    # LegalClosure가 동일 원문에서 계산한 규범요건 span·법원성·시점 경고.
+    # 답변 모델의 자유 요약이 아니라 좌표에 붙는 관측/검증 메타데이터다.
+    legal_meta: dict = field(default_factory=dict)
+    # 일반 근거와 분리된 선택 규정의 정의 부록. 독립 인용 번호를 부여하지 않고
+    # 법정 용어를 일상어로 오해하지 않게 하는 해석 보조로만 렌더링한다.
+    definition_context: list[dict] = field(default_factory=list)
 
     @property
     def is_companion(self) -> bool:
@@ -79,6 +87,8 @@ class Section:
              "block": self.block}
         if self.scope_out:
             d["scope_out"] = True
+        if self.edges:
+            d["edges"] = list(self.edges)
         return d
 
 
@@ -230,7 +240,6 @@ def expand_refs(index: Index, sections: list[Section],
 
     out = list(sections)
     seen = {(s.doc_id, s.node) for s in sections}
-    cross = index.cross_ref_edges()
     for s in sections:
         if len(out) >= cap:
             break
@@ -241,7 +250,7 @@ def expand_refs(index: Index, sections: list[Section],
         span = n.get("span") or [0, 0]
         added = 0
         near = [(s.doc_id, e) for e in index.ref_edges().get(s.doc_id, [])]
-        far = [(e["dst_doc"], e) for e in cross if e.get("src_doc") == s.doc_id]
+        far = [(e["dst_doc"], e) for e in index.cross_from(s.doc_id)]
         # 후순위 간선은 **뒤로 민다**(빼지 않는다) — "연결은 옳은데 이번 질문엔
         # 안 맞았다"는 판정의 처리다. 자리가 남으면 여전히 온다.
         cand = sorted(near + far,
@@ -286,8 +295,8 @@ def expand_refs(index: Index, sections: list[Section],
 # 가리키는 가지를 고르게 하고, 고르면 이번 답변은 그 구역을 근거로 쓴다.
 # 제안은 기록으로 남고(verdicts.log_fixes) 간선 자체는 사람이 승인해야 옮겨
 # 앉는다(edge_rules.json redirect) — 제안자/검증자 분리 그대로다.
-REPAIR_MAX = 4         # 한 답변이 교정을 시도하는 참조 수 — 흔하면 구조를 고칠 일
-REPAIR_KIDS = 12       # 항목당 자손 후보 수 상한
+REPAIR_MAX = int(control_value("context.repair_refs_max"))
+REPAIR_KIDS = int(control_value("context.repair_children_max"))
 
 REPAIR_SYSTEM = (
     "너는 문서 상호참조의 '착지 검사원'이다. 본문이 \"제2조제3항\"처럼 깊은 "
@@ -475,8 +484,9 @@ ANSWER_SYSTEM = (
     "② 컨텍스트가 부족해도 '문서에 없다'고 단정하지 마라 — 그것은 '이번 검색으로는 "
     "회수되지 않았다'는 뜻일 뿐이다.\n"
     "③ 회수된 구역은 검색 표본이지 전체가 아니다 — '총 N개뿐' 같은 전수 단정 금지.\n"
-    "④ 근거는 refs 에 컨텍스트 번호로만 담는다. 번호 밖의 문서·조항을 인용하지 "
-    "마라. 실제로 근거로 쓴 번호만 담는다.\n"
+    "④ 출처 목록은 코드가 이번 최종 컨텍스트의 실제 좌표에서 확정한다. refs나 "
+    "문서 좌표를 출력하지 말고, 답변 문장만 작성한다. 컨텍스트 밖의 문서·조항을 "
+    "새로 만들어 인용하지 마라.\n"
     "⑤ 결론을 먼저 1~3문장으로, 그 뒤에 근거 설명. 컨텍스트에 답이 없으면 "
     "answerable 을 false 로 두고, 어떤 자료가 있으면 답할 수 있는지만 안내한다.\n"
     "⑥ [해석 맥락 — 지식 위키]가 있으면 그것은 축적된 해석 지식(법제처 해석례 "
@@ -492,12 +502,111 @@ ANSWER_SCHEMA = {
     "type": "object",
     "properties": {
         "answer": {"type": "string"},
-        "refs": {"type": "array", "items": {"type": "integer"}},
         "answerable": {"type": "boolean"},
     },
-    "required": ["answer", "refs", "answerable"],
+    "required": ["answer", "answerable"],
     "additionalProperties": False,
 }
+
+LEGAL_COMPILED_ANSWER_SYSTEM = ANSWER_SYSTEM + (
+    "\n⑦ [법률 evidence compiler]가 있으면 claim_id와 evidence_id는 검증된 원문 "
+    "span에 결속된 닫힌 목록이다. 답의 각 핵심 법률 명제는 그 목록의 claim에만 "
+    "근거하고, 사용한 evidence_id를 evidence_ids에 낸다. 목록 밖 ID를 만들지 마라."
+    "\n⑧ answer_mode가 DIRECT_RULE일 때만 DIRECT 결론을 허용한다. "
+    "CONDITIONAL_APPLICATION이면 추가 사실과 조건을 명시한 조건부 답만 하며, "
+    "INSUFFICIENT이면 가능/불가능을 단정하지 않고 부족한 규범이나 사실을 밝힌다."
+)
+
+LEGAL_COMPILED_ANSWER_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "answer": {"type": "string"},
+        "answerable": {"type": "boolean"},
+        "conclusion_strength": {
+            "type": "string",
+            "enum": ["DIRECT", "CONDITIONAL", "INSUFFICIENT"],
+        },
+        "evidence_ids": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": [
+        "answer", "answerable", "conclusion_strength", "evidence_ids"
+    ],
+    "additionalProperties": False,
+}
+
+ISSUE_ATOMIC_ANSWER_SYSTEM = LEGAL_COMPILED_ANSWER_SYSTEM + (
+    "\n⑨ schema_version이 issue-role-atomic-entailment v3이면 issues의 모든 "
+    "issue_id를 issue_results에 정확히 한 번씩 답한다. 각 쟁점은 그 issue_id에 "
+    "연결된 unit의 evidence_id만 사용한다. missing_requirements가 남은 쟁점은 "
+    "DIRECT로 단정하지 말고 unresolved_requirements에 그대로 낸다."
+    "\n⑩ unit의 quote는 원문 근거이지 자동으로 포섭 결론이 된 것이 아니다. "
+    "DIRECT_TEXT entailment가 없는 요건을 추측으로 채우거나 새 조건·예외를 만들지 마라."
+)
+
+ISSUE_ATOMIC_ANSWER_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "answer": {"type": "string"},
+        "answerable": {"type": "boolean"},
+        "conclusion_strength": {
+            "type": "string",
+            "enum": ["DIRECT", "CONDITIONAL", "INSUFFICIENT"],
+        },
+        "evidence_ids": {"type": "array", "items": {"type": "string"}},
+        "issue_results": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "issue_id": {"type": "string"},
+                    "conclusion": {"type": "string"},
+                    "conclusion_strength": {
+                        "type": "string",
+                        "enum": ["DIRECT", "CONDITIONAL", "INSUFFICIENT"],
+                    },
+                    "evidence_ids": {
+                        "type": "array", "items": {"type": "string"}
+                    },
+                    "unresolved_requirements": {
+                        "type": "array", "items": {"type": "string"}
+                    },
+                },
+                "required": [
+                    "issue_id", "conclusion", "conclusion_strength",
+                    "evidence_ids", "unresolved_requirements",
+                ],
+                "additionalProperties": False,
+            },
+        },
+    },
+    "required": [
+        "answer", "answerable", "conclusion_strength", "evidence_ids",
+        "issue_results",
+    ],
+    "additionalProperties": False,
+}
+
+SOFT_ATOMIC_ANSWER_SYSTEM = ANSWER_SYSTEM + (
+    "\n⑦ [법률 evidence compiler]의 claims는 검증된 원문 span과 evidence_id의 "
+    "닫힌 목록이다. 핵심 법률 명제에 사용한 evidence_id를 evidence_ids에 내고 목록 밖 "
+    "ID를 만들지 마라. 결론 강도는 원문과 질문의 사실관계에 따라 직접 판단한다."
+    "\n⑧ schema_version이 integrated-atomic-claim v4이면 issues는 빠뜨리기 쉬운 "
+    "쟁점의 soft checklist다. 근거가 있는 쟁점은 모두 답하되 issue_id나 requirement ID를 "
+    "출력하지 않는다. issues가 법률 결론을 미리 정하거나 답변을 차단하지 않는다."
+    "\n⑨ claims의 proposition은 원문 exact quote다. 핵심 법률 명제에 사용한 조문의 "
+    "evidence_id만 evidence_ids에 내고, 닫힌 claims 밖 ID를 만들지 마라. CONTEXT claim은 "
+    "원문 탐색 보조이며 그 자체를 요약된 법률효과로 오해하지 마라."
+)
+
+
+def _legal_compilation(sections: list[Section]) -> dict:
+    """Return the one immutable compiler packet attached to selected evidence."""
+
+    for section in sections:
+        packet = (section.legal_meta or {}).get("legal_compilation")
+        if isinstance(packet, dict) and packet.get("schema_version"):
+            return packet
+    return {}
 
 
 def _context_text(sections: list[Section]) -> str:
@@ -505,6 +614,32 @@ def _context_text(sections: list[Section]) -> str:
     이리로 보냈는지"가 보여야 판정(오참조)이 좌표를 근거로 설 수 있다.
     이게 없으면 모델은 주제만 보고 "무관하니 오참조"라고 뭉갠다(실측)."""
     parts = []
+    packet = _legal_compilation(sections)
+    if packet:
+        compiler_view = {
+            "answer_mode": packet.get("answer_mode"),
+            "direct_rule_answer_allowed": bool(
+                packet.get("direct_rule_answer_allowed")
+            ),
+            "claims": packet.get("claims") or [],
+            "coverage": packet.get("coverage") or [],
+            "missing": packet.get("missing") or [],
+            "selected_scope_ids": packet.get("selected_scope_ids") or [],
+            "required_elements": packet.get("required_elements") or [],
+            "decision_elements": packet.get("decision_elements") or [],
+            "missing_elements": packet.get("missing_elements") or [],
+            "protected_evidence_ids": packet.get("protected_evidence_ids") or [],
+            "issues": packet.get("issues") or [],
+            "units": packet.get("units") or [],
+            "entailments": packet.get("entailments") or [],
+            "missing_requirements": packet.get("missing_requirements") or [],
+            "quota": packet.get("quota") or {},
+            "reason": packet.get("reason") or "",
+        }
+        parts.append(
+            "[법률 evidence compiler — 검증 span에 결속된 닫힌 명제]\n"
+            + json.dumps(compiler_view, ensure_ascii=False)
+        )
     for s in sections:
         head = f"[{s.n}] {s.doc} ▸ {s.path}" + (f" (p.{s.page})" if s.page else "")
         if s.kind.startswith("참조") and s.ref_src:
@@ -514,8 +649,50 @@ def _context_text(sections: list[Section]) -> str:
             # 질문이 정한 문서 범위 밖 — 간선(배제·위임·준용…)이 데려온 것이다.
             # 모델이 이것을 "범위 안 조문" 처럼 근거의 중심에 세우지 않게 알린다.
             head += "  ⟨질의 범위 밖 문서 — 간선으로 동반됨⟩"
-        parts.append(f"{head}\n{s.text}")
+        research_meta = (s.legal_meta or {}).get("integrated_research") or {}
+        if research_meta.get("scope_id"):
+            head += f"  ⟨법률 scope: {research_meta['scope_id']}⟩"
+        edge_block = ""
+        if s.edges:
+            edge_lines = []
+            for edge in s.edges:
+                surface = f" '{edge.get('surface')}'" if edge.get("surface") else ""
+                edge_lines.append(
+                    f"{edge.get('id', 'E?')}: {edge.get('from')} "
+                    f"--{edge.get('relation', '인용')}{surface}--> {edge.get('to')}")
+            edge_block = "\n[함께 선택된 간선]\n" + "\n".join(edge_lines)
+        parts.append(f"{head}{edge_block}\n{s.text}")
     return "\n\n".join(parts)
+
+
+def _definition_context_text(sections: list[Section]) -> str:
+    """선택 규정의 필요한 정의만 별도 비인용 부록으로 정리한다."""
+    rows, seen = [], set()
+    for section in sections:
+        for row in section.definition_context:
+            key = (row.get("doc_id"), row.get("node"), row.get("block"),
+                   row.get("term"))
+            if key in seen:
+                continue
+            seen.add(key)
+            rows.append(row)
+    if not rows:
+        return ""
+    parts = [
+        "\n\n[선택 규정의 용어 정의 — 해석 보조, 독립 인용 근거 아님]",
+        "아래 정의는 선택된 규정의 원문 정의다. 결론·의무·예외는 위 [컨텍스트]의 "
+        "인용 가능한 조문에서 판단하고, 이 부록에는 별도 인용번호를 만들지 마라.",
+    ]
+    current_doc = None
+    for row in rows:
+        if row.get("doc") != current_doc:
+            current_doc = row.get("doc")
+            parts.append(f"\n《{current_doc}》")
+        parts.append(
+            f"- 용어: {row.get('term', '')}\n"
+            f"  위치: {row.get('path', '')}\n"
+            f"  정의 원문: {row.get('quote', '')}")
+    return "\n".join(parts)
 
 
 @dataclass
@@ -529,12 +706,17 @@ class Answer:
     discards: list = field(default_factory=list)
     # 이번 합성에 배경으로 들어간 위키 아티클 [{slug, title, why}] — 관측용.
     wiki: list = field(default_factory=list)
+    # ADR-0115 compiler profile only. Legacy callers see stable empty defaults.
+    conclusion_strength: str = ""
+    evidence_ids: list[str] = field(default_factory=list)
+    issue_results: list[dict] = field(default_factory=list)
+    gate_violation: bool = False
 
 
 def synthesize(llm, question: str, sections: list[Section],
                spots: list[dict] | None = None) -> Answer:
-    """구역들로 답을 만든다. refs 는 번호로 받고 좌표로 되돌린다 — 모델이
-    좌표를 쓰는 일은 없다. spots 는 검색 전에 이미 골라진 쟁점 카드
+    """구역들로 답을 만든다. ``refs``는 모델 출력이 아니라 이 호출에 확정된
+    구역 좌표 전체에서 결정론으로 만든다. spots 는 검색 전에 이미 골라진 쟁점 카드
     (wikictx.spot) — 위키 맥락 블록의 앞자리에 같이 끼운다."""
     if not sections:
         # 원본 §0-0 ② — 부재 단정이 아니라 회수 실패를 말한다.
@@ -564,21 +746,124 @@ def synthesize(llm, question: str, sections: list[Section],
         picks += [p for p in wikictx.pick(question, {s.doc for s in use})
                   if p["slug"] not in have]
     user = (f"[질문]\n{question}\n\n[컨텍스트]\n{_context_text(use)}"
+            + _definition_context_text(use)
             + wikictx.block(picks))
-    out = llm.structured("rag.answer", ANSWER_SYSTEM, user, ANSWER_SCHEMA,
+    compilation = _legal_compilation(use)
+    schema_version = str(compilation.get("schema_version") or "")
+    atomic_v3 = schema_version.startswith(
+        "issue-role-atomic-entailment"
+    )
+    atomic_v4 = schema_version.startswith("integrated-atomic-claim")
+    answer_system = (
+        ISSUE_ATOMIC_ANSWER_SYSTEM if atomic_v3 else
+        SOFT_ATOMIC_ANSWER_SYSTEM if atomic_v4 else
+        LEGAL_COMPILED_ANSWER_SYSTEM if compilation else ANSWER_SYSTEM
+    )
+    answer_schema = (
+        ISSUE_ATOMIC_ANSWER_SCHEMA if atomic_v3 else
+        LEGAL_COMPILED_ANSWER_SCHEMA if compilation else ANSWER_SCHEMA
+    )
+    out = llm.structured("rag.answer", answer_system, user, answer_schema,
                          max_tokens=4000, effort="high")
     if out is None:
         err = llm.log[-1].error if llm.log else "알 수 없는 실패"
         log.error("답변 합성 실패 — 구역 %d, %.0fms: %s",
                   len(use), (time.perf_counter() - t0) * 1000, err)
         return Answer(answer="", error=f"답변 합성 실패: {err}")
-    valid = {s.n: s for s in use}
-    refs = [valid[i].cite() for i in out.get("refs", [])
-            if isinstance(i, int) and i in valid]
+    gate_violation = False
+    if compilation:
+        allowed_ids = set(compilation.get("selected_evidence_ids") or ())
+        used_ids = out.get("evidence_ids") or ()
+        invalid_ids = sorted({str(value) for value in used_ids} - allowed_ids)
+        mode = str(compilation.get("answer_mode") or "INSUFFICIENT")
+        strength = str(out.get("conclusion_strength") or "INSUFFICIENT")
+        gate_violation = bool(invalid_ids)
+        if atomic_v4:
+            gate_violation = gate_violation or (
+                bool(out.get("answerable")) and not used_ids
+            )
+        else:
+            gate_violation = gate_violation or (
+                strength == "DIRECT" and mode != "DIRECT_RULE"
+            )
+            gate_violation = gate_violation or (
+                strength == "CONDITIONAL" and mode == "INSUFFICIENT"
+            )
+            gate_violation = gate_violation or (
+                bool(out.get("answerable")) and mode == "INSUFFICIENT"
+            )
+            gate_violation = gate_violation or (
+                bool(out.get("answerable")) and not used_ids
+            )
+        if atomic_v3:
+            expected_issues = {
+                str(row.get("issue_id") or "")
+                for row in compilation.get("issues") or ()
+                if str(row.get("issue_id") or "")
+            }
+            issue_rows = out.get("issue_results") or ()
+            returned_issues = [str(row.get("issue_id") or "") for row in issue_rows]
+            gate_violation = gate_violation or set(returned_issues) != expected_issues
+            gate_violation = gate_violation or len(returned_issues) != len(set(returned_issues))
+            unit_ids_by_issue: dict[str, set[str]] = {}
+            for unit in compilation.get("units") or ():
+                for issue_id in unit.get("issue_ids") or ():
+                    unit_ids_by_issue.setdefault(str(issue_id), set()).add(
+                        str(unit.get("evidence_id") or "")
+                    )
+            missing_requirements = set(
+                str(value) for value in compilation.get("missing_requirements") or ()
+            )
+            requirement_issue = {
+                str(requirement.get("requirement_id") or ""): str(issue.get("issue_id") or "")
+                for issue in compilation.get("issues") or ()
+                for requirement in issue.get("requirements") or ()
+            }
+            for issue_row in issue_rows:
+                issue_id = str(issue_row.get("issue_id") or "")
+                issue_evidence = {
+                    str(value) for value in issue_row.get("evidence_ids") or ()
+                }
+                issue_missing = {
+                    requirement for requirement in missing_requirements
+                    if requirement_issue.get(requirement) == issue_id
+                }
+                gate_violation = gate_violation or not issue_evidence.issubset(
+                    unit_ids_by_issue.get(issue_id, set())
+                )
+                gate_violation = gate_violation or (
+                    str(issue_row.get("conclusion_strength") or "") == "DIRECT"
+                    and bool(issue_missing)
+                )
+                gate_violation = gate_violation or not issue_missing.issubset({
+                    str(value) for value in issue_row.get("unresolved_requirements") or ()
+                })
+        if gate_violation:
+            missing = [
+                str(row.get("coverage_key") or "")
+                for row in compilation.get("missing") or ()
+                if str(row.get("coverage_key") or "").strip()
+            ]
+            suffix = f" 추가 확인 항목: {', '.join(missing[:5])}." if missing else ""
+            out = {
+                "answer": (
+                    "현재 회수·검증된 근거만으로는 이 질문에 대한 법률 결론을 "
+                    f"단정할 수 없습니다.{suffix}"
+                ),
+                "answerable": False,
+                "conclusion_strength": "INSUFFICIENT",
+                "evidence_ids": [],
+                "issue_results": [],
+            }
+    refs = [section.cite() for section in use]
     log.info("답변 합성 — 구역 %d, 인용 %d, answerable=%s (%.0fms)",
              len(use), len(refs), bool(out.get("answerable")),
              (time.perf_counter() - t0) * 1000)
     return Answer(answer=out.get("answer", ""), refs=refs,
                   answerable=bool(out.get("answerable")),
                   wiki=[{"slug": p["slug"], "title": p["title"],
-                         "why": p["why"]} for p in picks])
+                         "why": p["why"]} for p in picks],
+                  conclusion_strength=str(out.get("conclusion_strength") or ""),
+                  evidence_ids=[str(value) for value in out.get("evidence_ids") or ()],
+                  issue_results=[dict(value) for value in out.get("issue_results") or ()],
+                  gate_violation=gate_violation)

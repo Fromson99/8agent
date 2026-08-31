@@ -1,0 +1,192 @@
+{
+  "schema_version": "internal-compliance-compiler-holdout-v1",
+  "dataset_id": "internal-compliance-holdout-v1",
+  "version": "2026-08-31-frozen-12",
+  "as_of": "2026-08-31",
+  "selection_rule": "Twelve predeclared structural cases spanning lower/upper numeric limits, deadlines, prohibition, procedure, omission, exception, actor mismatch, definition-only evidence, closed-ID rejection, and degraded retrieval. No post-run exclusions.",
+  "in_sample": false,
+  "decision_eligible": true,
+  "legal_text_status": "Synthetic exact-quote fixtures; validates comparison contracts and gates, not substantive corpus accuracy.",
+  "cases": [
+    {
+      "case_id": "ircmp-holdout-001",
+      "question": "순자본비율 내부기준이 외규 하한보다 엄격한가?",
+      "internal": {"evidence_id": "N:n1:1", "text": "회사는 순자본비율을 100분의 500 이상으로 유지한다."},
+      "externals": [{"evidence_id": "E:o1:1", "mandatory": true, "text": "순자본비율은 100분의 150 이상이어야 한다."}],
+      "compiler_output": {
+        "issues": [{"issue_id": "I1", "question_span": "순자본비율 내부기준"}],
+        "internal_units": [{"claim_id": "N1", "evidence_id": "N:n1:1", "issue_ids": ["I1"], "role": "GOVERNING_RULE", "quote": "순자본비율을 100분의 500 이상으로 유지"}],
+        "requirements": [{"requirement_id": "R1", "evidence_id": "E:o1:1", "issue_ids": ["I1"], "role": "GOVERNING_RULE", "effect": "REQUIREMENT", "quote": "순자본비율은 100분의 150 이상이어야 한다"}],
+        "bindings": [{"requirement_id": "R1", "internal_claim_ids": ["N1"], "status": "STRICTER", "reason": "내규 하한이 더 높다"}]
+      },
+      "retrieval_status": "ok",
+      "expected_verdict": "부합",
+      "baseline_verdict": "부합"
+    },
+    {
+      "case_id": "ircmp-holdout-002",
+      "question": "순자본비율 내부기준이 외규보다 완화됐는가?",
+      "internal": {"evidence_id": "N:n2:1", "text": "회사는 순자본비율을 100분의 120 이상으로 유지한다."},
+      "externals": [{"evidence_id": "E:o2:1", "mandatory": true, "text": "순자본비율은 100분의 150 이상이어야 한다."}],
+      "compiler_output": {
+        "issues": [{"issue_id": "I1", "question_span": "순자본비율 내부기준"}],
+        "internal_units": [{"claim_id": "N1", "evidence_id": "N:n2:1", "issue_ids": ["I1"], "role": "GOVERNING_RULE", "quote": "순자본비율을 100분의 120 이상으로 유지"}],
+        "requirements": [{"requirement_id": "R1", "evidence_id": "E:o2:1", "issue_ids": ["I1"], "role": "GOVERNING_RULE", "effect": "REQUIREMENT", "quote": "순자본비율은 100분의 150 이상이어야 한다"}],
+        "bindings": [{"requirement_id": "R1", "internal_claim_ids": ["N1"], "status": "CONFLICT", "reason": "내규 하한이 더 낮다"}]
+      },
+      "retrieval_status": "ok",
+      "expected_verdict": "상충",
+      "baseline_verdict": "상충"
+    },
+    {
+      "case_id": "ircmp-holdout-003",
+      "question": "채무보증 내부 상한이 외규보다 보수적인가?",
+      "internal": {"evidence_id": "N:n3:1", "text": "채무보증 잔액은 자기자본의 100분의 30을 초과할 수 없다."},
+      "externals": [{"evidence_id": "E:o3:1", "mandatory": true, "text": "채무보증 잔액은 자기자본의 100분의 35 이내로 관리한다."}],
+      "compiler_output": {
+        "issues": [{"issue_id": "I1", "question_span": "채무보증 내부 상한"}],
+        "internal_units": [{"claim_id": "N1", "evidence_id": "N:n3:1", "issue_ids": ["I1"], "role": "GOVERNING_RULE", "quote": "자기자본의 100분의 30을 초과할 수 없다"}],
+        "requirements": [{"requirement_id": "R1", "evidence_id": "E:o3:1", "issue_ids": ["I1"], "role": "GOVERNING_RULE", "effect": "PROHIBITION", "quote": "자기자본의 100분의 35 이내로 관리"}],
+        "bindings": [{"requirement_id": "R1", "internal_claim_ids": ["N1"], "status": "STRICTER", "reason": "내규 상한이 더 낮다"}]
+      },
+      "retrieval_status": "ok",
+      "expected_verdict": "부합",
+      "baseline_verdict": "부합"
+    },
+    {
+      "case_id": "ircmp-holdout-004",
+      "question": "보고기한을 내부에서 더 길게 정했는가?",
+      "internal": {"evidence_id": "N:n4:1", "text": "한도초과 해소계획을 5영업일 이내에 제출한다."},
+      "externals": [{"evidence_id": "E:o4:1", "mandatory": true, "text": "한도초과 해소계획은 3영업일 이내에 제출하여야 한다."}],
+      "compiler_output": {
+        "issues": [{"issue_id": "I1", "question_span": "보고기한"}],
+        "internal_units": [{"claim_id": "N1", "evidence_id": "N:n4:1", "issue_ids": ["I1"], "role": "PROCEDURE", "quote": "5영업일 이내에 제출"}],
+        "requirements": [{"requirement_id": "R1", "evidence_id": "E:o4:1", "issue_ids": ["I1"], "role": "PROCEDURE", "effect": "PROCEDURE", "quote": "3영업일 이내에 제출하여야 한다"}],
+        "bindings": [{"requirement_id": "R1", "internal_claim_ids": ["N1"], "status": "CONFLICT", "reason": "내규 기한이 더 길다"}]
+      },
+      "retrieval_status": "ok",
+      "expected_verdict": "상충",
+      "baseline_verdict": "상충"
+    },
+    {
+      "case_id": "ircmp-holdout-005",
+      "question": "외규상 사전 승인 절차가 내규에 빠졌는가?",
+      "internal": {"evidence_id": "N:n5:1", "text": "담당부서는 거래 내용을 기록한다."},
+      "externals": [{"evidence_id": "E:o5:1", "mandatory": true, "text": "거래 실행 전에 위험관리책임자의 승인을 받아야 한다."}],
+      "compiler_output": {
+        "issues": [{"issue_id": "I1", "question_span": "사전 승인 절차"}],
+        "internal_units": [],
+        "requirements": [{"requirement_id": "R1", "evidence_id": "E:o5:1", "issue_ids": ["I1"], "role": "PROCEDURE", "effect": "PROCEDURE", "quote": "거래 실행 전에 위험관리책임자의 승인을 받아야 한다"}],
+        "bindings": [{"requirement_id": "R1", "internal_claim_ids": [], "status": "MISSING", "reason": "내규에 승인 요건이 없다"}]
+      },
+      "retrieval_status": "ok",
+      "expected_verdict": "미비",
+      "baseline_verdict": "재검토"
+    },
+    {
+      "case_id": "ircmp-holdout-006",
+      "question": "외규가 금지한 거래를 내규가 허용하는가?",
+      "internal": {"evidence_id": "N:n6:1", "text": "준법감시인의 사후 보고를 조건으로 해당 거래를 할 수 있다."},
+      "externals": [{"evidence_id": "E:o6:1", "mandatory": true, "text": "금융회사는 해당 거래를 하여서는 아니 된다."}],
+      "compiler_output": {
+        "issues": [{"issue_id": "I1", "question_span": "외규가 금지한 거래"}],
+        "internal_units": [{"claim_id": "N1", "evidence_id": "N:n6:1", "issue_ids": ["I1"], "role": "GOVERNING_RULE", "quote": "해당 거래를 할 수 있다"}],
+        "requirements": [{"requirement_id": "R1", "evidence_id": "E:o6:1", "issue_ids": ["I1"], "role": "GOVERNING_RULE", "effect": "PROHIBITION", "quote": "해당 거래를 하여서는 아니 된다"}],
+        "bindings": [{"requirement_id": "R1", "internal_claim_ids": ["N1"], "status": "CONFLICT", "reason": "외규 금지와 내규 허용이 충돌한다"}]
+      },
+      "retrieval_status": "ok",
+      "expected_verdict": "상충",
+      "baseline_verdict": "상충"
+    },
+    {
+      "case_id": "ircmp-holdout-007",
+      "question": "내규가 외규의 보고 절차를 모두 반영했는가?",
+      "internal": {"evidence_id": "N:n7:1", "text": "위반 사실을 지체없이 금융감독원장에게 보고한다."},
+      "externals": [{"evidence_id": "E:o7:1", "mandatory": true, "text": "위반 사실을 지체없이 금융감독원장에게 보고하여야 한다."}],
+      "compiler_output": {
+        "issues": [{"issue_id": "I1", "question_span": "보고 절차"}],
+        "internal_units": [{"claim_id": "N1", "evidence_id": "N:n7:1", "issue_ids": ["I1"], "role": "PROCEDURE", "quote": "지체없이 금융감독원장에게 보고"}],
+        "requirements": [{"requirement_id": "R1", "evidence_id": "E:o7:1", "issue_ids": ["I1"], "role": "PROCEDURE", "effect": "PROCEDURE", "quote": "지체없이 금융감독원장에게 보고하여야 한다"}],
+        "bindings": [{"requirement_id": "R1", "internal_claim_ids": ["N1"], "status": "SATISFIED", "reason": "보고 상대방과 시점이 같다"}]
+      },
+      "retrieval_status": "ok",
+      "expected_verdict": "부합",
+      "baseline_verdict": "부합"
+    },
+    {
+      "case_id": "ircmp-holdout-008",
+      "question": "외규 예외의 통제조건이 내규에서 누락됐는가?",
+      "internal": {"evidence_id": "N:n8:1", "text": "위험회피 목적의 거래는 허용한다."},
+      "externals": [{"evidence_id": "E:o8:1", "mandatory": true, "text": "위험회피 목적의 거래로서 사전 확인을 받은 경우에만 허용한다."}],
+      "compiler_output": {
+        "issues": [{"issue_id": "I1", "question_span": "외규 예외의 통제조건"}],
+        "internal_units": [{"claim_id": "N1", "evidence_id": "N:n8:1", "issue_ids": ["I1"], "role": "EXCEPTION", "quote": "위험회피 목적의 거래는 허용"}],
+        "requirements": [{"requirement_id": "R1", "evidence_id": "E:o8:1", "issue_ids": ["I1"], "role": "EXCEPTION", "effect": "EXCEPTION", "quote": "사전 확인을 받은 경우에만 허용"}],
+        "bindings": [{"requirement_id": "R1", "internal_claim_ids": ["N1"], "status": "MISSING", "reason": "사전 확인 조건이 없다"}]
+      },
+      "retrieval_status": "ok",
+      "expected_verdict": "미비",
+      "baseline_verdict": "재검토"
+    },
+    {
+      "case_id": "ircmp-holdout-009",
+      "question": "같은 의무인지 행위자 범위가 달라 불명확한가?",
+      "internal": {"evidence_id": "N:n9:1", "text": "리스크관리부는 반기마다 점검한다."},
+      "externals": [{"evidence_id": "E:o9:1", "mandatory": true, "text": "각 영업부서는 분기마다 점검하여야 한다."}],
+      "compiler_output": {
+        "issues": [{"issue_id": "I1", "question_span": "행위자 범위"}],
+        "internal_units": [{"claim_id": "N1", "evidence_id": "N:n9:1", "issue_ids": ["I1"], "role": "GOVERNING_RULE", "quote": "리스크관리부는 반기마다 점검"}],
+        "requirements": [{"requirement_id": "R1", "evidence_id": "E:o9:1", "issue_ids": ["I1"], "role": "GOVERNING_RULE", "effect": "REQUIREMENT", "quote": "각 영업부서는 분기마다 점검하여야 한다"}],
+        "bindings": [{"requirement_id": "R1", "internal_claim_ids": ["N1"], "status": "UNRESOLVED", "reason": "행위자와 주기가 모두 다르다"}]
+      },
+      "retrieval_status": "ok",
+      "expected_verdict": "재검토",
+      "baseline_verdict": "재검토"
+    },
+    {
+      "case_id": "ircmp-holdout-010",
+      "question": "정의조만 회수된 상태에서 부합 결론을 낼 수 있는가?",
+      "internal": {"evidence_id": "N:n10:1", "text": "이 규정에서 전문투자자란 관계 법령에 따른 자를 말한다."},
+      "externals": [{"evidence_id": "E:o10:1", "mandatory": false, "text": "전문투자자란 대통령령으로 정하는 금융투자상품에 관한 전문성을 보유한 자를 말한다."}],
+      "compiler_output": {
+        "issues": [{"issue_id": "I1", "question_span": "정의조만 회수"}],
+        "internal_units": [{"claim_id": "N1", "evidence_id": "N:n10:1", "issue_ids": ["I1"], "role": "DEFINITION", "quote": "전문투자자란 관계 법령에 따른 자"}],
+        "requirements": [{"requirement_id": "R1", "evidence_id": "E:o10:1", "issue_ids": ["I1"], "role": "CONTEXT", "effect": "CONTEXT", "quote": "전문투자자란 대통령령으로 정하는"}],
+        "bindings": []
+      },
+      "retrieval_status": "ok",
+      "expected_verdict": "재검토",
+      "baseline_verdict": "재검토"
+    },
+    {
+      "case_id": "ircmp-holdout-011",
+      "question": "코퍼스에 없는 evidence ID를 근거로 쓸 수 있는가?",
+      "internal": {"evidence_id": "N:n11:1", "text": "담당자는 사전 승인을 받아야 한다."},
+      "externals": [{"evidence_id": "E:o11:1", "mandatory": true, "text": "담당자는 사전 승인을 받아야 한다."}],
+      "compiler_output": {
+        "issues": [{"issue_id": "I1", "question_span": "코퍼스에 없는 evidence ID"}],
+        "internal_units": [{"claim_id": "N1", "evidence_id": "N:n11:1", "issue_ids": ["I1"], "role": "PROCEDURE", "quote": "담당자는 사전 승인을 받아야 한다"}],
+        "requirements": [{"requirement_id": "R1", "evidence_id": "E:invented:99", "issue_ids": ["I1"], "role": "PROCEDURE", "effect": "PROCEDURE", "quote": "담당자는 사전 승인을 받아야 한다"}],
+        "bindings": [{"requirement_id": "R1", "internal_claim_ids": ["N1"], "status": "SATISFIED", "reason": "동일 문구"}]
+      },
+      "retrieval_status": "ok",
+      "expected_verdict": "재검토",
+      "baseline_verdict": "재검토"
+    },
+    {
+      "case_id": "ircmp-holdout-012",
+      "question": "회수가 degraded인 상태에서 부합을 확정할 수 있는가?",
+      "internal": {"evidence_id": "N:n12:1", "text": "담당자는 사전 승인을 받아야 한다."},
+      "externals": [{"evidence_id": "E:o12:1", "mandatory": true, "text": "담당자는 사전 승인을 받아야 한다."}],
+      "compiler_output": {
+        "issues": [{"issue_id": "I1", "question_span": "회수가 degraded"}],
+        "internal_units": [{"claim_id": "N1", "evidence_id": "N:n12:1", "issue_ids": ["I1"], "role": "PROCEDURE", "quote": "담당자는 사전 승인을 받아야 한다"}],
+        "requirements": [{"requirement_id": "R1", "evidence_id": "E:o12:1", "issue_ids": ["I1"], "role": "PROCEDURE", "effect": "PROCEDURE", "quote": "담당자는 사전 승인을 받아야 한다"}],
+        "bindings": [{"requirement_id": "R1", "internal_claim_ids": ["N1"], "status": "SATISFIED", "reason": "동일 문구"}]
+      },
+      "retrieval_status": "degraded",
+      "expected_verdict": "재검토",
+      "baseline_verdict": "재검토"
+    }
+  ]
+}

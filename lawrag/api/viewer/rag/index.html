@@ -25,22 +25,42 @@
   <!-- 질의 — 결과의 근거 좌표는 전부 구조 뷰어 딥링크다.
        묻는 줄이 먼저, 그 줄을 바꾸는 스위치는 아래 작은 알약으로 물러난다. -->
   <section class="pane askpane">
+    <div class="ask-intro">
+      <span class="eyebrow">LEGALCLOSURE</span>
+      <h2>질문에서 쟁점을 찾고, 연결된 조문까지 읽습니다.</h2>
+      <p>답변의 모든 근거는 원문 좌표로 되돌아갈 수 있습니다.</p>
+    </div>
     <form id="askForm" class="askrow">
       <input id="q" type="search" placeholder="문서에 물어보세요 — 예: 설명의무가 뭐야"
              autocomplete="off" autofocus>
       <button id="askBtn" type="submit">묻기</button>
     </form>
     <div class="askopts">
-      <label class="chk" title="LLM 관련성 필터 — 끄면 거르지 않은 회수 원본이 보인다">
-        <input type="checkbox" id="optFilter" checked> 필터</label>
-      <label class="chk" title="검색이 빈손일 때 회복 사다리(의미해석→깔때기→원문→수색대→둘러보기)를 돈다">
-        <input type="checkbox" id="optRecover" checked> 탐험</label>
-      <label class="chk" title="기본: 벡터로 진입 → 참조 간선을 따라 연결 구역을 전부 싣는다. 출처는 회수 집합 그대로(정적). 끄면 용어 사다리">
-        <input type="checkbox" id="optVector" checked> 벡터 우선</label>
       <!-- 질의 스코프 — "이 문서들만 대상으로". 목록은 data/rag/scopes.yml (+ 내장 외규·내규·서식).
            진입은 스코프 안에서만, 동반(배제·위임·준용…)은 밖으로 나가되 표식이 붙는다. -->
       <label class="chk scope" title="질의 스코프 — 이 문서 묶음만 검색한다 (정의: data/rag/scopes.yml · 목록 /v1/rag/scopes)">
         범위 <select id="optScope"><option value="">전체</option></select></label>
+      <details class="search-settings">
+        <summary>검색 설정</summary>
+        <div class="search-settings-body">
+          <label class="chk" title="LLM 관련성 필터 — 끄면 거르지 않은 회수 원본이 보인다">
+            <input type="checkbox" id="optFilter" checked> 관련성 필터</label>
+          <label class="chk" title="검색이 빈손일 때 회복 사다리(의미해석→깔때기→원문→수색대→둘러보기)를 돈다">
+            <input type="checkbox" id="optRecover" checked> 빈손일 때 깊게 탐험</label>
+          <label class="chk retriever" title="LegalClosure가 운영 기본이며 이전 경로는 롤백·A/B용으로만 보관합니다">
+            검색기 <select id="optRetriever">
+              <option value="legalclosure" selected>LegalClosure (기본)</option>
+              <option value="legacy-vector">이전 벡터 (보관)</option>
+              <option value="legacy-auto">이전 용어 사다리 (보관)</option>
+            </select></label>
+        </div>
+      </details>
+    </div>
+    <div class="ask-examples" aria-label="예시 질문">
+      <span>예시</span>
+      <button type="button" data-question="설명의무가 무엇인가요?">설명의무가 무엇인가요?</button>
+      <button type="button" data-question="자기주식 소각 의무는 언제 발생하나요?">자기주식 소각 의무</button>
+      <button type="button" data-question="위임·준용 조문까지 포함해서 근거를 찾아줘">위임·준용 조문까지</button>
     </div>
   </section>
 
@@ -112,5 +132,14 @@
 <script src="app.js"></script>
 <script src="pdfpane.js"></script>
 <script src="backlog.js"></script>
+<script>
+  document.querySelectorAll("[data-question]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const input = document.getElementById("q");
+      input.value = button.dataset.question;
+      input.focus();
+    });
+  });
+</script>
 </body>
 </html>

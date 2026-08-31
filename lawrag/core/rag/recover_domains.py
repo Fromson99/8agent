@@ -32,12 +32,13 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from lawrag.core.rag import switches, wikictx
+from lawrag.core.rag.controls import value as control_value
 from lawrag.core.rag.index import Index, store_path
 from lawrag.core.rag.search import search as run_search
 
 log = logging.getLogger("lawrag.core.rag.recover_domains")
 
-COORDS_CAP = 8              # 원문 단(FULLTEXT_CAP)과 같은 상한 — 회복은 보충이지 홍수가 아니다
+COORDS_CAP = int(control_value("recover.domain_coords_max"))
 
 
 @dataclass
@@ -210,8 +211,8 @@ def law_scoped_funnel(llm, index: Index, query: str) -> tuple[list, dict]:
 # 여기는 **두 콜**이다 — 장 고르기(제목만) → 조 고르기(제목 + 본문 첫머리) —
 # 그리고 조만 돌려준다. 2026-08-18 실측: 18-0124 에서 이 모양이 제84조를 3위
 # 안에 두었고, 범용 깔때기는 못 찾았다.
-DESCEND_CHAPTERS = 2       # 장 선택 상한
-DESCEND_JOS = 3            # 조 선택 상한
+DESCEND_CHAPTERS = int(control_value("recover.chapters_max"))
+DESCEND_JOS = int(control_value("recover.articles_per_chapter_max"))
 _HEAD_CHARS = 90           # 조 메뉴의 본문 첫머리 — 제목만으론 "국세행정에 대한 협조"가 안 읽힌다
 _JO_RE = None
 
@@ -319,7 +320,7 @@ def descend(llm, index: Index, query: str, doc_ids: list[str]) -> tuple[list, di
                     "picked_chapters": [f"{index.docs[d].name[:10]} {c.get('surface','')}" for d, c in picked]}
 
 
-PICK_DOCS_MAX = 2
+PICK_DOCS_MAX = int(control_value("recover.documents_max"))
 _PICK_DOCS_SYSTEM = (
     "너는 법령 탐색기다. 질문의 답이 될 조문이 들어 있을 법한 **문서**를 목록에서 "
     "고른다 — 최대 2개, 확신 순. 목록의 각 줄은 문서명·종별·제1조(목적)다. 상위법과 "

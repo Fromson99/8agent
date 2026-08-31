@@ -25,6 +25,7 @@ def fake_embed(monkeypatch, tmp_path):
     monkeypatch.setattr(embedding, "available", lambda: True)
     monkeypatch.setattr(embedding, "encode", encode)
     monkeypatch.setenv("RAG_LEXICON_DIR", str(tmp_path))
+    monkeypatch.setenv("RAG_LEXICON_COMPILE_MISSING", "1")
     return calls
 
 
@@ -66,3 +67,21 @@ def test_legacy_cache_reused_when_sig_matches(fake_embed, tmp_path):
     lx._embed()
     assert fake_embed == []                                       # 옛 형식 통째로 재사용
     assert lx.vec.shape == (2, 3)
+
+
+def test_query_path_does_not_compile_missing_terms(monkeypatch, tmp_path):
+    calls = []
+    monkeypatch.setattr(embedding, "available", lambda: True)
+    monkeypatch.setattr(embedding, "encode", lambda texts: calls.append(texts))
+    monkeypatch.setenv("RAG_LEXICON_DIR", str(tmp_path))
+    monkeypatch.delenv("RAG_LEXICON_COMPILE_MISSING", raising=False)
+    np.savez_compressed(tmp_path / "terms.npz",
+                        names=np.array(["세무공무원"], dtype=str),
+                        emb=np.array([[1.0, 0.0, 0.0]], dtype=np.float32))
+    lx = _lex(["세무공무원", "국세청장"])
+    lx._embed()
+    assert calls == []
+    assert lx.cache_stats == {"terms": 2, "cached": 1, "missing": 1,
+                              "coverage": 0.5, "compiled": False}
+    assert np.allclose(lx.vec[0], [1.0, 0.0, 0.0])
+    assert np.allclose(lx.vec[1], [0.0, 0.0, 0.0])

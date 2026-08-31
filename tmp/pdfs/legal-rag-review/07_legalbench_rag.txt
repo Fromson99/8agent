@@ -1,0 +1,868 @@
+LegalBench-RAG: A Benchmark for Retrieval-Augmented Generation in the
+Legal Domain
+Nicholas Pipitone * 1 Ghita Houir Alami * 1
+Abstract
+Retrieval-Augmented Generation (RAG) systems
+are showing promising potential, and are becom-
+ing increasingly relevant in AI-powered legal ap-
+plications. Existing benchmarks, such as Legal-
+Bench, assess the generative capabilities of Large
+Language Models (LLMs) in the legal domain,
+but there is a critical gap in evaluating the retrieval
+component of RAG systems. To address this, we
+introduce LegalBench-RAG, the first benchmark
+specifically designed to evaluate the retrieval
+step of RAG pipelines within the legal space.
+LegalBench-RAG emphasizes precise retrieval
+by focusing on extracting minimal, highly rele-
+vant text segments from legal documents. These
+highly relevant snippets are preferred over retriev-
+ing document IDs, or large sequences of imprecise
+chunks, both of which can exceed context window
+limitations. Long context windows cost more to
+process, induce higher latency, and lead LLMs to
+forget or hallucinate information. Additionally,
+precise results allow LLMs to generate citations
+for the end user. The LegalBench-RAG bench-
+mark is constructed by retracing the context used
+in LegalBench queries back to their original loca-
+tions within the legal corpus, resulting in a dataset
+of 6,858 query-answer pairs over a corpus of over
+79M characters, entirely human-annotated by le-
+gal experts. We also introduce LegalBench-RAG-
+mini, a lightweight version for rapid iteration and
+experimentation. By providing a dedicated bench-
+mark for legal retrieval, LegalBench-RAG serves
+as a critical tool for companies and researchers
+focused on enhancing the accuracy and perfor-
+mance of RAG systems in the legal domain. The
+LegalBench-RAG dataset is publicly available at
+https://github.com/zeroentropy-cc/legalbenchrag
+*Equal contribution 1ZeroEntropy, San Francisco, CA. Corre-
+spondence to: Nicholas Pipitone <npip99@gmail.com>, Ghita
+Houir Alami <ghita.houir-alami@polytechnique.edu>.
+Copyright 2024 by the authors.
+Figure 1. Benchmarking The Retrieval Step Of RAG Systems
+1. Introduction
+In the rapidly evolving landscape of AI in the legal sec-
+tor, Retrieval-Augmented Generation (RAG) (Lewis et al.,
+2020) systems have emerged as a crucial technology. These
+systems, which combine retrieval mechanisms with gen-
+erative large language models (LLMs), show promising
+potential for contextualized generation. However, as com-
+panies race to develop RAG-based solutions, a critical gap
+in the ecosystem remains unaddressed: the lack of a ded-
+icated benchmark for evaluating the retrieval component
+in legal-specific RAG systems. Existing benchmarks such
+as LegalBench (Guha et al., 2023) assess the reasoning ca-
+pabilities of LLMs on complex legal questions, and how
+effectively LLMs recall legal knowledge in their training
+set. However, these existing benchmarks do not evaluate
+the retrieval quality over a large corpus, which is crucial
+for RAG-based systems. Similarly, a legal-specific RAG
+benchmark is essential because legal documents have unique
+structures, terminologies, and requirements that more gen-
+eral RAG benchmarks cannot adequately assess. General
+benchmarks often lack the domain-specific nuances and
+complex legal relationships found in real-world use cases.
+These benchmarks (Yu et al., 2024) also generally focus on
+recall without distinguishing between the retrieval of large,
+contextually broad chunks and the precise retrieval of small,
+highly relevant text snippets. The risk of hallucination at
+generation increases as irrelevant information is included in
+1
+arXiv:2408.10343v1  [cs.AI]  19 Aug 2024
+
+LegalBench-RAG: A Benchmark for Retrieval-Augmented Generation in the Legal Domain
+the context window of an LLM, which poses a significant
+risk in the legal industry. Benchmarks such as RAGTruth
+(Niu et al., 2024) study the extent of hallucinated content
+at the generation step of RAG systems. Additionally, suc-
+cinct annotations into highly relevant text snippets allow
+a human-in-the-loop to quickly verify the veracity of an
+LLM’s claims. To address all of these issues, a benchmark
+is necessary to compare the quality of competing retrieval
+algorithms. For this, we introduce LegalBench-RAG, the
+first benchmark designed specifically for evaluating retrieval
+systems in the legal domain. LegalBench-RAG provides
+a rigorous framework to assess how well retrieval mecha-
+nisms can pinpoint exact legal references, offering a more
+granular and relevant measure of performance than existing
+benchmarks.
+2. Related Work
+2.1. Retrieval Augmented Generation (RAG)
+A Retrieval-Augmented Generation (RAG) (Lewis et al.,
+2020) system is an intelligent generative system that utilizes
+a knowledge base, denoted as D, which contains a set of
+documents. In this case, each document, represented asdi ∈
+D, is a string of legal text. A traditional implementation
+will segment each document di into a set of chunks cj ∈ C i.
+These chunks are then transformed into vector embeddings
+using a specialized embedding model. After the ingestion
+of the documents, a user can submit a query q, which will
+be vectorized using the same embedding model. The system
+then retrieves the top-k chunksRq = {r1, r2, . . . , rK} most
+relevant to the query, using similarity metrics such as cosine
+similarity. The retrieved chunks, together with the query
+and a system prompt P , are processed by a large language
+model (LLM) to generate the final response. This overall
+process is formalized as:
+Contextual Retriever(q, D) → R q
+LLMP (q, Rq) → answer
+Contextual Retriever: The contextual retriever module
+locates relevant information from an external knowledge
+repository, returning a corresponding context set Rq. Typi-
+cally, RAG architectures incorporate a bi-encoder retriever
+such as DPR (Karpukhin et al., 2020), known for its effi-
+ciency and accuracy in information retrieval. The Contex-
+tual Retriever module often includes a reranking step. First,
+the top-k′ items are retrieved using a bi-encoder retriever.
+Then, all k′ items will be reranked using a cross-encoder
+model that outputs a similarity score between q and each
+item. The top k < k ′ results are returned.
+Answer Generator: The generator component, which often
+leverages a sequence-to-sequence model, receives both the
+question and the context as inputs. It then generates an
+answer yj,q with the likelihood PG(yj,q | q, rj,q).
+2.2. Retrieval Augmented Generation (RAG)
+Benchmarks
+Question-Answer Benchmarks have been introduced prior
+to the adoption of RAG systems, and datasets such as Hot-
+PotQA (Yang et al., 2018) are still in use today. Multiple
+RAG-specific benchmarks have also been created to assess
+the quality of RAG systems. Retrieval Augmented Genera-
+tion Benchmark (RGB) (Chen et al., 2023) and RECALL
+(Liu et al., 2023) are two major contributions that asses the
+performance of RAG models. However, these benchmarks
+evaluate a simple case where the answer of a query can be
+retrieved and solved in a general context. More complex
+datasets such as MultiHop-RAG (Tang and Yang, 2024)
+were also introduced to assess the retrieval and reasoning
+capability of LLMs for complex multi-hop queries.
+2.3. LegalBench
+LegalBench (Guha et al., 2023) was introduced to enable
+greater study of legal reasoning capabilities of LLMs. It is a
+collaboratively constructed legal reasoning benchmark con-
+sisting of 162 tasks covering six different types of legal rea-
+soning. LegalBench was built through an interdisciplinary
+process, in which tasks designed and hand-crafted by legal
+professionals were collected. Because these subject matter
+experts took a leading role in construction, tasks either mea-
+sure legal reasoning capabilities that are practically useful,
+or measure reasoning skills that lawyers find interesting.
+2.4. Other legal focused benchmarks
+In recent years, there has been considerable research aimed
+at evaluating AI models’ abilities to undertake tasks tradi-
+tionally handled by legal professionals (Maroudas et al.,
+2022) (Katz et al., 2023).
+Initial studies focused on complex legal tasks, such as doc-
+ument review (Wang et al., 2023) and case summarization
+(Shen et al., 2022) (Shukla et al., 2022).
+Subsequent research efforts have been directed towards the
+challenges posed by legal texts, such as extensive document
+lengths and specialized jargon (Li et al., 2023), (Chalkidis
+et al., 2022).
+Another critical area of investigation has been the creation
+of tasks that assess various forms of inferential reasoning
+commonly required in legal contexts (Chalkidis et al., 2022)
+(Guha et al., 2023).
+2
+
+LegalBench-RAG: A Benchmark for Retrieval-Augmented Generation in the Legal Domain
+Q&A Count Dataset Name Dataset Description
+946 ContractNLI NDA related documents
+4042 Contract Understanding Atticus Dataset (CUAD) Private Contracts
+1676 M&A Understanding Dataset M&A documents of public companies
+194 Privacy QA Privacy policies of consumer apps
+6858 4 datasets Variety of legal documents
+Table 1. Summary of Datasets
+3. A Benchmarking Dataset: LegalBench-RAG
+3.1. LegalBench-RAG Constuction
+In this section, we provide detailed information on the con-
+struction of the LegalBench-RAG dataset. Notably, we
+describe the process of creating a set of Queries along with
+the corresponding ground truth snippets sets derived from
+the well-known LegalBench (Guha et al., 2023) dataset.
+3.1.1. S TARTING POINT : L EGAL BENCH
+Our benchmark development is based on LegalBench, a
+collaboratively constructed legal reasoning benchmark con-
+sisting of 162 tasks covering six different types of legal
+reasoning. LegalBench is a widely recognized dataset that
+tests LLMs’ understanding of legal concepts and their legal
+reasoning by providing them with the exact context needed
+to answer legal questions. LegalBench focuses solely on
+evaluating the generation phase of the RAG pipeline, as-
+sessing how well the LLM can generate accurate responses
+given a certain context, task, and prompt. However, Legal-
+Bench does not benchmark the ability to extract the correct
+context from within a larger corpus. This limitation is what
+inspired the LegalBench-RAG benchmark.
+We selected four datasets to construct our retrieval bench-
+mark: Privacy Question Answering (PrivacyQA) (Ravichan-
+der et al., 2019), Contract Understanding Atticus Dataset
+(CUAD) (Hendrycks et al., 2021), Mergers and Acquisi-
+tions Understanding Dataset (MAUD) (Wang et al., 2023)
+and Contract Natural Language Inference (ContractNLI)
+(Koreeda and Manning, 2021).
+3.1.2. T RACING BACK TO ORIGINAL SOURCES
+To transform LegalBench into a retrieval benchmark, we un-
+dertook a comprehensive process to trace each text segment
+used in LegalBench, back to its original location within
+the source corpus. Each of the four source datasets used is
+unique, but in general, the datasets have categorical anno-
+tations and associated context clauses for each annotation.
+Our desired output is a pairing between queries and rele-
+vant spans, where each span is a range of characters in the
+original corpus. Creating this dataset involved searching
+in the original corpus for the context clauses, in order to
+deduce the index span implied. And, it involved transform-
+ing annotations into queries. By creating these pairings
+between queries and lists of relevant spans, we ensured that
+the benchmark accurately reflects the retrieval capabilities
+needed to locate exactly the relevant information within a
+large legal corpus. This detailed index mapping is criti-
+cal for evaluating retrieval-based models within the legal
+domain.
+3.1.3. C ONSTRUCTION PROCESS
+Each of the four source datasets is converted into
+LegalBench-RAG queries through a slightly different pro-
+cess, but all four follow a similar formula.
+First, as a pre-processing step, we must create unique de-
+scriptions of every document in the corpus, and we must
+create a mapping between annotation categories and inter-
+rogatives.
+From there, we can now generate our queries. A full
+LegalBench-RAG query is constructed using the format:
+"Consider (document description);
+(interrogative)"
+Therefore, every query is a combination of the document
+description, and an interrogative. Each individual query in
+LegalBench-RAG originates from an individual annotation
+in the source dataset. The annotation itself provides the
+document ID and annotation category, which we convert
+into a description and interrogative using our pre-processed
+mappings.
+3.1.4. E XAMPLE ANNOTATIONS
+For instance, consider the Contract Understanding Atticus
+Dataset (CUAD) ”Affiliate License-Licensee” task from
+LegalBench.
+The goal of this task is to classify if a clause describes
+a license grant to a licensee (incl. sublicensor) and the
+affiliates of such licensee/sublicensor.
+In LegalBench, a query appears as follows:
+Query: Does the clause describe a license grant
+3
+
+LegalBench-RAG: A Benchmark for Retrieval-Augmented Generation in the Legal Domain
+to a licensee (incl. sublicensor) and the affiliates
+of such licensee/sublicensor?
+Clause: Supplier hereby grants Bank of America
+a nonexclusive, (...) restrictions of this Section.
+Label: Yes
+Query: Does the clause describe a license grant
+to a licensee (incl. sublicensor) and the affiliates
+of such licensee/sublicensor?
+Clause: Promptly upon receipt of notice from
+Pfizer, Exact and Pfizer shall engage in exclu-
+sive good faith negotiations to enter into a defini-
+tive written agreement for the Ex-US Commercial
+Rights.
+Label: No
+In the original CUAD dataset, annotations appear as follows:
+Clause: Supplier hereby grants Bank of America
+a nonexclusive, (...) restrictions of this Section.
+File: CardlyticsInc 20180112 S-1 EX-
+10.16 11002987 EX-10.16 Maintenance
+Agreement1.pdf
+Label: Irrevocable Or Perpetual License
+Clause: Promptly upon receipt of notice from
+Pfizer, Exact and Pfizer shall engage in exclusive
+good faith negotiations to enter into a definitive
+written agreement for the Ex-US Commercial
+Rights.
+File: ExactSciencesCorp 20180822 8-K
+EX-10.1 11331629 EX-10.1 Promotion
+Agreement.pdf
+Label: Rofr/Rofo/Rofn
+In our LegalBench-RAG dataset, queries appear as follows:
+Query: Consider the Software License, Cus-
+tomization, and Maintenance Agreement between
+Cardlytics, Inc. and Bank of America; Are
+the licenses granted under this contract non-
+transferable?
+Label (File): CardlyticsInc 20180112 S-1
+EX-10.16 11002987 EX-10.16 Maintenance
+Agreement1.txt
+Label (Span): [44579, 45211]
+Query: Consider the Cologuard Promotion
+Agreement between Exact Sciences Corporation
+and Pfizer Inc.; Does this contract include any
+right of first refusal, right of first offer, or right of
+first negotiation?
+Label (File): ExactSciencesCorp 20180822 8
+-K EX-10.1 11331629 EX-10.1 Promotion
+Agreement.txt
+Label (Span): [51520, 52804]
+Notice the distinguishing characteristics between Legal-
+Bench and LegalBench-RAG. LegalBench will take a given
+query, and convert the annotation label from the CUAD
+dataset, into a Yes/No label based on whether or not the
+label matches the query. LegalBench-RAG on the other
+hand, will ask the same query, and the label will be the
+filename and span of the relevant text necessary to answer
+to the query.
+A detail omitted for brevity, is that LegalBench-RAG labels
+will be not be a single filename and index range, but rather
+an array of (filename, index range) tuples, as the source
+dataset has annotations that are sets of non-adjacent spans.
+3.2. Quality Control
+Quality control is of crucial importance for any RAG bench-
+mark, to ensure trust in recall and precision scores. All of
+the annotations themselves were created by domain-experts
+via the methods described by our four source datasets. On
+top of this, our team conducted a thorough manual inspec-
+tion of every data point in the dataset, employing the process
+described below. Quality control was rigorously applied at
+three critical decision points:
+Mapping Annotation Categories to Interrogatives
+The first step involved creating a mapping from annotation
+categories to interrogatives. Unlike the original LegalBench,
+where questions could be directly utilized, LegalBench-
+RAG necessitates that all text relevant to the query is in-
+cluded in the annotation, while irrelevant text is excluded.
+To meet these stringent criteria, we manually constructed a
+mapping where the relevant text would align precisely with
+the domain experts’ annotations. Categories with inconsis-
+tent annotation precision were excluded entirely from our
+dataset.
+Mapping Document IDs to Descriptions
+Second, we created the mapping from document IDs to doc-
+ument descriptions. For this, we utilized GPT-4o-mini to
+automatically create a short description for each document,
+utilizing the file name and approximate first and last para-
+graphs of the document. For consistency, the model was
+given explicit instructions on how to format its description,
+4
+
+LegalBench-RAG: A Benchmark for Retrieval-Augmented Generation in the Legal Domain
+and regular expressions (regex) was used to validate the out-
+put format. Each description was then manually inspected.
+We also used embedding similarity on every pair of docu-
+ment descriptions to find pairs of most similar descriptions,
+manually excluding any pairs that could not be distinctly
+differentiated.
+Selection of Annotation Categories
+The final decision point was determining which annotation
+categories to include. This decision was informed by our
+manual evaluations of the precision levels across categories,
+with inconsistent categories being excluded to preserve the
+integrity of the benchmark.
+Through these quality control measures, we have verified the
+robustness and reliability of the LegalBench-RAG dataset,
+ensuring that each critical decision point aligns with the
+intended benchmark standards.
+3.3. Dataset Structure
+The LegalBench-RAG benchmark is structured around two
+primary components: the original corpus and the QA pairs.
+The corpus includes the documents from our four source
+datasets. It excludes documents that were not asked by at
+least one query in LegalBench-RAG. Additionally, every
+document is in .txt format, utilizing the txt files provided by
+the source datasets. We opt to utilize the original uncleaned,
+often messy, file names representative of file names found
+in the industry.
+The QA pairs are directly linked to the documents within
+the corpus. Appendix A provides a detailed structure of
+these QA pairs. Each query is associated with a list of rel-
+evant snippets extracted from the different documents in
+the corpus that directly answer the query. For each snippet,
+the file path, the exact quote, and the precise character in-
+dices within the document are provided, ensuring a clear
+reference to the original source. This detailed mapping is
+crucial for accurately assessing retrieval capabilities within
+the LegalBench-RAG benchmark.
+3.3.1. D ESCRIPTIVE STATISTICS
+LegalBench-RAG is composed of 4 datasets and totals al-
+most 80 million characters in its corpus across 714 docu-
+ments. Each pair is annotated by legal experts, ensuring
+the highest accuracy and relevance for this benchmark. We
+extract 6,889 question-answer pairs which constitutes our
+retrieval benchmark. The outcome is a robust dataset that we
+call LegalBench-RAG. The statistics regarding this corpus
+are presented in Table 2.
+3.3.2. L EGAL BENCH -RAG AND
+LEGAL BENCH -RAG- MINI
+Given the consequent size of LegalBench-RAG, this paper
+also introduces LegalBench-RAG-mini, a more lightweight
+version of the benchmark we proposed. LegalBench-RAG-
+mini was created by selecting exactly 194 queries from each
+of the four datasets PrivacyQA, CUAD, MAUD and Con-
+tractNLI. We select the portions of the corpus corresponding
+to these queries accordingly. This results in a dataset of 776
+queries as described in Table 3.
+3.4. Significance of this work
+Creating datasets in the legal space is a difficult, time-
+consuming and costly task. For instance, The CUAD dataset
+alone, was a year-long effort that required the expertise of
+over 40 lawyers to generate 13,000 annotations. Given that
+9,283 pages were reviewed at least 4 times, that each page
+required 5-10 minutes of review, and assuming a rate of
+$500 per hour for legal expertise, then we can estimate
+that the creation of the CUAD dataset would cost around
+$2,000,000 to replicate.
+LegalBench-RAG is the first publicly available retrieval-
+focused legal benchmark, and can be used for both com-
+mercial and academic purposes to assess the quality of the
+retrieval step of RAG pipelines on legal tasks. We hope
+that the introduction of this dataset allows the industry to
+more easily compare and iterate upon the plethora of RAG
+techniques available today, by providing a standardized eval-
+uation framework for these techniques.
+3.5. Limitations
+We make note of the several limitations of this dataset.
+Our four source datasets include NDAs, M&A agreements,
+various commercial contracts, and the privacy policies of
+consumer-facing online companies. While this is broad, this
+dataset is not made of an exhaustive list of all existing doc-
+uments in the legal industry. For example, this benchmark
+does not assess structured numerical data parsing, which is
+relevant for cases involving financial fraud. It also does not
+assess the parsing and analyzing of medical records, which
+is relevant in personal injury suits.
+Notably, the queries in this benchmark are always answered
+by exactly one document, so this benchmark does not assess
+the ability of a retrieval system to reason across information
+found in multiple documents. It only assesses the ability of
+a retrieval system to select the correct document, and then
+the correct snippets within that document.
+Through manual inspection, we were able to find several
+queries that do require multi-hop reasoning, which is a
+difficult task to achieve. However, there is room to create
+5
+
+LegalBench-RAG: A Benchmark for Retrieval-Augmented Generation in the Legal Domain
+ContractNLI MAUD CUAD PrivacyQA Total
+Number of Documents 95 150 462 7 714
+Number of Corpus Characters 1,013,969 52,721,337 25,792,044 176,864 79,704,214
+Average Document Length 10,673 351,476 55,827 25,266 443,242
+Number of Queries 977 1,676 4,042 194 6,889
+Link ContractNLI MAUD CUAD PrivacyQA
+Table 2. Dataset Statistics
+ContractNLI MAUD CUAD PrivacyQA Total
+Number of Documents 18 18 29 7 72
+Number of Corpus Characters 184,267 7,109,200 1,211,773 176,864 8,682,104
+Number of Queries 194 194 194 194 776
+Table 3. Summary of datasets in LegalBench-RAG-mini, including the number of documents, corpus characters, and queries.
+even more complexr queries that require a very high number
+of hops to generate the correct snippets.
+4. Benchmarking RAG systems using
+LegalBench-RAG
+A typical RAG system operates in two phases: the retrieval
+phase and the generation phase. LegalBench-RAG is de-
+signed to assess the effectiveness of the retrieval phase,
+while the original LegalBench can be utilized to evaluate
+the performance of the generation phase. In this section,
+we demonstrate how LegalBench-RAG can be employed
+to measure the quality of retrieval. The code to run the
+benchmark is publicly available here.
+All the experiments conducted in this work are run on
+LegalBench-RAG-mini.
+4.1. Hyperparameters in RAG Pipelines
+Implementing a RAG pipeline involves selecting various hy-
+perparameters and making critical design decisions, which
+can be adjusted to optimize performance. In this section, we
+discuss a few design decisions that will be evaluated using
+LegalBench-RAG.
+4.1.1. P RE-PROCESSING STRATEGIES
+As discussed in Section 2.1, standard RAG pipelines typ-
+ically generate embeddings from document chunks using
+an embedding model. The method by which documents
+are divided into these chunks is a crucial design consid-
+eration (Pinecone, 2024). Different strategies can be em-
+ployed, ranging from simple fixed-size chunks with poten-
+tially overlapping segments, to recursive and contextual ap-
+proaches, to more sophisticated semantic chunking methods
+(FullStackRetrieval-com, 2024). The choice of chunking
+strategy can significantly impact the effectiveness of the
+retrieval system.
+4.1.2. P OST-PROCESSING STRATEGIES
+Following retrieval, several critical design decisions must
+be made in the post-processing phase. One key parameter is
+the number of retrieved chunks (i.e., the choice ofk in top-k
+retrieval) that are subsequently input to the large language
+model (LLM). This selection is pivotal due to the inherent
+trade-off between maximizing the relevant context provided
+to the LLM and minimizing the introduction of noise, which
+could increase the risk of hallucination. Furthermore, the
+decision to employ a reranker model on the retrieved chunks
+represents another crucial consideration, as it can substan-
+tially alter the final set of chunks presented to the LLM,
+potentially impacting the model’s overall performance.
+4.1.3. O THER DESIGN DECISIONS
+Among other critical decisions, the choice of the embedding
+model to use is a common one. Embedding models can
+vary significantly in how well they represent textual con-
+tent. A well-chosen embedding model can enhance retrieval
+accuracy by producing more meaningful and contextually
+relevant embeddings, which improves the quality of the
+retrieval.
+4.2. Experimental Setup
+In this evaluation experiment, we implement multiple RAG
+pipelines that we benchmark using LegalBench-RAG. We
+conduct several experiments to study the impact of the
+chunking strategy and the effect of reranking the retrieved
+chunks using a specialized model.
+We used OpenAI’s ”text-embedding-3-large” embeddings
+for the embedding model (OpenAI, 2024). We chose SQLite
+Vec as a vector database and Cohere’s ”rerank-english-v3.0”
+as our reranker model (Cohere, 2024). The two chunk-
+ing strategies we benchmarked here are (1) a naive fixed-
+size chunking method with a chunk size of 500 characters
+6
+
+LegalBench-RAG: A Benchmark for Retrieval-Augmented Generation in the Legal Domain
+Precision @ k Recall @ k
+1 2 4 8 16 32 64 1 2 4 8 16 32 64
+PrivacyQA 7.86 7.31 6.41 5.06 3.58 2.41 1.54 7.45 12.53 20.88 32.38 42.45 54.27 66.07
+ContractNLI 16.45 14.80 12.53 9.73 6.70 4.65 3.04 11.32 19.10 29.79 45.59 56.75 69.88 86.57
+MAUD 3.36 2.65 2.18 1.89 1.48 1.06 0.75 2.54 3.12 4.53 8.75 13.16 18.36 25.62
+CUAD 9.27 8.05 5.98 4.33 2.77 1.77 1.09 12.60 19.47 27.92 40.70 51.02 64.38 75.71
+ALL 2.40 3.76 4.97 4.33 3.39 2.17 1.29 3.37 8.44 21.30 34.51 48.88 64.47 76.39
+Table 4. Performance comparison on different datasets for Precision and Recall at various k values for the Naive Method.
+Precision @ k Recall @ k
+1 2 4 8 16 32 64 1 2 4 8 16 32 64
+Privacy QA 14.38 13.55 12.34 9.03 6.06 4.17 2.81 8.85 15.21 27.92 42.37 55.12 71.19 84.19
+ContractNLI 6.63 5.29 3.89 2.81 1.98 1.29 0.90 7.63 11.33 17.34 24.99 35.80 46.57 61.72
+MAUD 2.65 1.77 1.96 1.40 1.39 1.15 0.82 1.65 2.09 4.59 6.18 12.93 21.04 28.28
+CUAD 1.97 4.03 4.83 4.20 2.94 1.99 1.25 1.62 8.11 17.72 31.68 44.38 60.04 74.70
+ALL 6.41 6.16 5.76 4.36 3.09 2.15 1.45 4.94 9.19 16.90 26.30 37.06 49.71 62.22
+Table 5. Performance comparison on different datasets for Precision and Recall at various k values for the Recursive Character Text
+Splitter Method.
+with no overlap, and (2) a Recursive Character Text Splitter
+(RCTS) (LangChain, 2024), which divides text into smaller
+chunks by sequentially attempting to split on a predefined
+list of characters which maintains paragraphs, sentences,
+and words together. The two post-processing we evaluated
+here are (1) no reranker after the retrieval, and (2) Cohere
+Reranker after the retrieval.
+To evaluate the results on LegalBench-RAG, we weight the
+metrics equally on each dataset, independently from the
+number of documents or queries they contain.
+4.3. Variation of preprocessing splitting strategies
+In our initial experiment, we fixed all hyperparameters and
+compared the impact of transitioning from a naive chunking
+strategy to a Recursive Text Character Splitter (RTCS). The
+performance results for each dataset, as well as varying
+values of k, are presented in Tables 4 and 5.
+4.4. Variation of postprocessing method
+We conduct a second experiment where we freeze all other
+hyperparameters and change the post-processing method
+used only. We compare using no reranking stategy of the
+retrieved chunks and using Cohere’s Reranker model. The
+results of this comparison are shown in Tables 4 and 6
+respectively. We also run our benchmark on the RCTS
+method with Cohere’s Reranker in Table 7.
+5. Results and Discussion
+5.1. Results of the experimentation
+The overall evaluation results are computed for varying
+values of k between 1 and 64 and for each of the four dataset
+and are also aggregated across all datasets using an equal
+weight for each dataset. Figures 2 and 3 display Recall@k
+and Precision@k, respectively, for all method combinations.
+This experiment demonstrates that the most effective strat-
+egy was the Recursive Text Character Splitter (RTCS) with-
+out a reranker. Surprisingly, the performance of the Cohere
+Reranker was inferior compared to not using a reranker. This
+result may be attributed to the difficulty of this benchmark
+and its focus on legal text, which may not align well with a
+general-purpose model like Cohere’s reranker. Both preci-
+sion and recall were highest with the RTCS + No reranker
+configuration. As anticipated, recall improved with increas-
+ing values of k, while precision decreased. The observed
+low precision values could be due to the highly targeted and
+concise nature of the ground truth.
+5.2. Comparison of the four datasets
+Additionally to the standard evaluation conducted, we also
+aggregated Recall@k and Precision@k across all four of
+the different methods experimented with for each of the four
+datasets. The goal was to assess the relative difficulty of
+achieving high scores on each dataset, as shown in Figures
+4 and 5.
+7
+
+LegalBench-RAG: A Benchmark for Retrieval-Augmented Generation in the Legal Domain
+Precision @ k Recall @ k
+1 2 4 8 16 32 64 1 2 4 8 16 32 64
+PrivacyQA 14.38 13.55 12.34 9.02 6.06 4.17 2.81 8.85 15.21 27.92 42.37 55.12 71.19 84.19
+ContractNLI 6.63 5.28 3.89 2.81 1.98 1.29 0.90 7.63 11.34 17.34 24.99 35.80 46.57 61.72
+MAUD 2.64 1.77 1.96 1.40 1.38 1.15 0.82 1.65 2.09 5.59 6.18 12.93 21.04 28.28
+CUAD 1.97 4.03 4.83 4.20 2.94 1.99 1.25 1.62 8.11 17.72 31.68 44.38 60.04 74.70
+ALL† 6.41 6.16 5.76 4.36 3.09 2.15 1.45 4.94 9.19 16.90 26.30 37.05 49.71 62.22
+Table 6. Performance comparison on different datasets for Precision and Recall at various k values for the Naive Method with the Cohere
+Reranker.
+Precision @ k Recall @ k
+1 2 4 8 16 32 64 1 2 4 8 16 32 64
+PrivacyQA 13.94 15.91 13.32 9.57 6.88 4.68 3.28 7.32 16.12 25.65 35.60 51.87 64.98 79.61
+ContractNLI 5.08 5.59 5.04 3.67 2.52 1.75 1.17 4.91 9.33 16.09 25.83 35.04 46.90 62.97
+MAUD 1.94 2.63 2.05 1.77 1.79 1.55 1.12 0.52 2.48 4.39 7.24 14.03 22.60 31.46
+CUAD 3.53 4.18 6.18 5.06 3.93 2.74 1.66 3.17 7.33 18.26 28.67 42.50 55.66 70.19
+ALL† 6.13 7.08 6.65 5.02 3.78 2.68 1.81 3.98 8.82 16.10 24.34 35.86 47.54 61.06
+Table 7. Performance comparison on different datasets for Precision and Recall at various k values for the RCTS Method with the Cohere
+Reranker.
+We analyzed the performance of all methods across the four
+datasets and found that, as expected, the PrivacyQA dataset
+is the easiest benchmark. It consistently yielded the highest
+scores across all methods, indicating that this dataset was
+easier for the models to interpret. Specifically, on the RCTS
+with No reranker evaluation, the highest Precision@1 was
+achieved with 14.38%, and Recall@64 reached 84.19%.
+This high performance can be attributed to the nature of the
+PrivacyQA dataset, which features questions about private
+company policies from non-lawyers, making the text more
+straightforward and less complex.
+In contrast, the MAUD dataset proved to be the most chal-
+lenging. Precision@1 was only 2.65%, and Recall@64
+reached just 28.28%. The complexity and specialization of
+the MAUD dataset, which includes highly technical legal
+jargon, make it particularly difficult for models to retrieve
+relevant information accurately. The poor performance of
+the Cohere Reranker on this dataset, and across the board,
+highlights the limitations of using general-purpose models
+on specialized legal text.
+The ContractNLI and CUAD datasets also presented unique
+challenges, though they were not as difficult as MAUD.
+These results suggest that while these datasets are chal-
+lenging, they are not as inaccessible to retrieval models
+as MAUD, likely due to their somewhat less specialized
+language.
+Figure 2. Recall @ k across all datasets
+Figure 3. Precision @ k across all datasets
+8
+
+LegalBench-RAG: A Benchmark for Retrieval-Augmented Generation in the Legal Domain
+Figure 4. Recall @ k across all datasets
+Figure 5. Precision @ k across all datasets
+5.3. Future Work
+These results highlight the need for more specialized and
+challenging legal benchmarks to effectively assess the qual-
+ity of retrieval systems. Moreover, the consistently poor
+performance of the Cohere Reranker, particularly on the
+more challenging datasets like MAUD, indicates that there
+is significant room for improvement in reranking models.
+Future research could explore fine-tuning or developing new
+rerankers specifically designed for legal text, potentially in-
+corporating more legal-specific features or training on larger,
+more diverse legal corpora.
+6. Conclusion
+In conclusion, this paper introduces LegalBench-RAG,
+the first benchmark specifically designed to evaluate the
+retrieval component of Retrieval-Augmented Generation
+(RAG) systems in the legal domain. By leveraging ex-
+isting expert-annotated legal datasets and meticulously
+mapping question-answer pairs back to their original con-
+texts, LegalBench-RAG provides a robust framework for
+assessing retrieval precision and recall. The creation of
+both LegalBench-RAG and its lightweight counterpart,
+LegalBench-RAG-mini, addresses a critical gap in the eval-
+uation of RAG systems, particularly in contexts where legal
+accuracy is paramount.
+Through a series of experiments, we demonstrated the effec-
+tiveness of different chunking strategies and post-processing
+methods, revealing that advanced chunking techniques like
+the Recursive Text Character Splitter (RTCS) significantly
+enhance retrieval performance. Interestingly, the use of
+general-purpose rerankers, such as Cohere’s model, showed
+limitations, highlighting the need for domain-specific tools
+in legal AI applications.
+The results underscore the importance of specialized bench-
+marks that can accurately capture the nuances of legal text
+retrieval. LegalBench-RAG not only facilitates a more gran-
+ular evaluation of retrieval mechanisms but also provides
+a foundation for further advancements in the development
+of RAG systems tailored to the legal field. As legal AI
+continues to evolve, the availability of such targeted bench-
+marks will be crucial for driving innovation and ensuring
+the reliability of AI-driven legal tools.
+References
+Ilias Chalkidis, Abhik Jana, Dirk Hartung, Michael Bom-
+marito, Ion Androutsopoulos, Daniel Katz, and Niko-
+laos Aletras. LexGLUE: A benchmark dataset for legal
+language understanding in English. In Smaranda Mure-
+san, Preslav Nakov, and Aline Villavicencio, editors,Pro-
+ceedings of the 60th Annual Meeting of the Association
+for Computational Linguistics (Volume 1: Long Papers),
+pages 4310–4330, Dublin, Ireland, May 2022. Associa-
+tion for Computational Linguistics. doi: 10.18653/v1/
+2022.acl-long.297. URL https://aclanthology.
+org/2022.acl-long.297.
+Jiawei Chen, Hongyu Lin, Xianpei Han, and Le Sun. Bench-
+marking large language models in retrieval-augmented
+generation, 2023. URL https://arxiv.org/abs/
+2309.01431.
+Cohere. Rerank, 2024. URL https://docs.cohere.
+com/reference/rerank. Accessed: 2024-08-15.
+FullStackRetrieval-com. Levels of text splitting. https:
+//github.com/FullStackRetrieval-com/
+RetrievalTutorials, 2024. URL https:
+//github.com/FullStackRetrieval-com/
+RetrievalTutorials/blob/main/
+tutorials/LevelsOfTextSplitting/5_
+Levels_Of_Text_Splitting.ipynb. Accessed:
+2024-08-15.
+Neel Guha, Julian Nyarko, Daniel E. Ho, Christopher R ´e,
+Adam Chilton, Aditya Narayana, Alex Chohlas-Wood,
+Austin Peters, Brandon Waldon, Daniel N. Rockmore,
+Diego Zambrano, Dmitry Talisman, Enam Hoque, Faiz
+Surani, Frank Fagan, Galit Sarfaty, Gregory M. Dick-
+inson, Haggai Porat, Jason Hegland, Jessica Wu, Joe
+Nudell, Joel Niklaus, John Nay, Jonathan H. Choi, Kevin
+9
+
+LegalBench-RAG: A Benchmark for Retrieval-Augmented Generation in the Legal Domain
+Tobia, Margaret Hagan, Megan Ma, Michael Livermore,
+Nikon Rasumov-Rahe, Nils Holzenberger, Noam Kolt,
+Peter Henderson, Sean Rehaag, Sharad Goel, Shang Gao,
+Spencer Williams, Sunny Gandhi, Tom Zur, Varun Iyer,
+and Zehua Li. Legalbench: A collaboratively built bench-
+mark for measuring legal reasoning in large language
+models, 2023. URL https://arxiv.org/abs/
+2308.11462.
+Dan Hendrycks, Collin Burns, Anya Chen, and Spencer
+Ball. Cuad: An expert-annotated nlp dataset for legal
+contract review, 2021. URL https://arxiv.org/
+abs/2103.06268.
+Vladimir Karpukhin, Barlas O ˘guz, Sewon Min, Patrick
+Lewis, Ledell Wu, Sergey Edunov, Danqi Chen, and Wen
+tau Yih. Dense passage retrieval for open-domain ques-
+tion answering, 2020. URL https://arxiv.org/
+abs/2004.04906.
+Daniel Martin Katz, Dirk Hartung, Lauritz Gerlach, Abhik
+Jana, and Michael J. Bommarito II au2. Natural language
+processing in the legal domain, 2023. URL https:
+//arxiv.org/abs/2302.12039.
+Yuta Koreeda and Christopher D. Manning. Contractnli: A
+dataset for document-level natural language inference for
+contracts, 2021. URL https://arxiv.org/abs/
+2110.01799.
+LangChain. Recursive text splitter, 2024. URL https:
+//python.langchain.com/v0.1/docs/
+modules/data_connection/document_
+transformers/recursive_text_splitter/.
+Accessed: 2024-08-15.
+Patrick S. H. Lewis, Ethan Perez, Aleksandra Piktus, Fabio
+Petroni, Vladimir Karpukhin, Naman Goyal, Heinrich
+K¨uttler, Mike Lewis, Wen-tau Yih, Tim Rockt¨aschel, Se-
+bastian Riedel, and Douwe Kiela. Retrieval-augmented
+generation for knowledge-intensive NLP tasks. CoRR,
+abs/2005.11401, 2020. URL https://arxiv.org/
+abs/2005.11401.
+Zehua Li, Neel Guha, and Julian Nyarko. Don’t use a
+cannon to kill a fly: An efficient cascading pipeline
+for long documents. In Proceedings of the Nine-
+teenth International Conference on Artificial Intelli-
+gence and Law , ICAIL ’23, page 141–147, New
+York, NY , USA, 2023. Association for Computing
+Machinery. ISBN 9798400701979. doi: 10.1145/
+3594536.3595142. URL https://doi.org/10.
+1145/3594536.3595142.
+Yi Liu, Lianzhe Huang, Shicheng Li, Sishuo Chen, Hao
+Zhou, Fandong Meng, Jie Zhou, and Xu Sun. Recall:
+A benchmark for llms robustness against external coun-
+terfactual knowledge, 2023. URL https://arxiv.
+org/abs/2311.08147.
+Stelios Maroudas, Sotiris Legkas, Prodromos Malakasio-
+tis, and Ilias Chalkidis. Legal-tech open diaries: Lesson
+learned on how to develop and deploy light-weight mod-
+els in the era of humongous language models, 2022. URL
+https://arxiv.org/abs/2210.13086.
+Cheng Niu, Yuanhao Wu, Juno Zhu, Siliang Xu, Kashun
+Shum, Randy Zhong, Juntong Song, and Tong Zhang.
+Ragtruth: A hallucination corpus for developing trustwor-
+thy retrieval-augmented language models, 2024. URL
+https://arxiv.org/abs/2401.00396.
+OpenAI. Embedding models, 2024. URL
+https://platform.openai.com/docs/
+guides/embeddings/embedding-models.
+Accessed: 2024-08-15.
+Pinecone. Chunking strategies, 2024. URL
+https://www.pinecone.io/learn/
+chunking-strategies/. Accessed: 2024-08-15.
+Abhilasha Ravichander, Alan W Black, Shomir Wilson,
+Thomas Norton, and Norman Sadeh. Question answering
+for privacy policies: Combining computational and le-
+gal perspectives, 2019. URL https://arxiv.org/
+abs/1911.00841.
+Zejiang Shen, Kyle Lo, Lauren Yu, Nathan Dahlberg, Margo
+Schlanger, and Doug Downey. Multi-lexsum: Real-world
+summaries of civil rights lawsuits at multiple granulari-
+ties, 2022. URL https://arxiv.org/abs/2206.
+10883.
+Abhay Shukla, Paheli Bhattacharya, Soham Poddar, Ra-
+jdeep Mukherjee, Kripabandhu Ghosh, Pawan Goyal,
+and Saptarshi Ghosh. Legal case document summariza-
+tion: Extractive and abstractive methods and their evalua-
+tion, 2022. URL https://arxiv.org/abs/2210.
+07544.
+Yixuan Tang and Yi Yang. Multihop-rag: Bench-
+marking retrieval-augmented generation for multi-hop
+queries, 2024. URL https://arxiv.org/abs/
+2401.15391.
+Steven H. Wang, Antoine Scardigli, Leonard Tang, Wei
+Chen, Dimitry Levkin, Anya Chen, Spencer Ball, Thomas
+Woodside, Oliver Zhang, and Dan Hendrycks. Maud: An
+expert-annotated legal nlp dataset for merger agreement
+understanding, 2023. URL https://arxiv.org/
+abs/2301.00876.
+10
+
+LegalBench-RAG: A Benchmark for Retrieval-Augmented Generation in the Legal Domain
+Zhilin Yang, Peng Qi, Saizheng Zhang, Yoshua Bengio,
+William W. Cohen, Ruslan Salakhutdinov, and Christo-
+pher D. Manning. Hotpotqa: A dataset for diverse, ex-
+plainable multi-hop question answering, 2018. URL
+https://arxiv.org/abs/1809.09600.
+Hao Yu, Aoran Gan, Kai Zhang, Shiwei Tong, Qi Liu, and
+Zhaofeng Liu. Evaluation of retrieval-augmented gener-
+ation: A survey, 2024. URL https://arxiv.org/
+abs/2405.07437.
+11
+
+LegalBench-RAG: A Benchmark for Retrieval-Augmented Generation in the Legal Domain
+A. Appendix A
+Note: Ellipses (...) were added to replace large regions of text, for readability purposes.
+1 {
+2 "tests": [
+3 {
+4 "query": "Consider the Non-Disclosure Agreement (...) to the Confidential
+Information?",
+5 "snippets": [
+6 {
+7 "file_path": "contractnli/CopAcc_NDA-and-ToP-Mentors_2.0_2017.txt",
+8 "span": [
+9 11461,
+10 11963
+11 ],
+12 "answer": "Any and all proprietary rights, including but not limited
+to rights to and in inventions(...) with the Copernicus
+Accelerator 2017."
+13 }
+14 ]
+15 },
+16 ...
+17 {
+18 "query": "Consider the Non-Disclosure Agreement (...) include technical
+information?",
+19 "snippets": [
+20 {
+21 "file_path": "contractnli/CopAcc_NDA-and-ToP-Mentors_2.0_2017.txt",
+22 "span": [
+23 7752,
+24 8016
+25 ],
+26 "answer": "Confidential Information means any Idea disclosed to Mentor
+, (...) and/or its description and any conclusions. "
+27 }
+28 ]
+29 }
+Appendix A: Extract of the QA pairs in LegalBench-RAG
+12

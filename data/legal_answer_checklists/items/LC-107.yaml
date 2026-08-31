@@ -1,0 +1,23 @@
+id: LC-107
+name: 시점·개정·경과조치 일치
+scope: routed
+severity: blocker
+status: trial
+triggers: [개정, 현행, 시행, 부칙, 당시, 현재, 경과조치, 종전]
+basis:
+  - path: data/wiki/wiki/해석원칙/준용과-경과조치.md
+    anchor: 경과조치
+    note: 적용시점과 경과조치는 현재 조문만으로 대체할 수 없다.
+operational_definition: >-
+  질문의 기준시점과 근거의 시행일·개정일·부칙·경과조치가 일치하는지 검사한다.
+  과거 행위에 현행 규정을 소급 적용하거나 개정 전후 문언을 혼합하거나, 경과조치가 적용되는 사안에서 본칙만으로 결론을 내리면 FAIL이다.
+  필요한 버전이나 시행 정보가 회수되지 않았고 답변이 시점 판단을 유보하면 UNCLEAR로 판정한다.
+examples:
+  pass:
+    - 질문 당시 시행 중인 조문과 부칙의 적용대상을 함께 확인한다.
+  fail:
+    - 개정 전 사건에 개정 후 신설된 의무를 그대로 적용한다.
+  unclear:
+    - 질문 날짜는 있으나 회수 근거에 시행일과 개정 이력이 없다.
+learned_from:
+  - ADR-0048-legal-reasoning-causal-portfolio/temporal-validity

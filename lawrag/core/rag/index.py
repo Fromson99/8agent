@@ -20,6 +20,7 @@ import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from threading import RLock
 from typing import Optional
 
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
@@ -107,6 +108,7 @@ class DocView:
     by_id: dict = field(default_factory=dict)
     block_by_idx: dict = field(default_factory=dict)
     _owner: dict = field(default_factory=dict)
+    _path_cache: dict = field(default_factory=dict)
     # 문서 수준 시간 메타 — 관측용(응답 context 행의 시행일). 조문 수준
     # 이력은 구법 원문이 코퍼스에 없어 아직 자리만 있다 (docs/REVIEW.md
     # "필드는 최종 크기, 구현은 지금 크기").
@@ -195,6 +197,22 @@ class DocView:
             return "시행일"
         return "부칙기타"
 
+    def coordinate_scope(self, node_id: Optional[int]) -> str:
+        node = self.by_id.get(node_id)
+        if node is None:
+            return ""
+        stored = str(node.get("coordinate_scope") or "")
+        if stored:
+            return stored
+        path = self.path(node_id)
+        if "부칙" in path:
+            return "addendum"
+        if "별지" in path or "서식" in path:
+            return "form"
+        if "별표" in path or "부록" in path:
+            return "annex"
+        return "body"
+
     def path(self, node_id: Optional[int]) -> str:
         """마디의 조상 사슬 — `제2장 ▸ 제19조 ▸ 제3항`. 이것이 인용 좌표의
         사람이 읽는 형태다.
@@ -203,6 +221,8 @@ class DocView:
         준수사항)"이 "광고 관련 준수사항"으로 떠서, 참조 검수 화면에서 제22조
         마디가 계층에 없는 것처럼 읽힌다(실측 2026-08-12: 멀쩡한 구조를 계층
         결손으로 오판하게 했다)."""
+        if node_id in self._path_cache:
+            return self._path_cache[node_id]
         parts: list[str] = []
         seen: set[int] = set()
         n = self.by_id.get(node_id)
@@ -215,7 +235,9 @@ class DocView:
             if label:
                 parts.append(label)
             n = self.by_id.get(n.get("parent"))
-        return " ▸ ".join(reversed(parts))
+        value = " ▸ ".join(reversed(parts))
+        self._path_cache[node_id] = value
+        return value
 
     def section_outline(self, node: dict, cap: int = 6000) -> str:
         """구역 본문을 **계층 그대로** — 자손 마디를 들여쓰기로 세워 넘긴다.
@@ -345,11 +367,20 @@ class Index:
     # 답이 나가므로). 밖으로 나간 구역은 호출부가 표식을 붙인다(scope_out).
     scope: Optional[frozenset] = None
     scope_name: str = ""           # 표시용 — 어느 스코프였나 (응답·튜플에 남는다)
+    canonical_doc_ids: Optional[frozenset] = None  # 공식 법령 세대의 유일한 진입판
+    authority_generation: str = ""
+    authority_as_of: str = ""
     _postings: Optional[dict] = None
     _n_blocks: int = 0
     _refs: Optional[dict] = None
     _cross: Optional[tuple] = None
-    _scoped: dict = field(default_factory=dict)     # frozenset → 스코프 사본 (본문 색인 재사용)
+    _cross_from: Optional[dict] = None
+    _cross_to: Optional[dict] = None
+    _unified_relation_cache: dict = field(default_factory=dict)
+    _scoped: dict = field(default_factory=dict)     # (frozenset, 표시명) → 불변 스코프 사본
+    # Index is shared by API/golden worker threads.  Lazy caches must never
+    # publish a partially built dictionary to another caller.
+    _cache_lock: object = field(default_factory=RLock, repr=False, compare=False)
 
     # ------------------------------------------------------------- 스코프
     def in_scope(self, doc_id: str) -> bool:
@@ -367,12 +398,19 @@ class Index:
         """명시 스코프가 없을 때의 기본 진입 범위 — 구판(내규 status=구판)은
         뺀다. 신구 대비는 구판을 스코프로 **명시**해서 연다. 구판이 없으면
         None(제한 없음) — 비용 0."""
-        old = [d for d, v in self.docs.items() if not v.is_current]
+        canonical = set(self.canonical_doc_ids or ())
+        old = [d for d, v in self.docs.items()
+               if (not v.is_current
+                   or (canonical and v.kind in {"law", "admrul"} and d not in canonical))]
         if not old:
             return None
         return frozenset(d for d in self.docs if d not in set(old))
 
     def scoped(self, doc_ids: Optional[set], name: str = "") -> "Index":
+        with self._cache_lock:
+            return self._scoped_unlocked(doc_ids, name)
+
+    def _scoped_unlocked(self, doc_ids: Optional[set], name: str = "") -> "Index":
         """스코프를 씌운 얕은 사본 — docs·간선·링크는 공유하고 entries 만
         거른다(진입 표면형). postings 는 새로 세워 스코프 안만 든다.
         doc_ids 가 None 이면 기본 스코프(구판 제외)를 쓴다."""
@@ -381,9 +419,9 @@ class Index:
             if doc_ids is None:
                 return self
         ids = frozenset(doc_ids)
-        hit = self._scoped.get(ids)
-        if hit is not None:                     # 같은 스코프의 다음 질의 — postings 가 살아 있다
-            hit.scope_name = name or hit.scope_name
+        cache_key = (ids, str(name or ""))
+        hit = self._scoped.get(cache_key)
+        if hit is not None:                     # 같은 스코프·표시명의 다음 질의
             return hit
         ents: list = []
         for e in self.entries:
@@ -395,14 +433,18 @@ class Index:
             elif e.doc_id in ids:
                 ents.append(e)
         sub = Index(docs=self.docs, entries=ents, saved_links=self.saved_links,
-                    rel_fixes=self.rel_fixes, scope=ids, scope_name=name)
+                    rel_fixes=self.rel_fixes, scope=ids, scope_name=name,
+                    canonical_doc_ids=self.canonical_doc_ids,
+                    authority_generation=self.authority_generation,
+                    authority_as_of=self.authority_as_of)
         # 간선은 스토어 전체 것을 그대로 — 동반이 스코프 밖으로 나갈 수 있어야
         # 한다. 원본에서 한 번 세워 공유한다(사본마다 다시 세우면 질의마다 값).
         self.ref_edges(); self.cross_refs()
         sub._refs, sub._cross = self._refs, self._cross
+        sub._unified_relation_cache = self._unified_relation_cache
         if len(self._scoped) >= 16:             # 스코프는 몇 개 안 된다 — 폭주만 막는다
             self._scoped.clear()
-        self._scoped[ids] = sub
+        self._scoped[cache_key] = sub
         return sub
 
     # ------------------------------------------------------------- 구성
@@ -410,7 +452,10 @@ class Index:
     def from_docs(cls, docs: list[tuple[str, dict, dict]],
                   user_terms: Optional[list[dict]] = None,
                   saved_links: Optional[list[dict]] = None,
-                  rel_fixes: Optional[list[dict]] = None) -> "Index":
+                  rel_fixes: Optional[list[dict]] = None,
+                  canonical_doc_ids: Optional[set[str]] = None,
+                  authority_generation: str = "",
+                  authority_as_of: str = "") -> "Index":
         """(doc_id, meta, result) 목록에서 색인을 세운다. 파일이 아니라 값을
         받는다 — 시험이 저장소 없이 색인을 만들 수 있어야 한다."""
         views: dict[str, DocView] = {}
@@ -448,7 +493,11 @@ class Index:
                     value=sfc, key=skey, kind="용어",
                     target=f"term:{key}", occurrences=t.get("occurrences", [])))
         return cls(docs=views, entries=entries, saved_links=saved_links or [],
-                   rel_fixes=rel_fixes or [])
+                   rel_fixes=rel_fixes or [],
+                   canonical_doc_ids=(frozenset(canonical_doc_ids)
+                                      if canonical_doc_ids is not None else None),
+                   authority_generation=authority_generation,
+                   authority_as_of=authority_as_of)
 
     @classmethod
     def load(cls, store: Optional[Path] = None,
@@ -485,24 +534,55 @@ class Index:
                 rel_fixes = blob.get("rel_fixes", [])
             except Exception:
                 links = []
-        return cls.from_docs(docs, terms, links, rel_fixes)
+        canonical_ids: set[str] | None = None
+        authority_generation = authority_as_of = ""
+        law_index_file = Path(os.environ.get(
+            "RAG_LAW_INDEX_STORE", store.parent / "law_index.json"))
+        if law_index_file.is_file():
+            try:
+                authority = json.loads(law_index_file.read_text(encoding="utf-8"))
+            except Exception:
+                authority = {}
+            if authority.get("schema_version") == "legal-authority-generation-v1":
+                canonical_ids = set(authority.get("canonical_document_ids") or ())
+                authority_generation = str(authority.get("generation_id") or "")
+                authority_as_of = str(authority.get("as_of") or "")
+                meta_by_id = {doc_id: meta for doc_id, meta, _res in docs}
+                missing = canonical_ids - set(meta_by_id)
+                if missing:
+                    raise RuntimeError(f"law_index canonical structure 누락: {sorted(missing)}")
+                bad = [doc_id for doc_id in sorted(canonical_ids)
+                       if (meta_by_id[doc_id].get("authority_generation")
+                           != authority_generation
+                           or meta_by_id[doc_id].get("status") != "현행"
+                           or not meta_by_id[doc_id].get("canonical"))]
+                if bad:
+                    raise RuntimeError(f"law_index/meta authority generation 불일치: {bad}")
+        return cls.from_docs(docs, terms, links, rel_fixes,
+                             canonical_doc_ids=canonical_ids,
+                             authority_generation=authority_generation,
+                             authority_as_of=authority_as_of)
 
     # ------------------------------------------------------------- 본문 색인
     def postings(self) -> dict:
         """블록 본문의 렉시컬 색인 — 제목·용어가 다 빗나갔을 때의 마지막 단.
         쓰일 때 처음 세운다(문서가 많아도 첫 폴백 전까지는 공짜)."""
-        if self._postings is None:
-            self._postings = {}
-            n = 0
-            for doc_id, v in self.entry_docs.items():
-                for b in v.blocks:
-                    n += 1
-                    for t in _lex_terms(b.get("text") or ""):
-                        self._postings.setdefault(t, {}).setdefault(
-                            (doc_id, b.get("idx")), 0)
-                        self._postings[t][(doc_id, b.get("idx"))] += 1
-            self._n_blocks = max(n, 1)
-        return self._postings
+        with self._cache_lock:
+            if self._postings is None:
+                postings: dict = {}
+                n = 0
+                for doc_id, v in self.entry_docs.items():
+                    for b in v.blocks:
+                        n += 1
+                        for t in _lex_terms(b.get("text") or ""):
+                            postings.setdefault(t, {}).setdefault(
+                                (doc_id, b.get("idx")), 0)
+                            postings[t][(doc_id, b.get("idx"))] += 1
+                # Publish only the finished snapshot.  In particular, expand()
+                # must not iterate a dictionary another worker is still growing.
+                self._n_blocks = max(n, 1)
+                self._postings = postings
+            return self._postings
 
     def expand(self, token: str) -> list[str]:
         """조사가 붙은 어절을 색인어와 잇는다 — 형태소 분석기 없이.
@@ -523,12 +603,15 @@ class Index:
         return math.log(1 + self._n_blocks / len(post))
 
     # ------------------------------------------------------------- 상호참조
-    def _redirect(self, src_doc: str, src, edge: dict) -> dict:
+    def _redirect(self, src_doc: str, src, edge: dict, *,
+                  redirects: Optional[dict] = None) -> dict:
         """승인된 재지정(edge_rules.json)을 간선 하나에 적용한다 — 사람이
         "제2조가 아니라 제2조 제3항"이라 확정한 좌표로 도착을 옮겨 앉힌다.
         새 좌표가 실재할 때만 옮긴다(구조가 다시 서면 노드가 사라질 수 있다)."""
         from lawrag.core.rag import verdicts as verdicts_mod   # 순환 의존 회피 — 지연
-        r = verdicts_mod.redirect_map().get(
+        redirect_rules = redirects if redirects is not None \
+            else verdicts_mod.redirect_map()
+        r = redirect_rules.get(
             (src_doc, src, edge.get("dst_doc", src_doc), edge["dst"]))
         if r is None:
             return edge
@@ -539,12 +622,20 @@ class Index:
             if "dst_doc" in edge else {**edge, "dst": r["new_dst"]}
 
     def ref_edges(self) -> dict:
+        with self._cache_lock:
+            return self._ref_edges_unlocked()
+
+    def _ref_edges_unlocked(self) -> dict:
         """문서별 조문 상호참조 간선 — doc_id -> [{"src","dst","surface","block"}].
         본문의 "제4조를 참고한다" 가 구역을 가로로 잇는다. 쓰일 때 처음
         세운다(postings 와 같은 규율). 승인된 재지정이 있으면 도착이 옮겨 앉는다."""
         if self._refs is None:
             from lawrag.core.rag import refs as refs_mod       # 순환 의존 회피 — refs 는 DocView 타입만 본다
-            self._refs = {doc_id: [self._redirect(doc_id, e["src"], e)
+            from lawrag.core.rag import verdicts as verdicts_mod
+            rule_snapshot = verdicts_mod.rule_snapshot()
+            redirects = verdicts_mod.redirect_map(snapshot=rule_snapshot)
+            self._refs = {doc_id: [self._redirect(
+                                       doc_id, e["src"], e, redirects=redirects)
                                    for e in refs_mod.resolve(v)]
                           for doc_id, v in self.docs.items()}
             # 사람이 고친 관계 라벨 — 자동 분류(문면 술어)는 그대로 두고 조립
@@ -564,6 +655,10 @@ class Index:
                 for f in self.rel_fixes if f.get("rel")}
 
     def cross_refs(self) -> tuple:
+        with self._cache_lock:
+            return self._cross_refs_unlocked()
+
+    def _cross_refs_unlocked(self) -> tuple:
         """문서 사이 참조 — (확정 간선, 보류 목록).
 
         결정론 대조(refs.cross_resolve)에 links.json 의 판정 결과를 합친다.
@@ -639,10 +734,15 @@ class Index:
             # 끊긴 간선은 목록에서도 빠진다 — 참조 화면의 끊기(억제 규칙)가
             # 확장(expand_refs)만이 아니라 이 목록에서도 이겨야 검수가 남는다.
             from lawrag.core.rag import verdicts as verdicts_mod   # 순환 의존 회피
+            rule_snapshot = verdicts_mod.rule_snapshot()
+            redirects = verdicts_mod.redirect_map(snapshot=rule_snapshot)
             edges = [e for e in edges
                      if not verdicts_mod.is_suppressed(
-                         e["src_doc"], e["src"], e.get("dst_doc", ""), e["dst"])]
-            edges = [self._redirect(e["src_doc"], e["src"], e) for e in edges]
+                         e["src_doc"], e["src"], e.get("dst_doc", ""), e["dst"],
+                         snapshot=rule_snapshot)]
+            edges = [self._redirect(
+                         e["src_doc"], e["src"], e, redirects=redirects)
+                     for e in edges]
             # 일반 규칙(귀납층)은 인스턴스 재지정 **다음**이다 — 사람이 그
             # 간선에 직접 확정한 좌표가 규칙을 이긴다. off 면 호출 자체가 없어
             # 오늘의 시스템과 같다(RULE_LOOP.md §6 폭발 반경 보증 ④).
@@ -656,7 +756,8 @@ class Index:
                 redone = []
                 for e in edges:
                     if e.get("via") == "규칙":
-                        r2 = self._redirect(e["src_doc"], e["src"], e)
+                        r2 = self._redirect(
+                            e["src_doc"], e["src"], e, redirects=redirects)
                         if r2.get("dst") != e.get("dst"):
                             rules_mod.log_overturn_auto(
                                 e.get("rule", ""),
@@ -678,6 +779,26 @@ class Index:
 
     def cross_ref_edges(self) -> list:
         return self.cross_refs()[0]
+
+    def _cross_adjacency(self) -> tuple[dict, dict]:
+        """문서간 간선을 출발/도착 문서별로 한 번 접은 조회창."""
+        with self._cache_lock:
+            if self._cross_from is None or self._cross_to is None:
+                by_src: dict[str, list[dict]] = {}
+                by_dst: dict[str, list[dict]] = {}
+                for edge in self.cross_ref_edges():
+                    by_src.setdefault(edge.get("src_doc", ""), []).append(edge)
+                    by_dst.setdefault(edge.get("dst_doc", ""), []).append(edge)
+                self._cross_from, self._cross_to = by_src, by_dst
+            return self._cross_from, self._cross_to
+
+    def cross_from(self, doc_id: str) -> list[dict]:
+        """이 문서에서 나가는 문서간 간선."""
+        return self._cross_adjacency()[0].get(doc_id, [])
+
+    def cross_to(self, doc_id: str) -> list[dict]:
+        """이 문서로 들어오는 문서간 간선."""
+        return self._cross_adjacency()[1].get(doc_id, [])
 
 
 # 프로세스 안 캐시 — 파일이 바뀌면 다시 세운다. 문서 업로드는 드물고 질의는
@@ -703,6 +824,17 @@ def _signature(store: Path, terms_file: Path, links_file: Path) -> tuple:
     if aliases_file.exists():
         # 별칭 사전도 간선을 움직인다 — 사전을 채우면 다음 질의부터 보여야 한다.
         sig.append(("__aliases__", aliases_file.stat().st_mtime_ns))
+    # 통합 관계 번들은 Index 인스턴스에 캐시된다. 공식 위임·법령 가족 파일이
+    # 바뀌었는데 같은 Index를 재사용하면 graph와 검색이 다시 갈라지므로 둘도 서명에 넣는다.
+    relation_files = (
+        ("__delegation__", Path(os.environ.get(
+            "RAG_DELEGATION_STORE", store.parent / "delegation.json"))),
+        ("__law_index__", Path(os.environ.get(
+            "RAG_LAW_INDEX_STORE", store.parent / "law_index.json"))),
+    )
+    for tag, path in relation_files:
+        if path.exists():
+            sig.append((tag, path.stat().st_mtime_ns))
     # 간선 규칙(억제·재지정)도 서명에 든다 — 승인 즉시 간선이 옮겨 앉아야
     # "딸깍 수정"이 다음 질의부터 보인다. 재시작을 기다리게 하면 안 된다.
     from lawrag.core.rag import verdicts as verdicts_mod       # 순환 의존 회피 — 지연

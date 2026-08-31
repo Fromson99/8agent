@@ -1,0 +1,789 @@
+{
+  "cases": [
+    {
+      "axes": {
+        "answer_type": "criteria",
+        "business_domain": "IPO·인수",
+        "difficulty": "hard",
+        "in_sample": true,
+        "legal_operation": "semantic_operation_seed",
+        "material": "complete",
+        "outcome": "positive",
+        "provenance": "actual_case_fact_preserving_transform",
+        "question_kind": "additional",
+        "source_scope": "natural_language",
+        "surface_signal": "runtime_latent_only"
+      },
+      "expected_articles": [
+        {
+          "law": "코스닥시장 상장규정",
+          "article": "제13조",
+          "doc_id": "3521c3aaa5a735fd",
+          "document_revision": "2026-07-31",
+          "document_enforcement": "2026-08-03",
+          "node": "175",
+          "corpus_status": "present",
+          "evidence_role": "decisive",
+          "authority_as_of": "20260827",
+          "coordinate_scope": "body",
+          "coordinate_key": "body:제13조"
+        },
+        {
+          "law": "코스닥시장 상장규정 시행세칙",
+          "article": "제15조",
+          "doc_id": "eae25aa6e8a83c58",
+          "document_revision": "2026-07-31",
+          "document_enforcement": "2026-08-03",
+          "node": "82",
+          "corpus_status": "present",
+          "evidence_role": "decisive",
+          "authority_as_of": "20260827",
+          "coordinate_scope": "body",
+          "coordinate_key": "body:제15조"
+        }
+      ],
+      "id": "seed-latent-001",
+      "provenance": {
+        "inherited_fields": [
+          "reference_answer",
+          "expected_articles"
+        ],
+        "source_case_id": "cm-008",
+        "source_dataset": "cm",
+        "source_file": null,
+        "source_file_sha256": null,
+        "source_path": "data/review/cm_core_e2e_v2.json",
+        "source_question": "국내 일반기업의 3개월 보유기간이 6개월로 연장되는 경우는?",
+        "source_record": null,
+        "source_reference_sha256": "5384396c2edbb858aadbd1b94b0b41e90ce2b3b2cc92800c786070fb3657666f",
+        "source_runtime_question": "국내 일반기업의 3개월 보유기간이 6개월로 연장되는 경우는?\n(업무 문맥: 상장주선인의 의무인수 및 보유)",
+        "source_sha256": "d3c707caa114dec379201c2ba9d2177b0c6bc17ceb4ae9394df1397e9dbfccb1",
+        "transformation": "fact_preserving_plain_language_remove_authority_and_canonical_operation_terms",
+        "transformed_fields": [
+          "question"
+        ]
+      },
+      "question": "기업 공개를 맡은 회사가 의무적으로 사들인 주식을 보유해야 하는 기간이 보통 3개월인데, 6개월이 되는 사정은 무엇인가?",
+      "reference_answer": "코스닥시장 상장규정 제13조 제5항 제1호 나목 단서에 따라 상장신청인이 혁신기술기업이고 상장주선인이 시행세칙으로 정하는 사유에 해당하는 경우이다. 시행세칙 제15조 제5항(2023.12.28 신설)은 그 사유를 \"상장주선인이 상장예비심사신청일을 기준으로 최근 3년 이내에 상장을 주선한 기술성장기업이 상장 이후 2년 이내에 투자주의환기종목 또는 관리종목으로 지정되거나 형식적 상장폐지사유 또는 상장적격성 실질심사에 따른 상장폐지사유가 발생한 경우\"로 규정한다. 즉 상장신청인의 유형만으로 자동 연장되는 것이 아니라 상장주선인의 과거 주선실적이 요건이다.",
+      "reference_answer_sha256": "dfaa304a423d6ff8b0a5a04c80adfa70dc112740a52582b8e250c4f514b0bc94",
+      "surface_audit": {
+        "authority_absent": true,
+        "authority_evidence": [],
+        "canonical_operation_term_absent": true,
+        "canonical_term_evidence": [],
+        "canonical_terms": [
+          "상장주선인",
+          "의무인수",
+          "의무보유",
+          "코스닥시장 상장규정"
+        ],
+        "requires_semantic_operation_seed": true
+      }
+    },
+    {
+      "axes": {
+        "answer_type": "yes_no",
+        "business_domain": "IPO·상장심사",
+        "difficulty": "hard",
+        "in_sample": true,
+        "legal_operation": "semantic_operation_seed",
+        "material": "complete",
+        "outcome": "positive",
+        "provenance": "actual_case_fact_preserving_transform",
+        "question_kind": "additional",
+        "source_scope": "natural_language",
+        "surface_signal": "runtime_latent_only"
+      },
+      "expected_articles": [
+        {
+          "law": "코스닥시장 상장규정",
+          "article": "제29조",
+          "doc_id": "3521c3aaa5a735fd",
+          "document_revision": "2026-07-31",
+          "document_enforcement": "2026-08-03",
+          "node": "328",
+          "corpus_status": "present",
+          "evidence_role": "decisive",
+          "authority_as_of": "20260827",
+          "coordinate_scope": "body",
+          "coordinate_key": "body:제29조"
+        }
+      ],
+      "id": "seed-latent-002",
+      "provenance": {
+        "inherited_fields": [
+          "reference_answer",
+          "expected_articles"
+        ],
+        "source_case_id": "cm-012",
+        "source_dataset": "cm",
+        "source_file": null,
+        "source_file_sha256": null,
+        "source_path": "data/review/cm_core_e2e_v2.json",
+        "source_question": "제정 시기에 관한 규정이 있는가?",
+        "source_record": null,
+        "source_reference_sha256": "aede13ec58499910d2fc1d5d7aa3cf4bbef48b85c92c0869eaf400494dd34cca",
+        "source_runtime_question": "제정 시기에 관한 규정이 있는가?\n(업무 문맥: 질적심사요건과 사내규정 정비)",
+        "source_sha256": "d3c707caa114dec379201c2ba9d2177b0c6bc17ceb4ae9394df1397e9dbfccb1",
+        "transformation": "fact_preserving_plain_language_remove_authority_and_canonical_operation_terms",
+        "transformed_fields": [
+          "question"
+        ]
+      },
+      "question": "회사가 거래소의 적격성 심사를 받기 위해 내부 규칙을 미리 마련해야 한다면, 언제까지 만들어 두어야 한다는 정해진 시점이 있는가?",
+      "reference_answer": "상장규정 및 시행세칙에 제정 시기를 특정한 조문은 없다. 명시적 근거 미확인 사항이며, 운영 이력이 심사 대상이 된다는 점은 실무해설서 수준의 서술에 해당된다.",
+      "reference_answer_sha256": "ff83c2c561082d7314129d6594c2e640b4ffea17477ac3e12f5ddb182a94a31a",
+      "surface_audit": {
+        "authority_absent": true,
+        "authority_evidence": [],
+        "canonical_operation_term_absent": true,
+        "canonical_term_evidence": [],
+        "canonical_terms": [
+          "질적심사요건",
+          "사내규정 정비",
+          "상장심사",
+          "코스닥시장 상장규정"
+        ],
+        "requires_semantic_operation_seed": true
+      }
+    },
+    {
+      "axes": {
+        "answer_type": "authority",
+        "business_domain": "주식매수선택권",
+        "difficulty": "hard",
+        "in_sample": true,
+        "legal_operation": "semantic_operation_seed",
+        "material": "complete",
+        "outcome": "positive",
+        "provenance": "actual_case_fact_preserving_transform",
+        "question_kind": "additional",
+        "source_scope": "natural_language",
+        "surface_signal": "runtime_latent_only"
+      },
+      "expected_articles": [
+        {
+          "law": "벤처기업육성에 관한 특별법",
+          "article": "제16조의6",
+          "doc_id": "ada543ab1a11ae54",
+          "document_revision": "20260305",
+          "document_enforcement": "20260701",
+          "node": "274",
+          "corpus_status": "present",
+          "evidence_role": "decisive",
+          "authority_as_of": "20260827",
+          "coordinate_scope": "body",
+          "coordinate_key": "body:제16조의6"
+        },
+        {
+          "law": "벤처기업육성에 관한 특별법 시행령",
+          "article": "제11조의5",
+          "doc_id": "f67493d630cab3e6",
+          "document_revision": "20260630",
+          "document_enforcement": "20260701",
+          "node": "183",
+          "corpus_status": "present",
+          "evidence_role": "decisive",
+          "authority_as_of": "20260827",
+          "coordinate_scope": "body",
+          "coordinate_key": "body:제11조의5"
+        }
+      ],
+      "id": "seed-latent-003",
+      "provenance": {
+        "inherited_fields": [
+          "reference_answer",
+          "expected_articles"
+        ],
+        "source_case_id": "cm-015",
+        "source_dataset": "cm",
+        "source_file": null,
+        "source_file_sha256": null,
+        "source_path": "data/review/cm_core_e2e_v2.json",
+        "source_question": "부여 후 신고의무는 어디에 이행하는가?",
+        "source_record": null,
+        "source_reference_sha256": "b72b9fb63b740c210ffe5b21de2304f1ba42b1a3958fbeaaf3a7cd9455996b8f",
+        "source_runtime_question": "부여 후 신고의무는 어디에 이행하는가?\n(업무 문맥: 벤처기업 주식매수선택권의 부여요건)",
+        "source_sha256": "d3c707caa114dec379201c2ba9d2177b0c6bc17ceb4ae9394df1397e9dbfccb1",
+        "transformation": "fact_preserving_plain_language_remove_authority_and_canonical_operation_terms",
+        "transformed_fields": [
+          "question"
+        ]
+      },
+      "question": "직원에게 장래에 회사 주식을 정해진 값으로 살 권리를 준 뒤, 그 사실을 어느 곳에 알려야 하는가?",
+      "reference_answer": "벤처기업법 제16조의6 제1항에 따라 중소벤처기업부장관에게 신고한다. 같은 법 시행령 제11조의5 제1항에 따라 부여 신고 시 정관, 주주총회 의사록, 이사회 의사록(제16조의4 제3항에 따라 이사회에서 정하는 경우)을 첨부하며, 신고서 서식은 중소벤처기업부령에 위임되어 있다.",
+      "reference_answer_sha256": "54ad60aa7fd63d352fd03d8c906e20150086ea16446acf6e56a4c8be21e21136",
+      "surface_audit": {
+        "authority_absent": true,
+        "authority_evidence": [],
+        "canonical_operation_term_absent": true,
+        "canonical_term_evidence": [],
+        "canonical_terms": [
+          "주식매수선택권",
+          "스톡옵션",
+          "벤처기업육성에 관한 특별법"
+        ],
+        "requires_semantic_operation_seed": true
+      }
+    },
+    {
+      "axes": {
+        "answer_type": "yes_no",
+        "business_domain": "주식가치평가",
+        "difficulty": "hard",
+        "in_sample": true,
+        "legal_operation": "semantic_operation_seed",
+        "material": "complete",
+        "outcome": "positive",
+        "provenance": "actual_case_fact_preserving_transform",
+        "question_kind": "additional",
+        "source_scope": "natural_language",
+        "surface_signal": "runtime_latent_only"
+      },
+      "expected_articles": [
+        {
+          "law": "상속세 및 증여세법 시행령",
+          "article": "제57조",
+          "doc_id": "279d511501174f3f",
+          "document_revision": "20260227",
+          "document_enforcement": "20260227",
+          "node": "1226",
+          "corpus_status": "present",
+          "evidence_role": "decisive",
+          "authority_as_of": "20260827",
+          "coordinate_scope": "body",
+          "coordinate_key": "body:제57조"
+        }
+      ],
+      "id": "seed-latent-004",
+      "provenance": {
+        "inherited_fields": [
+          "reference_answer",
+          "expected_articles"
+        ],
+        "source_case_id": "cm-021",
+        "source_dataset": "cm",
+        "source_file": null,
+        "source_file_sha256": null,
+        "source_path": "data/review/cm_core_e2e_v2.json",
+        "source_question": "6개월과 3개월 중 어느 것이 적용되는가?",
+        "source_record": null,
+        "source_reference_sha256": "21a00c50dd84384ecd34495210e85e3809263a4ee38dd222ab7dcb23dab46ef1",
+        "source_runtime_question": "6개월과 3개월 중 어느 것이 적용되는가?\n(업무 문맥: 기업공개 준비 중인 주식의 평가)",
+        "source_sha256": "d3c707caa114dec379201c2ba9d2177b0c6bc17ceb4ae9394df1397e9dbfccb1",
+        "transformation": "fact_preserving_plain_language_remove_authority_and_canonical_operation_terms",
+        "transformed_fields": [
+          "question"
+        ]
+      },
+      "question": "회사가 시장 거래를 준비하는 동안 그 회사 주식을 세금 목적으로 평가할 때, 기준 기간은 6개월인가 3개월인가?",
+      "reference_answer": "증여세가 부과되는 주식등은 3개월, 그 외(상속세)는 6개월이다. 조문상 괄호 규정으로 명시되어 있다.",
+      "reference_answer_sha256": "26018fd33a42698e3fa0965a567b12bb7c50a81dafac4fd11886b32b4d548817",
+      "surface_audit": {
+        "authority_absent": true,
+        "authority_evidence": [],
+        "canonical_operation_term_absent": true,
+        "canonical_term_evidence": [],
+        "canonical_terms": [
+          "기업공개",
+          "상장",
+          "주식의 평가",
+          "상속세 및 증여세법"
+        ],
+        "requires_semantic_operation_seed": true
+      }
+    },
+    {
+      "axes": {
+        "answer_type": "calculation",
+        "business_domain": "증여세",
+        "difficulty": "hard",
+        "in_sample": true,
+        "legal_operation": "semantic_operation_seed",
+        "material": "complete",
+        "outcome": "positive",
+        "provenance": "actual_case_fact_preserving_transform",
+        "question_kind": "additional",
+        "source_scope": "natural_language",
+        "surface_signal": "runtime_latent_only"
+      },
+      "expected_articles": [
+        {
+          "law": "상속세 및 증여세법 시행령",
+          "article": "제31조의3",
+          "doc_id": "279d511501174f3f",
+          "document_revision": "20260227",
+          "document_enforcement": "20260227",
+          "node": "497",
+          "corpus_status": "present",
+          "evidence_role": "decisive",
+          "authority_as_of": "20260827",
+          "coordinate_scope": "body",
+          "coordinate_key": "body:제31조의3"
+        }
+      ],
+      "id": "seed-latent-005",
+      "provenance": {
+        "inherited_fields": [
+          "reference_answer",
+          "expected_articles"
+        ],
+        "source_case_id": "cm-024",
+        "source_dataset": "cm",
+        "source_file": null,
+        "source_file_sha256": null,
+        "source_path": "data/review/cm_core_e2e_v2.json",
+        "source_question": "기준금액은 어떻게 산정하는가?",
+        "source_record": null,
+        "source_reference_sha256": "6f42a0d0e1ff5c999ca11bfa80b24f386261baed18f9f4ab70f716453692ecd4",
+        "source_runtime_question": "기준금액은 어떻게 산정하는가?\n(업무 문맥: 주식등의 상장 등에 따른 이익의 증여)",
+        "source_sha256": "d3c707caa114dec379201c2ba9d2177b0c6bc17ceb4ae9394df1397e9dbfccb1",
+        "transformation": "fact_preserving_plain_language_remove_authority_and_canonical_operation_terms",
+        "transformed_fields": [
+          "question"
+        ]
+      },
+      "question": "누군가에게 받은 회사 지분이 나중에 시장에서 거래되면서 가치가 오른 경우, 과세에서 빼 주는 기준금액은 어떻게 계산하는가?",
+      "reference_answer": "시행령 제31조의3 제3항 제1호에 따라 같은 조 제1항 제2호(취득일 현재 1주당 취득가액 또는 증여 당시 1주당 증여세 과세가액) 및 제3호(1주당 기업가치의 실질적인 증가로 인한 이익)의 합계액에 주식수를 곱한 금액의 100분의 30에 상당하는 가액과, 제2호의 금액 중 적은 금액이다.",
+      "reference_answer_sha256": "1fa8cdf8e55ef2f31bf58253edd6569381eb555ca644e895a5b0fe69bbb6ddf8",
+      "surface_audit": {
+        "authority_absent": true,
+        "authority_evidence": [],
+        "canonical_operation_term_absent": true,
+        "canonical_term_evidence": [],
+        "canonical_terms": [
+          "주식등의 상장 등에 따른 이익의 증여",
+          "상장차익 증여의제",
+          "상속세 및 증여세법"
+        ],
+        "requires_semantic_operation_seed": true
+      }
+    },
+    {
+      "axes": {
+        "answer_type": "yes_no",
+        "business_domain": "내부회계",
+        "difficulty": "hard",
+        "in_sample": true,
+        "legal_operation": "semantic_operation_seed",
+        "material": "complete",
+        "outcome": "positive",
+        "provenance": "actual_case_fact_preserving_transform",
+        "question_kind": "additional",
+        "source_scope": "natural_language",
+        "surface_signal": "runtime_latent_only"
+      },
+      "expected_articles": [
+        {
+          "law": "주식회사 등의 외부감사에 관한 법률",
+          "article": "제8조",
+          "doc_id": "8e6b9251fdfba8f4",
+          "document_revision": "20250401",
+          "document_enforcement": "20250401",
+          "node": "51",
+          "corpus_status": "present",
+          "evidence_role": "decisive",
+          "authority_as_of": "20260827",
+          "coordinate_scope": "body",
+          "coordinate_key": "body:제8조"
+        }
+      ],
+      "id": "seed-latent-006",
+      "provenance": {
+        "inherited_fields": [
+          "reference_answer",
+          "expected_articles"
+        ],
+        "source_case_id": "cm-038",
+        "source_dataset": "cm",
+        "source_file": null,
+        "source_file_sha256": null,
+        "source_path": "data/review/cm_core_e2e_v2.json",
+        "source_question": "대표자의 보고의무는 위임할 수 있는가?",
+        "source_record": null,
+        "source_reference_sha256": "0520273ff7489e06fca32658a6e33c0dba033139e257148fbd4b0bc91aabde2d",
+        "source_runtime_question": "대표자의 보고의무는 위임할 수 있는가?\n(업무 문맥: 내부회계관리제도)",
+        "source_sha256": "d3c707caa114dec379201c2ba9d2177b0c6bc17ceb4ae9394df1397e9dbfccb1",
+        "transformation": "fact_preserving_plain_language_remove_authority_and_canonical_operation_terms",
+        "transformed_fields": [
+          "question"
+        ]
+      },
+      "question": "회사의 재무보고 절차가 제대로 운영되는지를 매년 설명해야 하는 대표자가 그 설명을 다른 담당자에게 맡길 수 있는가?",
+      "reference_answer": "외부감사법 제8조 제4항 본문은 대표자가 사업연도마다 주주총회, 이사회 및 감사에게 운영실태를 보고하도록 하고, 단서는 대표자가 필요하다고 판단하는 경우 이사회 및 감사에 대한 보고는 내부회계관리자가 하도록 할 수 있다고 규정한다. 주주총회 보고는 단서 대상이 아니다.",
+      "reference_answer_sha256": "67384c96723afd391355fdc2b536baa6f823d70c6da21c15a94dd434f14eac11",
+      "surface_audit": {
+        "authority_absent": true,
+        "authority_evidence": [],
+        "canonical_operation_term_absent": true,
+        "canonical_term_evidence": [],
+        "canonical_terms": [
+          "내부회계관리제도",
+          "내부회계관리자",
+          "외부감사법",
+          "주식회사 등의 외부감사에 관한 법률"
+        ],
+        "requires_semantic_operation_seed": true
+      }
+    },
+    {
+      "axes": {
+        "answer_type": "authority",
+        "business_domain": "IPO·우리사주",
+        "difficulty": "hard",
+        "in_sample": true,
+        "legal_operation": "semantic_operation_seed",
+        "material": "complete",
+        "outcome": "positive",
+        "provenance": "actual_case_fact_preserving_transform",
+        "question_kind": "additional",
+        "source_scope": "natural_language",
+        "surface_signal": "runtime_latent_only"
+      },
+      "expected_articles": [
+        {
+          "law": "상법",
+          "article": "제416조",
+          "doc_id": "7bbe815ff43b6635",
+          "document_revision": "20250722",
+          "document_enforcement": "20260723",
+          "node": "1686",
+          "corpus_status": "present",
+          "evidence_role": "decisive",
+          "authority_as_of": "20260827",
+          "coordinate_scope": "body",
+          "coordinate_key": "body:제416조"
+        }
+      ],
+      "id": "seed-latent-007",
+      "provenance": {
+        "inherited_fields": [
+          "reference_answer",
+          "expected_articles"
+        ],
+        "source_case_id": "cm-048",
+        "source_dataset": "cm",
+        "source_file": null,
+        "source_file_sha256": null,
+        "source_path": "data/review/cm_core_e2e_v2.json",
+        "source_question": "발행사항은 어느 기관이 결정하는가?",
+        "source_record": null,
+        "source_reference_sha256": "70c417580a5656110172163a2934ac9e494dc9e5c96a686fe88aa797b7e4754b",
+        "source_runtime_question": "발행사항은 어느 기관이 결정하는가?\n(업무 문맥: 우리사주조합원에 대한 주식 배정)",
+        "source_sha256": "d3c707caa114dec379201c2ba9d2177b0c6bc17ceb4ae9394df1397e9dbfccb1",
+        "transformation": "fact_preserving_plain_language_remove_authority_and_canonical_operation_terms",
+        "transformed_fields": [
+          "question"
+        ]
+      },
+      "question": "회사가 새 주식을 내놓으면서 종류·수량·가격·납입일 같은 조건을 정관에 미리 적어 두지 않았다면 누가 정하는가?",
+      "reference_answer": "상법 제416조에 따라 신주의 종류와 수, 발행가액과 납입기일, 인수방법 등으로서 정관에 규정이 없는 것은 이사회가 결정한다. 다만 이 법에 다른 규정이 있거나 정관으로 주주총회에서 결정하기로 정한 경우는 그러하지 아니하다.",
+      "reference_answer_sha256": "1d2b63bc6f608665e942dbe984052c9783e93945684d7f0f2e9ba7748fcf23f1",
+      "surface_audit": {
+        "authority_absent": true,
+        "authority_evidence": [],
+        "canonical_operation_term_absent": true,
+        "canonical_term_evidence": [],
+        "canonical_terms": [
+          "우리사주조합원 배정",
+          "신주발행",
+          "상법"
+        ],
+        "requires_semantic_operation_seed": true
+      }
+    },
+    {
+      "axes": {
+        "answer_type": "criteria",
+        "business_domain": "IPO·주관회사",
+        "difficulty": "hard",
+        "in_sample": true,
+        "legal_operation": "semantic_operation_seed",
+        "material": "complete",
+        "outcome": "positive",
+        "provenance": "actual_case_fact_preserving_transform",
+        "question_kind": "additional",
+        "source_scope": "natural_language",
+        "surface_signal": "runtime_latent_only"
+      },
+      "expected_articles": [
+        {
+          "law": "증권 인수업무 등에 관한 규정",
+          "article": "제15조",
+          "doc_id": "7687ac5d901e9a4a",
+          "document_revision": "2026-03-12",
+          "document_enforcement": "",
+          "node": "256",
+          "corpus_status": "present",
+          "evidence_role": "decisive",
+          "authority_as_of": "20260827",
+          "coordinate_scope": "body",
+          "coordinate_key": "body:제15조"
+        }
+      ],
+      "id": "seed-latent-008",
+      "provenance": {
+        "inherited_fields": [
+          "reference_answer",
+          "expected_articles"
+        ],
+        "source_case_id": "cm-050",
+        "source_dataset": "cm",
+        "source_file": null,
+        "source_file_sha256": null,
+        "source_path": "data/review/cm_core_e2e_v2.json",
+        "source_question": "100분의 10이 적용되는 경우는?",
+        "source_record": null,
+        "source_reference_sha256": "af9b5066b8297043e02a6dd4891e242faf63e8f74ce730a0865007958db02afc",
+        "source_runtime_question": "100분의 10이 적용되는 경우는?\n(업무 문맥: 공동주관회사 선임의무)",
+        "source_sha256": "d3c707caa114dec379201c2ba9d2177b0c6bc17ceb4ae9394df1397e9dbfccb1",
+        "transformation": "fact_preserving_plain_language_remove_authority_and_canonical_operation_terms",
+        "transformed_fields": [
+          "question"
+        ]
+      },
+      "question": "증권 발행을 맡은 회사와 발행회사 사이에 일정한 지분·임원 관계가 있을 때, 보유 비율 10퍼센트 기준의 예외를 적용받는 발행회사는 어떤 곳인가?",
+      "reference_answer": "제15조 제4항 제2호 단서 각 목에 해당하는 발행회사로서, 가목 중소기업기본법 제2조에 따른 중소기업(특수목적기구 및 부동산 관련 법인 제외), 나목 벤처기업, 다목 직전 3개 회계연도 평균 매출액 3천억원 미만 중견기업, 라목 신성장·원천기술 보유기업 또는 기술등급 상위 100분의 50 기업(공시대상기업집단 소속 기업 제외)이다. 다만 중소기업창업 지원법 시행령 제4조 각 호의 업종은 제외된다.",
+      "reference_answer_sha256": "ab64525a5cfd3207885a3f1416dc5a4eeac2bd03d276767ddc4ad3b6679f9734",
+      "surface_audit": {
+        "authority_absent": true,
+        "authority_evidence": [],
+        "canonical_operation_term_absent": true,
+        "canonical_term_evidence": [],
+        "canonical_terms": [
+          "공동주관회사",
+          "공동주관회사 선임의무",
+          "증권 인수업무 등에 관한 규정"
+        ],
+        "requires_semantic_operation_seed": true
+      }
+    },
+    {
+      "axes": {
+        "answer_type": "calculation",
+        "business_domain": "IPO·주관회사",
+        "difficulty": "hard",
+        "in_sample": true,
+        "legal_operation": "semantic_operation_seed",
+        "material": "complete",
+        "outcome": "positive",
+        "provenance": "actual_case_fact_preserving_transform",
+        "question_kind": "additional",
+        "source_scope": "natural_language",
+        "surface_signal": "runtime_latent_only"
+      },
+      "expected_articles": [
+        {
+          "law": "증권 인수업무 등에 관한 규정",
+          "article": "제6조",
+          "doc_id": "7687ac5d901e9a4a",
+          "document_revision": "2026-03-12",
+          "document_enforcement": "",
+          "node": "95",
+          "corpus_status": "present",
+          "evidence_role": "decisive",
+          "authority_as_of": "20260827",
+          "coordinate_scope": "body",
+          "coordinate_key": "body:제6조"
+        },
+        {
+          "law": "자본시장과 금융투자업에 관한 법률 시행규칙",
+          "article": "제14조",
+          "doc_id": "3161ad4eef272bd7",
+          "document_revision": "20250602",
+          "document_enforcement": "20250602",
+          "node": "125",
+          "corpus_status": "present",
+          "evidence_role": "decisive",
+          "authority_as_of": "20260827",
+          "coordinate_scope": "body",
+          "coordinate_key": "body:제14조"
+        }
+      ],
+      "id": "seed-latent-009",
+      "provenance": {
+        "inherited_fields": [
+          "reference_answer",
+          "expected_articles"
+        ],
+        "source_case_id": "cm-051",
+        "source_dataset": "cm",
+        "source_file": null,
+        "source_file_sha256": null,
+        "source_path": "data/review/cm_core_e2e_v2.json",
+        "source_question": "보유비율은 어떻게 산정하는가?",
+        "source_record": null,
+        "source_reference_sha256": "b53172c42401b954e3c62e37c52ec3b7b942cf2e67206db5c62f1450e890824a",
+        "source_runtime_question": "보유비율은 어떻게 산정하는가?\n(업무 문맥: 공동주관회사 선임의무)",
+        "source_sha256": "d3c707caa114dec379201c2ba9d2177b0c6bc17ceb4ae9394df1397e9dbfccb1",
+        "transformation": "fact_preserving_plain_language_remove_authority_and_canonical_operation_terms",
+        "transformed_fields": [
+          "question"
+        ]
+      },
+      "question": "증권 발행을 맡은 회사가 발행회사의 지분을 직접 또는 여러 사람이 돈을 모은 기구를 통해 가진 경우, 가진 것으로 보는 비율은 어떻게 계산하는가?",
+      "reference_answer": "제6조 제2항에 따라 자본시장법 시행규칙 제14조 제1항을 준용한다. 제4항에 따라 중소기업창업투자조합, 신기술사업투자조합, 한국벤처투자조합, 환매금지형 사모집합투자기구의 경우 출자 또는 투자한 비율만큼 보유한 것으로 본다.",
+      "reference_answer_sha256": "2309134e7bb409faf9d923cd529aa28cc09166d7507fe5ada8d4668f84951b6f",
+      "surface_audit": {
+        "authority_absent": true,
+        "authority_evidence": [],
+        "canonical_operation_term_absent": true,
+        "canonical_term_evidence": [],
+        "canonical_terms": [
+          "공동주관회사",
+          "공동주관회사 선임의무",
+          "증권 인수업무 등에 관한 규정"
+        ],
+        "requires_semantic_operation_seed": true
+      }
+    },
+    {
+      "axes": {
+        "answer_type": "prohibited",
+        "difficulty": "hard",
+        "in_sample": true,
+        "legal_operation": "semantic_operation_seed",
+        "provenance": "actual_case_fact_preserving_transform",
+        "source_scope": "law_and_decree",
+        "surface_signal": "runtime_latent_only"
+      },
+      "expected_articles": [
+        {
+          "law": "금융회사의 지배구조에 관한 법률",
+          "article": "제29조",
+          "doc_id": "c4b33879c7dc5554",
+          "document_revision": "20251001",
+          "document_enforcement": "20260102",
+          "node": "244",
+          "corpus_status": "present",
+          "evidence_role": "decisive",
+          "authority_as_of": "20260827",
+          "coordinate_scope": "body",
+          "coordinate_key": "body:제29조"
+        },
+        {
+          "law": "금융회사의 지배구조에 관한 법률 시행령",
+          "article": "제24조",
+          "doc_id": "33b5315a0bc2d899",
+          "document_revision": "20260324",
+          "document_enforcement": "20260324",
+          "node": "388",
+          "corpus_status": "present",
+          "evidence_role": "decisive",
+          "authority_as_of": "20260827",
+          "coordinate_scope": "body",
+          "coordinate_key": "body:제24조"
+        }
+      ],
+      "id": "seed-latent-010",
+      "provenance": {
+        "inherited_fields": [
+          "reference_answer",
+          "expected_articles"
+        ],
+        "source_case_id": "fsc-hard-003",
+        "source_dataset": "fsc-hard",
+        "source_file": "data/wiki/raw/fsc/2025-01-22-1-4958.md",
+        "source_file_sha256": "1b3ecaeba12701c8f56ce9f900744e636436169fed3236dc9a124524194b714d",
+        "source_path": "data/review/fsc_hard_retrieval_v2.json",
+        "source_question": "상호저축은행의 준법감시인이 「개인금융채권의관리 및 개인금융채무자의 보호에 관한 법률」(이하 “개인채무자보호법”)상 채무조정 전담인력으로서의 업무를 수행할 수 있는지",
+        "source_record": "법령해석 1-4958",
+        "source_reference_sha256": "014611b45ecc82bdf1e7d9c660bac143aa2c6013e66a5d8a0a831c836b5a4358",
+        "source_runtime_question": "상호저축은행의 준법감시인이 「개인금융채권의관리 및 개인금융채무자의 보호에 관한 법률」(이하 “개인채무자보호법”)상 채무조정 전담인력으로서의 업무를 수행할 수 있는지",
+        "source_sha256": "981d4fa6fd4b77d70eeade73aa907243937dfe33b228826c71eadf438b813269",
+        "transformation": "fact_preserving_plain_language_remove_authority_and_canonical_operation_terms",
+        "transformed_fields": [
+          "question"
+        ]
+      },
+      "question": "회사에서 업무가 규정대로 처리되는지 살피는 사람이 개인 고객의 상환 부담을 낮추는 전담 업무까지 함께 맡아도 되는가?",
+      "reference_answer": "상호저축은행의 준법감시인이 개인채무자보호법상 채무조정 전담인력으로서의 업무를 수행하는 것은 「금융회사의 지배구조에 관한 법률」(이하 “지배구조법”) 제29조제2호에 따라 허용되지 않음을 알려드립니다.",
+      "reference_answer_sha256": "930b20f4925bea76921bfbe2b165b604679c82cac2acab4d58e31b0037e5e5f0",
+      "surface_audit": {
+        "authority_absent": true,
+        "authority_evidence": [],
+        "canonical_operation_term_absent": true,
+        "canonical_term_evidence": [],
+        "canonical_terms": [
+          "준법감시인",
+          "채무조정",
+          "채무조정 전담인력",
+          "개인채무자보호법",
+          "금융회사의 지배구조에 관한 법률"
+        ],
+        "requires_semantic_operation_seed": true
+      }
+    }
+  ],
+  "counts": {
+    "cases": 10,
+    "cm_actual_work_cases": 9,
+    "corpus_exact_coordinates": 14,
+    "expected_articles": 14,
+    "fsc_actual_reply_cases": 1,
+    "expected_article_instances": 14,
+    "current_exact_coordinates": 14
+  },
+  "created_at": "2026-08-27",
+  "frozen": true,
+  "grading": {
+    "future_evaluation_requires_separate_adr": true,
+    "performance_not_measured_in_construction_adr": true,
+    "reference_and_expected_articles_are_grading_only": true
+  },
+  "name": "semantic-operation-seed-golden-v2",
+  "role": "in_sample_challenge",
+  "schema_version": 2,
+  "source": {
+    "combined_source_sha256": "05936e4bee0ae42a90c3d20a83ff40af2bb5b47895f1702d2716b18dd82f203e",
+    "construction_adr": "ADR-0085",
+    "manifest_path": "docs/adr/ADR-0085-semantic-operation-seed-golden-10/실험/manifest.json",
+    "manifest_sha256": "12d4e7b9946dcc8e701349dc62ab1ded7a21da6130720b83bd900420e6d6b306",
+    "sources": [
+      {
+        "path": "data/review/cm_core_e2e_v1.json",
+        "selected_cases": 9,
+        "sha256": "d3e4f658d8c9abb06244557b669d37d63b0e6fcc879059506e3b462619bcc18d"
+      },
+      {
+        "path": "data/review/fsc_hard_retrieval_v1.json",
+        "selected_cases": 1,
+        "sha256": "4373659368de7a81b7e9ee48233c8b317d863db4e5c4827f4346d09281b3d7f8"
+      }
+    ]
+  },
+  "surface_contract": {
+    "authority_rule": "정확한 법령·규정·시행령·시행규칙 이름과 제N조·제N항·제N호 좌표가 question에 없어야 한다.",
+    "canonical_term_rule": "각 case에 사전 동결한 canonical_terms 중 어느 것도 question의 exact substring으로 나타나지 않아야 한다.",
+    "definition": "문장에 일반 사실 단어는 존재하지만 정답 법령·조문과 용어집에 바로 올릴 case별 정식 법률 업무유형은 노출하지 않는다. 따라서 용어 exact-match가 아니라 사실관계→법적 업무유형 변환이 최초 seed 생성에 필요하다.",
+    "label": "runtime_latent_only",
+    "standalone_rule": "숨은 topic이나 이전 대화 없이 question 한 필드만 제품 입력으로 사용한다."
+  },
+  "task_contract": {
+    "grading_only_fields": [
+      "reference_answer",
+      "expected_articles",
+      "provenance",
+      "surface_audit",
+      "axes"
+    ],
+    "product_visible_fields": [
+      "id",
+      "question"
+    ]
+  },
+  "version": 2,
+  "supersedes": {
+    "name": "semantic-operation-seed-golden-v1",
+    "reason": "source golden authority generation and current body coordinates"
+  },
+  "authority_contract": {
+    "as_of": "20260827",
+    "source_cm": "data/review/cm_core_e2e_v2.json",
+    "source_cm_sha256": "d3c707caa114dec379201c2ba9d2177b0c6bc17ceb4ae9394df1397e9dbfccb1",
+    "source_fsc": "data/review/fsc_hard_retrieval_v2.json",
+    "source_fsc_sha256": "981d4fa6fd4b77d70eeade73aa907243937dfe33b228826c71eadf438b813269",
+    "coordinate_schema": "coordinate-scope-v1",
+    "no_stale_source_copy": true
+  }
+}

@@ -1,5 +1,8 @@
 # 문서 구조화 & 정합성 검증 플랫폼
 
+온사이트·폐쇄망에서 로컬 LLM, Qdrant, 프론트 없는 파일 반입 파이프라인을 운영하려면
+[온사이트 실행 가이드](docs/ONSITE_RUNBOOK.md)를 따른다.
+
 금융 문서(신탁계약서·투자설명서·법령·녹취 전사)를 **구조로 만들고**, 그 구조 위에서
 **업무 검증**을 돌리는 시스템이다.
 
@@ -28,13 +31,15 @@
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 cp .env.example .env            # ANTHROPIC_API_KEY (개발망) 또는 GENOS_LLM_URL·GENOS_LLM_KEY (GenOS)
-scripts/serve.sh                # uvicorn api.structure_app:app  → http://localhost:5566
+scripts/serve.sh                # uvicorn lawrag.api.structure_app:app → http://localhost:5566
 open http://localhost:5566          # 구조 해석 검수
 open http://localhost:5566/rag/     # 법령 질의응답
 open http://localhost:5566/agent6/  # 체크리스트 ↔ 법령 근거 연결
 ```
 
-반영 경로는 `scripts/serve.sh` 재시작 하나다. 폐쇄망(GenOS) 배포·데이터 반입은
+반영 경로는 `scripts/serve.sh` 재시작 하나다. 폐쇄망(GenOS)은 먼저
+[docs/GENOS_QUICKSTART.md](docs/GENOS_QUICKSTART.md)의 복붙 절차를 보고, 상세 배포는
+[docs/GENOS_DEPLOY.md](docs/GENOS_DEPLOY.md), 데이터 반입·왕복 운반의 상세 규약은
 [docs/OPS_TRANSPORT.md](docs/OPS_TRANSPORT.md).
 
 ### 2) 로컬 CLI
@@ -60,7 +65,9 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m agents.agent6.src.cli run --transcript 전사.json -o out/
 ```
 
-LLM 은 저장소 루트 `.env` 를 읽는다 — `ANTHROPIC_API_KEY`(개발망) 또는 `GENOS_LLM_URL`·`GENOS_LLM_KEY`(GenOS 서빙, [docs/OPS_TRANSPORT.md](docs/OPS_TRANSPORT.md) §LLM).
+LLM 은 저장소 루트 `.env` 를 읽는다 — `ANTHROPIC_API_KEY`(개발망),
+`GENOS_LLM_URL`·`GENOS_LLM_KEY`(GenOS 서빙, [docs/OPS_TRANSPORT.md](docs/OPS_TRANSPORT.md) §LLM),
+또는 `LLM_BACKEND=openrouter` + `OPEN_ROUTER`(기본 `qwen/qwen3.8-27b`)를 쓴다.
 
 ---
 
@@ -77,7 +84,7 @@ LLM 은 저장소 루트 `.env` 를 읽는다 — `ANTHROPIC_API_KEY`(개발망)
 │   ├── sources/      수집 어댑터 — kofia · fss · krx · lawgo · expc · prec · cite
 │   ├── pipeline/     수집→변환→인제스트→위키 트리아지 CLI 12개  (`python -m lawrag.pipeline.<이름>`)
 │   └── agents/agent6/  녹취 체크리스트 ↔ 법령 근거 (앱이 라우터·화면을 싣는다)
-├── scripts/          운영·평가 도구 — serve.sh · data_ship.sh · 골든·벤치·트레이스·도판
+├── scripts/          운영·평가 도구 — serve.sh · code_ship.py · genos_preflight.py · genos_call.sh · data_ship.sh · 골든·벤치
 ├── tests/            core · rag · casereview · law_crawler · agent6 · architecture
 ├── docs/             문서 (+ tasks/ 작업 지시, archive/ 옛 스펙, examples/ 과제3·5 예시)
 ├── data/             남는 상태 — structure/ embeddings/ wiki/ review/ bench/ corpus/(수집 원본, 미추적) …
@@ -92,7 +99,7 @@ LLM 은 저장소 루트 `.env` 를 읽는다 — `ANTHROPIC_API_KEY`(개발망)
 | [lawrag/pipeline/](lawrag/pipeline/) · [lawrag/sources/](lawrag/sources/) | 수집·변환·인제스트 단계와 소스별 어댑터 | [lawrag/pipeline/__init__.py](lawrag/pipeline/__init__.py) · [docs/adapter_design.md](docs/adapter_design.md) |
 | [lawrag/agents/agent6/](lawrag/agents/agent6/) | 녹취 체크리스트 점검 — 판정기가 LLM | [lawrag/agents/agent6/README.md](lawrag/agents/agent6/README.md) |
 | [lawrag/api/](lawrag/api/) | FastAPI `structure_app` (5566) + GenOS 운반 `ops` | [lawrag/api/README.md](lawrag/api/README.md) |
-| [scripts/](scripts/) | 서버 기동·데이터 반입·골든·벤치 도구 | [docs/OPS_TRANSPORT.md](docs/OPS_TRANSPORT.md) |
+| [scripts/](scripts/) | 서버 기동·GenOS 점검·데이터 반입·골든·벤치 도구 | [docs/GENOS_DEPLOY.md](docs/GENOS_DEPLOY.md) · [docs/OPS_TRANSPORT.md](docs/OPS_TRANSPORT.md) |
 | [data/](data/) | 서버 상태 — 무엇이 git 에 있고 무엇을 메일로 나르나 | [data/README.md](data/README.md) |
 | [tests/](tests/) | core · rag · casereview · law_crawler · agent6 · architecture | |
 | [docs/archive/](docs/archive/) | v0·v1·agent1 시절 문서 (코드는 git 이력에) | |
@@ -108,7 +115,7 @@ LLM 은 저장소 루트 `.env` 를 읽는다 — `ANTHROPIC_API_KEY`(개발망)
 | [docs/expc.md](docs/expc.md) | 해석례 수집·색인·llm-wiki (해석 지식은 원문과 다른 층) |
 | [docs/REVIEW.md](docs/REVIEW.md) · [docs/RULE_LOOP.md](docs/RULE_LOOP.md) | 사실→쟁점→규범→포섭→결론 검토 뼈대 · 자가 규칙 루프 |
 | [docs/GOLDEN.md](docs/GOLDEN.md) · [docs/RETRIEVAL.md](docs/RETRIEVAL.md) | 골든 셋 채점 규칙과 회차 실측 · 회수를 재는 자 |
-| [docs/LINEAGE.md](docs/LINEAGE.md) · [docs/OPS_TRANSPORT.md](docs/OPS_TRANSPORT.md) | 문서 계보 원장 · 폐쇄망 운반 |
+| [docs/LINEAGE.md](docs/LINEAGE.md) · [docs/GENOS_DEPLOY.md](docs/GENOS_DEPLOY.md) · [docs/OPS_TRANSPORT.md](docs/OPS_TRANSPORT.md) | 문서 계보 원장 · GenOS 배포 · 폐쇄망 운반 |
 | [docs/NOTION_ARCHITECTURE.md](docs/NOTION_ARCHITECTURE.md) | 2026-08-17 실측 종합 스냅샷 (노션 임포트용) |
 | [docs/site_survey.md](docs/site_survey.md) · [docs/access_profile.md](docs/access_profile.md) · [docs/adapter_design.md](docs/adapter_design.md) | 규정 수집기 — 사이트 조사·접속 프로파일·어댑터 설계 |
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
+from functools import cached_property
 from pathlib import Path
 
 
@@ -18,11 +19,13 @@ STATUSES = frozenset({"candidate", "reviewed", ACTIVE, "deprecated", "rejected"}
 CONCEPT_TYPES = frozenset({
     "entity", "person_role", "organization_role", "document", "artifact",
     "action", "method", "modality", "condition", "legal_effect", "quantity",
-    "domain_term",
+    "norm_function", "domain_term", "legal_operation", "procedure_stage",
+    "sanction", "authority", "legal_status", "applicability",
+    "temporal_constraint",
 })
 ASSERTION_ROLES = frozenset({
     "ACTOR", "PREDICATE", "OBJECT", "TARGET", "METHOD", "MODALITY",
-    "CONDITION", "EFFECT", "SUBJECT",
+    "CONDITION", "EFFECT", "SUBJECT", "FUNCTION", "EXCEPTION",
 })
 CONCEPT_RELATIONS = frozenset({
     "IS_A", "EQUIVALENT_TO", "REALIZES", "SATISFIES", "OPPOSITE_OF",
@@ -49,6 +52,8 @@ class Tier1Concept:
     scope_docs: tuple[str, ...] = ()
     version: int = 1
     approved_by: str = ""
+    review_state: str = ""
+    evidence_type: str = ""
 
     @property
     def surfaces(self) -> tuple[str, ...]:
@@ -65,6 +70,8 @@ class Tier1Relation:
     evidence: tuple[dict, ...] = ()
     confidence: float = 1.0
     approved_by: str = ""
+    review_state: str = ""
+    evidence_type: str = ""
 
 
 @dataclass(frozen=True)
@@ -78,6 +85,8 @@ class Tier1Assertion:
     note: str = ""
     query_cues: tuple[str, ...] = ()
     version: int = 1
+    review_state: str = ""
+    evidence_type: str = ""
 
 
 @dataclass
@@ -118,27 +127,54 @@ class Tier1Registry:
             raise ValueError("1급 지식 레지스트리 검증 실패:\n- " + "\n- ".join(errors))
         return reg
 
-    @property
+    @cached_property
     def active_concepts(self) -> dict[str, Tier1Concept]:
         return {cid: c for cid, c in self.concepts.items() if c.status == ACTIVE}
 
-    @property
+    @cached_property
     def active_relations(self) -> list[Tier1Relation]:
         active = self.active_concepts
         return [r for r in self.relations
                 if r.status == ACTIVE and r.src in active and r.dst in active]
 
-    @property
+    @cached_property
     def active_assertions(self) -> list[Tier1Assertion]:
         active = self.active_concepts
         return [a for a in self.assertions if a.status == ACTIVE
                 and all(cid in active for ids in a.roles.values() for cid in ids)]
 
+    @cached_property
+    def active_assertions_by_id(self) -> dict[str, Tier1Assertion]:
+        return {assertion.id: assertion for assertion in self.active_assertions}
+
+    @cached_property
+    def assertion_concepts(self) -> dict[str, frozenset[str]]:
+        return {a.id: frozenset(cid for ids in a.roles.values() for cid in ids)
+                for a in self.active_assertions}
+
+    @cached_property
+    def concept_assertions(self) -> dict[str, frozenset[str]]:
+        found: dict[str, set[str]] = {}
+        for aid, cids in self.assertion_concepts.items():
+            for cid in cids:
+                found.setdefault(cid, set()).add(aid)
+        return {cid: frozenset(aids) for cid, aids in found.items()}
+
     def shared_assertions(self, concept_ids: set[str]) -> int:
         if len(concept_ids) < 2:
             return 0
-        return sum(1 for a in self.active_assertions
-                   if concept_ids <= {cid for ids in a.roles.values() for cid in ids})
+        groups = [self.concept_assertions.get(cid, frozenset()) for cid in concept_ids]
+        return len(set.intersection(*(set(group) for group in groups))) if groups else 0
+
+    def connected_concepts(self, concept_ids: set[str]) -> set[str]:
+        """주어진 후보 집합 안에서 같은 active Assertion을 공유하는 Concept."""
+        connected: set[str] = set()
+        for cid in concept_ids:
+            for aid in self.concept_assertions.get(cid, ()):
+                peers = self.assertion_concepts.get(aid, frozenset()) & concept_ids
+                if len(peers) >= 2:
+                    connected.update(peers)
+        return connected
 
 
 def _status(row: dict) -> str:
@@ -178,6 +214,8 @@ def _concept(row: dict) -> Tier1Concept:
         negative_aliases=_strings(row.get("negative_aliases")),
         scope_docs=_strings(scope.get("docs") or row.get("scope_docs")),
         version=int(row.get("version") or 1), approved_by=approved,
+        review_state=str(row.get("review_state") or ""),
+        evidence_type=str(row.get("evidence_type") or ""),
     )
 
 
@@ -203,8 +241,11 @@ def _relation(row: dict, concepts: dict[str, Tier1Concept]) -> Tier1Relation:
     approved = str(row.get("approved_by") or "").strip()
     if status == ACTIVE and (not evidence or not approved):
         raise ValueError(f"{rid}: active는 evidence·approved_by 필수")
-    return Tier1Relation(rid, kind, src, dst, status, evidence,
-                         float(row.get("confidence", 1.0)), approved)
+    return Tier1Relation(
+        rid, kind, src, dst, status, evidence,
+        float(row.get("confidence", 1.0)), approved,
+        str(row.get("review_state") or ""),
+        str(row.get("evidence_type") or ""))
 
 
 def _assertion(row: dict, concepts: dict[str, Tier1Concept]) -> Tier1Assertion:
@@ -232,9 +273,12 @@ def _assertion(row: dict, concepts: dict[str, Tier1Concept]) -> Tier1Assertion:
         raise ValueError(f"{aid}: confidence는 0..1")
     if status == ACTIVE and not approved:
         raise ValueError(f"{aid}: active는 approved_by 필수")
-    return Tier1Assertion(aid, status, roles, source, confidence, approved,
-                          str(row.get("note") or ""), _strings(row.get("query_cues")),
-                          int(row.get("version") or 1))
+    return Tier1Assertion(
+        aid, status, roles, source, confidence, approved,
+        str(row.get("note") or ""), _strings(row.get("query_cues")),
+        int(row.get("version") or 1),
+        str(row.get("review_state") or ""),
+        str(row.get("evidence_type") or ""))
 
 
 def _is_a_cycles(relations: list[Tier1Relation]) -> list[str]:

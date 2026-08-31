@@ -10,11 +10,13 @@ GenOS 는 임의의 uvicorn 앱을 서빙하지 않는다. 계약은 이 파일�
 앱 전체(라우터 전부)와 망분리 운반(ops)을 다 태운다:
 
     {"op": "ping"}                                  기동·rev 확인
-    {"op": "call", "method": "GET",
-     "path": "/v1/structure/folders"}               임의 API 호출
+    {"op": "call", "method": "GET", "path": "/v1/rag/search",
+     "params": {"q": "질문", "mode": "auto"}}    GET 파라미터도 JSON 으로
     {"op": "call", "method": "POST",
      "path": "/v1/rag/ask", "json": {...}}          JSON 몸통은 json 으로,
                                                     파일은 body_b64 로
+    {"op": "upload", "filename": "내규.pdf",
+     "file_b64": "…", "form": {"folder": "내규"}}  작은 문서 업로드
     {"op": "ls", "path": "/mnt/…"}                  진단 — 볼륨 공유 판별
     {"op": "report"}                                정적 현황 HTML 한 장
     {"op": "snapshot"}                              상태 tar.gz → b64 로 반출
@@ -33,7 +35,9 @@ from __future__ import annotations
 import base64
 import json
 import os
+import secrets
 import tempfile
+import urllib.parse
 from pathlib import Path
 from typing import Any, Dict
 
@@ -67,6 +71,11 @@ async def _do_call(data: Dict[str, Any]) -> Dict[str, Any]:
     method = (data.get("method") or "GET").upper()
     path = data.get("path") or "/"
     query = data.get("query") or ""
+    if not query and data.get("params") is not None:
+        params = data["params"]
+        if not isinstance(params, dict):
+            raise ValueError("params 는 JSON 객체여야 합니다")
+        query = urllib.parse.urlencode(params, doseq=True)
     if "json" in data:
         body = json.dumps(data["json"], ensure_ascii=False).encode()
         content_type = "application/json"
@@ -82,6 +91,57 @@ async def _do_call(data: Dict[str, Any]) -> Dict[str, Any]:
         out["json"] = json.loads(raw.decode("utf-8"))
     except Exception:                       # PNG·tar 같은 이진 응답은 b64 로
         out["body_b64"] = base64.b64encode(raw).decode()
+    return out
+
+
+async def _do_upload(data: Dict[str, Any]) -> Dict[str, Any]:
+    """JSON 게이트웨이에서 작은 문서를 multipart 업로드로 바꾼다."""
+    encoded = data.get("file_b64")
+    if not isinstance(encoded, str) or not encoded:
+        raise ValueError("file_b64 가 필요합니다")
+    try:
+        raw = base64.b64decode(encoded, validate=True)
+    except Exception as exc:
+        raise ValueError("file_b64 가 올바른 base64가 아닙니다") from exc
+
+    filename = Path(str(data.get("filename") or "document.bin")).name
+    filename = filename.replace('"', "_").replace("\r", "_").replace("\n", "_")
+    form = data.get("form") or {}
+    if not isinstance(form, dict):
+        raise ValueError("form 은 JSON 객체여야 합니다")
+    allowed = {"root", "families", "ladder", "order", "use_llm",
+               "folder", "engine", "status", "series"}
+    unknown = sorted(set(form) - allowed)
+    if unknown:
+        raise ValueError("허용하지 않는 form 필드: " + ", ".join(unknown))
+
+    boundary = "----8agent-" + secrets.token_hex(12)
+    chunks: list[bytes] = []
+    for key, value in form.items():
+        if value is None:
+            continue
+        if isinstance(value, bool):
+            value = "true" if value else "false"
+        chunks.extend([
+            f"--{boundary}\r\n".encode(),
+            f'Content-Disposition: form-data; name="{key}"\r\n\r\n'.encode(),
+            str(value).encode("utf-8"), b"\r\n",
+        ])
+    chunks.extend([
+        f"--{boundary}\r\n".encode(),
+        f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'.encode("utf-8"),
+        b"Content-Type: application/octet-stream\r\n\r\n",
+        raw, b"\r\n", f"--{boundary}--\r\n".encode(),
+    ])
+    status, response = await _ops()._call_self(
+        _app(), "POST", "/v1/structure/documents", "",
+        f"multipart/form-data; boundary={boundary}", b"".join(chunks),
+    )
+    out: Dict[str, Any] = {"status": status, "ok": status < 400}
+    try:
+        out["json"] = json.loads(response.decode("utf-8"))
+    except Exception:
+        out["body_b64"] = base64.b64encode(response).decode()
     return out
 
 
@@ -144,6 +204,8 @@ async def service(config: Dict[str, Any], data: Dict[str, Any]):
             return {"path": str(p), "exists": False}
         if op == "call":
             return await _do_call(data)
+        if op == "upload":
+            return await _do_upload(data)
         if op == "report":
             # 정적 현황 HTML — 파일로 떨궈 브라우저로만 연다:
             #   curl … -d '{"op":"report"}' | jq -r .html > 현황.html
@@ -159,7 +221,7 @@ async def service(config: Dict[str, Any], data: Dict[str, Any]):
         if op in ("apply", "apply_from"):
             return await _do_apply(data)
         return {"error": f"모르는 op 입니다: {op}",
-                "ops": ["ping", "ls", "call", "report", "snapshot",
+                "ops": ["ping", "ls", "call", "upload", "report", "snapshot",
                         "snapshot_to", "apply", "apply_from"]}
     except Exception as exc:
         detail = getattr(exc, "detail", None)

@@ -19,7 +19,11 @@ def _wiki(tmp_path: Path) -> Path:
         "# 준용의 방향\n\n준용은 문언 범위 그대로 따라간다. "
         "「자본시장과 금융투자업에 관한 법률」 제160조가 그 예다.\n", "utf-8")
     (w / "법령갈래" / "개인정보-경계.md").write_text(
-        "# 개인정보 경계\n\n「개인정보 보호법」 동의 체계.\n" + "가" * 5000, "utf-8")
+        "# 개인정보 경계\n\n"
+        "> Sources: 금융위 회신 50건\n"
+        "> Raw: [원문](../../raw/fsc/example.md)\n"
+        "> Updated: 2026-08-14\n\n"
+        "「개인정보 보호법」 동의 체계.\n" + "가" * 5000, "utf-8")
     (w / "쟁점" / "실권주-인수.md").write_text(
         "# 실권주 인수\n\n"
         "> 트리거: 실권주 · 유상증자 · 제3자 배정\n"
@@ -45,9 +49,10 @@ def test_문서명이_강신호다(tmp_path, monkeypatch):
     assert "자본시장과 금융투자업에 관한 법률" in picks[0]["why"]
 
 
-def test_질의_낱말은_제목·요약에만_약신호(tmp_path, monkeypatch):
+def test_질의_낱말은_제목·요약에서_두개가_맞아야_한다(tmp_path, monkeypatch):
     monkeypatch.setenv("WIKI_STORE", str(_wiki(tmp_path)))
-    picks = wikictx.pick("준용 조항은 어디까지 가나", set())
+    assert wikictx.pick("준용 조항은 어디까지 가나", set()) == []
+    picks = wikictx.pick("준용 해석은 어디까지 가나", set())
     assert picks and picks[0]["slug"] == "해석원칙/준용의-방향"
 
 
@@ -66,11 +71,28 @@ def test_긴_아티클은_잘리고_표시된다(tmp_path, monkeypatch):
 
 def test_블록은_배경_표제를_단다(tmp_path, monkeypatch):
     monkeypatch.setenv("WIKI_STORE", str(_wiki(tmp_path)))
-    picks = wikictx.pick("준용", set())
+    picks = wikictx.pick("준용 해석", set())
     blk = wikictx.block(picks)
     assert blk.startswith("\n\n[해석 맥락 — 지식 위키]\n")
     assert "《준용의 방향》" in blk
     assert wikictx.block([]) == ""
+
+
+def test_모델용_Wiki에서_provenance만_제거한다(tmp_path, monkeypatch):
+    monkeypatch.setenv("WIKI_STORE", str(_wiki(tmp_path)))
+    picks = wikictx.pick("동의", {"개인정보 보호법"})
+    assert picks
+    assert "Sources:" not in picks[0]["text"]
+    assert "Raw:" not in picks[0]["text"]
+    assert "Updated:" not in picks[0]["text"]
+    assert "../../raw/" not in picks[0]["text"]
+    assert "개인정보 보호법" in picks[0]["text"]
+
+
+def test_provenance에만_있는_문서명은_라우팅_강신호가_아니다(tmp_path, monkeypatch):
+    monkeypatch.setenv("WIKI_STORE", str(_wiki(tmp_path)))
+    picks = wikictx.pick("아무 질문", {"금융위 회신"})
+    assert all(pick["slug"] != "법령갈래/개인정보-경계" for pick in picks)
 
 
 def test_위키_스위치가_등록부에_있다():
@@ -206,5 +228,5 @@ def test_방법은_무신호면_빈손(tmp_path, monkeypatch):
 def test_방법은_일반_pick_경쟁에도_남는다(tmp_path, monkeypatch):
     """신호 메타는 추가 경로지 pick 박탈이 아니다 — 이중 경로, 중복은 합성이 걸러낸다."""
     _wiki_with_methods(tmp_path, monkeypatch)
-    picks = wikictx.pick("단서 읽기가 뭐야", set())
+    picks = wikictx.pick("단서 읽기", set())
     assert any(p["slug"] == "방법/단서-읽기" for p in picks)

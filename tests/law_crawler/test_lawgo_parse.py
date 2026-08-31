@@ -1,7 +1,8 @@
 """law.go.kr OPEN API 어댑터 순수 파싱 — 실측 응답 픽스처 대상 (네트워크 없음)."""
 from pathlib import Path
 
-from lawrag.sources.lawgo import parse_annexes, parse_search
+from lawrag.sources.base import Target
+from lawrag.sources.lawgo import LawGoAdapter, parse_annexes, parse_body_meta, parse_search
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures" / "law_crawler" / "lawgo"
 
@@ -37,3 +38,52 @@ def test_parse_annexes_decree():
     assert first["url"].startswith("https://www.law.go.kr/LSW/flDownload.do?flSeq=")
     # HWP 링크만 — PDF·이미지 파생본이 섞이면 안 된다 (별표단위당 1건)
     assert len({a["url"] for a in annexes}) == 2
+
+
+def test_parse_body_meta_for_pinned_revision():
+    xml = """<법령><기본정보>
+      <법령ID>001702</법령ID><법령명_한글>상법</법령명_한글>
+      <공포일자>20260306</공포일자><공포번호>21361</공포번호>
+      <시행일자>20260306</시행일자><제개정구분>일부개정</제개정구분>
+      <소관부처>법무부</소관부처>
+    </기본정보></법령>"""
+    assert parse_body_meta(xml) == {
+        "name": "상법", "doc_id": "001702", "promulgated": "20260306",
+        "promul_no": "21361", "rev_kind": "일부개정", "enforce": "20260306",
+        "dept": "법무부",
+    }
+
+
+def test_unpinned_law_uses_official_effective_current_body_by_id():
+    search = """<LawSearch><law><법령명한글>시험법</법령명한글>
+      <법령일련번호>100</법령일련번호><법령ID>001234</법령ID>
+      <공포일자>20260101</공포일자><공포번호>1</공포번호>
+      <제개정구분명>일부개정</제개정구분명><시행일자>20260701</시행일자>
+      <소관부처명>시험부</소관부처명><현행연혁코드>현행</현행연혁코드>
+    </law></LawSearch>"""
+    body = """<법령><기본정보><법령ID>001234</법령ID><법령명_한글>시험법</법령명_한글>
+      <공포일자>20260201</공포일자><공포번호>2</공포번호>
+      <시행일자>20260801</시행일자><제개정구분>타법개정</제개정구분>
+      <소관부처>시험부</소관부처></기본정보></법령>"""
+
+    class Response:
+        def __init__(self, text):
+            self.text = text
+
+    class Client:
+        session = None
+        def __init__(self):
+            self.urls = []
+        def get(self, url, params=None):
+            self.urls.append((url, params))
+            return Response(search if "lawSearch" in url else body)
+
+    client = Client()
+    adapter = LawGoAdapter(client, oc="test")
+    refs = adapter.discover(Target("law", "시험법", "시험법", hints={"kind": "law"}))
+    assert "target=eflaw" in refs[0].url and "ID=001234" in refs[0].url
+    assert "MST=" not in refs[0].url
+    meta = adapter.metadata(Target("law", "시험법", "시험법"))
+    assert meta["authority_mode"] == "effective-current"
+    assert meta["law_id"] == "001234"
+    assert meta["enforce"] == "20260801"  # 검색 가지가 아니라 통합본문 머리말

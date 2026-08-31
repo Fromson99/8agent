@@ -21,7 +21,7 @@ log = logging.getLogger("lawrag.core.rag.delegation")
 
 KINDS = ("시행령", "시행규칙", "위임행정규칙")   # 위임 계열 — 확장이 거의 항상 옳다
 
-_cache: dict = {"mtime": None, "out": {}}
+_cache: dict[tuple[str, bool], tuple[int, dict]] = {}
 
 
 def delegation_path() -> Path:
@@ -29,14 +29,26 @@ def delegation_path() -> Path:
                                store_path().parent / "delegation.json"))
 
 
-def adjacency() -> dict:
-    """(doc_id, 조 node) -> [{doc_id, node, kind, link, name, jo}] — 나가는 위임."""
-    p = delegation_path()
+def adjacency(path: str | Path | None = None, *,
+              include_document_targets: bool = False) -> dict:
+    """(doc_id, 조 node) → 나가는 공식 위임 인접 리스트.
+
+    ``path``를 받는 이유는 그래프 빌더와 제품 런타임이 같은 전사 파일을 명시적으로
+    소비하게 하기 위해서다. 과거 빌더는 자신의 ``data_dir``를 알고도 전역 env/default를
+    다시 해석해, 실제 ``data/delegation.json`` 대신 빈 경로를 읽을 수 있었다.
+
+    법제처가 위임행정규칙의 대상 조문을 주지 않은 행도 ``include_document_targets``가
+    켜지면 ``node=None``인 문서 수준 포인터로 보존한다. 기존 조문 확장 호출자는 기본값을
+    사용하므로 좌표가 완성된 간선만 계속 받는다.
+    """
+    p = Path(path) if path is not None else delegation_path()
     if not p.exists():
         return {}
     mt = p.stat().st_mtime_ns
-    if _cache["mtime"] == mt:
-        return _cache["out"]
+    cache_key = (str(p.resolve()), bool(include_document_targets))
+    cached = _cache.get(cache_key)
+    if cached is not None and cached[0] == mt:
+        return cached[1]
     out: dict[tuple, list[dict]] = {}
     try:
         edges = json.loads(p.read_text(encoding="utf-8")).get("edges", [])
@@ -48,14 +60,22 @@ def adjacency() -> dict:
         if e.get("kind") not in KINDS:
             continue
         s, d = e.get("src") or {}, e.get("dst") or {}
-        if not (s.get("doc_id") and s.get("node") is not None
-                and d.get("doc_id") and d.get("node") is not None):
-            continue                    # 한쪽이 미보유·미해소 — 걷지 못한다
-        out.setdefault((s["doc_id"], s["node"]), []).append({
-            "doc_id": d["doc_id"], "node": d["node"], "kind": e["kind"],
+        if not (s.get("doc_id") and s.get("node") is not None and d.get("doc_id")):
+            continue                    # 출발 좌표나 대상 문서가 없으면 걷지 못한다
+        if d.get("node") is None and not include_document_targets:
+            continue
+        row = {
+            "doc_id": d["doc_id"], "node": d.get("node"), "kind": e["kind"],
             "link": e.get("link", ""), "name": d.get("name", ""),
-            "jo": d.get("jo") or ""})
+            "jo": d.get("jo") or "", "src_anchor": s.get("anchor"),
+            "provenance": "law.go.kr:lsDelegated"}
+        bucket = out.setdefault((s["doc_id"], s["node"]), [])
+        key = (row["doc_id"], row["node"], row["kind"], row["link"])
+        if any((old["doc_id"], old.get("node"), old["kind"], old.get("link", "")) == key
+               for old in bucket):
+            continue
+        bucket.append(row)
         n += 1
-    _cache.update(mtime=mt, out=out)
+    _cache[cache_key] = (mt, out)
     log.info("위임 인접 리스트 — 출발 조 %d, 간선 %d (%s)", len(out), n, p.name)
     return out

@@ -96,7 +96,7 @@ data_pack() {
   cd "$_DS_ROOT"
   local stamp; stamp="$(date +%Y%m%d-%H%M)"
   name="${name:-8agent-data-$stamp}"
-  out="${out:-$_DS_ROOT/var/var/out/ship/$name}"
+  out="${out:-$_DS_ROOT/var/out/ship/$name}"
   local rev; rev="$(git -C "$_DS_ROOT" rev-parse --short HEAD 2>/dev/null || echo '-')"
   local tmp; tmp="$(mktemp -d)"; trap "rm -rf '$tmp'; trap - RETURN" RETURN
 

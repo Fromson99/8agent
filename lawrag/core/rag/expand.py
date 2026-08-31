@@ -33,8 +33,10 @@ from typing import Optional
 
 from lawrag.core.rag import definitions as definitions_mod
 from lawrag.core.rag import delegation as delegation_mod
+from lawrag.core.rag import relations as relations_mod
 from lawrag.core.rag import tags as tags_mod
 from lawrag.core.rag.answer import CANDIDATES_MAX, SECTION_CHARS, Section
+from lawrag.core.rag.controls import value as control_value
 from lawrag.core.rag.index import Index
 
 log = logging.getLogger("lawrag.core.rag.expand")
@@ -42,10 +44,10 @@ log = logging.getLogger("lawrag.core.rag.expand")
 # 편-조 체계(제4-19조)까지 문다 — 좁게 잡으면 규정·세칙류에서 조용히 빠진다
 # (docs/LEGAL_DOMAIN §2 함정 ①, wikictx._ART_RE 와 같은 교훈).
 _JO_SURFACE = re.compile(r"^제\d+(?:-\d+)?조(?:의\d+)?$")
-DELEG_PER_SECTION = 3                   # 조 하나의 위임 동반 상한 — 꼬리는 항해 몫
-NAV_HOPS = 2
-NAV_PICKS = 6
-NAV_CARDS = 24
+DELEG_PER_SECTION = int(control_value("expand.delegations_per_section_max"))
+NAV_HOPS = int(control_value("expand.navigation_hops_max"))
+NAV_PICKS = int(control_value("expand.navigation_picks_max"))
+NAV_CARDS = int(control_value("expand.navigation_cards_max"))
 
 
 def _enclosing_jo(v, node: Optional[int]) -> Optional[int]:
@@ -71,8 +73,8 @@ def _mk(index: Index, doc_id: str, node: int, kind: str, matched: str,
                    ref_src=ref_src)
 
 
-def expand_floor(index: Index, sections: list[Section],
-                 cap: int = CANDIDATES_MAX) -> list[Section]:
+def _expand_floor_legacy(index: Index, sections: list[Section],
+                         cap: int = CANDIDATES_MAX) -> list[Section]:
     """배제(역방향 포함)·위임·준용 — 원 히트에서 한 걸음, 무조건 동반."""
     from lawrag.core.rag import switches as switches_mod   # 지연 — 순환 회피
     from lawrag.core.rag import verdicts as verdicts_mod
@@ -87,7 +89,6 @@ def expand_floor(index: Index, sections: list[Section],
 
     out = list(sections)
     seen = {(s.doc_id, s.node) for s in sections}
-    cross = index.cross_ref_edges()
     # 후순위(demote) — "참조무관" 판정을 사람이 승인한 간선은 지우지 않고
     # **자리 경쟁에서 뒤로** 민다. 바닥은 무조건 동반이라 cap 을 먼저 먹으므로,
     # 여기서 안 밀면 expand_refs 의 후순위는 관측되지 않는다(2026-08-18 감사).
@@ -153,8 +154,7 @@ def expand_floor(index: Index, sections: list[Section],
                  for e in index.ref_edges().get(s.doc_id, [])
                  if hits_here(e["dst"])]
                 + [(e["src_doc"], e["src"], e.get("rel"), e["surface"], e["dst"])
-                   for e in cross
-                   if e.get("dst_doc") == s.doc_id and hits_here(e["dst"])]):
+                   for e in index.cross_to(s.doc_id) if hits_here(e["dst"])]):
             lab = rel if rel in REV else None
             if lab is None and sanc_ok:
                 sv = index.docs.get(src_doc)
@@ -175,7 +175,7 @@ def expand_floor(index: Index, sections: list[Section],
         # ── 순방향 배제·준용 — 이 구역 본문의 문면 간선 중 바닥 관계
         fwd_kinds = ({"배제"} if on_excl else set()) | ({"준용"} if on_jun else set())
         near = [(s.doc_id, e) for e in index.ref_edges().get(s.doc_id, [])]
-        far = [(e["dst_doc"], e) for e in cross if e.get("src_doc") == s.doc_id]
+        far = [(e["dst_doc"], e) for e in index.cross_from(s.doc_id)]
         for dst_doc, e in near + far:
             blk = e.get("block")
             if e.get("rel") not in fwd_kinds or blk is None \
@@ -230,6 +230,125 @@ def expand_floor(index: Index, sections: list[Section],
     return out
 
 
+def expand_floor(index: Index, sections: list[Section],
+                 cap: int = CANDIDATES_MAX) -> list[Section]:
+    """필수 companion을 통합 관계 번들에서 한 층 연다.
+
+    과거에는 배제·위임·준용·수임·정의·제재가 각각 별도 생성기를 호출했다. 이제
+    LegalClosure·간선 항해·domain graph와 같은 ``relations.RelationBundle``을 걷는다.
+    정의어가 본문에 직접 나타나지 않는 경우의 관할 정의 조 fallback만 기존 호환 계약으로
+    남긴다. 이것은 확정 ``USES_DEFINITION`` 간선이 아니라 검색 보조임을 matched에 표시한다.
+    """
+    from lawrag.core.rag import switches as switches_mod
+    from lawrag.core.rag import verdicts as verdicts_mod
+
+    enabled = {
+        "EXCLUDES": switches_mod.is_on("floor_exclusion"),
+        "DELEGATES_TO": switches_mod.is_on("floor_delegation"),
+        "INCORPORATES": switches_mod.is_on("floor_junyong"),
+        "RECEIVES_FROM": switches_mod.is_on("floor_reception"),
+        "USES_DEFINITION": switches_mod.is_on("floor_definition"),
+        "VIOLATION_SANCTIONED_BY": switches_mod.is_on("floor_sanction"),
+        "DEEMS": True,
+        "EFFECTIVE_FOR": True,
+        "APPLIES_TO": True,
+        "TRANSITION_FOR": True,
+    }
+    public_kind = {
+        "EXCLUDES": "배제", "DELEGATES_TO": "위임",
+        "INCORPORATES": "준용", "RECEIVES_FROM": "수임",
+        "USES_DEFINITION": "정의", "VIOLATION_SANCTIONED_BY": "제재",
+        "DEEMS": "의제", "EFFECTIVE_FOR": "시행일",
+        "APPLIES_TO": "적용례", "TRANSITION_FOR": "경과조치",
+    }
+    per_seed_cap = {
+        "DELEGATES_TO": DELEG_PER_SECTION, "RECEIVES_FROM": 3,
+        "VIOLATION_SANCTIONED_BY": 2, "USES_DEFINITION": 4,
+    }
+    priority = {
+        "EXCLUDES": 0, "DELEGATES_TO": 1, "INCORPORATES": 2,
+        "RECEIVES_FROM": 3, "USES_DEFINITION": 4,
+        "VIOLATION_SANCTIONED_BY": 5, "DEEMS": 6,
+        "APPLIES_TO": 7, "TRANSITION_FOR": 8, "EFFECTIVE_FOR": 9,
+    }
+    out = list(sections)
+    seen = {(row.doc_id, row.node) for row in out}
+    deferred = []
+
+    def push(seed: Section, doc_id: str, node: object, rel_kind: str,
+             matched: str, *, late: bool = False) -> bool:
+        if (doc_id, node) in seen or len(out) >= cap:
+            return False
+        if verdicts_mod.is_suppressed(seed.doc_id, seed.node, doc_id, node):
+            return False
+        ref_src = {"doc_id": seed.doc_id, "node": seed.node,
+                   "path": seed.path, "surface": matched}
+        if not late and verdicts_mod.is_demoted(
+                seed.doc_id, seed.node, doc_id, node):
+            deferred.append((seed, doc_id, node, rel_kind, matched, ref_src))
+            return False
+        section = _mk(index, doc_id, node, public_kind[rel_kind],
+                      matched + (" (후순위)" if late else ""), ref_src)
+        if section is None:
+            return False
+        seen.add((doc_id, node))
+        out.append(section)
+        return True
+
+    for seed in list(sections):
+        view = index.docs.get(seed.doc_id)
+        if view is None or seed.node not in view.by_id:
+            continue
+        root = relations_mod.article_root(view, seed.node)
+        outgoing, incoming = relations_mod.incident(index, seed.doc_id, root)
+        candidates = []
+        for edge in outgoing:
+            if edge.kind in {"EXCLUDES", "DELEGATES_TO", "INCORPORATES",
+                             "USES_DEFINITION", "VIOLATION_SANCTIONED_BY", "DEEMS"}:
+                candidates.append((edge, edge.dst_doc, edge.dst_node, False))
+        for edge in incoming:
+            if edge.kind in {"EXCLUDES", "RECEIVES_FROM", "EFFECTIVE_FOR",
+                             "APPLIES_TO", "TRANSITION_FOR"}:
+                candidates.append((edge, edge.src_doc, edge.src_node, True))
+        candidates.sort(key=lambda item: (
+            priority.get(item[0].kind, 99), item[1], str(item[2])))
+        counts = {}
+        exact_definition = False
+        for edge, doc_id, node, reverse in candidates:
+            if not enabled.get(edge.kind, False):
+                continue
+            limit = per_seed_cap.get(edge.kind, cap)
+            if counts.get(edge.kind, 0) >= limit:
+                continue
+            tail = seed.path.split(" ▸ ")[-1] if seed.path else seed.doc
+            surface = str(edge.props.get("surface") or edge.props.get("link")
+                          or edge.props.get("term") or edge.label)
+            if edge.kind == "EXCLUDES" and reverse:
+                matched = f"{tail}의 적용을 배제·제한 — '{surface}'"
+            elif edge.kind == "RECEIVES_FROM" and reverse:
+                matched = f"{tail}의 위임을 받은 조문 — '{surface}'"
+            elif edge.kind == "DELEGATES_TO":
+                matched = f"{tail}의 위임 — '{surface}'"
+            elif edge.kind == "USES_DEFINITION":
+                matched = f"{tail}의 '{edge.props.get('term') or surface}' 정의"
+                exact_definition = True
+            elif edge.kind == "VIOLATION_SANCTIONED_BY":
+                matched = f"{tail} 위반의 {edge.props.get('sanction_kind') or '제재'} — '{surface}'"
+            else:
+                matched = f"{tail}의 {edge.label} 관계 — '{surface}'"
+            if push(seed, doc_id, node, edge.kind, matched):
+                counts[edge.kind] = counts.get(edge.kind, 0) + 1
+
+        if enabled["USES_DEFINITION"] and not exact_definition:
+            for definition_node in tags_mod.governing_definitions(view, seed.node):
+                push(seed, seed.doc_id, definition_node, "USES_DEFINITION",
+                     f"{seed.path.split(' ▸ ')[-1]} 용어의 관할 정의 조 (검색 fallback)")
+
+    for seed, doc_id, node, rel_kind, matched, _ref_src in deferred:
+        push(seed, doc_id, node, rel_kind, matched, late=True)
+    return out
+
+
 # ------------------------------------------------------------------ LLM 항해
 NAV_SYSTEM = (
     "너는 법령 검색의 간선 항해사다. 사용자 질문과, 이미 회수된 구역들에서 "
@@ -250,35 +369,32 @@ NAV_SCHEMA = {
 
 def _edge_cards(index: Index, frontier: list[Section], seen: set,
                 cap: int = NAV_CARDS) -> list[dict]:
-    """열 수 있는 간선의 카드 — 본문 없이 관계·대상·표면형만."""
-    from lawrag.core.rag import verdicts as verdicts_mod
-
-    cross = index.cross_ref_edges()
+    """열 수 있는 통합 관계 카드 — 본문 없이 관계·대상·원천만."""
     cards: list[dict] = []
     for s in frontier:
         v = index.docs.get(s.doc_id)
-        n = v.by_id.get(s.node) if v else None
-        if v is None or n is None:
+        if v is None or s.node not in v.by_id:
             continue
-        span = n.get("span") or [0, 0]
         tail = s.path.split(" ▸ ")[-1] if s.path else s.doc
-        near = [(s.doc_id, e) for e in index.ref_edges().get(s.doc_id, [])]
-        far = [(e["dst_doc"], e) for e in cross if e.get("src_doc") == s.doc_id]
-        for dst_doc, e in near + far:
-            blk = e.get("block")
-            if blk is None or not (span[0] <= blk < max(span[1], span[0] + 1)):
-                continue
-            if (dst_doc, e["dst"]) in seen or len(cards) >= cap:
+        root = relations_mod.article_root(v, s.node)
+        outgoing, incoming = relations_mod.incident(index, s.doc_id, root)
+        candidates = [
+            (edge, edge.dst_doc, edge.dst_node, False) for edge in outgoing
+        ] + [
+            (edge, edge.src_doc, edge.src_node, True) for edge in incoming
+        ]
+        for edge, dst_doc, dst_node, reverse in candidates:
+            if (dst_doc, dst_node) in seen or len(cards) >= cap:
                 continue
             tv = index.docs.get(dst_doc)
-            if tv is None or verdicts_mod.is_suppressed(
-                    s.doc_id, s.node, dst_doc, e["dst"]):
+            if tv is None or dst_node not in tv.by_id:
                 continue
-            cards.append({"id": len(cards), "rel": e.get("rel", "인용"),
-                          "from": tail,
-                          "to": f"{tv.name} ▸ {tv.path(e['dst'])}",
-                          "표면형": e["surface"],
-                          "_dst": (dst_doc, e["dst"]), "_src": s})
+            surface = str(edge.props.get("surface") or edge.props.get("link") or edge.label)
+            cards.append({"id": len(cards), "rel": edge.label,
+                          "from": tail, "direction": "incoming" if reverse else "outgoing",
+                          "to": f"{tv.name} ▸ {tv.path(dst_node)}",
+                          "표면형": surface,
+                          "_dst": (dst_doc, dst_node), "_src": s})
     return cards
 
 

@@ -1,6 +1,7 @@
 import json
 
 from lawrag.core.domain_graph.builder import GraphBuilder, section_id
+from lawrag.core.domain_graph.candidates import stage_requirement_concepts
 from lawrag.core.domain_graph.canonical import CanonicalRegistry
 from lawrag.core.domain_graph.model import lexeme_id
 from lawrag.core.domain_graph.store import GraphStore
@@ -72,6 +73,37 @@ def test_graph_preserves_mentions_and_resolves_coordinates(tmp_path, monkeypatch
         assert any(edge["kind"] == "HAS_FRAME" for edge in section_edges)
         assert any(edge["kind"] == "HAS_MENTION" for edge in section_edges)
 
+        contract = store.get_meta("uncertainty_contract")
+        assert contract["default_policy"] == "may_be_wrong"
+        assert contract["active_means"] == "eligible_for_consumption_not_truth"
+
+        requirements = list(store.conn.execute(
+            "SELECT id,props FROM nodes WHERE kind='Requirement'"))
+        assert requirements
+        requirement_ids = {row["id"] for row in requirements}
+        candidate_edges = list(store.conn.execute(
+            "SELECT src,dst,props FROM edges WHERE kind='MAY_METHOD_OF'"))
+        assert any(row["src"] in requirement_ids for row in candidate_edges)
+        edge_props = json.loads(candidate_edges[0]["props"])
+        assert edge_props["claim_status"] == "candidate"
+        assert edge_props["consumer_policy"] == "candidate_only"
+        assert edge_props["confidence_status"] == "unscored"
+
+    queue = tmp_path / "candidates.json"
+    queue.write_text(
+        '{"schema_version":1,"concepts":[],"relations":[],"assertions":[]}',
+        encoding="utf-8")
+    canonical = tmp_path / "canonical.json"
+    canonical.write_text(
+        '{"schema_version":1,"concepts":[],"relations":[],"assertions":[]}',
+        encoding="utf-8")
+    staged = stage_requirement_concepts(db, queue, canonical)
+    concepts = json.loads(queue.read_text(encoding="utf-8"))["concepts"]
+    assert staged["staged"] > 0
+    assert {row["candidate_status"] for row in concepts} == {"pending"}
+    assert {row["review_state"] for row in concepts} == {"unreviewed"}
+    assert all(row["uncertainty_policy"] == "may_be_wrong" for row in concepts)
+
 
 def test_unregistered_frame_value_stays_lexeme_not_concept(tmp_path, monkeypatch):
     frames = tmp_path / "frames"
@@ -93,3 +125,38 @@ def test_unregistered_frame_value_stays_lexeme_not_concept(tmp_path, monkeypatch
     with GraphStore(db, readonly=True) as store:
         assert store.get_node(lexeme_id("임의 표현"))["kind"] == "Lexeme"
         assert store.resolve("임의 표현") == []
+
+
+def test_ambiguous_same_node_frames_are_recorded_but_not_semantically_bound(
+        tmp_path, monkeypatch):
+    frames = tmp_path / "frames"
+    frames.mkdir()
+    rows = [
+        {"jo": 1, "node": 2, "actor": "금융투자업자", "act": action,
+         "target": "일반청약자", "object": "투자설명서",
+         "mode": "의무", "function": "절차", "proviso": False}
+        for action in ("교부", "발송")
+    ]
+    (frames / "sample.jsonl").write_text(
+        "\n".join(json.dumps(row, ensure_ascii=False) for row in rows) + "\n",
+        encoding="utf-8")
+    glossary = tmp_path / "glossary.json"
+    glossary.write_text('{"terms": []}', encoding="utf-8")
+    delegation = tmp_path / "delegation.json"
+    delegation.write_text('{"edges": []}', encoding="utf-8")
+    monkeypatch.setenv("RAG_DELEGATION_STORE", str(delegation))
+
+    db = tmp_path / "graph.sqlite"
+    GraphBuilder(_index(), data_dir=tmp_path,
+                 registry=CanonicalRegistry(), glossary_path=glossary).build(db)
+    with GraphStore(db, readonly=True) as store:
+        requirement = store.conn.execute(
+            "SELECT props FROM nodes WHERE kind='Requirement' LIMIT 1").fetchone()
+        props = json.loads(requirement["props"])
+        assert props["binding_status"] == "ambiguous_same_node_candidates"
+        assert props["binding_candidate_count"] == 2
+        semantic_edges = store.conn.execute(
+            "SELECT count(*) n FROM edges WHERE kind LIKE 'MAY_%_OF' "
+            "OR kind IN ('MAY_EXCEPTION_TO','MAY_TIME_LIMIT_OF',"
+            "'MAY_QUANTITY_LIMIT_OF')").fetchone()["n"]
+        assert semantic_edges == 0

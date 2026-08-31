@@ -75,6 +75,11 @@ def test_진입은_벡터_연결은_참조_닫힘(tmp_path, monkeypatch):
     assert kinds == [(1, "벡터"), (2, "참조"), (3, "참조")]
     assert meta["depth"] == 2
     assert [s.n for s in sections] == [1, 2, 3]          # 번호는 연속
+    assert meta["counts"] == {
+        "combination": 0, "concept": 0, "memory": 0, "keyword": 0, "frame": 0,
+        "vector": 1, "floor": 0, "doc_companion": 0, "final": 3,
+        "shared_cap": 12, "over_shared_cap": False,
+    }
 
 
 def test_출처는_정적이다(tmp_path, monkeypatch):
@@ -154,6 +159,8 @@ def test_문서_동반은_밖인용이_적은_문서만_태운다(monkeypatch, t
         [(s.kind, s.doc_id, s.node) for s in sections]
     assert dc[0].is_companion, "ref_src 가 있어야 스코프 밖에서도 표식으로 남는다"
     assert meta["doc_companion"] == [{"src": "c1", "doc_id": "c2", "node": 9}]
+    assert meta["counts"]["doc_companion"] == 1
+    assert meta["counts"]["final"] == len(sections)
 
     # 게이트 — 밖 인용이 문턱을 넘는 문서는 안 태운다
     monkeypatch.setattr(vecfirst, "DOC_COMPANION_FANOUT", 0)
@@ -169,3 +176,193 @@ def test_문서_동반은_밖인용이_적은_문서만_태운다(monkeypatch, t
         assert not [s for s in sections3 if s.kind == "문서 동반"]
     finally:
         switches.set_switch("doc_companion", True)
+
+
+def test_좌표교집합이_잠기면_문서전체_동반은_생략한다(monkeypatch):
+    from lawrag.core.rag import conceptfirst
+    from lawrag.core.rag.answer import Section
+
+    caller = ("c1", {"name": "정확한법"}, {"nodes": [{
+        "id": 1, "parent": None, "level": 1, "surface": "제1조",
+        "title": "정답", "page": 1, "span": [0, 1],
+    }], "blocks": [{"idx": 0, "page": 1, "node": 1,
+                     "text": "정확한 본문", "kind": "text"}]})
+    companion = ("c2", {"name": "동반법"}, {"nodes": [{
+        "id": 9, "parent": None, "level": 1, "surface": "제9조",
+        "title": "넓은 인용", "page": 1, "span": [0, 1],
+    }], "blocks": [{"idx": 0, "page": 1, "node": 9,
+                     "text": "문서 전체 동반 후보", "kind": "text"}]})
+    idx = Index.from_docs([caller, companion])
+    idx._refs = {"c1": [], "c2": []}
+    idx._cross = ([{"src_doc": "c1", "src": 1, "dst_doc": "c2", "dst": 9,
+                    "surface": "제9조", "rel": "인용"}], [])
+    exact = Section(n=0, doc_id="c1", doc="정확한법", node=1, path="제1조",
+                    page=1, kind="교집합", matched="정확 좌표", text="정확한 본문")
+    monkeypatch.setattr(
+        conceptfirst, "retrieve",
+        lambda *_a, **_k: ([exact], {"strategy": "coordinate_intersection"}),
+    )
+    monkeypatch.setattr(
+        vecfirst.vector_mod, "search",
+        lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("좌표 잠금 뒤 Vector를 호출함")),
+    )
+
+    sections, meta = vecfirst.retrieve(idx, "정확한법 제1조 질문", raw_query="질문")
+
+    assert not [section for section in sections if section.kind == "문서 동반"]
+    assert meta["entry_policy"] == "coordinate-intersection-only"
+    assert meta["doc_companion"] == []
+
+
+def test_후보조합이_성공하면_운영_rag를_좌표잠금한다(monkeypatch):
+    from lawrag.core.rag import combinations, conceptfirst
+    from lawrag.core.rag.answer import Section
+
+    idx = Index.from_docs([("d1", {"name": "시험법"}, {
+        "nodes": [{"id": 1, "parent": None, "level": 1,
+                   "surface": "제1조", "title": "정답", "span": [0, 1]}],
+        "blocks": [{"idx": 0, "text": "정답 본문", "kind": "text"}],
+    })])
+    idx._refs = {"d1": []}
+    idx._cross = ([], [])
+    exact = Section(n=0, doc_id="d1", doc="시험법", node=1, path="제1조 정답",
+                    page=None, kind="조합선택", matched="키워드+구조", text="정답 본문")
+    monkeypatch.setattr(conceptfirst, "_registry", lambda _path: object())
+    monkeypatch.setattr(
+        combinations, "retrieve",
+        lambda *_a, **_k: ([exact], {
+            "strategy": "structure_constrained_lazy_tree", "option_count": 3,
+            "combination_counts": {"zero_intersections": 7, "surviving": 2},
+        }),
+    )
+    monkeypatch.setattr(
+        conceptfirst, "retrieve",
+        lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("조합 성공 뒤 기존 단일해석 경로를 다시 호출함")),
+    )
+    monkeypatch.setattr(
+        vecfirst.vector_mod, "search",
+        lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("조합 성공 뒤 전역 Vector를 호출함")),
+    )
+
+    class _StructuredLLM:
+        def structured(self, *_args, **_kwargs):
+            return {}
+
+    sections, meta = vecfirst.retrieve(
+        idx, "확장 질의", llm=_StructuredLLM(), raw_query="원 질문")
+
+    assert [(row.kind, row.node) for row in sections] == [("조합선택", 1)]
+    assert meta["entry_policy"] == "structure-constrained-lazy-tree-only"
+    assert meta["combination_hits"][0]["node"] == 1
+    assert meta["counts"]["combination"] == 1
+
+
+def test_지연트리가_빈손이어도_운영질의는_옛_진입채널로_우회하지_않는다(monkeypatch):
+    from lawrag.core.rag import assertionfirst, conceptfirst, framequery, switches
+
+    idx = Index.from_docs([("d1", {"name": "시험법"}, {
+        "nodes": [{"id": 1, "parent": None, "level": 1,
+                   "surface": "제1조", "title": "정답", "span": [0, 1]}],
+        "blocks": [{"idx": 0, "text": "정답 본문", "kind": "text"}],
+    })])
+    idx._refs = {"d1": []}
+    idx._cross = ([], [])
+    monkeypatch.setattr(conceptfirst, "_registry", lambda _path: object())
+    original_switch = switches.is_on
+    monkeypatch.setattr(
+        switches, "is_on",
+        lambda key: True if key == "assertion_tree_entry" else original_switch(key))
+    monkeypatch.setattr(
+        assertionfirst, "retrieve",
+        lambda *_a, **_k: ([], {
+            "strategy": "assertion_first_structural_navigation",
+            "fallback": "선택 없음",
+        }),
+    )
+    monkeypatch.setattr(
+        conceptfirst, "retrieve",
+        lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("지연 트리 빈손 뒤 옛 Concept 경로를 호출함")),
+    )
+    monkeypatch.setattr(
+        vecfirst.vector_mod, "search",
+        lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("지연 트리 빈손 뒤 전역 Vector를 호출함")),
+    )
+    monkeypatch.setattr(
+        framequery, "lex_hits",
+        lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("지연 트리 빈손 뒤 옛 Frame 경로를 호출함")),
+    )
+
+    class _StructuredLLM:
+        def structured(self, *_args, **_kwargs):
+            return {}
+
+    sections, meta = vecfirst.retrieve(
+        idx, "확장 질의", llm=_StructuredLLM(), raw_query="원 질문")
+
+    assert sections == []
+    assert meta["entry_policy"] == "assertion-first-structural-navigation-only"
+    assert meta["counts"]["concept"] == 0
+    assert meta["counts"]["vector"] == 0
+    assert meta["counts"]["frame"] == 0
+
+
+def test_지연트리_선택뒤에는_선택하지_않은_후단확장을_섞지_않는다(monkeypatch):
+    from lawrag.core.rag import answer, assertionfirst, conceptfirst, expand, switches
+    from lawrag.core.rag.answer import Section
+
+    idx = Index.from_docs([("d1", {"name": "시험법"}, {
+        "nodes": [{"id": 1, "parent": None, "level": 1,
+                   "surface": "제1조", "title": "선택 조문", "span": [0, 1]}],
+        "blocks": [{"idx": 0, "text": "선택 본문", "kind": "text"}],
+    })])
+    idx._refs = {"d1": []}
+    idx._cross = ([], [])
+    chosen = Section(
+        n=0, doc_id="d1", doc="시험법", node=1, path="제1조 선택 조문",
+        page=None, kind="지연트리선택", matched="R1", text="선택 본문")
+    monkeypatch.setattr(conceptfirst, "_registry", lambda _path: object())
+    original_switch = switches.is_on
+    monkeypatch.setattr(
+        switches, "is_on",
+        lambda key: True if key == "assertion_tree_entry" else original_switch(key))
+    monkeypatch.setattr(
+        assertionfirst, "retrieve",
+        lambda *_a, **_k: ([chosen], {
+            "strategy": "assertion_first_structural_navigation",
+            "selected": [{"doc_id": "d1", "node": 1}],
+        }),
+    )
+    monkeypatch.setattr(
+        expand, "expand_floor",
+        lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("지연 트리 선택 뒤 결정론 바닥을 확장함")),
+    )
+    monkeypatch.setattr(
+        answer, "expand_refs",
+        lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("지연 트리 선택 뒤 참조 닫힘을 확장함")),
+    )
+    monkeypatch.setattr(
+        expand, "navigate",
+        lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("지연 트리 선택 뒤 LLM 항해를 실행함")),
+    )
+
+    class _StructuredLLM:
+        def structured(self, *_args, **_kwargs):
+            return {}
+
+    sections, meta = vecfirst.retrieve(
+        idx, "확장 질의", llm=_StructuredLLM(), raw_query="원 질문")
+
+    assert [(s.kind, s.node) for s in sections] == [("지연트리선택", 1)]
+    assert meta["floor"] == []
+    assert meta["depth"] == 0
+    assert "nav" not in meta
+    assert meta["counts"]["final"] == 1

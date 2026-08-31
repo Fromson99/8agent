@@ -1,0 +1,23 @@
+id: LC-102
+name: 단서·예외 결론 반전
+scope: routed
+severity: blocker
+status: trial
+triggers: [다만, 단서, 예외, 제외, 제3호, 제4호, 해당하지]
+basis:
+  - path: data/wiki/wiki/방법/단서-읽기.md
+    anchor: 본문과 단서는 원칙-예외 한 세트다
+    note: 예외는 장식이 아니라 법적 효과를 바꾸는 구성요소다.
+operational_definition: >-
+  질문 사실이 단서·예외·제외 요건을 충족하는지 명시적으로 대조하고 그 결과가 최종 결론에 반영됐는지 검사한다.
+  예외 대상인 사실과 아닌 사실에서 같은 결론을 내리거나, 예외 문구를 인용만 하고 효과를 본문 결론에 반영하지 않으면 FAIL이다.
+  참조된 예외의 내용 또는 필요한 사실이 없으면 UNCLEAR로 판정한다.
+examples:
+  pass:
+    - 전문투자자 해당 여부를 확인하고 해당하지 않아 본문 제한이 유지된다고 판단한다.
+  fail:
+    - 예외 대상이 아닌 투자자에게 예외 효과를 적용한다.
+  unclear:
+    - 예외의 대상 목록이 근거에서 생략돼 질문 주체가 포함되는지 알 수 없다.
+learned_from:
+  - ADR-0049-legal-minimal-pairs-v1/exception-investor

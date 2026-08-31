@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from lawrag.core import geometry
+from lawrag.core.legal_coordinate import LegalCoordinate, parse_label
 from lawrag.core.structure.model import Block, Node, StructureResult
 
 
@@ -74,6 +75,166 @@ def _flat_tree(nodes: list[Node], out: list[dict], parent: Optional[int] = None)
         _flat_tree(n.children, out, nid)
 
 
+_NORMATIVE_KINDS = {"law", "admrul", "krx-rule", "kofia-rule", "internal"}
+
+
+def _coordinate_component(node: dict) -> Optional[LegalCoordinate]:
+    """원천 파서가 확정한 family·ordinal을 공통 좌표 부품으로 바꾼다.
+
+    표면형을 먼저 읽되, 원천 파서가 이미 구조를 확정한 경우에는 그 ordinal을
+    fallback으로 사용한다. 자유문 본문을 여기서 새 좌표로 추측하지 않는다.
+    """
+    surface = str(node.get("surface") or "").strip()
+    family = str(node.get("family") or "")
+    ordinal = tuple(node.get("ordinal") or ())
+    parsed = parse_label(surface)
+    structural = (
+        family == "kr_article" or family in {"kr_편", "kr_장", "kr_절", "kr_관"}
+        or family == "circled" or family.startswith("dot_number")
+        or family == "hangul_dot" or family == "annex"
+        or family.startswith("annex_") or family.startswith("style_h:")
+    )
+    if parsed is not None and (structural or parsed.unit == "조"):
+        return parsed
+    if not ordinal:
+        return None
+    if family == "kr_article":
+        main = int(ordinal[0])
+        if "-" in surface:
+            return LegalCoordinate(
+                "조", main,
+                dash=int(ordinal[1]) if len(ordinal) > 1 else None,
+                sub=int(ordinal[2]) if len(ordinal) > 2 else None,
+            )
+        return LegalCoordinate(
+            "조", main, sub=int(ordinal[1]) if len(ordinal) > 1 else None)
+    if family in {"kr_편", "kr_장", "kr_절", "kr_관"}:
+        return LegalCoordinate(family[-1], int(ordinal[0]))
+    if family == "circled":
+        return LegalCoordinate("항", int(ordinal[0]))
+    if family.startswith("dot_number"):
+        return LegalCoordinate(
+            "호", int(ordinal[0]),
+            sub=int(ordinal[1]) if len(ordinal) > 1 else None)
+    if family == "hangul_dot":
+        return LegalCoordinate("목", int(ordinal[0]))
+    return None
+
+
+def annotate_coordinate_scopes(nodes: list[dict], document_kind: str = "") -> list[dict]:
+    """모든 원천의 구조 노드에 공통 LegalCoordinate와 scope key를 물질화한다.
+
+    `law + article surface`만으로 조인하면 부칙 제2조나 서식 안 제2조가 본문
+    제2조를 덮는다. scope와 path-qualified key를 저장해 그 충돌을 데이터 단계에서
+    없앤다. 항·호·목은 가장 가까운 조상 조문 좌표에 이어 붙이며, 부모 조문이
+    없으면 완전 좌표를 추측하지 않는다. 원본 목록을 제자리에서 보강한다.
+    """
+    by_id = {n.get("id"): n for n in nodes}
+    full_by_id: dict[object, LegalCoordinate] = {}
+    coordinate_nodes: list[dict] = []
+    article_nodes: list[dict] = []
+    for node in nodes:
+        for field in ("legal_coordinate", "coordinate_component", "coordinate_scope",
+                      "coordinate_path", "coordinate_key"):
+            node.pop(field, None)
+        component = _coordinate_component(node)
+        if component is None:
+            continue
+        full = component
+        if component.unit in {"항", "호", "목"}:
+            parent = node.get("parent")
+            while parent is not None:
+                candidate = full_by_id.get(parent)
+                if candidate is not None and candidate.unit == "조":
+                    full = candidate.append_part(component)
+                    break
+                parent = (by_id.get(parent) or {}).get("parent")
+            else:
+                # standalone 제N항/호/목은 어느 조문 소속인지 확정할 수 없다.
+                node["coordinate_component"] = component.as_dict()
+                continue
+        full_by_id[node.get("id")] = full
+        node["legal_coordinate"] = full.as_dict()
+        chain, seen = [], set()
+        cur = node
+        while cur is not None and cur.get("id") not in seen:
+            seen.add(cur.get("id"))
+            chain.append(cur)
+            cur = by_id.get(cur.get("parent"))
+        labels = [str(item.get("surface") or item.get("title") or "").strip()
+                  for item in reversed(chain)]
+        families = {str(item.get("family") or "") for item in chain}
+        if "buchik" in families or any(label == "부칙" or label.startswith("부칙 ")
+                                        for label in labels):
+            scope = "addendum"
+        elif any(label.startswith("별지") or "서식" in label for label in labels):
+            scope = "form"
+        elif "annex" in families or any(label.startswith(("별표", "부록"))
+                                         for label in labels):
+            scope = "annex"
+        else:
+            scope = "body"
+        node["coordinate_scope"] = scope
+        node["coordinate_path"] = labels
+        coordinate_nodes.append(node)
+        if component.unit == "조":
+            article_nodes.append(node)
+
+    groups: dict[tuple[str, tuple], list[dict]] = {}
+    for node in article_nodes:
+        groups.setdefault((node["coordinate_scope"],
+                           full_by_id[node.get("id")].key()), []).append(node)
+    for (scope, _coordinate), group in groups.items():
+        if scope != "body" or len(group) < 2:
+            continue
+        ordered = sorted(group, key=lambda n: (n.get("block", 0), n.get("id", 0)))
+        repeated = ordered[1:] if document_kind in _NORMATIVE_KINDS else ordered
+        for node in repeated:
+            node["coordinate_scope"] = "repeated"
+
+    # 반복 조문의 하위 항·호·목도 같은 scope를 상속한다.
+    article_ids = {node.get("id") for node in article_nodes}
+    for node in coordinate_nodes:
+        if node.get("id") in article_ids:
+            continue
+        parent = node.get("parent")
+        while parent is not None:
+            if parent in article_ids:
+                parent_scope = (by_id.get(parent) or {}).get("coordinate_scope")
+                if parent_scope == "repeated":
+                    node["coordinate_scope"] = "repeated"
+                break
+            parent = (by_id.get(parent) or {}).get("parent")
+
+    # 같은 완전 좌표가 한 scope에서 다시 나오면 기존 article 규칙과 같이 반복
+    # 좌표로 격리한다. 정상 계층에서는 발생하지 않지만 malformed PDF/HWP를
+    # 조용히 같은 body key로 덮어쓰지 않는다.
+    complete_groups: dict[tuple[str, str], list[dict]] = {}
+    for node in coordinate_nodes:
+        if node["coordinate_scope"] != "body":
+            continue
+        complete_groups.setdefault(
+            ("body", full_by_id[node.get("id")].canonical_surface()), []).append(node)
+    for group in complete_groups.values():
+        if len(group) < 2:
+            continue
+        ordered = sorted(group, key=lambda n: (n.get("block", 0), n.get("id", 0)))
+        repeated = ordered[1:] if document_kind in _NORMATIVE_KINDS else ordered
+        for node in repeated:
+            node["coordinate_scope"] = "repeated"
+
+    for node in coordinate_nodes:
+        surface = full_by_id[node.get("id")].canonical_surface()
+        scope = node["coordinate_scope"]
+        if scope == "body":
+            key = f"body:{surface}"
+        else:
+            path = " > ".join(node.get("coordinate_path") or ())
+            key = f"{scope}:{path}:{node.get('id')}"
+        node["coordinate_key"] = key
+    return nodes
+
+
 # 그림 픽셀을 payload 에 실을 총량 상한(바이트). 도장·서명 몇 개는 가볍지만, 사진이
 # 많은 문서는 화면이 못 받을 만큼 커진다. 넘치면 **넘쳤다고 말하고** 자른다.
 IMAGE_BUDGET = 4 * 1024 * 1024
@@ -113,6 +274,7 @@ def payload(result: StructureResult, blocks: list[Block],
 
     nodes: list[dict] = []
     _flat_tree(result.tree, nodes)
+    annotate_coordinate_scopes(nodes)
 
     # 블록 → 그 블록을 덮는 **가장 깊은** 마디. 오버레이 색을 그것으로 칠한다.
     owner: dict[int, dict] = {}
@@ -182,6 +344,7 @@ def payload(result: StructureResult, blocks: list[Block],
                      f"넘어 픽셀을 싣지 않았습니다")
     return {
         "doc": result.doc,
+        "coordinate_schema_version": "legal-coordinate-v2",
         "pages": [{"n": p, "w": w, "h": h} for p, (w, h) in sorted(sizes.items())],
         "fitness": {"score": round(result.fitness_score, 3),
                     "passed": result.fitness_passed, "tier": result.tier,

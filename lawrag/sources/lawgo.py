@@ -17,6 +17,7 @@ from __future__ import annotations
 import os
 import re
 import xml.etree.ElementTree as ET
+from datetime import date
 
 import requests
 
@@ -71,6 +72,37 @@ def parse_search(xml_text: str, kind: str) -> list[dict[str, str]]:
     return rows
 
 
+def parse_body_meta(xml_text: str, kind: str = "law") -> dict[str, str]:
+    """본문 응답의 기본정보를 검색 행과 같은 메타 모양으로 읽는다.
+
+    법령 검색 API는 같은 이름의 시행 예정·현행 가지가 함께 나타날 수 있다.
+    재현 실험이 특정 MST/ID를 고정한 경우에는 검색 행의 메타가 아니라 실제로
+    받은 본문 머리말이 정본이어야 한다.
+    """
+    root = ET.fromstring(xml_text)
+    if kind == "law":
+        return {
+            "name": root.findtext(".//법령명_한글", "").strip(),
+            "doc_id": root.findtext(".//법령ID", "").strip(),
+            "promulgated": root.findtext(".//공포일자", "").strip(),
+            "promul_no": root.findtext(".//공포번호", "").strip(),
+            "rev_kind": root.findtext(".//제개정구분", "").strip(),
+            "enforce": root.findtext(".//시행일자", "").strip(),
+            "dept": (root.findtext(".//소관부처", "").strip()
+                     or root.findtext(".//소관부처명", "").strip()),
+        }
+    return {
+        "name": root.findtext(".//행정규칙명", "").strip(),
+        "doc_id": root.findtext(".//행정규칙ID", "").strip(),
+        "promulgated": root.findtext(".//발령일자", "").strip(),
+        "promul_no": root.findtext(".//발령번호", "").strip(),
+        "rev_kind": root.findtext(".//제개정구분", "").strip(),
+        "enforce": root.findtext(".//시행일자", "").strip(),
+        "dept": (root.findtext(".//소관부처", "").strip()
+                 or root.findtext(".//소관부처명", "").strip()),
+    }
+
+
 def parse_annexes(xml_text: str) -> list[dict[str, str]]:
     """본문 XML → 별표·서식 HWP 링크 목록 [{title, url}] (+ 행정규칙 첨부파일)"""
     root = ET.fromstring(xml_text)
@@ -112,29 +144,46 @@ class LawGoAdapter:
 
     def discover(self, target: Target) -> list[DocumentRef]:
         kind = target.hints.get("kind", "law")
-        resp = self.client.get(
-            f"{BASE}/DRF/lawSearch.do",
-            params={"OC": self.oc, "target": kind, "type": "XML",
-                    "query": target.label, "display": "50"},
-        )
-        try:
-            rows = parse_search(resp.text, kind)
-        except ET.ParseError as e:
-            raise RuntimeError(f"{target.label}: 검색 응답이 XML 이 아님 (OC 거부?): {e}")
-        matches = [r for r in rows
-                   if _norm(r["name"]) == _norm(target.label) and r["current"] == "현행"]
-        if not matches:
-            raise RuntimeError(
-                f"{target.label}: 현행 항목을 찾지 못함 "
-                f"(검색 {len(rows)}건: {[r['name'] for r in rows][:5]})")
-        row = matches[0]
+        pinned = str(target.hints.get("serial") or "").strip()
+        requested_as_of = str(target.hints.get("as_of") or "").replace("-", "")
+        if pinned:
+            row = {"serial": pinned}
+        else:
+            resp = self.client.get(
+                f"{BASE}/DRF/lawSearch.do",
+                params={"OC": self.oc, "target": kind, "type": "XML",
+                        "query": target.label, "display": "50"},
+            )
+            try:
+                rows = parse_search(resp.text, kind)
+            except ET.ParseError as e:
+                raise RuntimeError(f"{target.label}: 검색 응답이 XML 이 아님 (OC 거부?): {e}")
+            matches = [r for r in rows
+                       if _norm(r["name"]) == _norm(target.label)
+                       and r["current"] == "현행"]
+            if not matches:
+                raise RuntimeError(
+                    f"{target.label}: 현행 항목을 찾지 못함 "
+                    f"(검색 {len(rows)}건: {[r['name'] for r in rows][:5]})")
+            row = sorted(matches, key=lambda r: (
+                r.get("doc_id", ""), r.get("enforce", ""), r.get("serial", "")))[0]
 
-        if kind == "law":
+        if kind == "law" and not pinned:
+            body_url = (f"{BASE}/DRF/lawService.do?OC={self.oc}&target=eflaw"
+                        f"&ID={row['doc_id']}&type=XML")
+            authority_mode = "effective-current"
+        elif kind == "law" and requested_as_of:
+            body_url = (f"{BASE}/DRF/lawService.do?OC={self.oc}&target=eflaw"
+                        f"&MST={row['serial']}&efYd={requested_as_of}&type=XML")
+            authority_mode = "effective-date"
+        elif kind == "law":
             body_url = (f"{BASE}/DRF/lawService.do?OC={self.oc}&target=law"
                         f"&MST={row['serial']}&type=XML")
+            authority_mode = "pinned-revision"
         else:
             body_url = (f"{BASE}/DRF/lawService.do?OC={self.oc}&target=admrul"
                         f"&ID={row['serial']}&type=XML")
+            authority_mode = "official-current"
 
         refs: list[DocumentRef] = [
             DocumentRef(
@@ -146,6 +195,7 @@ class LawGoAdapter:
         body = self.client.get(body_url)
         try:
             annexes = parse_annexes(body.text)
+            row.update({k: v for k, v in parse_body_meta(body.text, kind).items() if v})
         except ET.ParseError as e:
             raise RuntimeError(f"{target.label}: 본문 응답이 XML 이 아님: {e}")
         for annex in annexes:
@@ -158,7 +208,11 @@ class LawGoAdapter:
             "seq": row["serial"], "kind": kind,
             "revised": row["promulgated"], "rev_kind": row["rev_kind"],
             "enforce": row["enforce"], "dept": row["dept"],
-            "promul_no": row["promul_no"],
+            "promul_no": row["promul_no"], "law_id": row.get("doc_id", ""),
+            "authority_mode": authority_mode,
+            "authority_as_of": (requested_as_of
+                                  if requested_as_of not in ("", "current")
+                                  else date.today().strftime("%Y%m%d")),
         }
         return refs
 

@@ -478,6 +478,7 @@ def run_one(llm, idx, case: dict, text: Optional[str] = None) -> dict:
     from lawrag.core.rag import wikictx
 
     t0 = time.perf_counter()
+    log_start = len(getattr(llm, "log", []))
     q_text = (text or case.get("issue") or "")[:2000]
     st = rp.run(llm, idx, q_text, track="해석")
     got_docs = {n.doc for n in st.norms}
@@ -510,6 +511,7 @@ def run_one(llm, idx, case: dict, text: Optional[str] = None) -> dict:
         got_basis |= _basis_coords(str(b))
     mat, mat_n, mat_have = material_status(idx, case)
     row = {"case_no": case["case_no"], "label": case.get("label", "")[:60],
+            "facts": len(st.facts),
             # 질문 종류 — 실제로 돌린 문장 기준 (구어 변환이면 대개 B)
             "mode": question_mode(idx, q_text), "text_kind": "구어" if text else "질의요지",
             "material": mat, "material_have": f"{mat_have}/{mat_n}",
@@ -542,6 +544,47 @@ def run_one(llm, idx, case: dict, text: Optional[str] = None) -> dict:
         row["m_basis"] = mk["basis_hit"]       # 판정이 그 항·호를 짚었나
         row["m_gold"] = mk["direction_gold"]
         row["m_detail"] = mk["detail"]
+    exchanges = list(getattr(llm, "log", []))[log_start:]
+    truncated = [x for x in exchanges
+                 if getattr(x, "stop_reason", "") == "max_tokens"
+                 or ("max_tokens" in str(getattr(x, "error", ""))
+                     and "잘림" in str(getattr(x, "error", "")))]
+    row["usage"] = {
+        "calls": len(exchanges),
+        "input_tokens": sum(int((x.usage or {}).get("input_tokens", 0))
+                            for x in exchanges),
+        "output_tokens": sum(int((x.usage or {}).get("output_tokens", 0))
+                             for x in exchanges),
+        "duration_ms": sum(int(x.dur_ms) for x in exchanges),
+        "ttft_ms": max((int(x.ttft_ms) for x in exchanges), default=0),
+        "errors": sum(bool(x.error) for x in exchanges),
+        "truncated_calls": len(truncated),
+    }
+    norm_chars = sum(len(getattr(req, "text", "") or "")
+                     for norm in st.norms for req in norm.reqs)
+    glossary_chars = sum(len(getattr(norm, "text", "") or "")
+                         for norm in getattr(st, "glossary", []))
+    try:
+        from lawrag.core.rag import lexicon as lexicon_mod
+        lexicon_stats = dict(lexicon_mod.current(idx).cache_stats)
+    except Exception:
+        lexicon_stats = {}
+    row["runtime"] = {
+        "final_contexts": len(st.norms) + len(getattr(st, "glossary", [])),
+        "context_chars": norm_chars + glossary_chars,
+        "truncated_sections": len(truncated), "shared_cap_overflow": False,
+        "truncation_stages": [str(x.kind) for x in truncated],
+        "channel_counts": {},
+        "stage_counts": {
+            "fact_extraction": len(st.facts), "issue_spot": len(st.issues),
+            "norm_retrieval": len(st.norms), "subsumption": len(st.subs),
+            "final_decision": int(bool(st.overall)),
+        },
+        "lexicon_cache_terms": int(lexicon_stats.get("terms", 0)),
+        "lexicon_cache_missing": int(lexicon_stats.get("missing", 0)),
+        "lexicon_cache_coverage": float(lexicon_stats.get("coverage", 0.0)),
+        "lexicon_runtime_compiled": bool(lexicon_stats.get("compiled", False)),
+    }
     return row
 
 
@@ -735,6 +778,9 @@ def main() -> int:
                     help="안건번호 여러 개를 쉼표로 (예: 07-0338,18-0124). --mix 와 "
                          "같이 쓰면 **배분을 51건 전체로 계산한 뒤** 이 목록만 남긴다 "
                          "— 그래서 전체 판과 A/B·질문지가 정확히 같다(빠른 되먹임용).")
+    ap.add_argument("--suite", type=Path,
+                    help="고정 E2E 사건판 JSON(case_nos, mix)을 실행 — 사건 문자열을 "
+                         "명령마다 복사하지 않아 같은 판을 재현한다")
     ap.add_argument("--report", action="store_true", help="마지막 실행 재집계")
     ap.add_argument("--holdout", action="store_true",
                     help="동결 목록(golden_tuned_cases.json) 밖 사례만 — 튜닝에 안 쓴 검증 셋")
@@ -748,6 +794,21 @@ def main() -> int:
                     help="A:B 비율(예 20:80). 재료 있는 사례를 A(질의요지 그대로)·B(구어 변환)로 "
                          "배분해 돌린다 — 실사용(주소 없는 질문)에 맞춘 골든")
     args = ap.parse_args()
+
+    suite = {}
+    if args.suite:
+        suite = json.loads(args.suite.read_text(encoding="utf-8"))
+        suite_cases = [str(x) for x in suite.get("case_nos") or []]
+        if not suite_cases:
+            print("E2E suite에 case_nos가 없습니다", file=sys.stderr)
+            return 2
+        if args.cases:
+            print("--suite와 --cases는 함께 쓸 수 없습니다", file=sys.stderr)
+            return 2
+        args.cases = ",".join(suite_cases)
+        if not args.mix:
+            args.mix = str(suite.get("mix") or "20:80")
+        print(f"E2E suite {suite.get('name') or args.suite.stem} · {len(suite_cases)}건 · mix {args.mix}")
 
     if not INDEX.is_file():
         print("색인이 없습니다 — lawrag/pipeline/ingest_expc.py 먼저", file=sys.stderr)
@@ -845,8 +906,15 @@ def main() -> int:
               f" {r['sec']}s")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out_path = args.out or LAST
-    out_path.write_text(json.dumps({"rows": rows}, ensure_ascii=False, indent=1),
-                        "utf-8")
+    from lawrag.core.rag import controls as controls_mod
+    from lawrag.core.rag import evaluation as evaluation_mod
+    control_rows = controls_mod.snapshot()
+    out_path.write_text(json.dumps({
+        "flow": "legal_review", "suite": suite, "rows": rows,
+        "controls": {"fingerprint": controls_mod.fingerprint(control_rows),
+                     "values": control_rows, "audit": controls_mod.audit(control_rows)},
+        "engine": evaluation_mod.engine_snapshot(),
+    }, ensure_ascii=False, indent=1), "utf-8")
     score(rows, labels)
     return 0
 

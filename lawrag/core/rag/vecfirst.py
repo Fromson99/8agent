@@ -17,24 +17,25 @@
 from __future__ import annotations
 
 import logging
-import os
 import time
 from typing import Optional
 
 from lawrag.core.rag import answer as answer_mod
 from lawrag.core.rag import vector as vector_mod
 from lawrag.core.rag.answer import CANDIDATES_MAX, SECTION_CHARS, Section
+from lawrag.core.rag.controls import value as control_value
 from lawrag.core.rag.index import Index, norm
 from lawrag.core.rag.search import _ascii_only, _token_in_query
 
 log = logging.getLogger("lawrag.core.rag.vecfirst")
 
-DOC_COMPANION_FANOUT = 20   # 문서 동반 게이트 — 밖 인용(중복 접음)이 이보다 많으면 안 태운다
-ENTRY_K = 4             # 진입 구역 수 — 너무 많으면 확장 자리가 없다
+DOC_COMPANION_FANOUT = int(control_value("expand.doc_companion_max"))
+ENTRY_K = int(control_value("entry.vector_sections_max"))
 # 참조 닫힘의 깊이 — 법령 참조망은 얕고 넓다. 바닥(배제·위임·준용)과 항해가
 # 생기면서 이 무차별 닫힘은 보수화 후보다 — golden A/B 로 정할 손잡이.
-MAX_DEPTH = int(os.environ.get("RAG_REF_DEPTH", "3"))
-KEYWORD_ENTRY_CAP = 2   # 승인 용어가 차지할 수 있는 진입 자리 — 나머지는 벡터
+MAX_DEPTH = int(control_value("expand.ref_depth_max"))
+KEYWORD_ENTRY_CAP = int(control_value("entry.keyword_sections_max"))
+VECTOR_PREFETCH_MIN = int(control_value("entry.vector_prefetch_min"))
 
 
 def _approved_hits(index: Index, query: str, cap: int = KEYWORD_ENTRY_CAP):
@@ -42,6 +43,9 @@ def _approved_hits(index: Index, query: str, cap: int = KEYWORD_ENTRY_CAP):
     keyword 매칭이 맞다(사용자 결정). 색인에 활성만 실리므로 여기 오는 것은
     전부 사람이(또는 저자 선언이) 승인한 것이다. 긴 값 우선 — 더 구체적인
     지목이 이긴다."""
+    from lawrag.core.rag import switches as switches_mod
+    if not switches_mod.is_on("keyword_entry"):
+        return []
     qn = norm(query)
     q_lower = query.casefold()
     cands = [e for e in index.entries
@@ -85,10 +89,9 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
     seeds 는 검색 없이 여는 좌표(promote.direct_hits — 사람이 승인한 질문↔조문
     연결)다. 진입보다 앞에 앉고 벡터 예산을 뺏지 않으며 진입 제외를 받지 않는다."""
     t0 = time.perf_counter()
-    vec = vector_mod.search(vec_query or query, topk=max(entry_k * 2, 8),
-                            doc_ids=index.scope)          # 진입은 스코프 안만
-    meta: dict = {"vector_hits": len(vec), "entries": [], "keywords": [],
-                  "memory": [], "concept_hits": [], "depth": 0,
+    vec = []
+    meta: dict = {"vector_hits": 0, "entries": [], "keywords": [],
+                  "memory": [], "concept_hits": [], "combination_hits": [], "depth": 0,
                   "vec_query": vec_query or ""}
 
     sections: list[Section] = []
@@ -97,14 +100,57 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
     # 데려온다. 참조를 타고는 여전히 온다(연결 지식을 지우는 것이 아니다).
     from lawrag.core.rag import verdicts as verdicts_mod
 
-    # ── 1급 Concept/Assertion — 자연어를 직접 Cypher로 바꾸지 않는다. 승인
-    #    Concept 메뉴 정렬 → 고정 OQL pattern → ID 파라미터 바인딩만 허용한다.
+    # ── Assertion-first 구조 탐색 — 원 질문에서 확정 구조를 DB 역매칭하고,
+    #    canonical 표현→Assertion 좌표만 계층 메뉴로 연다. 이 경로가 착지하면
+    #    다른 진입 채널을 섞지 않는다.
     from lawrag.core.rag import switches as switches_mod
+    meta["combination"] = {}
+    # 운영 질의(raw_query)에서만 후보 조합을 연다. 검색 전용 API·단위시험처럼
+    # LLM이나 원질문이 없는 호출은 기존 저비용 사다리를 그대로 탄다.
+    assertion_tree_requested = bool(
+        callable(getattr(llm, "structured", None)) and raw_query
+        and switches_mod.is_on("assertion_tree_entry"))
+    lazy_tree_requested = bool(
+        not assertion_tree_requested
+        and callable(getattr(llm, "structured", None)) and raw_query
+        and switches_mod.is_on("combination_entry"))
+    tree_requested = assertion_tree_requested or lazy_tree_requested
+    if tree_requested:
+        from lawrag.core.rag import conceptfirst as conceptfirst_mod
+        try:
+            registry = conceptfirst_mod._registry(conceptfirst_mod.registry_path())
+            if assertion_tree_requested:
+                from lawrag.core.rag import assertionfirst as assertionfirst_mod
+                combo_sections, combo_meta = assertionfirst_mod.retrieve(
+                    index, raw_query, registry, llm=llm, cap=cap)
+            else:
+                from lawrag.core.rag import combinations as combinations_mod
+                combo_sections, combo_meta = combinations_mod.retrieve(
+                    index, raw_query, registry, llm=llm, cap=cap)
+        except (OSError, ValueError) as exc:
+            combo_sections, combo_meta = [], {
+                "strategy": ("assertion_first_structural_navigation"
+                             if assertion_tree_requested else
+                             "structure_constrained_lazy_tree"),
+                "fallback": f"구조 트리 초기화 실패: {exc}",
+            }
+        meta["combination"] = combo_meta
+        for section in combo_sections:
+            key = (section.doc_id, section.node)
+            if key in seen or verdicts_mod.is_entry_blocked(*key):
+                continue
+            seen.add(key)
+            sections.append(section)
+            meta["combination_hits"].append({
+                "doc_id": section.doc_id, "node": section.node,
+                "matched": section.matched,
+            })
+
     meta["concept"] = {}
-    if switches_mod.is_on("concept_entry"):
+    if not tree_requested and switches_mod.is_on("concept_entry"):
         from lawrag.core.rag import conceptfirst as conceptfirst_mod
         concept_sections, cmeta = conceptfirst_mod.retrieve(
-            index, raw_query or query, llm=llm)
+            index, raw_query or query, llm=llm, coordinate_first=True)
         meta["concept"] = cmeta
         for section in concept_sections:
             key = (section.doc_id, section.node)
@@ -116,8 +162,27 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
                                          "node": section.node,
                                          "matched": section.matched})
 
+    concept_locked = bool(meta["concept_hits"]) and \
+        meta["concept"].get("strategy") in {
+            "coordinate_intersection", "definition_lookup",
+        }
+    coordinate_locked = tree_requested or concept_locked
+    meta["entry_policy"] = (
+        "assertion-first-structural-navigation-only" if assertion_tree_requested else
+        "structure-constrained-lazy-tree-only" if lazy_tree_requested else
+        "coordinate-intersection-only" if concept_locked else
+        "fallback-channels"
+    )
+    if not coordinate_locked:
+        vec = vector_mod.search(
+            vec_query or query,
+            topk=max(entry_k * 2, VECTOR_PREFETCH_MIN),
+            doc_ids=index.scope,
+        )
+        meta["vector_hits"] = len(vec)
+
     # ── 질문 기억 — 같은/비슷한 질문에 사람이 승인한 착지. 검색보다 앞선다.
-    for c in seeds or []:
+    for c in ([] if coordinate_locked else (seeds or [])):
         v = index.docs.get(c.get("doc_id"))
         node = c.get("node")
         if v is None or node is None or (c["doc_id"], node) in seen:
@@ -136,7 +201,8 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
 
     # ── 승인 용어 진입 — 벡터보다 앞선다. 활성만 색인에 있으므로 일반어
     #    오염("가입" 선점)은 승인 단계가 이미 걸렀다.
-    for value, term_key, o in _approved_hits(index, query):
+    approved = [] if coordinate_locked else _approved_hits(index, query)
+    for value, term_key, o in approved:
         v = index.docs.get(o.get("doc_id"))
         node = o.get("node")
         if v is None or (o["doc_id"], node) in seen:
@@ -158,7 +224,12 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
     #    끌리는 자리(실측: '성과보수' → 제98조의2, 정답 제71조)를 행위 문형이
     #    가른다. 스코프는 entry_docs 가 이미 걸렀다.
     meta["frame_hits"] = []
-    if llm is not None and switches_mod.is_on("frame_entry"):
+    # Concept 조립이 이미 같은 Frame 정본에서 정확한 Assertion 좌표를 열었으면
+    # 다시 질문 프레임을 추출하지 않는다. 프레임 진입은 Concept가 빈손일 때의
+    # 회수 채널로만 남겨 같은 데이터에 LLM을 두 번 쓰지 않는다.
+    if llm is not None and switches_mod.is_on("frame_entry") \
+            and not coordinate_locked \
+            and not meta["concept_hits"] and not meta["combination_hits"]:
         from lawrag.core.rag import framequery as framequery_mod
         fhits, fmeta = framequery_mod.lex_hits(index, llm, query)
         meta["frame_query"] = fmeta.get("frames") or []
@@ -181,7 +252,8 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
 
     # Concept·용어·기억·프레임이 벡터 자리를 뺏지 않는다
     budget = (entry_k + len(meta["keywords"]) + len(meta["memory"])
-              + len(meta["frame_hits"]) + len(meta["concept_hits"]))
+              + len(meta["frame_hits"]) + len(meta["concept_hits"])
+              + len(meta["combination_hits"]))
     for doc_id, node, cos in vec:
         if len(sections) >= budget:
             break
@@ -203,7 +275,8 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
     #    배제는 누락이 오답을 만드는 유일한 간선이라 자리 경쟁보다 먼저다.
     from lawrag.core.rag import expand as expand_mod
     n0 = len(sections)
-    sections = expand_mod.expand_floor(index, sections, cap=cap)
+    if not tree_requested:
+        sections = expand_mod.expand_floor(index, sections, cap=cap)
     meta["floor"] = [{"kind": s.kind, "path": s.path, "matched": s.matched}
                      for s in sections[n0:]]
 
@@ -216,12 +289,15 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
     #    시행령(수백~)은 자동 배제되고 실무문서(0~86)만 든다. 문서별 상수가 아니라
     #    관측 게이트다.
     meta["doc_companion"] = []
-    if switches_mod.is_on("doc_companion"):
+    # 문서·Heading·본문 좌표가 이미 교집합으로 잠긴 요청에는 그 문서 전체의
+    # 외부 인용을 다시 싣지 않는다. 좌표 자체의 배제·위임·준용과 참조 닫힘은
+    # 위/아래 단계가 계속 담당한다. 문서 동반은 fallback 진입 전용이다.
+    if switches_mod.is_on("doc_companion") and not coordinate_locked:
         landed = {s.doc_id for s in sections}
         fan: dict = {}
-        for e in index.cross_ref_edges():
-            if e.get("src_doc") in landed:
-                fan.setdefault(e["src_doc"], {}).setdefault(
+        for landed_doc in landed:
+            for e in index.cross_from(landed_doc):
+                fan.setdefault(landed_doc, {}).setdefault(
                     (e["dst_doc"], e["dst"]), e["src"])
         for did in sorted(landed):
             tgts = fan.get(did) or {}
@@ -254,7 +330,7 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
     # 연결 닫힘 — expand_refs(1-hop 결정론)를 새 구역이 안 늘 때까지.
     # 매 회전마다 직전 회전의 신규 구역이 확장 출발점이 된다.
     depth = 0
-    while depth < MAX_DEPTH and len(sections) < cap:
+    while not tree_requested and depth < MAX_DEPTH and len(sections) < cap:
         grown = answer_mod.expand_refs(index, sections, cap=cap)
         if len(grown) == len(sections):
             break
@@ -264,13 +340,24 @@ def retrieve(index: Index, query: str, entry_k: int = ENTRY_K,
 
     # ── LLM 항해 — 자리가 남고 판단자가 있으면, 간선 카드를 보고 고른다.
     #    걸음은 kind="항해" 로 남아 진단 튜플에 경로가 쌓인다(승격 루프의 연료).
-    if llm is not None and switches_mod.is_on("navigate") and len(sections) < cap:
+    if not tree_requested and llm is not None \
+            and switches_mod.is_on("navigate") and len(sections) < cap:
         sections, nav = expand_mod.navigate(llm, index, query, sections, cap=cap)
         if nav.get("hops"):
             meta["nav"] = nav
 
     for i, s in enumerate(sections, start=1):
         s.n = i
+    # 실제 합류 수를 실행 기록에 남긴다. 선언된 shared cap만 보면 별도 예산을
+    # 놓치므로 A/B는 이 값과 control fingerprint를 함께 비교해야 한다.
+    meta["counts"] = {
+        "combination": len(meta["combination_hits"]),
+        "concept": len(meta["concept_hits"]), "memory": len(meta["memory"]),
+        "keyword": len(meta["keywords"]), "frame": len(meta["frame_hits"]),
+        "vector": len(meta["entries"]), "floor": len(meta["floor"]),
+        "doc_companion": len(meta["doc_companion"]), "final": len(sections),
+        "shared_cap": cap, "over_shared_cap": len(sections) > cap,
+    }
     log.info("벡터우선 '%s' → 용어 %d + 진입 %d + 확장(깊이 %d) = %d구역 (%.0fms)",
              query[:60], len(meta["keywords"]), len(meta["entries"]),
              depth, len(sections), (time.perf_counter() - t0) * 1000)

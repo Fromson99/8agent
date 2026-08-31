@@ -2,15 +2,17 @@
 
 전체 그림은 docs/COMPARE_INTERNAL_EXTERNAL.md. 흐름 세 단계:
 
-    ① 짝 찾기   문면 간선(내규 조가 인용한 외규 좌표 직행) + 벡터 + 프레임 —
-                외규 스코프만 회수한다. 내규는 입력이라 회수하지 않는다.
+    ① 짝 찾기   문면 간선(내규 조가 인용한 외규 좌표 mandatory) + LegalClosure
+                A/B/C/D·reference rescue — 외규 스코프만 진입한다. 내규는 입력이다.
     ② 판정      값이 있으면 숫자로(결정론 quant), 없으면 LLM 이 쌍마다 판정.
                 결정론이 확정한 쌍은 LLM 이 뒤집지 못한다(stochastic 격리).
-    ③ 출력      verdict + 양쪽 좌표 + 값비교·쌍판정 근거. 원문 표기 그대로.
+    ③ 출력      verdict + 양쪽 좌표 + 값비교·쌍판정 근거 + 회수 origin·legal_meta·
+                article reachability. 원문 표기 그대로.
 
 verdict 는 셋 + 하나다: 상충(내규가 완화·역행) · 부합(그대로거나 더 보수적) ·
-재검토(짝이 없거나 불명만) — 자동 확정 금지 원칙(§1-3 조용한 실패 금지)은
-여기서도 산다. **미비**(외규가 "정하라" 한 것이 내규에 없음)는 방향이 반대
+재검토(짝이 없거나 하나라도 미해결) — 자동 확정 금지 원칙(§1-3 조용한 실패 금지)은
+여기서도 산다. `부합`은 회수된 후보에 대한 조문 단위 판정이다. **미비**(외규가
+"정하라" 한 것이 내규에 없음)는 방향이 반대
 (외규 각 호 → 내규 순회)라 이 함수가 아니라 coverage 점검(후속)의 몫이다.
 
 ## 값 비교가 왜 축(비교어)을 요구하는가
@@ -27,6 +29,7 @@ LLM 판정으로 넘어간다. 같은 "비율"이라도 분모가 다르면 견�
 """
 from __future__ import annotations
 
+import json
 import logging
 import re
 from typing import Optional
@@ -36,7 +39,8 @@ from lawrag.core.rag.index import Index
 log = logging.getLogger("lawrag.core.rag.compare")
 
 _JO = re.compile(r"^제\s*[\d\-]+\s*조(?:의\s*\d+)?$")
-CAND_MAX = 6              # 외규 후보 조 상한 — 판정 콜 입력이 이걸 따라 큰다
+CAND_MAX = 20             # LegalClosure MAIN의 최종 조문 예산과 같은 계약
+LEGACY_CAND_MAX = 6       # 롤백용 종전 간선→프레임→벡터 후보 예산
 SNIPPET = 1800            # 판정 콜에 넣는 조문 본문 상한 (조 하나)
 
 # ---------------------------------------------------------------- 값 추출
@@ -190,9 +194,10 @@ def _subtree(v, node_id) -> set:
     return out
 
 
-def find_counterparts(idx_scoped: Index, idx_all: Index, llm,
-                      doc_id: str, node: int, cap: int = CAND_MAX) -> list[dict]:
-    """내규 조 → 외규 후보 조. 통로 셋(간선 → 프레임 → 벡터)을 순서대로 합류.
+def find_counterparts_legacy(idx_scoped: Index, idx_all: Index, llm,
+                             doc_id: str, node: int,
+                             cap: int = LEGACY_CAND_MAX) -> list[dict]:
+    """롤백용 종전 후보기: 간선 → 프레임 → 벡터를 선착순으로 합류한다.
 
     간선이 맨 앞이다 — 문서 자신의 인용이 가장 강한 신호(§2-3 ①과 같은 원리).
     idx_scoped 는 외규만 보이는 색인(진입용), idx_all 은 내규 좌표 되짚기용."""
@@ -236,6 +241,163 @@ def find_counterparts(idx_scoped: Index, idx_all: Index, llm,
     return out
 
 
+def _comparison_query(cite: str, text: str) -> str:
+    """내규를 사실 쪽에 고정하고 적용 외규만 찾게 하는 LegalClosure 질의."""
+    return (
+        "다음 회사 내규 조문에 적용되는 법률·시행령·감독규정·시행세칙의 기준을 "
+        "찾아라. 내규와 외규의 행위자, 대상, 의무·금지·허용, 조건·예외, 수치·기한, "
+        "위임·준용 관계를 함께 확인하라.\n\n"
+        f"[내규 좌표]\n{cite}\n\n[내규 원문]\n{text[:4000]}"
+    )
+
+
+def _direct_counterparts(idx_scoped: Index, idx_all: Index,
+                         doc_id: str, node: int) -> list[dict]:
+    """내규가 직접 인용한 외규 좌표 — 검색 결과와 무관하게 mandatory로 보존."""
+    sub = _subtree(idx_all.docs[doc_id], node)
+    out, seen = [], set()
+    for edge in idx_all.cross_ref_edges():
+        if edge.get("src_doc") != doc_id or edge.get("src") not in sub:
+            continue
+        did = edge.get("dst_doc")
+        view = idx_all.docs.get(did)
+        if view is None or view.scope_kind != "외규":
+            continue
+        jo = _article_of(view, edge.get("dst"))
+        if (did, jo) in seen:
+            continue
+        seen.add((did, jo))
+        out.append({
+            "doc_id": did, "doc": view.name, "node": jo,
+            "path": view.path(jo), "via": "간선",
+            "why": str(edge.get("surface") or "")[:60],
+            "origin": "direct-reference", "mandatory": True,
+            "scope_out": not idx_scoped.in_scope(did),
+            "legal_meta": {}, "ref_src": {
+                "doc_id": doc_id, "node": node,
+                "via": str(edge.get("rel") or edge.get("via") or "인용"),
+            },
+        })
+    return out
+
+
+def retrieve_counterparts(idx_scoped: Index, idx_all: Index, llm,
+                          doc_id: str, node: int,
+                          cap: int = CAND_MAX) -> tuple[list[dict], dict]:
+    """내규 조 → 외규 후보: 직접 인용을 보존하고 LegalClosure MAIN 계약을 재사용.
+
+    LegalClosure는 정확 구조·Assertion·균등 BM25·관계 폐쇄·reference rescue를
+    실행하고 canonical 조문 Section과 legal_meta/reachability를 반환한다. 스코프 밖
+    관계 동반은 허용하되 외규가 아닌 문서는 비교 후보에서 제거한다. 런타임 실패는
+    직접 인용만 남긴 degraded 결과로 드러내며 조용히 `부합`시키지 않는다.
+    """
+    from lawrag.core.rag import article_reachability
+    from lawrag.core.rag import legalclosure_runtime
+    from lawrag.core.rag import switches as switches_mod
+
+    view = idx_all.docs[doc_id]
+    text = view.section_text(view.by_id[node], cap=4000)
+    cite = f"{view.name} ▸ {view.path(node)}"
+    direct = _direct_counterparts(idx_scoped, idx_all, doc_id, node)
+    out, positions = [], {}
+
+    def push(row: dict) -> None:
+        did, raw_node = row.get("doc_id"), row.get("node")
+        target = idx_all.docs.get(did)
+        if target is None or target.scope_kind != "외규" or raw_node is None:
+            return
+        jo = _article_of(target, raw_node)
+        key = (did, jo)
+        existing_at = positions.get(key)
+        normalized = {
+            "doc_id": did, "doc": target.name, "node": jo,
+            "path": target.path(jo),
+            "via": str(row.get("via") or "LegalClosure"),
+            "why": str(row.get("why") or row.get("origin") or "")[:120],
+            "origin": str(row.get("origin") or "legalclosure"),
+            "mandatory": bool(row.get("mandatory")),
+            "scope_out": bool(row.get("scope_out", not idx_scoped.in_scope(did))),
+            "legal_meta": dict(row.get("legal_meta") or {}),
+            "ref_src": row.get("ref_src"),
+        }
+        if existing_at is not None:
+            existing = out[existing_at]
+            existing["mandatory"] = existing["mandatory"] or normalized["mandatory"]
+            if normalized["legal_meta"]:
+                existing["legal_meta"] = normalized["legal_meta"]
+            if not existing.get("ref_src") and normalized.get("ref_src"):
+                existing["ref_src"] = normalized["ref_src"]
+            origins = existing.setdefault("origins", [existing["origin"]])
+            if normalized["origin"] not in origins:
+                origins.append(normalized["origin"])
+            return
+        if len(out) >= cap:
+            return
+        positions[key] = len(out)
+        out.append(normalized)
+
+    for row in direct:
+        push(row)
+
+    trace = article_reachability.ArticleReachabilityTrace(
+        idx_scoped, f"compare:{doc_id}:{node}", "legalclosure-comparison-v2")
+    try:
+        sections, lc_meta = legalclosure_runtime.retrieve(
+            idx_scoped, _comparison_query(cite, text), llm=llm,
+            assertion_llm=llm, cap=cap,
+            shortcut_enabled=switches_mod.is_on("legalclosure_proof_shortcut"),
+            feedback_enabled=switches_mod.is_on("legalclosure_feedback_explore"),
+            graph_enabled=switches_mod.is_on("legal_graph_v1_closure"),
+            semantic_graph_enabled=switches_mod.is_on(
+                "legal_semantic_entity_search"),
+            integrated_research_enabled=switches_mod.is_on(
+                "legal_research_integrated_v1"),
+            integrated_cap=32, reachability_trace=trace)
+        selected_meta = {
+            (row.get("doc_id"), row.get("node")): row
+            for row in lc_meta.get("selected") or []
+        }
+        mandatory_coordinates = {
+            (row.get("doc_id"), row.get("node"))
+            for row in lc_meta.get("closure") or [] if row.get("mandatory")
+        }
+        for section in sections:
+            selected = selected_meta.get((section.doc_id, section.node), {})
+            push({
+                "doc_id": section.doc_id, "node": section.node,
+                "via": "LegalClosure",
+                "why": selected.get("origin") or section.matched,
+                "origin": selected.get("origin") or section.matched,
+                "mandatory": ((section.doc_id, section.node)
+                              in mandatory_coordinates),
+                "scope_out": section.scope_out,
+                "legal_meta": section.legal_meta,
+                "ref_src": section.ref_src,
+            })
+        return out, {
+            "retriever": "legalclosure-v2", "status": "ok",
+            "query": _comparison_query(cite, text),
+            "scope": idx_scoped.scope_name or "외규",
+            "candidate_cap": cap, "direct_count": len(direct),
+            "selected_count": len(out),
+            "strategy": lc_meta.get("strategy"),
+            "article_reachability": lc_meta.get("article_reachability"),
+            "legal_annotations": lc_meta.get("legal_annotations") or {},
+            "runtime": lc_meta.get("runtime") or {},
+        }
+    except Exception as exc:                                  # pragma: no cover
+        log.exception("LegalClosure 비교 후보 회수 실패 — 직접 인용만 보존")
+        return out, {
+            "retriever": "legalclosure-v2", "status": "degraded",
+            "query": _comparison_query(cite, text),
+            "scope": idx_scoped.scope_name or "외규",
+            "candidate_cap": cap, "direct_count": len(direct),
+            "selected_count": len(out),
+            "error": f"{type(exc).__name__}: {exc}"[:500],
+            "article_reachability": None, "legal_annotations": {},
+        }
+
+
 # ---------------------------------------------------------------- LLM 쌍 판정
 JUDGE_SYSTEM = (
     "너는 회사 내규가 법령·감독규정(외규)에 맞는지 점검하는 심사역이다. 내규 조문 "
@@ -269,7 +431,13 @@ def judge_pairs(llm, nae_cite: str, nae_text: str, cands: list[dict],
         return []
     lines = [f"[내규] {nae_cite}\n{nae_text[:SNIPPET]}"]
     for i, c in enumerate(cands, start=1):
+        meta = json.dumps(c.get("legal_meta") or {}, ensure_ascii=False,
+                          separators=(",", ":"))[:1200]
         lines.append(f"[후보 {i}] {c['doc']} ▸ {c['path']}\n"
+                     f"[회수] origin={c.get('origin', '')}; "
+                     f"mandatory={bool(c.get('mandatory'))}; "
+                     f"scope_out={bool(c.get('scope_out'))}\n"
+                     f"[근거 메타] {meta}\n"
                      f"{texts.get((c['doc_id'], c['node']), '')[:SNIPPET]}")
     out = llm.structured("rag.compare", JUDGE_SYSTEM, "\n\n".join(lines),
                          JUDGE_SCHEMA, max_tokens=2500, effort=None)
@@ -286,7 +454,8 @@ def judge_pairs(llm, nae_cite: str, nae_text: str, cands: list[dict],
 
 # ---------------------------------------------------------------- 본체
 def compare_article(llm, idx: Index, doc_id: str, node: int,
-                    scope: str = "외규") -> dict:
+                    scope: str = "외규",
+                    retrieval_mode: str = "legalclosure") -> dict:
     """내규 조 하나의 비교 리포트. verdict: 상충 | 부합 | 재검토."""
     from lawrag.core.rag import scopes as scopes_mod
 
@@ -297,7 +466,19 @@ def compare_article(llm, idx: Index, doc_id: str, node: int,
     nae_text = v.section_text(n, cap=4000)
     nae_cite = f"{v.name} ▸ {v.path(node)}"
 
-    cands = find_counterparts(idx_scoped, idx, llm, doc_id, node)
+    if retrieval_mode == "legacy":
+        cands = find_counterparts_legacy(idx_scoped, idx, llm, doc_id, node)
+        retrieval_meta = {
+            "retriever": "legacy-frame-vector", "status": "ok",
+            "scope": idx_scoped.scope_name or scope,
+            "candidate_cap": LEGACY_CAND_MAX,
+            "selected_count": len(cands),
+        }
+    elif retrieval_mode == "legalclosure":
+        cands, retrieval_meta = retrieve_counterparts(
+            idx_scoped, idx, llm, doc_id, node)
+    else:
+        raise ValueError(f"모르는 비교 후보기입니다: {retrieval_mode}")
     texts = {}
     for c in cands:
         tv = idx.docs[c["doc_id"]]
@@ -316,6 +497,85 @@ def compare_article(llm, idx: Index, doc_id: str, node: int,
         elif rows:
             quant_verdicts[i] = "부합"
 
+    from lawrag.core.rag import switches as switches_mod
+
+    if switches_mod.is_on("internal_compliance_compiler_v1"):
+        from lawrag.core.rag import internal_compliance
+
+        internal_id = internal_compliance.internal_evidence_id(doc_id, node)
+        compiler_rows = []
+        compiler_texts = {}
+        candidate_number: dict[str, int] = {}
+        for i, c in enumerate(cands, start=1):
+            evidence_id = internal_compliance.external_evidence_id(
+                str(c["doc_id"]), int(c["node"]))
+            compiler_rows.append({**c, "evidence_id": evidence_id})
+            compiler_texts[evidence_id] = texts[(c["doc_id"], c["node"])]
+            candidate_number[evidence_id] = i
+        compiler_question = (
+            f"{nae_cite} 내규가 적용 외규에 부합하며 필수 통제를 빠짐없이 반영했는가?"
+        )
+        compilation = internal_compliance.compile_compliance(
+            llm,
+            question=compiler_question,
+            internal_id=internal_id,
+            internal_text=nae_text,
+            external_rows=compiler_rows,
+            external_texts=compiler_texts,
+            retrieval_status=str(retrieval_meta.get("status") or "degraded"),
+            deterministic_rows=quant_rows,
+        )
+        packet = compilation["packet"]
+        requirements = {
+            row["requirement_id"]: row for row in packet["requirements"]
+        }
+        status_to_pair = {
+            "SATISFIED": "부합", "STRICTER": "부합", "CONFLICT": "상충",
+            "MISSING": "불명", "UNRESOLVED": "불명",
+        }
+        pairs = []
+        for binding in packet["bindings"]:
+            requirement = requirements.get(binding["requirement_id"])
+            n_value = candidate_number.get(
+                str((requirement or {}).get("evidence_id") or ""))
+            if n_value is None:
+                continue
+            pairs.append({
+                "n": n_value,
+                "판정": status_to_pair[binding["status"]],
+                "근거": binding["reason"],
+                "인용": str((requirement or {}).get("quote") or ""),
+                "requirement_id": binding["requirement_id"],
+                "binding_status": binding["status"],
+            })
+        assessment = dict(compilation["assessment"])
+        deterministic_conflicts = sorted(
+            i for i, value in quant_verdicts.items() if value == "상충")
+        if deterministic_conflicts:
+            assessment.update({
+                "verdict": "상충", "status": "CONFLICT_DETERMINISTIC",
+                "coverage_closed": False,
+                "deterministic_conflict_candidates": deterministic_conflicts,
+            })
+        verdict = assessment["verdict"]
+        return {
+            "verdict": verdict,
+            "내규": {"doc": v.name, "doc_id": doc_id, "node": node,
+                    "path": v.path(node), "evidence_id": internal_id},
+            "후보": compiler_rows, "값비교": quant_rows, "판정": pairs,
+            "짝없음": not cands,
+            "검색": retrieval_meta,
+            "컴파일": compilation,
+            "완전성": {
+                "판정범위": "회수된 외규 원자요건과 내규 통제의 양방향 비교",
+                "미해결후보": assessment["unresolved_requirement_ids"],
+                "미비요건": assessment["missing_requirement_ids"],
+                "상충요건": assessment["conflict_requirement_ids"],
+                "coverage_closed": assessment["coverage_closed"],
+                "미비점검": "구현 — 외규 requirement에서 내규 claim으로 역방향 결속",
+            },
+        }
+
     pairs = judge_pairs(llm, nae_cite, nae_text, cands, texts)
     for p in pairs:
         if p["n"] in quant_verdicts:
@@ -327,11 +587,24 @@ def compare_article(llm, idx: Index, doc_id: str, node: int,
     effective = {p["n"]: p["판정"] for p in pairs}
     effective.update({i: v_ for i, v_ in quant_verdicts.items()
                       if i not in effective or effective[i] in ("무관", "불명")})
+    unresolved = [i for i in range(1, len(cands) + 1)
+                  if effective.get(i) in (None, "불명")]
+    relevant = [i for i, value in effective.items() if value != "무관"]
+    degraded = retrieval_meta.get("status") != "ok"
     verdict = ("상충" if any(x == "상충" for x in effective.values())
-               else "부합" if any(x == "부합" for x in effective.values())
+               else "재검토" if degraded or unresolved
+               else "부합" if relevant and all(
+                   effective.get(i) == "부합" for i in relevant)
                else "재검토")
     return {"verdict": verdict,
             "내규": {"doc": v.name, "doc_id": doc_id, "node": node,
                     "path": v.path(node)},
             "후보": cands, "값비교": quant_rows, "판정": pairs,
-            "짝없음": not cands}
+            "짝없음": not cands,
+            "검색": retrieval_meta,
+            "완전성": {
+                "판정범위": "회수된 외규 후보에 대한 내규 조문 단위 비교",
+                "미해결후보": unresolved,
+                "coverage_closed": False,
+                "미비점검": "미구현 — 외규 요구사항에서 내규로 향하는 역방향 점검 필요",
+            }}

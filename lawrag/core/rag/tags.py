@@ -26,6 +26,8 @@ from __future__ import annotations
 import re
 from typing import Optional
 
+from lawrag.core.rag.controls import value as control_value
+
 # 조 표면형 — 법률의 `제34조의2`와 규정·세칙류 편-조 체계 `제4-19조`를 함께
 # 문다 (docs/LEGAL_DOMAIN §2 함정 ①: 좁게 잡으면 조용히 빠진다).
 _JO = re.compile(r"^제\d+(?:-\d+)?조(?:의\d+)?$")
@@ -42,6 +44,9 @@ TYPES: dict[str, re.Pattern] = {
                        r'적용(?:하지|되지)\s*아니한다'),
     "특례": re.compile(r'에도\s*불구하고|특례|특별한\s*규정'),
     "벌칙": re.compile(r'(?:징역|벌금|금고|과료)에\s*처한다|과태료를\s*부과'),
+    "제재": re.compile(r'과징금을\s*부과|(?:영업|업무)의?\s*정지|'
+                       r'(?:등록|인가|허가)의?\s*취소|시정명령|개선명령|'
+                       r'해임(?:요구|권고)|손해를\s*배상|손해배상책임|무효로\s*한다'),
 }
 
 # condition_type — 마디의 "어떤 규범인가". "할 수 있다"의 허용(사업자)/권한
@@ -72,7 +77,15 @@ _DECL = re.compile(
 # '정의' 앞이 한글이면 다른 낱말이다 — "업무규**정의** 보고"(자본시장법
 # 제290조)가 물리는 오탐 실측으로 경계를 박았다.
 _DEF_TITLE = re.compile(r'(?<![가-힣])정의|용어의\s*뜻')
-_SANC_TITLE = re.compile(r'벌칙|과태료')
+_SANC_TITLE = re.compile(
+    r'벌칙|과태료|과징금|행정처분|제재|시정명령|개선명령|'
+    r'(?:영업|업무)정지|(?:등록|인가|허가)취소|손해배상')
+_SANC_BODY = re.compile(
+    r'(?:징역|벌금|금고|과료)에\s*처한다|(?:과태료|과징금)를\s*부과|'
+    r'(?:영업|업무)의?\s*정지를\s*(?:명|할)|'
+    r'(?:등록|인가|허가)을?\s*취소(?:할\s*수\s*있다|한다)|'
+    r'(?:시정|개선)을?\s*명(?:할|한다)|해임을?\s*(?:요구|권고)|'
+    r'손해를\s*배상(?:할|하여야)|손해배상책임을\s*진다|무효로\s*한다')
 
 # 정량 — 표기(원문 그대로)와, 문면에 붙어 있을 때만 기준(base). 값을 바꿔
 # 적지 않는다: "100분의 25"를 "25%"로 옮기는 순간 grounding 이 끊긴다.
@@ -87,8 +100,8 @@ _QUANT: list[tuple[str, re.Pattern]] = [
 ]
 _QUANT_HINT = re.compile(r'분의|퍼센트|원|이내|이상|이하|전까지|\d\s*배')
 
-DEF_COMPANION_MAX = 2      # 착지 하나가 동반하는 정의 조 — 최근접 스코프 + 문서 대표
-QUANT_MAX = 8              # 마디 하나에서 뽑는 정량 표기 상한 — 표(별표)의 폭주 방지
+DEF_COMPANION_MAX = int(control_value("companion.definition_sections_max"))
+QUANT_MAX = int(control_value("companion.quantities_per_section_max"))
 
 
 # ---------------------------------------------------------------- 계산·캐시
@@ -140,7 +153,7 @@ def _compute(v) -> dict:
     # 엉뚱한 조의 용어가 이웃 착지에 끌려온다. 블록 태그 '정의'는 그대로
     # 남으니 관측은 잃지 않는다.
     defs: list[int] = []
-    sanctions: set[int] = set()
+    sanctions: dict[int, str] = {}
     for n in v.nodes:
         if not _JO.fullmatch((n.get("surface") or "").strip()):
             continue
@@ -155,8 +168,15 @@ def _compute(v) -> dict:
         if _DEF_TITLE.search(title) or "_선언" in agg:
             defs.append(n.get("id"))
         anc_title = " ".join((a.get("title") or "") for a in anc)
-        if "벌칙" in agg or _SANC_TITLE.search(title) or _SANC_TITLE.search(anc_title):
-            sanctions.add(n.get("id"))
+        body = v.section_text(n, cap=12000) or ""
+        if "벌칙" in agg or re.search(r'벌칙|과태료', title + " " + anc_title):
+            sanctions[n.get("id")] = "형사·질서벌"
+        elif ("제재" in agg or _SANC_TITLE.search(title)
+              or _SANC_TITLE.search(anc_title) or _SANC_BODY.search(body)):
+            if re.search(r'손해배상|손해를\s*배상|무효', body + " " + title):
+                sanctions[n.get("id")] = "민사구제"
+            else:
+                sanctions[n.get("id")] = "행정제재"
 
     out = {"blocks": blocks, "defs": defs, "sanctions": sanctions}
     v._tags_cache = out
@@ -240,6 +260,16 @@ def is_sanction(v, node_id: Optional[int]) -> bool:
     장 제목(`벌칙`·`과태료`) 또는 본문 처벌 술어(`…에 처한다`)가 신호다."""
     sanctions = _compute(v)["sanctions"]
     return any(n.get("id") in sanctions for n in _chain(v, node_id))
+
+
+def sanction_kind(v, node_id: Optional[int]) -> str:
+    """벌칙·행정제재·민사구제 중 실제 조문에 붙은 종류를 반환한다."""
+    sanctions = _compute(v)["sanctions"]
+    for node in _chain(v, node_id):
+        value = sanctions.get(node.get("id"))
+        if value:
+            return value
+    return ""
 
 
 def quant_rules(v, node_id: Optional[int], cap: int = QUANT_MAX) -> list[dict]:

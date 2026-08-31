@@ -28,25 +28,30 @@ from lawrag.core.rag import promote as promote_mod
 from lawrag.core.rag import termretrieve as termretrieve_mod
 from lawrag.core.rag import wikictx
 from lawrag.core.rag.answer import assemble, enforce_scope, sections_from_coords
+from lawrag.core.rag.controls import value as control_value
 from lawrag.core.rag.search import search as run_search
 from lawrag.core.casereview.model import (Fact, Issue, Norm, Req, ReviewState, Sub,
                                Verdict, req_leaves)
 
 log = logging.getLogger("lawrag.core.casereview")
 
-NORM_SECTIONS = 6         # 쟁점 하나에 조립할 규범 상한 — 판단은 넓이가 아니라 정확도다
-REQ_MAX = 6               # 규범 하나에서 뽑을 요건 상한
-ISSUE_MAX = 4             # 검토 하나에 세울 쟁점 상한 (질의응답 2장보다 넓다)
-SUB_REQ_CAP = 18          # 포섭 한 콜에 넘길 요건 상한 — 넘기면 출력이 잘린다(실측)
+NORM_SECTIONS = int(control_value("review.norms_per_issue_max"))
+REQ_MAX = int(control_value("review.requirements_per_norm_max"))
+ISSUE_MAX = int(control_value("review.issues_max"))
+SUB_REQ_CAP = int(control_value("review.sub_requirements_max"))
 # 요건 한 조각의 글자 상한. **한 번 넓혀 봤다가 되돌렸다** (2026-08-17):
 # 40 / 800 / 1200 으로 넓혀 고집 세트 11건을 재니 요건이 240→321 로 늘고 잘림·
 # 타임아웃은 0 이었는데, 판정은 안 따라왔다 — 유보 3건이 풀려 1건만 정답, 2건은
 # 오답(○0△8✗3 → ○1△5✗5). 근거는 오히려 나빠졌다(18-0124 과잉 1→4,
 # 16-0182 근거 0/2→0/0). 요건 목록이 길어지자 판정이 **결정적 조문을 고르는 데서**
 # 흔들린다. 병목은 재료의 양이 아니다 — 넓히면 잡음만 는다.
-REQ_LEAF_CHARS = 260      # 호·목 (잎)
-REQ_STEM_CHARS = 400      # 항·조 줄기, 통짜 조, 회수 본문 대체
-_ISSUE_MAX_TOKENS = 8000  # 1500 → 2500 → 8000 (2026-08-17). max_tokens 는 천장이지
+REQ_LEAF_CHARS = int(control_value("review.requirement_leaf_chars"))
+REQ_STEM_CHARS = int(control_value("review.requirement_stem_chars"))
+FACTS_MAX = int(control_value("review.facts_max"))
+FACTS_MAX_TOKENS = int(control_value("review.facts_output_tokens"))
+ISSUE_PROBES_MAX = int(control_value("review.issue_probes_max"))
+PROBE_MAX_TOKENS = int(control_value("review.probe_output_tokens"))
+_ISSUE_MAX_TOKENS = int(control_value("review.issue_output_tokens"))
                           # 예약이 아니다 — 안 쓰면 값이 0 이므로 넉넉히 잡는다.
                           # 잘리면 쟁점이 통째로 없어진다(상류라 제일 비싼 실패)
 
@@ -73,7 +78,7 @@ FACT_SCHEMA = {
 }
 
 
-def extract_facts(llm, text: str, limit: int = 8) -> list:
+def extract_facts(llm, text: str, limit: int = FACTS_MAX) -> list:
     """① 사실 확정 — 짧은 텍스트에서 사실 항목 3~5개.
 
     지금은 입력이 짧아 타임라인·증거 태깅이 무의미하다(docs/REVIEW.md §접는 것).
@@ -82,7 +87,7 @@ def extract_facts(llm, text: str, limit: int = 8) -> list:
     if llm is None:
         return [Fact(text=text.strip()[:200], subject="", action="", object="")]
     out = llm.structured("review.facts", FACT_SYSTEM, f"[입력]\n{text}",
-                         FACT_SCHEMA, max_tokens=1200, effort="low")
+                         FACT_SCHEMA, max_tokens=FACTS_MAX_TOKENS, effort="low")
     if out is None:
         return [Fact(text=text.strip()[:200])]
     facts = []
@@ -151,7 +156,7 @@ ISSUE_SCHEMA = {
 }
 
 
-NET_MIN_TRIGGERS = 2      # 안전망이 서려면 트리거가 최소 이만큼 물어야 한다
+NET_MIN_TRIGGERS = int(control_value("review.net_triggers_min"))
 
 
 def _issues_from_cards(facts: list, limit: int) -> list:
@@ -222,7 +227,8 @@ def spot_issues(llm, facts: list, limit: int = ISSUE_MAX) -> list:
             why=str(it.get("why", ""))[:300],
             core=(it.get("confidence") != "부수"),
             probes=[str(x).strip()[:wikictx.PROBE_MAX_CHARS]
-                    for x in (it.get("조문질의") or [])[:2] if str(x).strip()]))
+                    for x in (it.get("조문질의") or [])[:ISSUE_PROBES_MAX]
+                    if str(x).strip()]))
     if issues:
         return issues
     net = _issues_from_cards(facts, limit)
@@ -912,7 +918,8 @@ def subsume(llm, issue: Issue, norms: list, facts: list) -> list:
         f"[정리된 사실]\n{fact_txt}\n\n[요건 목록] "
         f"— ◆는 조문, 〔〕는 그 항의 머리글(맥락), [id]가 판정 대상이다\n"
         + "\n".join(lines),
-        SUB_SCHEMA, max_tokens=12000, effort="low")
+        SUB_SCHEMA, max_tokens=int(control_value("review.subsume_output_tokens")),
+        effort="low")
     if out is None:
         return []
     subs = []
@@ -1068,13 +1075,16 @@ _INTERP_CHARS = None         # 자르지 않음 — 스토어 전문
 # 4회차 뒤집힘 33%의 원인은 상류(쟁점 수·요건 수 분산은 뒤집힌 사례나 아닌 사례나
 # 비슷)가 아니라 **판정 콜 자체의 분산**이었다. 표결 k=3 은 흔들리는 모델을 세 번
 # 물은 것 — 비용 3배에 완화만 됐다. 흔들리지 않는 모델을 한 번 묻는 쪽이 맞다.
-_INTERP_K = 1                # 표결 폐지 — 안정 모델 단일 콜 (k>1 은 실험용으로만)
+_INTERP_K = int(control_value("review.interpret_samples"))
 _INTERP_MODEL = os.environ.get("REVIEW_INTERPRET_MODEL", "claude-sonnet-5")
-_INTERP_MAX_TOKENS = 12000   # 2400 → 3600 → 12000 (2026-08-17). 소넷5 는 사고 토큰이
+_INTERP_MAX_TOKENS = int(control_value("review.interpret_output_tokens"))
                              # 출력 예산을 먹으므로 판정이 제일 잘 잘린다. 천장이라
                              # 안 쓰면 비용 0. 잘리면 llm.py 가 이름 붙여 보고
-_CARD_CTX_CHARS = 1500       # 카드 한 장의 배경 상한
-_CARD_CTX_MAX = 2            # 배경 카드 수
+_CARD_CTX_CHARS = int(control_value("review.card_context_chars"))
+_CARD_CTX_MAX = int(control_value("review.card_context_max"))
+BASIS_MAX = int(control_value("review.basis_max"))
+GLOSSARY_CONTEXT_MAX = int(control_value("review.glossary_context_max"))
+UNMET_CONTEXT_MAX = int(control_value("review.unmet_context_max"))
 
 
 def _card_context(st: ReviewState) -> str:
@@ -1138,7 +1148,7 @@ def interpret_case(llm, st: ReviewState, idx=None) -> Optional[dict]:
     defn_txt = ""
     if getattr(st, "glossary", None):
         rows = []
-        for g in st.glossary[:3]:
+        for g in st.glossary[:GLOSSARY_CONTEXT_MAX]:
             gv = idx.docs.get(g.doc_id) if idx is not None else None
             gn = gv.by_id.get(g.node) if gv is not None else None
             rows.append(f"◆ {g.doc} ▸ {g.path}\n"
@@ -1148,7 +1158,7 @@ def interpret_case(llm, st: ReviewState, idx=None) -> Optional[dict]:
     unmet = [s for s in st.subs if s.judgment == "불충족"]
     unmet_txt = ("\n\n[포섭 관측 — 불충족 요건] (참고 — 핵심 요건인지 판정이 가린다)\n"
                  + "\n".join(f"- {s.req_text[:100]} ({s.reason[:60]})"
-                             for s in unmet[:6])) if unmet else ""
+                             for s in unmet[:UNMET_CONTEXT_MAX])) if unmet else ""
     issues_txt = "\n".join(f"- {i.question}" + (f" (판단 축: {i.axis})" if i.axis
                                                 else "") for i in st.issues)
     user = (f"[질문]\n{st.question[:2000]}\n\n[도출된 쟁점]\n{issues_txt}\n\n"
@@ -1172,7 +1182,7 @@ def interpret_case(llm, st: ReviewState, idx=None) -> Optional[dict]:
     lead = next(v for v in votes if v["direction"] == top) \
         if top in tally else votes[0]
     return {"direction": top, "reason": str(lead["reason"])[:500],
-            "basis": [str(b)[:120] for b in lead.get("basis", [])][:6],
+            "basis": [str(b)[:120] for b in lead.get("basis", [])][:BASIS_MAX],
             "votes": [v["direction"] for v in votes]}
 
 
@@ -1193,7 +1203,7 @@ def interpret_case(llm, st: ReviewState, idx=None) -> Optional[dict]:
 # "무엇을 따질 것인가"(판정 골격·카드·판단 축)이고 그건 조문을 본 뒤가 제자리다
 # — 질의응답 경로의 issue_spot_llm 이 이미 이 순서였고, 실무 순서이기도 하다.
 # ====================================================================
-REVIEW_NORMS = 8          # 검토 전체의 규범 상한 (옛: 쟁점당 6 × 최대 4)
+REVIEW_NORMS = int(control_value("review.norms_total_max"))
 PROBE_SYSTEM = (
     "너는 법령 검색용 질의 번역기다. 사용자 질문을 받아, 그 답이 될 조문이 **실제로 "
     "쓰였을 법한 문체**의 서술문 2개를 쓴다 — 하나는 조문 직역형, 하나는 핵심 "
@@ -1214,11 +1224,12 @@ def write_probes(llm, question: str) -> list:
     if llm is None:
         return []
     out = llm.structured("review.probes", PROBE_SYSTEM, f"[질문]\n{question}",
-                         PROBE_SCHEMA, max_tokens=300, effort="low")
+                         PROBE_SCHEMA, max_tokens=PROBE_MAX_TOKENS, effort="low")
     if not out:
         return []
     return [str(x).strip()[:wikictx.PROBE_MAX_CHARS]
-            for x in (out.get("probes") or [])[:2] if str(x).strip()]
+            for x in (out.get("probes") or [])[:ISSUE_PROBES_MAX]
+            if str(x).strip()]
 
 
 def _norms_from_sections(idx, secs: list, state: ReviewState) -> list:
@@ -1375,8 +1386,8 @@ def spot_issues_after(llm, facts: list, norms: list, limit: int = ISSUE_MAX) -> 
     return issues or _issues_from_cards(facts, limit)
 
 
-INADEQUATE_RATIO = 0.8    # 불명·해당없음이 이 비율 이상이면 회수가 엉뚱했다고 본다
-REFETCH_MAX = 3           # 되먹임이 보충하는 규범 상한 — 보충이 본 회수를 밀어내면 안 된다
+INADEQUATE_RATIO = float(control_value("review.inadequate_ratio"))
+REFETCH_MAX = int(control_value("review.refetch_norms_max"))
 
 
 def _inadequate(subs: list) -> bool:

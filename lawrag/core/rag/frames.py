@@ -170,7 +170,8 @@ def _mainbody_jos(v: DocView) -> list[dict]:
 
 
 def extract_doc(v: DocView, llm_factory, out_dir: Optional[Path] = None,
-                workers: int = WORKERS, only_missing: bool = True) -> dict:
+                workers: int = WORKERS, only_missing: bool = True,
+                article_ids: Optional[set[object]] = None) -> dict:
     """문서 하나 전량 → data/frames/<doc_id>.jsonl (한 줄 = 프레임 하나).
     only_missing 이면 이미 뽑힌 조는 건너뛴다(재실행이 실패분만 다시)."""
     out_dir = out_dir or frames_dir()
@@ -183,7 +184,9 @@ def extract_doc(v: DocView, llm_factory, out_dir: Optional[Path] = None,
                 done.add(json.loads(line)["jo"])
             except Exception:
                 pass
-    jos = [j for j in _mainbody_jos(v) if j["id"] not in done]
+    jos = [j for j in _mainbody_jos(v)
+           if j["id"] not in done
+           and (article_ids is None or j["id"] in article_ids)]
     t0 = time.perf_counter()
     stats = {"doc": v.name, "jos": len(jos), "frames": 0, "errors": 0, "dropped": 0}
     if not jos:

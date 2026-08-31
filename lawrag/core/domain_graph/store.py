@@ -97,6 +97,11 @@ class GraphStore:
             (key, json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)),
         )
 
+    def get_meta(self, key: str, default=None):
+        row = self.conn.execute(
+            "SELECT value FROM build_meta WHERE key=?", (key,)).fetchone()
+        return json.loads(row["value"]) if row is not None else default
+
     def get_node(self, node_id: str) -> dict | None:
         return _unpack(self.conn.execute("SELECT * FROM nodes WHERE id=?", (node_id,)).fetchone())
 

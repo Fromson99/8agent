@@ -99,6 +99,13 @@ def resolve(edge: dict, action: str, note: str = "") -> dict:
     _append({"kind": "처리", "ts": _now(), "edge_key": key,
              "action": action, "note": note})
     if action != "승인":
+        from lawrag.core.rag import approvals
+        approvals.safe_record(
+            kind="reference_verdict", decision=action, effect="rejected",
+            failure="잘못된_참조", subject={"edge_key": key,
+                 "src_doc": edge.get("src_doc"), "dst_doc": edge.get("dst_doc")},
+            after={"suppressed": False}, note=note, actor="human",
+            source={"ledger": "verdicts"})
         return {"action": action, "edge_key": key}
 
     p = rules_path()
@@ -108,13 +115,12 @@ def resolve(edge: dict, action: str, note: str = "") -> dict:
             data = json.loads(p.read_text(encoding="utf-8"))
         except Exception:
             pass
+    qids = [r.get("qid") for r in _records()
+            if r.get("kind") == "지문" and r.get("간선")
+            and _edge_key(r["간선"]["src_doc"], r["간선"]["src"],
+                          r["간선"]["dst_doc"], r["간선"]["dst"]) == key]
     if not any(_edge_key(r["src_doc"], r["src"], r["dst_doc"], r["dst"]) == key
                for r in data.get("suppress", [])):
-        qids = [r.get("qid") for r in _records()
-                if r.get("kind") == "지문"
-                and r.get("간선") and _edge_key(
-                    r["간선"]["src_doc"], r["간선"]["src"],
-                    r["간선"]["dst_doc"], r["간선"]["dst"]) == key]
         data.setdefault("suppress", []).append({
             "src_doc": edge["src_doc"], "src": edge["src"],
             "dst_doc": edge["dst_doc"], "dst": edge["dst"],
@@ -126,6 +132,13 @@ def resolve(edge: dict, action: str, note: str = "") -> dict:
         p.write_text(json.dumps(data, ensure_ascii=False, indent=2),
                      encoding="utf-8")
     _rules_cache.clear()
+    from lawrag.core.rag import approvals
+    approvals.safe_record(
+        kind="reference_verdict", decision=action, effect="suppress",
+        failure="잘못된_참조", subject={"edge_key": key,
+             "src_doc": edge.get("src_doc"), "dst_doc": edge.get("dst_doc")},
+        before={"suppressed": False}, after={"suppressed": True}, note=note,
+        actor="human", qids=qids, source={"ledger": "edge_rules"})
     return {"action": "승인", "edge_key": key, "suppressed": True}
 
 
@@ -163,6 +176,13 @@ def resolve_fix(fix: dict, action: str, note: str = "") -> dict:
     _append({"kind": "교정처리", "ts": _now(), "fix_key": key,
              "action": action, "note": note})
     if action != "승인":
+        from lawrag.core.rag import approvals
+        approvals.safe_record(
+            kind="landing_fix", decision=action, effect="rejected",
+            failure="얕은_착지", subject={"fix_key": key,
+                 "src_doc": fix.get("src_doc"), "dst_doc": fix.get("dst_doc")},
+            after={"redirected": False}, note=note, actor="human",
+            source={"ledger": "verdicts"})
         return {"action": action, "fix_key": key}
 
     p = rules_path()
@@ -173,14 +193,14 @@ def resolve_fix(fix: dict, action: str, note: str = "") -> dict:
         except Exception:
             pass
     rows = data.setdefault("redirect", [])
+    qids = [r.get("qid") for r in _records()
+            if r.get("kind") == "교정" and r.get("간선")
+            and r.get("새_dst") == fix.get("new_dst")
+            and _edge_key(r["간선"]["src_doc"], r["간선"]["src"],
+                          r["간선"]["dst_doc"], r["간선"]["dst"])
+            == _edge_key(fix["src_doc"], fix["src"],
+                         fix["dst_doc"], fix["dst"])]
     if not any(_fix_key(r, r.get("new_dst")) == key for r in rows):
-        qids = [r.get("qid") for r in _records()
-                if r.get("kind") == "교정" and r.get("간선")
-                and r.get("새_dst") == fix.get("new_dst")
-                and _edge_key(r["간선"]["src_doc"], r["간선"]["src"],
-                              r["간선"]["dst_doc"], r["간선"]["dst"])
-                == _edge_key(fix["src_doc"], fix["src"],
-                             fix["dst_doc"], fix["dst"])]
         rows.append({
             "src_doc": fix["src_doc"], "src": fix["src"],
             "dst_doc": fix["dst_doc"], "dst": fix["dst"],
@@ -199,6 +219,15 @@ def resolve_fix(fix: dict, action: str, note: str = "") -> dict:
         p.write_text(json.dumps(data, ensure_ascii=False, indent=2),
                      encoding="utf-8")
     _rules_cache.clear()
+    from lawrag.core.rag import approvals
+    approvals.safe_record(
+        kind="landing_fix", decision=action, effect="redirect",
+        failure="얕은_착지", subject={"fix_key": key,
+                                 "src_doc": fix.get("src_doc"),
+                                 "dst_doc": fix.get("dst_doc")},
+        before={"dst": fix.get("dst")}, after={"dst": fix.get("new_dst")},
+        note=note, actor="human", qids=qids,
+        source={"ledger": "edge_rules", "derived_from_rule": fix.get("출처") or {}})
     return {"action": "승인", "fix_key": key, "redirected": True}
 
 
@@ -279,6 +308,17 @@ def resolve_miss(rec: dict, action: str, note: str = "") -> dict:
     key = miss_key(rec)
     _append({"kind": "회수처리", "ts": _now(), "miss_key": key,
              "action": action, "note": note})
+    from lawrag.core.rag import approvals
+    effect = {"후순위": "demote", "진입제외": "entry_block", "정상": "rejected"}[action]
+    failure = {"후순위": "과도한_참조확장", "진입제외": "검색_진입오염",
+               "정상": ""}[action]
+    approvals.safe_record(
+        kind="retrieval_verdict", decision=action, effect=effect, failure=failure,
+        subject={"miss_key": key, "doc_id": s.get("doc_id"),
+                 "src_doc": e.get("src_doc"), "dst_doc": e.get("dst_doc")},
+        after={"applied": applied}, note=note, actor="human",
+        qids=rec.get("qids") or ([rec.get("qid")] if rec.get("qid") else []),
+        source={"ledger": "edge_rules" if applied else "verdicts"})
     return {"action": action, "miss_key": key, "applied": applied}
 
 
@@ -302,6 +342,14 @@ def resolve_struct(section: dict, action: str, note: str = "") -> dict:
     _append({"kind": "구조처리", "ts": _now(), "struct_key": key,
              "action": action, "note": note,
              "구역": {k: section.get(k) for k in ("doc_id", "doc", "node", "path")}})
+    from lawrag.core.rag import approvals
+    approvals.safe_record(
+        kind="structure_verdict", decision=action,
+        effect="structure_fixed" if action == "고침" else "rejected",
+        failure="구조화_오류" if action == "고침" else "",
+        subject={"struct_key": key, "doc_id": section.get("doc_id"),
+                 "node": section.get("node")}, after={"action": action},
+        note=note, actor="human", source={"ledger": "verdicts"})
     return {"action": action, "struct_key": key}
 
 
@@ -346,8 +394,19 @@ def _rules() -> dict:
     return _rules_cache
 
 
-def is_suppressed(src_doc, src, dst_doc, dst) -> bool:
-    return _edge_key(src_doc, src, dst_doc, dst) in _rules().get("keys", set())
+def rule_snapshot() -> dict:
+    """한 조립 작업에서 재사용할 읽기 전용 규칙 스냅샷.
+
+    간선 수만 개를 세우는 동안 매 간선이 rules_path의 mtime을 다시 ``stat``하지
+    않도록 호출부가 한 번 받아 전달한다. Index 자체가 규칙 파일 mtime을 서명에
+    포함하므로 다음 요청의 새 Index에는 최신 스냅샷이 적용된다.
+    """
+    return _rules()
+
+
+def is_suppressed(src_doc, src, dst_doc, dst, *, snapshot: Optional[dict] = None) -> bool:
+    rules = snapshot if snapshot is not None else _rules()
+    return _edge_key(src_doc, src, dst_doc, dst) in rules.get("keys", set())
 
 
 def is_demoted(src_doc, src, dst_doc, dst) -> bool:
@@ -361,10 +420,11 @@ def is_entry_blocked(doc_id, node) -> bool:
     return (doc_id, node) in _rules().get("entry", {})
 
 
-def redirect_map() -> dict:
+def redirect_map(*, snapshot: Optional[dict] = None) -> dict:
     """승인된 재지정 — (src_doc, src, dst_doc, dst) -> 규칙 행. 색인이 간선을
     세울 때 이 사전으로 도착 좌표를 옮겨 앉힌다."""
-    return dict(_rules().get("redir", {}))
+    rules = snapshot if snapshot is not None else _rules()
+    return dict(rules.get("redir", {}))
 
 
 def _records() -> list[dict]:

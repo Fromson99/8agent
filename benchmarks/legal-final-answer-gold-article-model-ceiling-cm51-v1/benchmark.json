@@ -1,0 +1,108 @@
+{
+  "schema_version": "benchmark-v1",
+  "benchmark_id": "legal-final-answer-gold-article-model-ceiling-cm51-v1",
+  "version": 1,
+  "title": "Gold-article model ceiling over CM core 51",
+  "status": "frozen",
+  "owner": "8-AGENT",
+  "benchmark_class": "final_answer_quality",
+  "specializations": [
+    "oracle_context",
+    "model_knowledge_ceiling",
+    "product_isolated"
+  ],
+  "purpose": "정답 조문 전문을 완전히 제공했을 때 답변 모델 자체의 법률 합성 상한 비교",
+  "decision_eligible": false,
+  "comparability_key": "legal-final-answer/oracle-gold-article/cm-v1/opus-single-v1",
+  "dataset": {
+    "name": "CM core E2E v1",
+    "combined_sha256": "5bd360eb6d728a2d9b8ef1c670246d8820d090e3df02bb2c7dd1f711cc71a52d",
+    "combined_hash_algorithm": "sha256(length_u64_be || bytes, in source order)",
+    "case_count": 51,
+    "sources": [
+      {
+        "path": "data/review/cm_core_e2e_v1.json",
+        "sha256": "d3e4f658d8c9abb06244557b669d37d63b0e6fcc879059506e3b462619bcc18d",
+        "bytes": 96700,
+        "case_count": 51
+      }
+    ]
+  },
+  "input_contract": {
+    "answer_models": [
+      "qwen/qwen3.8-27b",
+      "claude-fable-5",
+      "claude-haiku-4-5-20251001",
+      "claude-opus-4-5-20251101",
+      "claude-opus-4-6",
+      "claude-opus-4-7",
+      "claude-opus-4-8",
+      "claude-opus-5",
+      "claude-sonnet-4-5-20250929",
+      "claude-sonnet-4-6",
+      "claude-sonnet-5"
+    ],
+    "message_contract": "question_plus_full_gold_articles",
+    "retrieval": "oracle",
+    "gold_visible_to_answer_model": false,
+    "gold_articles_visible_to_answer_model": true,
+    "max_tokens": 12000
+  },
+  "scoring_contract": {
+    "primary_metric": "Opus 5 semantic correct / 51 by arm",
+    "judge_models": ["claude-opus-5"],
+    "judge_repeats": 1,
+    "model_identity_blind": true,
+    "disagreement_policy": "not_measured_single_judge"
+  },
+  "isolation_contract": {
+    "class": "offline_benchmark_candidate",
+    "may_change_product_answer": false,
+    "may_enter_product_context": false,
+    "judge_only_use": true,
+    "main_wiring": "unchanged"
+  },
+  "adr_links": [
+    {
+      "relation": "policy",
+      "adr_id": "ADR-0054",
+      "record_path": "docs/adr/ADR-0054-offline-answer-model-benchmark-policy/실험/manifest.json",
+      "record_sha256": "0d998a85c675331555408f3073e02c7142cf5886771e41a4b78e5ee67e555a8b"
+    },
+    {
+      "relation": "execution_provenance",
+      "adr_id": "ADR-0056",
+      "record_path": "docs/adr/ADR-0056-cm-core-51-open-model-ceiling/실험/manifest.json",
+      "record_sha256": "3ee4e8a49b82b481241a46dc41d7739fd8e64a48ad953317a4b2ce6654e45a28",
+      "experiment_id": "ADR-0056-experiment-v1",
+      "arm_ids": [
+        "baseline",
+        "claude-fable-5",
+        "claude-haiku-4-5",
+        "claude-opus-4-5",
+        "claude-opus-4-6",
+        "claude-opus-4-7",
+        "claude-opus-4-8",
+        "claude-opus-5",
+        "claude-sonnet-4-5",
+        "claude-sonnet-4-6",
+        "claude-sonnet-5"
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "run-001",
+      "path": "benchmarks/legal-final-answer-gold-article-model-ceiling-cm51-v1/runs/run-001.json",
+      "sha256": "9d37d1c614a4568a1b381beef985db3d60f0031db4589aba8a61917d8fdf21d9",
+      "bytes": 3321,
+      "status": "complete"
+    }
+  ],
+  "limitations": [
+    "반복 사용한 CM v1 51건으로 외부 holdout이 아님",
+    "Opus 5 단일 judge이며 사람 확정 재감사가 없음",
+    "Opus 5 answer arm의 structured-output 공답 11건이 포함됨",
+    "oracle gold article 입력이므로 실제 retrieval 성능을 나타내지 않음"
+  ]
+}

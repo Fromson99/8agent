@@ -6,9 +6,9 @@ stochastic 은 컴파일 타임에 가둔다. 이 모듈은 형식 유도(T4)와
 기록: 모든 요청·응답을 그대로 남긴다. 무엇을 물었고 무엇이 왔는지 사람이 볼 수 있어야
 형식을 신뢰할 수 있다.
 
-백엔드는 둘이다 — anthropic(개발망) · genos(폐쇄망, GenOS LLM 서빙의 OpenAI 호환
-REST). 고르는 규칙과 환경변수는 `backend()` 머리, 계약은 `LLM.structured()` 하나로
-같다.
+백엔드는 넷이다 — anthropic(개발망) · local(온프레미스 OpenAI 호환 서빙) ·
+genos(폐쇄망, GenOS LLM 서빙) · openrouter(외부 OpenAI 호환 API). 고르는 규칙과 환경변수는 `backend()` 머리,
+계약은 `LLM.structured()` 하나로 같다.
 """
 
 from __future__ import annotations
@@ -26,6 +26,8 @@ from typing import Any, Optional
 # 벤치로 확인하는 국면이다. effort 는 하이쿠가 안 받으므로 structured() 가
 # 하이쿠일 때 키를 뺀다 — 호출부는 모델을 모른 채 effort 를 계속 말해도 된다.
 DEFAULT_MODEL = "claude-haiku-4-5-20251001"
+OPENROUTER_URL = "https://openrouter.ai/api"
+OPENROUTER_MODEL = "qwen/qwen3.8-27b"
 ROOT = Path(__file__).resolve().parent.parent.parent
 
 log = logging.getLogger("lawrag.core.llm")
@@ -40,11 +42,13 @@ log = logging.getLogger("lawrag.core.llm")
 #             그 뒤의 엔진(vLLM 계열)이 json_schema 를 받으면 그대로 쓰고, 400 을
 #             내면 스키마를 프롬프트에 싣는 길로 **한 번 내려가 그 세션 내내** 그
 #             길로 간다. 호출부(structured 의 계약)는 어느 쪽인지 모른다.
+# openrouter — 개발망의 OpenAI 호환 REST. 사용자 환경의 `OPEN_ROUTER` 키를
+#             그대로 받고, 별도 모델 지정이 없으면 Qwen3.8 27B 를 쓴다.
 #
 # 고르는 규칙: LLM_BACKEND 가 있으면 그것. 없으면 GENOS_LLM_URL 이 있을 때
 # genos, 아니면 anthropic. 둘 다 있으면 genos — URL 을 적은 건 그쪽을 쓰겠다는
 # 뜻이다(폐쇄망엔 어차피 anthropic 키가 없다).
-BACKENDS = ("anthropic", "genos")
+BACKENDS = ("anthropic", "local", "genos", "openrouter")
 
 
 def backend() -> str:
@@ -52,6 +56,8 @@ def backend() -> str:
     b = (os.environ.get("LLM_BACKEND") or "").strip().lower()
     if b in BACKENDS:
         return b
+    if os.environ.get("LOCAL_LLM_URL"):
+        return "local"
     return "genos" if os.environ.get("GENOS_LLM_URL") else "anthropic"
 
 
@@ -59,13 +65,19 @@ def available() -> bool:
     """LLM 을 쓸 수 있는가 — 호출부는 키 이름을 몰라도 된다. 없으면 검색까지만
     내려가는 것이 전 경로의 규약이다."""
     b = backend()
+    if b == "local":
+        return bool(os.environ.get("LOCAL_LLM_URL"))
     if b == "genos":
         return bool(os.environ.get("GENOS_LLM_URL"))
+    if b == "openrouter":
+        return bool(os.environ.get("OPEN_ROUTER") or
+                    os.environ.get("OPENROUTER_API_KEY"))
     return bool(os.environ.get("ANTHROPIC_API_KEY"))
 
 
 # 없을 때 사람에게 보여 줄 한 줄 — 어느 변수를 채워야 하는지.
-MISSING_HINT = "ANTHROPIC_API_KEY(개발망) 또는 GENOS_LLM_URL·GENOS_LLM_KEY(GenOS)"
+MISSING_HINT = ("LOCAL_LLM_URL(온프레미스 OpenAI 호환), ANTHROPIC_API_KEY(개발망), "
+                "GENOS_LLM_URL·GENOS_LLM_KEY(GenOS), 또는 OPEN_ROUTER(OpenRouter)")
 
 
 def load_env() -> None:
@@ -117,7 +129,7 @@ class LLM:
         load_env()
         self.backend = backend()
         self.log: list[Exchange] = []
-        if self.backend == "genos":
+        if self.backend in ("local", "genos", "openrouter"):
             self._init_genos(model)
             return
         import anthropic
@@ -141,28 +153,62 @@ class LLM:
     def _init_genos(self, model: Optional[str]) -> None:
         import requests
 
-        self._genos_url = os.environ["GENOS_LLM_URL"].rstrip("/")
-        self._genos_key = os.environ.get("GENOS_LLM_KEY", "")
-        self._genos_user = os.environ.get("GENOS_USER_ID", "")
+        if self.backend == "openrouter":
+            self._genos_url = (os.environ.get("OPENROUTER_URL") or
+                               OPENROUTER_URL).rstrip("/")
+            self._genos_key = (os.environ.get("OPEN_ROUTER") or
+                               os.environ.get("OPENROUTER_API_KEY", ""))
+            self._genos_user = ""
+            json_mode = os.environ.get("OPENROUTER_JSON_MODE")
+            temperature = os.environ.get("OPENROUTER_TEMPERATURE")
+            configured_model = os.environ.get("OPENROUTER_MODEL")
+            default_model = OPENROUTER_MODEL
+            self._backend_label = "OpenRouter"
+        elif self.backend == "local":
+            self._genos_url = os.environ["LOCAL_LLM_URL"].rstrip("/")
+            self._genos_key = os.environ.get("LOCAL_LLM_KEY", "")
+            self._genos_user = ""
+            json_mode = os.environ.get("LOCAL_LLM_JSON_MODE")
+            temperature = os.environ.get("LOCAL_LLM_TEMPERATURE")
+            configured_model = os.environ.get("LOCAL_LLM_MODEL")
+            default_model = ""
+            self._backend_label = "Local LLM"
+        else:
+            self._genos_url = os.environ["GENOS_LLM_URL"].rstrip("/")
+            self._genos_key = os.environ.get("GENOS_LLM_KEY", "")
+            self._genos_user = os.environ.get("GENOS_USER_ID", "")
+            json_mode = os.environ.get("GENOS_LLM_JSON_MODE")
+            temperature = os.environ.get("GENOS_LLM_TEMPERATURE")
+            configured_model = os.environ.get("GENOS_LLM_MODEL")
+            default_model = ""
+            self._backend_label = "GenOS"
         # json 을 받는 방식 — json_schema(엔진이 스키마 강제) → prompt(스키마를
         # 시스템 프롬프트에 싣고 파싱). 400 이 나면 자동으로 한 단계 내려간다.
-        self._json_mode = (os.environ.get("GENOS_LLM_JSON_MODE") or "json_schema").lower()
+        self._json_mode = (json_mode or "json_schema").lower()
+        self._temperature = float(temperature or "0")
         self._session = requests.Session()
         self._session.headers.update({"Content-Type": "application/json"})
         if self._genos_key:
             self._session.headers["Authorization"] = f"Bearer {self._genos_key}"
         if self._genos_user:
             self._session.headers["x-genos-user-id"] = self._genos_user
+        if self.backend == "openrouter":
+            referer = os.environ.get("OPENROUTER_HTTP_REFERER", "")
+            app_name = os.environ.get("OPENROUTER_APP_NAME", "8-AGENT")
+            if referer:
+                self._session.headers["HTTP-Referer"] = referer
+            if app_name:
+                self._session.headers["X-Title"] = app_name
         # 모델 이름 — 환경이 말하면 그것, 아니면 서빙에 물어 첫 모델(문서의 예시
         # 절차 그대로: /v1/models 의 data[0].id). 실패는 첫 호출로 미룬다.
-        self.model = model or os.environ.get("GENOS_LLM_MODEL") or ""
+        self.model = model or configured_model or default_model
         if not self.model:
             try:
                 r = self._session.get(self._genos_url + "/v1/models", timeout=15)
                 r.raise_for_status()
                 self.model = r.json()["data"][0]["id"]
             except Exception as exc:                  # 첫 호출 때 다시 시도한다
-                log.warning("GenOS /v1/models 실패 — %s", exc)
+                log.warning("%s /v1/models 실패 — %s", self._backend_label, exc)
 
     @staticmethod
     def _extract_json(text: str) -> str:
@@ -198,7 +244,7 @@ class LLM:
             content = blocks + [{"type": "text", "text": user}]
             ex.images = len(blocks)
         ex.model = model
-        temperature = float(os.environ.get("GENOS_LLM_TEMPERATURE", "0"))
+        temperature = self._temperature
 
         def _payload(mode: str) -> dict:
             sys_text = system
@@ -228,8 +274,8 @@ class LLM:
             if resp.status_code == 400 and mode != "prompt":
                 # 엔진이 이 형식을 모른다 — 한 단계 내려가고, 세션 내내 그 길로.
                 nxt = "prompt"
-                log.warning("GenOS 가 %s 를 거부(400: %s) — %s 모드로 내려간다",
-                            mode, resp.text[:200], nxt)
+                log.warning("%s가 %s 를 거부(400: %s) — %s 모드로 내려간다",
+                            self._backend_label, mode, resp.text[:200], nxt)
                 self._json_mode = mode = nxt
                 continue
             resp.raise_for_status()
@@ -289,7 +335,7 @@ class LLM:
         ex = Exchange(kind=kind, system=system, user=user, model=use,
                       at=datetime.now(timezone.utc).isoformat(timespec="seconds"))
         content: Any = user
-        if images and self.backend != "genos":
+        if images and self.backend not in ("local", "genos", "openrouter"):
             blocks: list[dict] = []
             for uri in images:
                 head, _, b64 = str(uri).partition(",")
@@ -310,7 +356,7 @@ class LLM:
             cfg["effort"] = effort
         t0 = time.perf_counter()
         try:
-            if self.backend == "genos":
+            if self.backend in ("local", "genos", "openrouter"):
                 # 그림 블록은 백엔드마다 형식이 다르다 — genos 쪽이 다시 만든다.
                 text, stop = self._call_genos(ex, system, user, schema,
                                               max_tokens, images, t0,

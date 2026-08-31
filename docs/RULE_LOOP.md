@@ -206,6 +206,8 @@ data/rules/breaker.json: {"state": "정상"|"강하", "reason": "…", "ts": "�
 5. 자동화                 ◐ 잠정→규칙 자동 승격 · 규칙별 자동 강등(뒤집힘 누적→보류) ·
                           반증 자동 배선 완료 — 부검 LLM 딱지·표본 감사 ⬜
 6. 정착 동작              ⬜ 인제스트 게이트 — 마지막. 그 전까지 정착은 상태값만
+7. 승인 receipt 합본      ✅ 분산 승인→append-only 공통 계보 + 실패×효과별 진화 후보
+                          (`docs/APPROVAL_EVOLUTION.md`, GET `/v1/rag/approvals{,/evolution}`)
 ```
 
 **반증 배선 (2026-08-12 추가)** — 반례는 일어나는 자리에서 세어진다:

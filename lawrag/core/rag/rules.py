@@ -218,8 +218,10 @@ def load() -> list[dict]:
         for narrow, wide in overlaps(rows):
             log.warning("규칙 중첩 — %s ⊂ %s (좁은 쪽이 먼저 평가된다)",
                         narrow, wide)
-        _load_cache["sig"] = sig
         _load_cache["rows"] = rows
+        # Publish the signature last.  Another thread that observes the new
+        # signature must also be guaranteed to observe its matching rows.
+        _load_cache["sig"] = sig
     return list(_load_cache["rows"])
 
 
@@ -307,6 +309,13 @@ def set_status(rule_id: str, status: str, by: str, note: str = "") -> dict:
                                               by=by)
             except Exception:                          # pragma: no cover
                 log.exception("위키 연대기 기록 실패 — 전이는 성립")
+            from lawrag.core.rag import approvals
+            approvals.safe_record(
+                kind="general_rule_status", decision=status,
+                effect="rule_activate" if status in ACTIVE else "rule_hold",
+                failure="", subject={"rule": rule_id},
+                before={"status": cur}, after={"status": status}, note=note,
+                actor=by, source={"ledger": "general_rules"})
             return r
     raise ValueError(f"규칙 {rule_id} 가 없습니다")
 
@@ -453,6 +462,15 @@ def resolve_hit(rule_id: str, target: dict, action: str, note: str = "") -> dict
     if action == "뒤집힘":
         _maybe_demote(rule_id)
         out["breaker"] = maybe_trip()
+    from lawrag.core.rag import approvals
+    approvals.safe_record(
+        kind="rule_autopsy", decision=action,
+        effect="rule_overturn" if action == "뒤집힘" else "confirmed",
+        failure="규칙_반례" if action == "뒤집힘" else "",
+        subject={"rule": rule_id, "target": {k: target.get(k) for k in
+                 ("src_doc", "src", "dst_doc", "dst")}},
+        after={"action": action}, note=note, actor="human",
+        source={"ledger": "rule_hits"})
     return out
 
 

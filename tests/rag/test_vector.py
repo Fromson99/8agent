@@ -113,3 +113,23 @@ def test_코사인_문턱_미달은_버린다(tmp_path, monkeypatch):
                   [{"doc_id": "d1", "node": 1}], [[1, 0]])
     _fake_query_vec(monkeypatch, [0.3, 0.954])   # cos ≈ 0.3 < 0.45
     assert vector_mod.search("먼 질의") == []
+
+
+def test_같은_질문의_좌표검색은_임베딩을_한번만_계산한다(tmp_path, monkeypatch):
+    from lawrag.core import embedding
+
+    _vector_store(tmp_path, monkeypatch,
+                  [{"doc_id": "d1", "node": 1}, {"doc_id": "d1", "node": 2}],
+                  [[1, 0], [0, 1]])
+    called = {"n": 0}
+    monkeypatch.setattr(embedding, "available", lambda: True)
+    monkeypatch.setattr(
+        embedding, "encode_one",
+        lambda _q: called.__setitem__("n", called["n"] + 1)
+        or np.array([1.0, 0.0], dtype=np.float32),
+    )
+
+    vector_mod.search("같은 질문", coordinates=frozenset({("d1", 1)}))
+    vector_mod.search("같은 질문", coordinates=frozenset({("d1", 2)}))
+
+    assert called["n"] == 1

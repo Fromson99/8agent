@@ -77,6 +77,8 @@ class Lexicon:
             self._by_field[f] = np.array([i for i, t in enumerate(self.names)
                                           if f in self.terms[t]["fields"]], dtype=np.int64)
         self.vec: Optional[np.ndarray] = None
+        self.cache_stats = {"terms": len(self.names), "cached": 0, "missing": 0,
+                            "coverage": 0.0, "compiled": False}
         if cache:
             self._embed()
 
@@ -115,7 +117,13 @@ class Lexicon:
         들고, 어휘가 바뀌면(문서 추가·프레임 재생성) 없는 낱말만 인코딩하고 합집합을
         다시 쓴다. 옛 형식(terms-N.npz: emb+sig 만)은 sig 가 맞을 때만 통째로 쓴다.
         2026-08-19 실측 — 57→140 문서 재편 한 번에 4만 낱말 1h43m 을 다시 내던 것이
-        새 낱말 몫만 남는다."""
+        새 낱말 몫만 남는다.
+
+        질의 경로의 기본은 **컴파일 금지**다. 캐시가 덜 구워졌다고 첫 사용자가 CPU
+        BGE-M3로 수만 낱말을 컴파일하며 수십 분 기다리면 서비스가 아니다. 준비된
+        낱말만 의미 이웃에 쓰고(빠진 행은 영벡터), 정확 문자열 일치는 전 용어를
+        그대로 쓴다. 배치에서만 ``RAG_LEXICON_COMPILE_MISSING=1``로 명시해 캐시를
+        갱신한다."""
         np = _np()
         from lawrag.core import embedding
         if not embedding.available() or not self.names:
@@ -137,17 +145,41 @@ class Lexicon:
             except Exception:
                 continue
         missing = [n for n in self.names if n not in known]
-        if missing:
+        compile_missing = os.environ.get("RAG_LEXICON_COMPILE_MISSING", "0") == "1"
+        if missing and compile_missing:
             log.info("용어집 임베딩 — 전체 %d · 캐시 재사용 %d · 새로 %d",
                      len(self.names), len(self.names) - len(missing), len(missing))
             emb = np.asarray(embedding.encode(missing), dtype=np.float32)
+            if emb.ndim != 2 or len(emb) != len(missing):
+                log.warning("용어집 임베딩 실패 — 준비된 캐시만 사용")
+                emb = np.zeros((0, 0), dtype=np.float32)
             emb /= (np.linalg.norm(emb, axis=1, keepdims=True) + 1e-9)
             for n, v in zip(missing, emb):
                 known[n] = v
-            names = list(known)                                   # 합집합 — 파일럿·전수가 서로 안 지운다
-            np.savez_compressed(d / "terms.npz", names=np.array(names, dtype=str),
-                                emb=np.stack([known[n] for n in names]).astype(np.float16))
-        self.vec = np.stack([np.asarray(known[n], dtype=np.float32) for n in self.names])
+            if len(emb) == len(missing):
+                names = list(known)                               # 합집합 — 파일럿·전수가 서로 안 지운다
+                np.savez_compressed(d / "terms.npz", names=np.array(names, dtype=str),
+                                    emb=np.stack([known[n] for n in names]).astype(np.float16))
+        cached = sum(n in known for n in self.names)
+        self.cache_stats = {
+            "terms": len(self.names), "cached": cached,
+            "missing": len(self.names) - cached,
+            "coverage": round(cached / len(self.names), 6) if self.names else 1.0,
+            "compiled": bool(missing and compile_missing and cached == len(self.names)),
+        }
+        if not known:
+            self.vec = None
+            return
+        dim = int(np.asarray(next(iter(known.values()))).shape[-1])
+        zero = np.zeros(dim, dtype=np.float32)
+        self.vec = np.stack([
+            np.asarray(known[n], dtype=np.float32) if n in known else zero
+            for n in self.names
+        ])
+        if self.cache_stats["missing"]:
+            log.warning("용어집 벡터 캐시 미완성 — %d/%d(%.1f%%), 빠진 %d개는 정확 일치만 사용",
+                        cached, len(self.names), self.cache_stats["coverage"] * 100,
+                        self.cache_stats["missing"])
 
     # ------------------------------------------------------------ 1-a 정확
     def exact(self, question: str, cap: int = 12) -> list[dict]:

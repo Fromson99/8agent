@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "name": "ask-fixed-claims-e2e-v1",
+  "role": "ask_answer_claim_and_negation_canary",
+  "required_channels": ["concept", "vector"],
+  "required_stages": ["issue_spot", "retrieval", "answer_synthesis", "final_citation"],
+  "cases": [
+    {
+      "id": "liability-positive",
+      "question": "자본시장법 제64조제1항에서 금융투자업자가 업무 소홀로 투자자에게 손해를 내면 배상 책임이 있나요?",
+      "direction": "긍정",
+      "expected_claim": "금융투자업자가 법령·약관·집합투자규약·투자설명서를 위반하거나 업무를 소홀히 해 투자자 손해를 발생시키면 원칙적으로 배상책임이 있고, 법이 정한 주의 증명·투자자 인식 등의 예외가 있다.",
+      "mode": "A",
+      "expect_sources": [{"doc_id": "9a51fdb8028417bf", "node": 575}]
+    },
+    {
+      "id": "payment-hold-positive",
+      "question": "자본시장법 시행령 제73조의2에서 예치기관은 투자자에게 지급보류를 알려야 하나요?",
+      "direction": "긍정",
+      "expected_claim": "예치기관이 투자자예탁금 지급을 보류하면 지급보류 금액·사유·기간·향후 지급청구 사항을 투자자에게 서면으로 알려야 한다.",
+      "mode": "A",
+      "expect_sources": [{"doc_id": "2fc762b3b8ed81f0", "node": 1129}]
+    },
+    {
+      "id": "recruitment-recusal-positive",
+      "question": "금융투자회사 채용절차 모범규준 제18조에서 면접위원이 지원자와 이해관계나 특수관계가 있으면 그 면접위원을 해당 지원자의 면접에서 제척하나요?",
+      "direction": "긍정",
+      "expected_claim": "면접위원이 지원자와 이해관계 또는 특수관계가 있으면 금융투자회사는 그 면접위원을 해당 지원자의 면접에서 제척한다.",
+      "mode": "A",
+      "expect_sources": [{"doc_id": "1356beb3fa4a0002", "node": 74}]
+    },
+    {
+      "id": "it-risk-positive",
+      "question": "제3자 IT리스크관리 가이드라인 제10조제1항에서 금융회사는 제3자의 IT리스크를 주기적으로 평가·관리해야 하나요?",
+      "direction": "긍정",
+      "expected_claim": "금융회사는 계약 전 검토 단계와 계약 이후 운영 단계에서 제3자의 IT리스크를 주기적으로 평가·관리해야 한다.",
+      "mode": "A",
+      "expect_sources": [{"doc_id": "e1734bc13ef83238", "node": 63}]
+    },
+    {
+      "id": "competition-report-positive",
+      "question": "공정거래법 제80조제2항에 따라 누구든지 법 위반 사실을 공정거래위원회에 신고할 수 있나요?",
+      "direction": "긍정",
+      "expected_claim": "누구든지 공정거래법에 위반되는 사실을 공정거래위원회에 신고할 수 있다.",
+      "mode": "A",
+      "expect_sources": [{"doc_id": "27d38a32e79835d9", "node": 641}]
+    },
+    {
+      "id": "liability-negated",
+      "question": "자본시장법 제64조제1항상 금융투자업자는 업무 소홀로 투자자에게 손해를 내도 배상 책임이 없나요?",
+      "direction": "긍정",
+      "expected_claim": "금융투자업자가 법령·약관·집합투자규약·투자설명서를 위반하거나 업무를 소홀히 해 투자자 손해를 발생시키면 원칙적으로 배상책임이 있고, 법이 정한 주의 증명·투자자 인식 등의 예외가 있다.",
+      "mode": "A",
+      "expect_sources": [{"doc_id": "9a51fdb8028417bf", "node": 575}]
+    },
+    {
+      "id": "payment-hold-negated",
+      "question": "자본시장법 시행령 제73조의2상 예치기관은 지급보류를 투자자에게 알리지 않아도 되나요?",
+      "direction": "긍정",
+      "expected_claim": "예치기관이 투자자예탁금 지급을 보류하면 지급보류 금액·사유·기간·향후 지급청구 사항을 투자자에게 서면으로 알려야 한다.",
+      "mode": "A",
+      "expect_sources": [{"doc_id": "2fc762b3b8ed81f0", "node": 1129}]
+    },
+    {
+      "id": "recruitment-recusal-negated",
+      "question": "금융투자회사 채용절차 모범규준 제18조상 면접위원이 지원자와 이해관계나 특수관계가 있어도 그 면접위원을 해당 지원자의 면접에서 제척하면 안 되나요?",
+      "direction": "긍정",
+      "expected_claim": "면접위원이 지원자와 이해관계 또는 특수관계가 있으면 금융투자회사는 그 면접위원을 해당 지원자의 면접에서 제척한다.",
+      "mode": "A",
+      "expect_sources": [{"doc_id": "1356beb3fa4a0002", "node": 74}]
+    },
+    {
+      "id": "it-risk-negated",
+      "question": "제3자 IT리스크관리 가이드라인 제10조제1항상 금융회사는 제3자 IT리스크를 평가·관리할 필요가 없나요?",
+      "direction": "긍정",
+      "expected_claim": "금융회사는 계약 전 검토 단계와 계약 이후 운영 단계에서 제3자의 IT리스크를 주기적으로 평가·관리해야 한다.",
+      "mode": "A",
+      "expect_sources": [{"doc_id": "e1734bc13ef83238", "node": 63}]
+    },
+    {
+      "id": "competition-report-negated",
+      "question": "공정거래법 제80조제2항상 누구도 법 위반 사실을 공정거래위원회에 신고할 수 없나요?",
+      "direction": "긍정",
+      "expected_claim": "누구든지 공정거래법에 위반되는 사실을 공정거래위원회에 신고할 수 있다.",
+      "mode": "A",
+      "expect_sources": [{"doc_id": "27d38a32e79835d9", "node": 641}]
+    }
+  ],
+  "release_rule": "Concept가 실제로 진입한 baseline만 Concept OFF A/B로 인정한다. 긍정·명시 부정 표현을 분리해 본다."
+}

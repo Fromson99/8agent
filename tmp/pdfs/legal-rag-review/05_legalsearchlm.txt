@@ -1,0 +1,2527 @@
+LegalSearchLM: Rethinking Legal Case Retrieval as Legal Elements
+Generation
+Chaeeun Kim1∗ Jinu Lee2 Wonseok Hwang1,3
+1LBOX 2University of Illinois Urbana-Champaign 3University of Seoul
+Abstract
+Legal Case Retrieval (LCR), which retrieves
+relevant cases from a query case, is a fun-
+damental task for legal professionals in re-
+search and decision-making. However, exist-
+ing studies on LCR face two major limita-
+tions. First, they are evaluated on relatively
+small-scale retrieval corpora (e.g., 100-55K
+cases) and use a narrow range of criminal
+query types, which cannot sufficiently reflect
+thecomplexityofreal-worldlegalretrievalsce-
+narios. Second, their reliance on embedding-
+based or lexical matching methods often re-
+sults in limited representations and legally ir-
+relevant matches. To address these issues, we
+present: (1)LEGAR BENCH, the first large-
+scale Korean LCR benchmark, covering 411
+diverse crime types in queries over 1.2M can-
+didate cases; and (2)LegalSearchLM, a
+retrieval model that performs legal element
+reasoning over the query case and directly
+generates content containing those elements,
+grounded in the target cases through con-
+strained decoding. Experimental results show
+thatLegalSearchLMoutperforms baselines
+by 6 – 20% onLEGAR BENCH, achieving
+state-of-the-art performance. It also demon-
+strates strong generalization to out-of-domain
+cases, outperforming naive generative models
+trained on in-domain data by 15%.
+1 Introduction
+Legal AI has increasingly gained attention from
+legalprofessionalstoraisetheproductivityoftheir
+work. Among various legal applications,Legal
+Case Retrieval(LCR) (Feng et al., 2024; Deng
+etal.,2024b;Suetal.,2024;Dengetal.,2024a;Li
+et al., 2023a; Xiao et al., 2021; Li et al., 2023b,c;
+Zhangetal.,2023),whichidentifiesrelevantprece-
+dents for a given case, plays a particularly crucial
+roleinmaintainingjudicialfairnessandsupporting
+the decision-making process of legal experts.
+∗Correspondence to: chaechaek1214@gmail.com
+However, previous work on the legal case re-
+trieval task has clear limitations. (1) Most evalua-
+tions have been conducted in small-scale settings,
+where a predefined set of candidate documents is
+providedforeachqueryandthequeriesdonotsuf-
+ficientlyreflectthediversecriminalcasetypes(Ma
+etal.,2021;Lietal.,2023b,c;Xiaoetal.,2018;Li
+et al., 2023d). (2) The tested retrieval models are
+limited to embedding-based similarity and lexical
+matching approaches, with the former struggling
+to capture the rich semantics of legal literature
+as it compresses complex documents into fixed-
+size vectors, and the latter often leading to unfo-
+cused matches due to a lack of semantic under-
+standing (Wang et al., 2023; Magesh et al., 2024;
+Kim et al., 2024).
+Toaddressthefirst,wepresentLEGAR BENCH
+(LegalCaseRetrievalBenchmark),thefirstlarge-
+scale Korean LCR benchmark, comprising two
+dataset versions tailored to different evaluation
+needs: (1) LEGAR BENCHStandard is designed for
+comprehensive assessment across a broad range
+of crime categories. The queries cover 411 dis-
+tinct crime types and are evaluated over a retrieval
+pool of 1.2M cases. To achieve this, we systemati-
+cally construct the benchmark using crime types
+based on statutory provisions, even further de-
+tailedthanofficialchargetitlesusedincourts(e.g.,
+defamation by fact disclosure – Article 307(1), or
+false allegation – Article 307(2), both sharing the
+chargetitledefamation)(Section2.1).(2)LEGAR
+BENCHStricter evaluates stricter relevance criteria
+than LEGAR BENCHStandard. It considers more
+factual details and legal issues within the same
+crime type that can affect the final judgment or
+sentence, which is crucial for legal practitioners.
+Toenablethis,weannotatethepoolof170Kcases
+across 160 crime types using 102 crime-specific
+legal factors and 443 corresponding options (Sec-
+tion 2.2).
+To address the second, we shift our focus on the
+arXiv:2505.23832v3  [cs.CL]  5 Oct 2025
+
+Language Crime types of query Query case Retrieval pool Target case per query
+COLIEE2024 English - 400 1,734 (per query) -
+LeCaRD Chinese - 107 100 (per query) 10.33
+LeCaRDv2 Chinese - 800 55,192 (per query) 20.89
+LEGAR BENCHStandard Korean 411 411*N 1,226,814 200
+LEGAR BENCHStricter Korean 160 ~15,777 169,230 14.69
+Table 1: Scale comparison of LCR benchmarks.LEGAR BENCHexpands the retrieval pool and query coverage.
+Nindicates query set expandability via similar case groups.
+LCR task from sequence-to-sequence matching to
+generating the key legal elements that determine
+relevance by proposingLegalSearchLM. It di-
+rectly generates important legal elements via con-
+strained decoding and returns the documents that
+contain them (Li et al., 2024; Kim et al., 2024; Li
+et al., 2023e,f; Bevilacqua et al., 2022), mitigat-
+ing the shortcomings of traditional retrievers like
+BM25anddenseembeddings.Giventhespecificity
+of the legal domain, we adopt diverse strategies
+including first token-aware generation and self-
+supervised fine-tuning (SSFT) (Section 3).
+We evaluateLegalSearchLMonLEGAR
+BENCH, comparing it against strong baselines
+including lexical matching and embedding-based
+methods from both general-purpose and legal-
+domain models. Our experimental results show
+thatLegalSearchLMoutperforms the best base-
+lineby6%inprecision.Ourtrainingstrategyleads
+to significantly better generalization, achieving a
+15% improvement over generative retrieval mod-
+elstrainedwithnaiveidentifiersonin-domaindata
+(Section 5).
+In summary, our contributions are as follows.
+•We introduce the first Korean LCR bench-
+mark,LEGAR BENCH,whichhasthelargest
+and most diverse criminal cases.
+•We presentLegalSearchLMthat generates
+legal elements that should be included in tar-
+get case via first-token-aware decoding.
+•OurLegalSearchLMachieves state-of-the-
+artperformanceonLEGARBENCH,demon-
+strating remarkablegeneralization abilityon
+unseen crime types.
+2LEGAR BENCH
+In this section, we describe relevance criteria and
+the construction process ofLEGAR BENCH.
+LEGAR BENCHfeatures the most comprehen-
+sive set of query and target cases (See Table 1),
+Categories #Crime types of queries
+Standard Stricter
+Traffic offenses 13 9
+Fraud 21 8
+Injury or Violence 31 19
+Sexual crime 132 111
+Defamation or Insult 8 6
+Finance or Insurance 5 1
+Drug 5 4
+Murder 2 2
+Theft or Robbery 38 -
+Obstruction of Business 13 -
+Destruction 5 -
+Threat 11 -
+Criminal trespass 15 -
+Embezzlement or Breach of trust 15 -
+Gambling 7 -
+Negligent homicide and injury 6 -
+Obstruction of right 5 -
+Child abuse or School violence 10 -
+Medical or Food drug 11 -
+Corporation 3 -
+Bribery 3 -
+Car 2 -
+Labor or Employment 11 -
+Industrial or Serious accidents 4 -
+Military duty or law 2 -
+Consumer or Fair trade 1 -
+Arrest or Detention 1 -
+Intellectual property 3 -
+IT or Privacy 2 -
+Misdemeanor 1 -
+Sexual norms 1 -
+Tax, Administ, Const law 14 -
+Other criminal offenses 10 -
+Total 411 160
+Table 2: Statistics of Crime Typology and Correspond-
+ing Criminal Types. LEGAR BENCHStandard includes
+411 query types across 33 crime categories, while
+LEGAR BENCHStricter covers 160 query types across
+8 categories.
+with relevance criteria rigorously defined by the
+lawyersinvolvedintheconstructionprocess.Itof-
+fers two dataset versions based on different evalu-
+ation needs, LEGAR BENCHStandard and LEGAR
+BENCHStricter.
+2.1 LEGAR BENCH Standard
+LEGAR BENCHStandard is designed to provide a
+comprehensive assessment of retrieving diverse
+crime categories, and the enhancement of overall
+
+( Q u e r y )  F r o m  S e p t e m b e r  2 0 2 0  t o  M a r c h  2 0 2 1 ,  a t  t h e  d e f e n d a n t ’ s  r e s i d e n c e  i n  B  B u i l d i n g ,  C  U n i t ,  S e o b u k  D i s t r i c t ,  C h e o n a n ,  t h e  d e f e n d a n t  c r e a t e d  a  T e l e g r a m  c h a t  r o o m  
+n a m e d  " D . "  O v e r  9 5  t r a n s a c t i o n s ,  t h e  d e f e n d a n t  r e c e i v e d  a  t o t a l  o f  2 , 4 0 0 , 0 0 0  K R W  i n  c u l t u r a l  g i f t  c e r t i fi c a t e s  f r o m  b u y e r s .  T h e  d e f e n d a n t  t h e n  i n v i t e d  t h e m  t o  o t h e r  c h a t  
+r o o m s ,  " E , "  " F , "  a n d  " G " ,  w h i c h  c o n t a i n e d  1 0 1  e d i t e d  p h o t o s  o f  f e m a l e  c e l e b r i t i e s ,  w i t h  t h e i r  f a c e s  i n s e r t e d  i n t o  e x p l i c i t  c o n t e n t  w i t h o u t  c o n s e n t .  T h e  d e f e n d a n t  a l s o  s e n t  
+2 5 0  s i m i l a r  p h o t o s  d i r e c t l y  t o  b u y e r s .  T h r o u g h  t h e s e  a c t i o n s ,  t h e  d e f e n d a n t  s o l d  a n d  d i s t r i b u t e d  e d i t e d ,  s e x u a l l y  s u g g e s t i v e  i m a g e s  f o r  p r o fi t ,  u s i n g  t h e  i n t e r n e t  w i t h o u t  
+t h e  i n d i v i d u a l s ’  c o n s e n t .
+( S t a n d a r d )  O n  J u n e  1 5 ,  2 0 2 1 ,  a t  0 1 : 5 7  A M ,  a t  t h e  d e f e n d a n t ’ s  r e s i d e n c e  i n  B  
+A p a r t m e n t ,  C  U n i t ,  i n  G y e o n g b u k  G u n w i ,  t h e  d e f e n d a n t ,  a f t e r  p o s t i n g  a  f a l s e  
+v i d e o  s a l e  a d v e r t i s e m e n t  o n  T e l e g r a m ,  w a s  c o n t a c t e d  b y  O ffi c e r  E  f r o m  t h e  J e j u  
+P o l i c e  D e p a r t m e n t .  T h e  d e f e n d a n t  a c c e p t e d  a n  o ff e r  t o  s e l l  t h e  f a k e  v i d e o s ,  
+r e c e i v e d  2 0 , 0 0 0  K R W  v i a  a  b a n k  t r a n s f e r  t o  a n  a c c o u n t  u n d e r  t h e  d e f e n d a n t ' s  
+n a m e ,  a n d  s e n t  9  e d i t e d  p h o t o s  o f  w o m e n ’ s  b o d i e s  t o  O ffi c e r  E  v i a  T e l e g r a m .  T h e  
+p h o t o s  w e r e  d i g i t a l l y  a l t e r e d  t o  i n s e r t  i m a g e s  o f  w o m e n ' s  b r e a s t s  o r  g e n i t a l s .  I n  
+d o i n g  s o ,  t h e  d e f e n d a n t  p r o v i d e d  e d i t e d  o r  f a b r i c a t e d  m a t e r i a l  f o r  p r o fi t ,  u s i n g  t h e  
+i n t e r n e t  t o  c r e a t e  s e x u a l l y  s u g g e s t i v e  c o n t e n t  w i t h o u t  t h e  c o n s e n t .
+( S t r i c t e r )  F r o m  J u n e  2 0 2 3  t o  J a n u a r y  2 0 2 4 ,  t h e  d e f e n d a n t  o p e r a t e d  a  p r i v a t e  
+T e l e g r a m  c h a n n e l  f r o m  t h e i r  r e s i d e n c e  i n  G a n g s e o - g u ,  S e o u l ,  a d v e r t i s i n g  t h e  s a l e  
+o f  " h i g h - q u a l i t y  m a n i p u l a t e d  p h o t o s  a n d  v i d e o s . "  T h r o u g h  t h i s  p l a t f o r m ,  t h e  
+d e f e n d a n t  r e c e i v e d  p a y m e n t s  f r o m  m u l t i p l e  b u y e r s  i n t o  t h e i r  H  B a n k  a c c o u n t  a n d  
+d i s t r i b u t e d  a p p r o x i m a t e l y  3 2 0  m a n i p u l a t e d  i m a g e s  a n d  v i d e o s ,  i n  w h i c h  t h e  
+f a c e s  o f  o r d i n a r y  w o m e n  a n d  c e l e b r i t i e s  w e r e  s u p e r i m p o s e d  o n t o  t h e  n u d e  
+b o d i e s  o f  u n i d e n t i fi e d  i n d i v i d u a l s .  E n g a g i n g  i n  t h i s  a c t i v i t y  o n  a p p r o x i m a t e l y  1 1 0  
+o c c a s i o n s ,  t h e  d e f e n d a n t  a c c r u e d  a  t o t a l  o f  3 , 3 0 0 , 0 0 0  K R W .  T h e s e  m a t e r i a l s  
+w e r e  r e p e a t e d l y  d i s t r i b u t e d  o n l i n e  f o r  p r o fi t ,  w i t h o u t  t h e  v i c t i m s '  c o n s e n t .
+( A )  O n  J u l y  2 3 ,  2 0 2 2 ,  t h e  d e f e n d a n t  u s e d  a  p r o g r a m  t o  c r e a t e  8  m a n i p u l a t e d  i m a g e s  b y  c o m b i n i n g  a  p h o t o  o f  t h e  v i c t i m  w i t h  n u d e  i m a g e s  o f  a n  u n k n o w n  w o m a n  f r o m  a  
+p o r n o g r a p h i c  s i t e .  L a t e r ,  o n  O c t o b e r  6 ,  2 0 2 2 ,  t h e  d e f e n d a n t  c r e a t e d  a  G  a c c o u n t  u n d e r  t h e  v i c t i m ' s  n a m e  a n d  p o s t e d  t h e  8  m a n i p u l a t e d  i m a g e s  a l o n g  w i t h  2 4  o t h e r  
+p e r s o n a l  p h o t o s ,  i n c l u d i n g  f a m i l y  p h o t o s ,  m a k i n g  t h e m  p u b l i c .  B y  d o i n g  s o ,  t h e  d e f e n d a n t  i l l e g a l l y  m a n i p u l a t e d  a n d  d i s t r i b u t e d  t h e  v i c t i m ’ s  i m a g e s  a g a i n s t  t h e i r  w i l l .
+( B )  O n  M a y  2 4 ,  2 0 2 4 ,  t h e  d e f e n d a n t  fi l m e d  t h e  v i c t i m ,  E  ( f e m a l e ,  4 5 ) ,  p e r f o r m i n g  a  n u d e  m a s s a g e  u s i n g  a  h i d d e n  c a m e r a .  B e t w e e n  F e b r u a r y  a n d  M a y  2 0 2 4 ,  t h e  
+d e f e n d a n t  fi l m e d  5 0  s i m i l a r  i n s t a n c e s  i n v o l v i n g  w o m e n ,  i n c l u d i n g  s e x u a l  a c t s ,  w i t h o u t  t h e i r  c o n s e n t .  L a t e r ,  o n  F e b r u a r y  2 7 ,  2 0 2 4 ,  t h e  d e f e n d a n t  u p l o a d e d  o n e  v i d e o  t o  a  
+s i t e  a n d  s o l d  i t  f o r  3 0 0  ' w o o d '  ( a p p r o x i m a t e l y  4 4 , 7 1 5  K R W ) .  B e t w e e n  F e b r u a r y  a n d  S e p t e m b e r  2 0 2 4 ,  t h e  d e f e n d a n t  s o l d  s i m i l a r  v i d e o s ,  e a r n i n g  a  t o t a l  o f  7 3 , 7 4 2 , 4 8 8  K R W .
+Figure 1: Examples of Relevance Cases.(Query)is a query case on distributing false images/videos for profit.
+The Blue Highlight indicates profit, the Yellow Highlight represents the creation of false images/videos, and the
+Green Highlight denotes distribution—the three key legal elements of the crime. Both(Standard)and(Stricter)
+satisfy the three elements, and(Stricter)additionally meets the requirements concerning the scale of distributed
+images/videos (Red Highlight) and the total financial gains obtained (Purple Highlight).(A)and(B)are not target
+cases, as(A)distributed a false image without intending to obtain financial gains, and(B)committed the offense
+for financial gain through the unlawful filming of real footage, not the creation of false images.
+3 3
+4 1 1
+C R I M I N A L  A C T
+S e x u a l  c r i m e L a b o r  o r  E m p l o y m e n t C r i m e s  a g a i n s t  
+r e p u t a t i o n
+I n s u l t D e f a m a t i o n D e f a m a t i o n  t h r o u g h  
+p r i n t e d  m a t e r i a l s
+D e f a m a t i o n  t h r o u g h  
+r a d i o
+D e f a m a t i o n  b y  
+d i s c l o s u r e  o f  f a c t s
+D e f a m a t i o n  b y  f a l s e  
+a l l e g a t i o n
+.
+.
+.
+.
+.
+.
+.
+.
+.
+. . .
+. . .
+T h e f t  o r  R o b b e r yS t e p  1 .
+S t e p  2 .
+S t e p  3 .
+Figure 2: Examples of the construction process for each
+step in LEGAR BENCHStandard.Step 1defines major
+crime categories based on Korean Criminal Act.Step 2
+refines these categories using charge titles, andStep 3
+further specifies them based on statutory provisions.
+system performance.
+2.1.1 Definition of Standard Relevance
+We define standard relevance based on the charge
+title and statutory provision, where the former
+referstotheformalnameoftheoffense,andthelat-
+terindicatesthespecificstatutoryarticleapplicable
+to that charge. For example, as shown in Figure 1
+onsexualcrime,forthequerycase(Query)ondis-
+tributing false sexual images/videos for profit, the
+standard target case(Standard)satisfies the three
+statutory elements: 1. creation of false sexual im-
+ages/videos,2.intentforprofit,and3.distribution.
+Cases like(A), which are not for profit, or(B),
+which concern illegal sexual video filming rather
+than false sexual image creation, cannot be con-
+sidered target cases, since they are distinct crimes
+governed by different laws.
+2.1.2 Data Construction
+To ensure comprehensive coverage of the diverse
+and complex legal literature, we employ a top-
+downapproach,systematicallycategorizingcrimes
+based on Korean Criminal Act.
+Step 1: Construction of Crime Typology.We
+establish a crime typology to categorize various
+typesofcrimesincriminalcases.AsshowninStep
+1 of Figure 2, we define major categories based
+on the structure of the Korean Criminal Act, such
+as sexual crimes, labor or employment offenses,
+crimesagainstreputation,andtheftorrobbery.Ap-
+pendix 5 lists a total of 33 crime categories.
+
+I n s u l t
+. . .
+C o m m o n  C r i m i n a l  
+F a c t o r s
+V i c t i m - T a r g e t e d  
+C r i m e  F a c t o r s
+V o l u n t a r y
+S u r r e n d e r I n s a n i t y D i m i n i s h e d  C a p a c i t y
+N u m b e r  o f  V i c t i m s R e l a t i o n s h i p  w i t h  
+V i c t i m
+M e d i u m  T y p e V i c t i m  S p e c i fi c i t yS o c i a l  R e p u t a t i o n  
+H a r mF a c t o r s  o f  I n s u l t
+< O p t i o n 
+P u b l i c  I n s u l 
+T h i r d - p a r t y  I n s u l 
+N o n - v e r b a l  I n s u l 
+O n l i n e  I n s u l t
+S t e p  5 .
+Figure 3: Examples of the construction process of
+LEGAR BENCHStricter. Each crime type (e.g., Insult)
+includesspecificallydefinedfactors(inboxesfilledwith
+sky blue) and sub-factors (in boxes outlined in black).
+Casesareannotatedbymappingallsub-factorstocorre-
+sponding predefined options.
+Step 2: Assignment of Charge Titles.We con-
+struct the set of crime charge titles that can oc-
+cur within each crime category. A charge title is
+the official name used in legal documents, such as
+indictments or complaints, to describe a specific
+offense. As shown in Figure 2, crimes against rep-
+utation can be expanded into related charge titles
+(sub-categories), such as defamation, defamation
+through printed materials, defamation through ra-
+dio,insults,etc.Whilechargetitlesaredetermined
+by statutory provisions that apply, there is no one-
+to-onecorrespondencebetweenthesetwobecause
+some charge titles correspond to multiple provi-
+sions with subtle differences. This ambiguity is
+resolved by further refinement in the next step.
+Step 3: Refinement from Statutory Provisions.
+To better reflect the subtle difference of the body
+of the crime between provisions grouped within
+the same charge title, we refine charge titles to the
+level of individual statutory provisions when such
+refinementisbothpossibleandmeaningful.Figure
+2showshowdefamationcanbedividedaccording
+to distinct laws, such as defamation by disclosure
+offactsanddefamationbyallegationoffalsefacts.
+Finally, the standard similar groups are formed by
+combining the results of Step 2 and Step 3, as
+shown in the skyblue-bordered box of Figure 2.
+As a result, LEGAR BENCHStandard contains 411
+similar groups across 33 categories.
+Step 4: Case Mapping.We automatically pro-
+cess 1.2M (1,226,814) criminal cases, mapping
+themtotheirrespectivegroupsbasedonthecharge
+title and statutory provisions annotated for each
+group. This process successfully maps 1M cases
+(1,052,506), which account for 85.79% of our
+total criminal cases,enabling evaluation on the
+majority of criminal cases through our LEGAR
+BENCHStandard.
+2.2 LEGAR BENCH Stricter
+2.2.1 Definition of Stricter Relevance
+For stricter case similarity, we expand the scope
+fromfactstoincludeclaims,reasoning,sentencing
+factors, and conclusions sections from the case,
+aiming to provide a more comprehensive view of
+theprocessofjudges.Stricterrelevancefurtherre-
+quiresfactual detailsthat do not affect the type
+of charge, but might affect the final judgment or
+the sentence. Examples include the severity of the
+crime, the relationship between the defendant and
+the victim, situational information, and arguments
+made by defendants. For instance, while making
+only a few fake images and selling them for 20
+dollars is ruled under the same crime with making
+hundreds of fake videos with thousands of dollars
+of profit, the stricter factual relevance between the
+twocasesislow(Seetheredandpurplehighlights
+in Figure 1). Also, if two assault defendants make
+thesameclaimofself-defensebutonlyoneofthem
+is accepted by the judge, these two cases should
+also be distinguished. Five legal experts have an-
+notated these important factors that determine the
+stricter relevance between cases (Appendix C.1).
+2.3 Dataset Construction
+Step 5: Define Detailed Factors.We construct
+LEGAR BENCHStricter starting from 160 simi-
+lar groups across 8 crime categories in LEGAR
+BENCHStandard. First, we define sets of factors to
+be further considered for each group in the stan-
+dard set. Figure 3 shows that the standard group
+“Insult”isassociatedwithCommonCriminalFac-
+tors, Victim-Targeted Crime Factors, and Factors
+of Insult. Next, we identify detailed sub-factors
+and create options for each of them. Finally, based
+on the defined factors, sub-factors, and options for
+eachstandardgroup,weannotatethecasesbelong-
+ing to each standard group using GPT-4o. The full
+list of sub-factors is shown in Table 7.
+Step 6: Case Grouping.As a result of Step 5,
+we obtain (sub-factor, option) pairs for each case
+across all sub-factors required for each standard
+group. The following grouping algorithm is then
+
+applied to find cases with the highest factual rele-
+vance.Wecreatedonestrictergroupforeachstan-
+dard group, resulting in 160 queries (See Table 1
+for details).
+Algorithm 1Stricter Relevance Group
+1:Input:case_data, subfactor-option pair_list
+2:Output:grouped_cases
+3:foreach case in case_datado
+4:key = generate_key(subfactor-option
+pair_list)
+5:group[key].append(case)
+6:end for
+7:ifany group has 2 or more casesthen
+8:return the group
+9:end if
+10:forr = number of subfactors to 1do
+11:foreach case in case_datado
+12:key = generate_key(subfactor-option
+pair_list[:r])
+13:group[key].append(case)
+14:end for
+15:ifany group has 2 or more casesthen
+16:return the group
+17:end if
+18:end for
+19:returnNone
+3LegalSearchLM
+Previous approaches to LCR rely on either
+embedding-based or lexical matching meth-
+ods (Magesh et al., 2024). However, embedding
+models often lose important details by compress-
+ing lengthy legal texts into single vectors, while
+lexical methods struggle to distinguish legally im-
+portant information from noise. To better reflect
+how legal experts assess relevance—focusing on
+specific legal elements that constitute the crime,
+rather than subtle details like dates, geographic
+names,orplacenames—thereisaneedforamore
+sophisticated retrieval approach.
+In this work, we introduceLegalSearchLM,
+which addresses the pitfalls of sequence-to-
+sequence matching by adopting the generative
+retrieval paradigm (Bevilacqua et al., 2022; Li
+et al., 2023f,e; Kim et al., 2024). Given a query
+case,LegalSearchLMgeneratesrelevantlegalel-
+ementsas keys for the target documents. By mod-
+eling retrieval as language modeling, it effectively
+mitigates the fixed-dimension embeddings’ infor-
+mation loss problem and the lexical match’s lack
+of deep semantic understanding, which are both
+crucial in LCR.
+3.1 Training
+Extracting legal elements.We define legal ele-
+ments are atomic facts that can influence the final
+judgment.AsproveneffectivebyMinetal.(2023);
+Chen et al. (2024a); Cai et al. (2024), we extract
+legally valid elements by prompting an LLM.
+However, naively training the model using ex-
+tracted legal elements is insufficient for success-
+ful retrieval. This is especially true at inference
+time, where the decoding process is constrained
+by a predefined FM-index that forces the model to
+generate sequences appearing exactly in the cor-
+pus. In this framework, early decoding decisions
+arehighlycritical;forinstance,generating“dates”
+or “locations” of the crime as the first token may
+unintentionally steer the decoding process toward
+irrelevant paths. This has the unintended effect of
+filtering based on information unrelated to legal
+relevance, thereby discarding documents that may
+contain key legal elements while overemphasizing
+those that happen to include the specific date or
+location.
+To address this problem, we construct synthetic
+examples that begin with legally informative to-
+kens from legal elements using few-shot LLMs.
+Figure 4 illustrates the generation of first-token-
+aware legal elements at inference time.
+Data collection.AsLegalSearchLMformu-
+lates LCR as legal elements generation, it needs
+finetuning to generate appropriate legal elements
+given the query case. However, as relevance an-
+notation in the legal domain is costly, training the
+model on a large set of query-target pairs is not
+feasible.
+As a solution, we construct a training dataset
+in a self-supervised manner (Lewis et al., 2020).
+Specifically, we use query case as inputs and le-
+gal elements from thequery caseas outputs. This
+approach provides the following three benefits:
+•Less noise and cost-effectiveness:It re-
+duces noise compared to using an existing
+retriever’s results as gold query-target pairs
+(e.g., BM25) (Li et al., 2023a).
+•Balanced training on long-tail crimes:It
+enablesbettersamplingofrarecasetypesthan
+citation-based approaches.
+
+(Quer y doc) F r om Sept ember 2020 t o Mar ch 
+2021 , at t he def endant ’ s r esidence in B 
+Building, C Unit, Seobuk District, Cheonan, 
+t he def endant cr eat ed a T elegram chat r oom 
+named "D . " Ov er 95 transactions, t he 
+def endant r eceiv ed a t otal of 2,400 , 000 KRW 
+in cultural gift cer tificat es fr om buy ers. The 
+def endant t hen in vit ed t hem t o ot her chat 
+r ooms, "E, " "F , " and "G" , which contained 101 
+edit ed phot os of f emale celebrities, wit h t heir 
+f aces inser t ed int o e xplicit cont ent wit hout 
+consent. The def endant also sent 250 similar 
+phot os dir ect ly t o buy ers. Thr ough t hese 
+actions, t he def endant sold and distribut ed 
+edit ed, se xually suggestiv e images f or pr ofit, 
+using t he int ernet wit hout t he individuals’ 
+consent.
+(Gener at ed cont ent)
+fr om
+sept ember
+def endant
+Cheonan
+videos
+edit ed
+f alse
+t he
+an off er
+allo wance
+a
+edit ed
+t he
+filmed
+pr o vided
+accept ed
+sent
+t o
+or
+mat erial
+t o tak
+t o sell
+t o call
+phot os
+v edios
+accept ed an off er t o sell t he f ak e videos, 
+r eceiv ed 20 , 000 KRW
+sent edit ed phot os of w omen’ s bodies
+pr o vided edit ed or f abricat ed mat erial f or pr ofit
+(T ar get doc) ... ( omitt ed) ... Officer E fr om 
+t he Jeju P olice Depar tment. The def endant 
+accept ed an off er t o sell t he f ak e videos, 
+r eceiv ed 20 , 000 KRW via a bank transf er t o 
+an account under t he def endant's name. 
+def endant sent edit ed phot os of w omen’ s 
+bodies t o Officer E via T elegram. The phot os 
+w er e digitally alt er ed t o inser t images of 
+w omen's br east s or genitals. In doing so, t he 
+def endant pr o vided edit ed or f abricat ed 
+mat erial f or pr ofit, ... ( omitt ed) ...
+Legal
+SearchLM
+Figure 4: Inference process ofLegalSearchLM. Given aQuery docas input,LegalSearchLMgenerates key
+legal elements expected to appear in theTarget docviacore-first-token-awareconstrained decoding over a prefix-
+indexed corpus (Generated content). Since the generated content is grounded in the corpus, it can be linked back
+to its source document, enabling retrieval.
+•Better generalization:The model learns to
+reasonoverlegalelementsfromaquerycase,
+aligningwithinference-timeconditionswith-
+out relying on memorization.
+3.2 Inference
+During inference,LegalSearchLMperforms
+constrained beam decoding over the document in-
+dex, ensuring that the generated content always
+exists in a document within the corpus (See Fig-
+ure 4). For constrained decoding, we employ an
+FM-index based on the Burrows-Wheeler Trans-
+form(BWT)(FerraginaandManzini,2000).Iten-
+ablesefficientexactpatternmatchingviabackward
+searchintimelineartothepatternlength.Detailed
+explanationsontheFM-indexareinAppendixA.1.
+The specific generation process is as follows.
+Letx 1, x2, . . . , xn denote a generated token se-
+quence obtained via constrained beam search. At
+each decoding stept, we maintain a beam of par-
+tial sequences{x(1)
+<t , x(2)
+<t , . . . , x(B)
+<t}, where each
+hypothesis is extended based on the previously
+generated tokensx (i)
+<t. The candidate setC(x (i)
+<t)
+representsthevalidnexttokensforthei-thhypoth-
+esis,constrainedbyFM-index.Thisensuresthatall
+generated sequences present within the corpus.
+x(i)
+1 = arg max
+x∈V
+P(x|[BOS])
+fori= 1, . . . , B(1)
+x(i)
+t ∈Top-k
+{
+P(x|x(i)
+<t)
+⏐⏐⏐ x∈C(x(i)
+<t)
+}
+fort≥2(2)
+In our retrieval process,LegalSearchLMcap-
+tures key legal elements from the query case that
+areexpectedtoappearinthetargetcase,andbegins
+generation with informative initial tokens to guide
+decoding toward relevant parts of the corpus.
+4 Experimental Setup
+4.1 Baselines
+We evaluate a range of baselines, including tra-
+ditional lexical matching and embedding-based
+methods trained on general or legal domains.
+Lexical matching.(1)BM25, a strong base-
+line in the legal domain (Rosa et al., 2021),
+widelyadoptedbyproduction-levellegalRAGsys-
+tems (Magesh et al., 2024).
+General dual-encoders.(1)Contriever(Izac-
+ard et al., 2022), a dual-encoder model designed
+as a general-purpose retriever. We further adapt
+this model by training it on our legal corpus.
+(2)mE5(Wang et al., 2024b), an open-source
+multilingual E5 (Wang et al., 2024a) embedding
+model that has achieved state-of-the-art retrieval
+performance. (3)OpenAI-Embedding 1, a widely
+used commercial embedding model from OpenAI
+(text-embedding-3-small).
+Legal dual-encoders.(1)Sailer(Li et al.,
+2023a), which achieves strong performance in
+the LCR task of the COLIEE 2023 competition
+(Goebel et al., 2024). Compared toContriever,
+1https://platform.openai.com/docs/guides/
+embeddings/embedding-models
+
+LEGAR BENCHStandard(P@5) LEGAR BENCH Strciter(P@5)
+Criminal Category LegalSearchLM BM25 Contriever SAILER Hybrid mE5 OpenAI-Embedding LegalSearchLM BM25 Contriever SAILER
+Fraud 0.74 0.53 0.57 0.64 0.66 0.63 0.65 0.33 0.33 0.03 0.24
+Injury or Violence0.62 0.50 0.42 0.66 0.68 0.57 0.56 0.35 0.35 0.01 0.23
+Sexual crime 0.62 0.49 0.40 0.65 0.66 0.51 0.53 0.37 0.37 0.02 0.32
+Finance or Insurance0.72 0.56 0.60 0.64 0.68 0.68 0.76 0.32 0.32 0 0.20
+Defamation or Insult0.83 0.58 0.48 0.78 0.78 0.68 0.70 0.33 0.33 0 0.22
+Drug 0.80 0.52 0.76 0.84 0.84 0.88 0.84 0.34 0.33 0 0.10
+Murder 0.50 0.50 0.30 0.50 0.50 0.30 0.30 0.39 0.39 0 0.35
+Traffic offenses 0.47 0.33 0.33 0.94 0.94 0.82 0.89 0.34 0.34 0.02 0.12
+... ... ... ... ... ... ... ...
+Total 0.680.51 0.48 0.62 0.65 0.57 0.580.350.34 0.01 0.22
+Table3:ResultsonLEGARBENCH StandardandLEGARBENCH Stricter.Wepresentresultsforthe8crimecategories
+shared by both evaluation sets, while the scores for the remaining 25 crime categories in LEGAR BENCHStandard
+are listed in Table B.1.
+0.00
+0.10
+0.20
+0.30
+0.40
+N=1 N=2 N=3 N=4
+LegalSearchLM BM25 SAILER
+Performance breakdown by difficulty on LEGAR BENCH_stricter
+Figure5:PerformanceonLEGARBENCH Stricterbyfour
+different difficulties, whereNrepresents the number
+of factors that should be matched.LegalSearchLM
+achievesthebestperformanceacrossalldifficultylevels,
+demonstrating robustness in complex retrieval settings.
+Saileris pretrained using legal documents with
+section-leveltrainingloss(e.g.,fact,interpretation
+(reasoning), and decision), enabling better legal
+documentunderstanding.(2)Hybrid,obtainedby
+averaging BM25 andSailerscores.
+5 Results and Analysis
+Performance on LEGAR BENCHStandard.An
+evaluation on the standard version, consisting of
+411variousquerytypesacross33crimecategories,
+demonstrates thatLegalSearchLMoutperforms
+Contriever by 20%, BM25 by 17%, mE5 by 11%,
+OpenAI-Embeddingby10%,SAILERby6%,and
+Hybrid by 3% (Table 3, bottom row). Specifically,
+itoutperformedBM25in28crimecategories,Con-
+trieveracrossallcategories,andSAILERin21cat-
+egories.InTable3,weprovidetheresultsfor8out
+of33criminalcategoriesforbrevity.Fullresultsare
+presentedinAppendixB.1,wherewealsoprovide
+a comparison with the reranked model, KELLER.
+Performance on LEGAR BENCHStricter.An
+evaluation on the stricter version, which includes
+15,777 diverse query types across 8 crime cate-
+gories, further demonstratesLegalSearchLM’s
+effectiveness in handling complex legal knowl-
+edge, achieving the highest performance in Ta-
+ble 3. BM25 excels at capturing fine-grained de-
+tails through exact lexical matching, leading to
+stronger performance in LEGAR BENCHStricter
+compared to embedding-based similarity search.
+LegalSearchLMeffectively captures both fine-
+grained details and legal semantic understanding,
+combining the strengths of both approaches. Fur-
+ther analysis is provided below.
+Advantages ofLegalSearchLMover existing
+retrievalmethods.IntheLEGALBENCH Stricter
+setting, we analyze retrieval performance across
+varying levels of retrieval difficulty, measured by
+the number of sub-factorsN.
+As shown in Figure 5, The performance of
+SAILER, an embedding-based retriever, relatively
+sharply degrades in difficult problems compared
+to LegalSearchLM, indicating that information is
+lost when vectorized. On the other hand, BM25,
+a lexical matching method, demonstrates no sig-
+nificant change by difficulty since it retrieves in a
+way that captures overlapping keywords without
+regard to legal element understanding. In contrast,
+
+0
+0.25
+0.5
+0.75
+1
+Total Sexual Crime Embezzlement 
+and Breach of 
+Trust
+Traffic Offenses Labor and 
+Employment
+LegalSeachLM_all    LegalSearchLM_sexual crime    NaiveIdentifiers_all
+Out-of-domain Performance & Identifier Ablation
+Figure 6: Performance on out-of-distribution.
+LegalSearchLMall is trained on all test categories;
+LegalSearchLMsexual crime on sexual crimes only.
+NaiveIdentifiersall is trained with random spans
+within the query case as supervision. Performance
+of LegalSearchLM sexual crime highlights its superior
+generalization ability.
+LegalSearchLMachieves the best performance
+inalldifficultiesbycombiningthestrengthoflexi-
+calmatchingincapturingfine-graineddetailswith
+thatofembedding-basedretrievalinunderstanding
+semantics.
+Generalization ability ofLegalSearchLMto
+unseencrimetypes.Aslegalprofessionalshan-
+dle diverse cases, the generalizability to unseen
+criminal types is crucial in LCR. To evaluate this,
+wetrainLegalSearchLMonlyusingsexualcrime
+data and test it on unseen domains (embezzle-
+ment and breach of trust, traffic offenses, and la-
+bor and employment). We compare the results
+with a generative retrieval model trained on all
+crimes but with naive identifiers. Figure 6 shows
+thatLegalSearchLMtrainedonsexualcrimeout-
+performs the model trained with naive identifiers
+by 15.66%, despite the latter is trained using in-
+domain data. Furthermore, the performance is al-
+most on par withLegalSearchLMtrained on the
+fulldata.Thisdemonstratesthattheabilitytoeffec-
+tivelycapturekeylegalelementsismorebeneficial
+than training on various datasets without carefully
+designed identifiers.
+6 Related Works
+6.1 Legal Case Retrieval Datasets
+LegalCaseRetrieval(LCR)isthetaskofretrieving
+target casesrelevantto a query case (Feng et al.,
+2024; Ma et al., 2021). While some works define
+relevantdocumentsasonethatiscitedbythequery
+(Shao et al., 2020; Li et al., 2023c), we focus on
+case similarity (Ma et al., 2021).
+InLCR,obtaininglarge-scaledataischallenging
+as the annotation requires legal expertise. There-
+fore, existing works often restrict the crime types
+or the retrieval pool’s size (Li et al., 2023b; Ma
+etal.,2021).Incontrast,thisworksuccessfullyau-
+tomated the annotation process while maintaining
+expert-level relevance judgments, eliminating the
+need for compromising data size and diversity.
+In contrast, LEGAR BENCHStandard has effec-
+tively scaled the number of distinct crimes and
+the number of documents in the retrieval pool by
+using statutory provisions. Furthermore, LEGAR
+BENCHStricter can evaluate the relevance based
+on expert-annotated legal factors on a large scale,
+which was not possible before.
+6.2 Legal Case Retrievers
+Earlier works on LCR have directly applied
+task-agnostic neural retrieval methods like cross-
+encoders (Xiao et al., 2021). However, recent
+works emphasize the specificity of the legal do-
+main. For instance, SAILER (Li et al., 2023a) in-
+corporates the document structure of legal cases
+during the pretraining, improving the embedding
+quality. KELLER and Elem4LCR first segment
+the case into atomic legal elements, and ap-
+plyelement-wiseembeddingsimilarity(KELLER)
+or cross-encoder scoring (Elem4LCR) between
+cases to obtain a fine-grained similarity score.
+LegalSearchLM proposes novel LCR-specific ad-
+justmentsspecializedforgenerativelanguagemod-
+els, while previous works resort to encoder-only
+models.
+6.3 Generative Retrieval
+Generative Retrieval (GR) initially emerged from
+GENRE (Cao et al., 2021), in which an encoder-
+decodermodelretrievesadocumentbygenerating
+the title of the document from a given query.
+Recent works explore identifiers based on spe-
+cific document IDs (Tay et al., 2022; Mehta et al.,
+2023; Wang et al., 2023; Chen et al., 2024b;
+Zeng et al., 2023, 2024) or the document’scon-
+tent, which contain richer, finer-grained informa-
+tion. For instance, SEAL uses spans from the
+body text (Bevilacqua et al., 2022), which was
+also adopted by MINDER (Li et al., 2023f) and
+LTRGR(Lietal.,2023e)thatcombinespans,titles,
+and pseudo-queries.LegalSearchLMis inspired
+
+by content identifiers and incorporates domain-
+specificadaptationstobetteraddresslegalretrieval
+tasks.
+7 Conclusion
+Legal case retrieval is a crucial task for le-
+gal practitioners, but resource scarcity and com-
+plex relevance judgment have hindered its ap-
+plication. To address these issues, we first con-
+struct LEGAR BENCH, a novel large-scale LCR
+datasetbasedonexpert-definedrelevance.LEGAR
+BENCHcomeswithtwosubsets,onewithbroader
+crime coverage and one with finer-grained rel-
+evance labels, supporting diverse applications.
+Next, we presentLegalSearchLM, the first gen-
+erative retrieval model, that captures the core le-
+gal elements relevant to the given query case.
+LegalSearchLMshowspromisingresultsinboth
+versionsofLEGAR BENCH,provingthepotential
+of generative retrieval in LCR.
+8 Limitations
+Inthisdataset,weconstructthelargestbenchmark
+in the legal case retrieval task, LEGAR BENCH.
+However, this dataset is restricted to the cases
+and statutes from the Korean legal system, which
+might limit its applicability beyond other jurisdic-
+tions and to non-Korean speakers. Furthermore,
+although legal experts were actively involved in
+definingtherelevancecriteriainLEGARBENCH,
+theywerenotinvolvedinthedatapoint-wiseverifi-
+cation of case-to-case relevance. As a result, there
+may be undetected noise in the dataset.
+Acknowledgments
+We are grateful to LBOX for their support in con-
+structing and releasing the benchmark datasets.
+References
+Michele Bevilacqua, Giuseppe Ottaviano, Patrick
+Lewis, Wen tau Yih, Sebastian Riedel, and Fabio
+Petroni. 2022. Autoregressive search engines: Gen-
+erating substrings as document identifiers.Preprint,
+arXiv:2204.10628.
+Fengyu Cai, Xinran Zhao, Tong Chen, Sihao Chen,
+Hongming Zhang, Iryna Gurevych, and Heinz
+Koeppl. 2024.MixGR: Enhancing retriever general-
+izationforscientificdomainthroughcomplementary
+granularity.Preprint, arXiv:2407.10691.
+Nicola De Cao, Gautier Izacard, Sebastian Riedel, and
+Fabio Petroni. 2021. Autoregressive entity retrieval.
+Preprint, arXiv:2010.00904.
+Tong Chen, Hongwei Wang, Sihao Chen, Wenhao Yu,
+Kaixin Ma, Xinran Zhao, Hongming Zhang, and
+Dong Yu. 2024a. Dense X retrieval: What retrieval
+granularity should we use? InProceedings of the
+2024 Conference on Empirical Methods in Natural
+Language Processing, pages 15159–15177, Miami,
+Florida, USA. Association for Computational Lin-
+guistics.
+Tong Chen, Hongwei Wang, Sihao Chen, Wenhao
+Yu, Kaixin Ma, Xinran Zhao, Hongming Zhang,
+and Dong Yu. 2024b. Dense x retrieval: What
+retrieval granularity should we use?Preprint,
+arXiv:2312.06648.
+Chenlong Deng, Zhicheng Dou, Yujia Zhou, Peitian
+Zhang,andKelongMao.2024a. Anelementisworth
+a thousand words: Enhancing legal case retrieval by
+incorporating legal elements. InFindings of the As-
+sociation for Computational Linguistics: ACL 2024,
+pages 2354–2365, Bangkok, Thailand. Association
+for Computational Linguistics.
+Chenlong Deng, Kelong Mao, and Zhicheng Dou.
+2024b. Learning interpretable legal case retrieval
+via knowledge-guided case reformulation.Preprint,
+arXiv:2406.19760.
+Yi Feng, Chuanyi Li, and Vincent Ng. 2024. Legal
+case retrieval: A survey of the state of the art. In
+Proceedings of the 62nd Annual Meeting of the As-
+sociation for Computational Linguistics (Volume 1:
+LongPapers),pages6472–6485,Bangkok,Thailand.
+Association for Computational Linguistics.
+P. Ferragina and G. Manzini. 2000. Opportunistic data
+structures with applications. InProceedings 41st
+AnnualSymposiumonFoundationsofComputerSci-
+ence, pages 390–398.
+Randy Goebel, Yoshinobu Kano, Mi-Young Kim, Ju-
+liano Rabelo, Ken Satoh, and Masaharu Yoshioka.
+2024. Overview and discussion of the competi-
+tiononlegalinformation,extraction/entailment(col-
+iee) 2023.The Review of Socionetwork Strategies,
+18(1):27–47.
+Wonseok Hwang, Saehee Eom, Hanuhl Lee, Hai Jin
+Park,andMinjoonSeo.2022. Data-efficientend-to-
+end information extraction for statistical legal analy-
+sis. InProceedings of the Natural Legal Language
+Processing Workshop 2022, pages 143–152, Abu
+Dhabi, United Arab Emirates (Hybrid). Association
+for Computational Linguistics.
+Gautier Izacard, Mathilde Caron, Lucas Hosseini, Se-
+bastian Riedel, Piotr Bojanowski, Armand Joulin,
+andEdouardGrave.2022. Unsuperviseddenseinfor-
+mation retrieval with contrastive learning.Preprint,
+arXiv:2112.09118.
+
+Chaeeun Kim, Soyoung Yoon, Hyunji Lee, Joel Jang,
+Sohee Yang, and Minjoon Seo. 2024. Exploring the
+practicality of generative retrieval on dynamic cor-
+pora. InProceedings of the 2024 Conference on
+EmpiricalMethodsinNaturalLanguageProcessing,
+pages 13616–13633, Miami, Florida, USA. Associ-
+ation for Computational Linguistics.
+Mike Lewis, Yinhan Liu, Naman Goyal, Mar-
+jan Ghazvininejad, Abdelrahman Mohamed, Omer
+Levy, Veselin Stoyanov, and Luke Zettlemoyer.
+2020. BART: Denoising sequence-to-sequence pre-
+training for natural language generation, translation,
+and comprehension. InProceedings of the 58th An-
+nual Meeting of the Association for Computational
+Linguistics, pages 7871–7880, Online. Association
+for Computational Linguistics.
+Haitao Li, Qingyao Ai, Jia Chen, Qian Dong, Yueyue
+Wu, Yiqun Liu, Chong Chen, and Qi Tian. 2023a.
+Sailer: Structure-aware pre-trained language model
+for legal case retrieval.Preprint, arXiv:2304.11370.
+HaitaoLi,YunqiuShao,YueyueWu,QingyaoAi,Yix-
+iao Ma, and Yiqun Liu. 2023b. Lecardv2: A large-
+scale chinese legal case retrieval dataset.Preprint,
+arXiv:2310.17609.
+Haitao Li, Weihang Su, Changyue Wang, Yueyue Wu,
+Qingyao Ai, and Yiqun Liu. 2023c. Thuir@coliee
+2023: Incorporating structural knowledge into pre-
+trained language models for legal case retrieval.
+Preprint, arXiv:2305.06812.
+Qingquan Li, Yiran Hu, Feng Yao, Chaojun Xiao,
+Zhiyuan Liu, Maosong Sun, and Weixing Shen.
+2023d. Muser: A multi-view similar case retrieval
+dataset. InProceedings of the 32nd ACM Interna-
+tional Conference on Information and Knowledge
+Management, CIKM ’23, page 5336–5340. ACM.
+Xiaoxi Li, Jiajie Jin, Yujia Zhou, Yuyao Zhang, Peitian
+Zhang, Yutao Zhu, and Zhicheng Dou. 2024. From
+matching to generation: A survey on generative in-
+formation retrieval.Preprint, arXiv:2404.14851.
+YongqiLi,NanYang,LiangWang,FuruWei,andWen-
+jie Li. 2023e. Learning to rank in generative re-
+trieval.Preprint, arXiv:2306.15222.
+Yongqi Li, Nan Yang, Liang Wang, Furu Wei, and
+Wenjie Li. 2023f. Multiview identifiers enhanced
+generative retrieval. InProceedings of the 61st An-
+nual Meeting of the Association for Computational
+Linguistics (Volume 1: Long Papers), pages 6636–
+6648, Toronto, Canada. Association for Computa-
+tional Linguistics.
+Yixiao Ma, Yunqiu Shao, Yueyue Wu, Yiqun Liu,
+Ruizhe Zhang, Min Zhang, and Shaoping Ma. 2021.
+Lecard:Alegalcaseretrievaldatasetforchineselaw
+system. InProceedings of the 44th International
+ACM SIGIR Conference on Research and Devel-
+opment in Information Retrieval, SIGIR ’21, page
+2342–2348, New York, NY, USA. Association for
+Computing Machinery.
+VarunMagesh,FaizSurani,MatthewDahl,MiracSuz-
+gun, Christopher D. Manning, and Daniel E. Ho.
+2024. Hallucination-free? assessing the reliabil-
+ity of leading ai legal research tools.Preprint,
+arXiv:2405.20362.
+Sanket Vaibhav Mehta, Jai Gupta, Yi Tay, Mostafa De-
+hghani, Vinh Q. Tran, Jinfeng Rao, Marc Najork,
+Emma Strubell, and Donald Metzler. 2023. Dsi++:
+Updatingtransformermemorywithnewdocuments.
+Preprint, arXiv:2212.09744.
+Sewon Min, Kalpesh Krishna, Xinxi Lyu, Mike
+Lewis, Wen tau Yih, Pang Wei Koh, Mohit Iyyer,
+Luke Zettlemoyer, and Hannaneh Hajishirzi. 2023.
+Factscore: Fine-grained atomic evaluation of factual
+precision in long form text generation.Preprint,
+arXiv:2305.14251.
+Guilherme Moraes Rosa, Ruan Chaves Rodrigues,
+Roberto Lotufo, and Rodrigo Nogueira. 2021. Yes,
+bm25 is a strong baseline for legal case retrieval.
+Preprint, arXiv:2105.05686.
+Yunqiu Shao, Bulou Liu, Jiaxin Mao, Yiqun Liu, Min
+Zhang, and Shaoping Ma. 2020. Thuir@coliee-
+2020: Leveraging semantic understanding and ex-
+act matching for legal case retrieval and entailment.
+Preprint, arXiv:2012.13102.
+Weihang Su, Qingyao Ai, Yueyue Wu, Yixiao Ma,
+Haitao Li, Yiqun Liu, Zhijing Wu, and Min Zhang.
+2024. Caseformer: Pre-training for legal case re-
+trieval based on inter-case distinctions.Preprint,
+arXiv:2311.00333.
+Yi Tay, Vinh Q. Tran, Mostafa Dehghani, Jianmo
+Ni, Dara Bahri, Harsh Mehta, Zhen Qin, Kai Hui,
+Zhe Zhao, Jai Gupta, Tal Schuster, William W.
+Cohen, and Donald Metzler. 2022. Transformer
+memory as a differentiable search index.Preprint,
+arXiv:2202.06991.
+Liang Wang, Nan Yang, Xiaolong Huang, Binx-
+ing Jiao, Linjun Yang, Daxin Jiang, Rangan Ma-
+jumder, and Furu Wei. 2024a. Text embed-
+dingsbyweakly-supervisedcontrastivepre-training.
+Preprint, arXiv:2212.03533.
+LiangWang,NanYang,XiaolongHuang,LinjunYang,
+Rangan Majumder, and Furu Wei. 2024b. Mul-
+tilingual e5 text embeddings: A technical report.
+Preprint, arXiv:2402.05672.
+Yujing Wang, Yingyan Hou, Haonan Wang, Ziming
+Miao, Shibin Wu, Hao Sun, Qi Chen, Yuqing Xia,
+Chengmin Chi, Guoshuai Zhao, Zheng Liu, Xing
+Xie, Hao Allen Sun, Weiwei Deng, Qi Zhang, and
+Mao Yang. 2023. A neural corpus indexer for docu-
+ment retrieval.Preprint, arXiv:2206.02743.
+Chaojun Xiao, Xueyu Hu, Zhiyuan Liu, Cunchao Tu,
+and Maosong Sun. 2021. Lawformer: A pre-trained
+language model for chinese legal long documents.
+Preprint, arXiv:2105.03887.
+
+Chaojun Xiao, Haoxi Zhong, Zhipeng Guo, Cunchao
+Tu, Zhiyuan Liu, Maosong Sun, Yansong Feng, Xi-
+anpei Han, Zhen Hu, Heng Wang, and Jianfeng Xu.
+2018. Cail2018:Alarge-scalelegaldatasetforjudg-
+ment prediction.Preprint, arXiv:1807.02478.
+Linting Xue, Noah Constant, Adam Roberts, Mihir
+Kale,RamiAl-Rfou,AdityaSiddhant,AdityaBarua,
+and Colin Raffel. 2021. mT5: A massively multilin-
+gualpre-trainedtext-to-texttransformer. InProceed-
+ings of the 2021 Conference of the North American
+Chapter of the Association for Computational Lin-
+guistics:HumanLanguageTechnologies,pages483–
+498,Online.AssociationforComputationalLinguis-
+tics.
+Hansi Zeng, Chen Luo, Bowen Jin, Sheikh Muham-
+madSarwar,TianxinWei,andHamedZamani.2023.
+Scalable and effective generative information re-
+trieval.Preprint, arXiv:2311.09134.
+Hansi Zeng, Chen Luo, and Hamed Zamani. 2024.
+Planning ahead in generative retrieval: Guiding au-
+toregressivegenerationthroughsimultaneousdecod-
+ing.Preprint, arXiv:2404.14600.
+KunZhang,ChongChen,YuanzhuoWang,QiTian,and
+Long Bai. 2023. Cfgl-lcr: A counterfactual graph
+learning framework for legal case retrieval. InPro-
+ceedings of the 29th ACM SIGKDD Conference on
+Knowledge Discovery and Data Mining, KDD ’23,
+page 3332–3341, New York, NY, USA. Association
+for Computing Machinery.
+
+A Inference Details
+A.1 Background on FM-index
+FM-index.The FM-index is a compressed full-
+text index built on top of the Burrows–Wheeler
+Transform (BWT). Given a textTterminated by
+a unique sentinel (commonly “$”), the BWT is
+obtained by generating all cyclic rotations ofT,
+sorting them lexicographically, and extracting the
+last column of the resulting matrix.
+Data structures.The FM-index augments the
+BWT with two auxiliary structures. The arrayC
+stores, for each characterc, the number of charac-
+ters inTthat are lexicographically smaller thanc.
+The tableOcc(c, i)counts how many occurrences
+ofcappear in the BWT up to positioni. Together,
+these enable efficient navigation between the first
+and last columns of the BWT.
+Backward search.Pattern matching proceeds
+right-to-left: we start with the entire text as a can-
+didate range and, at each step, useCandOccto
+restrict the range to suffixes consistent with the
+processedpartofthepattern.Iftherangebecomes
+empty, the pattern does not occur; otherwise, the
+finalrangecorrespondstoallmatches.Thisproce-
+durerunsintimeproportionaltothepatternlength.
+Useinconstraineddecoding.Inoursetting,the
+FM-index acts as a prefix-tree–like constraint over
+the corpus, restricting decoding to continuations
+that appear exactly inT. As a result, early token
+choices are critical, since they determine whether
+a valid continuation path remains available.
+B Result Details
+B.1 Full results on LEGAR BENCHStandard
+We provide the complete results on LEGAR
+BENCHStandard across all 33 criminal categories
+in Table 4. Keep in mind that KELLER, which
+focuses on reranking, leverages passage-level re-
+trieval and make multiple inferences per case us-
+ing majority voting (MaxSum). This setup differs
+fromourmodelandotherbaselines,makingdirect
+comparisons difficult. We include KELLER as a
+referenceofarerankedmodel.Allresultsarefrom
+single-run experiments.
+C Benchmark Details
+C.1 Collaboration with legal experts
+Annotation of LEGAR BENCHStricter requires a
+significant amount of legal expert annotation. For
+instance,determiningthecriticalfactorsthatdeter-
+minetheapplicabilityofaspecificstatuterequires
+extensive knowledge of criminal law, and deter-
+mining the range of inherently continuous values
+(e.g.severityofaninjury)thataresimilarlytreated
+in practice requires strong expertise in practicing
+criminal law.
+For expert annotation, we hired five Korean
+lawyers specialized in the Criminal Act to con-
+struct our LEGAR BENCHStandard and LEGAR
+BENCHStricter. The lawyers were instructed to or-
+ganize high-coverage categories that encompass
+most criminal offenses and to label subcategories
+ofcasesbasedonchargetitles.Additionally,forthe
+stricter version, they listed relevant factors (fac-
+tual details) for each specific charge in LEGAR
+BENCHStandard.Lawyersspentatotal70hoursfor
+the annotation task, and the compensation was ap-
+proximately $250/hour during the whole process.
+C.2 Statistics of LEGAR BENCHStandard
+Table 5 presents a criminal typology that includes
+33majorcategoriesofcriminaloffenses.Eachcat-
+egory is classified in detail based on charge ti-
+tles and statutes. The number of standard groups
+for each category is listed under#of Standard
+Group, while the number of unique case docu-
+ments mapped to each group is listed under#of
+Cases.Thetotalnumberofstandardgroupsis411,
+including 1,052,506 unique cases, which consti-
+tute85.79%oftheentirecorpus(1,226,814cases).
+This figure underscores the broad coverage of our
+benchmarkacrossawiderangeoftypesofcriminal
+offenses.
+C.3 Statistics of LEGAR BENCHStricter
+Table 6 shows statistics of stricter groups in 8
+criminalcategories.Thenumberofstrictergroups
+for each category is listed under#of Stricter
+Group, while the number of unique case docu-
+ments mapped to each group is listed under#of
+Cases.
+C.4 Total crime types in 33 categories for
+query cases.
+Traffic offenses.In Table 25.
+Sexual crime.In Table 8
+
+LEGAR BENCHStandard (Precision@5)
+Criminal CategoryLegalSeachLM(Ours)BM25 Contriever SAILER Hybrid mE5 OpenAI-Embedding KELLER*
+[Total] [0.68][0.51] [0.48] [0.62] [0.65] [0.57] [0.58] [0.70]
+Traffic offenses 0.75 0.60 0.72 0.94 0.94 0.82 0.89 0.89
+Fraud 0.74 0.53 0.57 0.64 0.66 0.63 0.65 0.90
+Injury or Violence 0.62 0.50 0.42 0.66 0.68 0.57 0.56 0.70
+Sexual crime 0.52 0.49 0.40 0.65 0.66 0.51 0.53 0.73
+Theft or Robbery 0.65 0.48 0.41 0.60 0.63 0.48 0.47 0.69
+Obstruction of Business 0.75 0.58 0.40 0.74 0.74 0.65 0.57 0.94
+Embezzlement or Breach of trust 0.67 0.64 0.49 0.56 0.60 0.55 0.60 0.81
+Destruction 0.64 0.64 0.48 0.72 0.68 0.48 0.60 0.92
+Finance or Insurance 0.72 0.56 0.60 0.64 0.68 0.68 0.76 0.92
+Threat 0.60 0.60 0.47 0.60 0.64 0.62 0.75 0.87
+Defamation or Insult 0.83 0.58 0.48 0.78 0.78 0.68 0.70 0.80
+Drug 0.80 0.52 0.76 0.84 0.84 0.88 0.84 0.80
+Criminal trespass 0.73 0.63 0.51 0.80 0.80 0.65 0.63 0.89
+Gambling 0.74 0.54 0.63 0.71 0.74 0.89 0.74 0.97
+Negligent homicide and injury 0.37 0.27 0.30 0.57 0.57 0.43 0.40 0.50
+Obstruction of right 0.80 0.52 0.52 0.52 0.56 0.40 0.52 0.92
+Child abuse or School violence 0.64 0.48 0.38 0.50 0.52 0.62 0.50 0.54
+Medical or Food drug 0.40 0.35 0.22 0.11 0.24 0.25 0.22 0.14
+Murder 0.50 0.50 0.30 0.50 0.50 0.30 0.30 0.60
+Corporation 0.47 0.33 0.33 0.33 0.47 0.33 0.27 0.40
+Bribery 0.47 0.60 0.40 0.80 0.80 0.47 0.53 0.80
+Car 0.80 0.60 0.60 0.60 0.60 0.60 0.70 1.00
+Labor or Employment 0.53 0.51 0.40 0.58 0.64 0.56 0.53 0.55
+Industrial or Serious accidents 0.45 0.45 0.20 0.40 0.50 0.50 0.30 0.25
+Military duty or law 0.70 0.50 0.50 0.60 0.60 0.60 0.60 0.50
+Consumer or Fair trade 1.00 0.60 0.80 0.40 0.40 0.60 0.40 0.40
+Arrest or Detention 1.00 0.80 0.40 0.80 0.80 0.40 0.60 1.00
+Intellectual property 0.60 0.33 0.67 0.80 0.80 0.80 0.73 0.73
+IT or Privacy 1.00 0.60 0.80 1.00 1.00 0.80 0.60 1.00
+Misdemeanor 0.40 0.20 0.20 0.40 0.40 0.40 0.20 0.40
+Sexual norms 0.80 0.20 0.20 0.20 0.20 0.40 1.00 0
+Tax, Administ, Const law 0.81 0.61 0.71 0.91 0.91 0.74 0.71 0.76
+Other criminal offenses 0.72 0.58 0.42 0.70 0.74 0.66 0.70 0.88
+Table 4: Full results of LegalSearchLM and the baselines on LEGAR BENCHStandard across all 33 criminal
+categories.
+Fraud.In Table 9.
+Injury and Violence.In Table 14.
+Theft and Robbery.In Table 10.
+Embezzlement.In Table 11.
+Destruction.In Table 12.
+Finance and Insurance.In Table 32.
+Threat.In Table 17.
+Crimes against Reputation.In Table 18.
+Drug.In Table 22.
+Gambling.In Table 23.
+Negligent homicide and injury.In Table 15.
+Obstruction of rights.In Table 21.
+
+Crime categories # of Standard group # of Cases
+Traffic offenses 13 319,527
+Fraud 21 181,703
+Injury or Violence 31 146,764
+Sexual crime 132 104,919
+Theft or Robbery 38 74,772
+Obstruction of Business 13 74,722
+Embezzlement or Breach of trust 15 39,835
+Destruction 5 39,595
+Finance or Insurance 5 32,944
+Threat 11 27,496
+Defamation or Insult 8 27,278
+Drug 5 26,066
+Criminal trespass 15 24,856
+Gambling 7 11,091
+Negligent homicide and injury 6 7,384
+Obstruction of right 5 6,749
+Child abuse or School violence 10 5,756
+Medical or Food drug 11 98
+Murder 2 4,306
+Corporation 3 1,195
+Bribery 3 1,638
+Car 2 20,882
+Labor or Employment 11 12,647
+Industrial or Serious accidents 4 198
+Military duty or law 2 9,300
+Consumer or Fair trade 1 128
+Arrest or Detention 1 6
+Intellectual property 3 3,927
+IT or Privacy 2 2,311
+Misdemeanor 1 6,476
+Sexual norms 1 4,140
+Tax, Administ, Const law 14 40,890
+Other criminal offenses 10 23,211
+Total 411 1,052,506
+Table 5: Statistics of Crime typology and Standard
+version of LEGAR BENCH. The total number of
+cases is reported as a unique count, excluding dupli-
+cates from cases classified under multiple categories
+1,347,962→1,052,506.
+Crime categories # of Stricter group # of Cases
+Fraud 8 325
+Injury or Violence 19 308
+Sexual crime 111 1,061
+Finance or Insurance 1 28
+Defamation or Insult 6 253
+Drug 4 37
+Murder 2 8
+Traffic offenses 9 330
+Total 160 2,350
+Table 6: Statistics of Stricter version of LEGAR
+BENCH.
+Crimes against children and School violence.
+In Table 26.
+Medical and Food drug.In Table 30.
+Murder.In Table 13.
+Corporation.In Table 27.
+Bribery.In Table 37.
+Labor and Employment.In Table 28.
+Fair trade.In Table 31.
+Arrest and Detention.In Table 16.
+Other criminal offenses.In Table 24.
+Car-related offenses.In Table 40.
+Home invasion.In Table 20.
+IndustrialaccidentorSeriousaccident.InTa-
+ble 29.
+Intellectual property rights.In Table 38.
+IT or Privacy.In Table 36.
+Military duty.In Table 39.
+Misdemeanor.In Table 35.
+Obstruction of business.In Table 19.
+Sexual morality.In Table 34.
+Tax or Administrative or Constitutional Law.
+In Table 33.
+C.5 Full list of the stricter relevance group
+LEGAR BENCHStricter further divides LEGAR
+BENCHStandard categories based on different fac-
+tualdetailsofacriminalcasethatdonotaffectthe
+type of charge, but might affect the final judgment
+(guiltyorinnocent)orthesentencee.g.information
+about defendant/victims, methods, consequences,
+andclaimsmadeincourt.Also,itprovidesacom-
+prehensive list of possible options for each fac-
+tor. The options are primarily based on the official
+sentencing guidelines from the Sentencing Com-
+missionoftheSupremeCourtofKorea,andannual
+crimestatisticsreportspublishedbygovernment/a-
+cademic authorities including the Supreme Prose-
+cutor’s Office and the Korean Institute of Crimi-
+nology. However, these lists are often insufficient
+toexpressexistingcases,especiallythedefendant’s
+claims(e.g.,adefendantconvictedofassaultmight
+claim that the act was due to self-defense, plead-
+ingforinnocence).Identifyingsuchfactorsheavily
+reliesondeepunderstandingandexpertiseinprac-
+ticing law. Hence, the lawyers were instructed to
+
+add factors and options that are frequent and im-
+portantinpracticebutnotmentionedintheofficial
+documents.
+Previous work in identifying such factors in
+the Korean Criminal Act Hwang et al. (2022) in-
+cludes only 11 unique factors across 4 crime cate-
+goriesfocusingonlyonfacts,whilethisworkadds
+102uniquefactors(including39defendantclaims)
+across 8 categories.
+C.6 Prompt template for LEGAR
+BENCHStricter annotation
+The example annotation templates are shown on
+thefollowingpage.Theblueboxpresentstheorig-
+inal Korean version, and the pink box presents the
+English version provided for reference.
+D Implementation Details
+Allmodelsaretrainedusing8*A10080GBGPUs.
+LegalSearchLM.To develop our SearchLM
+based on an autoregressive language model, we
+take the mt5-base pretrained model (Xue et al.,
+2021)andtrainiton170Kcasesforasingleepoch.
+Wecreateatrainingdatasetwithamaximumof15
+query case-element pairs and 5 element-element
+pairs.
+Contriever.We select Contriever as a represen-
+tativemodelforretrievalinthegeneraldomain.We
+perform unsupervised training on the bert-base-
+multilingual-cased pretrained model with 170K
+cases for 10 epochs. Following the results in their
+work, we use the MoCo method during training
+rather than in-batch.
+SAILER.We implement SAILER as a repre-
+sentative model for retrieval in the legal domain.
+Following their paper, we pretrain the bert-base-
+multilingual-casedmodelonfacts,interpretations,
+and decisions of 1.2M cases for a single epoch,
+using the same configuration as in SAILER. The
+pretrained model is then fine-tuned for a single
+epoch with positive and negative samples, adjust-
+ing the learning rate from the default 5e-6 to 5e-5.
+We retrieve 100 related cases using BM25 over
+the170Kcases,selectingthosewiththesamecase
+name as positive samples and others as negative.
+To ensure comparability with other baselines, we
+use 5 positive and 5 negative cases per query.
+KELLER.We implement KELLER based on
+the code from the official repository3. To prepare
+the retrieval pool, we first process the same 1.2M
+cases used in implementing SAILER. To further
+separate cases into subfactual levels, we use GPT-
+4o. Each subfact is labeled with its criminal type
+using either their subheadings or regular expres-
+sions. This results in 1.1M cases.
+For training, we use the same query cases from
+SearchLM. Following the same process, we sepa-
+rateandlabeleachsubfact,resultingin143Kcases.
+Wepreparegroundtruthdocumentcasesbymatch-
+ing cases that include the same subfacts criminal
+typeasthequerycase.Amongthematchingcases,
+we use the top 10 document cases based on BM25
+scores. This results in total of 820k (query case,
+document case) pairs. The model is trained on the
+resulting dataset for 1 epoch under the same con-
+dition with the original Keller paper (batch size:
+128, learning rate: 1e-5, optimizer: AdamW).
+E Licenses and intended use
+Korean legal cases are not protected by the Ko-
+rean Copyright Act. mT5 (Xue et al., 2021), the
+basemodelofLegalSearchLM,isdisclosedwith
+Apache2.0licensethatpermitsfreeacademicuse.
+Korean legal cases are fully anonymized when
+disclosed by the Korean court. However, we do
+not censor potentially offensive content, including
+descriptions about violent and sexual crimes, as
+they constitute the core content of legal cases.
+3https://github.com/ChenlongDeng/KELLER
+
+Example prompt for a specific d1–d2 case (Korean)
+Input으로주어지는판결문은d1카테고리의d2범죄에대한내용입니다.아래각항목의분류기준을기반으로항목별분류번호를제공하세요.모든항목에대해누락없이
+분류번호를제공하세요.단,답변은Output예시처럼항목과분류번호로구성된튜플이나열된리스트형식으로작성하세요.
+"d1": "명예훼손및모욕",
+"d2": "허위적시명예훼손",
+"description":
+"<형사공통>
+-항목:자수여부
+-항목설명:피고인이범행이후자수하였는지여부
+-분류기준:
+1.피고인이 자수함2.피고인이 자수하지않음
+-항목:심신미약여부
+-항목설명:피고인이범행당시 심신미약이었는지여부
+-분류기준:
+1.해당쟁점이다루어지고,인정됨(사실관계에’심신미약상태로...’의표현이 있는경우포함) 2.해당쟁점이다루어지고,인정되지않음3.해당쟁점이다뤄지지않음
+-항목:심신상실여부
+-항목설명:피고인이범행당시 심신상실이었는지여부
+-분류기준:
+1.해당쟁점이다루어지고,인정됨(사실관계에’심신상실상태로...’의표현이 있는경우포함) 2.해당쟁점이다루어지고,인정되지않음3.해당쟁점이다뤄지지않음
+<피해자범죄>
+-항목:피해자수
+-항목설명:피해자의수
+-분류기준:
+1. 1명2. 2명3. 3명이상
+-항목:피해자와의관계
+-항목설명:피고인과피해자와의관계
+-분류기준:
+1.연인2.부부3.피해자가피고인의부모4.피해자가피고인의 자녀5. 5촌이내친족6.친구/지인7.피해자가피고인의피감독자/피보호자(교사/제자,고용인/피고용인
+등) 8.동료직원9.클럽,랜덤채팅등일회성만남10.불특정다수대상범행(피해자와가해자가모르는사이인경우)
+<명예훼손>
+-항목:명예훼손유형
+-항목설명:명예훼손의문제가된발언의 유형
+-분류기준:
+1.과거전과기록2.직업적명예와관한사실(비리,중대한업무상과실,업무능력에대한평가등) 3.범죄행위등과관련된의혹제기4.치정/가족사/사생활등5.기타
+-항목:명예훼손매체유형
+-항목설명:명예훼손의매체
+-분류기준:
+1.일상적인개인간대화2.연설/토론회등공적대화3.벽보,포스터,공고문등공개된문서4.정보통신망-인터넷뉴스등공적매체5.정보통신망-SNS,커뮤니티,채팅,
+게임,유튜브등개인간의대화6.출판물-신문,잡지등7.출판물-서적,논문등8.출판물-TV/라디오등매체
+-항목:피해자유형
+-항목설명:피해자가자연인인지법인인지여부
+-분류기준:
+1.자연인2.법인3.법인격없는단체(공중등)
+-항목:구체적사실의적시
+-항목설명:명예훼손죄가성립하기위한구체적인사실이적시되었는지여부가쟁점인경우
+-분류기준:
+1.해당쟁점이다루어지고,인정됨2.해당쟁점이다루어지고,인정되지않음3.해당쟁점이다뤄지지않음
+-항목:공연성전파가능성
+-항목설명:불특정또는 다수인이 인식할수있는상태(공연성)를 만족하는지,제3자에게전파될가능성이 있는지가쟁점인경우
+-분류기준:
+1.해당쟁점이다루어지고,인정됨2.해당쟁점이다루어지고,인정되지않음3.해당쟁점이다뤄지지않음
+-항목:피해자특정성
+-항목설명:명예훼손만의내용으로피해자가특정되는지여부
+-분류기준:
+1.해당쟁점이다루어지고,인정됨2.해당쟁점이다루어지고,인정되지않음3.해당쟁점이다뤄지지않음
+-항목:사회적평가저해여부
+-항목설명:명예훼손의내용이피해자의명예를훼손하여사회적평가의저해로이어지는사안인지가쟁점이된경우
+-분류기준:
+1.해당쟁점이다루어지고,인정됨2.해당쟁점이다루어지고,인정되지않음3.해당쟁점이다뤄지지않음
+-항목:공익위법성조각정당행위
+-항목설명:명예훼손의내용이진실한사실로서오직공공의 이익을목적으로하므로위법성이조각되거나,언론사등의적법한업무로서정당한 행위인지여부가쟁점이
+되는경우
+-분류기준:
+1.해당쟁점이다루어지고,인정됨2.해당쟁점이다루어지고,인정되지않음3.해당쟁점이다뤄지지않음"
+Output예시: [(’피해자와의관계’, 6), (’명예훼손유형’, 2), (’명예훼손의매체’, 5), (’공연성전파가능성’, 1), (’공익위법성조각정당행위’, 3)]
+Input: #d1카테고리(명예훼손및모욕) d2범죄(허위적시명예훼손)에해당되는각판결문예시(생략)
+
+Example prompt for a specific d1–d2 case (English)
+The judgment provided as input concerns an offense in category d1 and specific crime type d2. Based on the classification criteria for each item below, provide the classification
+number for each item. Provide a classification number for every item without omission. The answer must be written in a list format consisting of tuples of (item, classification
+number), as in the Output example.
+"d1": "Defamation and Insult",
+"d2": "Defamation by False Facts",
+"description":
+<Criminal (Common)>
+- Item: Voluntary surrender
+- Item description: Whether the defendant voluntarily surrendered after the offense
+- Classification criteria:
+1. The defendant voluntarily surrendered 2. The defendant did not voluntarily surrender
+- Item: Diminished capacity
+- Item description: Whether the defendant was in a state of diminished capacity at the time of the offense
+- Classification criteria:
+1. The issue is addressed and recognized (including cases where the facts state ’in a state of diminished capacity...’) 2. The issue is addressed but not recognized 3. The issue is
+not addressed
+- Item: Insanity
+- Item description: Whether the defendant was insane at the time of the offense
+- Classification criteria:
+1. The issue is addressed and recognized (including cases where the facts state ’in a state of insanity...’) 2. The issue is addressed but not recognized 3. The issue is not addressed
+<Victim-Related Offense>
+- Item: Number of victims
+- Item description: Number of victims
+- Classification criteria:
+1. 1 victim 2. 2 victims 3. 3 or more victims
+- Item: Relationship with the victim
+- Item description: Relationship between the defendant and the victim
+- Classification criteria:
+1. Romantic partner 2. Spouses 3. The victim is the defendant’s parent 4. The victim is the defendant’s child 5. Relative within the fifth degree of kinship 6. Friend/acquaintance
+7. The victim is the defendant’s supervisee/ward (teacher/student, employer/employee, etc.) 8. Coworker 9. One-off encounter (club, random chat, etc.) 10. Offense against
+unspecified persons (the perpetrator and victim are strangers)
+<Defamation>
+- Item: Type of defamatory statement
+- Item description: The type of statement at issue for defamation
+- Classification criteria:
+1. Prior criminal record 2. Facts concerning professional reputation (corruption, serious professional negligence, evaluation of job ability, etc.) 3. Allegations related to criminal
+conduct, etc. 4. Romantic/family/private life, etc. 5. Other
+- Item: Medium of defamation
+- Item description: The medium of the defamatory act
+- Classification criteria:
+1. Everyday private conversation 2. Public speech/discussion (e.g., lecture, debate) 3. Publicly posted documents (posters, notices, etc.) 4. Information network – internet news
+and other public media 5. Information network – interpersonal channels such as SNS, communities, chat, games, YouTube, etc. 6. Publications – newspapers, magazines, etc. 7.
+Publications – books, academic papers, etc. 8. Publications – TV/radio, etc.
+- Item: Type of victim
+- Item description: Whether the victim is a natural person or a legal entity
+- Classification criteria:
+1. Natural person 2. Legal entity 3. Unincorporated association (the public, etc.)
+- Item: Statement of specific facts
+- Item description: When it is at issue whether specific facts were stated, which is required for defamation to be established
+- Classification criteria:
+1. The issue is addressed and recognized 2. The issue is addressed but not recognized 3. The issue is not addressed
+- Item: Publicity / possibility of dissemination
+- Item description: When it is at issue whether the requirement of publicity (recognizable by unspecified or many persons) is satisfied and whether there is a possibility of
+dissemination to third parties
+- Classification criteria:
+1. The issue is addressed and recognized 2. The issue is addressed but not recognized 3. The issue is not addressed
+- Item: Specificity of the victim
+- Item description: Whether the victim is identifiable solely from the content of the defamatory statement
+- Classification criteria:
+1. The issue is addressed and recognized 2. The issue is addressed but not recognized 3. The issue is not addressed
+- Item: Impairment of social reputation
+- Item description: When it is at issue whether the content of the defamation harms the victim’s reputation and leads to impairment of social evaluation
+- Classification criteria:
+1. The issue is addressed and recognized 2. The issue is addressed but not recognized 3. The issue is not addressed
+- Item: Public-interest / justifiable act (illegality exemption)
+- Item description: When it is at issue whether the content of the defamation consists of true facts for the sole purpose of the public interest, thereby excluding illegality, or
+constitutes a justifiable act as part of legitimate activities such as those of the press
+- Classification criteria:
+1. The issue is addressed and recognized 2. The issue is addressed but not recognized 3. The issue is not addressed
+Output example: [(’Relationship with the victim’, 6), (’Type of defamatory statement’, 2), (’Medium of defamation’, 5), (’Publicity / possibility of dissemination’,
+1), (’Public-interest / justifiable act (illegality exemption)’, 3)]
+Input: (omitted) example case corresponding to each d1-d2 pair
+
+Crime categories Factors(# Options)
+Traffic offenses Trafficaccidenttype(6),Trafficaccidenttime(2),Automobiletype(3),Road
+type(4),Grossnegligencetype(18),Automobileaccidentinsurance(3),Mal-
+practice?(3), Hit-and-run type(3), Hit-and-run loss type(2), Aided vic-
+tim?(3), Not aware of accident?(3), Blood alcohol level(3), Driving dis-
+tance(4), Necessity?(3), Not driving?(3), Absorption phase?(3), Excessive
+extrapolation?(3), Driving without license type(5), Not aware of license
+suspension(3), Not aware of invalidation(3), Injury severity(8), Injury?(3),
+Number of victims(3), Defendant-victim relation(10), Surrender(2), Defen-
+dant feeble-minded?(3), Defendant insanity?(3), Reason not reaching con-
+summation(4), Reached consummation?(3)
+Fraud Fraud type(14), No intent for pecuniary advantage?(3), No intent to de-
+fraud?(3), Profit(12), Defendant feeble-minded?(3), Defendant insanity?(3)
+Injury or Violence Two-way assault(2), Motivation(7), Intent to injure?(3), Self-defense?(3),
+Assault method(9), Injury severity(8), Injury?(3), Special crime type(2),
+Number of accomplices(5), Dangerous weapon?(3), Time between injury
+and death(4), Injury direct cause of death?(3), Surrender(2), Defendant
+feeble-minded?(3), Defendant insanity?(3)
+Sexual crime Sexual assault location(6), Victim age(4), Victim disability(2), Defen-
+dant under influence(3), Victim under influence(3), Consent?(3), Inter-
+course type(4), Incident act type(4), Incident act by blitz(2), Victim sex-
+ual shame(3), Inability to resist cause(5), Aware of inability to resist?(3),
+Aware of victim’s age under 13?(3), Aware of victim’s age under 16?(3),
+Fraudulence/influence type(7), Victim under influence?(3), Covert pho-
+tography filming/distribution type(7), Number of covert photography(4),
+Profit(4), Obscene communication medium(4), Obscene communication
+content(6), Object of sexual satisfaction(2), Reached the victim?(3), As-
+sault/threat type(6), Assault method(9), Injury severity(8), Injury?(3), Spe-
+cialcrimetype(2),Numberofaccomplices(5),Dangerousweapon?(3),Time
+between injury and death(4), Injury direct cause of death?(3), No intent to
+defraud?(3), Number of victims(3), Defendant-victim relation(10), Surren-
+der(2), Defendant feeble-minded?(3), Defendant insanity?(3), Reason not
+reaching consummation(4), Reached consummation?(3)
+Finance or Insurance2 Insurancefraudtype(5),Nointentforpecuniaryadvantage?(3),Nointentto
+defraud?(3),Profit(12),Surrender(2),Defendantfeeble-minded?(3),Defen-
+dantinsanity?(3),Reasonnotreachingconsummation(4),Reachedconsum-
+mation?(3)
+Defamation or Insult Defamation content(5), Defamation medium(8), Insult content(4), Victim
+type(3), Alleged facts?, Publicly alleged?(3), Can specify victim?(3), De-
+faming the social status?(3), Justified(3), Number of victims(3), Defendant-
+victim relation(10), Surrender(2), Defendant feeble-minded?(3), Defendant
+insanity?(3)
+Drug Drug type(14), Drug crime type(7), Defendant role(6), Narcotic handling
+license(6), Drug quantity(6), Profit(12), Surrender(2), Defendant feeble-
+minded?(3), Defendant insanity?(3)
+Murder Motivation(7), Intent to kill?(3), Self-defense?(3), Assault method(9), In-
+jury?(3), Number of victims(3), Defendant-victim relation(10), Surren-
+der(2), Defendant feeble-minded?(3), Defendant insanity?(3), Reason not
+reaching consummation(4), Reached consummation?(3)
+Table7:FactorsfordefiningStricterrelevance.Eachfactorispresentedwiththenumberofoptionsinparentheses.
+Question mark(?) indicates that the factor represents aclaimdefendant makes in a court, which always has three
+options (not mention, claimed but not taken, claimed and taken). As some factors only apply to certain standard
+groups (e.g.Traffic accident type(6) only applies to traffic crimes involving accidents and not crimes like Driving
+Under the Influence (without any traffic accident)) and not all combinations are possible (e.g.Killing Ascendant
+(killing one’s own or any lineal ascendant of one’s spouse) cases can only take two options (parent, other family
+members)outof10options(partners,friend,...)providedfortheDefendant-victimrelationfactor),thetotalnumber
+of stricter groups is a magnitude smaller compared to all option numbers multiplied.
+
+Table 8: List of query case types for Sexual Crime
+Law Crime
+형법제297조강간
+형법제297조의2유사강간
+형법제298조강제추행
+형법제299조,제297조준강간
+형법제299조,제297조의2준유사강간
+형법제299조,제298조준강제추행
+형법제300조,제297조강간미수
+형법제300조,제297조의2유사강간미수
+형법제300조,제298조강제추행미수
+형법제300조,제297조,제299조준강간미수
+형법제300조,제297조의2,제299조준유사강간미수
+형법제300조,제298조,제299조준강제추행미수
+형법제301조,제297조강간상해치상
+형법제301조,제297조의2유사강간상해치상
+형법제301조,제298조강제추행상해치상
+형법제301조,제297조,제299조준강간상해치상
+형법제301조,제297조의2,제299조준유사강간상해치상
+형법제301조,제298조,제299조준강제추행상해치상
+형법제301조,제300조,제297조강간미수상해치상
+형법제301조,제300조,제297조의2유사강간미수상해치상
+형법제301조,제300조,제298조강제추행미수상해치상
+형법제301조,제300조,제297조,제299조준강간미수상해치상
+형법제301조,제300조,제297조의2,제299조준유사강간미수상해치상
+형법제301조,제300조,제298조,제299조준강제추행미수상해치상
+형법제301조의2,제297조강간살인치사
+형법제301조의2,제297조의2유사강간살인치사
+형법제301조의2,제298조강제추행살인치사
+형법제301조의2,제297조,제299조준강간살인치사
+형법제301조의2,제297조의2,제299조준유사강간살인치사
+형법제301조의2,제298조,제299조준강제추행살인치사
+형법제301조의2,제300조,제297조강간미수살인치사
+형법제301조의2,제300조,제297조의2유사강간미수살인치사
+형법제301조의2,제300조,제298조강제추행미수살인치사
+형법제301조의2,제300조,제297조,제299조준강간미수살인치사
+형법제301조의2,제300조,제297조의2,제299조준유사강간미수살인치사
+형법제301조의2,제300조,제298조,제299조준강제추행미수살인치사
+형법제302조미성년자간음/심신미약자간음/미성년자추행/심신미약자추행
+형법제303조 제1항 피보호자간음/피감독자간음
+형법제305조,제297조미성년자의제강간
+형법제305조,제297조의2미성년자의제유사강간
+형법제305조,제298조미성년자의제강제추행
+형법제305조,제301조,제297조미성년자의제강간상해치상
+형법제305조,제301조,제297조의2미성년자의제유사강간상해치상
+형법제305조,제301조,제298조미성년자의제강제추행상해치상
+형법제305조,제301조의2,제297조미성년자의제강간살인치사
+형법제305조,제301조의2,제297조의2미성년자의제유사강간살인치사
+형법제305조,제301조의2,제298조미성년자의제강제추행살인치사
+형법제305조의3,제297조강간예비음모
+형법제305조의3,제297조의2유사강간예비음모
+형법제305조의3,제297조,제299조준강간예비음모
+형법제305조의3,제301조,제297조강간상해예비음모
+형법제305조의3,제301조,제298조강제추행상해예비음모
+형법제305조의3,제301조,제297조,제299조준강간상해예비음모
+형법제305조의3,제301조,제297조의2,제299조준유사강간상해예비음모
+형법제305조의3,제301조,제298조,제299조준강제추행상해예비음모
+형법제305조의3,제305조,제297조미성년자의제강간예비음모
+형법제305조의3,제305조,제297조의2미성년자의제유사강간예비음모
+형법제305조의3,제305조,제298조미성년자의제강제추행예비음모
+형법제305조의3,제305조,제301조,제297조미성년자의제강간상해치상예비음모
+형법제305조의3,제305조,제301조,제297조의2미성년자의제유사강간상해치상예비음모
+형법제305조의3,제305조,제301조,제298조미성년자의제강제추행상해치상예비음모
+형법제305조의3,제305조,제301조의2,제297조미성년자의제강간살인치사예비음모
+형법제305조의3,제305조,제301조의2,제297조의2미성년자의제유사강간살인치사예비음모
+형법제305조의3,제305조,제301조의2,제298조미성년자의제강제추행살인치사예비음모
+
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제319조 제1항,제297
+조
+주거침입강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제319조 제1항,제297
+조의2
+주거침입유사강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제319조 제1항,제298
+조
+주거침입강제추행
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제319조 제1항,제299
+조,제297조
+주거침입준강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제319조 제1항,제299
+조,제297조의2
+주거침입준유사강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제319조 제1항,제299
+조,제298조
+주거침입준강제추행
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제330조,제297조야간주거침입절도강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제330조,제297조의2야간주거침입절도유사강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제330조,제298조야간주거침입절도강제추행
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제330조,제299조,
+제297조
+야간주거침입절도준강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제330조,제299조,
+제297조의2
+야간주거침입절도준유사강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제330조,제299조,
+제298조
+야간주거침입절도준강제추행
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제331조,제297조특수절도강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제331조,제297조의2특수절도유사강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제331조,제298조특수절도강제추행
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제331조,제299조,
+제297조
+특수절도준강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제331조,제299조,
+제297조의2
+특수절도준유사강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제331조,제299조,
+제298조
+특수절도준강제추행
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제342조,제330조,
+제297조
+야간주거침입절도미수강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제342조,제330조,
+제297조의2
+야간주거침입절도미수유사강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제342조,제330조,
+제298조
+야간주거침입절도미수강제추행
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제342조,제330조,
+제299조,제297조
+야간주거침입절도미수준강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제342조,제330조,
+제299조,제297조의2
+야간주거침입절도미수준유사강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제342조,제330조,
+제299조,제298조
+야간주거침입절도미수준강제추행
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제342조,제331조,
+제297조
+특수절도미수강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제342조,제331조,
+제297조의2
+특수절도미수유사강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제342조,제331조,
+제298조
+특수절도미수강제추행
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제342조,제331조,
+제299조,제297조
+특수절도미수준강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제342조,제331조,
+제299조,제297조의2
+특수절도미수준유사강간
+성폭력범죄의처벌등에관한특례법제3조 제1항,형법제342조,제331조,
+제299조,제298조
+특수절도미수준강제추행
+성폭력범죄의처벌등에관한특례법제3조 제2항,형법제319조 제1항,제297
+조
+특수강도강간
+성폭력범죄의처벌등에관한특례법제3조 제2항,형법제334조,제297조의2특수강도유사강간
+성폭력범죄의처벌등에관한특례법제3조 제2항,형법제334조,제298조특수강도강제추행
+성폭력범죄의처벌등에관한특례법제3조 제2항,형법제334조,제299조,
+제297조
+특수강도준강간
+성폭력범죄의처벌등에관한특례법제3조 제2항,형법제334조,제299조,
+제298조
+특수강도준강제추행
+성폭력범죄의처벌등에관한특례법제3조 제2항,형법제342조,제334조,
+제297조
+특수강도미수강간
+성폭력범죄의처벌등에관한특례법제3조 제2항,형법제342조,제334조,
+제297조의2
+특수강도미수유사강간
+성폭력범죄의처벌등에관한특례법제3조 제2항,형법제342조,제334조,
+제298조
+특수강도미수강제추행
+성폭력범죄의처벌등에관한특례법제3조 제2항,형법제342조,제334조,
+제299조,제297조
+특수강도미수준강간
+성폭력범죄의처벌등에관한특례법제3조 제2항,형법제342조,제334조,
+제299조,제297조의2
+특수강도미수준유사강간
+성폭력범죄의처벌등에관한특례법제3조 제2항,형법제342조,제334조,
+제299조,제298조
+특수강도미수준강제추행
+성폭력범죄의처벌등에관한특례법제4조 제1항성폭력범죄의처벌등에관한특례법위반(특수강간)
+
+성폭력범죄의처벌등에관한특례법제4조 제2항성폭력범죄의처벌등에관한특례법위반(특수강제추행)
+성폭력범죄의처벌등에관한특례법제4조 제3항성폭력범죄의처벌등에관한특례법위반(특수준강간)
+성폭력범죄의처벌등에관한특례법제4조 제3항성폭력범죄의처벌등에관한특례법위반(특수준강제추행)
+성폭력범죄의처벌등에관한특례법제5조 제1항성폭력범죄의처벌등에관한특례법위반(친족관계에의한강간)
+성폭력범죄의처벌등에관한특례법제5조 제2항성폭력범죄의처벌등에관한특례법위반(친족관계에의한강제추행)
+성폭력범죄의처벌등에관한특례법제5조 제3항성폭력범죄의처벌등에관한특례법위반(친족관계에의한준강간)
+성폭력범죄의처벌등에관한특례법제5조 제3항성폭력범죄의처벌등에관한특례법위반(친족관계에의한준강제추행)
+성폭력범죄의처벌등에관한특례법제6조 제1항성폭력범죄의처벌등에관한특례법위반(장애인강간)
+성폭력범죄의처벌등에관한특례법제6조 제2항성폭력범죄의처벌등에관한특례법위반(장애인유사성행위)
+성폭력범죄의처벌등에관한특례법제6조 제3항성폭력범죄의처벌등에관한특례법위반(장애인강제추행)
+성폭력범죄의처벌등에관한특례법제6조 제4항성폭력범죄의처벌등에관한특례법위반(장애인준강간)
+성폭력범죄의처벌등에관한특례법제6조 제4항성폭력범죄의처벌등에관한특례법위반(장애인준유사성행위)
+성폭력범죄의처벌등에관한특례법제6조 제4항성폭력범죄의처벌등에관한특례법위반(장애인준강제추행)
+성폭력범죄의처벌등에관한특례법제6조 제5항성폭력범죄의처벌등에관한특례법위반(장애인위계등간음)
+성폭력범죄의처벌등에관한특례법제6조 제6항성폭력범죄의처벌등에관한특례법위반(장애인위계등추행)
+성폭력범죄의처벌등에관한특례법제6조 제7항성폭력범죄의처벌등에관한특례법위반(장애인피보호자강간등)
+성폭력범죄의처벌등에관한특례법제7조 제1항성폭력범죄의처벌등에관한특례법위반(13세미만미성년자강간)
+성폭력범죄의처벌등에관한특례법제7조 제2항성폭력범죄의처벌등에관한특례법위반(13세미만미성년자유사성행위)
+성폭력범죄의처벌등에관한특례법제7조 제3항성폭력범죄의처벌등에관한특례법위반(13세미만미성년자강제추행)
+성폭력범죄의처벌등에관한특례법제7조 제4항성폭력범죄의처벌등에관한특례법위반(13세미만미성년자준강간)
+성폭력범죄의처벌등에관한특례법제7조 제4항성폭력범죄의처벌등에관한특례법위반(13세미만미성년자준유사성행위)
+성폭력범죄의처벌등에관한특례법제7조 제4항성폭력범죄의처벌등에관한특례법위반(13세미만미성년자준강제추행)
+성폭력범죄의처벌등에관한특례법제7조 제5항성폭력범죄의처벌등에관한특례법위반(13세미만미성년자위계등간음)
+성폭력범죄의처벌등에관한특례법제7조 제5항성폭력범죄의처벌등에관한특례법위반(13세미만미성년자위계등유사성행
+위)
+성폭력범죄의처벌등에관한특례법제7조 제5항성폭력범죄의처벌등에관한특례법위반(13세미만미성년자위계등추행)
+성폭력범죄의처벌등에관한특례법제8조성폭력범죄의처벌등에관한특례법위반(강간등상해)/성폭력범죄의처벌등
+에관한특례법위반(강간등치상)
+성폭력범죄의처벌등에관한특례법제9조성폭력범죄의처벌등에관한특례법위반(강간등살인)/성폭력범죄의처벌등
+에관한특례법위반(강간등치사)
+성폭력범죄의처벌등에관한특례법제10조성폭력범죄의처벌등에관한특례법위반(업무상위력등에의한추행)
+성폭력범죄의처벌등에관한특례법제11조성폭력범죄의처벌등에관한특례법위반(공중밀집장소에서의추행)
+성폭력범죄의처벌등에관한특례법제12조성폭력범죄의처벌등에관한특례법위반(성적목적다중이용장소침입)
+성폭력범죄의처벌등에관한특례법제13조성폭력범죄의처벌등에관한특례법위반(통신매체이용음란)
+성폭력범죄의처벌등에관한특례법제14조 제1항성폭력범죄의처벌등에관한특례법위반(카메라등이용촬영)
+성폭력범죄의처벌등에관한특례법제14조 제2항성폭력범죄의처벌등에관한특례법위반(카메라등이용촬영물반포등)
+성폭력범죄의처벌등에관한특례법제14조 제3항성폭력범죄의처벌등에관한특례법위반(영리목적카메라등이용촬영물반포
+등)
+성폭력범죄의처벌등에관한특례법제14조 제4항성폭력범죄의처벌등에관한특례법위반(카메라등이용촬영물소지등)
+성폭력범죄의처벌등에관한특례법제14조 제5항성폭력범죄의처벌등에관한특례법위반(상습카메라등이용촬영·반포등)
+성폭력범죄의처벌등에관한특례법제14조의2제1항성폭력범죄의처벌등에관한특례법위반(허위영상물편집등)
+성폭력범죄의처벌등에관한특례법제14조의2제2항성폭력범죄의처벌등에관한특례법위반(허위영상물반포등)
+성폭력범죄의처벌등에관한특례법제14조의2제3항성폭력범죄의처벌등에관한특례법위반(영리목적허위영상물반포등)
+성폭력범죄의처벌등에관한특례법제14조의3제1항성폭력범죄의처벌등에관한특례법위반(촬영물등이용협박)
+성폭력범죄의처벌등에관한특례법제14조의3제2항성폭력범죄의처벌등에관한특례법위반(촬영물등이용강요)
+성폭력범죄의처벌등에관한특례법제14조의3제3항,제14조의3제1항,
+제14조 제1항
+성폭력범죄의처벌등에관한특례법위반(상습촬영물등이용협박)
+성폭력범죄의처벌등에관한특례법제50조성폭력범죄의처벌등에관한특례법위반(비밀준수등)
+성매매알선등행위의처벌에관한법률제19조성매매알선등행위의처벌에관한법률위반(성매매알선등)
+성매매알선등행위의처벌에관한법률제20조성매매알선등행위의처벌에관한법률위반(성매매광고)
+성매매알선등행위의처벌에관한법률제21조 제1항성매매알선등행위의처벌에관한법률위반(성매매)
+아동·청소년의성보호에관한법률제7조 제1항아동·청소년의성보호에관한법률위반(강간)
+아동·청소년의성보호에관한법률제7조 제2항아동·청소년의성보호에관한법률위반(유사성행위)
+아동·청소년의성보호에관한법률제7조 제3항아동·청소년의성보호에관한법률위반(강제추행)
+아동·청소년의성보호에관한법률제7조 제4항아동·청소년의성보호에관한법률위반(준강간)
+아동·청소년의성보호에관한법률제7조 제4항아동·청소년의성보호에관한법률위반(준유사성행위)
+아동·청소년의성보호에관한법률제7조 제4항아동·청소년의성보호에관한법률위반(준강제추행)
+아동·청소년의성보호에관한법률제7조 제2항아동·청소년의성보호에관한법률위반(위계등간음)
+아동·청소년의성보호에관한법률제7조 제2항아동·청소년의성보호에관한법률위반(위계등유사성행위)
+아동·청소년의성보호에관한법률제7조 제2항아동·청소년의성보호에관한법률위반(위계등추행)
+아동·청소년의성보호에관한법률제7조의2,제7조 제1항아동·청소년의성보호에관한법률위반(강간예비음모)
+아동·청소년의성보호에관한법률제7조의2,제7조 제2항아동·청소년의성보호에관한법률위반(유사성행위예비음모)
+아동·청소년의성보호에관한법률제7조의2,제7조 제3항아동·청소년의성보호에관한법률위반(강제추행예비음모)
+아동·청소년의성보호에관한법률제7조의2,제7조 제4항아동·청소년의성보호에관한법률위반(준강간예비음모)
+아동·청소년의성보호에관한법률제7조의2,제7조 제4항아동·청소년의성보호에관한법률위반(준유사성행위예비음모)
+아동·청소년의성보호에관한법률제7조의2,제7조 제4항아동·청소년의성보호에관한법률위반(준강제추행예비음모)
+아동·청소년의성보호에관한법률제7조의2,제7조 제2항아동·청소년의성보호에관한법률위반(위계등간음예비음모)
+아동·청소년의성보호에관한법률제7조의2,제7조 제2항아동·청소년의성보호에관한법률위반(위계등유사성행위예비음모)
+
+아동·청소년의성보호에관한법률제7조의2,제7조 제2항아동·청소년의
+성보호에관한법률위반(위계등추행예비음모)
+아동·청소년의성보호에관한법률제8조 제1항아동·청소년의성보호에관한법률위반(장애인간음)
+아동·청소년의성보호에관한법률제8조 제2항아동·청소년의성보호에관한법률위반(장애인추행)
+아동·청소년의성보호에관한법률제8조의2제1항아동·청소년의성보호에관한법률위반(16세미만아동·청소년간음)
+아동·청소년의성보호에관한법률제8조의2제2항아동·청소년의성보호에관한법률위반(16세미만아동·청소년추행)
+아동·청소년의성보호에관한법률제9조아동·청소년의성보호에관한법률위반(강간등상해) /아동·청소년의성보
+호에관한법률위반(강간등치상)
+아동·청소년의성보호에관한법률제10조아동·청소년의성보호에관한법률위반(강간등살인) /아동·청소년의성보
+호에관한법률위반(강간등치사)
+아동·청소년의성보호에관한법률제11조 제1항아동·청소년의성보호에관한법률위반(성착취물제작등)
+아동·청소년의성보호에관한법률제11조 제2항아동·청소년의성보호에관한법률위반(영리목적성착취물판매등)
+아동·청소년의성보호에관한법률제11조 제3항아동·청소년의성보호에관한법률위반(성착취물배포등)
+아동·청소년의성보호에관한법률제11조 제5항아동·청소년의성보호에관한법률위반(성착취물소지등)
+아동·청소년의성보호에관한법률제11조 제7항아동·청소년의성보호에관한법률위반(상습성착취물제작·배포등)
+아동·청소년의성보호에관한법률제13조 제1항아동·청소년의성보호에관한법률위반(성매수등)
+아동·청소년의성보호에관한법률제15조의2아동·청소년의성보호에관한법률위반(성착취목적대화등)
+스토킹범죄의처벌등에관한법률제18조 제1항스토킹범죄의처벌등에관한법률위반
+스토킹범죄의처벌등에관한법률제20조스토킹범죄의처벌등에관한법률위반
+Table 9: List of query case types for Fraud
+Law Crime
+형법제347조사기
+형법제347조,제351조상습사기
+형법제347조,제352조사기미수
+형법제347조,제351조,제352조상습사기미수
+형법제347조의2컴퓨터등사용사기
+형법제347조의2,제351조상습컴퓨터등사용사기
+형법제347조의2,제352조컴퓨터등사용사기미수
+형법제347조의2,제351조,제352조상습컴퓨터등사용사기미수
+형법제348조준사기
+형법제348조,제351조상습준사기
+형법제348조,제352조준사기미수
+형법제348조,제351조,제352조상습준사기미수
+형법제348조의2편의시설부정이용
+형법제348조의2,제351조상습편의시설부정이용
+형법제348조의2,제352조편의시설부정이용미수
+형법제348조의2,제351조,제352조상습편의시설부정이용미수
+형법제350조공갈
+형법제350조,제351조상습공갈
+형법제350조,제352조공갈미수
+형법제350조,제351조,제352조상습공갈미수
+형법제350조의2특수공갈
+형법제350조의2,제351조상습특수공갈
+형법제350조의2,제352조특수공갈미수
+형법제350조의2,제351조,제352조상습특수공갈미수
+폭력행위등처벌에관한법률제2조 제2항,형법제350조폭력행위등처벌에관한법률위반(공갈)
+폭력행위등처벌에관한법률제2조 제3항,형법제350조폭력행위등처벌에관한법률위반(공갈재범)
+특정경제범죄가중처벌등에관한법률제3조,형법제347조,제347조의2,
+제351조
+특정경제범죄가중처벌등에관한법률위반(사기)
+특정경제범죄가중처벌등에관한법률제3조,형법제350조,제350조의2,
+제351조
+특정경제범죄가중처벌등에관한법률위반(공갈)
+여신전문금융업법제70조여신전문금융업법위반
+
+Table 10: List of query case types for Theft and Robbery
+Law Crime
+형법제329조 절도
+형법제329조,제342조 절도미수
+형법제329조,제332조상습절도
+형법제329조,제332조,제342조상습절도미수
+형법제330조야간주거침입절도
+형법제330조,제342조야간주거침입절도미수
+형법제330조,제332조상습야간주거침입절도
+형법제330조,제332조,제342조상습야간주거침입절도미수
+형법제330조야간건조물침입절도
+형법제330조,제342조야간건조물침입절도미수
+형법제330조,제332조상습야간건조물침입절도
+형법제330조,제332조,제342조상습야간건조물침입절도미수
+형법제330조야간선박침입절도
+형법제330조,제342조야간선박침입절도미수
+형법제330조,제332조상습야간선박침입절도
+형법제330조,제332조,제342조상습야간선박침입절도미수
+형법제330조야간항공기침입절도
+형법제330조,제342조야간항공기침입절도미수
+형법제330조,제332조상습야간항공기침입절도
+형법제330조,제332조,제342조상습야간항공기침입절도미수
+형법제330조야간방실침입절도
+형법제330조,제342조야간방실침입절도미수
+형법제330조,제332조상습야간방실침입절도
+형법제330조,제332조,제342조상습야간방실침입절도미수
+형법제331조특수절도
+형법제331조,제342조특수절도미수
+형법제331조,제332조상습특수절도
+형법제331조,제332조,제342조상습특수절도미수
+형법제333조강도
+형법제333조,제342조강도미수
+형법제333조,제341조상습강도
+형법제333조,제341조,제342조상습강도미수
+형법제334조특수강도
+형법제334조,제342조특수강도미수
+형법제334조,제341조상습특수강도
+형법제334조,제341조,제342조상습특수강도미수
+형법제335조준강도
+형법제335조,제342조준강도미수
+형법제335조준특수강도
+형법제335조,제342조준특수강도미수
+형법제337조강도상해
+형법제337조,제342조강도상해미수
+형법제337조강도치상
+형법제337조,제342조강도치상미수
+형법제338조강도살인
+형법제338조,제342조강도살인미수
+형법제338조강도치사
+형법제338조,제342조강도치사미수
+형법제339조강도강간
+형법제339조,제342조강도강간미수
+형법제343조강도예비
+형법제343조강도음모
+
+Table 11: List of query case types for Embezzlement
+Law Crime
+형법제355조 제1항횡령
+형법제355조 제1항,제359조횡령미수
+형법제355조 제2항배임
+형법제355조 제2항,제359조배임미수
+형법제356조업무상횡령
+형법제356조,제359조업무상횡령미수
+형법제356조업무상배임
+형법제356조,제359조업무상배임미수
+형법제357조 제1항배임수재
+형법제357조 제1항,제359조배임수재미수
+형법제357조 제2항배임증재
+형법제357조 제2항,제359조배임증재미수
+형법제360조 제1항점유이탈물횡령
+형법제360조 제1항,제359조 점유이탈물횡령미수
+특정경제범죄가중처벌등에관한법률제3조,형법제355조 제1항,제356조특정경제범죄가중처벌등에관한법률위반(횡령)
+특정경제범죄가중처벌등에관한법률제3조,형법제355조 제2항,제356조특정경제범죄가중처벌등에관한법률위반(배임)
+Table 12: List of query case types for Destruction
+Law Crime
+형법제366조재물손괴
+형법제369조,제366조특수재물손괴
+형법제369조,제371조특수재물손괴미수
+형법제371조,제366조재물손괴미수
+형법제371조,제369조,제366조특수재물손괴미수
+폭력행위등처벌에관한법률제2조 제2항,형법제366조폭력행위등처벌에관한법률위반(재물손괴등)
+폭력행위등처벌에관한법률제2조 제3항,형법제366조폭력행위등처벌에관한법률위반(재물손괴등재범)
+Table 13: List of query case types for Murder
+Law Crime
+형법제250조 제1항살인
+형법제254조,제250조 제1항살인미수
+Table 14: List of query case types for Injury and Violence
+Law Crime
+형법제257조 제1항상해
+형법제257조 제1항,제264조상습상해
+형법제257조 제3항,제1항상해미수
+형법제258조 제1항/제258조 제2항중상해
+형법제258조,제264조상습중상해
+형법제258조의2제1항,제257조 제1항특수상해
+형법제258조의2,제264조상습특수상해
+형법제258조의2제3항,제1항,제257조 제1항특수상해미수
+형법제258조의2,제264조상습특수상해미수
+형법제259조 제1항상해치사
+형법제260조 제1항폭행
+형법제260조 제1항,제264조상습폭행
+형법제261조,제260조 제1항특수폭행
+형법제261조,제264조상습특수폭행
+형법제262조,제260조 제1항, (제259조,제257조 제1항)폭행치사
+형법제262조,제260조 제1항, (제259조,제257조 제1항)폭행치상
+형법제262조,제261조, (제259조,제257조 제1항)특수폭행치사
+형법제262조,제261조, (제259조,제257조 제1항)특수폭행치상
+폭력행위등처벌에관한법률제2조 제2항폭력행위등처벌에관한법률위반(폭행)
+폭력행위등처벌에관한법률제2조 제2항폭력행위등처벌에관한법률위반(존속폭행)
+폭력행위등처벌에관한법률제2조 제2항폭력행위등처벌에관한법률위반(상해)
+폭력행위등처벌에관한법률제2조 제2항폭력행위등처벌에관한법률위반(존속상해)
+폭력행위등처벌에관한법률제2조 제3항폭력행위등처벌에관한법률위반(폭행재범)
+폭력행위등처벌에관한법률제2조 제3항폭력행위등처벌에관한법률위반(존속폭행재범)
+
+Law Crime
+폭력행위등처벌에관한법률제2조 제3항폭력행위등처벌에관한법률위반(상해재범)
+폭력행위등처벌에관한법률제2조 제3항폭력행위등처벌에관한법률위반(존속상해재범)
+폭력행위등처벌에관한법률제4조 제1항폭력행위등처벌에관한법률위반(단체등의구성·활동)
+형법제262조,제260조 제2항존속폭행치상
+형법제262조,제260조 제2항존속폭행치사
+형법제262조,제260조 제2항존속상해치상
+형법제262조,제260조 제2항존속상해치사
+형법제260조 제2항,제264조상습존속폭행
+형법제260조 제2항,제264조상습존속상해
+형법제261조,제260조 제2항특수존속폭행
+형법제261조,제260조 제2항특수존속상해
+형법제260조 제2항존속폭행
+형법제260조 제2항존속상해
+형법제258조 제3항존속중상해
+Table 15: List of query case types for Negligent homicide and injury
+Law Crime
+형법제266조과실치상
+형법제267조과실치사
+형법제268조업무상과실치사
+형법제268조중과실치사
+형법제268조업무상과실치상
+형법제268조중과실치상
+Table 16: List of query case types for Arrest and Detention
+Law Crime
+형법제276조 제1항체포
+형법제276조 제1항감금
+형법제277조 제1항중체포
+형법제277조 제1항중감금
+형법제276조 제1항,제280조체포미수
+형법제276조 제1항,제280조감금미수
+형법제277조 제1항,제280조중체포미수
+형법제277조 제1항,제280조중감금미수
+형법제278조특수체포
+형법제278조특수감금
+형법제278조특수중체포
+형법제278조특수중감금
+형법제278조,제280조특수체포미수
+형법제278조,제280조특수감금미수
+형법제278조,제280조특수중체포미수
+형법제278조,제280조특수중감금미수
+형법제279조상습체포
+형법제279조상습감금
+형법제279조상습중체포
+형법제279조상습중감금
+형법제279조,제280조상습체포미수
+형법제279조,제280조상습감금미수
+형법제279조,제280조상습중체포미수
+형법제279조,제280조상습중감금미수
+형법제281조 제1항체포치상
+형법제281조 제1항감금치상
+형법제281조 제1항중체포치상
+형법제281조 제1항중감금치상
+형법제281조 제1항체포치사
+형법제281조 제1항감금치사
+형법제281조 제1항중체포치사
+형법제281조 제1항중감금치사
+형법제281조 제1항특수존속체포
+형법제281조 제1항상습존속체포
+형법제281조 제1항특수존속체포미수
+형법제281조 제1항상습존속체포미수
+
+Law Crime
+형법제281조 제1항특수존속감금
+형법제281조 제1항상습존속감금
+형법제281조 제1항특수존속감금미수
+형법제281조 제1항상습존속감금미수
+형법제281조 제1항특수중존속체포
+형법제281조 제1항상습중존속체포
+형법제281조 제1항특수중존속체포미수
+형법제281조 제1항상습중존속체포미수
+형법제281조 제1항특수중존속감금
+형법제281조 제1항상습중존속감금
+형법제281조 제1항특수중존속감금미수
+형법제281조 제1항상습중존속감금미수
+형법제277조 제2항중존속체포
+형법제277조 제2항중존속감금
+형법제276조 제2항존속체포
+형법제276조 제2항존속감금
+폭력행위등처벌에관한법률제2조 제2항,형법제276조 제1항폭력행위등처벌에관한법률위반(체포)
+폭력행위등처벌에관한법률제2조 제2항,형법제276조 제1항폭력행위등처벌에관한법률위반(감금)
+폭력행위등처벌에관한법률제2조 제2항,형법제276조 제2항폭력행위등처벌에관한법률위반(존속체포)
+폭력행위등처벌에관한법률제2조 제2항,형법제276조 제2항폭력행위등처벌에관한법률위반(존속감금)
+폭력행위등처벌에관한법률제2조 제3항,형법제276조 제1항폭력행위등처벌에관한법률위반(체포재범)
+폭력행위등처벌에관한법률제2조 제3항,형법제276조 제1항폭력행위등처벌에관한법률위반(감금재범)
+폭력행위등처벌에관한법률제2조 제3항,형법제276조 제2항폭력행위등처벌에관한법률위반(존속체포재범)
+폭력행위등처벌에관한법률제2조 제3항,형법제276조 제2항폭력행위등처벌에관한법률위반(존속감금재범)
+Table 17: List of query case types for Threat
+Law Crime
+형법제283조 제1항협박
+형법제284조특수협박
+형법제285조상습협박
+형법제285조,제284조상습특수협박
+형법제286조협박미수
+형법제284조특수협박미수
+형법제285조상습협박미수
+형법제285조,제284조상습특수협박미수
+형법제283조 제2항존속협박
+형법제284조,제283조 제2항특수존속협박
+형법제285조,제283조 제2항상습존속협박
+폭력행위등처벌에관한법률제2조 제2항,형법제283조 제1항폭력행위등처벌에관한법률위반(협박)
+폭력행위등처벌에관한법률제2조 제2항,형법제283조 제2항폭력행위등처벌에관한법률위반(존속협박)
+폭력행위등처벌에관한법률제2조 제3항,형법제283조 제1항폭력행위등처벌에관한법률위반(협박재범)
+폭력행위등처벌에관한법률제2조 제3항,형법제283조 제2항폭력행위등처벌에관한법률위반(존속협박재범)
+Table 18: List of query case types for Defamation and Insult
+Law Crime
+형법제307조 제1항사실적시명예훼손
+형법제307조 제2항 허위적시명예훼손
+형법제309조, (제307조 제1항,제307조 제2항)출판물에의한명예훼손
+형법제309조, (제307조 제1항,제307조 제2항)라디오에의한명예훼손
+형법제311조모욕
+정보통신망이용촉진및정보보호등에관한법률제70조 제1항정보통신망이용촉진및정보보호등에관한법률위반(사실적시명예훼손)
+정보통신망이용촉진및정보보호등에관한법률제70조 제2항정보통신망이용촉진및정보보호등에관한법률위반(허위적시명예훼손)
+정보통신망이용촉진및정보보호등에관한법률제71조 제1항정보통신망이용촉진및정보보호등에관한법률위반(정보통신망침해등)
+정보통신망이용촉진및정보보호등에관한법률제74조 제1항제2호정보통신망이용촉진및정보보호등에관한법률위반(음란물유포)
+Table 19: List of query case types for Obstruction of business
+Law Crime
+형법제314조 제1항업무방해
+형법제314조 제1항공무집행방해
+형법제314조 제1항위계에의한공무집행방해
+
+Law Crime
+형법제314조 제1항공용서류손상
+형법제314조 제1항공용서류은닉
+형법제314조 제1항공용서류무효
+형법제314조 제1항공용물건손상
+형법제314조 제1항공용물건은닉
+형법제314조 제1항공용물건무효
+형법제314조 제1항공용전자기록등손상
+형법제314조 제1항공용전자기록등은닉
+형법제314조 제1항공용전자기록등무효
+형법제314조 제1항특수공무집행방해치사
+형법제314조 제1항특수공무집행방해치상
+형법제314조 제1항특수공무집행방해
+형법제314조 제1항특수공용물건손상
+Table 20: List of query case types for Home invasion
+Law Crime
+형법제319조 제1항주거침입
+형법제319조 제1항건조물침입
+형법제319조 제1항방실침입
+형법제319조 제2항퇴거불응
+형법제320조특수주거침입
+형법제320조특수건조물침입
+형법제320조특수방실침입
+형법제320조특수퇴거불응
+형법제322조 주거침입미수
+형법제322조건조물침입미수
+형법제322조방실침입미수
+형법제322조퇴거불응미수
+형법제320조,제322조특수주거침입미수
+형법제320조,제322조특수건조물침입미수
+형법제320조,제322조특수방실침입미수
+형법제320조,제322조특수퇴거불응미수
+폭력행위등처벌에관한법률제2조 제2항,형법제319조 제1항폭력행위등처벌에관한법률위반(주거침입)
+폭력행위등처벌에관한법률제2조 제2항,형법제319조 제2항폭력행위등처벌에관한법률위반(퇴거불응)
+폭력행위등처벌에관한법률제2조 제3항,형법제319조 제1항폭력행위등처벌에관한법률위반(주거침입재범)
+폭력행위등처벌에관한법률제2조 제3항,형법제319조 제2항폭력행위등처벌에관한법률위반(퇴거불응재범)
+Table 21: List of query case types for Obstruction of right
+Law Crime
+형법제323조권리행사방해
+형법제324조 제1항강요
+형법제324조 제2항특수강요
+형법제327조강제집행면탈
+폭력행위등처벌에관한법률제2조 제2항,형법제324조 제1항폭력행위등처벌에관한법률위반(강요)
+폭력행위등처벌에관한법률제2조 제3항,형법제324조 제1항폭력행위등처벌에관한법률위반(강요재범)
+Table 22: List of query case types for Drug
+Law Crime
+마약류관리에관한법률제2조 제2호마약류관리에관한법률위반(마약)
+마약류관리에관한법률제5조의2제5항마약류관리에관한법률위반임시마약류마약
+마약류관리에관한법률제2조 제3호마약류관리에관한법률위반(향정)
+마약류관리에관한법률제5조의2제5항마약류관리에관한법률위반임시마약류향정
+마약류관리에관한법률제2조 제4호마약류관리에관한법률위반(대마)
+마약류관리에관한법률제5조의2제5항마약류관리에관한법률위반임시마약류대마
+
+Table 23: List of query case types for Gambling
+Law Crime
+형법제246조 제1항도박
+형법제246조 제2항상습도박
+형법제247조도박장소개설
+형법제247조도박공간개설
+국민체육진흥법제47조 제2호국민체육진흥법위반(도박개장등)
+국민체육진흥법제48조 제3호,제26조 제1항국민체육진흥법위반(도박등)
+국민체육진흥법제48조 제4호,제26조 제2항제1호국민체육진흥법위반(도박개장등)
+게임산업진흥에관한법률게임산업진흥에관한법률위반
+Table 24: List of query case types for Other criminal offenses
+Law Crime
+형법제145조도주
+형법제151조범인은닉
+형법제151조범인도피
+형법제152조 제1항위증
+형법제156조무고
+형법제164조 제1항,제165조,제166조,제167조방화
+형법제164조 제2항,제164조 제1항방화치상
+형법제164조 제2항,제164조 제1항방화치사
+형법제170조실화
+형법제171조업무상실화
+형법제174조방화미수
+형법제175조방화예비
+형법제185조일반교통방해
+형법제186조기차교통방해
+형법제186조 전차교통방해
+Table 25: List of query case types for Traffic offenses
+Law Crime
+교통사고처리특례법제3조 제1항,형법제268조교통사고처리특례법위반(치사)
+교통사고처리특례법제3조 제1항,형법제268조교통사고처리특례법위반(치상)
+교통사고처리특례법교통사고처리특례법위반
+특정범죄가중처벌등에관한법률제5조의3제1항제1호특정범죄가중처벌등에관한법률위반(도주치사)
+특정범죄가중처벌등에관한법률제5조의3제1항제2호특정범죄가중처벌등에관한법률위반(도주치상)
+특정범죄가중처벌등에관한법률제5조의10특정범죄가중처벌등에관한법률위반(운전자폭행등)
+특정범죄가중처벌등에관한법률제5조의11제1항특정범죄가중처벌등에관한법률위반(위험운전치사)
+특정범죄가중처벌등에관한법률제5조의11제1항특정범죄가중처벌등에관한법률위반(위험운전치상)
+특정범죄가중처벌등에관한법률제5조의13특정범죄가중처벌등에관한법률위반(어린이보호구역치사)
+특정범죄가중처벌등에관한법률제5조의13특정범죄가중처벌등에관한법률위반(어린이보호구역치상)
+도로교통법제43조도로교통법위반(무면허운전)
+도로교통법제44조 제1항도로교통법위반(음주운전)
+도로교통법제44조 제2항도로교통법위반(음주측정거부)
+도로교통법제46조도로교통법위반(공동위험행위)
+도로교통법제54조 제1항도로교통법위반(사고후미조치)
+Table 26: List of query case types for Child crime and School violence
+Law Crime
+아동복지법제71조 제1항제2호,제17조각호아동복지법위반(아동학대)
+아동복지법아동복지법위반(아동유기·방임)
+아동복지법아동복지법위반(상습아동학대)
+아동복지법아동복지법위반(상습아동유기·방임)
+아동학대범죄의처벌등에관한특례법제4조 제2항아동학대범죄의처벌등에관한특례법위반(아동학대치사)
+아동학대범죄의처벌등에관한특례법제5조아동학대범죄의처벌등에관한특례법위반(아동학대중상해)
+아동학대범죄의처벌등에관한특례법제7조아동학대범죄의처벌등에관한특례법위반(아동복지시설종사자등의아동
+학대)
+청소년보호법청소년보호법위반
+학교폭력예방및대책에관한법률학교폭력예방및대책에관한법률위반
+
+Table 27: List of query case types for Corporation
+Law Crime
+부정경쟁방지법제18조 제1항부정경쟁방지및영업비밀보호에관한법률위반(영업비밀국외누설등)
+부정경쟁방지법제18조 제2항부정경쟁방지및영업비밀보호에관한법률위반(영업비밀누설등)
+자본시장법자본시장과금융투자업에관한법률위반
+Table 28: List of query case types for Labor and Employment
+Law Crime
+근로기준법제107조,제7조근로기준법위반(강제근로의금지)
+근로기준법제107조,제8조근로기준법위반(폭행의금지)
+근로기준법제107조,제9조근로기준법위반(중간착취의배제)
+근로기준법제107조,제23조 제2항근로기준법위반(해고등의제한)
+근로기준법제107조,제40조근로기준법위반(취업방해의금지)
+근로기준법제109조 제1항,제36조근로기준법위반(금품청산)
+근로기준법제109조 제1항,제43조근로기준법위반(임금지급)
+근로기준법제109조 제1항,제46조근로기준법위반(휴업수당지급)
+근로기준법제109조 제1항,제51조의2근로기준법위반(가산임금지급)
+근로기준법제109조 제1항,제52조 제2항제2호근로기준법위반(가산임금지급)
+근로기준법제109조 제1항,제56조근로기준법위반(가산임금지급)
+근로기준법제109조 제1항,제65조근로기준법위반(사용금지)
+근로기준법제109조 제1항,제72조근로기준법위반(갱내근로의금지)
+근로기준법제109조 제1항,제76조의3제6항근로기준법위반(직장내괴롭힘발생시조치)
+근로기준법제110조 제1호,제10조근로기준법위반(공민권행사보장)
+근로기준법제110조 제1호,제22조 제1항근로기준법위반(강제저금의금지)
+근로기준법제110조 제1호,제26조근로기준법위반(해고의예고)
+근로기준법제110조 제1호,제50조근로기준법위반(법정근로시간)
+근로기준법제110조 제1호,제51조의2제2항근로기준법위반(휴식시간제공)
+근로기준법제110조 제1호,제52조 제2항제1호근로기준법위반(휴식시간제공)
+근로기준법제110조 제1호,제53조 제1항근로기준법위반(연장근로의제한)
+근로기준법제110조 제1호,제53조 제2항근로기준법위반(연장근로의제한)
+근로기준법제110조 제1호,제53조 제4항본문근로기준법위반(연장근로의제한)
+근로기준법제110조 제1호,제53조 제7항근로기준법위반(연장근로의제한)
+근로기준법제110조 제1호,제54조근로기준법위반(휴식시간제공)
+근로기준법제110조 제1호,제55조근로기준법위반(휴일보장)
+근로기준법제110조 제1호,제59조 제2항근로기준법위반(휴식시간제공)
+근로기준법제110조 제1호,제60조 제1항근로기준법위반(연차유급휴가지급)
+근로기준법제110조 제1호,제60조 제2항근로기준법위반(연차유급휴가지급)
+근로기준법제110조 제1호,제60조 제4항근로기준법위반(연차유급휴가지급)
+근로기준법제110조 제1호,제60조 제5항근로기준법위반(연차유급휴가지급)
+근로기준법제110조 제1호,제69조근로기준법위반(미성년자근로시간)
+근로기준법제110조 제1호,제70조 제1항근로기준법위반(야간근로휴일근로)
+근로기준법제110조 제1호,제70조 제2항근로기준법위반(야간근로휴일근로)
+근로기준법제110조 제1호,제71조근로기준법위반(시간외근로)
+근로기준법제110조 제1호,제74조근로기준법위반(임산부보호)
+근로기준법제110조 제1호,제75조근로기준법위반(육아시간제공)
+근로기준법제110조 제1호,제104조 제2항근로기준법위반(불리한처우금지)
+근로기준법제110조 제2호,제53조 제5항근로기준법위반(휴식시간제공)
+근로기준법제114조 제1호,제6조근로기준법위반(균등한처우)
+근로기준법제114조 제1호,제17조근로기준법위반(근로조건명시)
+근로기준법제114조 제1호,제20조근로기준법위반(위약예정금지)
+근로기준법제114조 제1호,제21조근로기준법위반(전차금상계금지)
+근로기준법제114조 제1호,제22조 제2항근로기준법위반(강제저금금지)
+근로기준법제114조 제1호,제67조 제1항근로기준법위반(근로계약대리금지)
+근로기준법제114조 제1호,제67조 제3항근로기준법위반(근로조건서면교부)
+근로기준법제114조 제1호,제70조 제3항근로기준법위반(야간근로휴일근로제한)
+근로기준법제114조 제1호,제73조근로기준법위반(생리휴가지급)
+근로기준법제114조 제1호,제74조 제6항근로기준법위반(임산부의보호)
+근로기준법제114조 제1호,제94조근로기준법위반(취업규칙작성변경)
+근로기준법제114조 제1호,제95조근로기준법위반(감급제재제한규정)
+근로기준법제116조 제1항,제76조의2근로기준법위반(직장내괴롭힘금지)
+근로기준법제116조 제2항제2호,제41조근로기준법위반(근로자명부작성)
+근로기준법제116조 제2항제2호,제42조근로기준법위반(계약서류보존)
+근로기준법제116조 제2항제2호,제48조근로기준법위반(임금대장및임금내역서)
+근로기준법제116조 제2항제2호,제74조 제7항근로기준법위반(임산부의보호)
+
+Law Crime
+근로기준법제116조 제2항제2호,제74조 제9항근로기준법위반(임산부의보호)
+근로기준법제116조 제2항제2호,제76조의3제2항근로기준법위반(직장내괴롭힘발생시조치)
+근로기준법제116조 제2항제2호,제76조의3제4항근로기준법위반(직장내괴롭힘발생시조치)
+근로기준법제116조 제2항제2호,제76조의3제5항근로기준법위반(직장내괴롭힘발생시조치)
+근로기준법제116조 제2항제2호,제76조의3제7항근로기준법위반(직장내괴롭힘발생시조치)
+근로기준법제116조 제2항제2호,제91조근로기준법위반(서류보존)
+근로기준법제116조 제2항제2호,제93조근로기준법위반(취업규칙작성신고)
+근로기준법제116조 제2항제3호,제51조의2제5항근로기준법위반(임금보전방안마련)
+퇴직급여법근로자퇴직급여보장법위반
+최저임금법최저임금법위반
+노동조합법제88조,제41조노동조합및노동관계조정법위반(쟁의행위제한과금지)
+노동조합법제89조,제37조노동조합및노동관계조정법위반(노동조합아닌자에의한쟁의행위금지)
+노동조합법제89조,제38조노동조합및노동관계조정법위반(노동조합의지도와책임)
+노동조합법제89조,제42조노동조합및노동관계조정법위반(폭력행위등의금지)
+노동조합법제89조,제42조의2노동조합및노동관계조정법위반(필수유지업무에대한쟁의행위제한)
+노동조합법제90조,제44조노동조합및노동관계조정법위반(쟁의행위기간중의임금지급요구금지)
+노동조합법제90조,제77조노동조합및노동관계조정법위반(긴급조정시쟁의행위중지)
+노동조합법제90조,제81조노동조합및노동관계조정법위반(부당노동행위)
+노동조합법제91조,제38조노동조합및노동관계조정법위반(노동조합의지도와책임)
+노동조합법제91조,제41조노동조합및노동관계조정법위반(쟁의행위제한금지)
+노동조합법제91조,제42조노동조합및노동관계조정법위반(폭력행위등의금지)
+노동조합법제91조,제43조노동조합및노동관계조정법위반(사용자의채용제한)
+노동조합법제91조,제46조노동조합및노동관계조정법위반(직장폐쇄)
+노동조합법제91조,제63조노동조합및노동관계조정법위반(중재시쟁의행위금지)
+노동조합법제92조,제31조노동조합및노동관계조정법위반(단체협약준수)
+노동조합법제93조,제7조노동조합및노동관계조정법위반(노동조합의보호요건)
+노동조합법제93조,제21조,제31조노동조합및노동관계조정법위반(시정명령)
+노동조합법제96조,제14조노동조합및노동관계조정법위반(서류비치)
+노동조합법제96조,제27조노동조합및노동관계조정법위반(자료제출)
+노동조합법제96조,제46조노동조합및노동관계조정법위반(직장폐쇄신고)
+노동조합법제96조,제13조,제28조제2항,제31조 제2항노동조합및노동관계조정법위반(신고의무)
+Table 29: List of query case types for Industrial accident and Serious accident
+Law Crime
+산업안전법제167조,제38조 제1,2,3항,제166조의2산업안전보건법위반(안전조치)
+산업안전법제167조,제39조 제1항산업안전보건법위반(보건조치)
+산업안전법제167조,제63조산업안전보건법위반(안전보건조치)
+산업안전법제168조,제38조 제1,2,3항산업안전보건법위반(안전조치)
+산업안전법제168조,제39조 제1항산업안전보건법위반(보건조치)
+산업안전법제168조,제51조산업안전보건법위반(작업중지의무)
+산업안전법제168조,제54조 제1항산업안전보건법위반(사업주의조치)
+산업안전법제168조,제117조 제1항산업안전보건법위반(유해위험물질제조등금지)
+산업안전법제168조,제118조 제1항산업안전보건법위반(무허가유해위험물질제조)
+산업안전법제168조,제122조 제1항산업안전보건법위반(석면해체제거)
+산업안전법제168조,제157조 제3항산업안전보건법위반(불리한처우금지)
+산업안전법제169조,제45조 제1항,제46조 제5항,제53조 제1항,제87조
+제2항,제118조 제4항,제119조 제4항,제131조 제1항
+산업안전보건법위반(명령위반)
+산업안전법제170조,제41조제3항산업안전보건법위반(불리한처우금지)
+산업안전법제170조,제56조제3항산업안전보건법위반(중대재해발생현장훼손)
+산업안전법제170조,제57조제1항산업안전보건법위반(산업재해사실은폐교사공모)
+산업안전법제170조,제153조산업안전보건법위반(자격증등록증대여)
+산업안전법제171조,제125조제6항,제132조제4항산업안전보건법위반(조치의무)
+산업안전법제172조,제64조 제1항제7호,제64조 제1항제8호,제64조 제2
+항
+산업안전보건법위반(산업재해예방조치의무)
+산재보험법산업재해보상보험법위반
+중대재해처벌법중대재해처벌등에관한법률위반
+Table 30: List of query case types for Medical or Food drug
+Law Crime
+약사법제93조 제1항제1호,제6조 제3항약사법위반(약사면허대여)
+약사법제93조 제1항제2호,제20조 제1항약사법위반(약국개설금지)
+약사법제93조 제1항제3호,제23조 제1항약사법위반(무면허의약품조제)
+
+Law Crime
+약사법제93조 제1항제4호,제31조 제1항,제2항,제3항,제4항,제9항약사법위반(허가,신고미이행)
+약사법제93조 제1항제5호,제42조 제1항약사법위반(무허가,무신고의약품수입등)
+약사법제93조 제1항제7호,제44조 제1항약사법위반((약국개설자가아님에도)의약품판매등)
+약사법제93조 제1항제10호,제61조 제1항제1호약사법위반(위조의약품판매등)
+약사법제93조 제1항제10호,제61조 제1항제2호약사법위반(무허가,무신고의약품판매등)
+약사법제93조 제1항제10호,제61조 제2항약사법위반(의약품유사광고등)
+약사법제93조 제1항제10호,제66조약사법위반(의약외품)
+약사법제94조 제1항제2호,제24조 제2항약사법위반(담합행위)
+약사법제94조 제1항제5호의4,제47조 제2항약사법위반(경제적이익등제공)
+약사법제94조 제1항제5호의4,제47조 제6항약사법위반(경제적이익등취득)
+약사법제94조 제1항제8호,제50조 제1항약사법위반(점포이외의장소에서의약품판매)
+약사법제94조 제1항제9호,제62조약사법위반(유해/위해의약품판매등)
+약사법제94조 제1항제9호,제66조,제62조약사법위반(유해/위해의약외품판매등)
+약사법제95조 제1항제2호,제21조 제1항약사법위반(약국이중개설)
+약사법제95조 제1항제8호,제47조 제1항,제4항,제7항약사법위반(유통체계확립및판매질서유지의무위반)
+약사법제95조 제1항제10호,제60조약사법위반(기재금지사항)
+약사법제95조 제1항제10호,제68조약사법위반(의약품과장광고등)
+식품위생법제94조 제1항제1호,제4조식품위생법위반(위해식품등의판매등)
+식품위생법제94조 제1항제3호,제37조 제1항식품위생법위반(무허가유흥주점)
+식품위생법제95조 제1호,제7조 제4항식품위생법위반(식품또는식품첨가물에관한기준및규격)
+식품위생법제95조 제1호,제9조 제4항식품위생법위반(기구및용기포장에관한기준및규격)
+식품위생법제95조 제2호의2,제37조 제5항식품위생법위반(영업허가등(허가,등록,신고))
+식품위생법제96조,제51조,제52조식품위생법위반(조리사미배치,영양사미채용)
+식품위생법제97조 제1호,제37조 제4항식품위생법위반(무허가,무신고영업등)
+식품위생법제97조 제4호,제36조식품위생법위반(시설기준위반)
+식품위생법제97조 제6호,제44조 제1항식품위생법위반(영업자등준수사항위반)
+식품위생법제97조 제7호,제75조 제1항식품위생법위반(영업정지명령위반)
+식품위생법제98조 제1호,제44조 제3항식품위생법위반(접객행위알선)
+Table 31: List of query case types for Fair trade
+Law Crime
+공정거래법제6조,제5조 제1항제1호,제124조 제1항제1호독점규제및공정거래에관한법률위반(시장지배적지위남용행위-가격남용
+행위)
+공정거래법제6조,제5조 제1항제2호,제124조 제1항제1호독점규제및공정거래에관한법률위반(시장지배적지위남용행위-출고조절
+행위)
+공정거래법제6조,제5조 제1항제3호,제124조 제1항제1호독점규제및공정거래에관한법률위반(시장지배적지위남용행위-사업활동
+방해행위)
+공정거래법제6조,제5조 제1항제4호,제124조 제1항제1호독점규제및공정거래에관한법률위반(시장지배적지위남용행위-진입제한
+행위)
+공정거래법제6조,제5조 제1항제5호,제124조 제1항제1호독점규제및공정거래에관한법률위반(시장지배적지위남용행위-경쟁사업
+자배제또는소비자이익의저해행위)
+공정거래법제13조,제9조,제124조 제1항제2호독점규제및공정거래에관한법률위반(경쟁제한적기업결합행위)
+공정거래법제19조,제124조 제1항제5호독점규제및공정거래에관한법률위반(상호출자제한기업집단의지주회사
+설립제한위반행위)
+공정거래법제20조,제124조 제1항제6호독점규제및공정거래에관한법률위반(일반지주회사의금융회사주식소유
+제한위반행위)
+공정거래법제21조,제124조 제1항제7호독점규제및공정거래에관한법률위반(상호출자금지위반행위)
+공정거래법제24조,제124조 제1항제8호독점규제및공정거래에관한법률위반(채무보증제한위반행위)
+공정거래법제25조,제124조 제1항제3호독점규제및공정거래에관한법률위반(금융보험사의결권제한위반행위)
+공정거래법제17조,제18조,제124조 제1항제4호,제126조 제1호,제126
+조 제2호
+독점규제및공정거래에관한법률위반(지주회사등의행위제한위반행위)
+공정거래법제26조,제130조 제1항제4호,제37조 제1항제7호독점규제및공정거래에관한법률위반(대규모내부거래에대한이사회의결
+및공시제도위반)
+공정거래법제27조,제130조 제1항제4호,제37조 제1항제7호독점규제및공정거래에관한법률위반(비상장회사등의중요사항공시제도
+위반행위)
+공정거래법제28조,제130조 제1항제4호,제37조 제1항제7호독점규제및공정거래에관한법률위반(기업집단현황공시제도위반행위)
+공정거래법제22조,제124조 제1항제7호독점규제및공정거래에관한법률위반(순환출자금지위반행위)
+공정거래법제23조,제124조 제1항제3호독점규제및공정거래에관한법률위반(순환출자에대한의결권제한위반행
+위)
+공정거래법제40조 제1항제1호,제124조 제1항제9호독점규제및공정거래에관한법률위반(부당공동행위-가격의결정,유지,변
+경행위)
+공정거래법제40조 제1항제2호,제124조 제1항제9호독점규제및공정거래에관한법률위반(부당공동행위-거래조건및대금지급
+조건설정행위)
+공정거래법제40조 제1항제3호,제124조 제1항제9호독점규제및공정거래에관한법률위반(부당공동행위-거래제한행위)
+공정거래법제40조 제1항제4호,제124조 제1항제9호독점규제및공정거래에관한법률위반(부당공동행위-시장분할행위)
+공정거래법제40조 제1항제5호,제124조 제1항제9호독점규제및공정거래에관한법률위반(부당공동행위-설비제한행위)
+공정거래법제40조 제1항제6호,제124조 제1항제9호독점규제및공정거래에관한법률위반(부당공동행위-상품의종류,규격제한
+행위)
+
+Law Crime
+공정거래법제40조 제1항제7호,제124조 제1항제9호독점규제및공정거래에관한법률위반(부당공동행위-영업의주요부문공동
+관리행위)
+공정거래법제40조 제1항제8호,제124조 제1항제9호독점규제및공정거래에관한법률위반(부당공동행위-입찰담합행위)
+공정거래법제40조 제1항제9호,제124조 제1항제9호독점규제및공정거래에관한법률위반(부당공동행위-정보교환공동행위)
+공정거래법제51조 제1항제1호,제124조 제1항제12호,제53조,제52조독점규제및공정거래에관한법률위반(사업자단체금지행위-부당한공동행
+위)
+공정거래법제51조 제1항제2호,제53조,제52조독점규제및공정거래에관한법률위반(사업자단체금지행위-사업자수제한
+행위)
+공정거래법제51조 제1항제3호,제125조 제5호,제53조,제52조독점규제및공정거래에관한법률위반(사업자단체금지행위-사업활동방해
+행위)
+공정거래법제51조 제1항제4호,제53조,제52조독점규제및공정거래에관한법률위반(사업자단체금지행위-불공정거래행
+위)
+공정거래법제45조 제1항제1호독점규제및공정거래에관한법률위반(일반불공정거래행위-거래거절행위)
+공정거래법제45조 제1항제2호독점규제및공정거래에관한법률위반(일반불공정거래행위-차별적취급행
+위)
+공정거래법제45조 제1항제3호독점규제및공정거래에관한법률위반(일반불공정거래행위-경쟁사업자배
+제행위)
+공정거래법제45조 제1항제4호,제125조 제4호독점규제및공정거래에관한법률위반(일반불공정거래행위-부당한고객유
+인행위)
+공정거래법제45조 제1항제5호,제125조 제4호독점규제및공정거래에관한법률위반(일반불공정거래행위-거래강제행위)
+공정거래법제45조 제1항제6호,제125조 제4호독점규제및공정거래에관한법률위반(일반불공정거래행위-거래상지위남
+용행위)
+공정거래법제45조 제1항제7호독점규제및공정거래에관한법률위반(일반불공정거래행위-구속조건부거
+래행위)
+공정거래법제45조 제1항제8호,제125조 제4호독점규제및공정거래에관한법률위반(일반불공정거래행위-사업활동방해
+행위)
+공정거래법제45조 제1항제9호,령별표2제9호가목,제124조 제1항제10
+호
+독점규제및공정거래에관한법률위반(부당지원행위-부당한자금지원행위)
+공정거래법제45조 제1항제9호,령별표2제9호나목,제124조 제1항제10
+호
+독점규제및공정거래에관한법률위반(부당지원행위-부당한자산상품등지
+원행위)
+공정거래법제45조 제1항제9호,령별표2제9호다목,제124조 제1항제10
+호
+독점규제및공정거래에관한법률위반(부당지원행위-부당한인력지원행위)
+공정거래법제45조 제1항제9호,령별표2제9호라목,제124조 제1항제10
+호
+독점규제및공정거래에관한법률위반(부당지원행위-부당한거래단계추가
+행위)
+공정거래법제48조,제124조 제1항제11호독점규제및공정거래에관한법률위반(보복조치행위)
+공정거래법제47조,제124조 제1항제10호독점규제및공정거래에관한법률위반(특수관계인에대한부당한이익제공
+행위)
+공정거래법제81조 제2항,제124조 제1항제13호독점규제및공정거래에관한법률위반(조사시폭언폭행등행위)
+공정거래법제30조,제126조 제3호독점규제및공정거래에관한법률위반(주식소유현황신고의무위반행위)
+표시광고법표시·광고의공정화에관한법률위반
+Table 32: List of query case types for Finance or Insurance
+Law Crime
+특정금융거래정보의보고및이용등에관한법률특정금융거래정보의보고및이용등에관한법률위반
+금융실명거래및비밀보장에관한법률금융실명거래및비밀보장에관한법률위반
+대부업법제3조,제3조의2,제9조의2,제19조 제1항대부업등의등록및금융이용자보호에관한법률(미등록대부업및광고행위)
+대부업법제5조의2제5항,제19조 제2항제1호대부업등의등록및금융이용자보호에관한법률(타인명의대부행위)
+대부업법제8조,제11조 제1항,제19조 제2항제2호대부업등의등록및금융이용자보호에관한법률(이자율제한행위)
+대부업법제9조의3제2항,제19조 제2항제3호대부업등의등록및금융이용자보호에관한법률(허위과장광고금지행위)
+대부업법제9조의9제1항,제2항,제19조 제2항제4호대부업등의등록및금융이용자보호에관한법률(대부업이용자의개인정보
+보호처리행위)
+대부업법제9조의9제3항,제19조 제2항제5호대부업등의등록및금융이용자보호에관한법률(대부업이용자의개인정보
+제공보관등행위)
+대부업법제10조 제1항,제7항,제19조 제3항대부업등의등록및금융이용자보호에관한법률(신용공여행위)
+대부업법제5조의2제4항,제19조 제4항제1호대부업등의등록및금융이용자보호에관한법률(상호사용행위)
+대부업법제7조 제3항,제19조 제4항제2호대부업등의등록및금융이용자보호에관한법률(서류목적외사용행위)
+대부업법제9조의4제1항,제2항,제19조 제4항제4호대부업등의등록및금융이용자보호에관한법률(불법사금융업자로부터의
+채권양수및추심,대부중개행위)
+대부업법제9조의4제3항,제19조 제4항제5호대부업등의등록및금융이용자보호에관한법률(불법사금융업자에의채권
+양도행위)
+대부업법제11조의2제1항,제2항,제19조 제4항제6호대부업등의등록및금융이용자보호에관한법률(대부중개행위)
+대부업법제11조의2제3항,제19조 제4항제7호대부업등의등록및금융이용자보호에관한법률(중개수수료초과지급행위)
+대부업법제11조의2제6항,제19조 제4항제9호대부업등의등록및금융이용자보호에관한법률(중개수수료수취행위)
+보험사기방지특별법 보험사기방지특별법위반
+유사수신행위의규제에관한법률유사수신행위의규제에관한법률위반
+전자금융거래법전자금융거래법위반
+범죄수익은닉의규제및처벌등에관한법률범죄수익은닉의규제및처벌등에관한법률위반
+
+Table 33: List of query case types for Tax or Administrative or Constitutional Law
+Law Crime
+변호사법 변호사법위반
+조세범처벌법조세범처벌법위반
+국가보안법국가보안법위반
+출입국관리법출입국관리법위반
+주민등록법주민등록법위반
+전기통신사업법전기통신사업법위반
+공직선거법공직선거법위반
+국민체육진흥법국민체육진흥법위반
+도시및주거환경정비법도시및주거환경정비법위반
+집회및시위에관한법률집회및시위에관한법률위반
+공인중개사법공인중개사법위반
+건설산업기본법건설산업기본법위반
+보조금관리에관한법률보조금관리에관한법률위반
+성폭력범죄의처벌및피해자보호등에관한법률성폭력범죄의처벌및피해자보호등에관한법률위반
+Table 34: List of query case types for Sexual morality
+Law Crime
+형법제245조공연음란
+Table 35: List of query case types for Misdemeanor
+Law Crime
+경범죄처벌법위반경범죄처벌법위반
+Table 36: List of query case types for IT or Privacy offenses
+Law Crime
+개인정보보호법개인정보보호법위반
+통신비밀보호법통신비밀보호법위반
+Table 37: List of query case types for Bribery
+Law Crime
+형법제129조 제1항뇌물수수
+형법제133조 제1항뇌물공여
+특정범죄가중처벌등에관한법률제2조, (형법제129조,제130조,제132조)특정범죄가중처벌등에관한법률위반(뇌물)
+Table 38: List of query case types for Intellectual property rights
+Law Crime
+상표법상표법위반
+저작권법저작권법위반
+특허법특허법위반
+Table 39: List of query case types for Military duty law
+Law Crime
+병역법 병역법위반
+군형법군형법위반
+Table 40: List of query case types for Car-related law
+Law Crime
+자동차손해배상보장법자동차손해배상보장법위반
+
+Law Crime
+자동차관리법자동차관리법위반

@@ -95,9 +95,12 @@ class Alignment:
 class ConceptAligner:
     def __init__(self, registry: Tier1Registry):
         self.registry = registry
+        self.assertions = {assertion.id: assertion
+                           for assertion in registry.active_assertions}
 
     def candidates(self, question: str, cap: int = 24) -> list[Candidate]:
         packed_q, spans = _pack(question), _spans(question)
+        span_grams = [(span, _grams(span)) for span in spans]
         out = []
         for concept in self.registry.active_concepts.values():
             negative = [s for s in concept.negative_aliases if _pack(s) in packed_q]
@@ -115,8 +118,7 @@ class ConceptAligner:
                         best = cand
                     continue
                 sg = _grams(surface)
-                for span in spans:
-                    qg = _grams(span)
+                for span, qg in span_grams:
                     if not qg or not sg:
                         continue
                     containment = len(qg & sg) / len(qg)
@@ -131,11 +133,11 @@ class ConceptAligner:
         # Assertion 안의 둘 이상의 후보와 이어져도 보너스는 한 번만 준다. 예컨대
         # ``금융투자회사 + 투자 설명서``가 actor/document/action 세 후보를 만들 때
         # 예전 코드는 +graph를 두 번 붙여 약한 action 후보를 1.0으로 만들었다.
-        graph_connected = set()
-        for i, left in enumerate(out):
-            for right in out[i + 1:]:
-                if self.registry.shared_assertions({left.concept_id, right.concept_id}):
-                    graph_connected.update((left.concept_id, right.concept_id))
+        # 후보가 수천 개일 때 모든 쌍마다 모든 Assertion을 다시 훑으면
+        # O(candidate² × assertion)가 된다. Registry의 역색인으로 같은 Assertion에
+        # 실제 동시 등장하는 후보만 한 번에 구한다.
+        graph_connected = self.registry.connected_concepts(
+            {candidate.concept_id for candidate in out})
         for candidate in out:
             if candidate.concept_id in graph_connected:
                 candidate.score = min(1.0, candidate.score + 0.10)
@@ -143,7 +145,14 @@ class ConceptAligner:
         out.sort(key=lambda c: (-c.score, c.label, c.concept_id))
         return out[:cap]
 
-    def align(self, question: str, *, llm=None) -> Alignment:
+    def align(self, question: str, *, llm=None,
+              assertion_ids: set[str] | None = None) -> Alignment:
+        """질문을 정본 Concept에 정렬한다.
+
+        ``assertion_ids``가 주어지면 공동 출현 판정만 그 구조 범위 안에서 한다.
+        문서·조문을 이미 확정했는데 다른 법령의 동명 Concept 쌍 때문에 중의적으로
+        탈락하는 일을 막되, 후보 표면형과 최종 OQL 제약은 그대로 유지한다.
+        """
         candidates = self.candidates(question)
         result = Alignment(question, candidates=candidates)
         if not candidates:
@@ -153,23 +162,52 @@ class ConceptAligner:
         connected = []
         for i, left in enumerate(candidates):
             for right in candidates[i + 1:]:
-                if min(left.score, right.score) >= 0.68 and \
-                        self.registry.shared_assertions({left.concept_id, right.concept_id}) and \
+                left_match, right_match = _pack(left.matched), _pack(right.matched)
+                # 한 표현 안의 중첩 표면형은 사용자가 두 개념의 관계를 물은 것이
+                # 아니다. ``금융투자업자`` 하나가 ``금융투자업``+``금융투자업자``
+                # 쌍으로 부풀어 진짜 상대인 ``투자설명서``를 밀어내지 못하게 한다.
+                if left_match and right_match and \
+                        (left_match in right_match or right_match in left_match):
+                    continue
+                shared = (set(self.registry.concept_assertions.get(left.concept_id, ())) &
+                          set(self.registry.concept_assertions.get(right.concept_id, ())))
+                if assertion_ids is not None:
+                    shared = shared & assertion_ids
+                if min(left.score, right.score) >= 0.68 and shared and \
                         (not left.via.startswith("profile") or
                          not right.via.startswith("profile")):
                     # label/alias로 직접 물린 쌍을 profile 추정 쌍보다 먼저 고른다.
                     # 합산 점수만 보면 그래프 보너스를 받은 약한 세 번째 후보와의
                     # 쌍이 동률이 되어 정상 질의가 '중의적'으로 탈락할 수 있다.
                     anchors = sum(not c.via.startswith("profile") for c in (left, right))
-                    connected.append((anchors, left.score + right.score, left, right))
+                    context_ids = {
+                        cid
+                        for aid in shared
+                        for assertion in (self.assertions[aid],)
+                        for role in ("SUBJECT", "OBJECT", "TARGET", "CONDITION", "METHOD")
+                        for cid in (assertion.roles.get(role) or ())
+                    }
+                    contextual = int(bool(
+                        {left.concept_id, right.concept_id} & context_ids))
+                    specificity = sum(len(_pack(c.matched)) for c in (left, right))
+                    connected.append((anchors, contextual,
+                                      left.score + right.score, specificity,
+                                      frozenset(shared), left, right))
         if connected:
-            connected.sort(key=lambda row: (-row[0], -row[1], row[2].concept_id,
-                                             row[3].concept_id))
-            anchors, joint_score, left, right = connected[0]
+            connected.sort(key=lambda row: (-row[0], -row[1], -row[2], -row[3],
+                                             row[5].concept_id, row[6].concept_id))
+            anchors, contextual, joint_score, specificity, shared, left, right = connected[0]
             result.selected = [left, right]
             result.intent = "RELATION_BETWEEN_CONCEPTS"
             result.ambiguous = len(connected) > 1 and \
-                anchors == connected[1][0] and joint_score - connected[1][1] < 0.08
+                anchors == connected[1][0] and contextual == connected[1][1] and \
+                joint_score - connected[1][2] < 0.08
+            # 한 구조 범위의 같은 Assertion 안에서 actor/object/predicate 쌍이 모두
+            # 잡힌 것은 의미 중의성이 아니라 동일 프레임을 여러 각도에서 본 것이다.
+            if result.ambiguous and shared & connected[1][4]:
+                result.ambiguous = False
+            if result.ambiguous and specificity > connected[1][3]:
+                result.ambiguous = False
             return result
 
         strong = [c for c in candidates if c.score >= 0.90]

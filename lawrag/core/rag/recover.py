@@ -33,26 +33,27 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from lawrag.core.rag import oql, recover_domains, switches
+from lawrag.core.rag.controls import value as control_value
 from lawrag.core.rag.graph import Graph, Sec
 from lawrag.core.rag.index import Index, norm
 from lawrag.core.rag.search import tokens_of
 
 log = logging.getLogger("lawrag.core.rag.recover")
 
-CONF_MIN = float(os.environ.get("RAG_RECOVER_MIN_CONF", "0.5"))
+CONF_MIN = float(control_value("recover.confidence_min"))
 # 회복 루프는 싼 모델로 고정 — 원본도 폴백 선택은 haiku 급이었다
 # (RAG_FAST_LLM_PROVIDER or "claude_haiku_fast"). 여기 판단은 전부 "고르기"라
 # 큰 모델이 필요 없고, 사다리는 한 질의에 호출이 잦다. haiku 는 effort 를
 # 받으면 400 이 나므로 effort=None 으로 키 자체를 뺀다 (lawrag/core/llm.py 규약).
 RECOVER_MODEL = os.environ.get("RAG_RECOVER_MODEL", "claude-haiku-4-5-20251001")
-FUNNEL_MAX_STEPS = 5
-FUNNEL_PICKS_PER_STEP = 4
-FUNNEL_KEEP_CAP = 12
-SCOUT_MAX_HOPS = 3
-SCOUT_MAX_ENTRIES = 8
-SURFACE_CAP = 24
-FULLTEXT_CAP = 8
-SENSE_CATALOG_CAP = 120
+FUNNEL_MAX_STEPS = int(control_value("recover.funnel_steps_max"))
+FUNNEL_PICKS_PER_STEP = int(control_value("recover.funnel_picks_per_step_max"))
+FUNNEL_KEEP_CAP = int(control_value("recover.funnel_keep_max"))
+SCOUT_MAX_HOPS = int(control_value("recover.scout_hops_max"))
+SCOUT_MAX_ENTRIES = int(control_value("recover.scout_entries_max"))
+SURFACE_CAP = int(control_value("recover.surface_catalog_max"))
+FULLTEXT_CAP = int(control_value("recover.fulltext_sections_max"))
+SENSE_CATALOG_CAP = int(control_value("recover.sense_catalog_max"))
 
 
 # ---------------------------------------------------------------- 프롬프트

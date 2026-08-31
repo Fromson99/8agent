@@ -9,13 +9,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-from lawrag.core.rag import definitions, delegation, tags
+from lawrag.core.rag import definitions, relations, tags
 from lawrag.core.rag.index import Index, store_path, terms_path
 
 from .canonical import CanonicalRegistry
 from .model import Edge, Node, lexeme_id, normalize_surface, stable_id
 from .store import GraphStore
 from .tier1 import Tier1Registry
+from .uncertainty import claim_metadata, graph_contract
 
 
 SLOTS = {
@@ -25,15 +26,23 @@ SLOTS = {
     "object": "HAS_OBJECT",
 }
 
-REFERENCE_KINDS = {
-    "준용": "INCORPORATES",
-    "배제": "EXCLUDES",
-    "의제": "DEEMS",
-    "수임": "RECEIVES_FROM",
-    "근거": "BASED_ON",
-    "인용": "REFERENCES",
+REQUIREMENT_KINDS = {
+    "CONDITION": "HAS_CONDITION",
+    "EXCEPTION": "HAS_EXCEPTION",
+    "TIME": "HAS_TIME_CONSTRAINT",
+    "QUANTITY": "HAS_QUANTITATIVE_CONSTRAINT",
+    "METHOD": "HAS_METHOD",
+    "EFFECT": "HAS_EFFECT",
 }
 
+REQUIREMENT_CANDIDATE_KINDS = {
+    "CONDITION": "MAY_CONDITION_OF",
+    "EXCEPTION": "MAY_EXCEPTION_TO",
+    "TIME": "MAY_TIME_LIMIT_OF",
+    "QUANTITY": "MAY_QUANTITY_LIMIT_OF",
+    "METHOD": "MAY_METHOD_OF",
+    "EFFECT": "MAY_EFFECT_OF",
+}
 
 def _read_json(path: Path, default):
     if not path.is_file():
@@ -121,7 +130,11 @@ class GraphBuilder:
         self.store: GraphStore
         self.node_ids: set[str] = set()
         self.stats = {"documents": 0, "sections": 0, "blocks": 0, "frames": 0,
-                      "mentions": 0, "references": 0, "unresolved_references": 0}
+                      "mentions": 0, "relations": 0, "requirements": 0,
+                      "requirement_candidate_bindings": 0,
+                      "references": 0, "unresolved_references": 0}
+        self.frames_by_source: dict[tuple[str, object], list[str]] = {}
+        self.requirements_by_source: dict[tuple[str, object], list[tuple[str, str]]] = {}
 
     def _node(self, node: Node) -> str:
         self.store.put_node(node)
@@ -181,8 +194,14 @@ class GraphBuilder:
         output = Path(output)
         self.node_ids = set()
         self.stats = {"documents": 0, "sections": 0, "blocks": 0, "frames": 0,
-                      "mentions": 0, "references": 0, "unresolved_references": 0}
-        selected = set(doc_ids or self.index.docs)
+                      "mentions": 0, "relations": 0, "requirements": 0,
+                      "requirement_candidate_bindings": 0,
+                      "references": 0, "unresolved_references": 0}
+        self.frames_by_source = {}
+        self.requirements_by_source = {}
+        # 기본 그래프는 authority/default scope의 현행 진입판만 발행한다. 구판과
+        # 회신 당시 역사 스냅샷은 structure에 보존하되 현재 관계망에 섞지 않는다.
+        selected = set(doc_ids or self.index.scoped(None).entry_docs)
         selected &= set(self.index.docs)
         tmp = output.with_name(f".{output.name}.building")
         if tmp.exists():
@@ -195,14 +214,31 @@ class GraphBuilder:
                 for did in sorted(selected):
                     self._build_document(did, include_blocks=include_blocks,
                                          include_derived=include_derived)
-                self._tier1_knowledge(selected)
                 self._aliases(selected)
                 if include_derived:
-                    self._references(selected)
-                    self._delegations(selected)
+                    relation_bundle = relations.build(
+                        self.index,
+                        delegation_file=self.data_dir / "delegation.json",
+                        law_index_file=self.data_dir / "law_index.json",
+                        include_requirements=True, use_cache=False)
+                    self._relations(selected, relation_bundle)
+                    self._pending_references(selected)
+                    self._requirements(selected, relation_bundle)
+                    self._graph_relations(selected, relation_bundle)
                     self._glossary_occurrences(selected)
+                # 1급은 모든 파생물보다 마지막에 발행한다. 같은 Concept가 glossary
+                # 파생(2급)에도 있으면 ``put_node``가 뒤의 값을 정본으로 삼기 때문에,
+                # 예전 순서에서는 승인된 1급 3,218개가 후속 _lexeme 호출에 의해 다시
+                # 2급 props로 덮였다. 마지막 발행은 단순 우선순위가 아니라
+                # "승인 정본이 파생물을 이긴다"는 등급 불변식이다.
+                self._tier1_knowledge(selected)
                 self.store.set_meta("schema_version", 1)
+                self.store.set_meta("uncertainty_contract", graph_contract())
                 self.store.set_meta("built_at", datetime.now(timezone.utc).isoformat())
+                self.store.set_meta("authority_generation", self.index.authority_generation)
+                self.store.set_meta("authority_as_of", self.index.authority_as_of)
+                self.store.set_meta("canonical_documents",
+                                    sorted(self.index.canonical_doc_ids or ()))
                 self.store.set_meta("documents", sorted(selected))
                 self.store.set_meta("stats", self.stats)
             counts = self.store.counts()
@@ -215,8 +251,14 @@ class GraphBuilder:
     def _tier1_knowledge(self, selected: set[str]) -> None:
         """검증·승인된 항목만 1급 label/edge로 발행한다."""
         active = self.tier1.active_concepts
+        # 먼저 모든 표면형을 만든다. _lexeme는 registry matching 과정에서 Concept
+        # 노드를 다시 쓸 수 있으므로, 정본 Concept 발행은 표면형 생성이 전부 끝난
+        # 뒤 별도 pass에서 해야 review_state가 겹친 alias 때문에 사라지지 않는다.
+        surface_ids_by_concept = {
+            concept.id: [self._lexeme(surface) for surface in concept.surfaces]
+            for concept in active.values()
+        }
         for concept in active.values():
-            surface_ids = [self._lexeme(surface) for surface in concept.surfaces]
             self._node(Node(concept.id, "Concept", concept.label, {
                 "concept_type": concept.type, "status": concept.status,
                 "knowledge_grade": 1, "aliases": list(concept.aliases),
@@ -224,19 +266,34 @@ class GraphBuilder:
                 "negative_aliases": list(concept.negative_aliases),
                 "scope_docs": list(concept.scope_docs), "version": concept.version,
                 "approved_by": concept.approved_by, "source": "tier1_registry",
+                **claim_metadata(
+                    evidence_type=concept.evidence_type or "registry_declaration",
+                    claim_status="active", approved_by=concept.approved_by,
+                    explicit_review_state=concept.review_state),
             }))
-            for lid in surface_ids:
+        for concept in active.values():
+            for lid in surface_ids_by_concept[concept.id]:
                 if lid:
                     self._edge("NORMALIZES_TO", lid, concept.id,
                                key=(concept.id, "tier1"), props={
                                    "source": "tier1_registry", "status": "active",
                                    "knowledge_grade": 1,
+                                   **claim_metadata(
+                                       evidence_type="registry_surface_mapping",
+                                       claim_status="active",
+                                       approved_by=concept.approved_by,
+                                       explicit_review_state=concept.review_state),
                                })
         for relation in self.tier1.active_relations:
             self._edge(relation.type, relation.src, relation.dst, key=relation.id, props={
                 "registry_id": relation.id, "status": relation.status,
                 "knowledge_grade": 1, "confidence": relation.confidence,
                 "approved_by": relation.approved_by, "evidence": list(relation.evidence),
+                **claim_metadata(
+                    evidence_type=relation.evidence_type or "cited_semantic_relation",
+                    claim_status="active", approved_by=relation.approved_by,
+                    explicit_review_state=relation.review_state,
+                    confidence=relation.confidence),
             })
         for assertion in self.tier1.active_assertions:
             doc_id, node = assertion.source["doc_id"], assertion.source["node"]
@@ -250,11 +307,38 @@ class GraphBuilder:
                 "knowledge_grade": 1, "confidence": assertion.confidence,
                 "approved_by": assertion.approved_by, "version": assertion.version,
                 "source": assertion.source, "query_cues": list(assertion.query_cues),
+                **claim_metadata(
+                    evidence_type=assertion.evidence_type or "assertion_source_coordinate",
+                    claim_status="active", approved_by=assertion.approved_by,
+                    explicit_review_state=assertion.review_state,
+                    confidence=assertion.confidence),
             }))
             for role, concept_ids in assertion.roles.items():
                 for pos, cid in enumerate(concept_ids):
                     self._edge(role, aid, cid, key=(role, pos))
             self._edge("SUPPORTED_BY", aid, source, props={"source": assertion.source})
+            frame_id = str(assertion.source.get("frame_id") or "")
+            if frame_id and frame_id in self.node_ids:
+                # 이 간선은 의미 일치 주장이 아니라 생성 계보만 표현한다.
+                self._edge("DERIVED_FROM_FRAME", aid, frame_id,
+                           key=assertion.id, props=claim_metadata(
+                               evidence_type="recorded_frame_lineage",
+                               claim_status="observed",
+                               approved_by=assertion.approved_by,
+                               explicit_review_state=assertion.review_state,
+                               consumer_policy="lineage_only"))
+                source_key = (doc_id, node)
+                alternatives = len(self.frames_by_source.get(source_key, ()))
+                if alternatives != 1:
+                    continue
+                for rid, requirement_kind in self.requirements_by_source.get(source_key, ()):
+                    self._edge(
+                        REQUIREMENT_CANDIDATE_KINDS[requirement_kind], rid, aid,
+                        key=(assertion.id, requirement_kind),
+                        props=self._requirement_binding_props(
+                            doc_id, node, frame_id, alternatives,
+                            target_kind="Assertion"))
+                    self.stats["requirement_candidate_bindings"] += 1
 
     def _build_document(self, doc_id: str, *, include_blocks: bool,
                         include_derived: bool) -> None:
@@ -328,6 +412,7 @@ class GraphBuilder:
                 "proviso": bool(row.get("proviso")), "extractor": "llm",
             }))
             sid = section_id(doc_id, node)
+            self.frames_by_source.setdefault((doc_id, node), []).append(fid)
             self._edge("HAS_FRAME", sid, fid, key=ordinal)
             jo = row.get("jo")
             if jo in view.by_id and jo != node:
@@ -431,37 +516,37 @@ class GraphBuilder:
                 self._edge("DENOTES", aid, document_id(doc_id), key=(doc_id, "alias"),
                            props={"doc_id": doc_id, "role": "document_alias"})
 
-    def _reference_edge(self, src_doc: str, edge: dict, *, cross: bool) -> None:
-        dst_doc = edge.get("dst_doc") or src_doc
-        src = section_id(src_doc, edge.get("src"))
-        dst = section_id(dst_doc, edge.get("dst"))
+    def _relation_edge(self, edge: relations.SectionRelation) -> None:
+        src = section_id(edge.src_doc, edge.src_node)
+        dst = section_id(edge.dst_doc, edge.dst_node)
         if src not in self.node_ids or dst not in self.node_ids:
             return
-        rel = str(edge.get("rel") or "인용")
-        kind = REFERENCE_KINDS.get(rel, "REFERENCES")
-        props = {k: v for k, v in edge.items() if k not in {"src", "dst"}}
-        props.update({"relation": rel, "cross_document": cross})
-        self._edge(kind, src, dst, key=(edge.get("block"), edge.get("surface"), rel), props=props)
-        surface = str(edge.get("surface") or "").strip()
+        props = {**edge.props, "relation_kind": edge.kind,
+                 "src_doc": edge.src_doc, "src_node": edge.src_node,
+                 "dst_doc": edge.dst_doc, "dst_node": edge.dst_node}
+        self._edge(edge.kind, src, dst, key=edge.key, props=props)
+        surface = str(edge.props.get("surface") or edge.props.get("link") or "").strip()
         if surface:
-            lid = self._lexeme(surface, doc_id=src_doc)
+            lid = self._lexeme(surface, doc_id=edge.src_doc)
             if lid:
-                self._edge("USES_LOCATOR", src, lid, key=(edge.get("block"), surface))
-                self._edge("DENOTES", lid, dst, key=(src_doc, dst_doc, dst), props={
-                    "doc_id": dst_doc, "role": "reference_locator", "source_doc": src_doc,
+                self._edge("USES_LOCATOR", src, lid,
+                           key=(edge.props.get("block"), surface, edge.kind))
+                self._edge("DENOTES", lid, dst,
+                           key=(edge.src_doc, edge.dst_doc, dst, edge.kind), props={
+                    "doc_id": edge.dst_doc, "role": "relation_locator",
+                    "source_doc": edge.src_doc, "relation_kind": edge.kind,
                 })
-        self.stats["references"] += 1
+        self.stats["relations"] += 1
+        if edge.kind in set(relations.REFERENCE_KINDS.values()):
+            self.stats["references"] += 1
 
-    def _references(self, selected: set[str]) -> None:
-        for doc_id, edges in self.index.ref_edges().items():
-            if doc_id not in selected:
-                continue
-            for edge in edges:
-                self._reference_edge(doc_id, edge, cross=False)
-        resolved, pending = self.index.cross_refs()
-        for edge in resolved:
-            if edge.get("src_doc") in selected and edge.get("dst_doc") in selected:
-                self._reference_edge(edge["src_doc"], edge, cross=True)
+    def _relations(self, selected: set[str], bundle: relations.RelationBundle) -> None:
+        for edge in bundle.sections:
+            if edge.src_doc in selected and edge.dst_doc in selected:
+                self._relation_edge(edge)
+
+    def _pending_references(self, selected: set[str]) -> None:
+        _resolved, pending = self.index.cross_refs()
         for ordinal, row in enumerate(pending):
             src_doc = row.get("src_doc")
             src = section_id(src_doc, row.get("src"))
@@ -481,18 +566,101 @@ class GraphBuilder:
                 })
             self.stats["unresolved_references"] += 1
 
-    def _delegations(self, selected: set[str]) -> None:
-        for (src_doc, src_node), rows in delegation.adjacency().items():
-            if src_doc not in selected:
+    def _requirements(self, selected: set[str], bundle: relations.RelationBundle) -> None:
+        for row in bundle.requirements:
+            if row.doc_id not in selected:
                 continue
-            src = section_id(src_doc, src_node)
-            for ordinal, row in enumerate(rows):
-                if row.get("doc_id") not in selected:
-                    continue
-                dst = section_id(row["doc_id"], row.get("node"))
-                self._edge("DELEGATES_TO", src, dst, key=ordinal, props={
-                    k: v for k, v in row.items() if k not in {"doc_id", "node"}
-                })
+            owner, article = (section_id(row.doc_id, row.node),
+                              section_id(row.doc_id, row.article))
+            if owner not in self.node_ids or article not in self.node_ids:
+                continue
+            source_key = (row.doc_id, row.node)
+            frames = self.frames_by_source.get(source_key, ())
+            rid = self._node(Node(
+                stable_id("requirement", row.doc_id, row.block, row.kind,
+                          row.start, row.end, row.trigger_start, row.trigger_end),
+                "Requirement", row.trigger, {
+                    "doc_id": row.doc_id, "node": row.node, "article": row.article,
+                    "block": row.block, "kind": row.kind, "surface": row.surface,
+                    "start": row.start, "end": row.end, "trigger": row.trigger,
+                    "trigger_start": row.trigger_start, "trigger_end": row.trigger_end,
+                    "provenance": "source_text:exact_span",
+                    "grounding_status": "exact_span",
+                    **claim_metadata(
+                        evidence_type="rule_extracted_exact_source_span",
+                        claim_status="candidate",
+                        consumer_policy="corroborate",
+                        confidence_status="unscored",
+                        possible_errors=[
+                            "source_parser_error", "span_boundary_error",
+                            "requirement_kind_misclassification",
+                        ],
+                        binding_status=("unique_same_node_candidate"
+                                        if len(frames) == 1 else
+                                        "ambiguous_same_node_candidates"
+                                        if frames else "no_same_node_frame"),
+                        binding_candidate_count=len(frames)),
+                }))
+            self._edge("HAS_REQUIREMENT", owner, rid,
+                       key=(row.block, row.kind, row.start, row.end))
+            self._edge(REQUIREMENT_KINDS.get(row.kind, "HAS_REQUIREMENT"),
+                       article, rid,
+                       key=(row.block, row.kind, row.trigger_start, row.trigger_end))
+            self._edge("QUALIFIES", rid, article,
+                       key=(row.block, row.kind, row.trigger_start))
+            self.requirements_by_source.setdefault(source_key, []).append((rid, row.kind))
+            # 복수 Frame 중 하나를 임의 선택하거나 모두 연결하면 후보라는 라벨이
+            # 있어도 탐색 폭증과 잘못된 결속을 만든다. 유일한 same-node Frame만
+            # MAY_* 후보로 내고, 나머지는 Requirement props에 모호성만 보존한다.
+            for frame_id in frames if len(frames) == 1 else ():
+                self._edge(
+                    REQUIREMENT_CANDIDATE_KINDS[row.kind], rid, frame_id,
+                    key=(row.block, row.kind, row.trigger_start, frame_id),
+                    props=self._requirement_binding_props(
+                        row.doc_id, row.node, frame_id, len(frames),
+                        target_kind="Frame"))
+                self.stats["requirement_candidate_bindings"] += 1
+            self.stats["requirements"] += 1
+
+    @staticmethod
+    def _requirement_binding_props(doc_id: str, node: object, frame_id: str,
+                                   alternatives: int, *, target_kind: str) -> dict:
+        """같은 source node라는 사실과 의미 결속 후보를 분리해 기록한다."""
+        return claim_metadata(
+            evidence_type="same_source_node_proximity",
+            claim_status="candidate", consumer_policy="candidate_only",
+            confidence_status="unscored", doc_id=doc_id, node=node,
+            via_frame=frame_id, target_kind=target_kind,
+            alternative_frames=alternatives,
+            possible_errors=[
+                "wrong_frame_attachment", "shared_clause_scope",
+                "parser_or_llm_extraction_error",
+            ])
+
+    def _graph_relations(self, selected: set[str],
+                         bundle: relations.RelationBundle) -> None:
+        def endpoint(kind: str, doc_id: str, node: object | None) -> str:
+            return (document_id(doc_id) if kind == "document"
+                    else section_id(doc_id, node))
+
+        for row in bundle.graph:
+            if row.src_doc not in selected or row.dst_doc not in selected:
+                continue
+            src = endpoint(row.src_kind, row.src_doc, row.src_node)
+            dst = endpoint(row.dst_kind, row.dst_doc, row.dst_node)
+            self._edge(row.kind, src, dst,
+                       key=(row.src_kind, row.src_doc, row.src_node,
+                            row.dst_kind, row.dst_doc, row.dst_node),
+                       props=row.props)
+        for fact in bundle.temporal:
+            if fact.doc_id not in selected:
+                continue
+            did = document_id(fact.doc_id)
+            date_id = self._node(Node(
+                stable_id("date", fact.value), "DateValue", fact.value,
+                {"value": fact.value, "precision": "day" if len(fact.value) == 8 else "raw"}))
+            self._edge(fact.kind, did, date_id, key=(fact.kind, fact.value), props={
+                "provenance": "structure:document_metadata"})
 
     def _glossary_occurrences(self, selected: set[str]) -> None:
         blob = _read_json(self.glossary_path, {"terms": []})

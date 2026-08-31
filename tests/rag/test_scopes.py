@@ -112,6 +112,20 @@ def test_기본_스코프는_구판만_뺀다():
     assert idx2.scoped(None) is idx2
 
 
+def test_공식_generation은_meta가_stale해도_noncanonical_법령판을_뺀다():
+    docs = [
+        _doc("law-current", "시험법", "현재", {"kind": "law", "status": "현행"}),
+        _doc("law-stale", "시험법", "옛판", {"kind": "law", "status": "현행"}),
+        _doc("rule", "민간규정", "규정", {"kind": "krx-rule"}),
+    ]
+    idx = Index.from_docs(
+        docs, canonical_doc_ids={"law-current"},
+        authority_generation="g1", authority_as_of="20260827")
+    sub = idx.scoped(None)
+    assert sub.scope == frozenset({"law-current", "rule"})
+    assert "law-stale" not in sub.entry_docs
+
+
 def test_스코프_색인은_진입_표면형만_거르고_docs_는_전부_든다():
     idx = _index()
     sub = idx.scoped({"dA"}, name="A만")

@@ -3,26 +3,59 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>골든 태깅</title>
+<title>골든셋</title>
 <link rel="stylesheet" href="/ui/ui.css">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=20260825.2">
 <script src="/ui/nav.js" defer></script>
-<script src="app.js" defer></script>
+<script src="app.js?v=20260825.2" defer></script>
 </head>
 <body>
 <header class="ui-bar">
   <nav class="ui-nav" data-nav="golden"></nav>
   <span class="ui-meta" id="summary">불러오는 중…</span>
   <span class="grow"></span>
-  <span class="ui-acts">
-    <button id="saveBtn" class="primary" disabled>저장</button>
+  <span class="ui-acts golden-modes">
+    <button id="cmMode" class="on">CM 현업 51</button>
+    <button id="tagMode">법령해석 태깅</button>
+    <a class="navlink" href="/experiments/?q=cm_core">실험 결과</a>
+    <button id="saveBtn" class="primary hidden" disabled>저장</button>
   </span>
 </header>
-<h1 class="sr">골든 태깅 — 회답이 답을 가른 조문을 항·호까지 짚는다</h1>
+<h1 class="sr">골든셋 — CM 현업 핵심 51건과 법령해석 정답 태깅</h1>
 
 <div id="banner" class="banner err hidden"></div>
 
-<div class="wrap">
+<section id="cmView" class="cm-view">
+  <header class="cm-hero">
+    <div>
+      <span class="cm-kicker">FINAL RAG RELEASE CORE</span>
+      <h2>CM본부 현업 핵심 골든</h2>
+      <p id="cmSource">동결 정본과 원문 무결성을 확인하는 중입니다.</p>
+    </div>
+    <div class="cm-state"><span id="cmFrozen">FROZEN</span><b id="cmValid">검증 중</b></div>
+  </header>
+  <div class="cm-metrics">
+    <div><span>평가 문항</span><strong id="cmCases">—</strong><small>실제 답변 보유</small></div>
+    <div><span>정답 조문 좌표</span><strong id="cmArticles">—</strong><small>중복 포함</small></div>
+    <div><span>업무 도메인</span><strong id="cmDomains">—</strong><small>과적합 슬라이스</small></div>
+    <div><span>현재 재료 완비</span><strong id="cmComplete">—</strong><small id="cmDrift">코퍼스 대조 중</small></div>
+  </div>
+  <div class="cm-work">
+    <aside class="cm-browser">
+      <div class="cm-tools">
+        <input id="cmQuery" type="search" placeholder="질문·주제·법령 검색">
+        <select id="cmDomain" aria-label="업무 도메인"><option value="">모든 도메인</option></select>
+      </div>
+      <div class="cm-list-head"><span>문항</span><small id="cmCount">0건</small></div>
+      <div id="cmList" class="cm-list"></div>
+    </aside>
+    <main class="cm-detail" id="cmDetail">
+      <div class="cm-empty">왼쪽에서 CM 문항을 선택하세요.</div>
+    </main>
+  </div>
+</section>
+
+<div id="tagView" class="wrap hidden">
   <!-- 왼쪽: 후보 목록. 점수가 높을수록 시험지로 쓰기 좋다 -->
   <aside class="side">
     <div class="sidehead">

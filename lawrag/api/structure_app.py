@@ -54,6 +54,14 @@ try:
     from lawrag.api.routers import rag as rag_router            # noqa: E402
 except Exception:                                        # pragma: no cover
     rag_router = None
+try:
+    from lawrag.api.routers import general_search as general_search_router  # noqa: E402
+except Exception:                                        # pragma: no cover
+    general_search_router = None
+try:
+    from lawrag.api.routers import knowledge as knowledge_router  # noqa: E402
+except Exception:                                        # pragma: no cover
+    knowledge_router = None
 
 # ------------------------------------------------------------------ 예열
 # 임베딩 모델 적재와 색인 로드는 프로세스 수명 동안 딱 한 번이다 —
@@ -142,6 +150,10 @@ if glossary_router is not None:
     app.include_router(glossary_router.router)
 if rag_router is not None:
     app.include_router(rag_router.router)
+if general_search_router is not None:
+    app.include_router(general_search_router.router)
+if knowledge_router is not None:
+    app.include_router(knowledge_router.router)
 
 # 로그 조회 — core 만 전제하므로 선택이 아니다.
 from lawrag.api.routers import logs as logs_router               # noqa: E402
@@ -165,6 +177,11 @@ app.include_router(lineage_router.router)
 from lawrag.api.routers import pipeline as pipeline_router       # noqa: E402
 
 app.include_router(pipeline_router.router)
+
+# 격리 실험 코드와 var/eval 산출물 카탈로그 — 실행·변경 없이 읽기만 한다.
+from lawrag.api.routers import experiments as experiments_router  # noqa: E402
+
+app.include_router(experiments_router.router)
 
 # 법적 검토 — 사실을 요건에 대는 층 (docs/REVIEW.md). rag 회수 위에 얹히므로
 # rag 라우터와 같은 조건에서만 선다(LLM·색인 전제).
@@ -281,6 +298,11 @@ if _LINKS_VIEWER.is_dir():
     app.mount("/links", StaticFiles(directory=str(_LINKS_VIEWER), html=True),
               name="links-viewer")
 
+_KNOWLEDGE_VIEWER = Path(__file__).resolve().parent / "viewer" / "knowledge"
+if _KNOWLEDGE_VIEWER.is_dir() and knowledge_router is not None:
+    app.mount("/knowledge", StaticFiles(directory=str(_KNOWLEDGE_VIEWER), html=True),
+              name="knowledge-viewer")
+
 _RAG_VIEWER = Path(__file__).resolve().parent / "viewer" / "rag"
 if _RAG_VIEWER.is_dir() and rag_router is not None:
     app.mount("/rag", StaticFiles(directory=str(_RAG_VIEWER), html=True),
@@ -291,6 +313,13 @@ _RULES_VIEWER = Path(__file__).resolve().parent / "viewer" / "rules"
 if _RULES_VIEWER.is_dir() and rag_router is not None:
     app.mount("/rules", StaticFiles(directory=str(_RULES_VIEWER), html=True),
               name="rules-viewer")
+
+# 승인 진화 루프 — 사람 판정 receipt가 실패×효과 군집과 닫힌 변이축을 거쳐
+# replay/holdout/shadow/사람 승인으로 향하는 읽기 전용 감독 화면.
+_EVOLUTION_VIEWER = Path(__file__).resolve().parent / "viewer" / "evolution"
+if _EVOLUTION_VIEWER.is_dir() and rag_router is not None:
+    app.mount("/evolution", StaticFiles(directory=str(_EVOLUTION_VIEWER), html=True),
+              name="evolution-viewer")
 
 # 법령해석례 — 위키(맥락)와 사례(원문) 두 판 (docs/expc.md)
 _EXPC_VIEWER = Path(__file__).resolve().parent / "viewer" / "expc"
@@ -303,6 +332,11 @@ _GOLDEN_VIEWER = Path(__file__).resolve().parent / "viewer" / "golden"
 if _GOLDEN_VIEWER.is_dir():
     app.mount("/golden", StaticFiles(directory=str(_GOLDEN_VIEWER), html=True),
               name="golden-viewer")
+
+_EXPERIMENTS_VIEWER = Path(__file__).resolve().parent / "viewer" / "experiments"
+if _EXPERIMENTS_VIEWER.is_dir():
+    app.mount("/experiments", StaticFiles(directory=str(_EXPERIMENTS_VIEWER), html=True),
+              name="experiments-viewer")
 
 _LOGS_VIEWER = Path(__file__).resolve().parent / "viewer" / "logs"
 if _LOGS_VIEWER.is_dir():

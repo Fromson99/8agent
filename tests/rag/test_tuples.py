@@ -47,6 +47,27 @@ def test_피드백은_마지막_것이_남는다(tmp_path, monkeypatch):
     assert tuples.read()[0]["피드백"]["판정"] == "정답"
 
 
+def test_legal_graph_세대와_활성화_원장을_진단튜플에_보존한다(
+    tmp_path, monkeypatch,
+):
+    monkeypatch.setenv("RAG_LOG_DIR", str(tmp_path))
+    out = _out("주요주주인지")
+    out["legalclosure"] = {"legal_graph": {
+        "enabled": True,
+        "status": "expanded",
+        "generation_id": "lgv1-test",
+        "added_count": 1,
+        "reason_counts": {"activated": 1},
+        "decisions": [{"assertion_id": "relation:test", "activated": True}],
+        "selected": [{"doc_id": "d2", "node": 4}],
+    }}
+    qid = tuples.log_ask(out)
+    stored = tuples.find(qid)["legal_graph"]
+    assert stored["generation_id"] == "lgv1-test"
+    assert stored["reason_counts"] == {"activated": 1}
+    assert stored["selected"] == [{"doc_id": "d2", "node": 4}]
+
+
 def test_승격후보는_정규형으로_묶여_센다(tmp_path, monkeypatch):
     monkeypatch.setenv("RAG_LOG_DIR", str(tmp_path))
     coords = [{"doc_id": "d1", "node": 5, "via": "깔때기"}]

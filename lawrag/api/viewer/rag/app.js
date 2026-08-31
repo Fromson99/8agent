@@ -61,7 +61,7 @@ $("askForm").addEventListener("submit", async (e) => {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ question: q, filter: $("optFilter").checked,
                              recover: $("optRecover").checked,
-                             mode: $("optVector").checked ? "vector" : "auto",
+                             mode: $("optRetriever").value || "legalclosure",
                              scope: $("optScope").value || "" }),
     });
     render(out);
@@ -192,17 +192,26 @@ $("fbDoc").addEventListener("change", async () => {
 async function sendFeedback(verdict, expected, note) {
   if (!S.qid) return;
   try {
-    await api("/v1/rag/feedback", {
+    const result = await api("/v1/rag/feedback", {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ qid: S.qid, verdict, expected, note }),
     });
     $("fbPick").classList.add("hidden");
+    const recovered = result.recovery || {};
+    const suggestions = recovered.selected || [];
+    const recoveryHtml = suggestions.length ? `
+      <div class="muted" style="margin-top:.55rem">검증된 복구 후보 ${suggestions.length}개</div>
+      ${suggestions.map((r) => `<div>
+        <a class="qlink" href="/structure/?doc=${encodeURIComponent(r.doc_id || "")}&node=${encodeURIComponent(r.node ?? "")}">
+          ${esc(r.doc || "법령")} · ${esc(r.path || "조항")}
+        </a>
+      </div>`).join("")}` : "";
     // 오답이면 다음 걸음까지 말해 준다 — 기록은 후보일 뿐, 백로그 승인이
     // 간선을 억제해야 검색이 실제로 바뀐다 (루프 2의 나머지 절반).
     $("fbDone").innerHTML = verdict === "정답"
       ? "기록했습니다 — 이 질의는 golden 후보입니다"
       : `기록했습니다 — 아래 <a href="#backlog" class="qlink">판정 백로그</a>에
-         후보로 쌓입니다. 거기서 승인해야 잘못된 참조 간선이 억제됩니다.`;
+         후보로 쌓입니다. 거기서 승인해야 잘못된 참조 간선이 억제됩니다.${recoveryHtml}`;
     $("fbDone").classList.remove("hidden");
     sessionStorage.removeItem("ui-queue-counts");   // 상단바 배지 즉시 갱신
     loadTuples();

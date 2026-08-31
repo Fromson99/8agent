@@ -1,8 +1,6 @@
-# 런타임 (결정론) — 이것만으로 구조화·비교가 돈다
-docling>=2.117
-pymupdf
-pydantic>=2
-pyyaml
+# 서비스 런타임 — GenOS 빌드는 이 묶음만 설치한다.
+# 개발 환경도 같은 바닥을 쓰게 include 해 의존성 드리프트를 막는다.
+-r requirements-serving.txt
 
 # 컴파일 국면 (LLM) — 형식을 만들 때만 필요
 anthropic
@@ -15,12 +13,8 @@ anthropic
 kiwipiepy
 sentence-transformers
 
-# 수집기 (collect.py · sources/)
-requests
-
-# 변환기 (convert.py) — 수집된 HWP5 원문 → 라우터가 받는 md
-pyhwp
-six          # pyhwp 0.1b15 가 import 하면서 의존성 선언은 빠뜨렸다
+# 수집기의 requests와 변환기의 pyhwp/six도 서비스 런타임 묶음에 포함돼 있다.
+# 수집·변환 CLI는 위 include만으로 같은 버전을 사용한다.
 
 # 테스트
 pytest

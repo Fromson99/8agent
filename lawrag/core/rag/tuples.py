@@ -112,6 +112,20 @@ def log_ask(out: dict, prompt: Optional[dict] = None,
         rec["ask_user"] = out["ask_user"]
     if out.get("usage"):
         rec["usage"] = out["usage"]
+    legal_graph = (out.get("legalclosure") or {}).get("legal_graph") or {}
+    if legal_graph:
+        # The adapter bounds decisions before they reach this durable record.
+        rec["legal_graph"] = {
+            key: legal_graph.get(key) for key in (
+                "enabled", "status", "fallback", "reasons", "generation_id",
+                "content_sha256", "authority_generation", "query_frame",
+                "hypotheses", "active_family_ids", "allowed_predicates", "policy",
+                "trace_id", "before_count", "residual_slots", "considered_count",
+                "eligible_target_count", "added_count", "after_count",
+                "reason_counts", "decisions", "decisions_truncated", "selected",
+                "load", "elapsed_ms",
+            ) if key in legal_graph
+        }
     _append(rec)
     return qid
 
@@ -126,6 +140,15 @@ def log_feedback(qid: str, verdict: str, expected: Optional[dict] = None,
     rec = {"kind": "피드백", "qid": qid, "ts": _now(), "판정": verdict,
            "기대": expected, "메모": note, "실패_원인": None}
     _append(rec)
+    from lawrag.core.rag import approvals
+    correct = verdict == "정답"
+    approvals.safe_record(
+        kind="answer_feedback", decision=verdict,
+        effect="confirmed" if correct else "answer_overturn",
+        failure="" if correct else "답변_오류",
+        subject={"qid": qid},
+        before={"verdict": None}, after={"verdict": verdict, "expected": expected},
+        note=note, actor="human", qids=[qid], source={"ledger": "tuples"})
     return rec
 
 

@@ -1,0 +1,436 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="2780" viewBox="0 0 2400 2780" role="img" aria-labelledby="title desc">
+  <title id="title">실마리 RAG의 1급 객체 검색 상세 흐름</title>
+  <desc id="desc">사용자 질문을 실제 연속 문자열 Span과 역할로 분해하고, 각 조각을 문서와 구조 객체, 승인 Concept, Assertion 출현, 본문 조각, 일반 질문의 저자 정의 별칭 확장으로 라우팅해 원문 좌표 교집합에 착지한 뒤 법적 관계 확장과 답변 합성으로 이어지는 현재 구현의 상세 구조</desc>
+
+  <defs>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L11,5.5 L0,11 z" fill="#52606d"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L11,5.5 L0,11 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L11,5.5 L0,11 z" fill="#16815b"/>
+    </marker>
+    <marker id="arrowOrange" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L11,5.5 L0,11 z" fill="#d97706"/>
+    </marker>
+    <filter id="shadow" x="-12%" y="-12%" width="124%" height="132%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .title { font: 700 39px 'Noto Sans CJK KR','Noto Sans KR','Apple SD Gothic Neo',sans-serif; fill: #ffffff; }
+      .subtitle { font: 400 19px 'Noto Sans CJK KR','Noto Sans KR','Apple SD Gothic Neo',sans-serif; fill: #cbd5e1; }
+      .lane-title { font: 700 24px 'Noto Sans CJK KR','Noto Sans KR','Apple SD Gothic Neo',sans-serif; fill: #17202a; }
+      .group-title { font: 700 21px 'Noto Sans CJK KR','Noto Sans KR','Apple SD Gothic Neo',sans-serif; fill: #1f2937; }
+      .node-title { font: 700 18px 'Noto Sans CJK KR','Noto Sans KR','Apple SD Gothic Neo',sans-serif; fill: #17202a; text-anchor: middle; }
+      .body { font: 400 15px 'Noto Sans CJK KR','Noto Sans KR','Apple SD Gothic Neo',sans-serif; fill: #334155; text-anchor: middle; }
+      .small { font: 400 13.5px 'Noto Sans CJK KR','Noto Sans KR','Apple SD Gothic Neo',sans-serif; fill: #52606d; text-anchor: middle; }
+      .micro { font: 400 12.5px 'Noto Sans CJK KR','Noto Sans KR','Apple SD Gothic Neo',sans-serif; fill: #64748b; text-anchor: middle; }
+      .left { text-anchor: start; }
+      .code { font: 600 13px 'Noto Sans Mono CJK KR','D2Coding',monospace; fill: #334155; text-anchor: middle; }
+      .edge { fill: none; stroke: #52606d; stroke-width: 2.6; marker-end: url(#arrow); }
+      .edge-blue { fill: none; stroke: #2563eb; stroke-width: 2.8; marker-end: url(#arrowBlue); }
+      .edge-green { fill: none; stroke: #16815b; stroke-width: 2.8; marker-end: url(#arrowGreen); }
+      .edge-orange { fill: none; stroke: #d97706; stroke-width: 2.6; marker-end: url(#arrowOrange); }
+      .edge-dash { fill: none; stroke: #64748b; stroke-width: 2.2; stroke-dasharray: 8 7; marker-end: url(#arrow); }
+      .edge-soft { fill: none; stroke: #94a3b8; stroke-width: 2; stroke-dasharray: 6 7; marker-end: url(#arrow); }
+      .node { filter: url(#shadow); stroke-width: 2.2; }
+      .badge { font: 700 12px 'Noto Sans CJK KR','Noto Sans KR',sans-serif; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect width="2400" height="2460" fill="#f6f8fb"/>
+  <rect x="0" y="0" width="2400" height="122" fill="#0f172a"/>
+  <text x="56" y="55" class="title">실마리 RAG — 1급 객체가 검색에 쓰이는 전체 과정</text>
+  <text x="58" y="91" class="subtitle">현재 기본 배선: POST /v1/rag/ask · mode=vector · coordinate_first=True · 2026-08-24 코드 기준</text>
+
+  <!-- Legend -->
+  <g transform="translate(1615,26)">
+    <rect x="0" y="0" width="730" height="72" rx="14" fill="#111c31" stroke="#334155"/>
+    <rect x="18" y="16" width="18" height="18" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="45" y="30" class="small left" style="fill:#e2e8f0">결정론 구조</text>
+    <rect x="148" y="16" width="18" height="18" rx="4" fill="#dcfce7" stroke="#16815b"/>
+    <text x="175" y="30" class="small left" style="fill:#e2e8f0">승인 1급 지식</text>
+    <rect x="318" y="16" width="18" height="18" rx="4" fill="#fef3c7" stroke="#d97706"/>
+    <text x="345" y="30" class="small left" style="fill:#e2e8f0">닫힌 LLM 선택</text>
+    <rect x="485" y="16" width="18" height="18" rx="4" fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="512" y="30" class="small left" style="fill:#e2e8f0">의미 벡터</text>
+    <line x1="18" y1="52" x2="57" y2="52" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 6"/>
+    <text x="68" y="57" class="small left" style="fill:#e2e8f0">보조·비기본 배선</text>
+  </g>
+
+  <!-- Lane 1 -->
+  <rect x="34" y="148" width="2332" height="385" rx="24" fill="#ffffff" stroke="#d7dee7" stroke-width="2"/>
+  <text x="62" y="184" class="lane-title">1. 질문을 검색 신호로 분해</text>
+
+  <rect class="node" x="65" y="247" width="270" height="115" rx="20" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="200" y="287" class="node-title">사용자 질문</text>
+  <text x="200" y="318" class="body">구어 · 법령명/조번호 선택</text>
+  <text x="200" y="344" class="small">원 질문 q는 끝까지 보존</text>
+
+  <path class="edge-blue" d="M335 304 L382 304"/>
+  <rect class="node" x="382" y="220" width="330" height="168" rx="18" fill="#ffffff" stroke="#2563eb"/>
+  <text x="547" y="259" class="node-title">API 라우팅</text>
+  <text x="547" y="291" class="body">POST /v1/rag/ask</text>
+  <text x="547" y="320" class="body">기본 mode=vector</text>
+  <text x="547" y="349" class="small">Index.current() · LLM 준비 확인</text>
+  <rect x="466" y="362" width="162" height="23" rx="11" fill="#eff6ff"/>
+  <text x="547" y="378" class="badge" fill="#1d4ed8">운영 질의응답 경로</text>
+
+  <path class="edge" d="M712 304 L758 304"/>
+  <rect class="node" x="758" y="220" width="300" height="168" rx="18" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="908" y="259" class="node-title">검색 범위 확정</text>
+  <text x="908" y="291" class="body">기본 · 외규 · 내규 · 서식</text>
+  <text x="908" y="320" class="body">또는 지정 문서 목록</text>
+  <text x="908" y="349" class="small">진입은 scope 안 · 법적 동반은</text>
+  <text x="908" y="371" class="small">밖으로 나가되 scope_out 표시</text>
+
+  <path class="edge-orange" d="M1058 304 L1102 304"/>
+  <rect class="node" x="1102" y="202" width="390" height="204" rx="18" fill="#fef3c7" stroke="#d97706"/>
+  <text x="1297" y="239" class="node-title">검색 전 쟁점 분해</text>
+  <text x="1297" y="270" class="body">issue_spot_pre = ON</text>
+  <text x="1297" y="299" class="body">질문만 보고 승인 쟁점 카드 선택</text>
+  <text x="1297" y="328" class="body">조문 문체 probe 작성</text>
+  <text x="1297" y="356" class="small">새 카드·새 조문 좌표 생성 금지</text>
+  <text x="1297" y="380" class="small">실패하면 트리거 매칭으로 폴백</text>
+
+  <path class="edge-orange" d="M1492 304 L1538 304"/>
+  <rect class="node" x="1538" y="202" width="382" height="204" rx="18" fill="#fef3c7" stroke="#d97706"/>
+  <text x="1729" y="239" class="node-title">Exact Span 분해</text>
+  <text x="1729" y="270" class="body">질문에 실제 존재하는 문자열만</text>
+  <text x="1729" y="298" class="body">최대 12개 단서</text>
+  <text x="1729" y="328" class="small">document · toc · heading · locator</text>
+  <text x="1729" y="352" class="small">actor · predicate · object · target</text>
+  <text x="1729" y="376" class="small">condition · effect · subject 등</text>
+
+  <path class="edge-blue" d="M1920 255 L1980 218"/>
+  <path class="edge" d="M1920 304 L1980 304"/>
+  <path class="edge-green" d="M1920 353 L1980 390"/>
+  <rect class="node" x="1980" y="184" width="330" height="70" rx="16" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="2145" y="213" class="node-title">원 질문 q</text>
+  <text x="2145" y="237" class="small">구조·Concept 착지 · 합성</text>
+  <rect class="node" x="1980" y="270" width="330" height="70" rx="16" fill="#f8fafc" stroke="#64748b"/>
+  <text x="2145" y="299" class="node-title">어휘 질의 qx</text>
+  <text x="2145" y="323" class="small">원문 + 법률용어 probe</text>
+  <rect class="node" x="1980" y="356" width="330" height="70" rx="16" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="2145" y="385" class="node-title">벡터 질의 qv</text>
+  <text x="2145" y="409" class="small">조문 문체 probe 중심</text>
+
+  <rect x="382" y="435" width="1928" height="70" rx="14" fill="#f8fafc" stroke="#cbd5e1" stroke-dasharray="7 6"/>
+  <text x="414" y="463" class="small left"><tspan font-weight="700">경로 차이</tspan>　GET /v1/rag/search?mode=vector는 같은 vecfirst를 쓰지만 LLM 없이 결정론 표면형만 착지</text>
+  <text x="414" y="489" class="small left">GET /v1/rag/search?mode=auto는 기존 용어 검색 사다리로 가며 아래의 1급 좌표 교집합을 직접 타지 않음</text>
+
+  <!-- Lane 1.5: explicit span routing and author definitions -->
+  <rect x="34" y="555" width="2332" height="285" rx="24" fill="#ffffff" stroke="#d7dee7" stroke-width="2"/>
+  <text x="62" y="591" class="lane-title">1.5 질문 조각별 라우팅 + 저자 정의 공통 확장</text>
+
+  <path class="edge-orange" d="M1729 406 L1729 530 L320 530 L320 620"/>
+  <rect class="node" x="60" y="620" width="530" height="190" rx="18" fill="#fffdf7" stroke="#d97706"/>
+  <text x="325" y="651" class="node-title">예시 질문을 실제 문자열로 분해</text>
+  <text x="325" y="679" class="small">“자본시장법 제64조에서 금융투자업자가 투자설명서를 교부해야 하나?”</text>
+  <rect x="82" y="698" width="133" height="43" rx="12" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="148" y="716" class="small" style="font-weight:700">S1 자본시장법</text>
+  <text x="148" y="735" class="micro">document</text>
+  <rect x="225" y="698" width="105" height="43" rx="12" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="277" y="716" class="small" style="font-weight:700">S2 제64조</text>
+  <text x="277" y="735" class="micro">locator</text>
+  <rect x="340" y="698" width="223" height="43" rx="12" fill="#dcfce7" stroke="#16815b"/>
+  <text x="451" y="716" class="small" style="font-weight:700">S3 금융투자업자</text>
+  <text x="451" y="735" class="micro">actor</text>
+  <rect x="82" y="755" width="184" height="43" rx="12" fill="#dcfce7" stroke="#16815b"/>
+  <text x="174" y="773" class="small" style="font-weight:700">S4 투자설명서</text>
+  <text x="174" y="792" class="micro">object / subject</text>
+  <rect x="278" y="755" width="285" height="43" rx="12" fill="#dcfce7" stroke="#16815b"/>
+  <text x="420" y="773" class="small" style="font-weight:700">S5 교부해야 하나</text>
+  <text x="420" y="792" class="micro">predicate + modality</text>
+
+  <path class="edge-blue" d="M590 704 L625 675"/>
+  <path class="edge-green" d="M590 765 L625 755"/>
+  <rect class="node" x="625" y="620" width="455" height="190" rx="18" fill="#f8fafc" stroke="#64748b"/>
+  <text x="852" y="651" class="node-title">Span 역할에 따라 병렬 라우팅</text>
+  <rect x="650" y="669" width="405" height="52" rx="12" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="852" y="691" class="body">document · toc · heading · locator</text>
+  <text x="852" y="713" class="micro">→ 구조 객체와 subtree 좌표</text>
+  <rect x="650" y="738" width="405" height="58" rx="12" fill="#dcfce7" stroke="#16815b"/>
+  <text x="852" y="760" class="body">actor · predicate · object · condition …</text>
+  <text x="852" y="781" class="micro">→ Concept + LiteralFragment + 저자 정의를 병렬 조회</text>
+
+  <path class="edge-blue" d="M1055 695 L1090 695 L1090 670 L1115 670"/>
+  <path class="edge-green" d="M1080 767 L1115 767"/>
+  <rect class="node" x="1115" y="610" width="590" height="210" rx="18" fill="#fff7ed" stroke="#d97706"/>
+  <text x="1410" y="642" class="node-title">저자 정의 인덱스 — 문서 범위 지역 규칙</text>
+  <text x="1410" y="670" class="body">A(이하 “B”라 한다) · “X”란 · X이란 …</text>
+  <text x="1410" y="699" class="small">구조 객체가 확정한 doc_id/Heading 좌표 안에서만 조회</text>
+  <rect x="1140" y="720" width="540" height="74" rx="13" fill="#ffffff" stroke="#fb923c"/>
+  <text x="1410" y="746" class="body" style="font-weight:700;fill:#9a3412">일반 질문에서도 항상 A→B 확장 실행</text>
+  <text x="1410" y="771" class="small">A 직접 출현 ∪ 선언 이후 B 출현 = 같은 Span의 대체 좌표(OR)</text>
+  <text x="1410" y="807" class="micro">문서 제목 A→“법” 같은 무의미 확장과 선언 이전 B는 제외</text>
+
+  <path class="edge-orange" d="M1705 694 L1742 674"/>
+  <path class="edge-orange" d="M1705 755 L1742 765"/>
+  <rect class="node" x="1742" y="610" width="584" height="105" rx="18" fill="#fff7ed" stroke="#d97706"/>
+  <text x="2034" y="642" class="node-title">일반 사실 질문</text>
+  <text x="2034" y="671" class="body">확장 좌표를 Concept/Literal 좌표와 합집합</text>
+  <text x="2034" y="697" class="small">그 뒤 다른 Span 좌표들과 교집합</text>
+  <rect class="node" x="1742" y="730" width="584" height="90" rx="18" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="2034" y="760" class="node-title">뜻·정의 질문</text>
+  <text x="2034" y="788" class="body">실제 정의문 Section ≤4로 직행 · 교집합 우회</text>
+  <text x="2034" y="811" class="micro">이 특수 분기만 definition_lookup으로 조기 반환</text>
+
+  <!-- Routing from 1.5 into the shifted landing/selection lanes -->
+  <path class="edge-blue" d="M852 721 L852 850 L355 850 L355 930"/>
+  <path class="edge-green" d="M2034 715 L2034 850 L1184 850 L1184 930"/>
+  <path class="edge-orange" d="M2326 662 L2338 662 L2338 850 L2200 850 L2200 930"/>
+  <path class="edge" d="M1055 781 L1085 835 L2008 835 L2008 930"/>
+  <!-- Definition questions bypass coordinate intersection and become entry Sections. -->
+  <path class="edge-dash" d="M2326 775 L2350 775 L2350 1863 L2323 1863"/>
+
+  <g id="after-span" transform="translate(0,310)">
+
+  <!-- Lane 2 -->
+  <rect x="34" y="555" width="2332" height="610" rx="24" fill="#ffffff" stroke="#d7dee7" stroke-width="2"/>
+  <text x="62" y="591" class="lane-title">2. 질문 단서를 실제 객체와 원문 좌표에 착지</text>
+
+  <!-- Structure group -->
+  <rect x="58" y="620" width="635" height="500" rx="22" fill="#f8fbff" stroke="#93c5fd" stroke-width="2"/>
+  <text x="84" y="654" class="group-title">A. 확정 구조 객체</text>
+  <rect x="86" y="682" width="270" height="112" rx="16" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="221" y="717" class="node-title">Document</text>
+  <text x="221" y="746" class="body">정식명 · 승인 별칭</text>
+  <text x="221" y="772" class="small">doc_id로 문서 범위 고정</text>
+  <rect x="389" y="682" width="270" height="112" rx="16" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="524" y="717" class="node-title">TOC · Heading</text>
+  <text x="524" y="746" class="body">장·절·조 제목</text>
+  <text x="524" y="772" class="small">해당 subtree 좌표</text>
+  <rect x="86" y="828" width="270" height="112" rx="16" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="221" y="863" class="node-title">Locator</text>
+  <text x="221" y="892" class="body">제N조·항·호·목</text>
+  <text x="221" y="918" class="small">모두 확정 못 하면 착지 포기</text>
+  <path class="edge-blue" d="M356 738 L389 738"/>
+  <path class="edge-blue" d="M221 794 L221 828"/>
+  <path class="edge-blue" d="M524 794 L524 970 L356 970"/>
+  <path class="edge-blue" d="M221 940 L221 970"/>
+  <rect class="node" x="160" y="970" width="390" height="110" rx="18" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="355" y="1006" class="node-title">구조 허용 좌표 Cₛ</text>
+  <text x="355" y="1036" class="body">문서 ∩ Heading subtree ∩ Locator</text>
+  <text x="355" y="1063" class="small">가장 강한 결정론 제약</text>
+
+  <!-- Semantic group -->
+  <rect x="719" y="620" width="930" height="500" rx="22" fill="#f7fff9" stroke="#86d3b2" stroke-width="2"/>
+  <text x="745" y="654" class="group-title">B. 승인 1급 의미 객체</text>
+  <rect x="751" y="682" width="330" height="140" rx="16" fill="#dcfce7" stroke="#16815b" stroke-width="2"/>
+  <text x="916" y="716" class="node-title">Concept 정본</text>
+  <text x="916" y="745" class="body">label · alias · type · scope</text>
+  <text x="916" y="772" class="small">active + approved_by 필수</text>
+  <text x="916" y="797" class="small">현재 42,435개</text>
+  <path class="edge-green" d="M1081 752 L1121 752"/>
+  <rect x="1121" y="682" width="494" height="140" rx="16" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="1368" y="716" class="node-title">단서별 닫힌 후보 메뉴</text>
+  <text x="1368" y="745" class="body">정확 표면형 → 단일 Concept 직행</text>
+  <text x="1368" y="772" class="small">후보 ≤24: 전부 · 초과: Vector+표면으로 ≤24</text>
+  <text x="1368" y="797" class="small">LLM은 메뉴 안 ID만 SELECT 또는 생략</text>
+  <path class="edge-orange" d="M1368 822 L1368 850 L916 850 L916 870"/>
+  <rect x="751" y="870" width="330" height="132" rx="16" fill="#dcfce7" stroke="#16815b" stroke-width="2"/>
+  <text x="916" y="905" class="node-title">선택된 Concept</text>
+  <text x="916" y="934" class="body">ACTOR · PREDICATE · OBJECT 등</text>
+  <text x="916" y="961" class="small">종류↔역할 불일치면 전체 거부</text>
+  <text x="916" y="984" class="small">새 ID·새 의미 생성 불가</text>
+  <path class="edge-green" d="M1081 936 L1121 936"/>
+  <rect x="1121" y="858" width="494" height="156" rx="16" fill="#ecfdf5" stroke="#16815b" stroke-width="2"/>
+  <text x="1368" y="892" class="node-title">Assertion 출현 원장</text>
+  <text x="1368" y="920" class="body">Concept가 어느 역할로 어디서 나왔는가</text>
+  <text x="1368" y="948" class="code">role → source.doc_id + source.node</text>
+  <text x="1368" y="976" class="small">Assertion ID는 provenance일 뿐</text>
+  <text x="1368" y="999" class="small">교집합 키는 항상 원문 좌표</text>
+  <path class="edge-green" d="M1368 1014 L1368 1032"/>
+  <rect x="1062" y="1032" width="612" height="66" rx="14" fill="#e9fff4" stroke="#16815b"/>
+  <text x="1368" y="1058" class="node-title">역할별 Concept 출현 좌표 Cᵣ</text>
+  <text x="1368" y="1082" class="small">ACTOR 좌표 · PREDICATE 좌표 · OBJECT 좌표 …</text>
+  <rect x="751" y="1032" width="280" height="66" rx="14" fill="#f8fafc" stroke="#94a3b8" stroke-dasharray="7 6"/>
+  <text x="891" y="1058" class="node-title" style="font-size:15px">ConceptRelation</text>
+  <text x="891" y="1082" class="micro">현재 기본 교집합엔 직접 미사용</text>
+
+  <!-- Fragment/direct-body group -->
+  <rect x="1675" y="620" width="667" height="500" rx="22" fill="#fcfaff" stroke="#c4b5fd" stroke-width="2"/>
+  <text x="1701" y="654" class="group-title">C. 본문 조각과 직접 표면 출현</text>
+  <rect x="1707" y="682" width="287" height="158" rx="16" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+  <text x="1850" y="717" class="node-title">LiteralFragment</text>
+  <text x="1850" y="746" class="body">Assertion.query_cues</text>
+  <text x="1850" y="774" class="small">조건·행위·효과의 실제 본문 조각</text>
+  <text x="1850" y="800" class="small">용어로 억지 승격하지 않음</text>
+  <text x="1850" y="824" class="small">같은 source 좌표로 접음</text>
+  <rect x="2025" y="682" width="285" height="158" rx="16" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="2167" y="717" class="node-title">명시 구조 안 직접 표면</text>
+  <text x="2167" y="746" class="body">Concept label · alias</text>
+  <text x="2167" y="774" class="small">추출기가 역할 슬롯을 놓쳤어도</text>
+  <text x="2167" y="800" class="small">원문 블록에 실제 표현이 있으면 유지</text>
+  <text x="2167" y="824" class="small">확정 structure_coords 안에서만</text>
+  <path class="edge" d="M1850 840 L1850 875"/>
+  <path class="edge-blue" d="M2167 840 L2167 875"/>
+  <rect x="1707" y="875" width="603" height="100" rx="16" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+  <text x="2008" y="909" class="node-title">같은 질문 표면의 대체 좌표 합류</text>
+  <text x="2008" y="938" class="body">Concept 좌표 ∪ 본문 조각 ∪ 직접 표면 ∪ 저자 별칭</text>
+  <text x="2008" y="961" class="small">겹치지 않는 LiteralFragment는 독립 Span 조건으로 유지</text>
+  <path class="edge" d="M2008 975 L2008 1008"/>
+  <rect class="node" x="1812" y="1008" width="392" height="90" rx="16" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="2008" y="1041" class="node-title">본문 조각 좌표 C𝒇</text>
+  <text x="2008" y="1070" class="small">cue · 직접 표면 · 저자 정의 대체 표면을 좌표로 통합</text>
+
+  <!-- Lane 3 -->
+  <rect x="34" y="1188" width="2332" height="475" rx="24" fill="#ffffff" stroke="#d7dee7" stroke-width="2"/>
+  <text x="62" y="1224" class="lane-title">3. 객체를 좌표 대수로 합치고 진입 정책을 결정</text>
+
+  <rect class="node" x="68" y="1260" width="475" height="310" rx="20" fill="#f8fafc" stroke="#64748b"/>
+  <text x="305" y="1298" class="node-title">단서별 좌표 집합</text>
+  <text x="100" y="1338" class="body left">• 구조 범위　Cₛ</text>
+  <text x="100" y="1372" class="body left">• ACTOR 출현　Cₐ</text>
+  <text x="100" y="1406" class="body left">• PREDICATE 출현　Cₚ</text>
+  <text x="100" y="1440" class="body left">• OBJECT/TARGET 출현　Cₒ</text>
+  <text x="100" y="1474" class="body left">• 본문 조각/정의　C𝒇</text>
+  <text x="100" y="1515" class="small left">좌표 = (doc_id, node)</text>
+  <text x="100" y="1541" class="small left">같은 조문을 여러 행이 설명해도 좌표 하나</text>
+
+  <path class="edge-blue" d="M355 1080 L355 1168 L305 1168 L305 1260"/>
+  <path class="edge-green" d="M1368 1098 L1368 1168 L420 1168 L420 1260"/>
+  <path class="edge" d="M2008 1098 L2008 1168 L495 1168 L495 1260"/>
+  <path class="edge" d="M543 1415 L592 1415"/>
+
+  <rect class="node" x="592" y="1260" width="590" height="310" rx="20" fill="#e8f3ff" stroke="#2563eb"/>
+  <text x="887" y="1298" class="node-title">좌표 교집합</text>
+  <text x="887" y="1344" class="code" style="font-size:17px">C* = Cₛ ∩ Cₐ ∩ Cₚ ∩ Cₒ ∩ C𝒇</text>
+  <text x="887" y="1388" class="body">서로 다른 단서는 같은 원문 좌표에서 만나야 함</text>
+  <text x="887" y="1423" class="small">한 단서의 alias·저자 정의 표면은 먼저 합집합(OR)</text>
+  <text x="887" y="1450" class="small">서로 다른 조문에 흩어진 단서를 임의 결합하지 않음</text>
+  <line x1="638" y1="1475" x2="1136" y2="1475" stroke="#bfdbfe"/>
+  <text x="887" y="1507" class="small">문서/Heading을 의미 Concept로 다시 AND하지 않음</text>
+  <text x="887" y="1535" class="small">명시 주소가 틀리거나 미해결이면 비슷한 좌표로 확장 금지</text>
+
+  <path class="edge-blue" d="M1182 1415 L1218 1415"/>
+  <polygon class="node" points="1338,1304 1458,1415 1338,1526 1218,1415" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="1338" y="1399" class="node-title">후보 좌표</text>
+  <text x="1338" y="1428" class="node-title">몇 개인가?</text>
+
+  <!-- zero branch -->
+  <path class="edge-orange" d="M1338 1304 L1338 1272 L1510 1272"/>
+  <text x="1414" y="1262" class="small" style="fill:#b45309">0</text>
+  <rect class="node" x="1510" y="1240" width="365" height="195" rx="18" fill="#fff7ed" stroke="#d97706"/>
+  <text x="1692" y="1276" class="node-title">일반검색 인계</text>
+  <text x="1692" y="1307" class="body">좌표 착지를 억지 확정하지 않음</text>
+  <text x="1692" y="1337" class="small">질문 기억 ≤4 · 승인 용어 ≤2</text>
+  <text x="1692" y="1363" class="small">Frame ≤2×2 · Vector 4</text>
+  <text x="1692" y="1389" class="small">벡터 cos ≥0.45 · 채널은 가산 합류</text>
+  <text x="1692" y="1416" class="micro">Concept 빈손일 때 Frame을 호출</text>
+
+  <!-- direct branch -->
+  <path class="edge-green" d="M1338 1526 L1338 1550 L1510 1550"/>
+  <text x="1422" y="1540" class="small" style="fill:#15803d">1–4</text>
+  <rect class="node" x="1510" y="1482" width="365" height="142" rx="18" fill="#dcfce7" stroke="#16815b"/>
+  <text x="1692" y="1518" class="node-title">원문 좌표 직행</text>
+  <text x="1692" y="1548" class="body">후보 전부를 근거 진입으로 사용</text>
+  <text x="1692" y="1576" class="small">coordinate-intersection-only</text>
+  <text x="1692" y="1601" class="small">다른 진입 채널 차단</text>
+
+  <!-- wide branch -->
+  <path class="edge-orange" d="M1458 1415 L1908 1415"/>
+  <text x="1684" y="1403" class="small" style="fill:#b45309">5 이상</text>
+  <rect class="node" x="1908" y="1240" width="415" height="195" rx="18" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="2115" y="1276" class="node-title">교집합 안에서만 축소</text>
+  <text x="2115" y="1307" class="body">Vector shortlist ≤12</text>
+  <text x="2115" y="1337" class="small">coordinates=C*로 전역 후보 차단</text>
+  <text x="2115" y="1363" class="small">닫힌 LLM이 직접 답하는 좌표 ≤4 선택</text>
+  <text x="2115" y="1389" class="small">Vector는 구조 필터를 뒤집지 못함</text>
+  <text x="2115" y="1416" class="micro">LLM 없음: 앞 4좌표</text>
+
+  <path class="edge-green" d="M1875 1553 L1947 1553"/>
+  <path class="edge-orange" d="M2115 1435 L2115 1482"/>
+  <path class="edge-orange" d="M1692 1435 L1692 1455 L1915 1455 L1915 1553 L1947 1553"/>
+  <rect class="node" x="1947" y="1482" width="376" height="142" rx="18" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="2135" y="1518" class="node-title">최초 착지 Section 집합</text>
+  <text x="2135" y="1548" class="body">검색 종착점이 아니라 확장 출발점</text>
+  <text x="2135" y="1576" class="small">각 Section에 doc · path · text · page</text>
+  <text x="2135" y="1601" class="small">matched · kind · ref_src 보존</text>
+
+  <!-- Lane 4 -->
+  <rect x="34" y="1686" width="2332" height="520" rx="24" fill="#ffffff" stroke="#d7dee7" stroke-width="2"/>
+  <text x="62" y="1722" class="lane-title">4. 착지 근거를 법적으로 완성하고 답변·피드백으로 연결</text>
+
+  <path class="edge-blue" d="M2135 1624 L2135 1670 L208 1670 L208 1785"/>
+  <rect class="node" x="66" y="1785" width="284" height="148" rx="18" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="208" y="1822" class="node-title">진입 근거</text>
+  <text x="208" y="1852" class="body">좌표 직행 또는 폴백 합류</text>
+  <text x="208" y="1881" class="small">본문 구역당 ≤6,000자</text>
+  <text x="208" y="1907" class="small">진입 제외 승인 좌표는 차단</text>
+
+  <path class="edge-orange" d="M350 1859 L394 1859"/>
+  <rect class="node" x="394" y="1765" width="375" height="188" rx="18" fill="#fef3c7" stroke="#d97706"/>
+  <text x="581" y="1802" class="node-title">법적 필수 동반</text>
+  <text x="581" y="1833" class="body">판단하지 않고 실재 간선·태그로 추가</text>
+  <text x="581" y="1863" class="small">배제 · 위임 · 수임 · 준용</text>
+  <text x="581" y="1890" class="small">본문에 사용된 정의 · 의무/금지의 제재</text>
+  <text x="581" y="1918" class="small">구역당 참조/위임 예산 적용</text>
+
+  <path class="edge" d="M769 1859 L813 1859"/>
+  <rect class="node" x="813" y="1765" width="415" height="188" rx="18" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="1020" y="1802" class="node-title">관계 그래프 확장</text>
+  <text x="1020" y="1833" class="body">참조 닫힘 ≤3홉</text>
+  <text x="1020" y="1863" class="small">구역당 참조 ≤3 · 공유 풀 목표 ≤12</text>
+  <text x="1020" y="1890" class="small">문서 동반 ≤20은 별도 예산</text>
+  <text x="1020" y="1918" class="small">간선 항해 navigate=OFF</text>
+
+  <path class="edge" d="M1228 1859 L1272 1859"/>
+  <rect class="node" x="1272" y="1765" width="350" height="188" rx="18" fill="#f8fafc" stroke="#64748b"/>
+  <text x="1447" y="1802" class="node-title">최종 검문</text>
+  <text x="1447" y="1833" class="body">scope 적용 · scope_out 표시</text>
+  <text x="1447" y="1863" class="small">조에 머문 참조를 항·호·목으로 교정</text>
+  <text x="1447" y="1890" class="small">repair refs ≤4 · 자손 후보 ≤12</text>
+  <text x="1447" y="1918" class="small">vector 모드는 관련성 필터 없음</text>
+
+  <path class="edge-blue" d="M1622 1859 L1666 1859"/>
+  <rect class="node" x="1666" y="1765" width="315" height="188" rx="18" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="1823" y="1802" class="node-title">답변 합성</text>
+  <text x="1823" y="1833" class="body">LLM은 닫힌 번호 근거만 인용</text>
+  <text x="1823" y="1863" class="small">위키 맥락은 배경, 법적 근거 아님</text>
+  <text x="1823" y="1890" class="small">issue_spot_llm=OFF</text>
+  <text x="1823" y="1918" class="small">LLM 부재 시 검색 결과까지 반환</text>
+
+  <path class="edge-blue" d="M1981 1859 L2025 1859"/>
+  <rect class="node" x="2025" y="1750" width="298" height="218" rx="20" fill="#0f4c81" stroke="#0b3b66"/>
+  <text x="2174" y="1788" class="node-title" style="fill:#ffffff">응답</text>
+  <text x="2174" y="1821" class="body" style="fill:#e0f2fe">answer + context</text>
+  <text x="2174" y="1850" class="body" style="fill:#e0f2fe">refs + cited</text>
+  <text x="2174" y="1880" class="small" style="fill:#bfdbfe">doc_id · node · block · page</text>
+  <text x="2174" y="1906" class="small" style="fill:#bfdbfe">구조 뷰어 딥링크</text>
+  <text x="2174" y="1935" class="small" style="fill:#bfdbfe">벡터 모드 refs=회수 집합 전체</text>
+
+  <!-- Feedback row -->
+  <path class="edge-dash" d="M2174 1968 L2174 2016 L208 2016 L208 2040"/>
+  <rect x="66" y="2040" width="2257" height="126" rx="18" fill="#f8fafc" stroke="#94a3b8" stroke-dasharray="8 7"/>
+  <text x="94" y="2073" class="group-title">답변 뒤 피드백 루프 — 런타임은 1급 정본을 직접 수정하지 않는다</text>
+  <text x="94" y="2105" class="small left">진단 튜플(qid) → 비동기 사후 감사 → 오참조 억제/재지정/후순위 백로그 → 용어 hits/misses → 벡터·회복 착지 후보 적재</text>
+  <text x="94" y="2133" class="small left">질문 기억 후보는 사람 승인 뒤에만 활성화된다. Concept·Relation·Assertion의 1급 발행은 별도 오프라인 후보/승인 파이프라인을 통한다.</text>
+  <rect x="1902" y="2080" width="370" height="53" rx="13" fill="#fff7ed" stroke="#d97706"/>
+  <text x="2087" y="2102" class="small" style="font-weight:700;fill:#9a3412">런타임 LLM 자동 승격 금지</text>
+  <text x="2087" y="2123" class="micro">canonical.json은 읽기 전용</text>
+
+  <!-- Footer / current inventory -->
+  <rect x="34" y="2230" width="2332" height="190" rx="24" fill="#111827" stroke="#334155" stroke-width="2"/>
+  <text x="62" y="2268" class="lane-title" style="fill:#ffffff">현재 1급 정본 스냅샷과 해석 주의</text>
+  <g transform="translate(65,2293)">
+    <rect x="0" y="0" width="310" height="90" rx="16" fill="#163b2e" stroke="#34d399"/>
+    <text x="155" y="35" class="node-title" style="fill:#d1fae5">Concept 42,435</text>
+    <text x="155" y="64" class="small" style="fill:#a7f3d0">action 14,381 · domain_term 28,051</text>
+    <rect x="336" y="0" width="310" height="90" rx="16" fill="#163b2e" stroke="#34d399"/>
+    <text x="491" y="35" class="node-title" style="fill:#d1fae5">Relation 2,205</text>
+    <text x="491" y="64" class="small" style="fill:#a7f3d0">현재 전부 IS_A</text>
+    <rect x="672" y="0" width="350" height="90" rx="16" fill="#163b2e" stroke="#34d399"/>
+    <text x="847" y="35" class="node-title" style="fill:#d1fae5">Assertion 29,282</text>
+    <text x="847" y="64" class="small" style="fill:#a7f3d0">105문서 · 고유 근거 좌표 20,786</text>
+    <rect x="1048" y="0" width="1156" height="90" rx="16" fill="#452514" stroke="#fb923c"/>
+    <text x="1076" y="32" class="body left" style="font-weight:700;fill:#ffedd5">주의: 현재 전 항목 approved_by=user:force-all</text>
+    <text x="1076" y="61" class="small left" style="fill:#fed7aa">엄격 스키마는 통과하지만 의미 품질까지 보증하지는 않는다. 구조·역할·단일좌표·명시 불일치 검문과 폴백이 운영 안전장치다.</text>
+  </g>
+
+  <text x="1200" y="2444" class="micro">정본: data/domain_graph/canonical.json · 구현: rag/landings.py, rag/conceptfirst.py, rag/vecfirst.py, domain_graph/tier1.py</text>
+  </g>
+</svg>

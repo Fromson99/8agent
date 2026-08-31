@@ -99,6 +99,43 @@ def test_찾기_조_가지_항():
     assert ("장", 3) in units and ("별지", 2) in units
 
 
+def test_찾기_하이픈_조문은_가지조문과_구별한다():
+    dashed = refs.find("제2-4조제5항제3호다목에도 불구하고")[0]
+    branched = refs.find("제2조의4제1항에 따른다")[0]
+
+    assert (dashed.n, dashed.dash, dashed.sub) == (2, 4, None)
+    assert dashed.chain == (("항", 5), ("호", 3), ("목", 3))
+    assert dashed.key() == ("조", 2, ("dash", 4, None))
+    assert branched.key() == ("조", 2, 4)
+    assert refs.label_key("제2-4조") == dashed.key()
+    assert refs.label_key("제2조의4") == branched.key()
+
+
+def test_해소_하이픈_조문_참조가_정확한_조에_착지한다():
+    doc = ("hyphen", {"name": "증권규정", "kind": "admrul"}, {
+        "nodes": [
+            {"id": 1, "parent": None, "level": 1, "surface": "제2조의4",
+             "title": "다른 가지조문", "span": [0, 1]},
+            {"id": 2, "parent": None, "level": 1, "surface": "제2-4조",
+             "title": "첨부서류의 정의", "span": [1, 2]},
+            {"id": 3, "parent": None, "level": 1, "surface": "제2-6조",
+             "title": "첨부서류", "span": [2, 3]},
+        ],
+        "blocks": [
+            {"idx": 0, "text": "제2조의4(다른 가지조문)", "kind": "text"},
+            {"idx": 1, "text": "제2-4조(첨부서류의 정의)", "kind": "text"},
+            {"idx": 2, "text": "제2-6조는 제2-4조에도 불구하고 적용한다.",
+             "kind": "text"},
+        ],
+    })
+    view = Index.from_docs([doc]).docs["hyphen"]
+    edges = refs.resolve(view)
+
+    assert any(edge["src"] == 3 and edge["dst"] == 2
+               and edge["surface"] == "제2-4조" for edge in edges)
+    assert not any(edge["src"] == 3 and edge["dst"] == 1 for edge in edges)
+
+
 def test_찾기_사슬_호목_표면형():
     r = refs.find("제1조제1항제2호나목을 따른다")[0]
     assert r.chain == (("항", 1), ("호", 2), ("목", 2))

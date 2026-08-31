@@ -1,7 +1,7 @@
 """엔진 규칙 스위치 — 자동 규칙은 전부 사용자가 켜고 끈다 (lawrag/core/rag/switches.py).
 
 여기서 지키는 것 넷:
-  (1) 기본값은 전부 켜짐 — 파일 없음 = 오늘의 시스템. 켜짐은 파일에 안 적는다.
+  (1) 파일 없음 = 등록부 기본값. 기본과 같은 값은 파일에 적지 않는다.
   (2) 본문우선 — 한 문서 안 본문·부칙 번호 중복이면 본문 조로 확정(via 본문우선).
       끄면 보류로 남는다.
   (3) 선언 확정도 스위치를 따른다 — 끄면 그 참조가 보류로 내려간다.
@@ -54,6 +54,21 @@ def test_기본_꺼짐_스위치는_켠_것이_파일에_남는다(monkeypatch, 
     assert json.loads(p.read_text())["switches"] == {"issue_spot_llm": True}
     switches.set_switch("issue_spot_llm", False)  # 기본값 복귀 — 파일에서 사라진다
     assert json.loads(p.read_text())["switches"] == {}
+
+
+def test_정의압축은_답변비열등성_실패로_기본꺼짐이다(monkeypatch, tmp_path):
+    _use_engine(monkeypatch, tmp_path)
+    assert not switches.is_on("legalclosure_definition_compaction")
+
+
+def test_피드백_탐색은_메인배선이_아니라_기본꺼짐이다(monkeypatch, tmp_path):
+    _use_engine(monkeypatch, tmp_path)
+    assert not switches.is_on("legalclosure_feedback_explore")
+
+
+def test_legal_graph_폐쇄는_oos_승격_전_기본꺼짐이다(monkeypatch, tmp_path):
+    _use_engine(monkeypatch, tmp_path)
+    assert not switches.is_on("legal_graph_v1_closure")
 
 
 def _dup_docs():
@@ -153,3 +168,26 @@ def test_배제_동반을_끄면_회수에서_빠진다(monkeypatch, tmp_path):
     switches.set_switch("floor_exclusion", True)
     out2 = expand.expand_floor(idx, land)
     assert any(s.kind == "배제" for s in out2)
+
+
+def test_진입_채널_셋도_독립_ablation_switch를_따른다(monkeypatch, tmp_path):
+    from lawrag.core.rag import promote, vecfirst, vector
+
+    _use_engine(monkeypatch, tmp_path,
+                off=("memory_entry", "keyword_entry", "vector_entry"))
+    # 스위치가 앞에서 막으므로 원장·임베딩 모델을 읽지 않는다.
+    assert promote.direct_hits("승인 질문") == []
+    assert vector.search("벡터 질문") == []
+
+    doc = ("d1", {"name": "규정.pdf"}, {"nodes": [
+        {"id": 1, "parent": None, "level": 1, "surface": "제1조",
+         "title": "벌칙", "page": 1, "span": [0, 1]},
+    ], "blocks": [{"idx": 0, "page": 1, "text": "벌칙", "kind": "text"}]})
+    terms = [{"term": "벌칙", "key": "벌칙", "status": "활성",
+              "surfaces": ["벌칙"],
+              "occurrences": [{"doc_id": "d1", "node": 1, "via": "제목"}]}]
+    idx = Index.from_docs([doc], terms)
+    assert vecfirst._approved_hits(idx, "벌칙 알려줘") == []
+
+    switches.set_switch("keyword_entry", True)
+    assert vecfirst._approved_hits(idx, "벌칙 알려줘")

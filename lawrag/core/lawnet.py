@@ -37,6 +37,7 @@ from pathlib import Path
 from typing import Optional
 
 from lawrag.core.lineage import body_of
+from lawrag.core import legal_generation
 
 # 조번호 두 체계 — 법령 "제34조(의2)" · 행정규칙 편-조 "제2-3조(의2)" (실측:
 # 금융투자업규정류). 하이픈을 못 읽으면 시행령→금투업규정 위임 664건이 통째로
@@ -177,7 +178,9 @@ def _jo_nodes(store: Path, doc_id: str) -> dict[str, int]:
     for n in nodes:
         s = (n.get("surface") or "").strip()
         if _JO_SURFACE_RE.fullmatch(s) and s not in out \
-                and n.get("id") is not None and not in_appendix(n):
+                and n.get("id") is not None \
+                and (n.get("coordinate_scope") == "body"
+                     or (not n.get("coordinate_scope") and not in_appendix(n))):
             out[s] = n["id"]
     return out
 
@@ -289,12 +292,13 @@ def transcribe_families(relations_dir: Path, items: list[dict]) -> list[dict]:
 
 
 def build_index(corpus: Path, relations_dir: Path, store: Path,
-                repo_root: Path) -> dict:
+                repo_root: Path, contract: dict | None = None) -> dict:
     items = load_manifest(corpus)
     fams = transcribe_families(relations_dir, items)
     kind_by_serial = {m["serial"]: m["kind"]
                       for fam in fams for m in fam["members"] if m["serial"]}
     docs = []
+    canonical_ids = set((contract or {}).get("canonical_document_ids") or ())
     for it in items:
         sha, _, _ = body_of(it)
         doc_id = sha[:16] if sha else None
@@ -304,9 +308,21 @@ def build_index(corpus: Path, relations_dir: Path, store: Path,
                     or ("법률" if it.get("kind") == "law" else "행정규칙"),
             "enforce": it.get("enforce", ""),
             "doc_id": doc_id,
+            "canonical": bool(doc_id and (not contract or doc_id in canonical_ids)),
+            "status": "현행" if doc_id and (not contract or doc_id in canonical_ids) else "구판",
+            "authority_mode": it.get("authority_mode", "manifest-canonical"),
+            "authority_as_of": it.get("authority_as_of", (contract or {}).get("as_of", "")),
             "in_store": bool(doc_id and (store / doc_id).exists()),
             "purpose": transcribe_purpose(it, repo_root)})
-    return {"docs": docs, "families": fams}
+    out = {"docs": docs, "families": fams}
+    if contract:
+        out.update({
+            "schema_version": contract["schema_version"],
+            "generation_id": contract["generation_id"],
+            "as_of": contract["as_of"],
+            "canonical_document_ids": contract["canonical_document_ids"],
+        })
+    return out
 
 
 # ---------------------------------------------------------------- CLI
@@ -325,7 +341,10 @@ def main(argv: Optional[list[str]] = None) -> int:
     corpus, store = Path(args.corpus), Path(args.store)
     out = Path(args.out) if args.out else store.parent
     relations = corpus / "law" / "relations"
-    items = load_manifest(corpus)
+    manifest_path = corpus / "law" / "manifest.json"
+    manifest_blob = json.loads(manifest_path.read_text(encoding="utf-8"))
+    items = manifest_blob.get("items", [])
+    contract = legal_generation.build_contract(manifest_blob)
     built = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     deleg = transcribe_delegations(relations, items)
@@ -334,21 +353,25 @@ def main(argv: Optional[list[str]] = None) -> int:
     missing = Counter(e["dst"]["name"] for e in deleg["edges"]
                       if not e["dst"]["doc_id"] and e["dst"]["name"])
     out.mkdir(parents=True, exist_ok=True)
-    (out / "delegation.json").write_text(json.dumps(
-        {"built": built, "sources": deleg["sources"], "edges": deleg["edges"],
+    legal_generation.atomic_json(out / "delegation.json",
+        {"built": built, "schema_version": contract["schema_version"],
+         "generation_id": contract["generation_id"], "as_of": contract["as_of"],
+         "canonical_document_ids": contract["canonical_document_ids"],
+         "sources": deleg["sources"], "edges": deleg["edges"],
          "stats": {"total": len(deleg["edges"]), "by_kind": dict(kinds),
                    "resolved_ends": hits,
-                   "dst_missing_top": dict(missing.most_common(20))}},
-        ensure_ascii=False), encoding="utf-8")
+                   "dst_missing_top": dict(missing.most_common(20))}}, indent=None)
 
-    index = build_index(corpus, relations, store, root)
-    (out / "law_index.json").write_text(json.dumps(
-        {"built": built, **index}, ensure_ascii=False, indent=2), encoding="utf-8")
+    index = build_index(corpus, relations, store, root, contract=contract)
+    legal_generation.atomic_json(out / "law_index.json", {"built": built, **index})
+    sync = legal_generation.synchronize_structure(store, contract)
 
     print(f"위임 간선 {len(deleg['edges'])}개 (좌표 해소 {hits}끝) → {out/'delegation.json'}")
     print(f"  타입: {dict(kinds)}")
     print(f"  대상 미보유 상위: {dict(missing.most_common(8))}")
     print(f"문서 {len(index['docs'])}행 · 가족 {len(index['families'])}개 → {out/'law_index.json'}")
+    print(f"세대 {contract['generation_id']} · 기준일 {contract['as_of']} · "
+          f"meta current {sync['current']} / old {sync['old']}")
     return 0
 
 

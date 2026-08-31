@@ -46,6 +46,9 @@ def test_답변_콜은_판정하지_않는다():
     ans = answer_mod.synthesize(llm, "질문", _sections())
     assert ans.answer == "답" and ans.discards == []
     assert "discard" not in answer_mod.ANSWER_SCHEMA["properties"]
+    assert "refs" not in answer_mod.ANSWER_SCHEMA["properties"]
+    assert [(row["doc_id"], row["node"]) for row in ans.refs] == [
+        ("d1", 1), ("d1", 3)]
 
 
 def test_감사는_닫힌_번호에_간선이_붙는다():

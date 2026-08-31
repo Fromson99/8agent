@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
 from lawrag.core.rag import compare  # noqa: E402
+from lawrag.core.rag.answer import Section  # noqa: E402
 
 
 # ---------------------------------------------------------------- 값 추출
@@ -144,7 +145,19 @@ def _mini(monkeypatch, tmp_path):
           {"nodes": [{"id": 1, "parent": None, "level": 0, "surface": "제166조의2",
                       "title": "장외파생상품의 매매 등", "page": 1, "span": [0, 1]}],
            "blocks": [{"idx": 0, "page": 1, "text": OE_150, "kind": "text"}]})
-    idx = Index.from_docs([nae, oe])
+    oe2 = ("o2", {"name": "금융투자업규정", "kind": "admrul"},
+           {"nodes": [{"id": 2, "parent": None, "level": 0, "surface": "제3-44조",
+                       "title": "위험관리지침", "page": 2, "span": [0, 1]}],
+            "blocks": [{"idx": 0, "page": 2,
+                        "text": "위험관리지침은 내부 보고 및 승인체계를 정하여야 한다",
+                        "kind": "text"}]})
+    internal2 = ("n2", {"name": "다른세칙", "kind": "internal", "folder": "내규"},
+                 {"nodes": [{"id": 1, "parent": None, "level": 0,
+                              "surface": "제1조", "title": "목적", "page": 1,
+                              "span": [0, 1]}],
+                  "blocks": [{"idx": 0, "page": 1, "text": "목적 조문",
+                              "kind": "text"}]})
+    idx = Index.from_docs([nae, oe, oe2, internal2])
     idx._cross = ([{"src_doc": "n1", "src": 1, "dst_doc": "o1", "dst": 1,
                     "surface": "제166조의2", "hint": "자본시장법", "block": 0,
                     "via": "이름대조", "rel": "인용"}], [])
@@ -154,6 +167,13 @@ def _mini(monkeypatch, tmp_path):
                         lambda idx0, scope, docs: (idx0.scoped(frozenset({"o1"}), scope)
                                                    if hasattr(idx0, "scoped")
                                                    else _scoped(idx0), {}))
+    from lawrag.core.rag import legalclosure_runtime
+    monkeypatch.setattr(legalclosure_runtime, "retrieve",
+                        lambda *a, **k: ([], {
+                            "strategy": "fixture", "selected": [],
+                            "article_reachability": {"fixture": True},
+                            "legal_annotations": {"rows": []},
+                        }))
     return idx
 
 
@@ -180,3 +200,148 @@ def test_compare_article_without_candidates_is_review(monkeypatch, tmp_path):
     monkeypatch.setattr(vector_mod, "search", lambda *a, **k: [])
     out = compare.compare_article(None, idx, "n1", 1)
     assert out["verdict"] == "재검토" and out["짝없음"], out
+
+
+def test_legalclosure_candidate_keeps_origin_annotation_and_trace(monkeypatch, tmp_path):
+    idx = _mini(monkeypatch, tmp_path)
+    idx._cross = ([], [])
+    from lawrag.core.rag import legalclosure_runtime
+    section = Section(
+        n=1, doc_id="o2", doc="금융투자업규정", node=2,
+        path="제3-44조", page=2, kind="법률좌표폐쇄", matched="assertion-tree",
+        text="위험관리지침은 내부 보고 및 승인체계를 정하여야 한다",
+        legal_meta={"validity": {"status": "current"},
+                    "requirement_spans": [{"kind": "의무", "surface": "정하여야 한다"}]})
+    monkeypatch.setattr(legalclosure_runtime, "retrieve", lambda *a, **k: (
+        [section], {"strategy": "fixture-legalclosure",
+                    "selected": [{"doc_id": "o2", "node": 2,
+                                  "origin": "assertion-tree"}],
+                    "closure": [{"doc_id": "o2", "node": 2,
+                                 "mandatory": True}],
+                    "article_reachability": {"capture_sha256": "fixture"},
+                    "legal_annotations": {"rows": [section.legal_meta]}}))
+
+    out = compare.compare_article(
+        _FakeLLM([{"n": 1, "판정": "부합", "근거": "승인체계를 정함", "인용": ""}]),
+        idx, "n1", 1)
+    assert out["후보"][0]["origin"] == "assertion-tree"
+    assert out["후보"][0]["mandatory"] is True
+    assert out["후보"][0]["legal_meta"]["validity"]["status"] == "current"
+    assert out["검색"]["strategy"] == "fixture-legalclosure"
+    assert out["검색"]["article_reachability"]["capture_sha256"] == "fixture"
+
+
+def test_direct_reference_is_first_and_enriched_by_legalclosure(monkeypatch, tmp_path):
+    idx = _mini(monkeypatch, tmp_path)
+    from lawrag.core.rag import legalclosure_runtime
+    section = Section(
+        n=1, doc_id="o1", doc="자본시장법", node=1,
+        path="제166조의2", page=1, kind="법률좌표폐쇄", matched="exact-structural",
+        text=OE_150, legal_meta={"validity": {"status": "current"}})
+    monkeypatch.setattr(legalclosure_runtime, "retrieve", lambda *a, **k: (
+        [section], {"strategy": "fixture", "selected": [
+            {"doc_id": "o1", "node": 1, "origin": "exact-structural"}]}))
+
+    out = compare.compare_article(None, idx, "n1", 1)
+    assert len(out["후보"]) == 1
+    assert out["후보"][0]["via"] == "간선" and out["후보"][0]["mandatory"]
+    assert "exact-structural" in out["후보"][0]["origins"]
+    assert out["후보"][0]["legal_meta"]["validity"]["status"] == "current"
+
+
+def test_legalclosure_filters_internal_candidate_but_keeps_external_scope_companion(
+        monkeypatch, tmp_path):
+    idx = _mini(monkeypatch, tmp_path)
+    idx._cross = ([], [])
+    from lawrag.core.rag import legalclosure_runtime
+    rows = [
+        Section(n=1, doc_id="n2", doc="다른세칙", node=1, path="제1조", page=1,
+                kind="법률좌표폐쇄", matched="noise", text="목적 조문"),
+        Section(n=2, doc_id="o2", doc="금융투자업규정", node=2, path="제3-44조",
+                page=2, kind="법률좌표폐쇄", matched="relation-closure",
+                text="위험관리지침은 내부 보고 및 승인체계를 정하여야 한다",
+                scope_out=True),
+    ]
+    monkeypatch.setattr(legalclosure_runtime, "retrieve", lambda *a, **k: (
+        rows, {"strategy": "fixture", "selected": []}))
+
+    out = compare.compare_article(None, idx, "n1", 1)
+    assert [(row["doc_id"], row["scope_out"]) for row in out["후보"]] == [("o2", True)]
+
+
+def test_unresolved_candidate_prevents_mixed_compliance_overclaim(monkeypatch, tmp_path):
+    idx = _mini(monkeypatch, tmp_path)
+    idx._cross = ([], [])
+    from lawrag.core.rag import legalclosure_runtime
+    rows = [
+        Section(n=1, doc_id="o1", doc="자본시장법", node=1, path="제166조의2",
+                page=1, kind="법률좌표폐쇄", matched="exact", text=OE_150),
+        Section(n=2, doc_id="o2", doc="금융투자업규정", node=2, path="제3-44조",
+                page=2, kind="법률좌표폐쇄", matched="assertion",
+                text="위험관리지침은 내부 보고 및 승인체계를 정하여야 한다"),
+    ]
+    monkeypatch.setattr(legalclosure_runtime, "retrieve", lambda *a, **k: (
+        rows, {"strategy": "fixture", "selected": []}))
+    monkeypatch.setattr(compare, "compare_quants", lambda *a, **k: [])
+    llm = _FakeLLM([
+        {"n": 1, "판정": "부합", "근거": "부합", "인용": ""},
+        {"n": 2, "판정": "불명", "근거": "본문만으로 불명", "인용": ""},
+    ])
+
+    out = compare.compare_article(llm, idx, "n1", 1)
+    assert out["verdict"] == "재검토"
+    assert out["완전성"]["미해결후보"] == [2]
+    assert out["완전성"]["coverage_closed"] is False
+
+
+def test_legalclosure_failure_is_visible_and_cannot_yield_compliance(monkeypatch, tmp_path):
+    idx = _mini(monkeypatch, tmp_path)
+    idx._cross = ([], [])
+    from lawrag.core.rag import legalclosure_runtime
+
+    def fail(*args, **kwargs):
+        raise RuntimeError("fixture failure")
+
+    monkeypatch.setattr(legalclosure_runtime, "retrieve", fail)
+    out = compare.compare_article(None, idx, "n1", 1)
+    assert out["verdict"] == "재검토" and out["짝없음"]
+    assert out["검색"]["status"] == "degraded"
+    assert "fixture failure" in out["검색"]["error"]
+
+
+def test_promoted_atomic_compiler_keeps_deterministic_conflict(monkeypatch, tmp_path):
+    idx = _mini(monkeypatch, tmp_path)
+    from lawrag.core.rag import switches as switches_mod
+    monkeypatch.setattr(
+        switches_mod, "is_on",
+        lambda key: key == "internal_compliance_compiler_v1")
+
+    class CompilerLLM:
+        def structured(self, kind, system, user, schema, **kwargs):
+            assert kind == "rag.compare.atomic_compliance_compiler"
+            return {
+                "issues": [{"issue_id": "I1", "question_span": "필수 통제"}],
+                "internal_units": [{
+                    "claim_id": "N1", "evidence_id": "N:n1:1",
+                    "issue_ids": ["I1"], "role": "GOVERNING_RULE",
+                    "quote": "순자본비율이 100분의 120에 미달",
+                }],
+                "requirements": [{
+                    "requirement_id": "R1", "evidence_id": "E:o1:1",
+                    "issue_ids": ["I1"], "role": "GOVERNING_RULE",
+                    "effect": "REQUIREMENT",
+                    "quote": "순자본비율이 100분의 150에 미달",
+                }],
+                "bindings": [{
+                    "requirement_id": "R1", "internal_claim_ids": ["N1"],
+                    "status": "SATISFIED", "reason": "모델은 같다고 보았다",
+                }],
+                "reason": "fixture",
+            }
+
+    out = compare.compare_article(CompilerLLM(), idx, "n1", 1)
+    assert out["verdict"] == "상충"
+    assert out["컴파일"]["assessment"]["verdict"] == "부합"
+    assert out["완전성"]["coverage_closed"] is False
+    assert out["내규"]["evidence_id"] == "N:n1:1"
+    assert out["후보"][0]["evidence_id"] == "E:o1:1"

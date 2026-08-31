@@ -1,0 +1,23 @@
+id: LC-003
+name: 조건·단서·예외 폐쇄
+scope: core
+severity: blocker
+status: trial
+triggers: []
+basis:
+  - path: data/wiki/wiki/방법/단서-읽기.md
+    anchor: 본문과 단서는 원칙-예외 한 세트다
+    note: 본문과 단서를 한 규범 단위로 읽는다.
+operational_definition: >-
+  결론에 필요한 적극요건, 소극요건, 단서, 예외, 제외사유를 회수 근거 안에서 끝까지 확인했는지 검사한다.
+  본문만 읽고 바로 뒤의 단서를 누락하거나, 예외의 요건이 충족되지 않았는데 효과만 적용하거나, 충족된 예외를 무시하면 FAIL이다.
+  예외 조항이 참조만 되고 실제 내용이 회수되지 않아 충족 여부를 알 수 없으면 UNCLEAR로 판정한다.
+examples:
+  pass:
+    - 원칙 적용을 설명한 뒤 단서 요건의 충족 여부까지 확인해 최종 결론을 낸다.
+  fail:
+    - 전문투자자 예외의 대상이 아닌데 예외를 적용해 금지 규정을 배제한다.
+  unclear:
+    - 제3호 예외를 참조하지만 제3호 원문이 근거에 없어 해당 여부를 알 수 없다.
+learned_from:
+  - ADR-0049-legal-minimal-pairs-v1/exception-investor

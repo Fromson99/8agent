@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "name": "rag-shared-e2e-pilot-v1",
+  "role": "shared_case_canary_not_release_gate",
+  "flows": {
+    "ask": {
+      "required_stages": ["issue_spot", "retrieval", "answer_synthesis", "final_citation"],
+      "required_channels": [
+        "concept", "memory", "keyword", "frame", "vector", "floor", "doc_companion"
+      ]
+    },
+    "legal_review": {
+      "required_stages": [
+        "fact_extraction", "issue_spot", "norm_retrieval", "subsumption", "final_decision"
+      ]
+    }
+  },
+  "mix": "20:80",
+  "case_nos": [
+    "06-0128",
+    "06-0131",
+    "10-0251",
+    "11-0345",
+    "18-0124",
+    "18-0370",
+    "19-0152",
+    "21-0131"
+  ],
+  "coverage": {
+    "mode": {"A": 2, "B": 6},
+    "gold_direction": {"positive": 3, "negative": 4, "conditional": 1},
+    "challenges": [
+      "historical_correct",
+      "historical_wrong_direction",
+      "historical_abstain",
+      "missing_decisive_basis",
+      "stray_basis",
+      "colloquial_without_legal_coordinates"
+    ]
+  },
+  "release_rule": "파일럿은 구조 신호를 찾는 canary다. 기본값 변경은 51건 전수와 반복 trial에서 재확인한다."
+}

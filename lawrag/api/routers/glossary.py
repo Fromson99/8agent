@@ -574,6 +574,7 @@ def patch_term(key: str, body: PatchTerm):
     row = rows.get(norm(key))
     if row is None:
         raise HTTPException(404, f"저장된 용어가 아닙니다: {key}")
+    before = row.get("status")
     if body.status is not None:
         if body.status not in ("활성", "잠정", "tombstone"):
             raise HTTPException(400, "status 는 활성|잠정|tombstone 중 하나입니다")
@@ -581,6 +582,20 @@ def patch_term(key: str, body: PatchTerm):
     if body.note is not None:
         row["note"] = body.note
     _save_user(rows)
+    if body.status is not None:
+        from lawrag.core.rag import approvals
+        approvals.safe_record(
+            kind="glossary_term", decision=body.status,
+            effect="term_activate" if body.status == "활성" else (
+                "term_reject" if body.status == "tombstone" else "pending"),
+            failure="용어_누락" if body.status == "활성" else (
+                "용어_오염" if body.status == "tombstone" else ""),
+            subject={"key": row.get("key")},
+            before={"status": before},
+            after={"status": body.status, "term": row.get("term"),
+                   "scope": row.get("scope") or {}},
+            note=body.note or "", actor="human",
+            source={"ledger": "glossary"})
     return {"ok": True, "term": row["term"], "status": row["status"]}
 
 

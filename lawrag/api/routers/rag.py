@@ -1,7 +1,7 @@
 """RAG API — 구조화된 문서에 묻는다.
 
     GET  /v1/rag/search?q=…     검색만 — 결정론, LLM 없음. 저작·검수 화면용.
-    POST /v1/rag/ask            검색 → 관련성 필터 → 답변 합성 (LLM)
+    POST /v1/rag/ask            LegalClosure → 답변 합성 (LLM)
 
 ## 왜 검색과 답변을 가르는가
 
@@ -32,8 +32,10 @@ from lawrag.core import llm as llm_mod
 from lawrag.core import logbook
 from lawrag.core.rag import answer as answer_mod
 from lawrag.core.rag import audit as audit_mod
+from lawrag.core.rag import companion_recovery
 from lawrag.core.rag import index as index_mod
 from lawrag.core.rag import judge as judge_mod
+from lawrag.core.rag import legal_coordinates
 from lawrag.core.rag import promote as promote_mod
 from lawrag.core.rag import recover as recover_mod
 from lawrag.core.rag import scopes as scopes_mod
@@ -42,6 +44,7 @@ from lawrag.core.rag import tuples as tuples_mod
 from lawrag.core.rag import wikictx
 from lawrag.core.rag import wikiledger
 from lawrag.core.rag import verdicts as verdicts_mod
+from lawrag.core.rag.controls import value as control_value
 # `core.rag.search` 모듈이 아니라 함수를 바로 받는다 — 패키지 facade 가
 # 같은 이름(search)으로 함수를 내보내서, 모듈 경유 접근은 헷갈린다.
 from lawrag.core.rag.search import search as run_search
@@ -49,6 +52,33 @@ from lawrag.core.rag.search import search as run_search
 router = APIRouter(prefix="/v1/rag", tags=["rag"])
 
 log = logging.getLogger("lawrag.api.rag")
+
+LEGALCLOSURE_MODE = "legalclosure"
+_ASK_MODE_ALIASES = {
+    "legalclosure": LEGALCLOSURE_MODE,
+    "legal-closure": LEGALCLOSURE_MODE,
+    # 예전 클라이언트의 vector/auto 값은 깨지지 않게 받되, 응답에는 보관
+    # 경로임을 명시한다. 새 호출은 legacy-* 이름으로 의도를 드러낸다.
+    "vector": "legacy-vector",
+    "legacy-vector": "legacy-vector",
+    "legacy_vector": "legacy-vector",
+    "auto": "legacy-auto",
+    "legacy-auto": "legacy-auto",
+    "legacy_auto": "legacy-auto",
+}
+
+
+def _resolve_ask_mode(value: str) -> tuple[str, str, bool]:
+    """(요청값, 실제 경로, 운영 스위치 롤백 여부)."""
+    requested = str(value or LEGALCLOSURE_MODE).strip().lower()
+    effective = _ASK_MODE_ALIASES.get(requested)
+    if effective is None:
+        raise HTTPException(
+            400, "mode는 legalclosure | legacy-vector | legacy-auto 중 하나여야 합니다")
+    rolled_back = False
+    if effective == LEGALCLOSURE_MODE and not switches_mod.is_on("legalclosure_main"):
+        effective, rolled_back = "legacy-vector", True
+    return requested, effective, rolled_back
 
 
 def _ask_event(out: dict, dur_ms: int) -> None:
@@ -58,6 +88,7 @@ def _ask_event(out: dict, dur_ms: int) -> None:
         "ask",
         q=out.get("question", ""), qid=out.get("qid"),
         mode=out.get("mode", ""), dur_ms=dur_ms,
+        retriever=out.get("retriever"),
         answerable=out.get("answerable"),
         n_context=len(out.get("context") or []),
         n_refs=len(out.get("refs") or []),
@@ -66,6 +97,11 @@ def _ask_event(out: dict, dur_ms: int) -> None:
         filter=out.get("filter"),
         recovery=(out.get("recovery") or {}).get("rungs_fired"),
         usage=out.get("usage"),
+        legal_graph={
+            key: ((out.get("legalclosure") or {}).get("legal_graph") or {}).get(key)
+            for key in ("enabled", "status", "generation_id", "added_count",
+                        "considered_count", "reason_counts", "fallback")
+        },
         answer=(out.get("answer") or "")[:400],
         refs=[{"doc": r.get("doc"), "path": r.get("path"), "page": r.get("page")}
               for r in (out.get("refs") or [])[:10]],
@@ -117,10 +153,9 @@ class Ask(BaseModel):
     filter: bool = True
     # 회복 루프(의미해석→깔때기→원문→수색대→둘러보기)를 끌 수 있다.
     recover: bool = True
-    # "vector"(기본 — 벡터 진입 + 참조 닫힘 + 정적 출처) | "auto"(용어 사다리).
-    # 벤치 실측(2026-08-10)에서 패러프레이즈 질의는 벡터가 뚜렷이 우세해
-    # 기본이 됐다. 벡터가 빈손이면 용어 사다리로 자동 폴백한다.
-    mode: str = "vector"
+    # "legalclosure"가 운영 기본. 이전 vector/auto는 삭제하지 않고
+    # "legacy-vector"/"legacy-auto" 롤백 모드로 보관한다. 옛 이름도 호환된다.
+    mode: str = LEGALCLOSURE_MODE
     # 질의 스코프 — "이 문서들만 대상으로". scope 는 scopes.yml 의 이름(또는
     # 내장 외규·내규·서식), documents 는 즉석 파일명 목록. 합집합. 진입은 이
     # 안에서만, 동반(배제·위임·준용…)은 밖으로 나가되 표식이 붙는다
@@ -134,6 +169,22 @@ def _llm():
     if not llm_mod.available():
         return None
     return llm_mod.LLM()
+
+
+def _legalclosure_assertion_llm(primary):
+    """Assertion 닫힌 메뉴는 검증 프로필의 강한 모델을 독립 사용한다.
+
+    Anthropic 개발망 기본은 68/70 실험과 같은 opus 별칭이다. GenOS는 배포된
+    모델 목록이 환경마다 다르므로 명시 환경값이 없으면 primary 서빙을 공유한다.
+    """
+    if primary is None:
+        return None
+    configured = os.environ.get("RAG_LEGALCLOSURE_ASSERTION_MODEL", "").strip()
+    if not configured and getattr(primary, "backend", "") == "anthropic":
+        configured = "claude-opus-5"
+    if not configured or configured == getattr(primary, "model", ""):
+        return primary
+    return llm_mod.LLM(model=configured)
 
 
 @router.get("/links/summary", summary="참조 수만 — 상단바 배지·홈 현황용")
@@ -449,8 +500,11 @@ def rag_links_remove(body: Unlink):
 
 @router.get("/switches", summary="엔진 규칙 스위치 — 자동 규칙의 등록부와 상태")
 def rag_switches():
-    from lawrag.core.rag import switches as switches_mod
-    return {"switches": switches_mod.snapshot()}
+    from lawrag.core.rag import main_promotion, switches as switches_mod
+    return {
+        "switches": switches_mod.snapshot(),
+        "main_pipeline": main_promotion.runtime_provenance(),
+    }
 
 
 class SwitchSet(BaseModel):
@@ -463,12 +517,15 @@ def rag_switches_set(body: SwitchSet):
     """규칙은 코드가 갖고 있지만 켜짐/꺼짐은 사용자 소유다. 끄면 확정 규칙의
     간선은 보류로 내려가고, 동반 규칙은 회수에서 빠진다. 저장된 판정
     (links.json·정정·억제)은 스위치와 무관하다."""
-    from lawrag.core.rag import switches as switches_mod
+    from lawrag.core.rag import main_promotion, switches as switches_mod
     try:
         switches_mod.set_switch(body.key, body.on)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    return {"switches": switches_mod.snapshot()}
+    return {
+        "switches": switches_mod.snapshot(),
+        "main_pipeline": main_promotion.runtime_provenance(),
+    }
 
 
 class RelFix(BaseModel):
@@ -544,6 +601,8 @@ def _ctx_row(idx, s) -> dict:
     row = {"n": s.n, "doc": s.doc, "doc_id": s.doc_id,
            "node": s.node, "path": s.path,
            "page": s.page, "kind": s.kind, "matched": s.matched}
+    if getattr(s, "legal_meta", None):
+        row["법률검증"] = s.legal_meta
     add = _addendum(idx, s)
     if add:
         row["부칙"] = add
@@ -629,7 +688,7 @@ def _timing(llm) -> Optional[dict]:
                       for e in llm.log]}
 
 
-RESPOT_MAX = 6   # 판정 재회수가 보충하는 구역 상한 — 보충이 본 회수를 밀어내면 안 된다
+RESPOT_MAX = int(control_value("api.respot_sections_max"))
 
 
 def _respot(idx, q: str, spots: list, sections: list) -> list:
@@ -715,6 +774,7 @@ def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
     n_mem = len(vmeta.get("memory") or [])
     n_frame = len(vmeta.get("frame_hits") or [])
     n_concept = len(vmeta.get("concept_hits") or [])
+    n_combo = len(vmeta.get("combination_hits") or [])
     n_dc = len(vmeta.get("doc_companion") or [])
     ladder = [
         {"stage": "승인 용어", "count": n_kw,
@@ -728,7 +788,8 @@ def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
         # 필수 동반(floor)도 sections 에 들어 있다 — 빼지 않으면 겹쳐 센다
         # (실측: 보고 8 vs 실제 5, floor 3).
         {"stage": "참조 확장",
-         "count": len(sections) - n_entry - n_kw - n_mem - n_frame - n_concept - n_dc
+         "count": len(sections) - n_entry - n_kw - n_mem - n_frame - n_concept
+                  - n_combo - n_dc
                   - len(vmeta.get("floor") or []),
          "note": f"참조 간선 닫힘, 깊이 {vmeta['depth']}"},
     ]
@@ -747,8 +808,20 @@ def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
         labels = [c.get("label", "") for c in alignment.get("selected") or []]
         ladder.insert(0, {"stage": "1급 Concept", "count": n_concept,
                           "note": "OQL 고정 패턴 — " + " · ".join(labels)})
+    if n_combo:
+        combo = vmeta.get("combination") or {}
+        general = combo.get("general_search") or {}
+        ccounts = combo.get("combination_counts") or {}
+        ladder.insert(0, {
+            "stage": "좌표 후보 조합", "count": n_combo,
+            "note": (f"0 교집합 {ccounts.get('zero_intersections', 0)} 제거 · "
+                     f"생존 {ccounts.get('surviving', 0)} · "
+                     f"LLM 메뉴 {combo.get('option_count', 0)}"
+                     + (" · 일반검색 " + " · ".join(general.get("keywords") or [])
+                        if general.get("keywords") else "")),
+        })
     if n_mem:
-        ladder.insert(1 if n_concept else 0,
+        ladder.insert(1 if (n_concept or n_combo) else 0,
                       {"stage": "질문 기억", "count": n_mem,
                           "note": _memory_note(vmeta["memory"])})
     floor = vmeta.get("floor") or []
@@ -820,6 +893,16 @@ def _ask_vector(idx, q: str, llm, spots: Optional[list] = None,
            "discards": [],
            # 착지 교정 — 이번 답변에서 LLM 이 고쳐 앉힌 참조. 간선 반영은 승인 몫.
            "fixes": fixes}
+    combo_meta = vmeta.get("combination") or {}
+    if combo_meta.get("exploration"):
+        # 검색 좌표가 어떤 문서→조→항 탐색 범위가 됐고 무엇이 선택됐는지 검수
+        # 화면에서 그대로 재현한다. 원문 전문은 context에만 있고 여기에는 경로만 있다.
+        out["exploration"] = combo_meta["exploration"]
+        out["exploration_selection"] = {
+            "choice": combo_meta.get("choice") or {},
+            "selected": combo_meta.get("selected") or [],
+            "coordinate_option_count": combo_meta.get("coordinate_option_count", 0),
+        }
     if ans.wiki:
         out["wiki"] = ans.wiki
     if ans.error:
@@ -866,14 +949,126 @@ async def rag_scopes_upload(file: UploadFile = File(...)):
     return {"path": str(path), "scopes": scopes_mod.listing(index_mod.current())}
 
 
-@router.post("/ask", summary="질의응답 — 검색 → 필터 → 합성 (mode=vector: 벡터 우선)")
+def _legalclosure_public(meta: dict) -> dict:
+    """호환 wrapper. 표현 로직은 전용 presenter가 소유한다."""
+    from lawrag.api import legalclosure_presenter
+    return legalclosure_presenter.public_meta(meta)
+
+
+def _ask_legalclosure(body: Ask, idx, q: str, llm, *, t0: float,
+                      requested_mode: str) -> dict:
+    """운영 메인: LegalClosure 조문 좌표를 그대로 답변 근거로 합성한다."""
+    from lawrag.api import legalclosure_presenter
+    from lawrag.core.rag import legalclosure_runtime
+    from lawrag.core.rag import vecfirst
+    assertion_llm = _legalclosure_assertion_llm(llm)
+    sections, retrieval_meta = legalclosure_runtime.retrieve(
+        idx, q, llm=llm, assertion_llm=assertion_llm, cap=20,
+        shortcut_enabled=switches_mod.is_on("legalclosure_proof_shortcut"),
+        feedback_enabled=switches_mod.is_on("legalclosure_feedback_explore"),
+        graph_enabled=switches_mod.is_on("legal_graph_v1_closure"),
+        semantic_graph_enabled=switches_mod.is_on(
+            "legal_semantic_entity_search"),
+        integrated_research_enabled=switches_mod.is_on(
+            "legal_research_integrated_v1"),
+        integrated_cap=32)
+    # 한 질의의 감사 로그는 기존 튜플 계약상 한 객체에 있어야 한다. 정확 구조가
+    # 먼저, Assertion이 다음에 실행되므로 별도 모델 로그를 그 순서로 합친다.
+    if (llm is not None and assertion_llm is not None and assertion_llm is not llm
+            and getattr(assertion_llm, "log", None)):
+        llm.log.extend(assertion_llm.log)
+
+    sections, smeta = answer_mod.enforce_scope(idx, sections)
+    feedback = retrieval_meta.get("feedback_loop") or {}
+    feedback_failed = bool(
+        feedback.get("enabled") and feedback.get("ran")
+        and feedback.get("sufficient") is False)
+    recovery = None
+    if not sections and body.recover and not feedback_failed:
+        recovery = recover_mod.run(llm, idx, q)
+        if recovery.coords:
+            sections = answer_mod.sections_from_coords(idx, recovery.coords)
+            sections, smeta = answer_mod.enforce_scope(idx, sections)
+
+    public_meta = _legalclosure_public(retrieval_meta)
+    main_pipeline = (retrieval_meta.get("runtime") or {}).get("main_pipeline") or {}
+    ladder = legalclosure_presenter.ladder(public_meta, len(sections))
+    if recovery is not None:
+        ladder.extend(recovery.trail)
+    if idx.scope is not None:
+        ladder.append(_scope_rung(idx, smeta))
+
+    # 쟁점 카드는 검색 좌표를 바꾸지 않고 답변 배경으로만 사용한다. 평가된
+    # LegalClosure 회수에 검색 전 LLM 재작성 경로를 섞지 않는다.
+    spots = wikictx.spot(q) if switches_mod.is_on("issue_spot") else []
+    if feedback_failed:
+        ans = answer_mod.Answer(
+            answer=("최종 회수 조문을 관계·구조·키워드·벡터로 다시 탐색했지만 "
+                    "질문에 답할 지배 근거를 확인하지 못했습니다."),
+            answerable=False)
+    else:
+        ans = answer_mod.synthesize(llm, q, sections, spots=spots)
+    if ans.wiki:
+        ladder.append({"stage": "위키 맥락", "count": len(ans.wiki),
+                       "note": " · ".join(w["title"] for w in ans.wiki)})
+    refs = [] if feedback_failed else vecfirst.static_refs(sections)
+    out = {
+        "question": q, "mode": "LegalClosure", "ladder": ladder,
+        "retriever": {
+            "id": "legalclosure-v2", "status": "main",
+            "requested_mode": requested_mode,
+            "strategy": retrieval_meta.get("strategy"),
+            "legal_graph": {
+                "enabled": bool((retrieval_meta.get("legal_graph") or {}).get("enabled")),
+                "status": (retrieval_meta.get("legal_graph") or {}).get("status"),
+                "generation_id": (retrieval_meta.get("legal_graph") or {}).get(
+                    "generation_id", ""),
+                "added_count": (retrieval_meta.get("legal_graph") or {}).get(
+                    "added_count", 0),
+            },
+            "main_pipeline": main_pipeline,
+            "primary_model": getattr(llm, "model", "") if llm else "",
+            "assertion_model": getattr(assertion_llm, "model", "")
+                               if assertion_llm else "",
+        },
+        "scope": _scope_out(idx, smeta),
+        # LegalClosure의 닫힌 조문 선택을 일반 관련성 필터가 다시 삭제하지 않는다.
+        "filter": {"in": len(sections), "out": len(sections),
+                   "applied": False,
+                   "reason": "LegalClosure 확정 좌표 — 일반 관련성 필터 미적용"},
+        "context": [_ctx_row(idx, section) for section in sections],
+        "answer": ans.answer, "answerable": ans.answerable,
+        "refs": refs, "cited": [row.get("n") for row in ans.refs],
+        "discards": [], "fixes": [], "legalclosure": public_meta,
+    }
+    legal_warnings = (public_meta.get("legal_annotations") or {}).get("warnings") or []
+    if legal_warnings:
+        out["legal_warnings"] = legal_warnings
+    if ans.wiki:
+        out["wiki"] = ans.wiki
+    if recovery is not None:
+        out["recovery"] = {"rungs_fired": recovery.rungs_fired, **recovery.meta}
+        if recovery.ask_user:
+            out["ask_user"] = recovery.ask_user
+    if ans.error:
+        out["error"] = ans.error
+    if llm is not None and llm.log:
+        out["usage"] = llm.totals()
+        out["timing"] = _timing(llm)
+    _after_answer(out, q, llm, sections, ans, [], cand_coords=None)
+    _ask_event(out, logbook.ms(t0))
+    return out
+
+
+@router.post("/ask", summary="질의응답 — LegalClosure 기본, legacy 경로는 롤백용")
 def rag_ask(body: Ask):
     t0 = time.perf_counter()
     q = (body.question or "").strip()
     if not q:
         raise HTTPException(400, "질문이 비었습니다")
-    log.info("질의 시작 — '%s' (mode=%s, filter=%s, recover=%s)",
-             q[:60], body.mode, body.filter, body.recover)
+    requested_mode, effective_mode, rolled_back = _resolve_ask_mode(body.mode)
+    log.info("질의 시작 — '%s' (requested=%s, effective=%s, filter=%s, recover=%s)",
+             q[:60], requested_mode, effective_mode, body.filter, body.recover)
     idx = index_mod.current()
     # 질의 스코프 — "이 문서들만". 이름을 모르거나 비면 400 — 조용히 전체를
     # 뒤지는 것이 과제 1 의 정반대다.
@@ -887,6 +1082,22 @@ def rag_ask(body: Ask):
     llm = _llm()
     if llm is None:
         log.warning("LLM 없음 — 검색까지만 내려간다 (%s 미설정)", llm_mod.MISSING_HINT)
+    if effective_mode == LEGALCLOSURE_MODE:
+        return _ask_legalclosure(
+            body, idx, q, llm, t0=t0, requested_mode=requested_mode)
+
+    # 여기부터는 롤백·A/B를 위해 보존한 이전 경로다. 옛 vector/auto 요청도
+    # 이 이름으로 정규화되며 응답 retriever가 archived/rollback을 드러낸다.
+    from lawrag.core.rag import main_promotion
+    legacy_mode = "vector" if effective_mode == "legacy-vector" else "auto"
+    legacy_retriever = {
+        "id": effective_mode,
+        "status": "rollback" if rolled_back else "archived",
+        "requested_mode": requested_mode,
+        "rollback_reason": ("legalclosure_main 스위치 OFF"
+                            if rolled_back else ""),
+        "main_pipeline": main_promotion.runtime_provenance(),
+    }
 
     # 쟁점 분해 두 시점 (wikictx 머리): ① 검색 전 — 트리거 매칭이 조문
     # 후보로 질의를 넓힌다(검색 보조, 결정론). ② 컨텍스트 확보 후 — LLM 이
@@ -913,17 +1124,18 @@ def rag_ask(body: Ask):
 
     vector_missed = False
     auto_concept_sections, auto_concept_meta = [], {}
-    if body.mode == "vector":
+    if legacy_mode == "vector":
         out_v = _ask_vector(idx, q, llm, spots=spots, qx=qx,
                             spots_trig=spots_trig, qv=qv, memory=memory)
         if out_v is not None:
+            out_v["retriever"] = legacy_retriever
             _ask_event(out_v, logbook.ms(t0))
             return out_v
         vector_missed = True          # 색인·모델 부재 포함 — 사다리가 받는다
     elif switches_mod.is_on("concept_entry"):
         from lawrag.core.rag import conceptfirst as conceptfirst_mod
         auto_concept_sections, auto_concept_meta = conceptfirst_mod.retrieve(
-            idx, q, llm=llm)
+            idx, q, llm=llm, coordinate_first=True)
 
     res = run_search(idx, qx)
     if vector_missed:
@@ -946,9 +1158,12 @@ def rag_ask(body: Ask):
             section.n = i
         labels = [c.get("label", "") for c in
                   (auto_concept_meta.get("alignment") or {}).get("selected") or []]
-        res.ladder.insert(0, {"stage": "1급 Concept",
+        if not labels:
+            labels = [c.get("label", "") for c in
+                      auto_concept_meta.get("landings") or []]
+        res.ladder.insert(0, {"stage": "구조·역할 교집합",
                               "count": len(auto_concept_sections),
-                              "note": "OQL 고정 패턴 — " + " · ".join(labels)})
+                              "note": "DB 객체 착지 — " + " · ".join(labels)})
     sections, smeta = answer_mod.enforce_scope(idx, sections)
     fmeta = {"in": len(sections), "out": len(sections), "applied": False, "reason": ""}
     if body.filter:
@@ -1018,6 +1233,7 @@ def rag_ask(body: Ask):
         r["link"] = link
 
     out = {"question": q, "mode": res.mode, "ladder": res.ladder,
+           "retriever": legacy_retriever,
            "scope": _scope_out(idx, smeta),
            # 쟁점기의 전모 — 트리거가 무엇을 물었고(왜), 판정이 무엇으로
            # 고쳤고, 질의가 어떻게 넓어졌는지. 사다리 note 는 제목뿐이다.
@@ -1059,7 +1275,7 @@ def rag_ask(body: Ask):
 
 
 class Compare(BaseModel):
-    """내규 조 하나를 외규와 비교 — verdict 상충/부합/재검토와 근거 좌표.
+    """내규 조 하나를 외규와 비교 — 상충/미비/부합/재검토와 근거 좌표.
 
     doc 은 내규 문서 이름(부분 일치), article 은 조 표면형('제12조' —
     '제12조제2항'을 줘도 조로 접는다). 흐름·판정 규칙의 정본은
@@ -1069,7 +1285,7 @@ class Compare(BaseModel):
     scope: str = "외규"
 
 
-@router.post("/compare", summary="내규↔외규 비교 — 값비교(결정론)+쌍판정(LLM)")
+@router.post("/compare", summary="내규↔외규 비교 — 수치 override+원자명제 coverage gate")
 def rag_compare(body: Compare):
     import re as _re
 
@@ -1078,13 +1294,16 @@ def rag_compare(body: Compare):
     t0 = time.perf_counter()
     idx = index_mod.current()
     name = (body.doc or "").strip()
-    hits = [v for v in idx.docs.values() if name and name in v.name]
-    if not hits:
+    named = [v for v in idx.docs.values() if name and name in v.name]
+    if not named:
         raise HTTPException(404, f"문서를 못 찾았습니다: {name}")
+    hits = [v for v in named if v.scope_kind == "내규"]
+    if not hits:
+        raise HTTPException(400, f"비교 입력은 내규 문서여야 합니다: {name}")
     if len(hits) > 1:
         # 현행 우선 — 신·구판이 같이 걸리면 개정일이 최신인 판. 이름순이면
         # '…_v1_2024' 가 '…_v2_2026' 보다 앞서 구판이 잡힌다.
-        hits.sort(key=lambda v: v.revised or "", reverse=True)
+        hits.sort(key=lambda v: (v.is_current, v.revised or ""), reverse=True)
     v = hits[0]
     jo = _re.match(r"제\s*[\d\-]+\s*조(의\s*\d+)?", (body.article or "").replace(" ", ""))
     if not jo:
@@ -1095,8 +1314,21 @@ def rag_compare(body: Compare):
                  and "부칙" not in v.path(n["id"])), None)
     if node is None:
         raise HTTPException(404, f"{v.name} 에 {jo_s} 가 없습니다")
-    out = compare_mod.compare_article(_llm(), idx, v.doc_id, node,
-                                      scope=body.scope or "외규")
+    try:
+        out = compare_mod.compare_article(_llm(), idx, v.doc_id, node,
+                                          scope=body.scope or "외규")
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    from lawrag.core.rag import main_promotion, switches as switches_mod
+    switch_row = next(
+        (row for row in switches_mod.snapshot()
+         if row["key"] == "internal_compliance_compiler_v1"), {})
+    out["pipeline"] = {
+        "profile": ("internal-compliance-atomic-v1" if switch_row.get("on")
+                    else "legalclosure-comparison-v2"),
+        "switch": switch_row,
+        "main": main_promotion.runtime_provenance(),
+    }
     out["ms"] = int((time.perf_counter() - t0) * 1000)
     return out
 
@@ -1109,13 +1341,76 @@ class Feedback(BaseModel):
     note: str = ""
 
 
+def _role_predicate_feedback_recovery(idx, ask_record: dict) -> dict:
+    """Return source-validated suggestions without rewriting the prior answer.
+
+    The stored question and already-presented context are the only tuple fields
+    consumed.  Existing coordinates form an immutable exclusion floor; the
+    router therefore returns additions only.
+    """
+    question = str(ask_record.get("질의") or "").strip()
+    if not question:
+        return {
+            "enabled": True, "attempted": False,
+            "reason": "stored_question_missing", "selected": [],
+        }
+    floor = []
+    for row in ask_record.get("context") or ():
+        doc_id, node = row.get("doc_id"), row.get("node")
+        view = idx.docs.get(doc_id)
+        if view is None or node not in view.by_id:
+            continue
+        coordinate = (str(doc_id), legal_coordinates.article_root(view, int(node)))
+        if coordinate not in floor:
+            floor.append(coordinate)
+    branches, meta = companion_recovery.role_predicate_governing_feedback(
+        idx, question, answer_incorrect=True, exclude=floor,
+        preferred_document_ids=sorted(getattr(idx, "canonical_doc_ids", None) or ()),
+        card_limit=2, addition_cap=4)
+    selected = [{
+        "doc_id": row.doc_id,
+        "node": row.node,
+        "doc": row.doc,
+        "path": row.path,
+        "origin": row.origin,
+    } for row in branches]
+    return {
+        "enabled": True,
+        "attempted": True,
+        "reason": meta.get("reason") or "no_validated_governing_hypothesis",
+        "baseline_count": len(floor),
+        "baseline_preserved": True,
+        "added_count": len(selected),
+        "selected": selected,
+        "audit": {
+            "general_lexical_search_calls": meta.get("general_lexical_search_calls", 0),
+            "forbidden_fields_used": meta.get("forbidden_fields_used") or [],
+            "predicate_families": meta.get("predicate_families") or [],
+            "caps": meta.get("caps") or {"cards": 2, "additions": 4},
+            # Card body is not present in router metadata.  These bounded fields
+            # make a failed feedback attempt explainable without exposing gold,
+            # reference answers, or opening another search path.
+            "cards": [{
+                "slug": card.get("slug"),
+                "title": card.get("title"),
+                "matched_triggers": card.get("matched_triggers") or [],
+                "actor_roles": card.get("actor_roles") or [],
+                "predicate_families": card.get("predicate_families") or [],
+                "gate_open": bool(card.get("gate_open")),
+                "hypotheses": card.get("hypotheses") or [],
+            } for card in (meta.get("cards") or [])],
+        },
+    }
+
+
 @router.post("/feedback", summary="질의 피드백 — 진단 튜플에 기대 출력을 기록")
 def rag_feedback(body: Feedback):
     """실패_원인(a~d) 판정은 여기서 하지 않는다 — 책임 귀속은 별도 국면이다.
     기대 좌표는 실재하는 구역만 받는다(닫힌 후보 규율과 같다)."""
     if body.verdict not in ("정답", "오답"):
         raise HTTPException(400, "verdict 는 '정답' 또는 '오답'이어야 합니다")
-    if tuples_mod.find(body.qid) is None:
+    ask_record = tuples_mod.find(body.qid)
+    if ask_record is None:
         raise HTTPException(404, f"질의 기록이 없습니다: {body.qid}")
     expected = None
     if body.expected:
@@ -1134,7 +1429,34 @@ def rag_feedback(body: Feedback):
     wikiledger.feedback(body.qid, body.verdict, body.note)
     log.info("피드백 — %s %s%s", body.qid, body.verdict,
              f" (기대: {expected['path']})" if expected else "")
-    return {"saved": True, "record": rec}
+    recovery_enabled = switches_mod.is_on("role_predicate_feedback_recovery")
+    if body.verdict != "오답":
+        recovery = {
+            "enabled": recovery_enabled, "attempted": False,
+            "reason": "verdict_not_incorrect", "selected": [],
+        }
+    elif expected is not None:
+        recovery = {
+            "enabled": recovery_enabled, "attempted": False,
+            "reason": "explicit_expected_coordinate", "selected": [],
+        }
+    elif not recovery_enabled:
+        recovery = {
+            "enabled": False, "attempted": False,
+            "reason": "switch_off", "selected": [],
+        }
+    else:
+        try:
+            recovery = _role_predicate_feedback_recovery(
+                index_mod.current(), ask_record)
+        except Exception as exc:  # feedback receipt must remain durable
+            log.exception("오답 역할·판단축 복구 실패 — 피드백 기록은 보존: %s", body.qid)
+            recovery = {
+                "enabled": True, "attempted": True,
+                "reason": "recovery_failed_open", "selected": [],
+                "error": type(exc).__name__,
+            }
+    return {"saved": True, "record": rec, "recovery": recovery}
 
 
 @router.get("/tuples", summary="진단 튜플 목록 — 질의 기록 + 피드백 합본")
@@ -1143,6 +1465,26 @@ def rag_tuples(limit: int = Query(100, ge=1, le=1000)):
     n_fb = sum(1 for r in rows if r.get("피드백"))
     return {"tuples": rows, "count": len(rows), "with_feedback": n_fb,
             "candidates": tuples_mod.candidates()}
+
+
+@router.get("/approvals", summary="사람 판정 공통 receipt — 승인 원장 합본")
+def rag_approvals(limit: int = Query(200, ge=1, le=2000),
+                  current_only: bool = Query(False)):
+    """기능별 정본을 바꾸지 않고 승인·기각·교정 사건을 한 계보로 보여준다."""
+    from lawrag.core.rag import approvals
+
+    rows = approvals.current() if current_only else approvals.read()
+    return {"rows": rows[-limit:], "count": len(rows),
+            "store": str(approvals.receipts_path())}
+
+
+@router.get("/approvals/evolution",
+            summary="승인 receipt 기반 진화 후보 — 실패×효과 집계")
+def rag_approval_evolution(min_evidence: int = Query(2, ge=1, le=100)):
+    """읽기 전용 후보표다. 이 API는 설정이나 정본을 자동 변경하지 않는다."""
+    from lawrag.core.rag import approvals
+
+    return approvals.evolution_summary(min_evidence=min_evidence)
 
 
 @router.get("/verdicts", summary="판정 백로그 — 잘못 끌려온 간선의 지문 묶음")
@@ -1348,6 +1690,56 @@ def _memory_rows(status: str) -> list[dict]:
                     "path": v.path(r.get("node")) if v else "",
                     "exists": v is not None and v.by_id.get(r.get("node")) is not None})
     return out
+
+
+@router.get("/terms/proposals", summary="새 표현 검수 — LLM 제안, 사람 승인/기각")
+def rag_term_proposals(
+        status: str = Query("pending", description="pending|approved|rejected|all"),
+        limit: int = Query(200, ge=1, le=2000)):
+    """질의 중 DB 값과 달랐던 표현의 단일 검수 원장.
+
+    pending은 검색에 아직 쓰이지 않는다. 사람이 승인한 표현만 문서 별칭 또는
+    Concept aliases 정본에 발행된다.
+    """
+    from lawrag.core.rag import term_proposals
+
+    try:
+        rows = term_proposals.queue(status)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    return {"rows": rows[:limit], "count": len(rows)}
+
+
+class TermProposalResolve(BaseModel):
+    proposal_id: str
+    action: str                       # "승인" | "기각"
+    note: str = ""
+    reviewer: str = "user"
+
+
+@router.post("/terms/proposals/resolve",
+             summary="새 표현 처리 — 승인만 검색 정본에 발행")
+def rag_term_proposal_resolve(body: TermProposalResolve):
+    from lawrag.core.rag import term_proposals
+
+    pending = {row.get("id"): row for row in term_proposals.queue("all")}
+    row = pending.get(body.proposal_id)
+    if row is None:
+        raise HTTPException(404, "용어 제안을 찾을 수 없습니다")
+    target = row.get("target") or {}
+    if body.action == "승인" and target.get("kind") == "document":
+        view = index_mod.current().docs.get(str(target.get("id") or ""))
+        if view is None or view.name != target.get("label"):
+            raise HTTPException(400, "문서 대상이 현재 DB 정본과 일치하지 않습니다")
+    try:
+        saved = term_proposals.resolve(
+            body.proposal_id, body.action,
+            reviewer=body.reviewer or "user", note=body.note)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    logbook.rag_event("term_proposal", proposal_id=body.proposal_id,
+                      action=body.action, target=target)
+    return {"saved": True, "proposal": saved}
 
 
 @router.get("/memory", summary="질문 기억 — 승격 원장(잠정·활성·기각) 목록")

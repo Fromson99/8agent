@@ -1,0 +1,23 @@
+id: LC-106
+name: 법률용어 동일성 검증
+scope: routed
+severity: blocker
+status: trial
+triggers: [의미, 같은, 동일, 상근이사, 등기이사, 등기임원, 임원, 용어]
+basis:
+  - path: data/wiki/wiki/방법/정의-우선.md
+    anchor: 정의 규정은 해석지침이다
+    note: 일상어 유사성보다 해당 규범의 정의가 우선한다.
+operational_definition: >-
+  서로 다른 법률용어를 동일하다고 보거나 상하위 개념으로 포섭할 때 회수된 정의·문맥이 그 관계를 실제로 지지하는지 검사한다.
+  표현이 비슷하다는 이유만으로 상근이사와 등기이사처럼 요건이 다른 개념을 같다고 단정하면 FAIL이다.
+  해당 규범의 정의나 문맥이 회수되지 않아 동일성을 확정할 수 없으면 UNCLEAR로 판정한다.
+examples:
+  pass:
+    - 근거의 정의요건을 하나씩 대조하고 두 용어가 항상 동일하지 않다고 한정한다.
+  fail:
+    - 일상적 어감만으로 두 법률상 지위를 완전히 같은 개념이라고 단정한다.
+  unclear:
+    - 두 용어가 나오지만 정의조나 적용 문맥이 근거에 없다.
+learned_from:
+  - ADR-0048-legal-reasoning-causal-portfolio/term-equivalence

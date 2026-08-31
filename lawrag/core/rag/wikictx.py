@@ -33,12 +33,14 @@ import re
 from pathlib import Path
 from typing import Optional
 
+from lawrag.core.rag.controls import value as control_value
+
 ROOT = Path(__file__).resolve().parents[3]
 
-ARTICLE_MAX_CHARS = 4000     # 아티클 하나의 프롬프트 상한 — 위키가 조문을 밀어내면 안 된다
-PICK_LIMIT = 2               # 질의 하나에 아티클 최대 두 편
+ARTICLE_MAX_CHARS = int(control_value("wiki.article_chars"))
+PICK_LIMIT = int(control_value("wiki.articles_max"))
 ISSUE_DIR = "쟁점"           # 쟁점기 갈래 — spot 만 읽고 pick 은 건너뛴다
-SPOT_LIMIT = 2               # 질의 하나에 쟁점 카드 최대 두 장
+SPOT_LIMIT = int(control_value("wiki.issue_cards_max"))
 # 판정 콜 출력 예산 — 카드마다 slug+why(120자)+조문질의가 실리므로 300 은 애초에
 # 모자랐다(실측 2026-08-20: 하루 62콜 중 16콜 잘림, fail-open 이라 쟁점 확장 없이
 # 진행돼 실행 간 변동의 원인이 됐다). 잘리면 3배로 1회만 재시도한다(frames 와 동형).
@@ -50,6 +52,11 @@ _ROW_RE = re.compile(
     r"^\|\s*\[(?P<title>[^\]]+)\]\((?P<file>[^)]+\.md)\)\s*\|"
     r"\s*(?P<summary>[^|]*)\|", re.M)
 _WORD_RE = re.compile(r"[가-힣A-Za-z0-9]{2,}")
+_WORD_SUFFIXES = ("으로부터", "에게서", "에서는", "으로", "에서", "에게",
+                  "까지", "부터", "처럼", "보다", "과", "와", "의", "을",
+                  "를", "이", "가", "은", "는", "에", "로")
+_PROVENANCE_RE = re.compile(
+    r"^>\s*(?:Sources|Raw|Updated)\s*:\s*.*(?:\n|$)", re.M | re.I)
 # 카드 머리의 기계 가독 메타 — `> 트리거: a · b` 꼴 (가운뎃점 구분).
 # `신호`는 방법 갈래의 라우팅 키다 — 질의 낱말이 아니라 **회수 결과의 성격**
 # (동반 kind: 정의·제재·위임·준용·배제·수임, 본문의 단서)이 깨운다.
@@ -64,6 +71,32 @@ def wiki_dir() -> Path:
 
 def _pack(s: str) -> str:
     return re.sub(r"\s+", "", s)
+
+
+def _question_words(question: str) -> set[str]:
+    """제목·요약 대조용 어절 — 조사만 접고 의미어 자체는 만들지 않는다."""
+    out = set()
+    for raw in _WORD_RE.findall(question):
+        word = raw
+        for suffix in _WORD_SUFFIXES:
+            if word.endswith(suffix) and len(word) - len(suffix) >= 2:
+                word = word[:-len(suffix)]
+                break
+        out.add(word)
+    return out
+
+
+def prompt_text(text: str) -> str:
+    """저장·감사용 provenance를 보존한 채 모델에 줄 본문에서만 제거한다."""
+    cleaned = _PROVENANCE_RE.sub("", str(text or ""))
+    return re.sub(r"\n{3,}", "\n\n", cleaned).strip()
+
+
+def _prompt_slice(text: str) -> str:
+    value = prompt_text(text)
+    if len(value) > ARTICLE_MAX_CHARS:
+        value = value[:ARTICLE_MAX_CHARS] + "\n…(잘림 — 전문은 위키)"
+    return value
 
 
 def _rows() -> list[dict]:
@@ -90,7 +123,10 @@ def _rows() -> list[dict]:
         text = p.read_text("utf-8")
         rows.append({"slug": m.group("file").removesuffix(".md"),
                      "title": title, "summary": m.group("summary").strip(),
-                     "text": text, "packed": _pack(text),
+                     "text": text,
+                     # provenance에 우연히 등장한 법령·기관명은 라우팅 강신호가
+                     # 아니다. 모델 입력과 같은 정제 본문으로 문서명도 대조한다.
+                     "packed": _pack(prompt_text(text)),
                      "head": title + " " + m.group("summary")})
     _cache["key"], _cache["rows"] = key, rows
     return rows
@@ -103,7 +139,7 @@ def pick(question: str, doc_names: set[str],
     점수 0 은 안 낸다 — 위키가 모르는 주제에 배경을 끼워 넣지 않는다.
     """
     scored = []
-    words = set(_WORD_RE.findall(question))
+    words = _question_words(question)
     for row in _rows():
         if row["slug"].startswith(ISSUE_DIR + "/"):
             continue                     # 쟁점 카드는 spot 의 몫 — 이중 경쟁 금지
@@ -113,19 +149,22 @@ def pick(question: str, doc_names: set[str],
             if dn and _pack(dn) in row["packed"]:
                 score += 2
                 why.append(dn)
-        hit_words = [w for w in words if w in row["head"]]
-        score += len(hit_words)
-        why.extend(hit_words)
+        hit_words = sorted(w for w in words if w in row["head"])
+        # 질문 낱말 하나만 맞는 Wiki는 ``업무``·``합산`` 같은 우연 일치가 너무
+        # 쉽다. 회수 문서명은 강신호로 유지하고, 문서명이 없으면 서로 다른 두
+        # 낱말이 제목·요약에서 함께 확인될 때만 일반 아티클을 연다.
+        lexical_ok = len(hit_words) >= 2
+        score += len(hit_words) if lexical_ok else 0
+        if lexical_ok:
+            why.extend(hit_words)
         if score > 0:
             scored.append((score, row, why))
     scored.sort(key=lambda t: -t[0])
     out = []
     for score, row, why in scored[:limit]:
-        text = row["text"]
-        if len(text) > ARTICLE_MAX_CHARS:
-            text = text[:ARTICLE_MAX_CHARS] + "\n…(잘림 — 전문은 위키)"
         out.append({"slug": row["slug"], "title": row["title"],
-                    "text": text, "why": why[:6], "score": score})
+                    "text": _prompt_slice(row["text"]),
+                    "why": why[:6], "score": score})
     return out
 
 
@@ -183,11 +222,9 @@ def methods_for(sections, limit: int = METHOD_LIMIT) -> list[dict]:
     scored.sort(key=lambda t: -t[0])
     out = []
     for score, row, hit in scored[:limit]:
-        text = row["text"]
-        if len(text) > ARTICLE_MAX_CHARS:
-            text = text[:ARTICLE_MAX_CHARS] + "\n…(잘림 — 전문은 위키)"
         out.append({"slug": row["slug"], "title": row["title"],
-                    "text": text, "why": hit[:6], "score": score})
+                    "text": _prompt_slice(row["text"]),
+                    "why": hit[:6], "score": score})
     return out
 
 
@@ -195,7 +232,7 @@ def _issue_rows() -> list[dict]:
     return [r for r in _rows() if r["slug"].startswith(ISSUE_DIR + "/")]
 
 
-TITLES_PER_CARD = 8          # 카드당 조 제목 상한 — 재료지 목록이 아니다
+TITLES_PER_CARD = int(control_value("wiki.titles_per_card_max"))
 _PROV_RE = re.compile(r"「(?P<law>[^」]+)」\s*(?P<coord>.*)")
 # 조번호 — 법률·시행령의 `제34조의2` 와 규정·세칙류의 **편-조 체계**
 # `제4-19조`·`제3-70조의2` 를 함께 문다 (docs/LEGAL_DOMAIN §2 함정 ①).
@@ -255,10 +292,8 @@ def _card_pick(row: dict, why: list[str], score: int, via: str,
     조문 문체 문장. 트리거 판은 빈 값이다(코드는 문체를 못 바꾼다).
     """
     meta = _meta(row["text"])
-    text = row["text"]
-    if len(text) > ARTICLE_MAX_CHARS:
-        text = text[:ARTICLE_MAX_CHARS] + "\n…(잘림 — 전문은 위키)"
-    return {"slug": row["slug"], "title": row["title"], "text": text,
+    return {"slug": row["slug"], "title": row["title"],
+            "text": _prompt_slice(row["text"]),
             "why": why[:6], "score": score, "via": via,
             "probe": (probe or "").strip()[:PROBE_MAX_CHARS],
             "provisions": [p.strip() for p in

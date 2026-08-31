@@ -23,12 +23,13 @@ from typing import Any, Optional
 import yaml
 
 from lawrag.core.rag.graph import Graph
+from lawrag.core.rag.controls import value as control_value
 from lawrag.core.rag.index import norm
 
 CATALOG = Path(__file__).resolve().parent / "patterns.yaml"
-LIMIT_CEILING = 500
-RENDER_ROW_CAP = 16
-MILESTONE_CAP = 24
+LIMIT_CEILING = int(control_value("oql.result_rows_ceiling"))
+RENDER_ROW_CAP = int(control_value("oql.render_rows_max"))
+MILESTONE_CAP = int(control_value("oql.milestones_max"))
 WORLDS = {"doc", "term", "structured"}
 RELS = {"MENTIONS", "HAS_CHILD", "SIBLING", "BRIDGE"}
 LABELS = {"Term", "Section"}

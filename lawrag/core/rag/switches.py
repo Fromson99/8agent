@@ -5,7 +5,7 @@
 사용자가 선택하게") — data/rules/engine.json 에 남고, 화면(공리 루프)에서
 스위치로 보인다. 기본값은 등록부의 `기본`(없으면 켜짐 — 기존 동작 그대로)
 이고, 파일에는 기본값과 다른 것만 적는다(빈 파일 = 오늘의 시스템).
-실험 성격이라 비용·지연을 얹는 규칙(예: issue_spot_llm)만 기본 꺼짐이다 —
+실험 성격이라 비용·지연을 얹는 규칙(예: navigate, issue_spot_llm)만 기본 꺼짐이다 —
 issue_spot_pre 는 2026-08-18 부터 기본 켜짐(카드 조문 후보 좌표를 끊은 대가).
 
 끄면 어떻게 되나: 확정 규칙(선언·추정·본문우선)은 그 간선이 보류로 내려가고,
@@ -23,6 +23,86 @@ from lawrag.core.rag.index import store_path
 
 # 등록부 — key 는 코드가 부르는 이름, 나머지는 화면이 읽는 설명.
 REGISTRY: list[dict] = [
+    {"key": "legalclosure_main", "이름": "LegalClosure 운영 기본",
+     "기본": True,
+     "설명": "POST /v1/rag/ask의 기본 회수기를 정확 구조→Assertion→균등 BM25→"
+             "직접 관계 폐쇄 LegalClosure로 사용. 끄면 보관된 legacy-vector 경로로 "
+             "즉시 롤백하며 응답 retriever에 rollback 상태를 표시",
+     "자리": "회수 진입"},
+    {"key": "legalclosure_proof_shortcut", "이름": "LegalClosure 증명 단축경로",
+     "기본": True,
+     "설명": "현재 canonical fingerprint와 일치하고 모든 source proof가 보존된 "
+             "승인 Assertion 경로만 B0에서 재사용. miss·중의·버전 불일치는 기존 "
+             "Assertion LLM 트리 B1로 즉시 fallback",
+     "자리": "LegalClosure Assertion"},
+    {"key": "legalclosure_definition_compaction", "이름": "정의 조 압축 부록",
+     "기본": False,
+     "설명": "일반 질문의 정의 조를 최종 인용 근거에서 빼고, 실제 제거된 규정의 "
+             "질문 관련 정의만 원문 좌표가 있는 비인용 부록으로 제공. ADR-0038 "
+             "fresh/fresh 27건 3표에서 13→12로 비열등성 실패하여 기본 OFF",
+     "자리": "LegalClosure 최종 근거"},
+    {"key": "legalclosure_feedback_explore", "이름": "LegalClosure 부족 재탐색",
+     "기본": False,
+     "설명": "최종 top 20을 Haiku가 충분성 판정하고 부족할 때 관계·구조·키워드·"
+             "벡터 점프를 최대 3걸음 실행. 추가 모델 호출과 지연이 있으므로 실험 "
+             "승인 전에는 기본 OFF이며, 실패하면 근거 없음으로 닫힘",
+     "자리": "LegalClosure 최종 회수"},
+    {"key": "legal_graph_v1_closure", "이름": "Legal Graph v1 조건부 폐쇄",
+     "기본": False,
+     "설명": "검증된 Legal Graph CURRENT를 질문·ProvisionCard·exact source "
+             "endpoint와 모두 맞는 REQUIRED_WHEN_ACTIVATED 1-hop에만 사용. "
+             "기존 LegalClosure 결과를 삭제하지 않고 잔여 슬롯에만 붙이며 "
+             "missing·hash·schema·authority 불일치는 기존 결과로 fail-open. "
+             "ADR-0101 in-sample probe만 완료되어 별도 out-of-sample 승격 전까지 "
+             "repository 기본 OFF",
+     "자리": "LegalClosure 최종 조문 동반"},
+    {"key": "legal_semantic_entity_search", "이름": "법 의미 엔티티 검색 v2",
+     "기본": False,
+     "설명": "원문 근거가 있는 Formula·Time·Document·Authority·Classification "
+             "등의 의미 엔티티 카드로 항·호·목에 먼저 착지한 뒤, 타입 관계를 최대 "
+             "2-hop 닫고 DecisionBundle 단위로 최종 20건을 재선정. 상위 12건은 "
+             "보호하고 최대 8건만 교체하며, 부정 결론은 조문 관계가 아닌 검토 필요 "
+             "LegalAssessment로 분리. ADR-0103 검증·승격 전까지 기본 OFF",
+     "자리": "LegalClosure 의미 착지·최종 근거"},
+    {"key": "legal_research_integrated_v1", "이름": "통합 법률 조사 상태 머신",
+     "기본": False,
+     "설명": "현재 LegalClosure 결과를 삭제할 수 없는 바닥값으로 고정하고, "
+             "법체계 지도→closed-set soft grounding→semantic card→타입 관계→"
+             "Wiki 조사법→법령별 cursor→원문 검증→coverage compiler를 순서대로 "
+             "실행. 최종 근거는 최대 32개이며 관계 발견만으로 법적 결론을 만들지 "
+             "않는다. ADR-0114 인샘플 평가와 별도 승격 전까지 기본 OFF",
+     "자리": "LegalClosure 통합 조사"},
+    {"key": "internal_compliance_compiler_v1", "이름": "내규·외규 원자명제 비교",
+     "기본": False,
+     "설명": "POST /v1/rag/compare에서 회수된 외규 후보를 삭제하지 않고 closed "
+             "evidence ID·exact quote의 원자 requirement로 컴파일한 뒤 내규 claim과 "
+             "결속한다. 상충·부합 외에 외규 요건의 내규 누락을 미비로 분리하고, "
+             "degraded·미검증·미결속 coverage에서는 부합을 차단. 끄면 ADR-0125의 "
+             "쌍별 비교기로 즉시 롤백",
+     "자리": "내규·외규 비교"},
+    {"key": "role_predicate_feedback_recovery", "이름": "오답 역할·판단축 복구 제안",
+     "기본": False,
+     "설명": "POST /v1/rag/feedback에서 정확 위치 없이 오답을 준 경우 저장된 질문의 "
+             "행위자 역할과 허용·금지 판단술어를 함께 확인하고, 원문 검증된 규율법 "
+             "조항만 add-only 복구 후보로 제시. 기존 답과 MAIN 회수는 바꾸지 않으며 "
+             "문제가 있으면 이 스위치로 즉시 기록 전용 경로로 롤백",
+     "자리": "오답 피드백"},
+    {"key": "query_guide", "이름": "DB 역매칭 해석 안내", "기본": False,
+     "설명": "질문 문자열에 실제로 맞은 문서·구조·Concept·저자 정의·본문 조각을 "
+             "한 해석 후보표로 Span 분해기에 제시. 같은 문자열 해석은 OR로 고르고 "
+             "서로 다른 문자열 착지는 기존처럼 좌표 AND로 결합",
+     "자리": "단서 분해"},
+    {"key": "assertion_tree_entry", "이름": "Assertion-first 구조 탐색", "기본": False,
+     "설명": "명시 문서·TOC·Heading·조문을 DB 좌표 루트로 확정하고, 정본 Concept "
+             "표현과 Assertion query cue를 정확 구·형태소로 역매칭한다. 임베딩 없이 "
+             "DB 역할과 canonical 신호를 따라 문서군→문서→조·항을 최대 32개 닫힌 "
+             "메뉴로 지연 선택. 문서군 라우팅 후 51건 실험 20/70으로 기본 OFF",
+     "자리": "회수 진입"},
+    {"key": "combination_entry", "이름": "구조 제약 지연 트리", "기본": True,
+     "설명": "명시 문서·TOC·Heading·조문을 DB 좌표 루트로 확정하고, 질문의 역할 "
+             "Span을 같은 Assertion 역할의 Concept 벡터 후보로 연다. LegalClosure 전환 "
+             "뒤에는 legacy-vector/legacy-auto 롤백 모드에서만 사용하는 보관 경로",
+     "자리": "회수 진입"},
     {"key": "declare", "이름": "선언 확정",
      "설명": "문서가 '이하 \"법\"이라 한다'로 선언한 대용어를 그 문서로 확정",
      "자리": "참조 해소"},
@@ -54,7 +134,7 @@ REGISTRY: list[dict] = [
      "설명": "착지가 의무·금지 조문일 때, 그 조를 겨누는 벌칙·과태료 조를 "
              "역방향으로 회수 — 위반 리스크는 지어내지 않고 조문으로 보인다",
      "자리": "회수 바닥"},
-    {"key": "navigate", "이름": "간선 항해",
+    {"key": "navigate", "이름": "간선 항해", "기본": False,
      "설명": "바닥 뒤 남은 자리를 LLM 이 간선 카드를 보고 채움",
      "자리": "회수"},
     {"key": "wiki_context", "이름": "위키 맥락",
@@ -96,6 +176,18 @@ REGISTRY: list[dict] = [
              "패턴에 ID 파라미터를 바인딩해 active Assertion의 근거 조항으로 진입. "
              "빈손·중의성이면 용어·프레임·벡터 사다리가 그대로 받는다",
      "자리": "회수 진입"},
+    {"key": "memory_entry", "이름": "승인 질문 기억", "기본": True,
+     "설명": "사람이 승인한 질문↔근거 좌표를 같은·유사 질문에서 직행으로 엶 — "
+             "한 변수 A/B를 위해 독립 스위치로 둔다",
+     "자리": "회수 진입"},
+    {"key": "keyword_entry", "이름": "승인 용어 진입", "기본": True,
+     "설명": "질문에 통째로 든 활성 용어의 대표 근거로 진입 — 낮은 독립 기여를 "
+             "한 변수 A/B로 검증",
+     "자리": "회수 진입"},
+    {"key": "vector_entry", "이름": "벡터 진입", "기본": True,
+     "설명": "구역 임베딩 의미 검색으로 진입 — 패러프레이즈·미발행 영역의 독립 "
+             "회수 기여를 A/B로 검증",
+     "자리": "회수 진입"},
     {"key": "doc_companion", "이름": "문서 동반",
      "설명": "밖 인용이 적은(≤20) 실무문서가 착지하면 그 문서의 밖 인용 전부를 "
              "동반 — 모범규준·내규는 법령 인용 모음이라 그 목록이 곧 법령 지도다. "
@@ -126,8 +218,8 @@ def engine_path() -> Path:
                                store_path().parent / "rules" / "engine.json"))
 
 
-def _overrides() -> dict:
-    """파일의 명시 값 — 기본값과 다른 것만 실재한다."""
+def _user_overrides() -> dict:
+    """사용자·운영자의 명시 override. MAIN promotion보다 우선한다."""
     p = engine_path()
     if not p.exists():
         return {}
@@ -144,15 +236,38 @@ def _overrides() -> dict:
     return ovr
 
 
+def _promotion_overrides() -> dict:
+    """검증된 ADR arm이 MAIN generation에 승격한 switch 값."""
+    try:
+        from lawrag.core.rag import main_promotion
+        return {
+            key: value for key, value in main_promotion.switch_overrides().items()
+            if key in _KEYS
+        }
+    except Exception:
+        # 손상된 promotion manifest가 repository default나 사람 override를 막지 않는다.
+        return {}
+
+
+def _overrides() -> dict:
+    """MAIN promotion 위에 사람의 emergency override를 합친 최종 명시 값."""
+    return {**_promotion_overrides(), **_user_overrides()}
+
+
 def is_on(key: str) -> bool:
     return _overrides().get(key, _DEFAULTS.get(key, True))
 
 
 def snapshot() -> list[dict]:
     """화면용 — 등록부 + 현재 상태."""
-    ovr = _overrides()
-    return [{**r, "on": ovr.get(r["key"], _DEFAULTS[r["key"]])}
-            for r in REGISTRY]
+    promoted = _promotion_overrides()
+    user = _user_overrides()
+    return [{
+        **r,
+        "on": user.get(r["key"], promoted.get(r["key"], _DEFAULTS[r["key"]])),
+        "source": ("user_override" if r["key"] in user else
+                   "main_promotion" if r["key"] in promoted else "default"),
+    } for r in REGISTRY]
 
 
 def set_switch(key: str, on: bool) -> None:
@@ -166,7 +281,8 @@ def set_switch(key: str, on: bool) -> None:
         except Exception:
             data = {}
     sw = data.get("switches", {})
-    if on == _DEFAULTS[key]:
+    promoted_base = _promotion_overrides().get(key, _DEFAULTS[key])
+    if on == promoted_base:
         sw.pop(key, None)               # 기본값과 같으면 안 적는다
     else:
         sw[key] = on

@@ -24,12 +24,13 @@ import logging
 from typing import Optional
 
 from lawrag.core.rag import tuples as tuples_mod
+from lawrag.core.rag.controls import value as control_value
 from lawrag.core.rag.index import norm
 
 log = logging.getLogger("lawrag.core.rag.promote")
 
-MEMORY_MIN_COS = 0.80      # 질문 기억 문턱 — 같은 사안 유형이면 넘고, 주제만 같으면 못 넘는 자리
-MEMORY_MAX = 4             # 직행으로 여는 좌표 상한
+MEMORY_MIN_COS = float(control_value("entry.memory_cos_min"))
+MEMORY_MAX = int(control_value("entry.memory_sections_max"))
 _qvec_cache: dict = {}     # 활성 행 질문 → 임베딩 (원장 mtime 으로 무효화)
 
 
@@ -58,7 +59,8 @@ def queue(status: str = "잠정") -> list[dict]:
     return rows
 
 
-def set_status(qkey: str, doc_id: str, node, status: str, note: str = "") -> bool:
+def set_status(qkey: str, doc_id: str, node, status: str, note: str = "",
+               actor: str = "human") -> bool:
     """잠정 ↔ 활성 ↔ tombstone. 적었으면 True. 상태 변경 이력을 행에 남긴다."""
     if status not in ("잠정", "활성", "tombstone"):
         raise ValueError(f"모르는 상태: {status}")
@@ -66,6 +68,7 @@ def set_status(qkey: str, doc_id: str, node, status: str, note: str = "") -> boo
     hit = False
     for r in rows:
         if r.get("qkey") == qkey and r.get("doc_id") == doc_id and r.get("node") == node:
+            before = r.get("status") or "잠정"
             r["status"] = status
             r.setdefault("이력", []).append({"ts": tuples_mod._now(), "status": status,
                                             "메모": note[:120]})
@@ -73,6 +76,16 @@ def set_status(qkey: str, doc_id: str, node, status: str, note: str = "") -> boo
     if hit:
         _save(rows)
         _qvec_cache.clear()
+        from lawrag.core.rag import approvals
+        effect = {"활성": "memory_activate", "tombstone": "memory_reject",
+                  "잠정": "pending"}[status]
+        failure = {"활성": "질문기억_누락", "tombstone": "질문기억_오염",
+                   "잠정": ""}[status]
+        approvals.safe_record(
+            kind="question_memory", decision=status, effect=effect, failure=failure,
+            subject={"qkey": qkey, "doc_id": doc_id, "node": node},
+            before={"status": before}, after={"status": status}, note=note,
+            actor=actor, source={"ledger": "candidates"})
     return hit
 
 
@@ -94,6 +107,9 @@ def direct_hits(question: str, cap: int = MEMORY_MAX,
     """활성 원장에서 이 질문에 닿는 좌표 — [{doc_id, node, via, why, score}].
     ① 정규형 완전일치 → score 1.0  ② 질문 임베딩 코사인 ≥ 문턱.
     임베딩이 없으면 ①만 — 결정론 부분은 언제나 돈다."""
+    from lawrag.core.rag import switches as switches_mod
+    if not switches_mod.is_on("memory_entry"):
+        return []
     rows = active()
     if not rows or not (question or "").strip():
         return []

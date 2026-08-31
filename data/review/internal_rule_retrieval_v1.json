@@ -1,0 +1,290 @@
+{
+  "schema_version": "internal-rule-retrieval-golden-v1",
+  "dataset_id": "internal-rule-retrieval-v1",
+  "version": "2026-08-31-source-derived-12",
+  "as_of": "2026-08-31",
+  "selection_rule": "Six current risk-rule cases, five investment-guideline cases, and one cross-document case derived only from the four registered example DOCX files; questions do not expose article numbers; no post-run exclusions.",
+  "in_sample": true,
+  "decision_eligible": false,
+  "source_documents": [
+    {
+      "doc_id": "38803e534c832e19",
+      "name": "위험관리기준시행세칙_v1_2024",
+      "status": "구판",
+      "body_sha256": "38803e534c832e19ec7252348fa2e56c1a737a6ec49e8c290c88cc3312429e73",
+      "structure_sha256": "9f9186b41c25b1d470fe36361264f54bab880cae9217a276dd65920abe8a6b42"
+    },
+    {
+      "doc_id": "3bad39ac4c01eec6",
+      "name": "위험관리기준시행세칙_v2_2026",
+      "status": "현행",
+      "body_sha256": "3bad39ac4c01eec6d3e1e788d7b4518531658d6cf06b211d3eeb412e447b8d4c",
+      "structure_sha256": "40a4580795dcb7750751c2a307773d3693ad095196fbcaea40d2c71f176f27a1"
+    },
+    {
+      "doc_id": "a87d28a238399591",
+      "name": "투자및인수위험관리지침_2025",
+      "status": "현행",
+      "body_sha256": "a87d28a2383995912c8dc2aa2282d9c84b70df7c0405670368f92221be6d0aec",
+      "structure_sha256": "c1660d195fa5284c03d03a8008111757fab891a4cf30390c2b467f0600418fc8"
+    },
+    {
+      "doc_id": "ea6809e5776be26e",
+      "name": "신규딜_리스크검토요청서_예시",
+      "status": "질의재료",
+      "body_sha256": "ea6809e5776be26ed81e88e1eddefc79f1bfec22e614fd5235fb875334508287",
+      "structure_sha256": "69ef87465e3d2cb301efa6529f26941b8c675ba9516d5ad77da2cbecb9e1bb3e"
+    }
+  ],
+  "forbidden_final_documents": [
+    {
+      "doc_id": "38803e534c832e19",
+      "reason": "현행 질문에서 구판 v1 좌표 혼입 금지"
+    }
+  ],
+  "cases": [
+    {
+      "number": 1,
+      "case_id": "internal-001",
+      "suite": "risk-rule",
+      "question": "회사의 건전성 지표를 평상시 어느 수준 이상으로 관리하고, 어느 수준 아래부터 사전 경보해야 하나?",
+      "material": null,
+      "expected_articles": [
+        {
+          "doc_id": "3bad39ac4c01eec6",
+          "node": 34,
+          "document": "위험관리기준시행세칙_v2_2026",
+          "article": "제9조",
+          "title": "순자본비율 내부관리기준",
+          "role": "decisive",
+          "source_quote": "회사는 순자본비율을 100분의 500 이상으로 유지하는 것을 내부 관리목표로 한다."
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "case_id": "internal-002",
+      "suite": "risk-rule",
+      "question": "자본여력이 크게 떨어진 상태에서 새로운 장외 파생 거래를 계속할 수 있는지, 허용되는 업무가 무엇인지 알려줘.",
+      "material": null,
+      "expected_articles": [
+        {
+          "doc_id": "3bad39ac4c01eec6",
+          "node": 44,
+          "document": "위험관리기준시행세칙_v2_2026",
+          "article": "제12조",
+          "title": "장외파생상품 거래",
+          "role": "decisive",
+          "source_quote": "순자본비율이 100분의 120에 미달하는 경우 그 미달상태가 해소될 때까지 새로운 장외파생상품의 매매를 중지"
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "case_id": "internal-003",
+      "suite": "risk-rule",
+      "question": "부서가 정해진 리스크 용량을 넘긴 경우 누구에게 언제 알리고 며칠 안에 정상화 방안을 내야 하나?",
+      "material": null,
+      "expected_articles": [
+        {
+          "doc_id": "3bad39ac4c01eec6",
+          "node": 40,
+          "document": "위험관리기준시행세칙_v2_2026",
+          "article": "제11조",
+          "title": "한도 초과 시 조치",
+          "role": "decisive",
+          "source_quote": "한도초과 해소계획을 3영업일 이내에 위험관리책임자에게 제출"
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "case_id": "internal-004",
+      "suite": "risk-rule",
+      "question": "유동성 위기에 대비한 시나리오 분석과 비상조달계획은 각각 어떻게 실시·점검하고 누구에게 보고해야 하나?",
+      "material": null,
+      "expected_articles": [
+        {
+          "doc_id": "3bad39ac4c01eec6",
+          "node": 52,
+          "document": "위험관리기준시행세칙_v2_2026",
+          "article": "제15조",
+          "title": "위기상황분석",
+          "role": "decisive",
+          "source_quote": "리스크관리부는 위기상황(Stress Test)분석을 반기 1회 이상 실시한다."
+        },
+        {
+          "doc_id": "3bad39ac4c01eec6",
+          "node": 55,
+          "document": "위험관리기준시행세칙_v2_2026",
+          "article": "제15조의2",
+          "title": "비상자금조달계획",
+          "role": "decisive",
+          "source_quote": "비상자금조달계획의 실효성을 연 1회 점검하고 그 결과를 위원회에 보고"
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "case_id": "internal-005",
+      "suite": "risk-rule",
+      "question": "건전성 비율이 100분의 100 아래로 내려갔을 때 감독원에 최초와 후속 보고를 어떻게 해야 하나?",
+      "material": null,
+      "expected_articles": [
+        {
+          "doc_id": "3bad39ac4c01eec6",
+          "node": 60,
+          "document": "위험관리기준시행세칙_v2_2026",
+          "article": "제17조",
+          "title": "감독당국 보고",
+          "role": "decisive",
+          "source_quote": "순자본비율이 100분의 100에 미달하는 경우 회사는 지체없이 금융감독원장에게 이를 보고"
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "case_id": "internal-006",
+      "suite": "risk-rule",
+      "question": "조직 이름만 바꾸는 정도의 경미한 세칙 개정은 누가 전결할 수 있고, 원칙적인 개정 권한은 어디에 있나?",
+      "material": null,
+      "expected_articles": [
+        {
+          "doc_id": "3bad39ac4c01eec6",
+          "node": 63,
+          "document": "위험관리기준시행세칙_v2_2026",
+          "article": "제18조",
+          "title": "세칙의 개정",
+          "role": "decisive",
+          "source_quote": "조직 명칭의 변경 등 경미한 사항의 개정은 리스크관리부장의 전결로 할 수 있다."
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "case_id": "internal-007",
+      "suite": "investment-guideline",
+      "question": "자기자본 6,000억 원인 회사가 1,200억 원을 총액인수하려면 내부 승인과 인수한도 측면에서 가능한가?",
+      "material": "신규딜 검토요청서: 인수금액 1,200억 원, 직전 사업연도말 자기자본 6,000억 원, 투자심사위원회 심의·가결.",
+      "expected_articles": [
+        {
+          "doc_id": "a87d28a238399591",
+          "node": 9,
+          "document": "투자및인수위험관리지침_2025",
+          "article": "제3조",
+          "title": "투자심사위원회",
+          "role": "decisive",
+          "source_quote": "인수금액 또는 투자금액이 500억 원 이상인 딜은 실행 전에 투자심사위원회의 심의·의결"
+        },
+        {
+          "doc_id": "a87d28a238399591",
+          "node": 13,
+          "document": "투자및인수위험관리지침_2025",
+          "article": "제4조",
+          "title": "인수 한도",
+          "role": "decisive",
+          "source_quote": "총액인수 금액은 직전 사업연도말 자기자본의 100분의 15를 초과할 수 없다."
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "case_id": "internal-008",
+      "suite": "investment-guideline",
+      "question": "A- 등급 무보증사채를 비용 절감을 이유로 한 신용평가회사 평가만 받아 인수해도 되나?",
+      "material": "신규딜 검토요청서: 발행회사 신용등급 A-, 단일 평가 예정.",
+      "expected_articles": [
+        {
+          "doc_id": "a87d28a238399591",
+          "node": 17,
+          "document": "투자및인수위험관리지침_2025",
+          "article": "제5조",
+          "title": "무보증사채의 인수",
+          "role": "decisive",
+          "source_quote": "둘 이상의 신용평가회사로부터 해당 무보증사채에 대한 평가를 받은 것이어야 한다."
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "case_id": "internal-009",
+      "suite": "investment-guideline",
+      "question": "인수한 증권이 미매각으로 남으면 처분계획은 언제까지 세우고 실제 처분은 어느 기간 안에 해야 하나?",
+      "material": null,
+      "expected_articles": [
+        {
+          "doc_id": "a87d28a238399591",
+          "node": 24,
+          "document": "투자및인수위험관리지침_2025",
+          "article": "제7조",
+          "title": "미매각 관리",
+          "role": "decisive",
+          "source_quote": "5영업일 이내에 처분계획을 수립하여 리스크관리부에 제출하고, 발생일부터 90일 이내에 처분"
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "case_id": "internal-010",
+      "suite": "investment-guideline",
+      "question": "채무보증 전체 한도와 부동산 PF 관련 별도 한도는 자기자본 대비 각각 얼마인가?",
+      "material": null,
+      "expected_articles": [
+        {
+          "doc_id": "a87d28a238399591",
+          "node": 27,
+          "document": "투자및인수위험관리지침_2025",
+          "article": "제8조",
+          "title": "채무보증 한도",
+          "role": "decisive",
+          "source_quote": "채무보증 잔액의 합계는 직전 사업연도말 자기자본의 100분의 30을 초과할 수 없다."
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "case_id": "internal-011",
+      "suite": "investment-guideline",
+      "question": "회사와 이해관계인이 합쳐 발행회사 지분을 5% 이상 보유한 경우 단독 주관이 가능한가?",
+      "material": null,
+      "expected_articles": [
+        {
+          "doc_id": "a87d28a238399591",
+          "node": 30,
+          "document": "투자및인수위험관리지침_2025",
+          "article": "제9조",
+          "title": "이해상충 관리 및 공동주관",
+          "role": "decisive",
+          "source_quote": "다른 금융투자회사와 공동으로 수행하여야 한다."
+        }
+      ]
+    },
+    {
+      "number": 12,
+      "case_id": "internal-012",
+      "suite": "cross-document",
+      "question": "인수 딜과 함께 일반투자자 상대 환헤지 장외파생 거래를 체결하려면 실행 전에 어떤 내부 절차와 확인을 마쳐야 하나?",
+      "material": "신규딜 검토요청서: 일반투자자인 발행회사와 USD/KRW 통화선도 계약 예정, 파생상품업무책임자 승인 예정.",
+      "expected_articles": [
+        {
+          "doc_id": "a87d28a238399591",
+          "node": 33,
+          "document": "투자및인수위험관리지침_2025",
+          "article": "제10조",
+          "title": "장외파생상품 연계 딜",
+          "role": "decisive",
+          "source_quote": "파생상품업무책임자의 승인 및 일반투자자 상대방에 대한 위험회피 목적 확인을 실행 전에 완료"
+        },
+        {
+          "doc_id": "3bad39ac4c01eec6",
+          "node": 44,
+          "document": "위험관리기준시행세칙_v2_2026",
+          "article": "제12조",
+          "title": "장외파생상품 거래",
+          "role": "decisive",
+          "source_quote": "일반투자자가 위험회피 목적의 거래를 하는 경우에 한하며"
+        }
+      ]
+    }
+  ]
+}

@@ -25,7 +25,9 @@ import json
 import logging
 import os
 import re
+from collections import Counter
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
@@ -35,6 +37,7 @@ from pydantic import BaseModel
 ROOT = Path(__file__).resolve().parents[3]
 MARKED = ROOT / "data" / "review" / "marked.json"
 PICKED = ROOT / "data" / "review" / "golden_v2.json"
+CM_SUITE = ROOT / "data" / "review" / "cm_core_e2e_v2.json"
 
 router = APIRouter(prefix="/v1/golden", tags=["golden"])
 log = logging.getLogger("lawrag.api.golden")
@@ -60,6 +63,26 @@ def _marked() -> dict:
     return json.loads(MARKED.read_text("utf-8"))
 
 
+def _cm_suite() -> dict:
+    if not CM_SUITE.is_file():
+        raise HTTPException(404, "CM 현업 골든 정본이 없습니다")
+    return json.loads(CM_SUITE.read_text(encoding="utf-8"))
+
+
+@lru_cache(maxsize=4)
+def _cm_validation(suite_mtime_ns: int, structure_mtime_ns: int) -> dict:
+    # 검증은 DOCX 원문 SHA와 현재 조문 좌표를 실제로 대조한다. 같은 정본·구조 스냅샷을
+    # 화면 새로고침마다 다시 0.8초씩 읽지 않도록 파일 세대에만 묶어 캐시한다.
+    from scripts import cm_core_golden
+    return cm_core_golden.validate(CM_SUITE)
+
+
+def _current_cm_validation() -> dict:
+    structure = ROOT / "data" / "structure"
+    structure_mtime = structure.stat().st_mtime_ns if structure.exists() else 0
+    return _cm_validation(CM_SUITE.stat().st_mtime_ns, structure_mtime)
+
+
 class Tag(BaseModel):
     decisive: list = []          # [{law, jo, hang_ho, node_id, why}]
     premise: list = []
@@ -67,6 +90,60 @@ class Tag(BaseModel):
     colloquial: Optional[str] = None     # 새로 쓴 구어 질문
     note: str = ""
     by: str = "사람"
+
+
+@router.get("/cm", summary="CM본부 현업 핵심 골든 51건")
+def cm_cases():
+    """릴리스 정본을 수정하지 않고 질문·답변·기대 조문과 현재 재료 상태를 보여준다."""
+    suite = _cm_suite()
+    report = _current_cm_validation()
+    cases = list(suite.get("cases") or [])
+    rows = []
+    for case in cases:
+        axes = dict(case.get("axes") or {})
+        rows.append({
+            "id": case.get("id"), "topic": case.get("topic"),
+            "question": case.get("question"), "source_question": case.get("source_question"),
+            "question_kind": case.get("question_kind"), "material": case.get("material"),
+            "expected_articles": case.get("expected_articles") or [],
+            "required_companions": case.get("required_companions") or [],
+            "auxiliary_evidence": case.get("auxiliary_evidence") or [], "axes": axes,
+            "answer_type": axes.get("answer_type"),
+            "business_domain": axes.get("business_domain"),
+        })
+    return {
+        "name": suite.get("name"), "role": suite.get("role"),
+        "version": suite.get("version"), "frozen": bool(suite.get("frozen")),
+        "source": suite.get("source") or {}, "counts": suite.get("counts") or {},
+        "axis_order": suite.get("axis_order") or [],
+        "required_channels": suite.get("required_channels") or [],
+        "required_stages": suite.get("required_stages") or [],
+        "release_rule": suite.get("release_rule") or "",
+        "turn_contract": suite.get("turn_contract") or {},
+        "validation": report,
+        "summary": {
+            "cases": len(cases),
+            "expected_articles": sum(len(case.get("expected_articles") or []) for case in cases),
+            "required_companions": sum(len(case.get("required_companions") or []) for case in cases),
+            "business_domains": len({str((case.get("axes") or {}).get("business_domain") or "") for case in cases}),
+            "additional_questions": sum(case.get("question_kind") == "additional" for case in cases),
+            "by_domain": dict(Counter(str((case.get("axes") or {}).get("business_domain") or "") for case in cases)),
+            "by_answer_type": dict(Counter(str((case.get("axes") or {}).get("answer_type") or "") for case in cases)),
+            "by_frozen_material": dict(Counter(str(case.get("material") or "") for case in cases)),
+        },
+        "cases": rows,
+    }
+
+
+@router.get("/cm/case/{case_id}", summary="CM 골든 한 문항의 기준답변·기대 조문")
+def cm_case(case_id: str):
+    suite = _cm_suite()
+    row = next((case for case in suite.get("cases") or []
+                if str(case.get("id")) == case_id), None)
+    if row is None:
+        raise HTTPException(404, "그런 CM 골든 문항이 없습니다")
+    return {"suite": suite.get("name"), "frozen": bool(suite.get("frozen")),
+            "case": row}
 
 
 @router.get("/cases", summary="후보 목록 — 태깅 진행률")

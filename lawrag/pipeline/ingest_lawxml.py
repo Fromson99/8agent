@@ -41,6 +41,9 @@ def ingest(xml_path: Path, name: str, store: Path, folder: str,
 
 def manifest_targets() -> list[tuple[Path, str, dict, dict]]:
     m = json.loads((REPO_ROOT / "data" / "corpus" / "law" / "manifest.json").read_text("utf-8"))
+    from lawrag.core.legal_generation import build_contract
+    contract = build_contract(m)
+    canonical = set(contract["canonical_document_ids"])
     out = []
     for item in m["items"]:
         body = item.get("body_file")
@@ -52,9 +55,16 @@ def manifest_targets() -> list[tuple[Path, str, dict, dict]]:
         if not body:
             continue
         enforce = item.get("enforce", "")
+        sha = str(item.get("body_sha256") or "")
         extra = {"kind": item.get("kind"), "enforce": enforce,
                  "revised": item.get("revised"), "promul_no": item.get("promul_no"),
-                 "dept": item.get("dept"), "law_serial": item.get("doc_no")}
+                 "dept": item.get("dept"), "law_serial": item.get("doc_no"),
+                 "law_id": item.get("law_id"), "series": item.get("name"),
+                 "status": "현행" if sha[:16] in canonical else "구판",
+                 "canonical": sha[:16] in canonical,
+                 "authority_generation": contract["generation_id"],
+                 "authority_as_of": contract["as_of"],
+                 "authority_mode": item.get("authority_mode", "manifest-canonical")}
         out.append((REPO_ROOT / body, item["name"], extra, item))
     return out
 
@@ -86,6 +96,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[{name}] doc_id={r['doc_id']} pages={r['pages']} "
               f"nodes={r['nodes']} blocks={r['blocks']} "
               f"별표md {r['annex_md']}/{r['annex_have']} ({u})")
+    if not failed and not args.paths:
+        from lawrag.core.legal_generation import build_contract, synchronize_structure
+        manifest = json.loads((REPO_ROOT / "data" / "corpus" / "law" / "manifest.json").read_text("utf-8"))
+        sync = synchronize_structure(store, build_contract(manifest))
+        print(f"canonical generation={sync['generation_id']} current={sync['current']} old={sync['old']}")
     return 1 if failed else 0
 
 

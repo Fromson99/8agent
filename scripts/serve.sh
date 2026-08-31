@@ -19,4 +19,4 @@ export CORS_ORIGINS="${CORS_ORIGINS:-*}"
 export MAX_UPLOAD_MB="${MAX_UPLOAD_MB:-40}"
 export STRUCTURE_RENDER_SCALE="${STRUCTURE_RENDER_SCALE:-2.0}"
 
-exec .venv/bin/uvicorn lawrag.api.structure_app:app --host 0.0.0.0 --port "${PORT:-5566}"
+exec .venv/bin/uvicorn lawrag.api.structure_app:app --host "${HOST:-0.0.0.0}" --port "${PORT:-5566}"

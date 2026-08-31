@@ -179,3 +179,57 @@ def test_라우터가_두_앱에_실린다():
     from lawrag.api.routers import rag as rag_router
     paths = {r.path for r in rag_router.router.routes}
     assert "/v1/rag/search" in paths and "/v1/rag/ask" in paths
+
+
+def test_ask_기본은_legalclosure이고_이전모드는_archive_별칭이다(monkeypatch):
+    from lawrag.api.routers import rag as rag_router
+
+    monkeypatch.setattr(rag_router.switches_mod, "is_on", lambda key: True)
+    assert rag_router.Ask(question="질문").mode == "legalclosure"
+    assert rag_router._resolve_ask_mode("legalclosure") == (
+        "legalclosure", "legalclosure", False)
+    assert rag_router._resolve_ask_mode("vector") == (
+        "vector", "legacy-vector", False)
+    assert rag_router._resolve_ask_mode("legacy-auto") == (
+        "legacy-auto", "legacy-auto", False)
+
+
+def test_legalclosure_main_switch_off는_legacy_vector로_롤백한다(monkeypatch):
+    from lawrag.api.routers import rag as rag_router
+
+    monkeypatch.setattr(
+        rag_router.switches_mod, "is_on",
+        lambda key: False if key == "legalclosure_main" else True)
+
+    assert rag_router._resolve_ask_mode("legalclosure") == (
+        "legalclosure", "legacy-vector", True)
+
+
+def test_ask_api_mode_생략은_legalclosure_운영함수로_직행한다(monkeypatch):
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from lawrag.api.routers import rag as rag_router
+
+    seen = {}
+    monkeypatch.setattr(rag_router.index_mod, "current", _index)
+    monkeypatch.setattr(rag_router, "_llm", lambda: None)
+    monkeypatch.setattr(rag_router.switches_mod, "is_on", lambda key: True)
+
+    def main(body, idx, q, llm, *, t0, requested_mode):
+        seen.update(question=q, mode=requested_mode, scope=idx.scope)
+        return {"question": q, "mode": "LegalClosure",
+                "retriever": {"id": "legalclosure-v2", "status": "main"}}
+
+    monkeypatch.setattr(rag_router, "_ask_legalclosure", main)
+    app = FastAPI()
+    app.include_router(rag_router.router)
+    client = TestClient(app)
+
+    response = client.post("/v1/rag/ask", json={"question": "설명의무"})
+
+    assert response.status_code == 200
+    assert response.json()["retriever"] == {
+        "id": "legalclosure-v2", "status": "main"}
+    assert seen["mode"] == "legalclosure"
+    assert client.post("/v1/rag/ask", json={
+        "question": "설명의무", "mode": "unknown"}).status_code == 400

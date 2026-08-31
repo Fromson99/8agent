@@ -24,8 +24,45 @@
 
 ## 진화 루프
 
+- 사람 승인 합본: `$RAG_LOG_DIR/approval_receipts.jsonl` (`lawrag/core/rag/approvals`) —
+  기존 정본을 대체하지 않는 append-only 계보. `/v1/rag/approvals/evolution`은
+  대상별 최신 판정만 세어 실패×효과별 닫힌 mutation target 후보를 낸다.
 - 대화→위키 유입 판정: `python -m lawrag.pipeline.wiki_triage` (오답·감사 지문 우선)
 - 아티클 실적: 적중 원장 data/wiki/ledger.jsonl (lawrag/core/rag/wikiledger) —
   생애 보고서(lawrag/core/rag/wikilife)가 4기준·권고로 접는다 (/expc/ 위키 판 배지)
 - 규칙 정착·강등은 rules.set_status 가 위키 연대기에 자동 기록 — 정착 규칙은
   아티클로 컴파일하고 본문에 `rule:<id>` 로 인용하라 (강등 시 재심이 걸린다)
+
+## ADR·LLM 실험 기록
+
+- 실험·평가·A/B·ablation·probe·holdout·replay·regrade를 실행하기 전에
+  `docs/adr/EXPERIMENT_AGENT_PROMPT.md`와 `docs/adr/STANDARD.md`를 끝까지 읽고 따른다.
+- 첫 실험 호출 전에 ADR과 가설·기준·데이터셋·arm·run을 생성·동결한다.
+- 구현 파일 수정이나 실험 호출보다 먼저 `scripts/adr_structure.py new`를 실행해 ADR 번호와
+  `scope_key`를 원자적으로 선점한다. 생성기가 기록한 owner, Codex task/session ID,
+  `created_at`, `work_started_at`, `updated_at`, 작업 상태와 append-only 이벤트를 보존한다.
+  진행 중인 같은 scope를 다른 ADR로 중복 생성하지 않는다.
+- 여러 ADR 결과를 합치면 새 ADR에 모든 정확한 부모 `experiment_id/arm_id`를
+  `merged_from`으로 연결하고 부모별 채택·제외 항목, 충돌·해결, 공통 불변조건과 rollback
+  부모를 기록한다. 단순 참조·의존·충돌은 계보 부모가 아니라 hash된 `relationships`로 남긴다.
+- ADR merge만으로 MAIN은 바뀌지 않는다. Accepted·분리평가·`decision_eligible=true`·complete
+  arm만 `scripts/rag_main_promotion.py`의 hash 고정 plan과 명시 승인으로 승격한다. 승격 코드는
+  rollback switch 뒤에 두고 MAIN generation과 apply/rollback receipt를 append-only로 보존한다.
+- ADR-0043 이후 새 ADR은 `docs/adr/STANDARD.md`를 따른다.
+- `scripts/adr_structure.py new`로 표준 디렉터리를 만들고, 완료 전
+  `scripts/adr_structure.py validate --final`을 통과시킨다.
+- ADR-0044 이후 후속 실험은 부모 `experiment_id/arm_id`를 지정한다. 같은 조건의
+  A/B/C는 한 ADR의 arm으로, 결과를 본 뒤 만든 B1/B2는 새 ADR로 기록한다.
+- `scripts/adr_structure.py graph --adr-root docs/adr`로 전역 실험 DAG의 부모 hash와
+  cycle을 검사한다. 완료된 run과 탈락 분기를 덮어쓰거나 삭제하지 않는다.
+- 결과가 complete인 arm만 후속 ADR의 부모로 쓴다. 완료 후 반복 실행·재채점도 부모
+  manifest를 수정하지 않고 새 ADR로 기록한다.
+- 질문 단위 LLM 평가가 있으면 `실험/질문-NNN-case-id.md`에 실제 제품·중간·채점
+  prompt와 output을 보존한다. 요약 JSON만 남기지 않는다.
+- 제품 답변과 이를 변경하는 모든 중간 역할은 `claude-haiku-4-5-20251001`을 사용한다.
+  제품과 격리된 오프라인 채점은 manifest에 `class=offline_evaluator`로 선언한 경우에만
+  Haiku·Sonnet 5·Opus 5를 사용할 수 있다.
+- ADR-0054의 `role-separated-v2` 격리 계약을 따르는 답변 모델 성능 비교만
+  `class=offline_benchmark_candidate`로 동결된 외부 모델을 사용할 수 있다. 그 출력은
+  제품 답변을 선택·수정하거나 제품 context에 들어갈 수 없다.
+- 인샘플 probe는 `decision_eligible=false`이며 메인 배선 채택 근거로 사용하지 않는다.

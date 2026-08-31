@@ -306,6 +306,14 @@ def ingest_lawxml_bytes(raw: bytes, name: str, store: Path, folder: str = "",
     annex_md = annex_md_map(manifest_item)
 
     d = store / doc_id
+    extra_meta = dict(extra_meta or {})
+    # 수집 순서로 현행을 정하지 않는다. 공식 manifest의 canonical 본문 집합이
+    # legal_generation.synchronize_structure에서 같은 계열 전체의 지위를 확정한다.
+    # 단독 업로드는 검증 전 문서이므로 검색 진입점에서 현행인 척하지 않는다.
+    if extra_meta.get("kind") in {"law", "admrul"}:
+        extra_meta.setdefault("status", "미확정")
+        extra_meta.setdefault("canonical", False)
+        extra_meta.setdefault("series", name)
     prev = {}
     if (d / "meta.json").exists():      # 재업로드 — 사람이 고친 이름·폴더를 지킨다
         try:
@@ -323,6 +331,7 @@ def ingest_lawxml_bytes(raw: bytes, name: str, store: Path, folder: str = "",
     pdf.write_bytes(pdf_bytes)
 
     data = viewer.payload(result, blocks, pdf_path=pdf)
+    viewer.annotate_coordinate_scopes(data["nodes"], str(extra_meta.get("kind") or ""))
     data["doc"] = name
     data["parser_warnings"] = []
     (d / "result.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
@@ -334,7 +343,7 @@ def ingest_lawxml_bytes(raw: bytes, name: str, store: Path, folder: str = "",
         "fingerprint": data.get("fingerprint", {}).get("key"),
         "used_llm": False, "source_kind": "lawxml",
         "at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        **(extra_meta or {}),
+        **extra_meta,
     }
     if folder:
         meta["folder"] = folder
@@ -389,6 +398,7 @@ def ingest_rulehtml_bytes(raw: bytes, name: str, store: Path, folder: str = "",
     pdf.write_bytes(pdf_bytes)
 
     data = viewer.payload(result, blocks, pdf_path=pdf)
+    viewer.annotate_coordinate_scopes(data["nodes"], str((extra_meta or {}).get("kind") or ""))
     data["doc"] = name
     data["parser_warnings"] = []
     (d / "result.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
@@ -495,6 +505,8 @@ def ingest(raw: bytes, filename: str, *, store: Path, name: str = "",
         shutil.rmtree(d, ignore_errors=True)
         raise
 
+    from lawrag.core.structure import viewer as viewer_mod
+    viewer_mod.annotate_coordinate_scopes(data["nodes"], str((extra_meta or {}).get("kind") or ""))
     (d / "result.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     kind = source_kind(d)
     meta = {
