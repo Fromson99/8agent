@@ -1,5 +1,9 @@
 # GenOS 반입·가동 — 복붙용 1장
 
+GenOS 사이트의 화면 순서, Gitea push, 배포 필드, 트러블슈팅까지 현장에서
+차례로 따라하려면 [GENOS_SITE_RUNBOOK.md](GENOS_SITE_RUNBOOK.md)를 먼저 본다.
+최초 배포 뒤의 코드 갱신은 [GENOS_PATCH_UPDATE.md](GENOS_PATCH_UPDATE.md)를 따른다.
+
 ## 결론
 
 - **코드 ZIP을 GenOS에 바로 배포하는 것은 아니다.** ZIP 반입 → 코드 스페이스에서

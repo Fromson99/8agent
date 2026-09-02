@@ -66,16 +66,50 @@ def test_call_ping_and_health(gateway):
     }
 
 
+def test_call_ls_and_report(gateway):
+    assert _call(gateway, "ls", "/mnt/shared/data") == {
+        "op": "ls", "path": "/mnt/shared/data",
+    }
+    assert _call(gateway, "report") == {"op": "report"}
+
+
 def test_call_search_encodes_query(gateway):
     body = _call(gateway, "search", "설명의무 & 적합성")
     assert body["path"] == "/v1/rag/search"
     assert body["params"] == {"q": "설명의무 & 적합성", "mode": "auto"}
 
 
+def test_call_search_vector_encodes_vector_mode(gateway):
+    body = _call(gateway, "search-vector", "설명의무")
+    assert body["path"] == "/v1/rag/search"
+    assert body["params"] == {"q": "설명의무", "mode": "vector"}
+
+
 def test_call_ask_wraps_unicode(gateway):
     body = _call(gateway, "ask", "신탁재산 근거는?")
     assert body == {"op": "call", "method": "POST", "path": "/v1/rag/ask",
                     "json": {"question": "신탁재산 근거는?"}}
+
+
+def test_call_upload_wraps_small_file(gateway, tmp_path):
+    path = tmp_path / "내규.pdf"
+    path.write_bytes(b"PDF-CANARY")
+    body = _call(gateway, "upload", str(path), "현장")
+    assert body["op"] == "upload"
+    assert body["filename"] == "내규.pdf"
+    assert body["form"] == {"folder": "현장", "use_llm": False}
+    assert body["file_b64"] == "UERGLUNBTkFSWQ=="
+
+
+def test_call_upload_rejects_large_file(gateway, tmp_path):
+    url, _seen = gateway
+    path = tmp_path / "large.pdf"
+    path.write_bytes(b"x" * 512001)
+    env = {**os.environ, "GENOS_CODE_URL": url, "GENOS_CODE_KEY": "secret-test-key"}
+    done = subprocess.run([str(CALL), "upload", str(path)], cwd=ROOT, env=env,
+                          text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert done.returncode == 2
+    assert "500KB" in done.stderr
 
 
 def test_call_requires_secret_env():
@@ -96,3 +130,27 @@ def test_source_preflight_is_machine_readable():
     assert report["summary"]["fail"] == 0
     names = {row["name"] for row in report["checks"]}
     assert {"GenOS 진입점", "서빙 의존성", "비밀값 추적"} <= names
+
+
+def test_genos_volume_env_routes_persistent_auxiliary_data(tmp_path):
+    env = {
+        **os.environ,
+        "AGENT6_CORPUS_DIR": str(tmp_path / "lawrag/agents/agent6/corpus"),
+        "REVIEW_STORE": str(tmp_path / "data/review"),
+    }
+    code = """
+from lawrag.agents.agent6.src import basis
+from lawrag.api.routers import agent6, golden
+print(basis.DEFAULT_CORPUS)
+print(agent6.CORPUS)
+print(golden.REVIEW_STORE)
+"""
+    done = subprocess.run(
+        [sys.executable, "-c", code], cwd=ROOT, env=env, text=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True,
+    )
+    assert done.stdout.splitlines() == [
+        str(tmp_path / "lawrag/agents/agent6/corpus"),
+        str(tmp_path / "lawrag/agents/agent6/corpus"),
+        str(tmp_path / "data/review"),
+    ]

@@ -23,6 +23,7 @@ from pathlib import Path, PurePosixPath
 ROOT = Path(__file__).resolve().parents[1]
 ZERO_SHA = "0" * 40
 MANIFEST = "PATCH_MANIFEST.json"
+GMAIL_SAFE_SUFFIX = ".gmail-safe.txt"
 DEFAULT_MAX_ZIP_MB = 18
 DEFAULT_MAX_FILE_MB = 12
 BLOCKED_NAMES = {".env", ".env.local"}
@@ -117,6 +118,16 @@ def _zip_info(path: str, executable: bool = False) -> zipfile.ZipInfo:
     return info
 
 
+def _archive_path(path: str) -> str:
+    """Return the attachment-safe member name while preserving the real path.
+
+    Gmail may reject ZIP attachments containing JavaScript members.  The real
+    target path remains in ``PATCH_MANIFEST.json``; only the ZIP member name is
+    changed and the GenOS receiver restores it after checksum verification.
+    """
+    return path + GMAIL_SAFE_SUFFIX if path.lower().endswith(".js") else path
+
+
 def pack(before: str, after: str, out: Path, *, max_file_mb: int) -> dict:
     before, after = _resolve_range(before, after)
     changes = _changes(before, after)
@@ -144,8 +155,15 @@ def pack(before: str, after: str, out: Path, *, max_file_mb: int) -> dict:
             excluded.append({**row, "reason": "file_too_large", "bytes": len(raw)})
             continue
         digest = hashlib.sha256(raw).hexdigest()
-        included.append({**row, "bytes": len(raw), "sha256": digest, "mode": mode})
-        blobs.append((path, raw, mode == "100755"))
+        archive_path = _archive_path(path)
+        included.append({
+            **row,
+            "archive_path": archive_path,
+            "bytes": len(raw),
+            "sha256": digest,
+            "mode": mode,
+        })
+        blobs.append((archive_path, raw, mode == "100755"))
 
     manifest = {
         "format": "8agent-push-patch/1",
@@ -179,11 +197,18 @@ def _recipient(explicit: str | None) -> str:
     return value
 
 
-def send(zip_path: Path, manifest: dict, *, recipient: str | None) -> str:
-    username = os.environ.get("GMAIL_USERNAME", "").strip()
-    password = os.environ.get("GMAIL_APP_PASSWORD", "").replace(" ", "").strip()
+def send(
+    zip_path: Path,
+    manifest: dict,
+    *,
+    recipient: str | None,
+    username: str | None = None,
+    password: str | None = None,
+) -> str:
+    username = (username or os.environ.get("GMAIL_USERNAME", "")).strip()
+    password = (password or os.environ.get("GMAIL_APP_PASSWORD", "")).replace(" ", "").strip()
     if not username or not password:
-        raise ValueError("GMAIL_USERNAME·GMAIL_APP_PASSWORD GitHub Secrets가 필요합니다")
+        raise ValueError("Gmail 사용자명과 앱 비밀번호가 필요합니다")
     to = _recipient(recipient)
     ref = manifest.get("ref") or "unknown-ref"
     after = str(manifest.get("after") or "")[:12]

@@ -26,13 +26,15 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = "CODE_MANIFEST.json"
 
 ROOT_FILES = (
-    ".gitignore", ".env.example", "README.md", "service.py",
+    ".gitignore", ".env.example", ".env.genos.example", ".env.onsite.example",
+    "README.md", "service.py",
     "requirements.txt", "requirements-serving.txt",
 )
-TREE_ROOTS = ("lawrag", "scripts")
+TREE_ROOTS = ("lawrag", "scripts", "config/dataset_sync")
 DOC_FILES = (
     "docs/GENOS_QUICKSTART.md", "docs/GENOS_DEPLOY.md",
-    "docs/OPS_TRANSPORT.md",
+    "docs/GENOS_SITE_RUNBOOK.md", "docs/ONSITE_RUNBOOK.md",
+    "docs/OPS_TRANSPORT.md", "docs/DATASET_SYNC.md", "docs/GENOS_PATCH_UPDATE.md",
 )
 STATIC_FILES = (
     "data/aliases.json", "data/rag/scopes.yml",
@@ -46,6 +48,7 @@ BLOCKED_SUFFIXES = {
     ".key", ".pem", ".p12", ".pfx",
     ".pdf", ".hwp", ".hwpx", ".doc", ".docx", ".xls", ".xlsx",
     ".ppt", ".pptx", ".zip", ".tar", ".gz", ".7z", ".bak", ".pyc",
+    ".orig", ".ps1",
 }
 
 

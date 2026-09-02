@@ -117,8 +117,12 @@ def _mb(size: int) -> str:
 def source_checks(c: Checks) -> None:
     required_files = (
         "service.py", "requirements-serving.txt", ".env.example",
+        ".env.genos.example", ".env.onsite.example",
         "scripts/data_ship.sh", "scripts/code_ship.py", "scripts/genos_call.sh",
+        "scripts/genos_patch_apply.py", "scripts/genos_smoke.sh",
         "docs/GENOS_QUICKSTART.md", "docs/GENOS_DEPLOY.md",
+        "docs/GENOS_SITE_RUNBOOK.md", "docs/ONSITE_RUNBOOK.md",
+        "docs/GENOS_PATCH_UPDATE.md",
     )
     missing = [name for name in required_files if not (ROOT / name).exists()]
     if missing:
@@ -163,7 +167,12 @@ def source_checks(c: Checks) -> None:
         c.fail("Git 작업판", f"Git 확인 실패: {exc}")
     else:
         branch = _git("branch", "--show-current") or "detached"
-        rev = _git("rev-parse", "--short", "HEAD")
+        try:
+            rev = _git("rev-parse", "--short", "HEAD")
+        except subprocess.CalledProcessError:
+            # GenOS 내부 Gitea의 빈 저장소를 clone한 직후에는 아직 HEAD가 없다.
+            # 현장 가이드는 ZIP 검증 후 첫 commit 전에 preflight를 실행한다.
+            rev = "unborn"
         if rows:
             c.warn("Git 작업판", (f"{branch}@{rev} · 변경 {changed}, 미추적 {untracked}, "
                                   f"staged {staged} — 배포 커밋에 포함할 판을 확정해야 합니다"))
@@ -262,7 +271,22 @@ def runtime_checks(c: Checks, probe_upstreams: bool) -> None:
         url = os.environ.get(url_key, "").strip()
         key = os.environ.get(key_key, "").strip()
         if not url:
-            c.warn(label, f"{url_key} 미설정")
+            base = os.environ.get("GENOS_BASE_URL", "").strip().rstrip("/")
+            if label == "GenOS LLM":
+                profile = os.environ.get("GENOS_LLM_PROFILE", "").strip().upper()
+                if profile and not profile.replace("_", "").isalnum():
+                    profile = ""
+                serving_id = ((os.environ.get(f"GENOS_{profile}_SERVING_ID", "")
+                               if profile else "")
+                              or os.environ.get("GENOS_LLM_SERVING_ID", "")).strip()
+                if profile:
+                    key = os.environ.get(f"GENOS_{profile}_KEY", "").strip() or key
+            else:
+                serving_id = os.environ.get("GENOS_EMBED_SERVING_ID", "").strip()
+            if base and serving_id.isdigit():
+                url = f"{base}/api/gateway/rep/serving/{serving_id}"
+        if not url:
+            c.warn(label, f"{url_key} 또는 GENOS_BASE_URL·서빙 ID 미설정")
             continue
         if not key and label == "GenOS Embedding":
             key = os.environ.get("GENOS_LLM_KEY", "").strip()

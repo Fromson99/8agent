@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+remote_name="${1:-}"
+repo_root="$(git rev-parse --show-toplevel)" || exit 0
+configured_remote="$(git config --local --get patchmail.remote 2>/dev/null || true)"
+configured_ref="$(git config --local --get patchmail.ref 2>/dev/null || true)"
+configured_remote="${configured_remote:-infocz}"
+configured_ref="${configured_ref:-refs/heads/feature/legal_RAG}"
+
+if [[ "$remote_name" != "$configured_remote" ]]; then
+    exit 0
+fi
+
+python_bin="$repo_root/.venv/bin/python"
+if [[ ! -x "$python_bin" ]]; then
+    python_bin="$(command -v python3 || true)"
+fi
+if [[ -z "$python_bin" ]]; then
+    echo "patch-mail: python3를 찾지 못해 메일 작업을 예약하지 못했습니다." >&2
+    exit 0
+fi
+
+while read -r _local_ref local_sha remote_ref remote_sha; do
+    if [[ "$remote_ref" != "$configured_ref" || "$local_sha" =~ ^0+$ ]]; then
+        continue
+    fi
+    log_dir="$repo_root/var/patch-mail/logs"
+    mkdir -p "$log_dir"
+    log_file="$log_dir/${local_sha:0:12}.log"
+    nohup "$python_bin" "$repo_root/scripts/local_push_mail.py" \
+        --remote "$remote_name" \
+        --remote-ref "$remote_ref" \
+        --before "$remote_sha" \
+        --after "$local_sha" \
+        --timeout 180 \
+        >"$log_file" 2>&1 </dev/null &
+    echo "patch-mail: push 성공 확인 후 증분 ZIP 발송 예정 (log: $log_file)" >&2
+done
+
+exit 0
