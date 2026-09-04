@@ -19,11 +19,14 @@ import pytest
 from lawrag.agents.agent6.src import basis, schema
 from lawrag.agents.agent6.src import corpus_build as cb
 
-ROOT = Path(__file__).resolve().parents[2]
-FIXTURES = ROOT / "tests/agent6/fixtures/corpus"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+FIXTURES = ROOT / "05_TESTS/LEGACY_TESTS/agent6/fixtures/corpus"
 RAW = FIXTURES / "raw"
 BAD = FIXTURES / "bad"
-ITEMS = ROOT / "lawrag/agents/agent6/checklist/items"
+ITEMS = Path(__import__("lawrag").__file__).resolve().parent / "agents/agent6/checklist/items"
 
 
 @pytest.fixture(scope="module")

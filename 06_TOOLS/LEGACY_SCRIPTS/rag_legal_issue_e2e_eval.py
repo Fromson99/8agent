@@ -20,8 +20,11 @@ from pathlib import Path
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import review_golden as review  # noqa: E402 — 데이터 환경을 먼저 연다
 from scripts.ask_e2e_golden import (  # noqa: E402

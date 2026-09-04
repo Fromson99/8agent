@@ -16,14 +16,17 @@ import sys
 import time
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for _key, _relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
 ):
     os.environ.setdefault(_key, str(ROOT / _relative))
 
@@ -33,8 +36,8 @@ from lawrag.core.rag import legalclosure_runtime  # noqa: E402
 
 
 MODEL = "claude-haiku-4-5-20251001"
-CM_SOURCE = ROOT / "data/review/cm_core_e2e_v1.json"
-FSC_SOURCE = ROOT / "data/review/fsc_hard_retrieval_v1.json"
+CM_SOURCE = ROOT / "01_DATA/review/cm_core_e2e_v1.json"
+FSC_SOURCE = ROOT / "01_DATA/review/fsc_hard_retrieval_v1.json"
 FROZEN_NAME = "frozen-cases.json"
 ARMS = ("baseline", "feedback-explore")
 

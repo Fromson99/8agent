@@ -14,14 +14,17 @@ import sys
 import time
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for key, value in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
 ):
     os.environ.setdefault(key, str(ROOT / value))
 
@@ -135,8 +138,8 @@ def fixtures(module):
 def relation_inventory(index, frozen_relations, census):
     bundle = frozen_relations.build(
         index,
-        delegation_file=ROOT / "data/delegation.json",
-        law_index_file=ROOT / "data/law_index.json",
+        delegation_file=ROOT / "01_DATA/delegation.json",
+        law_index_file=ROOT / "01_DATA/law_index.json",
         include_requirements=True,
         use_cache=False,
     )
@@ -179,9 +182,9 @@ def main() -> int:
     relation_path = revision_dir / "snapshot/lawrag/core/rag/relations.py"
     candidate = load_module(requirement_path, "adr0148_frozen_requirements")
     frozen_relations = load_module(relation_path, "adr0148_frozen_relations")
-    index = Index.load(ROOT / "data/structure", ROOT / "data/glossary.json",
-                       ROOT / "data/links.json")
-    delegated = delegation.adjacency(ROOT / "data/delegation.json",
+    index = Index.load(ROOT / "01_DATA/structure", ROOT / "01_DATA/glossary.json",
+                       ROOT / "01_DATA/links.json")
+    delegated = delegation.adjacency(ROOT / "01_DATA/delegation.json",
                                      include_document_targets=True)
     census = candidate.proviso_connection_census(index, delegated)
     fixture_rows = fixtures(candidate)

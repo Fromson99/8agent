@@ -19,15 +19,18 @@ from pathlib import Path
 import sys
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import rag_verified_span_coverage_gate_golden_61 as run1
 
 
 ADR_ID = "ADR-0078"
 RUN_ID = "run-002"
-SOURCE = ROOT / "docs/adr/ADR-0078-verified-span-coverage-explore-gate/artifacts/run-001.json"
+SOURCE = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0078-verified-span-coverage-explore-gate/artifacts/run-001.json"
 SOURCE_SHA256 = "8150ee77c0e891baaeac5b678a1ae34e60547d417ebeae720512bc37c32f152f"
 
 

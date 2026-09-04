@@ -11,8 +11,11 @@ import sys
 from typing import Iterable
 
 
-ROOT = Path(__file__).resolve().parents[1]
-DATA = ROOT / "data"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+DATA = ROOT / "01_DATA"
 VECTOR_MARKERS = ("embedding", "vectors", ".npz", "qdrant")
 
 
@@ -105,9 +108,9 @@ def build_inventory() -> dict:
 
     connected_rows: list[dict] = []
     for relative, role in (
-        ("data/delegation.json", "legal_relation_edges"),
-        ("data/law_index.json", "law_document_index"),
-        ("data/aliases.json", "law_aliases"),
+        ("01_DATA/delegation.json", "legal_relation_edges"),
+        ("01_DATA/law_index.json", "law_document_index"),
+        ("01_DATA/aliases.json", "law_aliases"),
     ):
         path = ROOT / relative
         if path.is_file():
@@ -124,17 +127,17 @@ def build_inventory() -> dict:
 
     evaluation_rows: list[dict] = []
     for relative, role in (
-        ("data/bench", "benchmark_dataset"),
-        ("data/review", "golden_or_review_dataset"),
-        ("tests/fixtures", "test_fixture"),
-        ("tests/agent6/fixtures", "agent6_test_fixture"),
-        ("docs/examples", "example_or_synthetic_document"),
+        ("01_DATA/bench", "benchmark_dataset"),
+        ("01_DATA/review", "golden_or_review_dataset"),
+        ("05_TESTS/LEGACY_TESTS/fixtures", "test_fixture"),
+        ("05_TESTS/LEGACY_TESTS/agent6/fixtures", "agent6_test_fixture"),
+        ("07_DOCS/LEGACY_DOCS/examples", "example_or_synthetic_document"),
     ):
         for path in _files(ROOT / relative):
             evaluation_rows.append(_record(path, role=role, provenance="evaluation"))
 
     excluded_vectors = []
-    for relative in ("data/embeddings", "data/lexicon"):
+    for relative in ("01_DATA/embeddings", "01_DATA/lexicon"):
         for path in _files(ROOT / relative):
             lowered = path.as_posix().lower()
             if relative.endswith("embeddings") or any(
@@ -146,17 +149,17 @@ def build_inventory() -> dict:
 
     mixed_rows = []
     for relative, role in (
-        ("data/domain_graph", "mixed_domain_graph"),
-        ("data/legal_graph", "mixed_legal_graph_generation"),
-        ("data/glossary.json", "mixed_curated_glossary"),
-        ("data/wiki", "authoritative_interpretation_and_curated_wiki"),
-        ("data/rules", "human_curated_runtime_rules"),
-        ("data/corpus/expc", "external_authoritative_interpretation"),
-        ("data/corpus/fsc", "external_authoritative_fsc"),
-        ("data/corpus/prec", "external_authoritative_precedent"),
-        ("data/corpus/kofia", "external_self_regulation"),
-        ("data/corpus/krx", "external_exchange_rules"),
-        ("data/corpus/internal", "internal_authoritative_rules"),
+        ("01_DATA/domain_graph", "mixed_domain_graph"),
+        ("01_DATA/legal_graph", "mixed_legal_graph_generation"),
+        ("01_DATA/glossary.json", "mixed_curated_glossary"),
+        ("01_DATA/wiki", "authoritative_interpretation_and_curated_wiki"),
+        ("01_DATA/rules", "human_curated_runtime_rules"),
+        ("01_DATA/corpus/expc", "external_authoritative_interpretation"),
+        ("01_DATA/corpus/fsc", "external_authoritative_fsc"),
+        ("01_DATA/corpus/prec", "external_authoritative_precedent"),
+        ("01_DATA/corpus/kofia", "external_self_regulation"),
+        ("01_DATA/corpus/krx", "external_exchange_rules"),
+        ("01_DATA/corpus/internal", "internal_authoritative_rules"),
     ):
         for path in _files(ROOT / relative):
             mixed_rows.append(_record(path, role=role, provenance="not-mock-not-pure-lawxml"))
@@ -187,7 +190,7 @@ def build_inventory() -> dict:
 
     inventory = {
         "schema_version": "data-tier-inventory-v1",
-        "source_manifest": "data/corpus/law/manifest.json",
+        "source_manifest": "01_DATA/corpus/law/manifest.json",
         "source_manifest_sha256": hashlib.sha256(
             law_manifest_path.read_bytes()).hexdigest(),
         "classification": {

@@ -26,12 +26,15 @@ import sys
 import unicodedata
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 sys.path.insert(0, str(REPO_ROOT))
 
 
 def tuples_dir() -> Path:
-    store = Path(os.environ.get("STRUCTURE_STORE", REPO_ROOT / "data" / "structure"))
+    store = Path(os.environ.get("STRUCTURE_STORE", REPO_ROOT / "01_DATA" / "structure"))
     return Path(os.environ.get("RAG_LOG_DIR", store.parent / "rag")) / "tuples"
 
 

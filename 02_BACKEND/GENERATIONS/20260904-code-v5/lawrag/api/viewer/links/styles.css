@@ -1,0 +1,280 @@
+/* 참조 연결 — glossary 뷰어와 같은 결. 색은 문서와 경위(via)에만 쓴다.
+ *
+ * 겹침 방지가 레이아웃의 규율이다:
+ *   지도    라벨 열(0–186px)과 화살표 레인(196px–)을 분리한다
+ *   간선 행 긴 경로는 줄바꿈 대신 말줄임 — 전체는 title 로 보인다 */
+/* 토큰·상단바·이동은 /ui/ui.css 가 쥔다. 여기엔 이 화면의 것만 남긴다. */
+.hint { color:var(--dim); font-size:11.5px; margin:2px 0 8px; line-height:1.55; }
+.hint b { color:var(--ink); font-weight:600; }
+.qlink { color:var(--accent); cursor:pointer; text-decoration:none;
+         border-bottom:1px dashed color-mix(in srgb,var(--accent) 45%,transparent); }
+.qlink:hover { background:color-mix(in srgb,var(--accent) 13%,transparent); }
+
+.cols { display:grid; grid-template-columns:324px 1fr; height:calc(100vh - var(--bar)); }
+.pane { padding:11px 12px; overflow:hidden; display:flex; flex-direction:column;
+        border-right:1px solid var(--line); }
+.pane.body { border-right:none; padding-right:8px; }
+.scroll { overflow:auto; flex:1; scrollbar-width:thin; padding-right:8px; }
+input[type=search] { width:100%; margin-bottom:10px; padding:6px 10px; background:var(--bg);
+  color:var(--ink); border:1px solid var(--line); border-radius:8px; outline:none;
+  transition:border-color .15s; }
+input[type=search]:focus { border-color:var(--accent); }
+
+/* 절 제목 — 스크롤 중에도 어느 켜를 보는지 남는다 */
+h2 { font-size:12.5px; margin:0; padding:14px 0 4px; font-weight:650;
+     position:sticky; top:0; background:var(--bg); z-index:2; }
+.scroll > h2:first-child { padding-top:0; }
+
+/* 문서 카드 */
+#docs { flex:1; overflow:auto; min-height:96px; scrollbar-width:thin; }
+.doc { border:1px solid var(--line); border-radius:var(--r); padding:8px 11px;
+       margin-bottom:6px; background:var(--pane); cursor:pointer;
+       display:flex; gap:8px; align-items:center;
+       transition:border-color .15s, box-shadow .15s; }
+.doc:hover { border-color:var(--accent); }
+.doc.on { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
+.doc .name { flex:1; font-weight:600; overflow:hidden; text-overflow:ellipsis;
+             white-space:nowrap; min-width:0; }
+.dot { display:inline-block; width:8px; height:8px; border-radius:50%; flex:none; }
+.pill { padding:1px 7px; border-radius:999px; font-size:10.5px; border:1px solid var(--line);
+        color:var(--dim); white-space:nowrap; flex:none; }
+.pill.ok { color:var(--ok); border-color:currentColor; }
+.pill.accent { color:var(--accent); border-color:currentColor; }
+.pill.warn { color:var(--warn); border-color:currentColor; }
+.pill.bad { color:#f87171; border-color:currentColor; }
+.relsel { margin-left:auto; font-size:10.5px; background:transparent;
+  color:var(--muted, #94a3b8); border:1px solid var(--line); border-radius:6px; }
+
+/* 문서 지도 — 왼쪽은 이름 열, 오른쪽은 화살표 레인. 서로 침범하지 않는다. */
+.map { margin-top:10px; border:1px solid var(--line); border-radius:var(--r);
+       background:var(--pane); overflow:hidden; flex:none; }
+.map .cap { padding:7px 11px 0; color:var(--dim); font-size:10.5px; }
+.map svg { display:block; width:100%; }
+.map .lbl { fill:var(--ink); font-size:11px; }
+.map .cnt { fill:var(--dim); font-size:9.5px; }
+.map .arc { fill:none; stroke-width:1.5; opacity:.85; }
+.map .rail { stroke:var(--line); stroke-dasharray:2 3; stroke-width:1; }
+
+/* 간선 행 — [출발 | 표면형 | 도착 | via] 그리드. 긴 경로는 말줄임. */
+.edge { border:1px solid var(--line); border-radius:var(--r); padding:8px 11px;
+        margin-bottom:6px; background:var(--pane); transition:border-color .15s; }
+.edge:hover { border-color:color-mix(in srgb, var(--accent) 55%, var(--line)); }
+.line { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;
+        gap:10px; align-items:center; }
+.line.nopill { grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); }
+.end { display:flex; gap:7px; align-items:center; min-width:0; }
+.end .p { overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+          font-weight:600; min-width:0; }
+.end .dn { color:var(--dim); font-weight:500; flex:none; }
+.chip { font-family:ui-monospace,monospace; font-size:11.5px; color:var(--accent);
+        border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));
+        border-radius:6px; padding:1px 8px; white-space:nowrap; flex:none;
+        background:color-mix(in srgb,var(--accent) 8%,transparent); }
+.chip::before { content:"─ "; color:var(--dim); }
+.chip::after { content:" →"; color:var(--dim); }
+.links { margin-top:5px; display:flex; gap:14px; }
+.go { color:var(--accent); text-decoration:none; font-size:11.5px; opacity:.85; }
+.go:hover { text-decoration:underline; opacity:1; }
+
+/* 문서 안 참조의 문서 묶음 머리 */
+.docgroup { display:flex; gap:7px; align-items:center; color:var(--dim);
+            font-size:11.5px; font-weight:600; margin:12px 0 6px; }
+
+/* 보류 카드 — 원문 문맥과 닫힌 후보 */
+.pend { border:1px solid var(--line); border-left:3px solid var(--warn);
+        border-radius:var(--r); padding:9px 12px; margin-bottom:8px;
+        background:var(--pane); }
+.pend .head { display:flex; gap:8px; align-items:center; min-width:0; flex-wrap:wrap; }
+.pend .head b { overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+                min-width:0; max-width:100%; }
+.pend .quote { color:var(--dim); font-size:11.5px; line-height:1.6; margin:7px 0;
+               border-left:2px solid var(--line); padding-left:9px; }
+.pend .quote b { color:var(--warn); font-weight:650; }
+.cand { display:grid; grid-template-columns:auto auto minmax(0,1fr) auto;
+        gap:8px; align-items:center; margin-top:6px; }
+.cand .p { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+.row { display:flex; gap:10px; align-items:center; margin:2px 0 10px; }
+button { background:var(--pane); color:var(--ink); border:1px solid var(--line);
+         border-radius:7px; padding:4px 11px; cursor:pointer; font-size:12px;
+         transition:border-color .15s, color .15s; }
+button:hover { border-color:var(--accent); color:var(--accent); }
+button:disabled { opacity:.45; cursor:default; }
+/* 해제는 지우는 손짓이다 — 파랑(잇기)과 색을 가른다 */
+.unlink { font-size:10.5px; padding:1px 8px; }
+.unlink:hover { border-color:#e06c75; color:#e06c75; }
+/* 연결 형태(via) 칩 — 자동·이름대조·판정을 갈라 훑는다. 수가 곧 검수 부담이다 */
+.viaseg { display:flex; gap:4px; flex-wrap:wrap; margin:0 0 8px; }
+.viaseg button { font-size:11.5px; padding:2px 11px; border-radius:999px;
+  color:var(--dim); background:transparent; border:1px solid var(--line);
+  cursor:pointer; font-variant-numeric:tabular-nums; }
+.viaseg button:hover { color:var(--ink); border-color:var(--accent); }
+.viaseg button.on { color:var(--accent);
+  border-color:color-mix(in srgb,var(--accent) 55%,var(--line));
+  background:color-mix(in srgb,var(--accent) 10%,transparent); font-weight:650; }
+
+/* 더 보기 — 상한을 한 페이지씩 연다 */
+.more { display:block; width:100%; margin-top:6px; padding:6px; font-size:12px;
+  color:var(--dim); background:transparent; border:1px dashed var(--line);
+  border-radius:8px; cursor:pointer; }
+.more:hover { color:var(--accent); border-color:var(--accent); }
+
+/* 끊기 — 데이터 검수의 본 동작. 행마다 있으므로 평소엔 조용히, 손이 오면 또렷이 */
+.cut { font-size:10.5px; padding:1px 8px; color:var(--dim); }
+.edge:hover .cut { color:var(--ink); }
+.cut:hover { border-color:var(--bad); color:var(--bad); }
+.line.open { cursor:pointer; }
+.line.open:hover { background:color-mix(in srgb,var(--accent) 6%,transparent);
+                   border-radius:6px; }
+
+/* 본문 펼침 — [쓰인 자리] ─끊기─ [가리키는 구역]. 판단은 경로가 아니라 본문으로 */
+.edgeview { display:grid; grid-template-columns:1fr 104px 1fr; gap:0;
+            margin:6px 0 4px; align-items:stretch; }
+.evpane { border:1px solid var(--line); border-radius:8px; background:var(--bg);
+          min-width:0; display:flex; flex-direction:column; }
+.evpane.dst { border-color:color-mix(in srgb,var(--ok) 45%,var(--line)); }
+.evhead { padding:5px 10px; border-bottom:1px solid var(--line); font-size:11px;
+          color:var(--dim); }
+.evhead b { color:var(--ink); }
+.evbody { padding:8px 10px; font-size:12px; line-height:1.65; white-space:pre-wrap;
+          overflow:auto; max-height:240px; scrollbar-width:thin; }
+mark.hl, .evhead b.hl { background:color-mix(in srgb,var(--warn) 30%,transparent);
+          color:var(--ink); border-radius:3px; padding:0 2px; }
+/* 마디 줄(▸) — 해석이 세운 제목. 본문과 결이 다르다는 게 보여야 계층이 읽힌다 */
+.olh { color:var(--accent); font-weight:650; }
+/* 연결선 기둥 — 선 두 토막 사이에 표면과 끊기가 선다 */
+.evlink { display:flex; flex-direction:column; align-items:center;
+          justify-content:center; gap:4px; padding:0 6px; }
+.evwire { flex:1; width:0; border-left:2px solid color-mix(in srgb,var(--ok) 60%,var(--line)); }
+.evwire.arrow { position:relative; }
+.evwire.arrow::after { content:"▾"; position:absolute; bottom:-4px; left:-6px;
+          color:color-mix(in srgb,var(--ok) 70%,var(--line)); font-size:11px; }
+.evsurf { font-size:10.5px; color:var(--dim); white-space:nowrap; max-width:100px;
+          overflow:hidden; text-overflow:ellipsis; }
+.evcut { font-size:11px; padding:2px 9px; color:var(--bad);
+         border:1px solid color-mix(in srgb,var(--bad) 55%,var(--line));
+         border-radius:999px; background:var(--pane); cursor:pointer;
+         white-space:nowrap; }
+.evcut:hover { background:var(--bad); color:#fff; border-color:var(--bad); }
+/* 계층 결손 경고 — 연결이 아니라 구조를 고치라는 안내 */
+.evwarn { padding:6px 10px; font-size:11.5px; line-height:1.6;
+          border-bottom:1px solid var(--line);
+          background:color-mix(in srgb,var(--warn) 10%,transparent); }
+.evwarn b { color:var(--warn); }
+@media (max-width:900px) {
+  .edgeview { grid-template-columns:1fr; }
+  .evlink { flex-direction:row; padding:4px 0; }
+  .evwire { border-left:none; border-top:2px solid color-mix(in srgb,var(--ok) 60%,var(--line));
+            height:0; width:auto; }
+  .evwire.arrow::after { content:"▸"; right:-4px; left:auto; top:-9px; bottom:auto; }
+}
+button.primary { border-color:color-mix(in srgb,var(--accent) 60%,var(--line));
+                 color:var(--accent); }
+.empty { color:var(--dim); font-size:11.5px; padding:4px 0 8px; }
+
+/* 탭 — 목록 ↔ 그래프 */
+.tabs { display:flex; gap:6px; align-items:center; margin-bottom:10px; flex:none; }
+.tabs button { border-radius:999px; padding:3px 14px; color:var(--dim); }
+.tabs button.on { color:var(--accent); border-color:var(--accent);
+                  background:color-mix(in srgb,var(--accent) 10%,transparent); }
+
+/* 이동 궤적 — 타고 다닌 링크의 사슬. 맨 끝 칩이 지금 자리, 이전 칩을 누르면
+ * 그리로 돌아가고 그 뒤는 잘린다. */
+.trail { display:flex; gap:8px; align-items:center; margin-bottom:8px; flex:none;
+         border:1px solid var(--line); border-radius:var(--r);
+         background:var(--pane); padding:5px 9px; }
+.trail .chips { display:flex; gap:6px; align-items:center; overflow-x:auto;
+                scrollbar-width:none; min-width:0; flex:1; }
+.trail .tarr { color:var(--dim); flex:none; }
+.trail .tchip { display:inline-flex; gap:6px; align-items:center; cursor:pointer;
+                border:1px solid var(--line); border-radius:999px; padding:2px 10px;
+                white-space:nowrap; flex:none; font-size:11.5px; color:var(--dim);
+                transition:border-color .15s,color .15s; }
+.trail .tchip:hover { border-color:var(--accent); color:var(--accent); }
+.trail .tchip.cur { color:var(--ink); border-color:var(--accent);
+                    background:color-mix(in srgb,var(--accent) 10%,transparent); }
+#trailBack { flex:none; font-size:11px; padding:2px 9px; border-radius:999px; }
+
+/* 문서(PDF) 탭 — 페이지 그대로, 참조 자리 위에 링크 상자. 좌표는 서버가 준
+ * 정규화 rect 를 %로 그대로 쓴다 — 어떤 배율에서도 자리가 맞는다. */
+.docview { flex:1; min-height:0; display:flex; flex-direction:column; }
+.pg { position:relative; margin:0 auto 16px; max-width:920px;
+      border:1px solid var(--line); border-radius:var(--r); overflow:visible;
+      background:#fff; box-shadow:0 2px 12px rgba(0,0,0,.28); }
+/* lazy 이미지가 뜨기 전에도 페이지 높이를 잡아 둔다(A4 비율) — 자리가 미리
+ * 서 있어야 다른 문서로 점프한 직후의 스크롤이 밀리지 않는다. */
+.pg img { width:100%; display:block; border-radius:var(--r);
+          aspect-ratio:auto 210/297; }
+.pgnum { position:absolute; right:8px; top:6px; font-size:10.5px; color:var(--dim);
+         background:var(--pane); border:1px solid var(--line); border-radius:999px;
+         padding:0 7px; }
+.refbox { position:absolute; border:1.5px solid var(--accent); border-radius:4px;
+          background:color-mix(in srgb,var(--accent) 13%,transparent);
+          cursor:pointer; transition:background .12s; }
+.refbox:hover { background:color-mix(in srgb,var(--accent) 30%,transparent); }
+.refbox.pend { border-color:var(--warn);
+               background:color-mix(in srgb,var(--warn) 13%,transparent); }
+.refbox.pend:hover { background:color-mix(in srgb,var(--warn) 30%,transparent); }
+.reftag { position:absolute; right:-1px; bottom:100%; margin-bottom:3px;
+          font-size:10px; line-height:1.6; padding:0 6px; white-space:nowrap;
+          background:var(--pane); color:var(--accent);
+          border:1px solid var(--accent); border-radius:5px; pointer-events:none; }
+.refbox.pend .reftag { color:var(--warn); border-color:var(--warn); }
+/* 도착 표시 — 처음엔 진하게 반짝이고, 다음 이동까지 옅은 테두리로 남는다.
+ * 사라지면 "어디로 왔는지"를 다시 잃는다. */
+.flash { position:absolute; border:2px solid var(--ok); border-radius:4px;
+         background:color-mix(in srgb,var(--ok) 7%,transparent);
+         pointer-events:none; animation:flashsettle 2.4s ease-out forwards; }
+@keyframes flashsettle {
+  0%,45% { background:color-mix(in srgb,var(--ok) 28%,transparent); }
+  100%   { background:color-mix(in srgb,var(--ok) 7%,transparent); } }
+.flashtag { position:absolute; left:-2px; bottom:100%; margin-bottom:3px;
+            font-size:10px; line-height:1.6; padding:0 6px; white-space:nowrap;
+            background:var(--pane); color:var(--ok); border:1px solid var(--ok);
+            border-radius:5px; }
+.refmenu { position:fixed; z-index:40; background:var(--pane);
+           border:1px solid var(--line); border-radius:8px; padding:5px;
+           box-shadow:0 6px 20px rgba(0,0,0,.4); max-width:460px; }
+.refmenu .mi { display:flex; gap:7px; align-items:center; padding:5px 9px;
+               border-radius:6px; cursor:pointer; min-width:0; font-size:12px; }
+.refmenu .mi:hover { background:color-mix(in srgb,var(--accent) 13%,transparent); }
+.refmenu .mi .p { overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+                  min-width:0; }
+
+/* 네트워크 — 마디 라벨 자리는 레이아웃(forceCollide)이 비워 두고,
+ * 간선 글자는 툴팁(.gtip)과 오른쪽 원문 패널(.gside)에만 산다. */
+.graphview { flex:1; display:flex; gap:10px; min-height:0; }
+.gwrap { flex:1; min-width:0; overflow:hidden; border:1px solid var(--line);
+         border-radius:var(--r); background:var(--pane);
+         background-image:radial-gradient(var(--line) 1px, transparent 1px);
+         background-size:24px 24px; }
+#gcanvas, .gnet { width:100%; height:100%; }
+.gnet { display:block; cursor:grab; }
+.gnet:active { cursor:grabbing; }
+.glb { fill:var(--ink); font-size:11px; paint-order:stroke;
+       stroke:var(--pane); stroke-width:3px; }   /* 글자 밑에 선이 지나가도 읽힌다 */
+.gn { cursor:pointer; }
+.gn:hover circle { r:7; }
+.gn.dim { opacity:.13; }
+.ge { fill:none; stroke-width:1.3; opacity:.42; cursor:pointer;
+      transition:opacity .12s; }
+.ge.gx { stroke-width:1.7; }
+.ge:hover, .ge.hot { opacity:1; stroke-width:2.4;
+                     filter:drop-shadow(0 0 3px currentColor); }
+.ge.dim { opacity:.05; }
+.gtip { position:fixed; z-index:20; pointer-events:none; background:var(--pane);
+        border:1px solid var(--line); border-radius:8px; padding:5px 10px;
+        font-size:11.5px; box-shadow:0 4px 14px rgba(0,0,0,.35); max-width:420px; }
+
+/* 원문 패널 — 본문 속 참조가 링크다 */
+.gside { width:400px; flex:none; overflow:auto; scrollbar-width:thin;
+         border:1px solid var(--line); border-radius:var(--r);
+         background:var(--pane); padding:11px 13px; }
+.gpath { font-weight:650; line-height:1.45; margin-top:2px; }
+.txt { white-space:pre-wrap; line-height:1.7; font-size:12px; margin-top:8px;
+       border-top:1px solid var(--line); padding-top:9px;
+       overflow-wrap:anywhere; }
+.refgo { color:var(--accent); cursor:pointer; text-decoration:none;
+         border-bottom:1px dashed color-mix(in srgb,var(--accent) 55%,transparent); }
+.refgo:hover { background:color-mix(in srgb,var(--accent) 14%,transparent); }
+.citer { display:flex; gap:7px; align-items:center; margin-top:5px; min-width:0; }
+.citer .refgo { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }

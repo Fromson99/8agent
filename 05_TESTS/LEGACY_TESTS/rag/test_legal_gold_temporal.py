@@ -4,11 +4,14 @@ from pathlib import Path
 from lawrag.core.legal_generation import validate_consumers
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 
 
 def test_fsc_answer_time_and_current_coordinates_are_explicit_and_grounded():
-    suite = json.loads((ROOT / "data/review/fsc_hard_retrieval_v2.json").read_text("utf-8"))
+    suite = json.loads((ROOT / "01_DATA/review/fsc_hard_retrieval_v2.json").read_text("utf-8"))
     assert suite["schema_version"] == 2 and suite["version"] == 2
     assert suite["temporal_contract"]["no_silent_rebinding"] is True
     assert sum(len(c["answer_time_articles"]) for c in suite["cases"]) == 15
@@ -18,7 +21,7 @@ def test_fsc_answer_time_and_current_coordinates_are_explicit_and_grounded():
         assert case["expected_articles"] == case["current_articles"]
         for field in ("answer_time_articles", "current_articles"):
             for row in case[field]:
-                result = json.loads((ROOT / "data/structure" / row["doc_id"]
+                result = json.loads((ROOT / "01_DATA/structure" / row["doc_id"]
                                      / "result.json").read_text("utf-8"))
                 node = next(n for n in result["nodes"] if str(n["id"]) == row["node"])
                 assert node["coordinate_scope"] == "body"
@@ -26,7 +29,7 @@ def test_fsc_answer_time_and_current_coordinates_are_explicit_and_grounded():
 
 
 def test_cm_audited_citation_gaps_have_explicit_roles():
-    suite = json.loads((ROOT / "data/review/cm_core_e2e_v2.json").read_text("utf-8"))
+    suite = json.loads((ROOT / "01_DATA/review/cm_core_e2e_v2.json").read_text("utf-8"))
     reviewed = {"cm-005", "cm-006", "cm-009", "cm-013", "cm-015", "cm-016",
                 "cm-018", "cm-025", "cm-027", "cm-028", "cm-029", "cm-030",
                 "cm-042", "cm-043", "cm-045", "cm-046", "cm-047", "cm-049",
@@ -41,14 +44,14 @@ def test_cm_audited_citation_gaps_have_explicit_roles():
 
 def test_legal_generation_consumers_match():
     result = validate_consumers(
-        ROOT / "data", ROOT / "data/structure", ROOT / "data/domain_graph/graph.sqlite")
+        ROOT / "01_DATA", ROOT / "01_DATA/structure", ROOT / "01_DATA/domain_graph/graph.sqlite")
     assert result["status"] == "ok"
     assert result["canonical_documents"] == 50
 
 
 def test_semantic_seed_v2_is_rebound_to_current_source_coordinates():
     suite = json.loads(
-        (ROOT / "data/review/semantic_operation_seed_v2.json").read_text("utf-8"))
+        (ROOT / "01_DATA/review/semantic_operation_seed_v2.json").read_text("utf-8"))
     assert suite["schema_version"] == 2 and suite["version"] == 2
     assert suite["authority_contract"]["no_stale_source_copy"] is True
     assert sum(len(case["expected_articles"]) for case in suite["cases"]) == 14

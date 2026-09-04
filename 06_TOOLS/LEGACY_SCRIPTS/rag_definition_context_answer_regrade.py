@@ -12,8 +12,11 @@ import sys
 import threading
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import review_golden as review  # noqa: E402
 from scripts.rag_definition_context_answer_ab import (  # noqa: E402
@@ -66,10 +69,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
         "--input", type=Path,
-        default=ROOT / "var/eval/e2e/ADR-0038/definition_context_answer_ab_51.json")
+        default=ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0038/definition_context_answer_ab_51.json")
     parser.add_argument(
         "--out", type=Path,
-        default=ROOT / "var/eval/e2e/ADR-0038/definition_context_answer_ab_disputed19_regrade3.json")
+        default=ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0038/definition_context_answer_ab_disputed19_regrade3.json")
     parser.add_argument("--workers", type=int, choices=range(1, 5), default=2)
     parser.add_argument("--manifest-existing", action="store_true",
                         help="이미 저장된 --out을 LLM 재호출 없이 manifest에 등록")
@@ -77,7 +80,7 @@ def main() -> int:
     if args.manifest_existing:
         result = json.loads(args.out.read_text("utf-8"))
         digest = hashlib.sha256(args.out.read_bytes()).hexdigest()
-        artifact_dir = ROOT / "docs/adr/ADR-0038-definition-context-wiki-hygiene/artifacts"
+        artifact_dir = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0038-definition-context-wiki-hygiene/artifacts"
         manifest = json.loads((artifact_dir / "manifest.json").read_text("utf-8"))
         key = ("definition_only_regrade3" if "definition_only" in args.out.name
                else "answer_ab_regrade3")
@@ -152,7 +155,7 @@ def main() -> int:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(result, ensure_ascii=False, indent=1) + "\n", "utf-8")
     digest = hashlib.sha256(args.out.read_bytes()).hexdigest()
-    artifact_dir = ROOT / "docs/adr/ADR-0038-definition-context-wiki-hygiene/artifacts"
+    artifact_dir = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0038-definition-context-wiki-hygiene/artifacts"
     manifest = json.loads((artifact_dir / "manifest.json").read_text("utf-8"))
     key = ("definition_only_regrade3" if "definition_only" in args.out.name
            else "answer_ab_regrade3")

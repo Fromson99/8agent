@@ -9,8 +9,11 @@ from textwrap import wrap
 from PIL import Image, ImageDraw, ImageFont
 
 
-ROOT = Path(__file__).resolve().parents[1]
-OUTPUT_DIR = ROOT / "artifacts" / "legal_rag_report_diagrams"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+OUTPUT_DIR = ROOT / "09_ARTIFACTS" / "LEGACY_ARTIFACTS" / "legal_rag_report_diagrams"
 
 W = 1800
 BG = "#F7F9FC"

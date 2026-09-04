@@ -14,8 +14,11 @@ import json
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
-ADR = ROOT / "docs/adr/ADR-0113-legal-system-entry-routing-full-stack"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0113-legal-system-entry-routing-full-stack"
 RUN = ADR / "artifacts/run-004.json"
 LAW = ADR / "artifacts/law-route-ledger-run-004.json"
 OUTPUT = ADR / "artifacts/frozen-criteria-regrade-run-004.json"

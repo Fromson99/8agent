@@ -17,12 +17,15 @@ from pathlib import Path
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[1]
-ADR = ROOT / "docs/adr/ADR-0124-golden-minimal-sufficient-evidence-audit-61"
-CM_V2 = ROOT / "data/review/cm_core_e2e_v2.json"
-FSC_V2 = ROOT / "data/review/fsc_hard_retrieval_v2.json"
-CM_V3 = ROOT / "data/review/cm_core_e2e_v3.json"
-FSC_V3 = ROOT / "data/review/fsc_hard_retrieval_v3.json"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0124-golden-minimal-sufficient-evidence-audit-61"
+CM_V2 = ROOT / "01_DATA/review/cm_core_e2e_v2.json"
+FSC_V2 = ROOT / "01_DATA/review/fsc_hard_retrieval_v2.json"
+CM_V3 = ROOT / "01_DATA/review/cm_core_e2e_v3.json"
+FSC_V3 = ROOT / "01_DATA/review/fsc_hard_retrieval_v3.json"
 LEDGER = ADR / "artifacts/golden-evidence-audit-run-003.json"
 
 EXPECTED_INPUT_HASHES = {
@@ -162,11 +165,11 @@ def load(path: Path) -> dict[str, Any]:
 
 class Corpus:
     def __init__(self) -> None:
-        index = load(ROOT / "data/law_index.json")
+        index = load(ROOT / "01_DATA/law_index.json")
         self.as_of = str(index["as_of"])
         self.current = {row["name"]: row["doc_id"] for row in index["docs"] if row.get("canonical") and row.get("in_store")}
         self.history: dict[str, list[tuple[str, str]]] = {}
-        for directory in sorted((ROOT / "data/structure").iterdir()):
+        for directory in sorted((ROOT / "01_DATA/structure").iterdir()):
             meta_path = directory / "meta.json"
             result_path = directory / "result.json"
             if not meta_path.exists() or not result_path.exists():
@@ -177,7 +180,7 @@ class Corpus:
             self.history.setdefault(name, []).append((enforce, directory.name))
 
     def _card(self, doc_id: str, law: str, article: str, role: str, authority_as_of: str) -> dict[str, Any]:
-        directory = ROOT / "data/structure" / doc_id
+        directory = ROOT / "01_DATA/structure" / doc_id
         meta = load(directory / "meta.json")
         result = load(directory / "result.json")
         nodes = [row for row in result["nodes"] if str(row.get("surface") or "").strip() == article and str(row.get("coordinate_scope") or "body") == "body"]

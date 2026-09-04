@@ -9,8 +9,11 @@ from pathlib import Path
 import sys
 from typing import Any, Mapping
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import rag_raw_evidence_id_selection_golden_61 as run  # noqa: E402
 
@@ -234,10 +237,10 @@ def main() -> int:
         entry(SCORING, "offline scoring fixture"),
         entry(SEAL, "61-case product capture seal"),
         entry(REPORT, "deterministic evidence confusion report"),
-        entry(ROOT / "scripts/rag_raw_evidence_id_selection_golden_61.py", "ADR-0131 runner"),
-        entry(ROOT / "scripts/rag_raw_evidence_id_selection_finalize.py", "ADR-0131 finalizer"),
-        entry(ROOT / "lawrag/core/rag/raw_evidence_selection.py", "compiler-free raw selector"),
-        entry(ROOT / "tests/rag/test_raw_evidence_selection.py", "focused raw selector tests"),
+        entry(ROOT / "06_TOOLS/LEGACY_SCRIPTS/rag_raw_evidence_id_selection_golden_61.py", "ADR-0131 runner"),
+        entry(ROOT / "06_TOOLS/LEGACY_SCRIPTS/rag_raw_evidence_id_selection_finalize.py", "ADR-0131 finalizer"),
+        entry(Path(__import__("lawrag").__file__).resolve().parent / "core/rag/raw_evidence_selection.py", "compiler-free raw selector"),
+        entry(ROOT / "05_TESTS/LEGACY_TESTS/rag/test_raw_evidence_selection.py", "focused raw selector tests"),
         entry(run.PARENT_ADR / "artifacts/retrieval-stage-ledger-run-002.json", "inherited ADR-0118 retrieval-stage ledger"),
     ]
     files.extend(entry(path, f"question result {path.stem}") for path in question_files)

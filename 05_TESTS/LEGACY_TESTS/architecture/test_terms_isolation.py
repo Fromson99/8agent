@@ -15,9 +15,12 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-RAG = ROOT / "lawrag" / "core" / "rag"
-TERMS = ROOT / "lawrag" / "core" / "terms"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+RAG = Path(__import__("lawrag").__file__).resolve().parent / "core" / "rag"
+TERMS = Path(__import__("lawrag").__file__).resolve().parent / "core" / "terms"
 
 HEAVY = {"sentence_transformers", "torch", "numpy", "sklearn", "scipy",
          "gensim", "kiwipiepy"}
@@ -55,7 +58,7 @@ def test_검색_런타임은_용어층_컴파일을_import_하지_않는다():
 def test_검색_런타임의_무거운_의존은_지연_로드만():
     """lawrag/core/rag 와 lawrag/core/embedding 을 import 하는 것만으로 torch 가 뜨면 안
     된다 — 모델 없는 컨테이너에서도 렉시컬 검색은 살아야 한다."""
-    targets = list(RAG.glob("*.py")) + [ROOT / "lawrag" / "core" / "embedding.py"]
+    targets = list(RAG.glob("*.py")) + [Path(__import__("lawrag").__file__).resolve().parent / "core" / "embedding.py"]
     for py in targets:
         bad = {m for m in _module_level_imports(py) if m.split(".")[0] in HEAVY}
         assert not bad, f"{py.name} 모듈 수준에 무거운 의존: {bad} — 함수 안으로 내려라"

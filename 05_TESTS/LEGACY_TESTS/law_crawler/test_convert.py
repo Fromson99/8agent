@@ -96,10 +96,10 @@ def test_manifest_index_maps_body_and_attachments(tmp_path):
         }],
     }, ensure_ascii=False), encoding="utf-8")
     index = convert.manifest_index([tmp_path])
-    body = index[(convert.REPO_ROOT / "data/corpus/kofia/규정A/전문.hwp").resolve()]
+    body = index[(convert.REPO_ROOT / "01_DATA/corpus/kofia/규정A/전문.hwp").resolve()]
     assert body["role"] == "body" and body["regulation"] == "규정A"
     assert body["collected"] == "2026-08-07" and body["enforced"] == "2026-01-01"
-    att = index[(convert.REPO_ROOT / "data/corpus/kofia/규정A/별표서식/별표1.hwp").resolve()]
+    att = index[(convert.REPO_ROOT / "01_DATA/corpus/kofia/규정A/별표서식/별표1.hwp").resolve()]
     assert att["title"] == "별표1" and att["source"] == "https://x/1"
     assert len(index) == 2                    # file 없는 첨부(다운로드 실패)는 건너뛴다
 

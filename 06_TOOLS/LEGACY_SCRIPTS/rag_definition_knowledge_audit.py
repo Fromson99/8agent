@@ -11,8 +11,11 @@ import re
 import sys
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import review_golden as review  # noqa: E402 — 저장소 환경 경로 고정
 from lawrag.core.domain_graph.model import lexeme_id  # noqa: E402
@@ -102,7 +105,7 @@ def _glossary_stats(path: Path) -> tuple[dict, list[dict]]:
 
 def _cm002(index, glossary_terms: list[dict]) -> dict:
     source = json.loads(
-        (ROOT / "var/eval/e2e/ADR-0040/frame_only_answer_ab_51.json").read_text("utf-8"))
+        (ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0040/frame_only_answer_ab_51.json").read_text("utf-8"))
     row = next(item for item in source["rows"] if item["case_no"] == "cm-002")
     target = row["selected"][0]
     view = index.docs[target["doc_id"]]
@@ -111,7 +114,7 @@ def _cm002(index, glossary_terms: list[dict]) -> dict:
     glossary_by_key = {_pack(term.get("term")): term for term in glossary_terms}
     tx = taxonomy.current(index, None, {view.doc_id})
     public = []
-    with GraphStore(ROOT / "data/domain_graph/graph.sqlite", readonly=True) as graph:
+    with GraphStore(ROOT / "01_DATA/domain_graph/graph.sqlite", readonly=True) as graph:
         for item in used:
             key = _pack(item["term"])
             lid = lexeme_id(item["term"])
@@ -171,7 +174,7 @@ def _cross_layer(runtime_rows: list[dict], glossary_terms: list[dict],
 
 def _suite_51(index, glossary_terms: list[dict]) -> dict:
     stage = json.loads(
-        (ROOT / "var/eval/e2e/cm_core_legalclosure_stage_ablation_51.json").read_text("utf-8"))
+        (ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_legalclosure_stage_ablation_51.json").read_text("utf-8"))
     glossary = {_pack(row.get("term")) for row in glossary_terms
                 if row.get("status") != "tombstone"}
     tx = taxonomy.current(index, None)
@@ -223,19 +226,19 @@ def main() -> int:
     args = parser.parse_args()
 
     index = index_mod.current().scoped(None)
-    glossary_stats, glossary_terms = _glossary_stats(ROOT / "data/glossary.json")
+    glossary_stats, glossary_terms = _glossary_stats(ROOT / "01_DATA/glossary.json")
     runtime_stats, runtime_rows = _runtime_definition_stats(index)
-    with GraphStore(ROOT / "data/domain_graph/graph.sqlite", readonly=True) as store:
+    with GraphStore(ROOT / "01_DATA/domain_graph/graph.sqlite", readonly=True) as store:
         graph_stats = store.counts()
     result = {
         "audit": "definition-knowledge-layers-v1", "llm_calls": 0,
         "glossary": glossary_stats, "runtime_definitions": runtime_stats,
-        "taxonomy": _taxonomy_stats(ROOT / "data/taxonomy"),
-        "canonical": _canonical_stats(ROOT / "data/domain_graph/canonical.json"),
+        "taxonomy": _taxonomy_stats(ROOT / "01_DATA/taxonomy"),
+        "canonical": _canonical_stats(ROOT / "01_DATA/domain_graph/canonical.json"),
         "property_graph": graph_stats,
         "cross_layer": _cross_layer(
-            runtime_rows, glossary_terms, ROOT / "data/domain_graph/canonical.json",
-            ROOT / "data/taxonomy"),
+            runtime_rows, glossary_terms, ROOT / "01_DATA/domain_graph/canonical.json",
+            ROOT / "01_DATA/taxonomy"),
         "suite_51": _suite_51(index, glossary_terms),
         "cm002": _cm002(index, glossary_terms),
         "prompt_path_finding": {

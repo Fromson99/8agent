@@ -14,8 +14,11 @@ import threading
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.llm import LLM  # noqa: E402
 from scripts.adr_structure import (  # noqa: E402
@@ -26,10 +29,10 @@ from scripts.adr_structure import (  # noqa: E402
 )
 
 
-ADR = ROOT / "docs/adr/ADR-0047-offline-evaluator-calibration"
-SOURCE = ROOT / "var/eval/e2e/cm_core_haiku_hard_distractor_wrong16_v1.json"
-REGRADE = ROOT / "var/eval/e2e/cm_core_haiku_hard_distractor_regrade3_v1.json"
-PARENT = ROOT / "docs/adr/ADR-0046-role-separated-evaluator-model-policy/실험/manifest.json"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0047-offline-evaluator-calibration"
+SOURCE = ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_haiku_hard_distractor_wrong16_v1.json"
+REGRADE = ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_haiku_hard_distractor_regrade3_v1.json"
+PARENT = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0046-role-separated-evaluator-model-policy/실험/manifest.json"
 FROZEN = ADR / "artifacts/frozen-items.json"
 OUTPUT = ADR / "artifacts/calibration-results.json"
 MODELS = (SONNET_MODEL, OPUS_MODEL)
@@ -109,7 +112,7 @@ def prepare() -> None:
     items = _items()
     if not ADR.exists():
         scaffold_adr(
-            ROOT / "docs/adr", 47, "offline-evaluator-calibration",
+            ROOT / "07_DOCS/LEGACY_DOCS/adr", 47, "offline-evaluator-calibration",
             "오프라인 의미 채점 모델 교정", "probe", [row["id"] for row in items],
             branch_id="evaluator-calibration",
             candidate_arms=["sonnet-single", "opus-single", "sonnet-opus-cascade"],

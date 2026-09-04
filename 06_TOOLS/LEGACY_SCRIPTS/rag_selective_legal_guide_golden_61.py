@@ -12,8 +12,11 @@ import sys
 import time
 from typing import Any, Mapping, Sequence
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import rag_raw_evidence_id_selection_golden_61 as prior  # noqa: E402
 from lawrag.core.rag import selective_legal_guide as selective  # noqa: E402
@@ -27,8 +30,8 @@ RAW_ARM = "raw-parent"
 FULL_ARM = "full-compiler-parent"
 CANDIDATE_ARM = selective.PROFILE
 ARMS = (RAW_ARM, FULL_ARM, CANDIDATE_ARM)
-ADR = ROOT / "docs/adr/ADR-0132-selective-legal-guide-evidence-selection-golden-61"
-RAW_PARENT_ADR = ROOT / "docs/adr/ADR-0131-raw-evidence-id-selection-golden-61"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0132-selective-legal-guide-evidence-selection-golden-61"
+RAW_PARENT_ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0131-raw-evidence-id-selection-golden-61"
 RAW_PARENT_CAPTURES = RAW_PARENT_ADR / "artifacts/product-captures/run-001"
 RAW_PARENT_SEAL = RAW_PARENT_ADR / "artifacts/product-capture-seal-run-001.json"
 RAW_PARENT_SEAL_SHA256 = "3fcc04ded3d0ca5da35881c9c4cdd26026bef37235751d7e956526c5c345df5a"

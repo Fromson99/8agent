@@ -11,15 +11,18 @@ import sys
 import time
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for key, relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
-    ("RAG_LAW_INDEX_STORE", "data/law_index.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
+    ("RAG_LAW_INDEX_STORE", "01_DATA/law_index.json"),
 ):
     os.environ.setdefault(key, str(ROOT / relative))
 
@@ -27,12 +30,12 @@ from lawrag.api.routers import rag  # noqa: E402
 from lawrag.core.rag import index as index_mod, switches  # noqa: E402
 
 
-ADR = ROOT / "docs/adr/ADR-0095-feedback-api-role-predicate-recovery"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0095-feedback-api-role-predicate-recovery"
 RUN_ID = "run-002"
 PARENT_RUN = ROOT / (
     "docs/adr/ADR-0094-role-predicate-governing-law-feedback-router/"
     "artifacts/run-002.json")
-FSC = ROOT / "data/review/fsc_hard_retrieval_v2.json"
+FSC = ROOT / "01_DATA/review/fsc_hard_retrieval_v2.json"
 MUTABLE_WIRING_PATHS = {
     "lawrag/api/routers/rag.py",
     "lawrag/core/rag/switches.py",

@@ -5,9 +5,12 @@ import json
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts/rag_latent_discovery_pool_10.py"
-ADR = ROOT / "docs/adr/ADR-0087-latent-discovery-pool-stage-ledger"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+SCRIPT = ROOT / "06_TOOLS/LEGACY_SCRIPTS/rag_latent_discovery_pool_10.py"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0087-latent-discovery-pool-stage-ledger"
 
 
 def _module():
@@ -45,7 +48,7 @@ def test_manifest_declares_complete_topological_stage_plans():
 
 
 def test_product_discovery_api_has_no_gold_or_reference_answer_parameter():
-    source = (ROOT / "lawrag/core/rag/latent_discovery_pool.py").read_text(encoding="utf-8")
+    source = (Path(__import__("lawrag").__file__).resolve().parent / "core/rag/latent_discovery_pool.py").read_text(encoding="utf-8")
     signatures = [
         line for line in source.splitlines()
         if line.startswith("def run_") or line.startswith("def retrieve_channels")

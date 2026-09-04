@@ -5,9 +5,12 @@ import json
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts/rag_semantic_operation_seed_golden_10.py"
-MANIFEST = ROOT / "docs/adr/ADR-0085-semantic-operation-seed-golden-10/실험/manifest.json"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+SCRIPT = ROOT / "06_TOOLS/LEGACY_SCRIPTS/rag_semantic_operation_seed_golden_10.py"
+MANIFEST = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0085-semantic-operation-seed-golden-10/실험/manifest.json"
 
 
 def _module():

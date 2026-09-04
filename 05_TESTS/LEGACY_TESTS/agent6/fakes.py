@@ -213,7 +213,7 @@ def replay(transcript: Path, meta, out_dir: Path, *, consistency: int = 1, **kw)
     """녹화 재생 — 키가 없어도 돌고, 같은 입력이면 같은 결과다."""
     return cli.run_pipeline(transcript, meta=meta, out_dir=out_dir,
                             llm_mode="replay", consistency=consistency,
-                            history=False, **kw)
+                            cache_dir=FIXTURES / "llm", history=False, **kw)
 
 
 def verdicts(result) -> dict[str, str]:

@@ -14,7 +14,7 @@ from pathlib import Path
 import requests
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.ingest import ingest_lawxml_bytes
 from lawrag.core.legal_generation import atomic_json
@@ -346,15 +346,15 @@ def migrate_semantic_seed(source: Path, target: Path, cm_path: Path,
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--store", type=Path, default=ROOT / "data" / "structure")
-    parser.add_argument("--cm", type=Path, default=ROOT / "data" / "review" / "cm_core_e2e_v2.json")
-    parser.add_argument("--fsc", type=Path, default=ROOT / "data" / "review" / "fsc_hard_retrieval_v2.json")
+    parser.add_argument("--store", type=Path, default=ROOT / "01_DATA" / "structure")
+    parser.add_argument("--cm", type=Path, default=ROOT / "01_DATA" / "review" / "cm_core_e2e_v2.json")
+    parser.add_argument("--fsc", type=Path, default=ROOT / "01_DATA" / "review" / "fsc_hard_retrieval_v2.json")
     parser.add_argument("--history-corpus", type=Path,
-                        default=ROOT / "data" / "corpus" / "law_history")
+                        default=ROOT / "01_DATA" / "corpus" / "law_history")
     parser.add_argument("--semantic-source", type=Path,
-                        default=ROOT / "data" / "review" / "semantic_operation_seed_v1.json")
+                        default=ROOT / "01_DATA" / "review" / "semantic_operation_seed_v1.json")
     parser.add_argument("--semantic", type=Path,
-                        default=ROOT / "data" / "review" / "semantic_operation_seed_v2.json")
+                        default=ROOT / "01_DATA" / "review" / "semantic_operation_seed_v2.json")
     parser.add_argument("--semantic-only", action="store_true")
     args = parser.parse_args()
     if args.semantic_only:

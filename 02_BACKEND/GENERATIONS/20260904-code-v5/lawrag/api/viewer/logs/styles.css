@@ -1,0 +1,83 @@
+/* 로그 화면 — 토큰·상단바·이동은 /ui/ui.css 가 쥔다. */
+.chk { display:flex; align-items:center; gap:5px; color:var(--dim);
+       font-size:11.5px; cursor:pointer; white-space:nowrap; }
+
+.wrap { max-width:1060px; margin:0 auto; padding:14px; display:flex;
+        flex-direction:column; gap:12px; }
+.pane { background:var(--pane); border:1px solid var(--line); border-radius:var(--r);
+        padding:10px 12px; }
+.panehead { display:flex; align-items:center; gap:9px; margin-bottom:7px; }
+.panehead b { font-size:12.5px; }
+
+button { padding:6px 12px; background:var(--accent); color:#fff; border:0;
+         border-radius:8px; font:inherit; font-weight:600; cursor:pointer; }
+button.ghost { background:transparent; color:var(--dim);
+               border:1px solid var(--line); font-weight:500; }
+button.ghost:hover { color:var(--accent); border-color:var(--accent); }
+select, input[type=search] { padding:5px 8px; background:var(--bg); color:var(--ink);
+        border:1px solid var(--line); border-radius:6px; font:inherit; font-size:12px; }
+input[type=search]:focus, select:focus { border-color:var(--accent); outline:none; }
+input[type=search] { min-width:160px; }
+
+/* 요약 칩 */
+.stats { display:flex; gap:8px; flex-wrap:wrap; }
+.stat { display:flex; flex-direction:column; gap:2px; min-width:96px;
+        border:1px solid var(--line); border-radius:8px; padding:8px 12px; }
+.stat .v { font-size:17px; font-weight:650; font-variant-numeric:tabular-nums; }
+.stat .k { color:var(--dim); font-size:11px; }
+.stat.bad .v { color:var(--bad); }
+.stat.warn .v { color:var(--warn); }
+.stat.ok .v { color:var(--ok); }
+
+/* 이벤트 목록 */
+.events { display:flex; flex-direction:column; }
+.ev { border-bottom:1px solid var(--line); }
+.ev:last-child { border-bottom:0; }
+.evrow { display:flex; gap:8px; align-items:baseline; padding:6px 2px;
+         cursor:pointer; font-size:12px; }
+.evrow:hover { background:color-mix(in srgb, var(--accent) 6%, transparent); }
+.evrow .ts { color:var(--dim); font-size:11px; white-space:nowrap;
+             font-variant-numeric:tabular-nums; }
+.evrow .q { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.evrow .ms { color:var(--dim); font-size:11px; white-space:nowrap;
+             font-variant-numeric:tabular-nums; }
+.badge { font-size:10.5px; border-radius:5px; padding:1px 6px; white-space:nowrap;
+         border:1px solid var(--line); color:var(--dim); }
+.badge.ask { color:var(--accent); border-color:var(--accent); }
+.badge.ok { color:var(--ok); border-color:var(--ok); }
+.badge.bad { color:var(--bad); border-color:var(--bad); }
+.badge.warn { color:var(--warn); border-color:var(--warn); }
+
+/* 이벤트 상세 */
+.evdetail { padding:4px 10px 12px 10px; display:flex; flex-direction:column;
+            gap:8px; font-size:12px; }
+.evdetail h4 { margin:6px 0 2px; font-size:11.5px; color:var(--dim);
+               font-weight:600; text-transform:none; }
+.trail { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:2px; }
+.trail li { font-size:12px; }
+.trail .cnt { color:var(--dim); }
+.trail .hit { color:var(--ok); }
+.reflist { display:flex; flex-direction:column; gap:2px; }
+.reflist .r { color:var(--dim); }
+.answerbox { border-left:2px solid var(--line); padding:4px 10px;
+             color:var(--dim); white-space:pre-wrap; line-height:1.55; }
+.errbox { border-left:2px solid var(--bad); padding:4px 10px; color:var(--bad);
+          white-space:pre-wrap; }
+.kv { display:flex; gap:14px; flex-wrap:wrap; color:var(--dim); }
+.kv b { color:var(--ink); font-weight:600; }
+details.raw summary { cursor:pointer; color:var(--dim); font-size:11px; }
+details.raw pre { margin:6px 0 0; padding:8px; background:var(--bg);
+                  border:1px solid var(--line); border-radius:6px;
+                  font-size:11px; overflow-x:auto; }
+
+/* 앱 로그·파일 로그 */
+.loglines, .filetail { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+       font-size:11.5px; line-height:1.5; background:var(--bg);
+       border:1px solid var(--line); border-radius:8px; padding:8px 10px;
+       max-height:360px; overflow:auto; white-space:pre-wrap; word-break:break-all; }
+.loglines .ln { display:block; }
+.loglines .DEBUG { color:var(--dim); }
+.loglines .WARNING { color:var(--warn); }
+.loglines .ERROR, .loglines .CRITICAL { color:var(--bad); }
+.filetail { margin:0; }
+.empty { color:var(--dim); padding:8px 2px; font-size:12px; }

@@ -28,16 +28,19 @@ import re
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 sys.path.insert(0, str(REPO_ROOT))
-os.environ.setdefault("STRUCTURE_STORE", str(REPO_ROOT / "data" / "structure"))
+os.environ.setdefault("STRUCTURE_STORE", str(REPO_ROOT / "01_DATA" / "structure"))
 
 from lawrag.core.rag import wikictx  # noqa: E402
 
 
 def _tuples() -> list:
     out = []
-    for p in glob.glob(str(REPO_ROOT / "data" / "rag" / "tuples" / "*.jsonl")):
+    for p in glob.glob(str(REPO_ROOT / "01_DATA" / "rag" / "tuples" / "*.jsonl")):
         for line in open(p, encoding="utf-8"):
             try:
                 r = json.loads(line)
@@ -50,7 +53,7 @@ def _tuples() -> list:
 
 def _fsc_issues() -> list:
     out = []
-    for f in glob.glob(str(REPO_ROOT / "data" / "wiki" / "raw" / "fsc" / "*.md")):
+    for f in glob.glob(str(REPO_ROOT / "01_DATA" / "wiki" / "raw" / "fsc" / "*.md")):
         t = Path(f).read_text("utf-8")
         if "비조치의견서" not in t[:600]:
             continue
@@ -61,8 +64,8 @@ def _fsc_issues() -> list:
 
 
 def main() -> int:
-    cases = json.loads((REPO_ROOT / "data" / "expc" / "index.json").read_text("utf-8"))["cases"]
-    tuned_p = REPO_ROOT / "data" / "review" / "golden_tuned_cases.json"
+    cases = json.loads((REPO_ROOT / "01_DATA" / "expc" / "index.json").read_text("utf-8"))["cases"]
+    tuned_p = REPO_ROOT / "01_DATA" / "review" / "golden_tuned_cases.json"
     tuned = set(json.loads(tuned_p.read_text("utf-8"))["case_nos"]) if tuned_p.is_file() else set()
     cites: dict = {}
     for r in wikictx._issue_rows():

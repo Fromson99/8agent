@@ -28,10 +28,13 @@ import os
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-os.environ.setdefault("STRUCTURE_STORE", str(ROOT / "data" / "structure"))
-MARKED = ROOT / "data" / "review" / "marked.json"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
+os.environ.setdefault("STRUCTURE_STORE", str(ROOT / "01_DATA" / "structure"))
+MARKED = ROOT / "01_DATA" / "review" / "marked.json"
 
 
 def _query(idx, law: str, jo: str, node_id) -> str:

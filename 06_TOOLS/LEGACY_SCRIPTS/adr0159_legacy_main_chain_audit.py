@@ -33,13 +33,16 @@ import uuid
 
 sys.dont_write_bytecode = True
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 CANDIDATE_ROOT = (
-    ROOT / "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge"
+    Path(__import__("lawrag").__file__).resolve().parent / "research/candidates/adr_0159/legacy-main-chain-bridge"
 )
 CANDIDATE_MANIFEST = CANDIDATE_ROOT / "candidate.json"
 BASE_CANDIDATE_ROOT = (
-    ROOT / "lawrag/research/candidates/adr_0158/v2-runtime-activation"
+    Path(__import__("lawrag").__file__).resolve().parent / "research/candidates/adr_0158/v2-runtime-activation"
 )
 BASE_CANDIDATE_MANIFEST = BASE_CANDIDATE_ROOT / "candidate.json"
 BASE_CANDIDATE_MANIFEST_SHA256 = (
@@ -49,8 +52,8 @@ BASE_REVISION_ID = "rev-012"
 BASE_REVISION_SHA256 = (
     "ea8d5ce937d59f94cdd17092ef88a746441f044cf79a2dba7ce8f2facf69e597"
 )
-STATE_PATH = ROOT / "var/out/structure/main/pipeline.json"
-LEDGER_PATH = ROOT / "var/out/structure/main/promotion_receipts.jsonl"
+STATE_PATH = ROOT / "90_RUNTIME/LEGACY_VAR/out/structure/main/pipeline.json"
+LEDGER_PATH = ROOT / "90_RUNTIME/LEGACY_VAR/out/structure/main/promotion_receipts.jsonl"
 PLAN_PATH = (
     ROOT
     / "docs/adr/ADR-0133-internal-rule-atomic-compliance-main/artifacts"
@@ -74,9 +77,9 @@ MONITORED_PRODUCTION = (
     STATE_PATH,
     LEDGER_PATH,
     PLAN_PATH,
-    ROOT / "lawrag/core/rag/main_promotion.py",
-    ROOT / "lawrag/platform/release.py",
-    ROOT / "scripts/rag_main_promotion.py",
+    Path(__import__("lawrag").__file__).resolve().parent / "core/rag/main_promotion.py",
+    Path(__import__("lawrag").__file__).resolve().parent / "platform/release.py",
+    ROOT / "06_TOOLS/LEGACY_SCRIPTS/rag_main_promotion.py",
     ROOT / "service.py",
 )
 EXPECTED_TARGETS = {

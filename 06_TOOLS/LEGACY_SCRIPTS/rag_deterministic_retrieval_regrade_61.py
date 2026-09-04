@@ -14,10 +14,13 @@ import time
 from typing import Any, Mapping
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-ADR = ROOT / "docs/adr/ADR-0123-deterministic-retrieval-regrade-golden-61"
-PARENT = ROOT / "docs/adr/ADR-0121-claimwise-nondestructive-legal-compiler-golden-61"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0123-deterministic-retrieval-regrade-golden-61"
+PARENT = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0121-claimwise-nondestructive-legal-compiler-golden-61"
 PARENT_ARTIFACTS = PARENT / "artifacts"
 PARENT_RUN = PARENT_ARTIFACTS / "run-001.json"
 PARENT_SEAL = PARENT_ARTIFACTS / "product-capture-seal-run-001.json"

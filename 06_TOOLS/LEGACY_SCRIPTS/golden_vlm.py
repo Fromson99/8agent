@@ -56,7 +56,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 ROOT = Path(__file__).resolve().parent.parent
-GOLDEN = ROOT / "data" / "bench" / "golden"
+GOLDEN = ROOT / "01_DATA" / "bench" / "golden"
 
 # 계층을 여는 마디의 종류. 법령 인쇄본에서 실제로 쓰이는 것만 둔다 — 목록이 길수록
 # 판정이 흔들린다. 마지막 셋은 **마디가 아님**을 말하는 값이다.
@@ -153,7 +153,7 @@ SCHEMA: dict[str, Any] = {
 
 def _store() -> Path:
     import os
-    return Path(os.environ.get("STRUCTURE_STORE", ROOT / "data" / "structure"))
+    return Path(os.environ.get("STRUCTURE_STORE", ROOT / "01_DATA" / "structure"))
 
 
 def load_doc(doc_id: str) -> tuple[dict, list[dict], Path]:
@@ -368,7 +368,7 @@ def render(doc_id: str, meta: dict, items: list[dict], blocks: dict[int, dict],
 
 def main() -> None:
     import sys
-    sys.path.insert(0, str(ROOT))
+    sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
     ap = argparse.ArgumentParser(description="페이지 그림을 읽혀 골든 구조 초안을 만든다")
     ap.add_argument("--doc", required=True, help="doc_id")

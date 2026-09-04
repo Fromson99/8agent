@@ -32,16 +32,19 @@ import time
 from pathlib import Path
 from typing import Optional
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 sys.path.insert(0, str(REPO_ROOT))
-for _k, _v in (("STRUCTURE_STORE", "data/structure"),
-               ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-               ("GLOSSARY_STORE", "data/glossary.json"),
-               ("RAG_LINKS_STORE", "data/links.json")):
+for _k, _v in (("STRUCTURE_STORE", "01_DATA/structure"),
+               ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+               ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+               ("RAG_LINKS_STORE", "01_DATA/links.json")):
     os.environ.setdefault(_k, str(REPO_ROOT / _v))
 
-RAW_DIR = REPO_ROOT / "data" / "wiki" / "raw" / "fsc"
-OUT_DIR = REPO_ROOT / "data" / "review"
+RAW_DIR = REPO_ROOT / "01_DATA" / "wiki" / "raw" / "fsc"
+OUT_DIR = REPO_ROOT / "01_DATA" / "review"
 LABELS = OUT_DIR / "golden_b_labels.json"
 LAST = OUT_DIR / "golden_b_last.json"
 

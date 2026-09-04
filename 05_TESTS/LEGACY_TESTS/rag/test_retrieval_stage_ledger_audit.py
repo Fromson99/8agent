@@ -27,7 +27,7 @@ def test_frozen_source_and_manifest_hash_gates():
 
     # 완료 실행은 당시 구현 hash에 결속된다. 공용 validator가 진화한 뒤 현재
     # 파일로 재실행하지 않고, 위 fixture에서 고정 artifact를 검증해 읽는다.
-    with pytest.raises(ValueError, match="implementation_sha256 mismatch"):
+    with pytest.raises(ValueError, match="runner hash mismatch|implementation_sha256 mismatch"):
         audit._validate_manifest(
             audit.MANIFEST,
             expected_sha256=manifest_sha256,
@@ -289,7 +289,7 @@ def test_validate_only_performs_full_backfill_without_writing(
 ):
     output = tmp_path / "must-not-exist.json"
     manifest_sha256 = audit._sha256(audit.MANIFEST)
-    with pytest.raises(ValueError, match="implementation_sha256 mismatch"):
+    with pytest.raises(ValueError, match="runner hash mismatch|implementation_sha256 mismatch"):
         audit.main(
             [
                 "--manifest",

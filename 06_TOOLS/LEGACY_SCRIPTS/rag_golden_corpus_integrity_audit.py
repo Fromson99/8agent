@@ -17,12 +17,15 @@ from pathlib import Path
 from typing import Any, Iterable
 
 
-ROOT = Path(__file__).resolve().parents[1]
-CM_PATH = ROOT / "data/review/cm_core_e2e_v1.json"
-FSC_PATH = ROOT / "data/review/fsc_hard_retrieval_v1.json"
-LAW_INDEX_PATH = ROOT / "data/law_index.json"
-STRUCTURE_ROOT = ROOT / "data/structure"
-GRAPH_PATH = ROOT / "data/domain_graph/graph.sqlite"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+CM_PATH = ROOT / "01_DATA/review/cm_core_e2e_v1.json"
+FSC_PATH = ROOT / "01_DATA/review/fsc_hard_retrieval_v1.json"
+LAW_INDEX_PATH = ROOT / "01_DATA/law_index.json"
+STRUCTURE_ROOT = ROOT / "01_DATA/structure"
+GRAPH_PATH = ROOT / "01_DATA/domain_graph/graph.sqlite"
 AUDIT_DATE = "20260827"
 EXPECTED_COMBINED_SHA256 = (
     "9efd698528a7f7db36d8c5b26e470adb500e0b4d4b0e25cc4a18e5fc9ea9869e"

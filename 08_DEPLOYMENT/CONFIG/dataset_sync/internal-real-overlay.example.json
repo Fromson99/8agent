@@ -9,10 +9,10 @@
       "contract": {"kind": "internal-rule", "format_family": "docx", "version_role": "previous", "artifact_roles": ["primary", "structure", "frame", "taxonomy"]},
       "doc_id": "REPLACE_WITH_INTERNAL_DOC_ID",
       "files": [
-        {"source": "var/private-data/internal/v1/REPLACE.docx", "target": "data/corpus/internal/REPLACE.docx", "role": "primary"},
-        {"source": "var/private-data/internal/v1/structure", "target": "data/structure/REPLACE_DOC_ID", "role": "structure"},
-        {"source": "var/private-data/internal/v1/frame.jsonl", "target": "data/frames/REPLACE_DOC_ID.jsonl", "role": "frame"},
-        {"source": "var/private-data/internal/v1/taxonomy.jsonl", "target": "data/taxonomy/REPLACE_DOC_ID.jsonl", "role": "taxonomy"}
+        {"source": "var/private-data/internal/v1/REPLACE.docx", "target": "01_DATA/corpus/internal/REPLACE.docx", "role": "primary"},
+        {"source": "var/private-data/internal/v1/structure", "target": "01_DATA/structure/REPLACE_DOC_ID", "role": "structure"},
+        {"source": "var/private-data/internal/v1/frame.jsonl", "target": "01_DATA/frames/REPLACE_DOC_ID.jsonl", "role": "frame"},
+        {"source": "var/private-data/internal/v1/taxonomy.jsonl", "target": "01_DATA/taxonomy/REPLACE_DOC_ID.jsonl", "role": "taxonomy"}
       ]
     },
     {
@@ -20,10 +20,10 @@
       "contract": {"kind": "internal-rule", "format_family": "docx", "version_role": "current", "artifact_roles": ["primary", "structure", "frame", "taxonomy"]},
       "doc_id": "REPLACE_WITH_INTERNAL_DOC_ID",
       "files": [
-        {"source": "var/private-data/internal/v2/REPLACE.docx", "target": "data/corpus/internal/REPLACE.docx", "role": "primary"},
-        {"source": "var/private-data/internal/v2/structure", "target": "data/structure/REPLACE_DOC_ID", "role": "structure"},
-        {"source": "var/private-data/internal/v2/frame.jsonl", "target": "data/frames/REPLACE_DOC_ID.jsonl", "role": "frame"},
-        {"source": "var/private-data/internal/v2/taxonomy.jsonl", "target": "data/taxonomy/REPLACE_DOC_ID.jsonl", "role": "taxonomy"}
+        {"source": "var/private-data/internal/v2/REPLACE.docx", "target": "01_DATA/corpus/internal/REPLACE.docx", "role": "primary"},
+        {"source": "var/private-data/internal/v2/structure", "target": "01_DATA/structure/REPLACE_DOC_ID", "role": "structure"},
+        {"source": "var/private-data/internal/v2/frame.jsonl", "target": "01_DATA/frames/REPLACE_DOC_ID.jsonl", "role": "frame"},
+        {"source": "var/private-data/internal/v2/taxonomy.jsonl", "target": "01_DATA/taxonomy/REPLACE_DOC_ID.jsonl", "role": "taxonomy"}
       ]
     },
     {
@@ -31,10 +31,10 @@
       "contract": {"kind": "internal-rule", "format_family": "docx", "version_role": "current", "artifact_roles": ["primary", "structure", "frame", "taxonomy"]},
       "doc_id": "REPLACE_WITH_INTERNAL_DOC_ID",
       "files": [
-        {"source": "var/private-data/internal/guideline/REPLACE.docx", "target": "data/corpus/internal/REPLACE.docx", "role": "primary"},
-        {"source": "var/private-data/internal/guideline/structure", "target": "data/structure/REPLACE_DOC_ID", "role": "structure"},
-        {"source": "var/private-data/internal/guideline/frame.jsonl", "target": "data/frames/REPLACE_DOC_ID.jsonl", "role": "frame"},
-        {"source": "var/private-data/internal/guideline/taxonomy.jsonl", "target": "data/taxonomy/REPLACE_DOC_ID.jsonl", "role": "taxonomy"}
+        {"source": "var/private-data/internal/guideline/REPLACE.docx", "target": "01_DATA/corpus/internal/REPLACE.docx", "role": "primary"},
+        {"source": "var/private-data/internal/guideline/structure", "target": "01_DATA/structure/REPLACE_DOC_ID", "role": "structure"},
+        {"source": "var/private-data/internal/guideline/frame.jsonl", "target": "01_DATA/frames/REPLACE_DOC_ID.jsonl", "role": "frame"},
+        {"source": "var/private-data/internal/guideline/taxonomy.jsonl", "target": "01_DATA/taxonomy/REPLACE_DOC_ID.jsonl", "role": "taxonomy"}
       ]
     },
     {
@@ -42,8 +42,8 @@
       "contract": {"kind": "review-request", "format_family": "docx", "version_role": "current", "artifact_roles": ["primary", "structure"]},
       "doc_id": "REPLACE_WITH_INTERNAL_DOC_ID",
       "files": [
-        {"source": "var/private-data/internal/review/REPLACE.docx", "target": "data/corpus/internal/REPLACE.docx", "role": "primary"},
-        {"source": "var/private-data/internal/review/structure", "target": "data/structure/REPLACE_DOC_ID", "role": "structure"}
+        {"source": "var/private-data/internal/review/REPLACE.docx", "target": "01_DATA/corpus/internal/REPLACE.docx", "role": "primary"},
+        {"source": "var/private-data/internal/review/structure", "target": "01_DATA/structure/REPLACE_DOC_ID", "role": "structure"}
       ]
     }
   ]

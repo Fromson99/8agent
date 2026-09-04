@@ -5,7 +5,10 @@ from pathlib import Path
 from lawrag.core.rag import controls
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 
 
 def test_control_registry_is_unique_and_described():
@@ -36,7 +39,7 @@ def test_environment_override_changes_value_and_fingerprint(monkeypatch):
 
 
 def test_main_flow_diagram_contains_every_required_control_and_fingerprint():
-    text = (ROOT / "docs" / "RAG_FLOW.md").read_text(encoding="utf-8")
+    text = (ROOT / "07_DOCS" / "LEGACY_DOCS" / "RAG_FLOW.md").read_text(encoding="utf-8")
     assert controls.validate_diagram(text) == []
 
 

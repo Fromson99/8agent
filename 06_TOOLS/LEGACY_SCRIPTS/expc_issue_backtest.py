@@ -22,13 +22,16 @@ import re
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 sys.path.insert(0, str(REPO_ROOT))
 
 from lawrag.core.rag import wikictx                                   # noqa: E402
 
-INDEX = REPO_ROOT / "data" / "expc" / "index.json"
-ISSUE_DIR = REPO_ROOT / "data" / "wiki" / "wiki" / "쟁점"
+INDEX = REPO_ROOT / "01_DATA" / "expc" / "index.json"
+ISSUE_DIR = REPO_ROOT / "01_DATA" / "wiki" / "wiki" / "쟁점"
 
 # 같은 안건의 중복 등재 쌍 — 위키는 한쪽만 인용하므로 어느 쪽이 떠도 적중
 # (정본 목록: data/wiki/wiki/index.md §데이터 유의)

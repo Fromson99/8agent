@@ -18,12 +18,15 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parent.parent.parent
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 sys.path.insert(0, str(ROOT))
 
 from lawrag.core import ingest, legal_generation, lineage  # noqa: E402
 
-FIX = ROOT / "tests" / "fixtures" / "law_crawler" / "lawgo"
+FIX = ROOT / "05_TESTS" / "LEGACY_TESTS" / "fixtures" / "law_crawler" / "lawgo"
 
 
 def test_실행부와_경로선언은_같은_계열_어휘를_쓴다():

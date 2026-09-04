@@ -16,8 +16,11 @@ import sys
 import time
 from typing import Any, Mapping, Sequence
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import rag_integrated_legal_research_golden_61 as base  # noqa: E402
 from lawrag.research import profiles as research_profiles  # noqa: E402
@@ -28,7 +31,7 @@ EXPERIMENT_ID = "ADR-0115-experiment-v1"
 BASELINE_ARM = "baseline"
 CANDIDATE_ARM = "coverage-preserving-compiler"
 ARMS = (BASELINE_ARM, CANDIDATE_ARM)
-ADR = ROOT / "docs/adr/ADR-0115-coverage-preserving-legal-compiler-golden-61"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0115-coverage-preserving-legal-compiler-golden-61"
 
 BASELINE_STAGES = (
     ("question-source", "source", ()),

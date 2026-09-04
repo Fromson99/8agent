@@ -8,8 +8,11 @@ import json
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
-ADR = ROOT / "docs/adr/ADR-0091-legalclosure-v2-article-reachability-ledger"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0091-legalclosure-v2-article-reachability-ledger"
 ARTIFACTS = ADR / "artifacts"
 EXPERIMENT = ADR / "실험"
 

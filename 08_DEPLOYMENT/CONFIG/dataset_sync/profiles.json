@@ -3,30 +3,30 @@
   "common-runtime": {
     "classification": "shared-identical",
     "include": [
-      "data/corpus/expc",
-      "data/corpus/forms",
-      "data/corpus/fsc",
-      "data/corpus/kofia",
-      "data/corpus/krx",
-      "data/corpus/law",
-      "data/corpus/law_history",
-      "data/corpus/moleg",
-      "data/corpus/prec",
-      "data/structure",
-      "data/frames",
-      "data/taxonomy",
-      "data/wiki",
-      "data/expc",
-      "data/aliases.json",
-      "data/glossary.json",
-      "data/delegation.json",
-      "data/law_index.json",
-      "data/links.json"
+      "01_DATA/corpus/expc",
+      "01_DATA/corpus/forms",
+      "01_DATA/corpus/fsc",
+      "01_DATA/corpus/kofia",
+      "01_DATA/corpus/krx",
+      "01_DATA/corpus/law",
+      "01_DATA/corpus/law_history",
+      "01_DATA/corpus/moleg",
+      "01_DATA/corpus/prec",
+      "01_DATA/structure",
+      "01_DATA/frames",
+      "01_DATA/taxonomy",
+      "01_DATA/wiki",
+      "01_DATA/expc",
+      "01_DATA/aliases.json",
+      "01_DATA/glossary.json",
+      "01_DATA/delegation.json",
+      "01_DATA/law_index.json",
+      "01_DATA/links.json"
     ],
     "exclude_globs": [
-      "data/structure/*/pages/**",
-      "data/structure/*/source.pdf",
-      "data/structure/*/parse.json",
+      "01_DATA/structure/*/pages/**",
+      "01_DATA/structure/*/source.pdf",
+      "01_DATA/structure/*/parse.json",
       "**/*.bak",
       "**/*.npz"
     ]
@@ -34,14 +34,14 @@
   "common-evaluation": {
     "classification": "shared-identical-evaluation",
     "include": [
-      "data/bench",
-      "data/review",
-      "docs/examples/README.md",
-      "docs/examples/task3-law-chatbot/qa.yaml",
-      "docs/examples/task5-risk-agent/qa"
+      "01_DATA/bench",
+      "01_DATA/review",
+      "07_DOCS/LEGACY_DOCS/examples/README.md",
+      "07_DOCS/LEGACY_DOCS/examples/task3-law-chatbot/qa.yaml",
+      "07_DOCS/LEGACY_DOCS/examples/task5-risk-agent/qa"
     ],
     "exclude_globs": ["**/*.bak"]
   },
-  "external_overlay": "config/dataset_sync/external-mock-overlay.json",
-  "internal_overlay_template": "config/dataset_sync/internal-real-overlay.example.json"
+  "external_overlay": "08_DEPLOYMENT/CONFIG/dataset_sync/external-mock-overlay.json",
+  "internal_overlay_template": "08_DEPLOYMENT/CONFIG/dataset_sync/internal-real-overlay.example.json"
 }

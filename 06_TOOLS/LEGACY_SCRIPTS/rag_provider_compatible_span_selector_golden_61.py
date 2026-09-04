@@ -7,15 +7,18 @@ import json
 from pathlib import Path
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import rag_verified_span_selector_golden_61 as core
 
 
 ADR_ID = "ADR-0072"
 MODEL = core.MODEL
-IMPLEMENTATION = ROOT / "lawrag/core/rag/provider_compatible_span_selector.py"
+IMPLEMENTATION = Path(__import__("lawrag").__file__).resolve().parent / "core/rag/provider_compatible_span_selector.py"
 PARENT_MANIFEST_SHA256 = core.PARENT_MANIFEST_SHA256
 
 

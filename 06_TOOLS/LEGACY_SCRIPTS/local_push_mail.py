@@ -128,7 +128,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     short = after[:12]
-    out = ROOT / "var" / "out" / "ship" / "local-mail" / f"8agent-patch-{short}.zip"
+    out = ROOT / "90_RUNTIME" / "LEGACY_VAR" / "out" / "ship" / "local-mail" / f"8agent-patch-{short}.zip"
     manifest = push_patch_mail.pack(
         before,
         after,

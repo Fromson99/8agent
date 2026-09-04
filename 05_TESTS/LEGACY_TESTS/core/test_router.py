@@ -18,7 +18,10 @@ from pathlib import Path
 import pytest
 import yaml
 
-ROOT = Path(__file__).resolve().parent.parent.parent
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 sys.path.insert(0, str(ROOT))
 
 from lawrag.core import router                                       # noqa: E402
@@ -42,7 +45,7 @@ def _write_registry(tmp: Path, routes: list[dict], parsers=None) -> Path:
 
 def _rel(path: Path) -> str:
     """Route.format/glossary 는 저장소 루트 기준 상대 경로다."""
-    return os.path.relpath(path, ROOT)
+    return os.path.relpath(path, router.PACKAGE_CONTAINER)
 
 
 def _write_glossary(tmp: Path, doc_type: str) -> Path:
@@ -215,4 +218,4 @@ def test_glossary_load_is_not_how_agents_get_assets():
     r = router.load().get("금소법")
     g, _fmt = router.assets(r)
     assert g.doc_type == "금소법"
-    assert glossary_mod.load(ROOT / r.glossary).terms.keys() == g.terms.keys()
+    assert glossary_mod.load(r.glossary_path()).terms.keys() == g.terms.keys()

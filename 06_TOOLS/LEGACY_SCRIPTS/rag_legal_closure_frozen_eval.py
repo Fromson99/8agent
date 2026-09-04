@@ -11,8 +11,11 @@ import time
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import review_golden as review  # noqa: E402
 from scripts.ask_e2e_golden import _coords, _expected_article_coords  # noqa: E402

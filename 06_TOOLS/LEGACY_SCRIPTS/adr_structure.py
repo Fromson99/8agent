@@ -15,6 +15,8 @@ import statistics
 import sys
 from typing import Any
 
+from workspace_paths import StoredPathError, resolve_stored_path
+
 
 _SCRIPT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -277,7 +279,13 @@ def _stored_path(path: Path) -> str:
 
 def _resolve_stored_path(raw_path: str) -> Path:
     candidate = Path(raw_path)
-    return candidate if candidate.is_absolute() else ROOT / candidate
+    if candidate.is_absolute():
+        return candidate
+    try:
+        return resolve_stored_path(ROOT, raw_path, require_exists=False)
+    except StoredPathError:
+        # Keep the validator diagnostic-oriented for incomplete/TODO records.
+        return ROOT / candidate
 
 
 def _experiment_arm_ref(experiment_id: str, arm_id: str) -> str:
@@ -1832,8 +1840,11 @@ def _validate_code_isolation(
         for row in manifest.get("runs", [])
         if isinstance(row, dict)
     }
+    package_root = (ROOT / "02_BACKEND" / "lawrag"
+                    if (ROOT / "02_BACKEND" / "lawrag").is_dir()
+                    else ROOT / "lawrag")
     expected_root = (
-        ROOT / "lawrag" / "research" / "candidates" / f"adr_{number:04d}"
+        package_root / "research" / "candidates" / f"adr_{number:04d}"
     ).resolve()
 
     def contained(candidate: Path, boundary: Path) -> bool:
@@ -1939,9 +1950,12 @@ def _validate_code_isolation(
 
         raw_runner = str(candidate.get("runner_path") or "")
         runner_path = _resolve_stored_path(raw_runner) if raw_runner else Path()
+        tool_root = (ROOT / "06_TOOLS" / "LEGACY_SCRIPTS"
+                     if (ROOT / "06_TOOLS" / "LEGACY_SCRIPTS").is_dir()
+                     else ROOT / "scripts")
         runner_allowed = (
-            contained(runner_path, ROOT / "scripts") or
-            contained(runner_path, ROOT / "lawrag" / "research")
+            contained(runner_path, tool_root) or
+            contained(runner_path, package_root / "research")
         )
         if not raw_runner or not runner_allowed:
             errors.append(f"{label} runner must stay in scripts or lawrag/research")

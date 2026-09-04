@@ -4,11 +4,14 @@ import importlib.util
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 
 
 def _module():
-    path = ROOT / "scripts/regrade_corrected_legal_gold.py"
+    path = ROOT / "06_TOOLS/LEGACY_SCRIPTS/regrade_corrected_legal_gold.py"
     spec = importlib.util.spec_from_file_location("corrected_legal_gold_regrade", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

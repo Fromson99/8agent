@@ -19,16 +19,19 @@ import sys
 import time
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for key, relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
-    ("RAG_LAW_INDEX_STORE", "data/law_index.json"),
-    ("RAG_ENGINE_RULES", "data/rules/engine.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
+    ("RAG_LAW_INDEX_STORE", "01_DATA/law_index.json"),
+    ("RAG_ENGINE_RULES", "01_DATA/rules/engine.json"),
 ):
     os.environ.setdefault(key, str(ROOT / relative))
 
@@ -42,9 +45,9 @@ ADR_ID = "ADR-0106"
 EXPERIMENT_ID = "ADR-0106-experiment-v1"
 RUN_ID = "run-002"
 CASE_ID = "threshold-structured-001"
-ADR = ROOT / "docs/adr/ADR-0106-threshold-structured-search-trace"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0106-threshold-structured-search-trace"
 INPUT = ADR / "artifacts/frozen-input.json"
-GRAPH_CURRENT = ROOT / "data/legal_graph/CURRENT.json"
+GRAPH_CURRENT = ROOT / "01_DATA/legal_graph/CURRENT.json"
 EXPECTED_HASHES = {
     "input": "d9cf651897f185b3165d8ef7f70bcfaf7a679f36e83ecef6b2ba7c13f16e03bf",
     "graph_current": "418571f80d6d49ecdab9e8c2c6e2bede7221e5836f2a3a567100ee861c0c9161",
@@ -299,15 +302,15 @@ def run() -> dict:
     started = time.perf_counter()
     frozen = json.loads(INPUT.read_text("utf-8"))
     pointer = json.loads(GRAPH_CURRENT.read_text("utf-8"))
-    graph_manifest = ROOT / "data/legal_graph" / pointer["manifest"]
+    graph_manifest = ROOT / "01_DATA/legal_graph" / pointer["manifest"]
     source_paths = {
         "input": INPUT,
         "graph_current": GRAPH_CURRENT,
         "graph_manifest": graph_manifest,
-        "semantic_search_code": ROOT / "lawrag/core/rag/legal_semantic_search.py",
-        "graph_store_code": ROOT / "lawrag/core/rag/legal_graph_store.py",
-        "family_runtime_code": ROOT / "lawrag/core/rag/query_family_runtime.py",
-        "cm_gold": ROOT / "data/review/cm_core_e2e_v2.json",
+        "semantic_search_code": Path(__import__("lawrag").__file__).resolve().parent / "core/rag/legal_semantic_search.py",
+        "graph_store_code": Path(__import__("lawrag").__file__).resolve().parent / "core/rag/legal_graph_store.py",
+        "family_runtime_code": Path(__import__("lawrag").__file__).resolve().parent / "core/rag/query_family_runtime.py",
+        "cm_gold": ROOT / "01_DATA/review/cm_core_e2e_v2.json",
     }
     source_hashes = {key: _sha(path) for key, path in source_paths.items()}
     for key, expected in EXPECTED_HASHES.items():

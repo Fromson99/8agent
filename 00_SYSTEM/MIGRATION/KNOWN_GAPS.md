@@ -1,61 +1,30 @@
-# Bridge 단계 차단 목록
+# 영구 v2 전환 상태와 잔여 경계
 
-`LAWRAG_LAYOUT_VERSION=v2`를 활성화하기 전에 닫아야 하는 사항이다.
+## 2026-09-04 코드 상태
 
-## 2026-09-03 현재 확인된 진행 상태
+- workspace는 `v2-only`이며 legacy top-level root와 unknown root가 없다.
+- editable backend/tool source를 각각 `02_BACKEND/lawrag`,
+  `06_TOOLS/LEGACY_SCRIPTS`에 두고, 실행 선택은 활성화 영수증에 봉인된
+  `20260904-code-v5` 불변 generation을 사용한다.
+- 과거 기록의 `data/docs/scripts/lawrag/var` 경로는 기록을 재작성하지 않고
+  활성·이력 activation receipt의 source→target binding으로 해석한다.
+- `ExperimentStore`는 ADR/experiment ID 중복을 fail-closed 처리하고 artifact SHA-256을
+  읽기 전에 검증한다.
+- 기본 pytest 수집 범위는 smoke+legacy regression이며 `1960 passed`다.
+- `pyproject.toml` 기반 wheel을 만들 수 있고 research 및 agent6 raw corpus는 wheel에
+  포함되지 않는다. GenOS 코드 ZIP도 canonical code/config만 포함하고 data/runtime/
+  experiment/research root를 제외한다.
+- `release-manifest-v1`, source-set 고정, index build provenance, embedding fingerprint,
+  `ACTIVE_RELEASE` generation+hash CAS, append-only apply/rollback receipt 계약은 구현·검증돼 있다.
+- root의 domain graph 정적 파일은 코드 ZIP에서 제거됐으며 권위 데이터 패키지로만 운반한다.
 
-- `data`, backend, frontend, tests, scripts, ADR, ADR 외 docs, runtime/archive와
-  supporting roots를 하나의 287항목 plan으로 묶어 `copy-verify-0`,
-  `dual-read-compare`, `final-verify` 영수증을 발행했다.
-- 제품 API·검색 core·수집/인제스트 pipeline의 주요 `data/var` 기본값은
-  `lawrag.platform.paths`를 통하며, 기본 v1 경로 비회귀 테스트를 통과했다.
-- 최신 backend/tests/scripts shadow는
-  `20260903-code-shadows-refresh.*.json` 세대로 다시 고정했다.
-- final-verify는 완료됐지만 activation receipt는 발행·설정하지 않았다. 따라서
-  기본 v1과 legacy root는 그대로 유지된다.
+## 코드와 분리된 잔여 작업
 
-1. `data/`, `docs/`, `scripts/`, `lawrag/`, `var/`, `artifacts/` 물리 경로 참조를
-   `lawrag.platform.workspace` 또는 도메인별 Settings API로 교체한다.
-   제품 API·검색 core·수집 pipeline의 1차 교체는 끝났지만, agent6·배포 도구·
-   일부 legacy CLI와 문서/ADR resolver inventory가 남아 있다.
-2. `scripts.*` 재사용 import를 설치 가능한 `lawrag` 패키지로 옮긴다.
-3. `pyproject.toml` 패키지 계약과 GENOS install/build 절차를 확정한다.
-4. 완료 ADR의 path/hash 계보를 보존하는 `ExperimentStore` ID resolver와
-   append-only migration receipt를 만든다.
-5. `DatasetPackage` 각 row의 dataset/build provenance가 graph·index·hit·RuleBundle까지
-   유지되는 projection adapter를 만든다.
-6. 현재 Legal Graph compiler가 regex Requirement/Frame observation을 source-backed라는
-   이유만으로 canonical `ACCEPTED` 의미로 승격하는 경로를 제거한다.
-   규칙은 단서 존재·span·주변 문맥만 hint로 만들고 조건·결과·효과·
-   연결은 LLM observation·validator·승인 경계를 거친다.
-7. 검증된 `release-manifest-v1`과 `release-activation-plan-v1`을 기반으로
-   `ACTIVE_RELEASE` 단일 포인터의 compare-and-swap 활성화와 롤백 receipt를
-   GENOS 영속 볼륨에 구현한다. SourceSet을 별도 가변 포인터로
-   두지 않고 릴리스 내에 고정해 split-brain을 막는다.
-8. 현재 index builder가 source-set hash·semantic generation·embedding model fingerprint를
-   artifact manifest에 실제로 기록하게 한다. 릴리스 validator의 재사용 차단
-   계약은 추가되었지만 기존 index에는 아직 fingerprint가 없다.
-9. `ROOT_CLASSIFICATION.json`에 고정한 root DOCX/CSV/PNG/TXT와 legacy ADR
-   목적지의 copy/dual-read는 완료했다. DOCX의 기존 golden provenance 경로를
-   새 resolver에 연결하고 final-verify하기 전에는 원본을 제거하지 않는다.
-10. 전체 회귀, GENOS package pack/verify, 내부+외부 source-set 검색,
-    ACL 누수, ADR graph/hash 검증 후에만 strict target 모드를 켠다.
-11. 현재 code ZIP에 호환성 때문에 남은
-    `data/domain_graph/canonical.json`을 권위 데이터 패키지로 이행한다.
-    `lawrag/research/`는 이미 production ZIP에서 제외한다.
-12. v2 활성화 전 `code_ship.py`의 legacy `lawrag/scripts/config` 수집 root를
-    `02_BACKEND/06_TOOLS/08_DEPLOYMENT`의 중앙 레이아웃 resolver로 교체한다.
-13. **완료:** whole-root-only 계약을 partition-aware root binding v3로 확장했다.
-    부모의 모든 direct child는 `covered_sources`, 중첩 logical root는
-    `delegated_sources`, 허용 생성물은 `excluded_sources` 중 정확한 경로로 기록된다.
-    최종 세대는 12/12 root와 287개 source/target을 한 receipt로 증명한다.
+1. Legal Graph compiler의 regex Requirement/Frame observation을 canonical `ACCEPTED`로
+   자동 승격하는 경로는 별도 효과성 ADR에서 제거해야 한다. 조건·결과·효과·연결은
+   observation→validator→명시 승인 경계를 거쳐야 하며, 이 변경은 검색 의미를 바꾸므로
+   ADR-0166의 결정론적 경로 이행에 섞지 않는다.
+2. GenOS host의 실제 activation/rollback smoke, 내부+외부 source-set 검색, ACL 누수와
+   관찰 기간은 배포 작업이다. 사용자가 배포를 제외했으므로 이번 코드 작업에는 포함하지 않았다.
 
-## 최종 활성화 전 남은 핵심 작업
-
-- **완료:** backend 최신 target은 `migration_target("lawrag")`으로 선택하고
-  `scripts/serve.sh`는 그 target의 부모만 app-dir로 사용한다. runtime 쓰기는
-  `90_RUNTIME/{OUT,LOGS,...}` canonical bucket으로 분리했다. 전체 rehash는 explicit
-  activation audit로 분리해 API import를 25초 timeout에서 1.75초로 줄였다.
-- SourceSet runtime의 실제 내부+외부 조합, ACL 누수, index fingerprint를 검증한다.
-- GENOS host에서 activation/rollback smoke와 관찰 기간을 통과한 뒤에만 legacy
-  retirement receipt를 검토한다.
+위 두 항목 전에는 제품 의미 배선이나 GenOS 활성 포인터를 변경하지 않는다.

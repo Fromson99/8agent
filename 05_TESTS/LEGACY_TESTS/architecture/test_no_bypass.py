@@ -35,10 +35,13 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parent.parent.parent
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 sys.path.insert(0, str(ROOT))
 
-AGENTS = ROOT / "lawrag" / "agents"
+AGENTS = Path(__import__("lawrag").__file__).resolve().parent / "agents"
 
 # --- 예외 허용 목록 ---------------------------------------------------------
 # 경로(저장소 루트 기준) → **왜** 예외인지. 이유 없는 등재는 금지다. 여기에 한 줄

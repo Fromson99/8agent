@@ -17,8 +17,11 @@ import time
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.llm import LLM  # noqa: E402
 from lawrag.core.rag import answer as answer_mod  # noqa: E402
@@ -30,10 +33,10 @@ from scripts.rag_legal_issue_e2e_eval import reconstruct_evidence  # noqa: E402
 from scripts import rag_legal_proof_chain_selector as proof  # noqa: E402
 
 
-ADR = ROOT / "docs/adr/ADR-0053-haiku-rule-effect-executor-hardset"
-SOURCE_JUDGED = ROOT / "docs/adr/ADR-0052-proof-chain-hard-ambiguous/artifacts/judged-results.json"
-SOURCE_FROZEN = ROOT / "docs/adr/ADR-0052-proof-chain-hard-ambiguous/artifacts/frozen-cases.json"
-PARENT = ROOT / "docs/adr/ADR-0052-proof-chain-hard-ambiguous/실험/manifest.json"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0053-haiku-rule-effect-executor-hardset"
+SOURCE_JUDGED = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0052-proof-chain-hard-ambiguous/artifacts/judged-results.json"
+SOURCE_FROZEN = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0052-proof-chain-hard-ambiguous/artifacts/frozen-cases.json"
+PARENT = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0052-proof-chain-hard-ambiguous/실험/manifest.json"
 FROZEN = ADR / "artifacts/frozen-cases.json"
 PRODUCT = ADR / "artifacts/product-results.json"
 JUDGED = ADR / "artifacts/judged-results.json"
@@ -216,7 +219,7 @@ def prepare() -> None:
         raise RuntimeError(f"expected 8 common failures, got {len(cases)}")
     if not ADR.exists():
         scaffold_adr(
-            ROOT / "docs/adr", 53, "haiku-rule-effect-executor-hardset",
+            ROOT / "07_DOCS/LEGACY_DOCS/adr", 53, "haiku-rule-effect-executor-hardset",
             "Haiku 규칙·사실 분리 법률효과 실행기", "probe", [row["case_no"] for row in cases],
             branch_id="rule-effect-executor", candidate_arms=["rule-sheet", "verified-rule-sheet"],
             parent_manifest=PARENT, parent_arm="proof-chain", parent_relation="extends", judge_model=OPUS_MODEL,

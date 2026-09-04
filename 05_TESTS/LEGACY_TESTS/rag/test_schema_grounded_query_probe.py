@@ -3,8 +3,11 @@ from pathlib import Path
 from types import SimpleNamespace
 
 
-ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts/rag_schema_grounded_query_probe.py"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+SCRIPT = ROOT / "06_TOOLS/LEGACY_SCRIPTS/rag_schema_grounded_query_probe.py"
 
 
 def _runner():

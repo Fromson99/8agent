@@ -10,7 +10,10 @@ import zipfile
 import pytest
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 
 
 def _module(name: str, relative: str):
@@ -21,9 +24,15 @@ def _module(name: str, relative: str):
     return module
 
 
-CODE_SHIP = _module("code_ship_contract_v2", "scripts/code_ship.py")
-PATCH_SENDER = _module("push_patch_contract_v2", "scripts/push_patch_mail.py")
-PATCH_RECEIVER = _module("genos_patch_contract_v2", "scripts/genos_patch_apply.py")
+CODE_SHIP = _module(
+    "code_ship_contract_v2", "06_TOOLS/LEGACY_SCRIPTS/code_ship.py"
+)
+PATCH_SENDER = _module(
+    "push_patch_contract_v2", "06_TOOLS/LEGACY_SCRIPTS/push_patch_mail.py"
+)
+PATCH_RECEIVER = _module(
+    "genos_patch_contract_v2", "06_TOOLS/LEGACY_SCRIPTS/genos_patch_apply.py"
+)
 
 
 def test_code_bundle_contains_the_workspace_contract_but_not_data_roots():
@@ -34,7 +43,8 @@ def test_code_bundle_contains_the_workspace_contract_but_not_data_roots():
 
     assert "00_SYSTEM/WORKSPACE.json" in paths
     assert "00_SYSTEM/SCHEMAS/dataset-package-v2.schema.json" in paths
-    assert not any(path.startswith("lawrag/research/") for path in paths)
+    assert "pyproject.toml" in paths
+    assert not any(path.startswith("02_BACKEND/lawrag/research/") for path in paths)
     assert not any(
         path.startswith((
             "01_DATA/",
@@ -79,17 +89,21 @@ def test_incremental_patch_keeps_system_and_future_code_roots_available():
 def test_minimal_verified_code_bundle_can_bootstrap_workspace_after_extract(tmp_path):
     relative_paths = [
         "service.py",
+        "pyproject.toml",
         "requirements-serving.txt",
         "00_SYSTEM/WORKSPACE.json",
-        "lawrag/__init__.py",
-        "lawrag/datasets/__init__.py",
-        "lawrag/datasets/catalog.py",
-        "lawrag/datasets/sync.py",
-        "lawrag/platform/__init__.py",
-        "lawrag/platform/release.py",
-        "lawrag/platform/workspace.py",
-        "lawrag/runtime/__init__.py",
-        "lawrag/runtime/registry.py",
+        "02_BACKEND/lawrag/__init__.py",
+        "02_BACKEND/lawrag/datasets/__init__.py",
+        "02_BACKEND/lawrag/datasets/catalog.py",
+        "02_BACKEND/lawrag/datasets/sync.py",
+        "02_BACKEND/lawrag/platform/__init__.py",
+        "02_BACKEND/lawrag/platform/experiment_store.py",
+        "02_BACKEND/lawrag/platform/release.py",
+        "02_BACKEND/lawrag/platform/paths.py",
+        "02_BACKEND/lawrag/platform/stored_paths.py",
+        "02_BACKEND/lawrag/platform/workspace.py",
+        "02_BACKEND/lawrag/runtime/__init__.py",
+        "02_BACKEND/lawrag/runtime/registry.py",
     ]
     paths = [ROOT / relative for relative in relative_paths]
     assert all(path.is_file() for path in paths)
@@ -110,6 +124,7 @@ def test_minimal_verified_code_bundle_can_bootstrap_workspace_after_extract(tmp_
             sys.executable,
             "-c",
             (
+                "import sys; sys.path.insert(0, '02_BACKEND'); "
                 "from lawrag.datasets.sync import ROOT; "
                 "from lawrag.platform import load_layout; "
                 "assert ROOT == load_layout().root; print(load_layout().mode)"
@@ -123,4 +138,4 @@ def test_minimal_verified_code_bundle_can_bootstrap_workspace_after_extract(tmp_
     )
 
     assert done.returncode == 0, done.stderr
-    assert done.stdout.strip() == "bridge"
+    assert done.stdout.strip() == "v2-only"

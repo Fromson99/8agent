@@ -12,8 +12,11 @@ import statistics
 import sys
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.rag import answer, definitions, legal_coordinates, legal_references  # noqa: E402
 from lawrag.core.rag import legalclosure, wikictx  # noqa: E402
@@ -137,16 +140,16 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
         "--baseline", type=Path,
-        default=ROOT / "var/eval/e2e/cm_core_legal_coordinate_closure_normative_51.json")
+        default=ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_legal_coordinate_closure_normative_51.json")
     parser.add_argument(
         "--control", type=Path,
-        default=ROOT / "var/eval/e2e/cm_core_legalclosure_stage_ablation_51.json")
+        default=ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_legalclosure_stage_ablation_51.json")
     parser.add_argument(
         "--out", type=Path,
-        default=ROOT / "var/eval/e2e/ADR-0038/definition_context_wiki_51.json")
+        default=ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0038/definition_context_wiki_51.json")
     parser.add_argument(
         "--artifact-dir", type=Path,
-        default=ROOT / "docs/adr/ADR-0038-definition-context-wiki-hygiene/artifacts")
+        default=ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0038-definition-context-wiki-hygiene/artifacts")
     args = parser.parse_args()
 
     baseline = json.loads(args.baseline.read_text("utf-8"))

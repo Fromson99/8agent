@@ -19,11 +19,14 @@ from docx.shared import Inches, Pt, RGBColor
 from generate_legal_rag_report_diagrams import generate_all
 
 
-ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "docs/LEGAL_DOMAIN_RAG_EXPERIMENTS_COMPREHENSIVE_REPORT_2026-08-31.md"
-OUTPUT = ROOT / "artifacts/법률도메인_RAG_구조화_실험_종합보고서_2026-08-31_다이어그램_보강본.docx"
-ADR_ROOT = ROOT / "docs/adr"
-DIAGRAM_ROOT = ROOT / "artifacts/legal_rag_report_diagrams"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+SOURCE = ROOT / "07_DOCS/LEGACY_DOCS/LEGAL_DOMAIN_RAG_EXPERIMENTS_COMPREHENSIVE_REPORT_2026-08-31.md"
+OUTPUT = ROOT / "09_ARTIFACTS/LEGACY_ARTIFACTS/법률도메인_RAG_구조화_실험_종합보고서_2026-08-31_다이어그램_보강본.docx"
+ADR_ROOT = ROOT / "07_DOCS/LEGACY_DOCS/adr"
+DIAGRAM_ROOT = ROOT / "09_ARTIFACTS/LEGACY_ARTIFACTS/legal_rag_report_diagrams"
 
 FIGURES = {
     "{{FIGURE_END_TO_END}}": (

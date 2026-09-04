@@ -11,10 +11,13 @@ import time
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-os.environ.setdefault("STRUCTURE_STORE", "data/structure")
-os.environ.setdefault("GLOSSARY_STORE", "data/glossary.json")
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
+os.environ.setdefault("STRUCTURE_STORE", "01_DATA/structure")
+os.environ.setdefault("GLOSSARY_STORE", "01_DATA/glossary.json")
 
 from lawrag.core.rag import (  # noqa: E402
     legal_coordinates, legal_evidence, legal_references, legalclosure,

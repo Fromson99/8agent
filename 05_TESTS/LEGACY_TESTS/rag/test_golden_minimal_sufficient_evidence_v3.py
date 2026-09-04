@@ -4,13 +4,18 @@ import hashlib
 import json
 from pathlib import Path
 
+from lawrag.platform.stored_paths import resolve_stored_path
 
-ROOT = Path(__file__).resolve().parents[2]
-CM_V2 = ROOT / "data/review/cm_core_e2e_v2.json"
-FSC_V2 = ROOT / "data/review/fsc_hard_retrieval_v2.json"
-CM_V3 = ROOT / "data/review/cm_core_e2e_v3.json"
-FSC_V3 = ROOT / "data/review/fsc_hard_retrieval_v3.json"
-LEDGER = ROOT / "docs/adr/ADR-0124-golden-minimal-sufficient-evidence-audit-61/artifacts/golden-evidence-audit-run-003.json"
+
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+CM_V2 = ROOT / "01_DATA/review/cm_core_e2e_v2.json"
+FSC_V2 = ROOT / "01_DATA/review/fsc_hard_retrieval_v2.json"
+CM_V3 = ROOT / "01_DATA/review/cm_core_e2e_v3.json"
+FSC_V3 = ROOT / "01_DATA/review/fsc_hard_retrieval_v3.json"
+LEDGER = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0124-golden-minimal-sufficient-evidence-audit-61/artifacts/golden-evidence-audit-run-003.json"
 
 
 def load(path: Path) -> dict:
@@ -83,7 +88,7 @@ def test_missing_external_requirements_are_explicit_and_source_grounded() -> Non
             actual[case["id"]] = {(row["law"], row["article"]) for row in rows}
         for row in rows:
             assert row["corpus_status"] == "missing_document"
-            source = ROOT / row["source_path"]
+            source = resolve_stored_path(ROOT, row["source_path"])
             assert digest(source) == row["source_sha256"]
             assert row["source_quote"] in source.read_text(encoding="utf-8")
     assert actual == expected

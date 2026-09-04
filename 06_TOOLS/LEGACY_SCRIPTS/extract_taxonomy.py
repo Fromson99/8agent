@@ -1,4 +1,4 @@
-"""정의 조 → 용어 상하관계 표 (하이쿠). 
+"""정의 조 → 용어 상하관계 표 (하이쿠).
 
     python scripts/extract_taxonomy.py --doc 국세기본법 --doc "개인정보 보호법"
     python scripts/extract_taxonomy.py --all
@@ -8,9 +8,12 @@
 from __future__ import annotations
 import argparse, os, sys, time
 from pathlib import Path
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-os.environ.setdefault("STRUCTURE_STORE", str(ROOT / "data" / "structure"))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
+os.environ.setdefault("STRUCTURE_STORE", str(ROOT / "01_DATA" / "structure"))
 
 def main() -> int:
     ap = argparse.ArgumentParser()

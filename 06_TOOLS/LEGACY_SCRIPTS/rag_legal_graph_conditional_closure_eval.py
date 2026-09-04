@@ -21,17 +21,20 @@ import sys
 import time
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for key, relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
-    ("RAG_LAW_INDEX_STORE", "data/law_index.json"),
-    ("RAG_ENGINE_RULES", "data/rules/engine.json"),
-    ("LEGAL_GRAPH_STORE", "data/legal_graph"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
+    ("RAG_LAW_INDEX_STORE", "01_DATA/law_index.json"),
+    ("RAG_ENGINE_RULES", "01_DATA/rules/engine.json"),
+    ("LEGAL_GRAPH_STORE", "01_DATA/legal_graph"),
 ):
     os.environ.setdefault(key, str(ROOT / relative))
 
@@ -62,13 +65,13 @@ EXPECTED = {
     "graph_manifest": "9ca7fed5e964adc61958064904be4f95dbc3f0cd324d5e4256e3f1e38c5aa7d2",
 }
 SOURCES = {
-    "source_lock": ROOT / "docs/adr/ADR-0091-legalclosure-v2-article-reachability-ledger/artifacts/input-lock.json",
-    "source_run": ROOT / "docs/adr/ADR-0091-legalclosure-v2-article-reachability-ledger/artifacts/run-002.json",
-    "source_ledger": ROOT / "docs/adr/ADR-0091-legalclosure-v2-article-reachability-ledger/artifacts/retrieval-stage-ledger-run-002.json",
-    "cm": ROOT / "data/review/cm_core_e2e_v2.json",
-    "fsc": ROOT / "data/review/fsc_hard_retrieval_v2.json",
-    "graph_current": ROOT / "data/legal_graph/CURRENT.json",
-    "graph_manifest": ROOT / "data/legal_graph/generations/lgv1-a6c070b4bbd0411d193fb3ef/manifest.json",
+    "source_lock": ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0091-legalclosure-v2-article-reachability-ledger/artifacts/input-lock.json",
+    "source_run": ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0091-legalclosure-v2-article-reachability-ledger/artifacts/run-002.json",
+    "source_ledger": ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0091-legalclosure-v2-article-reachability-ledger/artifacts/retrieval-stage-ledger-run-002.json",
+    "cm": ROOT / "01_DATA/review/cm_core_e2e_v2.json",
+    "fsc": ROOT / "01_DATA/review/fsc_hard_retrieval_v2.json",
+    "graph_current": ROOT / "01_DATA/legal_graph/CURRENT.json",
+    "graph_manifest": ROOT / "01_DATA/legal_graph/generations/lgv1-a6c070b4bbd0411d193fb3ef/manifest.json",
 }
 
 
@@ -431,7 +434,7 @@ def main() -> None:
     parser.add_argument(
         "--adr",
         type=Path,
-        default=ROOT / "docs/adr/ADR-0099-legal-graph-query-family-search-wiring",
+        default=ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0099-legal-graph-query-family-search-wiring",
     )
     args = parser.parse_args()
     result = run(args.adr.resolve())

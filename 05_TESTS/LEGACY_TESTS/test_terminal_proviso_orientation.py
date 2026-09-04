@@ -6,9 +6,12 @@ from pathlib import Path
 import sys
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 CANDIDATE = (
-    ROOT / "lawrag/research/candidates/adr_0155/terminal-aware-proviso-graph"
+    Path(__import__("lawrag").__file__).resolve().parent / "research/candidates/adr_0155/terminal-aware-proviso-graph"
     "/revisions/rev-001/snapshot/lawrag/research/candidates/adr_0154"
     "/minimum-unit-proviso-graph/revisions/rev-002/snapshot/lawrag/research"
     "/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot"
@@ -43,7 +46,7 @@ def test_forward_proviso_and_reverse_receiving_locator_remain_exact():
     candidate = load_candidate()
     documents = {}
     for doc_id in ("3521c3aaa5a735fd", "eae25aa6e8a83c58"):
-        path = ROOT / "data/structure" / doc_id / "result.json"
+        path = ROOT / "01_DATA/structure" / doc_id / "result.json"
         documents[doc_id] = json.loads(path.read_text("utf-8"))
     graph = candidate.build_minimum_unit_proviso_graph(documents)
     components = {row["component_id"]: row for row in graph["components"]}

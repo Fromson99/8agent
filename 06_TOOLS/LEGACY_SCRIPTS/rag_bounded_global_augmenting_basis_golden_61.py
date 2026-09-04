@@ -23,14 +23,17 @@ import time
 from typing import Iterable
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for _key, _relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
 ):
     os.environ.setdefault(_key, str(ROOT / _relative))
 
@@ -46,32 +49,32 @@ POOL_CAP = 96
 BUNDLE_MAX = 4
 
 FROZEN = (
-    ROOT / "docs/adr/ADR-0064-feedback-explore-golden-61/artifacts/"
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0064-feedback-explore-golden-61/artifacts/"
     "frozen-cases.json")
 FROZEN_SHA256 = (
     "393ced7e9428aea5d6cbc7ed3383fe10dda199da1cc1bf7fcf0fd57edff9b0cb")
 PARENT_68_RUN = (
-    ROOT / "docs/adr/ADR-0068-recall-first-orthogonal-union/artifacts/"
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0068-recall-first-orthogonal-union/artifacts/"
     "run-001.json")
 PARENT_68_RUN_SHA256 = (
     "d751f88febc98a1537083dd5a4e93ebc2cfc40b40137a451fa359badc648d38b")
 PARENT_73_MANIFEST = (
-    ROOT / "docs/adr/ADR-0073-proof-contribution-basis-exchange/실험/"
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0073-proof-contribution-basis-exchange/실험/"
     "manifest.json")
 PARENT_73_MANIFEST_SHA256 = (
     "21ca70dc6bcf8dfdee130c9f58bd71f891c8a0010a2aed13c2c40b22bc0098c6")
 PARENT_73_RUN = (
-    ROOT / "docs/adr/ADR-0073-proof-contribution-basis-exchange/artifacts/"
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0073-proof-contribution-basis-exchange/artifacts/"
     "run-001.json")
 PARENT_73_RUN_SHA256 = (
     "a277eab6190f95476d9cc9b88b4881c5d6c9947dceefb59fa843ceddf3dc6904")
 
 IMPLEMENTATIONS = (
-    ROOT / "lawrag/core/rag/proof_basis_augmenting.py",
-    ROOT / "lawrag/core/rag/proof_basis_exchange.py",
-    ROOT / "lawrag/core/rag/grounded_witness.py",
-    ROOT / "lawrag/core/rag/legal_coordinates.py",
-    ROOT / "lawrag/core/rag/relations.py",
+    Path(__import__("lawrag").__file__).resolve().parent / "core/rag/proof_basis_augmenting.py",
+    Path(__import__("lawrag").__file__).resolve().parent / "core/rag/proof_basis_exchange.py",
+    Path(__import__("lawrag").__file__).resolve().parent / "core/rag/grounded_witness.py",
+    Path(__import__("lawrag").__file__).resolve().parent / "core/rag/legal_coordinates.py",
+    Path(__import__("lawrag").__file__).resolve().parent / "core/rag/relations.py",
 )
 
 _BANNED_PRODUCT_KEYS = frozenset({

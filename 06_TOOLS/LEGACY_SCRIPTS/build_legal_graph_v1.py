@@ -8,9 +8,12 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+    sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.legal_graph.compiler import BuildConfig, build_generation
 
@@ -20,22 +23,22 @@ def _parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     build = sub.add_parser("build", help="compile and atomically publish a generation")
-    build.add_argument("--structure-store", type=Path, default=Path("data/structure"))
-    build.add_argument("--law-index", type=Path, default=Path("data/law_index.json"))
-    build.add_argument("--delegation", type=Path, default=Path("data/delegation.json"))
+    build.add_argument("--structure-store", type=Path, default=Path("01_DATA/structure"))
+    build.add_argument("--law-index", type=Path, default=Path("01_DATA/law_index.json"))
+    build.add_argument("--delegation", type=Path, default=Path("01_DATA/delegation.json"))
     build.add_argument("--canonical", type=Path,
-                       default=Path("data/domain_graph/canonical.json"))
-    build.add_argument("--frames-store", type=Path, default=Path("data/frames"))
-    build.add_argument("--glossary", type=Path, default=Path("data/glossary.json"))
-    build.add_argument("--links", type=Path, default=Path("data/links.json"))
-    build.add_argument("--output-root", type=Path, default=Path("data/legal_graph"))
+                       default=Path("01_DATA/domain_graph/canonical.json"))
+    build.add_argument("--frames-store", type=Path, default=Path("01_DATA/frames"))
+    build.add_argument("--glossary", type=Path, default=Path("01_DATA/glossary.json"))
+    build.add_argument("--links", type=Path, default=Path("01_DATA/links.json"))
+    build.add_argument("--output-root", type=Path, default=Path("01_DATA/legal_graph"))
     build.add_argument("--no-publish-current", action="store_true")
 
     validate = sub.add_parser("validate", help="validate a generation without rebuilding it")
     validate.add_argument("--generation", type=Path,
                           help="generation directory (default: resolve output CURRENT.json)")
-    validate.add_argument("--output-root", type=Path, default=Path("data/legal_graph"))
-    validate.add_argument("--structure-store", type=Path, default=Path("data/structure"))
+    validate.add_argument("--output-root", type=Path, default=Path("01_DATA/legal_graph"))
+    validate.add_argument("--structure-store", type=Path, default=Path("01_DATA/structure"))
     return parser
 
 

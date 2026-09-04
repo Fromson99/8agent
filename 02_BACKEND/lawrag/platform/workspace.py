@@ -26,7 +26,7 @@ import re
 import shutil
 import stat
 import tempfile
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping
 
@@ -42,7 +42,7 @@ RETIREMENT_RECEIPT_SCHEMA = "workspace-legacy-retirement-authorization-v1"
 RETIREMENT_SOURCE_EVIDENCE_SCHEMA = "workspace-legacy-retirement-source-v1"
 MIGRATION_PLAN_SCHEMA = "workspace-copy-plan-v1"
 MIGRATION_RECEIPT_SCHEMA = "workspace-migration-phase-receipt-v4"
-CANONICAL_ROOT_BINDING_SCHEMA = "workspace-canonical-root-readiness-v2"
+CANONICAL_ROOT_BINDING_SCHEMA = "workspace-canonical-root-readiness-v3"
 MIGRATION_SEQUENCE = (
     "copy-verify-0",
     "dual-read-compare",
@@ -71,6 +71,7 @@ PUBLICATION_INCOMPLETE_MARKER = ".LAWRAG_PUBLICATION_INCOMPLETE"
 _PUBLISH_STRATEGIES = frozenset(
     {"renameat2", "hardlink", "reserved-directory", "already-present"}
 )
+_LAYOUT_CACHE: dict[tuple[str, str], "WorkspaceLayout"] = {}
 
 
 class LayoutError(ValueError):
@@ -591,33 +592,56 @@ class WorkspaceLayout:
     root_file_policy: Mapping[str, tuple[str, ...]]
     invariants: tuple[str, ...]
     manifest_sha256: str
+    activation_receipt: str | None = None
+    retirement_receipt: str | None = None
+    _routing_cache: dict[tuple[object, ...], Mapping[str, Any]] = field(
+        default_factory=dict, compare=False, repr=False
+    )
+    _inspection_cache: dict[tuple[object, ...], Path] = field(
+        default_factory=dict, compare=False, repr=False
+    )
 
-    def _validate_environment_activation(self) -> None:
-        receipt_value = os.environ.get(ACTIVATION_RECEIPT_ENV, "").strip()
-        if not receipt_value:
-            raise LayoutError(
-                f"v2 environment activation requires {ACTIVATION_RECEIPT_ENV}"
-            )
-        receipt_path = Path(receipt_value).expanduser()
-        if not receipt_path.is_absolute():
-            receipt_path = self.root / receipt_path
-        try:
-            assert_publication_ready(
-                receipt_path, field="layout activation receipt"
-            )
-            receipt_raw = _stable_regular_bytes(receipt_path)
-            receipt = json.loads(receipt_raw)
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-            raise LayoutError(f"cannot read layout activation receipt: {exc}") from exc
-        if not isinstance(receipt, Mapping):
-            raise LayoutError("layout activation receipt must be an object")
+    def _validate_environment_activation(self) -> Mapping[str, Any]:
+        receipt_path, receipt_raw, receipt = _read_environment_activation(self)
         _validate_activation_receipt_fields(self, receipt)
-        _validate_bound_final_receipt(
+        return _validate_bound_final_receipt(
             self,
             receipt,
             activation_path=receipt_path,
             activation_raw=receipt_raw,
         )
+
+    def _validate_environment_routing(self) -> Mapping[str, Any]:
+        """Validate immutable activation bindings without rehashing all payloads."""
+
+        receipt_path, receipt_raw, receipt = _read_environment_activation(self)
+        _validate_activation_receipt_fields(self, receipt)
+        validation_relative, validation_path = _checked_workspace_path(
+            self.root,
+            receipt.get("validation_receipt_path"),
+            field="validation_receipt_path",
+            require_leaf=True,
+        )
+        cache_key = (
+            hashlib.sha256(receipt_raw).hexdigest(),
+            _stat_identity(receipt_path.stat()),
+            validation_relative,
+            _stat_identity(validation_path.stat()),
+        )
+        cached = self._routing_cache.get(cache_key)
+        if cached is not None:
+            return cached
+        _relative, _validation_raw, validation = _load_bound_final_receipt(
+            self, receipt
+        )
+        self._routing_cache.clear()
+        self._routing_cache[cache_key] = validation
+        return validation
+
+    def validate_activation(self) -> Mapping[str, Any]:
+        """Run the expensive full source/target audit for an activation gate."""
+
+        return self._validate_environment_activation()
 
     def inspection_path(self, root_id: str, *, layout_version: str) -> Path:
         """Resolve an explicit layout only for migration/audit inspection.
@@ -637,11 +661,29 @@ class WorkspaceLayout:
             selected = self.root / spec.legacy_path
         else:
             selected = self.root / spec.canonical_path
-        return assert_publication_ready(
-            selected,
-            field=f"workspace root {root_id!r} ({version})",
-            boundary=self.root,
-        )
+        try:
+            identity = _stat_identity(selected.stat())
+        except OSError:
+            identity = None
+        cache_key = (root_id, version, identity)
+        cached = self._inspection_cache.get(cache_key)
+        if cached is not None:
+            return cached
+        if selected == self.root / spec.canonical_path:
+            ready = _canonical_root_directory(
+                self, root_id=root_id, canonical_path=spec.canonical_path
+            )
+        else:
+            ready = assert_publication_ready(
+                selected,
+                field=f"workspace root {root_id!r} ({version})",
+                boundary=self.root,
+            )
+        for stale_key in tuple(self._inspection_cache):
+            if stale_key[:2] == cache_key[:2] and stale_key != cache_key:
+                self._inspection_cache.pop(stale_key, None)
+        self._inspection_cache[cache_key] = ready
+        return ready
 
     def path(self, root_id: str, *, layout_version: str | None = None) -> Path:
         """Resolve a runtime logical root under the activated layout."""
@@ -656,14 +698,88 @@ class WorkspaceLayout:
         if version == "v1" and self.mode == "v2-only":
             raise LayoutError("v2-only workspace cannot resolve the v1 layout")
         if version == "v2":
-            self._validate_environment_activation()
+            self._validate_environment_routing()
         return self.inspection_path(root_id, layout_version=version)
 
     def canonical_path(self, root_id: str) -> Path:
         """Resolve a canonical runtime root only after v2 activation validation."""
 
-        self._validate_environment_activation()
+        self._validate_environment_routing()
         return self.inspection_path(root_id, layout_version="v2")
+
+    def migration_target(self, source: str) -> Path:
+        """Resolve one exact source through the active final migration receipt.
+
+        This is a content projection, not a canonical-root alias.  It is used
+        when a versioned publication such as ``.../GENERATIONS/.../lawrag`` is
+        the runnable payload below a stable canonical container.
+        """
+
+        version = os.environ.get(LAYOUT_ENV, self.default_layout_version)
+        if version != "v2":
+            raise LayoutError("migration targets are runtime-visible only in v2")
+        safe_source = _migration_relative_path(
+            source, field="migration target source"
+        )
+        activation_path, activation_raw, activation = _read_environment_activation(
+            self
+        )
+        _validate_activation_receipt_fields(self, activation)
+        _relative, _validation_raw, validation = _load_bound_final_receipt(
+            self, activation
+        )
+        rows = validation.get("items")
+        assert isinstance(rows, list)
+        matches = [row for row in rows if row.get("source") == safe_source]
+        if len(matches) != 1:
+            raise LayoutError(
+                "active final receipt must contain exactly one migration target "
+                f"for source: {safe_source}"
+            )
+        row = matches[0]
+        expected = _fingerprint_from_mapping(
+            row.get("fingerprint"), field="migration target fingerprint"
+        )
+        target_relative, target = _checked_workspace_path(
+            self.root,
+            row.get("target"),
+            field="migration target",
+            require_leaf=True,
+        )
+        assert_publication_ready(
+            target,
+            field=f"migration target {target_relative!r}",
+            boundary=self.root,
+        )
+        if _fingerprint_path(target) != expected:
+            raise LayoutError(
+                f"migration target no longer matches final receipt: {target_relative}"
+            )
+        if os.environ.get(RETIREMENT_RECEIPT_ENV, "").strip():
+            _validate_bound_final_receipt(
+                self,
+                activation,
+                activation_path=activation_path,
+                activation_raw=activation_raw,
+            )
+        else:
+            source_relative, source_path = _checked_workspace_path(
+                self.root,
+                safe_source,
+                field="migration target source",
+                require_leaf=True,
+            )
+            assert_publication_ready(
+                source_path,
+                field=f"migration source {source_relative!r}",
+                boundary=self.root,
+            )
+            if _fingerprint_path(source_path) != expected:
+                raise LayoutError(
+                    "migration source no longer matches final receipt: "
+                    f"{source_relative}"
+                )
+        return target
 
     def legacy_path(self, root_id: str) -> Path | None:
         """Return a legacy path for migration inspection, never runtime routing."""
@@ -747,6 +863,9 @@ class CanonicalRootBinding:
     completion_kind: str
     expected_kind: str
     evidence_targets: tuple[str, ...]
+    covered_sources: tuple[str, ...]
+    delegated_sources: tuple[str, ...]
+    excluded_sources: tuple[str, ...]
     readiness_sha256: str
 
     def unsigned_dict(self) -> dict[str, Any]:
@@ -758,6 +877,9 @@ class CanonicalRootBinding:
             "completion_kind": self.completion_kind,
             "expected_kind": self.expected_kind,
             "evidence_targets": list(self.evidence_targets),
+            "covered_sources": list(self.covered_sources),
+            "delegated_sources": list(self.delegated_sources),
+            "excluded_sources": list(self.excluded_sources),
         }
 
     def as_dict(self) -> dict[str, Any]:
@@ -973,6 +1095,9 @@ def _canonical_root_binding_from_mapping(
         "completion_kind",
         "expected_kind",
         "evidence_targets",
+        "covered_sources",
+        "delegated_sources",
+        "excluded_sources",
         "readiness_sha256",
     }
     if not isinstance(value, Mapping) or set(value) != expected_fields:
@@ -991,6 +1116,7 @@ def _canonical_root_binding_from_mapping(
     completion_kind = value.get("completion_kind")
     if not isinstance(completion_kind, str) or completion_kind not in {
         "migrated-legacy-root",
+        "migrated-legacy-partition",
         "already-canonical",
     }:
         raise LayoutError(f"{field}.completion_kind is invalid")
@@ -1006,6 +1132,22 @@ def _canonical_root_binding_from_mapping(
     )
     if evidence_targets != tuple(sorted(set(evidence_targets))):
         raise LayoutError(f"{field}.evidence_targets must be unique and sorted")
+
+    def source_list(name: str) -> tuple[str, ...]:
+        raw = value.get(name)
+        if not isinstance(raw, list):
+            raise LayoutError(f"{field}.{name} must be a list")
+        parsed = tuple(
+            _migration_relative_path(
+                source,
+                field=f"{field}.{name}[{position}]",
+            )
+            for position, source in enumerate(raw)
+        )
+        if parsed != tuple(sorted(set(parsed))):
+            raise LayoutError(f"{field}.{name} must be unique and sorted")
+        return parsed
+
     binding = CanonicalRootBinding(
         root_id=root_id,
         canonical_path=canonical_path,
@@ -1013,6 +1155,9 @@ def _canonical_root_binding_from_mapping(
         completion_kind=completion_kind,
         expected_kind=value.get("expected_kind"),
         evidence_targets=evidence_targets,
+        covered_sources=source_list("covered_sources"),
+        delegated_sources=source_list("delegated_sources"),
+        excluded_sources=source_list("excluded_sources"),
         readiness_sha256=_sha256_value(
             value.get("readiness_sha256"),
             field=f"{field}.readiness_sha256",
@@ -1046,17 +1191,227 @@ def _canonical_root_directory(
         field=f"canonical root {root_id!r}",
         require_leaf=True,
     )
-    assert_publication_ready(
-        path,
-        field=f"canonical root {root_id!r}",
-        boundary=layout.root,
-    )
     info = path.lstat()
     if stat.S_ISLNK(info.st_mode) or not stat.S_ISDIR(info.st_mode):
         raise LayoutError(
             f"canonical root {root_id!r} is not a no-follow directory: {relative}"
         )
+    # A canonical root is a long-lived container, and some roots (notably
+    # 90_RUNTIME) intentionally hold mutable files and test-created symlinks.
+    # Deep no-follow verification belongs to each immutable publication target;
+    # recursively scanning the container on every path lookup both rejected
+    # valid runtime state and made a RAG request proportional to the whole repo.
+    markers = tuple(
+        marker
+        for marker in (_publication_sidecar(path), path / PUBLICATION_INCOMPLETE_MARKER)
+        if _path_exists(marker)
+    )
+    if markers:
+        rendered = ", ".join(str(marker) for marker in markers)
+        raise LayoutError(
+            f"canonical root {root_id!r} is an incomplete publication: {rendered}"
+        )
     return path
+
+
+_GENERATED_MIGRATION_EXCLUSION_NAMES = frozenset({
+    ".git",
+    ".next",
+    ".vinext",
+    ".wrangler",
+    "__pycache__",
+    "dist",
+    "node_modules",
+})
+
+
+def _direct_legacy_children(layout: WorkspaceLayout, legacy_path: str) -> tuple[str, ...]:
+    _relative, directory = _checked_workspace_path(
+        layout.root,
+        legacy_path,
+        field=f"legacy root {legacy_path!r}",
+        require_leaf=True,
+    )
+    info = directory.lstat()
+    if stat.S_ISLNK(info.st_mode) or not stat.S_ISDIR(info.st_mode):
+        raise LayoutError(f"legacy root is not a no-follow directory: {legacy_path}")
+    return tuple(
+        sorted(
+            f"{legacy_path}/{entry.name}"
+            for entry in os.scandir(directory)
+            if not _is_reserved_publication_name(entry.name)
+        )
+    )
+
+
+def _direct_nested_legacy_roots(
+    layout: WorkspaceLayout,
+    *,
+    root_id: str,
+    legacy_path: str,
+) -> tuple[str, ...]:
+    parent = PurePosixPath(legacy_path)
+    nested: list[str] = []
+    for other_id, other in layout.roots.items():
+        if other_id == root_id or not other.legacy_path:
+            continue
+        candidate = PurePosixPath(other.legacy_path)
+        try:
+            remainder = candidate.relative_to(parent)
+        except ValueError:
+            continue
+        if len(remainder.parts) == 1:
+            nested.append(other.legacy_path)
+    return tuple(sorted(nested))
+
+
+def _normalized_partition_exclusions(
+    layout: WorkspaceLayout,
+    *,
+    root_id: str,
+    legacy_path: str,
+    values: Iterable[str],
+) -> tuple[str, ...]:
+    exclusions = tuple(
+        sorted(
+            {
+                _migration_relative_path(
+                    value,
+                    field=f"excluded_legacy_sources.{root_id}",
+                )
+                for value in values
+            }
+        )
+    )
+    legacy = PurePosixPath(legacy_path)
+    for value in exclusions:
+        path = PurePosixPath(value)
+        try:
+            remainder = path.relative_to(legacy)
+        except ValueError as exc:
+            raise LayoutError(
+                f"partition exclusion is outside legacy root {root_id!r}: {value}"
+            ) from exc
+        if (
+            len(remainder.parts) != 1
+            or remainder.name not in _GENERATED_MIGRATION_EXCLUSION_NAMES
+        ):
+            raise LayoutError(
+                f"partition exclusion is not an approved generated entry: {value}"
+            )
+        _relative, exclusion_path = _checked_workspace_path(
+            layout.root,
+            value,
+            field=f"excluded legacy source {root_id!r}",
+            require_leaf=True,
+        )
+        exclusion_info = exclusion_path.lstat()
+        if stat.S_ISLNK(exclusion_info.st_mode) or not stat.S_ISDIR(
+            exclusion_info.st_mode
+        ):
+            raise LayoutError(
+                "partition exclusion must be a no-follow generated directory: "
+                f"{value}"
+            )
+    return exclusions
+
+
+def _root_binding_components(
+    layout: WorkspaceLayout,
+    *,
+    root_id: str,
+    pairs: Iterable[tuple[str, str]],
+    excluded_sources: Iterable[str],
+) -> tuple[str, tuple[str, ...], tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
+    spec = layout.roots[root_id]
+    pair_rows = tuple(pairs)
+    if spec.state == "active":
+        if spec.legacy_path is not None:
+            raise LayoutError(
+                f"active root {root_id!r} must not retain legacy_path"
+            )
+        if tuple(excluded_sources):
+            raise LayoutError(
+                f"active root {root_id!r} cannot exclude legacy sources"
+            )
+        return (
+            "already-canonical",
+            (spec.canonical_path,),
+            (),
+            (),
+            (),
+        )
+    if spec.state != "bridge" or not spec.legacy_path:
+        raise LayoutError(
+            f"root {root_id!r} in state {spec.state!r} cannot be activated"
+        )
+
+    targeted = tuple(
+        (source, target)
+        for source, target in pair_rows
+        if _is_strict_path_descendant(target, spec.canonical_path)
+    )
+    whole = tuple((source, target) for source, target in targeted
+                  if source == spec.legacy_path)
+    if whole:
+        if len(whole) != 1:
+            raise LayoutError(
+                f"bridge root {root_id!r} has duplicate whole-root evidence"
+            )
+        if tuple(excluded_sources):
+            raise LayoutError(
+                f"whole-root migration {root_id!r} cannot declare exclusions"
+            )
+        source, target = whole[0]
+        return (
+            "migrated-legacy-root",
+            (target,),
+            (source,),
+            (),
+            (),
+        )
+
+    excluded = _normalized_partition_exclusions(
+        layout,
+        root_id=root_id,
+        legacy_path=spec.legacy_path,
+        values=excluded_sources,
+    )
+    delegated = _direct_nested_legacy_roots(
+        layout,
+        root_id=root_id,
+        legacy_path=spec.legacy_path,
+    )
+    direct_children = set(_direct_legacy_children(layout, spec.legacy_path))
+    covered_rows = tuple(
+        (source, target)
+        for source, target in targeted
+        if PurePosixPath(source).parent == PurePosixPath(spec.legacy_path)
+    )
+    covered = tuple(sorted(source for source, _target in covered_rows))
+    required = direct_children - set(delegated) - set(excluded)
+    if set(covered) != required:
+        missing = sorted(required - set(covered))
+        unexpected = sorted(set(covered) - required)
+        detail = []
+        if missing:
+            detail.append("missing=" + ",".join(missing))
+        if unexpected:
+            detail.append("unexpected=" + ",".join(unexpected))
+        raise LayoutError(
+            f"bridge root {root_id!r} partition is incomplete: " + "; ".join(detail)
+        )
+    targets_by_source = {source: target for source, target in covered_rows}
+    evidence = tuple(sorted(targets_by_source[source] for source in covered))
+    if not evidence:
+        raise LayoutError(f"bridge root {root_id!r} has no migration evidence")
+    return (
+        "migrated-legacy-partition",
+        evidence,
+        covered,
+        delegated,
+        excluded,
+    )
 
 
 def _build_canonical_root_bindings(
@@ -1064,6 +1419,7 @@ def _build_canonical_root_bindings(
     final_items: tuple[MigrationPhaseItem, ...],
     *,
     already_canonical_root_ids: Iterable[str],
+    excluded_legacy_sources: Mapping[str, Iterable[str]],
 ) -> tuple[CanonicalRootBinding, ...]:
     explicit_ids = tuple(already_canonical_root_ids)
     if len(explicit_ids) != len(set(explicit_ids)):
@@ -1074,6 +1430,13 @@ def _build_canonical_root_bindings(
         raise LayoutError(
             "already-canonical root policy names unknown roots: " + ", ".join(unknown)
         )
+    exclusion_ids = set(excluded_legacy_sources)
+    unknown_exclusions = sorted(exclusion_ids - set(layout.roots))
+    if unknown_exclusions:
+        raise LayoutError(
+            "partition exclusions name unknown roots: " + ", ".join(unknown_exclusions)
+        )
+    pairs = tuple((item.source, item.target) for item in final_items)
     bindings: list[CanonicalRootBinding] = []
     for root_id in sorted(layout.roots):
         spec = layout.roots[root_id]
@@ -1082,48 +1445,26 @@ def _build_canonical_root_bindings(
             root_id=root_id,
             canonical_path=spec.canonical_path,
         )
-        if spec.state == "bridge":
-            if not spec.legacy_path:
-                raise LayoutError(
-                    f"bridge root {root_id!r} requires a legacy_path"
-                )
-            evidence = tuple(
-                item.target
-                for item in final_items
-                if item.source == spec.legacy_path
-                and _is_strict_path_descendant(
-                    item.target, spec.canonical_path
-                )
-            )
-            exact_source_count = sum(
-                item.source == spec.legacy_path for item in final_items
-            )
-            if exact_source_count != 1 or len(evidence) != 1:
-                raise LayoutError(
-                    f"bridge root {root_id!r} requires exactly one final item "
-                    "from its whole legacy root to a target below its canonical root"
-                )
-            if root_id in explicit:
-                raise LayoutError(
-                    f"bridge root {root_id!r} cannot use already-canonical policy"
-                )
-            completion_kind = "migrated-legacy-root"
-            evidence_targets = evidence
-        elif spec.state == "active":
-            if spec.legacy_path is not None:
-                raise LayoutError(
-                    f"active root {root_id!r} must not retain legacy_path"
-                )
-            if root_id not in explicit:
-                raise LayoutError(
-                    f"active root {root_id!r} requires explicit already-canonical policy"
-                )
-            completion_kind = "already-canonical"
-            evidence_targets = (spec.canonical_path,)
-        else:
+        if spec.state == "bridge" and root_id in explicit:
             raise LayoutError(
-                f"root {root_id!r} in state {spec.state!r} cannot be activated"
+                f"bridge root {root_id!r} cannot use already-canonical policy"
             )
+        if spec.state == "active" and root_id not in explicit:
+            raise LayoutError(
+                f"active root {root_id!r} requires explicit already-canonical policy"
+            )
+        (
+            completion_kind,
+            evidence_targets,
+            covered_sources,
+            delegated_sources,
+            excluded_sources,
+        ) = _root_binding_components(
+            layout,
+            root_id=root_id,
+            pairs=pairs,
+            excluded_sources=excluded_legacy_sources.get(root_id, ()),
+        )
         provisional = CanonicalRootBinding(
             root_id=root_id,
             canonical_path=spec.canonical_path,
@@ -1131,6 +1472,9 @@ def _build_canonical_root_bindings(
             completion_kind=completion_kind,
             expected_kind="directory",
             evidence_targets=evidence_targets,
+            covered_sources=covered_sources,
+            delegated_sources=delegated_sources,
+            excluded_sources=excluded_sources,
             readiness_sha256="",
         )
         bindings.append(
@@ -1141,6 +1485,9 @@ def _build_canonical_root_bindings(
                 completion_kind=provisional.completion_kind,
                 expected_kind=provisional.expected_kind,
                 evidence_targets=provisional.evidence_targets,
+                covered_sources=provisional.covered_sources,
+                delegated_sources=provisional.delegated_sources,
+                excluded_sources=provisional.excluded_sources,
                 readiness_sha256=_canonical_root_readiness_hash(
                     layout.manifest_sha256,
                     provisional.unsigned_dict(),
@@ -1193,43 +1540,22 @@ def _validate_live_canonical_root_bindings(
             raise LayoutError(
                 f"canonical root binding does not match manifest: {binding.root_id!r}"
             )
-        if spec.state == "bridge":
-            if not spec.legacy_path:
-                raise LayoutError(
-                    f"bridge root {binding.root_id!r} requires a legacy_path"
-                )
-            evidence = tuple(
-                target
-                for source, target in final_pairs
-                if source == spec.legacy_path
-                and _is_strict_path_descendant(target, spec.canonical_path)
-            )
-            exact_source_count = sum(
-                source == spec.legacy_path for source, _target in final_pairs
-            )
-            if (
-                binding.completion_kind != "migrated-legacy-root"
-                or exact_source_count != 1
-                or len(evidence) != 1
-                or binding.evidence_targets != evidence
-            ):
-                raise LayoutError(
-                    f"canonical root binding has invalid migration evidence: "
-                    f"{binding.root_id!r}"
-                )
-        elif spec.state == "active":
-            if (
-                spec.legacy_path is not None
-                or binding.completion_kind != "already-canonical"
-                or binding.evidence_targets != (spec.canonical_path,)
-            ):
-                raise LayoutError(
-                    f"canonical root binding lacks explicit already-canonical "
-                    f"policy: {binding.root_id!r}"
-                )
-        else:
+        expected = _root_binding_components(
+            layout,
+            root_id=binding.root_id,
+            pairs=final_pairs,
+            excluded_sources=binding.excluded_sources,
+        )
+        observed = (
+            binding.completion_kind,
+            binding.evidence_targets,
+            binding.covered_sources,
+            binding.delegated_sources,
+            binding.excluded_sources,
+        )
+        if observed != expected:
             raise LayoutError(
-                f"canonical root binding cannot activate retired root: "
+                f"canonical root binding has invalid migration evidence: "
                 f"{binding.root_id!r}"
             )
         _canonical_root_directory(
@@ -1938,6 +2264,7 @@ def verify_final_migration(
     dual_read_receipt: MigrationReceipt,
     *,
     already_canonical_root_ids: Iterable[str] = (),
+    excluded_legacy_sources: Mapping[str, Iterable[str]] | None = None,
 ) -> MigrationReceipt:
     """Issue the final validation receipt without deleting any legacy source."""
 
@@ -1960,6 +2287,7 @@ def verify_final_migration(
             layout,
             final_items,
             already_canonical_root_ids=already_canonical_root_ids,
+            excluded_legacy_sources=excluded_legacy_sources or {},
         ),
     )
 
@@ -2134,6 +2462,31 @@ def _stable_regular_bytes(path: Path) -> bytes:
     if _stat_identity(opened) != _stat_identity(after) or len(raw) != after.st_size:
         raise LayoutError(f"record changed while reading: {path}")
     return raw
+
+
+def _read_environment_activation(
+    layout: WorkspaceLayout,
+) -> tuple[Path, bytes, Mapping[str, Any]]:
+    receipt_value = (
+        os.environ.get(ACTIVATION_RECEIPT_ENV, "").strip()
+        or (layout.activation_receipt or "")
+    )
+    if not receipt_value:
+        raise LayoutError(
+            f"v2 environment activation requires {ACTIVATION_RECEIPT_ENV}"
+        )
+    receipt_path = Path(receipt_value).expanduser()
+    if not receipt_path.is_absolute():
+        receipt_path = layout.root / receipt_path
+    try:
+        assert_publication_ready(receipt_path, field="layout activation receipt")
+        receipt_raw = _stable_regular_bytes(receipt_path)
+        receipt = json.loads(receipt_raw)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise LayoutError(f"cannot read layout activation receipt: {exc}") from exc
+    if not isinstance(receipt, Mapping):
+        raise LayoutError("layout activation receipt must be an object")
+    return receipt_path, receipt_raw, receipt
 
 
 def _validate_activation_receipt_fields(
@@ -2622,15 +2975,18 @@ def _validate_bound_final_receipt(
     *,
     activation_path: Path,
     activation_raw: bytes,
-) -> None:
+) -> Mapping[str, Any]:
     validation_relative, validation_raw, validation = _load_bound_final_receipt(
         layout,
         activation,
     )
-    retirement_value = os.environ.get(RETIREMENT_RECEIPT_ENV, "").strip()
+    retirement_value = (
+        os.environ.get(RETIREMENT_RECEIPT_ENV, "").strip()
+        or (layout.retirement_receipt or "")
+    )
     if not retirement_value:
         _validate_live_receipt_items(layout, validation, verify_sources=True)
-        return
+        return validation
     _retirement_relative, _retirement_path, _retirement_raw, retirement = (
         _read_json_record(
             layout,
@@ -2649,6 +3005,7 @@ def _validate_bound_final_receipt(
         validation=validation,
     )
     _validate_live_receipt_items(layout, validation, verify_sources=False)
+    return validation
 
 
 def persist_immutable_migration_record(
@@ -2807,6 +3164,27 @@ def _parse_manifest(
         root_policy[str(group)] = tuple(values)
 
     legacy_dirs = tuple(str(v) for v in blob.get("legacy_top_level_directories") or [])
+    lifecycle = blob.get("lifecycle") or {}
+    if not isinstance(lifecycle, Mapping):
+        raise LayoutError("lifecycle must be an object")
+    unexpected_lifecycle = set(lifecycle) - {
+        "activation_receipt", "retirement_receipt"
+    }
+    if unexpected_lifecycle:
+        raise LayoutError(
+            "lifecycle contains unexpected fields: "
+            + ", ".join(sorted(unexpected_lifecycle))
+        )
+    activation_receipt = _relative_path(
+        lifecycle.get("activation_receipt"),
+        field="lifecycle.activation_receipt",
+        allow_null=True,
+    )
+    retirement_receipt = _relative_path(
+        lifecycle.get("retirement_receipt"),
+        field="lifecycle.retirement_receipt",
+        allow_null=True,
+    )
     return WorkspaceLayout(
         root=root,
         mode=mode,
@@ -2817,6 +3195,8 @@ def _parse_manifest(
         root_file_policy=root_policy,
         invariants=tuple(str(v) for v in blob.get("invariants") or []),
         manifest_sha256=manifest_sha256,
+        activation_receipt=activation_receipt,
+        retirement_receipt=retirement_receipt,
     )
 
 
@@ -2830,9 +3210,19 @@ def load_layout(root: str | Path | None = None) -> WorkspaceLayout:
         raise LayoutError(f"cannot read workspace manifest {path}: {exc}") from exc
     if not isinstance(blob, Mapping):
         raise LayoutError("workspace manifest root must be an object")
-    return _parse_manifest(
-        blob, workspace, manifest_sha256=hashlib.sha256(raw).hexdigest()
+    manifest_sha256 = hashlib.sha256(raw).hexdigest()
+    cache_key = (str(workspace.resolve()), manifest_sha256)
+    cached = _LAYOUT_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+    parsed = _parse_manifest(
+        blob, workspace, manifest_sha256=manifest_sha256
     )
+    for stale_key in tuple(_LAYOUT_CACHE):
+        if stale_key[0] == cache_key[0] and stale_key != cache_key:
+            _LAYOUT_CACHE.pop(stale_key, None)
+    _LAYOUT_CACHE[cache_key] = parsed
+    return parsed
 
 
 def audit_top_level(layout: WorkspaceLayout | None = None) -> dict[str, Any]:

@@ -41,15 +41,20 @@ import textwrap
 import time
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
+from workspace_paths import resolve_stored_path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for _key, _relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
 ):
     os.environ.setdefault(_key, str(ROOT / _relative))
 
@@ -75,13 +80,12 @@ MODEL = "claude-haiku-4-5-20251001"
 EXPECTED_INPUT_LOCK_SHA256 = (
     "7636cc52ac0bd94a10baa1d75f3f381940981ff86beafa7f7ee91fedf9308452"
 )
-ADR = ROOT / "docs/adr/ADR-0114-integrated-legal-research-state-machine-golden-61"
-INPUT_LOCK = (
-    ROOT
-    / "docs/adr/ADR-0091-legalclosure-v2-article-reachability-ledger"
-    / "artifacts/input-lock.json"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0114-integrated-legal-research-state-machine-golden-61"
+INPUT_LOCK = resolve_stored_path(
+    ROOT,
+    "docs/adr/ADR-0091-legalclosure-v2-article-reachability-ledger/artifacts/input-lock.json",
 )
-CM_SOURCE = ROOT / "data/review/cm_core_e2e_v2.json"
+CM_SOURCE = ROOT / "01_DATA/review/cm_core_e2e_v2.json"
 EXPECTED_CM_SOURCE_SHA256 = (
     "d3c707caa114dec379201c2ba9d2177b0c6bc17ceb4ae9394df1397e9dbfccb1"
 )

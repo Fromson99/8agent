@@ -10,12 +10,17 @@ import re
 from pathlib import Path
 from typing import Any
 
+from workspace_paths import resolve_stored_path
 
-ROOT = Path(__file__).resolve().parents[1]
-CM = ROOT / "data/review/cm_core_e2e_v2.json"
-FSC = ROOT / "data/review/fsc_hard_retrieval_v2.json"
-INPUT_LOCK = ROOT / "docs/adr/ADR-0088-corrected-golden-impact-regrade/artifacts/input-lock.json"
-DEFAULT_OUTPUT = ROOT / "docs/adr/ADR-0088-corrected-golden-impact-regrade/artifacts/run-001.json"
+
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+CM = ROOT / "01_DATA/review/cm_core_e2e_v2.json"
+FSC = ROOT / "01_DATA/review/fsc_hard_retrieval_v2.json"
+INPUT_LOCK = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0088-corrected-golden-impact-regrade/artifacts/input-lock.json"
+DEFAULT_OUTPUT = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0088-corrected-golden-impact-regrade/artifacts/run-001.json"
 
 RETRIEVAL_ARTIFACTS = {
     "ADR-0061": "docs/adr/ADR-0061-fsc-hard-top20-retrieval/artifacts/run-001.json",
@@ -173,7 +178,7 @@ def _score_artifact(adr_id: str, path: Path, gold: dict[str, dict[str, Any]]) ->
 
 
 def _strata_regrade(gold: dict[str, dict[str, Any]]) -> dict[str, Any]:
-    path = ROOT / "docs/adr/ADR-0083-golden-question-surface-strata/artifacts/run-001.json"
+    path = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0083-golden-question-surface-strata/artifacts/run-001.json"
     data = _load(path)
     result: dict[str, Any] = {"source_artifact": str(path.relative_to(ROOT)), "source_sha256": _sha(path)}
     for view in ("source_question_view", "runtime_question_view"):
@@ -188,7 +193,7 @@ def _strata_regrade(gold: dict[str, dict[str, Any]]) -> dict[str, Any]:
 
 
 def _semantic_seed_audit(gold: dict[str, dict[str, Any]]) -> dict[str, Any]:
-    path = ROOT / "docs/adr/ADR-0085-semantic-operation-seed-golden-10/artifacts/run-001.json"
+    path = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0085-semantic-operation-seed-golden-10/artifacts/run-001.json"
     data = _load(path)
     semantic_matches = exact_matches = 0
     stale: list[dict[str, Any]] = []
@@ -231,12 +236,12 @@ def build() -> dict[str, Any]:
     if _sha(CM) != lock["golden"][0]["sha256"] or _sha(FSC) != lock["golden"][1]["sha256"]:
         raise RuntimeError("golden source hash changed after freeze")
     for record in lock["impacted_adrs"]:
-        if _sha(ROOT / record["artifact"]) != record["sha256"]:
+        if _sha(resolve_stored_path(ROOT, record["artifact"])) != record["sha256"]:
             raise RuntimeError(f"frozen ADR artifact changed: {record['artifact']}")
 
     gold, denominator = _gold_cases()
     retrieval = [
-        _score_artifact(adr_id, ROOT / rel, gold)
+        _score_artifact(adr_id, resolve_stored_path(ROOT, rel), gold)
         for adr_id, rel in RETRIEVAL_ARTIFACTS.items()
     ]
     impact = [
@@ -271,8 +276,8 @@ def build() -> dict[str, Any]:
         "strata_regrade": _strata_regrade(gold),
         "semantic_seed_audit": _semantic_seed_audit(gold),
         "immutability": {
-            "cm_v1_sha256": _sha(ROOT / "data/review/cm_core_e2e_v1.json"),
-            "fsc_v1_sha256": _sha(ROOT / "data/review/fsc_hard_retrieval_v1.json"),
+            "cm_v1_sha256": _sha(ROOT / "01_DATA/review/cm_core_e2e_v1.json"),
+            "fsc_v1_sha256": _sha(ROOT / "01_DATA/review/fsc_hard_retrieval_v1.json"),
         },
     }
 

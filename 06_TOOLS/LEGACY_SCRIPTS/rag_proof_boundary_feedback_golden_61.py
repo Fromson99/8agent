@@ -15,14 +15,17 @@ import sys
 import time
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for _key, _relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
 ):
     os.environ.setdefault(_key, str(ROOT / _relative))
 
@@ -43,7 +46,7 @@ PARENT_FROZEN_SHA256 = base.PARENT_FROZEN_SHA256
 PARENT_RUN_SHA256 = base.PARENT_RUN_SHA256
 PARENT_MANIFEST_SHA256 = base.PARENT_MANIFEST_SHA256
 DIRECT_PARENT_MANIFEST = (
-    ROOT / "docs/adr/ADR-0065-uncertainty-aware-semantic-bindings/실험/manifest.json"
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0065-uncertainty-aware-semantic-bindings/실험/manifest.json"
 )
 DIRECT_PARENT_MANIFEST_SHA256 = (
     "2f72b2ab89a6e2703740707a50f3ae7ad98b163838d521e9d494274d9c0169c2"
@@ -104,7 +107,7 @@ def _validate_adr_manifest(adr: Path, *, require_frozen: bool) -> dict:
         if not run or run.get("status") not in {"planned", "running"}:
             raise ValueError("run-001 must be planned or running")
         runner = Path(__file__).resolve()
-        impl = ROOT / "lawrag/core/rag/proof_boundary_feedback.py"
+        impl = Path(__import__("lawrag").__file__).resolve().parent / "core/rag/proof_boundary_feedback.py"
         if run.get("runner_sha256") != _sha(runner):
             raise ValueError("runner SHA is not frozen")
         expected_impl = (run.get("implementation_sha256") or {}).get(
@@ -423,7 +426,7 @@ def _save(out: Path, rows: list[dict], corpus: int) -> None:
         "runner": str(Path(__file__).resolve().relative_to(ROOT)),
         "runner_sha256": _sha(Path(__file__).resolve()),
         "implementation_sha256": _sha(
-            ROOT / "lawrag/core/rag/proof_boundary_feedback.py"),
+            Path(__import__("lawrag").__file__).resolve().parent / "core/rag/proof_boundary_feedback.py"),
         "model_policy": {
             "product_model": MODEL, "judge": None,
             "temperature": "provider default / omitted",

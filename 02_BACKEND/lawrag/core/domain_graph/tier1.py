@@ -1,7 +1,7 @@
 """엄격하게 발행되는 1급 지식: Concept, ConceptRelation, Assertion.
 
 glossary의 ``활성``은 검색 표면형의 상태일 뿐 1급 의미 승인이 아니다. 이 모듈은
-``data/domain_graph/canonical.json``에 사람이 명시한 항목만 읽는다. 런타임은 읽기
+권위 데이터 패키지의 ``domain_graph/canonical.json``에 사람이 명시한 항목만 읽는다. 런타임은 읽기
 전용이며 후보를 자동 승격하지 않는다.
 """
 

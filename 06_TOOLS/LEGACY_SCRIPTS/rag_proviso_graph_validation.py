@@ -12,8 +12,11 @@ import sys
 import time
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.rag.index import Index  # noqa: E402
 import lawrag.core.domain_graph as domain_package  # noqa: E402
@@ -61,29 +64,29 @@ def main() -> int:
     out_root = args.out_root.resolve()
     out_root.mkdir(parents=True, exist_ok=True)
     builder_mod, compiler_mod = install(args.revision_dir.resolve())
-    index = Index.load(ROOT / "data/structure", ROOT / "data/glossary.json",
-                       ROOT / "data/links.json")
+    index = Index.load(ROOT / "01_DATA/structure", ROOT / "01_DATA/glossary.json",
+                       ROOT / "01_DATA/links.json")
     registry = CanonicalRegistry.load(
-        registry_path=ROOT / "data/domain_graph/canonical.json",
-        glossary_path=ROOT / "data/glossary.json")
+        registry_path=ROOT / "01_DATA/domain_graph/canonical.json",
+        glossary_path=ROOT / "01_DATA/glossary.json")
     domain_path = out_root / "domain-graph.sqlite"
     domain_result = builder_mod.GraphBuilder(
-        index, data_dir=ROOT / "data", registry=registry,
-        glossary_path=ROOT / "data/glossary.json").build(domain_path)
+        index, data_dir=ROOT / "01_DATA", registry=registry,
+        glossary_path=ROOT / "01_DATA/glossary.json").build(domain_path)
     with GraphStore(domain_path, readonly=True) as store:
         domain_counts = store.counts()
     legal_root = out_root / "legal-graph"
     legal_result = compiler_mod.build_generation(compiler_mod.BuildConfig(
-        structure_store=ROOT / "data/structure",
-        law_index_file=ROOT / "data/law_index.json",
-        delegation_file=ROOT / "data/delegation.json",
-        canonical_file=ROOT / "data/domain_graph/canonical.json",
-        frames_store=ROOT / "data/frames",
-        glossary_file=ROOT / "data/glossary.json",
-        links_file=ROOT / "data/links.json",
+        structure_store=ROOT / "01_DATA/structure",
+        law_index_file=ROOT / "01_DATA/law_index.json",
+        delegation_file=ROOT / "01_DATA/delegation.json",
+        canonical_file=ROOT / "01_DATA/domain_graph/canonical.json",
+        frames_store=ROOT / "01_DATA/frames",
+        glossary_file=ROOT / "01_DATA/glossary.json",
+        links_file=ROOT / "01_DATA/links.json",
         output_root=legal_root, publish_current=False))
     validation = validate_generation(
-        legal_result.generation_path, structure_store=(ROOT / "data/structure"))
+        legal_result.generation_path, structure_store=(ROOT / "01_DATA/structure"))
     validation = validation.to_dict() if hasattr(validation, "to_dict") else validation
     result = {
         "schema_version": "proviso-graph-validation-v1",

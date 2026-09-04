@@ -10,8 +10,11 @@ import sys
 import time
 from typing import Any, Mapping
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import rag_proposition_assessment_shadow_golden_61 as parent  # noqa: E402
 from lawrag.core.rag import claimwise_nondestructive_compiler as claimwise  # noqa: E402
@@ -28,8 +31,8 @@ RUN_ID = "run-001"
 BASELINE_ARM = "baseline"
 CANDIDATE_ARM = claimwise.PROFILE
 ARMS = (BASELINE_ARM, CANDIDATE_ARM)
-ADR = ROOT / "docs/adr/ADR-0121-claimwise-nondestructive-legal-compiler-golden-61"
-PARENT_ADR = ROOT / "docs/adr/ADR-0120-proposition-assessment-shadow-golden-61"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0121-claimwise-nondestructive-legal-compiler-golden-61"
+PARENT_ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0120-proposition-assessment-shadow-golden-61"
 PARENT_CAPTURES = PARENT_ADR / "artifacts/product-captures/run-001"
 PARENT_SEAL = PARENT_ADR / "artifacts/product-capture-seal-run-001.json"
 PARENT_SEAL_FILE_SHA256 = "6628618299762522170179ab1abec4c59f2d39bc82264349df9c83489722ed2f"

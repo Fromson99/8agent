@@ -22,11 +22,14 @@ from docx.shared import Cm, Pt, RGBColor
 from annotate_cm_golden_coordinates_docx import ROLE_LABELS
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 DEFAULT_SOURCE = ROOT / "[CM본부] 주요 법규정 질의 등_260819.docx"
-DEFAULT_SUITE = ROOT / "data/review/cm_core_e2e_v3.json"
-DEFAULT_OUTPUT = ROOT / "artifacts/[CM본부] 주요 법규정 질의 등_260819_골든좌표_가독성개선본.docx"
-DEFAULT_REPORT = ROOT / "docs/adr/ADR-0141-cm-golden-docx-readable-layout/artifacts/run-001.json"
+DEFAULT_SUITE = ROOT / "01_DATA/review/cm_core_e2e_v3.json"
+DEFAULT_OUTPUT = ROOT / "09_ARTIFACTS/LEGACY_ARTIFACTS/[CM본부] 주요 법규정 질의 등_260819_골든좌표_가독성개선본.docx"
+DEFAULT_REPORT = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0141-cm-golden-docx-readable-layout/artifacts/run-001.json"
 
 EASY_CM_003 = (
     "제3자배정으로 취득했다는 형식만 보면 제26조 제1항 제3호를 먼저 검토합니다. "

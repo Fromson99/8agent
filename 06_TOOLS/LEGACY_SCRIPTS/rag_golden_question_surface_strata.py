@@ -19,18 +19,21 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 ADR_ID = "ADR-0083"
 EXPERIMENT_ID = "ADR-0083-experiment-v1"
 RUN_ID = "run-001"
 MANIFEST = (
-    ROOT / "docs/adr/ADR-0083-golden-question-surface-strata/실험/manifest.json"
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0083-golden-question-surface-strata/실험/manifest.json"
 )
 OUTPUT = (
-    ROOT / "docs/adr/ADR-0083-golden-question-surface-strata/artifacts/run-001.json"
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0083-golden-question-surface-strata/artifacts/run-001.json"
 )
-CM_PATH = ROOT / "data/review/cm_core_e2e_v1.json"
-FSC_PATH = ROOT / "data/review/fsc_hard_retrieval_v1.json"
+CM_PATH = ROOT / "01_DATA/review/cm_core_e2e_v1.json"
+FSC_PATH = ROOT / "01_DATA/review/fsc_hard_retrieval_v1.json"
 CM_SHA256 = "d3e4f658d8c9abb06244557b669d37d63b0e6fcc879059506e3b462619bcc18d"
 FSC_SHA256 = "4373659368de7a81b7e9ee48233c8b317d863db4e5c4827f4346d09281b3d7f8"
 DATASET_SHA256 = "05936e4bee0ae42a90c3d20a83ff40af2bb5b47895f1702d2716b18dd82f203e"

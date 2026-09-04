@@ -108,4 +108,3 @@ def validate_id(value: str, *, prefix: str | None = None) -> str:
 # Short aliases used by streaming writers.
 canonical_json = canonical_json_text
 canonical_sha256 = content_sha256
-

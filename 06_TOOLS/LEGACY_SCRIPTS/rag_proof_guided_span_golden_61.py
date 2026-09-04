@@ -23,14 +23,17 @@ import time
 from typing import Any, Iterable
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for _key, _relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
 ):
     os.environ.setdefault(_key, str(ROOT / _relative))
 
@@ -43,7 +46,7 @@ CAP = 20
 POOL_CAP = 64
 MAX_STEPS = 3
 
-PARENT_ADR = ROOT / "docs/adr/ADR-0064-feedback-explore-golden-61"
+PARENT_ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0064-feedback-explore-golden-61"
 PARENT_FROZEN = PARENT_ADR / "artifacts/frozen-cases.json"
 PARENT_RUN = PARENT_ADR / "artifacts/run-001.json"
 PARENT_MANIFEST = PARENT_ADR / "실험/manifest.json"
@@ -59,7 +62,7 @@ PARENT_MANIFEST_SHA256 = (
 DIRECT_PARENT_EXPERIMENT = "ADR-0065-experiment-v1"
 DIRECT_PARENT_ARM = "uncertainty-aware-bindings"
 DIRECT_PARENT_MANIFEST = (
-    ROOT / "docs/adr/ADR-0065-uncertainty-aware-semantic-bindings/실험/manifest.json"
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0065-uncertainty-aware-semantic-bindings/실험/manifest.json"
 )
 DIRECT_PARENT_MANIFEST_SHA256 = (
     "2f72b2ab89a6e2703740707a50f3ae7ad98b163838d521e9d494274d9c0169c2"

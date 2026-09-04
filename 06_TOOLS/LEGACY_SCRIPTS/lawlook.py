@@ -18,9 +18,12 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-os.environ.setdefault("STRUCTURE_STORE", str(ROOT / "data" / "structure"))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
+os.environ.setdefault("STRUCTURE_STORE", str(ROOT / "01_DATA" / "structure"))
 
 
 def _idx():
@@ -78,7 +81,7 @@ def main() -> int:
         if not c:
             print("그런 사례가 없습니다", file=sys.stderr)
             return 2
-        col = json.loads((ROOT / "data/review/colloquial.json").read_text("utf-8"))
+        col = json.loads((ROOT / "01_DATA/review/colloquial.json").read_text("utf-8"))
         col = col.get("items", col)
         print(f"=== {a.case} ===")
         print(f"\n[구어 질문 — 실제로 시스템에 넣은 것]\n{col.get(a.case, '(없음)')}")

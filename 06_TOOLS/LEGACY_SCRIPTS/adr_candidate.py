@@ -15,9 +15,14 @@ import sys
 import tempfile
 from typing import Any
 
+from workspace_paths import StoredPathError, resolve_stored_path
 
-ROOT = Path(__file__).resolve().parents[1]
-CANDIDATE_ROOT = ROOT / "lawrag" / "research" / "candidates"
+
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+CANDIDATE_ROOT = Path(__import__("lawrag").__file__).resolve().parent / "research" / "candidates"
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,62}$")
 ADR_ID_RE = re.compile(r"^ADR-(\d{4})$")
 PROMOTION_CONTRACT = {
@@ -55,7 +60,14 @@ def _stored_path(path: Path) -> str:
 
 def _resolve_stored_path(raw: str) -> Path:
     path = Path(raw)
-    return path if path.is_absolute() else ROOT / path
+    if path.is_absolute():
+        return path
+    try:
+        return resolve_stored_path(ROOT, raw, require_exists=False)
+    except StoredPathError:
+        # Validation callers still need a concrete missing path so they can
+        # report the record error instead of aborting the whole audit.
+        return ROOT / path
 
 
 def _is_within(path: Path, boundary: Path) -> bool:

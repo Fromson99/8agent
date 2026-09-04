@@ -24,15 +24,18 @@ from lawrag.core.rag.legal_system_map import (
 )
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 
 
 @pytest.fixture(scope="module")
 def current_atlas() -> LegalResearchAtlas:
     index = Index.load(
-        store=ROOT / "data" / "structure",
-        terms_file=ROOT / "data" / "glossary.json",
-        links_file=ROOT / "data" / "links.json",
+        store=ROOT / "01_DATA" / "structure",
+        terms_file=ROOT / "01_DATA" / "glossary.json",
+        links_file=ROOT / "01_DATA" / "links.json",
     )
     return LegalResearchAtlas.from_index(index)
 
@@ -77,7 +80,7 @@ def test_issue_family_catalog_uses_only_closed_current_ids(
 def test_catalog_builder_reproduces_current_snapshot_without_drift(
     current_atlas: LegalResearchAtlas,
 ) -> None:
-    path = ROOT / "data" / "legal_system" / "legal-system-map-v1.json"
+    path = ROOT / "01_DATA" / "legal_system" / "legal-system-map-v1.json"
     seed = json.loads(path.read_text(encoding="utf-8"))
     rebuilt = build_legal_system_catalog_snapshot(current_atlas, seed)
     diff = legal_system_catalog_diff(seed, rebuilt)

@@ -21,9 +21,14 @@ from typing import Any
 
 from docx import Document
 
+from workspace_paths import StoredPathError, resolve_stored_path
 
-ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_SUITE = ROOT / "data" / "review" / "cm_core_e2e_v2.json"
+
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+DEFAULT_SUITE = ROOT / "01_DATA" / "review" / "cm_core_e2e_v2.json"
 
 
 def _source_rows(path: Path) -> tuple[list[dict[str, Any]], list[str]]:
@@ -55,7 +60,7 @@ def _source_rows(path: Path) -> tuple[list[dict[str, Any]], list[str]]:
 
 def _corpus_articles() -> dict[tuple[str, str], list[dict[str, str]]]:
     found: dict[tuple[str, str], list[dict[str, str]]] = {}
-    for meta_path in (ROOT / "data" / "structure").glob("*/meta.json"):
+    for meta_path in (ROOT / "01_DATA" / "structure").glob("*/meta.json"):
         result_path = meta_path.with_name("result.json")
         if not result_path.is_file():
             continue
@@ -81,14 +86,27 @@ def _corpus_articles() -> dict[tuple[str, str], list[dict[str, str]]]:
 
 def validate(suite_path: Path) -> dict[str, Any]:
     suite = json.loads(suite_path.read_text(encoding="utf-8"))
-    source_path = ROOT / str((suite.get("source") or {}).get("path") or "")
+    source = suite.get("source") or {}
+    stored_source = str(source.get("path") or "")
+    expected_sha = str(source.get("sha256") or "")
+    try:
+        source_path = resolve_stored_path(ROOT, stored_source)
+    except StoredPathError:
+        # The CM suite predates the migration plan and records the Korean
+        # attachment title, while the claimed migration source used a stable
+        # ASCII filename.  Resolve that one historical alias by its frozen
+        # content hash and require it to be unique.
+        candidates = [
+            path for path in (ROOT / "01_DATA" / "INBOX").glob("*.docx")
+            if hashlib.sha256(path.read_bytes()).hexdigest() == expected_sha
+        ]
+        source_path = candidates[0] if len(candidates) == 1 else ROOT / stored_source
     errors: list[str] = []
     warnings: list[str] = []
     if not source_path.is_file():
         return {"valid": False, "errors": [f"missing_source:{source_path}"],
                 "warnings": [], "suite": str(suite_path)}
 
-    expected_sha = str((suite.get("source") or {}).get("sha256") or "")
     actual_sha = hashlib.sha256(source_path.read_bytes()).hexdigest()
     if expected_sha != actual_sha:
         errors.append(f"source_sha256:{expected_sha}:{actual_sha}")

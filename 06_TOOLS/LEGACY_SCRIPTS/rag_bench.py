@@ -37,7 +37,7 @@ def ask(base: str, question: str, timeout: int = 300) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="http://localhost:5566")
-    ap.add_argument("--file", default=str(ROOT / "data" / "bench" / "questions.yaml"))
+    ap.add_argument("--file", default=str(ROOT / "01_DATA" / "bench" / "questions.yaml"))
     ap.add_argument("--set", dest="only", default=None,
                     help="이 id 의 셋만 돌린다")
     args = ap.parse_args()
@@ -76,7 +76,7 @@ def main() -> None:
                   f" · 지문 {row['지문']} · 교정 {row['교정']} | {q}"
                   + (f"  !! {err}" if err else ""), flush=True)
 
-    out_path = ROOT / "data" / "bench" / "last_results.json"
+    out_path = ROOT / "01_DATA" / "bench" / "last_results.json"
     out_path.write_text(json.dumps({"at": time.strftime("%Y-%m-%dT%H:%M:%S"),
                                     "rows": rows}, ensure_ascii=False, indent=2),
                         encoding="utf-8")

@@ -14,8 +14,11 @@ from collections import defaultdict
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.domain_graph.freshness import audit  # noqa: E402
 from lawrag.core.domain_graph.tier1 import Tier1Registry  # noqa: E402

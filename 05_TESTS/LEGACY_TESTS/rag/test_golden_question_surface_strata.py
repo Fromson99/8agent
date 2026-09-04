@@ -4,8 +4,11 @@ import importlib.util
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts/rag_golden_question_surface_strata.py"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+SCRIPT = ROOT / "06_TOOLS/LEGACY_SCRIPTS/rag_golden_question_surface_strata.py"
 
 
 def _module():

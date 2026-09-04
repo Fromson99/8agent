@@ -22,34 +22,46 @@ from pathlib import Path, PurePosixPath
 from typing import Iterable
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 MANIFEST = "CODE_MANIFEST.json"
 REQUIRED_FILES = (
     "service.py",
+    "pyproject.toml",
     "requirements-serving.txt",
     "00_SYSTEM/WORKSPACE.json",
 )
 
 ROOT_FILES = (
     ".gitignore", ".env.example", ".env.genos.example", ".env.onsite.example",
-    "README.md", "service.py",
+    "README.md", "service.py", "pyproject.toml",
     "requirements.txt", "requirements-serving.txt",
 )
-TREE_ROOTS = ("00_SYSTEM", "lawrag", "scripts", "config/dataset_sync")
+TREE_ROOTS = (
+    "00_SYSTEM",
+    "02_BACKEND/lawrag",
+    "06_TOOLS/LEGACY_SCRIPTS",
+    "08_DEPLOYMENT/CONFIG/dataset_sync",
+)
 DOC_FILES = (
-    "docs/GENOS_QUICKSTART.md", "docs/GENOS_DEPLOY.md",
-    "docs/GENOS_SITE_RUNBOOK.md", "docs/ONSITE_RUNBOOK.md",
-    "docs/OPS_TRANSPORT.md", "docs/DATASET_SYNC.md", "docs/GENOS_PATCH_UPDATE.md",
+    "07_DOCS/LEGACY_DOCS/GENOS_QUICKSTART.md",
+    "07_DOCS/LEGACY_DOCS/GENOS_DEPLOY.md",
+    "07_DOCS/LEGACY_DOCS/GENOS_SITE_RUNBOOK.md",
+    "07_DOCS/LEGACY_DOCS/ONSITE_RUNBOOK.md",
+    "07_DOCS/LEGACY_DOCS/OPS_TRANSPORT.md",
+    "07_DOCS/LEGACY_DOCS/DATASET_SYNC.md",
+    "07_DOCS/LEGACY_DOCS/GENOS_PATCH_UPDATE.md",
 )
-STATIC_FILES = (
-    "data/aliases.json", "data/rag/scopes.yml",
-    "data/domain_graph/canonical.json",
-)
+# Runtime data, including small lookup tables, travels through the separately
+# verified dataset package.  A code archive must remain data-free.
+STATIC_FILES: tuple[str, ...] = ()
 
 SKIP_DIRS = {"__pycache__", ".pytest_cache", ".ruff_cache", "output"}
 SKIP_PREFIXES = (
-    "lawrag/agents/agent6/corpus/",
-    "lawrag/research/",
+    "02_BACKEND/lawrag/agents/agent6/corpus/",
+    "02_BACKEND/lawrag/research/",
 )
 BLOCKED_NAMES = {".env", ".env.local"}
 BLOCKED_SUFFIXES = {
@@ -126,7 +138,7 @@ def _rows(paths: Iterable[Path]) -> tuple[list[dict], dict[str, bytes]]:
 def _default_output() -> Path:
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     rev = _git("rev-parse", "--short", "HEAD") or "nogit"
-    return ROOT / "var" / "out" / "ship" / f"8agent-code-{stamp}-{rev}.zip"
+    return ROOT / "90_RUNTIME" / "LEGACY_VAR" / "out" / "ship" / f"8agent-code-{stamp}-{rev}.zip"
 
 
 def pack(output: Path | None) -> Path:

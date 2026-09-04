@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.legal_generation import atomic_json
 
@@ -27,7 +27,7 @@ def _hash(path: Path) -> str:
 
 
 def main() -> int:
-    review = ROOT / "data/review"
+    review = ROOT / "01_DATA/review"
     cm_v1, fsc_v1 = review / "cm_core_e2e_v1.json", review / "fsc_hard_retrieval_v1.json"
     cm_v2, fsc_v2 = review / "cm_core_e2e_v2.json", review / "fsc_hard_retrieval_v2.json"
     cm = json.loads(cm_v1.read_text(encoding="utf-8"))
@@ -37,7 +37,7 @@ def main() -> int:
     atomic_json(cm_v2, cm)
     atomic_json(fsc_v2, fsc)
 
-    audit = json.loads((ROOT / "docs/adr/ADR-0082-golden-corpus-integrity-audit/artifacts/run-004.json")
+    audit = json.loads((ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0082-golden-corpus-integrity-audit/artifacts/run-004.json")
                        .read_text(encoding="utf-8"))
     old: dict[str, list[tuple[int, dict]]] = {}
     frozen_material = {row["case_id"]: row["frozen_material"] for row in audit["cases"]}

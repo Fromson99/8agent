@@ -10,8 +10,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from workspace_paths import StoredPathError, resolve_stored_path
 
-ROOT = Path(__file__).resolve().parents[1]
+
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 REGISTRY_PATH = Path("benchmarks/registry.json")
 ALLOWED_STATUSES = {"draft", "active", "frozen", "superseded", "retired"}
 ALLOWED_SPECIALIZATIONS = {
@@ -43,11 +48,10 @@ def _resolve(root: Path, stored: Any, errors: list[str], label: str) -> Path | N
     if candidate.is_absolute() or ".." in candidate.parts:
         errors.append(f"{label}: path must stay inside repository: {stored}")
         return None
-    resolved = (root / candidate).resolve()
     try:
-        resolved.relative_to(root)
-    except ValueError:
-        errors.append(f"{label}: path escapes repository: {stored}")
+        resolved = resolve_stored_path(root, stored)
+    except StoredPathError as exc:
+        errors.append(f"{label}: {exc}")
         return None
     return resolved
 
@@ -276,9 +280,10 @@ def _validate_benchmark(
     latest = entry.get("latest_run_id")
     if latest not in run_ids:
         errors.append(f"{label}: latest_run_id is not registered: {latest}")
-    manifest_dir = root / "benchmarks" / str(manifest.get("benchmark_id")) / "runs"
+    benchmark_root = resolve_stored_path(root, "benchmarks")
+    manifest_dir = benchmark_root / str(manifest.get("benchmark_id")) / "runs"
     disk_runs = {
-        str(path.relative_to(root)).replace("\\", "/")
+        f"benchmarks/{path.relative_to(benchmark_root).as_posix()}"
         for path in manifest_dir.glob("*.json")
     } if manifest_dir.is_dir() else set()
     for orphan in sorted(disk_runs - registered_paths):
@@ -288,9 +293,10 @@ def _validate_benchmark(
 def validate_registry(root: Path = ROOT) -> dict[str, Any]:
     root = root.resolve()
     errors: list[str] = []
-    registry_path = root / REGISTRY_PATH
-    if not registry_path.is_file():
-        return {"ok": False, "errors": [f"missing {REGISTRY_PATH}"], "counts": {}}
+    try:
+        registry_path = resolve_stored_path(root, REGISTRY_PATH.as_posix())
+    except StoredPathError as exc:
+        return {"ok": False, "errors": [f"missing {REGISTRY_PATH}: {exc}"], "counts": {}}
     try:
         registry = _read(registry_path)
     except (OSError, json.JSONDecodeError) as exc:
@@ -330,9 +336,10 @@ def validate_registry(root: Path = ROOT) -> dict[str, Any]:
         valid_manifests += 1
         _validate_benchmark(root, entry, manifest, errors)
 
+    benchmark_root = resolve_stored_path(root, "benchmarks")
     disk_manifests = {
-        str(path.relative_to(root)).replace("\\", "/")
-        for path in (root / "benchmarks").glob("*/benchmark.json")
+        f"benchmarks/{path.relative_to(benchmark_root).as_posix()}"
+        for path in benchmark_root.glob("*/benchmark.json")
     }
     for orphan in sorted(disk_manifests - manifest_paths):
         errors.append(f"orphan benchmark manifest: {orphan}")
@@ -375,7 +382,7 @@ def main() -> None:
     if not report["ok"]:
         print(json.dumps(report, ensure_ascii=False, indent=2))
         raise SystemExit(1)
-    registry = _read(root / REGISTRY_PATH)
+    registry = _read(resolve_stored_path(root, REGISTRY_PATH.as_posix()))
     if args.command == "list":
         rows = [{key: entry.get(key) for key in
                  ("benchmark_id", "version", "status", "benchmark_class", "latest_run_id")}
@@ -388,7 +395,11 @@ def main() -> None:
                   if row.get("benchmark_id") == args.benchmark_id), None)
     if entry is None:
         raise SystemExit(f"unknown benchmark: {args.benchmark_id}")
-    print(json.dumps(_read(root / entry["manifest_path"]), ensure_ascii=False, indent=2))
+    print(json.dumps(
+        _read(resolve_stored_path(root, entry["manifest_path"])),
+        ensure_ascii=False,
+        indent=2,
+    ))
 
 
 if __name__ == "__main__":

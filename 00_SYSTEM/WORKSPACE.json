@@ -4,9 +4,12 @@
   "canonical_root_pattern": "^[0-9]{2}_[A-Z][A-Z0-9_]*$",
   "default_layout_version": "v2",
   "lifecycle": {
-    "activation_receipt": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260903-permanent-v2-final-v10.json",
-    "retirement_receipt": "00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots-final-v10.json"
+    "activation_receipt": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v5.json",
+    "retirement_receipt": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v5.json"
   },
+  "path_history_activation_receipts": [
+    "00_SYSTEM/MIGRATION/ACTIVATIONS/20260903-permanent-v2-final-v10.json"
+  ],
   "root_file_policy": {
     "permanent": [
       "AGENTS.md",

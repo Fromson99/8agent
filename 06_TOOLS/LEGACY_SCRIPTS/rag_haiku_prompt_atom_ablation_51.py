@@ -17,16 +17,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.llm import LLM, load_env  # noqa: E402
 from scripts import rag_open_model_ceiling_51 as parent  # noqa: E402
 
 
-ADR = ROOT / "docs/adr/ADR-0058-haiku-prompt-atom-ablation-51"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0058-haiku-prompt-atom-ablation-51"
 ART = ADR / "artifacts"
-PARENT_ART = ROOT / "docs/adr/ADR-0056-cm-core-51-open-model-ceiling/artifacts"
+PARENT_ART = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0056-cm-core-51-open-model-ceiling/artifacts"
 MODEL = "claude-haiku-4-5-20251001"
 JUDGE_MODEL = "claude-opus-5"
 EXP = ADR / "실험"

@@ -15,14 +15,17 @@ import sys
 import time
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for _key, _relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
 ):
     os.environ.setdefault(_key, str(ROOT / _relative))
 
@@ -39,14 +42,14 @@ MAX_CALLS_TOTAL = 9
 MAX_NON_GOLD_PROMOTIONS = 5
 MIN_NON_GOLD_REMOVALS = 15
 PARENT_RUN = (
-    ROOT / "docs/adr/ADR-0069-source-registry-admission/artifacts/run-001.json")
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0069-source-registry-admission/artifacts/run-001.json")
 PARENT_RUN_SHA256 = (
     "a5b0c6267564b01ff9e82607c75a444b7b53ca1fb5f58aa5d51e41da3bbde452")
 PARENT_MANIFEST = (
-    ROOT / "docs/adr/ADR-0069-source-registry-admission/실험/manifest.json")
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0069-source-registry-admission/실험/manifest.json")
 PARENT_MANIFEST_SHA256 = (
     "d5e758acdf6fe7a6c10a400f7bb1d63650e5027d8bc1ed633b5b15c7ee519845")
-IMPLEMENTATION = ROOT / "lawrag/core/rag/claim_citation_selector.py"
+IMPLEMENTATION = Path(__import__("lawrag").__file__).resolve().parent / "core/rag/claim_citation_selector.py"
 
 
 def _sha(path: Path) -> str:

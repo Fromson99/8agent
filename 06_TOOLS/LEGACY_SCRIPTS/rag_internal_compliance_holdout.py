@@ -11,13 +11,13 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.rag import internal_compliance  # noqa: E402
 
 
-DEFAULT_DATASET = ROOT / "data/review/internal_compliance_holdout_v1.json"
-DEFAULT_ADR = ROOT / "docs/adr/ADR-0133-internal-rule-atomic-compliance-main"
+DEFAULT_DATASET = ROOT / "01_DATA/review/internal_compliance_holdout_v1.json"
+DEFAULT_ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0133-internal-rule-atomic-compliance-main"
 
 
 def _sha(path: Path) -> str:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -393,12 +394,15 @@ def test_validate_cli_returns_nonzero_for_invalid_generation(tmp_path: Path):
     _write_generation(tmp_path)
     path = tmp_path / "canonical/structural_units.jsonl"
     path.write_text(path.read_text(encoding="utf-8") + "\n", encoding="utf-8")
-    root = Path(__file__).resolve().parents[2]
+    root = next(
+        path for path in Path(__file__).resolve().parents
+        if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+    )
 
     completed = subprocess.run(
         [
             sys.executable,
-            str(root / "scripts/build_legal_graph_v1.py"),
+            str(root / "06_TOOLS/LEGACY_SCRIPTS/build_legal_graph_v1.py"),
             "validate",
             "--generation",
             str(tmp_path),
@@ -407,6 +411,12 @@ def test_validate_cli_returns_nonzero_for_invalid_generation(tmp_path: Path):
         check=False,
         capture_output=True,
         text=True,
+        env={
+            **os.environ,
+            "PYTHONPATH": str(
+                Path(__import__("lawrag").__file__).resolve().parent.parent
+            ),
+        },
     )
 
     assert completed.returncode == 1

@@ -10,8 +10,11 @@ import sys
 import time
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core import llm as llm_mod  # noqa: E402
 from lawrag.core.rag.index import Index  # noqa: E402
@@ -77,8 +80,8 @@ def main() -> int:
     args = parser.parse_args()
     lock = json.loads(args.input_lock.read_text("utf-8"))
     run = json.loads(args.relation_run.read_text("utf-8"))
-    index = Index.load(ROOT / "data/structure", ROOT / "data/glossary.json",
-                       ROOT / "data/links.json")
+    index = Index.load(ROOT / "01_DATA/structure", ROOT / "01_DATA/glossary.json",
+                       ROOT / "01_DATA/links.json")
     source_doc, source_node = lock["known_case"]["source_article"]
     detail_doc, detail_node = lock["known_case"]["direct_detail_article"]
     source_view, detail_view = index.docs[source_doc], index.docs[detail_doc]

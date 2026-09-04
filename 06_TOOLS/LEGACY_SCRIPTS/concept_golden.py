@@ -28,10 +28,13 @@ from pathlib import Path
 import yaml
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-DEFAULT = ROOT / "data" / "bench" / "concept_golden.yaml"
-LEGACY = ROOT / "data" / "review" / "golden_labels_v2.json"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
+DEFAULT = ROOT / "01_DATA" / "bench" / "concept_golden.yaml"
+LEGACY = ROOT / "01_DATA" / "review" / "golden_labels_v2.json"
 
 
 def _expected_sources(case: dict) -> set[tuple[str, str]]:
@@ -201,7 +204,7 @@ def _legacy_shadow(idx) -> dict:
 def main() -> int:
     # CLI 실행에만 저장소 기본 정본을 적용한다. 이 모듈의 스키마/축 집계 함수를
     # 테스트나 다른 도구가 import했다고 전역 검색 저장소가 바뀌면 안 된다.
-    os.environ.setdefault("STRUCTURE_STORE", str(ROOT / "data" / "structure"))
+    os.environ.setdefault("STRUCTURE_STORE", str(ROOT / "01_DATA" / "structure"))
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--file", type=Path, default=DEFAULT)
     ap.add_argument("--no-shadow", action="store_true",

@@ -38,7 +38,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 

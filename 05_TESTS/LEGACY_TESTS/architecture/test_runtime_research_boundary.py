@@ -8,7 +8,10 @@ import pytest
 from lawrag.runtime import registry
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 
 
 def _imports(path: Path) -> set[str]:
@@ -23,7 +26,7 @@ def _imports(path: Path) -> set[str]:
 
 
 def test_production_runtime_does_not_import_research_package() -> None:
-    for path in (ROOT / "lawrag" / "runtime").rglob("*.py"):
+    for path in (Path(__import__("lawrag").__file__).resolve().parent / "runtime").rglob("*.py"):
         assert not any(
             name == "lawrag.research" or name.startswith("lawrag.research.")
             for name in _imports(path)

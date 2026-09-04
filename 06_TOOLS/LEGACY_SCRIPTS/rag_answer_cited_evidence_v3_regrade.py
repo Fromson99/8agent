@@ -23,15 +23,18 @@ import time
 from typing import Any, Iterable, Mapping
 
 
-ROOT = Path(__file__).resolve().parents[1]
-ADR = ROOT / "docs/adr/ADR-0127-answer-cited-evidence-v3-regrade"
-PARENT = ROOT / "docs/adr/ADR-0121-claimwise-nondestructive-legal-compiler-golden-61"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0127-answer-cited-evidence-v3-regrade"
+PARENT = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0121-claimwise-nondestructive-legal-compiler-golden-61"
 PARENT_ARTIFACTS = PARENT / "artifacts"
 PARENT_SEAL = PARENT_ARTIFACTS / "product-capture-seal-run-001.json"
 PARENT_LEDGER = PARENT_ARTIFACTS / "retrieval-stage-ledger-run-001.json"
 PARENT_CAPTURES = PARENT_ARTIFACTS / "product-captures/run-001"
-CM_V3 = ROOT / "data/review/cm_core_e2e_v3.json"
-FSC_V3 = ROOT / "data/review/fsc_hard_retrieval_v3.json"
+CM_V3 = ROOT / "01_DATA/review/cm_core_e2e_v3.json"
+FSC_V3 = ROOT / "01_DATA/review/fsc_hard_retrieval_v3.json"
 MANIFEST_PATH = ADR / "실험/manifest.json"
 RUN_PATH = ADR / "artifacts/run-001.json"
 ARTIFACT_MANIFEST_PATH = ADR / "artifacts/manifest.json"

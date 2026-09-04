@@ -32,16 +32,19 @@ from typing import Any, Callable, Mapping
 sys.dont_write_bytecode = True
 
 
-ROOT = Path(__file__).resolve().parents[1]
-CANDIDATE_ROOT = ROOT / "lawrag/research/candidates/adr_0158/v2-runtime-activation"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+CANDIDATE_ROOT = Path(__import__("lawrag").__file__).resolve().parent / "research/candidates/adr_0158/v2-runtime-activation"
 CANDIDATE_MANIFEST = CANDIDATE_ROOT / "candidate.json"
 CANDIDATE_MANIFEST_SHA256 = "533e419284c8fa915bdffef2ab9d33f9e1d05ca513f4058aee7cba09e85b0818"
 REVISION_ID = "rev-010"
 REVISION_SHA256 = "81d028b4f16ded9b453e1c74d771fa541e9734eb94a054d9bccc395d2b8eff9f"
 REVISION_ROOT = CANDIDATE_ROOT / "revisions" / REVISION_ID / "snapshot"
-WORKSPACE_MODULE = REVISION_ROOT / "lawrag/platform/workspace.py"
-CATALOG_MODULE = REVISION_ROOT / "lawrag/datasets/catalog.py"
-RELEASE_MODULE = REVISION_ROOT / "lawrag/platform/release.py"
+WORKSPACE_MODULE = REVISION_Path(__import__("lawrag").__file__).resolve().parent / "platform/workspace.py"
+CATALOG_MODULE = REVISION_Path(__import__("lawrag").__file__).resolve().parent / "datasets/catalog.py"
+RELEASE_MODULE = REVISION_Path(__import__("lawrag").__file__).resolve().parent / "platform/release.py"
 SERVICE_MODULE = REVISION_ROOT / "service.py"
 SCHEMA_ROOT = REVISION_ROOT / "00_SYSTEM/SCHEMAS"
 CANDIDATE_SCHEMA_FILES = {
@@ -507,10 +510,10 @@ def monitored_production_paths() -> tuple[Path, ...]:
     if retirement_receipt is not None:
         paths.add(retirement_receipt)
 
-    repository_main = ROOT / "var/out/structure/main/pipeline.json"
+    repository_main = ROOT / "90_RUNTIME/LEGACY_VAR/out/structure/main/pipeline.json"
     paths.add(repository_main)
     paths.add(repository_main.with_name("promotion_receipts.jsonl"))
-    structure_store = _configured_path("STRUCTURE_STORE", ROOT / "var/out/structure/viewer")
+    structure_store = _configured_path("STRUCTURE_STORE", ROOT / "90_RUNTIME/LEGACY_VAR/out/structure/viewer")
     assert structure_store is not None
     default_main = structure_store.parent / "main/pipeline.json"
     main_manifest = _configured_path("RAG_MAIN_PIPELINE_MANIFEST", default_main)

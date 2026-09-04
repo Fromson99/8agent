@@ -26,16 +26,19 @@ import time
 from typing import Any, Iterable, Mapping, Sequence
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for key, relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
-    ("RAG_LAW_INDEX_STORE", "data/law_index.json"),
-    ("RAG_ENGINE_RULES", "data/rules/engine.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
+    ("RAG_LAW_INDEX_STORE", "01_DATA/law_index.json"),
+    ("RAG_ENGINE_RULES", "01_DATA/rules/engine.json"),
 ):
     os.environ.setdefault(key, str(ROOT / relative))
 
@@ -71,7 +74,7 @@ from lawrag.core.rag.legal_research_controller import (  # noqa: E402
 ADR_ID = "ADR-0107"
 EXPERIMENT_ID = "ADR-0107-experiment-v1"
 RUN_ID = "run-001"
-ADR = ROOT / "docs/adr/ADR-0107-hierarchical-parallel-legal-research-controller"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0107-hierarchical-parallel-legal-research-controller"
 FIXTURE = ADR / "artifacts/frozen-structure-cases.json"
 INVENTORY_OUTPUT = ADR / f"artifacts/atlas-inventory-{RUN_ID}.json"
 LEDGER_OUTPUT = ADR / f"artifacts/retrieval-stage-ledger-{RUN_ID}.json"
@@ -1108,17 +1111,17 @@ def run() -> dict[str, Any]:
 
     source_paths = {
         "frozen_fixture": FIXTURE,
-        "atlas_code": ROOT / "lawrag/core/rag/legal_research_atlas.py",
-        "controller_code": ROOT / "lawrag/core/rag/legal_research_controller.py",
+        "atlas_code": Path(__import__("lawrag").__file__).resolve().parent / "core/rag/legal_research_atlas.py",
+        "controller_code": Path(__import__("lawrag").__file__).resolve().parent / "core/rag/legal_research_controller.py",
         "instrument_routing_code": (
-            ROOT / "lawrag/core/rag/legal_instrument_routing.py"),
-        "behavior_code": ROOT / "lawrag/core/legal_graph/behavior.py",
+            Path(__import__("lawrag").__file__).resolve().parent / "core/rag/legal_instrument_routing.py"),
+        "behavior_code": Path(__import__("lawrag").__file__).resolve().parent / "core/legal_graph/behavior.py",
         "runner_code": Path(__file__).resolve(),
-        "atlas_tests": ROOT / "tests/rag/test_legal_research_atlas.py",
-        "controller_tests": ROOT / "tests/rag/test_legal_research_controller.py",
+        "atlas_tests": ROOT / "05_TESTS/LEGACY_TESTS/rag/test_legal_research_atlas.py",
+        "controller_tests": ROOT / "05_TESTS/LEGACY_TESTS/rag/test_legal_research_controller.py",
         "instrument_routing_tests": (
-            ROOT / "tests/rag/test_legal_instrument_routing.py"),
-        "graph_current": ROOT / "data/legal_graph/CURRENT.json",
+            ROOT / "05_TESTS/LEGACY_TESTS/rag/test_legal_instrument_routing.py"),
+        "graph_current": ROOT / "01_DATA/legal_graph/CURRENT.json",
         "atlas_inventory": INVENTORY_OUTPUT,
     }
     source_hashes = {

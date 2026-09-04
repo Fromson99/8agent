@@ -14,8 +14,11 @@ import threading
 import time
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import review_golden as review  # noqa: E402
 from lawrag.core.rag import answer, definitions, legal_coordinates, switches, wikictx  # noqa: E402
@@ -27,8 +30,8 @@ from scripts.rag_legal_issue_e2e_eval import _percentile, _usage  # noqa: E402
 
 
 VARIANTS = ("raw_definition_articles", "inline_same_doc", "no_definitions")
-ADR_DIR = ROOT / "docs/adr/ADR-0041-definition-knowledge-card"
-OUT_DEFAULT = ROOT / "var/eval/e2e/ADR-0041/inline_definition_card_answer_abc_51.json"
+ADR_DIR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0041-definition-knowledge-card"
+OUT_DEFAULT = ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0041/inline_definition_card_answer_abc_51.json"
 
 JUDGE_SYSTEM = (
     "너는 법률 E2E 답변의 동일 기준 비교 채점자다. 기준답변은 사람이 확정한 정답이다. "
@@ -229,9 +232,9 @@ def _write_cases(blob: dict) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--stage", type=Path,
-                        default=ROOT / "var/eval/e2e/cm_core_legalclosure_stage_ablation_51.json")
+                        default=ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_legalclosure_stage_ablation_51.json")
     parser.add_argument("--answers", type=Path,
-                        default=ROOT / "var/eval/e2e/cm_core_legalclosure_stage_answer_ab_51.json")
+                        default=ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_legalclosure_stage_answer_ab_51.json")
     parser.add_argument("--out", type=Path, default=OUT_DEFAULT)
     parser.add_argument("--workers", type=int, choices=range(1, 5), default=2)
     parser.add_argument("--cases", default="")

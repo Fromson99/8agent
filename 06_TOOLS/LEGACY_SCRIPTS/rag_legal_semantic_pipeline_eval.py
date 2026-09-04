@@ -21,16 +21,19 @@ import sys
 import time
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for key, relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
-    ("RAG_LAW_INDEX_STORE", "data/law_index.json"),
-    ("RAG_ENGINE_RULES", "data/rules/engine.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
+    ("RAG_LAW_INDEX_STORE", "01_DATA/law_index.json"),
+    ("RAG_ENGINE_RULES", "01_DATA/rules/engine.json"),
 ):
     os.environ.setdefault(key, str(ROOT / relative))
 
@@ -56,10 +59,10 @@ STAGES = {
     ],
 }
 SOURCES = {
-    "input_lock": ROOT / "docs/adr/ADR-0091-legalclosure-v2-article-reachability-ledger/artifacts/input-lock.json",
-    "parent_run": ROOT / "docs/adr/ADR-0101-legal-graph-runtime-consumer-hardening/artifacts/run-001.json",
-    "cm": ROOT / "data/review/cm_core_e2e_v2.json",
-    "fsc": ROOT / "data/review/fsc_hard_retrieval_v2.json",
+    "input_lock": ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0091-legalclosure-v2-article-reachability-ledger/artifacts/input-lock.json",
+    "parent_run": ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0101-legal-graph-runtime-consumer-hardening/artifacts/run-001.json",
+    "cm": ROOT / "01_DATA/review/cm_core_e2e_v2.json",
+    "fsc": ROOT / "01_DATA/review/fsc_hard_retrieval_v2.json",
 }
 EXPECTED = {
     "input_lock": "7636cc52ac0bd94a10baa1d75f3f381940981ff86beafa7f7ee91fedf9308452",
@@ -480,7 +483,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--adr", type=Path,
-        default=ROOT / "docs/adr/ADR-0103-legal-semantic-entity-search-pipeline",
+        default=ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0103-legal-semantic-entity-search-pipeline",
     )
     parser.add_argument(
         "--graph-root", type=Path,

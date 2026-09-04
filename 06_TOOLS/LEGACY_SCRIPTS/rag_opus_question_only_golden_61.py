@@ -16,19 +16,22 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.llm import LLM, load_env  # noqa: E402
 from scripts.rag_open_model_ceiling import JUDGE_SCHEMA, JUDGE_SYSTEM  # noqa: E402
 
 
-ADR = ROOT / "docs/adr/ADR-0100-opus-question-only-golden-61"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0100-opus-question-only-golden-61"
 ART = ADR / "artifacts"
 EXP = ADR / "실험"
 MANIFEST = EXP / "manifest.json"
-CM = ROOT / "data/review/cm_core_e2e_v2.json"
-FSC = ROOT / "data/review/fsc_hard_retrieval_v2.json"
+CM = ROOT / "01_DATA/review/cm_core_e2e_v2.json"
+FSC = ROOT / "01_DATA/review/fsc_hard_retrieval_v2.json"
 ANSWER_MODEL = "claude-opus-5"
 JUDGE_MODELS = ("claude-sonnet-5", "claude-opus-5")
 ANSWER_MAX_TOKENS = 8000

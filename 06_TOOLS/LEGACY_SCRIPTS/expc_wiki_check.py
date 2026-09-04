@@ -25,11 +25,14 @@ import re
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-WIKI_ROOT = REPO_ROOT / "data" / "wiki"
+REPO_ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+WIKI_ROOT = REPO_ROOT / "01_DATA" / "wiki"
 WIKI = WIKI_ROOT / "wiki"
 RAW = WIKI_ROOT / "raw"
-INDEX = REPO_ROOT / "data" / "expc" / "index.json"
+INDEX = REPO_ROOT / "01_DATA" / "expc" / "index.json"
 
 CASE_LINK = re.compile(r"\[([^\]]+)\]\(#case/(\d+)\)")
 RAW_LINK = re.compile(r"\[[^\]]*\]\((\.\./[^)]+\.md)\)")

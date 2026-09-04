@@ -26,7 +26,10 @@ from pathlib import Path
 from typing import Any, Callable
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 
 
 @dataclass
@@ -118,11 +121,16 @@ def source_checks(c: Checks) -> None:
     required_files = (
         "service.py", "requirements-serving.txt", ".env.example",
         ".env.genos.example", ".env.onsite.example",
-        "scripts/data_ship.sh", "scripts/code_ship.py", "scripts/genos_call.sh",
-        "scripts/genos_patch_apply.py", "scripts/genos_smoke.sh",
-        "docs/GENOS_QUICKSTART.md", "docs/GENOS_DEPLOY.md",
-        "docs/GENOS_SITE_RUNBOOK.md", "docs/ONSITE_RUNBOOK.md",
-        "docs/GENOS_PATCH_UPDATE.md",
+        "06_TOOLS/LEGACY_SCRIPTS/data_ship.sh",
+        "06_TOOLS/LEGACY_SCRIPTS/code_ship.py",
+        "06_TOOLS/LEGACY_SCRIPTS/genos_call.sh",
+        "06_TOOLS/LEGACY_SCRIPTS/genos_patch_apply.py",
+        "06_TOOLS/LEGACY_SCRIPTS/genos_smoke.sh",
+        "07_DOCS/LEGACY_DOCS/GENOS_QUICKSTART.md",
+        "07_DOCS/LEGACY_DOCS/GENOS_DEPLOY.md",
+        "07_DOCS/LEGACY_DOCS/GENOS_SITE_RUNBOOK.md",
+        "07_DOCS/LEGACY_DOCS/ONSITE_RUNBOOK.md",
+        "07_DOCS/LEGACY_DOCS/GENOS_PATCH_UPDATE.md",
     )
     missing = [name for name in required_files if not (ROOT / name).exists()]
     if missing:
@@ -200,8 +208,8 @@ def source_checks(c: Checks) -> None:
             c.warn("Git 원격", "원격 없음 — GenOS 내부 Gitea를 추가해야 합니다")
 
     paths = (
-        ROOT / "data/structure", ROOT / "data/glossary.json", ROOT / "data/rag",
-        ROOT / "data/embeddings", ROOT / "data/links.json",
+        ROOT / "01_DATA/structure", ROOT / "01_DATA/glossary.json", ROOT / "01_DATA/rag",
+        ROOT / "01_DATA/embeddings", ROOT / "01_DATA/links.json",
     )
     sizes = [(p, _tree_bytes(p)) for p in paths if p.exists()]
     if not sizes:
@@ -247,11 +255,11 @@ def runtime_checks(c: Checks, probe_upstreams: bool) -> None:
     c.capture("import multipart", lambda: _distribution_version("python-multipart"))
 
     persistent = {
-        "STRUCTURE_STORE": ROOT / "data/structure",
-        "STRUCTURE_CUSTOM_DIR": ROOT / "data/custom",
-        "GLOSSARY_STORE": ROOT / "data/glossary.json",
-        "RAG_LINKS_STORE": ROOT / "data/links.json",
-        "OPS_DIR": ROOT / "data/ops",
+        "STRUCTURE_STORE": ROOT / "01_DATA/structure",
+        "STRUCTURE_CUSTOM_DIR": ROOT / "01_DATA/custom",
+        "GLOSSARY_STORE": ROOT / "01_DATA/glossary.json",
+        "RAG_LINKS_STORE": ROOT / "01_DATA/links.json",
+        "OPS_DIR": ROOT / "01_DATA/ops",
     }
     for key, default in persistent.items():
         raw = os.environ.get(key, "").strip()
@@ -299,7 +307,7 @@ def runtime_checks(c: Checks, probe_upstreams: bool) -> None:
 
     async def service_probe() -> tuple[dict[str, Any], dict[str, Any]]:
         if str(ROOT) not in sys.path:
-            sys.path.insert(0, str(ROOT))
+            sys.path.insert(0, str(ROOT / "02_BACKEND"))
         service = importlib.import_module("service")
         ping = await service.service({}, {"op": "ping"})
         health = await service.service({}, {"op": "call", "method": "GET", "path": "/health"})

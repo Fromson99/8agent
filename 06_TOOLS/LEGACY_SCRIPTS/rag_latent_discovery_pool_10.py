@@ -16,14 +16,17 @@ import time
 from typing import Any, Mapping, Sequence
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for _key, _relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
 ):
     os.environ.setdefault(_key, str(ROOT / _relative))
 
@@ -38,15 +41,15 @@ EXPERIMENT_ID = "ADR-0087-experiment-v1"
 RUN_ID = "run-001"
 MODEL = "claude-haiku-4-5-20251001"
 ARMS = ("baseline", "semantic-seed-lattice", "seed-residual-discovery")
-DATASET = ROOT / "data/review/semantic_operation_seed_v2.json"
+DATASET = ROOT / "01_DATA/review/semantic_operation_seed_v2.json"
 DATASET_SHA256 = "1b8a91241a437dd16a9311351956f2481cb0dc3efc45399386acf93b269f01ee"
-DEFAULT_ADR = ROOT / "docs/adr/ADR-0087-latent-discovery-pool-stage-ledger"
+DEFAULT_ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0087-latent-discovery-pool-stage-ledger"
 STAGE_LEDGER_NAME = "run-001-stage-ledger.json"
 RUN_ARTIFACT_NAME = "run-001.json"
-IMPLEMENTATION = ROOT / "lawrag/core/rag/latent_discovery_pool.py"
+IMPLEMENTATION = Path(__import__("lawrag").__file__).resolve().parent / "core/rag/latent_discovery_pool.py"
 TESTS = (
-    ROOT / "tests/rag/test_latent_discovery_pool.py",
-    ROOT / "tests/rag/test_latent_discovery_pool_runner.py",
+    ROOT / "05_TESTS/LEGACY_TESTS/rag/test_latent_discovery_pool.py",
+    ROOT / "05_TESTS/LEGACY_TESTS/rag/test_latent_discovery_pool_runner.py",
 )
 
 

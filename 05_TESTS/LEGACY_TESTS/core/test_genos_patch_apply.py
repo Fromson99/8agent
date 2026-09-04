@@ -7,8 +7,14 @@ import zipfile
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[2]
-SPEC = importlib.util.spec_from_file_location("genos_patch_apply", ROOT / "scripts" / "genos_patch_apply.py")
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+SPEC = importlib.util.spec_from_file_location(
+    "genos_patch_apply",
+    ROOT / "06_TOOLS" / "LEGACY_SCRIPTS" / "genos_patch_apply.py",
+)
 assert SPEC and SPEC.loader
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)

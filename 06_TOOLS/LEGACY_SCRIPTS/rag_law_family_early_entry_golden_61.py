@@ -30,14 +30,17 @@ import time
 from typing import Any, Iterable, Mapping, Sequence
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for _key, _relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
 ):
     os.environ.setdefault(_key, str(ROOT / _relative))
 
@@ -67,7 +70,7 @@ ENTRY_LIMIT = 12
 POINTS_PER_INSTRUMENT = 6
 FAMILY_SIGNAL_PREFIX = "HELD_LAW_FAMILY_ROUTING_HINT:"
 
-ADR = ROOT / "docs/adr/ADR-0138-law-family-early-entry-retrieval"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0138-law-family-early-entry-retrieval"
 EXPERIMENT_MANIFEST = ADR / "실험/manifest.json"
 ARTIFACTS = ADR / "artifacts"
 INPUT_LOCK = ARTIFACTS / "input-lock-v2.json"
@@ -90,7 +93,7 @@ QUERY_PLAN_POINTER = (
 )
 
 CANDIDATE_ROOT = (
-    ROOT / "lawrag/research/candidates/adr_0138/law-family-entry"
+    Path(__import__("lawrag").__file__).resolve().parent / "research/candidates/adr_0138/law-family-entry"
 )
 CANDIDATE_MANIFEST = CANDIDATE_ROOT / "candidate.json"
 CANDIDATE_REVISION = (
@@ -134,7 +137,7 @@ SOURCE_HASHES = {
         "d3c707caa114dec379201c2ba9d2177b0c6bc17ceb4ae9394df1397e9dbfccb1",
     "data/review/fsc_hard_retrieval_v2.json":
         "981d4fa6fd4b77d70eeade73aa907243937dfe33b228826c71eadf438b813269",
-    "data/law_index.json":
+    "01_DATA/law_index.json":
         "5c781a916daceb49e494790228154954ab78d053fab9ca76bd8488a117536791",
     "data/legal_system/legal-system-map-v1.json":
         "627d2a27631bf4c8e51e608b153cdf5fb2f5f880b881499c158f87018ed10d9d",

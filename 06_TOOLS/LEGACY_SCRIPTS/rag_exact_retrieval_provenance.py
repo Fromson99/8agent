@@ -14,16 +14,19 @@ import sys
 import threading
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.llm import LLM  # noqa: E402
 from scripts.adr_structure import HAIKU_MODEL, OPUS_MODEL, scaffold_adr  # noqa: E402
 from scripts.rag_evaluator_calibration import SCHEMA as JUDGE_SCHEMA, SYSTEM as JUDGE_SYSTEM  # noqa: E402
 
-ADR = ROOT / "docs/adr/ADR-0050-exact-retrieval-provenance"
-SOURCE = ROOT / "docs/adr/ADR-0048-legal-reasoning-causal-portfolio/artifacts/frozen-cases.json"
-PARENT = ROOT / "docs/adr/ADR-0048-legal-reasoning-causal-portfolio/실험/manifest.json"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0050-exact-retrieval-provenance"
+SOURCE = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0048-legal-reasoning-causal-portfolio/artifacts/frozen-cases.json"
+PARENT = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0048-legal-reasoning-causal-portfolio/실험/manifest.json"
 FROZEN = ADR / "artifacts/frozen-cases.json"
 PRODUCT = ADR / "artifacts/product-results.json"
 JUDGED = ADR / "artifacts/judged-results.json"
@@ -77,7 +80,7 @@ def prepare() -> None:
     source = json.loads(SOURCE.read_text("utf-8"))
     cases = source["cases"]
     if not ADR.exists():
-        scaffold_adr(ROOT / "docs/adr", 50, "exact-retrieval-provenance", "최종 프롬프트 exact 검색 provenance",
+        scaffold_adr(ROOT / "07_DOCS/LEGACY_DOCS/adr", 50, "exact-retrieval-provenance", "최종 프롬프트 exact 검색 provenance",
                      "probe", [row["case_no"] for row in cases], branch_id="exact-provenance",
                      candidate_arms=["exact-provenance"], parent_manifest=PARENT,
                      parent_arm="retrieval-trace", parent_relation="extends", judge_model=OPUS_MODEL)

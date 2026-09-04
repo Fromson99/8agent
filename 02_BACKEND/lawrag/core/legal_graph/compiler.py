@@ -134,14 +134,14 @@ _SEMANTIC_CONTRACT = {
 
 @dataclass(frozen=True)
 class BuildConfig:
-    structure_store: Path = Path("data/structure")
-    law_index_file: Path = Path("data/law_index.json")
-    delegation_file: Path = Path("data/delegation.json")
-    canonical_file: Path = Path("data/domain_graph/canonical.json")
-    frames_store: Path = Path("data/frames")
-    glossary_file: Path = Path("data/glossary.json")
-    links_file: Path = Path("data/links.json")
-    output_root: Path = Path("data/legal_graph")
+    structure_store: Path = Path("01_DATA/structure")
+    law_index_file: Path = Path("01_DATA/law_index.json")
+    delegation_file: Path = Path("01_DATA/delegation.json")
+    canonical_file: Path = Path("01_DATA/domain_graph/canonical.json")
+    frames_store: Path = Path("01_DATA/frames")
+    glossary_file: Path = Path("01_DATA/glossary.json")
+    links_file: Path = Path("01_DATA/links.json")
+    output_root: Path = Path("01_DATA/legal_graph")
     publish_current: bool = True
 
     def resolved(self) -> "BuildConfig":

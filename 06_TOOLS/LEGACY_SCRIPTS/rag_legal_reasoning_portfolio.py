@@ -20,8 +20,11 @@ import threading
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.llm import LLM  # noqa: E402
 from scripts.adr_structure import HAIKU_MODEL, OPUS_MODEL, scaffold_adr  # noqa: E402
@@ -31,10 +34,10 @@ from scripts.rag_evaluator_calibration import (  # noqa: E402
 )
 
 
-ADR = ROOT / "docs/adr/ADR-0048-legal-reasoning-causal-portfolio"
-SOURCE = ROOT / "var/eval/e2e/cm_core_haiku_hard_distractor_wrong16_v1.json"
-FUNNEL = ROOT / "var/eval/e2e/cm_core_retrieval_selectivity_funnel_51.json"
-PARENT = ROOT / "docs/adr/ADR-0047-offline-evaluator-calibration/실험/manifest.json"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0048-legal-reasoning-causal-portfolio"
+SOURCE = ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_haiku_hard_distractor_wrong16_v1.json"
+FUNNEL = ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_retrieval_selectivity_funnel_51.json"
+PARENT = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0047-offline-evaluator-calibration/실험/manifest.json"
 FROZEN = ADR / "artifacts/frozen-cases.json"
 GENERATED = ADR / "artifacts/product-results.json"
 JUDGED = ADR / "artifacts/judged-results.json"
@@ -194,7 +197,7 @@ def prepare() -> None:
     rows = frozen_cases()
     if not ADR.exists():
         scaffold_adr(
-            ROOT / "docs/adr", 48, "legal-reasoning-causal-portfolio",
+            ROOT / "07_DOCS/LEGACY_DOCS/adr", 48, "legal-reasoning-causal-portfolio",
             "법률 추론 원인분리 포트폴리오", "probe", list(SELECTED),
             branch_id="legal-reasoning-causal",
             candidate_arms=list(ARMS[1:]),

@@ -23,9 +23,14 @@ import statistics
 import sys
 from typing import Any, Iterable, Mapping, Sequence
 
+from workspace_paths import resolve_stored_path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.rag.experiments.retrieval_stage_ledger import (  # noqa: E402
     StageLedgerRecorder,
@@ -43,21 +48,17 @@ RUN_ID = "run-001"
 CANDIDATE_ARM = "stage-ledger-v1"
 BASELINE_ARM = "baseline"
 
-ADR_DIR = ROOT / "docs/adr/ADR-0081-retrieval-stage-recall-discard-ledger"
+ADR_DIR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0081-retrieval-stage-recall-discard-ledger"
 MANIFEST = ADR_DIR / "실험/manifest.json"
 OUTPUT = ADR_DIR / "artifacts/run-001.json"
 
-ADR76_RUN = (
-    ROOT / "docs/adr/ADR-0076-bounded-global-augmenting-basis/artifacts/"
-    "run-001.json"
-)
+ADR76_RUN_STORED = "docs/adr/ADR-0076-bounded-global-augmenting-basis/artifacts/run-001.json"
+ADR76_RUN = resolve_stored_path(ROOT, ADR76_RUN_STORED)
 ADR76_RUN_SHA256 = (
     "8d954148b47c16976c24907f311ba0490f59005a54a9aa933fea1ef0ea63ffd5"
 )
-ADR68_RUN = (
-    ROOT / "docs/adr/ADR-0068-recall-first-orthogonal-union/artifacts/"
-    "run-001.json"
-)
+ADR68_RUN_STORED = "docs/adr/ADR-0068-recall-first-orthogonal-union/artifacts/run-001.json"
+ADR68_RUN = resolve_stored_path(ROOT, ADR68_RUN_STORED)
 ADR68_RUN_SHA256 = (
     "d751f88febc98a1537083dd5a4e93ebc2cfc40b40137a451fa359badc648d38b"
 )
@@ -207,6 +208,23 @@ EXPECTED_STAGE_PLAN: dict[str, list[dict[str, Any]]] = {
 Coordinate = tuple[str, object]
 
 
+def _working_source_path(value: object) -> Path:
+    """Resolve a frozen code reference against the current editable tree."""
+
+    relative = Path(str(value))
+    if relative.is_absolute() or ".." in relative.parts or not relative.parts:
+        raise ValueError(f"unsafe working source path: {value!r}")
+    mappings = {
+        "lawrag": ROOT / "02_BACKEND/lawrag",
+        "scripts": ROOT / "06_TOOLS/LEGACY_SCRIPTS",
+        "tests": ROOT / "05_TESTS/LEGACY_TESTS",
+    }
+    if relative.parts[:2] == ("docs", "adr"):
+        return ROOT / "04_EXPERIMENTS/LEGACY_ADR" / Path(*relative.parts[2:])
+    base = mappings.get(relative.parts[0])
+    return base.joinpath(*relative.parts[1:]) if base else ROOT / relative
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -305,8 +323,7 @@ def _validate_manifest(
 
     dataset = manifest.get("dataset") or {}
     if (
-        dataset.get("frozen_source")
-        != str(ADR76_RUN.relative_to(ROOT))
+        dataset.get("frozen_source") != ADR76_RUN_STORED
         or dataset.get("sha256") != ADR76_RUN_SHA256
         or int(dataset.get("cases") or 0) != EXPECTED_CASES
         or int(dataset.get("corpus_present_gold") or 0) != EXPECTED_GOLD
@@ -319,10 +336,10 @@ def _validate_manifest(
         raise ValueError("ADR-0081 run arm contract mismatch")
     if run.get("status") not in {"planned", "running", "complete"}:
         raise ValueError("ADR-0081 run is not executable or complete")
-    if run.get("artifact_path") != str(OUTPUT.relative_to(ROOT)):
+    if run.get("artifact_path") != "docs/adr/ADR-0081-retrieval-stage-recall-discard-ledger/artifacts/run-001.json":
         raise ValueError("ADR-0081 artifact path mismatch")
     runner_path = str(run.get("runner_path") or "")
-    if runner_path != str(Path(__file__).resolve().relative_to(ROOT)):
+    if runner_path != "scripts/rag_retrieval_stage_ledger_audit.py":
         raise ValueError("ADR-0081 runner path mismatch")
     if run.get("runner_sha256") != _sha256(Path(__file__).resolve()):
         raise ValueError("ADR-0081 runner hash mismatch")
@@ -331,7 +348,7 @@ def _validate_manifest(
         if not isinstance(frozen, Mapping) or not frozen:
             raise ValueError(f"ADR-0081 {group} hash gate is missing")
         for relative, digest in frozen.items():
-            candidate = (ROOT / str(relative)).resolve()
+            candidate = _working_source_path(relative).resolve()
             if ROOT != candidate and ROOT not in candidate.parents:
                 raise ValueError(f"ADR-0081 {group} path escapes repository")
             if not candidate.is_file() or _sha256(candidate) != digest:
@@ -361,8 +378,7 @@ def _load_frozen_sources() -> tuple[dict[str, Any], dict[str, Any]]:
         raise ValueError("ADR-0068 row count changed")
     lineage = adr76.get("source_lineage") or {}
     if (
-        lineage.get("parent_68_run_path")
-        != str(ADR68_RUN.relative_to(ROOT))
+        lineage.get("parent_68_run_path") != ADR68_RUN_STORED
         or lineage.get("parent_68_run_sha256") != ADR68_RUN_SHA256
     ):
         raise ValueError("ADR-0076 to ADR-0068 lineage mismatch")

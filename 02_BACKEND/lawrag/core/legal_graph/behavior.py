@@ -467,4 +467,3 @@ def assess_relation_behavior(
 
 
 validate_behavior_registry()
-

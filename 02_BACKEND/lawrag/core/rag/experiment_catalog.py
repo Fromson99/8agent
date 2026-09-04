@@ -14,11 +14,14 @@ from pathlib import Path
 from typing import Any
 
 from lawrag.core.rag import experiments
-from lawrag.platform.paths import repository_root, runtime_path
+from lawrag.platform.paths import repository_root
+from lawrag.platform.stored_paths import resolve_stored_path
 
 
 ROOT = repository_root()
-EVAL_ROOT = runtime_path("eval", "e2e")
+# These files are immutable pre-v2 experiment evidence.  Follow the migration
+# receipt instead of treating them as new runtime output.
+EVAL_ROOT = resolve_stored_path(ROOT, "var/eval/e2e")
 
 
 def _kind(path: Path) -> str:

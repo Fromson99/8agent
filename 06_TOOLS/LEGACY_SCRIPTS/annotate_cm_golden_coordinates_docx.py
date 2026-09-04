@@ -22,10 +22,13 @@ from docx.oxml.ns import qn
 from docx.text.paragraph import Paragraph
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 DEFAULT_SOURCE = ROOT / "[CM본부] 주요 법규정 질의 등_260819.docx"
-DEFAULT_SUITE = ROOT / "data/review/cm_core_e2e_v3.json"
-DEFAULT_OUTPUT = ROOT / "artifacts/[CM본부] 주요 법규정 질의 등_260819_골든좌표_검증본.docx"
+DEFAULT_SUITE = ROOT / "01_DATA/review/cm_core_e2e_v3.json"
+DEFAULT_OUTPUT = ROOT / "09_ARTIFACTS/LEGACY_ARTIFACTS/[CM본부] 주요 법규정 질의 등_260819_골든좌표_검증본.docx"
 DEFAULT_REPORT = (
     ROOT
     / "docs/adr/ADR-0140-cm-source-golden-coordinate-annotation/artifacts/run-001.json"
@@ -92,7 +95,7 @@ def _validate_corpus_coordinate(article: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     doc_id = str(article.get("doc_id") or "")
     node_id = str(article.get("node") or "")
-    result_path = ROOT / "data/structure" / doc_id / "result.json"
+    result_path = ROOT / "01_DATA/structure" / doc_id / "result.json"
     meta_path = result_path.with_name("meta.json")
     if not result_path.is_file() or not meta_path.is_file():
         return [f"missing_document:{doc_id}"]

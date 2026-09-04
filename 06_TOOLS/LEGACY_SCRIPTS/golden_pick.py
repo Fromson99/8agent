@@ -40,11 +40,14 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-os.environ.setdefault("STRUCTURE_STORE", str(ROOT / "data" / "structure"))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
+os.environ.setdefault("STRUCTURE_STORE", str(ROOT / "01_DATA" / "structure"))
 
-OUT = ROOT / "data" / "review" / "golden_v2.json"
+OUT = ROOT / "01_DATA" / "review" / "golden_v2.json"
 _PREC = re.compile(r"대법원|헌법재판소|선고\s*\d{2,4}[가-힣]+\d+|\d{2}-\d{4}")
 _OLDLAW = re.compile(r"구\s*「|폐지되기?\s*전|법률\s*제\d+호로\s*폐지")
 _PARTS = re.compile(r"(?:^|\n|\s)가\.\s.{5,}(?:\n|\s)나\.\s", re.S)

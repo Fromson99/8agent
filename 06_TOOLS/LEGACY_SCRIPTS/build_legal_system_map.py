@@ -17,9 +17,12 @@ from pathlib import Path
 import sys
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+    sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.rag.index import Index
 from lawrag.core.rag.legal_research_atlas import LegalResearchAtlas
@@ -34,7 +37,7 @@ from lawrag.core.rag.legal_system_map import (
 
 
 DEFAULT_RECEIPT_PATH = (
-    ROOT / "data" / "legal_system" / "catalog-update-receipts.jsonl"
+    ROOT / "01_DATA" / "legal_system" / "catalog-update-receipts.jsonl"
 )
 
 
@@ -97,9 +100,9 @@ def _append_receipt(path: Path, receipt: dict) -> None:
 
 def _atlas() -> LegalResearchAtlas:
     index = Index.load(
-        store=ROOT / "data" / "structure",
-        terms_file=ROOT / "data" / "glossary.json",
-        links_file=ROOT / "data" / "links.json",
+        store=ROOT / "01_DATA" / "structure",
+        terms_file=ROOT / "01_DATA" / "glossary.json",
+        links_file=ROOT / "01_DATA" / "links.json",
     )
     return LegalResearchAtlas.from_index(index)
 

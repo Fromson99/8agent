@@ -18,16 +18,19 @@ from typing import Any
 
 import requests
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.llm import LLM, load_env
 
 
-ADR = ROOT / "docs/adr/ADR-0055-gold-article-open-model-ceiling"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0055-gold-article-open-model-ceiling"
 ART = ADR / "artifacts"
 EXP = ADR / "실험"
-SOURCE = (ROOT / "docs/adr/ADR-0048-legal-reasoning-causal-portfolio"
+SOURCE = (ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0048-legal-reasoning-causal-portfolio"
           / "artifacts/frozen-cases.json")
 QWEN_MODEL = "qwen/qwen3.8-27b"
 JUDGE_MODEL = "claude-opus-5"

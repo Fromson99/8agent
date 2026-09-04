@@ -13,9 +13,12 @@ import time
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 CANDIDATE = (
-    ROOT / "lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/revisions/rev-002/snapshot"
+    Path(__import__("lawrag").__file__).resolve().parent / "research/candidates/adr_0154/minimum-unit-proviso-graph/revisions/rev-002/snapshot"
     "/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002"
     "/snapshot/lawrag/core/domain_graph/requirements.py"
 )
@@ -150,7 +153,7 @@ def write_gzip(path: Path, payload: bytes) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--structure", type=Path, default=ROOT / "data/structure")
+    parser.add_argument("--structure", type=Path, default=ROOT / "01_DATA/structure")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--summary", type=Path, required=True)
     args = parser.parse_args()

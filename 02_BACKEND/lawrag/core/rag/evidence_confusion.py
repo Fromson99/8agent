@@ -142,4 +142,3 @@ def difficulty_balanced_score(groups: Mapping[str, Mapping[str, int | float]]) -
     if set(groups) != expected:
         raise ValueError(f"difficulty groups must be exactly {sorted(expected)}")
     return round((float(groups["core"]["group_score"]) + float(groups["hard"]["group_score"])) / 2, 6)
-

@@ -2,8 +2,11 @@ import json
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[2]
-RUN = ROOT / "docs/adr/ADR-0128-legal-evidence-confusion-objective/artifacts/run-001.json"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+RUN = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0128-legal-evidence-confusion-objective/artifacts/run-001.json"
 
 
 def test_run_has_fixed_denominators_and_no_calls() -> None:

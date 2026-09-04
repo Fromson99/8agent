@@ -16,8 +16,11 @@ import threading
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.llm import LLM  # noqa: E402
 from lawrag.core.rag import index as index_mod  # noqa: E402
@@ -29,19 +32,19 @@ from scripts.rag_evaluator_calibration import SYSTEM as JUDGE_SYSTEM  # noqa: E4
 from scripts import rag_legal_proof_chain_selector as base  # noqa: E402
 
 
-ADR = ROOT / "docs/adr/ADR-0052-proof-chain-hard-ambiguous"
-SUITE = ROOT / "data/review/cm_core_e2e_v1.json"
-RETRIEVAL = ROOT / "var/eval/e2e/cm_core_legalclosure_stage_ablation_51.json"
-CANONICAL = ROOT / "data/domain_graph/canonical.json"
-WRONG16 = ROOT / "var/eval/e2e/cm_core_haiku_hard_distractor_wrong16_v1.json"
-OPUS_REGRADE = ROOT / "var/eval/e2e/cm_core_legal_answer_repair_opus5_medium_51.json"
-CALIBRATION = ROOT / "docs/adr/ADR-0047-offline-evaluator-calibration/artifacts/calibration-results.json"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0052-proof-chain-hard-ambiguous"
+SUITE = ROOT / "01_DATA/review/cm_core_e2e_v1.json"
+RETRIEVAL = ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_legalclosure_stage_ablation_51.json"
+CANONICAL = ROOT / "01_DATA/domain_graph/canonical.json"
+WRONG16 = ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_haiku_hard_distractor_wrong16_v1.json"
+OPUS_REGRADE = ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_legal_answer_repair_opus5_medium_51.json"
+CALIBRATION = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0047-offline-evaluator-calibration/artifacts/calibration-results.json"
 RELATION_SOURCES = (
-    ROOT / "var/eval/e2e/cm_core_haiku_source_relations_probe10_consensus2of3.json",
-    ROOT / "var/eval/e2e/cm_core_haiku_source_relations_holdout12_consensus2of2.json",
-    ROOT / "var/eval/e2e/cm_core_haiku_source_relations_unseen29_consensus_materialized.json",
+    ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_haiku_source_relations_probe10_consensus2of3.json",
+    ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_haiku_source_relations_holdout12_consensus2of2.json",
+    ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_haiku_source_relations_unseen29_consensus_materialized.json",
 )
-PARENT = ROOT / "docs/adr/ADR-0051-fail-open-proof-chain-selector/실험/manifest.json"
+PARENT = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0051-fail-open-proof-chain-selector/실험/manifest.json"
 FROZEN = ADR / "artifacts/frozen-cases.json"
 AUDIT = ADR / "artifacts/selector-audit.json"
 PRODUCT = ADR / "artifacts/product-results.json"
@@ -137,7 +140,7 @@ def prepare() -> None:
     cases, reasons = freeze_cases()
     if not ADR.exists():
         scaffold_adr(
-            ROOT / "docs/adr", 52, "proof-chain-hard-ambiguous",
+            ROOT / "07_DOCS/LEGACY_DOCS/adr", 52, "proof-chain-hard-ambiguous",
             "기존 오답·애매 사례 proof-chain stress test", "probe",
             [row["case_no"] for row in cases],
             branch_id="hard-ambiguous-stress",

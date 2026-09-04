@@ -10,8 +10,11 @@ from pathlib import Path
 import sys
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import review_golden as review  # noqa: E402 — 저장소 환경 기본값
 from lawrag.core.rag import answer, legal_coordinates, wikictx  # noqa: E402
@@ -261,15 +264,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
         "--out-dir", type=Path,
-        default=ROOT / "docs/adr/ADR-0038-definition-context-wiki-hygiene/cases")
+        default=ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0038-definition-context-wiki-hygiene/cases")
     args = parser.parse_args()
     sources = {
-        "structural": ROOT / "var/eval/e2e/ADR-0038/definition_context_wiki_51.json",
-        "combined": ROOT / "var/eval/e2e/ADR-0038/definition_context_answer_ab_51.json",
-        "combined_regrade": ROOT / "var/eval/e2e/ADR-0038/definition_context_answer_ab_disputed21_regrade3.json",
-        "definition_only": ROOT / "var/eval/e2e/ADR-0038/definition_only_fresh_answer_ab_27.json",
-        "definition_regrade": ROOT / "var/eval/e2e/ADR-0038/definition_only_fresh_answer_ab_disputed12_regrade3.json",
-        "stage": ROOT / "var/eval/e2e/cm_core_legalclosure_stage_ablation_51.json",
+        "structural": ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0038/definition_context_wiki_51.json",
+        "combined": ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0038/definition_context_answer_ab_51.json",
+        "combined_regrade": ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0038/definition_context_answer_ab_disputed21_regrade3.json",
+        "definition_only": ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0038/definition_only_fresh_answer_ab_27.json",
+        "definition_regrade": ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0038/definition_only_fresh_answer_ab_disputed12_regrade3.json",
+        "stage": ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_legalclosure_stage_ablation_51.json",
     }
     blobs = {name: json.loads(path.read_text("utf-8")) for name, path in sources.items()}
     maps = {name: {row["case_no"]: row for row in blob.get("rows") or []}
@@ -329,4 +332,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

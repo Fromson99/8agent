@@ -10,9 +10,12 @@ from pathlib import Path
 import sys
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+    sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.rag.index import Index
 from lawrag.core.rag.legal_research_atlas import LegalResearchAtlas
@@ -30,9 +33,9 @@ def main() -> int:
     )
     args = parser.parse_args()
     index = Index.load(
-        store=ROOT / "data" / "structure",
-        terms_file=ROOT / "data" / "glossary.json",
-        links_file=ROOT / "data" / "links.json",
+        store=ROOT / "01_DATA" / "structure",
+        terms_file=ROOT / "01_DATA" / "glossary.json",
+        links_file=ROOT / "01_DATA" / "links.json",
     )
     atlas = LegalResearchAtlas.from_index(index)
     system_map = load_legal_system_map(atlas)

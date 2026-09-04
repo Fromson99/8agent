@@ -15,14 +15,17 @@ import sys
 import time
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for _key, _relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
 ):
     os.environ.setdefault(_key, str(ROOT / _relative))
 
@@ -36,14 +39,14 @@ CAP = 20
 POOL_CAP = 48
 MAX_ADMISSIONS = 3
 PARENT_RUN = (
-    ROOT / "docs/adr/ADR-0067-proof-boundary-feedback/artifacts/run-001.json")
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0067-proof-boundary-feedback/artifacts/run-001.json")
 PARENT_RUN_SHA256 = (
     "d62dd2fa84d081498ad053a3900a7777ce0c85600399cb9c913bf3583442c52f")
 PARENT_MANIFEST = (
-    ROOT / "docs/adr/ADR-0067-proof-boundary-feedback/실험/manifest.json")
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0067-proof-boundary-feedback/실험/manifest.json")
 PARENT_MANIFEST_SHA256 = (
     "8e5b66f56ac6616313c926400044242914e9fb7a863934dcbbc8b1e2141fb13a")
-IMPLEMENTATION = ROOT / "lawrag/core/rag/source_registry_admission.py"
+IMPLEMENTATION = Path(__import__("lawrag").__file__).resolve().parent / "core/rag/source_registry_admission.py"
 
 
 def _sha(path: Path) -> str:

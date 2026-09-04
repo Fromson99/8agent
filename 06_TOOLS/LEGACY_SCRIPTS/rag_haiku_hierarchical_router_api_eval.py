@@ -36,16 +36,19 @@ import time
 from typing import Any, Iterable, Mapping, Sequence
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for _key, _relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
-    ("RAG_LAW_INDEX_STORE", "data/law_index.json"),
-    ("RAG_ENGINE_RULES", "data/rules/engine.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
+    ("RAG_LAW_INDEX_STORE", "01_DATA/law_index.json"),
+    ("RAG_ENGINE_RULES", "01_DATA/rules/engine.json"),
 ):
     os.environ.setdefault(_key, str(ROOT / _relative))
 
@@ -99,7 +102,7 @@ CANDIDATE_ARM_ID = "haiku-question-only-router"
 ARTIFACT_SCHEMA_PREFIX = "adr-0108"
 RUNTIME_LOCK_SCHEMA = "adr-0108-runtime-lock-v1"
 PUBLIC_INPUT_SCHEMA = "adr-0108-public-router-input-v1"
-ADR = ROOT / "docs/adr/ADR-0108-haiku-question-only-hierarchical-router-api"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0108-haiku-question-only-hierarchical-router-api"
 PUBLIC_INPUT = ADR / "artifacts/public-input-run-001.json"
 
 # This file is deliberately not opened anywhere in the product phase.  The
@@ -216,7 +219,7 @@ def configure_for_adr_0109() -> None:
     CANDIDATE_ARM_ID = "fixed-hierarchical-router"
     ARTIFACT_SCHEMA_PREFIX = "adr-0109"
     RUNTIME_LOCK_SCHEMA = "adr-0109-runtime-lock-v1"
-    ADR = ROOT / "docs/adr/ADR-0109-hierarchical-router-provider-ranking-probe-retry"
+    ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0109-hierarchical-router-provider-ranking-probe-retry"
     PUBLIC_INPUT = (
         ROOT
         / "docs/adr/ADR-0108-haiku-question-only-hierarchical-router-api"
@@ -261,8 +264,8 @@ def _output_paths() -> tuple[Path, ...]:
 def _assert_output_contract(*, fresh_run: bool) -> None:
     adr_root = ADR.resolve()
     historical_roots = {
-        (ROOT / "docs/adr/ADR-0107-hierarchical-parallel-legal-research-controller").resolve(),
-        (ROOT / "docs/adr/ADR-0108-haiku-question-only-hierarchical-router-api").resolve(),
+        (ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0107-hierarchical-parallel-legal-research-controller").resolve(),
+        (ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0108-haiku-question-only-hierarchical-router-api").resolve(),
     }
     for path in _output_paths():
         resolved = path.resolve()

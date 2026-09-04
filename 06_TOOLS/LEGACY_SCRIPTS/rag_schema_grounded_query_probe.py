@@ -29,16 +29,19 @@ import time
 from typing import Any, Iterable, Mapping, Sequence
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for key, relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
-    ("RAG_LAW_INDEX_STORE", "data/law_index.json"),
-    ("RAG_ENGINE_RULES", "data/rules/engine.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
+    ("RAG_LAW_INDEX_STORE", "01_DATA/law_index.json"),
+    ("RAG_ENGINE_RULES", "01_DATA/rules/engine.json"),
 ):
     os.environ.setdefault(key, str(ROOT / relative))
 # This probe is read-only.  An inherited batch setting must never compile and
@@ -83,23 +86,23 @@ STAGES = {
 }
 SOURCES = {
     "dataset_lock": (
-        ROOT / "docs/adr/ADR-0105-schema-constrained-query-grounding-api"
+        ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0105-schema-constrained-query-grounding-api"
         / "artifacts/dataset-lock.json"
     ),
     "public_input": (
-        ROOT / "docs/adr/ADR-0105-schema-constrained-query-grounding-api"
+        ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0105-schema-constrained-query-grounding-api"
         / "artifacts/public-input-lock.json"
     ),
     "input_lock": (
-        ROOT / "docs/adr/ADR-0091-legalclosure-v2-article-reachability-ledger"
+        ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0091-legalclosure-v2-article-reachability-ledger"
         / "artifacts/input-lock.json"
     ),
     "parent_run": (
-        ROOT / "docs/adr/ADR-0103-legal-semantic-entity-search-pipeline"
+        ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0103-legal-semantic-entity-search-pipeline"
         / "artifacts/run-007.json"
     ),
-    "cm": ROOT / "data/review/cm_core_e2e_v2.json",
-    "fsc": ROOT / "data/review/fsc_hard_retrieval_v2.json",
+    "cm": ROOT / "01_DATA/review/cm_core_e2e_v2.json",
+    "fsc": ROOT / "01_DATA/review/fsc_hard_retrieval_v2.json",
 }
 EXPECTED = {
     "dataset_lock": "69db899d15bfa05af3a91e10f8a0e1187e0b4d8f8c93bd2052346c24c1f7acf6",
@@ -1653,13 +1656,13 @@ def main() -> None:
         "--adr",
         type=Path,
         default=(
-            ROOT / "docs/adr/ADR-0105-schema-constrained-query-grounding-api"
+            ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0105-schema-constrained-query-grounding-api"
         ),
     )
     parser.add_argument(
         "--graph-root",
         type=Path,
-        default=ROOT / "data/legal_graph",
+        default=ROOT / "01_DATA/legal_graph",
     )
     args = parser.parse_args()
     print(json.dumps(

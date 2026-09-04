@@ -12,9 +12,12 @@ from pathlib import Path
 import pytest
 
 
-ROOT = Path(__file__).resolve().parents[2]
-CALL = ROOT / "scripts" / "genos_call.sh"
-PREFLIGHT = ROOT / "scripts" / "genos_preflight.py"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+CALL = ROOT / "06_TOOLS" / "LEGACY_SCRIPTS" / "genos_call.sh"
+PREFLIGHT = ROOT / "06_TOOLS" / "LEGACY_SCRIPTS" / "genos_preflight.py"
 
 
 @pytest.fixture()
@@ -135,6 +138,7 @@ def test_source_preflight_is_machine_readable():
 def test_genos_volume_env_routes_persistent_auxiliary_data(tmp_path):
     env = {
         **os.environ,
+        "PYTHONPATH": str(ROOT / "02_BACKEND"),
         "AGENT6_CORPUS_DIR": str(tmp_path / "lawrag/agents/agent6/corpus"),
         "REVIEW_STORE": str(tmp_path / "data/review"),
     }

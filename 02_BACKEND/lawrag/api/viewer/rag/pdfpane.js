@@ -323,4 +323,3 @@ $("ppClose").onclick = () => {
   $("pdfpane").classList.add("hidden");
   document.body.classList.remove("haspp");
 };
-

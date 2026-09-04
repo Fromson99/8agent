@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import runpy
 import sys
+import types
 from pathlib import Path
 
 
@@ -20,9 +22,13 @@ def _targets(root: Path) -> tuple[Path, Path]:
         raise SystemExit("workspace lifecycle.retirement_receipt is not configured")
     os.environ["LAWRAG_LAYOUT_RETIREMENT_RECEIPT"] = str(root / retirement_value)
     activation = json.loads((root / activation_value).read_text("utf-8"))
-    final = json.loads(
-        (root / activation["validation_receipt_path"]).read_text("utf-8")
-    )
+    final_path = root / activation["validation_receipt_path"]
+    final_raw = final_path.read_bytes()
+    if hashlib.sha256(final_raw).hexdigest() != activation.get(
+        "validation_receipt_sha256"
+    ):
+        raise SystemExit("active final receipt hash verification failed")
+    final = json.loads(final_raw)
 
     def one(source: str) -> Path:
         matches = [row for row in final.get("items", []) if row.get("source") == source]
@@ -49,6 +55,14 @@ def main() -> None:
         raise SystemExit("backend target verification failed")
     if layout.migration_target("scripts") != tools:
         raise SystemExit("tools target verification failed")
+    # Historical tools import each other through ``scripts.*``.  Keep that
+    # namespace virtual and receipt-bound; no retired top-level scripts tree is
+    # recreated on disk.
+    scripts_package = types.ModuleType("scripts")
+    scripts_package.__path__ = [str(tools)]
+    scripts_package.__package__ = "scripts"
+    sys.modules["scripts"] = scripts_package
+    sys.path.insert(0, str(tools))
     os.environ["LAWRAG_TOOL_WORKSPACE_ROOT"] = str(root)
     target = tools / name
     if not target.is_file() or target.is_symlink():

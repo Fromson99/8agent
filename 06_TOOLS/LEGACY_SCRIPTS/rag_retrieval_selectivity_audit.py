@@ -13,8 +13,11 @@ import statistics
 import sys
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 _ARTICLE = re.compile(r"^제\s*\d+(?:-\d+)?조(?:의\s*\d+)?$")
 
@@ -129,8 +132,8 @@ def navigation_exposure(primary: dict, assertion: dict) -> dict:
     }
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--structure-store", type=Path, default=ROOT / "data/structure")
-    parser.add_argument("--glossary-store", type=Path, default=ROOT / "data/glossary.json")
+    parser.add_argument("--structure-store", type=Path, default=ROOT / "01_DATA/structure")
+    parser.add_argument("--glossary-store", type=Path, default=ROOT / "01_DATA/glossary.json")
     parser.add_argument("--candidate", type=Path, required=True)
     parser.add_argument("--retrieval", type=Path, required=True)
     parser.add_argument("--answer", type=Path, required=True)

@@ -17,8 +17,11 @@ import time
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.llm import LLM  # noqa: E402
 from lawrag.core.rag import answer as answer_mod  # noqa: E402
@@ -44,15 +47,15 @@ from scripts.rag_frozen_retrieval_answer_control import _sections  # noqa: E402
 from scripts.rag_legal_issue_e2e_eval import reconstruct_evidence  # noqa: E402
 
 
-ADR = ROOT / "docs/adr/ADR-0051-fail-open-proof-chain-selector"
-SUITE = ROOT / "data/review/cm_core_e2e_v1.json"
-RETRIEVAL = ROOT / "var/eval/e2e/cm_core_legalclosure_stage_ablation_51.json"
-CANONICAL = ROOT / "data/domain_graph/canonical.json"
-RELATIONS = ROOT / "var/eval/e2e/cm_core_haiku_source_relations_unseen29_consensus_materialized.json"
-WRONG16 = ROOT / "var/eval/e2e/cm_core_haiku_hard_distractor_wrong16_v1.json"
-PRIOR_RELATION_ANSWERS = ROOT / "var/eval/e2e/cm_core_source_relation_annotation_answer_abc_unseen29.json"
-PRIOR_APPLICABILITY_ANSWERS = ROOT / "var/eval/e2e/cm_core_legal_applicability_answer_ab_dev17.json"
-PARENT = ROOT / "docs/adr/ADR-0050-exact-retrieval-provenance/실험/manifest.json"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0051-fail-open-proof-chain-selector"
+SUITE = ROOT / "01_DATA/review/cm_core_e2e_v1.json"
+RETRIEVAL = ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_legalclosure_stage_ablation_51.json"
+CANONICAL = ROOT / "01_DATA/domain_graph/canonical.json"
+RELATIONS = ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_haiku_source_relations_unseen29_consensus_materialized.json"
+WRONG16 = ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_haiku_hard_distractor_wrong16_v1.json"
+PRIOR_RELATION_ANSWERS = ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_source_relation_annotation_answer_abc_unseen29.json"
+PRIOR_APPLICABILITY_ANSWERS = ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_legal_applicability_answer_ab_dev17.json"
+PARENT = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0050-exact-retrieval-provenance/실험/manifest.json"
 FROZEN = ADR / "artifacts/frozen-cases.json"
 SELECTOR_AUDIT = ADR / "artifacts/selector-audit.json"
 PRODUCT = ADR / "artifacts/product-results.json"
@@ -318,7 +321,7 @@ def prepare() -> None:
     cases = frozen_cases()
     if not ADR.exists():
         scaffold_adr(
-            ROOT / "docs/adr", 51, "fail-open-proof-chain-selector",
+            ROOT / "07_DOCS/LEGACY_DOCS/adr", 51, "fail-open-proof-chain-selector",
             "실패-개방형 법률 증명사슬 selector", "probe",
             [row["case_no"] for row in cases],
             branch_id="fail-open-proof-chain",

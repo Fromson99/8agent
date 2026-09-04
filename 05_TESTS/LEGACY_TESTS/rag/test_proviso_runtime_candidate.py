@@ -6,10 +6,13 @@ from pathlib import Path
 import sys
 
 
-ROOT = Path(__file__).resolve().parents[2]
-REVISION = (ROOT / "lawrag/research/candidates/adr_0149/proviso-runtime-data/"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+REVISION = (Path(__import__("lawrag").__file__).resolve().parent / "research/candidates/adr_0149/proviso-runtime-data/"
             "revisions/rev-002/snapshot/lawrag/core/domain_graph/requirements.py")
-RUN = ROOT / "docs/adr/ADR-0149-proviso-span-relationship-runtime-data/artifacts/run-002.json"
+RUN = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0149-proviso-span-relationship-runtime-data/artifacts/run-002.json"
 
 
 def _requirements():

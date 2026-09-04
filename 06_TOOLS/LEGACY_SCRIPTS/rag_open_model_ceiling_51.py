@@ -16,18 +16,21 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.llm import LLM, load_env  # noqa: E402
 from lawrag.core.rag.index import Index  # noqa: E402
 from scripts import rag_open_model_ceiling as pilot  # noqa: E402
 
 
-ADR = ROOT / "docs/adr/ADR-0056-cm-core-51-open-model-ceiling"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0056-cm-core-51-open-model-ceiling"
 ART = ADR / "artifacts"
 EXP = ADR / "실험"
-SOURCE = ROOT / "data/review/cm_core_e2e_v1.json"
+SOURCE = ROOT / "01_DATA/review/cm_core_e2e_v1.json"
 MODELS = pilot.MODELS
 QWEN_MODEL = pilot.QWEN_MODEL
 JUDGE_MODEL = pilot.JUDGE_MODEL
@@ -168,10 +171,10 @@ def resolve_evidence(idx: Index, case_id: str, article: dict) -> dict[str, Any]:
 def prepare() -> None:
     load_env()
     for key, rel in (
-        ("STRUCTURE_STORE", "data/structure"),
-        ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-        ("GLOSSARY_STORE", "data/glossary.json"),
-        ("RAG_LINKS_STORE", "data/links.json"),
+        ("STRUCTURE_STORE", "01_DATA/structure"),
+        ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+        ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+        ("RAG_LINKS_STORE", "01_DATA/links.json"),
     ):
         os.environ.setdefault(key, str(ROOT / rel))
     idx = Index.load()

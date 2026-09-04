@@ -10,8 +10,11 @@ import json
 import time
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-CORPUS = REPO_ROOT / "data" / "corpus"
+REPO_ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+CORPUS = REPO_ROOT / "01_DATA" / "corpus"
 
 
 def main() -> None:

@@ -12,8 +12,11 @@ import sys
 import threading
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import review_golden as review  # noqa: E402
 from scripts.rag_definition_context_answer_ab import (  # noqa: E402
@@ -70,7 +73,7 @@ def _summary(source_rows: list[dict], regraded: list[dict]) -> dict:
 
 
 def _append_case_markdown(rows: list[dict]) -> None:
-    case_dir = ROOT / "docs/adr/ADR-0040-frame-only-legal-answer-ab/cases"
+    case_dir = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0040-frame-only-legal-answer-ab/cases"
     existing = {path.name.split("-", 1)[1][:-3]: path
                 for path in case_dir.glob("[0-9][0-9][0-9]-cm-*.md")}
     for row in rows:
@@ -103,7 +106,7 @@ def _append_case_markdown(rows: list[dict]) -> None:
 
 
 def _refresh_case_manifest() -> dict:
-    case_dir = ROOT / "docs/adr/ADR-0040-frame-only-legal-answer-ab/cases"
+    case_dir = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0040-frame-only-legal-answer-ab/cases"
     files = []
     for path in sorted(case_dir.glob("[0-9][0-9][0-9]-cm-*.md")):
         files.append({
@@ -127,10 +130,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
         "--input", type=Path,
-        default=ROOT / "var/eval/e2e/ADR-0040/frame_only_answer_ab_51.json")
+        default=ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0040/frame_only_answer_ab_51.json")
     parser.add_argument(
         "--out", type=Path,
-        default=ROOT / "var/eval/e2e/ADR-0040/frame_only_answer_ab_disputed35_regrade3.json")
+        default=ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0040/frame_only_answer_ab_disputed35_regrade3.json")
     parser.add_argument("--workers", type=int, choices=range(1, 5), default=2)
     parser.add_argument("--refresh-case-manifest-only", action="store_true")
     args = parser.parse_args()

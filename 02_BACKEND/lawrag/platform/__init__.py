@@ -24,9 +24,13 @@ from .paths import (
     root_path,
     runtime_path,
 )
+from .experiment_store import ExperimentRecord, ExperimentStore, ExperimentStoreError
 
 __all__ = [
     "LayoutError",
+    "ExperimentRecord",
+    "ExperimentStore",
+    "ExperimentStoreError",
     "ReleaseActivationPlan",
     "ReleaseContractError",
     "ReleaseManifest",

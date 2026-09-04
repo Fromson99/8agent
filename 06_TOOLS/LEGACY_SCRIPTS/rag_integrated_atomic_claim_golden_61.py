@@ -15,8 +15,11 @@ import sys
 import time
 from typing import Any, Mapping, Sequence
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import rag_scope_entailment_bundle_golden_61 as recovery  # noqa: E402
 from lawrag.core.rag import integrated_atomic_claim_research as atomic  # noqa: E402
@@ -41,7 +44,7 @@ CANDIDATE_ARM = (
 )
 COMPILER_MAX_TOKENS = 4000 if RUN_ID == "run-001" else 8000
 ARMS = (BASELINE_ARM, CANDIDATE_ARM)
-ADR = ROOT / "docs/adr/ADR-0118-integrated-atomic-claim-compiler-golden-61"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0118-integrated-atomic-claim-compiler-golden-61"
 
 BASELINE_STAGES = (
     ("question-source", "source", ()),

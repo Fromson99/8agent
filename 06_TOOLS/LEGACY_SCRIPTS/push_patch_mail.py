@@ -20,7 +20,10 @@ from email.message import EmailMessage
 from pathlib import Path, PurePosixPath
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 ZERO_SHA = "0" * 40
 MANIFEST = "PATCH_MANIFEST.json"
 GMAIL_SAFE_SUFFIX = ".gmail-safe.txt"

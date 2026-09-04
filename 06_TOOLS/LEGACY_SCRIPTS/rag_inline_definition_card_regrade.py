@@ -12,8 +12,11 @@ import sys
 import threading
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import review_golden as review  # noqa: E402
 from scripts.rag_definition_context_answer_ab import HAIKU  # noqa: E402
@@ -103,10 +106,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
         "--input", type=Path,
-        default=ROOT / "var/eval/e2e/ADR-0041/inline_definition_card_answer_abc_51.json")
+        default=ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0041/inline_definition_card_answer_abc_51.json")
     parser.add_argument(
         "--out", type=Path,
-        default=ROOT / "var/eval/e2e/ADR-0041/inline_definition_card_answer_abc_disputed31_regrade3.json")
+        default=ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0041/inline_definition_card_answer_abc_disputed31_regrade3.json")
     parser.add_argument("--workers", type=int, choices=range(1, 5), default=2)
     args = parser.parse_args()
 

@@ -6,8 +6,11 @@ from pathlib import Path
 from lawrag.core.rag import internal_compliance
 
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-DATASET = ROOT / "data" / "review" / "internal_compliance_holdout_v1.json"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+DATASET = ROOT / "01_DATA" / "review" / "internal_compliance_holdout_v1.json"
 
 
 def test_frozen_holdout_candidate_is_exact_and_fail_closed():

@@ -14,10 +14,13 @@ import build_legal_rag_report_docx as report
 from generate_fixed_baseline_report_diagrams import generate_all
 
 
-ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "docs" / "LEGAL_RAG_FIXED_BASELINE_ADR0118_2026-08-31.md"
-OUTPUT = ROOT / "artifacts" / "대한민국_법령_금융규제_RAG_최종고정구조_상세설계서_ADR-0118_2026-08-31.docx"
-DIAGRAM_ROOT = ROOT / "artifacts" / "legal_rag_fixed_baseline_diagrams"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+SOURCE = ROOT / "07_DOCS" / "LEGACY_DOCS" / "LEGAL_RAG_FIXED_BASELINE_ADR0118_2026-08-31.md"
+OUTPUT = ROOT / "09_ARTIFACTS" / "LEGACY_ARTIFACTS" / "대한민국_법령_금융규제_RAG_최종고정구조_상세설계서_ADR-0118_2026-08-31.docx"
+DIAGRAM_ROOT = ROOT / "09_ARTIFACTS" / "LEGACY_ARTIFACTS" / "legal_rag_fixed_baseline_diagrams"
 
 FIGURES = {
     "{{FIGURE_FIXED_OVERVIEW}}": (

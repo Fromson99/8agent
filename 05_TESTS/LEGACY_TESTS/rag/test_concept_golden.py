@@ -10,12 +10,12 @@ def _spec():
 
 
 def _holdout_spec():
-    path = concept_golden.ROOT / "data" / "bench" / "concept_holdout.yaml"
+    path = concept_golden.ROOT / "01_DATA" / "bench" / "concept_holdout.yaml"
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
 def _blind_spec():
-    path = concept_golden.ROOT / "data" / "bench" / "concept_blind.yaml"
+    path = concept_golden.ROOT / "01_DATA" / "bench" / "concept_blind.yaml"
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 

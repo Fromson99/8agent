@@ -22,12 +22,15 @@ from pathlib import Path
 import yaml
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 DEFAULT_SUITES = [
-    ROOT / "data" / "bench" / "concept_golden.yaml",
-    ROOT / "data" / "bench" / "concept_holdout.yaml",
-    ROOT / "data" / "bench" / "concept_blind.yaml",
+    ROOT / "01_DATA" / "bench" / "concept_golden.yaml",
+    ROOT / "01_DATA" / "bench" / "concept_holdout.yaml",
+    ROOT / "01_DATA" / "bench" / "concept_blind.yaml",
 ]
 
 
@@ -117,8 +120,8 @@ def _summary(rows: list[dict], *, index_load_ms: float) -> dict:
 
 
 def main() -> int:
-    os.environ.setdefault("STRUCTURE_STORE", str(ROOT / "data" / "structure"))
-    os.environ.setdefault("GLOSSARY_STORE", str(ROOT / "data" / "glossary.json"))
+    os.environ.setdefault("STRUCTURE_STORE", str(ROOT / "01_DATA" / "structure"))
+    os.environ.setdefault("GLOSSARY_STORE", str(ROOT / "01_DATA" / "glossary.json"))
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--suite", action="append", type=Path,
                     help="YAML 시험판. 생략하면 golden/holdout/blind 3개")

@@ -21,14 +21,17 @@ import time
 from typing import Iterable
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for _key, _relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
 ):
     os.environ.setdefault(_key, str(ROOT / _relative))
 
@@ -49,15 +52,15 @@ EXPECTED_CASE_IDS = (
 EXPECTED_MISSING_GOLD = 19
 
 ADR0068_RUN = (
-    ROOT / "docs/adr/ADR-0068-recall-first-orthogonal-union/artifacts/run-001.json")
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0068-recall-first-orthogonal-union/artifacts/run-001.json")
 ADR0068_RUN_SHA256 = (
     "d751f88febc98a1537083dd5a4e93ebc2cfc40b40137a451fa359badc648d38b")
 ADR0068_MANIFEST = (
-    ROOT / "docs/adr/ADR-0068-recall-first-orthogonal-union/실험/manifest.json")
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0068-recall-first-orthogonal-union/실험/manifest.json")
 ADR0068_MANIFEST_SHA256 = (
     "889255d1753ab9e1b9817fbcf5e7bc2af8eac29c4e7ab0019908ef1dda7d0779")
 ADR0067_RUN = (
-    ROOT / "docs/adr/ADR-0067-proof-boundary-feedback/artifacts/run-001.json")
+    ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0067-proof-boundary-feedback/artifacts/run-001.json")
 
 _TOKEN = re.compile(r"[0-9A-Za-z가-힣]+")
 _SPACE = re.compile(r"\s+")

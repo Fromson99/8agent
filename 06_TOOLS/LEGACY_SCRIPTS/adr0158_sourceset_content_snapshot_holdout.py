@@ -37,8 +37,11 @@ import zipfile
 
 sys.dont_write_bytecode = True
 
-ROOT = Path(__file__).resolve().parents[1]
-CANDIDATE_ROOT = ROOT / "lawrag/research/candidates/adr_0158/v2-runtime-activation"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+CANDIDATE_ROOT = Path(__import__("lawrag").__file__).resolve().parent / "research/candidates/adr_0158/v2-runtime-activation"
 CANDIDATE_MANIFEST = CANDIDATE_ROOT / "candidate.json"
 INPUT_LOCK = (
     ROOT

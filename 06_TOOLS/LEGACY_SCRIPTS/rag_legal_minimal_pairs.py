@@ -15,17 +15,20 @@ import threading
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.llm import LLM  # noqa: E402
 from scripts.adr_structure import HAIKU_MODEL, OPUS_MODEL, scaffold_adr  # noqa: E402
 from scripts.rag_evaluator_calibration import SCHEMA as JUDGE_SCHEMA, SYSTEM as JUDGE_SYSTEM  # noqa: E402
 
 
-ADR = ROOT / "docs/adr/ADR-0049-legal-minimal-pairs"
-SOURCE = ROOT / "var/eval/e2e/cm_core_haiku_hard_distractor_wrong16_v1.json"
-PARENT = ROOT / "docs/adr/ADR-0048-legal-reasoning-causal-portfolio/실험/manifest.json"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0049-legal-minimal-pairs"
+SOURCE = ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_haiku_hard_distractor_wrong16_v1.json"
+PARENT = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0048-legal-reasoning-causal-portfolio/실험/manifest.json"
 FROZEN = ADR / "artifacts/frozen-pairs.json"
 PRODUCT = ADR / "artifacts/product-results.json"
 JUDGED = ADR / "artifacts/judged-results.json"
@@ -154,7 +157,7 @@ def prepare() -> None:
     members = [member for pair in PAIR_SPECS for member in pair["members"]]
     if not ADR.exists():
         scaffold_adr(
-            ROOT / "docs/adr", 49, "legal-minimal-pairs", "법률 조건·예외 최소대조쌍",
+            ROOT / "07_DOCS/LEGACY_DOCS/adr", 49, "legal-minimal-pairs", "법률 조건·예외 최소대조쌍",
             "probe", [member["id"] for member in members], branch_id="minimal-pairs",
             candidate_arms=["gold-only", "condition-matrix"],
             parent_manifest=PARENT, parent_arm="ladder-gold", parent_relation="extends",

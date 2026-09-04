@@ -18,14 +18,17 @@ import time
 from typing import Any, Iterable, Mapping, Sequence
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for key, relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
 ):
     os.environ.setdefault(key, str(ROOT / relative))
 
@@ -43,8 +46,8 @@ BASELINE_ARM = "baseline"
 CANDIDATE_ARM = "integrated-seven-layer-internal"
 ARMS = (BASELINE_ARM, CANDIDATE_ARM)
 MODEL = "claude-haiku-4-5-20251001"
-ADR = ROOT / "docs/adr/ADR-0126-internal-rule-adr0114-retrieval-golden"
-GOLDEN = ROOT / "data/review/internal_rule_retrieval_v1.json"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0126-internal-rule-adr0114-retrieval-golden"
+GOLDEN = ROOT / "01_DATA/review/internal_rule_retrieval_v1.json"
 PUBLIC = ADR / "artifacts/public-questions-run-001.json"
 SCORING = ADR / "artifacts/scoring-fixture-run-001.json"
 AUDIT = ADR / "artifacts/internal-data-audit.json"
@@ -120,7 +123,7 @@ def _percentile(values: Iterable[float], ratio: float) -> float:
 
 
 def _legacy_runner():
-    path = ROOT / "scripts/rag_integrated_legal_research_golden_61.py"
+    path = ROOT / "06_TOOLS/LEGACY_SCRIPTS/rag_integrated_legal_research_golden_61.py"
     spec = importlib.util.spec_from_file_location("adr0114_runner_for_adr0126", path)
     if spec is None or spec.loader is None:
         raise RuntimeError("cannot load ADR-0114 runner")
@@ -155,8 +158,8 @@ def _body_article_rows(view: Any) -> list[dict[str, Any]]:
 
 
 def _graph_counts(doc_ids: Sequence[str]) -> dict[str, dict[str, int]]:
-    current = _read_json(ROOT / "data/legal_graph/CURRENT.json")
-    generation = ROOT / "data/legal_graph/generations" / str(current["generation_id"])
+    current = _read_json(ROOT / "01_DATA/legal_graph/CURRENT.json")
+    generation = ROOT / "01_DATA/legal_graph/generations" / str(current["generation_id"])
     files = (
         "canonical/structural_units.jsonl.gz",
         "projections/provision_cards.jsonl.gz",
@@ -188,8 +191,8 @@ def audit_internal_data() -> dict[str, Any]:
     source_checks = []
     for source in golden["source_documents"]:
         doc_id = str(source["doc_id"])
-        body = ROOT / "data/corpus/internal" / f"{source['name']}.docx"
-        structure = ROOT / "data/structure" / doc_id / "result.json"
+        body = ROOT / "01_DATA/corpus/internal" / f"{source['name']}.docx"
+        structure = ROOT / "01_DATA/structure" / doc_id / "result.json"
         source_checks.append({
             "doc_id": doc_id,
             "body_path": str(body.relative_to(ROOT)),
@@ -211,7 +214,7 @@ def audit_internal_data() -> dict[str, Any]:
         if doc_id in CURRENT_INTERNAL_DOC_IDS:
             current_articles += len(articles)
             current_body_articles += len(body_articles)
-        result = _read_json(ROOT / "data/structure" / doc_id / "result.json")
+        result = _read_json(ROOT / "01_DATA/structure" / doc_id / "result.json")
         render_dir = ADR / "artifacts/docx-render"
         rendered_pages = len(list(render_dir.glob(f"{view.name}-page-*.png")))
         documents.append({

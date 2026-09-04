@@ -1,0 +1,187 @@
+{
+  "schema_version": "adr-experiment-v4",
+  "adr_id": "ADR-0166",
+  "experiment_id": "ADR-0166-experiment-v1",
+  "reservation": {
+    "status": "completed",
+    "owner": "Codex",
+    "session_id": "/root",
+    "scope": "Complete permanent v2 regression, tooling, path, provenance, resolver, packaging, and CAS hardening",
+    "scope_key": "permanent-v2-completion",
+    "created_at": "2026-09-04T00:23:39.298640Z",
+    "work_started_at": "2026-09-04T00:23:39.299423Z",
+    "updated_at": "2026-09-04T01:28:03.842538Z",
+    "completed_at": "2026-09-04T01:28:03.842538Z",
+    "abandoned_at": null,
+    "events": [
+      {
+        "action": "reserved",
+        "at": "2026-09-04T00:23:39.298640Z",
+        "owner": "Codex",
+        "session_id": "/root",
+        "note": "ADR number and scope claimed before implementation or experiment work"
+      },
+      {
+        "action": "started",
+        "at": "2026-09-04T00:23:39.299423Z",
+        "owner": "Codex",
+        "session_id": "/root",
+        "note": "ADR scaffold completed; scoped work may begin"
+      },
+      {
+        "action": "completed",
+        "at": "2026-09-04T01:28:03.842538Z",
+        "owner": "Codex",
+        "session_id": "/root",
+        "note": "Deterministic v2 migration audit completed; 1959 tests passed; no deployment or push performed."
+      }
+    ]
+  },
+  "relationships": [],
+  "integration": null,
+  "phase": "audit",
+  "in_sample": false,
+  "decision_eligible": false,
+  "lineage": {
+    "branch_id": "A",
+    "root_ref": "ADR-0166-experiment-v1/baseline",
+    "root_refs": [
+      "ADR-0166-experiment-v1/baseline"
+    ],
+    "branch_path": [
+      "A"
+    ],
+    "source_branch_paths": {},
+    "hypothesis_delta": "Audit-only hardening of the permanent v2 path, receipt, package, and regression contracts; no retrieval or answer behavior is changed.",
+    "parents": [],
+    "immutable_after_completion": true
+  },
+  "design": {
+    "hypothesis": "Canonical path migration can be completed without rewriting immutable historical records by resolving stored paths through hash-pinned activation receipts.",
+    "primary_metric": "Deterministic workspace/receipt validation, installable package build, data-free code bundle checks, and full repository regression pass count.",
+    "success_criteria": "Active v3 code receipt validates; wheel excludes research and raw corpus files; code bundle excludes data/runtime roots; all default tests pass.",
+    "failure_criteria": "Any receipt hash mismatch, legacy/unknown root, package data leak, frozen snapshot drift, or default test failure.",
+    "criteria_frozen_before_run": false,
+    "retrieval_stage_plan": {
+      "schema_version": "retrieval-stage-ledger-v1",
+      "accounting_unit": "case_id + canonical article-root coordinate",
+      "stages_by_arm": {}
+    },
+    "code_isolation": {
+      "schema_version": "adr-code-isolation-v1",
+      "mode": "not_applicable",
+      "reason": "Deterministic repository migration audit; no model, router, retrieval, or answer candidate was evaluated.",
+      "production_paths_modified_before_decision": false,
+      "runtime_import_allowed": false,
+      "production_registry_registered": false,
+      "main_wiring_unchanged": true,
+      "candidates": []
+    },
+    "arms": [
+      {
+        "id": "baseline",
+        "role": "baseline",
+        "derived_from": [],
+        "changes": "Pre-change permanent-v2 tree at base commit b9ba20b3.",
+        "controls": "Same WSL checkout, Python environment, and default pytest selection."
+      },
+      {
+        "id": "hardened-v2",
+        "role": "candidate",
+        "derived_from": [
+          "baseline"
+        ],
+        "changes": "Canonical path defaults, receipt-bound stored-path and experiment-ID resolvers, package/build contract, GenOS code-only bundle roots, and immutable v3 code generation.",
+        "controls": "No deployment, push, LLM call, retrieval behavior change, or answer-path change."
+      }
+    ]
+  },
+  "runs": [
+    {
+      "id": "run-001",
+      "purpose": "audit",
+      "parent_run_id": null,
+      "arm_ids": [
+        "baseline",
+        "hardened-v2"
+      ],
+      "selection_rule": "Default pytest suite plus deterministic workspace, package, and receipt checks; recorded retrospectively and therefore not decision-eligible.",
+      "status": "complete",
+      "artifact_path": "04_EXPERIMENTS/ADR/ADR-0166-permanent-v2-completion/artifacts/run-001.json",
+      "sha256": "96aa0923b5240e54d1217d915589678c50dd0d359950166f899edcb1e5e8f343"
+    }
+  ],
+  "llm_policy": {
+    "required_model": "claude-haiku-4-5-20251001",
+    "policy_version": "role-separated-v1",
+    "product_required_model": "claude-haiku-4-5-20251001",
+    "offline_evaluator_allowed_models": [
+      "claude-haiku-4-5-20251001",
+      "claude-sonnet-5",
+      "claude-opus-5"
+    ],
+    "llm_calls": []
+  },
+  "dataset": {
+    "name": "repository-migration-audit",
+    "version": "20260904-code-v5",
+    "frozen_source": "00_SYSTEM/WORKSPACE.json",
+    "sha256": "b98e934045013f8a74537893e978e1d6a733f0469b82593ce5ecffc77ebbfda2",
+    "legal_version_checked": true,
+    "reference_version_checked": true
+  },
+  "retrieval_accounting": {
+    "changed": false,
+    "corpus_total": null,
+    "before_filter": null,
+    "after_filter": null,
+    "presented_total": null,
+    "presented_mean": null,
+    "presented_p50": null,
+    "presented_p95": null,
+    "golden_recall": null,
+    "selectivity": null,
+    "not_applicable_reason": "No retrieval candidate set or ranking behavior changed.",
+    "stage_ledger": {
+      "mode": "not_applicable",
+      "schema_version": "retrieval-stage-ledger-v1",
+      "accounting_unit": "case_id + canonical article-root coordinate",
+      "summary_run_id": null,
+      "artifact_path": null,
+      "sha256": null,
+      "not_applicable_reason": "Repository path and packaging audit only."
+    }
+  },
+  "results": {
+    "status": "complete",
+    "by_arm": {
+      "baseline": {
+        "status": "reference_only",
+        "base_commit": "b9ba20b3eedf770cdb3d26dba1935576767dc3a4"
+      },
+      "hardened-v2": {
+        "status": "passed",
+        "tests_passed": 1960,
+        "warnings": 16
+      }
+    },
+    "comparisons": [
+      {
+        "metric": "default_regression_failures",
+        "baseline": null,
+        "candidate": 0
+      }
+    ],
+    "judge_disagreements": 0,
+    "usage": {
+      "llm_calls": 0,
+      "input_tokens": 0,
+      "output_tokens": 0
+    },
+    "latency": {
+      "full_pytest_seconds": 153.14
+    },
+    "error_taxonomy": []
+  },
+  "questions": []
+}

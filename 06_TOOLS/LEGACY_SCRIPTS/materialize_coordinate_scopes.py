@@ -9,7 +9,7 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.legal_generation import atomic_json
 from lawrag.core.structure.viewer import annotate_coordinate_scopes
@@ -66,7 +66,7 @@ def migrate(store: Path) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--store", type=Path, default=Path("data/structure"))
+    parser.add_argument("--store", type=Path, default=Path("01_DATA/structure"))
     args = parser.parse_args()
     print(json.dumps(migrate(args.store), ensure_ascii=False, indent=2))
     return 0

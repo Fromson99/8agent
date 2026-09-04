@@ -15,6 +15,8 @@ import re
 from typing import Any, Iterable
 
 import yaml
+
+from lawrag.platform.stored_paths import StoredPathError, resolve_stored_path
 from lawrag.platform.paths import data_path, repository_root
 
 
@@ -90,9 +92,12 @@ def _basis(value: Any, path: Path, root: Path) -> tuple[Basis, ...]:
         note = str(row.get("note") or "").strip()
         if not stored or Path(stored).is_absolute() or ".." in Path(stored).parts:
             raise ChecklistError(f"{path}: invalid repository-relative basis path: {stored}")
-        target = root / stored
+        try:
+            target = resolve_stored_path(root, stored)
+        except StoredPathError as exc:
+            raise ChecklistError(f"{path}: basis file does not exist: {stored}: {exc}") from exc
         if not target.is_file():
-            raise ChecklistError(f"{path}: basis file does not exist: {stored}")
+            raise ChecklistError(f"{path}: basis path is not a file: {stored}")
         if anchor and anchor not in target.read_text("utf-8"):
             raise ChecklistError(f"{path}: basis anchor not found in {stored}: {anchor}")
         result.append(Basis(stored, anchor, note))

@@ -15,8 +15,11 @@ import threading
 import time
 from typing import Any, Mapping, Sequence
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import rag_proposition_first_evidence_golden_61 as parent  # noqa: E402
 from lawrag.core.rag import evidence_slot_nondropping as slot  # noqa: E402
@@ -38,14 +41,14 @@ BASELINE_ARM = "baseline"
 SLOT_ONLY_ARM = slot.PROFILE_SLOT_ONLY
 TARGETED_ARM = slot.PROFILE_SLOT_TARGETED
 ARMS = (BASELINE_ARM, SLOT_ONLY_ARM, TARGETED_ARM)
-ADR = ROOT / "docs/adr/ADR-0130-evidence-slot-nondropping-compiler-golden-61"
-PARENT_ADR = ROOT / "docs/adr/ADR-0129-proposition-first-evidence-preserving-compiler-golden-61"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0130-evidence-slot-nondropping-compiler-golden-61"
+PARENT_ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0129-proposition-first-evidence-preserving-compiler-golden-61"
 PARENT_CAPTURES = PARENT_ADR / "artifacts/product-captures/run-001"
 PARENT_SEAL = PARENT_ADR / "artifacts/product-capture-seal-run-001.json"
 PARENT_SEAL_SHA256 = "17bf75c1f87664788103c1db05dec316b240268220fd8afbbeb4f8ddc3c28bb4"
 PARENT_TARGETED_ARM = "proposition-first-evidence-v1"
-CM_V3 = ROOT / "data/review/cm_core_e2e_v3.json"
-FSC_V3 = ROOT / "data/review/fsc_hard_retrieval_v3.json"
+CM_V3 = ROOT / "01_DATA/review/cm_core_e2e_v3.json"
+FSC_V3 = ROOT / "01_DATA/review/fsc_hard_retrieval_v3.json"
 CORPUS_SIZE = 16_506
 
 

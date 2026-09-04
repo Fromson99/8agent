@@ -11,8 +11,11 @@ from lawrag.core.rag.legal_answer_checklists import (
 )
 
 
-ROOT = Path(__file__).resolve().parents[2]
-ITEMS = ROOT / "data/legal_answer_checklists/items"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+ITEMS = ROOT / "01_DATA/legal_answer_checklists/items"
 
 
 def test_registry_loads_and_version_is_content_addressed():

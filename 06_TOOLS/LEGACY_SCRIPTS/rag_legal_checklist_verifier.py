@@ -16,8 +16,11 @@ import threading
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.llm import LLM  # noqa: E402
 from lawrag.core.rag.legal_answer_checklists import (  # noqa: E402
@@ -31,9 +34,9 @@ from lawrag.core.rag.legal_answer_checklists import (  # noqa: E402
 from scripts.adr_structure import HAIKU_MODEL  # noqa: E402
 
 
-ADR = ROOT / "docs/adr/ADR-0052-legal-checklist-verifier"
-SOURCE = ROOT / "docs/adr/ADR-0049-legal-minimal-pairs/artifacts/judged-results.json"
-ITEM_DIR = ROOT / "data/legal_answer_checklists/items"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0052-legal-checklist-verifier"
+SOURCE = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0049-legal-minimal-pairs/artifacts/judged-results.json"
+ITEM_DIR = ROOT / "01_DATA/legal_answer_checklists/items"
 FROZEN = ADR / "artifacts/frozen-answers.json"
 RESULTS = ADR / "artifacts/verifier-results.json"
 DIAGNOSTICS = ADR / "artifacts/posthoc-diagnostics.json"
@@ -656,7 +659,7 @@ def finalize() -> None:
                        (DIAGNOSTICS, "posthoc diagnostics"),
                        (ADR / "artifacts/aborted-run-000.json", "invalid schema preflight"),
                        (ADR / "artifacts/aborted-run-001.json", "invalid token preflight"),
-                       (Path(__file__), "runner"), (ROOT / "data/legal_answer_checklists/ledger.jsonl", "checklist ledger")):
+                       (Path(__file__), "runner"), (ROOT / "01_DATA/legal_answer_checklists/ledger.jsonl", "checklist ledger")):
         files.append({"path": str(path.relative_to(ROOT)), "sha256": sha(path),
                       "bytes": path.stat().st_size, "role": role})
     for path in sorted(ITEM_DIR.glob("LC-*.yaml")):

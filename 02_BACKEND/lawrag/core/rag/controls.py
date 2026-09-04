@@ -470,12 +470,15 @@ def literal_limit_candidates(repo_root: Path | None = None) -> list[dict[str, An
     사람이 grep을 다시 할 필요 없이 파일·줄·종류·값이 고정된 결과로 남는다.
     """
     root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[3]
-    paths = sorted((root / "lawrag" / "core" / "rag").glob("*.py"))
-    paths += [root / "lawrag" / "core" / "domain_graph" / "spanparts.py",
-              root / "lawrag" / "api" / "routers" / "rag.py",
-              root / "lawrag" / "core" / "casereview" / "pipeline.py"]
+    package_root = (root / "02_BACKEND" / "lawrag"
+                    if (root / "02_BACKEND" / "lawrag").is_dir()
+                    else root / "lawrag")
+    paths = sorted((package_root / "core" / "rag").glob("*.py"))
+    paths += [package_root / "core" / "domain_graph" / "spanparts.py",
+              package_root / "api" / "routers" / "rag.py",
+              package_root / "core" / "casereview" / "pipeline.py"]
     ignored = {Path(__file__).resolve(),
-               (root / "lawrag" / "core" / "rag" / "evaluation.py").resolve()}
+               (package_root / "core" / "rag" / "evaluation.py").resolve()}
     found: list[dict[str, Any]] = []
 
     def add(path: Path, node: ast.AST, kind: str, value: int | float,

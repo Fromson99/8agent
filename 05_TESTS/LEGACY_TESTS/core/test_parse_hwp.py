@@ -11,13 +11,16 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parent.parent.parent
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 sys.path.insert(0, str(ROOT))
 
 from lawrag.core import parse_adapter                                     # noqa: E402
 from lawrag.core.structure import synthpdf                                # noqa: E402
 
-FIX = ROOT / "tests" / "fixtures" / "law_crawler"
+FIX = ROOT / "05_TESTS" / "LEGACY_TESTS" / "fixtures" / "law_crawler"
 HWP5 = FIX / "hwp" / "byulji2.hwp"
 HWPX = FIX / "lawgo" / "annex_byul16.hwpx"
 

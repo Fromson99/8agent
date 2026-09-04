@@ -14,8 +14,11 @@ import threading
 import time
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import review_golden as review  # noqa: E402 — 저장소 환경 기본값
 from lawrag.core.rag import answer, legal_coordinates, legalclosure  # noqa: E402
@@ -114,13 +117,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
         "--candidate-retrieval", type=Path,
-        default=ROOT / "var/eval/e2e/ADR-0038/definition_context_wiki_51.json")
+        default=ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0038/definition_context_wiki_51.json")
     parser.add_argument(
         "--baseline-answers", type=Path,
-        default=ROOT / "var/eval/e2e/cm_core_legalclosure_stage_answer_ab_51.json")
+        default=ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/cm_core_legalclosure_stage_answer_ab_51.json")
     parser.add_argument(
         "--out", type=Path,
-        default=ROOT / "var/eval/e2e/ADR-0038/definition_context_answer_ab_51.json")
+        default=ROOT / "90_RUNTIME/LEGACY_VAR/eval/e2e/ADR-0038/definition_context_answer_ab_51.json")
     parser.add_argument("--workers", type=int, choices=range(1, 5), default=2)
     parser.add_argument("--cases", default="")
     parser.add_argument("--manifest-existing", action="store_true")
@@ -128,7 +131,7 @@ def main() -> int:
     if args.manifest_existing:
         result = json.loads(args.out.read_text("utf-8"))
         digest = hashlib.sha256(args.out.read_bytes()).hexdigest()
-        artifact_dir = ROOT / "docs/adr/ADR-0038-definition-context-wiki-hygiene/artifacts"
+        artifact_dir = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0038-definition-context-wiki-hygiene/artifacts"
         manifest = json.loads((artifact_dir / "manifest.json").read_text("utf-8"))
         manifest["answer_ab"] = {
             "raw_result": str(args.out.resolve().relative_to(ROOT)),
@@ -229,7 +232,7 @@ def main() -> int:
                   flush=True)
 
     digest = hashlib.sha256(args.out.read_bytes()).hexdigest()
-    artifact_dir = ROOT / "docs/adr/ADR-0038-definition-context-wiki-hygiene/artifacts"
+    artifact_dir = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0038-definition-context-wiki-hygiene/artifacts"
     manifest = json.loads((artifact_dir / "manifest.json").read_text("utf-8"))
     manifest["answer_ab"] = {
         "raw_result": str(args.out.resolve().relative_to(ROOT)), "sha256": digest,

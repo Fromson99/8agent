@@ -33,12 +33,12 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
-GOLDEN = ROOT / "data" / "bench" / "golden"
+GOLDEN = ROOT / "01_DATA" / "bench" / "golden"
 
 
 def _store() -> Path:
     import os
-    return Path(os.environ.get("STRUCTURE_STORE", ROOT / "data" / "structure"))
+    return Path(os.environ.get("STRUCTURE_STORE", ROOT / "01_DATA" / "structure"))
 
 
 def _node_by_block(result: dict) -> dict[int, dict]:

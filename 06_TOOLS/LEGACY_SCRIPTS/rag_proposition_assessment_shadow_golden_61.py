@@ -16,8 +16,11 @@ import sys
 import time
 from typing import Any, Mapping, Sequence
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from scripts import rag_integrated_atomic_claim_golden_61 as parent  # noqa: E402
 from lawrag.core.rag import proposition_assessment_shadow as shadow  # noqa: E402
@@ -35,8 +38,8 @@ RUN_ID = "run-001"
 BASELINE_ARM = "baseline"
 CANDIDATE_ARM = shadow.PROFILE
 ARMS = (BASELINE_ARM, CANDIDATE_ARM)
-ADR = ROOT / "docs/adr/ADR-0120-proposition-assessment-shadow-golden-61"
-PARENT_ADR = ROOT / "docs/adr/ADR-0118-integrated-atomic-claim-compiler-golden-61"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0120-proposition-assessment-shadow-golden-61"
+PARENT_ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0118-integrated-atomic-claim-compiler-golden-61"
 PARENT_CAPTURES = PARENT_ADR / "artifacts/product-captures/run-002"
 PARENT_SEAL = PARENT_ADR / "artifacts/product-capture-seal-run-002.json"
 PARENT_SEAL_FILE_SHA256 = "2b50d2b2e13bbc96cf144ec8b93a6d0ccf16bf3fe4b34011f4b019c7d4ba3ba4"

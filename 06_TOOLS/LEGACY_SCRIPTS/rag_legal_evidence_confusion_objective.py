@@ -13,9 +13,12 @@ import sys
 import time
 from typing import Any, Mapping
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+    sys.path.insert(0, str(ROOT / "02_BACKEND"))
 
 from lawrag.core.rag.evidence_confusion import (
     EvidenceConfusion,
@@ -24,9 +27,9 @@ from lawrag.core.rag.evidence_confusion import (
 )
 
 
-ADR = ROOT / "docs/adr/ADR-0128-legal-evidence-confusion-objective"
-CM_V3 = ROOT / "data/review/cm_core_e2e_v3.json"
-FSC_V3 = ROOT / "data/review/fsc_hard_retrieval_v3.json"
+ADR = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0128-legal-evidence-confusion-objective"
+CM_V3 = ROOT / "01_DATA/review/cm_core_e2e_v3.json"
+FSC_V3 = ROOT / "01_DATA/review/fsc_hard_retrieval_v3.json"
 MANIFEST_PATH = ADR / "실험/manifest.json"
 RUN_PATH = ADR / "artifacts/run-001.json"
 ARTIFACT_MANIFEST_PATH = ADR / "artifacts/manifest.json"
@@ -37,43 +40,43 @@ SOURCES = (
     {
         "source_ref": "ADR-0115-experiment-v1/coverage-preserving-compiler",
         "arm": "coverage-preserving-compiler",
-        "seal": ROOT / "docs/adr/ADR-0115-coverage-preserving-legal-compiler-golden-61/artifacts/product-capture-seal-run-001.json",
+        "seal": ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0115-coverage-preserving-legal-compiler-golden-61/artifacts/product-capture-seal-run-001.json",
         "sha256": "fe49f8def6944d85c7e72794de86817b54c5ed4139c74bd317f19060be847d53",
     },
     {
         "source_ref": "ADR-0116-experiment-v1/scope-entailment-bundle-v2",
         "arm": "scope-entailment-bundle-v2",
-        "seal": ROOT / "docs/adr/ADR-0116-scope-entailment-bundle-compiler-golden-61/artifacts/product-capture-seal-run-001.json",
+        "seal": ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0116-scope-entailment-bundle-compiler-golden-61/artifacts/product-capture-seal-run-001.json",
         "sha256": "03aa953eb2ad687cb4dd5bc262ef2263a0a7616b27815fa6d8471ce9d86d98d3",
     },
     {
         "source_ref": "ADR-0117-experiment-v1/issue-role-atomic-entailment-v3",
         "arm": "issue-role-atomic-entailment-v3",
-        "seal": ROOT / "docs/adr/ADR-0117-issue-role-atomic-entailment-compiler-golden-61/artifacts/product-capture-seal-run-001.json",
+        "seal": ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0117-issue-role-atomic-entailment-compiler-golden-61/artifacts/product-capture-seal-run-001.json",
         "sha256": "821dcf96de83cdea48d47a4bfbf8fd9e8e40f09b5020a929002a18aa879f6f3b",
     },
     {
         "source_ref": "ADR-0118-experiment-v1/integrated-atomic-claim-v4b",
         "arm": "integrated-atomic-claim-v4b",
-        "seal": ROOT / "docs/adr/ADR-0118-integrated-atomic-claim-compiler-golden-61/artifacts/product-capture-seal-run-002.json",
+        "seal": ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0118-integrated-atomic-claim-compiler-golden-61/artifacts/product-capture-seal-run-002.json",
         "sha256": "2b50d2b2e13bbc96cf144ec8b93a6d0ccf16bf3fe4b34011f4b019c7d4ba3ba4",
     },
     {
         "source_ref": "ADR-0120-experiment-v1/proposition-assessment-shadow-v1",
         "arm": "proposition-assessment-shadow-v1",
-        "seal": ROOT / "docs/adr/ADR-0120-proposition-assessment-shadow-golden-61/artifacts/product-capture-seal-run-001.json",
+        "seal": ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0120-proposition-assessment-shadow-golden-61/artifacts/product-capture-seal-run-001.json",
         "sha256": "6628618299762522170179ab1abec4c59f2d39bc82264349df9c83489722ed2f",
     },
     {
         "source_ref": "ADR-0121-experiment-v1/baseline",
         "arm": "baseline",
-        "seal": ROOT / "docs/adr/ADR-0121-claimwise-nondestructive-legal-compiler-golden-61/artifacts/product-capture-seal-run-001.json",
+        "seal": ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0121-claimwise-nondestructive-legal-compiler-golden-61/artifacts/product-capture-seal-run-001.json",
         "sha256": "0474cd37239fef8b54fa50f0cf534679e772d34d3b952100003aced1a4cd8db6",
     },
     {
         "source_ref": "ADR-0121-experiment-v1/claimwise-nondestructive-v2",
         "arm": "claimwise-nondestructive-v2",
-        "seal": ROOT / "docs/adr/ADR-0121-claimwise-nondestructive-legal-compiler-golden-61/artifacts/product-capture-seal-run-001.json",
+        "seal": ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0121-claimwise-nondestructive-legal-compiler-golden-61/artifacts/product-capture-seal-run-001.json",
         "sha256": "0474cd37239fef8b54fa50f0cf534679e772d34d3b952100003aced1a4cd8db6",
     },
 )

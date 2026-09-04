@@ -12,8 +12,11 @@ import sys
 import zipfile
 
 
-ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_PROFILES = ROOT / "config" / "dataset_sync" / "profiles.json"
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+DEFAULT_PROFILES = ROOT / "08_DEPLOYMENT" / "CONFIG" / "dataset_sync" / "profiles.json"
 BUNDLE_MANIFEST = "BUNDLE_MANIFEST.json"
 SET_MANIFEST = "SYNC_SET.json"
 BLOCKED_PARTS = {".git", ".venv", "__pycache__", ".pytest_cache"}

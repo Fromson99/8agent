@@ -15,7 +15,10 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parent.parent.parent
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 sys.path.insert(0, str(ROOT))
 
 pytest.importorskip("fastapi", reason="FastAPI 필요")
@@ -61,7 +64,7 @@ def client(tmp_path, monkeypatch):
 
     # 등록부는 **사본**을 고치게 한다 — 시험이 저장소의 registry.yaml 을 건드리면 안 된다.
     reg_copy = tmp_path / "registry.yaml"
-    reg_copy.write_text((ROOT / "lawrag" / "core" / "registry.yaml").read_text(encoding="utf-8"),
+    reg_copy.write_text((Path(__import__("lawrag").__file__).resolve().parent / "core" / "registry.yaml").read_text(encoding="utf-8"),
                         encoding="utf-8")
 
     from lawrag.core import router as core_router

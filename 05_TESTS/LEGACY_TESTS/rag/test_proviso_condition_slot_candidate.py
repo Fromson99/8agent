@@ -5,9 +5,12 @@ from pathlib import Path
 import sys
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 FROZEN = (
-    ROOT / "lawrag/research/candidates/adr_0148/condition-slot-validator/"
+    Path(__import__("lawrag").__file__).resolve().parent / "research/candidates/adr_0148/condition-slot-validator/"
     "revisions/rev-001/snapshot/lawrag/core/domain_graph/requirements.py"
 )
 

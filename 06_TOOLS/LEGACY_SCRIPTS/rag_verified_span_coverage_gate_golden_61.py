@@ -15,14 +15,17 @@ import sys
 import time
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
+sys.path.insert(0, str(ROOT / "02_BACKEND"))
 for _key, _relative in (
-    ("STRUCTURE_STORE", "data/structure"),
-    ("STRUCTURE_CUSTOM_DIR", "data/custom"),
-    ("GLOSSARY_STORE", "data/glossary.json"),
-    ("RAG_LINKS_STORE", "data/links.json"),
-    ("RAG_DELEGATION_STORE", "data/delegation.json"),
+    ("STRUCTURE_STORE", "01_DATA/structure"),
+    ("STRUCTURE_CUSTOM_DIR", "01_DATA/custom"),
+    ("GLOSSARY_STORE", "01_DATA/glossary.json"),
+    ("RAG_LINKS_STORE", "01_DATA/links.json"),
+    ("RAG_DELEGATION_STORE", "01_DATA/delegation.json"),
 ):
     os.environ.setdefault(_key, str(ROOT / _relative))
 
@@ -38,24 +41,24 @@ MODEL = "claude-haiku-4-5-20251001"
 ARMS = ("baseline", "coverage-gate-only", "coverage-routed-explore")
 CAP = 20
 
-FROZEN = ROOT / "docs/adr/ADR-0064-feedback-explore-golden-61/artifacts/frozen-cases.json"
+FROZEN = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0064-feedback-explore-golden-61/artifacts/frozen-cases.json"
 FROZEN_SHA256 = "393ced7e9428aea5d6cbc7ed3383fe10dda199da1cc1bf7fcf0fd57edff9b0cb"
-PARENT_72_MANIFEST = ROOT / "docs/adr/ADR-0072-provider-compatible-span-id-selector/실험/manifest.json"
+PARENT_72_MANIFEST = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0072-provider-compatible-span-id-selector/실험/manifest.json"
 PARENT_72_MANIFEST_SHA256 = "f68429a86fede8b7ef7843359081042a7e414cce50134f13c6a1000006db03f2"
-PARENT_72_RUN = ROOT / "docs/adr/ADR-0072-provider-compatible-span-id-selector/artifacts/run-001.json"
+PARENT_72_RUN = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0072-provider-compatible-span-id-selector/artifacts/run-001.json"
 PARENT_72_RUN_SHA256 = "b081aff537efec908aba659b2a718a191c55c59664f4fd83dd20d8dc36a26e66"
-PARENT_68_MANIFEST = ROOT / "docs/adr/ADR-0068-recall-first-orthogonal-union/실험/manifest.json"
+PARENT_68_MANIFEST = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0068-recall-first-orthogonal-union/실험/manifest.json"
 PARENT_68_MANIFEST_SHA256 = "889255d1753ab9e1b9817fbcf5e7bc2af8eac29c4e7ab0019908ef1dda7d0779"
-PARENT_68_RUN = ROOT / "docs/adr/ADR-0068-recall-first-orthogonal-union/artifacts/run-001.json"
+PARENT_68_RUN = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0068-recall-first-orthogonal-union/artifacts/run-001.json"
 PARENT_68_RUN_SHA256 = "d751f88febc98a1537083dd5a4e93ebc2cfc40b40137a451fa359badc648d38b"
-PARENT_73_MANIFEST = ROOT / "docs/adr/ADR-0073-proof-contribution-basis-exchange/실험/manifest.json"
+PARENT_73_MANIFEST = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0073-proof-contribution-basis-exchange/실험/manifest.json"
 PARENT_73_MANIFEST_SHA256 = "21ca70dc6bcf8dfdee130c9f58bd71f891c8a0010a2aed13c2c40b22bc0098c6"
-PARENT_74_MANIFEST = ROOT / "docs/adr/ADR-0074-missing-gold-reachability-audit/실험/manifest.json"
+PARENT_74_MANIFEST = ROOT / "04_EXPERIMENTS/LEGACY_ADR/ADR-0074-missing-gold-reachability-audit/실험/manifest.json"
 PARENT_74_MANIFEST_SHA256 = "5cb8fd12a8316faa0b23eae79536a91abb66a146f776165c73fb698b3cdb8c33"
 IMPLEMENTATIONS = (
-    ROOT / "lawrag/core/rag/verified_span_coverage_gate.py",
-    ROOT / "lawrag/core/rag/provider_compatible_span_selector.py",
-    ROOT / "lawrag/core/rag/verified_span_selector.py",
+    Path(__import__("lawrag").__file__).resolve().parent / "core/rag/verified_span_coverage_gate.py",
+    Path(__import__("lawrag").__file__).resolve().parent / "core/rag/provider_compatible_span_selector.py",
+    Path(__import__("lawrag").__file__).resolve().parent / "core/rag/verified_span_selector.py",
 )
 
 _BANNED_PRODUCT_KEYS = frozenset({

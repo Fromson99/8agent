@@ -17,7 +17,10 @@ from typing import Optional
 
 import pytest
 
-ROOT = Path(__file__).resolve().parent.parent.parent
+ROOT = next(
+    path for path in Path(__file__).resolve().parents
+    if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
+)
 sys.path.insert(0, str(ROOT))
 
 from lawrag.core.parse_adapter import Element, ParseResult                    # noqa: E402
