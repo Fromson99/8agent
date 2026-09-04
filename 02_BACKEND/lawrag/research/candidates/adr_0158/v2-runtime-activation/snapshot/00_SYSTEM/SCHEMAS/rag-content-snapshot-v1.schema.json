@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:schema:rag-content-snapshot-v1",
+  "title": "RAG immutable content snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "release_id",
+    "release_generation",
+    "release_manifest_sha256",
+    "active_pointer_sha256",
+    "source_set_id",
+    "source_set_generation",
+    "source_set_sha256",
+    "cross_dataset_relations",
+    "export_allowed",
+    "source_set_lock_sha256",
+    "source_set_lock_artifact_sha256",
+    "source_set_materialization_sha256",
+    "source_set_materialization_receipt_sha256",
+    "catalog_sha256",
+    "catalog_artifact_sha256",
+    "semantic_generation",
+    "authority_generation",
+    "semantic_content_sha256",
+    "runtime_binding_sha256",
+    "main_generation",
+    "main_state_sha256",
+    "main_promotion_receipt_sha256",
+    "main_promotion_plan_sha256",
+    "indexes",
+    "artifacts",
+    "content_snapshot_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "rag-content-snapshot-v1"},
+    "release_id": {"$ref": "#/$defs/id"},
+    "release_generation": {"type": "integer", "minimum": 1},
+    "release_manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "active_pointer_sha256": {"$ref": "#/$defs/sha256"},
+    "source_set_id": {"$ref": "#/$defs/id"},
+    "source_set_generation": {"$ref": "#/$defs/id"},
+    "source_set_sha256": {"$ref": "#/$defs/sha256"},
+    "cross_dataset_relations": {"type": "boolean"},
+    "export_allowed": {"type": "boolean"},
+    "source_set_lock_sha256": {"$ref": "#/$defs/sha256"},
+    "source_set_lock_artifact_sha256": {"$ref": "#/$defs/sha256"},
+    "source_set_materialization_sha256": {"$ref": "#/$defs/sha256"},
+    "source_set_materialization_receipt_sha256": {"$ref": "#/$defs/sha256"},
+    "catalog_sha256": {"$ref": "#/$defs/sha256"},
+    "catalog_artifact_sha256": {"$ref": "#/$defs/sha256"},
+    "semantic_generation": {"$ref": "#/$defs/id"},
+    "authority_generation": {"$ref": "#/$defs/id"},
+    "semantic_content_sha256": {"$ref": "#/$defs/sha256"},
+    "runtime_binding_sha256": {"$ref": "#/$defs/sha256"},
+    "main_generation": {"type": "integer", "minimum": 0},
+    "main_state_sha256": {"$ref": "#/$defs/sha256"},
+    "main_promotion_receipt_sha256": {
+      "oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]
+    },
+    "main_promotion_plan_sha256": {
+      "oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]
+    },
+    "indexes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema_version", "kind", "artifact_id", "artifact_sha256",
+          "build_fingerprint", "embedding_model_fingerprint"
+        ],
+        "properties": {
+          "schema_version": {"const": "rag-index-provenance-v1"},
+          "kind": {"enum": ["lexical", "vector"]},
+          "artifact_id": {"$ref": "#/$defs/id"},
+          "artifact_sha256": {"$ref": "#/$defs/sha256"},
+          "build_fingerprint": {"$ref": "#/$defs/sha256"},
+          "embedding_model_fingerprint": {
+            "oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/artifact"}
+    },
+    "content_snapshot_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"main_generation": {"const": 0}},
+        "required": ["main_generation"]
+      },
+      "then": {
+        "properties": {
+          "main_promotion_receipt_sha256": {"type": "null"},
+          "main_promotion_plan_sha256": {"type": "null"}
+        }
+      },
+      "else": {
+        "properties": {
+          "main_promotion_receipt_sha256": {"$ref": "#/$defs/sha256"},
+          "main_promotion_plan_sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{1,191}$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version", "qualified_id", "package_id", "dataset_id",
+        "version_id", "build_id", "manifest_sha256", "logical_id", "role",
+        "source_path", "artifact_sha256", "contributors"
+      ],
+      "properties": {
+        "schema_version": {"const": "rag-artifact-provenance-v1"},
+        "qualified_id": {"$ref": "#/$defs/id"},
+        "package_id": {"$ref": "#/$defs/id"},
+        "dataset_id": {"$ref": "#/$defs/id"},
+        "version_id": {"$ref": "#/$defs/id"},
+        "build_id": {"$ref": "#/$defs/id"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "logical_id": {"$ref": "#/$defs/id"},
+        "role": {"$ref": "#/$defs/id"},
+        "source_path": {"type": "string", "minLength": 1},
+        "artifact_sha256": {"$ref": "#/$defs/sha256"},
+        "contributors": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "document_id": {"$ref": "#/$defs/id"}
+      }
+    }
+  }
+}

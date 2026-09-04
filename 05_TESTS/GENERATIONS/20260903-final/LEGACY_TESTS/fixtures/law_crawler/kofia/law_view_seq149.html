@@ -1,0 +1,927 @@
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ko" lang="ko">
+<head>
+<title>금융투자협회 법규정보시스템 | 규정보기</title>
+<meta http-equiv="X-UA-Compatible" content="IE=9" />
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/css/service/contents.css" />
+<link rel="stylesheet" type="text/css" href="/css/service/common.css" />
+<link rel="stylesheet" type="text/css" href="/css/service/main.css" />
+<link rel="stylesheet" type="text/css" href="/jquery/ui/css/redmond/jquery-ui-1.10.1.custom.min.css" />
+<!-- javascript -->
+<script type="text/javascript" src="/jquery/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/jquery/jquery-ui-1.10.1.custom.min.js"></script>
+<script type="text/javascript" src="/jmove/service/common.js"></script>
+<script type="text/javascript" src="/jmove/service/link.js"></script>
+<style type="text/css">
+#lawbtn1.law-title-wrap {
+	height: auto;
+	min-height: 29px;
+}
+#lawbtn1.law-title-wrap table {
+	width: 100%;
+	table-layout: fixed;
+}
+#lawbtn1.law-title-wrap .law-depart-cell {
+	width: 42%;
+	padding-right: 8px;
+}
+#lawbtn1.law-title-wrap .law-depart {
+	float: none;
+	display: block;
+	line-height: 1.35;
+	white-space: normal;
+	word-wrap: break-word;
+	word-break: break-word;
+	background-position: 0 6px;
+	padding-top: 0;
+	text-align: left;
+}
+#lawbtn1.law-title-wrap .law-depart-label {
+	white-space: nowrap;
+}
+@media screen and (max-width: 1024px) {
+	#lawbtn1.law-title-wrap table,
+	#lawbtn1.law-title-wrap tbody,
+	#lawbtn1.law-title-wrap tr,
+	#lawbtn1.law-title-wrap td {
+		display: block;
+		width: 100% !important;
+	}
+	#lawbtn1.law-title-wrap td {
+		height: auto;
+		padding: 4px 8px;
+		text-align: left !important;
+	}
+	#lawbtn1.law-title-wrap .tit,
+	#lawbtn1.law-title-wrap .titEx {
+		float: none;
+	}
+}
+</style>
+<script type="text/javascript">
+$(document).ready(function() {	
+	$("#contents").height(590);  /*  504 */
+	$("#left_cbtn").height(590);   /*  504 */
+	
+	var searchTimeType = "";		
+	
+	if (searchTimeType == '') {
+		searchTimeType = 'now';
+	}	
+	
+	if(searchTimeType=='now') {
+		$(".searchTimeTypeNow").attr('checked', true);
+		$(".searchTimeTypePast").attr('checked', false);		
+	} else if(searchTimeType=='past') {
+		$(".searchTimeTypeNow").attr('checked', false);
+		$(".searchTimeTypePast").attr('checked', true);
+	}
+	
+	document.getElementById("checkTime").value=searchTimeType;
+	adjustLawViewTitleLayout();
+	/* var userAgent = navigator.userAgent.toLowerCase();
+	 
+	var browser = {
+	  msie    : /msie/.test( userAgent ) && !/opera/.test( userAgent ),
+	  safari  : /webkit/.test( userAgent ),
+	  firefox : /mozilla/.test( userAgent ) && !/(compatible|webkit)/.test( userAgent ),
+	  opera   : /opera/.test( userAgent )
+	};   
+	
+	if(browser.msie) {
+		var IEversion = parseFloat(navigator.appVersion.split("MSIE")[1].split(";")[0].split(" ").join(""));
+		if(IEversion == 8){
+			var url = "javascript:popfullscreenEx('/service/law/lawFullScreen.do?seq=149&historySeq=1787', '1787')";
+			$("#fullscreen").attr('href', url);
+			$("#fullscreen").attr('target', "");
+		}
+	} */
+});
+$(window).on("resize", function() {
+	adjustLawViewTitleLayout();
+});
+
+	var show = 0;
+	var show_ex = 0;
+	
+	function showJoTitle() {
+		if(show_ex == 0) {
+			if(show == 1) {
+				$("#lawFullTitle").css("width", "0px");
+				$("#lawcon").css("width", "713px");
+				$("#lawFullContent").css("width", "713px");
+				show = 0;
+			} else {
+				$("#lawFullContent").css("width", "435px");
+				$("#lawcon").css("width", "435px");
+				$("#lawFullTitle").css("width", "275px");
+				show = 1;
+			}
+		} else {
+			if(show == 1) {
+				$("#lawFullTitle").css("width", "0px");
+				$("#lawFullContent").css("width", "949px");
+				$("#lawcon").css("width", "949px");
+				show = 0;
+			} else {
+				$("#lawFullContent").css("width", "674px");
+				$("#lawcon").css("width", "674px");
+				$("#lawFullTitle").css("width", "275px");
+				show = 1;
+			}
+		}
+		setTimeout(adjustLawViewTitleLayout, 0);
+	}
+	
+	function showJoTitleVerOne() {
+		var lf_navi = document.getElementById("lf_navi");
+		var rg_con = document.getElementById("rg_con");
+		var search = document.getElementById("search");
+		var tle_navi = document.getElementById("tle_navi");
+		var lawbtn = document.getElementById("lawbtn");
+		var lawbtn1 = document.getElementById("lawbtn1");
+		var lawcon = document.getElementById("lawcon");
+		var lawFullContent = document.getElementById("lawFullContent");
+			
+		if(show_ex == 0) {
+			if(show == 1) {
+				lf_navi.style.display = "none";
+				rg_con.style.width = "969px";
+				search.style.width = "969px";
+				tle_navi.style.width = "969px";
+				lawbtn.style.width = "969px";
+				lawbtn1.style.width = "969px";
+				lawcon.style.width = "673px";
+				lawFullContent.style.width = "673px";
+				$("#openbtn").attr("src", "/images/service/btn/menu_close.gif");	
+				show_ex = 1;
+			} else {
+				lf_navi.style.display = "none";
+				rg_con.style.width = "969px";
+				search.style.width = "969px";
+				tle_navi.style.width = "969px";
+				lawbtn.style.width = "969px";
+				lawbtn1.style.width = "969px";
+				lawcon.style.width = "949px";
+				lawFullContent.style.width = "949px";
+				$("#openbtn").attr("src", "/images/service/btn/menu_close.gif");	
+				show_ex = 1;
+			}
+		} else {
+			if(show == 1) {
+				rg_con.style.width = "733px";
+				search.style.width = "733px";
+				tle_navi.style.width = "733px";
+				lawbtn.style.width = "733px";
+				lawbtn1.style.width = "733px";
+				lawcon.style.width = "435px";
+				lawFullContent.style.width = "435px";
+				lf_navi.style.display = "block";
+				$("#openbtn").attr("src", "/images/service/btn/menu_open.gif");	
+				show_ex = 0;
+			} else {
+				rg_con.style.width = "733px";
+				search.style.width = "733px";
+				tle_navi.style.width = "733px";
+				lawbtn.style.width = "733px";
+				lawbtn1.style.width = "733px";
+				lawcon.style.width = "703px";
+				lawFullContent.style.width = "703px";
+				lf_navi.style.display = "block";
+				$("#openbtn").attr("src", "/images/service/btn/menu_open.gif");	
+				show_ex = 0;
+			}
+		}
+		
+		setTimeout(adjustLawViewTitleLayout, 0);
+	}
+
+	function adjustLawViewTitleLayout() {
+		var $bar = $("#lawbtn1");
+		var $depart = $("#lawDepartText");
+		if ($bar.length == 0 || $depart.length == 0) {
+			return;
+		}
+		
+		// 기본은 기존 화면 유지
+		$bar.removeClass("law-title-wrap");
+		
+		var lineHeight = parseFloat($depart.css("line-height"));
+		if (isNaN(lineHeight) || lineHeight <= 0) {
+			var fontSize = parseFloat($depart.css("font-size"));
+			lineHeight = (isNaN(fontSize) || fontSize <= 0) ? 16 : (fontSize * 1.3);
+		}
+		var lineCount = Math.round($depart.outerHeight() / lineHeight);
+		if (lineCount >= 2) {
+			$bar.addClass("law-title-wrap");
+		}
+	}
+</script>
+</head>
+<body>
+<div id="wrap_outer">
+<div id="wrap">
+    <!-- header  -->
+	 
+
+<!-- skip navigation -->
+
+<script language="javascript">
+	var TimeOut         = 300;
+	var currentLayer    = null;
+	var currentitem     = null;
+	
+	var currentLayerNum = 0;
+	var noClose         = 0;
+	var closeTimer      = null;
+	
+	// Open Hidden Layer
+	function mopen(n)
+	{
+	    var l  = document.getElementById("menu"+n);
+	    var mm = document.getElementById("mmenu"+n);
+	   
+	    if(l)
+	    {
+	        mcancelclosetime();
+	        l.style.visibility='visible';
+	
+	        if(currentLayer && (currentLayerNum != n))
+	            currentLayer.style.visibility='hidden';
+	
+	        currentLayer = l;
+	        currentitem = mm;
+	        currentLayerNum = n;           
+	    }
+	    else if(currentLayer)
+	    {
+	        currentLayer.style.visibility='hidden';
+	        currentLayerNum = 0;
+	        currentitem = null;
+	        currentLayer = null;
+	    }
+	}
+	
+	// Turn On Close Timer
+	function mclosetime()
+	{
+	    closeTimer = window.setTimeout(mclose, TimeOut);
+	}
+	
+	// Cancel Close Timer
+	function mcancelclosetime()
+	{
+	    if(closeTimer)
+	    {
+	        window.clearTimeout(closeTimer);
+	        closeTimer = null;
+	    }
+	}
+	
+	// Close Showed Layer
+	function mclose()
+	{
+	    if(currentLayer && noClose!=1)
+	    {
+	        currentLayer.style.visibility='hidden';
+	        currentLayerNum = 0;
+	        currentLayer = null;
+	        currentitem = null;
+	    }
+	    else
+	    {
+	        noClose = 0;
+	    }
+	
+	    currentLayer = null;
+	    currentitem = null;
+	}
+	
+	// Close Layer Then Click-out
+	document.onclick = mclose;
+</script>
+<h2 class="hid">바로가기 서비스</h2>
+<div class="skip_navigation">
+	<a href="#search">통합검색으로 이동</a>
+	<a href="#rg_con">본문으로 이동</a>
+	<a href="#footer">하단으로 이동</a>
+</div>
+<input type="hidden" name="checkTime" id="checkTime" value=""/>    
+<div id="header">
+<!-- header -->
+       <!-- 메인 로고 -->
+       <div id="tmenu">
+           <h1><a href="/service/main/main.do"><img src="/images/service/inc/logo1.gif" alt="금융투자협회 법규정보시스템" title="금융투자협회 법규정보시스템"  width="211" height="42"  /></a></h1>
+       </div>
+       <!--주메뉴 -->
+      <ul id="gnb">
+	      <li id="gn_f"><a href="/service/law/lawCurrentMain.do" title="현행규정"><img src="/images/service/menu/menu01.png"></a></li>
+	      <li id="gn"><a href="/service/law/lawHistoryMain.do" title="연혁규정"><img src="/images/service/menu/menu02.png"></a></li>
+	      <li id="gn"><a href="/service/law/relationList.do" title="관계법규"><img src="/images/service/menu/menu03.png"></a></li>
+	      <li id="gn"><a href="/service/revisionNotice/revisionNoticeList.do" title="규정 제ㆍ개정 예고"><img src="/images/service/menu/menu08.png"></a></li>
+	      <li id="gn"><a href="/service/revision/revisionlist.do" title="최신제ㆍ개정정보"><img src="/images/service/menu/menu04.png"></a></li>
+	      <li id="gn"><a href="/service/attach/attachlist.do" title="서식정보"><img src="/images/service/menu/menu05.png"></a></li>
+	      <li id="gn"><a href="/service/revision/boarList.do?type=1" title="정보센터"><img src="/images/service/menu/menu06.png"></a></li>
+	      
+	   </ul>
+</div>
+	
+	<div id="contents">
+		
+			
+
+<div id="lf_navi">
+      <!-- lnb -->
+      <div id="law_tree" class="lf_navi_contract">
+          <h2 class="lnbtit"><img src="/images/service/left/left_tit.gif" alt="규정정보" title="규정정보" /><a href="#Tree_Expand OR Reduce" onclick="expRed();" onkeypress="expRed();"><img id="expRedIcon" src="/images/service/btn/btn_expand.gif" alt="카테고리확대" title="카테고리확대" /></a></h2>
+
+          <div class="lnb" style="margin-top:5px;">
+          	  <!-- 분야별 트리 -->
+              <iframe width="100%" class="theight" id="tree01" name="tree01" src="/service/law/lawCurrentPartTree.do" scrolling="yes" frameborder="0" title="현행법규 카테고리검색" ></iframe>			
+          </div>
+      </div>
+
+</div>
+<script type="text/javascript">
+	var url = location.href;
+		
+	if(url.indexOf("lawDepartCurrentList") != -1 || url.indexOf("lawAbolitionCurrentList") != -1 || url.indexOf("tree=depart") != -1)	
+	{
+		$("#tree01").attr("src", "/service/law/lawCurrentDepartTree.do");
+		lawTreeTab(2);
+	}
+	
+	function lawTreeTab(type)
+	{
+		if(type == 1)
+		{
+			$("#lawTab").attr("src", "/images/service/left/tab_field_o.gif", "title");
+			$("#departTab").attr("src", "/images/service/left/tab_department.gif");
+		}
+		else
+		{
+			$("#lawTab").attr("src", "/images/service/left/tab_field.gif");
+			$("#departTab").attr("src", "/images/service/left/tab_department_o.gif");
+		}
+	}	
+</script>
+			
+		    
+		<!--화면 펼치기 닫기 -->
+        <div id="lf_btn">
+        	<div id="left_cbtn">
+				<!-- <p> --><a href="javascript:showJoTitleVerOne();"><img id ="openbtn" src="/images/service/btn/menu_open.gif" width="10" height="47" alt="목차 열고 닫기 버튼" title="목차 열고 닫기 버튼"/></a><!-- </p> -->
+            </div>
+        </div> 
+		<div id="rg_con">
+			<!-- search -->
+            <div id="search">
+			    <!-- search -->
+			    <h2 class="lSearchtit"><img src="/images/service/inc/tle_search.gif" alt="규정통합검색" /></h2>
+			    <form id="totalListForm" method="post" action="/service/search/searchTotal.do" onsubmit="return false">
+			    	
+<table id="lSearch" border="0" cellpadding="0" cellspacing="0">
+    <tr>			        	
+        <td><a href="javascript:goSeachABC();" onclick="" title="가나다 바로가기"><img src="/images/service/btn/btn_abcsrch.gif" alt="가나다" title="가나다 바로가기" /></a></td>
+        <td width="5"></td>
+        <td><a href="javascript:goSeachRevision();" onclick="" title="개정일 바로가기"><img src="/images/service/btn/btn_datesrch.gif" alt="개정일" title="개정일 바로가기" /></a></td>
+        <td width="10"></td>
+        <td>            
+        <fieldset>
+            <legend>규정통합검색</legend>   
+            <input type="radio" name="searchTimeType" class="searchTimeTypeNow" value="now" checked="checked" onclick="checkTimeType('now')"/> 현행
+            <input type="radio" name="searchTimeType" class="searchTimeTypePast" value="past" onclick="checkTimeType('past')"/> 연혁&nbsp;&nbsp;
+            <select title="Search Category" style="width:100px;" name="searchType" id="searchType">
+            	<option value="title">규정명</option>
+				<option value="content">규정내용</option>                             
+				<option value="attach">별표파일명</option>
+            </select>
+            <input type="text" class="itext" style="width:250px;" name="searchValue" id="searchValue" title="검색어입력" maxlength="30" onkeydown="if(event.keyCode == 13) searchTotal();" />                              
+        </fieldset>
+        </td>
+        <td width="5"></td>
+        <td><a href="javascript:searchTotal();" title="검색 버튼"><img src="/images/service/btn/btn_srch1.gif" alt="검색" title="검색 버튼" /></a></td>			                       
+    </tr>
+</table>
+	  
+			    </form>
+			</div>
+            
+            <div id="tle_navi" style="margin-bottom:0;">
+				<h3 class="tit4"><img src="/images/service/board/tle9.gif" alt="규정보기" title="규정보기" /><span class="memoview">※ 본문 내용 중 노란색 영역은 선택된 개정일 현재 변경된 조문.</span></h3> 
+				
+				<div class="p_navi"> 
+					HOME &gt; <span>규정보기</span>
+				</div>
+			</div>
+			
+			<div class="lawbtn" id="lawbtn">
+                <ul class="sel">
+                    
+                    <li>
+                        <ul>
+                            <li><a href="javascript:contensPlus();" title="글자확대하기"><img src="/images/service/btn/zoomBtn.gif" width="24" height="18" alt="전문" title="글자확대하기" /></a></li>
+                            <li><a href="javascript:contensMinus();" title="글자축소하기"><img src="/images/service/btn/reductionBtn.gif" width="23" height="18" alt="전문" title="글자축소하기" /></a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="btn">
+                	
+                    	<li><a href="/download.do?gubun=104&amp;seq=1783" title="개정문 새창열림" target="_blank"><img src="/images/service/btn/bt_revise.gif" width="44" height="19" alt="개정문 새창열림" title="개정문 새창열림" /></a></li>
+                    
+                    
+                    
+                    	<li><a href="/download.do?gubun=101&amp;seq=1787" title="전문(hwp)새창열림" target="_blank"><img src="/images/service/btn/bt_hwp1.gif" width="47" height="19" alt="전문(hwp)새창열림" title="전문(hwp)새창열림" /></a></li>
+                    
+                    
+                    
+                	
+                		
+                			<!-- 전문 개정이라면 신구 대비표가 나온다 -->
+                			
+                		                 
+                    		<li><a href="javascript:popLawHistory('149', '1787');" title="연혁대장보기 새창열림"><img src="/images/service/btn/bt_his.gif" width="56" height="19" alt="연혁대장보기 새창열림" title="연혁대장보기 새창열림"/></a></li>
+                    
+                    <li><a href="javascript:popLawTwoView('149', '1787');" title="2단보기 새창열림"><img src="/images/service/btn/bt_para2.gif" width="49" height="19" alt="2단보기 새창열림" title="2단보기 새창열림"/></a></li>
+                    <li><a href="javascript:showPopWindow('/service/law/revisionInfo.do?historySeq=1787', 'revision', '650', '350');" title="개정정보 새창열림"><img src="/images/service/btn/bt_department.gif" width="56" height="19" alt="개정정보 새창열림" title="개정정보 새창열림"/></a></li>
+                    <li><a id="fullscreen" href="javascript:popfullscreenEx2('149', '1787');" title="전체화면 새창열림"><img src="/images/service/btn/btn_viewall.gif" width="90" height="19" alt="전체화면 새창열림" title="전체화면 새창열림"/></a></li> 
+                    <li><a href="javascript:showPopWindow('/service/law/lawCheckPrint.do?historySeq=1787', 'print', 316, 420);" title="인쇄 새창열림"><img src="/images/service/btn/btn_print.gif" width="47" height="19" alt="인쇄 새창열림" title="인쇄 새창열림"/></a></li>
+                   
+                </ul>
+            </div>
+            
+            <div class="lawbtn" id="lawbtn1">
+            <table width="100%" height="100%" border="0" cellpadding="0" cellspacing="0">
+            	<tr>
+            		<td align="center" valign="middle">
+            			<div class="tit" id="tit" style="letter-spacing:-2px;">모범규준</div></td>
+            		<td align="center" valign="middle">
+	            		<div class="titEx" id="titEx">
+	            		<span style="font-weight:bold; letter-spaing:2px;">표준투자권유준칙</span>
+		                <select id="his_sel" onchange="lawHistory('149', '1787', 'cur');" title="연혁선택">
+			                
+				        		
+				        			
+				        				<option value="1787" selected="selected">
+							       			2026-04-09
+							       		</option>
+				        			
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1743">
+							       			2025-09-11
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1652">
+							       			2024-08-22
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1642">
+							       			2024-06-28
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1614">
+							       			2024-02-15
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1603">
+							       			2023-12-28
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1572">
+							       			2023-07-24
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1556">
+							       			2023-04-13
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1421">
+							       			2021-04-07
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1346">
+							       			2020-03-19
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1342">
+							       			2020-02-20
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1325">
+							       			2019-09-18
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1223">
+							       			2017-12-12
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1211">
+							       			2017-08-03
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1193">
+							       			2017-05-25
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1145">
+							       			2016-12-14
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1136">
+							       			2016-09-29
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1115">
+							       			2016-06-27
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1104">
+							       			2016-05-19
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1066">
+							       			2016-01-27
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1054">
+							       			2015-12-17
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="1028">
+							       			2015-08-20
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="971">
+							       			2015-02-04
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="917">
+							       			2014-09-01
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="875">
+							       			2014-03-20
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="804">
+							       			2013-08-29
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="436">
+							       			2012-07-10
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="435">
+							       			2011-11-09
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="434">
+							       			2011-09-07
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="433">
+							       			2010-08-27
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="432">
+							       			2009-12-22
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="431">
+							       			2009-09-25
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="430">
+							       			2009-02-19
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="429">
+							       			2009-02-16
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+				        		
+				        			
+				        			
+				        				<option value="428">
+							       			2009-02-04
+							       		</option>
+				        			                    			
+				        		                    		
+				        	
+			            </select>
+			            </div>
+            		</td>
+            		<!-- 운영부서 -->
+            		<td align="center" valign="middle" class="law-depart-cell">
+            			<div class="depart law-depart" id="lawDepartText" style="letter-spacing:-2px;">
+            				<span class="colBlue law-depart-label" style="letter-spacing:-2px;">운영부서:</span> 투자자보호부
+            			</div>
+            		</td>
+            	</tr>
+            </table>
+              		
+            </div>         
+                         
+            <div id="lawlist">
+            	<iframe src="/service/law/lawFullScreenTitle.do?seq=149&amp;historySeq=1787" id="lawFullTitle" width="0" height="463" frameborder="0" scrolling="auto" class="iframe_line" title="법규목차"></iframe> <!--  height="390" -->
+            </div>           
+            
+            <!-- 법규목차 열고 닫기 버튼 -->         
+            <div style="float:left;">
+	            <div id="lawcbtn">
+	            	<a href="javascript:showJoTitle();"><img src="/images/service/btn/bt_out.gif" width="12" height="52" alt="법규목차 열고 닫기 버튼" title="법규목차 열고 닫기 버튼"/></a> <!--  height="52" -->
+	            </div>
+            </div>
+            
+            <div id="lawcon">
+            	<iframe src="/service/law/lawFullScreenContent.do?seq=149&amp;historySeq=1787" id="lawFullContent" name="lawFullContent" width="703" height="463" frameborder="0" scrolling="auto" name="scontent03" class="iframe_line3" title="규정내용"></iframe>   <!--  height="390"  -->
+            </div>
+            
+		</div>
+	</div>
+</div>
+<!-- footer  -->
+<div id="footer_bg">
+	
+<!-- footer -->
+<script type="text/javascript">
+
+$(document).ready(function(){
+	$(".familySite .relationSite .linkTitle").click(function(){
+		$(this).next().slideDown(80);		
+	});
+	$(".familySite .relationSite").mouseleave(function(){
+		$(".familySite .relationSite ul").slideUp(80);
+	});
+	
+	$(".familySite .family .linkTitle").click(function(){
+		$(this).next().slideDown(80);
+	});
+	$(".familySite .family").mouseleave(function(){
+		$(".familySite .family ul").slideUp(80);
+	});
+});
+
+function doSite(title, url) {	
+	$(".familySite .relationSite ul").slideUp(80);
+	document.getElementById('linkTitle').innerHTML = title; 
+	document.getElementById('relation').value = url;
+}
+
+function doSite2(title, url) {	
+	$(".familySite .family ul").slideUp(80);
+	document.getElementById('linkTitle2').innerHTML = title; 
+	document.getElementById('fsite').value = url;
+}
+
+function familyPopupRelationWindow() {
+	if (document.getElementById('relation').value == '') {
+		alert("유관기관을 선택하여 주십시요.");
+	} else {
+		window.open(document.getElementById('relation').value);
+	}
+}
+
+function familyPopupWindow() {
+	if (document.getElementById('fsite').value == '') {
+		alert("family site를 선택하여 주십시요.");
+	} else {
+		window.open(document.getElementById('fsite').value);
+	}
+}
+</script>
+
+<input type="hidden" id="relation" name="relation" />
+<input type="hidden" id="fsite" name="fsite" />
+
+<div id="footer">
+        <address>
+        <img src="/images/service/inc/inc_footer.gif" alt="금융투자협회 우)07332  서울특별시 영등포구 의사당대로143 금융투자협회   TEL : 02-2003-9000    E-Mail : webmaster@kofia.or.kr Copyrights &copy; 2013 KOFIA. ALL RIGHTS RESERVED." border="0" usemap="#Map" title="금융투자협회 우)07332  서울특별시 영등포구 의사당대로143 금융투자협회   TEL : 02-2003-9000    E-Mail : webmaster@kofia.or.kr Copyrights &copy; 2013 KOFIA. ALL RIGHTS RESERVED." />
+        <map name="Map" id="Map">
+			<area shape="rect" coords="337,24,436,40" href="http://kofia.or.kr/wpge/m_34/etc02.do" target="_blank" alt="개인정보 처리/취급 방침" />
+	    </map>
+	    </address>        
+        <div class="familySite">
+  		<table>
+        	<tr>
+            	<td>
+                 <div class="relationSite">
+                   <p class="linkTitle" id="linkTitle" title="유관기관 바로가기">유관기관 바로가기</p>
+                   <ul>
+				       <li><a href="javascript:doSite('기획재정부', 'http://www.mosf.go.kr');" title="기획재정부(새창열림)">기획재정부</a> </li>
+					   <li><a href="javascript:doSite('금융위원회','http://www.fsc.go.kr/');" title="금융위원회(새창열림)">금융위원회</a></li>
+					   <li><a href="javascript:doSite('통계청','http://kostat.go.kr/');" title="통계청(새창열림)">통계청</a></li>
+					   <li><a href="javascript:doSite('금융감독원','http://www.fss.or.kr/');" title="금융감독원(새창열림)">금융감독원</a></li>
+					   <li><a href="javascript:doSite('한국거래소','http://www.krx.co.kr/');" title="한국거래소(새창열림)">한국거래소</a></li>
+					   <li><a href="javascript:doSite('한국예탁결제원','http://www.ksd.or.kr/');" title="한국예탁결제원(새창열림)">한국예탁결제원</a></li>
+					   <li><a href="javascript:doSite('한국증권금융','http://www.ksfc.co.kr/');" title="한국증권금융(새창열림)">한국증권금융</a></li>							
+					   <li><a href="javascript:doSite('DART 전자공시','http://dart.fss.or.kr/');" title="DART 전자공시(새창열림)">DART 전자공시</a></li>
+					   <li><a href="javascript:doSite('금융통계정보시스템','http://fisis.fss.or.kr/');" title="금융통계정보시스템(새창열림)">금융통계정보시스템</a></li>
+					   <li><a href="javascript:doSite('서민금융 1332','http://s1332.fss.or.kr/');"  title="서민금융 1332(새창열림)">서민금융 1332</a></li> 
+				   </ul>
+                  </div>
+                </td>
+                <td><img src="/images/service/btn/btn_go.gif"   alt="GO" title="유관기관 바로가기 버튼(새창열림)" onclick="familyPopupRelationWindow()" /></td>
+                <td>
+                <div class="family">
+                  <p class="linkTitle" id="linkTitle2" title="family site 바로가기">family site</p>  
+                     <ul>
+						<li><a href="javascript:doSite2('금융투자협회','http://www.kofia.or.kr/');" title="금융투자협회(새창열림)">금융투자협회</a></li>
+			            <li><a href="javascript:doSite2('전자공시서비스','http://dis.kofia.or.kr/');" title="전자공시서비스(새창열림)">전자공시서비스</a></li>
+			            <li><a href="javascript:doSite2('자본시장통계','http://freesis.kofia.or.kr/');" title="자본시장통계(새창열림)">자본시장통계</a></li>
+						<li><a href="javascript:doSite2('자격시험접수센터','http://license.kofia.or.kr/');" title="자격시험접수센터(새창열림)">자격시험접수센터</a></li>
+						<li><a href="javascript:doSite2('금융투자교육원','http://www.kifin.or.kr/');" title="금융투자교육원(새창열림)">금융투자교육원</a></li>
+						<li><a href="javascript:doSite2('채권정보센터','http://www.kofiabond.or.kr/');" title="채권정보센터(새창열림)">채권정보센터</a></li>
+			            <li><a href="javascript:doSite2('전국투자자교육협의회','http://www.kcie.or.kr/');" title="전국투자자교육협의회(새창열림)">전국투자자교육협의회</a></li>
+			            <li><a href="javascript:doSite2('한국투자성과위원회','http://www.gips.kr/');" title="한국투자성과위원회(새창열림)">한국투자성과위원회</a></li>
+						<li><a href="javascript:doSite2('본드몰','http://www.bondmall.or.kr/');" title="본드몰(새창열림)">본드몰</a></li>
+			            <li><a href="javascript:doSite2('K-OTC','http://www.k-otc.or.kr/');" title="K-OTC(새창열림)">K-OTC</a></li>
+			            <li><a href="javascript:doSite2('K-OTCBB','http://www.k-otcbb.or.kr/');" title="K-OTCBB(새창열림)">K-OTCBB</a></li>
+				     </ul>	
+                     </div>   
+                </td>
+                <td><img class ="image" src="/images/service/btn/btn_go.gif"  alt="GO" title="바로가기버튼(새창열림)" onclick="familyPopupWindow()" />
+	</td>
+            </tr>
+        </table>
+        
+</div>   
+</div>
+	  
+</div>
+</div>
+</body>
+</html>

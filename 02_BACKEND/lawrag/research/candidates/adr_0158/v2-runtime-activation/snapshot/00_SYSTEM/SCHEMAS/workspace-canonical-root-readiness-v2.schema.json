@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workspace-canonical-root-readiness-v2",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "root_id",
+    "canonical_path",
+    "root_state",
+    "completion_kind",
+    "expected_kind",
+    "evidence_targets",
+    "readiness_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "workspace-canonical-root-readiness-v2"},
+    "root_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(?![\\s\\S])"
+    },
+    "canonical_path": {"$ref": "#/$defs/relative_path"},
+    "root_state": {"enum": ["active", "bridge"]},
+    "completion_kind": {
+      "enum": ["migrated-legacy-root", "already-canonical"]
+    },
+    "expected_kind": {"const": "directory"},
+    "evidence_targets": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {"$ref": "#/$defs/relative_path"},
+      "uniqueItems": true
+    },
+    "readiness_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {"root_state": {"const": "bridge"}}
+      },
+      "then": {
+        "properties": {
+          "completion_kind": {"const": "migrated-legacy-root"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"root_state": {"const": "active"}}
+      },
+      "then": {
+        "properties": {
+          "completion_kind": {"const": "already-canonical"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "relative_path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!.*[\\\\\\u0000-\\u0020\\u007F-\\u00A0\\u1680\\u2000-\\u200A\\u2028-\\u2029\\u202F\\u205F\\u3000\\uFEFF])(?!(?:.*/)?\\.{1,2}(?:/|(?![\\s\\S])))[^/]+(?:/[^/]+)*(?![\\s\\S])"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}(?![\\s\\S])"
+    }
+  }
+}

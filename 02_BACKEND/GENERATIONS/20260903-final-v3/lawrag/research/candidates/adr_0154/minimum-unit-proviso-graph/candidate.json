@@ -1,0 +1,78 @@
+{
+  "schema_version": "adr-code-candidate-v1",
+  "adr_id": "ADR-0154",
+  "adr_path": "docs/adr/ADR-0154-minimum-unit-proviso-condition-effect-graph",
+  "experiment_id": "ADR-0154-experiment-v1",
+  "arm_id": "minimum-unit-proviso-graph",
+  "run_ids": [
+    "run-001"
+  ],
+  "candidate_id": "minimum-unit-proviso-graph",
+  "created_at": "2026-09-02T05:09:00.012614Z",
+  "updated_at": "2026-09-02T05:12:44.497736Z",
+  "status": "research-only",
+  "production_loadable": false,
+  "files": [
+    {
+      "upstream_path": "lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/domain_graph/requirements.py",
+      "upstream_sha256": "09a6473b1ff41cd46dd79474d2afaf19dc921ff0f4dcbc28537dbef950a294cb",
+      "initial_snapshot_sha256": "09a6473b1ff41cd46dd79474d2afaf19dc921ff0f4dcbc28537dbef950a294cb",
+      "snapshot_path": "lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/snapshot/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/domain_graph/requirements.py",
+      "snapshot_sha256": "0bafb5bd580a9866b91dfb9126fc86cb1774ab30f331b070c628eeaf96bfc406",
+      "bytes": 33866
+    },
+    {
+      "upstream_path": "lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/rag/relations.py",
+      "upstream_sha256": "2d57092440658f8723ea28c023b52d3417702bd1f67ef16cdceee3dcd506b878",
+      "initial_snapshot_sha256": "2d57092440658f8723ea28c023b52d3417702bd1f67ef16cdceee3dcd506b878",
+      "snapshot_path": "lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/snapshot/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/rag/relations.py",
+      "snapshot_sha256": "2d57092440658f8723ea28c023b52d3417702bd1f67ef16cdceee3dcd506b878",
+      "bytes": 31469
+    }
+  ],
+  "revisions": [
+    {
+      "revision_id": "rev-001",
+      "frozen_at": "2026-09-02T05:11:57.585912Z",
+      "files": [
+        {
+          "snapshot_path": "lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/snapshot/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/domain_graph/requirements.py",
+          "frozen_path": "lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/revisions/rev-001/snapshot/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/domain_graph/requirements.py",
+          "snapshot_sha256": "5ceb50c7bb97e3fe7d0dc5075ec82b23ef67fccc8e3283bffcc1dcf51ad4b077",
+          "bytes": 33664
+        },
+        {
+          "snapshot_path": "lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/snapshot/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/rag/relations.py",
+          "frozen_path": "lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/revisions/rev-001/snapshot/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/rag/relations.py",
+          "snapshot_sha256": "2d57092440658f8723ea28c023b52d3417702bd1f67ef16cdceee3dcd506b878",
+          "bytes": 31469
+        }
+      ],
+      "revision_sha256": "558cb000e320c051f8f9b22579c9055f49b27ee90bf35e320166f99c15e0eebe"
+    },
+    {
+      "revision_id": "rev-002",
+      "frozen_at": "2026-09-02T05:12:44.497736Z",
+      "files": [
+        {
+          "snapshot_path": "lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/snapshot/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/domain_graph/requirements.py",
+          "frozen_path": "lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/revisions/rev-002/snapshot/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/domain_graph/requirements.py",
+          "snapshot_sha256": "0bafb5bd580a9866b91dfb9126fc86cb1774ab30f331b070c628eeaf96bfc406",
+          "bytes": 33866
+        },
+        {
+          "snapshot_path": "lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/snapshot/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/rag/relations.py",
+          "frozen_path": "lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/revisions/rev-002/snapshot/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/rag/relations.py",
+          "snapshot_sha256": "2d57092440658f8723ea28c023b52d3417702bd1f67ef16cdceee3dcd506b878",
+          "bytes": 31469
+        }
+      ],
+      "revision_sha256": "da9c80ee9bf5b6a35def7f7150f681cd3f833edb479acb5da476cde53d58bbac"
+    }
+  ],
+  "promotion_contract": {
+    "copy_to": "lawrag/runtime/components/",
+    "register_in": "lawrag/runtime/registry.py",
+    "requires_main_promotion": true
+  }
+}

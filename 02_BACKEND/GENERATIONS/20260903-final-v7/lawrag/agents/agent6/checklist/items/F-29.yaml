@@ -1,0 +1,21 @@
+id: F-29
+name: 위험 설명의 충분성
+type: 충분성형
+when: always
+basis:
+  - { doc: KSB, section: "제19조", note: "설명의무 — 파생 항목이므로 구성 항목의 근거를 승계한다" }
+derived:
+  all_pass: [B-07, B-09, F-28]
+  note: >
+    "충분히 설명했는가"를 LLM 에게 직접 묻지 않는다 — 열린 판정이라 흔들리고, FAIL 이 나와도
+    PB 가 무엇을 더 말해야 하는지 알 수 없다. 대신 관찰 가능한 세 항목의 곱으로 정의한다:
+    원금손실 가능성(B-07) + 위험등급(B-09) + 이해 확인(F-28). 셋 다 PASS 여야 PASS,
+    하나라도 FAIL 이면 FAIL, UNCLEAR 가 섞이면 UNCLEAR 다. 해소 방법도 구성 항목이 알려 준다.
+operational_definition: >
+  독립 판정을 하지 않는 파생 항목이다. 구성 항목(B-07 원금손실 가능성, B-09 투자위험등급,
+  F-28 이해 확인)의 판정 결과만으로 산출한다. LLM 호출 대상이 아니며, 판정기는 이 항목을
+  프롬프트에 포함해서는 안 된다(AGENT6 §9-5).
+  FAIL 시 안내문에는 실패한 구성 항목의 재안내 문구가 그대로 인용된다.
+judgment_hints:
+  fail_route: PB보완
+  unclear_route: 준법감시큐

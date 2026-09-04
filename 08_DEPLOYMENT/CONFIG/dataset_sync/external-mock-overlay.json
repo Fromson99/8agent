@@ -1,0 +1,50 @@
+{
+  "schema_version": "dataset-overlay-v1",
+  "overlay_id": "internal-documents-external-mock-v1",
+  "representation": "mock",
+  "export_allowed": true,
+  "items": [
+    {
+      "logical_id": "internal-risk-rules/v1",
+      "contract": {"kind": "internal-rule", "format_family": "docx", "version_role": "previous", "artifact_roles": ["primary", "structure", "frame", "taxonomy"]},
+      "doc_id": "38803e534c832e19",
+      "files": [
+        {"source": "data/corpus/internal/위험관리기준시행세칙_v1_2024.docx", "target": "data/corpus/internal/위험관리기준시행세칙_v1_2024.docx", "role": "primary"},
+        {"source": "data/structure/38803e534c832e19", "target": "data/structure/38803e534c832e19", "role": "structure"},
+        {"source": "data/frames/38803e534c832e19.jsonl", "target": "data/frames/38803e534c832e19.jsonl", "role": "frame"},
+        {"source": "data/taxonomy/38803e534c832e19.jsonl", "target": "data/taxonomy/38803e534c832e19.jsonl", "role": "taxonomy"}
+      ]
+    },
+    {
+      "logical_id": "internal-risk-rules/v2",
+      "contract": {"kind": "internal-rule", "format_family": "docx", "version_role": "current", "artifact_roles": ["primary", "structure", "frame", "taxonomy"]},
+      "doc_id": "3bad39ac4c01eec6",
+      "files": [
+        {"source": "data/corpus/internal/위험관리기준시행세칙_v2_2026.docx", "target": "data/corpus/internal/위험관리기준시행세칙_v2_2026.docx", "role": "primary"},
+        {"source": "data/structure/3bad39ac4c01eec6", "target": "data/structure/3bad39ac4c01eec6", "role": "structure"},
+        {"source": "data/frames/3bad39ac4c01eec6.jsonl", "target": "data/frames/3bad39ac4c01eec6.jsonl", "role": "frame"},
+        {"source": "data/taxonomy/3bad39ac4c01eec6.jsonl", "target": "data/taxonomy/3bad39ac4c01eec6.jsonl", "role": "taxonomy"}
+      ]
+    },
+    {
+      "logical_id": "internal-investment-underwriting-guideline/current",
+      "contract": {"kind": "internal-rule", "format_family": "docx", "version_role": "current", "artifact_roles": ["primary", "structure", "frame", "taxonomy"]},
+      "doc_id": "a87d28a238399591",
+      "files": [
+        {"source": "data/corpus/internal/투자및인수위험관리지침_2025.docx", "target": "data/corpus/internal/투자및인수위험관리지침_2025.docx", "role": "primary"},
+        {"source": "data/structure/a87d28a238399591", "target": "data/structure/a87d28a238399591", "role": "structure"},
+        {"source": "data/frames/a87d28a238399591.jsonl", "target": "data/frames/a87d28a238399591.jsonl", "role": "frame"},
+        {"source": "data/taxonomy/a87d28a238399591.jsonl", "target": "data/taxonomy/a87d28a238399591.jsonl", "role": "taxonomy"}
+      ]
+    },
+    {
+      "logical_id": "internal-deal-risk-review/sample",
+      "contract": {"kind": "review-request", "format_family": "docx", "version_role": "current", "artifact_roles": ["primary", "structure"]},
+      "doc_id": "ea6809e5776be26e",
+      "files": [
+        {"source": "data/corpus/internal/신규딜_리스크검토요청서_예시.docx", "target": "data/corpus/internal/신규딜_리스크검토요청서_예시.docx", "role": "primary"},
+        {"source": "data/structure/ea6809e5776be26e", "target": "data/structure/ea6809e5776be26e", "role": "structure"}
+      ]
+    }
+  ]
+}

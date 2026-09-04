@@ -1,0 +1,65 @@
+# 8-AGENT GenOS JupyterLab 반입 명령
+# JupyterLab의 Terminal에서 위에서 아래 순서대로 실행하세요.
+
+set -euo pipefail
+
+# 1) 업로드한 코드 ZIP과 설치 위치
+export CODE_ZIP="$HOME/DEV/8agent-genos-code-20260901-gmail-safe.zip"
+export APP_DIR="$HOME/8-agent"
+
+test -f "$CODE_ZIP" || { echo "ZIP을 찾을 수 없습니다: $CODE_ZIP"; exit 1; }
+mkdir -p "$APP_DIR"
+cd "$APP_DIR"
+
+# 2) ZIP 검사 및 압축 해제
+python3 -m zipfile -t "$CODE_ZIP"
+python3 -m zipfile -e "$CODE_ZIP" .
+
+# 3) Gmail 전송용으로 변경했던 JavaScript 파일명 복구
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+manifest = Path("RESTORE_GMAIL_FILENAMES.json")
+if manifest.exists():
+    mapping = json.loads(manifest.read_text(encoding="utf-8"))
+    for transported, original in mapping.items():
+        src = Path(transported)
+        dst = Path(original)
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        src.replace(dst)
+    manifest.unlink()
+    print(f"Gmail-safe 파일명 복원 완료: {len(mapping)}개")
+else:
+    print("복원 manifest 없음: 일반 ZIP이거나 이미 복원되었습니다.")
+PY
+
+# 복구되지 않은 전송용 파일이 없어야 정상
+if find . -type f -name '*.gmail-safe.txt' -print -quit | grep -q .; then
+    echo "오류: 복구되지 않은 Gmail-safe 파일이 있습니다."
+    exit 1
+fi
+
+# 4) 소스 및 실행 환경 준비
+chmod +x scripts/*.sh scripts/*.py
+python3 scripts/genos_preflight.py source
+python3 -m pip install -r requirements-serving.txt
+
+echo
+echo "코드 준비 완료: $APP_DIR"
+echo "다음 단계는 GenOS 내부 Gitea push 또는 코드 서빙 배포입니다."
+
+# 5) 내부 Gitea에 올릴 때만 아래 예시의 URL을 바꿔 실행
+# export GENOS_GIT_URL='<코드 서빙 상세 화면의 Gitea clone URL>'
+# git init
+# git remote add origin "$GENOS_GIT_URL"
+# git add .
+# git commit -m 'Deploy 8-AGENT to GenOS'
+# git push -u origin HEAD:main
+# git rev-parse HEAD
+
+# 6) 배포 완료 후 호출 확인 예시
+# export GENOS_CODE_URL='https://<GenOS>/api/gateway/code_serving/<CODE_ID>/json'
+# read -rsp 'Code serving key: ' GENOS_CODE_KEY; export GENOS_CODE_KEY; echo
+# scripts/genos_call.sh ping
+# scripts/genos_call.sh health

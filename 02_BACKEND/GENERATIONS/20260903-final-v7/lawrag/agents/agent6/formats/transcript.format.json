@@ -1,0 +1,34 @@
+{
+  "doc_type": "STT전사",
+  "format_version": 1,
+  "compiled_from": [
+    "agents/agent6/src/transcript.py (파서와 짝으로 손으로 작성 — 표본 유도 아님)"
+  ],
+  "regex_markers": [
+    {
+      "id": "발화",
+      "pattern": "^\\[(\\d{3,})\\s+([^\\]]+)\\]",
+      "level": 0,
+      "groups": [
+        "no",
+        "speaker"
+      ],
+      "label": "발화{no}",
+      "max_tail": 0
+    }
+  ],
+  "term_markers": [],
+  "hierarchy": [
+    "문서",
+    "발화"
+  ],
+  "default_section": "전사",
+  "confidence": "high",
+  "notes": [
+    "발화 하나가 section 하나다. section_id 는 '발화001' 이며 이것이 판정의 근거 인용 좌표다.",
+    "level 이 0 인 이유: 1 로 두면 코어가 기본 구역을 먼저 열어(structurize.ensure_default) section_id 가 '전사/발화001' 이 되고 section 수가 발화 수보다 하나 많아진다. 좌표는 문서 머리글 유무에 흔들리면 안 되므로 발화를 최상위로 둔다.",
+    "max_tail 0 인 이유: 마커 줄은 마커만 있는 요소다(transcript.py 가 발화당 마커 줄 + 본문 줄 두 요소를 낸다). 고객이 '[003 PB]' 같은 문자열을 말해도 경계로 오인되지 않고, 본문 줄이 meta 를 달고 그 section 의 content[0] 이 된다.",
+    "번호는 3자리 이상(\\d{3,}) — 1000발화가 넘는 긴 녹취에서도 마커가 끊기지 않는다.",
+    "default_section '전사' 는 마커 없는 요소가 들어올 때만 열린다. 정상 입력에서는 열리지 않는다."
+  ]
+}

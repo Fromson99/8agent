@@ -1,0 +1,61 @@
+{
+  "schema_version": "workspace-layout-v2",
+  "mode": "v2-only",
+  "canonical_root_pattern": "^[0-9]{2}_[A-Z][A-Z0-9_]*$",
+  "default_layout_version": "v2",
+  "lifecycle": {
+    "activation_receipt": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260903-permanent-v2-final-v10.json",
+    "retirement_receipt": "00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots-final-v10.json"
+  },
+  "root_file_policy": {
+    "permanent": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "README.md",
+      "pyproject.toml",
+      "pytest.ini",
+      "service.py"
+    ],
+    "deployment_compatibility": [
+      "requirements.txt",
+      "requirements-serving.txt",
+      ".env.example",
+      ".env.genos.example",
+      ".env.onsite.example"
+    ]
+  },
+  "roots": [
+    {"id": "system", "canonical_path": "00_SYSTEM", "legacy_path": null, "state": "active"},
+    {"id": "data", "canonical_path": "01_DATA", "legacy_path": null, "state": "active"},
+    {"id": "backend", "canonical_path": "02_BACKEND", "legacy_path": null, "state": "active"},
+    {"id": "frontend", "canonical_path": "03_FRONTEND", "legacy_path": null, "state": "active"},
+    {"id": "experiments", "canonical_path": "04_EXPERIMENTS", "legacy_path": null, "state": "active"},
+    {"id": "tests", "canonical_path": "05_TESTS", "legacy_path": null, "state": "active"},
+    {"id": "tools", "canonical_path": "06_TOOLS", "legacy_path": null, "state": "active"},
+    {"id": "docs", "canonical_path": "07_DOCS", "legacy_path": null, "state": "active"},
+    {"id": "deployment", "canonical_path": "08_DEPLOYMENT", "legacy_path": null, "state": "active"},
+    {"id": "artifacts", "canonical_path": "09_ARTIFACTS", "legacy_path": null, "state": "active"},
+    {"id": "runtime", "canonical_path": "90_RUNTIME", "legacy_path": null, "state": "active"},
+    {"id": "archive", "canonical_path": "99_ARCHIVE", "legacy_path": null, "state": "active"}
+  ],
+  "legacy_top_level_directories": [
+    "artifacts",
+    "benchmarks",
+    "config",
+    "data",
+    "docs",
+    "experiment-studio",
+    "lawrag",
+    "scripts",
+    "tests",
+    "tmp",
+    "var"
+  ],
+  "invariants": [
+    "new top-level directories use numbered uppercase names",
+    "v2 lifecycle receipts are authoritative and v1 runtime resolution is forbidden",
+    "completed experiment artifacts are never rewritten during path migration",
+    "production retrieval never imports research candidates",
+    "restricted data is never made exportable by composition"
+  ]
+}

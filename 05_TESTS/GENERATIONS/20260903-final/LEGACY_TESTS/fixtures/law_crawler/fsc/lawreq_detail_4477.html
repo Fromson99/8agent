@@ -1,0 +1,661 @@
+
+
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=0,maximum-scale=10,user-scalable=yes">
+	<meta name="HandheldFriendly" content="true">
+	<meta name="format-detection" content="telephone=no">
+	<meta http-equiv="imagetoolbar" content="no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>금융규제민원</title>
+	
+	
+	<link rel="stylesheet" href="/fsc_new/css/comm.css">
+	<link rel="stylesheet" href="/fsc_new/css/sub.css?20250917">
+	<link rel="stylesheet" href="/fsc_new/css/jquery-ui.css">
+	<link rel="stylesheet" href="/fsc_new/css/swiper.min.css">
+
+	<script type="text/javascript" src="/fsc_new/js/jquery-3.5.1.min.js"></script>
+	
+	<script type="text/javascript" src="/fsc_new/js/jquery-ui.js"></script>
+	<script type="text/javascript" src="/fsc_new/js/ui_common.js?20250917"></script>
+	<script type="text/javascript" src="/fsc_new/js/prefixfree.min.js"></script>
+	<script type="text/javascript" src="/fsc_new/js/DataTables/datatables.js"></script>
+	<script type="text/javascript" src="/fsc_new/js/file.js"></script>
+	<script type="text/javascript" src="/fsc_new/js/page.js"></script>
+	
+
+</head>
+<body>
+
+   
+
+
+
+<script>
+$(document).ready(function() {
+	var stNo = "11" != "" ? "11" : getParameterByName("stNo");
+	var muNo = "117" != "" ? "117" : getParameterByName("muNo");
+	var muGpNo = "75" != "" ? "75" : getParameterByName("muGpNo");
+	fn_selectLeftMenu(stNo, muNo, muGpNo);
+	fn_selectTopMenu(stNo, muNo, muGpNo);
+	fn_selectNaviList(stNo, muNo, muGpNo);
+	fn_selectTitleTree(stNo, muNo, muGpNo);
+});
+
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+function fn_selectTopMenu(stNo, muNo, muGpNo) {
+	$.ajax({
+		url: "/fsc_new/main/selectTopMenu.do",
+		async: false,
+		type: "post",
+		data: {stNo:stNo, muNo:muNo, muGpNo:muGpNo},
+		dataType: "json",
+
+		success:function(data) {
+			var topMenuList = data.topMenuList;
+			var linkTarget;
+			var linkTitle;
+			$(topMenuList).each(function(i, list) {
+				//console.log(list);
+				if(list.linkTargetCd == "LINK0002"){
+					linkTarget = "_blank";
+					linkTitle = "새창열림";
+				}else{
+					linkTarget = "_self";
+					linkTitle = "";
+				}
+				
+				if(list.lvl == 1) {
+					$("<li class='gnb1-li'></li>").attr("id", "gnb1-li_"+list.muNo).appendTo("#gnb1");
+					if(linkTitle != ""){
+						$("<a></a>").addClass("gnb1-item").text(list.muNm).appendTo("#gnb1-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"")).after("<ul class='gnb2-ul' id='gnb2_"+list.muNo+"'></ul>").attr("target",linkTarget).attr("title",linkTitle);
+					}else{
+						$("<a></a>").addClass("gnb1-item").text(list.muNm).appendTo("#gnb1-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"")).after("<ul class='gnb2-ul' id='gnb2_"+list.muNo+"'></ul>").attr("target",linkTarget)
+					}
+					
+				}else if(list.lvl == 2) {
+					$("<li class='gnb2-li'></li>").attr("id", "gnb2-li_"+list.muNo).appendTo("#gnb2_"+list.muGpNo);
+					if(linkTitle != ""){
+						$("<a></a>").addClass("gnb2-item").text(list.muNm).appendTo("#gnb2-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"?stNo="+list.stNo+"&muNo="+list.muNo+"&muGpNo="+list.muGpNo)).attr("target",linkTarget).attr("title",linkTitle);
+					}else{
+						if(list.muNo == "192"){
+							$("<a></a>").addClass("gnb2-item").text(list.muNm).appendTo("#gnb2-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"")).attr("target",linkTarget);
+						}else{
+							$("<a></a>").addClass("gnb2-item").text(list.muNm).appendTo("#gnb2-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"?stNo="+list.stNo+"&muNo="+list.muNo+"&muGpNo="+list.muGpNo)).attr("target",linkTarget);
+						}
+					}
+				}else if(list.lvl == 3){
+					if(list.ordNo == 1){
+						$("<ul class='gnb3-ul muNoGnb_"+list.muPnNo+"'></ul>").appendTo("#gnb2-li_"+list.muPnNo);
+					}
+					$("<li class='gnb3-li'></li>").attr("id", "gnb3-li_"+list.muNo).appendTo(".muNoGnb_"+list.muPnNo);
+					if(linkTitle != ""){
+						$("<a></a>").addClass(muNo == list.muNo ? "gnb3-item on" : "gnb3-item").text("- "+list.muNm).appendTo("#gnb3-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"?stNo="+list.stNo+"&muNo="+list.muNo+"&muGpNo="+list.muGpNo)).attr("target",linkTarget).attr("title",linkTitle);
+					}else{
+						if(list.muNo == "109" || list.muNo == "114"){
+							$("<a></a>").addClass(muNo == list.muNo ? "gnb3-item on" : "gnb3-item").text("- "+list.muNm).appendTo("#gnb3-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"")).attr("target",linkTarget);
+						}else{
+							$("<a></a>").addClass(muNo == list.muNo ? "gnb3-item on" : "gnb3-item").text("- "+list.muNm).appendTo("#gnb3-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"?stNo="+list.stNo+"&muNo="+list.muNo+"&muGpNo="+list.muGpNo)).attr("target",linkTarget);
+						}
+					}
+				}
+		
+			});
+		},
+	});
+}
+
+function fn_selectLeftMenu(stNo, muNo, muGpNo) {
+	$.ajax({
+		url: "/fsc_new/main/selectLeftMenu.do",
+		async: false,
+		type: "post",
+		data: {stNo:stNo, muNo:muNo, muGpNo:muGpNo},
+		dataType: "json",
+
+		success:function(data) {
+			var leftMenuList = data.leftMenuList;
+			var linkTarget;
+			var linkImg;
+			var linkTitle;
+			//console.log(leftMenuList);
+			
+			$(leftMenuList).each(function(i, list) {
+				
+				if(list.linkTargetCd == "LINK0002"){
+					linkTarget = "_blank";
+					linkImg = " <img src='/fsc_new/img/sub/ico_link.png' alt='새창'>";
+					linkTitle = "새창열림";
+				}else{
+					linkTarget = "_self";
+					linkImg = "";
+					linkTitle = "";
+				}
+				
+				if(list.lvl == 1 && muGpNo == list.muNo){
+					//console.log(list.muNm);
+					$("#left-menu_nm").text(list.muNm);
+				}else if(list.lvl == 2 && muGpNo == list.muGpNo) {
+					$("<li class='lnb1-li'></li>").attr("id", "lnb1-li_"+list.muNo).appendTo("#lnb1");
+					if(linkTitle != ""){
+						$("<a></a>").addClass(muNo == list.muNo ? "lnb1-item on" : "lnb1-item").text(list.muNm).appendTo("#lnb1-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"?stNo="+list.stNo+"&muNo="+list.muNo+"&muGpNo="+list.muGpNo)).attr("target",linkTarget).attr("title",linkTitle).append(linkImg);
+					}else{
+						if(list.muNo == "192"){
+							$("<a></a>").addClass(muNo == list.muNo ? "lnb1-item on" : "lnb1-item").text(list.muNm).appendTo("#lnb1-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"")).attr("target",linkTarget).append(linkImg);
+						}else{
+							$("<a></a>").addClass(muNo == list.muNo ? "lnb1-item on" : "lnb1-item").text(list.muNm).appendTo("#lnb1-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"?stNo="+list.stNo+"&muNo="+list.muNo+"&muGpNo="+list.muGpNo)).attr("target",linkTarget).append(linkImg);
+						}
+					}
+					
+				}else if(list.lvl == 3 && muGpNo == list.muGpNo) {
+					if(list.ordNo == 1){
+						$("<ul class='lnb2-ul muNo_"+list.muPnNo+"'></ul>").appendTo("#lnb1-li_"+list.muPnNo);
+					}
+					$("<li class='lnb2-li'></li>").attr("id", "lnb2-li_"+list.muNo).appendTo(".muNo_"+list.muPnNo);
+					if(linkTitle != ""){
+						$("<a></a>").addClass(muNo == list.muNo ? "lnb2-item on" : "lnb2-item").text("- "+list.muNm).appendTo("#lnb2-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"?stNo="+list.stNo+"&muNo="+list.muNo+"&muGpNo="+list.muGpNo)).attr("target",linkTarget).attr("title",linkTitle).append(linkImg);
+					}else{
+						if(list.muNo == "109" || list.muNo == "114"){
+							$("<a></a>").addClass(muNo == list.muNo ? "lnb2-item on" : "lnb2-item").text("- "+list.muNm).appendTo("#lnb2-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"")).attr("target",linkTarget).append(linkImg);
+						}else{
+							$("<a></a>").addClass(muNo == list.muNo ? "lnb2-item on" : "lnb2-item").text("- "+list.muNm).appendTo("#lnb2-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"?stNo="+list.stNo+"&muNo="+list.muNo+"&muGpNo="+list.muGpNo)).attr("target",linkTarget).append(linkImg);
+						}
+					}
+					
+				}
+		
+			});
+		},
+	});
+}
+
+function fn_selectNaviList(stNo, muNo, muGpNo) {
+	$.ajax({
+		url: "/fsc_new/main/selectNaviList.do",
+		async: false,
+		type: "post",
+		data: {stNo:stNo, muNo:muNo, muGpNo:muGpNo},
+		dataType: "json",
+
+		success:function(data) {
+			var naviList = data.naviList;
+			var linkTarget;
+			//console.log(naviList);
+			
+			$(naviList).each(function(i, list) {
+				
+				if(list.linkTargetCd == "LINK0002"){
+					linkTarget = "_blank";
+				}else{
+					linkTarget = "_self";
+				}
+
+				if(list.lvl == 1){
+					if(muGpNo == list.muNo){
+						$("#naviDepth1").text(list.muNm);
+					}else{
+						$("<li class='snb2-li'></li>").attr("id", "navi1-li_"+list.muNo).appendTo("#naviUl1");
+						$("<a></a>").addClass("snb2-item").text(list.muNm).appendTo("#navi1-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"")).attr("target",linkTarget);
+					}
+				}else if(list.lvl != 1) {
+					if(muNo == list.muNo){
+						$("#naviDepth2").text(list.muNm);
+					}else{
+						
+						if(muGpNo == list.muGpNo){
+						$("<li class='snb2-li'></li>").attr("id", "navi2-li_"+list.muNo).appendTo("#naviUl2");
+						$("<a></a>").addClass("snb2-item").text(list.muNm).appendTo("#navi2-li_"+list.muNo).attr("href",urlCheck(list.linkUrl,"?stNo="+list.stNo+"&muNo="+list.muNo+"&muGpNo="+list.muGpNo)).attr("target",linkTarget);
+						}
+					}
+				}
+			});
+			if($(location).attr('pathname') == "/fsc_new/user/memberEdit.do"){
+				$("#naviDepth1").text("마이페이지");
+				$("#naviDepth2").text("회원정보 변경");
+			}else if(muNo == "198"){
+				$("#naviDepth1").text("사이트 이용안내");
+				$("#naviDepth2").text("사이트 이용안내");
+			}else if(muNo == "199"){
+				$("#naviDepth1").text("개인정보 처리방침");
+				$("#naviDepth2").text("개인정보 처리방침");
+			}else if(muNo == "200"){ 
+				$("#naviDepth1").text("저작권정책");
+				$("#naviDepth2").text("저작권정책");
+			}else if(muNo == "201"){
+				$("#naviDepth1").text("이메일무단수집거부");
+				$("#naviDepth2").text("이메일무단수집거부");
+			}
+		},
+	});
+}
+
+function fn_selectTitleTree(stNo, muNo, muGpNo) {
+	$.ajax({
+		url: "/fsc_new/main/selectTitleTree.do",
+		async: false,
+		type: "post",
+		data: {stNo:stNo, muNo:muNo, muGpNo:muGpNo},
+		dataType: "json",
+
+		success:function(data) {
+			var nowUrl = window.location.pathname;
+			nowUrl = nowUrl.toLowerCase();
+
+			if(nowUrl.indexOf("detail") !== -1){
+				var viewTitle = " > 상세";
+			}else{
+				var viewTitle = "";
+			}
+			
+			if(muNo != ""){
+				document.title = data.titleTree + viewTitle + " | 금융규제·법령해석포털";
+			}else if($(location).attr('pathname') == "/fsc_new/user/memberEdit.do"){
+				document.title =  "마이페이지 > 회원정보 변경 | 금융규제·법령해석포털";
+			}
+
+		},
+	});
+}
+
+function totalSearch() {
+	if($("#searchTxt").val() == ""){
+		alert("검색어를 입력하세요.");
+		$("#searchTxt").focus();
+		return false;
+	}
+	
+	var win = window.open("about:blank","searchPop")
+	var frm = $("#frmTotalSearch");
+	frm.attr("action","/fsc_new/search/search.do");
+	frm.attr("target","searchPop");
+	frm.submit();
+}
+
+function urlCheck(url,param){
+	if(url == "#"){
+		url = "javascript:void(0);";
+	}else{
+		if(!url.match("http://") && !url.match("https://")){
+			url = "/fsc_new"+url+param;
+		}
+	}
+	
+	return url;
+}
+</script>
+	<!-- 상단 시작  -->
+	 
+	
+		
+		
+			
+		
+	
+	
+	<header class="">
+		<div id="skip-to-container"><a href="#skip_main">본문 바로가기</a></div>
+		<div class="hd-wrap">
+			<a href="/fsc_new/main/main.do" title="홈으로 이동">
+				<h1 id="logo">
+					<strong>금융규제·법령해석포털</strong>
+					<img src="/fsc_new/img/comm/logo01.png" alt="금융위원회 로고" /> <img src="/fsc_new/img/comm/logo02.png" alt="금융감독원 로고" />
+				</h1>
+			</a>
+			<div class="hd-search">
+				<form method="post" name="frmTotalSearch" id="frmTotalSearch">
+					<label for="searchTxt" class="sound-only">검색어 입력</label><input type="text" name="searchTxt" id="searchTxt" placeholder="검색어를 입력하세요." onKeypress="javascript:if(event.keyCode==13) {totalSearch(); return false;}" title="검색어 입력">
+					<button type="button" onclick="totalSearch();"><img src="/fsc_new/img/comm/icon-search.png" alt="검색"></button>
+				</form>
+			</div>
+			<div class="hd-link">
+				
+					
+						<a href="/fsc_new/login/login.do?stNo=11&muNo=176&muGpNo=175"><img src="/fsc_new/img/comm/icon-user.png" alt=""> <span>로그인</span></a>
+						<a href="/fsc_new/user/memberForm.do?stNo=11&muNo=174&muGpNo=173"><img src="/fsc_new/img/comm/icon-list.png" alt=""> <span>아이디신청</span></a>
+					
+					
+				
+			</div>
+		</div>
+
+		<nav>
+			<div class="gnb-wrap">
+				<ul class="gnb1-ul" id="gnb1">
+					
+				</ul>
+				<span class="gnb-bg"></span>
+			</div>
+		</nav>
+		<button class="btn-menu" type="button"> <span class="m-menu-box"> <span class="m-menu-binner"><span class="sound-only">모바일 메뉴 버튼 </span></span></span></button>
+	</header>
+
+	<div id="wrapper">
+		
+
+		<div class="sub-ground">
+    		<div class="tit">
+    			<span>현장과 소통하는 <strong>금융규제혁신</strong><br /><strong>금융규제·법령해석포털</strong>이 함께 합니다.</span>
+    		</div>
+    	</div>
+    	<div class="snb-wrap">
+    		<ol class="snb1-ul">
+    			<li class="snb1-li"><a href="javascript:void(0)" class="snb1-item"><img src="/fsc_new/img/comm/icon-house.png" alt="홈"></a></li>
+    			<li class="snb1-li">
+    				<a href="javascript:;" class="snb1-item" id="naviDepth1"></a>
+    				<ul class="snb2-ul" id="naviUl1">
+    					
+    				</ul>
+    			</li>
+    			<li class="snb1-li">
+    				<a href="javascript:;" class="snb1-item" id="naviDepth2"></a>
+    				<ul class="snb2-ul" id="naviUl2">
+    					
+    				</ul>
+    			</li>
+    		</ol>
+    	</div>
+	    <div id="container_wr">
+			<div id="left-menu">
+				<h2 id="left-menu_nm"></h2>
+				<ul class="lnb1-ul" id="lnb1">
+				
+				</ul>
+			</div>
+
+
+		
+
+
+
+<div class="sub-con">
+	<h3>법령해석</h3>
+	<div class="board-view">
+		<table cellpadding="0" cellspacing="0" class="tbl-view two">
+			<caption class="sound-only">법령해석 상세보기 목록표 – 처리구분, 소관부서로 구성</caption>
+			<tr>
+				<td colspan="2" class="subject">은행업감독규정 內 집합건물 관련 규정 문의</td>
+			</tr>
+			<tr>
+				<th scope="row">처리구분</th>
+				<td>완료</td>
+			</tr>
+			<tr>
+				<th scope="row">소관부서</th>
+				<td>은행과</td>
+			</tr>
+		</table>
+	</div>
+	<div class="btn-wrap mr10">
+		<a href="javascript:void(0);" onclick="openLawreqList();" class="btn btn-save">목록</a>
+		<a href="javascript:void(0);" onclick="urlCopy('https://better.fsc.go.kr/fsc_new/replyCase/LawreqDetail.do?stNo=11&muNo=117&muGpNo=75&lawreqIdx=4477');" class="btn btn-save">URL 복사</a>
+	</div>
+	<div class="res-wrap">
+			<div class="tit">회신</div>
+			<div class="board-view">
+				<table cellpadding="0" cellspacing="0" class="tbl-write">
+					<caption class="sound-only">법령해석 회신확인표-처리구분, 공개여부,등록자,회신일, 첨부파일, 질의요지, 회답, 이유로 이루어짐</caption>
+					<tr>
+						<td class="subject" colspan="2" style="font-size: 1.175rem;">은행업감독규정 內 집합건물 관련 규정 문의 </td>
+					</tr>
+					<tr>
+						<th scope="row">처리구분</th>
+						<td>완료</td>
+					</tr>
+					<tr>
+						<th scope="row">공개여부</th>
+						<td>Y</td>
+					</tr>
+					<!-- <tr>
+						<th>소관부서</th>
+						<td>-</td>
+					</tr> -->
+					<tr>
+						<th scope="row">등록자</th>
+						<td>관리자</td>
+					</tr>
+					<tr>
+						<th scope="row">회신일</th>
+						<td>2026-08-06</td>
+					</tr>
+					<tr>
+						<th scope="row">첨부파일</th>
+						<td>
+							
+								<a href="/fsc_new/file/displayFile.do?filePath=/2026/08/06&orgFileName=법령해석 회신문(230340)F.hwpx&sysFileName=7f7d181c416b4963b661a1a34c7a472e.hwpx" title="법령해석 회신문(230340)F.hwpx 새창으로 다운로드">
+									<img src="/fsc_new/img/comm/icon-files.png" alt="첨부파일 있음" /> 법령해석 회신문(230340)F.hwpx
+								</a> 
+								<br />
+							
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">질의요지</th>
+						<td>
+							<p>&nbsp;□은행은 건축자금에 한하여 집합건물 담보 대출 취급이 가능한데(은행업감독규정 제29조의3 제2항 제5호의 1)), 토지매입자금은 건축자금에 포함되는지 여부</p>
+
+<p>&nbsp; ㅇ 토지매입자금이 건축자금에 포함되지 않는 경우, 토지담보대출 취급 이후 차주가 완성한 집합건물에 근저당을 설정하는 행위가 금지되는지 여부</p>
+
+<p>&nbsp;□은행은 집합건물 담보 대출 취급시에 입주자 또는 입주예정자 등 제3자의 기득권 보호를 위한 조치를 강구하여야 하는데(은행업감독규정 제29조의3 제2항 제5호의 2)), 후분양의 경우에는 조치 강구 대상에서 제외되는지 여부</p>
+
+						</td>
+					</tr>
+					<tr>
+						<th class="bc-yellow" scope="row">회답</th>
+						<td class="bc-yellow">
+							<p>&nbsp;□ 토지매입자금은 은행업감독규정 제29조의3 제2항 제5호의 1)의 건축자금에 해당하지 않습니다.</p>
+
+<p>&nbsp;ㅇ 동 규정에 따라 집합건물을 담보로 하는 대출은 원칙적으로 동 담보건물의 건축자금에 한하여 취급되어야 하므로, 건축자금에 포함되지 않은 토지매입자금 등 대출 시 원칙적으로 집합건물에 근저당을 설정할 수 없습니다.</p>
+
+<p>&nbsp;□은행업감독규정 제29조의3 제2항 제5호의 2)에서는 집합건물 담보대출 취급 전에 입주자, 입주예정자 등 제3자 기득권 보호조치를 강구하도록 정하고 있으나, 후분양 등 분양방식에 따라 규정 적용을 달리하고 있지는 않습니다.</p>
+
+						</td>
+					</tr>
+					<tr>
+						<th class="bc-blue" scope="row">이유</th>
+						<td class="bc-blue">
+							<p>&nbsp;□ 토지매입자금은 은행업감독규정 제29조의3 제2항 제5호의 1)의 건축자금에 해당하지 않습니다.</p>
+
+<p>&nbsp; * ｢건축법｣은 &ldquo;건축&rdquo;이란 건축물을 신축ㆍ증축ㆍ개축ㆍ재축(再築)하거나 건축물을 이전하는 것이라고 정의하고 있고(제2조 제1항 제8호), ｢주택법｣은 분양가 상한제 적용주택의 분양가격은 택지비와 건축비로 구성된다고 규정(제57조 제3항).</p>
+
+<p>&nbsp;ㅇ 동 규정에 따라 집합건물을 담보로 하는 대출은 원칙적으로 동 담보건물의 건축자금에 한하여 취급되어야 하므로, 건축자금에 포함되지 않은 토지매입자금 등 대출 시 원칙적으로 집합건물에 근저당을 설정할 수 없습니다.</p>
+
+<p>&nbsp;□은행업감독규정 제29조의3 제2항 제5호의 2)에서는 집합건물 담보대출 취급 전에 입주자, 입주예정자 등 제3자 기득권 보호조치를 강구하도록 정하고 있으나, 후분양 등 분양방식에 따라 규정 적용을 달리하고 있지는 않습니다.<br />
+&nbsp;</p>
+
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+</div>
+
+<script type="text/javascript">
+
+
+/* 이름: openLawreqList
+ * 설명: 리스트페이지로 이동
+ */
+function openLawreqList(){
+	goUrl("/fsc_new/replyCase/LawreqList.do", {muNo:"117", stNo: "11", actCd: 'R'});
+}
+
+/* 이름: goUrl
+ * 설명: 페이지 이동
+ */
+function goUrl(url, param, option){
+	var $form = $('<form>').attr($.extend({
+		method : 'get'
+	}, option, {
+		action : url
+	}));
+	for ( var key in param) {
+		try {
+			$.each($.makeArray(param[key]), function(index, value) {
+				var input = document.createElement('input');
+			    input.type = 'hidden';
+			    input.name = key;
+			    input.value = typeof value === 'object' ? JSON.stringify(value) : value;
+			    $form.append(input);
+			});
+		} catch (e) {
+			console.log(e);
+		}
+	}
+	$form.appendTo(document.body).submit().remove();
+}
+
+function urlCopy(url){
+	var dummy = document.createElement("textarea");
+	document.body.appendChild(dummy);
+	dummy.value = url;
+	dummy.select();
+	document.execCommand("copy");
+	document.body.removeChild(dummy);
+	alert('URL 주소가 복사되었습니다.');
+}
+</script>
+
+	</div>
+	
+
+
+	</div><!--} #container_wr-->
+	<footer class="main">
+		<div class="flink">
+			<ul>
+				<li><a href="/fsc_new/page/selectPage.do?stNo=11&muNo=198&muGpNo=195" target="_blank" title="새창 열림">사이트 이용안내</a></li>
+				<li><a href="/fsc_new/page/selectPage.do?stNo=11&muNo=199&muGpNo=195" target="_blank" title="새창 열림" style="color:#3BE5E5;">개인정보처리방침</a></li>
+				<li><a href="/fsc_new/page/selectPage.do?stNo=11&muNo=200&muGpNo=195" target="_blank" title="새창 열림">저작권정책</a></li>
+				<li><a href="/fsc_new/page/selectPage.do?stNo=11&muNo=201&muGpNo=195" target="_blank" title="새창 열림">이메일무단수집거부</a></li>
+				<li><a href="mailto:betterfsc@korea.kr" title="메일 보내기">운영자에게</a></li>
+			</ul>
+		</div>
+		<div class="footer-inner">
+			<address>
+				<dl>
+					<dt>금융위원회</dt>
+					<dd>서울특별시 종로구 세종대로 209 금융위원회 대표전화 <a href="tel:0221002500" title="금융위원회 전화걸기">02-2100-2500</a></dd>
+				</dl>
+				<dl>
+					<dt>금융감독원</dt>
+					<dd>서울특별시 영등포구 여의도동 여의대로 38 대표전화 <a href="tel:0231455114" title="금융감독원 전화걸기">02-3145-5114</a></dd>
+				</dl>
+			</address>
+			<p>COPYRIGHT 2009 FINANCIAL SERVICES COMMISSION.ALL RIGHTS RESERVED.<br />COPYRIGHT FINANCIAL SUPERVISORY SERVICE. ALL RIGHTS RESERVED.</p>
+			<div class="fsite">
+				​<a href="http://kwacc.or.kr/CertificationSite/WA/2407/Detail?page=3" target="_blank" title="한국웹접근성평가센터 인증현황 바로가기_새창" class="web_logo">
+                    <img src="/fsc_new/img/comm/web_mark.png" alt="국가공인 정보통신접근성 품질인증마크">
+                </a>
+				<select id="relSites" title="패밀리 사이트 옵션 선택">
+					<option>Family Site</option>
+					<option value="https://www.fsc.go.kr/">금융위원회</option>
+					<option value="https://www.fss.or.kr/">금융감독원</option>
+					<option value="https://www.fcsc.kr/">e-금융민원센터</option>
+				</select>
+				<input type="button" value="이동" onclick="window.open(document.getElementById('relSites').value);" style="padding:6px;" title="새창"/>
+			</div>
+		</div>
+</footer>
+<div id="bg-dark"></div>
+<script type="text/javascript">
+$(document).ready(function(){
+	
+	$(".sub-con").attr("id","skip_main");
+	//<!--20220324: S-->
+	$('.gnb1-ul > li').hover(function() {
+        $('.gnb1-ul > li').removeClass('on');
+        $('nav').addClass('on');
+        $(this).addClass('on');
+    });
+	$('.gnb1-ul > li').on('focusin',function() {
+        $('.gnb1-ul > li').removeClass('on');
+        $('nav').addClass('on');
+        $(this).addClass('on');
+    });
+
+    $('.gnb-bg').mouseleave(function() {
+        $('.gnb1-ul > li').removeClass('on');
+        $('nav').removeClass('on');
+    });
+    
+    $('.gnb1-ul > li:last-child  li.gnb2-li:last-child > a').on('focusout', function() {
+        $('.gnb1-ul > li').removeClass('on');
+        $('nav').removeClass('on');
+        $(this).removeClass('on');
+    });
+    
+   //<!--//20220324: E-->
+	$('.btn-menu').click(function(){
+    	$('header').toggleClass('menu-open');               
+   	});
+       
+    $('.gnb1-item').click(function(){
+    	$(this).next().toggleClass('smenu-open');
+    });
+    
+    //sub-menu
+    $('.snb1-item').click(function(){
+    	$(this).next().slideToggle('fast');
+    });
+    
+    //fixed
+    $(window).scroll(function(){ 
+    	var height = $(document).scrollTop(); //실시간으로 스크롤의 높이를 측정
+    	//var el = $('header').height(); // header높이
+    	if(height > 0){ 
+      		$('header').addClass('fixed'); 
+    	}else if(height < 0){ 
+      		$('header').removeClass('fixed'); 
+    	} 
+  	});
+
+});
+	
+	function change_gnb(status){
+		if(status){
+			$('header').removeClass('main');
+			$('.logo01').attr("src","/fsc_new/img/comm/logo01.png");
+			$('.logo02').attr("src","/fsc_new/img/comm/logo02.png");
+			$('.icon01').attr("src","/fsc_new/img/comm/icon-user.png");
+			$('.icon02').attr("src","/fsc_new/img/comm/icon-list.png");	
+		}else{
+			if(!$('header').hasClass('fixed')){
+				$('header').addClass('main');
+				$('.logo01').attr("src","/fsc_new/img/comm/mlogo01.png");
+				$('.logo02').attr("src","/fsc_new/img/comm/mlogo02.png");
+				$('.icon01').attr("src","/fsc_new/img/comm/icon-muser.png");
+				$('.icon02').attr("src","/fsc_new/img/comm/icon-mlist.png");	
+			}
+		}
+	}
+	
+	function scroll_smooth() {
+		 $(".panel_list a[href^='#']").click(function (event) {
+			 var windowWidth = $(window).width();
+			 var offset_top = $(this.hash).offset().top - $('header').height();
+			 var offset_top_m = $(this.hash).offset().top - $('header').height() - 50;
+			 event.preventDefault();
+			  if (windowWidth < 768) {
+				$('html, body').animate({ scrollTop: offset_top_m }, 900);
+			} else {
+				$('html, body').animate({ scrollTop: offset_top }, 900);
+			} });
+		}
+	scroll_smooth();
+	</script>
+	
+ 	<!-- 	//저장팝업 -->
+<!-- 	<div class="overlay"></div> -->
+<!-- 	//팝업용 dim -->
+</body>
+</html>

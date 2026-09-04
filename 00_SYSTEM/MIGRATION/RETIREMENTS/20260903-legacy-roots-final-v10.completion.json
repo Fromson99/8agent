@@ -1,0 +1,50 @@
+{
+  "schema_version": "workspace-legacy-retirement-completion-v1",
+  "completed_at": "2026-09-03T09:35:00Z",
+  "retirement_authorization_path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots-final-v10.json",
+  "retirement_authorization_sha256": "c85e568e5d14f3fcd9533ff3da4ccab4aa364b3b43296e933e5cbcf9bc65fda3",
+  "retirement_record_sha256": "7d84c1950ac7bc2669b8aff8e47e50111988c9cbc7c5579e443a167e2c81efee",
+  "authorized_sources": 294,
+  "deleted_targets": [
+    "artifacts",
+    "benchmarks",
+    "config",
+    "data",
+    "docs",
+    "experiment-studio",
+    "lawrag",
+    "scripts",
+    "tests",
+    "tmp",
+    "var",
+    "ADR-0043-smoke-probe",
+    "ADR-0047-order-safe",
+    "CM_MAJOR_LEGAL_QUESTIONS_260819.docx",
+    "adr_notion_import.csv",
+    "ax-experiment-studio-social-preview.png",
+    "genos-jupyterlab-commands-20260901.txt",
+    "__pycache__",
+    ".pytest_cache"
+  ],
+  "post_delete_audit": {
+    "legacy_roots_present": 0,
+    "unknown_top_level_directories": 0,
+    "unclassified_root_files": 0,
+    "unsafe_top_level_entries": 0,
+    "activation_ready": true,
+    "retirement_ready": true,
+    "target_ready": true
+  },
+  "post_delete_validation": {
+    "activation_receipt_sha256": "860832d0c6c40fbf3b05822bf741a5c3b8e63d06005c56334190bdf2a007ffb4",
+    "permanent_smoke_tests": "4 passed",
+    "port": 5566,
+    "health": 200,
+    "lexical_search": 200,
+    "vector_search": 200,
+    "genos_source_preflight_failures": 0,
+    "genos_code_zip_files": 769,
+    "genos_code_zip_sha256": "7d33483b22d80c76b19fea489414020c0f03e4b505d0307c7fa7e403201cf65e"
+  },
+  "recovery": "legacy tracked files remain recoverable from Git history; v2 copies are preserved under canonical roots"
+}

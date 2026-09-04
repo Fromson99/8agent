@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>공리 루프</title>
+<link rel="stylesheet" href="/ui/ui.css">
+<link rel="stylesheet" href="styles.css">
+<script src="/ui/nav.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<header class="ui-bar">
+  <nav class="ui-nav" data-nav="rules"></nav>
+  <span class="ui-meta" id="summary">불러오는 중…</span>
+  <span class="grow"></span>
+  <span id="modePill" class="mode"></span>
+  <button id="induceBtn" class="induce" title="승인 사례를 군집화 → 일반화 → replay 검증 → 잠정 등재. 발동은 없다">귀납 실행</button>
+</header>
+<pre id="induceOut" class="induce-out hidden"></pre>
+<h1 class="sr">공리 루프 — 규칙의 생애</h1>
+
+<div id="breaker" class="banner hidden"></div>
+<div id="overlapNote" class="overlap hidden"></div>
+<!-- 엔진 규칙 스위치 — 해소·확장의 자동 규칙, 켜고 끄는 것은 사용자 몫 -->
+<div id="engineSwitches" class="engine hidden"></div>
+
+<main class="wrap">
+  <!-- 사다리 — 승인 사례에서 태어난 규칙이 공리(정착)로 굳는 길.
+       핵심은 화살표가 아니라 각 단의 "반례가 누구를 심판하는가"다. -->
+  <section class="ladder">
+    <div class="stage" data-col="잠정">
+      <header><b>잠정</b> <span class="n"></span></header>
+      <p class="hint">발동하지 않는다 — replay 성적과 그림자 실적만 쌓는 후보</p>
+      <div class="cards"></div>
+    </div>
+    <div class="arrow" title="replay 전부 녹색 + 근거 3건이면 자동 승격">
+      <span class="who auto">자동</span><span class="tri">▶</span>
+      <span class="cond">replay 녹색</span>
+    </div>
+    <div class="stage" data-col="규칙">
+      <header><b>규칙</b> <span class="n"></span></header>
+      <p class="hint">발동한다 · <b class="judge">반례가 규칙을 심판</b></p>
+      <div class="cards"></div>
+    </div>
+    <div class="arrow gate" title="의심의 방향을 뒤집는 결정 — 4기준 보고서를 보고 사람만 누른다">
+      <span class="who human">사람만</span><span class="tri">⇶</span>
+      <span class="cond">4기준 충족</span>
+    </div>
+    <div class="stage axiom" data-col="정착">
+      <header><b>정착</b> <span class="ax">AXIOM</span> <span class="n"></span></header>
+      <p class="hint">인제스트 게이트가 된다 · <b class="judge flip">반례가 데이터를 심판</b></p>
+      <div class="cards"></div>
+    </div>
+  </section>
+
+  <section class="parked">
+    <header>보류 · 강등 <span class="n" id="nParked"></span>
+      <span class="sub">— 반례가 쌓여 내려온 규칙. 사례층은 그대로 산다</span></header>
+    <div class="cards row" id="parkedCards"></div>
+  </section>
+
+  <section class="detail hidden" id="detail"></section>
+
+  <section class="empty hidden" id="empty">
+    <h2>아직 규칙이 없습니다</h2>
+    <p>루프의 첫 바퀴: <a href="/rag/#backlog">질의응답 백로그</a>에서
+       <b>교정을 3건 이상 승인</b>하면 상단의 <b>귀납 실행</b>이 사례를 묶어
+       잠정 규칙을 만들 수 있습니다.</p>
+  </section>
+</main>
+</body>
+</html>

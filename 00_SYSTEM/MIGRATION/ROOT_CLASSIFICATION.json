@@ -1,0 +1,72 @@
+{
+  "schema_version": "root-classification-v1",
+  "layout_stage": "bridge",
+  "policy": "No source is moved until every recorded reference is migrated and the copied bytes verify against sha256.",
+  "files": [
+    {
+      "source": "[CM본부] 주요 법규정 질의 등_260819.docx",
+      "target": "01_DATA/PACKAGES/INTERNAL/cm-legal-questions/SOURCE/[CM본부] 주요 법규정 질의 등_260819.docx",
+      "classification": "restricted_internal_source",
+      "bytes": 27869,
+      "sha256": "69c3ab12063a6f4aec8d6d5ca6567867a2080ce8a0808746cf2b8f50516df78a",
+      "state": "deferred_reference_migration",
+      "known_references": [
+        "scripts/format_cm_golden_coordinates_docx.py",
+        "scripts/annotate_cm_golden_coordinates_docx.py",
+        "data/review/cm_core_e2e_v1.json",
+        "data/review/cm_core_e2e_v2.json",
+        "data/review/cm_core_e2e_v3.json"
+      ]
+    },
+    {
+      "source": "adr_notion_import.csv",
+      "target": "99_ARCHIVE/IMPORTS/adr_notion_import.csv",
+      "classification": "legacy_import_artifact",
+      "bytes": 1874,
+      "sha256": "87f8cdcfd4422160843e262dabea85f94f55014c87133dc67cbc6bedb039cb0c",
+      "state": "copy_verified_dual_read",
+      "migration_plan": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.plan.json",
+      "dual_read_receipt": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.dual-read-compare.json",
+      "known_references": []
+    },
+    {
+      "source": "ax-experiment-studio-social-preview.png",
+      "target": "03_FRONTEND/ASSETS/experiment-studio/social-preview.png",
+      "classification": "frontend_asset",
+      "bytes": 1659012,
+      "sha256": "f7901d4aed4a8e4a3c65472882a9c501dfda7b2915d6e5f6589702b5d792fde2",
+      "state": "copy_verified_dual_read",
+      "migration_plan": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.plan.json",
+      "dual_read_receipt": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.dual-read-compare.json",
+      "known_references": []
+    },
+    {
+      "source": "genos-jupyterlab-commands-20260901.txt",
+      "target": "08_DEPLOYMENT/GENOS/RUNBOOKS/jupyterlab-commands-20260901.txt",
+      "classification": "deployment_runbook",
+      "bytes": 2232,
+      "sha256": "cb7ac2abfb5781138454fd1c9e1108d0bc25e11b61817df0848a202f7f6b8c93",
+      "state": "copy_verified_dual_read",
+      "migration_plan": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.plan.json",
+      "dual_read_receipt": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.dual-read-compare.json",
+      "known_references": []
+    }
+  ],
+  "directories": [
+    {
+      "source": "ADR-0043-smoke-probe",
+      "target": "99_ARCHIVE/EXPERIMENTS/ADR-0043-smoke-probe",
+      "state": "deferred_lineage_preservation"
+    },
+    {
+      "source": "ADR-0047-order-safe",
+      "target": "99_ARCHIVE/EXPERIMENTS/ADR-0047-order-safe",
+      "state": "deferred_lineage_preservation"
+    },
+    {
+      "source": "__pycache__",
+      "target": "90_RUNTIME/CACHE/root-python",
+      "state": "generated_discardable"
+    }
+  ]
+}

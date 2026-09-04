@@ -1,0 +1,45 @@
+{
+  "schema_version": "adr-code-candidate-v1",
+  "adr_id": "ADR-0155",
+  "adr_path": "docs/adr/ADR-0155-terminal-proviso-effect-orientation",
+  "experiment_id": "ADR-0155-experiment-v1",
+  "arm_id": "terminal-aware-proviso-graph",
+  "run_ids": [
+    "run-001"
+  ],
+  "candidate_id": "terminal-aware-proviso-graph",
+  "created_at": "2026-09-02T05:17:11.954006Z",
+  "updated_at": "2026-09-02T05:17:32.614641Z",
+  "status": "research-only",
+  "production_loadable": false,
+  "files": [
+    {
+      "upstream_path": "lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/revisions/rev-002/snapshot/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/domain_graph/requirements.py",
+      "upstream_sha256": "0bafb5bd580a9866b91dfb9126fc86cb1774ab30f331b070c628eeaf96bfc406",
+      "initial_snapshot_sha256": "0bafb5bd580a9866b91dfb9126fc86cb1774ab30f331b070c628eeaf96bfc406",
+      "snapshot_path": "lawrag/research/candidates/adr_0155/terminal-aware-proviso-graph/snapshot/lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/revisions/rev-002/snapshot/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/domain_graph/requirements.py",
+      "snapshot_sha256": "2a602aa9e5b4c8da56b16d160735ae0fef8b7e07b3886478ec61a8a5d1d4fece",
+      "bytes": 34235
+    }
+  ],
+  "revisions": [
+    {
+      "revision_id": "rev-001",
+      "frozen_at": "2026-09-02T05:17:32.614641Z",
+      "files": [
+        {
+          "snapshot_path": "lawrag/research/candidates/adr_0155/terminal-aware-proviso-graph/snapshot/lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/revisions/rev-002/snapshot/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/domain_graph/requirements.py",
+          "frozen_path": "lawrag/research/candidates/adr_0155/terminal-aware-proviso-graph/revisions/rev-001/snapshot/lawrag/research/candidates/adr_0154/minimum-unit-proviso-graph/revisions/rev-002/snapshot/lawrag/research/candidates/adr_0150/proviso-schema-slot-gate/revisions/rev-002/snapshot/lawrag/core/domain_graph/requirements.py",
+          "snapshot_sha256": "2a602aa9e5b4c8da56b16d160735ae0fef8b7e07b3886478ec61a8a5d1d4fece",
+          "bytes": 34235
+        }
+      ],
+      "revision_sha256": "bcaa54653c804c3cd1bd47d637f218f4565a2d5cb58e3f042fb71639b8d04969"
+    }
+  ],
+  "promotion_contract": {
+    "copy_to": "lawrag/runtime/components/",
+    "register_in": "lawrag/runtime/registry.py",
+    "requires_main_promotion": true
+  }
+}

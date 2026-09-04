@@ -1,0 +1,125 @@
+{
+  "schema_version": "adr-code-candidate-v2",
+  "adr_id": "ADR-0159",
+  "adr_path": "docs/adr/ADR-0159-legacy-main-transition-chain-bridge",
+  "experiment_id": "ADR-0159-experiment-v1",
+  "arm_id": "legacy-chain-bridge",
+  "run_ids": [
+    "run-001",
+    "run-002",
+    "run-003",
+    "run-004",
+    "run-005",
+    "run-006"
+  ],
+  "candidate_id": "legacy-main-chain-bridge",
+  "created_at": "2026-09-02T16:00:28.061108Z",
+  "updated_at": "2026-09-02T16:22:57.933141Z",
+  "status": "research-only",
+  "production_loadable": false,
+  "files": [
+    {
+      "target_path": "lawrag/core/rag/main_promotion.py",
+      "upstream_state": "present",
+      "upstream_path": "lawrag/core/rag/main_promotion.py",
+      "upstream_sha256": "b3218e149d8ece8f3200ea3253e8174222dce1c7ebdef956ff24802881a7ccda",
+      "initial_snapshot_sha256": "b3218e149d8ece8f3200ea3253e8174222dce1c7ebdef956ff24802881a7ccda",
+      "snapshot_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/snapshot/lawrag/core/rag/main_promotion.py",
+      "snapshot_sha256": "d18a8c5698078c45c78d79eab1d985a17cff28a7a0a10e03324d45f788615eea",
+      "bytes": 61559
+    },
+    {
+      "target_path": "lawrag/platform/release.py",
+      "upstream_state": "present",
+      "upstream_path": "lawrag/platform/release.py",
+      "upstream_sha256": "4584fa54e67f1cb9cac1d223387d6c3a90018e45464e93dfc9264f151c485666",
+      "initial_snapshot_sha256": "4584fa54e67f1cb9cac1d223387d6c3a90018e45464e93dfc9264f151c485666",
+      "snapshot_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/snapshot/lawrag/platform/release.py",
+      "snapshot_sha256": "42c440453160d1038d1608150889a9e521bcadc6241d2e67b3efb3ba8887277c",
+      "bytes": 142235
+    },
+    {
+      "target_path": "scripts/rag_main_promotion.py",
+      "upstream_state": "present",
+      "upstream_path": "scripts/rag_main_promotion.py",
+      "upstream_sha256": "e1f2af74040c36fae999258b94decec5ea42e4d15eb990a69658872869d95fdf",
+      "initial_snapshot_sha256": "e1f2af74040c36fae999258b94decec5ea42e4d15eb990a69658872869d95fdf",
+      "snapshot_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/snapshot/scripts/rag_main_promotion.py",
+      "snapshot_sha256": "0006035be35155cbccdd3899264cb2071eac3d710feba08636d2d80e48dfd41a",
+      "bytes": 6793
+    },
+    {
+      "target_path": "service.py",
+      "upstream_state": "present",
+      "upstream_path": "service.py",
+      "upstream_sha256": "2315068e540d389d59105b526bac5cf3b0a2d7e8ddc3999147a3b00660c514e7",
+      "initial_snapshot_sha256": "2315068e540d389d59105b526bac5cf3b0a2d7e8ddc3999147a3b00660c514e7",
+      "snapshot_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/snapshot/service.py",
+      "snapshot_sha256": "4d4a06452817ac7b454bc27a94a1f63ed5b8de02c293946ab56f94b590985f40",
+      "bytes": 83840
+    }
+  ],
+  "revisions": [
+    {
+      "revision_id": "rev-001",
+      "frozen_at": "2026-09-02T16:10:41.280067Z",
+      "files": [
+        {
+          "snapshot_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/snapshot/lawrag/core/rag/main_promotion.py",
+          "frozen_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/revisions/rev-001/snapshot/lawrag/core/rag/main_promotion.py",
+          "snapshot_sha256": "d18a8c5698078c45c78d79eab1d985a17cff28a7a0a10e03324d45f788615eea",
+          "bytes": 61559
+        },
+        {
+          "snapshot_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/snapshot/lawrag/platform/release.py",
+          "frozen_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/revisions/rev-001/snapshot/lawrag/platform/release.py",
+          "snapshot_sha256": "42c440453160d1038d1608150889a9e521bcadc6241d2e67b3efb3ba8887277c",
+          "bytes": 142235
+        },
+        {
+          "snapshot_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/snapshot/service.py",
+          "frozen_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/revisions/rev-001/snapshot/service.py",
+          "snapshot_sha256": "4d4a06452817ac7b454bc27a94a1f63ed5b8de02c293946ab56f94b590985f40",
+          "bytes": 83840
+        }
+      ],
+      "revision_sha256": "c9af14f22fc90b68deb4d475e652043c9e76c91382740a67e3767f8d22e7b0d0"
+    },
+    {
+      "revision_id": "rev-002",
+      "frozen_at": "2026-09-02T16:22:57.933141Z",
+      "files": [
+        {
+          "snapshot_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/snapshot/lawrag/core/rag/main_promotion.py",
+          "frozen_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/revisions/rev-002/snapshot/lawrag/core/rag/main_promotion.py",
+          "snapshot_sha256": "d18a8c5698078c45c78d79eab1d985a17cff28a7a0a10e03324d45f788615eea",
+          "bytes": 61559
+        },
+        {
+          "snapshot_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/snapshot/lawrag/platform/release.py",
+          "frozen_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/revisions/rev-002/snapshot/lawrag/platform/release.py",
+          "snapshot_sha256": "42c440453160d1038d1608150889a9e521bcadc6241d2e67b3efb3ba8887277c",
+          "bytes": 142235
+        },
+        {
+          "snapshot_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/snapshot/scripts/rag_main_promotion.py",
+          "frozen_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/revisions/rev-002/snapshot/scripts/rag_main_promotion.py",
+          "snapshot_sha256": "0006035be35155cbccdd3899264cb2071eac3d710feba08636d2d80e48dfd41a",
+          "bytes": 6793
+        },
+        {
+          "snapshot_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/snapshot/service.py",
+          "frozen_path": "lawrag/research/candidates/adr_0159/legacy-main-chain-bridge/revisions/rev-002/snapshot/service.py",
+          "snapshot_sha256": "4d4a06452817ac7b454bc27a94a1f63ed5b8de02c293946ab56f94b590985f40",
+          "bytes": 83840
+        }
+      ],
+      "revision_sha256": "846584ca08b77bfabbacc58d81322013d1810a605e5d486a104c2ab91545cc0e"
+    }
+  ],
+  "promotion_contract": {
+    "copy_to": "lawrag/runtime/components/",
+    "register_in": "lawrag/runtime/registry.py",
+    "requires_main_promotion": true
+  }
+}

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>법률 지식 그래프</title>
+<link rel="stylesheet" href="/ui/ui.css">
+<link rel="stylesheet" href="styles.css">
+<script src="/ui/nav.js" defer></script>
+<script src="/links/vendor/d3.v7.min.js"></script>
+</head>
+<body>
+<header class="ui-bar">
+  <nav class="ui-nav" data-nav="knowledge"></nav>
+  <span class="ui-meta" id="graphStatus">컴파일 그래프 연결 중…</span>
+  <span class="grow"></span>
+  <div class="ui-acts">
+    <a class="btn" href="/glossary/">Concept 검수</a>
+    <a class="btn" href="/links/">조문 연결</a>
+  </div>
+</header>
+<h1 class="sr">법률 지식 그래프</h1>
+
+<main class="kg-workspace">
+  <aside class="kg-panel kg-explorer" aria-label="그래프 탐색">
+    <div class="kg-panel-head">
+      <span class="kg-kicker">KNOWLEDGE MAP</span>
+      <h2>연결 탐색</h2>
+      <p>용어를 정규 Concept에서 규범과 근거 조문까지 추적합니다.</p>
+    </div>
+    <form id="kgSearch" class="kg-search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+      <input id="kgQuery" type="search" placeholder="개념·Assertion·문서 검색" autocomplete="off">
+      <kbd>↵</kbd>
+    </form>
+    <div class="kg-section-title"><span>시작점</span><small>실데이터 프리셋</small></div>
+    <div id="kgPresets" class="kg-presets">
+      <button data-query="자기주식"><b>자기주식</b><span>대상과 소각 규범</span></button>
+      <button data-query="설명의무"><b>설명의무</b><span>용어 → 규범 → 근거</span></button>
+      <button data-query="금지"><b>금지·허용</b><span>규범 양태 비교</span></button>
+      <button data-query="위임"><b>위임·준용</b><span>법적 연결 추적</span></button>
+    </div>
+    <div class="kg-section-title"><span>검색 결과</span><small id="resultCount">0건</small></div>
+    <div id="kgResults" class="kg-results" aria-live="polite"></div>
+    <div class="kg-layer-box">
+      <div class="kg-section-title"><span>표시 레이어</span><small>유형별 필터</small></div>
+      <label><input type="checkbox" value="meaning" checked><i class="meaning"></i><span><b>의미</b><small>Concept · Lexeme</small></span></label>
+      <label><input type="checkbox" value="rule" checked><i class="rule"></i><span><b>규범</b><small>Assertion · Frame</small></span></label>
+      <label><input type="checkbox" value="source" checked><i class="source"></i><span><b>출처</b><small>법령 · 조문 · 원문</small></span></label>
+      <label><input type="checkbox" value="evidence" checked><i class="evidence"></i><span><b>근거</b><small>Mention · 수량 · 태그</small></span></label>
+    </div>
+  </aside>
+
+  <section class="kg-canvas-panel" aria-label="지식 그래프 캔버스">
+    <div class="kg-overview">
+      <div><small>컴파일 노드</small><strong id="totalNodes">—</strong></div>
+      <div><small>타입 간선</small><strong id="totalEdges">—</strong></div>
+      <div><small>현재 뷰</small><strong id="viewSize">—</strong></div>
+      <div class="kg-overview-note"><span class="live-dot"></span>읽기 전용 컴파일 그래프</div>
+    </div>
+    <div class="kg-toolbar" aria-label="그래프 도구">
+      <div class="kg-layout-switch" aria-label="그래프 배치 방식">
+        <button id="layoutConnect" class="on" title="개별 값을 역할별 관계 묶음으로 표시">CONNECT</button>
+        <button id="layoutDepth" title="중앙 계산축을 강조한 원근형 상세 배치">DEPTH</button>
+        <button id="layoutFlow" title="법률 데이터 단계를 좌우 흐름으로 배치">FLOW</button>
+        <button id="layoutMap" title="관계 강도에 따라 자유롭게 배치">MAP</button>
+      </div>
+      <span class="kg-tool-sep"></span>
+      <button id="zoomIn" title="확대">＋</button>
+      <button id="zoomOut" title="축소">−</button>
+      <button id="fitGraph" title="그래프 맞춤">화면 맞춤</button>
+      <button id="resetGraph" title="현재 중심점으로 되돌리기">초기화</button>
+      <button id="traceFlow" class="kg-trace-button" title="표면 용어에서 원문 근거까지 단계별로 재생"><span>▶</span> TRACE</button>
+      <span class="grow"></span>
+      <span class="kg-help">노드 선택 · 더블클릭하여 1단계 확장 · 드래그하여 배치</span>
+    </div>
+    <div id="kgCanvas" class="kg-canvas connect-mode">
+      <div id="kgFlowAxis" class="kg-flow-axis" aria-hidden="true">
+        <span><b>01</b><strong>표면 용어</strong><small>Lexeme · Mention</small></span>
+        <span><b>02</b><strong>정규 개념</strong><small>Canonical Concept</small></span>
+        <span><b>03</b><strong>규범 명제</strong><small>Assertion · Frame</small></span>
+        <span><b>04</b><strong>법적 출처</strong><small>Document · Section</small></span>
+        <span><b>05</b><strong>원문 근거</strong><small>TextBlock · Evidence</small></span>
+      </div>
+      <svg id="kgGraph" role="img" aria-label="Concept, Assertion, 법령 근거의 연결 그래프">
+        <defs>
+          <marker id="arrow" viewBox="0 -5 10 10" refX="18" refY="0" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,-5L10,0L0,5"/></marker>
+          <filter id="nodeGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <g class="kg-zoom-layer"><g class="kg-depth-guides"></g><g class="kg-edges"></g><g class="kg-edge-labels"></g><g class="kg-nodes"></g></g>
+      </svg>
+      <div id="kgEmpty" class="kg-empty">
+        <div class="kg-empty-mark"><span></span><span></span><span></span></div>
+        <h3>탐색할 법률 개념을 선택하세요</h3>
+        <p>컴파일된 실제 Concept를 중심으로 규범과 출처 연결을 구성합니다.</p>
+      </div>
+      <div id="kgLoading" class="kg-loading hidden"><span></span>연결 계산 중</div>
+      <div id="kgTraceStatus" class="kg-trace-status hidden" aria-live="polite">
+        <div><span id="traceStep">01 / 05</span><b id="traceName">표면 용어</b><small id="traceCount">0 nodes</small></div>
+        <ol><li></li><li></li><li></li><li></li><li></li></ol>
+      </div>
+      <div class="kg-legend">
+        <span><i class="concept"></i>Concept</span>
+        <span><i class="assertion"></i>Assertion</span>
+        <span><i class="document"></i>법령·조문</span>
+        <span><i class="evidence"></i>원문 근거</span>
+      </div>
+    </div>
+  </section>
+
+  <aside class="kg-panel kg-inspector" aria-label="선택 노드 상세">
+    <div class="kg-panel-head">
+      <span class="kg-kicker">NODE INSPECTOR</span>
+      <h2>연결 상세</h2>
+      <p>노드의 정체성, 품질 등급과 직접 연결을 확인합니다.</p>
+    </div>
+    <div id="kgInspector" class="kg-inspector-body">
+      <div class="kg-inspector-empty">
+        <span class="crosshair"></span>
+        <b>노드를 선택하세요</b>
+        <p>Concept가 의미의 허브이고 Assertion이 법적 명제를, 출처 노드가 검증 가능한 근거를 담당합니다.</p>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

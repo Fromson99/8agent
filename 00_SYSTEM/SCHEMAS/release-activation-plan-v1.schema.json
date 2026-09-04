@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "release-activation-plan-v1",
+  "type": "object",
+  "required": [
+    "schema_version", "activation_id", "target", "created_at", "release_id",
+    "release_manifest_sha256", "expected_active_generation",
+    "expected_active_pointer_sha256", "rollback_release_id", "validation_receipts"
+  ],
+  "properties": {
+    "schema_version": {"const": "release-activation-plan-v1"},
+    "activation_id": {"type": "string", "minLength": 2},
+    "target": {"enum": ["genos", "onsite", "local"]},
+    "created_at": {"type": "string", "minLength": 1},
+    "release_id": {"type": "string", "minLength": 2},
+    "release_manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "expected_active_generation": {"type": "integer", "minimum": 0},
+    "expected_active_pointer_sha256": {
+      "anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]
+    },
+    "rollback_release_id": {
+      "anyOf": [{"type": "string", "minLength": 2}, {"type": "null"}]
+    },
+    "validation_receipts": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["kind", "receipt_id", "sha256"],
+        "properties": {
+          "kind": {"enum": ["schema", "hash", "acl", "smoke", "provenance"]},
+          "receipt_id": {"type": "string", "minLength": 2},
+          "sha256": {"$ref": "#/$defs/sha256"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "plan_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "additionalProperties": false
+}

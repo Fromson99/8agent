@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://8-agent.local/schemas/rag-retrieval-runtime-v1.schema.json",
+  "title": "RAG Retrieval Runtime Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "content_snapshot_sha256",
+    "llm",
+    "vector",
+    "query_shortcuts",
+    "retrieval_runtime_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "rag-retrieval-runtime-v1"},
+    "content_snapshot_sha256": {"$ref": "#/$defs/sha256"},
+    "llm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "backend", "model", "model_revision", "model_artifact_sha256", "endpoint", "serving_id", "tenant_id", "descriptor_sha256", "credential_binding_id", "credential_binding_version", "trust_policy_id", "credential_configured", "trust_zone", "export_allowed"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "backend": {"enum": ["disabled", "anthropic", "local", "genos", "openrouter"]},
+        "model": {"const": "claude-haiku-4-5-20251001"},
+        "model_revision": {"type": ["string", "null"]},
+        "model_artifact_sha256": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+        "endpoint": {"type": ["string", "null"]},
+        "serving_id": {"type": ["string", "null"]},
+        "tenant_id": {"type": ["string", "null"]},
+        "descriptor_sha256": {"$ref": "#/$defs/sha256"},
+        "credential_binding_id": {"type": ["string", "null"]},
+        "credential_binding_version": {"type": ["string", "null"]},
+        "trust_policy_id": {"type": ["string", "null"]},
+        "credential_configured": {"type": "boolean"},
+        "trust_zone": {"enum": ["none", "local", "internal", "external"]},
+        "export_allowed": {"type": "boolean"}
+      }
+    },
+    "vector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "backend", "embedding_model_fingerprint", "query_timeout_seconds", "trust_zone", "encoder", "qdrant"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "backend": {"enum": ["file", "qdrant"]},
+        "embedding_model_fingerprint": {"type": ["string", "null"]},
+        "query_timeout_seconds": {"type": ["integer", "null"], "minimum": 1},
+        "trust_zone": {"enum": ["local", "internal", "external"]},
+        "encoder": {
+          "anyOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["backend", "endpoint", "serving_id", "tenant_id", "trust_zone", "model_id", "model_revision", "model_artifact_sha256", "dimensions", "descriptor_sha256", "credential_binding_id", "credential_binding_version", "trust_policy_id", "local_artifact_verified", "credential_configured"],
+              "properties": {
+                "backend": {"enum": ["local", "genos"]},
+                "endpoint": {"type": ["string", "null"]},
+                "serving_id": {"type": ["string", "null"]},
+                "tenant_id": {"type": ["string", "null"]},
+                "trust_zone": {"enum": ["local", "internal", "external"]},
+                "model_id": {"type": "string", "minLength": 1},
+                "model_revision": {"type": "string", "minLength": 1},
+                "model_artifact_sha256": {"$ref": "#/$defs/sha256"},
+                "dimensions": {"type": "integer", "minimum": 1},
+                "descriptor_sha256": {"$ref": "#/$defs/sha256"},
+                "credential_binding_id": {"type": ["string", "null"]},
+                "credential_binding_version": {"type": ["string", "null"]},
+                "trust_policy_id": {"type": ["string", "null"]},
+                "local_artifact_verified": {"type": "boolean"},
+                "credential_configured": {"type": "boolean"}
+              }
+            }
+          ]
+        },
+        "qdrant": {
+          "anyOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["descriptor_sha256", "endpoint", "collection", "credential_binding_id", "credential_binding_version", "trust_policy_id", "trust_zone", "credential_configured"],
+              "properties": {
+                "descriptor_sha256": {"$ref": "#/$defs/sha256"},
+                "endpoint": {"type": "string", "minLength": 1},
+                "collection": {"type": "string", "minLength": 1},
+                "credential_binding_id": {"type": "string", "minLength": 1},
+                "credential_binding_version": {"type": "string", "minLength": 1},
+                "trust_policy_id": {"type": "string", "minLength": 1},
+                "trust_zone": {"enum": ["internal", "external"]},
+                "credential_configured": {"const": true}
+              }
+            }
+          ]
+        }
+      }
+    },
+    "query_shortcuts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "store_sha256"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "store_sha256": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}
+      }
+    },
+    "retrieval_runtime_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

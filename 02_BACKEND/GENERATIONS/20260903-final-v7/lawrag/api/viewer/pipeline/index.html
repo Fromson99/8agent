@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>배치 파이프라인</title>
+<link rel="stylesheet" href="/ui/ui.css">
+<link rel="stylesheet" href="styles.css">
+<script src="/ui/nav.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<header class="ui-bar">
+  <nav class="ui-nav" data-nav="pipeline"></nav>
+  <span class="ui-meta" id="summary">불러오는 중…</span>
+  <span class="grow"></span>
+  <span id="models" class="models"></span>
+  <button id="refreshBtn" class="ghost" title="라인업을 다시 센다">라인업 새로고침</button>
+  <button id="stopBtn" class="stop hidden" title="단계·문서 경계에서 멈춘다">중지</button>
+  <button id="runBtn" class="run" title="빠진 것만 순서대로 전부 돌린다 — 투입 → 위임 → 용어 → 프레임(LLM) → 벡터 → 점검">
+    ▶ 전체 실행</button>
+</header>
+<h1 class="sr">배치 파이프라인 — 라인업과 실행</h1>
+
+<main class="wrap">
+  <!-- 실행 상태 — 돌고 있을 때만 살아난다 -->
+  <section id="runPane" class="runpane hidden">
+    <header>
+      <b id="runTitle">실행</b> <span id="runState" class="state"></span>
+      <span class="grow"></span><span id="runTime" class="sub"></span>
+    </header>
+    <div id="runNote" class="note"></div>
+  </section>
+
+  <!-- 라인업 — 단계 한 줄 = 무엇이 빠졌나 + 진행 막대 + 이것만 버튼 -->
+  <section class="stages" id="stages"></section>
+
+  <!-- 펼쳐 보기 — 어느 문서가 빠졌나 -->
+  <section id="detail" class="detail hidden">
+    <header><b id="detailTitle"></b> <span class="grow"></span>
+      <button id="detailClose" class="ghost">닫기</button></header>
+    <div id="detailBody"></div>
+  </section>
+
+  <!-- 문서별 처리 기록 — 단계마다 문서 한 줄 (투입 점수·용어 수·프레임 수·벡터 수) -->
+  <section class="docs" id="docsPane">
+    <header><b>문서별 처리 기록</b>
+      <select id="docsStage"></select>
+      <input id="docsFilter" type="search" placeholder="문서 이름으로 거르기">
+      <span class="sub" id="docsMeta"></span></header>
+    <div id="docsTable" class="dtable"></div>
+  </section>
+
+  <!-- 사건 로그 + 이력 -->
+  <section class="logs">
+    <div class="col">
+      <header><b>처리 로그</b>
+        <select id="logStage"><option value="">전부</option></select>
+        <input id="logFilter" type="search" placeholder="걸러 보기 (문서·사건)">
+        <label class="chk"><input type="checkbox" id="logFollow" checked> 따라가기</label>
+        <span class="sub" id="logMeta"></span></header>
+      <pre id="log"></pre>
+    </div>
+    <div class="col">
+      <header><b>이력</b></header>
+      <div id="runs"></div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

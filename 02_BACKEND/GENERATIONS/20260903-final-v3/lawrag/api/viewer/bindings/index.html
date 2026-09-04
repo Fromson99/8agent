@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구조화 연결</title>
+<link rel="stylesheet" href="/ui/ui.css">
+<link rel="stylesheet" href="styles.css">
+<script src="/ui/nav.js" defer></script>
+</head>
+<body>
+
+<header class="ui-bar">
+  <nav class="ui-nav" data-nav="bindings"></nav>
+  <span class="ui-meta" id="summary">불러오는 중…</span>
+  <span class="grow"></span>
+  <div class="ui-acts">
+    <a class="btn" href="/knowledge/">지식 그래프</a>
+    <button id="newFolder" title="연결의 기본 단위인 폴더를 여기서 바로 만든다">
+      ＋ 폴더</button>
+    <button id="newFormat" title="빈 틀을 캔버스에 놓고, 문서를 이어 실행하면 만들어집니다">
+      ＋ 새 구조화</button>
+    <label class="chk" title="마커 체계를 LLM 이 유도한다 (ANTHROPIC_API_KEY 필요)">
+      <input type="checkbox" id="useLlm"> LLM 유도</label>
+    <button id="tidy" title="자리를 자동으로 정리한다">자리 정리</button>
+  </div>
+</header>
+<h1 class="sr">구조화 연결</h1>
+
+<div id="banner" class="banner hidden"></div>
+
+<main class="layout">
+  <aside class="panel src">
+    <div class="phead">
+      <b>틀 · 폴더 · 문서</b>
+      <span class="sub">캔버스로 끌어다 놓기</span>
+    </div>
+    <input id="q" type="search" placeholder="이름으로 찾기">
+    <div id="srcList" class="srclist"></div>
+    <!-- 선의 뜻(범례)은 늘 보이고, 규칙 설명은 접어 둔다 — 한 번 읽으면 되는 글이
+         왼쪽 판의 절반을 늘 차지하고 있었다 -->
+    <div class="phelp">
+      <div class="legend">
+        <span><i class="l firm"></i>폴더 → 틀</span>
+        <span><i class="l exc"></i>문서 예외</span>
+        <span><i class="l draftw"></i>초안 (실행 전)</span>
+        <span><i class="l own"></i>소속</span>
+        <span><i class="l builtin"></i>내장</span>
+      </div>
+      <details>
+        <summary>연결 규칙</summary>
+        기본 단위는 <b>폴더</b>입니다. 폴더를 틀에 이으면 그 안의 문서 전부가 그 틀로
+        잘립니다. 특이한 문서 하나는 <b>따로 끌어다 다른 틀에 이어</b> 예외로 둘 수
+        있습니다 — 문서 연결이 폴더 연결을 이깁니다.
+      </details>
+    </div>
+  </aside>
+
+  <section class="panel canvaswrap">
+    <div id="canvas" class="canvas">
+      <svg id="wires" class="wires"></svg>
+      <div id="nodes"></div>
+      <div id="empty" class="empty">
+        <p>왼쪽에서 폴더나 문서를 끌어다 놓고, <b>＋ 새 구조화</b> 로 틀을 놓으세요.</p>
+        <p class="dim">노드를 누르면 오른쪽에 상세가 뜹니다 · 오른쪽 고리(●)에서 끌면 이어집니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel side">
+    <div class="phead"><b>상세</b><span class="sub" id="detailKind"></span></div>
+    <div id="detail" class="detailbody">
+      <div class="empty"><p class="dim">노드를 누르면 여기에 뜹니다.</p>
+        <p class="dim">틀·법령 XML 노드는 <b>무엇을 보고 자르는지</b>(마커 규칙)까지 보여 줍니다.</p>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workspace-layout-activation-v1",
+  "type": "object",
+  "required": [
+    "schema_version", "activation_id", "layout_version", "status",
+    "workspace_manifest_sha256", "validation_receipt_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "workspace-layout-activation-v1"},
+    "activation_id": {"type": "string", "minLength": 1},
+    "layout_version": {"const": "v2"},
+    "status": {"const": "active"},
+    "workspace_manifest_sha256": {
+      "type": "string", "pattern": "^[0-9a-f]{64}$"
+    },
+    "validation_receipt_sha256": {
+      "type": "string", "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "additionalProperties": false
+}

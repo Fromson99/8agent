@@ -1,0 +1,63 @@
+# 질의 스코프 — "이 문서들만 대상으로 답하라" 의 정의 (lawrag/core/rag/scopes.py)
+#
+# 쓰는 법
+#   POST /v1/rag/ask   {"question": "...", "scope": "자본시장-기본"}
+#   POST /v1/rag/ask   {"question": "...", "documents": ["자본시장과 금융투자업에 관한 법률"]}  ← 즉석
+#   GET  /v1/rag/scopes            해석 결과(어느 문서로 풀렸나 · 못 찾은 이름) 확인
+#   POST /v1/rag/scopes/file       이 파일을 통째로 교체 (yml 업로드)
+#
+# 규칙
+#   · documents 는 파일명·표시 이름·doc_id 아무거나 — 확장자(.xml/.hwp/.docx/.pdf)·" 본문" 꼬리·공백은 무시
+#   · 못 찾은 이름은 missing 으로 보인다 (조용히 버리지 않는다) — 오타를 GET /v1/rag/scopes 에서 잡아라
+#   · 진입(검색)은 스코프 안에서만 · 동반(배제·위임·준용·수임·정의·제재·참조)은 밖으로 나가되
+#     응답에 scope_out 표식이 붙는다 (2026-08-19 결정 — 배제를 놓치면 반대 답이 나간다)
+#   · 구판(내규 status=구판)은 include_old: true 를 켜지 않는 한 안 든다
+#   · 내장 스코프 "외규" · "내규" · "서식" 은 여기 없어도 쓴다 (kind 태그 축)
+#   · 파일을 고치면 서버 재시작 없이 다음 질의부터 반영된다 (mtime)
+#
+# 한 항목의 모든 칸
+#   - name:          스코프 이름 (필수)
+#     description:   설명 (선택)
+#     documents:     [파일명, …]            (선택 — kinds/scope_kinds 와 합집합)
+#     kinds:         [law, admrul, krx-rule, kofia-rule, internal, …]   (선택 — meta.kind 로 묶기)
+#     scope_kinds:   [외규 | 내규 | 서식]    (선택)
+#     include_old:   false                   (선택 — 구판 포함)
+
+scopes:
+  - name: 자본시장-기본
+    description: 자본시장법 · 시행령 · 시행규칙 · 금융투자업규정 · 시행세칙
+    documents:
+      - 자본시장과 금융투자업에 관한 법률
+      - 자본시장과 금융투자업에 관한 법률 시행령
+      - 자본시장과 금융투자업에 관한 법률 시행규칙
+      - 금융투자업규정
+      - 금융투자업규정시행세칙
+
+  - name: 개인정보
+    description: 개인정보 보호법 · 시행령 · 신용정보법 · 시행령
+    documents:
+      - 개인정보 보호법
+      - 개인정보 보호법 시행령
+      - 신용정보의 이용 및 보호에 관한 법률
+      - 신용정보의 이용 및 보호에 관한 법률 시행령
+
+  - name: 상장
+    description: 거래소 상장규정·시행세칙 + 협회 인수업무규정 (서식 제외)
+    kinds: [krx-rule, kofia-rule]
+
+  - name: 협회규정
+    description: 금융투자협회 규정·모범규준·가이드라인 (배치 투입분 포함)
+    kinds: [kofia-rule]
+
+  - name: 법률-전부
+    description: law.go.kr 법률·시행령·시행규칙 (행정규칙 제외)
+    kinds: [law]
+
+  # 과제 2 — 내규 비교용. 현행 내규만; 신구 대비는 include_old 를 켠 별도 스코프로
+  - name: 내규-현행
+    scope_kinds: [내규]
+
+  - name: 내규-신구
+    description: 신구 대비 — 구판까지
+    scope_kinds: [내규]
+    include_old: true

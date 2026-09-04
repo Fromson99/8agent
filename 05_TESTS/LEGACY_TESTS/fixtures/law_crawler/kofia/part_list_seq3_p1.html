@@ -1,0 +1,753 @@
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ko" lang="ko">
+<head>
+<title>금융투자협회 법규정보시스템 | 현행규정 | 분야별 목록</title>
+<meta http-equiv="X-UA-Compatible" content="IE=9" />
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="/css/service/contents.css" />
+<link rel="stylesheet" type="text/css" href="/css/service/main.css" />
+<!-- javascript -->
+<script type="text/javascript" language="javascript" src="/jquery/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" language="javascript" src="/jmove/service/common.js"></script>
+<script type="text/javascript" language="javascript" src="/jmove/service/page.js"></script>
+<script type="text/javascript">
+	$(document).ready(function() {	
+		$("#contents").height(590);  /*  504 */
+		$("#left_cbtn").height(590);   /*  504 */
+		
+		var userAgent = navigator.userAgent.toLowerCase();
+		 
+		var browser = {
+		  msie    : /msie/.test( userAgent ) && !/opera/.test( userAgent ),
+		  safari  : /webkit/.test( userAgent ),
+		  firefox : /mozilla/.test( userAgent ) && !/(compatible|webkit)/.test( userAgent ),
+		  opera   : /opera/.test( userAgent )
+		};   
+		
+		if(browser.msie) {
+			var IEversion = parseFloat(navigator.appVersion.split("MSIE")[1].split(";")[0].split(" ").join(""));
+			if(IEversion == 8){
+				var url = "javascript:popfullscreenEx('/service/law/lawFullScreen.do?seq=&historySeq=', '')";
+				$("#fullscreen").attr('href', url);
+				$("#fullscreen").attr('target', "");
+			}
+		}
+		
+		var searchTimeType = "";		
+		
+		if (searchTimeType == '') {
+			searchTimeType = 'now';
+		}	
+		
+		if(searchTimeType=='now') {
+			$(".searchTimeTypeNow").attr('checked', true);
+			$(".searchTimeTypePast").attr('checked', false);		
+		} else if(searchTimeType=='past') {
+			$(".searchTimeTypeNow").attr('checked', false);
+			$(".searchTimeTypePast").attr('checked', true);
+		}
+		
+		document.getElementById("checkTime").value=searchTimeType;
+		
+	});
+</script>
+</head>
+<body>
+
+<div id="wrap_outer">
+<div id="wrap">
+    <!-- header  -->
+	   
+
+<!-- skip navigation -->
+
+<script language="javascript">
+	var TimeOut         = 300;
+	var currentLayer    = null;
+	var currentitem     = null;
+	
+	var currentLayerNum = 0;
+	var noClose         = 0;
+	var closeTimer      = null;
+	
+	// Open Hidden Layer
+	function mopen(n)
+	{
+	    var l  = document.getElementById("menu"+n);
+	    var mm = document.getElementById("mmenu"+n);
+	   
+	    if(l)
+	    {
+	        mcancelclosetime();
+	        l.style.visibility='visible';
+	
+	        if(currentLayer && (currentLayerNum != n))
+	            currentLayer.style.visibility='hidden';
+	
+	        currentLayer = l;
+	        currentitem = mm;
+	        currentLayerNum = n;           
+	    }
+	    else if(currentLayer)
+	    {
+	        currentLayer.style.visibility='hidden';
+	        currentLayerNum = 0;
+	        currentitem = null;
+	        currentLayer = null;
+	    }
+	}
+	
+	// Turn On Close Timer
+	function mclosetime()
+	{
+	    closeTimer = window.setTimeout(mclose, TimeOut);
+	}
+	
+	// Cancel Close Timer
+	function mcancelclosetime()
+	{
+	    if(closeTimer)
+	    {
+	        window.clearTimeout(closeTimer);
+	        closeTimer = null;
+	    }
+	}
+	
+	// Close Showed Layer
+	function mclose()
+	{
+	    if(currentLayer && noClose!=1)
+	    {
+	        currentLayer.style.visibility='hidden';
+	        currentLayerNum = 0;
+	        currentLayer = null;
+	        currentitem = null;
+	    }
+	    else
+	    {
+	        noClose = 0;
+	    }
+	
+	    currentLayer = null;
+	    currentitem = null;
+	}
+	
+	// Close Layer Then Click-out
+	document.onclick = mclose;
+</script>
+<h2 class="hid">바로가기 서비스</h2>
+<div class="skip_navigation">
+	<a href="#search">통합검색으로 이동</a>
+	<a href="#rg_con">본문으로 이동</a>
+	<a href="#footer">하단으로 이동</a>
+</div>
+<input type="hidden" name="checkTime" id="checkTime" value=""/>    
+<div id="header">
+<!-- header -->
+       <!-- 메인 로고 -->
+       <div id="tmenu">
+           <h1><a href="/service/main/main.do"><img src="/images/service/inc/logo1.gif" alt="금융투자협회 법규정보시스템" title="금융투자협회 법규정보시스템"  width="211" height="42"  /></a></h1>
+       </div>
+       <!--주메뉴 -->
+      <ul id="gnb">
+	      <li id="gn_f"><a href="/service/law/lawCurrentMain.do" title="현행규정"><img src="/images/service/menu/menu01.png"></a></li>
+	      <li id="gn"><a href="/service/law/lawHistoryMain.do" title="연혁규정"><img src="/images/service/menu/menu02.png"></a></li>
+	      <li id="gn"><a href="/service/law/relationList.do" title="관계법규"><img src="/images/service/menu/menu03.png"></a></li>
+	      <li id="gn"><a href="/service/revisionNotice/revisionNoticeList.do" title="규정 제ㆍ개정 예고"><img src="/images/service/menu/menu08.png"></a></li>
+	      <li id="gn"><a href="/service/revision/revisionlist.do" title="최신제ㆍ개정정보"><img src="/images/service/menu/menu04.png"></a></li>
+	      <li id="gn"><a href="/service/attach/attachlist.do" title="서식정보"><img src="/images/service/menu/menu05.png"></a></li>
+	      <li id="gn"><a href="/service/revision/boarList.do?type=1" title="정보센터"><img src="/images/service/menu/menu06.png"></a></li>
+	      
+	   </ul>
+</div>
+	<div id="contents">    
+		
+
+<div id="lf_navi">
+      <!-- lnb -->
+      <div id="law_tree" class="lf_navi_contract">
+          <h2 class="lnbtit"><img src="/images/service/left/left_tit.gif" alt="규정정보" title="규정정보" /><a href="#Tree_Expand OR Reduce" onclick="expRed();" onkeypress="expRed();"><img id="expRedIcon" src="/images/service/btn/btn_expand.gif" alt="카테고리확대" title="카테고리확대" /></a></h2>
+
+          <div class="lnb" style="margin-top:5px;">
+          	  <!-- 분야별 트리 -->
+              <iframe width="100%" class="theight" id="tree01" name="tree01" src="/service/law/lawCurrentPartTree.do" scrolling="yes" frameborder="0" title="현행법규 카테고리검색" ></iframe>			
+          </div>
+      </div>
+
+</div>
+<script type="text/javascript">
+	var url = location.href;
+		
+	if(url.indexOf("lawDepartCurrentList") != -1 || url.indexOf("lawAbolitionCurrentList") != -1 || url.indexOf("tree=depart") != -1)	
+	{
+		$("#tree01").attr("src", "/service/law/lawCurrentDepartTree.do");
+		lawTreeTab(2);
+	}
+	
+	function lawTreeTab(type)
+	{
+		if(type == 1)
+		{
+			$("#lawTab").attr("src", "/images/service/left/tab_field_o.gif", "title");
+			$("#departTab").attr("src", "/images/service/left/tab_department.gif");
+		}
+		else
+		{
+			$("#lawTab").attr("src", "/images/service/left/tab_field.gif");
+			$("#departTab").attr("src", "/images/service/left/tab_department_o.gif");
+		}
+	}	
+</script>
+   		<!-- left메뉴 열고닫기버튼 -->
+        <div id="lf_btn">
+        	<div id="left_cbtn">
+				<p><a href="javascript:showJoTitleVerOne();"><img id ="openbtn" src="/images/service/btn/menu_open.gif" width="10" height="47" alt="목차 열고 닫기 버튼" title="목차 열고 닫기 버튼"/></a></p>
+            </div>
+        </div>
+		<div id="rg_con">
+			<!-- search -->
+            <div id="search">
+			    <!-- search -->
+			    <h2 class="lSearchtit"><img src="/images/service/inc/tle_search.gif" alt="규정통합검색" /></h2>
+			    <form id="totalListForm" method="post" action="/service/search/searchTotal.do" onsubmit="return false">
+			    	
+<table id="lSearch" border="0" cellpadding="0" cellspacing="0">
+    <tr>			        	
+        <td><a href="javascript:goSeachABC();" onclick="" title="가나다 바로가기"><img src="/images/service/btn/btn_abcsrch.gif" alt="가나다" title="가나다 바로가기" /></a></td>
+        <td width="5"></td>
+        <td><a href="javascript:goSeachRevision();" onclick="" title="개정일 바로가기"><img src="/images/service/btn/btn_datesrch.gif" alt="개정일" title="개정일 바로가기" /></a></td>
+        <td width="10"></td>
+        <td>            
+        <fieldset>
+            <legend>규정통합검색</legend>   
+            <input type="radio" name="searchTimeType" class="searchTimeTypeNow" value="now" checked="checked" onclick="checkTimeType('now')"/> 현행
+            <input type="radio" name="searchTimeType" class="searchTimeTypePast" value="past" onclick="checkTimeType('past')"/> 연혁&nbsp;&nbsp;
+            <select title="Search Category" style="width:100px;" name="searchType" id="searchType">
+            	<option value="title">규정명</option>
+				<option value="content">규정내용</option>                             
+				<option value="attach">별표파일명</option>
+            </select>
+            <input type="text" class="itext" style="width:250px;" name="searchValue" id="searchValue" title="검색어입력" maxlength="30" onkeydown="if(event.keyCode == 13) searchTotal();" />                              
+        </fieldset>
+        </td>
+        <td width="5"></td>
+        <td><a href="javascript:searchTotal();" title="검색 버튼"><img src="/images/service/btn/btn_srch1.gif" alt="검색" title="검색 버튼" /></a></td>			                       
+    </tr>
+</table>
+	  
+			    </form>
+			</div>
+            
+			<div id="tle_navi">
+				<h3 class="tit4"><img src="/images/service/board/tle1.gif" alt="현행규정" title="현행규정" /></h3>
+				<div class="p_navi">
+					HOME &gt; 현행규정 &gt; 분야별 목록 
+				</div>
+			</div>
+
+			<form id="commonForm" action="/service/law/lawPartCurrentList.do" method="post">
+            <input id="page" name="page" type="hidden" value="1"/>
+            <input id="selectedSeq" name="selectedSeq" type="hidden" value="3"/>
+            <input id="selectedName" name="selectedName" type="hidden" value=""/>
+            <div class="brdInfo3">
+            	전체 : <strong class="colRed">68</strong>건 
+             	&nbsp;<span>페이지 : <strong class="colBlue">1/7</strong></span>                
+                
+                <!-- <span class="right"><img src="/images/service/inc/file.png" width="16" height="16" alt="비정형문서 아이콘" title="비정형문서 아이콘" /> <img src="/images/service/inc/brdinfo_txt1.gif"  class="mr5" width="48" height="12" alt="비정형문서" title="비정형문서"/>
+                <img src="/images/service/inc/icon_lawview.gif" width="18" height="18" alt="조문별보기 가능 아이콘" title="조문별보기 가능 아이콘" /> <img src="/images/service/inc/brdinfo_txt2.gif" width="73" height="12" alt="조문별보기 가능" title="조문별보기 가능" /></span> -->
+      		</div>
+        
+            <table cellspacing="0" class="brdComList" summary="현행규정 분야별 검색의 제목, 개정일자, 전체화면 보기 등의 정보를 볼 수 있는 목록입니다.">
+                <caption>현행규정 분야별 목록</caption>
+                <colgroup>
+                    <col width="5%" /><col width="%" /><col width="12%" /><col width="13%" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">번호</th>
+                        <th scope="col">제목</th>
+                        <th scope="col">제ㆍ개정일</th>
+                        <th scope="col">전체화면 보기</th>
+                    </tr>
+                </thead>
+                <tbody>
+                	
+                		
+                		
+                			                			
+                			
+                				<tr>
+			                        <td>68</td>
+			                        <td>
+			                        	<p>
+			                        		
+			                        			
+				                        		
+						                        	
+						                        		
+						                        			<img src="/images/service/inc/icon_lawview.gif" width="18" height="18" alt="조문별보기 가능 아이콘" title="조문별보기 가능 아이콘" />
+						                        			<a href="/service/law/lawView.do?seq=284&amp;historySeq=1770&amp;gubun=cur&amp;tree=part">
+			                        							금융투자회사의 컴플라이언스 매뉴얼 공통·증권·선물편
+			                        						</a>			                        	
+						                        		
+						                        		
+						                        	
+						                        
+				                        	
+			                        	</p>
+			                        </td>
+			                        <td>2025-12-31</td>
+			                        <td>
+			                        	
+			                        		
+			                        			
+			                        			<a id="fullscreen" href="/service/law/lawFullScreen.do?seq=284&amp;historySeq=1770&amp;1770" title="전체화면 보기(새창열림)" target="_blank"><img src="/images/service/btn/btn_viewall.gif" width="90" height="19" alt="전체화면 보기(새창열림)" title="전체화면 보기(새창열림)" /></a>
+			                        		
+			                        		
+			                        	
+			                        </td>
+			                    </tr>
+			                
+                			
+                				<tr>
+			                        <td>67</td>
+			                        <td>
+			                        	<p>
+			                        		
+			                        			
+				                        		
+						                        	
+						                        		
+						                        			<img src="/images/service/inc/icon_lawview.gif" width="18" height="18" alt="조문별보기 가능 아이콘" title="조문별보기 가능 아이콘" />
+						                        			<a href="/service/law/lawView.do?seq=262&amp;historySeq=1672&amp;gubun=cur&amp;tree=part">
+			                        							금융투자회사의 컴플라이언스 매뉴얼 Ⅲ편(자산운용)
+			                        						</a>			                        	
+						                        		
+						                        		
+						                        	
+						                        
+				                        	
+			                        	</p>
+			                        </td>
+			                        <td>2024-12-31</td>
+			                        <td>
+			                        	
+			                        		
+			                        			
+			                        			<a id="fullscreen" href="/service/law/lawFullScreen.do?seq=262&amp;historySeq=1672&amp;1672" title="전체화면 보기(새창열림)" target="_blank"><img src="/images/service/btn/btn_viewall.gif" width="90" height="19" alt="전체화면 보기(새창열림)" title="전체화면 보기(새창열림)" /></a>
+			                        		
+			                        		
+			                        	
+			                        </td>
+			                    </tr>
+			                
+                			
+                				<tr>
+			                        <td>66</td>
+			                        <td>
+			                        	<p>
+			                        		
+			                        			
+				                        		
+						                        	
+						                        		
+						                        			<img src="/images/service/inc/icon_lawview.gif" width="18" height="18" alt="조문별보기 가능 아이콘" title="조문별보기 가능 아이콘" />
+						                        			<a href="/service/law/lawView.do?seq=149&amp;historySeq=1787&amp;gubun=cur&amp;tree=part">
+			                        							표준투자권유준칙
+			                        						</a>			                        	
+						                        		
+						                        		
+						                        	
+						                        
+				                        	
+			                        	</p>
+			                        </td>
+			                        <td>2026-04-09</td>
+			                        <td>
+			                        	
+			                        		
+			                        			
+			                        			<a id="fullscreen" href="/service/law/lawFullScreen.do?seq=149&amp;historySeq=1787&amp;1787" title="전체화면 보기(새창열림)" target="_blank"><img src="/images/service/btn/btn_viewall.gif" width="90" height="19" alt="전체화면 보기(새창열림)" title="전체화면 보기(새창열림)" /></a>
+			                        		
+			                        		
+			                        	
+			                        </td>
+			                    </tr>
+			                
+                			
+                				<tr>
+			                        <td>65</td>
+			                        <td>
+			                        	<p>
+			                        		
+			                        			
+				                        		
+						                        	
+						                        		
+						                        			<img src="/images/service/inc/icon_lawview.gif" width="18" height="18" alt="조문별보기 가능 아이콘" title="조문별보기 가능 아이콘" />
+						                        			<a href="/service/law/lawView.do?seq=150&amp;historySeq=1795&amp;gubun=cur&amp;tree=part">
+			                        							금융투자회사 표준내부통제기준
+			                        						</a>			                        	
+						                        		
+						                        		
+						                        	
+						                        
+				                        	
+			                        	</p>
+			                        </td>
+			                        <td>2026-05-14</td>
+			                        <td>
+			                        	
+			                        		
+			                        			
+			                        			<a id="fullscreen" href="/service/law/lawFullScreen.do?seq=150&amp;historySeq=1795&amp;1795" title="전체화면 보기(새창열림)" target="_blank"><img src="/images/service/btn/btn_viewall.gif" width="90" height="19" alt="전체화면 보기(새창열림)" title="전체화면 보기(새창열림)" /></a>
+			                        		
+			                        		
+			                        	
+			                        </td>
+			                    </tr>
+			                
+                			
+                				<tr>
+			                        <td>64</td>
+			                        <td>
+			                        	<p>
+			                        		
+			                        			
+				                        		
+						                        	
+						                        		
+						                        			<img src="/images/service/inc/icon_lawview.gif" width="18" height="18" alt="조문별보기 가능 아이콘" title="조문별보기 가능 아이콘" />
+						                        			<a href="/service/law/lawView.do?seq=154&amp;historySeq=1048&amp;gubun=cur&amp;tree=part">
+			                        							금융투자회사의 표준윤리준칙
+			                        						</a>			                        	
+						                        		
+						                        		
+						                        	
+						                        
+				                        	
+			                        	</p>
+			                        </td>
+			                        <td>2015-12-04</td>
+			                        <td>
+			                        	
+			                        		
+			                        			
+			                        			<a id="fullscreen" href="/service/law/lawFullScreen.do?seq=154&amp;historySeq=1048&amp;1048" title="전체화면 보기(새창열림)" target="_blank"><img src="/images/service/btn/btn_viewall.gif" width="90" height="19" alt="전체화면 보기(새창열림)" title="전체화면 보기(새창열림)" /></a>
+			                        		
+			                        		
+			                        	
+			                        </td>
+			                    </tr>
+			                
+                			
+                				<tr>
+			                        <td>63</td>
+			                        <td>
+			                        	<p>
+			                        		
+			                        			
+				                        		
+						                        	
+						                        		
+						                        			<img src="/images/service/inc/icon_lawview.gif" width="18" height="18" alt="조문별보기 가능 아이콘" title="조문별보기 가능 아이콘" />
+						                        			<a href="/service/law/lawView.do?seq=333&amp;historySeq=1252&amp;gubun=cur&amp;tree=part">
+			                        							금융투자회사의 영업행위 표준윤리준칙
+			                        						</a>			                        	
+						                        		
+						                        		
+						                        	
+						                        
+				                        	
+			                        	</p>
+			                        </td>
+			                        <td>2018-05-25</td>
+			                        <td>
+			                        	
+			                        		
+			                        			
+			                        			<a id="fullscreen" href="/service/law/lawFullScreen.do?seq=333&amp;historySeq=1252&amp;1252" title="전체화면 보기(새창열림)" target="_blank"><img src="/images/service/btn/btn_viewall.gif" width="90" height="19" alt="전체화면 보기(새창열림)" title="전체화면 보기(새창열림)" /></a>
+			                        		
+			                        		
+			                        	
+			                        </td>
+			                    </tr>
+			                
+                			
+                				<tr>
+			                        <td>62</td>
+			                        <td>
+			                        	<p>
+			                        		
+			                        			
+				                        		
+						                        	
+						                        		
+						                        			<img src="/images/service/inc/icon_lawview.gif" width="18" height="18" alt="조문별보기 가능 아이콘" title="조문별보기 가능 아이콘" />
+						                        			<a href="/service/law/lawView.do?seq=336&amp;historySeq=1697&amp;gubun=cur&amp;tree=part">
+			                        							금융투자회사의 증권 대차 및 공매도 업무처리 모범규준
+			                        						</a>			                        	
+						                        		
+						                        		
+						                        	
+						                        
+				                        	
+			                        	</p>
+			                        </td>
+			                        <td>2025-03-13</td>
+			                        <td>
+			                        	
+			                        		
+			                        			
+			                        			<a id="fullscreen" href="/service/law/lawFullScreen.do?seq=336&amp;historySeq=1697&amp;1697" title="전체화면 보기(새창열림)" target="_blank"><img src="/images/service/btn/btn_viewall.gif" width="90" height="19" alt="전체화면 보기(새창열림)" title="전체화면 보기(새창열림)" /></a>
+			                        		
+			                        		
+			                        	
+			                        </td>
+			                    </tr>
+			                
+                			
+                				<tr>
+			                        <td>61</td>
+			                        <td>
+			                        	<p>
+			                        		
+			                        			
+				                        		
+						                        	
+						                        		
+						                        			<img src="/images/service/inc/icon_lawview.gif" width="18" height="18" alt="조문별보기 가능 아이콘" title="조문별보기 가능 아이콘" />
+						                        			<a href="/service/law/lawView.do?seq=153&amp;historySeq=1783&amp;gubun=cur&amp;tree=part">
+			                        							대표주관업무 등 모범기준
+			                        						</a>			                        	
+						                        		
+						                        		
+						                        	
+						                        
+				                        	
+			                        	</p>
+			                        </td>
+			                        <td>2026-03-12</td>
+			                        <td>
+			                        	
+			                        		
+			                        			
+			                        			<a id="fullscreen" href="/service/law/lawFullScreen.do?seq=153&amp;historySeq=1783&amp;1783" title="전체화면 보기(새창열림)" target="_blank"><img src="/images/service/btn/btn_viewall.gif" width="90" height="19" alt="전체화면 보기(새창열림)" title="전체화면 보기(새창열림)" /></a>
+			                        		
+			                        		
+			                        	
+			                        </td>
+			                    </tr>
+			                
+                			
+                				<tr>
+			                        <td>60</td>
+			                        <td>
+			                        	<p>
+			                        		
+			                        			
+				                        		
+						                        	
+						                        		
+						                        			<img src="/images/service/inc/icon_lawview.gif" width="18" height="18" alt="조문별보기 가능 아이콘" title="조문별보기 가능 아이콘" />
+						                        			<a href="/service/law/lawView.do?seq=318&amp;historySeq=1452&amp;gubun=cur&amp;tree=part">
+			                        							증권형 크라우드펀딩 표준업무방법서
+			                        						</a>			                        	
+						                        		
+						                        		
+						                        	
+						                        
+				                        	
+			                        	</p>
+			                        </td>
+			                        <td>2021-06-30</td>
+			                        <td>
+			                        	
+			                        		
+			                        			
+			                        			<a id="fullscreen" href="/service/law/lawFullScreen.do?seq=318&amp;historySeq=1452&amp;1452" title="전체화면 보기(새창열림)" target="_blank"><img src="/images/service/btn/btn_viewall.gif" width="90" height="19" alt="전체화면 보기(새창열림)" title="전체화면 보기(새창열림)" /></a>
+			                        		
+			                        		
+			                        	
+			                        </td>
+			                    </tr>
+			                
+                			
+                				<tr>
+			                        <td>59</td>
+			                        <td>
+			                        	<p>
+			                        		
+			                        			
+				                        		
+						                        	
+						                        		
+						                        			<img src="/images/service/inc/icon_lawview.gif" width="18" height="18" alt="조문별보기 가능 아이콘" title="조문별보기 가능 아이콘" />
+						                        			<a href="/service/law/lawView.do?seq=155&amp;historySeq=1800&amp;gubun=cur&amp;tree=part">
+			                        							금융투자회사의 리스크관리 모범규준
+			                        						</a>			                        	
+						                        		
+						                        		
+						                        	
+						                        
+				                        	
+			                        	</p>
+			                        </td>
+			                        <td>2026-07-09</td>
+			                        <td>
+			                        	
+			                        		
+			                        			
+			                        			<a id="fullscreen" href="/service/law/lawFullScreen.do?seq=155&amp;historySeq=1800&amp;1800" title="전체화면 보기(새창열림)" target="_blank"><img src="/images/service/btn/btn_viewall.gif" width="90" height="19" alt="전체화면 보기(새창열림)" title="전체화면 보기(새창열림)" /></a>
+			                        		
+			                        		
+			                        	
+			                        </td>
+			                    </tr>
+			                
+                			
+                		
+                	                                        
+                </tbody>
+            </table>
+            </form>
+            
+             <!-- paging -->
+            
+			<div class="paging">
+				<a><img src='/images/service/btn/btn_start.gif' title='first' alt='first' style="vertical-align:middle;"/></a>
+<a><img src='/images/service/btn/btn_prev.gif' title='prev' alt='prev' style="vertical-align:middle;"/></a>
+<strong style="padding-top:8px;">1</strong>
+ <a style="padding-top:8px;" href="javascript:goPage('2')" + onclick="goPage('2')" onkeypress="goPage('2')">2</a>
+ <a style="padding-top:8px;" href="javascript:goPage('3')" + onclick="goPage('3')" onkeypress="goPage('3')">3</a>
+ <a style="padding-top:8px;" href="javascript:goPage('4')" + onclick="goPage('4')" onkeypress="goPage('4')">4</a>
+ <a style="padding-top:8px;" href="javascript:goPage('5')" + onclick="goPage('5')" onkeypress="goPage('5')">5</a>
+ <a style="padding-top:8px;" href="javascript:goPage('6')" + onclick="goPage('6')" onkeypress="goPage('6')">6</a>
+ <a style="padding-top:8px;" href="javascript:goPage('7')" + onclick="goPage('7')" onkeypress="goPage('7')">7</a>
+<a style="next" href="javascript:goPage('2')" + onclick="goPage('2')" onkeypress="goPage('2')"><img src='/images/service/btn/btn_next.gif' title='next' alt='next' style="vertical-align:middle;"/></a>
+<a style="end" href="javascript:goPage('7')" + onclick="goPage('7')" onkeypress="goPage('7')"><img src='/images/service/btn/btn_last.gif' title='last' alt='last' style="vertical-align:middle;"/></a>
+
+			</div>	
+			
+			
+		</div>
+	</div>
+</div>
+<!-- footer  -->
+<div id="footer_bg">
+   
+<!-- footer -->
+<script type="text/javascript">
+
+$(document).ready(function(){
+	$(".familySite .relationSite .linkTitle").click(function(){
+		$(this).next().slideDown(80);		
+	});
+	$(".familySite .relationSite").mouseleave(function(){
+		$(".familySite .relationSite ul").slideUp(80);
+	});
+	
+	$(".familySite .family .linkTitle").click(function(){
+		$(this).next().slideDown(80);
+	});
+	$(".familySite .family").mouseleave(function(){
+		$(".familySite .family ul").slideUp(80);
+	});
+});
+
+function doSite(title, url) {	
+	$(".familySite .relationSite ul").slideUp(80);
+	document.getElementById('linkTitle').innerHTML = title; 
+	document.getElementById('relation').value = url;
+}
+
+function doSite2(title, url) {	
+	$(".familySite .family ul").slideUp(80);
+	document.getElementById('linkTitle2').innerHTML = title; 
+	document.getElementById('fsite').value = url;
+}
+
+function familyPopupRelationWindow() {
+	if (document.getElementById('relation').value == '') {
+		alert("유관기관을 선택하여 주십시요.");
+	} else {
+		window.open(document.getElementById('relation').value);
+	}
+}
+
+function familyPopupWindow() {
+	if (document.getElementById('fsite').value == '') {
+		alert("family site를 선택하여 주십시요.");
+	} else {
+		window.open(document.getElementById('fsite').value);
+	}
+}
+</script>
+
+<input type="hidden" id="relation" name="relation" />
+<input type="hidden" id="fsite" name="fsite" />
+
+<div id="footer">
+        <address>
+        <img src="/images/service/inc/inc_footer.gif" alt="금융투자협회 우)07332  서울특별시 영등포구 의사당대로143 금융투자협회   TEL : 02-2003-9000    E-Mail : webmaster@kofia.or.kr Copyrights &copy; 2013 KOFIA. ALL RIGHTS RESERVED." border="0" usemap="#Map" title="금융투자협회 우)07332  서울특별시 영등포구 의사당대로143 금융투자협회   TEL : 02-2003-9000    E-Mail : webmaster@kofia.or.kr Copyrights &copy; 2013 KOFIA. ALL RIGHTS RESERVED." />
+        <map name="Map" id="Map">
+			<area shape="rect" coords="337,24,436,40" href="http://kofia.or.kr/wpge/m_34/etc02.do" target="_blank" alt="개인정보 처리/취급 방침" />
+	    </map>
+	    </address>        
+        <div class="familySite">
+  		<table>
+        	<tr>
+            	<td>
+                 <div class="relationSite">
+                   <p class="linkTitle" id="linkTitle" title="유관기관 바로가기">유관기관 바로가기</p>
+                   <ul>
+				       <li><a href="javascript:doSite('기획재정부', 'http://www.mosf.go.kr');" title="기획재정부(새창열림)">기획재정부</a> </li>
+					   <li><a href="javascript:doSite('금융위원회','http://www.fsc.go.kr/');" title="금융위원회(새창열림)">금융위원회</a></li>
+					   <li><a href="javascript:doSite('통계청','http://kostat.go.kr/');" title="통계청(새창열림)">통계청</a></li>
+					   <li><a href="javascript:doSite('금융감독원','http://www.fss.or.kr/');" title="금융감독원(새창열림)">금융감독원</a></li>
+					   <li><a href="javascript:doSite('한국거래소','http://www.krx.co.kr/');" title="한국거래소(새창열림)">한국거래소</a></li>
+					   <li><a href="javascript:doSite('한국예탁결제원','http://www.ksd.or.kr/');" title="한국예탁결제원(새창열림)">한국예탁결제원</a></li>
+					   <li><a href="javascript:doSite('한국증권금융','http://www.ksfc.co.kr/');" title="한국증권금융(새창열림)">한국증권금융</a></li>							
+					   <li><a href="javascript:doSite('DART 전자공시','http://dart.fss.or.kr/');" title="DART 전자공시(새창열림)">DART 전자공시</a></li>
+					   <li><a href="javascript:doSite('금융통계정보시스템','http://fisis.fss.or.kr/');" title="금융통계정보시스템(새창열림)">금융통계정보시스템</a></li>
+					   <li><a href="javascript:doSite('서민금융 1332','http://s1332.fss.or.kr/');"  title="서민금융 1332(새창열림)">서민금융 1332</a></li> 
+				   </ul>
+                  </div>
+                </td>
+                <td><img src="/images/service/btn/btn_go.gif"   alt="GO" title="유관기관 바로가기 버튼(새창열림)" onclick="familyPopupRelationWindow()" /></td>
+                <td>
+                <div class="family">
+                  <p class="linkTitle" id="linkTitle2" title="family site 바로가기">family site</p>  
+                     <ul>
+						<li><a href="javascript:doSite2('금융투자협회','http://www.kofia.or.kr/');" title="금융투자협회(새창열림)">금융투자협회</a></li>
+			            <li><a href="javascript:doSite2('전자공시서비스','http://dis.kofia.or.kr/');" title="전자공시서비스(새창열림)">전자공시서비스</a></li>
+			            <li><a href="javascript:doSite2('자본시장통계','http://freesis.kofia.or.kr/');" title="자본시장통계(새창열림)">자본시장통계</a></li>
+						<li><a href="javascript:doSite2('자격시험접수센터','http://license.kofia.or.kr/');" title="자격시험접수센터(새창열림)">자격시험접수센터</a></li>
+						<li><a href="javascript:doSite2('금융투자교육원','http://www.kifin.or.kr/');" title="금융투자교육원(새창열림)">금융투자교육원</a></li>
+						<li><a href="javascript:doSite2('채권정보센터','http://www.kofiabond.or.kr/');" title="채권정보센터(새창열림)">채권정보센터</a></li>
+			            <li><a href="javascript:doSite2('전국투자자교육협의회','http://www.kcie.or.kr/');" title="전국투자자교육협의회(새창열림)">전국투자자교육협의회</a></li>
+			            <li><a href="javascript:doSite2('한국투자성과위원회','http://www.gips.kr/');" title="한국투자성과위원회(새창열림)">한국투자성과위원회</a></li>
+						<li><a href="javascript:doSite2('본드몰','http://www.bondmall.or.kr/');" title="본드몰(새창열림)">본드몰</a></li>
+			            <li><a href="javascript:doSite2('K-OTC','http://www.k-otc.or.kr/');" title="K-OTC(새창열림)">K-OTC</a></li>
+			            <li><a href="javascript:doSite2('K-OTCBB','http://www.k-otcbb.or.kr/');" title="K-OTCBB(새창열림)">K-OTCBB</a></li>
+				     </ul>	
+                     </div>   
+                </td>
+                <td><img class ="image" src="/images/service/btn/btn_go.gif"  alt="GO" title="바로가기버튼(새창열림)" onclick="familyPopupWindow()" />
+	</td>
+            </tr>
+        </table>
+        
+</div>   
+</div>
+	  
+</div>
+</div>
+</body>
+</html>

@@ -6,7 +6,7 @@
 anthropic
 
 # 용어 추출 (컴파일 국면) — core/terms 빌드에만 필요. 런타임·배포 이미지에는
-# 넣지 않는다 (검색 경로의 임베딩 반입은 tests/architecture 가 막는다).
+# 넣지 않는다 (보존된 architecture 회귀 테스트가 검색 경로의 임베딩 반입을 막는다).
 # sentence-transformers 는 torch 를 동반한다 — WSL/CPU 환경이면
 #   pip install torch --index-url https://download.pytorch.org/whl/cpu
 # 로 먼저 CPU 빌드를 깔면 수 GB 를 아낀다.

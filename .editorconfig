@@ -1,0 +1,15 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+[*.{bat,cmd}]
+end_of_line = crlf
+
+[tests/fixtures/**]
+end_of_line = unset
+
+[tmp/pdfs/legal-rag-review/**]
+end_of_line = unset

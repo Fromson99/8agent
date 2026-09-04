@@ -1,1 +1,26 @@
-data/domain_graph/candidates.json filter=lfs diff=lfs merge=lfs -text
+# Repository source is Linux-native. Keep checkout behavior deterministic even
+# when a Windows Git client inspects the tree.
+* text=auto eol=lf
+
+# Captured upstream fixtures are byte-level test inputs; do not normalize them.
+tests/fixtures/** -text -eol
+tmp/pdfs/legal-rag-review/** -text -eol
+01_DATA/** -text -eol
+02_BACKEND/GENERATIONS/** -text -eol
+04_EXPERIMENTS/GENERATIONS/** -text -eol
+05_TESTS/GENERATIONS/** -text -eol
+06_TOOLS/GENERATIONS/** -text -eol
+07_DOCS/LEGACY_DOCS/** -text -eol
+
+# Binary formats must never pass through text conversion.
+*.gif binary
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.pdf binary
+*.png binary
+*.woff binary
+*.woff2 binary
+*.zip binary
+
+01_DATA/domain_graph/candidates.json filter=lfs diff=lfs merge=lfs -text -eol

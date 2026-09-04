@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:lawrag:schema:rag-qdrant-runtime-binding-v1",
+  "title": "RAG Qdrant Runtime Binding v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "url", "collection", "credential_binding_id", "credential_binding_version", "trust_policy_id", "trust_zone", "config_sha256"],
+  "properties": {
+    "schema_version": {
+      "const": "rag-qdrant-runtime-binding-v1"
+    },
+    "url": {
+      "type": "string",
+      "pattern": "^https?://[^/?#@]+(?!(?:[\\s\\S]))"
+    },
+    "collection": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,255}(?!(?:[\\s\\S]))"
+    },
+    "credential_binding_id": {
+      "$ref": "#/$defs/canonicalText"
+    },
+    "credential_binding_version": {
+      "$ref": "#/$defs/canonicalText"
+    },
+    "trust_policy_id": {
+      "$ref": "#/$defs/canonicalText"
+    },
+    "trust_zone": {
+      "enum": ["internal", "external"]
+    },
+    "config_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}(?!(?:[\\s\\S]))"
+    }
+  },
+  "$defs": {
+    "canonicalText": {
+      "type": "string",
+      "pattern": "^(?=\\S)(?:[^\\u0000-\\u001f]*\\S)?$"
+    }
+  }
+}

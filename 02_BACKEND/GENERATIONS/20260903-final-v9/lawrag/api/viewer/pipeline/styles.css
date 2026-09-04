@@ -1,0 +1,99 @@
+/* 배치 파이프라인 — 단계 한 줄 = 라인업 수 + 진행 막대. 색: 빠짐=warn · 실행=accent
+ * · 완료=ok · 실패=bad · 건너뜀=dim. */
+
+.wrap { padding: 12px 16px 40px; max-width: 1180px; margin: 0 auto; }
+.sr { position: absolute; left: -9999px; }
+.hidden { display: none !important; }
+.grow { flex: 1; }
+.sub { color: var(--dim); font-size: 12px; }
+
+button.run { background: var(--accent); color: #fff; border: 0; border-radius: 999px;
+             padding: 7px 16px; font-weight: 650; cursor: pointer; }
+button.run:disabled { opacity: .5; cursor: default; }
+button.stop { background: var(--bad); color: #fff; border: 0; border-radius: 999px;
+              padding: 7px 14px; cursor: pointer; margin-right: 8px; }
+button.ghost { background: transparent; border: 1px solid var(--line); color: var(--ink);
+               border-radius: 999px; padding: 5px 12px; cursor: pointer; margin-right: 8px; }
+button.ghost.small { padding: 2px 9px; font-size: 12px; margin: 0 0 0 6px; }
+button.ghost:hover { border-color: var(--accent); }
+button.ghost:disabled { opacity: .5; cursor: default; }
+
+.models { display: flex; gap: 6px; margin-right: 10px; }
+.pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); }
+.pill.on { color: var(--ok); border-color: var(--ok); }
+.pill.off { color: var(--dim); }
+
+/* 실행 상태 */
+.runpane { background: var(--pane); border: 1px solid var(--line); border-radius: var(--r);
+           padding: 10px 14px; margin-bottom: 12px; }
+.runpane header { display: flex; gap: 10px; align-items: baseline; }
+.runpane .note { color: var(--dim); font-size: 12px; margin-top: 4px; }
+.state { font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); }
+.state.running { color: var(--accent); border-color: var(--accent); }
+.state.done { color: var(--ok); border-color: var(--ok); }
+.state.failed { color: var(--bad); border-color: var(--bad); }
+.state.stopped, .state.skipped { color: var(--dim); }
+
+/* 단계 줄 */
+.stages { display: flex; flex-direction: column; gap: 8px; }
+.stage { background: var(--pane); border: 1px solid var(--line); border-radius: var(--r);
+         padding: 10px 14px; }
+.stage.has { border-left: 4px solid var(--warn); }
+.stage.clean { border-left: 4px solid var(--ok); }
+.stage.running { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.stage.failed { border-color: var(--bad); }
+.stage .head { display: flex; align-items: center; gap: 8px; }
+.stage .idx { font: 600 11px/1 var(--mono, monospace); color: var(--dim); width: 16px; }
+.stage .label { font-size: 15px; }
+.stage .kind { font-size: 11px; padding: 1px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--dim); }
+.stage .kind.LLM { color: var(--warn); border-color: var(--warn); }
+.stage .kind.임베딩 { color: var(--accent); border-color: var(--accent); }
+.stage .pending { font-size: 12px; }
+.stage .pending.warn { color: var(--warn); font-weight: 650; }
+.stage .pending.ok { color: var(--ok); }
+.stage .note { color: var(--dim); font-size: 12px; margin: 4px 0 6px 24px; }
+.stage .bar { height: 6px; background: color-mix(in srgb, var(--line) 70%, transparent);
+              border-radius: 3px; overflow: hidden; margin-left: 24px; }
+.stage .fill { height: 100%; background: var(--accent); transition: width .4s; }
+.stage.done .fill { background: var(--ok); }
+.stage.failed .fill { background: var(--bad); }
+.stage .prog { display: flex; gap: 12px; font-size: 12px; color: var(--dim); margin: 4px 0 0 24px; flex-wrap: wrap; }
+.stage .prog .state { border: 0; padding: 0; }
+.stage .prog .cur { color: var(--ink); }
+.stage .prog .res { color: var(--ok); }
+.stage .prog .err { color: var(--bad); }
+
+/* 펼쳐 보기 */
+.detail { margin-top: 12px; background: var(--pane); border: 1px solid var(--line);
+          border-radius: var(--r); padding: 10px 14px; max-height: 360px; overflow: auto; }
+.detail header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.drow { display: flex; gap: 10px; padding: 3px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
+.drow .sub { margin-left: auto; white-space: nowrap; }
+
+/* 로그·이력 */
+.logs { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; margin-top: 14px; }
+.logs .col { background: var(--pane); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 14px; min-width: 0; }
+.logs header { display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px; }
+#log { font: 11.5px/1.5 var(--mono, monospace); max-height: 320px; overflow: auto; white-space: pre; margin: 0; }
+.rrow { display: flex; gap: 8px; align-items: center; padding: 4px 0; border-bottom: 1px dashed var(--line); font-size: 12px; flex-wrap: wrap; }
+.rrow .rid { font-family: var(--mono, monospace); }
+.minis { display: flex; gap: 4px; flex-wrap: wrap; }
+.mini { font-size: 10px; padding: 0 5px; border-radius: 3px; border: 1px solid var(--line); color: var(--dim); }
+.mini.done { color: var(--ok); border-color: var(--ok); }
+.mini.failed { color: var(--bad); border-color: var(--bad); }
+.mini.running { color: var(--accent); border-color: var(--accent); }
+@media (max-width: 900px) { .logs { grid-template-columns: 1fr; } }
+
+/* 문서별 표 */
+.docs { margin-top: 14px; background: var(--pane); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 14px; }
+.docs header { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+.docs select, .logs select, .logs input, .docs input { font: inherit; font-size: 12px; background: var(--bg); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; }
+.dtable { max-height: 360px; overflow: auto; }
+.dtable table { border-collapse: collapse; width: 100%; font-size: 12px; }
+.dtable th, .dtable td { text-align: left; padding: 3px 8px; border-bottom: 1px dashed var(--line); white-space: nowrap; }
+.dtable th { position: sticky; top: 0; background: var(--pane); color: var(--dim); font-weight: 600; }
+.dtable tr.bad td { color: var(--bad); }
+.dtable a { color: inherit; text-decoration: none; }
+.dtable a:hover { color: var(--accent); }
+.logs .chk { font-size: 12px; color: var(--dim); display: flex; gap: 4px; align-items: center; }

@@ -10,6 +10,25 @@
 
 # 실행 산출물
 var/
+# v2 canonical runtime/artifact/data payloads.  Keep the contracts and folder
+# guides in Git; immutable packages, feedback ledgers, reports, and runtime
+# state live on the managed volume and travel through their own manifests.
+90_RUNTIME/*
+!90_RUNTIME/README.md
+09_ARTIFACTS/*
+!09_ARTIFACTS/README.md
+99_ARCHIVE/*
+!99_ARCHIVE/README.md
+04_EXPERIMENTS/*
+!04_EXPERIMENTS/README.md
+01_DATA/CATALOG/*
+!01_DATA/CATALOG/README.md
+01_DATA/PACKAGES/EXTERNAL/*
+!01_DATA/PACKAGES/EXTERNAL/README.md
+01_DATA/PACKAGES/INTERNAL/*
+!01_DATA/PACKAGES/INTERNAL/README.md
+01_DATA/FEEDBACK/*
+!01_DATA/FEEDBACK/README.md
 # {stem}.doc.json · *.reconcile.json — CLI 로 재생성됩니다.
 # (주석은 반드시 제 줄에 — 패턴 뒤에 붙이면 주석까지 패턴이 되어 아무것도 안 걸립니다.)
 agents/*/output/
@@ -41,6 +60,10 @@ data/structure/
 data/custom/
 data/glossary.json
 data/links.json
+01_DATA/structure/
+01_DATA/custom/
+01_DATA/glossary.json
+01_DATA/links.json
 # 같은 성격 — 화면·배치가 만들어 내는 상태와 관측의 누적입니다.
 # (주석은 여기서도 제 줄에 — 위의 경고와 같은 이유입니다.)
 # data/rag             판정 지문·튜플·후보 (append-only 관측)
@@ -51,27 +74,44 @@ data/links.json
 # structure_fixes      사람이 옮긴 계층 교정
 # structure_ledger     fingerprint 원장 — 관측 누적
 data/rag/
+01_DATA/rag/
 # 예외 — 질의 스코프 정의는 관측이 아니라 사람이 쓰는 정의라 같이 간다
 !data/rag/scopes.yml
+!01_DATA/rag/scopes.yml
 # 배치 파이프라인 — 실행 상태·로그(관측)와 반입함(원본은 스토어로 옮겨진다)
 data/pipeline/
 data/inbox/
 data/rules/
 data/embeddings/
+01_DATA/pipeline/
+01_DATA/inbox/
+01_DATA/rules/
+01_DATA/embeddings/
 # 구조·프레임·용어에서 재생성하는 로컬 property graph
 data/domain_graph/graph.sqlite
 data/domain_graph/.graph.sqlite.building
+01_DATA/domain_graph/graph.sqlite
+01_DATA/domain_graph/.graph.sqlite.building
 # 법령 관계망 파생 — corpus/law/relations 원본에서 python -m core.lawnet 로 재생성
 data/delegation.json
 data/law_index.json
+01_DATA/delegation.json
+01_DATA/law_index.json
 # 폐쇄망 왕복 스냅샷 — 런타임 산출
 data/ops/
 data/format_bindings.json
 data/format_canvas.json
 data/structure_fixes.json
 data/structure_ledger.json
+01_DATA/ops/
+01_DATA/format_bindings.json
+01_DATA/format_canvas.json
+01_DATA/structure_fixes.json
+01_DATA/structure_ledger.json
 
 # 벤치 실행 결과. 질문셋(data/bench/questions.yaml)만 이력에 둡니다.
 data/bench/last_results.json
+01_DATA/bench/last_results.json
 # 파생층 초기화 보관함 — 되돌리기용, 나르지 않는다
 data/_archive/
+01_DATA/_archive/

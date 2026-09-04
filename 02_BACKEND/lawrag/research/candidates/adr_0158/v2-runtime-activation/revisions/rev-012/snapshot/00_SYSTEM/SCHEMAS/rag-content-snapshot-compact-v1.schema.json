@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:schema:rag-content-snapshot-compact-v1",
+  "title": "RAG immutable content snapshot compact receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "release_id",
+    "release_generation",
+    "release_manifest_sha256",
+    "source_set_id",
+    "source_set_generation",
+    "source_set_sha256",
+    "cross_dataset_relations",
+    "export_allowed",
+    "source_set_lock_sha256",
+    "source_set_lock_artifact_sha256",
+    "source_set_materialization_sha256",
+    "source_set_materialization_receipt_sha256",
+    "catalog_sha256",
+    "catalog_artifact_sha256",
+    "semantic_generation",
+    "authority_generation",
+    "runtime_binding_sha256",
+    "main_generation",
+    "main_state_sha256",
+    "main_promotion_receipt_sha256",
+    "main_promotion_plan_sha256",
+    "content_snapshot_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "rag-content-snapshot-compact-v1"},
+    "release_id": {"$ref": "#/$defs/id"},
+    "release_generation": {"type": "integer", "minimum": 1},
+    "release_manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "source_set_id": {"$ref": "#/$defs/id"},
+    "source_set_generation": {"$ref": "#/$defs/id"},
+    "source_set_sha256": {"$ref": "#/$defs/sha256"},
+    "cross_dataset_relations": {"type": "boolean"},
+    "export_allowed": {"type": "boolean"},
+    "source_set_lock_sha256": {"$ref": "#/$defs/sha256"},
+    "source_set_lock_artifact_sha256": {"$ref": "#/$defs/sha256"},
+    "source_set_materialization_sha256": {"$ref": "#/$defs/sha256"},
+    "source_set_materialization_receipt_sha256": {"$ref": "#/$defs/sha256"},
+    "catalog_sha256": {"$ref": "#/$defs/sha256"},
+    "catalog_artifact_sha256": {"$ref": "#/$defs/sha256"},
+    "semantic_generation": {"$ref": "#/$defs/id"},
+    "authority_generation": {"$ref": "#/$defs/id"},
+    "runtime_binding_sha256": {"$ref": "#/$defs/sha256"},
+    "main_generation": {"type": "integer", "minimum": 0},
+    "main_state_sha256": {"$ref": "#/$defs/sha256"},
+    "main_promotion_receipt_sha256": {
+      "oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]
+    },
+    "main_promotion_plan_sha256": {
+      "oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]
+    },
+    "content_snapshot_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"main_generation": {"const": 0}},
+        "required": ["main_generation"]
+      },
+      "then": {
+        "properties": {
+          "main_promotion_receipt_sha256": {"type": "null"},
+          "main_promotion_plan_sha256": {"type": "null"}
+        }
+      },
+      "else": {
+        "properties": {
+          "main_promotion_receipt_sha256": {"$ref": "#/$defs/sha256"},
+          "main_promotion_plan_sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{1,191}(?!(?:[\\s\\S]))"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}(?!(?:[\\s\\S]))"
+    }
+  }
+}

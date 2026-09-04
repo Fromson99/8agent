@@ -1,0 +1,697 @@
+"""법률 관계의 단일 생성·소비 계약.
+
+본문 참조, 법제처 위임, 정의 적용, 위반-제재, 부칙 시점 관계를 같은
+``SectionRelation``으로 접는다. 제품 검색과 domain graph 빌더가 이 모듈을 함께
+사용하므로, 그래프에는 있지만 검색은 못 걷거나 검색에서만 즉석 생성되는 관계를
+없애는 것이 목적이다.
+
+모든 관계는 실제 문서·구역 좌표와 원천을 보존한다. LLM이 새 좌표를 만들지 않으며,
+미해결 인용은 기존 ``Index.cross_refs()``의 PendingReference 경로에 그대로 남는다.
+"""
+from __future__ import annotations
+
+import json
+import re
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Iterable
+
+from lawrag.core.domain_graph import requirements as requirement_spans
+from lawrag.core.rag import definitions, delegation, tags
+from lawrag.core.rag.index import Index, norm
+
+
+_ARTICLE = re.compile(r"^제\s*\d+(?:-\d+)?조(?:의\s*\d+)?$")
+
+REFERENCE_KINDS = {
+    "준용": "INCORPORATES",
+    "배제": "EXCLUDES",
+    "의제": "DEEMS",
+    "수임": "RECEIVES_FROM",
+    "근거": "BASED_ON",
+    "인용": "REFERENCES",
+}
+
+DISPLAY = {
+    "REFERENCES": "인용",
+    "BASED_ON": "근거",
+    "INCORPORATES": "준용",
+    "EXCLUDES": "배제",
+    "DEEMS": "의제",
+    "RECEIVES_FROM": "수임",
+    "DELEGATES_TO": "위임",
+    "USES_DEFINITION": "정의적용",
+    "VIOLATION_SANCTIONED_BY": "제재",
+    "HAS_EXCEPTION": "예외",
+    "EFFECTIVE_FOR": "시행일",
+    "APPLIES_TO": "적용례",
+    "TRANSITION_FOR": "경과조치",
+    "AMENDS": "개정",
+}
+
+# 누락되면 법적 결론이 달라지거나 조문의 직접 완결성이 깨지는 관계다. 일반 인용과
+# 이웃 조문은 여기에 넣지 않는다.
+MANDATORY_KINDS = frozenset({
+    "BASED_ON", "INCORPORATES", "EXCLUDES", "DEEMS", "RECEIVES_FROM",
+    "DELEGATES_TO", "USES_DEFINITION", "VIOLATION_SANCTIONED_BY",
+    "HAS_EXCEPTION", "EFFECTIVE_FOR", "APPLIES_TO", "TRANSITION_FOR",
+})
+
+_TEMPORAL_KINDS = {
+    "시행일": "EFFECTIVE_FOR",
+    "적용례": "APPLIES_TO",
+    "경과조치": "TRANSITION_FOR",
+    "개정·폐지": "AMENDS",
+}
+
+
+@dataclass
+class SectionRelation:
+    kind: str
+    src_doc: str
+    src_node: object
+    dst_doc: str
+    dst_node: object
+    props: dict = field(default_factory=dict)
+
+    @property
+    def key(self) -> tuple:
+        return self.kind, self.src_doc, self.src_node, self.dst_doc, self.dst_node
+
+    @property
+    def mandatory(self) -> bool:
+        return self.kind in MANDATORY_KINDS
+
+    @property
+    def label(self) -> str:
+        return DISPLAY.get(self.kind, self.kind)
+
+    def explanation(self, *, reverse: bool = False) -> str:
+        surface = str(self.props.get("surface") or self.props.get("link") or "").strip()
+        source = "·".join(self.props.get("provenance") or ())
+        direction = "역방향" if reverse else "순방향"
+        tail = f" — '{surface}'" if surface else ""
+        via = f" ({source})" if source else ""
+        return f"{self.label} {direction}{tail}{via}"
+
+
+@dataclass(frozen=True)
+class RequirementRecord:
+    doc_id: str
+    node: object
+    article: object
+    block: object
+    kind: str
+    surface: str
+    start: int
+    end: int
+    trigger: str
+    trigger_start: int
+    trigger_end: int
+
+
+@dataclass(frozen=True)
+class ProvisoRelation:
+    """단서 span의 물리 부착·법적 효과·검색 경로를 분리한 관계."""
+    plane: str
+    kind: str
+    proviso_id: str
+    src_doc: str
+    src_node: object
+    src_block: object
+    dst_kind: str
+    dst_doc: str
+    dst_node: object | None
+    props: dict = field(default_factory=dict)
+
+    @property
+    def key(self) -> tuple:
+        return (self.plane, self.kind, self.proviso_id, self.dst_kind,
+                self.dst_doc, self.dst_node)
+
+
+@dataclass(frozen=True)
+class GraphRelation:
+    """Section 외 Document endpoint까지 허용하는 그래프 전용 관계."""
+    kind: str
+    src_kind: str
+    src_doc: str
+    src_node: object | None
+    dst_kind: str
+    dst_doc: str
+    dst_node: object | None
+    props: dict = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class TemporalFact:
+    doc_id: str
+    kind: str
+    value: str
+
+
+@dataclass
+class RelationBundle:
+    sections: tuple[SectionRelation, ...]
+    requirements: tuple[RequirementRecord, ...] = ()
+    provisos: tuple[requirement_spans.ProvisoSpan, ...] = ()
+    proviso_relations: tuple[ProvisoRelation, ...] = ()
+    graph: tuple[GraphRelation, ...] = ()
+    temporal: tuple[TemporalFact, ...] = ()
+    outgoing: dict[tuple[str, object], tuple[SectionRelation, ...]] = field(
+        default_factory=dict)
+    incoming: dict[tuple[str, object], tuple[SectionRelation, ...]] = field(
+        default_factory=dict)
+    provisos_by_article: dict[tuple[str, object], tuple[requirement_spans.ProvisoSpan, ...]] = field(
+        default_factory=dict)
+    proviso_edges_by_id: dict[str, tuple[ProvisoRelation, ...]] = field(
+        default_factory=dict)
+
+    def incident(self, doc_id: str, node: object) \
+            -> tuple[tuple[SectionRelation, ...], tuple[SectionRelation, ...]]:
+        return (self.outgoing.get((doc_id, node), ()),
+                self.incoming.get((doc_id, node), ()))
+
+    def proviso_incident(self, doc_id: str, article: object) \
+            -> tuple[tuple[requirement_spans.ProvisoSpan, tuple[ProvisoRelation, ...]], ...]:
+        return tuple((span, self.proviso_edges_by_id.get(span.proviso_id, ()))
+                     for span in self.provisos_by_article.get((doc_id, article), ()))
+
+
+def article_root(view, node: object) -> object:
+    cur = view.by_id.get(node)
+    seen = set()
+    while cur is not None and cur.get("id") not in seen:
+        seen.add(cur.get("id"))
+        if _ARTICLE.fullmatch(str(cur.get("surface") or "").strip()):
+            return cur.get("id")
+        cur = view.by_id.get(cur.get("parent"))
+    return node
+
+
+def _provenance(value: str | Iterable[str]) -> list[str]:
+    values = [value] if isinstance(value, str) else list(value)
+    return list(dict.fromkeys(str(item) for item in values if str(item)))
+
+
+def _put(edges: dict[tuple, SectionRelation], row: SectionRelation) -> None:
+    old = edges.get(row.key)
+    row.props["provenance"] = _provenance(row.props.get("provenance") or ())
+    if old is None:
+        edges[row.key] = row
+        return
+    old.props["provenance"] = _provenance([
+        *(old.props.get("provenance") or ()), *(row.props.get("provenance") or ())])
+    evidence = list(old.props.get("evidence") or ())
+    candidate = {k: v for k, v in row.props.items() if k != "evidence"}
+    if candidate not in evidence:
+        evidence.append(candidate)
+    if evidence:
+        old.props["evidence"] = evidence
+
+
+def _section_relation(index: Index, kind: str, src_doc: str, src_node: object,
+                      dst_doc: str, dst_node: object, props: dict) \
+        -> SectionRelation | None:
+    sv, dv = index.docs.get(src_doc), index.docs.get(dst_doc)
+    if (sv is None or dv is None or src_node not in sv.by_id
+            or dst_node not in dv.by_id):
+        return None
+    return SectionRelation(
+        kind, src_doc, article_root(sv, src_node),
+        dst_doc, article_root(dv, dst_node), props)
+
+
+def _reference_rows(index: Index) -> list[tuple[str, dict, bool]]:
+    rows = []
+    for doc_id, values in index.ref_edges().items():
+        rows.extend((doc_id, row, False) for row in values)
+    rows.extend((row.get("src_doc", ""), row, True)
+                for row in index.cross_ref_edges())
+    return rows
+
+
+def _requirements(index: Index) -> tuple[RequirementRecord, ...]:
+    out, seen = [], set()
+    for doc_id, view in index.docs.items():
+        for block in view.blocks:
+            text = str(block.get("text") or "")
+            if not text:
+                continue
+            owner = block.get("node")
+            if owner is None:
+                owner = (view.owner(block.get("idx")) or {}).get("id")
+            if owner not in view.by_id:
+                continue
+            article = article_root(view, owner)
+            for span in requirement_spans.extract(text):
+                key = (doc_id, owner, block.get("idx"), span.kind,
+                       span.start, span.end, span.trigger_start, span.trigger_end)
+                if key in seen:
+                    continue
+                seen.add(key)
+                out.append(RequirementRecord(
+                    doc_id, owner, article, block.get("idx"), span.kind,
+                    span.surface, span.start, span.end, span.trigger,
+                    span.trigger_start, span.trigger_end))
+    return tuple(out)
+
+
+def _provisos(index: Index) -> tuple[requirement_spans.ProvisoSpan, ...]:
+    out, seen = [], set()
+    for doc_id, view in index.docs.items():
+        for block in view.blocks:
+            text = str(block.get("text") or "")
+            if not text:
+                continue
+            owner = block.get("node")
+            if owner is None:
+                owner = (view.owner(block.get("idx")) or {}).get("id")
+            if owner not in view.by_id:
+                continue
+            article = article_root(view, owner)
+            for span in requirement_spans.extract_provisos(
+                    text, doc_id=doc_id, node=owner, article=article,
+                    block=block.get("idx")):
+                if span.proviso_id not in seen:
+                    seen.add(span.proviso_id)
+                    out.append(span)
+    return tuple(sorted(out, key=lambda row: (
+        row.doc_id, str(row.article), str(row.block), row.cue_start)))
+
+
+def _proviso_relations(
+        index: Index, provisos: tuple[requirement_spans.ProvisoSpan, ...],
+        reference_rows: list[tuple[str, dict, bool]], delegated: dict) \
+        -> tuple[ProvisoRelation, ...]:
+    out: dict[tuple, ProvisoRelation] = {}
+
+    def put(row: ProvisoRelation) -> None:
+        out.setdefault(row.key, row)
+
+    refs_by_block: dict[tuple[str, object], list[tuple[dict, bool]]] = {}
+    incoming_by_article: dict[tuple[str, object], list[tuple[str, dict, bool]]] = {}
+    for src_doc, raw, cross in reference_rows:
+        if raw.get("block") is not None:
+            refs_by_block.setdefault((src_doc, raw.get("block")), []).append((raw, cross))
+        dst_doc = raw.get("dst_doc") or src_doc
+        dst_view = index.docs.get(dst_doc)
+        if dst_view is not None and raw.get("dst") in dst_view.by_id:
+            incoming_by_article.setdefault(
+                (dst_doc, article_root(dst_view, raw.get("dst"))), []).append(
+                    (src_doc, raw, cross))
+
+    delegation_by_article: dict[tuple[str, object], list[dict]] = {}
+    for (src_doc, src_node), rows in delegated.items():
+        view = index.docs.get(src_doc)
+        if view is None or src_node not in view.by_id:
+            continue
+        delegation_by_article.setdefault(
+            (src_doc, article_root(view, src_node)), []).extend(rows)
+
+    for span in provisos:
+        common = {
+            "cue": span.cue, "cue_start": span.cue_start,
+            "cue_end": span.cue_end, "body_start": span.body_start,
+            "body_end": span.body_end, "parent_start": span.parent_start,
+            "parent_end": span.parent_end, "scope_status": span.scope_status,
+            "source_sha256": span.source_sha256,
+            "authority": "source_text", "confidence": "exact-span",
+        }
+        put(ProvisoRelation(
+            "PHYSICAL_LINK", "ATTACHED_TO", span.proviso_id, span.doc_id,
+            span.node, span.block, "section", span.doc_id, span.node,
+            {**common, "provenance": ["source_text:proviso", "deterministic:nearest-scope"]}))
+        put(ProvisoRelation(
+            "LEGAL_EFFECT", span.effect_kind, span.proviso_id, span.doc_id,
+            span.node, span.block, "section", span.doc_id, span.node,
+            {**common, "provenance": ["source_text:proviso", "deterministic:closed-effect-cue"]}))
+
+        for raw, cross in refs_by_block.get((span.doc_id, span.block), ()):
+            dst_doc = raw.get("dst_doc") or span.doc_id
+            dst_node = raw.get("dst")
+            if dst_doc not in index.docs or dst_node not in index.docs[dst_doc].by_id:
+                continue
+            rel = str(raw.get("rel") or "인용")
+            route_kind = "FOLLOW_RECEPTION" if rel == "수임" else "FOLLOW_REFERENCE"
+            put(ProvisoRelation(
+                "SEARCH_ROUTING", route_kind, span.proviso_id, span.doc_id,
+                span.node, span.block, "section", dst_doc,
+                article_root(index.docs[dst_doc], dst_node), {
+                    **common, "reference_relation": rel,
+                    "surface": raw.get("surface", ""), "cross_document": cross,
+                    "provenance": ["source_text:reference", "deterministic:block-cooccurrence"],
+                    "confidence": "exact-block-route", "legal_effect_inferred": False,
+                }))
+
+        # 시행세칙 등이 ``규정 제26조제1항제3호 단서``처럼 부모의 세부 호를
+        # 역방향으로 수임하는 경우다. source article의 모든 수임을 붙이지 않고,
+        # 단서의 parent 문면에서 읽은 호 번호와 수임 블록의 명시 좌표가 같은 때만
+        # 해당 수임 조문 전체를 검색 경로로 연다.
+        item_match = re.match(r"\s*(\d+)\s*[.]", span.parent_text)
+        item_locator = (rf"제\s*{item_match.group(1)}\s*호"
+                        if item_match else "")
+        for inbound_doc, raw, cross in incoming_by_article.get(
+                (span.doc_id, span.article), ()):
+            source_view = index.docs.get(inbound_doc)
+            source_node = raw.get("src")
+            if source_view is None or source_node not in source_view.by_id:
+                continue
+            source_block = source_view.block_by_idx.get(raw.get("block")) or {}
+            locator_text = " ".join((
+                str(raw.get("surface") or ""),
+                str(source_block.get("text") or ""),
+            ))
+            if item_locator and not re.search(item_locator, locator_text):
+                continue
+            # 호 단서가 있는데 수임 좌표에 호 번호가 없으면 article-wide 자동
+            # 결속을 금지한다. 호가 없는 조문 단서는 정확 article 수임만 허용한다.
+            if item_match is None and "단서" not in locator_text:
+                continue
+            target_article = article_root(source_view, source_node)
+            put(ProvisoRelation(
+                "SEARCH_ROUTING", "FOLLOW_RECEPTION", span.proviso_id,
+                span.doc_id, span.node, span.block, "section", inbound_doc,
+                target_article, {
+                    **common, "reference_relation": str(raw.get("rel") or "인용"),
+                    "surface": raw.get("surface", ""), "cross_document": cross,
+                    "source_block": raw.get("block"),
+                    "provenance": ["source_text:receiving-reference",
+                                   "deterministic:parent-item-locator-match"],
+                    "confidence": "exact-parent-item-reception-route",
+                    "legal_effect_inferred": False,
+                }))
+
+        for raw in delegation_by_article.get((span.doc_id, span.article), ()):
+            dst_doc, dst_node = raw.get("doc_id"), raw.get("node")
+            if dst_doc not in index.docs:
+                continue
+            dst_kind = "section" if dst_node in index.docs[dst_doc].by_id else "document"
+            target = article_root(index.docs[dst_doc], dst_node) if dst_kind == "section" else None
+            put(ProvisoRelation(
+                "SEARCH_ROUTING", "FOLLOW_DELEGATION", span.proviso_id,
+                span.doc_id, span.node, span.block, dst_kind, dst_doc, target, {
+                    **common, "provenance": [raw.get("provenance", "law.go.kr:lsDelegated"),
+                                              "deterministic:article-scope-candidate"],
+                    "confidence": "official-article-route", "legal_effect_inferred": False,
+                }))
+    return tuple(sorted(out.values(), key=lambda row: row.key))
+
+
+def _definition_relations(index: Index, doc_id: str,
+                          article: object) -> tuple[SectionRelation, ...]:
+    view = index.docs.get(doc_id)
+    if view is None or article not in view.by_id:
+        return ()
+    out = []
+    for definition in definitions.terms_in(view, article, cap=64):
+        row = _section_relation(
+            index, "USES_DEFINITION", doc_id, article,
+            doc_id, definition.get("node"), {
+                "term": definition.get("term", ""),
+                "definition_kind": definition.get("kind", ""),
+                "scope": definition.get("scope", ""),
+                "scope_root": definition.get("scope_root"),
+                "block": definition.get("block"),
+                "provenance": ["source_text:definition", "deterministic:scope"],
+                "authority": "source_text", "confidence": "exact-term-in-scope",
+                "status": "resolved",
+            })
+        if row:
+            out.append(row)
+    return tuple(out)
+
+
+def _document_graph(index: Index, law_index_file: Path | None) \
+        -> tuple[tuple[GraphRelation, ...], tuple[TemporalFact, ...]]:
+    graph: list[GraphRelation] = []
+    seen = set()
+
+    def put(row: GraphRelation) -> None:
+        key = (row.kind, row.src_kind, row.src_doc, row.src_node,
+               row.dst_kind, row.dst_doc, row.dst_node)
+        if key not in seen:
+            seen.add(key)
+            graph.append(row)
+
+    if law_index_file is not None and law_index_file.is_file():
+        try:
+            blob = json.loads(law_index_file.read_text(encoding="utf-8"))
+        except Exception:
+            blob = {}
+        for family in blob.get("families", []):
+            stack: list[tuple[int, str]] = []
+            for member in family.get("members", []):
+                doc_id = member.get("doc_id")
+                if not doc_id or doc_id not in index.docs:
+                    continue
+                depth = int(member.get("depth") or 0)
+                while stack and stack[-1][0] >= depth:
+                    stack.pop()
+                if stack:
+                    parent = stack[-1][1]
+                    props = {"provenance": "law.go.kr:lsStmd",
+                             "family": family.get("root", "")}
+                    put(GraphRelation("IMPLEMENTED_BY", "document", parent, None,
+                                      "document", doc_id, None, props))
+                    put(GraphRelation("ISSUED_UNDER", "document", doc_id, None,
+                                      "document", parent, None, props))
+                stack.append((depth, doc_id))
+
+    # 같은 series가 있으면 그것이 우선이고, 없을 때만 같은 문서명의 구판·현행을 잇는다.
+    groups: dict[str, list[tuple[str, object]]] = {}
+    for doc_id, view in index.docs.items():
+        key = f"series:{view.series}" if view.series else f"name:{norm(view.name)}"
+        groups.setdefault(key, []).append((doc_id, view))
+    for key, rows in groups.items():
+        if len(rows) < 2:
+            continue
+        ordered = sorted(rows, key=lambda item: (
+            item[1].is_current, item[1].enforce, item[1].revised,
+            item[1].version, item[0]))
+        for (old_id, _old), (new_id, _new) in zip(ordered, ordered[1:]):
+            props = {"provenance": "structure:version_metadata", "series": key}
+            put(GraphRelation("SUPERSEDES", "document", new_id, None,
+                              "document", old_id, None, props))
+            put(GraphRelation("SUPERSEDED_BY", "document", old_id, None,
+                              "document", new_id, None, props))
+
+    temporal = []
+    for doc_id, view in index.docs.items():
+        if view.enforce:
+            temporal.append(TemporalFact(doc_id, "VALID_FROM", view.enforce))
+        if view.revised:
+            temporal.append(TemporalFact(doc_id, "REVISED_ON", view.revised))
+    return tuple(graph), tuple(temporal)
+
+
+def build(index: Index, *, delegation_file: str | Path | None = None,
+          law_index_file: str | Path | None = None,
+          include_requirements: bool = False,
+          include_definition_edges: bool | None = None,
+          use_cache: bool = True) -> RelationBundle:
+    """현재 Index에서 확정 관계 번들을 만든다.
+
+    ``delegation_file``과 ``law_index_file``을 명시하면 빌더의 data directory가 정본이다.
+    인자를 생략한 제품 런타임은 기존 환경 경로를 사용한다.
+    """
+    if include_definition_edges is None:
+        include_definition_edges = bool(include_requirements)
+    cache_key = ("proviso-relations-v1",
+                 str(Path(delegation_file).resolve()) if delegation_file else "runtime",
+                 str(Path(law_index_file).resolve()) if law_index_file else "",
+                 bool(include_requirements), bool(include_definition_edges))
+    cache = getattr(index, "_unified_relation_cache", None)
+    if use_cache and isinstance(cache, dict) and cache_key in cache:
+        return cache[cache_key]
+
+    edges: dict[tuple, SectionRelation] = {}
+    reference_rows = _reference_rows(index)
+
+    for src_doc, raw, cross in reference_rows:
+        dst_doc = raw.get("dst_doc") or src_doc
+        rel = str(raw.get("rel") or "인용")
+        row = _section_relation(
+            index, REFERENCE_KINDS.get(rel, "REFERENCES"), src_doc, raw.get("src"),
+            dst_doc, raw.get("dst"), {
+                **{k: v for k, v in raw.items()
+                   if k not in {"src", "dst", "src_doc", "dst_doc"}},
+                "relation": rel, "cross_document": cross,
+                "provenance": ["source_text:reference", str(raw.get("via") or "deterministic")],
+                "authority": "source_text", "confidence": "exact-coordinate",
+                "status": "resolved",
+            })
+        if row:
+            _put(edges, row)
+
+        # 부칙의 정형 종류를 일반 참조와 별도의 시점 관계로 보존한다.
+        view = index.docs.get(src_doc)
+        temporal_kind = _TEMPORAL_KINDS.get(
+            view.addendum_kind(raw.get("src")) if view else "")
+        if temporal_kind:
+            temporal = _section_relation(
+                index, temporal_kind, src_doc, raw.get("src"), dst_doc, raw.get("dst"), {
+                    "surface": raw.get("surface", ""), "block": raw.get("block"),
+                    "provenance": ["source_text:addendum", "structure:addendum_kind"],
+                    "authority": "source_text", "confidence": "exact-coordinate",
+                    "status": "resolved",
+                })
+            if temporal:
+                _put(edges, temporal)
+
+    # 공식 위임. 조 좌표가 없는 위임행정규칙은 반대 방향의 수임 문면이 같은
+    # 출발 조를 정확히 가리킬 때만 조문 간선으로 닫고, 아니면 그래프의 문서 포인터로 남긴다.
+    graph_extra: list[GraphRelation] = []
+    dpath = Path(delegation_file) if delegation_file is not None else None
+    delegated = delegation.adjacency(dpath, include_document_targets=True)
+    from lawrag.core.rag import verdicts as verdicts_mod
+    for (src_doc, src_node), rows in delegated.items():
+        if src_doc not in index.docs or src_node not in index.docs[src_doc].by_id:
+            continue
+        src_root = article_root(index.docs[src_doc], src_node)
+        for raw in rows:
+            dst_doc, dst_node = raw.get("doc_id"), raw.get("node")
+            candidates = []
+            if dst_node is None and dst_doc in index.docs:
+                for ref_src_doc, ref, _cross in reference_rows:
+                    ref_dst_doc = ref.get("dst_doc") or ref_src_doc
+                    if (ref_src_doc != dst_doc or ref_dst_doc != src_doc
+                            or str(ref.get("rel") or "") != "수임"):
+                        continue
+                    if article_root(index.docs[src_doc], ref.get("dst")) == src_root:
+                        candidates.append(ref.get("src"))
+            else:
+                candidates = [dst_node]
+            if candidates:
+                for candidate in dict.fromkeys(candidates):
+                    if verdicts_mod.is_suppressed(
+                            src_doc, src_node, dst_doc, candidate):
+                        continue
+                    row = _section_relation(
+                        index, "DELEGATES_TO", src_doc, src_node, dst_doc, candidate, {
+                            **{k: v for k, v in raw.items() if k not in {"doc_id", "node"}},
+                            "provenance": [raw.get("provenance", "law.go.kr:lsDelegated"),
+                                           *( ["source_text:receiving"] if dst_node is None else [])],
+                            "authority": "official", "confidence": "exact-coordinate",
+                            "status": "resolved",
+                        })
+                    if row:
+                        _put(edges, row)
+            elif dst_doc in index.docs:
+                graph_extra.append(GraphRelation(
+                    "DELEGATES_TO_DOCUMENT", "section", src_doc, src_root,
+                    "document", dst_doc, None, {
+                        **{k: v for k, v in raw.items() if k not in {"doc_id", "node"}},
+                        "provenance": raw.get("provenance", "law.go.kr:lsDelegated"),
+                        "status": "document-target",
+                    }))
+
+    # 전체 정의 적용 간선은 graph build에서 물질화한다. 제품 런타임은 incident()가
+    # 선택된 조문 하나에 대해서만 같은 생성기를 호출해 첫 질의에 전 코퍼스를 훑지 않는다.
+    if include_definition_edges:
+        for doc_id, view in index.docs.items():
+            articles = [node.get("id") for node in view.nodes
+                        if _ARTICLE.fullmatch(str(node.get("surface") or "").strip())]
+            for article in articles:
+                for row in _definition_relations(index, doc_id, article):
+                    _put(edges, row)
+
+    # 위반 조문을 인용하는 벌칙·행정제재·민사구제 조문을 역방향 companion으로 잇는다.
+    for src_doc, raw, _cross in reference_rows:
+        dst_doc = raw.get("dst_doc") or src_doc
+        sv, dv = index.docs.get(src_doc), index.docs.get(dst_doc)
+        if sv is None or dv is None:
+            continue
+        src_root, dst_root = article_root(sv, raw.get("src")), article_root(dv, raw.get("dst"))
+        if (not tags.is_sanction(sv, src_root)
+                or not tags.has_condition(dv, dst_root, ("의무", "금지"))):
+            continue
+        row = _section_relation(
+            index, "VIOLATION_SANCTIONED_BY", dst_doc, dst_root, src_doc, src_root, {
+                "surface": raw.get("surface", ""), "block": raw.get("block"),
+                "sanction_kind": tags.sanction_kind(sv, src_root),
+                "provenance": ["source_text:reference", "deterministic:sanction_tag"],
+                "authority": "source_text", "confidence": "exact-reference",
+                "status": "resolved",
+            })
+        if row:
+            _put(edges, row)
+
+    requirement_rows = _requirements(index) if include_requirements else ()
+    for req in requirement_rows:
+        if req.kind != "EXCEPTION" or req.node == req.article:
+            continue
+        row = _section_relation(
+            index, "HAS_EXCEPTION", req.doc_id, req.article, req.doc_id, req.node, {
+                "surface": req.surface, "trigger": req.trigger, "block": req.block,
+                "provenance": ["source_text:requirement", "deterministic:closed-cue"],
+                "authority": "source_text", "confidence": "exact-span",
+                "status": "resolved",
+            })
+        if row:
+            # article_root 정규화로 자기 간선이 된 경우는 Requirement node 쪽에만 보존한다.
+            if (row.src_doc, row.src_node) != (row.dst_doc, row.dst_node):
+                _put(edges, row)
+
+    # 단서 구조는 제품 탐색 계약이므로 Requirement shadow flag와 무관하게 만든다.
+    # 기존 SectionRelation은 그대로 두고 별도 plane에 병행 발행한다.
+    proviso_rows = _provisos(index)
+    proviso_relation_rows = _proviso_relations(
+        index, proviso_rows, reference_rows, delegated)
+
+    law_path = Path(law_index_file) if law_index_file is not None else None
+    document_graph, temporal_facts = _document_graph(index, law_path)
+    section_rows = tuple(sorted(edges.values(), key=lambda row: (
+        row.src_doc, str(row.src_node), row.kind, row.dst_doc, str(row.dst_node))))
+    outgoing: dict[tuple[str, object], list[SectionRelation]] = {}
+    incoming: dict[tuple[str, object], list[SectionRelation]] = {}
+    for row in section_rows:
+        outgoing.setdefault((row.src_doc, row.src_node), []).append(row)
+        incoming.setdefault((row.dst_doc, row.dst_node), []).append(row)
+    provisos_by_article: dict[tuple[str, object], list[requirement_spans.ProvisoSpan]] = {}
+    proviso_edges_by_id: dict[str, list[ProvisoRelation]] = {}
+    for span in proviso_rows:
+        provisos_by_article.setdefault((span.doc_id, span.article), []).append(span)
+    for row in proviso_relation_rows:
+        proviso_edges_by_id.setdefault(row.proviso_id, []).append(row)
+    bundle = RelationBundle(
+        sections=section_rows, requirements=tuple(requirement_rows),
+        provisos=proviso_rows, proviso_relations=proviso_relation_rows,
+        graph=tuple([*document_graph, *graph_extra]), temporal=temporal_facts,
+        outgoing={key: tuple(value) for key, value in outgoing.items()},
+        incoming={key: tuple(value) for key, value in incoming.items()},
+        provisos_by_article={key: tuple(value) for key, value in provisos_by_article.items()},
+        proviso_edges_by_id={key: tuple(value) for key, value in proviso_edges_by_id.items()},
+    )
+    if use_cache:
+        if not isinstance(cache, dict):
+            cache = {}
+            setattr(index, "_unified_relation_cache", cache)
+        cache[cache_key] = bundle
+    return bundle
+
+
+def incident(index: Index, doc_id: str, node: object) \
+        -> tuple[tuple[SectionRelation, ...], tuple[SectionRelation, ...]]:
+    view = index.docs.get(doc_id)
+    if view is None or node not in view.by_id:
+        return (), ()
+    root = article_root(view, node)
+    outgoing, incoming = build(index).incident(doc_id, root)
+    # 정의 적용은 선택된 조문에서만 지연 계산한다. 그래프 빌더의 전량 생성과 정확히
+    # 같은 함수라 관계 의미는 갈리지 않고 계산 범위만 다르다.
+    definition_rows = _definition_relations(index, doc_id, root)
+    if definition_rows:
+        merged = {row.key: row for row in outgoing}
+        for row in definition_rows:
+            merged.setdefault(row.key, row)
+        outgoing = tuple(merged.values())
+    return outgoing, incoming
+
+
+def proviso_incident(index: Index, doc_id: str, node: object) \
+        -> tuple[tuple[requirement_spans.ProvisoSpan, tuple[ProvisoRelation, ...]], ...]:
+    view = index.docs.get(doc_id)
+    if view is None or node not in view.by_id:
+        return ()
+    return build(index).proviso_incident(doc_id, article_root(view, node))
