@@ -1,0 +1,73 @@
+{
+  "source": {
+    "contract": "source.corrected",
+    "file": "source.json"
+  },
+  "correction": {
+    "contract": "source.corrected",
+    "file": "correction.json"
+  },
+  "observation": {
+    "contract": "semantic.observation",
+    "file": "observation.json",
+    "context_file": "context.json"
+  },
+  "canonical": {
+    "contract": "semantic.canonical",
+    "file": "canonical.json",
+    "context_file": "context.json"
+  },
+  "review": {
+    "contract": "data.review",
+    "file": "review.json",
+    "context_file": "context.json"
+  },
+  "generation": {
+    "contract": "storage.generation",
+    "file": "generation.json",
+    "context_file": "context.json"
+  },
+  "projection": {
+    "contract": "storage.projection",
+    "file": "projection.json",
+    "context_file": "context.json"
+  },
+  "question": {
+    "contract": "rag.question",
+    "file": "question.json"
+  },
+  "templates": {
+    "contract": "rag.templates",
+    "file": "templates.json"
+  },
+  "query": {
+    "contract": "semantic.query",
+    "file": "query.json",
+    "context_file": "context.json"
+  },
+  "hits": {
+    "contract": "rag.hits",
+    "file": "hits.json",
+    "context_file": "context.json"
+  },
+  "cards": {
+    "contract": "rag.cards",
+    "file": "cards.json",
+    "context_file": "context.json"
+  },
+  "answer": {
+    "contract": "rag.answer",
+    "file": "answer.json",
+    "context_file": "context.json"
+  },
+  "feedback_event": {
+    "contract": "feedback.event",
+    "file": "feedback_event.json",
+    "context_file": "context.json"
+  },
+  "feedback_proposal": {
+    "contract": "feedback.proposal",
+    "file": "feedback_proposal.json",
+    "context_file": "context.json"
+  }
+}

@@ -1,23 +1,8 @@
-# GenOS 코드 서빙 및 호스트 FastAPI 런타임.
-# 빌드 커맨드: python -m pip install -r requirements-serving.txt
-#
-# 로컬 sentence-transformers, anthropic, pytest, 수집·용어 컴파일 도구는 의도적으로
-# 제외한다. GenOS에서는 LLM·임베딩을 별도 서빙으로 호출한다. 다만 docling의 PDF
-# 레이아웃 모델이 torch를 요구할 수 있으므로 GenOS에서 승인된 CPU 이미지/휠을 쓴다.
-
-# service.py가 내부 ASGI 앱 전체를 적재·호출하는 데 필요한 API 계층
-fastapi==0.141.1
-uvicorn==0.52.1
-python-multipart==0.0.32
-pydantic==2.13.4
-
-# JSON/YAML 상태와 GenOS LLM·Embedding REST
-pyyaml==6.0.3
+# GENOS Python 3.11.15 minimal code-serving runtime.
+# Local vector/model and standalone uvicorn dependencies are installed separately.
+jsonschema==4.26.0
+referencing==0.37.0
 requests==2.34.2
-numpy==2.5.1
-
-# 문서 파싱·업로드 런타임
-docling==2.117.0
-pymupdf==1.28.0
-pyhwp==0.1b15
-six==1.17.0
+python-dotenv==1.2.2
+fastapi==0.141.1
+httpx==0.28.1

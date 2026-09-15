@@ -22,7 +22,7 @@ import time
 from typing import Any, Mapping, Sequence
 
 from lawrag.core.rag.answer import Section
-from lawrag.core.rag.experiments import retrieval_stage_ledger as stage_ledger
+from lawrag.runtime import retrieval_stage_ledger as stage_ledger
 from lawrag.core.rag.index import Index
 from lawrag.core.rag.legal_proposition_compiler import (
     ApplicabilityState,

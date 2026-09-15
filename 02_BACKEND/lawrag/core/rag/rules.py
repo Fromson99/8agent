@@ -30,6 +30,7 @@ from typing import Optional
 
 from lawrag.core.rag import refs
 from lawrag.core.rag.index import store_path
+from lawrag.platform.paths import data_path
 
 log = logging.getLogger("lawrag.core.rag.rules")
 
@@ -67,7 +68,7 @@ def breaker_file() -> Path:
 
 def hits_file() -> Path:
     """적중 원장 — verdicts.jsonl(판정)과 같은 자리, append-only."""
-    return Path(os.environ.get("RAG_LOG_DIR", store_path().parent / "rag")) \
+    return Path(os.environ.get("RAG_LOG_DIR", data_path("FEEDBACK", "RUNTIME"))) \
         / "rule_hits.jsonl"
 
 
@@ -104,7 +105,7 @@ def reset_breaker(note: str = "") -> dict:
 def mode() -> str:
     """유효 모드 — env 와 차단기 중 약한 쪽. 색인 서명에 이 값이 들어가므로
     전환은 재시작 없이 다음 질의부터다."""
-    from lawrag.core.rag.content_snapshot import current_content_snapshot
+    from lawrag.runtime.content_snapshot import current_content_snapshot
 
     if current_content_snapshot() is not None:
         return "off"

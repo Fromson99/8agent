@@ -16,7 +16,7 @@ from .store import GraphStore
 
 def default_structure() -> Path:
     configured = Path(store_path())
-    local = data_path("structure")
+    local = data_path("INBOX", "AUTHORING", "structure")
     # 서비스는 env를 주입한다. 저장소에서 CLI만 실행할 때는 실제 정본 자리를 쓴다.
     return configured if configured.exists() or not local.exists() else local
 

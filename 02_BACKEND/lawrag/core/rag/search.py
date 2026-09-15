@@ -31,7 +31,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Optional
 
-from lawrag.core.rag.content_snapshot import (
+from lawrag.runtime.content_snapshot import (
     ArtifactProvenance,
     ContentSnapshot,
     ContentSnapshotError,
@@ -266,7 +266,7 @@ def search(index: Index, query: str) -> SearchResult:
     try:
         vec_nodes = vector_mod.search(q, doc_ids=index.scope)   # [(doc_id, node, cos)] — 스코프 안만
     except Exception as exc:
-        from lawrag.core.rag.content_snapshot import ContentSnapshotError
+        from lawrag.runtime.content_snapshot import ContentSnapshotError
 
         if isinstance(exc, ContentSnapshotError):
             raise

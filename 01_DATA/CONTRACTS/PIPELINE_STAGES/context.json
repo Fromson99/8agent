@@ -1,0 +1,802 @@
+{
+  "canonical": {
+    "schema_version": "legal-semantic-v2",
+    "schema_sha256": "25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607",
+    "record_kind": "CANONICAL_BUNDLE",
+    "id": "canonical:example",
+    "scope": {
+      "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "authority_generation": "synthetic-authority-1",
+      "document_version_ids": [
+        "synthetic:main-v1",
+        "synthetic:detail-v1"
+      ],
+      "jurisdiction": "SYNTHETIC",
+      "as_of": null
+    },
+    "generation_id": "synthetic-generation-1",
+    "payload": {
+      "concepts": [
+        {
+          "id": "concept:0",
+          "label": "기관",
+          "concept_type": "ENTITY",
+          "aliases": [],
+          "definition_rule_ids": [],
+          "evidence_ids": [
+            "evidence:0"
+          ]
+        },
+        {
+          "id": "concept:1",
+          "label": "취득",
+          "concept_type": "ACTION",
+          "aliases": [],
+          "definition_rule_ids": [],
+          "evidence_ids": [
+            "evidence:0"
+          ]
+        },
+        {
+          "id": "concept:2",
+          "label": "대상 증권",
+          "concept_type": "ENTITY",
+          "aliases": [],
+          "definition_rule_ids": [],
+          "evidence_ids": [
+            "evidence:0"
+          ]
+        },
+        {
+          "id": "concept:3",
+          "label": "보유",
+          "concept_type": "ACTION",
+          "aliases": [],
+          "definition_rule_ids": [],
+          "evidence_ids": [
+            "evidence:0"
+          ]
+        },
+        {
+          "id": "concept:4",
+          "label": "면제",
+          "concept_type": "ACTION",
+          "aliases": [],
+          "definition_rule_ids": [],
+          "evidence_ids": [
+            "evidence:1"
+          ]
+        },
+        {
+          "id": "concept:5",
+          "label": "전문기관",
+          "concept_type": "LEGAL_CATEGORY",
+          "aliases": [],
+          "definition_rule_ids": [],
+          "evidence_ids": [
+            "evidence:2"
+          ]
+        },
+        {
+          "id": "concept:6",
+          "label": "공개 절차",
+          "concept_type": "PROPERTY",
+          "aliases": [],
+          "definition_rule_ids": [],
+          "evidence_ids": [
+            "evidence:2"
+          ]
+        },
+        {
+          "id": "concept:7",
+          "label": "해당",
+          "concept_type": "STATE",
+          "aliases": [],
+          "definition_rule_ids": [],
+          "evidence_ids": [
+            "evidence:2"
+          ]
+        }
+      ],
+      "mentions": [
+        {
+          "id": "mention:0",
+          "surface": "기관",
+          "concept_id": "concept:0",
+          "resolution": "RESOLVED",
+          "unresolved_reason": null,
+          "evidence_ids": [
+            "evidence:0"
+          ]
+        },
+        {
+          "id": "mention:1",
+          "surface": "취득",
+          "concept_id": "concept:1",
+          "resolution": "RESOLVED",
+          "unresolved_reason": null,
+          "evidence_ids": [
+            "evidence:0"
+          ]
+        },
+        {
+          "id": "mention:2",
+          "surface": "대상 증권",
+          "concept_id": "concept:2",
+          "resolution": "RESOLVED",
+          "unresolved_reason": null,
+          "evidence_ids": [
+            "evidence:0"
+          ]
+        },
+        {
+          "id": "mention:3",
+          "surface": "보유",
+          "concept_id": "concept:3",
+          "resolution": "RESOLVED",
+          "unresolved_reason": null,
+          "evidence_ids": [
+            "evidence:0"
+          ]
+        },
+        {
+          "id": "mention:4",
+          "surface": "면제",
+          "concept_id": "concept:4",
+          "resolution": "RESOLVED",
+          "unresolved_reason": null,
+          "evidence_ids": [
+            "evidence:1"
+          ]
+        },
+        {
+          "id": "mention:5",
+          "surface": "전문기관",
+          "concept_id": "concept:5",
+          "resolution": "RESOLVED",
+          "unresolved_reason": null,
+          "evidence_ids": [
+            "evidence:2"
+          ]
+        },
+        {
+          "id": "mention:6",
+          "surface": "공개 절차",
+          "concept_id": "concept:6",
+          "resolution": "RESOLVED",
+          "unresolved_reason": null,
+          "evidence_ids": [
+            "evidence:2"
+          ]
+        },
+        {
+          "id": "mention:7",
+          "surface": "해당",
+          "concept_id": "concept:7",
+          "resolution": "RESOLVED",
+          "unresolved_reason": null,
+          "evidence_ids": [
+            "evidence:2"
+          ]
+        }
+      ],
+      "clauses": [
+        {
+          "id": "clause:0",
+          "clause_type": "ACTION",
+          "polarity": "POSITIVE",
+          "role_bindings": [
+            {
+              "role": "ACTOR",
+              "concept_id": "concept:0",
+              "mention_ids": [
+                "mention:0"
+              ],
+              "resolution": "RESOLVED",
+              "unresolved_reason": null,
+              "evidence_ids": [
+                "evidence:0"
+              ]
+            },
+            {
+              "role": "PREDICATE",
+              "concept_id": "concept:1",
+              "mention_ids": [
+                "mention:1"
+              ],
+              "resolution": "RESOLVED",
+              "unresolved_reason": null,
+              "evidence_ids": [
+                "evidence:0"
+              ]
+            },
+            {
+              "role": "OBJECT",
+              "concept_id": "concept:2",
+              "mention_ids": [
+                "mention:2"
+              ],
+              "resolution": "RESOLVED",
+              "unresolved_reason": null,
+              "evidence_ids": [
+                "evidence:0"
+              ]
+            }
+          ],
+          "evidence_ids": [
+            "evidence:0"
+          ]
+        },
+        {
+          "id": "clause:1",
+          "clause_type": "ACTION",
+          "polarity": "POSITIVE",
+          "role_bindings": [
+            {
+              "role": "ACTOR",
+              "concept_id": "concept:0",
+              "mention_ids": [
+                "mention:0"
+              ],
+              "resolution": "RESOLVED",
+              "unresolved_reason": null,
+              "evidence_ids": [
+                "evidence:0"
+              ]
+            },
+            {
+              "role": "PREDICATE",
+              "concept_id": "concept:3",
+              "mention_ids": [
+                "mention:3"
+              ],
+              "resolution": "RESOLVED",
+              "unresolved_reason": null,
+              "evidence_ids": [
+                "evidence:0"
+              ]
+            },
+            {
+              "role": "OBJECT",
+              "concept_id": "concept:2",
+              "mention_ids": [
+                "mention:2"
+              ],
+              "resolution": "RESOLVED",
+              "unresolved_reason": null,
+              "evidence_ids": [
+                "evidence:0"
+              ]
+            }
+          ],
+          "evidence_ids": [
+            "evidence:0"
+          ]
+        },
+        {
+          "id": "clause:2",
+          "clause_type": "ACTION",
+          "polarity": "POSITIVE",
+          "role_bindings": [
+            {
+              "role": "PREDICATE",
+              "concept_id": "concept:4",
+              "mention_ids": [
+                "mention:4"
+              ],
+              "resolution": "RESOLVED",
+              "unresolved_reason": null,
+              "evidence_ids": [
+                "evidence:1"
+              ]
+            }
+          ],
+          "evidence_ids": [
+            "evidence:1"
+          ]
+        },
+        {
+          "id": "clause:3",
+          "clause_type": "STATE",
+          "polarity": "POSITIVE",
+          "role_bindings": [
+            {
+              "role": "ACTOR",
+              "concept_id": "concept:5",
+              "mention_ids": [
+                "mention:5"
+              ],
+              "resolution": "RESOLVED",
+              "unresolved_reason": null,
+              "evidence_ids": [
+                "evidence:2"
+              ]
+            },
+            {
+              "role": "PREDICATE",
+              "concept_id": "concept:7",
+              "mention_ids": [
+                "mention:7"
+              ],
+              "resolution": "RESOLVED",
+              "unresolved_reason": null,
+              "evidence_ids": [
+                "evidence:2"
+              ]
+            },
+            {
+              "role": "METHOD",
+              "concept_id": "concept:6",
+              "mention_ids": [
+                "mention:6"
+              ],
+              "resolution": "RESOLVED",
+              "unresolved_reason": null,
+              "evidence_ids": [
+                "evidence:2"
+              ]
+            }
+          ],
+          "evidence_ids": [
+            "evidence:2"
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "rule:main",
+          "rule_type": "NORM",
+          "applicability": {
+            "operator": "TRUE",
+            "evidence_ids": [
+              "evidence:0"
+            ]
+          },
+          "antecedent": {
+            "operator": "CLAUSE",
+            "clause_id": "clause:0"
+          },
+          "consequent_clause_ids": [
+            "clause:1"
+          ],
+          "modality": "OBLIGATION",
+          "valid_from": null,
+          "valid_until": null,
+          "evidence_ids": [
+            "evidence:0"
+          ]
+        },
+        {
+          "id": "rule:detail",
+          "rule_type": "CLASSIFICATION",
+          "applicability": {
+            "operator": "TRUE",
+            "evidence_ids": [
+              "evidence:2"
+            ]
+          },
+          "antecedent": {
+            "operator": "TRUE",
+            "evidence_ids": [
+              "evidence:2"
+            ]
+          },
+          "consequent_clause_ids": [
+            "clause:3"
+          ],
+          "modality": "DECLARATION",
+          "valid_from": null,
+          "valid_until": null,
+          "evidence_ids": [
+            "evidence:2"
+          ]
+        }
+      ],
+      "provisos": [
+        {
+          "id": "proviso:main",
+          "attached_rule_id": "rule:main",
+          "condition": {
+            "operator": "CLAUSE",
+            "clause_id": "clause:3"
+          },
+          "outcome_clause_ids": [
+            "clause:2"
+          ],
+          "effect_type": "EXEMPTION",
+          "completion_type": "EXTERNAL",
+          "dependency_relation_ids": [
+            "relation:dependency"
+          ],
+          "evidence_ids": [
+            "evidence:1"
+          ]
+        }
+      ],
+      "relations": [
+        {
+          "id": "relation:dependency",
+          "predicate": "DEPENDS_ON_REQUIREMENTS_OF",
+          "source": {
+            "type": "Proviso",
+            "id": "proviso:main"
+          },
+          "target": {
+            "type": "Rule",
+            "id": "rule:detail"
+          },
+          "resolution": "RESOLVED",
+          "target_locator": null,
+          "unresolved_reason": null,
+          "evidence_ids": [
+            "evidence:1"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "evidence:0",
+          "document_version_id": "synthetic:main-v1",
+          "structural_unit_id": "unit:0",
+          "block_id": "block:0",
+          "source_artifact_sha256": "499941f464e3c85828b367cccb2c5d5b6d2b94a6684df32aff348c2dbecc22e7",
+          "start": 0,
+          "end": 30,
+          "quote": "기관이 대상 증권을 취득한 경우 이를 보유하여야 한다.",
+          "quote_sha256": "499941f464e3c85828b367cccb2c5d5b6d2b94a6684df32aff348c2dbecc22e7"
+        },
+        {
+          "id": "evidence:1",
+          "document_version_id": "synthetic:main-v1",
+          "structural_unit_id": "unit:1",
+          "block_id": "block:1",
+          "source_artifact_sha256": "3e02a7d4c4131036949578755f7b841e47dbf9325ed3db170881a98a91151c23",
+          "start": 0,
+          "end": 32,
+          "quote": "다만, 별도 규칙의 요건에 해당하면 기본 의무를 면제한다.",
+          "quote_sha256": "3e02a7d4c4131036949578755f7b841e47dbf9325ed3db170881a98a91151c23"
+        },
+        {
+          "id": "evidence:2",
+          "document_version_id": "synthetic:detail-v1",
+          "structural_unit_id": "unit:2",
+          "block_id": "block:2",
+          "source_artifact_sha256": "bf48db60984c605cfb4fb17b3beaeb9496dfd5421d62018574b71d1b625bb7e9",
+          "start": 0,
+          "end": 26,
+          "quote": "전문기관이 공개 절차로 취득한 경우에 해당한다.",
+          "quote_sha256": "bf48db60984c605cfb4fb17b3beaeb9496dfd5421d62018574b71d1b625bb7e9"
+        }
+      ],
+      "crosswalk": []
+    },
+    "source_observation_ids": [
+      "observation:example"
+    ],
+    "review_receipts": [
+      {
+        "id": "review:synthetic-only",
+        "sha256": "de8a3730fcb57be734784264362a8a69de097be3d6e9369e73bf7b49e55e4aae"
+      }
+    ]
+  },
+  "query": {
+    "schema_version": "legal-semantic-v2",
+    "schema_sha256": "25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607",
+    "record_kind": "QUERY_PLAN",
+    "id": "query:example",
+    "scope": {
+      "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "authority_generation": "synthetic-authority-1",
+      "document_version_ids": [
+        "synthetic:main-v1",
+        "synthetic:detail-v1"
+      ],
+      "jurisdiction": "SYNTHETIC",
+      "as_of": null
+    },
+    "question": "기관의 보유 의무 면제 조건을 알려줘; 별도 사례의 조건도 알려줘",
+    "cards": [
+      {
+        "id": "card:example",
+        "template_id": "template:exemption",
+        "document_version_ids": [
+          "synthetic:main-v1",
+          "synthetic:detail-v1"
+        ],
+        "facts": [
+          {
+            "key": "actor",
+            "value": "기관",
+            "start": 0,
+            "end": 2,
+            "quote": "기관",
+            "concept_candidates": [
+              "concept:0"
+            ]
+          }
+        ],
+        "missing_fact_keys": [],
+        "unresolved_reason": null
+      },
+      {
+        "id": "card:second",
+        "template_id": "template:exemption",
+        "document_version_ids": [
+          "synthetic:main-v1",
+          "synthetic:detail-v1"
+        ],
+        "facts": [],
+        "missing_fact_keys": [
+          "actor"
+        ],
+        "unresolved_reason": "별도 사례의 주체가 제시되지 않았다."
+      }
+    ]
+  },
+  "templates": [
+    {
+      "schema_version": "legal-semantic-v2",
+      "schema_sha256": "25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607",
+      "record_kind": "ASSEMBLY_TEMPLATE",
+      "template": {
+        "id": "template:exemption",
+        "label": "면제·적용 제외 검토",
+        "intent": "기본 규칙과 적용 범위, 단서 조건, 변경 결과, 외부 요건을 함께 찾는다.",
+        "slots": [
+          {
+            "slot": "SCOPE",
+            "required": true,
+            "allowed_types": [
+              "Rule"
+            ]
+          },
+          {
+            "slot": "BASE_RULE",
+            "required": true,
+            "allowed_types": [
+              "Rule"
+            ]
+          },
+          {
+            "slot": "CONDITIONS",
+            "required": true,
+            "allowed_types": [
+              "SemanticClause"
+            ]
+          },
+          {
+            "slot": "PROVISOS",
+            "required": true,
+            "allowed_types": [
+              "Proviso"
+            ]
+          },
+          {
+            "slot": "OUTCOMES",
+            "required": true,
+            "allowed_types": [
+              "SemanticClause"
+            ]
+          },
+          {
+            "slot": "REFERENCES",
+            "required": true,
+            "allowed_types": [
+              "LegalRelation"
+            ]
+          }
+        ],
+        "required_fact_keys": [
+          "actor"
+        ],
+        "traversals": [
+          {
+            "predicate": "DEPENDS_ON_REQUIREMENTS_OF",
+            "direction": "OUTGOING",
+            "max_hops": 2
+          }
+        ],
+        "missing_policy": "RETURN_UNKNOWN_WITH_MISSING"
+      }
+    }
+  ],
+  "cards": {
+    "schema_version": "rag-stage-v2",
+    "scope": {
+      "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "authority_generation": "synthetic-authority-1",
+      "document_version_ids": [
+        "synthetic:main-v1",
+        "synthetic:detail-v1"
+      ],
+      "jurisdiction": "SYNTHETIC",
+      "as_of": null
+    },
+    "query_plan_id": "query:example",
+    "canonical_generation_id": "synthetic-generation-1",
+    "canonical_payload_sha256": "8e440448a2a1ac462b7eb1603eae2a4e49191c42b582e50882301badddd79976",
+    "record_kind": "CARDS",
+    "id": "cards:example",
+    "cards": [
+      {
+        "query_card_id": "card:example",
+        "bundle": {
+          "schema_version": "legal-semantic-v2",
+          "schema_sha256": "25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607",
+          "record_kind": "RULE_BUNDLE",
+          "id": "bundle:example",
+          "scope": {
+            "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "authority_generation": "synthetic-authority-1",
+            "document_version_ids": [
+              "synthetic:main-v1",
+              "synthetic:detail-v1"
+            ],
+            "jurisdiction": "SYNTHETIC",
+            "as_of": null
+          },
+          "canonical_generation_id": "synthetic-generation-1",
+          "canonical_payload_sha256": "8e440448a2a1ac462b7eb1603eae2a4e49191c42b582e50882301badddd79976",
+          "template_id": "template:exemption",
+          "entry_rule_ids": [
+            "rule:main"
+          ],
+          "slots": [
+            {
+              "slot": "SCOPE",
+              "state": "PRESENT",
+              "refs": [
+                {
+                  "type": "Rule",
+                  "id": "rule:main"
+                }
+              ],
+              "reason": null
+            },
+            {
+              "slot": "BASE_RULE",
+              "state": "PRESENT",
+              "refs": [
+                {
+                  "type": "Rule",
+                  "id": "rule:main"
+                }
+              ],
+              "reason": null
+            },
+            {
+              "slot": "CONDITIONS",
+              "state": "PRESENT",
+              "refs": [
+                {
+                  "type": "SemanticClause",
+                  "id": "clause:3"
+                }
+              ],
+              "reason": null
+            },
+            {
+              "slot": "PROVISOS",
+              "state": "PRESENT",
+              "refs": [
+                {
+                  "type": "Proviso",
+                  "id": "proviso:main"
+                }
+              ],
+              "reason": null
+            },
+            {
+              "slot": "OUTCOMES",
+              "state": "PRESENT",
+              "refs": [
+                {
+                  "type": "SemanticClause",
+                  "id": "clause:2"
+                }
+              ],
+              "reason": null
+            },
+            {
+              "slot": "REFERENCES",
+              "state": "PRESENT",
+              "refs": [
+                {
+                  "type": "LegalRelation",
+                  "id": "relation:dependency"
+                }
+              ],
+              "reason": null
+            }
+          ],
+          "unresolved_relation_ids": [],
+          "structural_completeness": "COMPLETE",
+          "legal_assessment": "NOT_PERFORMED"
+        },
+        "reason": null
+      },
+      {
+        "query_card_id": "card:second",
+        "bundle": null,
+        "reason": "추가 사실이 없어 규칙을 특정하지 못했다."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "document_version_id": "synthetic:main-v1",
+      "block_id": "block:0",
+      "source_artifact_sha256": "499941f464e3c85828b367cccb2c5d5b6d2b94a6684df32aff348c2dbecc22e7",
+      "text": "기관이 대상 증권을 취득한 경우 이를 보유하여야 한다."
+    },
+    {
+      "document_version_id": "synthetic:main-v1",
+      "block_id": "block:1",
+      "source_artifact_sha256": "3e02a7d4c4131036949578755f7b841e47dbf9325ed3db170881a98a91151c23",
+      "text": "다만, 별도 규칙의 요건에 해당하면 기본 의무를 면제한다."
+    },
+    {
+      "document_version_id": "synthetic:detail-v1",
+      "block_id": "block:2",
+      "source_artifact_sha256": "bf48db60984c605cfb4fb17b3beaeb9496dfd5421d62018574b71d1b625bb7e9",
+      "text": "전문기관이 공개 절차로 취득한 경우에 해당한다."
+    }
+  ],
+  "artifacts": {
+    "observation:example": {
+      "ref": {
+        "id": "observation:example",
+        "contract": "semantic.observation",
+        "path": "synthetic/observation-example.json",
+        "sha256": "bac029d736309e39aa85fbb5903348f1d3b50544f997b0e1ea40bdb03c38d5f3"
+      },
+      "raw": "{\"id\":\"observation:example\",\"payload\":{\"clauses\":[{\"clause_type\":\"ACTION\",\"evidence_ids\":[\"evidence:0\"],\"id\":\"clause:0\",\"polarity\":\"POSITIVE\",\"role_bindings\":[{\"concept_id\":\"concept:0\",\"evidence_ids\":[\"evidence:0\"],\"mention_ids\":[\"mention:0\"],\"resolution\":\"RESOLVED\",\"role\":\"ACTOR\",\"unresolved_reason\":null},{\"concept_id\":\"concept:1\",\"evidence_ids\":[\"evidence:0\"],\"mention_ids\":[\"mention:1\"],\"resolution\":\"RESOLVED\",\"role\":\"PREDICATE\",\"unresolved_reason\":null},{\"concept_id\":\"concept:2\",\"evidence_ids\":[\"evidence:0\"],\"mention_ids\":[\"mention:2\"],\"resolution\":\"RESOLVED\",\"role\":\"OBJECT\",\"unresolved_reason\":null}]},{\"clause_type\":\"ACTION\",\"evidence_ids\":[\"evidence:0\"],\"id\":\"clause:1\",\"polarity\":\"POSITIVE\",\"role_bindings\":[{\"concept_id\":\"concept:0\",\"evidence_ids\":[\"evidence:0\"],\"mention_ids\":[\"mention:0\"],\"resolution\":\"RESOLVED\",\"role\":\"ACTOR\",\"unresolved_reason\":null},{\"concept_id\":\"concept:3\",\"evidence_ids\":[\"evidence:0\"],\"mention_ids\":[\"mention:3\"],\"resolution\":\"RESOLVED\",\"role\":\"PREDICATE\",\"unresolved_reason\":null},{\"concept_id\":\"concept:2\",\"evidence_ids\":[\"evidence:0\"],\"mention_ids\":[\"mention:2\"],\"resolution\":\"RESOLVED\",\"role\":\"OBJECT\",\"unresolved_reason\":null}]},{\"clause_type\":\"ACTION\",\"evidence_ids\":[\"evidence:1\"],\"id\":\"clause:2\",\"polarity\":\"POSITIVE\",\"role_bindings\":[{\"concept_id\":\"concept:4\",\"evidence_ids\":[\"evidence:1\"],\"mention_ids\":[\"mention:4\"],\"resolution\":\"RESOLVED\",\"role\":\"PREDICATE\",\"unresolved_reason\":null}]},{\"clause_type\":\"STATE\",\"evidence_ids\":[\"evidence:2\"],\"id\":\"clause:3\",\"polarity\":\"POSITIVE\",\"role_bindings\":[{\"concept_id\":\"concept:5\",\"evidence_ids\":[\"evidence:2\"],\"mention_ids\":[\"mention:5\"],\"resolution\":\"RESOLVED\",\"role\":\"ACTOR\",\"unresolved_reason\":null},{\"concept_id\":\"concept:7\",\"evidence_ids\":[\"evidence:2\"],\"mention_ids\":[\"mention:7\"],\"resolution\":\"RESOLVED\",\"role\":\"PREDICATE\",\"unresolved_reason\":null},{\"concept_id\":\"concept:6\",\"evidence_ids\":[\"evidence:2\"],\"mention_ids\":[\"mention:6\"],\"resolution\":\"RESOLVED\",\"role\":\"METHOD\",\"unresolved_reason\":null}]}],\"concepts\":[{\"aliases\":[],\"concept_type\":\"ENTITY\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:0\"],\"id\":\"concept:0\",\"label\":\"기관\"},{\"aliases\":[],\"concept_type\":\"ACTION\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:0\"],\"id\":\"concept:1\",\"label\":\"취득\"},{\"aliases\":[],\"concept_type\":\"ENTITY\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:0\"],\"id\":\"concept:2\",\"label\":\"대상 증권\"},{\"aliases\":[],\"concept_type\":\"ACTION\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:0\"],\"id\":\"concept:3\",\"label\":\"보유\"},{\"aliases\":[],\"concept_type\":\"ACTION\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:1\"],\"id\":\"concept:4\",\"label\":\"면제\"},{\"aliases\":[],\"concept_type\":\"LEGAL_CATEGORY\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:2\"],\"id\":\"concept:5\",\"label\":\"전문기관\"},{\"aliases\":[],\"concept_type\":\"PROPERTY\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:2\"],\"id\":\"concept:6\",\"label\":\"공개 절차\"},{\"aliases\":[],\"concept_type\":\"STATE\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:2\"],\"id\":\"concept:7\",\"label\":\"해당\"}],\"crosswalk\":[],\"evidence\":[{\"block_id\":\"block:0\",\"document_version_id\":\"synthetic:main-v1\",\"end\":30,\"id\":\"evidence:0\",\"quote\":\"기관이 대상 증권을 취득한 경우 이를 보유하여야 한다.\",\"quote_sha256\":\"499941f464e3c85828b367cccb2c5d5b6d2b94a6684df32aff348c2dbecc22e7\",\"source_artifact_sha256\":\"499941f464e3c85828b367cccb2c5d5b6d2b94a6684df32aff348c2dbecc22e7\",\"start\":0,\"structural_unit_id\":\"unit:0\"},{\"block_id\":\"block:1\",\"document_version_id\":\"synthetic:main-v1\",\"end\":32,\"id\":\"evidence:1\",\"quote\":\"다만, 별도 규칙의 요건에 해당하면 기본 의무를 면제한다.\",\"quote_sha256\":\"3e02a7d4c4131036949578755f7b841e47dbf9325ed3db170881a98a91151c23\",\"source_artifact_sha256\":\"3e02a7d4c4131036949578755f7b841e47dbf9325ed3db170881a98a91151c23\",\"start\":0,\"structural_unit_id\":\"unit:1\"},{\"block_id\":\"block:2\",\"document_version_id\":\"synthetic:detail-v1\",\"end\":26,\"id\":\"evidence:2\",\"quote\":\"전문기관이 공개 절차로 취득한 경우에 해당한다.\",\"quote_sha256\":\"bf48db60984c605cfb4fb17b3beaeb9496dfd5421d62018574b71d1b625bb7e9\",\"source_artifact_sha256\":\"bf48db60984c605cfb4fb17b3beaeb9496dfd5421d62018574b71d1b625bb7e9\",\"start\":0,\"structural_unit_id\":\"unit:2\"}],\"mentions\":[{\"concept_id\":\"concept:0\",\"evidence_ids\":[\"evidence:0\"],\"id\":\"mention:0\",\"resolution\":\"RESOLVED\",\"surface\":\"기관\",\"unresolved_reason\":null},{\"concept_id\":\"concept:1\",\"evidence_ids\":[\"evidence:0\"],\"id\":\"mention:1\",\"resolution\":\"RESOLVED\",\"surface\":\"취득\",\"unresolved_reason\":null},{\"concept_id\":\"concept:2\",\"evidence_ids\":[\"evidence:0\"],\"id\":\"mention:2\",\"resolution\":\"RESOLVED\",\"surface\":\"대상 증권\",\"unresolved_reason\":null},{\"concept_id\":\"concept:3\",\"evidence_ids\":[\"evidence:0\"],\"id\":\"mention:3\",\"resolution\":\"RESOLVED\",\"surface\":\"보유\",\"unresolved_reason\":null},{\"concept_id\":\"concept:4\",\"evidence_ids\":[\"evidence:1\"],\"id\":\"mention:4\",\"resolution\":\"RESOLVED\",\"surface\":\"면제\",\"unresolved_reason\":null},{\"concept_id\":\"concept:5\",\"evidence_ids\":[\"evidence:2\"],\"id\":\"mention:5\",\"resolution\":\"RESOLVED\",\"surface\":\"전문기관\",\"unresolved_reason\":null},{\"concept_id\":\"concept:6\",\"evidence_ids\":[\"evidence:2\"],\"id\":\"mention:6\",\"resolution\":\"RESOLVED\",\"surface\":\"공개 절차\",\"unresolved_reason\":null},{\"concept_id\":\"concept:7\",\"evidence_ids\":[\"evidence:2\"],\"id\":\"mention:7\",\"resolution\":\"RESOLVED\",\"surface\":\"해당\",\"unresolved_reason\":null}],\"provisos\":[{\"attached_rule_id\":\"rule:main\",\"completion_type\":\"EXTERNAL\",\"condition\":{\"clause_id\":\"clause:3\",\"operator\":\"CLAUSE\"},\"dependency_relation_ids\":[\"relation:dependency\"],\"effect_type\":\"EXEMPTION\",\"evidence_ids\":[\"evidence:1\"],\"id\":\"proviso:main\",\"outcome_clause_ids\":[\"clause:2\"]}],\"relations\":[{\"evidence_ids\":[\"evidence:1\"],\"id\":\"relation:dependency\",\"predicate\":\"DEPENDS_ON_REQUIREMENTS_OF\",\"resolution\":\"RESOLVED\",\"source\":{\"id\":\"proviso:main\",\"type\":\"Proviso\"},\"target\":{\"id\":\"rule:detail\",\"type\":\"Rule\"},\"target_locator\":null,\"unresolved_reason\":null}],\"rules\":[{\"antecedent\":{\"clause_id\":\"clause:0\",\"operator\":\"CLAUSE\"},\"applicability\":{\"evidence_ids\":[\"evidence:0\"],\"operator\":\"TRUE\"},\"consequent_clause_ids\":[\"clause:1\"],\"evidence_ids\":[\"evidence:0\"],\"id\":\"rule:main\",\"modality\":\"OBLIGATION\",\"rule_type\":\"NORM\",\"valid_from\":null,\"valid_until\":null},{\"antecedent\":{\"evidence_ids\":[\"evidence:2\"],\"operator\":\"TRUE\"},\"applicability\":{\"evidence_ids\":[\"evidence:2\"],\"operator\":\"TRUE\"},\"consequent_clause_ids\":[\"clause:3\"],\"evidence_ids\":[\"evidence:2\"],\"id\":\"rule:detail\",\"modality\":\"DECLARATION\",\"rule_type\":\"CLASSIFICATION\",\"valid_from\":null,\"valid_until\":null}]},\"provenance\":{\"input_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"method\":\"HUMAN\",\"producer\":\"synthetic-example\",\"producer_version\":\"1\",\"prompt_sha256\":null,\"provider_receipt_sha256\":null},\"record_kind\":\"OBSERVATION\",\"schema_sha256\":\"25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607\",\"schema_version\":\"legal-semantic-v2\",\"scope\":{\"as_of\":null,\"authority_generation\":\"synthetic-authority-1\",\"document_version_ids\":[\"synthetic:main-v1\",\"synthetic:detail-v1\"],\"jurisdiction\":\"SYNTHETIC\",\"source_set_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"},\"status\":\"CANDIDATE\"}"
+    },
+    "review:synthetic-only": {
+      "ref": {
+        "id": "review:synthetic-only",
+        "contract": "data.review",
+        "path": "synthetic/review-synthetic-only.json",
+        "sha256": "de8a3730fcb57be734784264362a8a69de097be3d6e9369e73bf7b49e55e4aae"
+      },
+      "raw": "{\"checks\":[{\"detail\":\"형식 검사 전용 합성 예시; 실제 검토자가 승인한 자료가 아니다.\",\"name\":\"synthetic-fixture\",\"result\":\"PASS\"}],\"decision\":\"APPROVE\",\"field_pointer\":\"/payload\",\"id\":\"review:synthetic-only\",\"reason\":\"합성 예시\",\"reviewed_at\":\"2026-09-06T00:00:00Z\",\"reviewer\":{\"id\":\"synthetic-reviewer-not-authenticated\",\"identity_receipt\":{\"contract\":\"synthetic.identity\",\"id\":\"identity:synthetic\",\"path\":\"synthetic/identity-synthetic.json\",\"sha256\":\"0000000000000000000000000000000000000000000000000000000000000000\"},\"kind\":\"HUMAN\",\"model\":null,\"policy_id\":\"synthetic-policy\"},\"schema_version\":\"data-review-v1\",\"scope\":{\"as_of\":null,\"authority_generation\":\"synthetic-authority-1\",\"document_version_ids\":[\"synthetic:main-v1\",\"synthetic:detail-v1\"],\"jurisdiction\":\"SYNTHETIC\",\"source_set_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"},\"subject\":{\"contract\":\"semantic.observation\",\"id\":\"observation:example\",\"path\":\"synthetic/observation-example.json\",\"sha256\":\"bac029d736309e39aa85fbb5903348f1d3b50544f997b0e1ea40bdb03c38d5f3\"},\"subject_payload_sha256\":\"8e440448a2a1ac462b7eb1603eae2a4e49191c42b582e50882301badddd79976\"}"
+    },
+    "canonical:example": {
+      "ref": {
+        "id": "canonical:example",
+        "contract": "semantic.canonical",
+        "path": "synthetic/canonical-example.json",
+        "sha256": "d9ef5e37d5869b628d7384618adadcc6a806005fce8d7b8edaf2130d19e89d45"
+      },
+      "raw": "{\"generation_id\":\"synthetic-generation-1\",\"id\":\"canonical:example\",\"payload\":{\"clauses\":[{\"clause_type\":\"ACTION\",\"evidence_ids\":[\"evidence:0\"],\"id\":\"clause:0\",\"polarity\":\"POSITIVE\",\"role_bindings\":[{\"concept_id\":\"concept:0\",\"evidence_ids\":[\"evidence:0\"],\"mention_ids\":[\"mention:0\"],\"resolution\":\"RESOLVED\",\"role\":\"ACTOR\",\"unresolved_reason\":null},{\"concept_id\":\"concept:1\",\"evidence_ids\":[\"evidence:0\"],\"mention_ids\":[\"mention:1\"],\"resolution\":\"RESOLVED\",\"role\":\"PREDICATE\",\"unresolved_reason\":null},{\"concept_id\":\"concept:2\",\"evidence_ids\":[\"evidence:0\"],\"mention_ids\":[\"mention:2\"],\"resolution\":\"RESOLVED\",\"role\":\"OBJECT\",\"unresolved_reason\":null}]},{\"clause_type\":\"ACTION\",\"evidence_ids\":[\"evidence:0\"],\"id\":\"clause:1\",\"polarity\":\"POSITIVE\",\"role_bindings\":[{\"concept_id\":\"concept:0\",\"evidence_ids\":[\"evidence:0\"],\"mention_ids\":[\"mention:0\"],\"resolution\":\"RESOLVED\",\"role\":\"ACTOR\",\"unresolved_reason\":null},{\"concept_id\":\"concept:3\",\"evidence_ids\":[\"evidence:0\"],\"mention_ids\":[\"mention:3\"],\"resolution\":\"RESOLVED\",\"role\":\"PREDICATE\",\"unresolved_reason\":null},{\"concept_id\":\"concept:2\",\"evidence_ids\":[\"evidence:0\"],\"mention_ids\":[\"mention:2\"],\"resolution\":\"RESOLVED\",\"role\":\"OBJECT\",\"unresolved_reason\":null}]},{\"clause_type\":\"ACTION\",\"evidence_ids\":[\"evidence:1\"],\"id\":\"clause:2\",\"polarity\":\"POSITIVE\",\"role_bindings\":[{\"concept_id\":\"concept:4\",\"evidence_ids\":[\"evidence:1\"],\"mention_ids\":[\"mention:4\"],\"resolution\":\"RESOLVED\",\"role\":\"PREDICATE\",\"unresolved_reason\":null}]},{\"clause_type\":\"STATE\",\"evidence_ids\":[\"evidence:2\"],\"id\":\"clause:3\",\"polarity\":\"POSITIVE\",\"role_bindings\":[{\"concept_id\":\"concept:5\",\"evidence_ids\":[\"evidence:2\"],\"mention_ids\":[\"mention:5\"],\"resolution\":\"RESOLVED\",\"role\":\"ACTOR\",\"unresolved_reason\":null},{\"concept_id\":\"concept:7\",\"evidence_ids\":[\"evidence:2\"],\"mention_ids\":[\"mention:7\"],\"resolution\":\"RESOLVED\",\"role\":\"PREDICATE\",\"unresolved_reason\":null},{\"concept_id\":\"concept:6\",\"evidence_ids\":[\"evidence:2\"],\"mention_ids\":[\"mention:6\"],\"resolution\":\"RESOLVED\",\"role\":\"METHOD\",\"unresolved_reason\":null}]}],\"concepts\":[{\"aliases\":[],\"concept_type\":\"ENTITY\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:0\"],\"id\":\"concept:0\",\"label\":\"기관\"},{\"aliases\":[],\"concept_type\":\"ACTION\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:0\"],\"id\":\"concept:1\",\"label\":\"취득\"},{\"aliases\":[],\"concept_type\":\"ENTITY\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:0\"],\"id\":\"concept:2\",\"label\":\"대상 증권\"},{\"aliases\":[],\"concept_type\":\"ACTION\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:0\"],\"id\":\"concept:3\",\"label\":\"보유\"},{\"aliases\":[],\"concept_type\":\"ACTION\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:1\"],\"id\":\"concept:4\",\"label\":\"면제\"},{\"aliases\":[],\"concept_type\":\"LEGAL_CATEGORY\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:2\"],\"id\":\"concept:5\",\"label\":\"전문기관\"},{\"aliases\":[],\"concept_type\":\"PROPERTY\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:2\"],\"id\":\"concept:6\",\"label\":\"공개 절차\"},{\"aliases\":[],\"concept_type\":\"STATE\",\"definition_rule_ids\":[],\"evidence_ids\":[\"evidence:2\"],\"id\":\"concept:7\",\"label\":\"해당\"}],\"crosswalk\":[],\"evidence\":[{\"block_id\":\"block:0\",\"document_version_id\":\"synthetic:main-v1\",\"end\":30,\"id\":\"evidence:0\",\"quote\":\"기관이 대상 증권을 취득한 경우 이를 보유하여야 한다.\",\"quote_sha256\":\"499941f464e3c85828b367cccb2c5d5b6d2b94a6684df32aff348c2dbecc22e7\",\"source_artifact_sha256\":\"499941f464e3c85828b367cccb2c5d5b6d2b94a6684df32aff348c2dbecc22e7\",\"start\":0,\"structural_unit_id\":\"unit:0\"},{\"block_id\":\"block:1\",\"document_version_id\":\"synthetic:main-v1\",\"end\":32,\"id\":\"evidence:1\",\"quote\":\"다만, 별도 규칙의 요건에 해당하면 기본 의무를 면제한다.\",\"quote_sha256\":\"3e02a7d4c4131036949578755f7b841e47dbf9325ed3db170881a98a91151c23\",\"source_artifact_sha256\":\"3e02a7d4c4131036949578755f7b841e47dbf9325ed3db170881a98a91151c23\",\"start\":0,\"structural_unit_id\":\"unit:1\"},{\"block_id\":\"block:2\",\"document_version_id\":\"synthetic:detail-v1\",\"end\":26,\"id\":\"evidence:2\",\"quote\":\"전문기관이 공개 절차로 취득한 경우에 해당한다.\",\"quote_sha256\":\"bf48db60984c605cfb4fb17b3beaeb9496dfd5421d62018574b71d1b625bb7e9\",\"source_artifact_sha256\":\"bf48db60984c605cfb4fb17b3beaeb9496dfd5421d62018574b71d1b625bb7e9\",\"start\":0,\"structural_unit_id\":\"unit:2\"}],\"mentions\":[{\"concept_id\":\"concept:0\",\"evidence_ids\":[\"evidence:0\"],\"id\":\"mention:0\",\"resolution\":\"RESOLVED\",\"surface\":\"기관\",\"unresolved_reason\":null},{\"concept_id\":\"concept:1\",\"evidence_ids\":[\"evidence:0\"],\"id\":\"mention:1\",\"resolution\":\"RESOLVED\",\"surface\":\"취득\",\"unresolved_reason\":null},{\"concept_id\":\"concept:2\",\"evidence_ids\":[\"evidence:0\"],\"id\":\"mention:2\",\"resolution\":\"RESOLVED\",\"surface\":\"대상 증권\",\"unresolved_reason\":null},{\"concept_id\":\"concept:3\",\"evidence_ids\":[\"evidence:0\"],\"id\":\"mention:3\",\"resolution\":\"RESOLVED\",\"surface\":\"보유\",\"unresolved_reason\":null},{\"concept_id\":\"concept:4\",\"evidence_ids\":[\"evidence:1\"],\"id\":\"mention:4\",\"resolution\":\"RESOLVED\",\"surface\":\"면제\",\"unresolved_reason\":null},{\"concept_id\":\"concept:5\",\"evidence_ids\":[\"evidence:2\"],\"id\":\"mention:5\",\"resolution\":\"RESOLVED\",\"surface\":\"전문기관\",\"unresolved_reason\":null},{\"concept_id\":\"concept:6\",\"evidence_ids\":[\"evidence:2\"],\"id\":\"mention:6\",\"resolution\":\"RESOLVED\",\"surface\":\"공개 절차\",\"unresolved_reason\":null},{\"concept_id\":\"concept:7\",\"evidence_ids\":[\"evidence:2\"],\"id\":\"mention:7\",\"resolution\":\"RESOLVED\",\"surface\":\"해당\",\"unresolved_reason\":null}],\"provisos\":[{\"attached_rule_id\":\"rule:main\",\"completion_type\":\"EXTERNAL\",\"condition\":{\"clause_id\":\"clause:3\",\"operator\":\"CLAUSE\"},\"dependency_relation_ids\":[\"relation:dependency\"],\"effect_type\":\"EXEMPTION\",\"evidence_ids\":[\"evidence:1\"],\"id\":\"proviso:main\",\"outcome_clause_ids\":[\"clause:2\"]}],\"relations\":[{\"evidence_ids\":[\"evidence:1\"],\"id\":\"relation:dependency\",\"predicate\":\"DEPENDS_ON_REQUIREMENTS_OF\",\"resolution\":\"RESOLVED\",\"source\":{\"id\":\"proviso:main\",\"type\":\"Proviso\"},\"target\":{\"id\":\"rule:detail\",\"type\":\"Rule\"},\"target_locator\":null,\"unresolved_reason\":null}],\"rules\":[{\"antecedent\":{\"clause_id\":\"clause:0\",\"operator\":\"CLAUSE\"},\"applicability\":{\"evidence_ids\":[\"evidence:0\"],\"operator\":\"TRUE\"},\"consequent_clause_ids\":[\"clause:1\"],\"evidence_ids\":[\"evidence:0\"],\"id\":\"rule:main\",\"modality\":\"OBLIGATION\",\"rule_type\":\"NORM\",\"valid_from\":null,\"valid_until\":null},{\"antecedent\":{\"evidence_ids\":[\"evidence:2\"],\"operator\":\"TRUE\"},\"applicability\":{\"evidence_ids\":[\"evidence:2\"],\"operator\":\"TRUE\"},\"consequent_clause_ids\":[\"clause:3\"],\"evidence_ids\":[\"evidence:2\"],\"id\":\"rule:detail\",\"modality\":\"DECLARATION\",\"rule_type\":\"CLASSIFICATION\",\"valid_from\":null,\"valid_until\":null}]},\"record_kind\":\"CANONICAL_BUNDLE\",\"review_receipts\":[{\"id\":\"review:synthetic-only\",\"sha256\":\"de8a3730fcb57be734784264362a8a69de097be3d6e9369e73bf7b49e55e4aae\"}],\"schema_sha256\":\"25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607\",\"schema_version\":\"legal-semantic-v2\",\"scope\":{\"as_of\":null,\"authority_generation\":\"synthetic-authority-1\",\"document_version_ids\":[\"synthetic:main-v1\",\"synthetic:detail-v1\"],\"jurisdiction\":\"SYNTHETIC\",\"source_set_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"},\"source_observation_ids\":[\"observation:example\"]}"
+    },
+    "projection:synthetic": {
+      "ref": {
+        "id": "projection:synthetic",
+        "contract": "storage.projection",
+        "path": "synthetic/projection-synthetic.json",
+        "sha256": "81d1e56cd9e6ba12c62da58df957b0312a633c6ef3e6eafccab26b2b2d056878"
+      },
+      "raw": "{\"canonical_generation_id\":\"synthetic-generation-1\",\"canonical_payload_sha256\":\"8e440448a2a1ac462b7eb1603eae2a4e49191c42b582e50882301badddd79976\",\"entries\":[{\"document_version_id\":\"synthetic:main-v1\",\"entity_refs\":[{\"id\":\"rule:main\",\"type\":\"Rule\"}],\"evidence_ids\":[\"evidence:0\"],\"id\":\"entry:main\",\"search_terms\":[\"기관\",\"보유\"],\"structural_unit_id\":\"unit:0\"}],\"id\":\"projection:synthetic\",\"input_artifacts\":[{\"contract\":\"semantic.canonical\",\"id\":\"canonical:example\",\"path\":\"synthetic/canonical-example.json\",\"sha256\":\"d9ef5e37d5869b628d7384618adadcc6a806005fce8d7b8edaf2130d19e89d45\"}],\"kind\":\"RULE_LOOKUP\",\"producer\":\"synthetic-code-example\",\"record_kind\":\"PROJECTION\",\"schema_version\":\"semantic-storage-v1\",\"scope\":{\"as_of\":null,\"authority_generation\":\"synthetic-authority-1\",\"document_version_ids\":[\"synthetic:main-v1\",\"synthetic:detail-v1\"],\"jurisdiction\":\"SYNTHETIC\",\"source_set_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}}"
+    },
+    "source:synthetic:main-v1": {
+      "ref": {
+        "id": "source:synthetic:main-v1",
+        "contract": "source.corrected",
+        "path": "synthetic/source-synthetic-main-v1.json",
+        "sha256": "a5e1e995ccd66ebb15bf7bd817199bd0f8626ea4b33b865d7414210ebcb8d32f"
+      },
+      "raw": "{\"attachments\":[],\"blocks\":[{\"id\":\"block:0\",\"mappings\":[{\"correction_id\":null,\"end\":30,\"source_span\":{\"end\":30,\"raw_block_id\":\"raw:block:0\",\"start\":0},\"start\":0}],\"text\":\"기관이 대상 증권을 취득한 경우 이를 보유하여야 한다.\"},{\"id\":\"block:1\",\"mappings\":[{\"correction_id\":null,\"end\":32,\"source_span\":{\"end\":32,\"raw_block_id\":\"raw:block:1\",\"start\":0},\"start\":0}],\"text\":\"다만, 별도 규칙의 요건에 해당하면 기본 의무를 면제한다.\"}],\"corrections\":[],\"document\":{\"document_id\":\"synthetic:main\",\"title\":\"합성 규칙 예시\",\"version_label\":\"v1\"},\"document_version_id\":\"synthetic:main-v1\",\"id\":\"source:synthetic:main-v1\",\"input_artifacts\":[{\"contract\":\"source.raw\",\"id\":\"raw:evidence:0\",\"path\":\"synthetic/raw-evidence-0.json\",\"sha256\":\"499941f464e3c85828b367cccb2c5d5b6d2b94a6684df32aff348c2dbecc22e7\"},{\"contract\":\"source.raw\",\"id\":\"raw:evidence:1\",\"path\":\"synthetic/raw-evidence-1.json\",\"sha256\":\"3e02a7d4c4131036949578755f7b841e47dbf9325ed3db170881a98a91151c23\"}],\"issues\":[],\"raw_blocks\":[{\"element_path\":null,\"id\":\"raw:block:0\",\"page\":1,\"source_artifact_id\":\"raw:evidence:0\",\"text\":\"기관이 대상 증권을 취득한 경우 이를 보유하여야 한다.\"},{\"element_path\":null,\"id\":\"raw:block:1\",\"page\":1,\"source_artifact_id\":\"raw:evidence:1\",\"text\":\"다만, 별도 규칙의 요건에 해당하면 기본 의무를 면제한다.\"}],\"references\":[],\"schema_version\":\"source-document-v1\",\"scope\":{\"as_of\":null,\"authority_generation\":\"synthetic-authority-1\",\"document_version_ids\":[\"synthetic:main-v1\",\"synthetic:detail-v1\"],\"jurisdiction\":\"SYNTHETIC\",\"source_set_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"},\"status\":\"VALIDATED\",\"units\":[{\"id\":\"unit:0\",\"kind\":\"조\",\"label\":\"합성 조문\",\"order\":0,\"parent_id\":null,\"spans\":[{\"block_id\":\"block:0\",\"end\":30,\"start\":0}]},{\"id\":\"unit:1\",\"kind\":\"조\",\"label\":\"합성 조문\",\"order\":1,\"parent_id\":null,\"spans\":[{\"block_id\":\"block:1\",\"end\":32,\"start\":0}]}]}"
+    },
+    "source:synthetic:detail-v1": {
+      "ref": {
+        "id": "source:synthetic:detail-v1",
+        "contract": "source.corrected",
+        "path": "synthetic/source-synthetic-detail-v1.json",
+        "sha256": "e31a77c5e87ec72fdb4d540e90f202acbea9303c1b625b0ae169a47d1ef5796c"
+      },
+      "raw": "{\"attachments\":[],\"blocks\":[{\"id\":\"block:2\",\"mappings\":[{\"correction_id\":null,\"end\":26,\"source_span\":{\"end\":26,\"raw_block_id\":\"raw:block:2\",\"start\":0},\"start\":0}],\"text\":\"전문기관이 공개 절차로 취득한 경우에 해당한다.\"}],\"corrections\":[],\"document\":{\"document_id\":\"synthetic:detail\",\"title\":\"합성 규칙 예시\",\"version_label\":\"v1\"},\"document_version_id\":\"synthetic:detail-v1\",\"id\":\"source:synthetic:detail-v1\",\"input_artifacts\":[{\"contract\":\"source.raw\",\"id\":\"raw:evidence:2\",\"path\":\"synthetic/raw-evidence-2.json\",\"sha256\":\"bf48db60984c605cfb4fb17b3beaeb9496dfd5421d62018574b71d1b625bb7e9\"}],\"issues\":[],\"raw_blocks\":[{\"element_path\":null,\"id\":\"raw:block:2\",\"page\":1,\"source_artifact_id\":\"raw:evidence:2\",\"text\":\"전문기관이 공개 절차로 취득한 경우에 해당한다.\"}],\"references\":[],\"schema_version\":\"source-document-v1\",\"scope\":{\"as_of\":null,\"authority_generation\":\"synthetic-authority-1\",\"document_version_ids\":[\"synthetic:main-v1\",\"synthetic:detail-v1\"],\"jurisdiction\":\"SYNTHETIC\",\"source_set_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"},\"status\":\"VALIDATED\",\"units\":[{\"id\":\"unit:2\",\"kind\":\"조\",\"label\":\"합성 조문\",\"order\":0,\"parent_id\":null,\"spans\":[{\"block_id\":\"block:2\",\"end\":26,\"start\":0}]}]}"
+    }
+  }
+}

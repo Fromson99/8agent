@@ -115,7 +115,7 @@ def _freed_novelty(family_key: str, level: int, stack: ScopeStack, ladder: Ladde
     return scoring.LEVEL_NOVELTY
 
 
-def run(candidates: list[Candidate], ladder: Ladder) -> DPResult:
+def run(candidates: list[Candidate], ladder: Ladder, *, strict_levels: bool = False, required_candidates=()) -> DPResult:
     """읽기순 1회 훑기. 후보의 `activated` / `decision_note` 를 채운다."""
     result = DPResult()
     # 사다리 칸 수 + 여유. 사다리는 계열마다 층이 하나뿐이라, 같은 표기가 더
@@ -126,7 +126,9 @@ def run(candidates: list[Candidate], ladder: Ladder) -> DPResult:
     ordered = sorted(candidates, key=lambda c: (c.doc, c.block_idx, c.offset))
     # 계열 정합(S2)에서 떨어진 후보는 DP 에 들어오지 않는다 — 자기 계열 수열·위치가
     # 이미 "구조가 아니다" 라고 말했다. 그래도 감사 로그에는 남는다(§8.7).
-    live = [c for c in ordered if c.survives and c.s > ACTIVATE_FLOOR]
+    required = set(required_candidates)
+    if not required <= {c.id for c in ordered}:raise ValueError("Unknown required candidate")
+    live = [c for c in ordered if (c.survives and c.s > ACTIVATE_FLOOR) or c.id in required]
     result.pruned = len(ordered) - len(live)
 
     depth = max(1, ladder.depth)
@@ -147,10 +149,11 @@ def run(candidates: list[Candidate], ladder: Ladder) -> DPResult:
         best_activate = float("-inf")
         for stack, path in paths.items():
             # reject — 스택 불변, 점수 불변
-            _offer(stack, _Path(path.score, stack,
-                                path.steps + [(i, None, 0.0, "reject")]))
+            if cand.id not in required:
+                _offer(stack, _Path(path.score, stack,
+                                    path.steps + [(i, None, 0.0, "reject")]))
 
-            for level in _levels_for(cand, ladder, stack, depth):
+            for level in ([ladder.level_of(cand.family_key)] if strict_levels and ladder.level_of(cand.family_key) is not None else ([] if strict_levels else _levels_for(cand, ladder, stack, depth))):
                 if level >= depth:
                     continue
                 if nesting.check(level, stack) == nesting.FORBID:

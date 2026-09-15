@@ -1,16 +1,16 @@
-"""raw 등록부 — `data/corpus/` 가 원본층(raw)이다. 들어오는 길이 무엇이든 원본은
+"""raw 등록부 — `01_DATA/INBOX/AUTHORING/corpus/` 가 원본층(raw)이다. 들어오는 길이 무엇이든 원본은
 여기 한 번 남고, 출처별 `manifest.json` 한 줄이 그 원본의 등록이다.
 
 수집기(collect)는 처음부터 이 규약으로 쓴다(law·krx·kofia·expc…). 이 모듈은
 **수집기 밖**으로 들어오는 원본 — 화면 업로드, inbox, 손으로 둔 파일(서식·내규)
 — 에 같은 규약을 적용한다:
 
-    data/corpus/<source>/<파일>                    원본 사본 (불변)
-    data/corpus/<source>/manifest.json             {"source", "collected_at", "items": [...]}
+    01_DATA/INBOX/AUTHORING/corpus/<source>/<파일>                    원본 사본 (불변)
+    01_DATA/INBOX/AUTHORING/corpus/<source>/manifest.json             {"source", "collected_at", "items": [...]}
     항목  name · kind · status "ok" · body_file(저장소 뿌리 상대) · body_sha256 ·
           body_format(hwp5(ole)|docx|pdf|xml|html) · collected_at · folder · via · orig_filename
 
-왜: 구조 스토어(data/structure)는 **파생**이다 — 규칙이 바뀌면 다시 만든다. 그 안의
+왜: 구조 스토어(01_DATA/INBOX/AUTHORING/structure)는 **파생**이다 — 규칙이 바뀌면 다시 만든다. 그 안의
 source.* 만이 원본이면 스토어를 비우는 순간 원본이 사라지고, 계보 원장(lineage)은
 "수집 밖에서 들어온 것"으로만 본다. 원본은 파생과 다른 층에 있어야 하고, 한 줄의
 등록이 있어야 "무엇을 갖고 있나"를 셀 수 있다(배치 라인업·원장이 이걸 읽는다).
@@ -42,17 +42,17 @@ FORMAT_BY_EXT = {".hwp": "hwp5(ole)", ".hwpx": "hwpx", ".docx": "docx", ".pdf": 
 
 
 def corpus_dir() -> Path:
-    return Path(os.environ.get("CORPUS_DIR") or data_path("corpus"))
+    return Path(os.environ.get("CORPUS_DIR") or data_path("INBOX", "AUTHORING", "corpus"))
 
 
 def corpus_for(store: Optional[Path]) -> Path:
     """스토어 옆의 raw 층 — glossary·embeddings 와 같은 '스토어 부모' 규약. CORPUS_DIR
-    가 명시되면 그것이 이긴다. 시험이 tmp 스토어로 돌 때 실제 data/corpus 에 등록이
+    가 명시되면 그것이 이긴다. 시험이 tmp 스토어로 돌 때 실제 01_DATA/INBOX/AUTHORING/corpus 에 등록이
     새지 않게 하는 규칙이기도 하다."""
     if os.environ.get("CORPUS_DIR"):
         return Path(os.environ["CORPUS_DIR"])
     if store is not None:
-        return Path(store).parent / "corpus"
+        return data_path("INBOX", "AUTHORING", "corpus")
     return corpus_dir()
 
 

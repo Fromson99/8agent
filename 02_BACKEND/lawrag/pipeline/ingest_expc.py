@@ -3,7 +3,7 @@
     python -m lawrag.pipeline.ingest_expc                # 색인(data/expc/index.json) + raw(md) 생성
     python -m lawrag.pipeline.ingest_expc --keep-unrelated   # 인용 없는 오탐도 색인에 남긴다
 
-data/corpus/expc 는 수집 정본이라 여기서 절대 고치지 않는다(읽기 전용). 산출은 둘:
+01_DATA/INBOX/AUTHORING/corpus/expc 는 수집 정본이라 여기서 절대 고치지 않는다(읽기 전용). 산출은 둘:
 
 1. data/expc/index.json — /expc/ 화면·/v1/expc API 가 읽는 열람 색인.
 2. data/wiki/raw/expc/<해석일>-<안건번호>.md — llm-wiki 의 raw 층(소스 1개 =
@@ -32,7 +32,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from lawrag.sources.expc import case_text, cited_laws, parse_case  # noqa: E402
 
-CORPUS_DIR = data_path("corpus")
+CORPUS_DIR = data_path("INBOX", "AUTHORING", "corpus")
 EXPC_DIR = CORPUS_DIR / "expc"
 OUT_DIR = data_path("expc")
 RAW_DIR = data_path("wiki", "raw", "expc")

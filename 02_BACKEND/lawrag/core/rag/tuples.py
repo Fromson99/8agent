@@ -33,18 +33,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-from lawrag.core.rag.content_snapshot import (
+from lawrag.runtime.content_snapshot import (
     ContentSnapshotError,
     artifact_provenance_receipt,
     current_content_snapshot,
     current_retrieval_runtime_receipt,
 )
+from lawrag.platform.paths import data_path
 from lawrag.core.rag.index import norm, store_path
 
 
 def rag_dir() -> Path:
     """진단 기록의 자리 — glossary.json·links.json 과 같은 규약(스토어 옆)."""
-    return Path(os.environ.get("RAG_LOG_DIR", store_path().parent / "rag"))
+    return Path(os.environ.get("RAG_LOG_DIR", data_path("FEEDBACK", "RUNTIME")))
 
 
 def _feedback_disabled() -> bool:
@@ -659,12 +660,30 @@ def log_ask(out: dict, prompt: Optional[dict] = None,
                 "load", "elapsed_ms",
             ) if key in legal_graph
         }
+    ontology_rag = (out.get("legalclosure") or {}).get("ontology_rag") or {}
+    if ontology_rag:
+        rec["ontology_rag"] = {
+            key: ontology_rag.get(key) for key in (
+                "schema_version", "profile_id", "status", "reason", "detail",
+                "fallback", "projection_id", "matched_surface", "clause_span_ids",
+                "canonical_evidence_ids", "rule_ids", "baseline_count",
+                "final_count", "added_count", "added_coordinates",
+                "baseline_floor_preserved", "direct_conclusion_allowed",
+                "quality_status", "definition_generation",
+                "definition_content_sha256", "graph_generation",
+                "graph_content_sha256", "store_binding", "knowledge_cache",
+                "knowledge_cache_key_sha256",
+            ) if key in ontology_rag
+        }
+    runtime = (out.get("legalclosure") or {}).get("runtime") or {}
+    if runtime:
+        rec["runtime"] = dict(runtime)
     _append(rec)
     return qid
 
 
 def log_feedback(qid: str, verdict: str, expected: Optional[dict] = None,
-                 note: str = "") -> dict:
+                 note: str = "", *, ontology_feedback: Optional[dict] = None) -> dict:
     """사용자 신호 — "A 를 물었는데 B 가 나왔다. A 가 나와야 한다."
 
     실패_원인(a~d)은 여기서 판정하지 않는다(§5.1 책임 귀속은 Phase 2).
@@ -678,6 +697,11 @@ def log_feedback(qid: str, verdict: str, expected: Optional[dict] = None,
         )
     rec = {"kind": "피드백", "qid": qid, "ts": _now(), "판정": verdict,
            "기대": expected, "메모": note, "실패_원인": None}
+    if ontology_feedback is not None:
+        from lawrag.feedback.lifecycle import validate_feedback_event
+
+        validate_feedback_event(ontology_feedback)
+        rec["ontology_feedback"] = dict(ontology_feedback)
     if snapshot_context is not None:
         rec["content_snapshot"] = dict(snapshot_context[1])
         rec["retrieval_runtime"] = current_retrieval_runtime_receipt(required=True)
@@ -753,7 +777,10 @@ def read(limit: int = 200) -> list[dict]:
             order.append(qid)
         elif rec.get("kind") == "피드백" and qid in asks:
             asks[qid]["피드백"] = {k: rec.get(k)
-                                   for k in ("판정", "기대", "메모", "실패_원인", "ts")}
+                                   for k in (
+                                       "판정", "기대", "메모", "실패_원인", "ts",
+                                       "ontology_feedback",
+                                   ) if k in rec}
     rows = [asks[q] for q in reversed(order) if q in asks]
     return rows[:limit]
 

@@ -47,7 +47,7 @@ _JO_RE = re.compile(r"^제\d+조(?:의\d+)?$")
 
 
 def _idx():
-    os.environ.setdefault("STRUCTURE_STORE", str(data_path("structure")))
+    os.environ.setdefault("STRUCTURE_STORE", str(data_path("INBOX", "AUTHORING", "structure")))
     from lawrag.core.rag import index as index_mod
     return index_mod.current()
 
@@ -80,7 +80,7 @@ def _cm_validation(suite_mtime_ns: int, structure_mtime_ns: int) -> dict:
 
 
 def _current_cm_validation() -> dict:
-    structure = data_path("structure")
+    structure = data_path("INBOX", "AUTHORING", "structure")
     structure_mtime = structure.stat().st_mtime_ns if structure.exists() else 0
     return _cm_validation(CM_SUITE.stat().st_mtime_ns, structure_mtime)
 

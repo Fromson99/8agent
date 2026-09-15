@@ -1,0 +1,134 @@
+{
+  "schema_version": "legal-semantic-v2",
+  "schema_sha256": "25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607",
+  "record_kind": "ASSEMBLY_TEMPLATE",
+  "template": {
+    "id": "template:open",
+    "label": "원칙·조건·단서·참조 열린 조립",
+    "intent": "질문의 관련 규칙과 원문을 함께 검토",
+    "slots": [
+      {
+        "slot": "SCOPE",
+        "required": false,
+        "allowed_types": [
+          "Rule",
+          "SemanticClause"
+        ]
+      },
+      {
+        "slot": "BASE_RULE",
+        "required": true,
+        "allowed_types": [
+          "Rule"
+        ]
+      },
+      {
+        "slot": "CONDITIONS",
+        "required": false,
+        "allowed_types": [
+          "SemanticClause"
+        ]
+      },
+      {
+        "slot": "PROVISOS",
+        "required": false,
+        "allowed_types": [
+          "Proviso"
+        ]
+      },
+      {
+        "slot": "OUTCOMES",
+        "required": false,
+        "allowed_types": [
+          "SemanticClause"
+        ]
+      },
+      {
+        "slot": "DEFINITIONS",
+        "required": false,
+        "allowed_types": [
+          "Rule",
+          "LegalRelation"
+        ]
+      },
+      {
+        "slot": "REFERENCES",
+        "required": false,
+        "allowed_types": [
+          "LegalRelation"
+        ]
+      },
+      {
+        "slot": "FOLLOWUP_RULES",
+        "required": false,
+        "allowed_types": [
+          "Rule"
+        ]
+      }
+    ],
+    "required_fact_keys": [],
+    "traversals": [
+      {
+        "predicate": "REFERENCES",
+        "direction": "OUTGOING",
+        "max_hops": 4
+      },
+      {
+        "predicate": "USES_DEFINITION",
+        "direction": "OUTGOING",
+        "max_hops": 4
+      },
+      {
+        "predicate": "LEGISLATIVE_DELEGATION",
+        "direction": "OUTGOING",
+        "max_hops": 4
+      },
+      {
+        "predicate": "SUPPLEMENTS_BY_ADMINISTRATIVE_RULE",
+        "direction": "OUTGOING",
+        "max_hops": 4
+      },
+      {
+        "predicate": "INCORPORATES_MUTATIS_MUTANDIS",
+        "direction": "OUTGOING",
+        "max_hops": 4
+      },
+      {
+        "predicate": "DEPENDS_ON_REQUIREMENTS_OF",
+        "direction": "OUTGOING",
+        "max_hops": 4
+      },
+      {
+        "predicate": "LEGAL_BASIS_IN",
+        "direction": "OUTGOING",
+        "max_hops": 4
+      },
+      {
+        "predicate": "EXCEPTION_TO",
+        "direction": "OUTGOING",
+        "max_hops": 4
+      },
+      {
+        "predicate": "QUALIFIES_RULE",
+        "direction": "OUTGOING",
+        "max_hops": 4
+      },
+      {
+        "predicate": "EXCLUDES_APPLICATION_OF",
+        "direction": "OUTGOING",
+        "max_hops": 4
+      },
+      {
+        "predicate": "FALLBACK_TO",
+        "direction": "OUTGOING",
+        "max_hops": 4
+      },
+      {
+        "predicate": "OVERRIDES",
+        "direction": "OUTGOING",
+        "max_hops": 4
+      }
+    ],
+    "missing_policy": "RETURN_UNKNOWN_WITH_MISSING"
+  }
+}

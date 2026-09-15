@@ -1,0 +1,2657 @@
+#!/usr/bin/env python3
+"""Create and validate standardized ADR experiment directories."""
+
+from __future__ import annotations
+
+import argparse
+from datetime import date, datetime, timezone
+import getpass
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import statistics
+import sys
+from typing import Any
+
+from workspace_paths import StoredPathError, resolve_stored_path
+
+
+_SCRIPT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _find_workspace_root(start: Path) -> Path | None:
+    """Return the nearest v2 workspace root without assuming install depth."""
+    for candidate in (start, *start.parents):
+        if (candidate / "00_SYSTEM" / "WORKSPACE.json").is_file():
+            return candidate
+    return None
+
+
+_WORKSPACE_ROOT = _find_workspace_root(Path(__file__).resolve().parent)
+# The active tool generation is retained under 06_TOOLS/GENERATIONS after the
+# v2 cutover.  Resolve its workspace roots explicitly instead of reintroducing
+# the retired docs/adr path.
+ROOT = _WORKSPACE_ROOT or _SCRIPT_ROOT
+DEFAULT_ADR_ROOT = ROOT / "04_EXPERIMENTS" / "ADR"
+TEMPLATE_ROOT = ROOT / "04_EXPERIMENTS" / "LEGACY_ADR" / "templates"
+HAIKU_MODEL = "claude-haiku-4-5-20251001"
+EXPERIMENT_POLICY_PATH = ROOT / "00_SYSTEM/EXPERIMENT_MODEL_POLICY.json"
+EXPERIMENT_POLICY = json.loads(EXPERIMENT_POLICY_PATH.read_text("utf-8"))
+GEMINI_MODEL = EXPERIMENT_POLICY["model"]
+GEMINI_POLICY_VERSION = EXPERIMENT_POLICY["policy_version"]
+GEMINI_FIRST_ADR = EXPERIMENT_POLICY["effective_from_adr"]
+if (EXPERIMENT_POLICY.get("provider") != "gemini"
+        or EXPERIMENT_POLICY.get("allowed_models") != [GEMINI_MODEL]
+        or not GEMINI_MODEL.startswith("gemini-")
+        or EXPERIMENT_POLICY.get("fallback_allowed") is not False):
+    raise ValueError("Invalid experiment model policy")
+SONNET_MODEL = "claude-sonnet-5"
+OPUS_MODEL = "claude-opus-5"
+OFFLINE_EVALUATOR_MODELS = {HAIKU_MODEL, SONNET_MODEL, OPUS_MODEL}
+OFFLINE_BENCHMARK_CLASS = "offline_benchmark_candidate"
+ADR_DIR_RE = re.compile(r"^ADR-(\d{4})-([a-z0-9]+(?:-[a-z0-9]+)*)$")
+QUESTION_RE = re.compile(r"^질문-(\d{3})-([A-Za-z0-9][A-Za-z0-9_-]*)\.md$")
+UNRESOLVED_PLACEHOLDER_RE = {
+    token: re.compile(
+        rf"(?<![A-Za-z0-9_]){re.escape(token)}(?![A-Za-z0-9_])"
+    )
+    for token in ("TODO", "PENDING")
+}
+
+
+def _placeholder_scan_text(text: str, adr_path: Path, artifacts: dict) -> str:
+    """Exclude verified raw JSON envelopes, never ordinary metadata, from TODO scans.
+
+    A real model/search payload may contain the literal runtime state PENDING.
+    Exempt it only when every envelope entry exactly matches a hash/size-pinned
+    JSON artifact inside this ADR. The raw Markdown and artifact bytes stay intact.
+    """
+    verified: dict[str, Any] = {}
+    aliases = {"initial": "initial.json", "catalog": "catalog.json",
+               "journal": "journal.json", "searches": "search-records.json"}
+    local_artifacts = (adr_path / "artifacts").resolve()
+    for row in artifacts.get("files", []):
+        raw = row.get("path")
+        if not isinstance(raw, str):
+            continue
+        p = Path(raw)
+        p = p if p.is_absolute() else ROOT / p
+        if (p.suffix != ".json" or not p.is_file() or p.is_symlink()
+                or not p.resolve().is_relative_to(local_artifacts)):
+            continue
+        if row.get("sha256") != _sha256(p) or row.get("bytes") != p.stat().st_size:
+            continue
+        try:
+            verified[raw] = json.loads(p.read_text("utf-8"))
+        except (ValueError, UnicodeError):
+            continue
+
+    def strip_verified(match: re.Match) -> str:
+        try:
+            envelope = json.loads(match.group(1))
+        except ValueError:
+            return match.group(0)
+        if not isinstance(envelope, dict) or not envelope:
+            return match.group(0)
+        for key, value in envelope.items():
+            if key in verified and verified[key] == value:
+                continue
+            if key in aliases and any(Path(p).name == aliases[key] and v == value
+                                      for p, v in verified.items()):
+                continue
+            return match.group(0)
+        return "\n[hash-verified raw artifact envelope]\n"
+
+    return re.sub(r"^```json\s*\n(.*?)\n```[ \t]*$", strip_verified, text,
+                  flags=re.MULTILINE | re.DOTALL)
+
+ALLOWED_STATUSES = {"Proposed", "Accepted", "Rejected", "Superseded"}
+ALLOWED_PHASES = {"probe", "holdout", "full", "audit"}
+ALLOWED_ARM_ROLES = {"baseline", "candidate", "ablation", "control"}
+ALLOWED_PARENT_RELATIONS = {
+    "forked_from", "extends", "ablates", "retests", "supersedes", "merged_from"}
+ALLOWED_ADR_RELATIONS = {
+    "related_to", "depends_on", "informed_by", "conflicts_with", "duplicates",
+    "blocks", "blocked_by", "supersedes", "superseded_by",
+}
+ALLOWED_RUN_PURPOSES = {"primary", "repeat", "regrade", "holdout", "audit"}
+ALLOWED_RUN_STATUSES = {"planned", "complete", "failed", "invalid"}
+ALLOWED_WORK_STATUSES = {"in_progress", "completed", "abandoned"}
+ARM_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
+RUN_ID_RE = re.compile(r"^run-\d{3}$")
+STAGE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
+RETRIEVAL_STAGE_SCHEMA = "retrieval-stage-ledger-v1"
+RETRIEVAL_ACCOUNTING_UNIT = "case_id + canonical article-root coordinate"
+RETRIEVAL_STAGE_MODES = {"measured", "inherited", "not_applicable"}
+RETRIEVAL_STAGE_KINDS = {
+    "source", "retrieve", "union", "canonicalize", "filter", "expand",
+    "rerank", "select", "present",
+}
+
+ADR_HEADINGS = [
+    "## 1. 결정 요약",
+    "## 2. 문제와 변경 전 구조",
+    "## 3. 가설과 사전 판정 기준",
+    "## 4. 실험 설계",
+    "## 5. 데이터·모델·재현성",
+    "## 6. 결과",
+    "## 7. 사례별 오류 분석",
+    "## 8. 비용·지연·회수 규모",
+    "## 9. 해석",
+    "## 10. 한계와 일반화 가능 범위",
+    "## 11. 운영 결정·롤백 조건",
+    "## 12. 재현 명령",
+]
+
+QUESTION_HEADINGS_COMMON = [
+    "## 1. 실행 메타",
+    "## 2. 사용자 질문 원문",
+    "## 3. 기준답변 — 채점 전용, 제품 입력 비공개",
+    "## 4. 제품 입력을 구성한 원값",
+]
+
+QUESTION_HEADINGS_V1 = QUESTION_HEADINGS_COMMON + [
+    "## 5. 제품 모델 호출 — arm별 실제 원문",
+    "## 6. 중간 LLM 호출 — router/compiler/verifier/repair",
+    "## 7. 채점 호출과 반복 판정",
+    "## 8. 사례 최종 판정",
+]
+
+QUESTION_HEADINGS_V2 = QUESTION_HEADINGS_COMMON + [
+    "## 5. 제품 모델 호출 — run·arm별 실제 원문",
+    "## 6. 중간 LLM 호출 — router/compiler/verifier/repair",
+    "## 7. 채점 호출과 반복 판정",
+    "## 8. 사례 최종 판정",
+]
+
+QUESTION_HEADINGS_V4 = QUESTION_HEADINGS_COMMON + [
+    "### 회수·탈락 단계 원장 — run·arm별",
+    "## 5. 제품 모델 호출 — run·arm별 실제 원문",
+    "## 6. 중간 LLM 호출 — router/compiler/verifier/repair",
+    "## 7. 채점 호출과 반복 판정",
+    "## 8. 사례 최종 판정",
+]
+
+
+def _read_template(name: str, template_root: Path = TEMPLATE_ROOT) -> str:
+    return (template_root / name).read_text("utf-8")
+
+
+def _render(text: str, values: dict[str, str]) -> str:
+    for key, value in values.items():
+        text = text.replace("{{" + key + "}}", value)
+    leftovers = sorted(set(re.findall(r"\{\{([A-Z0-9_]+)\}\}", text)))
+    if leftovers:
+        raise ValueError(f"unresolved template variables: {', '.join(leftovers)}")
+    return text
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
+
+
+def _default_owner() -> str:
+    return os.environ.get("ADR_OWNER") or getpass.getuser()
+
+
+def _session_id() -> str | None:
+    return os.environ.get("CODEX_THREAD_ID") or os.environ.get("CODEX_SESSION_ID")
+
+
+def _reservation_from_manifest(path: Path) -> dict[str, Any] | None:
+    manifest_path = path / "실험" / "manifest.json"
+    if manifest_path.is_file():
+        try:
+            manifest = json.loads(manifest_path.read_text("utf-8"))
+        except (json.JSONDecodeError, OSError):
+            manifest = {}
+        reservation = manifest.get("reservation")
+        if isinstance(reservation, dict):
+            return reservation
+    claim_path = path / "claim.json"
+    if not claim_path.is_file():
+        return None
+    try:
+        claim = json.loads(claim_path.read_text("utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    claim["status"] = "in_progress"
+    return claim
+
+
+def _claim_conflicts(
+    adr_root: Path,
+    *,
+    number: int,
+    scope_key: str,
+) -> list[str]:
+    """Return permanent number conflicts and active semantic-scope conflicts."""
+    conflicts: list[str] = []
+    number_re = re.compile(rf"^(?:ADR-)?{number:04d}(?:-|$)")
+    if not adr_root.exists():
+        return conflicts
+    for entry in adr_root.iterdir():
+        if entry.name.startswith(f".ADR-{number:04d}-"):
+            continue
+        if number_re.match(entry.name):
+            conflicts.append(f"ADR number {number:04d} already claimed by {entry.name}")
+        if not entry.is_dir() or not ADR_DIR_RE.fullmatch(entry.name):
+            continue
+        reservation = _reservation_from_manifest(entry)
+        if (reservation and reservation.get("status") == "in_progress" and
+                reservation.get("scope_key") == scope_key):
+            conflicts.append(
+                f"active scope {scope_key!r} already claimed by {entry.name} "
+                f"(owner={reservation.get('owner', '<unknown>')})")
+    return conflicts
+
+
+def _claim_target(
+    adr_root: Path,
+    *,
+    number: int,
+    slug: str,
+    scope_key: str,
+    scope: str,
+    owner: str,
+    session_id: str | None,
+    created_at: str,
+) -> Path:
+    """Atomically serialize ADR claims, then make the permanent claimed directory."""
+    adr_root.mkdir(parents=True, exist_ok=True)
+    lock_path = adr_root / ".ADR-claims.create.lock"
+    lock_record = {
+        "number": number,
+        "slug": slug,
+        "scope_key": scope_key,
+        "scope": scope,
+        "owner": owner,
+        "session_id": session_id,
+        "created_at": created_at,
+        "pid": os.getpid(),
+    }
+    try:
+        with lock_path.open("x", encoding="utf-8") as stream:
+            json.dump(lock_record, stream, ensure_ascii=False, indent=2)
+            stream.write("\n")
+    except FileExistsError as exc:
+        try:
+            holder = lock_path.read_text("utf-8").strip()
+        except OSError:
+            holder = "<unreadable>"
+        raise FileExistsError(
+            f"another ADR claim is in progress; inspect {lock_path}: {holder}") from exc
+
+    try:
+        target = adr_root / f"ADR-{number:04d}-{slug}"
+        # A process can fail after atomically persisting claim.json but before
+        # rendering the scaffold (for example while the tool path itself is
+        # being migrated). Resume only that exact incomplete claim; never
+        # replace or mutate its immutable claim receipt.
+        claim_path = target / "claim.json"
+        manifest_path = target / "실험" / "manifest.json"
+        if target.is_dir() and claim_path.is_file() and not manifest_path.exists():
+            claim = json.loads(claim_path.read_text("utf-8"))
+            expected = {
+                "adr_id": f"ADR-{number:04d}", "slug": slug,
+                "owner": owner, "session_id": session_id, "scope": scope,
+                "scope_key": scope_key,
+            }
+            if all(claim.get(key) == value for key, value in expected.items()):
+                return target
+        conflicts = _claim_conflicts(adr_root, number=number, scope_key=scope_key)
+        if conflicts:
+            raise FileExistsError("; ".join(conflicts))
+        target.mkdir()
+        claim_receipt = {
+            "schema_version": "adr-claim-v1",
+            "adr_id": f"ADR-{number:04d}",
+            "slug": slug,
+            "owner": owner,
+            "session_id": session_id,
+            "scope": scope,
+            "scope_key": scope_key,
+            "created_at": created_at,
+        }
+        (target / "claim.json").write_text(
+            json.dumps(claim_receipt, ensure_ascii=False, indent=2) + "\n", "utf-8")
+        return target
+    finally:
+        lock_path.unlink(missing_ok=True)
+
+
+def _stored_path(path: Path) -> str:
+    """Prefer stable repository-relative paths, retain absolute paths outside the repo."""
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        return str(resolved)
+
+
+def _resolve_stored_path(raw_path: str) -> Path:
+    candidate = Path(raw_path)
+    if candidate.is_absolute():
+        return candidate
+    try:
+        return resolve_stored_path(ROOT, raw_path, require_exists=False)
+    except StoredPathError:
+        # Keep the validator diagnostic-oriented for incomplete/TODO records.
+        return ROOT / candidate
+
+
+def _experiment_arm_ref(experiment_id: str, arm_id: str) -> str:
+    return f"{experiment_id}/{arm_id}"
+
+
+def _load_parent(
+    parent_manifest: Path,
+    parent_arm: str,
+    relation: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    if relation not in ALLOWED_PARENT_RELATIONS:
+        raise ValueError(f"relation must be one of {sorted(ALLOWED_PARENT_RELATIONS)}")
+    parent_manifest = parent_manifest.resolve()
+    if not parent_manifest.is_file():
+        raise FileNotFoundError(parent_manifest)
+    parent = json.loads(parent_manifest.read_text("utf-8"))
+    parent_experiment = str(parent.get("experiment_id", ""))
+    arm_ids = {str(arm.get("id")) for arm in parent.get("design", {}).get("arms", [])}
+    if not parent_experiment or parent_arm not in arm_ids:
+        raise ValueError(f"parent arm does not exist: {parent_experiment}/{parent_arm}")
+    if parent.get("results", {}).get("status") != "complete":
+        raise ValueError("parent experiment must be complete before creating a child branch")
+    parent_ref = _experiment_arm_ref(parent_experiment, parent_arm)
+    record = {
+        "experiment_id": parent_experiment,
+        "arm_id": parent_arm,
+        "relation": relation,
+        "manifest_path": _stored_path(parent_manifest),
+        "manifest_sha256": _sha256(parent_manifest),
+    }
+    return parent, {"ref": parent_ref, "record": record}
+
+
+def _load_related_adr(
+    raw_path: Path,
+    relation: str,
+    note: str,
+) -> dict[str, Any]:
+    if relation not in ALLOWED_ADR_RELATIONS:
+        raise ValueError(f"ADR relation must be one of {sorted(ALLOWED_ADR_RELATIONS)}")
+    target = raw_path.resolve()
+    if target.is_dir():
+        claim_path = target / "claim.json"
+        manifest_path = target / "실험" / "manifest.json"
+    elif target.name == "claim.json":
+        claim_path = target
+        manifest_path = target.parent / "실험" / "manifest.json"
+    else:
+        manifest_path = target
+        claim_path = target.parent.parent / "claim.json"
+    if not manifest_path.is_file():
+        raise FileNotFoundError(manifest_path)
+    manifest = json.loads(manifest_path.read_text("utf-8"))
+    adr_id = str(manifest.get("adr_id", ""))
+    experiment_id = str(manifest.get("experiment_id", ""))
+    if not adr_id or not experiment_id:
+        raise ValueError(f"related ADR manifest lacks IDs: {manifest_path}")
+    record_path = claim_path if claim_path.is_file() else manifest_path
+    return {
+        "adr_id": adr_id,
+        "experiment_id": experiment_id,
+        "relation": relation,
+        "record_path": _stored_path(record_path),
+        "record_sha256": _sha256(record_path),
+        "note": note,
+    }
+
+
+def _ordered_headings(text: str, headings: list[str]) -> list[str]:
+    errors: list[str] = []
+    position = -1
+    for heading in headings:
+        found = text.find(heading)
+        if found < 0:
+            errors.append(f"missing heading: {heading}")
+        elif found <= position:
+            errors.append(f"heading out of order: {heading}")
+        else:
+            position = found
+    return errors
+
+
+def _front_matter(text: str) -> dict[str, str]:
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return {}
+    result: dict[str, str] = {}
+    for line in lines[1:]:
+        if line.strip() == "---":
+            return result
+        if ":" in line:
+            key, value = line.split(":", 1)
+            result[key.strip()] = value.strip()
+    return {}
+
+
+def scaffold_adr(
+    adr_root: Path,
+    number: int,
+    slug: str,
+    title: str,
+    phase: str,
+    questions: list[str],
+    *,
+    branch_id: str = "A",
+    candidate_arms: list[str] | None = None,
+    parent_manifest: Path | None = None,
+    parent_arm: str | None = None,
+    parent_relation: str = "forked_from",
+    parent_specs: list[tuple[Path, str, str]] | None = None,
+    related_adrs: list[tuple[Path, str, str]] | None = None,
+    judge_model: str | None = None,
+    owner: str | None = None,
+    session_id: str | None = None,
+    scope: str | None = None,
+    scope_key: str | None = None,
+    template_root: Path = TEMPLATE_ROOT,
+) -> Path:
+    if not 1 <= number <= 9999:
+        raise ValueError("number must be between 1 and 9999")
+    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug):
+        raise ValueError("slug must be lowercase kebab-case")
+    if phase not in ALLOWED_PHASES:
+        raise ValueError(f"phase must be one of {sorted(ALLOWED_PHASES)}")
+    if len(set(questions)) != len(questions):
+        raise ValueError("question case IDs must be unique")
+    for case_id in questions:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", case_id):
+            raise ValueError(f"invalid case ID: {case_id}")
+    if not ARM_ID_RE.fullmatch(branch_id):
+        raise ValueError("branch ID must contain only letters, numbers, underscore, or hyphen")
+    candidate_arms = candidate_arms or ["candidate"]
+    arm_ids = ["baseline", *candidate_arms]
+    if len(set(arm_ids)) != len(arm_ids) or any(not ARM_ID_RE.fullmatch(x) for x in arm_ids):
+        raise ValueError("arm IDs must be unique and use letters, numbers, underscore, or hyphen")
+    if (parent_manifest is None) != (parent_arm is None):
+        raise ValueError("parent-manifest and parent-arm must be provided together")
+    if parent_specs and parent_manifest is not None:
+        raise ValueError("use either legacy parent arguments or parent_specs, not both")
+    new_policy = number >= GEMINI_FIRST_ADR
+    judge_model = judge_model or (GEMINI_MODEL if new_policy else HAIKU_MODEL)
+    approved_judges = {GEMINI_MODEL} if new_policy else OFFLINE_EVALUATOR_MODELS
+    if judge_model not in approved_judges:
+        raise ValueError(f"judge model must be one of {sorted(approved_judges)}")
+    owner = (owner or _default_owner()).strip()
+    scope = (scope or title).strip()
+    scope_key = (scope_key or slug).strip()
+    if not owner:
+        raise ValueError("owner must not be empty")
+    if not scope:
+        raise ValueError("scope must not be empty")
+    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", scope_key):
+        raise ValueError("scope key must be lowercase kebab-case")
+
+    adr_id = f"ADR-{number:04d}"
+    experiment_id = f"{adr_id}-experiment-v1"
+    schema_version = "adr-experiment-v4" if number >= 82 else "adr-experiment-v3"
+    created_at = _utc_now()
+
+    in_sample = phase == "probe"
+    parent_records: list[dict[str, Any]] = []
+    parent_refs: list[str] = []
+    parent_branch_path: list[str] = []
+    root_ref = _experiment_arm_ref(experiment_id, "baseline")
+    parent_inputs = list(parent_specs or [])
+    if parent_manifest is not None and parent_arm is not None:
+        parent_inputs.append((parent_manifest, parent_arm, parent_relation))
+    if len(parent_inputs) > 1 and any(
+            relation != "merged_from" for _, _, relation in parent_inputs):
+        raise ValueError("every multi-parent relation must be merged_from")
+    parent_data_rows: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    for input_manifest, input_arm, input_relation in parent_inputs:
+        parent_data_rows.append(_load_parent(input_manifest, input_arm, input_relation))
+    if parent_data_rows:
+        parent_refs = [str(info["ref"]) for _, info in parent_data_rows]
+        if len(parent_refs) != len(set(parent_refs)):
+            raise ValueError("parent arm references must be unique")
+        parent_records = [info["record"] for _, info in parent_data_rows]
+        first_parent_data, _ = parent_data_rows[0]
+        first_parent_lineage = first_parent_data.get("lineage", {})
+        root_ref = str(first_parent_lineage.get("root_ref") or parent_refs[0])
+        if len(parent_data_rows) == 1:
+            parent_branch_path = list(first_parent_lineage.get("branch_path") or [])
+            first_parent_arm = str(parent_records[0]["arm_id"])
+            if not parent_branch_path or parent_branch_path[-1] != first_parent_arm:
+                parent_branch_path.append(first_parent_arm)
+    root_refs = list(dict.fromkeys(
+        str(data.get("lineage", {}).get("root_ref") or info["ref"])
+        for data, info in parent_data_rows)) or [root_ref]
+    source_branch_paths = {
+        str(info["ref"]): list(data.get("lineage", {}).get("branch_path") or [])
+        for data, info in parent_data_rows
+    }
+    lineage = {
+        "branch_id": branch_id,
+        "root_ref": root_ref,
+        "root_refs": root_refs,
+        "branch_path": [*parent_branch_path, branch_id],
+        "source_branch_paths": source_branch_paths,
+        "hypothesis_delta": "TODO",
+        "parents": parent_records,
+        "immutable_after_completion": True,
+    }
+    arms: list[dict[str, Any]] = [{
+        "id": "baseline",
+        "role": "baseline",
+        "derived_from": parent_refs,
+        "changes": "TODO",
+        "controls": "TODO",
+    }]
+    arms.extend({
+        "id": arm_id,
+        "role": "candidate",
+        "derived_from": ["baseline"],
+        "changes": "TODO",
+        "controls": "TODO",
+    } for arm_id in candidate_arms)
+    session_id = session_id or _session_id()
+    relationships = [
+        _load_related_adr(related_path, relation, note)
+        for related_path, relation, note in (related_adrs or [])
+    ]
+    relationship_keys = [
+        (record["adr_id"], record["relation"]) for record in relationships]
+    if len(relationship_keys) != len(set(relationship_keys)):
+        raise ValueError("related ADR and relation pairs must be unique")
+    target = _claim_target(
+        adr_root,
+        number=number,
+        slug=slug,
+        scope_key=scope_key,
+        scope=scope,
+        owner=owner,
+        session_id=session_id,
+        created_at=created_at,
+    )
+    # Recovery keeps the atomic claim's original timestamp immutable.
+    claim_path = target / "claim.json"
+    if claim_path.is_file():
+        claim = json.loads(claim_path.read_text("utf-8"))
+        claimed_at = claim.get("created_at")
+        if isinstance(claimed_at, str) and claimed_at:
+            created_at = claimed_at
+    work_started_at = _utc_now()
+    reservation = {
+        "status": "in_progress",
+        "owner": owner,
+        "session_id": session_id,
+        "scope": scope,
+        "scope_key": scope_key,
+        "created_at": created_at,
+        "work_started_at": work_started_at,
+        "updated_at": work_started_at,
+        "completed_at": None,
+        "abandoned_at": None,
+        "events": [
+            {
+                "action": "reserved",
+                "at": created_at,
+                "owner": owner,
+                "session_id": session_id,
+                "note": "ADR number and scope claimed before implementation or experiment work",
+            },
+            {
+                "action": "started",
+                "at": work_started_at,
+                "owner": owner,
+                "session_id": session_id,
+                "note": "ADR scaffold completed; scoped work may begin",
+            },
+        ],
+    }
+    experiment_dir = target / "실험"
+    artifacts_dir = target / "artifacts"
+    base = {
+        "ADR_ID": adr_id,
+        "EXPERIMENT_ID": experiment_id,
+        "SCHEMA_VERSION": schema_version,
+        "TITLE": title,
+        "DATE": date.today().isoformat(),
+        "CREATED_AT": created_at,
+        "UPDATED_AT": work_started_at,
+        "OWNER": owner,
+        "CREATED_BY_SESSION": session_id or "none",
+        "WORK_STATUS": "in_progress",
+        "SCOPE": scope,
+        "SCOPE_KEY": scope_key,
+        "PHASE": phase,
+        "IN_SAMPLE": "true" if in_sample else "false",
+        "IN_SAMPLE_JSON": "true" if in_sample else "false",
+        "BRANCH_ID": branch_id,
+        "PARENT_REF": ", ".join(parent_refs) or "ROOT",
+        "ARM_ID_LIST": ", ".join(f"`{arm_id}`" for arm_id in arm_ids),
+        "ADR_ARM_ROWS": "\n".join(
+            f"| {arm['id']} | TODO | TODO | {arm['role']} |" for arm in arms),
+        "ADR_RESULT_ROWS": "\n".join(
+            f"| {arm['id']} | TODO | TODO | {'-' if arm['role'] == 'baseline' else 'TODO'} | TODO | TODO |"
+            for arm in arms),
+        "JUDGE_MODEL": judge_model,
+    }
+    integration: dict[str, Any] | None = None
+    if len(parent_refs) > 1:
+        integration = {
+            "type": "multi_parent_merge",
+            "merge_id": f"{adr_id}-merge-v1",
+            "planned_at": work_started_at,
+            "result_arm": "baseline",
+            "parent_refs": parent_refs,
+            "rationale": "TODO",
+            "common_invariants": "TODO",
+            "parent_contributions": [
+                {"parent_ref": ref, "adopted": "TODO", "excluded": "TODO"}
+                for ref in parent_refs
+            ],
+            "conflicts": [],
+            "no_conflict_reason": "TODO — conflict가 없으면 근거, 있으면 이 값을 null로 바꾸고 conflicts에 기록",
+            "rollback_ref": parent_refs[0],
+        }
+    merge_section = ""
+    merge_summary = "- merge: 해당 없음"
+    if integration is not None:
+        merge_section = "\n".join([
+            "### 다중 부모 병합 계획",
+            "",
+            f"- merge ID: `{integration['merge_id']}`",
+            f"- 병합 부모: {', '.join(f'`{ref}`' for ref in parent_refs)}",
+            "- 병합 이유: TODO",
+            "- 공통 불변조건: TODO",
+            "- 부모별 채택·제외 항목과 충돌 해결은 manifest의 `integration`에 기록한다.",
+            "",
+        ])
+        merge_summary = "\n".join([
+            f"- merge ID: `{integration['merge_id']}`",
+            f"- merged parents: {', '.join(f'`{ref}`' for ref in parent_refs)}",
+            "- 채택·제외·충돌·rollback 정본: `manifest.json#integration`",
+        ])
+    related_section = "- 관련 ADR: 없음"
+    if relationships:
+        related_section = "\n".join(
+            f"- `{record['relation']}` → `{record['adr_id']}`: {record['note']}"
+            for record in relationships)
+    base["MERGE_SECTION"] = merge_section
+    base["MERGE_SUMMARY"] = merge_summary
+    base["RELATED_ADR_SECTION"] = related_section
+    experiment_dir.mkdir(parents=True, exist_ok=True)
+    artifacts_dir.mkdir(exist_ok=True)
+    (target / "README.md").write_text(
+        _render(_read_template("ADR-README.md", template_root), base), "utf-8")
+
+    question_rows: list[str] = []
+    question_manifest: list[dict[str, Any]] = []
+    for index, case_id in enumerate(questions, 1):
+        filename = f"질문-{index:03d}-{case_id}.md"
+        values = {
+            **base,
+            "QUESTION_NUMBER": f"{index:03d}",
+            "CASE_ID": case_id,
+        }
+        (experiment_dir / filename).write_text(
+            _render(_read_template("QUESTION.md", template_root), values), "utf-8")
+        question_rows.append(
+            f"| {index:03d} | `{case_id}` | `run-001` | TODO | TODO | TODO | "
+            f"[{filename}]({filename}) |")
+        question_manifest.append({
+            "number": index,
+            "case_id": case_id,
+            "file": filename,
+            "sha256": "PENDING",
+        })
+
+    experiment_values = {
+        **base,
+        "QUESTION_ROWS": "\n".join(question_rows) if question_rows
+        else "| - | - | - | - | - | - | 질문 단위 평가 없음 |",
+        "QUESTIONS_JSON": json.dumps(question_manifest, ensure_ascii=False, indent=2),
+        "RESERVATION_JSON": json.dumps(reservation, ensure_ascii=False, indent=2),
+        "INTEGRATION_JSON": json.dumps(integration, ensure_ascii=False, indent=2),
+        "RELATIONSHIPS_JSON": json.dumps(relationships, ensure_ascii=False, indent=2),
+        "LINEAGE_JSON": json.dumps(lineage, ensure_ascii=False, indent=2),
+        "ARMS_JSON": json.dumps(arms, ensure_ascii=False, indent=2),
+        "ARM_IDS_JSON": json.dumps(arm_ids, ensure_ascii=False),
+        "ARM_ROWS": "\n".join(
+            f"| `{arm['id']}` | {arm['role']} | "
+            f"{', '.join(arm['derived_from']) or 'ROOT'} | TODO | TODO |"
+            for arm in arms),
+    }
+    (experiment_dir / "README.md").write_text(
+        _render(_read_template("EXPERIMENT-README.md", template_root), experiment_values),
+        "utf-8")
+    (experiment_dir / "manifest.json").write_text(
+        _render(_read_template("experiment-manifest.json", template_root), experiment_values),
+        "utf-8")
+    (artifacts_dir / "manifest.json").write_text(
+        _render(_read_template("artifact-manifest.json", template_root), base), "utf-8")
+    if new_policy:
+        manifest_path = experiment_dir / "manifest.json"
+        manifest = json.loads(manifest_path.read_text("utf-8"))
+        manifest["llm_policy"] = {
+            "policy_version": GEMINI_POLICY_VERSION, "provider": "gemini",
+            "required_model": GEMINI_MODEL, "product_required_model": GEMINI_MODEL,
+            "offline_evaluator_allowed_models": [GEMINI_MODEL],
+            "fallback_allowed": False,
+            "llm_calls": [
+                {"role": "product", "class": "product", "model": GEMINI_MODEL, "repeats": 1},
+                {"role": "judge", "class": "offline_evaluator", "model": GEMINI_MODEL, "repeats": 1},
+            ],
+        }
+        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", "utf-8")
+        for markdown in [target / "README.md", *experiment_dir.glob("*.md")]:
+            markdown.write_text(markdown.read_text("utf-8").replace(HAIKU_MODEL, GEMINI_MODEL), "utf-8")
+    return target
+
+
+def update_question_hashes(path: Path) -> int:
+    manifest_path = path / "실험" / "manifest.json"
+    manifest = json.loads(manifest_path.read_text("utf-8"))
+    count = 0
+    for row in manifest.get("questions", []):
+        question = path / "실험" / str(row["file"])
+        if not question.is_file():
+            raise FileNotFoundError(question)
+        row["sha256"] = _sha256(question)
+        count += 1
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", "utf-8")
+    return count
+
+
+def _replace_front_matter(text: str, updates: dict[str, str]) -> str:
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        raise ValueError("README front matter is missing")
+    try:
+        closing = next(index for index, line in enumerate(lines[1:], 1) if line.strip() == "---")
+    except StopIteration as exc:
+        raise ValueError("README front matter is not closed") from exc
+    remaining = dict(updates)
+    for index in range(1, closing):
+        if ":" not in lines[index]:
+            continue
+        key = lines[index].split(":", 1)[0].strip()
+        if key in remaining:
+            lines[index] = f"{key}: {remaining.pop(key)}"
+    if remaining:
+        lines[closing:closing] = [f"{key}: {value}" for key, value in remaining.items()]
+    return "\n".join(lines) + ("\n" if text.endswith("\n") else "")
+
+
+def update_reservation_status(
+    path: Path,
+    status: str,
+    *,
+    owner: str | None = None,
+    session_id: str | None = None,
+    note: str | None = None,
+) -> dict[str, Any]:
+    if status not in ALLOWED_WORK_STATUSES:
+        raise ValueError(f"work status must be one of {sorted(ALLOWED_WORK_STATUSES)}")
+    manifest_path = path / "실험" / "manifest.json"
+    readme_path = path / "README.md"
+    manifest = json.loads(manifest_path.read_text("utf-8"))
+    if manifest.get("schema_version") not in {"adr-experiment-v3", "adr-experiment-v4"}:
+        raise ValueError("reservation status updates require adr-experiment-v3 or v4")
+    reservation = manifest.get("reservation")
+    if not isinstance(reservation, dict):
+        raise ValueError("v3 reservation record is missing")
+    previous = str(reservation.get("status", ""))
+    if previous == "completed":
+        raise ValueError("completed ADR reservation history is immutable")
+    if previous == status:
+        raise ValueError(f"ADR reservation is already {status}")
+    if previous not in ALLOWED_WORK_STATUSES:
+        raise ValueError(f"invalid current work status: {previous}")
+
+    changed_at = _utc_now()
+    effective_owner = (owner or str(reservation.get("owner", "")) or _default_owner()).strip()
+    if not effective_owner:
+        raise ValueError("owner must not be empty")
+    effective_session = session_id or _session_id() or reservation.get("session_id")
+    reservation["status"] = status
+    reservation["owner"] = effective_owner
+    reservation["session_id"] = effective_session
+    reservation["updated_at"] = changed_at
+    if status == "completed":
+        reservation["completed_at"] = changed_at
+        action = "completed"
+    elif status == "abandoned":
+        reservation["abandoned_at"] = changed_at
+        action = "abandoned"
+    else:
+        action = "resumed"
+    events = reservation.setdefault("events", [])
+    if not isinstance(events, list):
+        raise ValueError("reservation events must be a list")
+    events.append({
+        "action": action,
+        "at": changed_at,
+        "owner": effective_owner,
+        "session_id": effective_session,
+        "note": note or f"work status changed from {previous} to {status}",
+    })
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", "utf-8")
+    readme = readme_path.read_text("utf-8")
+    readme_path.write_text(_replace_front_matter(readme, {
+        "owner": effective_owner,
+        "work_status": status,
+        "updated_at": changed_at,
+    }), "utf-8")
+    return reservation
+
+
+def _parse_utc_timestamp(value: Any, field: str, errors: list[str]) -> datetime | None:
+    if not isinstance(value, str) or not value.endswith("Z"):
+        errors.append(f"reservation {field} must be an ISO-8601 UTC timestamp ending in Z")
+        return None
+    try:
+        parsed = datetime.fromisoformat(value[:-1] + "+00:00")
+    except ValueError:
+        errors.append(f"reservation {field} is not a valid timestamp: {value}")
+        return None
+    return parsed
+
+
+def _validate_v3_reservation(
+    manifest: dict[str, Any],
+    meta: dict[str, str],
+) -> list[str]:
+    errors: list[str] = []
+    reservation = manifest.get("reservation")
+    if not isinstance(reservation, dict):
+        return ["v3/v4 manifest reservation must be an object"]
+    for key in ("owner", "scope", "scope_key"):
+        if not isinstance(reservation.get(key), str) or not reservation.get(key, "").strip():
+            errors.append(f"reservation {key} is required")
+    if not re.fullmatch(
+            r"[a-z0-9]+(?:-[a-z0-9]+)*", str(reservation.get("scope_key", ""))):
+        errors.append("reservation scope_key must be lowercase kebab-case")
+    status = reservation.get("status")
+    if status not in ALLOWED_WORK_STATUSES:
+        errors.append(f"invalid reservation status: {status}")
+
+    timestamps: dict[str, datetime | None] = {}
+    for key in ("created_at", "work_started_at", "updated_at"):
+        timestamps[key] = _parse_utc_timestamp(reservation.get(key), key, errors)
+    for key in ("completed_at", "abandoned_at"):
+        raw = reservation.get(key)
+        timestamps[key] = None if raw is None else _parse_utc_timestamp(raw, key, errors)
+    created = timestamps["created_at"]
+    started = timestamps["work_started_at"]
+    updated = timestamps["updated_at"]
+    if created and started and created > started:
+        errors.append("reservation created_at must not be after work_started_at")
+    if started and updated and started > updated:
+        errors.append("reservation work_started_at must not be after updated_at")
+    if status == "completed" and timestamps["completed_at"] != updated:
+        errors.append("completed reservation must set completed_at equal to updated_at")
+    if status == "abandoned" and timestamps["abandoned_at"] != updated:
+        errors.append("abandoned reservation must set abandoned_at equal to updated_at")
+
+    events = reservation.get("events")
+    if not isinstance(events, list) or len(events) < 2:
+        errors.append("reservation events must preserve at least reserved and started events")
+    elif any(not isinstance(event, dict) for event in events):
+        errors.append("reservation events must be objects")
+    else:
+        if events[0].get("action") != "reserved" or events[1].get("action") != "started":
+            errors.append("reservation events must begin with reserved then started")
+        event_times = [
+            _parse_utc_timestamp(event.get("at"), f"events[{index}].at", errors)
+            for index, event in enumerate(events)
+        ]
+        comparable = [value for value in event_times if value is not None]
+        if comparable != sorted(comparable):
+            errors.append("reservation events must be chronological")
+        if events and isinstance(events[-1], dict) and events[-1].get("at") != reservation.get("updated_at"):
+            errors.append("reservation latest event must match updated_at")
+
+    front_map = {
+        "created_at": "created_at",
+        "updated_at": "updated_at",
+        "owner": "owner",
+        "work_status": "status",
+    }
+    for front_key, reservation_key in front_map.items():
+        if meta.get(front_key) != str(reservation.get(reservation_key, "")):
+            errors.append(f"README {front_key} must match reservation {reservation_key}")
+    return errors
+
+
+def _validate_claim_receipt(
+    path: Path,
+    reservation: dict[str, Any],
+    expected_id: str,
+) -> list[str]:
+    errors: list[str] = []
+    claim_path = path / "claim.json"
+    if not claim_path.is_file():
+        return ["v3/v4 ADR requires immutable claim.json"]
+    try:
+        claim = json.loads(claim_path.read_text("utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        return [f"invalid claim.json: {exc}"]
+    if claim.get("schema_version") != "adr-claim-v1":
+        errors.append("claim.json schema_version must be adr-claim-v1")
+    if claim.get("adr_id") != expected_id:
+        errors.append(f"claim.json adr_id must be {expected_id}")
+    match = ADR_DIR_RE.fullmatch(path.name)
+    if match and claim.get("slug") != match.group(2):
+        errors.append("claim.json slug must match ADR directory")
+    events = reservation.get("events", [])
+    initial_event = events[0] if isinstance(events, list) and events else {}
+    initial_values = {
+        "owner": initial_event.get("owner"),
+        "session_id": initial_event.get("session_id"),
+        "scope": reservation.get("scope"),
+        "scope_key": reservation.get("scope_key"),
+        "created_at": reservation.get("created_at"),
+    }
+    for key, expected in initial_values.items():
+        if claim.get(key) != expected:
+            errors.append(f"claim.json {key} must match initial reservation")
+    return errors
+
+
+def _validate_adr_relationships(manifest: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    relationships = manifest.get("relationships", [])
+    if not isinstance(relationships, list):
+        return ["manifest relationships must be a list"]
+    seen: set[tuple[str, str]] = set()
+    for record in relationships:
+        if not isinstance(record, dict):
+            errors.append("ADR relationship must be an object")
+            continue
+        adr_id = str(record.get("adr_id", ""))
+        relation = str(record.get("relation", ""))
+        key = (adr_id, relation)
+        if key in seen:
+            errors.append(f"duplicate ADR relationship: {adr_id}/{relation}")
+        seen.add(key)
+        if relation not in ALLOWED_ADR_RELATIONS:
+            errors.append(f"invalid ADR relationship: {relation}")
+        if adr_id == manifest.get("adr_id"):
+            errors.append(f"ADR cannot relate to itself: {adr_id}/{relation}")
+        raw_path = str(record.get("record_path", ""))
+        record_path = _resolve_stored_path(raw_path) if raw_path else Path()
+        if not raw_path or not record_path.is_file():
+            errors.append(f"related ADR record missing: {raw_path}")
+            continue
+        if record.get("record_sha256") != _sha256(record_path):
+            errors.append(f"related ADR record hash mismatch: {raw_path}")
+        try:
+            target_record = json.loads(record_path.read_text("utf-8"))
+        except json.JSONDecodeError as exc:
+            errors.append(f"invalid related ADR record {raw_path}: {exc}")
+            continue
+        if target_record.get("adr_id") != adr_id:
+            errors.append(f"related ADR ID mismatch: {adr_id}")
+        if not isinstance(record.get("note"), str) or not record.get("note", "").strip():
+            errors.append(f"related ADR note is required: {adr_id}/{relation}")
+    return errors
+
+
+def _validate_integration(manifest: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    parents = manifest.get("lineage", {}).get("parents", [])
+    parent_refs = [
+        _experiment_arm_ref(str(parent.get("experiment_id", "")), str(parent.get("arm_id", "")))
+        for parent in parents if isinstance(parent, dict)
+    ]
+    integration = manifest.get("integration")
+    if len(parent_refs) <= 1:
+        if integration is not None:
+            errors.append("integration must be null unless the ADR has multiple parents")
+        return errors
+    if not isinstance(integration, dict):
+        return ["multi-parent ADR requires an integration object"]
+    if integration.get("type") != "multi_parent_merge":
+        errors.append("integration type must be multi_parent_merge")
+    if integration.get("parent_refs") != parent_refs:
+        errors.append("integration parent_refs must match lineage parents in order")
+    if any(parent.get("relation") != "merged_from" for parent in parents):
+        errors.append("every multi-parent lineage relation must be merged_from")
+    arm_ids = {
+        str(arm.get("id")) for arm in manifest.get("design", {}).get("arms", [])}
+    if integration.get("result_arm") not in arm_ids:
+        errors.append("integration result_arm must reference a local arm")
+    if integration.get("rollback_ref") not in parent_refs:
+        errors.append("integration rollback_ref must reference a merge parent")
+    contributions = integration.get("parent_contributions")
+    if not isinstance(contributions, list):
+        errors.append("integration parent_contributions must be a list")
+    else:
+        contribution_refs = [
+            str(row.get("parent_ref", "")) for row in contributions if isinstance(row, dict)]
+        if contribution_refs != parent_refs or len(contribution_refs) != len(contributions):
+            errors.append("integration contributions must cover every parent once in order")
+    conflicts = integration.get("conflicts")
+    if not isinstance(conflicts, list):
+        errors.append("integration conflicts must be a list")
+    elif conflicts:
+        if integration.get("no_conflict_reason") not in {None, ""}:
+            errors.append("integration with conflicts must set no_conflict_reason to null")
+        for index, conflict in enumerate(conflicts):
+            if not isinstance(conflict, dict):
+                errors.append(f"integration conflict {index} must be an object")
+                continue
+            for key in ("id", "between", "resolution", "chosen_from", "rationale"):
+                if key not in conflict:
+                    errors.append(f"integration conflict {index} missing: {key}")
+    elif not isinstance(integration.get("no_conflict_reason"), str) or not integration.get(
+            "no_conflict_reason", "").strip():
+        errors.append("conflict-free integration requires no_conflict_reason")
+    return errors
+
+
+def _detect_cycle(nodes: set[str], edges: list[tuple[str, str]]) -> bool:
+    adjacency: dict[str, list[str]] = {node: [] for node in nodes}
+    for source, target in edges:
+        adjacency.setdefault(source, []).append(target)
+        adjacency.setdefault(target, [])
+    state: dict[str, int] = {}
+
+    def visit(node: str) -> bool:
+        if state.get(node) == 1:
+            return True
+        if state.get(node) == 2:
+            return False
+        state[node] = 1
+        if any(visit(child) for child in adjacency.get(node, [])):
+            return True
+        state[node] = 2
+        return False
+
+    return any(visit(node) for node in adjacency if state.get(node, 0) == 0)
+
+
+def _validate_v2_lineage(manifest: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    experiment_id = str(manifest.get("experiment_id", ""))
+    lineage = manifest.get("lineage")
+    if not isinstance(lineage, dict):
+        return ["v2/v3/v4 manifest lineage must be an object"]
+    if not ARM_ID_RE.fullmatch(str(lineage.get("branch_id", ""))):
+        errors.append("lineage branch_id is invalid")
+    if not lineage.get("root_ref"):
+        errors.append("lineage root_ref is required")
+    if not isinstance(lineage.get("branch_path"), list) or not lineage.get("branch_path"):
+        errors.append("lineage branch_path must be a non-empty list")
+    if lineage.get("immutable_after_completion") is not True:
+        errors.append("lineage immutable_after_completion must be true")
+
+    arms = manifest.get("design", {}).get("arms", [])
+    if not isinstance(arms, list) or not arms:
+        return errors + ["v2/v3/v4 manifest requires at least one arm"]
+    arm_ids = [str(arm.get("id", "")) for arm in arms]
+    if len(arm_ids) != len(set(arm_ids)):
+        errors.append("arm IDs must be unique")
+    local_nodes = {_experiment_arm_ref(experiment_id, arm_id) for arm_id in arm_ids}
+    local_edges: list[tuple[str, str]] = []
+    external_refs: set[str] = set()
+    for arm in arms:
+        arm_id = str(arm.get("id", ""))
+        if not ARM_ID_RE.fullmatch(arm_id):
+            errors.append(f"invalid arm ID: {arm_id}")
+        if arm.get("role") not in ALLOWED_ARM_ROLES:
+            errors.append(f"invalid arm role: {arm.get('role')}")
+        derived = arm.get("derived_from")
+        if not isinstance(derived, list):
+            errors.append(f"arm {arm_id} derived_from must be a list")
+            continue
+        target = _experiment_arm_ref(experiment_id, arm_id)
+        for raw_source in derived:
+            source = str(raw_source)
+            if "/" in source:
+                external_refs.add(source)
+            elif source in arm_ids:
+                source = _experiment_arm_ref(experiment_id, source)
+            else:
+                errors.append(f"arm {arm_id} has unknown derived_from: {source}")
+                continue
+            local_edges.append((source, target))
+    if _detect_cycle(local_nodes, [edge for edge in local_edges if edge[0] in local_nodes]):
+        errors.append("arm derived_from contains a local cycle")
+
+    parents = lineage.get("parents", [])
+    if not isinstance(parents, list):
+        return errors + ["lineage parents must be a list"]
+    parent_refs: set[str] = set()
+    for parent in parents:
+        if not isinstance(parent, dict):
+            errors.append("lineage parent must be an object")
+            continue
+        parent_ref = _experiment_arm_ref(
+            str(parent.get("experiment_id", "")), str(parent.get("arm_id", "")))
+        parent_refs.add(parent_ref)
+        if parent.get("relation") not in ALLOWED_PARENT_RELATIONS:
+            errors.append(f"invalid parent relation: {parent.get('relation')}")
+        raw_path = str(parent.get("manifest_path", ""))
+        parent_path = _resolve_stored_path(raw_path) if raw_path else Path()
+        if not raw_path or not parent_path.is_file():
+            errors.append(f"parent manifest missing: {raw_path}")
+            continue
+        if parent.get("manifest_sha256") != _sha256(parent_path):
+            errors.append(f"parent manifest hash mismatch: {raw_path}")
+            continue
+        try:
+            parent_manifest = json.loads(parent_path.read_text("utf-8"))
+        except json.JSONDecodeError as exc:
+            errors.append(f"invalid parent manifest {raw_path}: {exc}")
+            continue
+        if parent_manifest.get("experiment_id") != parent.get("experiment_id"):
+            errors.append(f"parent experiment ID mismatch: {parent_ref}")
+        if parent_manifest.get("results", {}).get("status") != "complete":
+            errors.append(f"parent experiment is not complete: {parent_ref}")
+        known_parent_arms = {
+            str(arm.get("id")) for arm in parent_manifest.get("design", {}).get("arms", [])}
+        if parent.get("arm_id") not in known_parent_arms:
+            errors.append(f"parent arm missing: {parent_ref}")
+    if parent_refs != external_refs:
+        missing = sorted(parent_refs - external_refs)
+        undeclared = sorted(external_refs - parent_refs)
+        if missing:
+            errors.append(f"declared parent not used by any arm: {', '.join(missing)}")
+        if undeclared:
+            errors.append(f"external derived_from lacks parent record: {', '.join(undeclared)}")
+
+    runs = manifest.get("runs")
+    if not isinstance(runs, list) or not runs:
+        return errors + ["v2/v3/v4 manifest requires at least one run"]
+    seen_runs: set[str] = set()
+    for run in runs:
+        run_id = str(run.get("id", ""))
+        if not RUN_ID_RE.fullmatch(run_id) or run_id in seen_runs:
+            errors.append(f"invalid or duplicate run ID: {run_id}")
+        if run.get("purpose") not in ALLOWED_RUN_PURPOSES:
+            errors.append(f"invalid run purpose: {run.get('purpose')}")
+        if run.get("status") not in ALLOWED_RUN_STATUSES:
+            errors.append(f"invalid run status: {run.get('status')}")
+        if any(arm_id not in arm_ids for arm_id in run.get("arm_ids", [])):
+            errors.append(f"run {run_id} references unknown arm")
+        raw_artifact = str(run.get("artifact_path", ""))
+        run_artifact = _resolve_stored_path(raw_artifact) if raw_artifact else Path()
+        if run.get("status") == "complete":
+            if not raw_artifact or not run_artifact.is_file():
+                errors.append(f"run {run_id} artifact missing: {raw_artifact}")
+            elif run.get("sha256") != _sha256(run_artifact):
+                errors.append(f"run {run_id} artifact hash mismatch: {raw_artifact}")
+        elif raw_artifact not in {"", "TODO"} and run_artifact.is_file():
+            if run.get("sha256") not in {"PENDING", _sha256(run_artifact)}:
+                errors.append(f"run {run_id} artifact hash mismatch: {raw_artifact}")
+        parent_run = run.get("parent_run_id")
+        if parent_run is not None and parent_run not in seen_runs:
+            errors.append(f"run {run_id} parent_run_id must reference an earlier run")
+        seen_runs.add(run_id)
+    return errors
+
+
+def _is_nonnegative_int(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def _number_close(actual: Any, expected: float, tolerance: float) -> bool:
+    return (isinstance(actual, (int, float)) and not isinstance(actual, bool)
+            and abs(float(actual) - expected) <= tolerance)
+
+
+def _canonical_value_sha256(value: Any) -> str:
+    payload = json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+        allow_nan=False)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _validate_retrieval_stage_plan(
+    manifest: dict[str, Any],
+) -> tuple[dict[str, list[dict[str, Any]]], list[str]]:
+    errors: list[str] = []
+    plan = manifest.get("design", {}).get("retrieval_stage_plan")
+    if not isinstance(plan, dict):
+        return {}, ["v4 measured retrieval requires design.retrieval_stage_plan"]
+    if plan.get("schema_version") != RETRIEVAL_STAGE_SCHEMA:
+        errors.append(
+            f"retrieval stage plan schema_version must be {RETRIEVAL_STAGE_SCHEMA}")
+    if plan.get("accounting_unit") != RETRIEVAL_ACCOUNTING_UNIT:
+        errors.append(
+            f"retrieval stage plan accounting_unit must be {RETRIEVAL_ACCOUNTING_UNIT}")
+    stages_by_arm = plan.get("stages_by_arm")
+    if not isinstance(stages_by_arm, dict):
+        return {}, errors + ["retrieval stage plan stages_by_arm must be an object"]
+
+    arm_ids = [
+        str(arm.get("id", ""))
+        for arm in manifest.get("design", {}).get("arms", [])
+        if isinstance(arm, dict)
+    ]
+    if set(stages_by_arm) != set(arm_ids):
+        errors.append("retrieval stage plan must cover every design arm exactly once")
+
+    normalized: dict[str, list[dict[str, Any]]] = {}
+    for arm_id in arm_ids:
+        rows = stages_by_arm.get(arm_id)
+        if not isinstance(rows, list) or not rows:
+            errors.append(f"retrieval stage plan arm {arm_id} requires at least one stage")
+            continue
+        seen: set[str] = set()
+        normalized_rows: list[dict[str, Any]] = []
+        for index, row in enumerate(rows):
+            prefix = f"retrieval stage plan {arm_id}[{index}]"
+            if not isinstance(row, dict):
+                errors.append(f"{prefix} must be an object")
+                continue
+            stage_id = str(row.get("stage_id", ""))
+            kind = str(row.get("kind", ""))
+            parents = row.get("parent_stage_ids")
+            if not STAGE_ID_RE.fullmatch(stage_id) or stage_id in seen:
+                errors.append(f"{prefix} has invalid or duplicate stage_id: {stage_id}")
+            if kind not in RETRIEVAL_STAGE_KINDS:
+                errors.append(f"{prefix} has invalid kind: {kind}")
+            if (not isinstance(parents, list)
+                    or any(not isinstance(parent, str) for parent in parents)
+                    or len(parents) != len(set(parents))):
+                errors.append(f"{prefix} parent_stage_ids must be a unique string list")
+                parents = []
+            unknown = [parent for parent in parents if parent not in seen]
+            if unknown:
+                errors.append(
+                    f"{prefix} parents must reference earlier stages: {', '.join(unknown)}")
+            if index == 0 and parents:
+                errors.append(f"{prefix} first stage must not have parents")
+            seen.add(stage_id)
+            normalized_rows.append({
+                "stage_id": stage_id,
+                "kind": kind,
+                "parent_stage_ids": list(parents),
+            })
+        if normalized_rows:
+            if normalized_rows[0]["kind"] != "source":
+                errors.append(f"retrieval stage plan arm {arm_id} must begin with source")
+            if normalized_rows[-1]["kind"] != "present":
+                errors.append(f"retrieval stage plan arm {arm_id} must end with present")
+            normalized[arm_id] = normalized_rows
+    return normalized, errors
+
+
+def _validator_identity_map(
+    value: Any,
+    *,
+    field: str,
+    errors: list[str],
+) -> dict[str, dict[str, Any]]:
+    if not isinstance(value, list):
+        errors.append(f"{field} must be an identity list")
+        return {}
+    result: dict[str, dict[str, Any]] = {}
+    ordered_keys: list[str] = []
+    for row in value:
+        if (not isinstance(row, dict) or set(row) != {"doc_id", "node"}
+                or not isinstance(row.get("doc_id"), str)
+                or not row.get("doc_id", "").strip()
+                or not isinstance(row.get("node"), int)
+                or isinstance(row.get("node"), bool) or row.get("node") < 0):
+            errors.append(
+                f"{field} identities require non-empty doc_id and non-negative integer node")
+            continue
+        try:
+            key = json.dumps(
+                row, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+                allow_nan=False)
+        except (TypeError, ValueError):
+            errors.append(f"{field} identity is not canonical JSON")
+            continue
+        if key in result:
+            errors.append(f"{field} contains duplicate identities")
+        result[key] = row
+        ordered_keys.append(key)
+    if ordered_keys != sorted(ordered_keys):
+        errors.append(f"{field} identities must be canonically sorted")
+    return result
+
+
+def _validate_stage_case(
+    *,
+    run_id: str,
+    arm_id: str,
+    case_id: str,
+    case: dict[str, Any],
+    planned: list[dict[str, Any]],
+) -> tuple[dict[str, Any] | None, list[str]]:
+    errors: list[str] = []
+    prefix = f"stage ledger {run_id}/{arm_id}/{case_id}"
+    if case.get("schema_version") != RETRIEVAL_STAGE_SCHEMA:
+        errors.append(f"{prefix} schema_version mismatch")
+    if case.get("computed_post_selection") is not True:
+        errors.append(f"{prefix} must set computed_post_selection=true")
+    if case.get("gold_visible_to_product") is not False:
+        errors.append(f"{prefix} must set gold_visible_to_product=false")
+    if case.get("accounting_unit") != RETRIEVAL_ACCOUNTING_UNIT:
+        errors.append(f"{prefix} accounting_unit mismatch")
+    if case.get("arm_id") != arm_id:
+        errors.append(f"{prefix} arm_id mismatch")
+    if case.get("case_id") != case_id:
+        errors.append(f"{prefix} case_id mismatch")
+
+    case_gold_total = case.get("gold_total")
+    if not _is_nonnegative_int(case_gold_total):
+        errors.append(f"{prefix} gold_total must be a non-negative integer")
+        case_gold_total = 0
+    gold_identities = _validator_identity_map(
+        case.get("gold_identities"), field=f"{prefix}.gold_identities", errors=errors)
+    if len(gold_identities) != case_gold_total:
+        errors.append(f"{prefix} gold_total must equal gold identity count")
+
+    stages = case.get("stages")
+    if not isinstance(stages, list):
+        return None, errors + [f"{prefix} stages must be a list"]
+    actual_ids = [
+        str(stage.get("stage_id", "")) if isinstance(stage, dict) else ""
+        for stage in stages
+    ]
+    planned_ids = [stage["stage_id"] for stage in planned]
+    if actual_ids != planned_ids:
+        errors.append(f"{prefix} stage IDs/order must match the frozen plan")
+
+    required = {
+        "stage_id", "kind", "parent_stage_ids", "executed", "skip_reason",
+        "before", "added", "discarded", "after", "before_count",
+        "added_count", "discarded_count", "after_count", "occurrence_counts",
+        "discard_receipts", "discard_reason_counts", "gold_total", "gold_before",
+        "gold_added", "gold_discarded", "gold_after", "golden_recall",
+        "gold_before_identities", "gold_added_identities", "discarded_gold",
+        "gold_after_identities",
+    }
+    prior: dict[str, dict[str, Any]] = {}
+    final: dict[str, Any] | None = None
+    for index, stage in enumerate(stages):
+        stage_prefix = f"{prefix}/stage[{index}]"
+        if not isinstance(stage, dict):
+            errors.append(f"{stage_prefix} must be an object")
+            continue
+        missing = sorted(required - set(stage))
+        if missing:
+            errors.append(f"{stage_prefix} missing fields: {', '.join(missing)}")
+            continue
+        if index < len(planned):
+            plan = planned[index]
+            for key in ("stage_id", "kind", "parent_stage_ids"):
+                if stage.get(key) != plan[key]:
+                    errors.append(f"{stage_prefix} {key} must match the frozen plan")
+        stage_id = str(stage.get("stage_id", ""))
+        parents = stage.get("parent_stage_ids")
+        if (not isinstance(parents, list)
+                or any(parent not in prior for parent in parents)
+                or len(parents) != len(set(parents))):
+            errors.append(f"{stage_prefix} parents must be a unique earlier-stage list")
+            parents = []
+        executed = stage.get("executed")
+        skip_reason = stage.get("skip_reason")
+        if not isinstance(executed, bool):
+            errors.append(f"{stage_prefix} executed must be boolean")
+        elif executed and str(skip_reason or "").strip():
+            errors.append(f"{stage_prefix} executed stage must not have skip_reason")
+        elif not executed and not str(skip_reason or "").strip():
+            errors.append(f"{stage_prefix} skipped stage requires skip_reason")
+
+        identities = {
+            name: _validator_identity_map(
+                stage.get(name), field=f"{stage_prefix}.{name}", errors=errors)
+            for name in ("before", "added", "discarded", "after")
+        }
+        before_keys = set(identities["before"])
+        added_keys = set(identities["added"])
+        discarded_keys = set(identities["discarded"])
+        after_keys = set(identities["after"])
+        for name in ("before", "added", "discarded", "after"):
+            count_key = f"{name}_count"
+            if not _is_nonnegative_int(stage.get(count_key)):
+                errors.append(f"{stage_prefix} {count_key} must be a non-negative integer")
+            elif stage[count_key] != len(identities[name]):
+                errors.append(f"{stage_prefix} {count_key} must equal identity count")
+        if (added_keys & before_keys or discarded_keys - before_keys
+                or after_keys != (before_keys | added_keys) - discarded_keys):
+            errors.append(f"{stage_prefix} canonical identity set equation failed")
+        if parents:
+            parent_union: set[str] = set()
+            for parent in parents:
+                parent_union.update(prior[parent]["after_keys"])
+            if before_keys != parent_union:
+                errors.append(f"{stage_prefix} before identities must equal parent output union")
+
+        occurrences = stage.get("occurrence_counts")
+        occurrence_fields = {
+            "before", "after", "canonical_collapsed_before",
+            "canonical_collapsed_after",
+        }
+        if not isinstance(occurrences, dict) or set(occurrences) != occurrence_fields:
+            errors.append(f"{stage_prefix} occurrence_counts fields are invalid")
+        else:
+            for key in occurrence_fields:
+                if not _is_nonnegative_int(occurrences.get(key)):
+                    errors.append(f"{stage_prefix} occurrence_counts.{key} is invalid")
+            if all(_is_nonnegative_int(occurrences.get(key)) for key in occurrence_fields):
+                if occurrences["before"] < len(before_keys):
+                    errors.append(f"{stage_prefix} before occurrences below canonical count")
+                if occurrences["after"] < len(after_keys):
+                    errors.append(f"{stage_prefix} after occurrences below canonical count")
+                if occurrences["canonical_collapsed_before"] != (
+                        occurrences["before"] - len(before_keys)):
+                    errors.append(f"{stage_prefix} collapsed-before count mismatch")
+                if occurrences["canonical_collapsed_after"] != (
+                        occurrences["after"] - len(after_keys)):
+                    errors.append(f"{stage_prefix} collapsed-after count mismatch")
+        if executed is False and (before_keys != after_keys or added_keys or discarded_keys):
+            errors.append(f"{stage_prefix} skipped stage changed its identity snapshot")
+
+        receipts = stage.get("discard_receipts")
+        receipt_map: dict[str, str] = {}
+        if not isinstance(receipts, list):
+            errors.append(f"{stage_prefix} discard_receipts must be a list")
+            receipts = []
+        for receipt in receipts:
+            if not isinstance(receipt, dict) or set(receipt) != {"identity", "reason"}:
+                errors.append(f"{stage_prefix} discard receipt fields are invalid")
+                continue
+            receipt_identity = _validator_identity_map(
+                [receipt.get("identity")], field=f"{stage_prefix}.discard_receipt",
+                errors=errors)
+            if not receipt_identity:
+                continue
+            key = next(iter(receipt_identity))
+            reason = receipt.get("reason")
+            if key in receipt_map:
+                errors.append(f"{stage_prefix} duplicate discard receipt")
+            if not isinstance(reason, str) or not reason.strip():
+                errors.append(f"{stage_prefix} discard receipt reason is empty")
+                continue
+            receipt_map[key] = reason
+        if set(receipt_map) != discarded_keys:
+            errors.append(f"{stage_prefix} discard receipts must cover discarded identities 100%")
+        expected_reason_counts: dict[str, int] = {}
+        for reason in receipt_map.values():
+            expected_reason_counts[reason] = expected_reason_counts.get(reason, 0) + 1
+        if stage.get("discard_reason_counts") != dict(sorted(expected_reason_counts.items())):
+            errors.append(f"{stage_prefix} discard_reason_counts mismatch")
+
+        if stage.get("gold_total") != case_gold_total:
+            errors.append(f"{stage_prefix} gold_total must equal the case denominator")
+        expected_gold_sets = {
+            "gold_before": before_keys & set(gold_identities),
+            "gold_added": added_keys & set(gold_identities),
+            "gold_discarded": discarded_keys & set(gold_identities),
+            "gold_after": after_keys & set(gold_identities),
+        }
+        identity_fields = {
+            "gold_before": "gold_before_identities",
+            "gold_added": "gold_added_identities",
+            "gold_after": "gold_after_identities",
+        }
+        for count_key, expected_set in expected_gold_sets.items():
+            if stage.get(count_key) != len(expected_set):
+                errors.append(f"{stage_prefix} {count_key} does not match exact identities")
+            identity_field = identity_fields.get(count_key)
+            if identity_field:
+                actual = _validator_identity_map(
+                    stage.get(identity_field), field=f"{stage_prefix}.{identity_field}",
+                    errors=errors)
+                if set(actual) != expected_set:
+                    errors.append(f"{stage_prefix} {identity_field} mismatch")
+        gold_count_keys = (
+            "gold_before", "gold_added", "gold_discarded", "gold_after")
+        if not all(_is_nonnegative_int(stage.get(key)) for key in gold_count_keys):
+            errors.append(f"{stage_prefix} gold counts must be non-negative integers")
+        elif stage["gold_after"] != (
+                stage["gold_before"] + stage["gold_added"]
+                - stage["gold_discarded"]):
+            errors.append(
+                f"{stage_prefix} violates gold_after=gold_before+gold_added-gold_discarded")
+        expected_recall = (None if case_gold_total == 0 else
+                           len(expected_gold_sets["gold_after"]) / case_gold_total)
+        if expected_recall is None:
+            if stage.get("golden_recall") is not None:
+                errors.append(f"{stage_prefix} golden_recall must be null for gold_total=0")
+        elif not _number_close(stage.get("golden_recall"), expected_recall, 1e-6):
+            errors.append(f"{stage_prefix} golden_recall does not match exact gold identities")
+
+        discarded_gold = stage.get("discarded_gold")
+        discarded_gold_map: dict[str, str] = {}
+        if not isinstance(discarded_gold, list):
+            errors.append(f"{stage_prefix} discarded_gold must be a list")
+            discarded_gold = []
+        for row in discarded_gold:
+            if not isinstance(row, dict) or set(row) != {"identity", "reason"}:
+                errors.append(f"{stage_prefix} discarded_gold fields are invalid")
+                continue
+            identity = _validator_identity_map(
+                [row.get("identity")], field=f"{stage_prefix}.discarded_gold",
+                errors=errors)
+            if not identity:
+                continue
+            key = next(iter(identity))
+            if key in discarded_gold_map:
+                errors.append(f"{stage_prefix} duplicate discarded gold identity")
+            discarded_gold_map[key] = str(row.get("reason") or "")
+        if set(discarded_gold_map) != expected_gold_sets["gold_discarded"]:
+            errors.append(f"{stage_prefix} discarded_gold identities mismatch")
+        for key, reason in discarded_gold_map.items():
+            if receipt_map.get(key) != reason:
+                errors.append(f"{stage_prefix} discarded_gold reason mismatch")
+
+        prior[stage_id] = {"after_keys": after_keys}
+        final = stage
+    return final, errors
+
+
+def _metric_for_arm(
+    value: Any,
+    arm_id: str,
+    arm_count: int,
+    metric: str,
+    errors: list[str],
+) -> Any:
+    if isinstance(value, dict):
+        if arm_id not in value:
+            errors.append(f"retrieval accounting {metric} missing arm: {arm_id}")
+            return None
+        return value[arm_id]
+    if arm_count == 1:
+        return value
+    errors.append(f"retrieval accounting {metric} must be an arm map")
+    return None
+
+
+def _validate_measured_stage_ledger(
+    path: Path,
+    manifest: dict[str, Any],
+    retrieval: dict[str, Any],
+    stage_config: dict[str, Any],
+) -> list[str]:
+    errors: list[str] = []
+    plan, plan_errors = _validate_retrieval_stage_plan(manifest)
+    errors.extend(plan_errors)
+    raw_path = str(stage_config.get("artifact_path") or "")
+    artifact_path = _resolve_stored_path(raw_path) if raw_path else Path()
+    if not raw_path or raw_path == "TODO" or not artifact_path.is_file():
+        return errors + [f"measured retrieval stage ledger artifact missing: {raw_path}"]
+    expected_hash = stage_config.get("sha256")
+    actual_hash = _sha256(artifact_path)
+    if expected_hash != actual_hash:
+        errors.append(f"retrieval stage ledger artifact hash mismatch: {raw_path}")
+    try:
+        ledger = json.loads(artifact_path.read_text("utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        return errors + [f"invalid retrieval stage ledger artifact: {exc}"]
+    if not isinstance(ledger, dict):
+        return errors + ["retrieval stage ledger artifact must be an object"]
+    if ledger.get("schema_version") != RETRIEVAL_STAGE_SCHEMA:
+        errors.append(f"stage ledger schema_version must be {RETRIEVAL_STAGE_SCHEMA}")
+    required_top = {
+        "schema_version", "adr_id", "experiment_id", "accounting_unit",
+        "computed_post_selection", "gold_visible_to_product", "runs",
+        "artifact_sha256",
+    }
+    allowed_top = required_top | {"audit"}
+    if not required_top <= set(ledger) or set(ledger) - allowed_top:
+        errors.append("stage ledger top-level fields differ from retrieval-stage-ledger-v1")
+    else:
+        if "audit" in ledger and not isinstance(ledger["audit"], dict):
+            errors.append("stage ledger audit extension must be an object")
+        unhashed = {key: value for key, value in ledger.items()
+                    if key != "artifact_sha256"}
+        if ledger.get("artifact_sha256") != _canonical_value_sha256(unhashed):
+            errors.append("stage ledger artifact_sha256 mismatch")
+    if ledger.get("adr_id") != manifest.get("adr_id"):
+        errors.append("stage ledger adr_id mismatch")
+    if ledger.get("experiment_id") != manifest.get("experiment_id"):
+        errors.append("stage ledger experiment_id mismatch")
+    if ledger.get("accounting_unit") != RETRIEVAL_ACCOUNTING_UNIT:
+        errors.append(f"stage ledger accounting_unit must be {RETRIEVAL_ACCOUNTING_UNIT}")
+    if ledger.get("computed_post_selection") is not True:
+        errors.append("stage ledger gold join must be computed_post_selection=true")
+    if ledger.get("gold_visible_to_product") is not False:
+        errors.append("stage ledger must set gold_visible_to_product=false")
+
+    complete_runs = [
+        run for run in manifest.get("runs", [])
+        if isinstance(run, dict) and run.get("status") == "complete"
+    ]
+    expected_run_ids = [str(run.get("id", "")) for run in complete_runs]
+    ledger_runs = ledger.get("runs")
+    if not isinstance(ledger_runs, list):
+        return errors + ["stage ledger runs must be a list"]
+    actual_run_ids = [
+        str(run.get("run_id", "")) if isinstance(run, dict) else ""
+        for run in ledger_runs
+    ]
+    if len(actual_run_ids) != len(set(actual_run_ids)):
+        errors.append("stage ledger run IDs must be unique")
+    if set(actual_run_ids) != set(expected_run_ids):
+        errors.append("stage ledger must cover every complete run exactly once")
+
+    questions = manifest.get("questions", [])
+    expected_case_ids = [
+        str(row.get("case_id", "")) for row in questions if isinstance(row, dict)]
+    if retrieval.get("changed") is True and not expected_case_ids:
+        errors.append("changed measured retrieval requires question-level case records")
+
+    summaries: dict[str, dict[str, dict[str, Any]]] = {}
+    run_records = {
+        str(row.get("run_id", "")): row
+        for row in ledger_runs if isinstance(row, dict)
+    }
+    for run in complete_runs:
+        run_id = str(run.get("id", ""))
+        ledger_run = run_records.get(run_id)
+        if not isinstance(ledger_run, dict):
+            continue
+        if set(ledger_run) != {"run_id", "arms"}:
+            errors.append(f"stage ledger run {run_id} fields differ from schema")
+        arms = ledger_run.get("arms")
+        if not isinstance(arms, list):
+            errors.append(f"stage ledger run {run_id} arms must be a list")
+            continue
+        expected_arm_ids = [str(arm_id) for arm_id in run.get("arm_ids", [])]
+        actual_arm_ids = [
+            str(arm.get("arm_id", "")) if isinstance(arm, dict) else ""
+            for arm in arms
+        ]
+        if len(actual_arm_ids) != len(set(actual_arm_ids)):
+            errors.append(f"stage ledger run {run_id} arm IDs must be unique")
+        if set(actual_arm_ids) != set(expected_arm_ids):
+            errors.append(f"stage ledger run {run_id} must cover every run arm exactly once")
+        arm_records = {
+            str(row.get("arm_id", "")): row
+            for row in arms if isinstance(row, dict)
+        }
+        summaries[run_id] = {}
+        for arm_id in expected_arm_ids:
+            arm = arm_records.get(arm_id)
+            if not isinstance(arm, dict):
+                continue
+            if set(arm) != {
+                    "arm_id", "declared_stage_ids", "cases", "aggregate"}:
+                errors.append(
+                    f"stage ledger {run_id}/{arm_id} fields differ from schema")
+            planned = plan.get(arm_id, [])
+            if arm.get("declared_stage_ids") != [
+                    stage["stage_id"] for stage in planned]:
+                errors.append(
+                    f"stage ledger {run_id}/{arm_id} declared stages differ from frozen plan")
+            cases = arm.get("cases")
+            if not isinstance(cases, list):
+                errors.append(f"stage ledger {run_id}/{arm_id} cases must be a list")
+                continue
+            actual_case_ids = [
+                str(case.get("case_id", "")) if isinstance(case, dict) else ""
+                for case in cases
+            ]
+            if len(actual_case_ids) != len(set(actual_case_ids)):
+                errors.append(f"stage ledger {run_id}/{arm_id} case IDs must be unique")
+            if set(actual_case_ids) != set(expected_case_ids):
+                errors.append(
+                    f"stage ledger {run_id}/{arm_id} must cover every manifest case exactly once")
+            final_counts: list[int] = []
+            final_gold = 0
+            gold_total = 0
+            for case in cases:
+                if not isinstance(case, dict):
+                    errors.append(f"stage ledger {run_id}/{arm_id} cases must be objects")
+                    continue
+                case_id = str(case.get("case_id", ""))
+                final, case_errors = _validate_stage_case(
+                    run_id=run_id,
+                    arm_id=arm_id,
+                    case_id=case_id,
+                    case=case,
+                    planned=planned,
+                )
+                errors.extend(case_errors)
+                if final is not None and all(_is_nonnegative_int(final.get(key)) for key in (
+                        "after_count", "gold_after", "gold_total")):
+                    final_counts.append(final["after_count"])
+                    final_gold += final["gold_after"]
+                    gold_total += final["gold_total"]
+            summaries[run_id][arm_id] = {
+                "counts": final_counts,
+                "gold_after": final_gold,
+                "gold_total": gold_total,
+            }
+
+    summary_run_id = stage_config.get("summary_run_id")
+    if summary_run_id not in expected_run_ids:
+        errors.append("measured stage ledger summary_run_id must reference a complete run")
+        return errors
+    run_summary = summaries.get(str(summary_run_id), {})
+    summary_run = next(
+        (run for run in complete_runs if run.get("id") == summary_run_id), None)
+    if not isinstance(summary_run, dict):
+        return errors
+    arm_ids = [str(arm_id) for arm_id in summary_run.get("arm_ids", [])]
+    corpus_total = retrieval.get("corpus_total")
+    if not _is_nonnegative_int(corpus_total) or corpus_total == 0:
+        errors.append("measured retrieval corpus_total must be a positive integer")
+        corpus_total = None
+    for arm_id in arm_ids:
+        summary = run_summary.get(arm_id)
+        if not isinstance(summary, dict):
+            continue
+        counts = summary["counts"]
+        if len(counts) != len(expected_case_ids):
+            continue
+        presented_total = sum(counts)
+        presented_mean = statistics.mean(counts) if counts else 0.0
+        presented_p50 = statistics.median(counts) if counts else 0.0
+        ordered = sorted(counts)
+        presented_p95 = (ordered[min(len(ordered) - 1,
+                                     max(0, round((len(ordered) - 1) * .95)))]
+                         if ordered else 0.0)
+        golden_recall = (None if summary["gold_total"] == 0 else
+                         summary["gold_after"] / summary["gold_total"])
+        selectivity = (None if corpus_total is None else presented_mean / corpus_total)
+        expected_metrics = {
+            "presented_total": (presented_total, 0.0),
+            "presented_mean": (presented_mean, 5e-4),
+            "presented_p50": (presented_p50, 0.0),
+            "presented_p95": (presented_p95, 0.0),
+            "golden_recall": (golden_recall, 1e-6),
+            "selectivity": (selectivity, 1e-8),
+        }
+        for metric, (expected, tolerance) in expected_metrics.items():
+            if expected is None:
+                continue
+            actual = _metric_for_arm(
+                retrieval.get(metric), arm_id, len(arm_ids), metric, errors)
+            if not _number_close(actual, float(expected), tolerance):
+                errors.append(
+                    f"retrieval accounting {metric} does not match final stage for {arm_id}")
+    return errors
+
+
+def _validate_retrieval_accounting_v4(
+    path: Path,
+    manifest: dict[str, Any],
+    retrieval: dict[str, Any],
+    *,
+    final: bool,
+) -> list[str]:
+    errors: list[str] = []
+    stage_config = retrieval.get("stage_ledger")
+    if not isinstance(stage_config, dict):
+        return ["v4 retrieval_accounting.stage_ledger must be an object"]
+    mode = stage_config.get("mode")
+    if mode not in RETRIEVAL_STAGE_MODES:
+        return [f"invalid retrieval stage ledger mode: {mode}"]
+    if stage_config.get("schema_version") != RETRIEVAL_STAGE_SCHEMA:
+        errors.append(
+            f"retrieval stage ledger schema_version must be {RETRIEVAL_STAGE_SCHEMA}")
+    if stage_config.get("accounting_unit") != RETRIEVAL_ACCOUNTING_UNIT:
+        errors.append(
+            f"retrieval stage ledger accounting_unit must be {RETRIEVAL_ACCOUNTING_UNIT}")
+    if retrieval.get("changed") is True and mode != "measured":
+        errors.append("changed retrieval requires stage_ledger mode=measured")
+
+    if mode == "not_applicable":
+        if retrieval.get("changed") is True:
+            errors.append("not_applicable stage ledger requires changed=false")
+        reason = stage_config.get("not_applicable_reason")
+        if not isinstance(reason, str) or not reason.strip():
+            errors.append("not_applicable stage ledger requires a reason")
+        if stage_config.get("artifact_path") is not None or stage_config.get("sha256") is not None:
+            errors.append("not_applicable stage ledger must not reference an artifact")
+        plan = manifest.get("design", {}).get("retrieval_stage_plan", {})
+        if isinstance(plan, dict) and plan.get("stages_by_arm") not in ({}, None):
+            errors.append("not_applicable stage ledger requires an empty stage plan")
+        return errors
+
+    raw_path = str(stage_config.get("artifact_path") or "")
+    if mode == "inherited":
+        if retrieval.get("changed") is True:
+            errors.append("inherited stage ledger requires changed=false")
+        artifact_path = _resolve_stored_path(raw_path) if raw_path else Path()
+        if not raw_path or not artifact_path.is_file():
+            errors.append(f"inherited retrieval stage ledger artifact missing: {raw_path}")
+            return errors
+        if stage_config.get("sha256") != _sha256(artifact_path):
+            errors.append(f"inherited retrieval stage ledger hash mismatch: {raw_path}")
+        try:
+            inherited = json.loads(artifact_path.read_text("utf-8"))
+        except (json.JSONDecodeError, OSError) as exc:
+            return errors + [f"invalid inherited retrieval stage ledger: {exc}"]
+        if not isinstance(inherited, dict):
+            return errors + ["inherited retrieval stage ledger must be an object"]
+        if inherited.get("schema_version") != RETRIEVAL_STAGE_SCHEMA:
+            errors.append("inherited retrieval artifact has an invalid schema_version")
+        if inherited.get("accounting_unit") != RETRIEVAL_ACCOUNTING_UNIT:
+            errors.append("inherited retrieval artifact has an invalid accounting_unit")
+        if inherited.get("computed_post_selection") is not True:
+            errors.append("inherited retrieval gold join was not computed post-selection")
+        if inherited.get("gold_visible_to_product") is not False:
+            errors.append("inherited retrieval artifact exposes gold to product roles")
+        return errors
+
+    complete_runs = [
+        run for run in manifest.get("runs", [])
+        if isinstance(run, dict) and run.get("status") == "complete"]
+    if not complete_runs:
+        _, plan_errors = _validate_retrieval_stage_plan(manifest)
+        errors.extend(plan_errors)
+        if final:
+            errors.append("final measured retrieval requires a complete run")
+        return errors
+    errors.extend(_validate_measured_stage_ledger(
+        path, manifest, retrieval, stage_config))
+    return errors
+
+
+def _validate_code_isolation(
+    path: Path,
+    manifest: dict[str, Any],
+    *,
+    number: int,
+    final: bool,
+) -> list[str]:
+    """Validate the research-only code boundary introduced at ADR-0138."""
+    if number < 138:
+        return []
+    errors: list[str] = []
+    isolation = manifest.get("design", {}).get("code_isolation")
+    if not isinstance(isolation, dict):
+        return ["code_isolation is required for ADR-0138+"]
+
+    if isolation.get("schema_version") != "adr-code-isolation-v1":
+        errors.append("code_isolation schema_version must be adr-code-isolation-v1")
+    mode = isolation.get("mode")
+    if mode not in {"candidate_snapshot", "not_applicable"}:
+        errors.append("code_isolation mode must be candidate_snapshot or not_applicable")
+    expected_flags = {
+        "production_paths_modified_before_decision": False,
+        "runtime_import_allowed": False,
+        "production_registry_registered": False,
+        "main_wiring_unchanged": True,
+    }
+    for key, expected in expected_flags.items():
+        if isolation.get(key) is not expected:
+            errors.append(f"code_isolation {key} must be {str(expected).lower()}")
+
+    candidates = isolation.get("candidates")
+    if not isinstance(candidates, list):
+        errors.append("code_isolation candidates must be a list")
+        candidates = []
+    reason = isolation.get("reason")
+    if mode == "not_applicable":
+        if not isinstance(reason, str) or not reason.strip():
+            errors.append("not_applicable code_isolation requires a reason")
+        if candidates:
+            errors.append("not_applicable code_isolation requires empty candidates")
+        return errors
+    if reason not in {None, ""}:
+        errors.append("candidate_snapshot code_isolation must set reason to null")
+    if not candidates:
+        errors.append("candidate_snapshot requires at least one candidate")
+        return errors
+
+    experiment_id = str(manifest.get("experiment_id") or "")
+    arms = {
+        str(row.get("id")): row
+        for row in manifest.get("design", {}).get("arms", [])
+        if isinstance(row, dict)
+    }
+    runs = {
+        str(row.get("id")): row
+        for row in manifest.get("runs", [])
+        if isinstance(row, dict)
+    }
+    package_root = (ROOT / "02_BACKEND" / "lawrag"
+                    if (ROOT / "02_BACKEND" / "lawrag").is_dir()
+                    else ROOT / "lawrag")
+    expected_root = (
+        package_root / "research" / "candidates" / f"adr_{number:04d}"
+    ).resolve()
+
+    def contained(candidate: Path, boundary: Path) -> bool:
+        try:
+            candidate.resolve().relative_to(boundary.resolve())
+        except ValueError:
+            return False
+        return True
+
+    seen_ids: set[str] = set()
+    for index, candidate in enumerate(candidates):
+        label = f"code_isolation candidate[{index}]"
+        if not isinstance(candidate, dict):
+            errors.append(f"{label} must be an object")
+            continue
+        candidate_id = str(candidate.get("candidate_id") or "")
+        if not re.fullmatch(r"[a-z0-9][a-z0-9-]{1,62}", candidate_id):
+            errors.append(f"{label} candidate_id must be lower kebab-case")
+        elif candidate_id in seen_ids:
+            errors.append(f"{label} candidate_id must be unique")
+        seen_ids.add(candidate_id)
+        if candidate.get("experiment_id") != experiment_id:
+            errors.append(f"{label} experiment_id linkage mismatch")
+        arm_id = str(candidate.get("arm_id") or "")
+        if arms.get(arm_id, {}).get("role") != "candidate":
+            errors.append(f"{label} arm_id must reference role=candidate")
+        run_ids = candidate.get("run_ids")
+        if (not isinstance(run_ids, list) or not run_ids or
+                len(run_ids) != len(set(run_ids))):
+            errors.append(f"{label} run_ids must be a non-empty unique list")
+            run_ids = []
+        for run_id in run_ids:
+            run = runs.get(str(run_id))
+            if not isinstance(run, dict) or arm_id not in run.get("arm_ids", []):
+                errors.append(f"{label} run_id must execute arm {arm_id}: {run_id}")
+
+        raw_manifest = str(candidate.get("manifest_path") or "")
+        candidate_manifest_path = (
+            _resolve_stored_path(raw_manifest) if raw_manifest else Path()
+        )
+        expected_candidate_dir = expected_root / candidate_id
+        if (not raw_manifest or
+                not contained(candidate_manifest_path, expected_candidate_dir) or
+                candidate_manifest_path.resolve() !=
+                (expected_candidate_dir / "candidate.json").resolve()):
+            errors.append(
+                f"{label} manifest must be under "
+                f"lawrag/research/candidates/adr_{number:04d}/{candidate_id}")
+        manifest_hash = candidate.get("manifest_sha256")
+        candidate_manifest: dict[str, Any] | None = None
+        if manifest_hash == "PENDING":
+            if final:
+                errors.append(f"{label} manifest sha256 is PENDING")
+        elif not re.fullmatch(r"[0-9a-f]{64}", str(manifest_hash or "")):
+            errors.append(f"{label} manifest sha256 is invalid")
+        elif not candidate_manifest_path.is_file():
+            errors.append(f"{label} candidate manifest missing: {raw_manifest}")
+        else:
+            if candidate_manifest_path.is_symlink():
+                errors.append(f"{label} candidate manifest must not be a symlink")
+            if manifest_hash != _sha256(candidate_manifest_path):
+                errors.append(f"{label} manifest sha256 mismatch")
+            try:
+                loaded = json.loads(candidate_manifest_path.read_text("utf-8"))
+                candidate_manifest = loaded if isinstance(loaded, dict) else None
+            except (json.JSONDecodeError, OSError) as exc:
+                errors.append(f"{label} invalid candidate manifest: {exc}")
+            if candidate_manifest is not None:
+                expected_linkage = {
+                    "adr_id": manifest.get("adr_id"),
+                    "experiment_id": experiment_id,
+                    "arm_id": arm_id,
+                    "run_ids": run_ids,
+                    "candidate_id": candidate_id,
+                    "status": "research-only",
+                    "production_loadable": False,
+                }
+                for key, expected in expected_linkage.items():
+                    if candidate_manifest.get(key) != expected:
+                        errors.append(f"{label} candidate manifest {key} mismatch")
+
+        revision_id = candidate.get("revision_id")
+        revision_hash = candidate.get("revision_sha256")
+        if revision_id == "PENDING" or revision_hash == "PENDING":
+            if final:
+                errors.append(f"{label} frozen revision is PENDING")
+        elif (not re.fullmatch(r"rev-\d{3}", str(revision_id or "")) or
+              not re.fullmatch(r"[0-9a-f]{64}", str(revision_hash or ""))):
+            errors.append(f"{label} frozen revision identity is invalid")
+        elif candidate_manifest is not None:
+            revision = next(
+                (
+                    row for row in candidate_manifest.get("revisions", [])
+                    if isinstance(row, dict) and
+                    row.get("revision_id") == revision_id
+                ),
+                None,
+            )
+            if not isinstance(revision, dict):
+                errors.append(f"{label} frozen revision is missing")
+            elif revision.get("revision_sha256") != revision_hash:
+                errors.append(f"{label} frozen revision sha256 mismatch")
+
+        raw_runner = str(candidate.get("runner_path") or "")
+        runner_path = _resolve_stored_path(raw_runner) if raw_runner else Path()
+        tool_roots = (
+            ROOT / "06_TOOLS" / "COMMANDS",
+            ROOT / "06_TOOLS" / "EXPERIMENTS",
+            ROOT / "scripts",  # frozen pre-cutover manifest namespace
+        )
+        runner_allowed = (
+            any(contained(runner_path, tool_root) for tool_root in tool_roots) or
+            contained(runner_path, package_root / "research")
+        )
+        if not raw_runner or not runner_allowed:
+            errors.append(
+                f"{label} runner must stay in 06_TOOLS, the frozen scripts namespace, "
+                "or lawrag/research"
+            )
+        runner_hash = candidate.get("runner_sha256")
+        if runner_hash == "PENDING":
+            if final:
+                errors.append(f"{label} runner sha256 is PENDING")
+        elif not re.fullmatch(r"[0-9a-f]{64}", str(runner_hash or "")):
+            errors.append(f"{label} runner sha256 is invalid")
+        elif not runner_path.is_file() or runner_path.is_symlink():
+            errors.append(f"{label} explicit runner missing or symlink: {raw_runner}")
+        elif runner_hash != _sha256(runner_path):
+            errors.append(f"{label} runner sha256 mismatch")
+    return errors
+
+
+def _gemini_scoped_model_override(
+    path: Path, manifest: dict[str, Any], meta: dict[str, Any],
+    default_model: str,
+) -> tuple[set[str], list[str]]:
+    """Validate an explicit, frozen user-requested comparison without changing defaults."""
+    override = manifest.get("llm_policy", {}).get("experiment_override")
+    if override is None:
+        return {default_model}, []
+    try:
+        if not isinstance(override, dict):
+            raise ValueError("must be an object")
+        if override.get("schema_version") != "user-authorized-experiment-models-v1":
+            raise ValueError("unsupported schema")
+        if (meta.get("main_wiring") != "unchanged"
+                or override.get("main_wiring") != "unchanged"
+                or manifest.get("in_sample") is not True
+                or manifest.get("decision_eligible") is not False):
+            raise ValueError("requires an isolated, in-sample comparison with MAIN unchanged")
+        auth = override.get("authorization", {})
+        if (auth.get("source") != "user_message" or not auth.get("text", "").strip()
+                or not auth.get("scope", "").strip()
+                or auth.get("fallback_allowed") is not False):
+            raise ValueError("requires a recorded explicit user request and no fallback")
+        raw = override.get("allowed_models")
+        if (not isinstance(raw, list) or not raw or len(raw) != len(set(raw))
+                or any(not isinstance(model, str) or not model.startswith("gemini-") for model in raw)):
+            raise ValueError("requires a closed unique Gemini model list")
+        design_path = (ROOT / override["frozen_design_path"]).resolve()
+        if (not design_path.is_relative_to((path / "artifacts").resolve())
+                or _sha256(design_path) != override.get("frozen_design_sha256")):
+            raise ValueError("frozen design location or hash mismatch")
+        design = json.loads(design_path.read_text("utf-8"))
+        configs = design["configs"]
+        if (design.get("scope_authorization") != auth
+                or {c["model"] for c in configs.values()} != set(raw)):
+            raise ValueError("authorization or model list differs from frozen design")
+        for call in manifest.get("llm_policy", {}).get("llm_calls", []):
+            config = configs.get(call.get("arm_id"), {})
+            if any(call.get(key) != config.get(key) for key in ("model", "thinking_level")):
+                raise ValueError("call model/thinking differs from its frozen arm")
+        return set(raw), []
+    except (KeyError, TypeError, ValueError, OSError) as exc:
+        return {default_model}, [f"Invalid experiment model override: {exc}"]
+
+
+def validate_adr(path: Path, *, final: bool = False) -> list[str]:
+    errors: list[str] = []
+    match = ADR_DIR_RE.fullmatch(path.name)
+    if not match:
+        errors.append("directory must match ADR-NNNN-kebab-slug")
+        expected_id = ""
+    else:
+        expected_id = f"ADR-{match.group(1)}"
+
+    required = [
+        path / "README.md",
+        path / "실험" / "README.md",
+        path / "실험" / "manifest.json",
+        path / "artifacts" / "manifest.json",
+    ]
+    for required_path in required:
+        if not required_path.is_file():
+            errors.append(f"missing required file: {required_path.relative_to(path)}")
+    if errors and not (path / "README.md").is_file():
+        return errors
+
+    readme = (path / "README.md").read_text("utf-8")
+    errors.extend(_ordered_headings(readme, ADR_HEADINGS))
+    meta = _front_matter(readme)
+    for key in ("adr_id", "title", "status", "decision_date", "phase", "in_sample",
+                "decision_eligible", "main_wiring"):
+        if key not in meta:
+            errors.append(f"README front matter missing: {key}")
+    if expected_id and meta.get("adr_id") != expected_id:
+        errors.append(f"README adr_id must be {expected_id}")
+    if meta.get("status") not in ALLOWED_STATUSES:
+        errors.append(f"invalid status: {meta.get('status')}")
+    if meta.get("phase") not in ALLOWED_PHASES:
+        errors.append(f"invalid phase: {meta.get('phase')}")
+
+    experiment_manifest_path = path / "실험" / "manifest.json"
+    artifact_manifest_path = path / "artifacts" / "manifest.json"
+    if not experiment_manifest_path.is_file() or not artifact_manifest_path.is_file():
+        return errors
+    try:
+        manifest = json.loads(experiment_manifest_path.read_text("utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        errors.append(f"invalid experiment manifest: {exc}")
+        return errors
+    try:
+        artifacts = json.loads(artifact_manifest_path.read_text("utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        errors.append(f"invalid artifact manifest: {exc}")
+        artifacts = {}
+
+    schema_version = manifest.get("schema_version")
+    if schema_version not in {
+            "adr-experiment-v1", "adr-experiment-v2", "adr-experiment-v3",
+            "adr-experiment-v4"}:
+        errors.append(
+            "experiment manifest schema_version must be adr-experiment-v1, v2, v3, or v4")
+    if match:
+        number = int(match.group(1))
+        if 44 <= number < 77 and schema_version != "adr-experiment-v2":
+            errors.append("ADR-0044 through ADR-0076 must use adr-experiment-v2")
+        elif 77 <= number < 82 and schema_version != "adr-experiment-v3":
+            errors.append("ADR-0077 through ADR-0081 must use adr-experiment-v3")
+        elif number >= 82 and schema_version != "adr-experiment-v4":
+            errors.append("ADR-0082 and later must use adr-experiment-v4")
+        errors.extend(_validate_code_isolation(
+            path, manifest, number=number, final=final))
+    if expected_id and manifest.get("adr_id") != expected_id:
+        errors.append(f"experiment manifest adr_id must be {expected_id}")
+    if manifest.get("phase") not in ALLOWED_PHASES:
+        errors.append("experiment manifest has invalid phase")
+    if manifest.get("in_sample") is True and manifest.get("decision_eligible") is not False:
+        errors.append("in-sample experiment must set decision_eligible=false")
+    if meta.get("main_wiring") == "promotion-candidate":
+        if meta.get("status") != "Accepted":
+            errors.append("promotion-candidate ADR status must be Accepted")
+        if manifest.get("decision_eligible") is not True:
+            errors.append("promotion-candidate must set decision_eligible=true")
+        if manifest.get("in_sample") is True:
+            errors.append("in-sample ADR cannot be a promotion-candidate")
+        if manifest.get("results", {}).get("status") != "complete":
+            errors.append("promotion-candidate results must be complete")
+    if schema_version in {
+            "adr-experiment-v2", "adr-experiment-v3", "adr-experiment-v4"}:
+        errors.extend(_validate_v2_lineage(manifest))
+    if schema_version in {"adr-experiment-v3", "adr-experiment-v4"}:
+        for key in ("created_at", "updated_at", "owner", "work_status"):
+            if key not in meta:
+                errors.append(f"README front matter missing: {key}")
+        errors.extend(_validate_v3_reservation(manifest, meta))
+        reservation = manifest.get("reservation")
+        if isinstance(reservation, dict):
+            errors.extend(_validate_claim_receipt(path, reservation, expected_id))
+        errors.extend(_validate_adr_relationships(manifest))
+        errors.extend(_validate_integration(manifest))
+
+    policy = manifest.get("llm_policy", {})
+    if policy.get("policy_version") == GEMINI_POLICY_VERSION:
+        record_model = GEMINI_MODEL
+        if manifest.get("results", {}).get("status") == "complete":
+            for artifact in artifacts.get("files", []):
+                raw = artifact.get("path", "")
+                frozen_policy = ROOT / raw
+                if (raw.endswith("artifacts/policy-snapshot.json") and frozen_policy.is_file()
+                        and frozen_policy.resolve().is_relative_to((path / "artifacts").resolve())
+                        and _sha256(frozen_policy) == artifact.get("sha256")):
+                    saved = json.loads(frozen_policy.read_text("utf-8"))
+                    if saved.get("provider") == "gemini" and saved.get("fallback_allowed") is False:
+                        record_model = saved["model"]
+        if policy.get("provider") != "gemini" or policy.get("fallback_allowed") is not False:
+            errors.append("Gemini experiments require provider=gemini and fallback_allowed=false")
+        if policy.get("required_model") != record_model or policy.get("product_required_model") != record_model:
+            errors.append(f"Gemini experiment model must be {record_model}")
+        if policy.get("offline_evaluator_allowed_models") != [record_model]:
+            errors.append("Gemini evaluator allowlist must match the experiment model")
+        allowed_call_models, override_errors = _gemini_scoped_model_override(
+            path, manifest, meta, record_model)
+        errors.extend(override_errors)
+        for call in policy.get("llm_calls", []):
+            if call.get("model") not in allowed_call_models:
+                errors.append(f"All new experiment roles must use {record_model}")
+            if call.get("class") not in {"product", "offline_evaluator", OFFLINE_BENCHMARK_CLASS}:
+                errors.append("Invalid Gemini experiment role class")
+            if call.get("class") == OFFLINE_BENCHMARK_CLASS:
+                if policy.get("offline_benchmark_isolation") != {"may_change_product_answer": False, "may_enter_product_context": False, "judge_only_use": True}:
+                    errors.append("offline benchmark isolation contract is invalid")
+    elif match and int(match.group(1)) >= GEMINI_FIRST_ADR:
+        errors.append(f"ADR-{GEMINI_FIRST_ADR:04d}+ requires {GEMINI_POLICY_VERSION}; historical Haiku policy is read-only")
+    else:
+        if policy.get("required_model") != HAIKU_MODEL:
+            errors.append(f"required product model must be {HAIKU_MODEL}")
+        policy_version = policy.get("policy_version")
+        if policy_version in {"role-separated-v1", "role-separated-v2"}:
+            if policy.get("product_required_model") != HAIKU_MODEL:
+                errors.append(f"product_required_model must be {HAIKU_MODEL}")
+            allowed = set(policy.get("offline_evaluator_allowed_models", []))
+            if allowed != OFFLINE_EVALUATOR_MODELS:
+                errors.append("offline evaluator allowlist must contain exact approved models")
+            benchmark_allowed: set[str] = set()
+            if policy_version == "role-separated-v2":
+                raw_benchmark_allowed = policy.get("offline_benchmark_candidate_models", [])
+                if (not isinstance(raw_benchmark_allowed, list) or
+                        not raw_benchmark_allowed or
+                        any(not isinstance(item, str) or not item.strip()
+                            for item in raw_benchmark_allowed) or
+                        len(raw_benchmark_allowed) != len(set(raw_benchmark_allowed))):
+                    errors.append(
+                        "offline benchmark candidate allowlist must be a non-empty unique model list")
+                else:
+                    benchmark_allowed = set(raw_benchmark_allowed)
+                isolation = policy.get("offline_benchmark_isolation", {})
+                if isolation != {
+                    "may_change_product_answer": False,
+                    "may_enter_product_context": False,
+                    "judge_only_use": True,
+                }:
+                    errors.append("offline benchmark isolation contract is invalid")
+                if meta.get("main_wiring") != "unchanged":
+                    errors.append("offline benchmark policy requires main_wiring=unchanged")
+            for call in policy.get("llm_calls", []):
+                call_class = call.get("class")
+                model = call.get("model")
+                role = call.get("role", "<unknown>")
+                if call_class == "product" and model != HAIKU_MODEL:
+                    errors.append(f"product LLM role {role} must use {HAIKU_MODEL}")
+                elif call_class == "offline_evaluator" and model not in allowed:
+                    errors.append(f"offline evaluator role {role} uses unapproved model: {model}")
+                elif (call_class == OFFLINE_BENCHMARK_CLASS and
+                      (policy_version != "role-separated-v2" or
+                       model not in benchmark_allowed)):
+                    errors.append(
+                        f"offline benchmark role {role} uses unfrozen model: {model}")
+                elif call_class not in {
+                        "product", "offline_evaluator", OFFLINE_BENCHMARK_CLASS}:
+                    errors.append(f"LLM role {role} has invalid class: {call_class}")
+        else:
+            for call in policy.get("llm_calls", []):
+                if call.get("model") != HAIKU_MODEL:
+                    errors.append(
+                        f"LLM role {call.get('role', '<unknown>')} must use {HAIKU_MODEL}")
+
+    experiment_dir = path / "실험"
+    actual_files = sorted(p.name for p in experiment_dir.glob("질문-*.md"))
+    question_rows = manifest.get("questions")
+    if not isinstance(question_rows, list):
+        errors.append("experiment manifest questions must be a list")
+        question_rows = []
+    manifest_files: list[str] = []
+    for expected_number, row in enumerate(question_rows, 1):
+        filename = str(row.get("file", ""))
+        manifest_files.append(filename)
+        file_match = QUESTION_RE.fullmatch(filename)
+        if not file_match:
+            errors.append(f"invalid question filename: {filename}")
+            continue
+        if int(file_match.group(1)) != expected_number or row.get("number") != expected_number:
+            errors.append(f"question numbering must be contiguous at {filename}")
+        if file_match.group(2) != row.get("case_id"):
+            errors.append(f"case ID mismatch for {filename}")
+        question_path = experiment_dir / filename
+        if not question_path.is_file():
+            errors.append(f"question file missing: {filename}")
+            continue
+        question_text = question_path.read_text("utf-8")
+        if schema_version == "adr-experiment-v4":
+            question_headings = QUESTION_HEADINGS_V4
+        elif schema_version in {"adr-experiment-v2", "adr-experiment-v3"}:
+            question_headings = QUESTION_HEADINGS_V2
+        else:
+            question_headings = QUESTION_HEADINGS_V1
+        errors.extend(f"{filename}: {error}" for error in
+                      _ordered_headings(question_text, question_headings))
+        recorded_hash = row.get("sha256")
+        if recorded_hash != "PENDING" and recorded_hash != _sha256(question_path):
+            errors.append(f"question hash mismatch: {filename}")
+        if final and recorded_hash == "PENDING":
+            errors.append(f"question hash is PENDING: {filename}")
+    if actual_files != sorted(manifest_files):
+        errors.append("question files and experiment manifest do not match")
+
+    retrieval = manifest.get("retrieval_accounting", {})
+    if not isinstance(retrieval, dict):
+        errors.append("retrieval_accounting must be an object")
+    else:
+        if retrieval.get("changed") is True:
+            for key in ("corpus_total", "before_filter", "after_filter", "presented_total",
+                        "presented_mean", "presented_p50", "presented_p95", "golden_recall",
+                        "selectivity"):
+                if retrieval.get(key) is None:
+                    errors.append(f"retrieval accounting missing: {key}")
+        elif not retrieval.get("not_applicable_reason"):
+            errors.append("unchanged retrieval requires not_applicable_reason")
+        if schema_version == "adr-experiment-v4":
+            errors.extend(_validate_retrieval_accounting_v4(
+                path, manifest, retrieval, final=final))
+
+    if artifacts.get("schema_version") != "adr-artifacts-v1":
+        errors.append("artifact manifest schema_version must be adr-artifacts-v1")
+    if expected_id and artifacts.get("adr_id") != expected_id:
+        errors.append(f"artifact manifest adr_id must be {expected_id}")
+    for row in artifacts.get("files", []):
+        raw_path = str(row.get("path", ""))
+        if not raw_path or raw_path == "TODO":
+            continue
+        artifact_path = Path(raw_path)
+        if not artifact_path.is_absolute():
+            artifact_path = ROOT / artifact_path
+        if not artifact_path.is_file():
+            errors.append(f"artifact file missing: {raw_path}")
+            continue
+        if row.get("sha256") not in ("PENDING", _sha256(artifact_path)):
+            errors.append(f"artifact hash mismatch: {raw_path}")
+        if row.get("bytes") is not None and row.get("bytes") != artifact_path.stat().st_size:
+            errors.append(f"artifact byte size mismatch: {raw_path}")
+
+    if final:
+        files_to_scan = [path / "README.md", experiment_dir / "README.md",
+                         experiment_manifest_path, artifact_manifest_path]
+        files_to_scan.extend(experiment_dir / name for name in actual_files)
+        for file_path in files_to_scan:
+            text = file_path.read_text("utf-8")
+            if file_path.parent == experiment_dir and QUESTION_RE.fullmatch(file_path.name):
+                text = _placeholder_scan_text(text, path, artifacts)
+            if UNRESOLVED_PLACEHOLDER_RE["TODO"].search(text):
+                errors.append(f"final ADR contains TODO: {file_path.relative_to(path)}")
+            if UNRESOLVED_PLACEHOLDER_RE["PENDING"].search(text):
+                errors.append(f"final ADR contains PENDING: {file_path.relative_to(path)}")
+        design = manifest.get("design", {})
+        if design.get("criteria_frozen_before_run") is not True:
+            errors.append("final ADR must freeze criteria before run")
+        if manifest.get("results", {}).get("status") == "not_run":
+            errors.append("final ADR results are not_run")
+        elif manifest.get("results", {}).get("status") not in {
+                "complete", "failed", "invalid", "complete_with_corpus_blockers"}:
+            errors.append("final ADR results.status must be a recognized terminal state; "
+                          "use complete for a completed experiment, not completed")
+        if schema_version in {
+                "adr-experiment-v2", "adr-experiment-v3", "adr-experiment-v4"}:
+            runs = manifest.get("runs", [])
+            if not any(run.get("status") == "complete" for run in runs):
+                errors.append("final v2/v3/v4 ADR requires at least one complete run")
+        if schema_version in {"adr-experiment-v3", "adr-experiment-v4"} and manifest.get(
+                "reservation", {}).get("status") != "completed":
+            errors.append("final v3/v4 ADR reservation status must be completed")
+    return errors
+
+
+def build_experiment_graph(adr_root: Path) -> dict[str, Any]:
+    """Build an arm-level DAG from every standardized experiment manifest."""
+    nodes: list[dict[str, Any]] = []
+    edges: list[dict[str, str]] = []
+    relationships: list[dict[str, str]] = []
+    errors: list[str] = []
+    node_refs: set[str] = set()
+    adr_ids: set[str] = set()
+
+    manifests = sorted(adr_root.glob("ADR-*/실험/manifest.json"))
+    for manifest_path in manifests:
+        try:
+            manifest = json.loads(manifest_path.read_text("utf-8"))
+        except json.JSONDecodeError as exc:
+            errors.append(f"{manifest_path}: invalid JSON: {exc}")
+            continue
+        experiment_id = str(manifest.get("experiment_id", ""))
+        source_adr_id = str(manifest.get("adr_id", ""))
+        adr_ids.add(source_adr_id)
+        schema_version = str(manifest.get("schema_version", ""))
+        arms = manifest.get("design", {}).get("arms", [])
+        parent_relations = {
+            _experiment_arm_ref(str(parent.get("experiment_id", "")),
+                                str(parent.get("arm_id", ""))):
+            str(parent.get("relation", "derived_from"))
+            for parent in manifest.get("lineage", {}).get("parents", [])
+            if isinstance(parent, dict)
+        }
+        for arm in arms:
+            arm_id = str(arm.get("id", ""))
+            ref = _experiment_arm_ref(experiment_id, arm_id)
+            if ref in node_refs:
+                errors.append(f"duplicate experiment arm ref: {ref}")
+            node_refs.add(ref)
+            nodes.append({
+                "ref": ref,
+                "adr_id": manifest.get("adr_id"),
+                "experiment_id": experiment_id,
+                "arm_id": arm_id,
+                "role": arm.get("role", "legacy"),
+                "branch_id": manifest.get("lineage", {}).get("branch_id", "legacy"),
+                "phase": manifest.get("phase"),
+                "result_status": manifest.get("results", {}).get("status"),
+                "manifest_path": _stored_path(manifest_path),
+                "schema_version": schema_version,
+            })
+        if schema_version in {
+                "adr-experiment-v2", "adr-experiment-v3", "adr-experiment-v4"}:
+            errors.extend(
+                f"{manifest.get('adr_id', manifest_path.parent.parent.name)}: {error}"
+                for error in _validate_v2_lineage(manifest))
+            arm_ids = {str(arm.get("id", "")) for arm in arms}
+            for arm in arms:
+                target = _experiment_arm_ref(experiment_id, str(arm.get("id", "")))
+                for raw_source in arm.get("derived_from", []):
+                    source = str(raw_source)
+                    if "/" not in source and source in arm_ids:
+                        source = _experiment_arm_ref(experiment_id, source)
+                    edges.append({
+                        "from": source,
+                        "to": target,
+                        "relation": parent_relations.get(source, "derived_from"),
+                    })
+        if schema_version in {"adr-experiment-v3", "adr-experiment-v4"}:
+            errors.extend(
+                f"{source_adr_id}: {error}"
+                for error in _validate_adr_relationships(manifest))
+            for record in manifest.get("relationships", []):
+                if isinstance(record, dict):
+                    relationships.append({
+                        "from_adr": source_adr_id,
+                        "to_adr": str(record.get("adr_id", "")),
+                        "relation": str(record.get("relation", "")),
+                        "note": str(record.get("note", "")),
+                    })
+
+    for edge in edges:
+        if edge["from"] not in node_refs:
+            errors.append(f"graph edge source missing: {edge['from']}")
+        if edge["to"] not in node_refs:
+            errors.append(f"graph edge target missing: {edge['to']}")
+    if _detect_cycle(node_refs, [(edge["from"], edge["to"]) for edge in edges]):
+        errors.append("experiment graph contains a cycle")
+    for relation in relationships:
+        if relation["to_adr"] not in adr_ids:
+            errors.append(
+                f"related ADR missing from graph: {relation['from_adr']} -> {relation['to_adr']}")
+
+    return {
+        "schema_version": "adr-experiment-graph-v1",
+        "node_unit": "experiment_id/arm_id",
+        "nodes": sorted(nodes, key=lambda row: row["ref"]),
+        "edges": sorted(edges, key=lambda row: (row["from"], row["to"], row["relation"])),
+        "adr_relationships": sorted(
+            relationships,
+            key=lambda row: (row["from_adr"], row["to_adr"], row["relation"])),
+        "validation_errors": sorted(set(errors)),
+    }
+
+
+def _graph_markdown(graph: dict[str, Any]) -> str:
+    node_ids = {node["ref"]: f"n{index}" for index, node in enumerate(graph["nodes"], 1)}
+    lines = [
+        "# ADR 실험 계보 그래프",
+        "",
+        "> `python scripts/adr_structure.py graph --adr-root docs/adr`로 생성한다. 수동 편집하지 않는다.",
+        "",
+        "```mermaid",
+        "flowchart LR",
+    ]
+    for node in graph["nodes"]:
+        label = f"{node['adr_id']} · {node['arm_id']}"
+        lines.append(f"  {node_ids[node['ref']]}[\"{label}\"]")
+    for edge in graph["edges"]:
+        if edge["from"] in node_ids and edge["to"] in node_ids:
+            lines.append(
+                f"  {node_ids[edge['from']]} -->|{edge['relation']}| {node_ids[edge['to']]}")
+    lines.extend(["```", "", "## Arm 목록", "",
+                  "| ref | 역할 | branch | phase | 결과 | manifest |",
+                  "|---|---|---|---|---|---|"])
+    for node in graph["nodes"]:
+        lines.append(
+            f"| `{node['ref']}` | {node['role']} | {node['branch_id']} | "
+            f"{node['phase']} | {node['result_status']} | `{node['manifest_path']}` |")
+    lines.extend(["", "## ADR 관계", "",
+                  "| source ADR | 관계 | target ADR | 기록 |",
+                  "|---|---|---|---|"])
+    if graph.get("adr_relationships"):
+        for relation in graph["adr_relationships"]:
+            lines.append(
+                f"| `{relation['from_adr']}` | `{relation['relation']}` | "
+                f"`{relation['to_adr']}` | {relation['note']} |")
+    else:
+        lines.append("| - | - | - | 기록 없음 |")
+    lines.extend(["", "## 검증", ""])
+    if graph["validation_errors"]:
+        lines.extend(f"- ERROR: {error}" for error in graph["validation_errors"])
+    else:
+        lines.append("- 부모 참조, manifest hash, arm 참조, cycle 검사 통과")
+    return "\n".join(lines) + "\n"
+
+
+def write_experiment_graph(adr_root: Path) -> dict[str, Any]:
+    graph = build_experiment_graph(adr_root)
+    (adr_root / "EXPERIMENT_GRAPH.json").write_text(
+        json.dumps(graph, ensure_ascii=False, indent=2) + "\n", "utf-8")
+    (adr_root / "EXPERIMENT_GRAPH.md").write_text(_graph_markdown(graph), "utf-8")
+    return graph
+
+
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    new = sub.add_parser("new", help="create a standardized ADR directory")
+    new.add_argument("--number", required=True, type=int)
+    new.add_argument("--slug", required=True)
+    new.add_argument("--title", required=True)
+    new.add_argument("--phase", choices=sorted(ALLOWED_PHASES), default="probe")
+    new.add_argument("--questions", nargs="*", default=[])
+    new.add_argument("--branch-id", default="A")
+    new.add_argument("--candidate-arms", nargs="+", default=["candidate"])
+    new.add_argument("--parent-manifest", type=Path)
+    new.add_argument("--parent-arm")
+    new.add_argument("--parent-relation", choices=sorted(ALLOWED_PARENT_RELATIONS),
+                     default="forked_from")
+    new.add_argument(
+        "--merge-parent", action="append", nargs=3,
+        metavar=("MANIFEST", "ARM", "RELATION"),
+        help="repeat for each exact merge parent; RELATION must be merged_from for 2+ parents")
+    new.add_argument(
+        "--related-adr", action="append", nargs=3,
+        metavar=("ADR_PATH", "RELATION", "NOTE"),
+        help="repeat to record non-lineage ADR relationships with an immutable record hash")
+    new.add_argument("--judge-model", choices=sorted(OFFLINE_EVALUATOR_MODELS | {GEMINI_MODEL}),
+                     default=None)
+    new.add_argument(
+        "--owner", default=None,
+        help="person or agent owning the claim (default: ADR_OWNER or OS user)")
+    new.add_argument(
+        "--session-id", default=None,
+        help="Codex task/session ID when it is not inherited by the execution environment")
+    new.add_argument(
+        "--scope", default=None,
+        help="short description of the claimed work (default: title)")
+    new.add_argument(
+        "--scope-key", default=None,
+        help="stable kebab-case duplicate-detection key (default: slug)")
+    new.add_argument("--adr-root", type=Path, default=DEFAULT_ADR_ROOT)
+
+    status = sub.add_parser("status", help="append an ADR work-lifecycle transition")
+    status.add_argument("--path", required=True, type=Path)
+    status.add_argument("--status", required=True, choices=sorted(ALLOWED_WORK_STATUSES))
+    status.add_argument("--owner")
+    status.add_argument("--session-id")
+    status.add_argument("--note")
+
+    validate = sub.add_parser("validate", help="validate an ADR directory")
+    validate.add_argument("--path", required=True, type=Path)
+    validate.add_argument("--final", action="store_true")
+
+    hashes = sub.add_parser("hash", help="update question Markdown SHA-256 values")
+    hashes.add_argument("--path", required=True, type=Path)
+
+    graph = sub.add_parser("graph", help="generate and validate the experiment arm DAG")
+    graph.add_argument("--adr-root", type=Path, default=DEFAULT_ADR_ROOT)
+    return parser
+
+
+def main() -> int:
+    args = _parser().parse_args()
+    try:
+        if args.command == "new":
+            target = scaffold_adr(
+                args.adr_root, args.number, args.slug, args.title, args.phase, args.questions,
+                branch_id=args.branch_id,
+                candidate_arms=args.candidate_arms,
+                parent_manifest=args.parent_manifest,
+                parent_arm=args.parent_arm,
+                parent_relation=args.parent_relation,
+                parent_specs=[
+                    (Path(path), arm, relation)
+                    for path, arm, relation in (args.merge_parent or [])
+                ],
+                related_adrs=[
+                    (Path(path), relation, note)
+                    for path, relation, note in (args.related_adr or [])
+                ],
+                judge_model=args.judge_model,
+                owner=args.owner,
+                session_id=args.session_id,
+                scope=args.scope,
+                scope_key=args.scope_key)
+            print(target)
+            return 0
+        if args.command == "status":
+            reservation = update_reservation_status(
+                args.path, args.status, owner=args.owner, session_id=args.session_id,
+                note=args.note)
+            print(json.dumps(reservation, ensure_ascii=False, indent=2))
+            return 0
+        if args.command == "hash":
+            count = update_question_hashes(args.path)
+            print(f"updated {count} question hashes")
+            return 0
+        if args.command == "graph":
+            graph = write_experiment_graph(args.adr_root)
+            print(f"wrote {args.adr_root / 'EXPERIMENT_GRAPH.json'}")
+            print(f"wrote {args.adr_root / 'EXPERIMENT_GRAPH.md'}")
+            for error in graph["validation_errors"]:
+                print(f"ERROR: {error}")
+            return 1 if graph["validation_errors"] else 0
+        errors = validate_adr(args.path, final=args.final)
+        if errors:
+            for error in errors:
+                print(f"ERROR: {error}")
+            return 1
+        print(f"OK: {args.path}")
+        return 0
+    except (ValueError, FileExistsError, FileNotFoundError, json.JSONDecodeError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

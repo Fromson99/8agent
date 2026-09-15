@@ -1,15 +1,15 @@
 """HWPX(OWPML zip) → markdown 사이드카 — 표를 md 표로 살린다.
 
-    python -m lawrag.core.hwpx_md data/corpus/law            # 디렉터리 아래 모든 hwpx → X.hwpx.md
+    python -m lawrag.core.hwpx_md 01_DATA/INBOX/AUTHORING/corpus/law            # 디렉터리 아래 모든 hwpx → X.hwpx.md
     python -m lawrag.core.hwpx_md path/to/file.hwpx     # 한 파일만
-    python -m lawrag.core.hwpx_md data/corpus/law --force
+    python -m lawrag.core.hwpx_md 01_DATA/INBOX/AUTHORING/corpus/law --force
 
 lawrag/core/hwp5_md.py 는 hwp5(ole) 전용이고 hwpx 는 FORMAT 으로 보고만 한다(계약 §8-5).
 law.go.kr 별표서식의 3할이 hwpx 라(실측 53/176, 표 있는 파일 29) 이 모듈이
 그 나머지다. 사이드카 규약은 lawrag/core/hwp5_md.py 와 동일: 원본 옆 `<이름>.md`,
 첫머리 `# key: value` 출처 주석 (corpus_build 가 읽는 형태).
 
-OWPML 실측 (data/corpus/law 별표):
+OWPML 실측 (01_DATA/INBOX/AUTHORING/corpus/law 별표):
 - Contents/section*.xml 의 hs:sec 아래 hp:p 가 문단, 문단의 hp:run 아래 hp:t 가 글
 - 표는 hp:run 안의 hp:tbl → hp:tr → hp:tc. 셀 위치는 hp:cellAddr(colAddr,rowAddr)
   + hp:cellSpan(colSpan,rowSpan) — 병합 셀은 앵커 칸에만 내용을 두고 덮인 칸은

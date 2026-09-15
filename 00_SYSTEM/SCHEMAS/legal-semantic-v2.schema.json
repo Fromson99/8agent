@@ -1,0 +1,1649 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:legal-semantic-v2",
+  "title": "Legal semantic SSOT",
+  "description": "Normative semantic contract. Record profiles share one vocabulary. Shape validity is not source verification or approval.",
+  "x-contract-revision": "2.0.0",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Observation"
+    },
+    {
+      "$ref": "#/$defs/CanonicalBundle"
+    },
+    {
+      "$ref": "#/$defs/TemplateRecord"
+    },
+    {
+      "$ref": "#/$defs/QueryPlan"
+    },
+    {
+      "$ref": "#/$defs/RuleBundle"
+    },
+    {
+      "$ref": "#/$defs/Feedback"
+    }
+  ],
+  "$defs": {
+    "Id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+    },
+    "Hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "Role": {
+      "type": "string",
+      "enum": [
+        "ACTOR",
+        "PREDICATE",
+        "OBJECT",
+        "TARGET",
+        "RECIPIENT",
+        "METHOD",
+        "LOCATION",
+        "TIME",
+        "QUANTITY"
+      ]
+    },
+    "Slot": {
+      "type": "string",
+      "enum": [
+        "SCOPE",
+        "BASE_RULE",
+        "CONDITIONS",
+        "PROVISOS",
+        "OUTCOMES",
+        "DEFINITIONS",
+        "REFERENCES",
+        "FOLLOWUP_RULES"
+      ]
+    },
+    "RelationPredicate": {
+      "type": "string",
+      "enum": [
+        "REFERENCES",
+        "USES_DEFINITION",
+        "DEFINES",
+        "LEGISLATIVE_DELEGATION",
+        "SUPPLEMENTS_BY_ADMINISTRATIVE_RULE",
+        "INCORPORATES_MUTATIS_MUTANDIS",
+        "DEPENDS_ON_REQUIREMENTS_OF",
+        "LEGAL_BASIS_IN",
+        "EXCEPTION_TO",
+        "QUALIFIES_RULE",
+        "EXCLUDES_APPLICATION_OF",
+        "OVERRIDES",
+        "FALLBACK_TO",
+        "DEEMS_AS",
+        "PRESUMES_AS",
+        "APPLIES_TO",
+        "SANCTIONS_VIOLATION_OF"
+      ]
+    },
+    "EntityRef": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "Concept",
+            "Mention",
+            "SemanticClause",
+            "Rule",
+            "Proviso",
+            "LegalRelation",
+            "Evidence"
+          ]
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "Scope": {
+      "type": "object",
+      "properties": {
+        "source_set_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "authority_generation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "document_version_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "jurisdiction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "as_of": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "source_set_sha256",
+        "authority_generation",
+        "document_version_ids",
+        "jurisdiction",
+        "as_of"
+      ],
+      "additionalProperties": false
+    },
+    "Evidence": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "document_version_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "structural_unit_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "block_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "quote": {
+          "type": "string",
+          "minLength": 1
+        },
+        "quote_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "document_version_id",
+        "structural_unit_id",
+        "block_id",
+        "source_artifact_sha256",
+        "start",
+        "end",
+        "quote",
+        "quote_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "Concept": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "concept_type": {
+          "type": "string",
+          "enum": [
+            "ENTITY",
+            "ACTION",
+            "STATE",
+            "PROPERTY",
+            "QUANTITY",
+            "TIME",
+            "DOCUMENT",
+            "LEGAL_CATEGORY"
+          ]
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "definition_rule_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "concept_type",
+        "aliases",
+        "definition_rule_ids",
+        "evidence_ids"
+      ],
+      "additionalProperties": false
+    },
+    "Mention": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "surface": {
+          "type": "string",
+          "minLength": 1
+        },
+        "concept_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resolution": {
+          "type": "string",
+          "enum": [
+            "RESOLVED",
+            "UNRESOLVED"
+          ]
+        },
+        "unresolved_reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "surface",
+        "concept_id",
+        "resolution",
+        "unresolved_reason",
+        "evidence_ids"
+      ],
+      "additionalProperties": false
+    },
+    "RoleBinding": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/$defs/Role"
+        },
+        "concept_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mention_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "resolution": {
+          "type": "string",
+          "enum": [
+            "RESOLVED",
+            "UNRESOLVED"
+          ]
+        },
+        "unresolved_reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "role",
+        "concept_id",
+        "mention_ids",
+        "resolution",
+        "unresolved_reason",
+        "evidence_ids"
+      ],
+      "additionalProperties": false
+    },
+    "SemanticClause": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "clause_type": {
+          "type": "string",
+          "enum": [
+            "ACTION",
+            "STATE"
+          ]
+        },
+        "polarity": {
+          "type": "string",
+          "enum": [
+            "POSITIVE",
+            "NEGATIVE",
+            "UNKNOWN"
+          ]
+        },
+        "role_bindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RoleBinding"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "clause_type",
+        "polarity",
+        "role_bindings",
+        "evidence_ids"
+      ],
+      "additionalProperties": false
+    },
+    "ConditionExpression": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "operator": {
+              "type": "string",
+              "enum": [
+                "CLAUSE"
+              ]
+            },
+            "clause_id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+            }
+          },
+          "required": [
+            "operator",
+            "clause_id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operator": {
+              "type": "string",
+              "enum": [
+                "ALL",
+                "ANY"
+              ]
+            },
+            "operands": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ConditionExpression"
+              },
+              "minItems": 2,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "operator",
+            "operands"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operator": {
+              "type": "string",
+              "enum": [
+                "NOT"
+              ]
+            },
+            "operand": {
+              "$ref": "#/$defs/ConditionExpression"
+            }
+          },
+          "required": [
+            "operator",
+            "operand"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operator": {
+              "type": "string",
+              "enum": [
+                "TRUE"
+              ]
+            },
+            "evidence_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "operator",
+            "evidence_ids"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operator": {
+              "type": "string",
+              "enum": [
+                "UNKNOWN"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evidence_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "operator",
+            "reason",
+            "evidence_ids"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Rule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "rule_type": {
+          "type": "string",
+          "enum": [
+            "NORM",
+            "DEFINITION",
+            "CLASSIFICATION",
+            "PROCEDURE",
+            "CALCULATION"
+          ]
+        },
+        "applicability": {
+          "$ref": "#/$defs/ConditionExpression"
+        },
+        "antecedent": {
+          "$ref": "#/$defs/ConditionExpression"
+        },
+        "consequent_clause_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "modality": {
+          "type": "string",
+          "enum": [
+            "OBLIGATION",
+            "PROHIBITION",
+            "PERMISSION",
+            "DECLARATION",
+            "UNKNOWN"
+          ]
+        },
+        "valid_from": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "valid_until": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "rule_type",
+        "applicability",
+        "antecedent",
+        "consequent_clause_ids",
+        "modality",
+        "valid_from",
+        "valid_until",
+        "evidence_ids"
+      ],
+      "additionalProperties": false
+    },
+    "Proviso": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "attached_rule_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "condition": {
+          "$ref": "#/$defs/ConditionExpression"
+        },
+        "outcome_clause_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "effect_type": {
+          "type": "string",
+          "enum": [
+            "EXEMPTION",
+            "LIMITATION",
+            "EXTENSION",
+            "REPLACEMENT",
+            "ADDITION",
+            "DEEMING",
+            "UNKNOWN"
+          ]
+        },
+        "completion_type": {
+          "type": "string",
+          "enum": [
+            "INTERNAL",
+            "EXTERNAL",
+            "UNKNOWN"
+          ]
+        },
+        "dependency_relation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "attached_rule_id",
+        "condition",
+        "outcome_clause_ids",
+        "effect_type",
+        "completion_type",
+        "dependency_relation_ids",
+        "evidence_ids"
+      ],
+      "additionalProperties": false
+    },
+    "TargetLocator": {
+      "type": "object",
+      "properties": {
+        "document_hint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "structural_locator": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text_hint": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "document_hint",
+        "structural_locator",
+        "text_hint"
+      ],
+      "additionalProperties": false
+    },
+    "LegalRelation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "predicate": {
+          "$ref": "#/$defs/RelationPredicate"
+        },
+        "source": {
+          "$ref": "#/$defs/EntityRef"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntityRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resolution": {
+          "type": "string",
+          "enum": [
+            "RESOLVED",
+            "UNRESOLVED"
+          ]
+        },
+        "target_locator": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TargetLocator"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "unresolved_reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "predicate",
+        "source",
+        "target",
+        "resolution",
+        "target_locator",
+        "unresolved_reason",
+        "evidence_ids"
+      ],
+      "additionalProperties": false
+    },
+    "Crosswalk": {
+      "type": "object",
+      "properties": {
+        "legacy_schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "legacy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "MAPPED",
+            "UNRESOLVED"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "legacy_schema",
+        "legacy_id",
+        "target_refs",
+        "status",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "SemanticGraph": {
+      "type": "object",
+      "properties": {
+        "concepts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Concept"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "mentions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Mention"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "clauses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SemanticClause"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "provisos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Proviso"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LegalRelation"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "crosswalk": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Crosswalk"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "concepts",
+        "mentions",
+        "clauses",
+        "rules",
+        "provisos",
+        "relations",
+        "evidence",
+        "crosswalk"
+      ],
+      "additionalProperties": false
+    },
+    "Provenance": {
+      "type": "object",
+      "properties": {
+        "producer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "producer_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "LLM",
+            "HUMAN",
+            "LEGACY_ADAPTER",
+            "DETERMINISTIC"
+          ]
+        },
+        "input_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "prompt_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provider_receipt_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "producer",
+        "producer_version",
+        "method",
+        "input_sha256",
+        "prompt_sha256",
+        "provider_receipt_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "ReceiptRef": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "TemplateSlot": {
+      "type": "object",
+      "properties": {
+        "slot": {
+          "$ref": "#/$defs/Slot"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "allowed_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Concept",
+              "Mention",
+              "SemanticClause",
+              "Rule",
+              "Proviso",
+              "LegalRelation",
+              "Evidence"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "slot",
+        "required",
+        "allowed_types"
+      ],
+      "additionalProperties": false
+    },
+    "Traversal": {
+      "type": "object",
+      "properties": {
+        "predicate": {
+          "$ref": "#/$defs/RelationPredicate"
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "OUTGOING",
+            "INCOMING"
+          ]
+        },
+        "max_hops": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        }
+      },
+      "required": [
+        "predicate",
+        "direction",
+        "max_hops"
+      ],
+      "additionalProperties": false
+    },
+    "AssemblyTemplate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "intent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TemplateSlot"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "required_fact_keys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "traversals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Traversal"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "missing_policy": {
+          "type": "string",
+          "enum": [
+            "RETURN_UNKNOWN_WITH_MISSING"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "intent",
+        "slots",
+        "required_fact_keys",
+        "traversals",
+        "missing_policy"
+      ],
+      "additionalProperties": false
+    },
+    "QuestionFact": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "quote": {
+          "type": "string",
+          "minLength": 1
+        },
+        "concept_candidates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "start",
+        "end",
+        "quote",
+        "concept_candidates"
+      ],
+      "additionalProperties": false
+    },
+    "QueryCard": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "template_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "document_version_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "facts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/QuestionFact"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "missing_fact_keys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "unresolved_reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "template_id",
+        "document_version_ids",
+        "facts",
+        "missing_fact_keys",
+        "unresolved_reason"
+      ],
+      "additionalProperties": false
+    },
+    "BundleSlot": {
+      "type": "object",
+      "properties": {
+        "slot": {
+          "$ref": "#/$defs/Slot"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "PRESENT",
+            "MISSING",
+            "UNKNOWN",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "slot",
+        "state",
+        "refs",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "FeedbackChange": {
+      "type": "object",
+      "properties": {
+        "target_ref": {
+          "$ref": "#/$defs/EntityRef"
+        },
+        "field_pointer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issue": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "target_ref",
+        "field_pointer",
+        "issue",
+        "evidence_ids"
+      ],
+      "additionalProperties": false
+    },
+    "Observation": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "legal-semantic-v2"
+        },
+        "schema_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "record_kind": {
+          "const": "OBSERVATION"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "CANDIDATE"
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "payload": {
+          "$ref": "#/$defs/SemanticGraph"
+        }
+      },
+      "required": [
+        "schema_version",
+        "schema_sha256",
+        "record_kind",
+        "id",
+        "scope",
+        "status",
+        "provenance",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "CanonicalBundle": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "legal-semantic-v2"
+        },
+        "schema_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "record_kind": {
+          "const": "CANONICAL_BUNDLE"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "generation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "$ref": "#/$defs/SemanticGraph"
+        },
+        "source_observation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "review_receipts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReceiptRef"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "schema_version",
+        "schema_sha256",
+        "record_kind",
+        "id",
+        "scope",
+        "generation_id",
+        "payload",
+        "source_observation_ids",
+        "review_receipts"
+      ],
+      "additionalProperties": false
+    },
+    "TemplateRecord": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "legal-semantic-v2"
+        },
+        "schema_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "record_kind": {
+          "const": "ASSEMBLY_TEMPLATE"
+        },
+        "template": {
+          "$ref": "#/$defs/AssemblyTemplate"
+        }
+      },
+      "required": [
+        "schema_version",
+        "schema_sha256",
+        "record_kind",
+        "template"
+      ],
+      "additionalProperties": false
+    },
+    "QueryPlan": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "legal-semantic-v2"
+        },
+        "schema_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "record_kind": {
+          "const": "QUERY_PLAN"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "question": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/QueryCard"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "schema_version",
+        "schema_sha256",
+        "record_kind",
+        "id",
+        "scope",
+        "question",
+        "cards"
+      ],
+      "additionalProperties": false
+    },
+    "RuleBundle": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "legal-semantic-v2"
+        },
+        "schema_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "record_kind": {
+          "const": "RULE_BUNDLE"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "canonical_generation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_payload_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "template_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "entry_rule_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BundleSlot"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "unresolved_relation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "structural_completeness": {
+          "type": "string",
+          "enum": [
+            "COMPLETE",
+            "PARTIAL"
+          ]
+        },
+        "legal_assessment": {
+          "type": "string",
+          "enum": [
+            "NOT_PERFORMED"
+          ]
+        }
+      },
+      "required": [
+        "schema_version",
+        "schema_sha256",
+        "record_kind",
+        "id",
+        "scope",
+        "canonical_generation_id",
+        "canonical_payload_sha256",
+        "template_id",
+        "entry_rule_ids",
+        "slots",
+        "unresolved_relation_ids",
+        "structural_completeness",
+        "legal_assessment"
+      ],
+      "additionalProperties": false
+    },
+    "Feedback": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "legal-semantic-v2"
+        },
+        "schema_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "record_kind": {
+          "const": "FEEDBACK"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "canonical_generation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "query_plan_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*:[^\\s]+$"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "PROPOSED"
+          ]
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FeedbackChange"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "schema_version",
+        "schema_sha256",
+        "record_kind",
+        "id",
+        "scope",
+        "canonical_generation_id",
+        "query_plan_id",
+        "status",
+        "changes"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

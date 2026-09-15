@@ -5,7 +5,7 @@
     python -m lawrag.pipeline.collect_prec --force
     python -m lawrag.pipeline.collect_prec --query "명칭"
 
-질의는 data/corpus/law/manifest.json 의 법령(kind=law) 명칭 — 사건명(evtNm)
+질의는 01_DATA/INBOX/AUTHORING/corpus/law/manifest.json 의 법령(kind=law) 명칭 — 사건명(evtNm)
 부분일치 검색이라 법률 명칭이 실용적이다(감독규정 위반은 사건명이 아니라
 참조조문에 나온다 — 관련 판정이 그쪽을 본다). 축약·멱등·원문 보존은
 lawrag/pipeline/collect_expc.py 와 같은 규율.
@@ -15,8 +15,8 @@ lawrag/pipeline/collect_expc.py 와 같은 규율.
 같은 꼬리 일치는 거른다. 전문(판례내용)은 판정에 안 쓴다(방론 소음).
 
 저장:
-    data/corpus/prec/cases/<판례일련번호>.xml    원문 (전문 포함)
-    data/corpus/prec/manifest.json             대장 (phase_model — 원장 밖)
+    01_DATA/INBOX/AUTHORING/corpus/prec/cases/<판례일련번호>.xml    원문 (전문 포함)
+    01_DATA/INBOX/AUTHORING/corpus/prec/manifest.json             대장 (phase_model — 원장 밖)
 """
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ from lawrag.platform.paths import (
 )
 
 REPO_ROOT = repository_root()
-CORPUS_DIR = data_path("corpus")
+CORPUS_DIR = data_path("INBOX", "AUTHORING", "corpus")
 PREC_DIR = CORPUS_DIR / "prec"
 CASES_DIR = PREC_DIR / "cases"
 LOG_DIR = runtime_path("logs")

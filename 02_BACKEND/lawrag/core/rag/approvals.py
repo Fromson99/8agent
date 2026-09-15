@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Iterable, Optional
 
 from lawrag.core.rag.index import store_path
+from lawrag.platform.paths import data_path
 
 
 log = logging.getLogger("lawrag.core.rag.approvals")
@@ -62,7 +63,7 @@ MUTATION_TARGETS = {
 
 
 def receipts_path() -> Path:
-    root = Path(os.environ.get("RAG_LOG_DIR", store_path().parent / "rag"))
+    root = Path(os.environ.get("RAG_LOG_DIR", data_path("FEEDBACK", "RUNTIME")))
     return Path(os.environ.get("RAG_APPROVAL_RECEIPTS", root / "approval_receipts.jsonl"))
 
 

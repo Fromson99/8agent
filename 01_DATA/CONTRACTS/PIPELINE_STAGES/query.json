@@ -1,0 +1,54 @@
+{
+  "schema_version": "legal-semantic-v2",
+  "schema_sha256": "25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607",
+  "record_kind": "QUERY_PLAN",
+  "id": "query:example",
+  "scope": {
+    "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "authority_generation": "synthetic-authority-1",
+    "document_version_ids": [
+      "synthetic:main-v1",
+      "synthetic:detail-v1"
+    ],
+    "jurisdiction": "SYNTHETIC",
+    "as_of": null
+  },
+  "question": "기관의 보유 의무 면제 조건을 알려줘; 별도 사례의 조건도 알려줘",
+  "cards": [
+    {
+      "id": "card:example",
+      "template_id": "template:exemption",
+      "document_version_ids": [
+        "synthetic:main-v1",
+        "synthetic:detail-v1"
+      ],
+      "facts": [
+        {
+          "key": "actor",
+          "value": "기관",
+          "start": 0,
+          "end": 2,
+          "quote": "기관",
+          "concept_candidates": [
+            "concept:0"
+          ]
+        }
+      ],
+      "missing_fact_keys": [],
+      "unresolved_reason": null
+    },
+    {
+      "id": "card:second",
+      "template_id": "template:exemption",
+      "document_version_ids": [
+        "synthetic:main-v1",
+        "synthetic:detail-v1"
+      ],
+      "facts": [],
+      "missing_fact_keys": [
+        "actor"
+      ],
+      "unresolved_reason": "별도 사례의 주체가 제시되지 않았다."
+    }
+  ]
+}

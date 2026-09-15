@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:pipeline-common-v1",
+  "type": "object",
+  "properties": {},
+  "required": [],
+  "additionalProperties": false,
+  "$defs": {
+    "Artifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contract": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "contract",
+        "path",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "Span": {
+      "type": "object",
+      "properties": {
+        "block_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "block_id",
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    },
+    "RawSpan": {
+      "type": "object",
+      "properties": {
+        "raw_block_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "raw_block_id",
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    },
+    "Target": {
+      "type": "object",
+      "properties": {
+        "stage": {
+          "enum": [
+            "DATA_INPUT",
+            "PROCESS",
+            "LOAD",
+            "RAG",
+            "FEEDBACK"
+          ]
+        },
+        "artifact": {
+          "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+        },
+        "field_pointer": {
+          "type": "string",
+          "pattern": "^(|/(?:[^~]|~[01])*)$"
+        },
+        "entity_ref": {
+          "anyOf": [
+            {
+              "$ref": "urn:8-agent:legal-semantic-v2#/$defs/EntityRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "stage",
+        "artifact",
+        "field_pointer",
+        "entity_ref"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

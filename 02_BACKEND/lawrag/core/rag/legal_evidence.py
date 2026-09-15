@@ -5,7 +5,7 @@ from __future__ import annotations
 from lawrag.core.domain_graph import requirements
 from lawrag.core.rag import legal_validity
 from lawrag.core.rag import legal_coordinates as coordinates
-from lawrag.core.rag.content_snapshot import (
+from lawrag.runtime.content_snapshot import (
     ContentSnapshotError,
     artifact_provenance_receipt,
     current_content_snapshot,

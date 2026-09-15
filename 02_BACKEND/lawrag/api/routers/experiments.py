@@ -4,19 +4,20 @@ import json
 
 from fastapi import APIRouter, HTTPException, Query
 
-from lawrag.core.rag import experiment_catalog
-
-
 router = APIRouter(prefix="/v1/experiments", tags=["experiments"])
 
 
 @router.get("/catalog", summary="실험 모듈·실행 산출물 카탈로그")
 def catalog():
+    from lawrag.research import experiment_catalog
+
     return experiment_catalog.catalog()
 
 
 @router.get("/artifact", summary="실험 산출물 요약·설정·대표 문항")
 def artifact(path: str = Query(...)):
+    from lawrag.research import experiment_catalog
+
     try:
         return experiment_catalog.detail(path)
     except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:

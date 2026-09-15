@@ -974,7 +974,7 @@ def generate_candidates(
             try:
                 rows = vector_mod.search(query, topk=16, doc_ids=index.scope, minimum=0.34)
             except Exception as exc:
-                from lawrag.core.rag.content_snapshot import ContentSnapshotError
+                from lawrag.runtime.content_snapshot import ContentSnapshotError
 
                 if isinstance(exc, ContentSnapshotError):
                     raise

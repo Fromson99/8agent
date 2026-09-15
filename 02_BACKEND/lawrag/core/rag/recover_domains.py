@@ -56,7 +56,7 @@ def register(domain: str, name: str,
 
 
 def rungs(domain: Optional[str] = None) -> list[Rung]:
-    from lawrag.core.rag.content_snapshot import current_content_snapshot
+    from lawrag.runtime.content_snapshot import current_content_snapshot
 
     # The release selects the product domain through its code/switch state;
     # an ambient process variable cannot silently select another recovery graph.
@@ -120,7 +120,7 @@ def law_issue_respot(llm, index: Index, query: str) -> tuple[list, dict]:
 
 # ---------------------------------------------------------------- 법령판 ②
 def aliases_path() -> Path:
-    from lawrag.core.rag.content_snapshot import current_content_snapshot
+    from lawrag.runtime.content_snapshot import current_content_snapshot
 
     snapshot = current_content_snapshot()
     if snapshot is not None:

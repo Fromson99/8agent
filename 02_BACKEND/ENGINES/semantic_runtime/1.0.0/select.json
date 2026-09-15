@@ -1,0 +1,45 @@
+{
+  "schema_version": "pipeline-engine-v1",
+  "id": "semantic-select@1.0.0",
+  "version": "1.0.0",
+  "kind": "RETRIEVER",
+  "maturity": "RELEASED",
+  "inputs": {
+    "retrieved": "runtime.retrieved"
+  },
+  "outputs": {
+    "selected": "runtime.selected"
+  },
+  "entrypoint": {
+    "path": "02_BACKEND/semantic_runtime/stages.py",
+    "function": "select"
+  },
+  "files": {
+    "02_BACKEND/semantic_runtime/__init__.py": "ce7278ea23a9ecc8c076c977c7dce1bf2ed04f9ff0d855d8a43b249235a897ba",
+    "02_BACKEND/semantic_runtime/genos.py": "5931b7d6dd71921f25b22ccb20d5e2a9f23622ba76f1827470cc5b46c76a043b",
+    "02_BACKEND/semantic_runtime/genos_backend.py": "fe467724be922e9a41c9dbcce466e5b5959b578ba99420a8885b4b3f920dac21",
+    "02_BACKEND/semantic_runtime/observability.py": "c9df02c550d9a2b960c7b8d9ab1b335e19d9203787c61869e781ff0f17263a79",
+    "02_BACKEND/semantic_runtime/contracts.py": "9ba41e85f9696011e452c0908bb39482bffb44174cc79f5682ef92141c20d82d",
+    "02_BACKEND/semantic_runtime/feedback.py": "70997155e54ce053ad9accba7a6432feb6274deeba5e5a3059df07e547d96eb1",
+    "02_BACKEND/semantic_runtime/genos_index.py": "fba9f1c95596f38d854c9d0e8000262b4523e95a410914579152e5283cf72bd8",
+    "02_BACKEND/semantic_runtime/control.py": "4ceb38fc78cab16f9810742b99a909449176038fe3ef4b6feb5fdd9830c78427",
+    "02_BACKEND/semantic_runtime/term_tools.py": "f88c33d09e59a207f5c922989986bc35848bcf8a95bd71a5013c62d02cddaba3",
+    "02_BACKEND/semantic_runtime/app.py": "9422942d82038e76120dafbdc8a328d803aeebcbc01fa6abd6924fd4ff385065",
+    "02_BACKEND/semantic_runtime/stages.py": "3aa246dda7656b2a2c0e3f66d5db2b904e4b7bc57414407c63f61f9fbc3d82f5",
+    "02_BACKEND/semantic_runtime/term_agent.py": "d6145afc629f49a876096e4c0c451c87a5673068910c7facb6c756703eedd7a2",
+    "02_BACKEND/semantic_runtime/vector.py": "d5aefa9fffdea12d6808472b10e99c3adb4f4e8cc8e39f9b7e2457bb93bef1ea",
+    "02_BACKEND/semantic_runtime/storage.py": "a9c8739e10eb602f9211c507598b0d9dca3e17e04cc628fc4364b30958354e89",
+    "02_BACKEND/semantic_runtime/term_index.py": "74009953b800212e5068e49fd110e206680f18c16753d88b8eef90ca25992796",
+    "02_BACKEND/semantic_runtime/provider.py": "ad754b2b5b8f8b610b40ab75c70f97eb60c3fcfa00eefb4c6adef4dab88640b2",
+    "02_BACKEND/semantic_runtime/pipeline.py": "c5808ea0df785dad087dad95168c4104f0b3ee9ff2d0f27dddbddbe9a0c2480f",
+    "02_BACKEND/semantic_runtime/moleg_links.py": "a3b31a180a640f9e9e60910ebd3463afa2b5385acea8517f69345e34d8247c0e",
+    "02_BACKEND/ENGINES/semantic_runtime/1.0.0/open-template.json": "44df869acc8f0a3b796e9db60883fc7f5d48b87a48d9e3d501df92a53c6cb8ed"
+  },
+  "parameters_schema": {
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+  },
+  "migration": null,
+  "experiment_binding": null
+}

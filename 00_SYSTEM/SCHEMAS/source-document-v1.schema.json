@@ -1,0 +1,515 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:source-document-v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "source-document-v1"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "document_version_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "document": {
+      "type": "object",
+      "properties": {
+        "document_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version_label": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "document_id",
+        "title",
+        "version_label"
+      ],
+      "additionalProperties": false
+    },
+    "scope": {
+      "$ref": "urn:8-agent:legal-semantic-v2#/$defs/Scope"
+    },
+    "input_artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+      },
+      "minItems": 1
+    },
+    "raw_blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "text": {
+            "type": "string"
+          },
+          "source_artifact_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "element_path": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "source_artifact_id",
+          "page",
+          "element_path"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "text": {
+            "type": "string"
+          },
+          "mappings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "start": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "end": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "source_span": {
+                  "$ref": "urn:8-agent:pipeline-common-v1#/$defs/RawSpan"
+                },
+                "correction_id": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "start",
+                "end",
+                "source_span",
+                "correction_id"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "mappings"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "편",
+              "장",
+              "절",
+              "관",
+              "조",
+              "항",
+              "호",
+              "목",
+              "부칙",
+              "별표",
+              "서식",
+              "표",
+              "기타"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "spans": {
+            "type": "array",
+            "items": {
+              "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Span"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "label",
+          "parent_id",
+          "order",
+          "spans"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "corrections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_span": {
+            "$ref": "urn:8-agent:pipeline-common-v1#/$defs/RawSpan"
+          },
+          "before": {
+            "type": "string"
+          },
+          "after": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "method": {
+            "enum": [
+              "DETERMINISTIC",
+              "LLM",
+              "HUMAN"
+            ]
+          },
+          "review_status": {
+            "enum": [
+              "PROPOSED",
+              "APPROVED",
+              "REJECTED"
+            ]
+          },
+          "review_receipt": {
+            "anyOf": [
+              {
+                "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "source_span",
+          "before",
+          "after",
+          "reason",
+          "method",
+          "review_status",
+          "review_receipt"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_span": {
+            "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Span"
+          },
+          "surface": {
+            "type": "string",
+            "minLength": 1
+          },
+          "locator": {
+            "type": "object",
+            "properties": {
+              "document_title": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "article": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "paragraph": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "item": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "document_title",
+              "article",
+              "paragraph",
+              "item"
+            ],
+            "additionalProperties": false
+          },
+          "cue_kind": {
+            "enum": [
+              "REFERENCE",
+              "DELEGATION_CUE",
+              "INCORPORATION_CUE"
+            ]
+          },
+          "resolution": {
+            "enum": [
+              "RESOLVED",
+              "UNRESOLVED"
+            ]
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "document_version_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "structural_unit_id": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "document_version_id",
+                  "structural_unit_id"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "source_span",
+          "surface",
+          "locator",
+          "cue_kind",
+          "resolution",
+          "target",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+      },
+      "minItems": 0
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "block_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "blocking": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "message",
+          "unit_id",
+          "block_id",
+          "blocking"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "status": {
+      "enum": [
+        "CANDIDATE",
+        "VALIDATED"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "document_version_id",
+    "document",
+    "scope",
+    "input_artifacts",
+    "raw_blocks",
+    "blocks",
+    "units",
+    "corrections",
+    "references",
+    "attachments",
+    "issues",
+    "status"
+  ],
+  "additionalProperties": false
+}

@@ -453,7 +453,7 @@ def alias_map() -> dict[str, str]:
     채워 두면, 선언 없이 약칭으로 인용하는 문서(협회 모범기준·내규류)의 참조가
     결정론으로 이어진다. 코드는 사전을 읽을 뿐 항목을 모른다(지식은 데이터로)."""
     from lawrag.core.rag.index import store_path
-    from lawrag.core.rag.content_snapshot import current_content_snapshot
+    from lawrag.runtime.content_snapshot import current_content_snapshot
     from lawrag.platform.paths import data_path
 
     snapshot = current_content_snapshot()

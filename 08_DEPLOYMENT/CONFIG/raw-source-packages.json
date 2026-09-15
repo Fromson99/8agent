@@ -1,0 +1,46 @@
+{
+  "schema_version": "raw-package-selection-v1",
+  "packages": [
+    {
+      "source": "law",
+      "manifest": "01_DATA/PACKAGES/EXTERNAL/source-law-267b1cfc7bfd3349/gen-267b1cfc7bfd3349bd27ed6f/manifest.json",
+      "sha256": "f1ceee0bb780de7ff0488c752618310ff17f91adc7cc700ddc71f613cd5ef643"
+    },
+    {
+      "source": "krx",
+      "manifest": "01_DATA/PACKAGES/EXTERNAL/source-krx-e6ef2a9a5355335d/gen-e6ef2a9a5355335d232b230c/manifest.json",
+      "sha256": "487f567da2a8045e8b9ec3b4a02ad65e79b234272d872c3ce02fd1e10bdae118"
+    },
+    {
+      "source": "kofia",
+      "manifest": "01_DATA/PACKAGES/EXTERNAL/source-kofia-85542fe8150a1be2/gen-85542fe8150a1be2950b51e7/manifest.json",
+      "sha256": "4dd958a7df5f385dddad1dc5ff24188b8280fc372a42e19e8cc4ba65aac6cd47"
+    },
+    {
+      "source": "expc",
+      "manifest": "01_DATA/PACKAGES/EXTERNAL/source-expc-95be582c307663b0/gen-95be582c307663b002b7788d/manifest.json",
+      "sha256": "2f9943f9254f75bd2f3797605519ac96b8216c152befed60b4562d206898c173"
+    },
+    {
+      "source": "fsc",
+      "manifest": "01_DATA/PACKAGES/EXTERNAL/source-fsc-3af218f11d7a2d5f/gen-3af218f11d7a2d5fa5b514fe/manifest.json",
+      "sha256": "4eac9ab3c4551bdf8398028fd5b53c2ac1dde6ba5516470d0527c50eba9b3f16"
+    },
+    {
+      "source": "moleg",
+      "manifest": "01_DATA/PACKAGES/EXTERNAL/source-moleg-e309c3f3f9ee6a7f/gen-e309c3f3f9ee6a7ff8958559/manifest.json",
+      "sha256": "85fe965cdc63acefbdb84cf2ac15218b229fa9b7ccf5168b5efc2dc0a082aac9"
+    },
+    {
+      "source": "prec",
+      "manifest": "01_DATA/PACKAGES/EXTERNAL/source-prec-3aa01fa14582b5e0/gen-3aa01fa14582b5e0fa1df6ab/manifest.json",
+      "sha256": "f3b10efbd834eb7059be0739c77b38295d2468a3c0f181d431b07bb9c28d4861"
+    }
+  ],
+  "excluded": [
+    "source-internal: example internal regulations, not actual GENOS originals",
+    "source-forms: example forms, not law source corpus",
+    "ontology and historical LLM artifacts",
+    "curated research/wiki/INBOX inputs outside operational source corpus"
+  ]
+}

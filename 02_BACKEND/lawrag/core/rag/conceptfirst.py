@@ -133,7 +133,7 @@ def _data_dir() -> Path:
 
 
 def graph_path() -> Path:
-    from lawrag.core.rag.content_snapshot import current_content_snapshot
+    from lawrag.runtime.content_snapshot import current_content_snapshot
 
     snapshot = current_content_snapshot()
     if snapshot is not None:
@@ -143,7 +143,7 @@ def graph_path() -> Path:
 
 
 def registry_path() -> Path:
-    from lawrag.core.rag.content_snapshot import current_content_snapshot
+    from lawrag.runtime.content_snapshot import current_content_snapshot
 
     snapshot = current_content_snapshot()
     if snapshot is not None:

@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:schema:feedback-event-v1",
+  "title": "Append-only operational feedback observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "event_id", "occurred_at", "source_kind",
+    "signal_kind", "status", "generation", "target", "evidence",
+    "resolution", "event_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "feedback-event-v1"},
+    "event_id": {"$ref": "#/$defs/id"},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "source_kind": {"enum": ["RAG_USER", "VALIDATOR", "INGESTION"]},
+    "signal_kind": {
+      "enum": [
+        "ANSWER_CORRECT", "ANSWER_INCORRECT", "DEFINITION_AMBIGUOUS",
+        "DATA_ERROR", "DATA_CORRECTED", "STALE_GENERATION"
+      ]
+    },
+    "status": {"const": "OBSERVED"},
+    "generation": {"$ref": "#/$defs/generation"},
+    "target": {"$ref": "#/$defs/target"},
+    "evidence": {"$ref": "#/$defs/evidence"},
+    "resolution": {"$ref": "#/$defs/resolution"},
+    "event_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"signal_kind": {"const": "DATA_CORRECTED"}}},
+      "then": {
+        "properties": {
+          "resolution": {
+            "required": [
+              "resolves_event_id", "before_sha256", "after_sha256",
+              "receipt_sha256"
+            ],
+            "properties": {
+              "resolves_event_id": {"$ref": "#/$defs/id"},
+              "before_sha256": {"$ref": "#/$defs/sha256"},
+              "after_sha256": {"$ref": "#/$defs/sha256"},
+              "receipt_sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{1,191}$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "nullable_id": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/id"}]},
+    "nullable_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
+    "generation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_profile", "main_generation", "graph_generation",
+        "definition_generation", "source_set_sha256"
+      ],
+      "properties": {
+        "runtime_profile": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/id"}]},
+        "main_generation": {"type": ["integer", "null"], "minimum": 0},
+        "graph_generation": {"$ref": "#/$defs/nullable_id"},
+        "definition_generation": {"$ref": "#/$defs/nullable_id"},
+        "source_set_sha256": {"$ref": "#/$defs/nullable_sha256"}
+      }
+    },
+    "coordinate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["document_id", "node_id"],
+      "properties": {
+        "document_id": {"$ref": "#/$defs/id"},
+        "node_id": {"type": ["integer", "null"], "minimum": 0}
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "qid", "query_sha256", "document_id", "node_id", "clause_span_id",
+        "projection_id", "surface"
+      ],
+      "properties": {
+        "qid": {"$ref": "#/$defs/nullable_id"},
+        "query_sha256": {"$ref": "#/$defs/nullable_sha256"},
+        "document_id": {"$ref": "#/$defs/nullable_id"},
+        "node_id": {"type": ["integer", "null"], "minimum": 0},
+        "clause_span_id": {"$ref": "#/$defs/nullable_id"},
+        "projection_id": {"$ref": "#/$defs/nullable_id"},
+        "surface": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reason", "note", "expected_coordinates", "detector_id",
+        "detector_fingerprint"
+      ],
+      "properties": {
+        "reason": {"type": "string"},
+        "note": {"type": "string"},
+        "expected_coordinates": {
+          "type": "array", "uniqueItems": true,
+          "items": {"$ref": "#/$defs/coordinate"}
+        },
+        "detector_id": {"$ref": "#/$defs/nullable_id"},
+        "detector_fingerprint": {"$ref": "#/$defs/nullable_sha256"}
+      }
+    },
+    "resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resolves_event_id", "before_sha256", "after_sha256", "receipt_sha256"
+      ],
+      "properties": {
+        "resolves_event_id": {"$ref": "#/$defs/nullable_id"},
+        "before_sha256": {"$ref": "#/$defs/nullable_sha256"},
+        "after_sha256": {"$ref": "#/$defs/nullable_sha256"},
+        "receipt_sha256": {"$ref": "#/$defs/nullable_sha256"}
+      }
+    }
+  }
+}

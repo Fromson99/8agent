@@ -36,7 +36,7 @@ from lawrag.sources.common import (
 from lawrag.platform.paths import data_path, repository_root, runtime_path
 
 REPO_ROOT = repository_root()
-CORPUS_DIR = data_path("corpus")
+CORPUS_DIR = data_path("INBOX", "AUTHORING", "corpus")
 LOG_DIR = runtime_path("logs")
 
 # 수집 대상 선언 (docs/adapter_design.md 결정사항 반영)
@@ -70,6 +70,18 @@ TARGETS: dict[str, list[Target]] = {
         # 위임 체인 중간 공백 보충 (2026-08-13 lsStmd 체계도 실측 — 법률은 보유,
         # 시행령이 없어 법률→규정 위임 간선이 끊기던 4건. 명칭은 체계도 XML 원문)
         Target("law", "상법 시행령", "상법 시행령", hints={"kind": "law"}),
+        Target("law", "금융지주회사법", "금융지주회사법", hints={"kind": "law"}),
+        Target("law", "법인세법", "법인세법", hints={"kind": "law"}),
+        Target("law", "법인세법 시행령", "법인세법 시행령", hints={"kind": "law"}),
+        Target("law", "법인세법 시행규칙", "법인세법 시행규칙", hints={"kind": "law"}),
+        Target("law", "소득세법 시행규칙", "소득세법 시행규칙", hints={"kind": "law"}),
+        Target("law", "조세특례제한법 시행령", "조세특례제한법 시행령", hints={"kind": "law"}),
+        Target("law", "조세특례제한법 시행규칙", "조세특례제한법 시행규칙", hints={"kind": "law"}),
+        Target("law", "상속세 및 증여세법 시행규칙", "상속세 및 증여세법 시행규칙", hints={"kind": "law"}),
+        Target("law", "주식회사 등의 외부감사에 관한 법률 시행규칙", "주식회사 등의 외부감사에 관한 법률 시행규칙", hints={"kind": "law"}),
+        Target("law", "주식·사채 등의 전자등록에 관한 법률", "주식ㆍ사채 등의 전자등록에 관한 법률", hints={"kind": "law"}),
+        Target("law", "주식·사채 등의 전자등록에 관한 법률 시행령", "주식ㆍ사채 등의 전자등록에 관한 법률 시행령", hints={"kind": "law"}),
+        Target("law", "벤처기업육성에 관한 특별법 시행규칙", "벤처기업육성에 관한 특별법 시행규칙", hints={"kind": "law"}),
         Target("law", "신용정보의 이용 및 보호에 관한 법률 시행령",
                "신용정보의 이용 및 보호에 관한 법률 시행령", hints={"kind": "law"}),
         Target("law", "공공기관의 운영에 관한 법률 시행령",
@@ -169,6 +181,11 @@ TARGETS: dict[str, list[Target]] = {
         Target("krx", "코스닥시장 상장규정 시행세칙", "코스닥시장 상장규정 시행세칙"),
         Target("krx", "코넥스시장 상장규정", "코넥스시장 상장규정"),
         Target("krx", "코넥스시장 상장규정 시행세칙", "코넥스시장 상장규정 시행세칙"),
+        Target("krx", "유가증권시장 공시규정", "유가증권시장 공시규정"),
+        Target("krx", "유가증권시장 공시규정 시행세칙", "유가증권시장 공시규정 시행세칙"),
+        Target("krx", "코스닥시장 공시규정", "코스닥시장 공시규정"),
+        Target("krx", "코스닥시장 공시규정 시행세칙", "코스닥시장 공시규정 시행세칙"),
+        Target("krx", "전문평가제도 운영지침", "전문평가제도 운영지침"),
     ],
 }
 

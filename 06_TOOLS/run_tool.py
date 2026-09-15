@@ -11,6 +11,21 @@ import types
 from pathlib import Path
 
 
+def _enforce_active_tool_policy(root: Path, name: str) -> None:
+    policy_path = root / "06_TOOLS" / "ACTIVE_TOOLS.json"
+    try:
+        policy = json.loads(policy_path.read_text("utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"active tool policy is unavailable: {exc}") from exc
+    allowed = policy.get("tools")
+    if policy.get("schema_version") != "active-tools-v1" or not isinstance(allowed, list):
+        raise SystemExit("active tool policy is invalid")
+    if name not in allowed:
+        reason = (policy.get("retired") or {}).get(name)
+        detail = f": {reason}" if isinstance(reason, str) else ""
+        raise SystemExit(f"tool is historical or retired and cannot run: {name}{detail}")
+
+
 def _targets(root: Path) -> tuple[Path, Path]:
     manifest = json.loads((root / "00_SYSTEM/WORKSPACE.json").read_text("utf-8"))
     lifecycle = manifest.get("lifecycle") or {}
@@ -40,12 +55,37 @@ def _targets(root: Path) -> tuple[Path, Path]:
 
 
 def main() -> None:
+    # Generated code trees are receipt-fingerprinted.  Import-time .pyc files
+    # would mutate a verified tree before the target tool can run.
+    sys.dont_write_bytecode = True
     if len(sys.argv) < 2:
         raise SystemExit("usage: run_tool.py <tool filename> [arguments ...]")
     name = sys.argv[1]
     if not name or Path(name).name != name or name in {".", ".."}:
         raise SystemExit("tool must be a filename inside the active tools generation")
     root = Path(__file__).resolve().parents[1]
+    _enforce_active_tool_policy(root, name)
+    if name == 'rag_main_promotion.py':
+        pointer=json.loads((root/'01_DATA/ACTIVE/local/ACTIVE_RELEASE.json').read_text())
+        if pointer.get('schema_version')=='semantic-runtime-active-v2':
+            # MAIN management follows the active runtime; the retired MAIN state
+            # must not be displayed as the operational generation.
+            sys.path.insert(0,str(root/'02_BACKEND'))
+            from semantic_runtime.control import main as semantic_main
+            sys.argv=[sys.argv[0],*sys.argv[2:]]
+            semantic_main()
+            return
+    if name == 'adr_structure.py':
+        # Model policy administration follows user-edited working policy. Serving
+        # and all other receipt-bound tools retain their selected generations.
+        command_root = root / '06_TOOLS' / 'COMMANDS'
+        target = command_root / name
+        if not target.is_file() or target.is_symlink():
+            raise SystemExit('ADR policy tool unavailable')
+        sys.path.insert(0, str(command_root))
+        sys.argv = [str(target), *sys.argv[2:]]
+        runpy.run_path(str(target), run_name='__main__')
+        return
     backend, tools = _targets(root)
     sys.path.insert(0, str(backend.parent))
     from lawrag.platform.workspace import load_layout

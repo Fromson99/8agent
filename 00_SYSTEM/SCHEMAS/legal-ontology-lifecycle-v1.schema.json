@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:schema:legal-ontology-lifecycle-v1",
+  "title": "Evidence-grounded legal ontology lifecycle pipeline",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pipeline_id",
+    "name",
+    "layers",
+    "phases",
+    "stages",
+    "invariants"
+  ],
+  "properties": {
+    "schema_version": {"const": "legal-ontology-lifecycle-v1"},
+    "pipeline_id": {"$ref": "#/$defs/id"},
+    "name": {"type": "string", "minLength": 1},
+    "description": {"type": "string", "minLength": 1},
+    "layers": {
+      "const": [
+        "source",
+        "structure",
+        "observation",
+        "canonical",
+        "projection",
+        "runtime",
+        "control"
+      ]
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "prefixItems": [
+        {"$ref": "#/$defs/input_phase"},
+        {"$ref": "#/$defs/extract_phase"},
+        {"$ref": "#/$defs/transform_phase"},
+        {"$ref": "#/$defs/use_phase"},
+        {"$ref": "#/$defs/restructure_phase"}
+      ],
+      "items": false
+    },
+    "stages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/stage"}
+    },
+    "invariants": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._:/-]{1,127}$"
+    },
+    "contract_list": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/id"}
+    },
+    "phase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "purpose", "gate"],
+      "properties": {
+        "id": {"enum": ["input", "extract", "transform", "use", "restructure"]},
+        "label": {"type": "string", "minLength": 1},
+        "purpose": {"type": "string", "minLength": 1},
+        "gate": {"type": "string", "minLength": 1}
+      }
+    },
+    "input_phase": {
+      "allOf": [
+        {"$ref": "#/$defs/phase"},
+        {"properties": {"id": {"const": "input"}}}
+      ]
+    },
+    "extract_phase": {
+      "allOf": [
+        {"$ref": "#/$defs/phase"},
+        {"properties": {"id": {"const": "extract"}}}
+      ]
+    },
+    "transform_phase": {
+      "allOf": [
+        {"$ref": "#/$defs/phase"},
+        {"properties": {"id": {"const": "transform"}}}
+      ]
+    },
+    "use_phase": {
+      "allOf": [
+        {"$ref": "#/$defs/phase"},
+        {"properties": {"id": {"const": "use"}}}
+      ]
+    },
+    "restructure_phase": {
+      "allOf": [
+        {"$ref": "#/$defs/phase"},
+        {"properties": {"id": {"const": "restructure"}}}
+      ]
+    },
+    "stage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "phase",
+        "layers",
+        "mode",
+        "execution_policy",
+        "depends_on",
+        "input_contracts",
+        "output_contracts",
+        "gate",
+        "auto_promote"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "label": {"type": "string", "minLength": 1},
+        "phase": {"enum": ["input", "extract", "transform", "use", "restructure"]},
+        "layers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "source",
+              "structure",
+              "observation",
+              "canonical",
+              "projection",
+              "runtime",
+              "control"
+            ]
+          }
+        },
+        "mode": {"enum": ["deterministic", "llm", "embedding", "inspection", "manual_gate"]},
+        "execution_policy": {"enum": ["automatic", "explicit", "manual_only"]},
+        "runner_stage": {"$ref": "#/$defs/id"},
+        "depends_on": {"$ref": "#/$defs/contract_list"},
+        "input_contracts": {"$ref": "#/$defs/contract_list"},
+        "output_contracts": {"$ref": "#/$defs/contract_list"},
+        "gate": {"type": "string", "minLength": 1},
+        "fallback": {"type": "string", "minLength": 1},
+        "auto_promote": {"const": false}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"execution_policy": {"enum": ["automatic", "explicit"]}}},
+          "then": {"required": ["runner_stage"]}
+        }
+      ]
+    }
+  }
+}

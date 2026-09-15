@@ -93,7 +93,7 @@ def propose(surface: str, *, target_kind: str, target_id: str,
     동일한 표현-정본 쌍은 한 행으로 접고 관측 횟수와 최근 질문만 갱신한다.
     제안은 검색에 아무 영향도 주지 않는다.
     """
-    from lawrag.core.rag.content_snapshot import current_content_snapshot
+    from lawrag.runtime.content_snapshot import current_content_snapshot
 
     # Product queries are read-only with respect to the semantic authority.
     # Observations may be exported through a separate feedback control plane,

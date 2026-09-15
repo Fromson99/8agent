@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:glossary-sense-review-v3",
+  "$defs": {
+    "SenseIdentityDecision": {
+      "type": "string",
+      "enum": [
+        "SAME",
+        "DIFFERENT",
+        "UNKNOWN"
+      ]
+    },
+    "SenseRelationKind": {
+      "type": "string",
+      "enum": [
+        "BROADER_THAN",
+        "NARROWER_THAN",
+        "OVERLAPS",
+        "COUNTERPART_OF",
+        "RELATED_TO"
+      ]
+    },
+    "SenseReviewResponse": {
+      "type": "object",
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "input_sha256": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "identity": {
+          "type": "object",
+          "properties": {
+            "decision": {
+              "$ref": "#/$defs/SenseIdentityDecision"
+            },
+            "evidence_ids": {
+              "type": "array",
+              "maxItems": 24,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "required": [
+            "decision",
+            "evidence_ids"
+          ],
+          "additionalProperties": false
+        },
+        "relation_assessment": {
+          "type": "string",
+          "enum": [
+            "IDENTIFIED",
+            "NOT_ESTABLISHED",
+            "UNKNOWN"
+          ]
+        },
+        "relations": {
+          "type": "array",
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "$ref": "#/$defs/SenseRelationKind"
+              },
+              "evidence_ids": {
+                "type": "array",
+                "maxItems": 24,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "kind",
+              "evidence_ids"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "rationale": {
+          "type": "string",
+          "maxLength": 2500
+        },
+        "missing_information": {
+          "type": "string",
+          "maxLength": 2500
+        }
+      },
+      "required": [
+        "job_id",
+        "input_sha256",
+        "identity",
+        "relation_assessment",
+        "relations",
+        "rationale",
+        "missing_information"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$ref": "#/$defs/SenseReviewResponse"
+}

@@ -12,6 +12,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from lawrag.core import batch as batch_mod
+from lawrag.ontology import contract_report, lifecycle_snapshot
 
 log = logging.getLogger("lawrag.api.pipeline")
 
@@ -22,9 +23,21 @@ router = APIRouter(prefix="/v1/pipeline", tags=["pipeline"])
 def pipeline_lineup():
     lu = batch_mod.lineup()
     lu["order"] = list(batch_mod.STAGES)
+    lu["automatic_order"] = list(batch_mod.AUTO_STAGES)
     lu["labels"] = batch_mod.LABELS
     lu["kinds"] = batch_mod.KIND
+    lu["lifecycle"] = lifecycle_snapshot(lu)
     return lu
+
+
+@router.get("/lifecycle", summary="입력→추출→변환→사용→재구조화 상태")
+def pipeline_lifecycle():
+    return lifecycle_snapshot()
+
+
+@router.get("/contracts", summary="온톨로지 lifecycle·Projection 계약 검증")
+def pipeline_contracts():
+    return contract_report()
 
 
 @router.get("/status", summary="현재(또는 마지막) 실행의 진행")
@@ -37,13 +50,28 @@ class Run(BaseModel):
     workers: Optional[int] = None          # 프레임 LLM 동시성
     chunk: Optional[int] = None            # 임베딩 진행 단위
     force: bool = False                    # 위임 간선 강제 재생성
+    confirm_explicit: bool = False         # graph/Projection 명시 단계 확인
 
 
 @router.post("/run", summary="딸깍 — 빠진 것만 순서대로 돌린다 (백그라운드)")
 def pipeline_run(body: Run):
     try:
-        return batch_mod.RUNNER.start(body.stages, {k: v for k, v in body.model_dump().items()
-                                                    if k != "stages" and v is not None})
+        requested = body.stages or list(batch_mod.AUTO_STAGES)
+        unknown = [stage for stage in requested if stage not in batch_mod.STAGES]
+        if unknown:
+            raise HTTPException(400, "모르는 단계입니다: " + ", ".join(unknown))
+        explicit = [stage for stage in requested if stage not in batch_mod.AUTO_STAGES]
+        if explicit and not body.confirm_explicit:
+            raise HTTPException(
+                409,
+                "명시 단계는 confirm_explicit=true가 필요합니다: " + ", ".join(explicit),
+            )
+        options = {
+            key: value
+            for key, value in body.model_dump().items()
+            if key not in {"stages", "confirm_explicit"} and value is not None
+        }
+        return batch_mod.RUNNER.start(requested, options)
     except RuntimeError as exc:
         raise HTTPException(409, str(exc))
     except ValueError as exc:

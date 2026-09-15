@@ -8,6 +8,7 @@ def public_meta(meta: dict) -> dict:
     assertion = meta.get("assertion") or {}
     keyword = meta.get("keyword") or {}
     annotations = meta.get("legal_annotations") or {}
+    ontology = meta.get("ontology_rag") or {}
     result = {
         "strategy": meta.get("strategy"), "cap": meta.get("cap"),
         "runtime": meta.get("runtime") or {},
@@ -40,6 +41,21 @@ def public_meta(meta: dict) -> dict:
         "reference_verifier": meta.get("reference_verifier") or {},
         "legal_graph": meta.get("legal_graph") or {
             "enabled": False, "status": "disabled", "added_count": 0,
+        },
+        "ontology_rag": {
+            key: ontology.get(key)
+            for key in (
+                "schema_version", "profile_id", "status", "reason", "detail",
+                "fallback", "projection_id", "matched_surface", "clause_span_ids",
+                "canonical_evidence_ids", "rule_ids", "baseline_count",
+                "final_count", "added_count", "added_coordinates",
+                "baseline_floor_preserved", "direct_conclusion_allowed",
+                "quality_status", "definition_generation",
+                "definition_content_sha256", "graph_generation",
+                "graph_content_sha256", "store_binding", "knowledge_cache",
+                "knowledge_cache_key_sha256",
+            )
+            if key in ontology
         },
         "legal_annotations": {
             "requested_kinds": annotations.get("requested_kinds") or [],

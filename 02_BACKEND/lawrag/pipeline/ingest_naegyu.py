@@ -2,7 +2,7 @@
 
     python -m lawrag.pipeline.ingest_naegyu docs/examples/task5-risk-agent/internal-rules/*.docx
     python -m lawrag.pipeline.ingest_naegyu 세칙_v1_2024.docx --status 구판
-    python -m lawrag.pipeline.ingest_naegyu 지침.docx --name 투자및인수위험관리지침 --store data/structure
+    python -m lawrag.pipeline.ingest_naegyu 지침.docx --name 투자및인수위험관리지침 --store 01_DATA/INBOX/AUTHORING/structure
 
 실제 이관은 lawrag/core/internal_rules.py(ingest_internal_rule)가 한다 — 업로드 API 와
 같은 문이어야 한다(코드단 일원화, docs/LINEAGE.md). 여기 남은 것은 CLI 인자뿐이다.
@@ -28,14 +28,14 @@ from lawrag.core.internal_rules import FOLDER, ingest_internal_rule  # noqa: E40
 
 
 def _store(arg: str | None) -> Path:
-    return Path(arg or os.environ.get("STRUCTURE_STORE") or data_path("structure"))
+    return Path(arg or os.environ.get("STRUCTURE_STORE") or data_path("INBOX", "AUTHORING", "structure"))
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="내규 docx → 구조 스토어 (유도 경로)")
     ap.add_argument("paths", nargs="+", help="내규 docx")
     ap.add_argument("--name", help="문서 이름 (paths 가 1건일 때만; 기본 파일명)")
-    ap.add_argument("--store", help="스토어 경로 (기본: $STRUCTURE_STORE 또는 data/structure)")
+    ap.add_argument("--store", help="스토어 경로 (기본: $STRUCTURE_STORE 또는 01_DATA/INBOX/AUTHORING/structure)")
     ap.add_argument("--folder", default=FOLDER, help=f"묶어 둘 폴더 라벨 (기본 {FOLDER})")
     ap.add_argument("--status", default="현행", choices=["현행", "구판"],
                     help="판 표식 — 신구 대비의 구판은 '구판' 으로")

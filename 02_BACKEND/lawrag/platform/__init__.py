@@ -24,6 +24,7 @@ from .paths import (
     root_path,
     runtime_path,
 )
+from .active_data import active_runtime_paths, active_structure_path
 from .experiment_store import ExperimentRecord, ExperimentStore, ExperimentStoreError
 
 __all__ = [
@@ -45,6 +46,8 @@ __all__ = [
     "release_from_mapping",
     "root_path",
     "runtime_path",
+    "active_runtime_paths",
+    "active_structure_path",
     "validate_activation_plan",
     "validate_release_bindings",
     "validate_release_for_source_set",

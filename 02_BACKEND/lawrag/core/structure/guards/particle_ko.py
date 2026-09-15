@@ -36,6 +36,14 @@ def score(cand: Candidate, blocks, lex) -> dict[str, float]:
         # 재면 `은행…` `이사회…` 처럼 조사 글자로 시작하는 제목이 억울하게 깎인다.
         return {ID: scoring.PARTICLE_CLEAN}
     tail = cand.tail
+    # PDF extraction can insert horizontal space after a closed annex marker.
+    # Accept only a complete standalone particle, not a heading noun such as
+    # 은행별/이사회; never erase line boundaries or mutate the source text.
+    if cand.family.startswith("annex_") and tail[:1] in {" ", "\t", "\u00a0"}:
+        spaced = tail.lstrip(" \t\u00a0")
+        particle = lex.josa.attached(spaced)
+        if particle and (len(spaced) == len(particle) or spaced[len(particle)].isspace()):
+            tail = spaced
     attached = lex.josa.attached(tail) or lex.josa.chained_reference(tail)
     if not attached:
         return {ID: scoring.PARTICLE_CLEAN}

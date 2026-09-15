@@ -1,0 +1,169 @@
+{
+  "schema_version": "source-document-v1",
+  "id": "source:correction-example",
+  "document_version_id": "synthetic:main-v1",
+  "document": {
+    "document_id": "synthetic:main",
+    "title": "합성 규칙 예시",
+    "version_label": "v1"
+  },
+  "scope": {
+    "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "authority_generation": "synthetic-authority-1",
+    "document_version_ids": [
+      "synthetic:main-v1",
+      "synthetic:detail-v1"
+    ],
+    "jurisdiction": "SYNTHETIC",
+    "as_of": null
+  },
+  "input_artifacts": [
+    {
+      "id": "raw:evidence:0",
+      "contract": "source.raw",
+      "path": "synthetic/raw-evidence-0.json",
+      "sha256": "499941f464e3c85828b367cccb2c5d5b6d2b94a6684df32aff348c2dbecc22e7"
+    },
+    {
+      "id": "raw:evidence:1",
+      "contract": "source.raw",
+      "path": "synthetic/raw-evidence-1.json",
+      "sha256": "3e02a7d4c4131036949578755f7b841e47dbf9325ed3db170881a98a91151c23"
+    }
+  ],
+  "raw_blocks": [
+    {
+      "id": "raw:block:0",
+      "text": "기곤이 대상 증권을 취득한 경우 이를 보유하여야 한다.",
+      "source_artifact_id": "raw:evidence:0",
+      "page": 1,
+      "element_path": null
+    },
+    {
+      "id": "raw:block:1",
+      "text": "다만, 별도 규칙의 요건에 해당하면 기본 의무를 면제한다.",
+      "source_artifact_id": "raw:evidence:1",
+      "page": 1,
+      "element_path": null
+    }
+  ],
+  "blocks": [
+    {
+      "id": "block:0",
+      "text": "기관이 대상 증권을 취득한 경우 이를 보유하여야 한다.",
+      "mappings": [
+        {
+          "start": 0,
+          "end": 2,
+          "source_span": {
+            "raw_block_id": "raw:block:0",
+            "start": 0,
+            "end": 2
+          },
+          "correction_id": "correction:typo"
+        },
+        {
+          "start": 2,
+          "end": 30,
+          "source_span": {
+            "raw_block_id": "raw:block:0",
+            "start": 2,
+            "end": 30
+          },
+          "correction_id": null
+        }
+      ]
+    },
+    {
+      "id": "block:1",
+      "text": "다만, 별도 규칙의 요건에 해당하면 기본 의무를 면제한다.",
+      "mappings": [
+        {
+          "start": 0,
+          "end": 32,
+          "source_span": {
+            "raw_block_id": "raw:block:1",
+            "start": 0,
+            "end": 32
+          },
+          "correction_id": null
+        }
+      ]
+    }
+  ],
+  "units": [
+    {
+      "id": "unit:0",
+      "kind": "조",
+      "label": "합성 조문",
+      "parent_id": null,
+      "order": 0,
+      "spans": [
+        {
+          "block_id": "block:0",
+          "start": 0,
+          "end": 30
+        }
+      ]
+    },
+    {
+      "id": "unit:1",
+      "kind": "조",
+      "label": "합성 조문",
+      "parent_id": null,
+      "order": 1,
+      "spans": [
+        {
+          "block_id": "block:1",
+          "start": 0,
+          "end": 32
+        }
+      ]
+    }
+  ],
+  "corrections": [
+    {
+      "id": "correction:typo",
+      "source_span": {
+        "raw_block_id": "raw:block:0",
+        "start": 0,
+        "end": 2
+      },
+      "before": "기곤",
+      "after": "기관",
+      "reason": "합성 OCR 오기 보정",
+      "method": "HUMAN",
+      "review_status": "APPROVED",
+      "review_receipt": {
+        "id": "review:synthetic-correction",
+        "contract": "data.review",
+        "path": "synthetic/review-synthetic-correction.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    }
+  ],
+  "references": [
+    {
+      "id": "reference:synthetic",
+      "source_span": {
+        "block_id": "block:1",
+        "start": 4,
+        "end": 9
+      },
+      "surface": "별도 규칙",
+      "locator": {
+        "document_title": "별도 규칙",
+        "article": null,
+        "paragraph": null,
+        "item": null
+      },
+      "cue_kind": "REFERENCE",
+      "resolution": "UNRESOLVED",
+      "target": null,
+      "reason": "명시적인 대상 조문 번호가 없다."
+    }
+  ],
+  "attachments": [],
+  "issues": [],
+  "status": "VALIDATED"
+}

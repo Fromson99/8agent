@@ -25,12 +25,12 @@ from lawrag.platform.paths import data_path
 
 
 def ledger_path() -> Path:
-    from lawrag.core.rag.content_snapshot import current_content_snapshot
+    from lawrag.runtime.content_snapshot import current_content_snapshot
 
     if current_content_snapshot() is not None:
         # The semantic wiki tree is immutable release input.  Runtime usage
         # observations belong beside the other external feedback ledgers.
-        root = Path(os.environ.get("RAG_LOG_DIR") or data_path("rag"))
+        root = Path(os.environ.get("RAG_LOG_DIR") or data_path("FEEDBACK", "RUNTIME"))
         return root / "wiki_ledger.jsonl"
     return Path(os.environ.get("WIKI_STORE") or data_path("wiki")) \
         / "ledger.jsonl"

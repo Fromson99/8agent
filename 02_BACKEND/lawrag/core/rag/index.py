@@ -25,7 +25,7 @@ from pathlib import Path
 from threading import RLock
 from typing import Mapping, Optional
 
-from lawrag.core.rag.content_snapshot import (
+from lawrag.runtime.content_snapshot import (
     ArtifactProvenance,
     ContentSnapshot,
     ContentSnapshotError,

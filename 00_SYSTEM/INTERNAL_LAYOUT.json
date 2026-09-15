@@ -1,0 +1,69 @@
+{
+  "schema_version": "internal-layout-v1",
+  "naming_policy": {
+    "human_navigation_containers": "UPPER_SNAKE_CASE",
+    "language_native_identifiers": "lowercase_or_lower_snake_case",
+    "immutable_identifiers": "preserve_exact_name"
+  },
+  "managed_containers": {
+    "00_SYSTEM": ["MIGRATION", "SCHEMAS"],
+    "03_FRONTEND": ["APPS", "ASSETS"],
+    "04_EXPERIMENTS": ["ADR", "BENCHMARKS", "GENERATIONS", "LEGACY_ADR", "PROMOTION_CANDIDATES"],
+    "05_TESTS": ["GENERATIONS", "REGRESSION", "SMOKE"],
+    "06_TOOLS": ["AUDIT", "COMMANDS", "EXPERIMENTS", "GENERATIONS", "MIGRATION"],
+    "06_TOOLS/EXPERIMENTS": ["ADR", "DATA", "DOCUMENTS", "EVALUATION", "OPERATIONS", "RAG"],
+    "06_TOOLS/EXPERIMENTS/RAG": ["CLAIMS", "DEFINITIONS", "GENERAL", "GRAPH", "HAIKU", "PROVISO", "RETRIEVAL"],
+    "07_DOCS": ["REFERENCE"],
+    "07_DOCS/REFERENCE": ["ARCHITECTURE", "ARCHIVE", "ASSETS", "AUDITS", "EXAMPLES", "EXPERIMENTS", "OPERATIONS", "RAG", "REPORTS", "TASKS"],
+    "09_ARTIFACTS": ["GENERATIONS", "MEDIA", "REPORTS", "STAGING"],
+    "99_ARCHIVE": ["EXPERIMENTS", "IMPORTS", "LEGACY_DATA_ARCHIVE", "TESTS", "TOOLS"]
+  },
+  "mixed_containers": {
+    "01_DATA": ["ACTIVE", "BACKUPS", "CATALOG", "CONTRACTS", "FEEDBACK", "INBOX", "INDEXES", "PACKAGES", "PROJECTIONS", "QUARANTINE", "RETIREMENT", "SOURCE_SETS", "bench", "domain_graph", "embeddings", "expc", "legal_answer_checklists", "legal_graph", "legal_system", "lexicon", "ops", "pipeline", "review", "rules", "taxonomy", "wiki"],
+    "02_BACKEND": ["GENERATIONS", "lawrag"],
+    "08_DEPLOYMENT": ["CI", "CONFIG", "GENOS", "RELEASES"],
+    "90_RUNTIME": ["GENERATIONS", "LEGACY_VAR", "LOGS", "OUT", "PYTEST_CACHE"]
+  },
+  "language_native_roots": [
+    "02_BACKEND/lawrag",
+    "03_FRONTEND/APPS/experiment-studio",
+    "05_TESTS/REGRESSION"
+  ],
+  "receipt_bound_or_data_store_roots": [
+    "01_DATA/ACTIVE",
+    "01_DATA/PACKAGES",
+    "01_DATA/SOURCE_SETS",
+    "01_DATA/bench",
+    "01_DATA/domain_graph",
+    "01_DATA/embeddings",
+    "01_DATA/expc",
+    "01_DATA/legal_answer_checklists",
+    "01_DATA/legal_graph",
+    "01_DATA/legal_system",
+    "01_DATA/lexicon",
+    "01_DATA/ops",
+    "01_DATA/pipeline",
+    "01_DATA/review",
+    "01_DATA/rules",
+    "01_DATA/taxonomy",
+    "01_DATA/wiki",
+    "02_BACKEND/GENERATIONS",
+    "04_EXPERIMENTS/ADR",
+    "04_EXPERIMENTS/GENERATIONS",
+    "04_EXPERIMENTS/LEGACY_ADR",
+    "06_TOOLS/GENERATIONS",
+    "08_DEPLOYMENT/RELEASES",
+    "09_ARTIFACTS/GENERATIONS",
+    "90_RUNTIME/GENERATIONS",
+    "90_RUNTIME/LEGACY_VAR"
+  ],
+  "retired_mutable_names": [
+    "03_FRONTEND/experiment-studio",
+    "04_EXPERIMENTS/IMPORTS",
+    "04_EXPERIMENTS/ROOT_ORPHANS",
+    "05_TESTS/LEGACY_TESTS",
+    "06_TOOLS/LEGACY_SCRIPTS",
+    "07_DOCS/LEGACY_DOCS",
+    "09_ARTIFACTS/LEGACY_ARTIFACTS"
+  ]
+}

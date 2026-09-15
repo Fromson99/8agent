@@ -11,11 +11,11 @@ from types import ModuleType
 
 
 _LEGACY = {
-    "legacy": "lawrag.core.rag.integrated_legal_research",
-    "coverage-preserving-v1": "lawrag.core.rag.coverage_preserving_research",
-    "scope-entailment-bundle-v2": "lawrag.core.rag.scope_entailment_bundle_research",
+    "legacy": "lawrag.research.legacy_rag.integrated_legal_research",
+    "coverage-preserving-v1": "lawrag.research.legacy_rag.coverage_preserving_research",
+    "scope-entailment-bundle-v2": "lawrag.research.legacy_rag.scope_entailment_bundle_research",
     "issue-role-atomic-entailment-v3": (
-        "lawrag.core.rag.issue_role_atomic_entailment_research"
+        "lawrag.research.legacy_rag.issue_role_atomic_entailment_research"
     ),
 }
 

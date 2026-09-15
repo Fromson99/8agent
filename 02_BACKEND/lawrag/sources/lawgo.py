@@ -29,7 +29,7 @@ _FLSEQ_RE = re.compile(r"flSeq=(\d+)")
 
 
 def _norm(label: str) -> str:
-    return re.sub(r"\s+", "", label)
+    return re.sub(r"\s+", "", label).replace("·", "ㆍ")
 
 
 def _fl_url(link: str) -> str | None:

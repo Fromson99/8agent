@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:semantic-storage-v1",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Generation"
+    },
+    {
+      "$ref": "#/$defs/Projection"
+    }
+  ],
+  "$defs": {
+    "Generation": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "semantic-storage-v1"
+        },
+        "record_kind": {
+          "const": "GENERATION"
+        },
+        "generation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parent_generation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scope": {
+          "$ref": "urn:8-agent:legal-semantic-v2#/$defs/Scope"
+        },
+        "status": {
+          "enum": [
+            "DRAFT",
+            "VALIDATED"
+          ]
+        },
+        "structure_artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+          },
+          "minItems": 1
+        },
+        "observation_artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+          },
+          "minItems": 1
+        },
+        "canonical_artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+          },
+          "minItems": 1
+        },
+        "review_artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+          },
+          "minItems": 1
+        },
+        "projection_artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+          },
+          "minItems": 0
+        },
+        "index_artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+          },
+          "minItems": 0
+        },
+        "migration": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "from_generation_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "from_contract": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "to_contract": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "migrator_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "receipt": {
+                  "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+                },
+                "crosswalk_artifacts": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+                  },
+                  "minItems": 1
+                },
+                "unresolved_count": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "from_generation_id",
+                "from_contract",
+                "to_contract",
+                "migrator_id",
+                "receipt",
+                "crosswalk_artifacts",
+                "unresolved_count"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "validation_receipt": {
+          "anyOf": [
+            {
+              "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schema_version",
+        "record_kind",
+        "generation_id",
+        "parent_generation_id",
+        "scope",
+        "status",
+        "structure_artifacts",
+        "observation_artifacts",
+        "canonical_artifacts",
+        "review_artifacts",
+        "projection_artifacts",
+        "index_artifacts",
+        "migration",
+        "validation_receipt"
+      ],
+      "additionalProperties": false
+    },
+    "Projection": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "semantic-storage-v1"
+        },
+        "record_kind": {
+          "const": "PROJECTION"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "$ref": "urn:8-agent:legal-semantic-v2#/$defs/Scope"
+        },
+        "canonical_generation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_payload_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "kind": {
+          "enum": [
+            "RULE_LOOKUP",
+            "DEFINITION_LOOKUP",
+            "REFERENCE_LOOKUP"
+          ]
+        },
+        "producer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+          },
+          "minItems": 1
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "document_version_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "structural_unit_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "entity_refs": {
+                "type": "array",
+                "items": {
+                  "$ref": "urn:8-agent:legal-semantic-v2#/$defs/EntityRef"
+                },
+                "minItems": 1
+              },
+              "search_terms": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 0
+              },
+              "evidence_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "id",
+              "document_version_id",
+              "structural_unit_id",
+              "entity_refs",
+              "search_terms",
+              "evidence_ids"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "schema_version",
+        "record_kind",
+        "id",
+        "scope",
+        "canonical_generation_id",
+        "canonical_payload_sha256",
+        "kind",
+        "producer",
+        "input_artifacts",
+        "entries"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

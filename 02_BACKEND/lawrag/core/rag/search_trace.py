@@ -139,7 +139,7 @@ class SearchTrace:
     def __init__(self, question: str, *, corpus_fingerprint: str = "",
                  trace_id: str | None = None,
                  content_snapshot: Any = None) -> None:
-        from lawrag.core.rag.content_snapshot import (
+        from lawrag.runtime.content_snapshot import (
             ContentSnapshotError,
             current_content_snapshot,
         )

@@ -5,7 +5,7 @@
     python -m lawrag.pipeline.collect_fsc --force
     python -m lawrag.pipeline.collect_fsc --query "명칭"   # 임시 질의 추가
 
-무엇을 받을지는 코퍼스가 결정한다 — data/corpus/law/manifest.json 에서 **소관부처에
+무엇을 받을지는 코퍼스가 결정한다 — 01_DATA/INBOX/AUTHORING/corpus/law/manifest.json 에서 **소관부처에
 '금융'이 든 문서**(금융위원회·금융감독원)의 명칭이 질의 집합이다. 이 포털은
 금융위 소관이라 상법·개인정보법 질의는 원리적으로 이 소스의 것이 아니다
 (그쪽은 법제처 expc 가 받는다). 부분일치 축약은 expc 와 같다(plan_queries).
@@ -15,8 +15,8 @@
 한다 — 낫표 관례가 없는 문서라 앞 경계(비한글) 평문 판정(lawrag/sources/cite)이다.
 
 저장 (llm-wiki raw 층의 원천 — corpus 는 수집 정본):
-    data/corpus/fsc/cases/<유형gubun>-<idx>.html   상세 원문
-    data/corpus/fsc/manifest.json                 대장 (phase_model 선언 — 원장 밖)
+    01_DATA/INBOX/AUTHORING/corpus/fsc/cases/<유형gubun>-<idx>.html   상세 원문
+    01_DATA/INBOX/AUTHORING/corpus/fsc/manifest.json                 대장 (phase_model 선언 — 원장 밖)
 """
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ from lawrag.platform.paths import (
 )
 
 REPO_ROOT = repository_root()
-CORPUS_DIR = data_path("corpus")
+CORPUS_DIR = data_path("INBOX", "AUTHORING", "corpus")
 FSC_DIR = CORPUS_DIR / "fsc"
 CASES_DIR = FSC_DIR / "cases"
 LOG_DIR = runtime_path("logs")

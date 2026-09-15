@@ -1,11 +1,11 @@
 """수집된 law.go.kr 본문 XML → 구조 검수 스토어 등록 — core.ingest 의 CLI 낯.
 
-    python -m lawrag.pipeline.ingest_lawxml                      # data/corpus/law manifest 의 본문 전부
-    python -m lawrag.pipeline.ingest_lawxml "data/corpus/law/금융투자업규정/금융투자업규정 본문.xml"
-    python -m lawrag.pipeline.ingest_lawxml --store data/structure --folder 법령
+    python -m lawrag.pipeline.ingest_lawxml                      # 01_DATA/INBOX/AUTHORING/corpus/law manifest 의 본문 전부
+    python -m lawrag.pipeline.ingest_lawxml "01_DATA/INBOX/AUTHORING/corpus/law/금융투자업규정/금융투자업규정 본문.xml"
+    python -m lawrag.pipeline.ingest_lawxml --store 01_DATA/INBOX/AUTHORING/structure --folder 법령
 
 실제 이관은 lawrag/core/ingest.py(ingest_lawxml_bytes)가 한다 — 업로드 API 와 같은
-문이다(코드단 일원화, docs/LINEAGE.md). 여기 남은 것은 CLI 인자와 data/corpus/law
+문이다(코드단 일원화, docs/LINEAGE.md). 여기 남은 것은 CLI 인자와 01_DATA/INBOX/AUTHORING/corpus/law
 manifest 를 대상 목록으로 펴는 일뿐이다.
 
 구조는 XML 태그에서 결정적으로 옮긴다(lawrag/core/structure/lawxml.py). 좌표·페이지는
@@ -32,7 +32,7 @@ from lawrag.core.ingest import ingest_lawxml_bytes as ingest_bytes  # noqa: E402
 
 def _store(arg: str | None) -> Path:
     import os
-    return Path(arg or os.environ.get("STRUCTURE_STORE") or data_path("structure"))
+    return Path(arg or os.environ.get("STRUCTURE_STORE") or data_path("INBOX", "AUTHORING", "structure"))
 
 
 def ingest(xml_path: Path, name: str, store: Path, folder: str,
@@ -42,7 +42,7 @@ def ingest(xml_path: Path, name: str, store: Path, folder: str,
 
 
 def manifest_targets() -> list[tuple[Path, str, dict, dict]]:
-    m = json.loads(data_path("corpus", "law", "manifest.json").read_text("utf-8"))
+    m = json.loads(data_path("INBOX", "AUTHORING", "corpus", "law", "manifest.json").read_text("utf-8"))
     from lawrag.core.legal_generation import build_contract
     contract = build_contract(m)
     canonical = set(contract["canonical_document_ids"])
@@ -73,9 +73,9 @@ def manifest_targets() -> list[tuple[Path, str, dict, dict]]:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="law.go.kr 본문 XML → 구조 스토어")
-    ap.add_argument("paths", nargs="*", help="본문 XML (생략하면 data/corpus/law manifest 전부)")
+    ap.add_argument("paths", nargs="*", help="본문 XML (생략하면 01_DATA/INBOX/AUTHORING/corpus/law manifest 전부)")
     ap.add_argument("--name", help="문서 이름 (paths 가 1건일 때만)")
-    ap.add_argument("--store", help="스토어 경로 (기본: $STRUCTURE_STORE 또는 data/structure)")
+    ap.add_argument("--store", help="스토어 경로 (기본: $STRUCTURE_STORE 또는 01_DATA/INBOX/AUTHORING/structure)")
     ap.add_argument("--folder", default="법령·규정", help="묶어 둘 폴더 라벨")
     args = ap.parse_args(argv)
 
@@ -100,7 +100,7 @@ def main(argv: list[str] | None = None) -> int:
               f"별표md {r['annex_md']}/{r['annex_have']} ({u})")
     if not failed and not args.paths:
         from lawrag.core.legal_generation import build_contract, synchronize_structure
-        manifest = json.loads(data_path("corpus", "law", "manifest.json").read_text("utf-8"))
+        manifest = json.loads(data_path("INBOX", "AUTHORING", "corpus", "law", "manifest.json").read_text("utf-8"))
         sync = synchronize_structure(store, build_contract(manifest))
         print(f"canonical generation={sync['generation_id']} current={sync['current']} old={sync['old']}")
     return 1 if failed else 0

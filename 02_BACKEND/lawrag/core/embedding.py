@@ -353,7 +353,7 @@ def available() -> bool:
         try:
             runtime_fingerprint()
         except RuntimeError as exc:
-            from lawrag.core.rag.content_snapshot import ContentSnapshotError
+            from lawrag.runtime.content_snapshot import ContentSnapshotError
 
             raise ContentSnapshotError(
                 "sealed embedding runtime identity is invalid"
@@ -484,7 +484,7 @@ def encode(texts: list[str], batch_size: int = 64):
     global _failed
     if _sealed():
         if os.environ.get("RAG_VECTOR") != "1":
-            from lawrag.core.rag.content_snapshot import ContentSnapshotError
+            from lawrag.runtime.content_snapshot import ContentSnapshotError
 
             raise ContentSnapshotError(
                 "sealed retrieval has no admitted embedding runtime"
@@ -492,7 +492,7 @@ def encode(texts: list[str], batch_size: int = 64):
         try:
             runtime_fingerprint()
         except RuntimeError as exc:
-            from lawrag.core.rag.content_snapshot import ContentSnapshotError
+            from lawrag.runtime.content_snapshot import ContentSnapshotError
 
             raise ContentSnapshotError(
                 "sealed embedding runtime identity is invalid"
@@ -517,7 +517,7 @@ def encode(texts: list[str], batch_size: int = 64):
     except Exception as exc:
         _failed = True
         if _sealed():
-            from lawrag.core.rag.content_snapshot import ContentSnapshotError
+            from lawrag.runtime.content_snapshot import ContentSnapshotError
 
             if isinstance(exc, ContentSnapshotError):
                 raise

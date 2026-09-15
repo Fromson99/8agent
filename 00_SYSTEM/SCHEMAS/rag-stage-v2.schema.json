@@ -1,0 +1,398 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:rag-stage-v2",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Question"
+    },
+    {
+      "$ref": "#/$defs/Templates"
+    },
+    {
+      "$ref": "#/$defs/Hits"
+    },
+    {
+      "$ref": "#/$defs/Cards"
+    },
+    {
+      "$ref": "#/$defs/Answer"
+    }
+  ],
+  "$defs": {
+    "Question": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "rag-stage-v2"
+        },
+        "record_kind": {
+          "const": "QUESTION"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "$ref": "urn:8-agent:legal-semantic-v2#/$defs/Scope"
+        },
+        "question": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "schema_version",
+        "record_kind",
+        "id",
+        "scope",
+        "question"
+      ],
+      "additionalProperties": false
+    },
+    "Templates": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "rag-stage-v2"
+        },
+        "record_kind": {
+          "const": "TEMPLATES"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "templates": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:8-agent:legal-semantic-v2#/$defs/TemplateRecord"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "schema_version",
+        "record_kind",
+        "id",
+        "templates"
+      ],
+      "additionalProperties": false
+    },
+    "Hits": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "rag-stage-v2"
+        },
+        "record_kind": {
+          "const": "HITS"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "$ref": "urn:8-agent:legal-semantic-v2#/$defs/Scope"
+        },
+        "query_plan_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_generation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_payload_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "query_card_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "hits": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "document_version_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "structural_unit_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "canonical_rule_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "minItems": 0
+                    },
+                    "evidence_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "minItems": 0
+                    },
+                    "score": {
+                      "type": "number"
+                    },
+                    "engine_id": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "document_version_id",
+                    "structural_unit_id",
+                    "canonical_rule_ids",
+                    "evidence_ids",
+                    "score",
+                    "engine_id"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 0
+              },
+              "unresolved_reasons": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 0
+              }
+            },
+            "required": [
+              "query_card_id",
+              "hits",
+              "unresolved_reasons"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "schema_version",
+        "record_kind",
+        "id",
+        "scope",
+        "query_plan_id",
+        "canonical_generation_id",
+        "canonical_payload_sha256",
+        "cards"
+      ],
+      "additionalProperties": false
+    },
+    "Cards": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "rag-stage-v2"
+        },
+        "record_kind": {
+          "const": "CARDS"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "$ref": "urn:8-agent:legal-semantic-v2#/$defs/Scope"
+        },
+        "query_plan_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_generation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_payload_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "query_card_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "bundle": {
+                "anyOf": [
+                  {
+                    "$ref": "urn:8-agent:legal-semantic-v2#/$defs/RuleBundle"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reason": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "query_card_id",
+              "bundle",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "schema_version",
+        "record_kind",
+        "id",
+        "scope",
+        "query_plan_id",
+        "canonical_generation_id",
+        "canonical_payload_sha256",
+        "cards"
+      ],
+      "additionalProperties": false
+    },
+    "Answer": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "rag-stage-v2"
+        },
+        "record_kind": {
+          "const": "ANSWER"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "$ref": "urn:8-agent:legal-semantic-v2#/$defs/Scope"
+        },
+        "query_plan_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "card_set_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_generation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_payload_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "query_card_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "evidence_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "id",
+              "text",
+              "query_card_ids",
+              "evidence_ids"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        },
+        "unresolved": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "query_card_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "query_card_id",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        },
+        "provider_receipt": {
+          "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+        }
+      },
+      "required": [
+        "schema_version",
+        "record_kind",
+        "id",
+        "scope",
+        "query_plan_id",
+        "card_set_id",
+        "canonical_generation_id",
+        "canonical_payload_sha256",
+        "text",
+        "claims",
+        "unresolved",
+        "provider_receipt"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

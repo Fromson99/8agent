@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "valid": {
+      "const": true
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "approval_verified": {
+      "const": false
+    },
+    "source_verified": {
+      "const": false
+    }
+  },
+  "required": [
+    "valid",
+    "record_id",
+    "approval_verified",
+    "source_verified"
+  ],
+  "additionalProperties": false
+}

@@ -61,7 +61,7 @@ SCHEMA = {
 
 
 def taxonomy_dir() -> Path:
-    from lawrag.core.rag.content_snapshot import current_content_snapshot
+    from lawrag.runtime.content_snapshot import current_content_snapshot
 
     snapshot = current_content_snapshot()
     if snapshot is not None:

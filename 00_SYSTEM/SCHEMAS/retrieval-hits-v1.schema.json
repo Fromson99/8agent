@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "enum": [
+        "retrieval-hits-v1"
+      ]
+    },
+    "source_set_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "canonical_generation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "query_plan_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "hits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "document_version_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "structural_unit_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "canonical_rule_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "score": {
+            "type": "number"
+          },
+          "engine_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "document_version_id",
+          "structural_unit_id",
+          "canonical_rule_ids",
+          "score",
+          "engine_id"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "source_set_sha256",
+    "canonical_generation_id",
+    "query_plan_id",
+    "hits"
+  ],
+  "additionalProperties": false
+}

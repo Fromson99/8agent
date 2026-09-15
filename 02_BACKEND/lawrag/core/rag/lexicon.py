@@ -55,7 +55,7 @@ def _pack(s: str) -> str:
 
 
 def lexicon_dir() -> Path:
-    from lawrag.core.rag.content_snapshot import current_content_snapshot
+    from lawrag.runtime.content_snapshot import current_content_snapshot
 
     snapshot = current_content_snapshot()
     if snapshot is not None:
@@ -108,7 +108,7 @@ class Lexicon:
             for d in definitions_mod.defs(v):
                 self._add(d["term"], "정의어", "정의어", did, d["node"])
             self._add(v.name, "법령명", "법령명", did, None)
-        from lawrag.core.rag.content_snapshot import current_content_snapshot
+        from lawrag.runtime.content_snapshot import current_content_snapshot
 
         snapshot = current_content_snapshot()
         p = (
@@ -141,7 +141,7 @@ class Lexicon:
         if not embedding.available() or not self.names:
             return
         d = lexicon_dir()
-        from lawrag.core.rag.content_snapshot import current_content_snapshot
+        from lawrag.runtime.content_snapshot import current_content_snapshot
 
         active_snapshot = current_content_snapshot()
         if active_snapshot is None:

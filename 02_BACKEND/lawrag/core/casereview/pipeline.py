@@ -519,7 +519,7 @@ def _vector_sections(idx, query: str, exclude: set, topk: int = 12) -> list:
     try:
         nodes = vector_mod.search(query, topk=topk, doc_ids=idx.scope)   # 진입은 스코프 안만
     except Exception as exc:                          # 모델·색인 부재
-        from lawrag.core.rag.content_snapshot import ContentSnapshotError
+        from lawrag.runtime.content_snapshot import ContentSnapshotError
 
         if isinstance(exc, ContentSnapshotError):
             raise
@@ -1438,7 +1438,7 @@ def _refetch_by_funnel(llm, idx, issue: Issue, st: ReviewState,
         ]
         from lawrag.core.rag import switches as switches_mod
         if switches_mod.is_on("sourceset_content_snapshot"):
-            from lawrag.core.rag.content_snapshot import current_content_snapshot
+            from lawrag.runtime.content_snapshot import current_content_snapshot
 
             snapshot = current_content_snapshot(required=True)
             assert snapshot is not None  # narrowed by required=True

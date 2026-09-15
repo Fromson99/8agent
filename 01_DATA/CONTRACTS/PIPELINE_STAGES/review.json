@@ -1,0 +1,44 @@
+{
+  "schema_version": "data-review-v1",
+  "id": "review:synthetic-only",
+  "scope": {
+    "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "authority_generation": "synthetic-authority-1",
+    "document_version_ids": [
+      "synthetic:main-v1",
+      "synthetic:detail-v1"
+    ],
+    "jurisdiction": "SYNTHETIC",
+    "as_of": null
+  },
+  "subject": {
+    "id": "observation:example",
+    "contract": "semantic.observation",
+    "path": "synthetic/observation-example.json",
+    "sha256": "bac029d736309e39aa85fbb5903348f1d3b50544f997b0e1ea40bdb03c38d5f3"
+  },
+  "subject_payload_sha256": "8e440448a2a1ac462b7eb1603eae2a4e49191c42b582e50882301badddd79976",
+  "field_pointer": "/payload",
+  "decision": "APPROVE",
+  "reviewer": {
+    "kind": "HUMAN",
+    "id": "synthetic-reviewer-not-authenticated",
+    "model": null,
+    "policy_id": "synthetic-policy",
+    "identity_receipt": {
+      "id": "identity:synthetic",
+      "contract": "synthetic.identity",
+      "path": "synthetic/identity-synthetic.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  },
+  "checks": [
+    {
+      "name": "synthetic-fixture",
+      "result": "PASS",
+      "detail": "형식 검사 전용 합성 예시; 실제 검토자가 승인한 자료가 아니다."
+    }
+  ],
+  "reason": "합성 예시",
+  "reviewed_at": "2026-09-06T00:00:00Z"
+}

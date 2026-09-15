@@ -40,7 +40,26 @@ async function loadLineup() {
   $("models").innerHTML =
     `<span class="pill ${L.llm ? "on" : "off"}" title="프레임 단계가 쓴다">LLM ${L.llm ? "있음" : "없음"}</span>
      <span class="pill ${L.embedding ? "on" : "off"}" title="벡터 단계가 쓴다">임베딩 ${L.embedding ? "있음" : "없음"}</span>`;
+  renderLifecycle();
   renderStages();
+}
+
+function renderLifecycle() {
+  const lifecycle = S.lineup && S.lineup.lifecycle;
+  if (!lifecycle) return;
+  $("pipelineVersion").textContent = lifecycle.pipeline_id;
+  $("lifecyclePhases").innerHTML = lifecycle.phases.map((phase, index) => `
+    <article class="phase-card ${phase.status}">
+      <div class="phase-index">0${index + 1}</div>
+      <div><span>${esc(phase.label)}</span><strong>${esc(phase.purpose)}</strong></div>
+      <b>${phase.status === "attention" ? `확인 ${phase.pending}` : phase.status === "gated" ? "승인 필요" : "준비"}</b>
+    </article>`).join("");
+  $("layerRibbon").innerHTML = lifecycle.layers.map((layer, index) =>
+    `<span class="layer-${esc(layer)}">${esc(layer)}${index < lifecycle.layers.length - 1 ? " →" : ""}</span>`).join("");
+  const action = lifecycle.next_action;
+  $("nextAction").innerHTML = action
+    ? `<b>다음 동작</b> ${esc(action.label)} · ${action.policy === "explicit" ? "명시 실행 전 확인이 필요합니다." : "자동 증분 실행에 포함됩니다."}`
+    : `<b>현재 상태</b> 자동·명시 단계의 누락이 없습니다. 운영 release는 별도 승인 gate입니다.`;
 }
 
 function stageRow(key) {
@@ -52,6 +71,10 @@ function stageRow(key) {
   const units = lu.units ? (lu.units.pending != null ? `조 ${lu.units.pending.toLocaleString()}/${lu.units.total.toLocaleString()}`
                                                     : `구역 ${lu.units.fresh.toLocaleString()}/${lu.units.total.toLocaleString()}`) : "";
   const stateCls = st.status || "idle";
+  const lifecycleStages = (((L.lifecycle || {}).stages) || {});
+  const life = Object.values(lifecycleStages).find((row) => row.runner_stage === key) || {};
+  const policy = { automatic: "자동", explicit: "명시", manual_only: "승인" }[life.execution_policy] || "";
+  const phase = { input: "입력", extract: "추출", transform: "변환", use: "사용", restructure: "재구조화" }[life.phase] || "";
   const stateTxt = { queued: "대기", running: "실행 중", done: "완료", failed: "실패",
                      skipped: "건너뜀", stopped: "중지", idle: "" }[stateCls] || stateCls;
   return `
@@ -60,12 +83,13 @@ function stageRow(key) {
       <span class="idx">${L.order.indexOf(key) + 1}</span>
       <b class="label">${esc(label)}</b>
       <span class="kind ${kind}">${esc(kind)}</span>
+      ${phase ? `<span class="phase-tag ${esc(life.phase)}">${esc(phase)} · ${esc(policy)}</span>` : ""}
       ${needModel ? `<span class="pill off" title="모델이 없어 이 단계는 건너뛴다">모델 없음</span>` : ""}
       <span class="grow"></span>
       <span class="pending ${lu.pending ? "warn" : "ok"}" title="빠진 것 / 전체">
         ${lu.pending ? `빠짐 ${lu.pending}` : "빠짐 0"} / ${lu.total ?? "?"}${units ? ` · ${units}` : ""}</span>
       ${(lu.detail || []).length ? `<button class="ghost small" data-detail="${key}">목록</button>` : ""}
-      <button class="ghost small" data-run="${key}" ${running ? "disabled" : ""}>이것만</button>
+      <button class="ghost small" data-run="${key}" ${running ? "disabled" : ""}>${life.execution_policy === "explicit" ? "명시 실행" : "이것만"}</button>
     </div>
     <div class="note">${esc(lu.note || "")}</div>
     <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
@@ -103,10 +127,14 @@ $("detailClose").onclick = () => $("detail").classList.add("hidden");
 /* ---------------------------------------------------------------- 실행 */
 async function run(stages) {
   const all = !stages;
-  if (all && !confirm("빠진 것만 순서대로 전부 돌립니다 — 투입 → 위임 → 용어 → 프레임(LLM) → 벡터 → 점검.\n"
-                      + "LLM·임베딩은 시간이 걸립니다(분~시간). 진행은 이 화면에서 보입니다. 시작할까요?")) return;
+  const automatic = (S.lineup && S.lineup.automatic_order) || [];
+  const explicit = (stages || []).filter((stage) => !automatic.includes(stage));
+  if (all && !confirm("기존 자동 단계만 증분 실행합니다 — 투입 → 추출 → Observation → 색인 → 사용 점검.\n"
+                      + "LLM·임베딩은 시간이 걸릴 수 있습니다. Canonical KG 전체 빌드와 release는 포함하지 않습니다. 시작할까요?")) return;
+  if (explicit.length && !confirm("이 단계는 전체 immutable generation을 만들거나 Projection 계약을 검사합니다.\n"
+                                  + explicit.join(", ") + "\n운영 release에는 자동 연결되지 않습니다. 실행할까요?")) return;
   try {
-    const r = await api("/v1/pipeline/run", { stages: stages || null });
+    const r = await api("/v1/pipeline/run", { stages: stages || null, confirm_explicit: explicit.length > 0 });
     S.runId = r.run_id;
     $("log").textContent = "";
     startPolling();
@@ -208,6 +236,7 @@ const DOC_COLS = {
   structure: ["folder", "kind", "score", "tier", "structured_by", "quarantined"],
   terms: ["terms"],
   frames: ["jos", "frames", "errors", "sec"],
+  definition_projections: ["file", "projection_status", "valid", "error"],
   embed: ["fresh", "sections"],
 };
 function renderDocs() {

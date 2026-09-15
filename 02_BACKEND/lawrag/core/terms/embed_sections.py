@@ -17,7 +17,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from lawrag.core.rag.content_snapshot import (
+from lawrag.runtime.content_snapshot import (
     ContentSnapshot,
     ContentSnapshotError,
     current_content_snapshot,

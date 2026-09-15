@@ -7,6 +7,40 @@
 .grow { flex: 1; }
 .sub { color: var(--dim); font-size: 12px; }
 
+/* 온톨로지 lifecycle — 운영자가 세부 모듈명보다 먼저 보는 다섯 단계 */
+.lifecycle-pane { margin: 4px 0 18px; padding: 18px; border: 1px solid var(--line);
+                  border-radius: calc(var(--r) + 4px); background: linear-gradient(145deg, var(--pane), color-mix(in srgb, var(--accent) 5%, var(--pane))); }
+.lifecycle-pane > header, .section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; }
+.lifecycle-pane h2, .section-heading h2 { margin: 3px 0 0; font-size: 19px; letter-spacing: -.02em; }
+.lifecycle-pane code { color: var(--dim); font-size: 11px; }
+.eyebrow { color: var(--accent); font-size: 10px; font-weight: 750; letter-spacing: .13em; }
+.lifecycle-phases { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 15px; }
+.phase-card { position: relative; min-height: 112px; padding: 12px; border: 1px solid var(--line);
+              border-radius: var(--r); background: color-mix(in srgb, var(--pane) 92%, transparent); }
+.phase-card::after { content: "→"; position: absolute; right: -9px; top: 46px; z-index: 2;
+                     width: 17px; height: 17px; display: grid; place-items: center; color: var(--dim);
+                     background: var(--pane); border-radius: 50%; }
+.phase-card:last-child::after { display: none; }
+.phase-index { color: var(--dim); font: 10px/1.2 ui-monospace, monospace; }
+.phase-card div:nth-child(2) { display: grid; gap: 5px; margin-top: 10px; }
+.phase-card div:nth-child(2) span { font-weight: 750; font-size: 14px; }
+.phase-card div:nth-child(2) strong { color: var(--dim); font-size: 11px; line-height: 1.45; font-weight: 450; }
+.phase-card > b { position: absolute; left: 12px; bottom: 10px; font-size: 10px; color: var(--ok); }
+.phase-card.attention { border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); }
+.phase-card.attention > b { color: var(--warn); }
+.phase-card.gated > b { color: var(--accent); }
+.layer-ribbon { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding: 9px 11px;
+                border-radius: 8px; background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.layer-ribbon span { color: var(--dim); font: 10px/1.2 ui-monospace, monospace; text-transform: uppercase; }
+.layer-ribbon .layer-observation, .layer-ribbon .layer-canonical, .layer-ribbon .layer-projection { color: var(--accent); font-weight: 750; }
+.next-action { margin: 11px 0 0; color: var(--dim); font-size: 12px; }
+.next-action b { color: var(--ink); margin-right: 7px; }
+.section-heading { margin: 0 2px 9px; }
+.section-heading p { max-width: 560px; margin: 0; color: var(--dim); font-size: 11px; text-align: right; }
+.phase-tag { margin-left: 6px; padding: 2px 7px; border-radius: 999px; font-size: 10px;
+             color: var(--dim); background: color-mix(in srgb, var(--ink) 5%, transparent); }
+.phase-tag.transform { color: var(--accent); }
+
 button.run { background: var(--accent); color: #fff; border: 0; border-radius: 999px;
              padding: 7px 16px; font-weight: 650; cursor: pointer; }
 button.run:disabled { opacity: .5; cursor: default; }
@@ -22,6 +56,14 @@ button.ghost:disabled { opacity: .5; cursor: default; }
 .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); }
 .pill.on { color: var(--ok); border-color: var(--ok); }
 .pill.off { color: var(--dim); }
+
+@media (max-width: 920px) {
+  .lifecycle-phases { grid-template-columns: 1fr; }
+  .phase-card { min-height: 86px; }
+  .phase-card::after { content: "↓"; right: 50%; top: auto; bottom: -13px; }
+  .lifecycle-pane > header, .section-heading { align-items: flex-start; flex-direction: column; }
+  .section-heading p { text-align: left; }
+}
 
 /* 실행 상태 */
 .runpane { background: var(--pane); border: 1px solid var(--line); border-radius: var(--r);

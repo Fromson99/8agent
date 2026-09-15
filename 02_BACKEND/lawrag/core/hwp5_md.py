@@ -1,9 +1,9 @@
 """수집된 HWP5 원문 → 라우터가 받는 md — 수집과 분리된 변환 단계.
 
-    python -m lawrag.pipeline.convert data/corpus/kofia                 # 디렉터리 아래 모든 .hwp → 사이드카 .md
-    python -m lawrag.pipeline.convert data/corpus/kofia --force         # 산출물이 더 새것이어도 재변환
+    python -m lawrag.pipeline.convert 01_DATA/INBOX/AUTHORING/corpus/kofia                 # 디렉터리 아래 모든 .hwp → 사이드카 .md
+    python -m lawrag.pipeline.convert 01_DATA/INBOX/AUTHORING/corpus/kofia --force         # 산출물이 더 새것이어도 재변환
     python -m lawrag.pipeline.convert path/to/file.hwp             # 한 파일만
-    python -m lawrag.pipeline.convert data/corpus/kofia --report var/logs/convert.kofia.json
+    python -m lawrag.pipeline.convert 01_DATA/INBOX/AUTHORING/corpus/kofia --report var/logs/convert.kofia.json
 
 수집기(lawrag/pipeline/collect.py)는 원문을 보존만 하고 변환하지 않는다(Task_law_crawler §8-4).
 이 스크립트가 그 "별도 파이프라인" 이다.
@@ -520,7 +520,7 @@ def extract_in_child(src: Path, mode: str, timeout: float) -> tuple[str, dict]:
 def manifest_index(paths: list[Path]) -> dict[Path, dict]:
     """입력 경로들에서 manifest.json 을 찾아 {절대경로: 출처 정보} 를 만든다.
 
-    파일 인자는 부모 디렉터리를 거슬러 올라가며 찾는다 — data/corpus/kofia/규정명/x.hwp
+    파일 인자는 부모 디렉터리를 거슬러 올라가며 찾는다 — 01_DATA/INBOX/AUTHORING/corpus/kofia/규정명/x.hwp
     처럼 manifest 가 두 층 위에 있는 배치를 위해서다.
     """
     manifests: set[Path] = set()

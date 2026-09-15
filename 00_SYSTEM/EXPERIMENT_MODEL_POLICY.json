@@ -1,0 +1,42 @@
+{
+  "schema_version": "experiment-model-policy-v1",
+  "policy_version": "gemini-experiments-v1",
+  "effective_from_adr": 383,
+  "provider": "gemini",
+  "model": "gemini-3.1-flash-lite",
+  "allowed_models": [
+    "gemini-3.1-flash-lite"
+  ],
+  "endpoint": "https://generativelanguage.googleapis.com/v1beta",
+  "key_env": "GEMINI_API_KEY",
+  "key_env_aliases": [
+    "gemini_api_key"
+  ],
+  "temperature": 0,
+  "max_output_tokens": 4096,
+  "http_retries": 0,
+  "fallback_allowed": false,
+  "default_roles": [
+    "product",
+    "offline_evaluator",
+    "offline_benchmark_candidate"
+  ],
+  "source_scope": [
+    "public",
+    "synthetic"
+  ],
+  "authorization": {
+    "adr": "ADR-0384",
+    "session_id": "01a09e5a-a287-7870-aa22-ada0d4f2f12d",
+    "text": "이제 그걸로 실험하자 모든 실험을 이제 그걸호 하게 하자"
+  },
+  "price_snapshot": {
+    "input": 0.25,
+    "output": 1.5
+  },
+  "price_verified_at": "2026-09-14",
+  "price_source": "https://ai.google.dev/gemini-api/docs/pricing",
+  "qwen_equivalence": "not established; no exact Qwen3.5 variant or comparable task evaluation specified",
+  "thinking_level": "minimal",
+  "selection_evidence": "04_EXPERIMENTS/ADR/ADR-0384-gemini-available-model-policy/artifacts/selected-model.json"
+}

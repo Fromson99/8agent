@@ -9,14 +9,15 @@
 착지다 — 스키마의 actor_ids/target_ids/act_id/object_ids 자리.
 
 규율 (tags.py 와 같다):
-- **파생층**이다 — result.json 은 불변, 프레임은 data/frames/<doc_id>.jsonl.
+- **파생층**이다 — result.json 은 불변, 프레임은 01_DATA/INBOX/AUTHORING/frames/<doc_id>.jsonl.
   다시 뽑으면 그 파일만 바뀐다.
 - **원문 표기 그대로** — actor·act·object 는 마디 본문의 표면형으로 쓰게 한다
   (프롬프트 규칙). 코드의 부분 문자열 검증은 뺐다 — 괄호 삽입·어미 변형에
   옳은 것까지 떨어뜨렸다(_grounded 머리). 정규명("tax_official")은 여기서
   만들지 않는다 — 정규화(별칭 병합)는 2차, 용어 사전의 병합키와 같은 자리.
-- 단위는 **항**(없으면 조) — 프레임의 자연 단위다. 콜은 조 하나에 한 번,
-  출력이 항마다 프레임 목록. 42문서 본문 조 5,504 · 항 21,424.
+- 주소 단위는 각 본문 블록의 **가장 깊은 구조 좌표**다. 조·항·호·목 텍스트를
+  중복 없이 한 번씩 보내고 출력 node도 그 좌표를 그대로 쓴다. 호출은 조 단위지만
+  6천자를 넘는 긴 조는 tail을 버리지 않고 여러 청크로 나눈다.
 - LLM 은 하이쿠 — 뽑기(추출)지 판단이 아니다. 실패한 조는 빈 프레임으로
   남기고 다음 조로 간다(fail-open, 재실행이 그 조만 다시 뽑는다).
 """
@@ -32,6 +33,7 @@ from pathlib import Path
 from typing import Optional
 
 from lawrag.core.rag.index import DocView, Index, store_path
+from lawrag.platform.paths import data_path
 
 log = logging.getLogger("lawrag.core.rag.frames")
 
@@ -83,33 +85,93 @@ SCHEMA = {
 
 
 def frames_dir() -> Path:
-    from lawrag.core.rag.content_snapshot import current_content_snapshot
+    from lawrag.runtime.content_snapshot import current_content_snapshot
 
     snapshot = current_content_snapshot()
     if snapshot is not None:
         return snapshot.semantic_path("frames")
-    return Path(os.environ.get("RAG_FRAMES_DIR", store_path().parent / "frames"))
+    return Path(
+        os.environ.get(
+            "RAG_FRAMES_DIR", data_path("INBOX", "AUTHORING", "frames")
+        )
+    )
 
 
 # ---------------------------------------------------------------- 입력 만들기
+def _is_descendant(v: DocView, node_id: object, root_id: object) -> bool:
+    seen: set[object] = set()
+    current = v.by_id.get(node_id)
+    while current is not None and current.get("id") not in seen:
+        current_id = current.get("id")
+        if current_id == root_id:
+            return True
+        seen.add(current_id)
+        current = v.by_id.get(current.get("parent"))
+    return False
+
+
 def _units(v: DocView, jo: dict) -> list[dict]:
-    """조 하나의 프레임 단위 — 항(circled)이 있으면 항, 없으면 조 자신.
-    각 단위의 본문은 자기 범위 전체(호·목 포함)다 — 프레임은 항 수준이면 족하다."""
-    kids = [n for n in v.nodes if n.get("parent") == jo["id"]
-            and n.get("family") == "circled"]
-    if not kids:
-        return [{"id": jo["id"], "label": jo.get("surface", ""),
-                 "text": v.section_text(jo, cap=JO_CHARS)}]
-    out = []
-    for k in kids:
-        out.append({"id": k["id"], "label": k.get("surface", ""),
-                    "text": v.section_text(k, cap=JO_CHARS // max(len(kids), 1) + 800)})
-    return out
+    """Return non-overlapping article text at its deepest structural coordinates.
+
+    Each source block occurs once.  Contiguous blocks with the same deepest owner
+    are grouped, while a parent that resumes after a child remains in source order.
+    """
+    span = jo.get("span") or [0, 0]
+    lo, hi = span[0], max(span[1], span[0] + 1)
+    units: list[dict] = []
+    for block_id in range(lo, hi):
+        block = v.block_by_idx.get(block_id)
+        text = ((block or {}).get("text") or "").strip()
+        if not text:
+            continue
+        owner = v.owner(block_id)
+        if owner is None or not _is_descendant(v, owner.get("id"), jo.get("id")):
+            owner = jo
+        node_id = owner.get("id")
+        if units and units[-1]["id"] == node_id:
+            units[-1]["text"] += "\n" + text
+            units[-1]["blocks"].append(block_id)
+            continue
+        units.append({
+            "id": node_id,
+            "label": owner.get("surface", ""),
+            "path": v.path(node_id),
+            "text": text,
+            "blocks": [block_id],
+        })
+    return units
+
+
+def _chunks(units: list[dict], cap: int = JO_CHARS) -> list[list[dict]]:
+    """Pack all unit text without truncation; a very long unit may span chunks."""
+    chunks: list[list[dict]] = []
+    current: list[dict] = []
+    used = 0
+    for unit in units:
+        text = unit["text"]
+        parts = [text[start:start + cap] for start in range(0, len(text), cap)] or [""]
+        for part_no, part in enumerate(parts, 1):
+            if current and used + len(part) > cap:
+                chunks.append(current)
+                current, used = [], 0
+            row = {**unit, "text": part}
+            if len(parts) > 1:
+                row["part"] = part_no
+            current.append(row)
+            used += len(part)
+            if used >= cap:
+                chunks.append(current)
+                current, used = [], 0
+    if current:
+        chunks.append(current)
+    return chunks
 
 
 def _user(v: DocView, jo: dict, units: list[dict]) -> str:
     head = f"《{v.name}》 {jo.get('surface', '')} {jo.get('title', '')}".strip()
-    body = "\n\n".join(f"[id={u['id']}] {u['text']}" for u in units)
+    body = "\n\n".join(
+        f"[id={u['id']}] [path={u.get('path', '')}] {u['text']}" for u in units
+    )
     return f"[조]\n{head}\n\n[마디]\n{body}"
 
 
@@ -141,31 +203,38 @@ def _grounded(frame: dict, texts: dict[int, str]) -> Optional[dict]:
 def extract_jo(llm, v: DocView, jo: dict) -> tuple[list[dict], dict]:
     """조 하나 → (프레임 목록, 관측). 실패는 빈 목록 + error."""
     units = _units(v, jo)
-    texts = {u["id"]: u["text"] for u in units}
-    out = llm.structured("rag.frames", SYSTEM, _user(v, jo, units), SCHEMA,
-                         max_tokens=MAX_TOKENS, effort=None, model=MODEL)
-    if out is None and llm.log and "잘림" in str(llm.log[-1].error or ""):
-        # 출력 잘림만 재시도한다 — 마디가 아주 많은 조(실측 2026-08-19: 지배구조법
-        # 제43조 과태료 각 호, 금투업규정 제4-20조)는 4천 토큰이 모자란다. 예산
-        # 3배로 한 번만; 다른 오류(파싱·네트워크)는 fail-open 그대로 둔다.
-        out = llm.structured("rag.frames", SYSTEM, _user(v, jo, units), SCHEMA,
-                             max_tokens=MAX_TOKENS * 3, effort=None, model=MODEL)
-    if out is None:
-        err = llm.log[-1].error if llm.log else "?"
-        return [], {"jo": jo["id"], "error": str(err)[:160]}
-    frames, dropped = [], 0
-    for f in out.get("frames", []):
-        if f.get("node") not in texts:
-            continue
-        g = _grounded(f, texts)
-        if g is None:
-            dropped += 1
-            continue
-        frames.append({"jo": jo["id"], "node": g["node"], "actor": g["actor"],
-                       "act": g["act"], "target": g["target"], "object": g["object"],
-                       "mode": g["mode"], "function": g["function"],
-                       "proviso": bool(g.get("proviso"))})
-    return frames, {"jo": jo["id"], "n": len(frames), "dropped": dropped}
+    frames, dropped, calls = [], 0, 0
+    for chunk_no, chunk in enumerate(_chunks(units), 1):
+        texts: dict[int, str] = {}
+        for unit in chunk:
+            texts[unit["id"]] = "\n".join(
+                part for part in (texts.get(unit["id"], ""), unit["text"]) if part
+            )
+        out = llm.structured("rag.frames", SYSTEM, _user(v, jo, chunk), SCHEMA,
+                             max_tokens=MAX_TOKENS, effort=None, model=MODEL)
+        calls += 1
+        if out is None and llm.log and "잘림" in str(llm.log[-1].error or ""):
+            out = llm.structured("rag.frames", SYSTEM, _user(v, jo, chunk), SCHEMA,
+                                 max_tokens=MAX_TOKENS * 3, effort=None, model=MODEL)
+            calls += 1
+        if out is None:
+            err = llm.log[-1].error if llm.log else "?"
+            return [], {"jo": jo["id"], "chunk": chunk_no,
+                        "error": str(err)[:160], "calls": calls}
+        for f in out.get("frames", []):
+            if f.get("node") not in texts:
+                dropped += 1
+                continue
+            g = _grounded(f, texts)
+            if g is None:
+                dropped += 1
+                continue
+            frames.append({"jo": jo["id"], "node": g["node"], "actor": g["actor"],
+                           "act": g["act"], "target": g["target"], "object": g["object"],
+                           "mode": g["mode"], "function": g["function"],
+                           "proviso": bool(g.get("proviso"))})
+    return frames, {"jo": jo["id"], "n": len(frames), "dropped": dropped,
+                    "calls": calls, "chunks": len(_chunks(units))}
 
 
 def _mainbody_jos(v: DocView) -> list[dict]:
@@ -177,7 +246,7 @@ def _mainbody_jos(v: DocView) -> list[dict]:
 def extract_doc(v: DocView, llm_factory, out_dir: Optional[Path] = None,
                 workers: int = WORKERS, only_missing: bool = True,
                 article_ids: Optional[set[object]] = None) -> dict:
-    """문서 하나 전량 → data/frames/<doc_id>.jsonl (한 줄 = 프레임 하나).
+    """문서 하나 전량 → 01_DATA/INBOX/AUTHORING/frames/<doc_id>.jsonl (한 줄 = 프레임 하나).
     only_missing 이면 이미 뽑힌 조는 건너뛴다(재실행이 실패분만 다시)."""
     out_dir = out_dir or frames_dir()
     out_dir.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "enum": [
+        "grounded-answer-v1"
+      ]
+    },
+    "query_plan_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "canonical_generation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "unresolved": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "query_plan_id",
+    "canonical_generation_id",
+    "text",
+    "evidence_ids",
+    "unresolved"
+  ],
+  "additionalProperties": false
+}

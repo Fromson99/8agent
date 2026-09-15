@@ -10,11 +10,11 @@ from collections import Counter
 from copy import deepcopy
 from typing import Any, Iterable, Mapping, Sequence
 
-from lawrag.core.rag.content_snapshot import (
+from lawrag.runtime.content_snapshot import (
     ContentSnapshotError,
     current_content_snapshot,
 )
-from lawrag.core.rag.experiments import retrieval_stage_ledger as stage_ledger
+from lawrag.runtime import retrieval_stage_ledger as stage_ledger
 
 
 SCHEMA_VERSION = "legalclosure-article-reachability-capture-v1"

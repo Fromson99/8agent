@@ -1,0 +1,215 @@
+{
+  "schema_version": "legal-ontology-lifecycle-v1",
+  "pipeline_id": "legal-ontology-pipeline-v1",
+  "name": "Evidence-Grounded Legal Ontology Lifecycle",
+  "description": "기존 수집·구조화·법률 그래프·RAG·피드백 경로를 원문 근거와 불변 세대 계약으로 연결한다.",
+  "layers": [
+    "source",
+    "structure",
+    "observation",
+    "canonical",
+    "projection",
+    "runtime",
+    "control"
+  ],
+  "phases": [
+    {
+      "id": "input",
+      "label": "입력",
+      "purpose": "출처와 원문을 hash 고정 구조 스토어에 투입한다.",
+      "gate": "원문·출처·버전·접근등급을 잃지 않는다."
+    },
+    {
+      "id": "extract",
+      "label": "추출",
+      "purpose": "구조와 의미 후보를 Observation으로 보존한다.",
+      "gate": "추출 후보는 승인 전 Canonical 사실이 아니다."
+    },
+    {
+      "id": "transform",
+      "label": "변환",
+      "purpose": "검증된 지식을 Canonical KG와 목적별 Projection으로 컴파일한다.",
+      "gate": "Projection은 Canonical에 없는 권위를 만들지 않는다."
+    },
+    {
+      "id": "use",
+      "label": "사용",
+      "purpose": "색인과 scope를 검증하고 질의별 Runtime trace를 남긴다.",
+      "gate": "세대 불일치와 근거 부족은 fail-closed 또는 Canonical 탐색으로 돌아간다."
+    },
+    {
+      "id": "restructure",
+      "label": "재구조화",
+      "purpose": "피드백을 후보·실험·승인·새 세대로 되돌린다.",
+      "gate": "Runtime과 Projection은 Canonical을 직접 수정하지 않는다."
+    }
+  ],
+  "stages": [
+    {
+      "id": "ingest",
+      "label": "원문 투입",
+      "phase": "input",
+      "layers": ["source", "structure"],
+      "mode": "deterministic",
+      "execution_policy": "automatic",
+      "runner_stage": "ingest",
+      "depends_on": [],
+      "input_contracts": ["source-manifest"],
+      "output_contracts": ["document-version", "structural-unit"],
+      "gate": "본문 hash와 source lineage 보존",
+      "auto_promote": false
+    },
+    {
+      "id": "structure",
+      "label": "구조 점검",
+      "phase": "extract",
+      "layers": ["structure"],
+      "mode": "inspection",
+      "execution_policy": "automatic",
+      "runner_stage": "structure",
+      "depends_on": ["ingest"],
+      "input_contracts": ["document-version"],
+      "output_contracts": ["structural-unit", "clause-span"],
+      "gate": "저신뢰 문서 격리와 정확한 원문 selector",
+      "auto_promote": false
+    },
+    {
+      "id": "delegation",
+      "label": "관계 후보",
+      "phase": "extract",
+      "layers": ["observation"],
+      "mode": "deterministic",
+      "execution_policy": "automatic",
+      "runner_stage": "delegation",
+      "depends_on": ["structure"],
+      "input_contracts": ["structural-unit"],
+      "output_contracts": ["relation-observation"],
+      "gate": "해결 실패와 불확실성 보존",
+      "auto_promote": false
+    },
+    {
+      "id": "terms",
+      "label": "정의·용어 후보",
+      "phase": "extract",
+      "layers": ["observation"],
+      "mode": "deterministic",
+      "execution_policy": "automatic",
+      "runner_stage": "terms",
+      "depends_on": ["structure"],
+      "input_contracts": ["structural-unit", "clause-span"],
+      "output_contracts": ["definition-observation"],
+      "gate": "잠정 전사와 승인 상태 분리",
+      "auto_promote": false
+    },
+    {
+      "id": "frames",
+      "label": "의미 프레임 후보",
+      "phase": "extract",
+      "layers": ["observation"],
+      "mode": "llm",
+      "execution_policy": "automatic",
+      "runner_stage": "frames",
+      "depends_on": ["structure"],
+      "input_contracts": ["structural-unit", "clause-span"],
+      "output_contracts": ["frame-observation", "requirement-observation"],
+      "gate": "모델·prompt·원문 span lineage 보존",
+      "fallback": "모델이 없으면 건너뛰고 이유를 기록한다.",
+      "auto_promote": false
+    },
+    {
+      "id": "legal-graph",
+      "label": "Canonical KG 컴파일",
+      "phase": "transform",
+      "layers": ["observation", "canonical", "projection"],
+      "mode": "deterministic",
+      "execution_policy": "explicit",
+      "runner_stage": "legal_graph",
+      "depends_on": ["delegation", "terms", "frames"],
+      "input_contracts": ["legal-graph-v1", "definition-observation", "frame-observation"],
+      "output_contracts": ["legal-graph-v1", "clause-span", "rule-bundle-projection"],
+      "gate": "독립 검증 뒤 immutable generation 발행",
+      "auto_promote": false
+    },
+    {
+      "id": "definition-projections",
+      "label": "일반화 정의 컴파일",
+      "phase": "transform",
+      "layers": ["canonical", "projection"],
+      "mode": "deterministic",
+      "execution_policy": "explicit",
+      "runner_stage": "definition_projections",
+      "depends_on": ["legal-graph"],
+      "input_contracts": ["legal-graph-v1", "definition-projection-v1"],
+      "output_contracts": ["definition-projection-v1", "definition-projection-store-v1"],
+      "gate": "충돌 surface 격리, 완결성 receipt와 Canonical 입력 hash 검증 뒤 immutable generation 발행",
+      "fallback": "범위 밖과 정보 부족은 Canonical 탐색으로 돌아간다.",
+      "auto_promote": false
+    },
+    {
+      "id": "embed",
+      "label": "검색 색인",
+      "phase": "use",
+      "layers": ["projection", "runtime"],
+      "mode": "embedding",
+      "execution_policy": "automatic",
+      "runner_stage": "embed",
+      "depends_on": ["structure"],
+      "input_contracts": ["structural-unit", "semantic-card"],
+      "output_contracts": ["vector-index"],
+      "gate": "입력 hash와 embedding fingerprint 일치",
+      "fallback": "임베딩이 없으면 lexical 경로를 유지한다.",
+      "auto_promote": false
+    },
+    {
+      "id": "scopes",
+      "label": "사용 준비 점검",
+      "phase": "use",
+      "layers": ["projection", "runtime"],
+      "mode": "inspection",
+      "execution_policy": "automatic",
+      "runner_stage": "scopes",
+      "depends_on": ["embed"],
+      "input_contracts": ["source-set-v1", "vector-index"],
+      "output_contracts": ["retrieval-readiness"],
+      "gate": "scope 이름·세대·접근권한 해석",
+      "auto_promote": false
+    },
+    {
+      "id": "release",
+      "label": "패키지·배포 승인",
+      "phase": "use",
+      "layers": ["projection", "control"],
+      "mode": "manual_gate",
+      "execution_policy": "manual_only",
+      "depends_on": ["definition-projections", "scopes"],
+      "input_contracts": ["dataset-package-v2", "source-set-v1", "release-manifest-v1"],
+      "output_contracts": ["active-release"],
+      "gate": "명시 승인·smoke·provenance·rollback receipt",
+      "auto_promote": false
+    },
+    {
+      "id": "feedback",
+      "label": "피드백 재구조화",
+      "phase": "restructure",
+      "layers": ["runtime", "control", "observation"],
+      "mode": "manual_gate",
+      "execution_policy": "manual_only",
+      "depends_on": ["release"],
+      "input_contracts": ["feedback-event-v1", "ontology-rag-runtime-trace-v1"],
+      "output_contracts": [
+        "change-candidate-v1", "query-projection-candidate",
+        "definition-observation", "data-correction-candidate",
+        "ingestion-rule-candidate"
+      ],
+      "gate": "후보→실험→승인 뒤 새 generation으로만 반영",
+      "auto_promote": false
+    }
+  ],
+  "invariants": [
+    "Observation은 승인 없이 Canonical이 되지 않는다.",
+    "Projection은 Canonical에 없는 법적 권위를 만들지 않는다.",
+    "Runtime과 피드백은 Canonical을 직접 수정하지 않는다.",
+    "세대·법령 버전·SourceSet hash 불일치는 stale로 처리한다.",
+    "운영 release는 명시 승인과 rollback receipt 없이 자동 활성화하지 않는다."
+  ]
+}

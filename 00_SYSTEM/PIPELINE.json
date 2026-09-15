@@ -1,0 +1,288 @@
+{
+  "schema_version": "pipeline-v1",
+  "authorities": {
+    "glossary_authoring": "00_SYSTEM/GLOSSARY_PIPELINE.json",
+    "pipeline": "00_SYSTEM/PIPELINE.json",
+    "data_packages": "01_DATA/CONTRACTS/README.md",
+    "source_sets": "01_DATA/SOURCE_SETS",
+    "runtime_activation": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+    "model_policy": "04_EXPERIMENTS/LEGACY_ADR/STANDARD.md",
+    "experiment_policy": "04_EXPERIMENTS/LEGACY_ADR/EXPERIMENT_AGENT_PROMPT.md",
+    "change_policy": "00_SYSTEM/PIPELINE.md",
+    "document_ingestion": "07_DOCS/REFERENCE/OPERATIONS/GENOS_RECIPE_VLM.md",
+    "runtime_schema": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json"
+  },
+  "contracts": {
+    "runtime.request": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "445ce3b245cf5199742397fe2f46b38d9cb13bc69660d32d8c6e6c72881f22bb",
+      "schema_definition": "Request"
+    },
+    "runtime.retrieved": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "445ce3b245cf5199742397fe2f46b38d9cb13bc69660d32d8c6e6c72881f22bb",
+      "schema_definition": "Retrieved"
+    },
+    "runtime.selected": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "445ce3b245cf5199742397fe2f46b38d9cb13bc69660d32d8c6e6c72881f22bb",
+      "schema_definition": "Selected"
+    },
+    "runtime.assembled": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "445ce3b245cf5199742397fe2f46b38d9cb13bc69660d32d8c6e6c72881f22bb",
+      "schema_definition": "Assembled"
+    },
+    "runtime.result": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "445ce3b245cf5199742397fe2f46b38d9cb13bc69660d32d8c6e6c72881f22bb",
+      "schema_definition": "Result"
+    },
+    "runtime.loadrequest": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "445ce3b245cf5199742397fe2f46b38d9cb13bc69660d32d8c6e6c72881f22bb",
+      "schema_definition": "LoadRequest"
+    },
+    "runtime.generation": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "445ce3b245cf5199742397fe2f46b38d9cb13bc69660d32d8c6e6c72881f22bb",
+      "schema_definition": "Generation"
+    },
+    "feedback.event": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "445ce3b245cf5199742397fe2f46b38d9cb13bc69660d32d8c6e6c72881f22bb",
+      "schema_definition": "Event"
+    },
+    "feedback.proposal": {
+      "schema_path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "schema_sha256": "445ce3b245cf5199742397fe2f46b38d9cb13bc69660d32d8c6e6c72881f22bb",
+      "schema_definition": "Proposal"
+    }
+  },
+  "slots": {
+    "term-retrieve": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "outputs": {
+        "retrieved": "runtime.retrieved"
+      }
+    },
+    "term-select": {
+      "kind": "RETRIEVER",
+      "inputs": {
+        "retrieved": "runtime.retrieved"
+      },
+      "outputs": {
+        "selected": "runtime.selected"
+      }
+    },
+    "term-assemble": {
+      "kind": "ASSEMBLER",
+      "inputs": {
+        "selected": "runtime.selected"
+      },
+      "outputs": {
+        "assembled": "runtime.assembled"
+      }
+    },
+    "term-answer": {
+      "kind": "ANSWERER",
+      "inputs": {
+        "assembled": "runtime.assembled"
+      },
+      "outputs": {
+        "result": "runtime.result"
+      }
+    },
+    "term-load": {
+      "kind": "INDEXER",
+      "inputs": {
+        "request": "runtime.loadrequest"
+      },
+      "outputs": {
+        "generation": "runtime.generation"
+      }
+    },
+    "term-feedback": {
+      "kind": "FEEDBACK",
+      "inputs": {
+        "event": "feedback.event"
+      },
+      "outputs": {
+        "proposal": "feedback.proposal"
+      }
+    }
+  },
+  "engines": {
+    "term-retrieve@1.0.0": {
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
+      "sha256": "8505497ab7d7774991188313dff5c7b7fd7dfeec0b0bf30a331a9139f7f79e54"
+    },
+    "term-select@1.0.0": {
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json",
+      "sha256": "4e0f8972adc1b8a8e477357d4ac15207cddc938dd8f1dac13012d47dc8635538"
+    },
+    "term-assemble@1.0.0": {
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
+      "sha256": "f93ebc738fbb58f8602c3967408e4deb07220991e34ce50be1deea41ffb1a91e"
+    },
+    "term-answer@1.0.0": {
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
+      "sha256": "2e08ccf9cf91d546a11d0238dc6396ac57c65de0abb74d10eb0185883e1ca2a2"
+    },
+    "term-feedback@1.0.0": {
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
+      "sha256": "a0f05026d58a9a14f500227ac1013ba5debf1f01acc98fea4703b0db9ddc3d63"
+    },
+    "term-load@1.0.0": {
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
+      "sha256": "165e0309f572a0f8d191c6f918600682d72aa533d5300b74f345478d32849ce1"
+    }
+  },
+  "profiles": {
+    "legal-rag": {
+      "mode": "serving",
+      "status": "READY",
+      "inputs": {
+        "request": "runtime.request"
+      },
+      "nodes": [
+        {
+          "id": "retrieve",
+          "slot": "term-retrieve",
+          "engine": "term-retrieve@1.0.0",
+          "bindings": {
+            "request": "$input.request"
+          },
+          "parameters": {
+            "term_agent": {
+              "enabled": true,
+              "index": {
+                "path": "01_DATA/SEMANTIC/TERM_INDEX/term-source-navigation-20260915-v1",
+                "manifest_sha256": "4e9942bfc462186419df96de003bbc5f9a90f7a218b93d3d0c59879614c58cd5"
+              },
+              "quality_certified": false,
+              "deployment_basis": "USER_DIRECTED_CUTOVER",
+              "limits": {
+                "max_rounds": 3,
+                "max_calls": 9,
+                "wall_seconds": 150,
+                "search_limit": 3,
+                "max_repairs": 1
+              }
+            }
+          }
+        },
+        {
+          "id": "select",
+          "slot": "term-select",
+          "engine": "term-select@1.0.0",
+          "bindings": {
+            "retrieved": "retrieve.retrieved"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "assemble",
+          "slot": "term-assemble",
+          "engine": "term-assemble@1.0.0",
+          "bindings": {
+            "selected": "select.selected"
+          },
+          "parameters": {}
+        },
+        {
+          "id": "answer",
+          "slot": "term-answer",
+          "engine": "term-answer@1.0.0",
+          "bindings": {
+            "assembled": "assemble.assembled"
+          },
+          "parameters": {}
+        }
+      ],
+      "outputs": {
+        "result": "answer.result"
+      }
+    },
+    "legal-feedback": {
+      "mode": "tool",
+      "status": "READY",
+      "inputs": {
+        "event": "feedback.event"
+      },
+      "nodes": [
+        {
+          "id": "feedback",
+          "slot": "term-feedback",
+          "engine": "term-feedback@1.0.0",
+          "bindings": {
+            "event": "$input.event"
+          },
+          "parameters": {}
+        }
+      ],
+      "outputs": {
+        "proposal": "feedback.proposal"
+      }
+    },
+    "legal-load": {
+      "mode": "tool",
+      "status": "READY",
+      "inputs": {
+        "request": "runtime.loadrequest"
+      },
+      "nodes": [
+        {
+          "id": "load",
+          "slot": "term-load",
+          "engine": "term-load@1.0.0",
+          "bindings": {
+            "request": "$input.request"
+          },
+          "parameters": {}
+        }
+      ],
+      "outputs": {
+        "generation": "load.generation"
+      }
+    }
+  },
+  "stage_schemas": [
+    {
+      "id": "LOAD",
+      "label": "원문 적재",
+      "contracts": [
+        "runtime.loadrequest",
+        "runtime.generation"
+      ],
+      "profiles": [
+        "legal-load"
+      ]
+    },
+    {
+      "id": "RAG",
+      "label": "용어·원문 탐색",
+      "contracts": [
+        "runtime.request",
+        "runtime.result"
+      ],
+      "profiles": [
+        "legal-rag"
+      ]
+    },
+    {
+      "id": "FEEDBACK",
+      "label": "피드백",
+      "contracts": [
+        "feedback.event",
+        "feedback.proposal"
+      ],
+      "profiles": [
+        "legal-feedback"
+      ]
+    }
+  ]
+}

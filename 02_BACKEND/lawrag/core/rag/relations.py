@@ -18,7 +18,7 @@ from typing import Iterable
 
 from lawrag.core.domain_graph import requirements as requirement_spans
 from lawrag.core.rag import definitions, delegation, tags
-from lawrag.core.rag.content_snapshot import (
+from lawrag.runtime.content_snapshot import (
     ArtifactProvenance,
     ContentSnapshot,
     ContentSnapshotError,

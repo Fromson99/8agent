@@ -25,7 +25,7 @@ from lawrag.platform.paths import data_path
 
 def corpus_dir() -> Path:
     """수집 루트 — lawrag/pipeline/collect.py 와 같은 저장소 data/corpus/ 가 기본, CORPUS_DIR 는 테스트용."""
-    return Path(os.environ.get("CORPUS_DIR") or data_path("corpus"))
+    return Path(os.environ.get("CORPUS_DIR") or data_path("INBOX", "AUTHORING", "corpus"))
 
 
 def body_of(item: dict) -> tuple[Optional[str], Optional[str], Optional[str]]:

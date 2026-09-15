@@ -1,0 +1,41 @@
+{
+  "created_at": "2026-09-07",
+  "kind": "documentation_of_stored_results",
+  "new_evaluation": false,
+  "answers": 1128,
+  "experiments": [
+    {
+      "adr_id": "ADR-0056",
+      "answers": 561,
+      "incorrect": 57
+    },
+    {
+      "adr_id": "ADR-0058",
+      "answers": 561,
+      "incorrect": 104
+    },
+    {
+      "adr_id": "ADR-0188",
+      "answers": 6,
+      "incorrect": 3
+    }
+  ],
+  "source_sha256": {
+    "04_EXPERIMENTS/LEGACY_ADR/ADR-0056-cm-core-51-open-model-ceiling/artifacts/product-results.json": "67f1b78ec791b1184d04ffb7fda61f06f12246a7bd67798f16144482e97bdf59",
+    "04_EXPERIMENTS/LEGACY_ADR/ADR-0056-cm-core-51-open-model-ceiling/artifacts/judged-results.json": "f67b04c22168a357bdf05ccf2ffd7e019ee9cd6f99b303a9efe50c5f67ae5fed",
+    "04_EXPERIMENTS/LEGACY_ADR/ADR-0056-cm-core-51-open-model-ceiling/artifacts/frozen-cases.json": "a42675b4fd634ecb11deb777efe51d7164c67afbdf820c79f3fe074a8dd3e0ff",
+    "04_EXPERIMENTS/LEGACY_ADR/ADR-0056-cm-core-51-open-model-ceiling/artifacts/summary.json": "fc9b9765ea7341962aee8f15214eabea2d3345dbc0dcd3219915b06a1209dd7d",
+    "04_EXPERIMENTS/LEGACY_ADR/ADR-0058-haiku-prompt-atom-ablation-51/artifacts/product-results.json": "5d87cdaf86bc3e80620b50b2d0863927186bbdcc1c6df7e6b94257983fca989c",
+    "04_EXPERIMENTS/LEGACY_ADR/ADR-0058-haiku-prompt-atom-ablation-51/artifacts/judged-results.json": "4d3c90f137545da2ce55e487c9ed35168178ac175f1daac7c112b09a57fafef8",
+    "04_EXPERIMENTS/LEGACY_ADR/ADR-0058-haiku-prompt-atom-ablation-51/artifacts/frozen-cases.json": "42b48577bad99ec9459eac399448cdc698c1660950406238d5c049c89c896572",
+    "04_EXPERIMENTS/LEGACY_ADR/ADR-0058-haiku-prompt-atom-ablation-51/artifacts/summary.json": "cc37f1cbc1fc79829e1b8b58fa05cb727ba7341aab83177a93577adb6bf4d088",
+    "04_EXPERIMENTS/LEGACY_ADR/ADR-0058-haiku-prompt-atom-ablation-51/artifacts/prompt-matrix.json": "913591ee957da0c7082a71d3e33c81537786f7ead690260a29b501224cd38951",
+    "04_EXPERIMENTS/ADR/ADR-0188-rag-main-g5-real-haiku-baseline/artifacts/run-006.json": "4fab41ac497bb7a59f18bcffc9ae067073c188359ace8ad21d5c64ccd5772271"
+  },
+  "checks": {
+    "all_answers_preserved": true,
+    "all_questions_and_reference_answers_preserved": true,
+    "stored_summary_counts_match": true,
+    "conditional_majority_matches_stored_wrong_cases": true
+  }
+}

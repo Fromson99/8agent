@@ -1,0 +1,32 @@
+{
+  "schema_version": "legal-semantic-v2",
+  "schema_sha256": "25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607",
+  "record_kind": "FEEDBACK",
+  "id": "feedback:example",
+  "scope": {
+    "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "authority_generation": "synthetic-authority-1",
+    "document_version_ids": [
+      "synthetic:main-v1",
+      "synthetic:detail-v1"
+    ],
+    "jurisdiction": "SYNTHETIC",
+    "as_of": null
+  },
+  "canonical_generation_id": "synthetic-generation-1",
+  "query_plan_id": "query:example",
+  "status": "PROPOSED",
+  "changes": [
+    {
+      "target_ref": {
+        "type": "Proviso",
+        "id": "proviso:main"
+      },
+      "field_pointer": "/condition",
+      "issue": "단서 조건의 외부 요건 연결을 검토해 주세요.",
+      "evidence_ids": [
+        "evidence:1"
+      ]
+    }
+  ]
+}

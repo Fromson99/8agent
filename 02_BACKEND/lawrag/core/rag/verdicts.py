@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Optional
 
 from lawrag.core.rag.index import store_path
+from lawrag.platform.paths import data_path
 
 
 # 판정 갈래 — audit.KINDS 와 같아야 한다. 옛 기록의 "무관"은 참조무관·검색무관으로
@@ -42,7 +43,7 @@ KINDS = ("오참조", "참조무관", "검색무관", "구조화오류", "무관
 
 
 def verdicts_path() -> Path:
-    return Path(os.environ.get("RAG_LOG_DIR", store_path().parent / "rag")) \
+    return Path(os.environ.get("RAG_LOG_DIR", data_path("FEEDBACK", "RUNTIME"))) \
         / "verdicts.jsonl"
 
 
@@ -372,7 +373,7 @@ def _rules() -> dict:
         entry     검색무관  진입(벡터·용어)이 빗나갔다 → 그 좌표를 **진입에서만** 뺀다
                             (참조를 타고는 여전히 올 수 있다 — 연결 지식은 그대로)
     """
-    from lawrag.core.rag.content_snapshot import current_content_snapshot
+    from lawrag.runtime.content_snapshot import current_content_snapshot
 
     # Feedback observations remain writable outside the immutable release, but
     # they cannot silently become retrieval rules.  Approved rules re-enter
@@ -522,7 +523,7 @@ def score_terms(hit_keys: list[str], miss_keys: list[str]) -> dict:
     용어는 검수 큐에서 다시 심사받거나 진입 자격을 잃는다. 여기서는 세기만
     한다 — 상태를 바꾸는 것은 사람(또는 Phase 3 게이트)의 몫이다.
     glossary.json 을 직접 고친다(core.terms import 금지 — 아키텍처 격리)."""
-    from lawrag.core.rag.content_snapshot import current_content_snapshot
+    from lawrag.runtime.content_snapshot import current_content_snapshot
 
     # Hit counters are authoring feedback, not legal content.  A request may
     # never rewrite the release-proved glossary; the external tuple/verdict

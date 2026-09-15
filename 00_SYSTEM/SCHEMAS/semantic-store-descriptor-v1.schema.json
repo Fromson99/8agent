@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "semantic-store-descriptor-v1"
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "manifest_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "database_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "schema_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "source_set_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "status": {
+      "const": "SHADOW"
+    },
+    "cutover_eligible": {
+      "const": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "path",
+    "manifest_sha256",
+    "database_sha256",
+    "schema_sha256",
+    "source_set_sha256",
+    "status",
+    "cutover_eligible"
+  ],
+  "additionalProperties": false
+}

@@ -5,7 +5,7 @@
     python -m lawrag.pipeline.collect_expc --force       # 멱등성 무시하고 재수집
     python -m lawrag.pipeline.collect_expc --query "명칭"  # 코퍼스 밖 질의 임시 추가
 
-무엇을 받을지는 선언이 아니라 **코퍼스가 결정한다**: data/corpus/law/manifest.json
+무엇을 받을지는 선언이 아니라 **코퍼스가 결정한다**: 01_DATA/INBOX/AUTHORING/corpus/law/manifest.json
 의 법령(kind=law) 명칭이 곧 질의 집합이다 — 코퍼스에 법령이 늘면 해석례도
 따라 넓어진다. 행정규칙(admrul)은 질의하지 않는다(법제처 해석례는 법령 대상).
 
@@ -13,8 +13,8 @@
 허용, 원문 보존(사례 XML 을 그대로 저장), 요청 규율은 common.HttpClient 소유.
 
 저장 구조 (llm-wiki 의 raw 층 — 불변, 이후 단계는 읽기 전용):
-    data/corpus/expc/cases/<일련번호>.xml    사례 원문
-    data/corpus/expc/manifest.json          사례 대장 (관련 법령·질의 출처 포함)
+    01_DATA/INBOX/AUTHORING/corpus/expc/cases/<일련번호>.xml    사례 원문
+    01_DATA/INBOX/AUTHORING/corpus/expc/manifest.json          사례 대장 (관련 법령·질의 출처 포함)
 
 관련 법령 판정은 lawrag/sources/expc.cited_laws — 본문의 「법령명」 낫표 인용
 완전일치다. 안건명 부분일치 검색의 오탐('상법'→'군인 재해보상법')은 이 단계에서
@@ -50,7 +50,7 @@ from lawrag.platform.paths import (
 )
 
 REPO_ROOT = repository_root()
-CORPUS_DIR = data_path("corpus")
+CORPUS_DIR = data_path("INBOX", "AUTHORING", "corpus")
 EXPC_DIR = CORPUS_DIR / "expc"
 CASES_DIR = EXPC_DIR / "cases"
 LOG_DIR = runtime_path("logs")

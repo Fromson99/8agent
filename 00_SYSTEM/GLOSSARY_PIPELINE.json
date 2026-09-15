@@ -1,0 +1,299 @@
+{
+  "schema_version": "glossary-authoring-workflow-v1",
+  "legal_term_relation_projection": {
+    "entrypoint": "06_TOOLS/pipeline.py glossary legal-relations build|inspect|verify",
+    "module": "lawrag.pipeline.glossary_legal_relations",
+    "stage": "glossary authoring; explicit DRAFT projection",
+    "inputs": [
+      "hash-bound glossary draft official_relation/source_request",
+      "same collection's complete knowledge_terms/everyday_terms catalogue"
+    ],
+    "matching": "exact label; zero legal candidates excluded, one mapped, multiple held unless one reciprocal relation candidate with unique source anchor",
+    "namespace": "MOLEG knowledge_terms, not corpus-presence LEGAL_TERM classification",
+    "relation_policy": "preserve original five source codes; normalized hierarchy parent to child; preserve raw paths; hold incompatible kinds and cycles",
+    "output": "explicit new directory: relations.sqlite, graph.json, TSV ledgers, report.json, REPORT.md",
+    "consumer": "legal-relations inspect/verify and human graph review; no automatic downstream selection",
+    "coverage": "all existing edges in selected draft; no implicit remote collection",
+    "canonical_approval": false,
+    "runtime_promotion": false,
+    "api_calls": 0,
+    "model_calls": 0
+  },
+  "entrypoint": "06_TOOLS/pipeline.py glossary",
+  "source_catalogs": [
+    "legal_terms",
+    "knowledge_terms"
+  ],
+  "optional_catalogs": [
+    "everyday_terms"
+  ],
+  "source_contract": "source.package",
+  "source_record_contract": "source.moleg-knowledge",
+  "steps": [
+    "collect",
+    "import-package",
+    "start-incremental-alignment",
+    "expand-glossary",
+    "assemble-scoped-draft",
+    "prepare-llm-review",
+    "run-evidence-bound-review",
+    "compile-review-proposals",
+    "select-completed-authoring-draft"
+  ],
+  "state_root": {
+    "root_id": "data",
+    "path": "LEXICON/moleg-alignment"
+  },
+  "incremental_key": [
+    "source_term_id",
+    "term_content_revision",
+    "document_sha256",
+    "matcher_version",
+    "parser_version"
+  ],
+  "promotion_scope": "document-grounded-lexical-surface",
+  "length_filter": false,
+  "negative_results_cached": true,
+  "document_removals_retract_evidence": true,
+  "document_snapshot_required": true,
+  "canonical_approval": false,
+  "ui_start_button": "not_connected",
+  "external_dictionary_collection": {
+    "entrypoint": "06_TOOLS/pipeline.py glossary collect-external",
+    "module": "lawrag.pipeline.collect_public_glossaries",
+    "sources": [
+      "bok",
+      "econedu",
+      "kofia",
+      "nts",
+      "krx"
+    ],
+    "raw_root": {
+      "root_id": "data",
+      "path": "RAW/glossaries/<snapshot>"
+    },
+    "structured_root": {
+      "root_id": "data",
+      "path": "STRUCTURE/glossaries/<snapshot>"
+    },
+    "receipt_root": {
+      "root_id": "data",
+      "path": "LOGS/glossaries/<snapshot>"
+    },
+    "artifact_contract": "public-glossary-collection-v1 (RAW/DRAFT collection receipt; not DatasetPackage)",
+    "consumer": "lawrag.pipeline.glossary_assembly via pipeline.py glossary assemble (econedu/nts); not connected to runtime",
+    "auto_import_into_moleg": false,
+    "runtime_promotion": false,
+    "genos_deployed": false,
+    "status_entrypoint": "06_TOOLS/pipeline.py glossary status --external --snapshot <snapshot>"
+  },
+  "scoped_relation_collection": {
+    "entrypoint": "06_TOOLS/pipeline.py glossary complete --corpus-generation <generation> --completion-endpoint legal_term_relations --snapshot <snapshot>",
+    "module": "lawrag.pipeline.glossary_enrichment",
+    "seed_policy": "legal knowledge terms occurring in selected corpus",
+    "max_relation_hops": 1,
+    "recursive_daily_collection": false,
+    "artifact": "completion/<snapshot>/collection.sqlite",
+    "consumer": "lawrag.pipeline.glossary_assembly via pipeline.py glossary assemble",
+    "auto_publish_complete_dictionary": false,
+    "runtime_promotion": false
+  },
+  "draft_assembly": {
+    "entrypoint": "06_TOOLS/pipeline.py glossary assemble",
+    "module": "lawrag.pipeline.glossary_assembly",
+    "lexical_tables": "lawrag.pipeline.glossary_v1",
+    "inputs": [
+      "explicit scoped relation collection.sqlite (partial allowed)",
+      "econedu/nts entries.jsonl",
+      "selected corpus generation",
+      "optional completed definition collection.sqlite files"
+    ],
+    "steps": [
+      "freeze-completed-responses-and-pending-status",
+      "select-corpus-seeds-and-direct-neighbours",
+      "preserve-typed-source-details",
+      "preserve-document-definition-hints-with-version-location-scope",
+      "index-corpus-occurrences-for-all-sources",
+      "build-official-and-definition-headword-candidates",
+      "separate-corpus-link-from-meaning-review"
+    ],
+    "outputs": [
+      "dictionary.sqlite",
+      "report.json"
+    ],
+    "schema_version": "glossary-assembly-v2",
+    "consumer": "glossary review prepare; glossary assemble --inspect; build-data-stages structure/llm via glossary_linking; subsequent versioned draft",
+    "live_collection_policy": "short SQLite read transaction; immutable selected response snapshot",
+    "rebuild_policy": "same explicit inputs with a new output directory; earlier draft preserved",
+    "semantic_approval": false,
+    "rag_integration": false,
+    "llm_calls": 0,
+    "output_root": {
+      "root_id": "data",
+      "path": "LEXICON/glossary-v1/<version>"
+    },
+    "definition_policy": {
+      "storage": "corpus_document + corpus_definition + entry_definition_link",
+      "source": "quoted definition patterns in selected immutable corpus",
+      "scope": "explicit same-clause hints only; unknown scope preserved; no inferred document-wide applicability",
+      "references": "explicit named law/article references preserved as unreviewed hints; no inferred cross-law applicability",
+      "partial_sentences": "preserved as CONTINUATION_REQUIRED; not passed as complete definitions",
+      "consumer": "assemble --inspect --term; review prepare with each definition as a separate target"
+    },
+    "occurrence_policy": "entry_corpus_link applies to every source; MOLEG absence never removes corpus evidence"
+  },
+  "llm_execution": {
+    "source_assembly_calls": 0,
+    "review": "GENOS only; complete orchestrates offline prepare, bounded run, draft compile; no external fallback"
+  },
+  "llm_review": {
+    "entrypoint": "06_TOOLS/pipeline.py glossary review",
+    "module": "lawrag.pipeline.glossary_review",
+    "actions": [
+      "prepare",
+      "run",
+      "status",
+      "compile",
+      "complete"
+    ],
+    "provider": "semantic_runtime.genos_backend.Genos.call with LLM-only preparation",
+    "transport": "semantic_runtime.genos.from_env / advertised_model / request_json",
+    "backend": "genos",
+    "external_fallback": false,
+    "input": "explicit immutable glossary-assembly-v2 directory",
+    "output": "review.sqlite and exact provider attempts; immutable reviewed draft plus completion.json selecting the downstream authoring input",
+    "contract": "glossary-llm-review-v3",
+    "jobs": [
+      "MEANING_CHECK with explicit descriptions/definitions on both sides"
+    ],
+    "guards": [
+      "definitions split source-scoped candidates; no automatic prose sense splitting",
+      "missing source evidence deferred without model calls",
+      "each identity and relationship selects existing evidence IDs from both definitions",
+      "system copies and verifies source text/offset/hash; no model quote field",
+      "unknown states and conflicting hierarchy preserved; no canonical membership writes",
+      "job/input/model/schema/source version bound on resume and compile",
+      "only hash-bound completion receipt selects a downstream reviewed draft"
+    ],
+    "default_run_job_limit": 10,
+    "resume": "Completed jobs skipped; failed/interrupted jobs need --retry-failed. After completion retry requires a new output. Old v2 review states remain historical and cannot run under v3.",
+    "consumer": "assemble --inspect --term exposes sense assertions; build-data-stages selects the completed draft through glossary_linking.configured; original source definitions remain authoring hints",
+    "canonical_approval": false,
+    "runtime_promotion": false,
+    "genos_live_verified": false,
+    "removed": "GAP_PROPOSAL and background-word candidates from dictionary descriptions",
+    "transport_contract": "API-compatible structural schema; complete length/cardinality/citation validation stays local",
+    "contract_registry": "00_SYSTEM/LEGAL_SCHEMA.json#authoring_contracts.GLOSSARY_REVIEW",
+    "identity_decisions": [
+      "SAME",
+      "DIFFERENT",
+      "UNKNOWN"
+    ],
+    "relationship_kinds": [
+      "BROADER_THAN",
+      "NARROWER_THAN",
+      "OVERLAPS",
+      "COUNTERPART_OF",
+      "RELATED_TO"
+    ],
+    "relation_assessment": [
+      "IDENTIFIED",
+      "NOT_ESTABLISHED",
+      "UNKNOWN"
+    ],
+    "default_workflow": "06_TOOLS/pipeline.py glossary review complete",
+    "current_review_state": {
+      "root_id": "data",
+      "path": "LEXICON/glossary-v1/reviews/boundary-20260914-v3-sense-review-v3"
+    },
+    "default_output": {
+      "root_id": "data",
+      "path": "LEXICON/glossary-v1/boundary-20260914-v3-reviewed-v3"
+    },
+    "historical_v2": {
+      "current_review_state": {
+        "root_id": "data",
+        "path": "LEXICON/glossary-v1/reviews/definitions-20260913-v2-r2"
+      },
+      "current_sample_state": {
+        "root_id": "data",
+        "path": "LEXICON/glossary-v1/reviews/definitions-20260913-v2-r2-sample3",
+        "max_jobs": 3,
+        "execution": "GENOS plan remains pending; external public integration result is separate"
+      },
+      "external_integration_receipt": "90_RUNTIME/glossary_definition_e2e/20260913-v2-r2/result.json"
+    },
+    "completion_policy": "One invocation processes up to max-jobs; pending returns exit 3 without publishing. Terminal failed/unknown/conflicted items remain explicit PARTIAL; valid proposals compile. Repeating completion is cached.",
+    "main_authoring_wired": true,
+    "acceptance": "explicit user direction after ADR-0393 known model errors; not holdout quality certification",
+    "authorization_receipt": "09_ARTIFACTS/AUDITS/20260914-glossary-review-main/authorization-and-before.json"
+  },
+  "current_draft": {
+    "root_id": "data",
+    "path": "LEXICON/glossary-v1/boundary-20260914-v3",
+    "selection": "explicit authoring draft, not runtime promotion"
+  },
+  "structure_linkage": {
+    "entrypoint": "06_TOOLS/pipeline.py build-data-stages",
+    "module": "lawrag.pipeline.glossary_linking",
+    "default_glossary": "validated completion from current_review_state; until it exists current_draft under logical data root; --glossary-dir overrides",
+    "inputs": [
+      "immutable structured authoring-source.sqlite",
+      "versioned glossary-assembly-v2 dictionary.sqlite"
+    ],
+    "steps": [
+      "longest literal surface match with source offsets",
+      "extract current-document definition hints",
+      "preserve source-specific definition candidates",
+      "enrich existing semantic authoring dictionary_lookup"
+    ],
+    "outputs": [
+      "LEXICON/LINKS/<source-and-glossary-fingerprint>/links.sqlite",
+      "LEXICON/LINKS/<source-and-glossary-fingerprint>/authoring-source.sqlite",
+      "LEXICON/LINKS/<source-and-glossary-fingerprint>/report.json"
+    ],
+    "consumer": "genos_build projects the same linked input in LLM/<run>/<document>/glossary-linked and passes it into the maintained authoring queue",
+    "cache_policy": "structure immutable; glossary changes rebuild links; new run ID for semantic reauthoring",
+    "candidate_policy": "same spelling does not approve meaning; reviewed draft retains assertions/conflicts; source-definition hints remain unapproved and bounded; lexical relationship proposals are not automatically applied as synonyms",
+    "llm_calls": 0,
+    "canonical_approval": false,
+    "rag_integration": false,
+    "genos_deployed": false,
+    "composed_build_all": "build-all calls glossary review complete first, then build-data-stages --stage all with the verified reviewed output; pending review stops downstream authoring",
+    "legacy_build_all": "build-all-legacy or genos_pipeline.sh keeps the old knowledge ZIP route and does not consume the v3 review"
+  },
+  "catalogue_model": {
+    "order": [
+      "source dictionaries",
+      "match existing headwords against the selected structured legal corpus",
+      "classify by corpus presence",
+      "connect everyday/legal terms with typed evidence",
+      "connect legal terms to law/article coordinates"
+    ],
+    "classification": {
+      "CORPUS_PRESENT": "LEGAL_TERM",
+      "GENERAL_IN_THIS_CORPUS": "EVERYDAY_TERM"
+    },
+    "classification_basis": "selected corpus headword occurrence; independent of MOLEG/finance/tax provider category; not legal authority or semantic equivalence",
+    "term_relations": "preserve original source/target IDs, direction and relation code; endpoints classified by corpus presence; finance label correspondence remains a candidate",
+    "article_links": {
+      "corpus_literal_occurrences": "implemented",
+      "official_api_term_articles": "not compiled into current glossary draft; collection pending in scoped state"
+    },
+    "query_discovery": "downstream consumer of the built glossary, not the glossary construction prerequisite",
+    "document_definition_hints": "optional existing corpus-derived supplement; separate document scope and provenance; not background-word extraction",
+    "llm_authoring_hints": "downstream document consumer only; not a substitute for glossary relationships"
+  },
+  "knowledge_bundle": {
+    "enabled": true,
+    "root_id": "data",
+    "path": "LEXICON/knowledge-bundles/genos-full-20260915-v1",
+    "manifest_sha256": "b36ebd9c0f427e2e4eb1bc38c60f515befd9fa83fef0982081d1af07d81fddaf",
+    "entrypoint": "06_TOOLS/pipeline.py glossary knowledge check|lookup|inspect",
+    "module": "lawrag.pipeline.glossary_knowledge",
+    "consumer": "build-all preflight -> glossary_linking.project -> authoring_job dictionary_lookup -> existing semantic authoring",
+    "scope": "all collected source ledgers, translations, mappings and relationship decisions; DRAFT observations only",
+    "canonical_approval": false,
+    "runtime_promoted": false
+  }
+}

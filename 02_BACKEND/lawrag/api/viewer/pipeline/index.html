@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>배치 파이프라인</title>
+<title>법률 온톨로지 파이프라인</title>
 <link rel="stylesheet" href="/ui/ui.css">
 <link rel="stylesheet" href="styles.css">
 <script src="/ui/nav.js" defer></script>
@@ -17,10 +17,10 @@
   <span id="models" class="models"></span>
   <button id="refreshBtn" class="ghost" title="라인업을 다시 센다">라인업 새로고침</button>
   <button id="stopBtn" class="stop hidden" title="단계·문서 경계에서 멈춘다">중지</button>
-  <button id="runBtn" class="run" title="빠진 것만 순서대로 전부 돌린다 — 투입 → 위임 → 용어 → 프레임(LLM) → 벡터 → 점검">
-    ▶ 전체 실행</button>
+  <button id="runBtn" class="run" title="기존 자동 단계만 증분 실행한다. 그래프·배포는 별도 확인이 필요하다.">
+    ▶ 자동 단계 실행</button>
 </header>
-<h1 class="sr">배치 파이프라인 — 라인업과 실행</h1>
+<h1 class="sr">법률 온톨로지 생명주기 파이프라인</h1>
 
 <main class="wrap">
   <!-- 실행 상태 — 돌고 있을 때만 살아난다 -->
@@ -32,7 +32,21 @@
     <div id="runNote" class="note"></div>
   </section>
 
+  <section class="lifecycle-pane" aria-labelledby="lifecycleTitle">
+    <header>
+      <div>
+        <span class="eyebrow">EVIDENCE-GROUNDED LEGAL ONTOLOGY</span>
+        <h2 id="lifecycleTitle">입력에서 재구조화까지, 한 흐름으로</h2>
+      </div>
+      <code id="pipelineVersion"></code>
+    </header>
+    <div id="lifecyclePhases" class="lifecycle-phases"></div>
+    <div id="layerRibbon" class="layer-ribbon"></div>
+    <p id="nextAction" class="next-action"></p>
+  </section>
+
   <!-- 라인업 — 단계 한 줄 = 무엇이 빠졌나 + 진행 막대 + 이것만 버튼 -->
+  <header class="section-heading"><div><span class="eyebrow">EXECUTION</span><h2>세부 단계</h2></div><p>자동 단계는 증분 실행, 변환 단계는 명시 확인, release는 사람 승인으로 분리됩니다.</p></header>
   <section class="stages" id="stages"></section>
 
   <!-- 펼쳐 보기 — 어느 문서가 빠졌나 -->

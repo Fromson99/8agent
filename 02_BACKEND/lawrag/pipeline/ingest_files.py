@@ -1,6 +1,6 @@
 """문서 파일 묶음(hwp·hwpx·docx·pdf) → 구조 검수 스토어 등록 — core.ingest 의 범용 CLI 낯.
 
-    python -m lawrag.pipeline.ingest_files data/corpus/forms/*.hwp --folder 상장서식 --kind krx-form \\
+    python -m lawrag.pipeline.ingest_files 01_DATA/INBOX/AUTHORING/corpus/forms/*.hwp --folder 상장서식 --kind krx-form \\
         --source "KRX 상장규정 시행세칙 별지서식" --collected 2026-08-19
     python -m lawrag.pipeline.ingest_files 표준정관.hwp --folder 표준정관 --kind klca-model \\
         --order "kr_장>kr_절" "kr_장>kr_article" "kr_절>kr_article"
@@ -39,7 +39,7 @@ ACCEPTED = (".hwp", ".hwpx", ".docx", ".pdf")
 
 
 def _store(arg: str | None) -> Path:
-    return Path(arg or os.environ.get("STRUCTURE_STORE") or data_path("structure"))
+    return Path(arg or os.environ.get("STRUCTURE_STORE") or data_path("INBOX", "AUTHORING", "structure"))
 
 
 def parse_order(pairs: list[str] | None) -> list[tuple[str, str]]:
@@ -68,7 +68,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="문서 파일 → 구조 스토어 (유도 경로)")
     ap.add_argument("paths", nargs="+", help="hwp·hwpx·docx·pdf 파일 또는 디렉터리")
     ap.add_argument("--name", help="문서 이름 (paths 가 1건일 때만; 기본 파일명)")
-    ap.add_argument("--store", help="스토어 경로 (기본: $STRUCTURE_STORE 또는 data/structure)")
+    ap.add_argument("--store", help="스토어 경로 (기본: $STRUCTURE_STORE 또는 01_DATA/INBOX/AUTHORING/structure)")
     ap.add_argument("--folder", default="", help="묶어 둘 폴더 라벨")
     ap.add_argument("--kind", default="", help="문서 축 (예: krx-form · klca-model)")
     ap.add_argument("--source", default="", help="출처 표기 (meta.source)")

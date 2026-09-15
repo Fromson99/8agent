@@ -1,0 +1,111 @@
+{
+  "schema_version": "definition-projection-v1",
+  "projection_id": "definition:professional-financial-consumer:v1",
+  "description": "필드와 fail-closed 동작을 보여주기 위한 합성 계약 예시이며 실제 법률 판정 데이터가 아니다.",
+  "projection_kind": "legal_classification",
+  "concept_id": "concept:professional-financial-consumer",
+  "term_sense_id": "term-sense:professional-financial-consumer:fsc-2026",
+  "status": "READY",
+  "scope": {
+    "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "authority_generation": "authority:2026-09-04",
+    "semantic_generation": "semantic:2026-09-04",
+    "as_of": "2026-09-04",
+    "jurisdictions": ["kr"],
+    "instrument_version_ids": ["instrument-version:fsc:2026-01-02"],
+    "audiences": ["financial-consumer"]
+  },
+  "required_facts": [
+    {
+      "key": "customer-type",
+      "value_type": "enum",
+      "allowed_values": ["individual", "corporation", "institution"],
+      "required_for_decision": true,
+      "description": "판정 대상의 고객 유형"
+    },
+    {
+      "key": "professional-status",
+      "value_type": "boolean",
+      "required_for_decision": true,
+      "description": "Canonical 분류 규칙상 전문성 지위 충족 여부"
+    },
+    {
+      "key": "consumer-treatment-requested",
+      "value_type": "boolean",
+      "required_for_decision": true,
+      "description": "일반금융소비자 대우 요청 여부"
+    }
+  ],
+  "decision_contract": {
+    "necessary_conditions": [
+      {
+        "fact": "professional-status",
+        "operator": "eq",
+        "value": true,
+        "canonical_basis_ids": ["rule:professional-status"]
+      }
+    ],
+    "sufficient_condition_sets": [
+      {
+        "id": "condition-set:professional-status",
+        "all": [
+          {
+            "fact": "professional-status",
+            "operator": "eq",
+            "value": true,
+            "canonical_basis_ids": ["rule:professional-status"]
+          }
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "id": "exclusion:consumer-treatment",
+        "all": [
+          {
+            "fact": "consumer-treatment-requested",
+            "operator": "eq",
+            "value": true,
+            "canonical_basis_ids": ["proviso:consumer-treatment"]
+          }
+        ]
+      }
+    ],
+    "exceptions": [],
+    "precedence": ["scope", "missing_facts", "exceptions", "exclusions", "necessary", "sufficient"],
+    "default_outcome": "UNKNOWN",
+    "missing_fact_outcome": "UNKNOWN"
+  },
+  "canonical_inputs": {
+    "term_sense_ids": ["term-sense:professional-financial-consumer:fsc-2026"],
+    "semantic_clause_ids": ["semantic-clause:professional-consumer-definition"],
+    "rule_ids": ["rule:professional-status"],
+    "proviso_ids": ["proviso:consumer-treatment"],
+    "relation_ids": ["relation:professional-to-general-consumer"],
+    "clause_span_ids": ["clause-span:fsc:article-2:definition"],
+    "evidence_ids": ["evidence:fsc:article-2:definition"]
+  },
+  "completeness": {
+    "decision_space": "PARTIAL",
+    "verification_status": "VERIFIED",
+    "closed_dimensions": ["instrument-version", "jurisdiction", "customer-type"],
+    "open_dimensions": ["unmodeled-special-act"],
+    "counterexample_set_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "verification_receipt_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "fallback": {
+    "on": ["OUT_OF_SCOPE", "MISSING_FACT", "CONFLICT", "STALE_GENERATION", "NO_RULE_MATCH"],
+    "action": "TRAVERSE_CANONICAL"
+  },
+  "security": {
+    "security_class": "public",
+    "export_allowed": true
+  },
+  "derivation": {
+    "compiler": "lawrag-definition-compiler",
+    "compiler_version": "v1",
+    "compiled_at": "2026-09-04T00:00:00Z",
+    "canonical_input_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "record_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  }
+}

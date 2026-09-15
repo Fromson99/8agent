@@ -1,0 +1,364 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:schema:definition-projection-v1",
+  "title": "Generation-locked generalized concept decision projection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "projection_id",
+    "projection_kind",
+    "concept_id",
+    "status",
+    "scope",
+    "required_facts",
+    "decision_contract",
+    "canonical_inputs",
+    "completeness",
+    "fallback",
+    "security",
+    "derivation"
+  ],
+  "properties": {
+    "schema_version": {"const": "definition-projection-v1"},
+    "projection_id": {"$ref": "#/$defs/id"},
+    "description": {"type": "string", "minLength": 1},
+    "projection_kind": {
+      "enum": ["concept_membership", "legal_classification", "rule_applicability"]
+    },
+    "concept_id": {"$ref": "#/$defs/id"},
+    "term_sense_id": {
+      "oneOf": [{"type": "null"}, {"$ref": "#/$defs/id"}]
+    },
+    "status": {"enum": ["BUILDING", "READY", "STALE", "REJECTED"]},
+    "scope": {"$ref": "#/$defs/scope"},
+    "required_facts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/fact"}
+    },
+    "decision_contract": {"$ref": "#/$defs/decision_contract"},
+    "canonical_inputs": {"$ref": "#/$defs/canonical_inputs"},
+    "completeness": {"$ref": "#/$defs/completeness"},
+    "fallback": {"$ref": "#/$defs/fallback"},
+    "security": {"$ref": "#/$defs/security"},
+    "derivation": {"$ref": "#/$defs/derivation"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"status": {"const": "READY"}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "completeness": {
+            "properties": {
+              "verification_status": {"const": "VERIFIED"},
+              "verification_receipt_sha256": {"$ref": "#/$defs/sha256"}
+            },
+            "required": ["verification_receipt_sha256"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "security": {
+            "properties": {
+              "security_class": {"enum": ["internal", "restricted"]}
+            },
+            "required": ["security_class"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "security": {
+            "properties": {"export_allowed": {"const": false}}
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{1,191}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_set_sha256",
+        "authority_generation",
+        "semantic_generation",
+        "as_of",
+        "jurisdictions",
+        "instrument_version_ids"
+      ],
+      "properties": {
+        "source_set_sha256": {"$ref": "#/$defs/sha256"},
+        "authority_generation": {"$ref": "#/$defs/id"},
+        "semantic_generation": {"$ref": "#/$defs/id"},
+        "as_of": {"$ref": "#/$defs/date"},
+        "jurisdictions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "instrument_version_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "audiences": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        }
+      }
+    },
+    "fact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "value_type", "required_for_decision"],
+      "properties": {
+        "key": {"$ref": "#/$defs/id"},
+        "value_type": {
+          "enum": ["boolean", "string", "number", "date", "entity_ref", "enum"]
+        },
+        "allowed_values": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": ["string", "number", "boolean"]}
+        },
+        "required_for_decision": {"type": "boolean"},
+        "description": {"type": "string", "minLength": 1}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"value_type": {"const": "enum"}},
+            "required": ["value_type"]
+          },
+          "then": {"required": ["allowed_values"]}
+        }
+      ]
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fact", "operator"],
+      "properties": {
+        "fact": {"$ref": "#/$defs/id"},
+        "operator": {
+          "enum": ["eq", "ne", "in", "not_in", "lt", "lte", "gt", "gte", "exists"]
+        },
+        "value": {
+          "type": ["string", "number", "boolean", "array", "null"],
+          "items": {"type": ["string", "number", "boolean"]}
+        },
+        "canonical_basis_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"operator": {"not": {"const": "exists"}}},
+            "required": ["operator"]
+          },
+          "then": {"required": ["value"]}
+        }
+      ]
+    },
+    "condition_set": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "all"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "all": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/condition"}
+        }
+      }
+    },
+    "exception": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "priority", "when", "outcome", "canonical_basis_ids"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "priority": {"type": "integer", "minimum": 0},
+        "when": {"$ref": "#/$defs/condition_set"},
+        "outcome": {"enum": ["MATCH", "NO_MATCH", "UNKNOWN"]},
+        "canonical_basis_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        }
+      }
+    },
+    "decision_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "necessary_conditions",
+        "sufficient_condition_sets",
+        "exclusions",
+        "exceptions",
+        "precedence",
+        "default_outcome",
+        "missing_fact_outcome"
+      ],
+      "properties": {
+        "necessary_conditions": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/condition"}
+        },
+        "sufficient_condition_sets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/condition_set"}
+        },
+        "exclusions": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/condition_set"}
+        },
+        "exceptions": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/exception"}
+        },
+        "precedence": {
+          "const": ["scope", "missing_facts", "exceptions", "exclusions", "necessary", "sufficient"]
+        },
+        "default_outcome": {"const": "UNKNOWN"},
+        "missing_fact_outcome": {"const": "UNKNOWN"}
+      }
+    },
+    "canonical_inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "term_sense_ids",
+        "semantic_clause_ids",
+        "rule_ids",
+        "proviso_ids",
+        "relation_ids",
+        "clause_span_ids",
+        "evidence_ids"
+      ],
+      "properties": {
+        "term_sense_ids": {"$ref": "#/$defs/id_list"},
+        "semantic_clause_ids": {"$ref": "#/$defs/id_list"},
+        "rule_ids": {"$ref": "#/$defs/id_list"},
+        "proviso_ids": {"$ref": "#/$defs/id_list"},
+        "relation_ids": {"$ref": "#/$defs/id_list"},
+        "clause_span_ids": {"$ref": "#/$defs/id_list"},
+        "evidence_ids": {"$ref": "#/$defs/nonempty_id_list"}
+      }
+    },
+    "id_list": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/id"}
+    },
+    "nonempty_id_list": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/id"}
+    },
+    "completeness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_space",
+        "verification_status",
+        "closed_dimensions",
+        "open_dimensions",
+        "counterexample_set_sha256"
+      ],
+      "properties": {
+        "decision_space": {"enum": ["CLOSED", "PARTIAL", "OPEN"]},
+        "verification_status": {"enum": ["VERIFIED", "UNVERIFIED", "FAILED"]},
+        "closed_dimensions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "open_dimensions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "counterexample_set_sha256": {"$ref": "#/$defs/sha256"},
+        "verification_receipt_sha256": {
+          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]
+        }
+      }
+    },
+    "fallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["on", "action"],
+      "properties": {
+        "on": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["OUT_OF_SCOPE", "MISSING_FACT", "CONFLICT", "STALE_GENERATION", "NO_RULE_MATCH"]
+          }
+        },
+        "action": {"enum": ["TRAVERSE_CANONICAL", "RETRIEVE_RULE_BUNDLE", "ABSTAIN"]}
+      }
+    },
+    "security": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["security_class", "export_allowed"],
+      "properties": {
+        "security_class": {"enum": ["public", "internal", "restricted"]},
+        "export_allowed": {"type": "boolean"}
+      }
+    },
+    "derivation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "compiler",
+        "compiler_version",
+        "compiled_at",
+        "canonical_input_sha256",
+        "record_sha256"
+      ],
+      "properties": {
+        "compiler": {"$ref": "#/$defs/id"},
+        "compiler_version": {"$ref": "#/$defs/id"},
+        "compiled_at": {"type": "string", "format": "date-time"},
+        "canonical_input_sha256": {"$ref": "#/$defs/sha256"},
+        "record_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

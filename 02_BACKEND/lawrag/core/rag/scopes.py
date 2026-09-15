@@ -5,7 +5,7 @@
 **yml 한 장**이다 — 폴더는 1:1 관리 라벨이라 한 문서가 여러 묶음에 들 수 없고,
 코드에 박으면 사용자가 못 고친다.
 
-    data/rag/scopes.yml  (env RAG_SCOPES_FILE)
+    active release semantics/scopes.yml  (env RAG_SCOPES_FILE)
 
     scopes:
       - name: 자본시장-기본
@@ -36,6 +36,7 @@ import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
+from lawrag.platform.paths import data_path
 from typing import Optional
 
 from lawrag.core.rag.index import Index, store_path
@@ -47,7 +48,7 @@ BUILTIN = ("외규", "내규", "서식")
 
 def scopes_path() -> Path:
     return Path(os.environ.get("RAG_SCOPES_FILE",
-                               store_path().parent / "rag" / "scopes.yml"))
+                               data_path("FEEDBACK", "CONFIG", "scopes.yml")))
 
 
 # ------------------------------------------------------------------ 이름 정규형

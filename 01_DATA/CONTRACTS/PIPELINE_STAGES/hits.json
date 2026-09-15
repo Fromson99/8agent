@@ -1,0 +1,45 @@
+{
+  "schema_version": "rag-stage-v2",
+  "scope": {
+    "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "authority_generation": "synthetic-authority-1",
+    "document_version_ids": [
+      "synthetic:main-v1",
+      "synthetic:detail-v1"
+    ],
+    "jurisdiction": "SYNTHETIC",
+    "as_of": null
+  },
+  "query_plan_id": "query:example",
+  "canonical_generation_id": "synthetic-generation-1",
+  "canonical_payload_sha256": "8e440448a2a1ac462b7eb1603eae2a4e49191c42b582e50882301badddd79976",
+  "record_kind": "HITS",
+  "id": "hits:example",
+  "cards": [
+    {
+      "query_card_id": "card:example",
+      "hits": [
+        {
+          "document_version_id": "synthetic:main-v1",
+          "structural_unit_id": "unit:0",
+          "canonical_rule_ids": [
+            "rule:main"
+          ],
+          "evidence_ids": [
+            "evidence:0"
+          ],
+          "score": 1.0,
+          "engine_id": "synthetic-only"
+        }
+      ],
+      "unresolved_reasons": []
+    },
+    {
+      "query_card_id": "card:second",
+      "hits": [],
+      "unresolved_reasons": [
+        "대상 규칙 미확정"
+      ]
+    }
+  ]
+}

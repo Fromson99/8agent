@@ -1,0 +1,40 @@
+{
+  "schema_version": "pipeline-engine-v1",
+  "id": "semantic-shadow-migration@1.0.0",
+  "version": "1.0.0",
+  "kind": "MIGRATOR",
+  "maturity": "TOOL",
+  "inputs": {
+    "snapshot": "legacy.shadow"
+  },
+  "outputs": {
+    "store": "semantic.store"
+  },
+  "entrypoint": {
+    "path": "02_BACKEND/ENGINES/semantic_migration/1.0.0/engine.py",
+    "function": "run"
+  },
+  "files": {
+    "02_BACKEND/ENGINES/semantic_migration/1.0.0/engine.py": "f29d512a1703cceb6e4c3d2466e4dfe6b195883b52551c3a637623782040de78",
+    "06_TOOLS/AUDIT/legal_semantic_contract.py": "9b70a75f790914003d4904ff3aaf4d04e3a3ddf4ffc80270a64735c4c4a52024"
+  },
+  "parameters_schema": {
+    "type": "object",
+    "properties": {
+      "output_path": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required": [
+      "output_path"
+    ],
+    "additionalProperties": false
+  },
+  "migration": {
+    "from_contract": "legacy.shadow",
+    "to_contract": "semantic.store",
+    "loss_policy": "CANDIDATE_WITH_UNRESOLVED"
+  },
+  "experiment_binding": null
+}

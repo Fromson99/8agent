@@ -1,0 +1,38 @@
+{
+  "schema_version": "feedback-event-v1",
+  "event_id": "feedback:4821b98c33afd984cd68a181",
+  "occurred_at": "2026-09-04T00:00:00Z",
+  "source_kind": "RAG_USER",
+  "signal_kind": "DEFINITION_AMBIGUOUS",
+  "status": "OBSERVED",
+  "generation": {
+    "runtime_profile": "ontology-rag-v1",
+    "main_generation": 1,
+    "graph_generation": "lgv1-example",
+    "definition_generation": "defv1-example",
+    "source_set_sha256": null
+  },
+  "target": {
+    "qid": "query-example",
+    "query_sha256": "631706aeb6eb78f06d6abbbaf0cf46abc40332039ca5d27584c0333dc0aba37d",
+    "document_id": null,
+    "node_id": null,
+    "clause_span_id": null,
+    "projection_id": null,
+    "surface": "가명정보"
+  },
+  "evidence": {
+    "reason": "AMBIGUOUS_SURFACE",
+    "note": "서로 다른 법률 정의가 충돌함",
+    "expected_coordinates": [],
+    "detector_id": null,
+    "detector_fingerprint": null
+  },
+  "resolution": {
+    "resolves_event_id": null,
+    "before_sha256": null,
+    "after_sha256": null,
+    "receipt_sha256": null
+  },
+  "event_sha256": "3224fc4966fbf40684177c1f279da00dbadeff1683b200eba98fb4d20ac7d40a"
+}

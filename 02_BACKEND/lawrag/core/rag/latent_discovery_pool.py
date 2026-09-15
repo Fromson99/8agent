@@ -19,7 +19,7 @@ from lawrag.core.rag import (
     termexplore,
 )
 from lawrag.core.rag import vector as vector_mod
-from lawrag.core.rag.experiments import retrieval_stage_ledger as ledger
+from lawrag.runtime import retrieval_stage_ledger as ledger
 from lawrag.core.rag.index import Index
 
 

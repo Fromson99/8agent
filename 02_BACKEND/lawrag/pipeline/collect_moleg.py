@@ -10,8 +10,8 @@
     행정규칙 입안·심사 기준  2026년판 152쪽 3.9MB  (moleg.go.kr 간행물 게시판)
 
 저장:
-    data/corpus/moleg/<이름>.pdf            원문 (수집 정본)
-    data/corpus/moleg/manifest.json        대장 (phase_model — 원장 밖)
+    01_DATA/INBOX/AUTHORING/corpus/moleg/<이름>.pdf            원문 (수집 정본)
+    01_DATA/INBOX/AUTHORING/corpus/moleg/manifest.json        대장 (phase_model — 원장 밖)
     data/wiki/raw/moleg/<이름>.md      쪽 단위 텍스트 이관 (PyMuPDF) —
                                       위키 컴파일·grep 이 읽는 증거층
 
@@ -39,7 +39,7 @@ from lawrag.sources.common import (
 from lawrag.platform.paths import data_path, repository_root, runtime_path
 
 REPO_ROOT = repository_root()
-MOLEG_DIR = data_path("corpus", "moleg")
+MOLEG_DIR = data_path("INBOX", "AUTHORING", "corpus", "moleg")
 RAW_DIR = data_path("wiki", "raw", "moleg")
 LOG_DIR = runtime_path("logs")
 

@@ -21,6 +21,46 @@ from typing import Any, Optional
 Ordinal = tuple[int, ...]
 
 
+def confirmed_furniture(elements):
+    """Retain margin text but suppress only corroborated parser furniture.
+
+    A furniture label alone cannot hide an annex heading. Repeated running text
+    needs a detached page number, multiple pages and stable edge coordinates.
+    """
+    import re
+    from collections import defaultdict
+    bands = defaultdict(list)
+    def y(e):
+        box = getattr(e, 'bbox', None)
+        if not box or len(box) != 4: return None
+        center = (box[1] + box[3]) / 2
+        return -center if getattr(e, 'bbox_origin', 'BOTTOMLEFT') == 'BOTTOMLEFT' else center
+    for e in elements:
+        pos = y(e)
+        if getattr(e, 'text', '').strip() and pos is not None: bands[e.page].append(pos)
+    found = set(); groups = defaultdict(list)
+    for e in elements:
+        if getattr(e, 'type', '') not in {'page_header', 'page_footer'}: continue
+        text = e.text.strip(); pos = y(e)
+        if pos is None or not bands[e.page]: continue
+        edge = 'top' if pos <= min(bands[e.page]) + 16 else 'bottom' if pos >= max(bands[e.page]) - 16 else None
+        if edge is None: continue
+        if re.match(r'^[\[〔(]?\s*(?:별표|별지|서식|양식)\s*(?:제\s*)?\d', text): continue
+        if re.fullmatch(r'[-–—]?\s*\d{1,4}\s*[-–—]?', text):
+            found.add(e.index); continue
+        stripped = re.sub(r'\s+\d{1,4}$', '', text)
+        if stripped == text: stripped = re.sub(r'^\d{1,4}\s+', '', text)
+        if stripped == text or not stripped: continue
+        groups[(e.type, edge, stripped)].append((e.index, e.page, pos, text))
+    for rows in groups.values():
+        # A majority from a different margin band cannot suppress an outlier.
+        for index, page, pos, text in rows:
+            peers = [r for r in rows if abs(r[2] - pos) <= 4]
+            if len({r[1] for r in peers}) >= 2 and len({r[3] for r in peers}) >= 2:
+                found.add(index)
+    return found
+
+
 @dataclass
 class Block:
     """Docling 요소 하나. 해석기는 이 형태만 안다 — 파서 교체에 열려 있다.
@@ -43,7 +83,7 @@ class Block:
     # 글자가 실제로 시작하는 x — 들여쓰기를 선행 공백으로 표현한 조판에서
     # bbox[0] 은 공백까지 왼쪽으로 늘어난다. 들여쓰기 증거(S3)는 이쪽을 본다.
     text_x: Optional[float] = None
-    kind: str = "text"             # text | table | figure
+    kind: str = "text"             # text | table | figure | furniture
     # 타이포그래피 (`core.typography`). 마커 없는 제목을 보려면 이 축이 있어야 한다.
     # `size_ratio` 는 본문 대비 배율이라 문서마다 임계를 다시 잡지 않아도 된다.
     size_ratio: Optional[float] = None
@@ -86,6 +126,8 @@ class Block:
         **읽기 순서의 자리를 차지한다** — 그래야 `Node.span` 이 표를 덮고, 검수
         화면이 "이 구역에 표가 있다" 를 말할 수 있다.
         """
+        elements = list(elements)
+        furniture = confirmed_furniture(elements)
         out: list[Block] = []
         for e in elements:
             if getattr(e, "table", None) is not None:
@@ -93,7 +135,7 @@ class Block:
             elif getattr(e, "is_picture", False):
                 kind, text = "figure", getattr(e, "text", "") or ""
             elif getattr(e, "text", ""):
-                kind, text = "text", e.text
+                kind, text = ("furniture" if e.index in furniture else "text"), e.text
             else:
                 continue
             lvl = (getattr(e, "meta", None) or {}).get("level")

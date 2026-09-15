@@ -1,8 +1,8 @@
 """수집된 조문 HTML → 구조 검수 스토어 등록 — core.ingest 의 CLI 낯.
 
-    python -m lawrag.pipeline.ingest_rulehtml                    # data/corpus/krx manifest 의 조문 HTML 전부
+    python -m lawrag.pipeline.ingest_rulehtml                    # 01_DATA/INBOX/AUTHORING/corpus/krx manifest 의 조문 HTML 전부
     python -m lawrag.pipeline.ingest_rulehtml --source krx --targets "유가증권시장 상장규정"
-    python -m lawrag.pipeline.ingest_rulehtml "data/corpus/krx/…/… 조문.html" --name "유가증권시장 상장규정"
+    python -m lawrag.pipeline.ingest_rulehtml "01_DATA/INBOX/AUTHORING/corpus/krx/…/… 조문.html" --name "유가증권시장 상장규정"
 
 실제 이관은 lawrag/core/ingest.py(ingest_rulehtml_bytes)가 한다 — lawrag/pipeline/ingest_lawxml.py 와
 같은 구도다. 여기 남은 것은 CLI 인자와 manifest 를 대상 목록으로 펴는 일뿐.
@@ -29,11 +29,11 @@ from lawrag.core.ingest import ingest_rulehtml_bytes  # noqa: E402
 
 def _store(arg: str | None) -> Path:
     import os
-    return Path(arg or os.environ.get("STRUCTURE_STORE") or data_path("structure"))
+    return Path(arg or os.environ.get("STRUCTURE_STORE") or data_path("INBOX", "AUTHORING", "structure"))
 
 
 def manifest_targets(source: str) -> list[tuple[Path, str, dict]]:
-    m = json.loads(data_path("corpus", source, "manifest.json").read_text("utf-8"))
+    m = json.loads(data_path("INBOX", "AUTHORING", "corpus", source, "manifest.json").read_text("utf-8"))
     out = []
     for item in m.get("items", []):
         body = item.get("body_html_file")
@@ -52,7 +52,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--source", default="krx", help="corpus 출처 = 추출기 site (기본 krx)")
     ap.add_argument("--name", help="문서 이름 (paths 가 1건일 때만)")
     ap.add_argument("--targets", help="쉼표 구분 문서 이름 필터")
-    ap.add_argument("--store", help="스토어 경로 (기본: $STRUCTURE_STORE 또는 data/structure)")
+    ap.add_argument("--store", help="스토어 경로 (기본: $STRUCTURE_STORE 또는 01_DATA/INBOX/AUTHORING/structure)")
     ap.add_argument("--folder", default="상장규정", help="묶어 둘 폴더 라벨")
     args = ap.parse_args(argv)
 

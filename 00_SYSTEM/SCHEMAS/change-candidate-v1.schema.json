@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:schema:change-candidate-v1",
+  "title": "Inert feedback-derived change candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "candidate_id", "candidate_kind", "status",
+    "activation", "feedback_event_ids", "generation", "target",
+    "evidence", "review", "candidate_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "change-candidate-v1"},
+    "candidate_id": {"$ref": "#/$defs/id"},
+    "candidate_kind": {
+      "enum": [
+        "QUERY_PROJECTION", "DEFINITION_OBSERVATION", "DATA_CORRECTION",
+        "INGESTION_RULE"
+      ]
+    },
+    "status": {"enum": ["CANDIDATE", "RESOLVED"]},
+    "activation": {"const": "INERT_UNTIL_REVIEW"},
+    "feedback_event_ids": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"$ref": "#/$defs/id"}
+    },
+    "generation": {"type": "object"},
+    "target": {"type": "object"},
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason", "example_count", "resolved_by_event_ids"],
+      "properties": {
+        "reason": {"type": "string", "minLength": 1},
+        "example_count": {"type": "integer", "minimum": 1},
+        "resolved_by_event_ids": {
+          "type": "array", "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_next_step", "approved_by", "experiment_id", "applied_generation"],
+      "properties": {
+        "required_next_step": {"enum": ["HUMAN_REVIEW", "EXPERIMENT_THEN_REVIEW"]},
+        "approved_by": {"$ref": "#/$defs/nullable_id"},
+        "experiment_id": {"$ref": "#/$defs/nullable_id"},
+        "applied_generation": {"$ref": "#/$defs/nullable_id"}
+      }
+    },
+    "candidate_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{1,191}$"},
+    "nullable_id": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/id"}]},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

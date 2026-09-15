@@ -25,7 +25,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from lawrag.core.rag import switches, wikictx
-from lawrag.core.rag.content_snapshot import (
+from lawrag.runtime.content_snapshot import (
     ArtifactProvenance,
     ContentSnapshot,
     ContentSnapshotError,

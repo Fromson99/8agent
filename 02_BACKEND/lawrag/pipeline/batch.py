@@ -1,11 +1,13 @@
 """배치 파이프라인 CLI — 화면의 딸깍과 같은 실행기(lawrag/core/batch)를 터미널에서.
 
     python -m lawrag.pipeline.batch lineup                 # 무엇이 빠졌나 (돌리지 않는다)
-    python -m lawrag.pipeline.batch run                    # 빠진 것만 순서대로 전부
+    python -m lawrag.pipeline.batch run                    # 기존 자동 단계만 증분 실행
     python -m lawrag.pipeline.batch run --stages ingest,embed
+    python -m lawrag.pipeline.batch run --stages legal_graph,definition_projections
     python -m lawrag.pipeline.batch status                 # 마지막/현재 실행
 
-순서: ingest → structure → delegation → terms → frames(LLM) → embed → scopes.
+전체 순서: ingest → structure → delegation → terms → frames(LLM) → legal_graph →
+definition_projections → embed → scopes. 기본 run은 무거운 명시 단계 둘을 제외한다.
 모델이 없는 단계는 건너뛰고 이유를 남긴다. 진행은 data/pipeline/state.json 과
 runs/<id>.jsonl 에 남아 화면(/pipeline/)이 같은 것을 읽는다.
 """
@@ -22,7 +24,7 @@ from lawrag.platform.paths import data_path, repository_root
 
 REPO_ROOT = repository_root()
 sys.path.insert(0, str(REPO_ROOT))
-os.environ.setdefault("STRUCTURE_STORE", str(data_path("structure")))
+os.environ.setdefault("STRUCTURE_STORE", str(data_path("INBOX", "AUTHORING", "structure")))
 
 from lawrag.core import batch as batch_mod  # noqa: E402
 
@@ -41,7 +43,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("lineup")
     sub.add_parser("status")
     r = sub.add_parser("run")
-    r.add_argument("--stages", help="쉼표 구분 (기본 전부)")
+    r.add_argument("--stages", help="쉼표 구분 (기본: 안전 자동 단계)")
     r.add_argument("--workers", type=int)
     r.add_argument("--force", action="store_true", help="위임 간선 강제 재생성")
     a = ap.parse_args(argv)

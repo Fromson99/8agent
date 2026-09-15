@@ -2,7 +2,7 @@
 
     python -m lawrag.pipeline.ingest_fsc
 
-data/corpus/fsc(수집 정본, HTML)는 읽기만 한다. 관련 법령은 저장값을 믿지 않고
+01_DATA/INBOX/AUTHORING/corpus/fsc(수집 정본, HTML)는 읽기만 한다. 관련 법령은 저장값을 믿지 않고
 **지금 코퍼스 명칭·현행 판정 규칙으로 재판정**한다 (ingest_expc 와 같은
 규율 — 판정 규칙이 고쳐지면 연결도 따라와야 한다). 인용이 있는 사례만
 data/wiki/raw/fsc/<회신일>-<키>.md 로 이관한다 (llm-wiki raw-template).
@@ -23,8 +23,8 @@ sys.path.insert(0, str(REPO_ROOT))
 from lawrag.sources.cite import plain_mentions  # noqa: E402
 from lawrag.sources.fsc import BASE, case_text, parse_detail  # noqa: E402
 
-FSC_DIR = data_path("corpus", "fsc")
-CORPUS_DIR = data_path("corpus")
+FSC_DIR = data_path("INBOX", "AUTHORING", "corpus", "fsc")
+CORPUS_DIR = data_path("INBOX", "AUTHORING", "corpus")
 RAW_DIR = data_path("wiki", "raw", "fsc")
 
 

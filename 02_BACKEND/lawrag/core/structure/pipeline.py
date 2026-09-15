@@ -233,7 +233,7 @@ def _induce_and_select(result: StructureResult, blocks: Optional[list[Block]],
                        n_blocks: int, *, root: Optional[str],
                        hint: Optional[list[list[str]]],
                        partial_order: Optional[list[tuple[str, str]]],
-                       chain_evidence: bool = False) -> None:
+                       chain_evidence: bool = False, strict_ladder: bool = False) -> None:
     """S3(사다리 유도) → S4(DP · 층 해제 1회 · 트리 · 제목 · 잎 · 범위).
 
     `interpret` 와 `rebuild` 의 공통 구간 — 같은 열두 줄이 두 곳에 있으면 한쪽만
@@ -245,12 +245,26 @@ def _induce_and_select(result: StructureResult, blocks: Optional[list[Block]],
                               chain_evidence=chain_evidence,
                               partial_order=partial_order,
                               page_width=Block.page_widths(blocks) if blocks else None)
-    dpr = dp.run(cands, result.ladder)
+    if strict_ladder:
+        # Explicit regional grammar also covers singleton-only regions.
+        from .model import Ladder, Rung
+        if not hint or any(not isinstance(row, list) or not row for row in hint):
+            raise ValueError("Strict ladder requires nonempty declared levels")
+        flat = [family for row in hint for family in row]
+        if any(not isinstance(family, str) for family in flat) or len(flat) != len(set(flat)):
+            raise ValueError("Strict ladder requires unique family assignments")
+        result.ladder = Ladder(rungs=[Rung(level=i, families=list(row), evidence="explicit region template")
+                                     for i, row in enumerate(hint)])
+        for candidate in cands:
+            candidate.level = result.ladder.level_of(candidate.family_key)
+            candidate.unassigned = candidate.level is None
+            candidate.assign_note = "Explicit regional template"
+    dpr = dp.run(cands, result.ladder, strict_levels=strict_ladder, required_candidates=result.applied.get("heading_candidates", []))
     # 사다리가 열 수 없는 층에 앉힌 계열이 있으면 풀고 **한 번만** 다시 돈다.
     # 되풀이하지 않는다 — 두 번째에도 막히면 그것은 층 문제가 아니다.
-    freed = s4_unlock(cands, result.ladder, dpr)
+    freed = [] if strict_ladder else s4_unlock(cands, result.ladder, dpr)
     if freed:
-        dpr = dp.run(cands, result.ladder)      # 새 DPResult — 감사도 새로 시작한다
+        dpr = dp.run(cands, result.ladder, strict_levels=strict_ladder, required_candidates=result.applied.get("heading_candidates", []))      # 새 DPResult — 감사도 새로 시작한다
         dpr.audit.insert(0, _unlock_note(freed, cands))
         result.stats["unlocked"] = freed
     result.tree = dp.build_tree(cands, n_blocks)
@@ -585,6 +599,9 @@ def interpret(blocks: list[Block], doc: str, *,
               families: Optional[list[str]] = None,
               ladder_hint: Optional[list[list[str]]] = None,
               partial_order: Optional[list[tuple[str, str]]] = None,
+              reference_candidates: Optional[list[str]] = None,
+              heading_candidates: Optional[list[str]] = None,
+              strict_ladder: bool = False,
               llm=None,
               pdf_path=None,
               split_indent: bool = True,
@@ -608,6 +625,8 @@ def interpret(blocks: list[Block], doc: str, *,
     어휘(`proposers/`)에는 여전히 레벨이 없다(SPEC §6). 여기 들어오는 것은 어휘가
     아니라 **이 문서군에 대한 입력**이다.
     """
+    if strict_ladder and not ladder_hint:
+        raise ValueError("strict_ladder requires an explicit template")
     reg = registry or registry_mod.default()
     lex = lexicon or lexicon_mod.default()
     result = StructureResult(doc=doc)
@@ -618,6 +637,7 @@ def interpret(blocks: list[Block], doc: str, *,
                       "partial_order": [f"{a}>{b}" for a, b in (partial_order or [])],
                       "llm": llm is not None, "lang": lang}
 
+    if strict_ladder: result.applied["strict_ladder"] = True
     cands = s0_propose(blocks, reg, lex, lang, families=families)
     result.candidates = cands
     if not cands:
@@ -657,13 +677,35 @@ def interpret(blocks: list[Block], doc: str, *,
             result.stats["indent_split"] = split_stats
 
     dropped = s2_family(cands)
+    if reference_candidates:
+        ids = set(reference_candidates)
+        if len(ids) != len(reference_candidates) or not ids <= {c.id for c in cands}:
+            raise ValueError('Unknown or duplicate reference candidate')
+        for c in cands:
+            if c.id in ids:
+                c.survives = False
+                c.family_note = 'Document recipe: source reference, not a heading'
+                c.llm_verdict = 'reference'
+        result.applied['reference_candidates'] = sorted(ids)
+    if heading_candidates:
+        required = set(heading_candidates)
+        if len(required)!=len(heading_candidates) or not required <= {c.id for c in cands}:
+            raise ValueError('Unknown or duplicate heading candidate')
+        if required & set(reference_candidates or []):
+            raise ValueError('Conflicting heading and reference candidate')
+        for c in cands:
+            if c.id in required:
+                c.survives = True
+                c.family_note = 'Document recipe: source heading recovery'
+                c.llm_verdict = 'heading'
+        result.applied['heading_candidates'] = sorted(required)
     result.stats["family_dropped"] = dropped
     result.stats["survivors"] = sum(1 for c in cands if c.survives)
 
     result.stats["page_width"] = len(Block.page_widths(blocks))
     _induce_and_select(result, blocks, len(blocks), chain_evidence=split_indent,
                        root=root, hint=ladder_hint,
-                       partial_order=partial_order)
+                       partial_order=partial_order, strict_ladder=strict_ladder)
 
     s5_fitness(result, blocks)
     s5_residual(result)

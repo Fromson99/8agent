@@ -18,7 +18,7 @@ from .ids import validate_id
 
 
 SCHEMA_VERSION = "legal-graph-v1"
-COMPILER_CONTRACT_VERSION = "legal-graph-compiler-v3"
+COMPILER_CONTRACT_VERSION = "legal-graph-compiler-v4-clause-span"
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -795,6 +795,24 @@ def validate_row(
                 or start < 0 or end <= start):
             raise SchemaValidationError("clause_span must satisfy 0 <= start < end")
         _sha256(row["text_sha256"], "text_sha256")
+        if "selector" in row:
+            selector = Selector.from_dict(row["selector"])
+            if selector.start != start or selector.end != end:
+                raise SchemaValidationError(
+                    "clause_span selector offsets must equal start/end"
+                )
+            if selector.quote_sha256 != row["text_sha256"]:
+                raise SchemaValidationError(
+                    "clause_span selector quote_sha256 must equal text_sha256"
+                )
+        if "text" in row:
+            text = row["text"]
+            if not isinstance(text, str) or not text:
+                raise SchemaValidationError("clause_span text must be non-empty")
+            if hashlib.sha256(text.encode("utf-8")).hexdigest() != row["text_sha256"]:
+                raise SchemaValidationError("clause_span text does not match text_sha256")
+        if row.get("span_kind") not in {None, "CLAUSE", "PROVISO"}:
+            raise SchemaValidationError("clause_span span_kind must be CLAUSE or PROVISO")
     for name in ("evidence_ids", "member_ids", "basis_ids"):
         if name in row and (
             not isinstance(row[name], list)

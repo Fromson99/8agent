@@ -1,5 +1,7 @@
 # GENOS
 
+현재 통합 패키지의 코드 서빙 배포는 [코드 서빙 배포 내부 지식](../../07_DOCS/REFERENCE/OPERATIONS/GENOS_CODE_SERVING_CURRENT.md)을 먼저 읽는다. 저장소 URL·Git 인증·코드 API 키·모델키, 코드 push와 영속 데이터 경로를 구분한다. 아래는 기존 release-bound 활성화 계약이며 standalone 인계본에 자동 적용됐다고 가정하지 않는다.
+
 GENOS는 다음 포인터만 활성화한다.
 
 ```text

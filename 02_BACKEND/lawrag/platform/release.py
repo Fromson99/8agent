@@ -803,7 +803,7 @@ def build_main_transition_chain_for_release(
                 f"legacy MAIN promotion plan must be an object: {resolved}"
             )
         plans.append(value)
-    from lawrag.core.rag.main_promotion import build_transition_chain
+    from lawrag.platform.main_promotion import build_transition_chain
 
     try:
         return build_transition_chain(
@@ -832,7 +832,7 @@ def validate_release_bindings(
     # The same validator used by sealed bootstrap protects the build path.
     # In particular, generation zero has no transition proof and therefore
     # must be the one canonical default state byte-for-byte semantically.
-    from lawrag.core.rag.main_promotion import validate_state as validate_main_state
+    from lawrag.platform.main_promotion import validate_state as validate_main_state
 
     main_state_errors = validate_main_state(main_state)
     mismatches.extend(f"main.state:{item}" for item in main_state_errors)

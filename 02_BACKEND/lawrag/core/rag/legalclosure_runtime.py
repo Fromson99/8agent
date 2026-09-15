@@ -17,14 +17,14 @@ from lawrag.core.rag import (
     legal_graph_closure,
     legal_semantic_search,
     legalclosure,
-    main_promotion,
 )
+from lawrag.platform import main_promotion
 from lawrag.core.rag.answer import Section
-from lawrag.core.rag.content_snapshot import (
+from lawrag.runtime.content_snapshot import (
     ContentSnapshotError,
     current_content_snapshot,
 )
-from lawrag.core.rag.experiments import retrieval_stage_ledger as stage_ledger
+from lawrag.runtime import retrieval_stage_ledger as stage_ledger
 from lawrag.core.rag.assertion_shortcuts import (
     ShortcutIndex,
     ShortcutLoadResult,

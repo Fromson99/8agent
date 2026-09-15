@@ -281,7 +281,7 @@ def health():
                  "preheat": PREHEAT, "deps": {}}
     if SEALED_SERVING:
         from lawrag.core.rag import switches as switches_mod
-        from lawrag.core.rag.content_snapshot import (
+        from lawrag.runtime.content_snapshot import (
             current_content_snapshot,
             current_retrieval_runtime_receipt,
         )

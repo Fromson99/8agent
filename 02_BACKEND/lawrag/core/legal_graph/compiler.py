@@ -54,6 +54,7 @@ _TERMINALS = ("mapped", "support_only", "unresolved", "suppressed",
 _JSONL_ARTIFACTS = (
     "canonical/instruments.jsonl",
     "canonical/structural_units.jsonl",
+    "canonical/clause_spans.jsonl",
     "canonical/legacy_concepts.jsonl",
     "canonical/legacy_assertions.jsonl",
     "canonical/legacy_taxonomy.jsonl",
@@ -98,6 +99,12 @@ _EXCEPTION_SIGNAL = re.compile(r"다만|예외|제외|제한|아니한\s*경우|
 _AUTHORITY_SIGNAL = re.compile(r"권한|결의|결정|선임|해임|승인|의결|위임|위탁|지정|명령")
 _TIME_SIGNAL = re.compile(r"(?:\d+|일|월|년)\s*(?:일|개월|월|년)|기한|기간|이내|이후|이전|부터|까지")
 _QUANTITY_SIGNAL = re.compile(r"\d|퍼센트|%|분의|금액|수량|횟수|이상|이하|초과|미만")
+# Korean legal sources often concatenate OCR/XML sentences without inserting
+# whitespace (``...한다.다음...``).  A ``다.`` ending is therefore a boundary
+# even when the next sentence starts immediately; other punctuation remains a
+# boundary only before whitespace/end so decimals and abbreviations stay whole.
+_CLAUSE_END = re.compile(r"(?<=다)\.|[.;](?=\s|$)")
+_PROVISO_START = re.compile(r"(?<![가-힣A-Za-z0-9])다만(?=\s|,)")
 
 _SEMANTIC_CONTRACT = {
     SemanticEntityType.FORMULA_EXPRESSION: (
@@ -134,11 +141,11 @@ _SEMANTIC_CONTRACT = {
 
 @dataclass(frozen=True)
 class BuildConfig:
-    structure_store: Path = Path("01_DATA/structure")
+    structure_store: Path = Path("01_DATA/INBOX/AUTHORING/structure")
     law_index_file: Path = Path("01_DATA/law_index.json")
     delegation_file: Path = Path("01_DATA/delegation.json")
     canonical_file: Path = Path("01_DATA/domain_graph/canonical.json")
-    frames_store: Path = Path("01_DATA/frames")
+    frames_store: Path = Path("01_DATA/INBOX/AUTHORING/frames")
     glossary_file: Path = Path("01_DATA/glossary.json")
     links_file: Path = Path("01_DATA/links.json")
     output_root: Path = Path("01_DATA/legal_graph")
@@ -289,6 +296,67 @@ def _block_quote(index: Index, doc_id: str, node_id: object,
         node = view.by_id.get(node_id) or {}
         block = view.block_by_idx.get(node.get("block"))
     return str((block or {}).get("text") or "")
+
+
+def _owned_blocks(view, node_id: object) -> list[Mapping[str, Any]]:
+    """Return source blocks owned by one structural unit, in source order.
+
+    A legal article commonly opens on a heading block and keeps its body in the
+    following block.  ``node.block`` points only at the opener, while child
+    units may be inside ``node.span``.  Block ownership is therefore the exact
+    boundary: it includes the article body without copying a paragraph child's
+    text into its parent ClauseSpan set.
+    """
+    rows: list[Mapping[str, Any]] = []
+    for block in view.blocks:
+        block_id = block.get("idx")
+        direct_owner = block.get("node")
+        owner = view.owner(block_id) if isinstance(block_id, int) else None
+        if direct_owner == node_id or (
+            direct_owner is None and owner is not None and owner.get("id") == node_id
+        ):
+            rows.append(block)
+    return rows
+
+
+def segment_clause_spans(text: str) -> list[tuple[int, int, str]]:
+    """Split one structural-unit text into exact, non-invented source spans.
+
+    Punctuation and an explicit ``다만`` marker are deterministic boundaries.
+    Whitespace is trimmed by moving offsets; the source text itself is never
+    rewritten.  A text without a boundary remains one ClauseSpan.
+    """
+    if not text or not text.strip():
+        return []
+    boundaries = {match.end() for match in _CLAUSE_END.finditer(text)}
+    boundaries.update(match.start() for match in _PROVISO_START.finditer(text))
+    boundaries.add(len(text))
+    rows: list[tuple[int, int, str]] = []
+    start = 0
+    for boundary in sorted(boundaries):
+        if boundary <= start:
+            continue
+        left, right = start, boundary
+        while left < right and text[left].isspace():
+            left += 1
+        while right > left and text[right - 1].isspace():
+            right -= 1
+        if left < right:
+            kind = "PROVISO" if text[left:right].startswith("다만") else "CLAUSE"
+            rows.append((left, right, kind))
+        start = boundary
+    return rows
+
+
+def _heading_only(node: Mapping[str, Any], text: str) -> bool:
+    """Exclude structural labels that carry no normative/semantic body text."""
+    compact = re.sub(r"\s+", "", text)
+    surface = re.sub(r"\s+", "", str(node.get("surface") or ""))
+    title = re.sub(r"\s+", "", str(node.get("title") or ""))
+    forms = {value for value in (surface, title, surface + title) if value}
+    if surface and title:
+        forms.add(f"{surface}({title})")
+    return compact in forms
 
 
 class _Collector:
@@ -515,6 +583,45 @@ def _compile_structure(collector: _Collector, index: Index,
                 "current": doc_id in current_docs,
                 "authority_generation": index.authority_generation,
             })
+            ordinal = 0
+            for block in _owned_blocks(view, node_id):
+                block_id = block.get("idx")
+                quote = str(block.get("text") or "")
+                if _heading_only(node, quote):
+                    continue
+                for start, end, span_kind in segment_clause_spans(quote):
+                    ordinal += 1
+                    text = quote[start:end]
+                    text_sha256 = sha256_hex(text)
+                    span_id = stable_id(
+                        "clause_span", uid, block_id, start, end, text_sha256
+                    )
+                    collector.add("canonical/clause_spans.jsonl", {
+                        **_base("clause_span", span_id, "canonical"),
+                        "structural_unit_id": uid,
+                        "document_id": doc_id,
+                        "node_id": node_id,
+                        "block_id": block_id,
+                        "article_root_id": root_id,
+                        "start": start,
+                        "end": end,
+                        "text": text,
+                        "text_sha256": text_sha256,
+                        "span_kind": span_kind,
+                        "ordinal": ordinal,
+                        "selector": _selector(
+                            doc_id,
+                            node_id,
+                            block_id=block_id,
+                            start=start,
+                            end=end,
+                            quote=text,
+                            coordinate=str(
+                                node.get("coordinate_key") or view.path(node_id)
+                            ),
+                        ).to_dict(),
+                        "current": doc_id in current_docs,
+                    })
             if doc_id in current_docs and _ARTICLE.fullmatch(str(node.get("surface") or "").strip()):
                 endpoint = _endpoint(index, doc_id, node_id)
                 card = {
@@ -1654,6 +1761,7 @@ def build_generation(config: BuildConfig | None = None) -> BuildResult:
             "schema_version": SCHEMA_VERSION, "generation_id": generation_id,
             "authority_generation": authority_generation, "authority_as_of": authority_as_of,
             "compiler_contract": COMPILER_CONTRACT_VERSION,
+            "features": ["clause-span-v1"],
             "projection_policy": PROJECTION_POLICY_VERSION,
             "runtime_wired": False,
             "source_hashes": hashes, "source_aggregate_sha256": content_sha256(hashes),
@@ -1662,6 +1770,7 @@ def build_generation(config: BuildConfig | None = None) -> BuildResult:
                 "documents": len(index.docs),
                 "current_documents": len(current_docs),
                 "structural_units": sum(len(view.nodes) for view in index.docs.values()),
+                "clause_spans": len(collector.rows.get("canonical/clause_spans.jsonl", [])),
                 "current_article_roots": len(cards),
                 "semantic_entities": sum(semantic_counts.values()),
                 "semantic_entities_by_type": dict(sorted(semantic_counts.items())),
@@ -1730,5 +1839,5 @@ def build_generation(config: BuildConfig | None = None) -> BuildResult:
 
 __all__ = [
     "COMPILER_CONTRACT_VERSION", "PROJECTION_POLICY_VERSION",
-    "BuildConfig", "BuildResult", "build_generation",
+    "BuildConfig", "BuildResult", "build_generation", "segment_clause_spans",
 ]

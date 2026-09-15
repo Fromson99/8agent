@@ -46,6 +46,7 @@ SUPPORTED_ACTIVATION_POLICY = "query_conditional_future_policy"
 SUPPORTED_COMPILER_CONTRACTS = frozenset({
     "legal-graph-compiler-v1",
     "legal-graph-compiler-v2",
+    "legal-graph-compiler-v3",
     COMPILER_CONTRACT_VERSION,
 })
 NEGATIVE_CACHE_TTL_SECONDS = 5.0

@@ -1,0 +1,29 @@
+{
+  "schema_version": "pipeline-engine-v1",
+  "id": "semantic-contract-audit@1.0.0",
+  "version": "1.0.0",
+  "kind": "AUDITOR",
+  "maturity": "TOOL",
+  "inputs": {
+    "observation": "semantic.observation"
+  },
+  "outputs": {
+    "report": "audit.semantic-report"
+  },
+  "entrypoint": {
+    "path": "02_BACKEND/ENGINES/semantic_contract/1.0.0/engine.py",
+    "function": "run"
+  },
+  "files": {
+    "02_BACKEND/ENGINES/semantic_contract/1.0.0/engine.py": "ed5b8e25518531b05aea9b5e8d52217fa6c91d4ff3263af42cbd7e69490e1541",
+    "06_TOOLS/AUDIT/legal_semantic_contract.py": "9b70a75f790914003d4904ff3aaf4d04e3a3ddf4ffc80270a64735c4c4a52024"
+  },
+  "parameters_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "migration": null,
+  "experiment_binding": null
+}

@@ -1,0 +1,108 @@
+{
+  "base_final_receipt_sha256": "1856e3833e2f6ca233749f87a9f2d4221483a6ef81bb240147cf0954da2d682a",
+  "base_generation": "20260904-code-v7",
+  "generation": "20260904-code-v8",
+  "overlays": [
+    {
+      "bytes": 3510,
+      "path": "02_BACKEND/lawrag/api/routers/pipeline.py",
+      "sha256": "6024b53e34ffb0bf637166b0f75ca59ccdcbd83bcb3c41f5f1571422d8d60af9"
+    },
+    {
+      "bytes": 100270,
+      "path": "02_BACKEND/lawrag/api/routers/rag.py",
+      "sha256": "17db173deb27b6e74300e2cbc973e84321a3a5fe6d8951c4a6df76639affd4c2"
+    },
+    {
+      "bytes": 14859,
+      "path": "02_BACKEND/lawrag/api/viewer/pipeline/app.js",
+      "sha256": "5d3a4088f818004bb325fe120337af13d65572f9e0d17f6f0bd0d2112de895cc"
+    },
+    {
+      "bytes": 3606,
+      "path": "02_BACKEND/lawrag/api/viewer/pipeline/index.html",
+      "sha256": "1dc49fba1da69ed1f471b893312ea18ad003975181ebb9833c8298c33f09e122"
+    },
+    {
+      "bytes": 9526,
+      "path": "02_BACKEND/lawrag/api/viewer/pipeline/styles.css",
+      "sha256": "3215e64bbef402e22365a755e0b43740e305a5617e8331e308f80a9a77c75c30"
+    },
+    {
+      "bytes": 40229,
+      "path": "02_BACKEND/lawrag/core/batch.py",
+      "sha256": "902f25007bc744a28d179d0187f2c2eeb583c583098917456c00b6c0ed5e3c89"
+    },
+    {
+      "bytes": 87140,
+      "path": "02_BACKEND/lawrag/core/legal_graph/compiler.py",
+      "sha256": "97e2ae2fe5de18b9cf77da0a3a2f74860b4a3908c3f6f0830df23d95b7f9c3f7"
+    },
+    {
+      "bytes": 39052,
+      "path": "02_BACKEND/lawrag/core/legal_graph/model.py",
+      "sha256": "4d283638ca3f732b506a8e2b01fc4b205da4c03ba57e55f8709642b5bcbd80b4"
+    },
+    {
+      "bytes": 67072,
+      "path": "02_BACKEND/lawrag/core/legal_graph/validation.py",
+      "sha256": "85ad9b100e3876d0dc8fa3d13080ace3adce6dadb3b9404e4b32965230b32599"
+    },
+    {
+      "bytes": 40750,
+      "path": "02_BACKEND/lawrag/core/rag/legal_graph_store.py",
+      "sha256": "22642074601684067338f12d71b06321fc302983039b82fd8b7c9c021f4869c6"
+    },
+    {
+      "bytes": 330,
+      "path": "02_BACKEND/lawrag/ontology/__init__.py",
+      "sha256": "7ed108176045fe1401b174508740ecd58a18d559fc5a3e623aa06df45649ed4a"
+    },
+    {
+      "bytes": 5450,
+      "path": "02_BACKEND/lawrag/ontology/catalog.py",
+      "sha256": "936df623a6e8c4685073cbffd886b66162c7c074bf0695959c1038b158e5c1ff"
+    },
+    {
+      "bytes": 35461,
+      "path": "02_BACKEND/lawrag/ontology/definition_projection.py",
+      "sha256": "a86689813112bda65e46ae48a31f460e62f80ca5c4656fad8cddf4b9cfb017bc"
+    },
+    {
+      "bytes": 14120,
+      "path": "02_BACKEND/lawrag/ontology/lifecycle.py",
+      "sha256": "472b5bf4fd477197fadfafa7d560ae672974c11924d7a7e6722d3be29e279fde"
+    },
+    {
+      "bytes": 3738,
+      "path": "02_BACKEND/lawrag/pipeline/batch.py",
+      "sha256": "c733058fa14dc85d05cc14b0ca4c19268910c06dd490023e837c8d5cf717a3c6"
+    },
+    {
+      "bytes": 23483,
+      "path": "02_BACKEND/lawrag/pipeline/collect.py",
+      "sha256": "b26a1559dd838e1ade9d37879e358c968509c4cd68d1de750a7b5c73c79d1d18"
+    },
+    {
+      "bytes": 6226,
+      "path": "02_BACKEND/lawrag/pipeline/ontology.py",
+      "sha256": "fe424570ebca7ca7814c5443c33d9cd11c459136482033274b84c9b97ef02825"
+    },
+    {
+      "bytes": 17135,
+      "path": "02_BACKEND/lawrag/runtime/components/ontology_rag_v1.py",
+      "sha256": "9717ccda078af87ed0766d680d53efd0226d107ffbc198f57142114025e3e881"
+    },
+    {
+      "bytes": 2437,
+      "path": "02_BACKEND/lawrag/runtime/registry.py",
+      "sha256": "8402fdd02684450bbe4a69fab65305c86bf30a2e564c5f097804333bba4265c7"
+    },
+    {
+      "bytes": 10258,
+      "path": "02_BACKEND/lawrag/sources/lawgo.py",
+      "sha256": "6280ca4d8ba23d221a103cea7301e84481fdd076bc3e268429e5f1c0e5157d5d"
+    }
+  ],
+  "schema_version": "code-generation-overlay-v1"
+}

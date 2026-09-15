@@ -63,6 +63,9 @@ _REQUIRED_ARTIFACTS_V2 = frozenset({
     "projections/rule_bundle_projections.jsonl",
     "source_accounting.json",
 })
+_REQUIRED_ARTIFACTS_V4 = _REQUIRED_ARTIFACTS_V2 | frozenset({
+    "canonical/clause_spans.jsonl",
+})
 _TERMINAL_DISPOSITIONS = (
     "mapped",
     "support_only",
@@ -71,6 +74,15 @@ _TERMINAL_DISPOSITIONS = (
     "out_of_contract",
     "parse_error",
 )
+_ACCOUNTING_SOURCE_KINDS_V4 = frozenset({
+    "definitions",
+    "frames",
+    "requirements",
+    "glossary",
+    "references",
+    "delegation",
+    "legacy_bundle_fallback",
+})
 _REQUIRED_MODES = frozenset({ClosureMode.REQUIRED_WHEN_ACTIVATED.value})
 _ARTICLE_SURFACE = re.compile(r"^제\s*\d+(?:-\d+)?조(?:의\s*\d+)?$")
 
@@ -246,9 +258,15 @@ def _load_artifacts(state: _State) -> None:
         for relative, metadata in artifacts.items()
         if isinstance(relative, str) and isinstance(metadata, Mapping)
     }
+    compiler_contract = state.manifest.get("compiler_contract")
     required = (
         _REQUIRED_ARTIFACTS_V1
-        if state.manifest.get("compiler_contract") == "legal-graph-compiler-v1"
+        if compiler_contract == "legal-graph-compiler-v1"
+        else _REQUIRED_ARTIFACTS_V4
+        if (
+            compiler_contract == COMPILER_CONTRACT_VERSION
+            and "clause-span-v1" in (state.manifest.get("features") or [])
+        )
         else _REQUIRED_ARTIFACTS_V2
     )
     missing_contract = sorted(required - logical_artifacts)
@@ -408,6 +426,7 @@ def _iter_endpoints(value: Any) -> Iterable[Mapping[str, Any]]:
 
 def _validate_structure_and_endpoints(state: _State) -> tuple[set[str], set[str]]:
     structural = state.by_type.get(RowType.STRUCTURAL_UNIT.value, {})
+    clause_spans = state.by_type.get(RowType.CLAUSE_SPAN.value, {})
     unit_by_selector: dict[tuple[str, str], str] = {}
     article_roots: set[str] = set()
     current_articles: set[str] = set()
@@ -436,6 +455,43 @@ def _validate_structure_and_endpoints(state: _State) -> tuple[set[str], set[str]
         selector = row.get("selector")
         if isinstance(selector, Mapping) and _selector_key(selector) != key:
             state.issue("structure.selector_mismatch", "selector does not equal structural document/node", path=path, row=number, record_id=unit_id)
+
+    for span_id, row in clause_spans.items():
+        path, number, _ = state.by_id[span_id]
+        unit_id = str(row.get("structural_unit_id") or "")
+        unit = structural.get(unit_id)
+        if unit is None:
+            state.issue(
+                "clause_span.unit_dangling",
+                f"unknown structural_unit_id {unit_id!r}",
+                path=path,
+                row=number,
+                record_id=span_id,
+            )
+            continue
+        selector = row.get("selector")
+        if not isinstance(selector, Mapping):
+            state.issue(
+                "clause_span.selector_missing",
+                "ClauseSpan requires an exact source selector",
+                path=path,
+                row=number,
+                record_id=span_id,
+            )
+            continue
+        expected_key = (
+            str(unit.get("document_id") or ""),
+            str(unit.get("node_id") or ""),
+        )
+        if _selector_key(selector) != expected_key:
+            state.issue(
+                "clause_span.selector_mismatch",
+                "ClauseSpan selector must resolve to its structural unit",
+                path=path,
+                row=number,
+                record_id=span_id,
+            )
+        _validate_source_span(state, selector, path, number, span_id)
 
     exact_span_seen = False
     for record_id, (path, number, row) in state.by_id.items():
@@ -1160,12 +1216,27 @@ def _validate_source_accounting(state: _State) -> None:
     if not isinstance(sources, Mapping):
         state.issue("accounting.sources", "sources must be an object", path="source_accounting.json")
         return
-    expected_kinds = set(grouped)
-    if set(map(str, sources)) != expected_kinds:
-        state.issue("accounting.source_partition", f"source kinds differ: expected {sorted(expected_kinds)}, got {sorted(map(str, sources))}", path="source_accounting.json")
+    # v4 publishes a closed source ledger even when one source has no input.
+    # Keeping a zero-row partition distinguishes "checked and absent" from
+    # "not processed".  Older compiler contracts did not promise this closed
+    # shape, so their historical observation-derived validation stays intact.
+    expected_kinds = (
+        set(_ACCOUNTING_SOURCE_KINDS_V4)
+        if state.manifest.get("compiler_contract") == COMPILER_CONTRACT_VERSION
+        else set(grouped)
+    )
+    declared_kinds = set(map(str, sources))
+    observed_kinds = set(grouped)
+    if declared_kinds != expected_kinds or not observed_kinds <= expected_kinds:
+        state.issue(
+            "accounting.source_partition",
+            f"source kinds differ: expected {sorted(expected_kinds)}, "
+            f"declared {sorted(declared_kinds)}, observed {sorted(observed_kinds)}",
+            path="source_accounting.json",
+        )
     total_input = 0
     total_counts = {disposition: 0 for disposition in _TERMINAL_DISPOSITIONS}
-    for source_kind in sorted(expected_kinds | set(map(str, sources))):
+    for source_kind in sorted(expected_kinds | declared_kinds | observed_kinds):
         source = sources.get(source_kind)
         if not isinstance(source, Mapping):
             continue
@@ -1289,6 +1360,7 @@ def validate_generation(
         bootstrap_errors.append(ValidationIssue("runtime.wired", "manifest.json", message="manifest.runtime_wired must be false"))
     if manifest.get("compiler_contract") not in {
         "legal-graph-compiler-v1", "legal-graph-compiler-v2",
+        "legal-graph-compiler-v3",
         COMPILER_CONTRACT_VERSION,
     }:
         bootstrap_errors.append(ValidationIssue(

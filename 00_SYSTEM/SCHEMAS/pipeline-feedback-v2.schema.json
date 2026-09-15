@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:pipeline-feedback-v2",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Event"
+    },
+    {
+      "$ref": "#/$defs/Proposal"
+    }
+  ],
+  "$defs": {
+    "Event": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "pipeline-feedback-v2"
+        },
+        "record_kind": {
+          "const": "EVENT"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "scope": {
+          "$ref": "urn:8-agent:legal-semantic-v2#/$defs/Scope"
+        },
+        "source_kind": {
+          "enum": [
+            "RAG_USER",
+            "VALIDATOR",
+            "INGESTION"
+          ]
+        },
+        "signal": {
+          "enum": [
+            "ANSWER_CORRECT",
+            "ANSWER_INCORRECT",
+            "DATA_ERROR",
+            "SCHEMA_MISMATCH",
+            "MISSING_EVIDENCE",
+            "STALE_GENERATION"
+          ]
+        },
+        "status": {
+          "const": "OBSERVED"
+        },
+        "target": {
+          "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Target"
+        },
+        "query_plan_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "query_card_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "schema_version",
+        "record_kind",
+        "id",
+        "occurred_at",
+        "scope",
+        "source_kind",
+        "signal",
+        "status",
+        "target",
+        "query_plan_id",
+        "query_card_id",
+        "reason",
+        "expected_evidence"
+      ],
+      "additionalProperties": false
+    },
+    "Proposal": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "pipeline-feedback-v2"
+        },
+        "record_kind": {
+          "const": "PROPOSAL"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "$ref": "urn:8-agent:legal-semantic-v2#/$defs/Scope"
+        },
+        "event_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "target": {
+          "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Target"
+        },
+        "action": {
+          "enum": [
+            "REPROCESS",
+            "CHANGE_SCHEMA",
+            "CHANGE_ENGINE",
+            "REVIEW_SEMANTICS",
+            "CHANGE_TEMPLATE"
+          ]
+        },
+        "status": {
+          "const": "PROPOSED"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "proposed_artifact": {
+          "anyOf": [
+            {
+              "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "semantic_feedback": {
+          "anyOf": [
+            {
+              "$ref": "urn:8-agent:legal-semantic-v2#/$defs/Feedback"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "required_next_step": {
+          "const": "REVIEW_AND_VALIDATE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "record_kind",
+        "id",
+        "scope",
+        "event_ids",
+        "target",
+        "action",
+        "status",
+        "reason",
+        "proposed_artifact",
+        "semantic_feedback",
+        "required_next_step"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

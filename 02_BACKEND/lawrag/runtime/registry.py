@@ -31,6 +31,13 @@ _SPECS = {
         source_adr="ADR-0021",
         description="현재 운영 LegalClosure 기준선; 연구 extension은 실행하지 않음",
     ),
+    "ontology-rag-v1": RuntimeSpec(
+        profile_id="ontology-rag-v1",
+        module="lawrag.runtime.components.ontology_rag_v1",
+        callable_name="retrieve",
+        source_adr="ADR-0175",
+        description="모호 surface를 차단하고 검증된 DefinitionProjection ClauseSpan만 LegalClosure 바닥에 가산",
+    ),
 }
 
 
@@ -49,7 +56,7 @@ def validate_profile_id(profile_id: str) -> None:
 
 
 def current_profile_id() -> str:
-    from lawrag.core.rag import main_promotion
+    from lawrag.platform import main_promotion
 
     profile_id = main_promotion.runtime_profile_id()
     validate_profile_id(profile_id)

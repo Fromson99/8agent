@@ -34,6 +34,8 @@ byte 0xc1`. 둘 다 시끄럽긴 하지만 **무엇을 어떻게 고치면 되�
 from __future__ import annotations
 
 import hashlib
+import json
+import os
 import re
 import sys
 from dataclasses import dataclass, field
@@ -337,22 +339,52 @@ def is_born_digital(path: Path, min_chars: int = 200) -> tuple[bool, dict]:
     try:
         _check_not_encrypted(doc, path)
         total, empty = 0, 0
+        scan_pages = []
         for p in doc:
             t = p.get_text().strip()
             total += len(t)
             if not t:
                 empty += 1
+                if p.get_images(): scan_pages.append(p.number+1)
         n = doc.page_count
     finally:
         doc.close()
-    return (total >= min_chars and empty < n,
-            {"pages": n, "text_chars": total, "empty_pages": empty})
+    return (total >= min_chars and empty < n and not scan_pages,
+            {"pages": n, "text_chars": total, "empty_pages": empty, "scan_candidate_pages": scan_pages})
 
 
-def _converter(ocr: bool):
+def pdf_parser_identity(path):
+    """Bind parser cache to exact source and explicit OCR assets; no auto download."""
+    from lawrag.platform.paths import data_path
+    born, _ = is_born_digital(Path(path))
+    policy = {'version': 'pdf-korean-ocr-v1', 'source_sha256': hashlib.sha256(Path(path).read_bytes()).hexdigest(),
+              'docling': docling_version(), 'ocr': not born}
+    if not born:
+        directory = Path(os.environ.get('STRUCTURE_OCR_MODEL_DIR', str(data_path('MODELS', 'rapidocr-korean-v4-native'))))
+        manifest = directory / 'manifest.json'
+        if not manifest.is_file():
+            raise ValueError('Korean OCR assets missing: prepare rapidocr-korean-v4 or set STRUCTURE_OCR_MODEL_DIR')
+        receipt = json.loads(manifest.read_text('utf-8'))
+        if receipt.get('profile') != 'rapidocr-korean-v4-torch':
+            raise ValueError('Unsupported OCR profile')
+        expected = {r['file']: r['sha256'] for r in receipt.get('files', [])}
+        assets = {}
+        for name in ('ch_PP-OCRv4_det_mobile.pth', 'ch_ptocr_mobile_v2.0_cls_mobile.pth', 'korean_PP-OCRv4_rec_mobile.pth', 'korean_dict.txt'):
+            p = directory / name
+            if not p.is_file(): raise ValueError('Korean OCR asset missing: ' + name)
+            h = hashlib.sha256(p.read_bytes()).hexdigest()
+            if h != expected.get(name): raise ValueError('Korean OCR asset hash mismatch: ' + name)
+            assets[name] = {'path': str(p.resolve()), 'sha256': h}
+        policy.update(profile=receipt['profile'], language='korean', assets=assets,
+                      mixed_script_quality='unverified; Korean model does not guarantee Hanja preservation')
+    return policy
+
+
+def _converter(ocr: bool, *, policy=None):
     """docling 변환기 — 프로세스당 한 번만 만든다(모델 로딩이 비싸다)."""
     global _CONVERTER
-    if _CONVERTER and _CONVERTER[0] == ocr:
+    identity = json.dumps({k:v for k,v in policy.items() if k != 'source_sha256'}, sort_keys=True) if policy is not None else str(ocr)
+    if _CONVERTER and _CONVERTER[0] == identity:
         return _CONVERTER[1]
 
     from docling.datamodel.base_models import InputFormat
@@ -360,6 +392,20 @@ def _converter(ocr: bool):
     from docling.document_converter import DocumentConverter, PdfFormatOption
 
     opts = PdfPipelineOptions()
+    if ocr:
+        if not policy or not policy.get('assets'):
+            raise ValueError('Explicit Korean OCR asset policy required')
+        from docling.datamodel.pipeline_options import RapidOcrOptions
+        from rapidocr import LangRec, OCRVersion
+        assets = policy['assets']
+        # Docling's language list selects its detector bundle; recognition is
+        # explicitly overridden with the Korean model and matching dictionary.
+        opts.ocr_options = RapidOcrOptions(
+            backend='torch', lang=['chinese'],
+            det_model_path=assets['ch_PP-OCRv4_det_mobile.pth']['path'], cls_model_path=assets['ch_ptocr_mobile_v2.0_cls_mobile.pth']['path'],
+            rec_model_path=assets['korean_PP-OCRv4_rec_mobile.pth']['path'], rec_keys_path=assets['korean_dict.txt']['path'],
+            rapidocr_params={'Rec.lang_type': LangRec.KOREAN,
+                'Det.ocr_version': OCRVersion.PPOCRV4, 'Rec.ocr_version': OCRVersion.PPOCRV4})
     opts.do_ocr = ocr                      # born-digital 이면 끈다 (§2.2)
     opts.do_table_structure = True         # 값은 표 안에 있다 — 반드시 켠다
     opts.table_structure_options.do_cell_matching = True
@@ -370,7 +416,7 @@ def _converter(ocr: bool):
     opts.images_scale = IMAGE_SCALE
     conv = DocumentConverter(
         format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=opts)})
-    _CONVERTER = (ocr, conv)
+    _CONVERTER = (identity, conv)
     return conv
 
 
@@ -574,9 +620,10 @@ def parse_pdf(path: str | Path, *, recognize_grids=None) -> ParseResult:
     born, pdf_stats = is_born_digital(p)
     warnings: list[str] = []
     if not born:
-        warnings.append("born-digital 이 아닙니다 — OCR 로 파싱하며 정확도가 낮습니다 (§8 범위 밖)")
+        warnings.append("한국어 OCR 적용 — 국한문 혼용·작은 글자·표의 원문 대조가 필요합니다")
 
-    doc = _converter(ocr=not born).convert(str(p)).document
+    policy = pdf_parser_identity(p)
+    doc = _converter(ocr=not born, policy=policy).convert(str(p)).document
     # picture_uris 는 요소 index → data URI (재정렬 뒤 다시 맞춘다)
     elements, picture_uris, docling_stats = _elements_from_docling(doc)
 
@@ -604,6 +651,7 @@ def parse_pdf(path: str | Path, *, recognize_grids=None) -> ParseResult:
     type_stats = typography.annotate(p, elements)
 
     stats = {
+        "parser_identity": policy,
         **docling_stats,
         **order_stats,
         **type_stats,

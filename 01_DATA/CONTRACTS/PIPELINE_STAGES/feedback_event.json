@@ -1,0 +1,37 @@
+{
+  "schema_version": "pipeline-feedback-v2",
+  "record_kind": "EVENT",
+  "id": "event:synthetic",
+  "occurred_at": "2026-09-06T00:00:00Z",
+  "scope": {
+    "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "authority_generation": "synthetic-authority-1",
+    "document_version_ids": [
+      "synthetic:main-v1",
+      "synthetic:detail-v1"
+    ],
+    "jurisdiction": "SYNTHETIC",
+    "as_of": null
+  },
+  "source_kind": "RAG_USER",
+  "signal": "DATA_ERROR",
+  "status": "OBSERVED",
+  "target": {
+    "stage": "PROCESS",
+    "artifact": {
+      "id": "canonical:example",
+      "contract": "semantic.canonical",
+      "path": "synthetic/canonical-example.json",
+      "sha256": "d9ef5e37d5869b628d7384618adadcc6a806005fce8d7b8edaf2130d19e89d45"
+    },
+    "field_pointer": "/payload/provisos/0/condition",
+    "entity_ref": {
+      "type": "Proviso",
+      "id": "proviso:main"
+    }
+  },
+  "query_plan_id": "query:example",
+  "query_card_id": "card:example",
+  "reason": "단서 조건 연결을 검토해 주세요.",
+  "expected_evidence": []
+}

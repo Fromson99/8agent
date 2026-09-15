@@ -37,7 +37,7 @@ def _pack(value: str) -> str:
 
 def enabled() -> bool:
     """평가 실행은 env 한 변수로 A/B하고, 평상시는 사용자 엔진 스위치를 따른다."""
-    from lawrag.core.rag.content_snapshot import current_content_snapshot
+    from lawrag.runtime.content_snapshot import current_content_snapshot
 
     if current_content_snapshot() is not None:
         return switches.is_on("query_guide")

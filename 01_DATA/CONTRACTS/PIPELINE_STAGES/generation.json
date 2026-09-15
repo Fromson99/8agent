@@ -1,0 +1,71 @@
+{
+  "schema_version": "semantic-storage-v1",
+  "record_kind": "GENERATION",
+  "generation_id": "synthetic-generation-1",
+  "parent_generation_id": null,
+  "scope": {
+    "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "authority_generation": "synthetic-authority-1",
+    "document_version_ids": [
+      "synthetic:main-v1",
+      "synthetic:detail-v1"
+    ],
+    "jurisdiction": "SYNTHETIC",
+    "as_of": null
+  },
+  "status": "VALIDATED",
+  "structure_artifacts": [
+    {
+      "id": "source:synthetic:main-v1",
+      "contract": "source.corrected",
+      "path": "synthetic/source-synthetic-main-v1.json",
+      "sha256": "a5e1e995ccd66ebb15bf7bd817199bd0f8626ea4b33b865d7414210ebcb8d32f"
+    },
+    {
+      "id": "source:synthetic:detail-v1",
+      "contract": "source.corrected",
+      "path": "synthetic/source-synthetic-detail-v1.json",
+      "sha256": "e31a77c5e87ec72fdb4d540e90f202acbea9303c1b625b0ae169a47d1ef5796c"
+    }
+  ],
+  "observation_artifacts": [
+    {
+      "id": "observation:example",
+      "contract": "semantic.observation",
+      "path": "synthetic/observation-example.json",
+      "sha256": "bac029d736309e39aa85fbb5903348f1d3b50544f997b0e1ea40bdb03c38d5f3"
+    }
+  ],
+  "canonical_artifacts": [
+    {
+      "id": "canonical:example",
+      "contract": "semantic.canonical",
+      "path": "synthetic/canonical-example.json",
+      "sha256": "d9ef5e37d5869b628d7384618adadcc6a806005fce8d7b8edaf2130d19e89d45"
+    }
+  ],
+  "review_artifacts": [
+    {
+      "id": "review:synthetic-only",
+      "contract": "data.review",
+      "path": "synthetic/review-synthetic-only.json",
+      "sha256": "de8a3730fcb57be734784264362a8a69de097be3d6e9369e73bf7b49e55e4aae"
+    }
+  ],
+  "projection_artifacts": [
+    {
+      "id": "projection:synthetic",
+      "contract": "storage.projection",
+      "path": "synthetic/projection-synthetic.json",
+      "sha256": "81d1e56cd9e6ba12c62da58df957b0312a633c6ef3e6eafccab26b2b2d056878"
+    }
+  ],
+  "index_artifacts": [],
+  "migration": null,
+  "validation_receipt": {
+    "id": "validation:synthetic",
+    "contract": "synthetic.validation",
+    "path": "synthetic/validation-synthetic.json",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  }
+}

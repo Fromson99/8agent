@@ -44,11 +44,12 @@ from lawrag.core.rag import tuples as tuples_mod
 from lawrag.core.rag import wikictx
 from lawrag.core.rag import wikiledger
 from lawrag.core.rag import verdicts as verdicts_mod
-from lawrag.core.rag.content_snapshot import (
+from lawrag.runtime.content_snapshot import (
     current_content_snapshot,
     current_retrieval_runtime_receipt,
 )
 from lawrag.core.rag.controls import value as control_value
+from lawrag.feedback import lifecycle as feedback_lifecycle
 # `core.rag.search` 모듈이 아니라 함수를 바로 받는다 — 패키지 facade 가
 # 같은 이름(search)으로 함수를 내보내서, 모듈 경유 접근은 헷갈린다.
 from lawrag.core.rag.search import search as run_search
@@ -643,7 +644,8 @@ def rag_links_remove(body: Unlink):
 
 @router.get("/switches", summary="엔진 규칙 스위치 — 자동 규칙의 등록부와 상태")
 def rag_switches():
-    from lawrag.core.rag import main_promotion, switches as switches_mod
+    from lawrag.platform import main_promotion
+    from lawrag.core.rag import switches as switches_mod
     return {
         "switches": switches_mod.snapshot(),
         "main_pipeline": main_promotion.runtime_provenance(),
@@ -660,7 +662,8 @@ def rag_switches_set(body: SwitchSet):
     """규칙은 코드가 갖고 있지만 켜짐/꺼짐은 사용자 소유다. 끄면 확정 규칙의
     간선은 보류로 내려가고, 동반 규칙은 회수에서 빠진다. 저장된 판정
     (links.json·정정·억제)은 스위치와 무관하다."""
-    from lawrag.core.rag import main_promotion, switches as switches_mod
+    from lawrag.platform import main_promotion
+    from lawrag.core.rag import switches as switches_mod
     try:
         switches_mod.set_switch(body.key, body.on)
     except ValueError as e:
@@ -1178,10 +1181,15 @@ def _ask_legalclosure(body: Ask, idx, q: str, llm, *, t0: float,
         ladder.append({"stage": "위키 맥락", "count": len(ans.wiki),
                        "note": " · ".join(w["title"] for w in ans.wiki)})
     refs = [] if feedback_failed else vecfirst.static_refs(sections)
+    effective_profile = str(
+        (retrieval_meta.get("runtime") or {}).get("effective_profile")
+        or main_pipeline.get("runtime_profile")
+        or "legalclosure-v2"
+    )
     out = {
         "question": q, "mode": "LegalClosure", "ladder": ladder,
         "retriever": {
-            "id": "legalclosure-v2", "status": "main",
+            "id": effective_profile, "status": "main",
             "requested_mode": requested_mode,
             "strategy": retrieval_meta.get("strategy"),
             "legal_graph": {
@@ -1255,7 +1263,7 @@ def rag_ask(body: Ask):
 
     # 여기부터는 롤백·A/B를 위해 보존한 이전 경로다. 옛 vector/auto 요청도
     # 이 이름으로 정규화되며 응답 retriever가 archived/rollback을 드러낸다.
-    from lawrag.core.rag import main_promotion
+    from lawrag.platform import main_promotion
     legacy_mode = "vector" if effective_mode == "legacy-vector" else "auto"
     legacy_retriever = {
         "id": effective_mode,
@@ -1487,7 +1495,8 @@ def rag_compare(body: Compare):
                                           scope=body.scope or "외규")
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
-    from lawrag.core.rag import main_promotion, switches as switches_mod
+    from lawrag.platform import main_promotion
+    from lawrag.core.rag import switches as switches_mod
     switch_row = next(
         (row for row in switches_mod.snapshot()
          if row["key"] == "internal_compliance_compiler_v1"), {})
@@ -1595,7 +1604,27 @@ def rag_feedback(body: Feedback):
             expected["content_provenance"] = (
                 snapshot.provenance_for_document(doc_id).receipt()
             )
-    rec = tuples_mod.log_feedback(body.qid, body.verdict, expected, body.note)
+    ontology_event = None
+    ontology_error = None
+    try:
+        ontology_event = feedback_lifecycle.build_rag_feedback_event(
+            qid=body.qid,
+            verdict=body.verdict,
+            ask_record=ask_record,
+            expected=expected,
+            note=body.note,
+        )
+    except (TypeError, ValueError) as exc:
+        # The original feedback receipt remains authoritative and durable even
+        # when the optional ontology observation cannot be compiled.
+        ontology_error = f"{type(exc).__name__}: {exc}"
+    rec = tuples_mod.log_feedback(
+        body.qid,
+        body.verdict,
+        expected,
+        body.note,
+        ontology_feedback=ontology_event,
+    )
     logbook.rag_event("feedback", qid=body.qid, verdict=body.verdict,
                       expected_path=(expected or {}).get("path"),
                       note=body.note[:200])
@@ -1630,7 +1659,21 @@ def rag_feedback(body: Feedback):
                 "reason": "recovery_failed_open", "selected": [],
                 "error": type(exc).__name__,
             }
-    return {"saved": True, "record": rec, "recovery": recovery}
+    change_candidates = (
+        list(feedback_lifecycle.compile_change_candidates([ontology_event]))
+        if ontology_event is not None else []
+    )
+    return {
+        "saved": True,
+        "record": rec,
+        "recovery": recovery,
+        "ontology_feedback": {
+            "event": ontology_event,
+            "change_candidates": change_candidates,
+            "error": ontology_error,
+            "activation": "INERT_UNTIL_REVIEW",
+        },
+    }
 
 
 @router.get("/tuples", summary="진단 튜플 목록 — 질의 기록 + 피드백 합본")

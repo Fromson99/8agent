@@ -1,0 +1,21 @@
+{
+  "schema_version": "active-tools-v1",
+  "policy": "deny-by-default",
+  "tools": [
+    "adr_candidate.py",
+    "adr_structure.py",
+    "code_ship.py",
+    "expc_wiki_check.py",
+    "genos_call.sh",
+    "genos_preflight.py",
+    "genos_smoke.sh",
+    "publish_ontology_data.py",
+    "rag_main_promotion.py"
+  ],
+  "retired": {
+    "dataset_sync.py": "Replaced by DatasetPackage, SourceSet and release activation",
+    "data_ship.sh": "Replaced by immutable SourceSet release materialization",
+    "onsite.sh": "Replaced by the onsite active release store"
+  },
+  "experiment_policy": "Unlisted files under EXPERIMENTS are ADR reproduction or analysis assets and are not operational entry points."
+}

@@ -1,0 +1,44 @@
+{
+  "schema_version": "rag-stage-v2",
+  "scope": {
+    "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "authority_generation": "synthetic-authority-1",
+    "document_version_ids": [
+      "synthetic:main-v1",
+      "synthetic:detail-v1"
+    ],
+    "jurisdiction": "SYNTHETIC",
+    "as_of": null
+  },
+  "query_plan_id": "query:example",
+  "canonical_generation_id": "synthetic-generation-1",
+  "canonical_payload_sha256": "8e440448a2a1ac462b7eb1603eae2a4e49191c42b582e50882301badddd79976",
+  "record_kind": "ANSWER",
+  "id": "answer:example",
+  "card_set_id": "cards:example",
+  "text": "합성 규칙에는 보유 의무가 있습니다. 별도 사례는 사실 확인이 필요합니다.",
+  "claims": [
+    {
+      "id": "claim:one",
+      "text": "합성 규칙에는 보유 의무가 있습니다.",
+      "query_card_ids": [
+        "card:example"
+      ],
+      "evidence_ids": [
+        "evidence:0"
+      ]
+    }
+  ],
+  "unresolved": [
+    {
+      "query_card_id": "card:second",
+      "reason": "주체와 대상 규칙 미확정"
+    }
+  ],
+  "provider_receipt": {
+    "id": "provider:synthetic-not-called",
+    "contract": "synthetic.provider",
+    "path": "synthetic/provider-synthetic-not-called.json",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:data-review-v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "data-review-v1"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scope": {
+      "$ref": "urn:8-agent:legal-semantic-v2#/$defs/Scope"
+    },
+    "subject": {
+      "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+    },
+    "subject_payload_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "field_pointer": {
+      "type": "string",
+      "pattern": "^(|/(?:[^~]|~[01])*)$"
+    },
+    "decision": {
+      "enum": [
+        "APPROVE",
+        "REJECT",
+        "NEEDS_REVIEW"
+      ]
+    },
+    "reviewer": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "HUMAN",
+            "MODEL",
+            "RULE"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "identity_receipt": {
+          "$ref": "urn:8-agent:pipeline-common-v1#/$defs/Artifact"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "model",
+        "policy_id",
+        "identity_receipt"
+      ],
+      "additionalProperties": false
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "name",
+          "result",
+          "detail"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "scope",
+    "subject",
+    "subject_payload_sha256",
+    "field_pointer",
+    "decision",
+    "reviewer",
+    "checks",
+    "reason",
+    "reviewed_at"
+  ],
+  "additionalProperties": false
+}

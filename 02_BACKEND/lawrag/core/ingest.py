@@ -76,6 +76,8 @@ def source_kind(d: Path) -> str:
 #   docxstyle         Word 스타일 통짜 신뢰 (사람이 엔진으로 고른 문서만)
 #   format:<유형>@v<n> 형식 파일 (버전까지 — 틀을 다시 컴파일하면 결과가 낡는다)
 def structured_by(data: dict, kind: str) -> str:
+    if (data.get("recipe_review") or {}).get("status") in {"visual_approved", "visual_sampled"}:
+        return "recipe-vlm:" + data["recipe_review"]["tag"]
     if kind == "lawxml":
         return "lawxml"
     if data.get("engine") == "docxstyle":
@@ -104,11 +106,14 @@ def parse_cached(pdf: Path, cache: Path):
     """
     from lawrag.core import parse_adapter, typography
 
+    expected = parse_adapter.pdf_parser_identity(pdf) if pdf.suffix.lower() == '.pdf' else None
     if cache.exists():
         try:
             parsed = parse_adapter.result_from_dump(json.loads(cache.read_text("utf-8")))
             # 캐시가 굳은 뒤에 생긴 축을 채운다 — 들여쓰기 증거가 보는 '글자가
             # 실제로 시작하는 x'. 없으면 선행 공백으로 들여쓴 층을 구별 못 한다.
+            if expected is not None and parsed.stats.get('parser_identity') != expected:
+                raise ValueError('Stale PDF parser/OCR/source identity')
             typography.ensure_text_x(pdf, parsed.elements)
             return parsed
         except Exception:
@@ -170,7 +175,7 @@ def _interpret_with_format(parsed, pdf: Path, name: str, doc_type: str) -> dict:
 
 def interpret_doc(pdf: Path, *, store: Path, cache: Optional[Path] = None,
                   doc_id: str = "", name: str = "", folder: str = "",
-                  engine: str = "",
+                  engine: str = "", recipe_document: str = "",
                   binding_of: Optional[Callable[[str, str], Optional[str]]] = None,
                   **kw) -> dict:
     """지면 있는 문서(pdf·합성 pdf)의 해석 — 업로드·재해석·규칙 시험이 공유한다."""
@@ -209,6 +214,24 @@ def interpret_doc(pdf: Path, *, store: Path, cache: Optional[Path] = None,
         return data
 
     blocks = Block.from_elements(parsed.elements)
+    from lawrag.core.structure import recipe_runtime
+    if kind == "pdf" and recipe_runtime.enabled():
+        # This is a separate, bounded structural call budget; GENOS's use_llm=False
+        # still disables the legacy residual/semantic calls, not this explicit switch.
+        structural_hints = {k: v for k, v in kw.items() if k not in {"llm", "ledger", "pdf_path", "doc"}}
+        result, review = recipe_runtime.revise_pdf(
+            pipeline, blocks, pdf, store=store,
+            document=recipe_document or "/".join(x for x in (folder, name or doc_id or pdf.name) if x),
+            hints=structural_hints)
+        if review.get("status") not in {"visual_approved", "visual_sampled"}:
+            raise recipe_runtime.NeedsReview("PDF structure review did not complete")
+        data = viewer.payload(result, blocks, pdf_path=pdf, elements=parsed.elements,
+                              images=parsed.images)
+        data.update(recipe_review=review, parser_warnings=parsed.warnings,
+                    source_kind=kind, parser=parsed.parser)
+        if name:
+            data["doc"] = name
+        return data
     # fingerprint 원장은 doc_id 로 관측한다 — 저장 파일명은 전부 source.pdf 라
     # 이름으로 세면 모든 문서가 한 항목으로 뭉개진다. 이름이 바뀌어도 doc_id 는 남는다.
     ledger = fp_mod.Ledger.load(ledger_path(store))
@@ -281,7 +304,7 @@ def find_manifest_item(raw: bytes) -> dict | None:
     일치하면 같은 문서다 (개정판이면 해시가 달라 안 잡히고, 별표 md 연결 없이
     XML 별표내용으로 들어간다 — 그때는 collect→convert 후 재인제스트가 맞다).
     """
-    mp = data_path("corpus", "law", "manifest.json")
+    mp = data_path("INBOX", "AUTHORING", "corpus", "law", "manifest.json")
     if not mp.exists():
         return None
     sha = hashlib.sha256(raw).hexdigest()
@@ -500,9 +523,11 @@ def ingest(raw: bytes, filename: str, *, store: Path, name: str = "",
             pdf.write_bytes(raw)
         data = interpret_doc(pdf, store=store, doc_id=doc_id, folder=eff_folder,
                              name=prev.get("name") or name, engine=eng,
+                             recipe_document="/".join(x for x in (eff_folder, filename) if x),
                              binding_of=binding_of, **kw)
     except Exception:
-        shutil.rmtree(d, ignore_errors=True)
+        if not prev:  # A failed new review must not delete an existing saved result.
+            shutil.rmtree(d, ignore_errors=True)
         raise
 
     from lawrag.core.structure import viewer as viewer_mod
@@ -518,7 +543,8 @@ def ingest(raw: bytes, filename: str, *, store: Path, name: str = "",
         "passed": data["fitness"]["passed"], "tier": data["fitness"]["tier"],
         "fingerprint": data.get("fingerprint", {}).get("key"),
         "fingerprint_count": data.get("stats", {}).get("fingerprint_count"),
-        "used_llm": bool(use_llm),
+        "used_llm": bool(use_llm or (data.get("recipe_review") or {}).get("model_calls")),
+        "recipe_review": data.get("recipe_review"),
         "at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         **(extra_meta or {}),
     }

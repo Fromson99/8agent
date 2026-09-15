@@ -1,0 +1,72 @@
+{
+  "schema_version": "rag-stage-v2",
+  "record_kind": "TEMPLATES",
+  "id": "templates:example",
+  "templates": [
+    {
+      "schema_version": "legal-semantic-v2",
+      "schema_sha256": "25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607",
+      "record_kind": "ASSEMBLY_TEMPLATE",
+      "template": {
+        "id": "template:exemption",
+        "label": "면제·적용 제외 검토",
+        "intent": "기본 규칙과 적용 범위, 단서 조건, 변경 결과, 외부 요건을 함께 찾는다.",
+        "slots": [
+          {
+            "slot": "SCOPE",
+            "required": true,
+            "allowed_types": [
+              "Rule"
+            ]
+          },
+          {
+            "slot": "BASE_RULE",
+            "required": true,
+            "allowed_types": [
+              "Rule"
+            ]
+          },
+          {
+            "slot": "CONDITIONS",
+            "required": true,
+            "allowed_types": [
+              "SemanticClause"
+            ]
+          },
+          {
+            "slot": "PROVISOS",
+            "required": true,
+            "allowed_types": [
+              "Proviso"
+            ]
+          },
+          {
+            "slot": "OUTCOMES",
+            "required": true,
+            "allowed_types": [
+              "SemanticClause"
+            ]
+          },
+          {
+            "slot": "REFERENCES",
+            "required": true,
+            "allowed_types": [
+              "LegalRelation"
+            ]
+          }
+        ],
+        "required_fact_keys": [
+          "actor"
+        ],
+        "traversals": [
+          {
+            "predicate": "DEPENDS_ON_REQUIREMENTS_OF",
+            "direction": "OUTGOING",
+            "max_hops": 2
+          }
+        ],
+        "missing_policy": "RETURN_UNKNOWN_WITH_MISSING"
+      }
+    }
+  ]
+}

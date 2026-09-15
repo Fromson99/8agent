@@ -8,6 +8,9 @@ version = "0.1.0"
 description = "Receipt-bound legal document retrieval and analysis runtime"
 requires-python = ">=3.11"
 
+[project.scripts]
+lawrag-ontology-pipeline = "lawrag.pipeline.ontology:main"
+
 [tool.setuptools]
 package-dir = {"" = "02_BACKEND"}
 include-package-data = false

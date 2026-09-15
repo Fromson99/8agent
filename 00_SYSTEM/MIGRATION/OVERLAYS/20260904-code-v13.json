@@ -1,0 +1,43 @@
+{
+  "base_final_receipt_sha256": "4c7f3608e7bc080e614861db6ebe1cbe398831dd3ff1bc154b80ce78f1d72bd5",
+  "base_generation": "20260904-code-v12",
+  "generation": "20260904-code-v13",
+  "overlays": [
+    {
+      "bytes": 5571,
+      "path": "02_BACKEND/lawrag/api/legalclosure_presenter.py",
+      "sha256": "ca07088c245cce9efa43f0c88bbc955a66d51e49acb9c7d74fe76c7be13b8be7"
+    },
+    {
+      "bytes": 101355,
+      "path": "02_BACKEND/lawrag/api/routers/rag.py",
+      "sha256": "7087c9d1c7844c920d8f0fe9813fb0a24e7fde2fff899d71c1bea38116773db6"
+    },
+    {
+      "bytes": 40320,
+      "path": "02_BACKEND/lawrag/core/batch.py",
+      "sha256": "120560af2fc7e1878da502305e06998b956a7997734bcbc9227d61f6f5478d43"
+    },
+    {
+      "bytes": 34652,
+      "path": "02_BACKEND/lawrag/core/rag/tuples.py",
+      "sha256": "ded6f04c040f8df01a5e7a0f1aec951f369bc331f33048e7782b21c8217bc6ae"
+    },
+    {
+      "bytes": 967,
+      "path": "02_BACKEND/lawrag/feedback/__init__.py",
+      "sha256": "b31712025684628bbde4dc670049fe34468adf275e838694d6038ab8c1d6edf9"
+    },
+    {
+      "bytes": 17652,
+      "path": "02_BACKEND/lawrag/feedback/lifecycle.py",
+      "sha256": "48e03bb1a4115db47e8d665ccab57fe0a2dfc0626644901416f57cf0bd92e6b2"
+    },
+    {
+      "bytes": 18446,
+      "path": "02_BACKEND/lawrag/ontology/lifecycle.py",
+      "sha256": "541dc70029a1d340277fb34712d416bee41a442042c225873d5682b037603616"
+    }
+  ],
+  "schema_version": "code-generation-overlay-v1"
+}

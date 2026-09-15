@@ -25,7 +25,7 @@ import os
 from typing import Optional
 
 from lawrag.core.rag import tuples as tuples_mod
-from lawrag.core.rag.content_snapshot import ContentSnapshotError
+from lawrag.runtime.content_snapshot import ContentSnapshotError
 from lawrag.core.rag.controls import value as control_value
 from lawrag.core.rag.index import norm
 
@@ -183,7 +183,7 @@ def direct_hits(question: str, cap: int = MEMORY_MAX,
     if len(out) < cap:
         try:
             from lawrag.core import embedding
-            from lawrag.core.rag.content_snapshot import current_content_snapshot
+            from lawrag.runtime.content_snapshot import current_content_snapshot
             import numpy as np
             snapshot = current_content_snapshot()
             vector_bound = snapshot is None

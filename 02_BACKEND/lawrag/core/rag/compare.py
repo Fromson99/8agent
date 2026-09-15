@@ -237,7 +237,7 @@ def find_counterparts_legacy(idx_scoped: Index, idx_all: Index, llm,
                                               doc_ids=idx_scoped.scope):
             push(did, jo, "벡터", f"코사인 {cos:.2f}")
     except Exception as exc:                               # pragma: no cover
-        from lawrag.core.rag.content_snapshot import ContentSnapshotError
+        from lawrag.runtime.content_snapshot import ContentSnapshotError
 
         if isinstance(exc, ContentSnapshotError):
             raise

@@ -13,6 +13,8 @@
     delegation  lsDelegated → delegation.json (법령만)        결정론      전체(원본이 새로울 때)
     terms       정의조항·괄호별칭 → glossary 잠정             결정론      전체(멱등)
     frames      조 → 주체·행위·객체 프레임 (→ 조문 카드)       LLM         조
+    legal_graph Observation → Canonical KG → Projection        결정론      불변 세대
+    definitions Canonical/Projection → DefinitionProjection 컴파일 결정론      세대
     embed       구역 벡터                                    임베딩 모델  구역(sha1)
     scopes      scopes.yml 이름 해석 점검 (검사만)             검사        —
 
@@ -43,24 +45,37 @@ from lawrag.platform.paths import data_path, persisted_data_path
 
 log = logging.getLogger("lawrag.core.batch")
 
-STAGES = ("ingest", "structure", "delegation", "terms", "frames", "embed", "scopes")
+STAGES = (
+    "ingest", "structure", "delegation", "terms", "frames",
+    "legal_graph", "definition_projections", "embed", "scopes",
+)
+# 기본 실행은 기존 증분 경로를 보존한다. 전체 graph 재컴파일과 DefinitionProjection
+# 검증은 화면/CLI에서 명시한 경우에만 돈다.
+AUTO_STAGES = (
+    "ingest", "structure", "delegation", "terms", "frames", "embed", "scopes",
+)
 LABELS = {"ingest": "투입", "structure": "구조 점검", "delegation": "위임 간선",
-          "terms": "용어 전사", "frames": "프레임", "embed": "벡터", "scopes": "스코프 점검"}
+          "terms": "용어 전사", "frames": "프레임", "legal_graph": "Canonical KG",
+          "definition_projections": "일반화 정의", "embed": "벡터", "scopes": "스코프 점검"}
 KIND = {"ingest": "결정론", "structure": "검사", "delegation": "결정론", "terms": "결정론",
-        "frames": "LLM", "embed": "임베딩", "scopes": "검사"}
+        "frames": "LLM", "legal_graph": "결정론", "definition_projections": "결정론",
+        "embed": "임베딩", "scopes": "검사"}
 
 # 수집 출처 → 스토어 폴더 라벨. manifest 의 kind 는 item 이 이미 들고 있다.
 SOURCE_FOLDER = {"law": "법령·규정", "krx": "상장규정", "kofia": "협회규정"}
 INBOX_EXTS = (".xml", ".html", ".htm", ".hwp", ".hwpx", ".docx", ".pdf")
+ATTACHMENT_ONLY_HTML_MARKERS = (
+    "전문은 상단 한글 파일 및 PDF 파일을 참조",
+)
 
 
 # ------------------------------------------------------------------ 경로
 def store_path() -> Path:
-    return Path(os.environ.get("STRUCTURE_STORE") or data_path("structure"))
+    return Path(os.environ.get("STRUCTURE_STORE") or data_path("INBOX", "AUTHORING", "structure"))
 
 
 def corpus_path() -> Path:
-    return Path(os.environ.get("CORPUS_DIR") or data_path("corpus"))
+    return Path(os.environ.get("CORPUS_DIR") or data_path("INBOX", "AUTHORING", "corpus"))
 
 
 def pipeline_dir() -> Path:
@@ -117,7 +132,28 @@ def _body_path(source: str, item: dict) -> Optional[Path]:
     if not body:
         return None
     p = Path(body)
-    return p if p.is_absolute() else persisted_data_path(p)
+    if p.is_absolute():
+        resolved = p
+    elif p.parts and p.parts[0] == "corpus":
+        # rawstore writes portable upload receipts as
+        # ``corpus/uploads/...``.  Under a GENOS_DATA_ROOT override this must
+        # resolve beside the configured corpus directory, not under the code
+        # checkout's canonical 01_DATA root.
+        data_root = corpus_path().parent.resolve()
+        resolved = (data_root / p).resolve()
+        resolved.relative_to(data_root)
+    else:
+        resolved = persisted_data_path(p)
+    if source == "kofia" and resolved.is_file():
+        html = resolved.read_text("utf-8", errors="replace")
+        if any(marker in html for marker in ATTACHMENT_ONLY_HTML_MARKERS):
+            declared = item.get("body_file")
+            if declared:
+                fallback = Path(declared)
+                fallback = fallback if fallback.is_absolute() else persisted_data_path(fallback)
+                if fallback.is_file():
+                    return fallback
+    return resolved
 
 
 def _manifest_sources() -> list[str]:
@@ -155,7 +191,12 @@ def ingest_targets() -> list[dict]:
             if p is None or not p.exists():
                 continue
             doc_id = hashlib.sha256(p.read_bytes()).hexdigest()[:16]
-            via = source if source in ("law", "krx", "kofia") else "file"
+            if source == "law":
+                via = "law"
+            elif source in ("krx", "kofia") and p.suffix.lower() in (".html", ".htm"):
+                via = source
+            else:
+                via = "file"
             folder = it.get("folder") or SOURCE_FOLDER.get(source) or source
             out.append({"via": via, "source": source,
                         "name": it.get("name") or it.get("label") or p.stem,
@@ -247,7 +288,10 @@ def lineup() -> dict:
         by_folder[m.get("folder") or "∅"] = by_folder.get(m.get("folder") or "∅", 0) + 1
     out["stages"]["structure"] = {
         "pending": len(low), "total": len(docs),
-        "detail": [{"name": m.get("name"), "score": m.get("score"), "tier": m.get("tier")} for m in low],
+        "detail": [{
+            "name": m.get("name"), "doc_id": document_id,
+            "score": m.get("score"), "tier": m.get("tier")
+        } for document_id, m in docs.items() if m in low],
         "note": " · ".join(f"{k} {v}" for k, v in sorted(by_folder.items(), key=lambda x: -x[1]))
                 + (f" · 격리(0.70 미만) {len(low)}" if low else "")}
 
@@ -325,6 +369,15 @@ def lineup() -> dict:
     except Exception as exc:                                 # pragma: no cover
         out["stages"]["frames"] = {"pending": 0, "total": len(docs), "detail": [],
                                    "note": f"세지 못함: {exc}"}
+
+    # Legal Graph — 전체 artifact hash 재검증은 빌드 단계가 수행한다. 라인업에서는
+    # CURRENT↔manifest↔독립 validation receipt와 compiler/ClauseSpan 세대만 빠르게 본다.
+    from lawrag.ontology.lifecycle import (
+        definition_projection_status,
+        legal_graph_status,
+    )
+    out["stages"]["legal_graph"] = legal_graph_status()
+    out["stages"]["definition_projections"] = definition_projection_status()
 
     # embed
     try:
@@ -459,7 +512,7 @@ class Runner:
         with self._lock:
             if self.is_running():
                 raise RuntimeError("이미 실행 중입니다 — 끝나거나 중지한 뒤 다시 누르세요")
-            want = [s for s in (stages or list(STAGES)) if s in STAGES]
+            want = [s for s in (stages or list(AUTO_STAGES)) if s in STAGES]
             if not want:
                 raise ValueError(f"모르는 단계입니다: {stages}")
             want.sort(key=STAGES.index)
@@ -687,6 +740,91 @@ class Runner:
             self._progress("frames", done_jos, total_jos)
         self._progress("frames", total_jos, total_jos, current="")
         return {**stats_all, "note": f"문서 {stats_all['docs']} · 프레임 {stats_all['frames']:,} · 실패 조 {stats_all['errors']}"}
+
+    def _run_legal_graph(self, opts: dict) -> dict:
+        """Build a validated immutable graph generation; never wire it to MAIN."""
+        from lawrag.core.legal_graph.compiler import BuildConfig, build_generation
+
+        self._progress("legal_graph", 0, 1, current="Observation → Canonical KG → Projection")
+        config = BuildConfig(
+            structure_store=store_path(),
+            law_index_file=store_path().parent / "law_index.json",
+            delegation_file=store_path().parent / "delegation.json",
+            canonical_file=store_path().parent / "domain_graph" / "canonical.json",
+            frames_store=data_path("INBOX", "AUTHORING", "frames"),
+            glossary_file=store_path().parent / "glossary.json",
+            links_file=store_path().parent / "links.json",
+            output_root=Path(
+                os.environ.get("LEGAL_GRAPH_STORE")
+                or store_path().parent / "legal_graph"
+            ),
+            publish_current=True,
+        )
+        result = build_generation(config)
+        self._progress("legal_graph", 1, 1, current="")
+        return {
+            "generation_id": result.generation_id,
+            "content_sha256": result.content_sha256,
+            "reused": result.reused,
+            "runtime_wired": False,
+            "note": (
+                f"{result.generation_id} · {'재사용' if result.reused else '새 세대'} · "
+                "독립 검증 완료 · MAIN 미배선"
+            ),
+        }
+
+    def _run_definition_projections(self, opts: dict) -> dict:
+        from lawrag.ontology.definition_projection import (
+            compile_definition_projections,
+            default_schema_path,
+        )
+        from lawrag.ontology.lifecycle import definition_projection_dir, definition_projection_status
+
+        graph_root = Path(
+            os.environ.get("LEGAL_GRAPH_STORE")
+            or store_path().parent / "legal_graph"
+        )
+        self._progress(
+            "definition_projections", 0, 1,
+            current="Canonical TermSense + Rule + Projection → DefinitionProjection",
+        )
+        result = compile_definition_projections(
+            graph_root=graph_root,
+            output_root=definition_projection_dir(),
+            schema_path=default_schema_path(),
+            publish_current=True,
+        )
+        status = definition_projection_status()
+        for index, row in enumerate(status["records"], 1):
+            self._doc(
+                "definition_projections",
+                doc=row["name"],
+                file=row["file"],
+                projection_status=row["status"],
+                valid=row["valid"],
+                error="; ".join(row["errors"]),
+            )
+            self._progress(
+                "definition_projections", index, status["total"], current=row["name"]
+            )
+        if status["invalid"]:
+            raise ValueError(
+                f"DefinitionProjection schema invalid: {status['invalid']}/{status['total']}"
+            )
+        self._progress("definition_projections", 1, 1, current="")
+        return {
+            "generation_id": result["generation_id"],
+            "content_sha256": result["content_sha256"],
+            "source_graph_generation": result["source_graph_generation"],
+            "valid": status["valid"],
+            "invalid": status["invalid"],
+            "ready": status.get("ready", 0),
+            "ambiguous_surfaces_withheld": status.get("ambiguous_surfaces_withheld", 0),
+            "excluded_terms_withheld": status.get("excluded_terms_withheld", 0),
+            "reused": result["reused"],
+            "runtime_wired": False,
+            "note": status["note"],
+        }
 
     def _run_embed(self, opts: dict) -> dict:
         from lawrag.core import embedding

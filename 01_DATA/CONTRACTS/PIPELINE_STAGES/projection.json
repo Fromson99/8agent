@@ -1,0 +1,47 @@
+{
+  "schema_version": "semantic-storage-v1",
+  "record_kind": "PROJECTION",
+  "id": "projection:synthetic",
+  "scope": {
+    "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "authority_generation": "synthetic-authority-1",
+    "document_version_ids": [
+      "synthetic:main-v1",
+      "synthetic:detail-v1"
+    ],
+    "jurisdiction": "SYNTHETIC",
+    "as_of": null
+  },
+  "canonical_generation_id": "synthetic-generation-1",
+  "canonical_payload_sha256": "8e440448a2a1ac462b7eb1603eae2a4e49191c42b582e50882301badddd79976",
+  "kind": "RULE_LOOKUP",
+  "producer": "synthetic-code-example",
+  "input_artifacts": [
+    {
+      "id": "canonical:example",
+      "contract": "semantic.canonical",
+      "path": "synthetic/canonical-example.json",
+      "sha256": "d9ef5e37d5869b628d7384618adadcc6a806005fce8d7b8edaf2130d19e89d45"
+    }
+  ],
+  "entries": [
+    {
+      "id": "entry:main",
+      "document_version_id": "synthetic:main-v1",
+      "structural_unit_id": "unit:0",
+      "entity_refs": [
+        {
+          "type": "Rule",
+          "id": "rule:main"
+        }
+      ],
+      "search_terms": [
+        "기관",
+        "보유"
+      ],
+      "evidence_ids": [
+        "evidence:0"
+      ]
+    }
+  ]
+}

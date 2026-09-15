@@ -1,0 +1,38 @@
+{
+  "schema_version": "change-candidate-v1",
+  "candidate_id": "change:f62c51447da30f603d2a5ec0",
+  "candidate_kind": "DEFINITION_OBSERVATION",
+  "status": "CANDIDATE",
+  "activation": "INERT_UNTIL_REVIEW",
+  "feedback_event_ids": [
+    "feedback:4821b98c33afd984cd68a181"
+  ],
+  "generation": {
+    "runtime_profile": "ontology-rag-v1",
+    "main_generation": 1,
+    "graph_generation": "lgv1-example",
+    "definition_generation": "defv1-example",
+    "source_set_sha256": null
+  },
+  "target": {
+    "qid": "query-example",
+    "query_sha256": "631706aeb6eb78f06d6abbbaf0cf46abc40332039ca5d27584c0333dc0aba37d",
+    "document_id": null,
+    "node_id": null,
+    "clause_span_id": null,
+    "projection_id": null,
+    "surface": "가명정보"
+  },
+  "evidence": {
+    "reason": "ambiguous definition surface requires canonical review",
+    "example_count": 1,
+    "resolved_by_event_ids": []
+  },
+  "review": {
+    "required_next_step": "EXPERIMENT_THEN_REVIEW",
+    "approved_by": null,
+    "experiment_id": null,
+    "applied_generation": null
+  },
+  "candidate_sha256": "16ae7ef72881e59feca14084e9f0936554827ed791274235ee79eea605b443c6"
+}

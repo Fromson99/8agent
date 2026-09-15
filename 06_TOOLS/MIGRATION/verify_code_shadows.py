@@ -24,8 +24,8 @@ DEFAULT_RECORD_PREFIX = (
 )
 PAIRS = (
     ("lawrag", "02_BACKEND/lawrag"),
-    ("tests", "05_TESTS/LEGACY_TESTS"),
-    ("scripts", "06_TOOLS/LEGACY_SCRIPTS"),
+    ("tests", "05_TESTS/REGRESSION"),
+    ("scripts", "06_TOOLS/COMMANDS"),
 )
 
 

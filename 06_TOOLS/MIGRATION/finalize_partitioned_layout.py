@@ -74,7 +74,7 @@ def migration_pairs(root: Path) -> tuple[tuple[str, str], ...]:
         name = Path(source).name
         if name in FRONTEND_EXCLUSION_NAMES:
             continue
-        pairs.append((source, f"03_FRONTEND/experiment-studio/{name}"))
+        pairs.append((source, f"03_FRONTEND/APPS/experiment-studio/{name}"))
 
     for source in _direct_children(root, "docs/adr"):
         name = Path(source).name
@@ -117,7 +117,7 @@ def migration_pairs(root: Path) -> tuple[tuple[str, str], ...]:
         name = Path(source).name
         if name == "adr":
             continue
-        pairs.append((source, f"07_DOCS/LEGACY_DOCS/{name}"))
+        pairs.append((source, f"07_DOCS/REFERENCE/{name}"))
 
     pairs.extend(
         (
@@ -133,11 +133,11 @@ def migration_pairs(root: Path) -> tuple[tuple[str, str], ...]:
             ("data/_archive", "99_ARCHIVE/LEGACY_DATA_ARCHIVE"),
             (
                 "ADR-0043-smoke-probe",
-                "04_EXPERIMENTS/ROOT_ORPHANS/ADR-0043-smoke-probe",
+                "99_ARCHIVE/EXPERIMENTS/ROOT_ORPHANS/ADR-0043-smoke-probe",
             ),
             (
                 "ADR-0047-order-safe",
-                "04_EXPERIMENTS/ROOT_ORPHANS/ADR-0047-order-safe",
+                "99_ARCHIVE/EXPERIMENTS/ROOT_ORPHANS/ADR-0047-order-safe",
             ),
             (
                 "CM_MAJOR_LEGAL_QUESTIONS_260819.docx",
@@ -145,7 +145,7 @@ def migration_pairs(root: Path) -> tuple[tuple[str, str], ...]:
             ),
             (
                 "adr_notion_import.csv",
-                "04_EXPERIMENTS/IMPORTS/adr_notion_import.csv",
+                "99_ARCHIVE/IMPORTS/adr_notion_import.csv",
             ),
             (
                 "ax-experiment-studio-social-preview.png",

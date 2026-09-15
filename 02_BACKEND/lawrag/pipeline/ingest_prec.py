@@ -2,7 +2,7 @@
 
     python -m lawrag.pipeline.ingest_prec
 
-data/corpus/prec(수집 정본, XML — 전문 포함)는 읽기만 한다. 코퍼스 법령 인용이
+01_DATA/INBOX/AUTHORING/corpus/prec(수집 정본, XML — 전문 포함)는 읽기만 한다. 코퍼스 법령 인용이
 있는 판례만 data/wiki/raw/prec/<선고일>-<사건번호>.md 로 이관한다.
 md 에는 대법원이 만든 공식 요지(판시사항·판결요지·참조조문)만 싣는다 —
 전문은 corpus XML 이 정본이고 md 머리가 그 경로를 가리킨다.
@@ -24,8 +24,8 @@ from lawrag.sources.cite import plain_mentions  # noqa: E402
 from lawrag.sources.common import safe_filename  # noqa: E402
 from lawrag.sources.prec import case_text, parse_case  # noqa: E402
 
-PREC_DIR = data_path("corpus", "prec")
-CORPUS_DIR = data_path("corpus")
+PREC_DIR = data_path("INBOX", "AUTHORING", "corpus", "prec")
+CORPUS_DIR = data_path("INBOX", "AUTHORING", "corpus")
 RAW_DIR = data_path("wiki", "raw", "prec")
 
 

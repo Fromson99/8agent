@@ -1,0 +1,480 @@
+{
+  "schema_version": "legal-semantic-v2",
+  "schema_sha256": "25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607",
+  "record_kind": "OBSERVATION",
+  "id": "observation:example",
+  "scope": {
+    "source_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "authority_generation": "synthetic-authority-1",
+    "document_version_ids": [
+      "synthetic:main-v1",
+      "synthetic:detail-v1"
+    ],
+    "jurisdiction": "SYNTHETIC",
+    "as_of": null
+  },
+  "status": "CANDIDATE",
+  "provenance": {
+    "producer": "synthetic-example",
+    "producer_version": "1",
+    "method": "HUMAN",
+    "input_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "prompt_sha256": null,
+    "provider_receipt_sha256": null
+  },
+  "payload": {
+    "concepts": [
+      {
+        "id": "concept:0",
+        "label": "기관",
+        "concept_type": "ENTITY",
+        "aliases": [],
+        "definition_rule_ids": [],
+        "evidence_ids": [
+          "evidence:0"
+        ]
+      },
+      {
+        "id": "concept:1",
+        "label": "취득",
+        "concept_type": "ACTION",
+        "aliases": [],
+        "definition_rule_ids": [],
+        "evidence_ids": [
+          "evidence:0"
+        ]
+      },
+      {
+        "id": "concept:2",
+        "label": "대상 증권",
+        "concept_type": "ENTITY",
+        "aliases": [],
+        "definition_rule_ids": [],
+        "evidence_ids": [
+          "evidence:0"
+        ]
+      },
+      {
+        "id": "concept:3",
+        "label": "보유",
+        "concept_type": "ACTION",
+        "aliases": [],
+        "definition_rule_ids": [],
+        "evidence_ids": [
+          "evidence:0"
+        ]
+      },
+      {
+        "id": "concept:4",
+        "label": "면제",
+        "concept_type": "ACTION",
+        "aliases": [],
+        "definition_rule_ids": [],
+        "evidence_ids": [
+          "evidence:1"
+        ]
+      },
+      {
+        "id": "concept:5",
+        "label": "전문기관",
+        "concept_type": "LEGAL_CATEGORY",
+        "aliases": [],
+        "definition_rule_ids": [],
+        "evidence_ids": [
+          "evidence:2"
+        ]
+      },
+      {
+        "id": "concept:6",
+        "label": "공개 절차",
+        "concept_type": "PROPERTY",
+        "aliases": [],
+        "definition_rule_ids": [],
+        "evidence_ids": [
+          "evidence:2"
+        ]
+      },
+      {
+        "id": "concept:7",
+        "label": "해당",
+        "concept_type": "STATE",
+        "aliases": [],
+        "definition_rule_ids": [],
+        "evidence_ids": [
+          "evidence:2"
+        ]
+      }
+    ],
+    "mentions": [
+      {
+        "id": "mention:0",
+        "surface": "기관",
+        "concept_id": "concept:0",
+        "resolution": "RESOLVED",
+        "unresolved_reason": null,
+        "evidence_ids": [
+          "evidence:0"
+        ]
+      },
+      {
+        "id": "mention:1",
+        "surface": "취득",
+        "concept_id": "concept:1",
+        "resolution": "RESOLVED",
+        "unresolved_reason": null,
+        "evidence_ids": [
+          "evidence:0"
+        ]
+      },
+      {
+        "id": "mention:2",
+        "surface": "대상 증권",
+        "concept_id": "concept:2",
+        "resolution": "RESOLVED",
+        "unresolved_reason": null,
+        "evidence_ids": [
+          "evidence:0"
+        ]
+      },
+      {
+        "id": "mention:3",
+        "surface": "보유",
+        "concept_id": "concept:3",
+        "resolution": "RESOLVED",
+        "unresolved_reason": null,
+        "evidence_ids": [
+          "evidence:0"
+        ]
+      },
+      {
+        "id": "mention:4",
+        "surface": "면제",
+        "concept_id": "concept:4",
+        "resolution": "RESOLVED",
+        "unresolved_reason": null,
+        "evidence_ids": [
+          "evidence:1"
+        ]
+      },
+      {
+        "id": "mention:5",
+        "surface": "전문기관",
+        "concept_id": "concept:5",
+        "resolution": "RESOLVED",
+        "unresolved_reason": null,
+        "evidence_ids": [
+          "evidence:2"
+        ]
+      },
+      {
+        "id": "mention:6",
+        "surface": "공개 절차",
+        "concept_id": "concept:6",
+        "resolution": "RESOLVED",
+        "unresolved_reason": null,
+        "evidence_ids": [
+          "evidence:2"
+        ]
+      },
+      {
+        "id": "mention:7",
+        "surface": "해당",
+        "concept_id": "concept:7",
+        "resolution": "RESOLVED",
+        "unresolved_reason": null,
+        "evidence_ids": [
+          "evidence:2"
+        ]
+      }
+    ],
+    "clauses": [
+      {
+        "id": "clause:0",
+        "clause_type": "ACTION",
+        "polarity": "POSITIVE",
+        "role_bindings": [
+          {
+            "role": "ACTOR",
+            "concept_id": "concept:0",
+            "mention_ids": [
+              "mention:0"
+            ],
+            "resolution": "RESOLVED",
+            "unresolved_reason": null,
+            "evidence_ids": [
+              "evidence:0"
+            ]
+          },
+          {
+            "role": "PREDICATE",
+            "concept_id": "concept:1",
+            "mention_ids": [
+              "mention:1"
+            ],
+            "resolution": "RESOLVED",
+            "unresolved_reason": null,
+            "evidence_ids": [
+              "evidence:0"
+            ]
+          },
+          {
+            "role": "OBJECT",
+            "concept_id": "concept:2",
+            "mention_ids": [
+              "mention:2"
+            ],
+            "resolution": "RESOLVED",
+            "unresolved_reason": null,
+            "evidence_ids": [
+              "evidence:0"
+            ]
+          }
+        ],
+        "evidence_ids": [
+          "evidence:0"
+        ]
+      },
+      {
+        "id": "clause:1",
+        "clause_type": "ACTION",
+        "polarity": "POSITIVE",
+        "role_bindings": [
+          {
+            "role": "ACTOR",
+            "concept_id": "concept:0",
+            "mention_ids": [
+              "mention:0"
+            ],
+            "resolution": "RESOLVED",
+            "unresolved_reason": null,
+            "evidence_ids": [
+              "evidence:0"
+            ]
+          },
+          {
+            "role": "PREDICATE",
+            "concept_id": "concept:3",
+            "mention_ids": [
+              "mention:3"
+            ],
+            "resolution": "RESOLVED",
+            "unresolved_reason": null,
+            "evidence_ids": [
+              "evidence:0"
+            ]
+          },
+          {
+            "role": "OBJECT",
+            "concept_id": "concept:2",
+            "mention_ids": [
+              "mention:2"
+            ],
+            "resolution": "RESOLVED",
+            "unresolved_reason": null,
+            "evidence_ids": [
+              "evidence:0"
+            ]
+          }
+        ],
+        "evidence_ids": [
+          "evidence:0"
+        ]
+      },
+      {
+        "id": "clause:2",
+        "clause_type": "ACTION",
+        "polarity": "POSITIVE",
+        "role_bindings": [
+          {
+            "role": "PREDICATE",
+            "concept_id": "concept:4",
+            "mention_ids": [
+              "mention:4"
+            ],
+            "resolution": "RESOLVED",
+            "unresolved_reason": null,
+            "evidence_ids": [
+              "evidence:1"
+            ]
+          }
+        ],
+        "evidence_ids": [
+          "evidence:1"
+        ]
+      },
+      {
+        "id": "clause:3",
+        "clause_type": "STATE",
+        "polarity": "POSITIVE",
+        "role_bindings": [
+          {
+            "role": "ACTOR",
+            "concept_id": "concept:5",
+            "mention_ids": [
+              "mention:5"
+            ],
+            "resolution": "RESOLVED",
+            "unresolved_reason": null,
+            "evidence_ids": [
+              "evidence:2"
+            ]
+          },
+          {
+            "role": "PREDICATE",
+            "concept_id": "concept:7",
+            "mention_ids": [
+              "mention:7"
+            ],
+            "resolution": "RESOLVED",
+            "unresolved_reason": null,
+            "evidence_ids": [
+              "evidence:2"
+            ]
+          },
+          {
+            "role": "METHOD",
+            "concept_id": "concept:6",
+            "mention_ids": [
+              "mention:6"
+            ],
+            "resolution": "RESOLVED",
+            "unresolved_reason": null,
+            "evidence_ids": [
+              "evidence:2"
+            ]
+          }
+        ],
+        "evidence_ids": [
+          "evidence:2"
+        ]
+      }
+    ],
+    "rules": [
+      {
+        "id": "rule:main",
+        "rule_type": "NORM",
+        "applicability": {
+          "operator": "TRUE",
+          "evidence_ids": [
+            "evidence:0"
+          ]
+        },
+        "antecedent": {
+          "operator": "CLAUSE",
+          "clause_id": "clause:0"
+        },
+        "consequent_clause_ids": [
+          "clause:1"
+        ],
+        "modality": "OBLIGATION",
+        "valid_from": null,
+        "valid_until": null,
+        "evidence_ids": [
+          "evidence:0"
+        ]
+      },
+      {
+        "id": "rule:detail",
+        "rule_type": "CLASSIFICATION",
+        "applicability": {
+          "operator": "TRUE",
+          "evidence_ids": [
+            "evidence:2"
+          ]
+        },
+        "antecedent": {
+          "operator": "TRUE",
+          "evidence_ids": [
+            "evidence:2"
+          ]
+        },
+        "consequent_clause_ids": [
+          "clause:3"
+        ],
+        "modality": "DECLARATION",
+        "valid_from": null,
+        "valid_until": null,
+        "evidence_ids": [
+          "evidence:2"
+        ]
+      }
+    ],
+    "provisos": [
+      {
+        "id": "proviso:main",
+        "attached_rule_id": "rule:main",
+        "condition": {
+          "operator": "CLAUSE",
+          "clause_id": "clause:3"
+        },
+        "outcome_clause_ids": [
+          "clause:2"
+        ],
+        "effect_type": "EXEMPTION",
+        "completion_type": "EXTERNAL",
+        "dependency_relation_ids": [
+          "relation:dependency"
+        ],
+        "evidence_ids": [
+          "evidence:1"
+        ]
+      }
+    ],
+    "relations": [
+      {
+        "id": "relation:dependency",
+        "predicate": "DEPENDS_ON_REQUIREMENTS_OF",
+        "source": {
+          "type": "Proviso",
+          "id": "proviso:main"
+        },
+        "target": {
+          "type": "Rule",
+          "id": "rule:detail"
+        },
+        "resolution": "RESOLVED",
+        "target_locator": null,
+        "unresolved_reason": null,
+        "evidence_ids": [
+          "evidence:1"
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "id": "evidence:0",
+        "document_version_id": "synthetic:main-v1",
+        "structural_unit_id": "unit:0",
+        "block_id": "block:0",
+        "source_artifact_sha256": "499941f464e3c85828b367cccb2c5d5b6d2b94a6684df32aff348c2dbecc22e7",
+        "start": 0,
+        "end": 30,
+        "quote": "기관이 대상 증권을 취득한 경우 이를 보유하여야 한다.",
+        "quote_sha256": "499941f464e3c85828b367cccb2c5d5b6d2b94a6684df32aff348c2dbecc22e7"
+      },
+      {
+        "id": "evidence:1",
+        "document_version_id": "synthetic:main-v1",
+        "structural_unit_id": "unit:1",
+        "block_id": "block:1",
+        "source_artifact_sha256": "3e02a7d4c4131036949578755f7b841e47dbf9325ed3db170881a98a91151c23",
+        "start": 0,
+        "end": 32,
+        "quote": "다만, 별도 규칙의 요건에 해당하면 기본 의무를 면제한다.",
+        "quote_sha256": "3e02a7d4c4131036949578755f7b841e47dbf9325ed3db170881a98a91151c23"
+      },
+      {
+        "id": "evidence:2",
+        "document_version_id": "synthetic:detail-v1",
+        "structural_unit_id": "unit:2",
+        "block_id": "block:2",
+        "source_artifact_sha256": "bf48db60984c605cfb4fb17b3beaeb9496dfd5421d62018574b71d1b625bb7e9",
+        "start": 0,
+        "end": 26,
+        "quote": "전문기관이 공개 절차로 취득한 경우에 해당한다.",
+        "quote_sha256": "bf48db60984c605cfb4fb17b3beaeb9496dfd5421d62018574b71d1b625bb7e9"
+      }
+    ],
+    "crosswalk": []
+  }
+}

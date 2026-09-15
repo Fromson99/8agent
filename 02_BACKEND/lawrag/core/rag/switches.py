@@ -297,7 +297,7 @@ def _promotion_overrides() -> dict:
                 raise RuntimeError("sealed MAIN switch map was not bound at bootstrap")
             return dict(_sealed_promotions)
     try:
-        from lawrag.core.rag import main_promotion
+        from lawrag.platform import main_promotion
         return {
             key: value for key, value in main_promotion.switch_overrides().items()
             if key in _KEYS

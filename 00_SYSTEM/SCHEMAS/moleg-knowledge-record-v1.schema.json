@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "moleg-knowledge-record-v1",
+  "type": "object",
+  "required": [
+    "schema_version", "entity_type", "source_id", "label", "definition",
+    "hanja", "source", "dictionary_kind", "fields"
+  ],
+  "properties": {
+    "schema_version": {"const": "moleg-knowledge-record-v1"},
+    "entity_type": {
+      "enum": [
+        "legal_terms", "legal_term_detail", "knowledge_terms", "everyday_terms",
+        "legal_term_relations", "everyday_term_relations", "term_articles", "article_terms"
+      ]
+    },
+    "source_id": {"type": "string"},
+    "label": {"type": "string"},
+    "definition": {"type": "string"},
+    "hanja": {"type": "string"},
+    "source": {"type": "string"},
+    "dictionary_kind": {"type": "string"},
+    "fields": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    }
+  },
+  "additionalProperties": false
+}

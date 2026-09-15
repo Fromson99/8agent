@@ -1,47 +1,30 @@
 {
-  "schema_version": "dataset-sync-profiles-v1",
-  "common-runtime": {
-    "classification": "shared-identical",
-    "include": [
-      "01_DATA/corpus/expc",
-      "01_DATA/corpus/forms",
-      "01_DATA/corpus/fsc",
-      "01_DATA/corpus/kofia",
-      "01_DATA/corpus/krx",
-      "01_DATA/corpus/law",
-      "01_DATA/corpus/law_history",
-      "01_DATA/corpus/moleg",
-      "01_DATA/corpus/prec",
-      "01_DATA/structure",
-      "01_DATA/frames",
-      "01_DATA/taxonomy",
-      "01_DATA/wiki",
-      "01_DATA/expc",
-      "01_DATA/aliases.json",
-      "01_DATA/glossary.json",
-      "01_DATA/delegation.json",
-      "01_DATA/law_index.json",
-      "01_DATA/links.json"
-    ],
-    "exclude_globs": [
-      "01_DATA/structure/*/pages/**",
-      "01_DATA/structure/*/source.pdf",
-      "01_DATA/structure/*/parse.json",
-      "**/*.bak",
-      "**/*.npz"
-    ]
+  "schema_version": "sourceset-release-sync-v2",
+  "status": "active",
+  "transport": "immutable-release",
+  "targets": {
+    "local": {
+      "source_set": "01_DATA/SOURCE_SETS/local-operational-v2",
+      "active_store": "01_DATA/ACTIVE/local"
+    },
+    "onsite": {
+      "source_set": "01_DATA/SOURCE_SETS/internal-restricted-v1",
+      "active_store": "01_DATA/ACTIVE/onsite"
+    },
+    "genos": {
+      "source_set": "01_DATA/SOURCE_SETS/internal-restricted-v1",
+      "active_store": "01_DATA/ACTIVE/genos"
+    }
   },
-  "common-evaluation": {
-    "classification": "shared-identical-evaluation",
-    "include": [
-      "01_DATA/bench",
-      "01_DATA/review",
-      "07_DOCS/LEGACY_DOCS/examples/README.md",
-      "07_DOCS/LEGACY_DOCS/examples/task3-law-chatbot/qa.yaml",
-      "07_DOCS/LEGACY_DOCS/examples/task5-risk-agent/qa"
-    ],
-    "exclude_globs": ["**/*.bak"]
+  "shared": {
+    "installed_catalog": "01_DATA/CATALOG/installed.json",
+    "packages": "01_DATA/PACKAGES",
+    "materializations": "01_DATA/SOURCE_SETS/MATERIALIZED",
+    "indexes": "01_DATA/INDEXES"
   },
-  "external_overlay": "08_DEPLOYMENT/CONFIG/dataset_sync/external-mock-overlay.json",
-  "internal_overlay_template": "08_DEPLOYMENT/CONFIG/dataset_sync/internal-real-overlay.example.json"
+  "commands": {
+    "publish": "06_TOOLS/MIGRATION/publish_v2_dataset.py",
+    "validate": "06_TOOLS/MIGRATION/validate_v2_cutover.py"
+  },
+  "legacy_overlay_sync_allowed": false
 }
