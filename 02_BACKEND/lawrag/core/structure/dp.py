@@ -278,6 +278,8 @@ def build_tree(candidates: list[Candidate], n_blocks: int) -> list[Node]:
     nodes: list[tuple[Node, Candidate]] = []
 
     for c in active:
+        if not 0 <= c.block_idx < n_blocks:
+            raise ValueError('structural opener is outside source blocks')
         node = Node(level=c.activated_level or 0, ordinal=c.ordinal,
                     family=c.family_key, surface=c.surface, block_idx=c.block_idx,
                     page=c.page, element_index=c.element_index, candidate_id=c.id,
@@ -299,5 +301,12 @@ def build_tree(candidates: list[Candidate], n_blocks: int) -> list[Node]:
             if later.level <= node.level:
                 end = later.block_idx
                 break
+        # Several markers can live in one original paragraph. Spans are whole
+        # source-block intervals, so closing at another marker in this block
+        # must still include the block containing this node's own opener.
+        # Keep overlapping provenance; do not fabricate character boundaries.
+        if end == c.block_idx:
+            end = c.block_idx + 1
+            node.activation_reason += ' | same-block boundary: shared source block; character split unverified'
         node.span = (c.block_idx, end)
     return roots

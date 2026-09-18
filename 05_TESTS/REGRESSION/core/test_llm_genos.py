@@ -1,6 +1,6 @@
 """GenOS 백엔드(lawrag/core/llm.py) — OpenAI 호환 서빙 앞에서 structured() 계약이 서는지.
 
-가짜 서빙 하나를 스레드로 띄운다 (실측 문서 v1.9.0 "LLM 서빙 API 사용"의 모양:
+소켓 없는 모의 HTTP 전송을 사용한다 (실측 문서 v1.9.0 "LLM 서빙 API 사용"의 모양:
 /v1/models · /v1/chat/completions · SSE `data:` 청크 · [DONE]). 지키는 것:
   (1) 백엔드 선택 — GENOS_LLM_URL 만 있으면 genos, LLM_BACKEND 가 이긴다.
   (2) json_schema 를 받는 엔진 — 그대로 JSON 이 파싱된다.
@@ -15,8 +15,6 @@ from __future__ import annotations
 import importlib
 import json
 import sys
-import threading
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 import pytest
@@ -48,6 +46,13 @@ def _isolate_llm_environment(monkeypatch):
     """다른 테스트나 실행 호스트의 provider 선택값을 상속하지 않는다."""
     for key in _LLM_ENV_KEYS:
         monkeypatch.delenv(key, raising=False)
+    import requests
+    def request(session, method, url, **kwargs):
+        for root, fake in _Fake.servers.items():
+            if url.startswith(root+'/'):
+                return fake.request(method, url[len(root):], session.headers, kwargs)
+        raise AssertionError('Unexpected network request: '+url)
+    monkeypatch.setattr(requests.sessions.Session, 'request', request)
 
 
 def _fresh():
@@ -61,65 +66,45 @@ def _fresh():
 
 
 class _Fake:
-    """모드: 'schema' 는 response_format 을 받아 JSON 을 낸다. 'reject' 는
-    response_format 이 오면 400, 없으면 <think>+울타리를 두른 JSON 을 낸다.
-    'length' 는 잘린 응답 + finish_reason=length."""
-
-    def __init__(self, mode: str):
-        self.mode = mode
-        self.requests: list[dict] = []
-        outer = self
-
-        class H(BaseHTTPRequestHandler):
-            def log_message(self, *a):            # 조용히
-                pass
-
-            def do_GET(self):
-                if self.path.endswith("/v1/models"):
-                    body = json.dumps({"data": [{"id": "fake-llm-7b"}]}).encode()
-                    self.send_response(200)
-                    self.send_header("Content-Type", "application/json")
-                    self.end_headers(); self.wfile.write(body)
-                else:
-                    self.send_response(404); self.end_headers()
-
-            def do_POST(self):
-                n = int(self.headers.get("Content-Length") or 0)
-                req = json.loads(self.rfile.read(n) or b"{}")
-                req["_auth"] = self.headers.get("Authorization", "")
-                outer.requests.append(req)
-                if outer.mode == "reject" and "response_format" in req:
-                    self.send_response(400)
-                    self.send_header("Content-Type", "application/json")
-                    self.end_headers()
-                    self.wfile.write(b'{"error":"response_format not supported"}')
-                    return
-                if outer.mode == "length":
-                    pieces, finish = ['{"answer": "잘', '린'], "length"
-                elif outer.mode == "reject":
-                    pieces = ["<think>생각 중…</think>\n```json\n",
-                              '{"answer": "울타리 안"}', "\n```"]
-                    finish = "stop"
-                else:
-                    pieces, finish = ['{"answer": ', '"스키마 그대로"}'], "stop"
-                self.send_response(200)
-                self.send_header("Content-Type", "text/event-stream")
-                self.end_headers()
-                for i, p in enumerate(pieces):
-                    last = i == len(pieces) - 1
-                    chunk = {"choices": [{"index": 0, "delta": {"content": p},
-                                          "finish_reason": finish if last else None}]}
-                    self.wfile.write(f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n".encode())
-                usage = {"choices": [], "usage": {"prompt_tokens": 11, "completion_tokens": 5}}
-                self.wfile.write(f"data: {json.dumps(usage)}\n\n".encode())
-                self.wfile.write(b"data: [DONE]\n\n")
-
-        self.srv = HTTPServer(("127.0.0.1", 0), H)
-        self.url = f"http://127.0.0.1:{self.srv.server_port}"
-        threading.Thread(target=self.srv.serve_forever, daemon=True).start()
-
+    """Synthetic HTTP/SSE peer; exercises requests without opening sockets."""
+    servers = {}
+    def __init__(self, mode):
+        self.mode=mode;self.requests=[]
+        self.url=f'http://fake-{id(self)}.invalid'
+        self.servers[self.url]=self
+    def request(self,method,path,headers,kwargs):
+        import requests
+        if method.upper()=='GET':
+            assert path.endswith('/v1/models')
+            return self.reply(200, {'data':[{'id':'fake-llm-7b'}]})
+        assert method.upper()=='POST' and path.endswith('/v1/chat/completions')
+        req={**kwargs['json'],'_auth':headers.get('Authorization','')}
+        self.requests.append(req)
+        if self.mode=='reject' and 'response_format' in req:
+            return self.reply(400,{'error':'response_format not supported'})
+        if self.mode=='length':pieces,finish=['{"answer": "잘','린'],'length'
+        elif self.mode=='reject':
+            pieces=['<think>생각 중…</think>\n```json\n','{"answer": "울타리 안"}','\n```'];finish='stop'
+        else:pieces,finish=['{"answer": ','"스키마 그대로"}'],'stop'
+        chunks=[{'choices':[{'index':0,'delta':{'content':piece},
+                            'finish_reason':finish if i==len(pieces)-1 else None}]}
+                for i,piece in enumerate(pieces)]
+        chunks.append({'choices':[],'usage':{'prompt_tokens':11,'completion_tokens':5}})
+        return self.reply(200,{},chunks)
+    @staticmethod
+    def reply(status,body,chunks=None):
+        import requests
+        class Reply:
+            status_code=status;headers={};text=json.dumps(body)
+            def json(self):return body
+            def raise_for_status(self):
+                if status>=400:raise requests.HTTPError(self.text)
+            def iter_lines(self):
+                for chunk in chunks or []:yield ('data: '+json.dumps(chunk,ensure_ascii=False)).encode()
+                yield b'data: [DONE]'
+        return Reply()
     def close(self):
-        self.srv.shutdown(); self.srv.server_close()
+        self.servers.pop(self.url,None)
 
 
 @pytest.fixture()
@@ -267,3 +252,62 @@ def test_extract_json():
     assert f('{"a":1}') == '{"a":1}'
     assert f('<think>x</think>\n```json\n{"a":1}\n```') == '{"a":1}'
     assert f('답은 다음과 같다: {"a": {"b": 2}} 끝') == '{"a": {"b": 2}}'
+
+
+def test_disable_thinking_reaches_server_and_survives_schema_fallback(genos_env):
+    fake=_Fake('reject')
+    try:
+        client=genos_env(fake.url).LLM()
+        result=client.structured('structure.test','s','u',SCHEMA,max_tokens=64,enable_thinking=False)
+        assert result=={'answer':'울타리 안'}
+        assert len(fake.requests)==2
+        assert all(r['chat_template_kwargs']=={'enable_thinking':False} for r in fake.requests)
+        exchange=client.log[-1]
+        # This fake intentionally ignores the flag, to verify unfiltered receipt.
+        assert exchange.raw_response=='<think>생각 중…</think>\n```json\n{"answer": "울타리 안"}\n```'
+        assert exchange.parsed==result and exchange.requested_thinking is False
+        assert exchange.provider_usage=={'prompt_tokens':11,'completion_tokens':5}
+        assert len(exchange.provider_response)==4
+        assert exchange.dump()['provider_response'][0]['choices'][0]['delta']['content'].startswith('<think>')
+    finally:fake.close()
+
+
+def test_separate_reasoning_only_cutoff_is_preserved(genos_env,monkeypatch):
+    fake=_Fake('schema')
+    try:
+        client=genos_env(fake.url).LLM()
+        chunks=[{'choices':[{'delta':{'reasoning_content':'synthetic reasoning field'},'finish_reason':None}]},
+                {'choices':[{'delta':{},'finish_reason':'length'}],
+                 'usage':{'prompt_tokens':8,'completion_tokens':16,'completion_tokens_details':{'reasoning_tokens':16}}}]
+        class Reply:
+            status_code=200;headers={}
+            def raise_for_status(self):pass
+            def iter_lines(self):
+                for c in chunks:yield ('data: '+json.dumps(c)).encode()
+                yield b'data: [DONE]'
+        monkeypatch.setattr(client._session,'post',lambda *a,**k:Reply())
+        assert client.structured('structure.cutoff','s','u',SCHEMA,max_tokens=16,enable_thinking=False) is None
+        ex=client.log[-1]
+        assert ex.raw_response=='' and ex.stop_reason=='max_tokens'
+        assert ex.provider_response==chunks
+        assert ex.provider_usage['completion_tokens_details']['reasoning_tokens']==16
+        assert '예산을 올려라' not in ex.error
+    finally:fake.close()
+
+
+def test_partial_content_survives_transport_failure(genos_env,monkeypatch):
+    fake=_Fake('schema')
+    try:
+        client=genos_env(fake.url).LLM()
+        chunk={'choices':[{'delta':{'content':'{"answer": "partial'},'finish_reason':None}]}
+        class Reply:
+            status_code=200;headers={}
+            def raise_for_status(self):pass
+            def iter_lines(self):
+                yield ('data: '+json.dumps(chunk)).encode()
+                raise RuntimeError('synthetic interrupted stream')
+        monkeypatch.setattr(client._session,'post',lambda *a,**k:Reply())
+        assert client.structured('structure.partial','s','u',SCHEMA,enable_thinking=False) is None
+        assert client.log[-1].raw_response=='{"answer": "partial'
+        assert client.log[-1].provider_response==[chunk]
+    finally:fake.close()

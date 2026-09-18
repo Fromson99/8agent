@@ -9,13 +9,11 @@ import base64
 import copy
 from contextlib import contextmanager
 from contextvars import ContextVar
-from dataclasses import replace
 from datetime import datetime, timezone
 import fcntl
 import hashlib
 import json
 import logging
-import math
 import os
 from pathlib import Path
 import re
@@ -26,7 +24,14 @@ import uuid
 from . import recipe_visual_loop as loop
 from . import recipe_rules
 
-VERSION = "genos-recipe-v22-main-regions"
+VERSION = "genos-recipe-v37-disclosure-budget-diagnostics"
+
+
+def accepts_warnings():
+    value = os.environ.get('STRUCTURE_RECIPE_ACCEPT_WARNINGS', 'on').strip().lower()
+    if value not in {'on','off'}:
+        raise ValueError('STRUCTURE_RECIPE_ACCEPT_WARNINGS must be on or off')
+    return value == 'on' and os.environ.get('STRUCTURE_RECIPE_PROTOCOL','basic') == 'basic'
 _PROGRESS = ContextVar("structure_recipe_progress", default=None)
 
 
@@ -41,7 +46,37 @@ def progress_events(emit):
 
 
 class NeedsReview(ValueError):
-    pass
+    repairable = False
+
+    def __init__(self, message, *, diagnostic=None):
+        super().__init__(message)
+        self.diagnostic = diagnostic
+
+
+def call_failure(exchange, *, phase, max_tokens, response_path):
+    """Public diagnosis uses known categories, never provider text or source content."""
+    code = 'existing_llm_call_failed'
+    summary = 'LLM 호출 실패'
+    action = '상세 응답 파일의 error 항목 확인'
+    if exchange.stop_reason == 'max_tokens':
+        code = 'OUTPUT_LENGTH_LIMIT'
+        summary = f'출력 토큰 한도 초과로 응답 잘림 (max_tokens={max_tokens})'
+        action = ('모델 지원 한도 내 STRUCTURE_RECIPE_MAX_TOKENS 조정 후 재실행'
+                  if max_tokens < 16384 else
+                  '현재 코드의 출력 상한 16384 도달; 요청 분할 또는 출력량 축소 필요')
+    elif exchange.stop_reason == 'refusal':
+        code, summary = 'MODEL_REFUSAL', '모델이 요청을 거절함'
+    elif exchange.error.startswith('JSONDecodeError:'):
+        code, summary = 'INVALID_MODEL_JSON', '모델 응답의 JSON 해석 실패'
+    diagnostic = {'code': code, 'summary': summary, 'phase': phase,
+                  'max_tokens': max_tokens, 'next_action': action,
+                  'response_path': str(response_path)}
+    output = exchange.usage.get('output_tokens')
+    if type(output) is int:
+        diagnostic['output_tokens'] = output
+    message = (f'{summary}; 단계={phase}; {action}; 상세: {response_path} '
+               f'[{code}; existing_llm_call_failed]')
+    return NeedsReview(message, diagnostic=diagnostic)
 
 
 class MeasuredEngine:
@@ -66,14 +101,17 @@ def policy_identity():
     active = enabled()
     if not active:
         return {"enabled": False, "version": VERSION}
-    profile = os.environ.get("GENOS_LLM_PROFILE", "qwen").upper()
+    profile = os.environ.get("GENOS_LLM_PROFILE", "").strip().upper()
     names = ["GENOS_BASE_URL", "GENOS_LLM_URL", "GENOS_GATEWAY_API_PREFIX", "GENOS_LLM_API_PREFIX",
              "GENOS_LLM_MODEL", f"GENOS_{profile}_MODEL", "GENOS_LLM_SERVING_ID", f"GENOS_{profile}_SERVING_ID",
              "GENOS_LLM_JSON_MODE", "GENOS_LLM_TEMPERATURE", "STRUCTURE_RECIPE_MAX_PAGES",
              "STRUCTURE_RECIPE_MAX_CHARS", "STRUCTURE_RECIPE_MAX_TOKENS",
              "STRUCTURE_RECIPE_REVIEW_MODE", "STRUCTURE_RECIPE_MAX_DOCUMENT_PAGES",
-             "STRUCTURE_RECIPE_MAX_CALLS", "STRUCTURE_RECIPE_MAX_RULE_ROUNDS", "STRUCTURE_RECIPE_MAX_CORRECTIONS"]
+             "STRUCTURE_RECIPE_MAX_CALLS", "STRUCTURE_RECIPE_MAX_RULE_ROUNDS", "STRUCTURE_RECIPE_MAX_CORRECTIONS",
+             "STRUCTURE_RECIPE_PROTOCOL", "STRUCTURE_RECIPE_REVIEW_MAX_CHARS",
+             "STRUCTURE_RECIPE_ACCEPT_WARNINGS", "STRUCTURE_RECIPE_REVIEW_MAX_TOKENS"]
     return {"enabled": True, "version": VERSION,
+            "llm_code_sha256": sha(Path(__file__).parents[1] / "llm.py"),
             "settings_sha256": loop.digest({name: os.environ.get(name) for name in names})}
 
 
@@ -175,93 +213,100 @@ class Journal:
 
 
 class GenosCalls:
-    def __init__(self, journal, images, *, request=None, max_calls=9):
-        from semantic_runtime import genos
-        self.target, self.model = genos.from_env("llm")
-        if not self.model:
-            raise ValueError("Set GENOS_QWEN_MODEL or GENOS_LLM_MODEL explicitly for visual structure")
-        if not 1 <= self.target.max_retries <= 3:
-            raise ValueError("GENOS_LLM_MAX_RETRIES must be 1..3 for visual structure")
-        if not math.isfinite(self.target.read_timeout) or not 0 < self.target.read_timeout <= 300:
-            raise ValueError("GENOS_LLM_TIMEOUT must be >0 and <=300")
-        self.request = request or genos.request_json
+    """Structure adapter over the existing product LLM, including its VLM path."""
+
+    def __init__(self, journal, images, *, max_calls=9):
+        from lawrag.core import llm
+        # Check before constructing a client: internal PDFs must stay on GENOS.
+        if llm.backend() != "genos":
+            raise NeedsReview("visual_structure_requires_genos_backend")
         self.journal, self.images = journal, images
+        self.protocol = os.environ.get('STRUCTURE_RECIPE_PROTOCOL', 'basic').strip().lower()
+        if self.protocol not in {'basic', 'compact', 'legacy'}:
+            raise ValueError('STRUCTURE_RECIPE_PROTOCOL must be basic, compact or legacy')
         self.calls = 0
         self.max_calls = max_calls
         self.max_tokens = integer("STRUCTURE_RECIPE_MAX_TOKENS", 4096, 256, 16384)
-        self.json_mode = os.environ.get("GENOS_LLM_JSON_MODE", "prompt")
-        if self.json_mode not in {"prompt", "json_object", "json_schema"}:
-            raise ValueError("Unsupported GENOS_LLM_JSON_MODE")
-        self.temperature = float(os.environ.get("GENOS_LLM_TEMPERATURE", "0"))
-        if not math.isfinite(self.temperature) or not 0 <= self.temperature <= 2:
-            raise ValueError("Invalid GENOS_LLM_TEMPERATURE")
+        self.client = llm.LLM()
+        self.model = self.client.model
+        if not self.model:
+            raise NeedsReview("existing_llm_model_discovery_failed; see LLM /v1/models log")
         journal.event("provider.configured", backend="genos", model=self.model,
-                      json_mode=self.json_mode, max_attempts=self.target.max_retries,
-                      timeout=self.target.read_timeout)
+                      caller="lawrag.core.llm.LLM.structured", protocol=self.protocol)
 
     def __call__(self, phase, system, data, schema, vision):
+        if self.protocol == 'compact':
+            from .recipe_compact import route
+            return route(self._request, self.journal, phase, system, data, schema, vision)
+        return self._request(phase, system, data, schema, vision)
+
+    def _request(self, phase, system, data, schema, vision):
         import jsonschema
-        from semantic_runtime.genos import ServingError
-        # Initial assembly + three reviews; one induction + assembly + three reviews.
+        from .recipe_output import COMPACT, ResponseError
+        system += COMPACT
         if self.calls >= self.max_calls:
-            raise NeedsReview("model_call_budget_exhausted")
-        self.calls += 1
+            raise NeedsReview("model_call_budget_exhausted", diagnostic={
+                'code': 'model_call_budget_exhausted', 'phase': phase,
+                'calls': self.calls, 'max_calls': self.max_calls,
+                'summary': '문서별 모델 호출 횟수 상한 도달 (입력 토큰 한도와 별개)',
+                'next_action': 'review-budget.json의 검수 창 수와 호출 상한을 확인하세요.'})
         if vision and not self.images:
             raise NeedsReview("visual_review_requires_images")
+        if vision and any(not isinstance(uri, str) or not uri.startswith("data:image/")
+                          or not uri.partition(",")[2] for uri in self.images):
+            raise NeedsReview("invalid_visual_image")
         serialized = json.dumps(data, ensure_ascii=False)
-        if len(serialized) > integer("STRUCTURE_RECIPE_MAX_CHARS", 160000, 1000, 500000):
+        limit = integer("STRUCTURE_RECIPE_MAX_CHARS", 160000, 1000, 500000)
+        if self.protocol == 'basic':
+            limit = min(limit, integer('STRUCTURE_RECIPE_REVIEW_MAX_CHARS', 24000, 1000, 100000))
+        if len(serialized) > limit:
             raise NeedsReview("document_context_budget_exceeded")
-        content = [{"type": "text", "text": serialized}]
-        if vision:
-            content.extend({"type": "image_url", "image_url": {"url": uri}} for uri in self.images)
-        payload = {"model": self.model, "messages": [
-            {"role": "system", "content": system + "\nReturn only JSON matching this schema:\n" + json.dumps(schema)},
-            {"role": "user", "content": content}],
-            "max_tokens": self.max_tokens, "temperature": self.temperature, "stream": False}
-        if self.json_mode == "json_object":
-            payload["response_format"] = {"type": "json_object"}
-        elif self.json_mode == "json_schema":
-            payload["response_format"] = {"type": "json_schema", "json_schema": {
-                "name": "structure_recipe", "strict": True, "schema": schema}}
+        self.calls += 1
+        max_tokens = self.max_tokens
+        if self.protocol == 'basic' and accepts_warnings():
+            max_tokens = min(max_tokens, integer('STRUCTURE_RECIPE_REVIEW_MAX_TOKENS',1024,256,16384))
         self.journal.save(f"call-{self.calls}-{phase}-input.json", {
             "system": system, "data": data, "schema": schema, "model": self.model,
-            "image_count": len(self.images) if vision else 0,
-            "payload_sha256": loop.digest(payload), "images_omitted": True})
-        # No silent schema-mode or image-to-text fallback. Every retry has same images.
+            "image_count": len(self.images) if vision else 0, "max_tokens":max_tokens,
+            "enable_thinking": False,
+            "caller": "lawrag.core.llm.LLM.structured", "images_omitted": True})
         with self.journal.step(phase):
-            for attempt in range(1, self.target.max_retries + 1):
-                started = time.monotonic()
-                self.journal.event("model.request", phase=phase, call=self.calls, attempt=attempt,
-                                   model=self.model, image_count=len(self.images) if vision else 0)
-                try:
-                    with self.journal.obs.context(run_id=self.journal.run_id, document=self.journal.document, phase=phase):
-                        body = self.request(replace(self.target, max_retries=1), "/chat/completions", payload)
-                    break
-                except ServingError as exc:
-                    transient = "request failed after" in str(exc)
-                    self.journal.event("model.error", phase=phase, attempt=attempt, transient=transient,
-                                       error_type=type(exc).__name__, seconds=round(time.monotonic()-started, 3))
-                    if not transient or attempt == self.target.max_retries:
-                        raise
-                    self.journal.event("model.retry", phase=phase, next_attempt=attempt+1, delay_seconds=2*attempt)
-                    time.sleep(2 * attempt)
-            self.journal.save(f"call-{self.calls}-{phase}-response.json", body)
-            choice = body["choices"][0]
-            usage = body.get("usage") or {}
+            self.journal.event("model.request", phase=phase, call=self.calls, attempt=1,
+                               model=self.model, image_count=len(self.images) if vision else 0)
+            with self.journal.obs.context(run_id=self.journal.run_id, document=self.journal.document, phase=phase):
+                value = self.client.structured(
+                    kind="structure_recipe_" + phase, system=system, user=serialized,
+                    schema=schema, max_tokens=max_tokens,
+                    images=list(self.images) if vision else None, enable_thinking=False)
+            exchange = self.client.log[-1]
+            self.journal.save(f"call-{self.calls}-{phase}-response.json", exchange.dump())
+            self.journal.save(f"call-{self.calls}-{phase}-provider-response.json",
+                              getattr(exchange, 'provider_response', []))
             self.journal.event("model.response", phase=phase, call=self.calls,
-                               model=body.get("model", self.model), finish_reason=choice.get("finish_reason"),
-                               seconds=round(time.monotonic()-started, 3),
-                               input_count=usage.get("prompt_tokens"), output_count=usage.get("completion_tokens"))
-            if choice.get("finish_reason") not in {"stop", "end_turn"}:
+                               model=exchange.model, finish_reason=exchange.stop_reason,
+                               seconds=exchange.dur_ms / 1000,
+                               input_count=exchange.usage.get("input_tokens"),
+                               output_count=exchange.usage.get("output_tokens"),
+                               failed=bool(exchange.error))
+            if value is None or exchange.error:
+                failure = call_failure(exchange, phase=phase, max_tokens=max_tokens,
+                                       response_path=self.journal.directory / f"call-{self.calls}-{phase}-response.json")
+                if (failure.diagnostic['code'] == 'INVALID_MODEL_JSON'
+                        and exchange.stop_reason == 'end_turn'):
+                    raise ResponseError('Return a complete valid JSON object matching the response schema.',
+                                        exchange.raw_response, diagnostic=failure.diagnostic) from failure
+                raise failure
+            if exchange.stop_reason != "end_turn":
                 raise NeedsReview("incomplete_model_response")
-            text = choice["message"]["content"]
-            if not isinstance(text, str):
-                raise NeedsReview("non_text_model_response")
-            text = text.strip()
-            if text.startswith("```json\n") and text.endswith("```"):
-                text = text[8:-3].strip()
-            value = json.loads(text)
-            jsonschema.validate(value, schema)
+            if vision and exchange.images != len(self.images):
+                raise NeedsReview("visual_image_count_mismatch")
+            # Regional review owns normalization, schema validation and bounded
+            # clarification, so malformed reviews can reach that recovery loop.
+            if not phase.startswith('window-review-'):
+                try:
+                    jsonschema.validate(value, schema)
+                except jsonschema.ValidationError as exc:
+                    raise ResponseError('Model response violates the response schema', value) from exc
             self.journal.save(f"call-{self.calls}-{phase}.json", value)
             return value
 
@@ -283,7 +328,7 @@ def tags_read(path):
     return value
 
 
-def revise_pdf(engine, blocks, pdf, *, store, document, hints=None):
+def revise_pdf(engine, blocks, pdf, *, store, document, hints=None, source_evidence=None):
     """Return actual rebuilt Result + audit metadata. Native PDFs only, caller guards."""
     journal = Journal(Path(store).parent / "structure-recipe-runs", document)
     engine = MeasuredEngine(engine, journal)
@@ -302,10 +347,20 @@ def revise_pdf(engine, blocks, pdf, *, store, document, hints=None):
                        "policy": policy_identity(),
                        "code_sha256": loop.digest({str(p.relative_to(Path(__file__).parent)): sha(p)
                                                    for p in Path(__file__).parent.rglob("*.py")})}
+            from . import recipe_basic
+            binding['structure_resources_sha256'] = recipe_basic.resources_identity()
+            if source_evidence:
+                binding['source_evidence'] = source_evidence
+                journal.save('source-evidence.json', source_evidence)
             journal.save("binding.json", binding)
             journal.save("blocks.json", recipe_rules.block_records(blocks))
             journal.save("catalog.json", catalog)
             journal.save("baseline.json", loop.tree_record(baseline))
+        call = GenosCalls(journal, [], max_calls=integer("STRUCTURE_RECIPE_MAX_CALLS",64,1,256))
+        # Bind cached approvals to the actual model, including IDs discovered
+        # from /models. Replacing a model behind the same profile invalidates reuse.
+        binding['resolved_model'] = call.model
+        journal.save('binding.json', binding)
         with tag_lock(tags_path):
             previous = tags_read(tags_path)["documents"].get(document)
         if previous and previous.get("binding") == binding and previous.get("status") in {"visual_approved", "visual_sampled"}:
@@ -337,7 +392,11 @@ def revise_pdf(engine, blocks, pdf, *, store, document, hints=None):
         mode = os.environ.get("STRUCTURE_RECIPE_REVIEW_MODE", "adaptive")
         if mode not in {"adaptive", "full"}:
             raise ValueError("STRUCTURE_RECIPE_REVIEW_MODE must be adaptive or full")
-        max_pages = integer("STRUCTURE_RECIPE_MAX_PAGES", 6, 1, 20)
+        # Chunk transport lacks local rectangles/tables. Inspect every original
+        # page before accepting a grammar; approval is about hierarchy, not cells.
+        if source_evidence or getattr(call, 'protocol', None) == 'basic':
+            mode = 'full'
+        max_pages = integer("STRUCTURE_RECIPE_MAX_PAGES", 1 if getattr(call,'protocol',None)=='basic' and accepts_warnings() else 6, 1, 20)
         import fitz
         from . import recipe_pages
         with fitz.open(pdf) as pages:
@@ -357,27 +416,51 @@ def revise_pdf(engine, blocks, pdf, *, store, document, hints=None):
                         images.append("data:image/png;base64,"+base64.b64encode(png).decode())
                         journal.event("page.rendered",page=number,image_bytes=len(png))
                 return images
-            call = GenosCalls(journal, [], max_calls=integer("STRUCTURE_RECIPE_MAX_CALLS",64,1,256))
-            result, recipe, rules, coverage = recipe_pages.run(
-                engine, blocks, pages, baseline, catalog, anchors, call, journal,
-                width=max_pages, render=render, full_review=mode == "full",
-                max_corrections=integer("STRUCTURE_RECIPE_MAX_CORRECTIONS",6,1,12))
+            checkpoint = journal.directory.parent / 'checkpoints' / (loop.digest([document,binding])+'.json')
+            with tag_lock(checkpoint):
+                result, recipe, rules, coverage = recipe_pages.run(
+                    engine, blocks, pages, baseline, catalog, anchors, call, journal,
+                    width=max_pages, render=render, full_review=mode == "full",
+                    checkpoint=checkpoint, checkpoint_binding=binding,
+                    max_corrections=integer("STRUCTURE_RECIPE_MAX_CORRECTIONS",2 if accepts_warnings() else 6,1,12),
+                    basic_hints=hints)
+            if source_evidence:
+                coverage['source_evidence'] = source_evidence
+                coverage['approval_scope'] = 'structure-template; missing parser coordinates and cells remain unavailable'
+                journal.save('coverage.json', coverage)
             return save_result(result,recipe,rules,coverage,call,binding,pdf,blocks,journal,tags_path,document,previous)
     except Exception as exc:
         # Keep short machine reasons, never dump schema instances/source into progress.
-        reason = str(exc)
-        if not isinstance(exc, NeedsReview) and not (isinstance(exc, ValueError) and
+        cause, seen = exc, set()
+        diagnostic = None
+        while cause is not None and id(cause) not in seen:
+            seen.add(id(cause))
+            diagnostic = getattr(cause, 'diagnostic', None)
+            if diagnostic:
+                break
+            cause = cause.__cause__
+        reason = str(cause if diagnostic else exc)
+        if diagnostic and diagnostic.get('artifact'):
+            diagnostic = copy.deepcopy(diagnostic)
+            diagnostic['response_path'] = str(journal.directory / diagnostic['artifact'])
+            reason = (f"{diagnostic['summary']}; 단계={diagnostic['phase']}; "
+                      f"시도={diagnostic['attempts']}; {diagnostic['next_action']}; "
+                      f"상세: {diagnostic['response_path']} [review_pending: {diagnostic['code']}]")
+        if not diagnostic and not isinstance(exc, NeedsReview) and not (isinstance(exc, ValueError) and
                 re.fullmatch(r"[A-Za-z][A-Za-z0-9_ .:-]{0,159}", reason)):
             reason = "configuration_or_step_failure"
         journal.event("run.needs_review", error_type=type(exc).__name__,
                       reason=reason)
-        raise NeedsReview(f"구조 검수 보류: {journal.run_id}; structure-recipe-runs 로그 확인") from exc
+        message = (reason if diagnostic else
+                   f"구조 검수 보류: {reason}; 상세: {journal.directory / 'events.jsonl'}")
+        raise NeedsReview(message, diagnostic=diagnostic) from exc
 
 
 def save_result(result, recipe, rules, coverage, call, binding, pdf, blocks, journal, tags_path, document, previous):
     if sha(pdf) != binding["source_sha256"] or loop.digest(recipe_rules.block_records(blocks)) != binding["blocks_sha256"]:
         raise NeedsReview("source_changed")
-    status = "visual_approved" if coverage["visual_scope"] == "full" else "visual_sampled"
+    status = ("accepted_with_warnings" if coverage.get('review_warnings') else
+              "visual_approved" if coverage["visual_scope"] == "full" else "visual_sampled")
     row = {"binding":binding,"rules":rules,"rules_sha256":loop.digest(rules),
            "recipe":recipe,"recipe_sha256":loop.digest(recipe),
            "tree_sha256":loop.digest(loop.tree_record(result)),"status":status,"run_id":journal.run_id,
@@ -389,6 +472,7 @@ def save_result(result, recipe, rules, coverage, call, binding, pdf, blocks, jou
         registry["documents"][document] = row
         atomic(tags_path,registry)
     journal.event("run.complete",reused=False,model_calls=call.calls,tag=recipe["tag"],
+                  status=status, warning_count=len(coverage.get("review_warnings",[])),
                   visual_scope=coverage["visual_scope"],reviewed_pages=len(coverage["visually_reviewed_pages"]),
                   total_pages=coverage["total_pages"])
     return result,{"status":status,"reused":False,"model_calls":call.calls,"tag":recipe["tag"],

@@ -83,6 +83,28 @@ def test_cycle_and_unknown_parent_rejected():
         with pytest.raises(ValueError):t.compile_recipe({'f':rule(parent)},{'f':{}})
 
 
+@pytest.mark.parametrize('mode',['cycle','unknown','bad_enum'])
+def test_invalid_grammar_returns_precise_repair_context(mode):
+    seen=[]
+    def call(phase,system,request,schema,vision):
+        seen.append(copy.deepcopy(request))
+        answer={'families':{'f':rule()}}
+        if len(seen)==1:
+            if mode=='bad_enum':answer['families']['f']['sequence']='guess'
+            else:answer['families']['f']['parent_family']='f' if mode=='cycle' else 'unknown'
+        return answer
+    result=t.compose({'source_blocks':[{'idx':0,'text':'1. Synthetic'}]}, {'f':{}},call,
+                     lambda recipe:None,lambda *args:None)
+    assert len(seen)==2 and result['parent_map']=={'f':'$document'}
+    report=seen[1]['repair_feedback']
+    assert report['constraints']['allowed_parent_families']==['$document','f']
+    assert seen[1]['invalid_template']['families']['f']!=result['heading_rules']['f']
+    if mode=='bad_enum':
+        assert report['error']['path']==['families','f','sequence']
+        assert report['error']['actual']=='guess' and report['error']['expected']==t.SEQUENCE
+    else:assert ('Parent cycle' if mode=='cycle' else 'Unknown parent') in report['error']['message']
+
+
 def test_edit_changes_all_instances_and_preserves_other_families():
     _,_,catalog,recipe,outer,inner=nested()
     changed=t.apply(recipe,[{'family':inner,'rule':rule(outer,sequence='increasing')}],catalog)

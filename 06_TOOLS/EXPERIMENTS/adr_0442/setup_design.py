@@ -1,0 +1,38 @@
+from pathlib import Path
+import json,hashlib
+R=Path('/home/jin/8-AGENT');D=R/'04_EXPERIMENTS/ADR/ADR-0442-schema-navigation-independent-probe';A=D/'artifacts'
+def new(p,v):
+ p.parent.mkdir(parents=True,exist_ok=True)
+ with p.open('x') as f:json.dump(v,f,ensure_ascii=False,indent=2);f.write('\n')
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+docs={'invest':'가상투자규정','deposit':'가상예치규정',**{f'archive{i}':f'가상보관규정{i}' for i in range(1,10)},'private':'비공개규정'}
+texts=[('s1','invest','1','제1조 정의',['이 규정에서 공동운용은 여러 사람의 투자금을 모아 운용하는 것을 말한다.']),('s2','invest','2','제2조 신청',['① 신청자는 접수일로부터 30일 안에 확인서를 제출한다. '+('신청 기록은 보관하며 제출 경위를 확인한다. '*65)+'신청서에는 담당자 확인을 첨부한다.','② 다만, 재난으로 제출할 수 없는 때에는 복구 후 10일 안에 제출한다.','이 조의 제출기한 계산에서는 공휴일을 제외한다.']),('s3','invest','3','제3조 운영자',['운영책임자는 공동운용계정의 잔액을 매월 말일에 대조한다.']),('s4','invest','4','제4조 반환',['투자금 반환 지연 발생 시 운영책임자는 3영업일 안에 감독자에게 보고한다.']),('s5','deposit','1','제1조 예탁금',['예탁금은 요청 다음 날 반환한다. 이 규정은 공동운용 투자금에 적용하지 않는다.']),('s6','invest','5','제5조 복구',['복구 승인 기록은 시스템관리자가 7년 동안 보관한다.']),('secret','private','1','제1조 비밀',['비공개 비밀번호와 비밀 문서의 내용은 노출하지 않는다.'])]
+sources={};units={}
+for sid,did,uid,heading,parts in texts:
+ blocks=[{'id':sid+'b'+str(i),'text':t,'owner_unit_id':uid if i!=1 or sid!='s2' else '2.2'} for i,t in enumerate(parts)]
+ text='\n'.join(parts);sources[sid]={'id':sid,'document_id':did,'document_name':docs[did],'unit_id':uid,'block_id':blocks[0]['id'],'heading':heading,'text':text,'text_sha256':hashlib.sha256(text.encode()).hexdigest(),'source_artifact_sha256':hashlib.sha256(did.encode()).hexdigest(),'blocks':blocks,'article_coordinate':{'doc_id':did,'node':int(uid)}}
+ units[did+':'+uid]={'parent':None,'family':'kr_article','surface':heading.split()[0],'title':heading.split()[1],'blocks':[b['id'] for b in blocks if b['owner_unit_id']==uid],'article_source_id':sid}
+ if sid=='s2':units[did+':2.2']={'parent':'2','family':'circled','surface':'②','title':'재난 예외','blocks':['s2b1'],'article_source_id':sid}
+terms={'fund':{'id':'fund','label':'공동운용'},'manager':{'id':'manager','label':'운영책임자'}}
+edges=[{'id':'e1','source':'fund','target':'manager','code':'RELATED_TO','origin':'synthetic-schema-v1','review_status':'SOURCE_ASSERTED','resolution':'RESOLVED'}]
+corpus={'schema_version':'synthetic-schema-v1','documents':docs,'sources':sources,'units':units,'terms':terms,'edges':edges,'occurrences':[['fund','s1'],['manager','s3'],['manager','s4']],'definitions':{'fund':[{'id':'def1','text':'공동운용은 여러 사람의 투자금을 모아 운용하는 것이다.','origin':'모의 용어집','status':'SOURCE_ASSERTED'}],'manager':[{'id':'def2','text':'운영책임자는 공동운용계정의 잔액을 관리하는 자다.','origin':'모의 용어집','status':'SOURCE_ASSERTED'}]}}
+new(A/'dataset/corpus.json',corpus)
+qs=[('catalogue','현재 내가 볼 수 있는 문서 전부의 제목과 개수를 알려줘.'),('literal','"반환 지연"이라는 표현이 들어 있는 조항에서 보고 기한을 알려줘.'),('graph','공동운용과 연결된 용어를 관계 탐색으로 확인하고, 연결된 담당자가 잔액을 언제 대조하는지 원문으로 알려줘.'),('structure','가상투자규정 제2조의 일반 제출 기한, 재난 예외, 공휴일 계산을 모두 설명해줘.'),('recovery','가상예치규정 제1조를 먼저 읽어 보고, 공동운용 투자금 반환 지연 보고기한 질문에 맞지 않으면 가상투자규정에서 찾아줘.'),('fulltext','전문검색으로 "복구 승인" 기록의 보관 기간과 담당자를 찾아줘.'),('missing','은하보장권의 보장률이 100퍼센트인지 알려줘. 문서에서 확인되지 않으면 미확인이라고 해줘.'),('definition','공동운용의 등록된 정의를 열고 가상투자규정의 원문 정의로 확인해줘.')]
+scope=[d for d in docs if d!='private']
+new(A/'dataset/product-cases.json',[{'id':i,'question':q,'scope_document_ids':scope} for i,q in qs])
+gold=[{'id':i,'required_source_ids':ids,'required_points':points,'required_tools':ts} for i,ids,points,ts in [('catalogue',[],['허용된 11개 문서의 이름 전체와 총건수11; 비공개규정 제외'],['CATALOG']),('literal',['s4'],['반환 지연 발생 시 3영업일 안에 감독자 보고'],['GREP']),('graph',['s3'],['등록 RELATED_TO로 공동운용에서 운영책임자로 연결','매월 말일에 잔액 대조'],['GRAPH']),('structure',['s2'],['일반30일','재난은 복구 후10일','공휴일 제외'],['READ']),('recovery',['s4'],['예치규정은 적용 안 됨','투자금 반환 지연 보고는3영업일'],['READ']),('fulltext',['s6'],['시스템관리자','7년 보관'],['SEARCH']),('missing',[],['확인 불가를 명시','100퍼센트 보장 단정 금지'],[]),('definition',['s1'],['여러 사람의 투자금을 모아 운용'],['OPEN_TERM'])]]
+new(A/'grading/gold.json',gold)
+m=json.loads((D/'실험/manifest.json').read_text());hyp='A schema-backed navigation adapter improves authored catalogue/literal/fulltext/structure cases while preserving graph and grounded term evidence, compared with the selected release navigation on the same synthetic corpus.'
+m['lineage']['hypothesis_delta']=hyp
+m['design'].update(hypothesis=hyp,primary_metric='strict grounded task success among eight authored synthetic cases; semantic evaluator AND required evidence/tool checks',success_criteria={'candidate_pass_min':6,'total':8,'baseline_only_regressions_max':0,'invalid_quotes_max':0,'scope_escapes_max':0,'candidate_calls_per_case_max':12,'candidate_seconds_per_case_soft_max':180},failure_criteria='Any failed criterion keeps Proposed/Rejected and forbids quality or deployment claim',criteria_frozen_before_run=True,limits={'max_calls':12,'max_actions':40,'wall_seconds':180,'active_segments':6,'active_chars':18000,'context_chars':60000},order='Alternate baseline/schema execution and anonymous evaluator positions by case index',judge='One isolated Gemini semantic evaluation per case after sealing outputs; AND exact quote, required sources, tool-use and coverage checks. Same-model uncalibrated developer probe, no generalization.',controls='Selected release navigation bytes, synthetic inputs, aggregate budgets and common audited Gemini client. No input from ADR0441 candidate or results.',implementation_scope='Research injection at navigation-session boundary plus original select/assemble/answer integration for legal findings. Catalogue rendered in explicit v2 metadata envelope. HTTP, feedback v2, persistence and semantic index are out of this probe.',authorization='User explicitly chose separate implementation/comparison after concurrent scope disclosure; all provider inputs synthetic/public code only; no private corpus export.')
+for arm in m['design']['arms']:
+ arm['changes']='unchanged selected release navigation-loop-v1' if arm['id']=='baseline' else 'subclass with schema CATALOG, document roots, GREP, FTS5 SEARCH, whole structural READ, compact context, explicit refocus/error feedback and separate catalogue completion'
+ arm['controls']='same synthetic corpus/schema/gold-hidden questions, provider/model, budget, one run, original downstream legal answer contract'
+stages=[{'stage_id':s,'kind':k,'parent_stage_ids':p} for s,k,p in [('source','source',[]),('discovered','retrieve',['source']),('read','filter',['discovered']),('adopted','select',['read']),('present','present',['adopted'])]]
+m['design']['retrieval_stage_plan']['stages_by_arm']={a:stages for a in ['baseline','schema']}
+m['runs'][0].update(selection_rule='All eight predeclared synthetic tasks; one attempt per arm, no automatic rerun',artifact_path=str((A/'results.json').relative_to(R)))
+m['llm_policy']['llm_calls']=[{'role':r,'class':c,'model':'gemini-3.1-flash-lite','repeats':1,'temperature':0} for r,c in [('navigation','product'),('judge','offline_evaluator')]]
+m['dataset'].update(name='Synthetic schema navigation probe',version='0442-v1',frozen_source=str((A/'dataset/product-cases.json').relative_to(R)),sha256=sha(A/'dataset/product-cases.json'),legal_version_checked=True,reference_version_checked=True,version_note='Synthetic, no actual legal rule or current law claim',corpus_sha256=sha(A/'dataset/corpus.json'))
+m['retrieval_accounting'].update(changed=True,not_applicable_reason=None);m['retrieval_accounting']['stage_ledger'].update(mode='measured',summary_run_id='run-001',artifact_path=str((A/'retrieval-ledger.json').relative_to(R)),sha256='PENDING',not_applicable_reason=None)
+(D/'실험/manifest.json').write_text(json.dumps(m,ensure_ascii=False,indent=2)+'\n');new(A/'design-before-snapshot.json',m)
+print('Frozen design and synthetic inputs; no model calls')

@@ -1,0 +1,2062 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:design:rag-schema-tools-v0",
+  "title": "Proposed navigation contracts, DESIGN ONLY",
+  "description": "Not a serving contract. ACL, provenance, relation semantics, coverage unions and per-tool payload require separate runtime validation.",
+  "$defs": {
+    "EntityRef": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "document",
+            "concept",
+            "definition",
+            "relation",
+            "unit",
+            "source",
+            "evidence"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "Binding": {
+      "type": "object",
+      "properties": {
+        "generation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_store_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "schema_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "adapter_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "indexes_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "principal_scope_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "acl_revision": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "generation_id",
+        "source_store_sha256",
+        "schema_sha256",
+        "adapter_sha256",
+        "policy_sha256",
+        "indexes_sha256",
+        "principal_scope_sha256",
+        "acl_revision"
+      ],
+      "additionalProperties": false
+    },
+    "Coverage": {
+      "type": "object",
+      "properties": {
+        "population_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "population_kind": {
+          "type": "string",
+          "enum": [
+            "FILTERED_DOCUMENTS",
+            "REGISTERED_RELATIONS",
+            "LEXICAL_MATCHES",
+            "SEMANTIC_WINDOW",
+            "STRUCTURE_UNITS"
+          ]
+        },
+        "collection_state": {
+          "type": "string",
+          "enum": [
+            "KNOWN",
+            "NOT_COLLECTED",
+            "NOT_FOUND_IN_SCOPE",
+            "AMBIGUOUS",
+            "INVALID"
+          ]
+        },
+        "total_kind": {
+          "type": "string",
+          "enum": [
+            "EXACT",
+            "LOWER_BOUND",
+            "UNKNOWN"
+          ]
+        },
+        "total": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "returned_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "enumeration_complete": {
+          "type": "boolean"
+        },
+        "read_complete": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "unread_count": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "population_id",
+        "population_kind",
+        "collection_state",
+        "total_kind",
+        "total",
+        "returned_count",
+        "enumeration_complete",
+        "read_complete",
+        "unread_count",
+        "next_cursor"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "total_kind": {
+                "const": "UNKNOWN"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "total": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "enumeration_complete": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "next_cursor": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "read_complete": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "unread_count": {
+                "const": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ScopeSelector": {
+      "type": "object",
+      "properties": {
+        "documents": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntityRef"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "document"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "minItems": 0
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/EntityRef"
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "unit"
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "documents",
+        "unit"
+      ],
+      "additionalProperties": false
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "allowed_recovery": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "retryable",
+        "allowed_recovery"
+      ],
+      "additionalProperties": false
+    },
+    "AvailableAction": {
+      "type": "object",
+      "properties": {
+        "tool": {
+          "type": "string",
+          "enum": [
+            "CATALOG",
+            "FIND_CONCEPT",
+            "OPEN_TERM",
+            "GRAPH",
+            "LIST",
+            "STRUCTURE",
+            "GREP",
+            "SEARCH",
+            "READ",
+            "REFERENCES",
+            "SOURCE_CONCEPTS",
+            "JUDGE",
+            "REFOCUS",
+            "RELEASE",
+            "HISTORY",
+            "FINISH"
+          ]
+        },
+        "input_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "minItems": 0
+        },
+        "requires": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "tool",
+        "input_refs",
+        "requires"
+      ],
+      "additionalProperties": false
+    },
+    "Envelope": {
+      "type": "object",
+      "properties": {
+        "result_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "OK",
+            "EMPTY",
+            "NEEDS_CHOICE",
+            "UNAVAILABLE",
+            "DENIED",
+            "INVALID",
+            "RETRYABLE_ERROR",
+            "BLOCKED"
+          ]
+        },
+        "binding": {
+          "$ref": "#/$defs/Binding"
+        },
+        "refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "minItems": 0
+        },
+        "payload": {
+          "type": "object"
+        },
+        "coverage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Coverage"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "available_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AvailableAction"
+          },
+          "minItems": 0
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Error"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "result_id",
+        "action_id",
+        "status",
+        "binding",
+        "refs",
+        "payload",
+        "coverage",
+        "available_actions",
+        "error"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "UNAVAILABLE",
+                  "DENIED",
+                  "INVALID",
+                  "RETRYABLE_ERROR",
+                  "BLOCKED"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "error": {
+                "$ref": "#/$defs/Error"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "EMPTY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "refs": {
+                "maxItems": 0
+              },
+              "coverage": {
+                "$ref": "#/$defs/Coverage"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "SourceSpan": {
+      "type": "object",
+      "properties": {
+        "span_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "document": {
+          "anyOf": [
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/EntityRef"
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "document"
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/EntityRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "source"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "block_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "OWN",
+            "SUPPORT"
+          ]
+        }
+      },
+      "required": [
+        "span_id",
+        "document",
+        "source",
+        "block_id",
+        "start",
+        "end",
+        "text",
+        "text_sha256",
+        "source_artifact_sha256",
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "ReadPacket": {
+      "type": "object",
+      "properties": {
+        "packet_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/EntityRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "unit",
+                    "definition"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "binding": {
+          "$ref": "#/$defs/Binding"
+        },
+        "evidence_class": {
+          "type": "string",
+          "enum": [
+            "CORPUS_TEXT",
+            "GLOSSARY_SOURCE"
+          ]
+        },
+        "structural_status": {
+          "const": "VERIFIED"
+        },
+        "extent": {
+          "type": "string",
+          "enum": [
+            "OWN",
+            "SUBTREE"
+          ]
+        },
+        "complete_extent": {
+          "const": true
+        },
+        "spans": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceSpan"
+          },
+          "minItems": 1
+        },
+        "covered_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "minItems": 1
+        },
+        "unread_required_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "minItems": 0
+        },
+        "attachment_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "minItems": 0
+        },
+        "packet_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "packet_id",
+        "target",
+        "binding",
+        "evidence_class",
+        "structural_status",
+        "extent",
+        "complete_extent",
+        "spans",
+        "covered_refs",
+        "unread_required_refs",
+        "attachment_refs",
+        "packet_sha256"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "evidence_class": {
+                "const": "CORPUS_TEXT"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spans": {
+                "items": {
+                  "properties": {
+                    "document": {
+                      "allOf": [
+                        {
+                          "$ref": "#/$defs/EntityRef"
+                        },
+                        {
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "document"
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "RelationRecord": {
+      "type": "object",
+      "properties": {
+        "ref": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/EntityRef"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "relation"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/EntityRef"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntityRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "original_predicate": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normalized_predicate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "BROADER_THAN",
+                "NARROWER_THAN",
+                "OVERLAPS",
+                "COUNTERPART_OF",
+                "RELATED_TO",
+                "DEFINED_BY",
+                "OCCURS_IN",
+                "CONTAINS",
+                "REFERENCES",
+                "IDENTITY_MAPPING"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resolution": {
+          "type": "string",
+          "enum": [
+            "RESOLVED",
+            "UNRESOLVED"
+          ]
+        },
+        "target_locator": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "unresolved_reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "traversal_direction": {
+          "type": "string",
+          "enum": [
+            "OUTGOING",
+            "INCOMING"
+          ]
+        },
+        "origin": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntityRef"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "evidence"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "minItems": 0
+        },
+        "review_status": {
+          "type": "string",
+          "enum": [
+            "UNREVIEWED",
+            "APPROVED",
+            "REJECTED",
+            "DISPUTED"
+          ]
+        },
+        "scope_documents": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntityRef"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "document"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "ref",
+        "source",
+        "target",
+        "original_predicate",
+        "normalized_predicate",
+        "resolution",
+        "target_locator",
+        "unresolved_reason",
+        "traversal_direction",
+        "origin",
+        "evidence_refs",
+        "review_status",
+        "scope_documents"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "resolution": {
+                "const": "RESOLVED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "target": {
+                "$ref": "#/$defs/EntityRef"
+              },
+              "unresolved_reason": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "target": {
+                "type": "null"
+              },
+              "target_locator": {
+                "type": "string",
+                "minLength": 1
+              },
+              "unresolved_reason": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Action": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "CATALOG"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "document_kind": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "cursor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "FIND_CONCEPT"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "document_refs": {
+                  "type": "array",
+                  "items": {
+                    "allOf": [
+                      {
+                        "$ref": "#/$defs/EntityRef"
+                      },
+                      {
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "document"
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "minItems": 0
+                },
+                "cursor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "text",
+                "document_refs"
+              ],
+              "additionalProperties": false
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "OPEN_TERM"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "concept_ref": {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/EntityRef"
+                    },
+                    {
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "concept"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "view": {
+                  "type": "string",
+                  "enum": [
+                    "identity",
+                    "definitions"
+                  ]
+                },
+                "cursor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "concept_ref",
+                "view"
+              ],
+              "additionalProperties": false
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "GRAPH"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "concept_ref": {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/EntityRef"
+                    },
+                    {
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "concept"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "predicate": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "OUTGOING",
+                    "INCOMING",
+                    "BOTH"
+                  ]
+                },
+                "cursor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "concept_ref",
+                "direction"
+              ],
+              "additionalProperties": false
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "LIST"
+            },
+            "args": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "concept_refs": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          {
+                            "$ref": "#/$defs/EntityRef"
+                          },
+                          {
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "concept"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "minItems": 1
+                    },
+                    "match": {
+                      "type": "string",
+                      "enum": [
+                        "any",
+                        "all"
+                      ]
+                    },
+                    "cursor": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "concept_refs",
+                    "match"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "unit_ref": {
+                      "allOf": [
+                        {
+                          "$ref": "#/$defs/EntityRef"
+                        },
+                        {
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "unit"
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "cursor": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "unit_ref"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "STRUCTURE"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "target": {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/EntityRef"
+                    },
+                    {
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "document",
+                            "unit"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "cursor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "target"
+              ],
+              "additionalProperties": false
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "GREP"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "literal": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "scope": {
+                  "$ref": "#/$defs/ScopeSelector"
+                },
+                "cursor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "literal"
+              ],
+              "additionalProperties": false
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "SEARCH"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "fulltext",
+                    "semantic",
+                    "hybrid"
+                  ]
+                },
+                "scope": {
+                  "$ref": "#/$defs/ScopeSelector"
+                },
+                "cursor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "query",
+                "mode"
+              ],
+              "additionalProperties": false
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "READ"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "target": {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/EntityRef"
+                    },
+                    {
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "unit",
+                            "definition"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "extent": {
+                  "type": "string",
+                  "enum": [
+                    "OWN",
+                    "SUBTREE"
+                  ]
+                }
+              },
+              "required": [
+                "target",
+                "extent"
+              ],
+              "additionalProperties": false
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "REFERENCES"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "unit_ref": {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/EntityRef"
+                    },
+                    {
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "unit"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "cursor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "unit_ref"
+              ],
+              "additionalProperties": false
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "SOURCE_CONCEPTS"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "unit_ref": {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/EntityRef"
+                    },
+                    {
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "unit"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "cursor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "unit_ref"
+              ],
+              "additionalProperties": false
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "JUDGE"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "receipt_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "issue_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "decision": {
+                  "type": "string",
+                  "enum": [
+                    "ADOPT",
+                    "EXCLUDE",
+                    "DEFER"
+                  ]
+                },
+                "quote": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "claim": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "span_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "receipt_id",
+                "issue_id",
+                "decision"
+              ],
+              "additionalProperties": false,
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "decision": {
+                        "const": "ADOPT"
+                      }
+                    }
+                  },
+                  "then": {
+                    "required": [
+                      "quote",
+                      "claim"
+                    ]
+                  }
+                }
+              ]
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "REFOCUS"
+            },
+            "args": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "target_branch": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "target_branch"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "anchor_ref": {
+                      "$ref": "#/$defs/EntityRef"
+                    }
+                  },
+                  "required": [
+                    "anchor_ref"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "RELEASE"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "packet_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "packet_ids"
+              ],
+              "additionalProperties": false
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "HISTORY"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "cursor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "result_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 0
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tool": {
+              "const": "FINISH"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "proposed_status": {
+                  "type": "string",
+                  "enum": [
+                    "COMPLETE",
+                    "NEEDS_INPUT",
+                    "INCOMPLETE"
+                  ]
+                }
+              },
+              "required": [
+                "proposed_status"
+              ],
+              "additionalProperties": false
+            },
+            "issue_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action_id",
+            "tool",
+            "args",
+            "issue_ids",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "$ref": "#/$defs/Action"
+}

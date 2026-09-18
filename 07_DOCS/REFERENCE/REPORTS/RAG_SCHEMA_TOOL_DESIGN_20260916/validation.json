@@ -1,0 +1,331 @@
+{
+  "status": "PASS",
+  "scope": "Design JSON Schema, synthetic valid/invalid shapes, fixture hashes, local Markdown links only",
+  "not_verified": [
+    "production implementation",
+    "ACL or generation enforcement",
+    "per-tool payload semantics",
+    "corpus completeness",
+    "model quality",
+    "performance",
+    "GENOS deployment"
+  ],
+  "schema_draft": "2020-12",
+  "tool_action_shapes": 16,
+  "cases": 43,
+  "passed": 43,
+  "valid_cases": 24,
+  "invalid_cases": 19,
+  "local_links_checked": 33,
+  "errors": [],
+  "files_sha256": {
+    "DESIGN.md": "2c014f728fc2f75f79c8805c67561fbd70340878c936f1be79b3524975845b77",
+    "contracts.json": "b562a013aa69fdffd13bbc5658fa3be441efe36b33e57ad4372e4dd28448585a",
+    "examples.json": "14fc1b3051d1f7403c5f8fe868e162de50d28eff8a5bf30463faa12daf225788",
+    "evidence.json": "f26f66f25a6340afe1c35bb4d6002b8007749c718f0edede36b0d0d5192c62ef",
+    "validate_design.py": "f72619b1b93959e42585194e5117c474a654c215bd838af8d34a0d978af537d4"
+  },
+  "results": [
+    {
+      "id": "valid-CATALOG",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-FIND_CONCEPT",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-OPEN_TERM",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-GRAPH",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-LIST",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-STRUCTURE",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-GREP",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-SEARCH",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-READ",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-REFERENCES",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-SOURCE_CONCEPTS",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-JUDGE",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-REFOCUS",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-RELEASE",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-HISTORY",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "valid-FINISH",
+      "definition": "Action",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "catalog-result",
+      "definition": "Envelope",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "partial-result",
+      "definition": "Envelope",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "empty-result",
+      "definition": "Envelope",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "blocked-result",
+      "definition": "Envelope",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "read-packet",
+      "definition": "ReadPacket",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "relation",
+      "definition": "RelationRecord",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "unresolved-relation",
+      "definition": "RelationRecord",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    },
+    {
+      "id": "model-forges-scope",
+      "definition": "Action",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "read-character-slicing",
+      "definition": "Action",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "graph-from-document",
+      "definition": "Action",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "unknown-tool",
+      "definition": "Action",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "untyped-args-string",
+      "definition": "Action",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "adopt-without-quote",
+      "definition": "Action",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "invalid-search-mode",
+      "definition": "Action",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "empty-list-selector",
+      "definition": "Action",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "full-and-next-page",
+      "definition": "Envelope",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "unknown-total-with-number",
+      "definition": "Envelope",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "read-complete-with-unread",
+      "definition": "Envelope",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "blocked-without-error",
+      "definition": "Envelope",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "empty-with-refs",
+      "definition": "Envelope",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "partial-body-packet",
+      "definition": "ReadPacket",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "unverified-body-packet",
+      "definition": "ReadPacket",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "resolved-without-target",
+      "definition": "RelationRecord",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "unresolved-without-reason",
+      "definition": "RelationRecord",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "invented-predicate",
+      "definition": "RelationRecord",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "corpus-packet-without-document",
+      "definition": "ReadPacket",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true
+    },
+    {
+      "id": "glossary-read-packet",
+      "definition": "ReadPacket",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true
+    }
+  ]
+}

@@ -6,8 +6,26 @@ import json
 from collections import defaultdict
 from . import recipe_visual_loop as loop, viewer
 
-VERSION = 'source-parent-chunks-viewer-v3'
+VERSION = 'source-parent-chunks-viewer-v4'
 COLORS = ['2563eb', '0891b2', '16a34a', 'ca8a04', 'ea580c', 'db2777', '7c3aed']
+
+
+def block_label(block, nodes):
+    """Separate a heading opener from content owned by an existing heading."""
+    opened = sorted(block['opens'], key=lambda nid: nodes[nid]['level'])
+    if opened:
+        lines = [f"b{block['idx']} HEAD"]
+        for nid in opened:
+            node = nodes[nid]
+            parent = 'ROOT' if node['parent'] is None else f"n{node['parent']}"
+            lines.append(f"n{nid} L{node['level']} parent={parent}")
+        return lines
+    kind = 'TABLE' if block['kind'] == 'table' else 'BODY'
+    if block['kind'] in {'header', 'footer', 'page_header', 'page_footer'}:
+        kind = 'MARGIN'
+    owner = nodes.get(block['node'])
+    return [f"b{block['idx']} {kind}",
+            f"in n{owner['id']} L{owner['level']}" if owner else 'owner=none']
 
 
 def sample(pages, blocks, result, catalog, max_pages=12):
@@ -93,19 +111,32 @@ def compose(data, catalog, call, check, save):
 
 def review_images(pdf_path, blocks, result, selected, output_dir):
     """Same block rectangles, owners, openers, levels and parents consumed by the web viewer."""
+    return payload_images(pdf_path, viewer.payload(result, blocks, pdf_path), selected, output_dir,
+                          tree_sha256=loop.digest(loop.tree_record(result)),
+                          region_plan=result.stats.get('region_plan', []),
+                          region_ladders=result.stats.get('region_ladders', []))
+
+
+def payload_images(pdf_path, payload, selected, output_dir, *, tree_sha256=None,
+                   region_plan=None, region_ladders=None, include_data=True):
+    """Render an already saved final payload; optionally avoid retaining raster data in memory."""
     import fitz
     output_dir.mkdir(parents=True, exist_ok=False)
-    payload = viewer.payload(result, blocks, pdf_path)
     (output_dir/'viewer-payload.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2)+'\n')
     nodes = {n['id']:n for n in payload['nodes']}
-    rows = {p:[b for b in payload['blocks'] if b['page']==p] for p in selected}
+    rows = {p: [] for p in selected}
+    for block in payload['blocks']:
+        if block['page'] in rows:
+            rows[block['page']].append(block)
     manifest = {'version':VERSION,'viewer_payload_sha256':hashlib.sha256((output_dir/'viewer-payload.json').read_bytes()).hexdigest(),
-                'tree_sha256':loop.digest(loop.tree_record(result)), 'images':[],
-                'legend':'For each page: raw source then bbox overlay. Colors are viewer levels; labels b=source block, n=actual node, L=level, p=actual parent node. These are the proposed structure, not ground truth. Consult actual_structure for the source-backed names. Check hierarchy against raw image and text.',
-                'region_plan':result.stats.get('region_plan',[]),
-                'region_ladders':result.stats.get('region_ladders',[]),
+                'tree_sha256':tree_sha256, 'images':[],
+                'legend':'For each page: raw source then bbox overlay. Side labels: b=source block, HEAD=opens a heading, n=actual node, L=level, parent=parent node or ROOT. BODY/TABLE in n means content already belongs to that node, not a missing heading. MARGIN=source header/footer. owner=none means no viewer owner. Solid boxes open headings; dashed boxes contain other content. These are the proposed structure, not ground truth.',
+                'region_plan':region_plan or [],
+                'region_ladders':region_ladders or [],
                 'visible_nodes':[n for n in payload['nodes'] if n['page'] in selected],
                 'visible_blocks':[{k:b[k] for k in ('idx','page','rect','node','level','opens')} for p in selected for b in rows[p]]}
+    manifest['blocks_without_rectangles'] = [b['idx'] for p in selected for b in rows[p] if not b['rect']]
+    manifest['spatial_scope'] = 'Missing rectangles are unavailable, not proof of spatial correctness; compare source text and page images.'
     images = []
     with fitz.open(pdf_path) as source:
         for number in selected:
@@ -113,27 +144,53 @@ def review_images(pdf_path, blocks, result, selected, output_dir):
             scale = min(1.5,1600/max(page.rect.width,page.rect.height))
             raw = page.get_pixmap(matrix=fitz.Matrix(scale,scale),alpha=False).tobytes('png')
             with fitz.open() as painted:
-                painted.insert_pdf(source,from_page=number-1,to_page=number-1)
-                canvas = painted[0]; w,h = canvas.rect.width,canvas.rect.height
-                for b in rows[number]:
+                # Keep labels outside the source. No white masks over source text,
+                # even for adjacent blocks or several markers on the same line.
+                gutter, top = 168, 38
+                w, h = page.rect.width, page.rect.height
+                layout = []
+                next_y = top + 8
+                for b in sorted(rows[number], key=lambda b: ((b['rect'] or {}).get('y', 1), b['idx'])):
+                    if not b['rect']: continue
+                    lines = block_label(b, nodes)
+                    y = max(next_y, top + b['rect']['y'] * h)
+                    height = len(lines) * 10 + 4
+                    layout.append((b, lines, y, height))
+                    next_y = y + height + 3
+                canvas = painted.new_page(width=w+gutter, height=max(h+top, next_y+8))
+                if page.get_contents():
+                    canvas.show_pdf_page(fitz.Rect(gutter, top, gutter+w, top+h), source, number-1)
+                canvas.insert_text((8, 14), 'HEAD = heading     BODY / TABLE in n = content of that heading', fontsize=9, color=(.1,.1,.1))
+                canvas.insert_text((8, 28), 'Solid = heading     Dashed = content     L = depth     ROOT = document', fontsize=9, color=(.1,.1,.1))
+                for b, lines, label_y, label_height in layout:
                     r = b['rect']
-                    if not r: continue
                     opens = sorted(b['opens'],key=lambda nid:nodes[nid]['level'])
                     for inset,nid in enumerate(opens or [b['node']]):
                         n = nodes.get(nid); level = n['level'] if n else None
                         rgb = tuple(int(COLORS[min(level,6)][i:i+2],16)/255 for i in (0,2,4)) if level is not None else (.5,.5,.5)
-                        rect = fitz.Rect(r['x']*w+inset*2,r['y']*h+inset*2,(r['x']+r['w'])*w-inset*2,(r['y']+r['h'])*h-inset*2)
+                        rect = fitz.Rect(gutter+r['x']*w+inset*2,top+r['y']*h+inset*2,gutter+(r['x']+r['w'])*w-inset*2,top+(r['y']+r['h'])*h-inset*2)
                         if rect.is_empty: continue
-                        canvas.draw_rect(rect,color=rgb,width=1.1 if opens else .45,overlay=True)
-                        if opens:
-                            label=f"b{b['idx']} n{nid} L{level} p{n['parent']}"
-                            y=max(8,rect.y0-2-inset*8);x=max(1,rect.x0)
-                            canvas.draw_rect(fitz.Rect(x,y-7,min(w,x+len(label)*3.5),y+1),color=None,fill=(1,1,1),overlay=True)
-                            canvas.insert_text((x,y),label,fontsize=6.5,color=rgb,overlay=True)
-                overlay = canvas.get_pixmap(matrix=fitz.Matrix(scale,scale),alpha=False).tobytes('png')
+                        canvas.draw_rect(rect,color=rgb,width=1.8 if opens else 1.0,
+                                         dashes=None if opens else '[3 2] 0',overlay=True)
+                    owner = nodes.get(opens[0] if opens else b['node'])
+                    color = COLORS[min(owner['level'],6)] if owner else '64748b'
+                    rgb = tuple(int(color[i:i+2],16)/255 for i in (0,2,4))
+                    canvas.draw_rect(fitz.Rect(6,label_y,gutter-12,label_y+label_height),
+                                     color=rgb,fill=(.96,.97,.99),width=.8)
+                    for i,line in enumerate(lines):
+                        canvas.insert_text((10,label_y+10+i*10),line,fontsize=8.5,
+                                           fontname='hebo' if i==0 else 'helv',color=(.08,.12,.2))
+                    canvas.draw_line((gutter-12,label_y+label_height/2),
+                                     (gutter+r['x']*w,top+r['y']*h+min(r['h']*h/2,8)),color=rgb,width=.7)
+                overlay_scale = min(scale,1600/max(canvas.rect.width,canvas.rect.height))
+                overlay = canvas.get_pixmap(matrix=fitz.Matrix(overlay_scale,overlay_scale),alpha=False).tobytes('png')
+                transform = {'source_offset_points':[gutter,top], 'source_size_points':[w,h],
+                             'canvas_size_points':[canvas.rect.width,canvas.rect.height], 'raster_scale':overlay_scale}
             for kind,png in [('source',raw),('viewer-overlay',overlay)]:
                 filename=f'page-{number}-{kind}.png'; (output_dir/filename).write_bytes(png)
                 manifest['images'].append({'page':number,'kind':kind,'file':filename,'sha256':hashlib.sha256(png).hexdigest()})
-                images.append('data:image/png;base64,'+base64.b64encode(png).decode())
+                if kind == 'viewer-overlay': manifest['images'][-1]['transform'] = transform
+                if include_data:
+                    images.append('data:image/png;base64,'+base64.b64encode(png).decode())
     (output_dir/'evidence.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
     return images, manifest

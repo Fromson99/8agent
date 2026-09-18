@@ -26,26 +26,49 @@ def main(argv=None):
     p.add_argument('--run-id', default='stages-' + datetime.now().strftime('%Y%m%d-%H%M%S'))
     p.add_argument('--stage', choices=['raw', 'structure', 'index', 'all'], default='all')
     p.add_argument('--exclude-internal', action='store_true')
+    p.add_argument('--only-internal', action='store_true', help='Select every supported format under RAW/internal, independently of the external document scope')
+    p.add_argument('--only-internal-pdf', action='store_true', help='Select RAW/internal PDFs without reading external source files')
+    p.add_argument('--limit', type=int, help='Positive document limit; requires --only-internal-pdf')
+    p.add_argument('--document-scope', type=Path, help='Hash-pinned selection; defaults to CATALOG/BUILD_SCOPE.json when configured')
+    p.add_argument('--team', action='append', help='Select a team in the registered RAW team layout; repeatable')
+    p.add_argument('--unzip', choices=['on', 'off'], default='on')
+    p.add_argument('--xml-markdown', choices=['on', 'off'], default='on')
+    p.add_argument('--pdf-conversion', choices=['on', 'off'], default=os.environ.get('GENOS_PDF_CONVERSION', 'on'))
     mode = p.add_mutually_exclusive_group()
     mode.add_argument('--execute', action='store_true')
     mode.add_argument('--check-only', action='store_true')
     args, rest = p.parse_known_args(argv)
+    if (args.only_internal_pdf or args.only_internal) and args.exclude_internal:
+        p.error('--only-internal-pdf and --exclude-internal conflict')
+    if args.limit is not None and (not args.only_internal_pdf or args.limit < 1):
+        p.error('--limit requires --only-internal-pdf and a positive value')
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,79}', args.run_id):
         p.error('run-id는 영문/숫자/._- 1~80자')
     forbidden = {'--input-root', '--external-root', '--build-dir', '--data-root', '--source', '--resume'}
     if any(a.split('=')[0] in forbidden for a in rest):
         p.error('경로는 논리 data root로 고정합니다. 같은 run-id는 자동 재개합니다.')
     data = genos_stages.offline_data_root(ROOT)
+    from lawrag.pipeline import document_scope, team_raw, raw_preprocess
+    if args.only_internal and (args.document_scope or args.only_internal_pdf):
+        p.error('--only-internal conflicts with --document-scope/--only-internal-pdf')
+    team_layout = bool(team_raw.config(data)) and not args.document_scope
+    if args.team and not team_layout:
+        p.error('--team requires prepare-data --team-layout --apply and no explicit document scope')
+    if args.team and any(not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]*_team', t) for t in args.team):
+        p.error('team must be a directory name ending in _team')
+    scope_path = None if args.only_internal or team_layout else (args.document_scope or document_scope.configured(data))
+    if scope_path and args.only_internal_pdf:
+        p.error('--only-internal-pdf conflicts with the configured document scope')
     raw = genos_stages.plain_path(data / 'RAW')
     if (raw / '.migration-in-progress').exists():
         p.error('원문 이동 미완료. migration receipt를 확인하세요.')
     options = genos_build.parser().parse_args(['build', '--input-root', str(raw),
         '--build-dir', str(data / 'TERM' / args.run_id), *rest])
     if options.timeout < 1:p.error('timeout must be positive')
-    if args.stage!='raw' and args.execute and not options.glossary_dir:
+    if args.stage in {'index', 'all'} and args.execute and not options.glossary_dir:
         from lawrag.pipeline import glossary_linking
         options.glossary_dir=glossary_linking.configured(ROOT,data)
-    if options.glossary_dir:
+    if args.stage in {'index', 'all'} and args.execute and options.glossary_dir:
         from lawrag.pipeline import glossary_linking
         glossary_linking.binding(options.glossary_dir)
     logs = genos_stages.plain_path(data / 'LOGS' / args.run_id)
@@ -54,7 +77,7 @@ def main(argv=None):
         genos_stages.plain_path(file)
     with (logs / 'run.lock').open('a') as lock, genos_stages.plain_path(data / '.raw-migration.lock').open('a') as raw_lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        fcntl.flock(raw_lock, fcntl.LOCK_SH | fcntl.LOCK_NB)
+        fcntl.flock(raw_lock, (fcntl.LOCK_EX if team_layout and args.execute else fcntl.LOCK_SH) | fcntl.LOCK_NB)
         migration = data / 'LOGS/raw-migration/receipt.json'
         if migration.exists() and json.loads(migration.read_text())['status'] != 'COMPLETED':
             p.error('원문 이동 미완료. genos_move_raw.py --apply를 재실행하세요.')
@@ -75,9 +98,22 @@ def main(argv=None):
         try:
             with redirect_stdout(stream), redirect_stderr(stream):
                 # Inventory has no document context; details are saved without flooding the screen.
-                plan, inventory = genos_corpus.collect(raw, options.bindings,
-                    exclude_internal=args.exclude_internal, skip_invalid=True, emit=progress.emit,
-                    internal_pdf_root=data / 'PDF/internal')
+                preparation = None
+                if team_layout:
+                    if args.stage != 'index':
+                        preparation = raw_preprocess.run(ROOT, data, logs / 'preparation', execute=args.execute,
+                            unzip=args.unzip == 'on', xml_md=args.xml_markdown == 'on', pdf=args.pdf_conversion == 'on',
+                            only_internal=args.only_internal or args.only_internal_pdf, exclude_internal=args.exclude_internal, teams=args.team)
+                    plan, inventory = team_raw.collect(data, options.bindings, emit=progress.emit,
+                        only_internal=args.only_internal, only_internal_pdf=args.only_internal_pdf, limit=args.limit,
+                        exclude_internal=args.exclude_internal, teams=args.team)
+                elif scope_path:
+                    plan, inventory = document_scope.collect(data, scope_path, options.bindings,
+                        exclude_internal=args.exclude_internal, emit=progress.emit)
+                else:
+                    plan, inventory = genos_corpus.collect(raw, options.bindings,
+                        exclude_internal=args.exclude_internal, skip_invalid=True, emit=progress.emit,
+                        only_internal_pdf=args.only_internal_pdf, limit=args.limit, only_internal=args.only_internal)
                 genos_build.atomic(logs / ('inventory-' + datetime.now().strftime('%Y%m%d-%H%M%S-%f') + '.json'), inventory)
                 input_failed = sum(x.get('scope') == 'document' for x in inventory['errors'])
                 source_errors = [x for x in inventory['errors'] if x.get('scope') != 'document']
@@ -92,6 +128,8 @@ def main(argv=None):
                     result = {'stage': 'raw', 'status': 'INPUT_CHECK_ONLY', 'selected': len(plan['files']),
                               'ok': inventory['ok'],
                               'note': '입력 목록/해시 확인이며 파싱·LLM·임베딩 성공이 아닙니다.'}
+                    if preparation and args.execute:
+                        result.update(status='RAW_PREPARED', note='ZIP/XML/PDF 준비 설정 적용 및 입력 검사 완료. 구조화·색인은 별도 단계입니다.')
                 else:
                     result = genos_stages.execute(plan, options, data, args.run_id, args.stage, progress=progress, status=status)
                     result['selected_total'] = result['total']
@@ -100,7 +138,12 @@ def main(argv=None):
                     result['passed_percent'] = round(100 * result['passed'] / result['total'], 2) if result['total'] else 0
                     result['skipped_percent'] = round(100 * result['skipped'] / result['total'], 2) if result['total'] else 0
                     result['ok'] = result['ok'] and not input_failed and not source_errors
-                result.update(input_failed=input_failed, source_errors=source_errors)
+                if args.execute and args.stage in {'structure', 'all'}:
+                    selected_path = logs / 'structure-selection.json'
+                    selected = json.loads(selected_path.read_text())
+                    selected['input_inventory_valid'] = not input_failed and not source_errors
+                    genos_build.atomic(selected_path, selected)
+                result.update(input_failed=input_failed, source_errors=source_errors, preparation=preparation)
                 receipt = logs / ('result-' + datetime.now().strftime('%Y%m%d-%H%M%S-%f') + '.json')
                 genos_build.atomic(receipt, safe(result))
                 status.finish('COMPLETED' if result.get('ok', True) and not source_errors else 'FAILED',
@@ -116,7 +159,7 @@ def main(argv=None):
         except KeyboardInterrupt:
             if status is not None and status.attempt is not None:
                 status.finish('INTERRUPTED')
-                export_report(logs)
+                # A cancelled report must not be rebuilt during cancellation.
             progress.finish('중단됨: 저장된 구조화/청크 결과 보존. 같은 명령으로 재개', status='INTERRUPTED') if progress.state else None
             return 130
         except Exception as exc:

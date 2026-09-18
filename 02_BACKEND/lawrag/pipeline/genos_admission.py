@@ -7,9 +7,63 @@ It validates the existing viewer/source-field payload coordinate contract.
 from __future__ import annotations
 
 import re
+import copy
 from typing import Any
 
 POLICY = "score-advisory-v1"
+
+
+def preserve_unowned_source(result: dict) -> dict:
+    """Give uncovered original text a neutral storage unit, never a legal heading.
+
+    This explicit export step is separate from the strict validator below. It
+    preserves existing nodes, text, scores and coordinates; malformed rows fail.
+    """
+    out = copy.deepcopy(result)
+    blocks, nodes = out.get('blocks'), out.get('nodes')
+    if not isinstance(blocks, list) or not blocks or not isinstance(nodes, list):
+        raise ValueError('source preservation requires blocks and nodes')
+    by_block = {b['idx']:b for b in blocks}
+    if (len(by_block) != len(blocks) or set(by_block) != set(range(len(blocks)))
+            or any(type(b['idx']) is not int for b in blocks)):
+        raise ValueError('invalid source block coordinates')
+    ids = [n['id'] for n in nodes]
+    if len(set(ids)) != len(ids) or any(type(i) is not int or i < 0 for i in ids):
+        raise ValueError('invalid structural node IDs')
+    intervals = []
+    for node in nodes:
+        lo, hi = node['span']
+        if type(lo) is not int or type(hi) is not int or not 0 <= lo < hi <= len(blocks):
+            raise ValueError('invalid structural source span')
+        intervals.append((lo, hi))
+        for attachment in node.get('attachments') or []:
+            idx = attachment['block']
+            if type(idx) is not int or idx not in by_block:
+                raise ValueError('invalid attached source block')
+            intervals.append((idx,idx+1))
+    gaps = []; end = 0
+    for lo, hi in sorted(intervals):
+        if lo > end: gaps.append((end,lo))
+        end = max(end,hi)
+    if end < len(blocks): gaps.append((end,len(blocks)))
+    if not gaps: return out
+    receipt = []
+    for ident, (lo, hi) in enumerate(gaps, max(ids,default=-1)+1):
+        # Do not overwrite a bad existing owner: the admission validator reports it.
+        if any(by_block[i].get('node') is not None for i in range(lo,hi)):
+            raise ValueError('uncovered source has an inconsistent existing owner')
+        nodes.append({'id':ident, 'parent':None, 'level':0, 'block':lo, 'span':[lo,hi],
+                      'family':'unstructured_text', 'ordinal':None, 'surface':'',
+                      'title':'구조 미지정 원문', 'page':by_block[lo].get('page'),
+                      'structural_role':'preserved_source', 'inferred_heading':False,
+                      'reason':'원문 보존을 위한 구역이며 조문·표제 판단이 아님'})
+        for idx in range(lo,hi):
+            by_block[idx]['node'] = ident
+            by_block[idx]['level'] = 0
+        receipt.append({'node':ident, 'span':[lo,hi], 'reason':'outside_structure'})
+    out['source_preservation'] = {'version':1, 'regions':receipt, 'text_changed':False}
+    out.setdefault('warnings',[]).append('구조 미지정 원문을 별도 구역으로 보존했습니다.')
+    return out
 
 
 def validate_structure(document_id: str, meta: dict, result: dict) -> dict[str, Any]:
@@ -42,7 +96,7 @@ def validate_structure(document_id: str, meta: dict, result: dict) -> dict[str, 
     if review is not None or result.get("recipe_review") is not None:
         if not isinstance(review, dict) or review != result.get("recipe_review"):
             fail("recipe_review", "저장된 구조와 메타데이터의 검수 기록이 다릅니다")
-        if review.get("status") not in {"visual_approved", "visual_sampled"}:
+        if review.get("status") not in {"visual_approved", "visual_sampled", "accepted_with_warnings"}:
             fail("recipe_review.status", "보류/실패한 PDF 구조는 후속 의미 추출에 전달할 수 없습니다")
 
     nodes, blocks = result.get("nodes"), result.get("blocks")
@@ -177,6 +231,12 @@ def validate_structure(document_id: str, meta: dict, result: dict) -> dict[str, 
     passed = meta.get("passed", fitness.get("passed"))
     score = meta.get("score", fitness.get("score"))
     warnings = []
+    if review and review.get('status') == 'accepted_with_warnings':
+        if not review.get('coverage', {}).get('review_warnings'):
+            fail('recipe_review.coverage.review_warnings', '경고 포함 통과에는 검수 경고 기록이 필요합니다')
+        warnings.append('시각 검수 미해결 사항을 보존하고 경고 포함 통과했습니다.')
+    if result.get('source_preservation'):
+        warnings.append('구조 미지정 원문을 별도 구역으로 보존했습니다.')
     if passed is False:
         warnings.append("휴리스틱 구조 점수/판정은 참고용입니다. 원래 실패 판정은 보존하고 기계적 계약으로 수용했습니다")
     return {

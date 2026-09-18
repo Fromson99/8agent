@@ -93,9 +93,14 @@ def answer(p,plan,assembly):
         if not claims and not unresolved:unresolved=['확인한 근거가 없어 답변을 확정하지 못했습니다.']
     else:
         texts=[c['document_name']+'\n'+c['text'] for c in contexts.values()];unresolved=['원문 조회 모드: LLM 판단을 수행하지 않았습니다.']
+        if state['status']=='METADATA_ONLY':unresolved=['모델 미사용: 용어·구조 시작점만 조회했습니다. 원문 탐색과 근거 채택은 수행하지 않았습니다.']
     receipt=p.provider.record_local({'agent_status':state['status'],'provider_receipts':state['provider_receipts'],'source_ids':list(contexts),'source_verification':'article identity and original source text; semantic entailment not certified'})
     result={'schema_version':'term-runtime-v1','id':'answer:'+uuid.uuid4().hex,'scope':plan['scope'],
             'query_id':plan['id'],'generation_id':p.store.manifest['generation_id'],
             'source_store_sha256':p.store.manifest['store_sha256'],'text':'\n\n'.join(texts+unresolved),
             'claims':claims,'unresolved':[{'reason':t} for t in unresolved],'provider_receipt':receipt}
+    navigation = state.get('navigation_output')
+    if navigation and state.get('implementation') == 'document-navigation-v1':
+        result['text'] = navigation['text']
+        result['unresolved'] = [{'reason': x} for x in navigation['unresolved']]
     p.contracts.validate(result,'urn:8-agent:term-runtime-v1','Answer');return result

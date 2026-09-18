@@ -31,6 +31,7 @@ def reason(value):
                      ('invalid_unresolved:', '미해결 참조의 null/이유 불일치: '),
                      ('invalid_resolved:', '해결된 참조의 ID 연결 오류: '),
                      ('OUTPUT_LENGTH_LIMIT', '출력 토큰 한도: 응답 잘림'),
+                     ('model_call_budget_exhausted', '문서별 모델 호출 횟수 상한 도달'),
                      ('authoring incomplete; nothing loaded.', '미통과 청크가 남아 문서 적재 보류.')]:
         text = text.replace(old, new)
     return text
@@ -39,6 +40,32 @@ def reason(value):
 def vlm_detail(row):
     """Render bounded metadata only; model prompts and responses stay in evidence files."""
     event = row['event']
+    if event == 'recipe.basic.ready':
+        return 'basic 구조화 완료 · 초기 LLM 틀 생성 없이 bbox 검수 시작'
+    if event == 'recipe.review.budget':
+        status = ' · 현재 상한으로 첫 검수 완료 불가' if row['minimum_exceeds_limit'] else ''
+        return (f'검수 {row["total_pages"]}쪽 · 묶음 최대 {row["window_width"]}쪽 · '
+                f'첫 검수 최소 {row["fresh_pass_min_calls"]}회 / 호출 상한 {row["max_calls"]}회'
+                + status + ' · 수정·재검수 호출 별도 필요')
+    if event == 'recipe.review.budget_exhausted':
+        return (f'문서별 호출 상한 {row["calls"]}/{row["max_calls"]}회 도달 · '
+                f'남은 {row["pending_pages"]}쪽 시각 미검수로 저장 · 입력 토큰 한도와 별개')
+    if event == 'recipe.output.split':
+        if row.get('reason') == 'INPUT_CONTEXT_LIMIT':
+            return '입력 문맥 한도 · 검수 페이지 묶음을 줄여 다시 확인'
+        if row['unit'] == 'pages':
+            return '출력 잘림 복구 · 검수 페이지 묶음을 줄여 다시 확인'
+        if row['unit'] == 'families':
+            return f'출력 잘림 복구 · 전체 원문 유지 · 번호 체계 {row["batch_size"]}개씩 규칙 생성'
+        return '출력 잘림 복구 · 전체 원문 유지 · 구간 목록을 나누어 생성'
+    if event == 'recipe.resume':
+        return f'중간 결과 재개 · 기존 승인 {row["approved_windows"]}창 · 미완료 검수 계속'
+    if event == 'recipe.review.reused':
+        return '기존 검수 승인 재사용 · '+','.join(map(str,row['pages']))+'쪽'
+    if event == 'recipe.review.warning':
+        return '경고 포함 계속 · '+','.join(map(str,row['pages']))+'쪽 · '+row['code']
+    if event == 'recipe.review.pending':
+        return '검수 대기 · 중간 결과 저장 완료 · 같은 실행 명령으로 재개 가능'
     if event == 'recipe.sampling':
         return f'문서 {row["total_pages"]}쪽 · 검수 후보 {row["selected_pages"]}쪽'
     if event == 'recipe.regions.start':
@@ -61,6 +88,8 @@ def vlm_detail(row):
     if event == 'run.needs_review':
         return f'구조 검수 보류 · {row["reason"]} · 실행 {row["run_id"]}'
     if event == 'run.complete':
+        if row.get('status') == 'accepted_with_warnings':
+            return f'경고 포함 저장 · 미해결 {row.get("warning_count",0)}건 · 모델 호출 {row["model_calls"]}회'
         if row['reused']:
             return '구조화 틀 재사용 · 모델 호출 0회'
         scope = '전체 페이지' if row['visual_scope'] == 'full' else '샘플 페이지'
@@ -80,6 +109,9 @@ def clip(value, width):
 
 
 VLM_SLOTS = {'recipe.sampling':'샘플링', 'recipe.regions.start':'구간',
+             'recipe.review.budget':'호출 예산', 'recipe.review.budget_exhausted':'호출 예산',
+             'recipe.basic.ready':'basic',
+             'recipe.output.split':'출력 복구',
              'recipe.regions.ready':'구간', 'recipe.template.start':'틀',
              'recipe.rebuild':'구조화', 'recipe.review.start':'검수',
              'recipe.review.result':'검수', 'recipe.correction':'수정',
@@ -170,7 +202,21 @@ class Progress:
 
     def emit(self, message):
         with self.lock:
-            message = safe(str(message))
+            message = str(message)
+            prefix = next((p for p in ('[STRUCTURE VLM] ', '[QUEUE] ', '[TASK] ') if message.startswith(p)), None)
+            if prefix:
+                try:
+                    # Redacting serialized JSON can replace a numeric token
+                    # budget with bare [REDACTED], corrupting its syntax.
+                    row = safe(json.loads(message[len(prefix):]))
+                    if not isinstance(row, dict):raise ValueError('event must be an object')
+                    message = prefix + json.dumps(row, ensure_ascii=False)
+                except (ValueError, TypeError):
+                    self.detail.write(datetime.now(timezone.utc).isoformat() +
+                                      ' [PROGRESS WARNING] Invalid event JSON; display update skipped\n')
+                    return
+            else:
+                message = safe(message)
             self.detail.write(datetime.now(timezone.utc).isoformat() + ' ' + message + '\n')
             if not self.state:
                 return
@@ -182,7 +228,10 @@ class Progress:
                 else:
                     base = self.state.get('vlm_step', 'PDF 구조화')
                     if row['event'] == 'model.request':
-                        detail = f'{base} · 모델 호출 {row["call"]} · 시도 {row["attempt"]} · 응답 대기'
+                        phase = row.get('phase', '')
+                        role = ('VLM 검토 의견 작성' if ('-vlm-opinions' in phase or '-vlm-review' in phase) else
+                                'LLM 의견 검증·수정안 작성' if ('-llm-adjudicate' in phase or '-body-review' in phase) else 'LLM 틀 생성')
+                        detail = f'{base} · {role} · 모델 호출 {row["call"]} · 시도 {row["attempt"]} · 응답 대기'
                     elif row['event'] == 'model.response':
                         detail = f'{base} · 응답 {row["seconds"]}초 · 입력/출력 {row.get("input_count")}/{row.get("output_count")}'
                     elif row['event'] == 'model.retry':
@@ -246,6 +295,12 @@ class Progress:
     def error(self, exc):
         self.emit(traceback.format_exc())
         self.finish('실패·후속 단계 보류: ' + reason(exc)[:500] + ' | 상세: detail.log', status='FAILED')
+        # The live board clips long rows. Keep the complete cause and exact
+        # response path below it so diagnosis never requires guessing a run ID.
+        with self.lock:
+            self._newline()
+            self.terminal.write('실패 원인: ' + reason(exc) + '\n')
+            self.terminal.flush()
 
     def close(self):
         self.stop.set()

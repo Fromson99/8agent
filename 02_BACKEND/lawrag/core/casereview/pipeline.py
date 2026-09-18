@@ -1359,10 +1359,11 @@ def spot_issues_after(llm, facts: list, norms: list, limit: int = ISSUE_MAX) -> 
                      f"{wikictx._meta(r['text']).get('판단 축', '')}" for r in rows)
     fact_txt = "\n".join(f"- [{f.id}] {f.subject} / {f.action} / {f.object}"
                          f" ({f.tense}) — {f.text}" for f in facts)
-    norm_txt = "\n".join(
-        f"[{i}] {n.doc} ▸ {n.path.split(' ▸ ')[-1]} — "
-        f"{re.sub(r'\s+', ' ', (n.reqs[0].text if n.reqs else ''))[:120]}"
-        for i, n in enumerate(norms, start=1))
+    norm_lines = []
+    for i, n in enumerate(norms, start=1):
+        excerpt = re.sub(r'\s+', ' ', (n.reqs[0].text if n.reqs else ''))[:120]
+        norm_lines.append(f"[{i}] {n.doc} ▸ {n.path.split(' ▸ ')[-1]} — {excerpt}")
+    norm_txt = "\n".join(norm_lines)
     user = (f"[정리된 사실]\n{fact_txt}\n\n[회수된 조문]\n{norm_txt}\n\n"
             f"[쟁점 카드 목록]\n{menu}")
     out = llm.structured("review.issues", ISSUE_SYSTEM_AFTER, user, ISSUE_SCHEMA_AFTER,

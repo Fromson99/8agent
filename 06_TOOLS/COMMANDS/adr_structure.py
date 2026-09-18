@@ -69,6 +69,9 @@ def _placeholder_scan_text(text: str, adr_path: Path, artifacts: dict) -> str:
     JSON artifact inside this ADR. The raw Markdown and artifact bytes stay intact.
     """
     verified: dict[str, Any] = {}
+    checked: set[str] = set()
+    rows_by_path: dict[str, list[dict]] = {}
+    paths_by_name: dict[str, list[str]] = {}
     aliases = {"initial": "initial.json", "catalog": "catalog.json",
                "journal": "journal.json", "searches": "search-records.json"}
     local_artifacts = (adr_path / "artifacts").resolve()
@@ -76,17 +79,32 @@ def _placeholder_scan_text(text: str, adr_path: Path, artifacts: dict) -> str:
         raw = row.get("path")
         if not isinstance(raw, str):
             continue
+        if raw not in rows_by_path:
+            paths_by_name.setdefault(Path(raw).name, []).append(raw)
+        rows_by_path.setdefault(raw, []).append(row)
+
+    def matches_verified(raw: str, value: Any) -> bool:
+        # Most artifacts are unrelated to this question. Read only candidates
+        # named by its envelope, and verify each once within this scan.
+        if raw in checked:
+            return raw in verified and verified[raw] == value
+        checked.add(raw)
+        if raw not in rows_by_path:
+            return False
         p = Path(raw)
         p = p if p.is_absolute() else ROOT / p
         if (p.suffix != ".json" or not p.is_file() or p.is_symlink()
                 or not p.resolve().is_relative_to(local_artifacts)):
-            continue
-        if row.get("sha256") != _sha256(p) or row.get("bytes") != p.stat().st_size:
-            continue
+            return False
+        digest, size = _sha256(p), p.stat().st_size
+        if not any(row.get("sha256") == digest and row.get("bytes") == size
+                   for row in rows_by_path[raw]):
+            return False
         try:
             verified[raw] = json.loads(p.read_text("utf-8"))
         except (ValueError, UnicodeError):
-            continue
+            return False
+        return verified[raw] == value
 
     def strip_verified(match: re.Match) -> str:
         try:
@@ -96,10 +114,10 @@ def _placeholder_scan_text(text: str, adr_path: Path, artifacts: dict) -> str:
         if not isinstance(envelope, dict) or not envelope:
             return match.group(0)
         for key, value in envelope.items():
-            if key in verified and verified[key] == value:
+            if matches_verified(key, value):
                 continue
-            if key in aliases and any(Path(p).name == aliases[key] and v == value
-                                      for p, v in verified.items()):
+            if key in aliases and any(matches_verified(raw, value)
+                                      for raw in paths_by_name.get(aliases[key], [])):
                 continue
             return match.group(0)
         return "\n[hash-verified raw artifact envelope]\n"

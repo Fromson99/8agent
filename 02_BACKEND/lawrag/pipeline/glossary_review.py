@@ -124,6 +124,27 @@ def evidence_for(db,store,ident,side):
             'definition_candidates_total':total,'definitions_omitted':max(0,total-6)},evidence
 
 
+def review_evidence_key(context):
+    # A new dictionary hash alone does not change the evidence or comparison.
+    return digest({k:v for k,v in context.items() if k != 'glossary_sha256'})
+
+
+def reusable_reviews(db, report):
+    previous = report.get('llm_review', {}).get('identity', {}).get('implementation', {})
+    current = implementation()
+    if any(previous.get(k) != current[k] for k in ('prompt', 'schema', 'transport_schema', 'sense_contract')):
+        return {}
+    if not db.execute("SELECT 1 FROM sqlite_master WHERE name='llm_review_v3'").fetchone():
+        return {}
+    result = {}
+    for row in db.execute('SELECT job_id,input_json,input_sha256 FROM llm_review_v3'):
+        context = json.loads(row['input_json'])
+        if digest(context) != row['input_sha256']:
+            raise ValueError('Inherited review input hash mismatch')
+        result[review_evidence_key(context)] = row['job_id']
+    return result
+
+
 def prepare(glossary,state,*,sample_jobs=None):
     if sample_jobs is not None and not 1<=sample_jobs<=100:raise ValueError('sample-jobs must be 1..100')
     glossary,state=Path(glossary).resolve(),Path(state).resolve()
@@ -138,10 +159,12 @@ def prepare(glossary,state,*,sample_jobs=None):
               'implementation':implementation(),'backend':'genos','sample_jobs':sample_jobs,'candidate_policy':'official-or-headword-to-explicit-definition',
               'collection_complete':report['collection']['complete']}
     with closing(ledger(temp/'review.sqlite')) as out,closing(v1.read_db(glossary/'dictionary.sqlite')) as db,closing(v1.read_db(corpus/'store.sqlite')) as store:
+        out.execute('CREATE TABLE reused_job(evidence_key TEXT PRIMARY KEY,parent_job_id TEXT)')
+        reusable = reusable_reviews(db, report)
         groups={}
         for c in db.execute('SELECT * FROM external_candidate ORDER BY id'):
             groups.setdefault((c['external_id'],c['matched_entry_id']),[]).append(dict(c))
-        for ext,status in db.execute("SELECT entry_id,status FROM review_queue WHERE status!='MEANING_REVIEW' ORDER BY entry_id"):
+        for ext,status in db.execute("SELECT entry_id,status FROM review_queue WHERE status NOT IN ('MEANING_REVIEW','MODEL_REVIEWED_PROPOSALS') ORDER BY entry_id"):
             reason={'WAITING_FOR_RELATIONS':'WAITING_FOR_RELATIONS',
                     'CORPUS_LINKED':'CORPUS_LINKED_NO_DEFINITION_REVIEW',
                     'UNLINKED_REVIEW':'NO_EXPLICIT_LINK'}.get(status,status)
@@ -169,6 +192,10 @@ def prepare(glossary,state,*,sample_jobs=None):
                         'candidate_ids':[p['id'] for p in paths],'official_paths':official,
                         'glossary_sha256':identity['glossary_sha256'],
                         **senses.pair_context(left,right,left_bundle,right_bundle)}
+                    evidence_key = review_evidence_key(context)
+                    if evidence_key in reusable:
+                        out.execute('INSERT OR IGNORE INTO reused_job VALUES (?,?)', (evidence_key, reusable[evidence_key]))
+                        continue
                     if len(v1.encode(context))>65000:
                         out.execute('INSERT OR IGNORE INTO deferred VALUES (?,?,?)',(ext,target,'CONTEXT_LIMIT'));continue
                     input_hash=digest(context);ident=digest([VERSION,input_hash])
@@ -212,7 +239,8 @@ def summary(db):
     saved=db.execute("SELECT value FROM meta WHERE key='identity'").fetchone()
     version=json.loads(saved[0]).get('version',VERSION) if saved else VERSION
     decision_path='$.decision' if version=='glossary-llm-review-v2' else '$.identity.decision'
-    return {'schema_version':version,'jobs':states,'total_jobs':sum(states.values()),
+    reused = db.execute('SELECT count(*) FROM reused_job').fetchone()[0] if db.execute("SELECT 1 FROM sqlite_master WHERE name='reused_job'").fetchone() else 0
+    return {'schema_version':version,'jobs':states,'total_jobs':sum(states.values()),'reused_jobs':reused,
             'job_types':dict(db.execute("SELECT json_extract(input_json,'$.task_type'),count(*) FROM job GROUP BY 1")),
             'deferred':dict(db.execute('SELECT reason,count(*) FROM deferred GROUP BY reason')),
             'decisions':dict(db.execute("SELECT json_extract(result_json,?),count(*) FROM job WHERE status='complete' GROUP BY 1",(decision_path,))),
@@ -392,7 +420,7 @@ def completion_receipt(state,output,report):
         'dictionary_sha256':report['dictionary_sha256'],
         'state_sha256':report['llm_review']['state_sha256'],
         'output_relative_to_state':os.path.relpath(output,state),
-        'review':{k:result[k] for k in ('schema_version','jobs','total_jobs','job_types','deferred','decisions','attempts')},'sense_review':report['sense_review'],'canonical_approval':False,
+        'review':{k:result[k] for k in ('schema_version','jobs','total_jobs','reused_jobs','job_types','deferred','decisions','attempts')},'sense_review':report['sense_review'],'canonical_approval':False,
         'runtime_promoted':False}
     # Keep each completion immutable as well as the latest authoring selection.
     receipt_dir=state/'completions';receipt_dir.mkdir(exist_ok=True)

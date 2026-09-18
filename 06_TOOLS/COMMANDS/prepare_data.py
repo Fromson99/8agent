@@ -19,6 +19,9 @@ def main(argv=None):
     group = p.add_mutually_exclusive_group()
     group.add_argument('--source', help='기존 원문 corpus 폴더만 이동; 패키지를 지정하지 마세요')
     group.add_argument('--from-packages', help='명시적 공개 외규 패키지 선택 JSON')
+    group.add_argument('--team-layout', action='store_true', help='현재 지정 문서를 RAW/internal|external/<team>에 배치; 이전 원문 경로 보존')
+    group.add_argument('--refresh-team-layout', action='store_true', help='현재 팀별 RAW의 해시·이동 경로를 새 등록 이력으로 갱신')
+    group.add_argument('--rollback-team-layout', action='store_true', help='팀별 신규 선택 해제, 파일/이행 이력 보존')
     p.add_argument('--apply', action='store_true')
     args = p.parse_args(argv)
     os.umask(0o077)
@@ -36,7 +39,16 @@ def main(argv=None):
     def prepare():
         target = plain_path(data / 'RAW')
         legacy = plain_path(ROOT / 'data/corpus')
-        if args.source:
+        if args.refresh_team_layout:
+            from lawrag.pipeline.team_raw_refresh import refresh
+            return refresh(data, apply=args.apply)
+        elif args.rollback_team_layout:
+            from lawrag.pipeline.team_raw import rollback
+            return rollback(data, apply=args.apply)
+        elif args.team_layout:
+            from lawrag.pipeline.team_raw import migrate
+            return migrate(data, apply=args.apply)
+        elif args.source:
             result = move(legacy_source(args.source), data, apply=args.apply)
         elif args.from_packages:
             result = import_packages(ROOT, data, args.from_packages, apply=args.apply)

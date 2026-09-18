@@ -6,12 +6,27 @@ from pathlib import Path
 import sys
 
 root = Path(__file__).resolve().parents[1]
+if __name__ == '__main__' and sys.argv[1:2] == ['task-harness']:
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    from lawrag.pipeline.task_harness import main
+    raise SystemExit(main(sys.argv[2:]))
+if __name__ == '__main__' and sys.argv[1:2] == ['golden']:
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    from lawrag.pipeline.golden import main
+    raise SystemExit(main(sys.argv[2:]))
+if __name__ == '__main__' and sys.argv[1:2] == ['document-release']:
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    from lawrag.pipeline.document_release import main
+    raise SystemExit(main(sys.argv[2:]))
 if __name__ == '__main__' and sys.argv[1:2] == ['build-all-legacy']:
     raise SystemExit('build-all-legacy is retired; use build-all --run-id NAME or build-data-stages --run-id NAME')
 if __name__ == '__main__' and sys.argv[1:2] == ['build-all']:
     os.execv(sys.executable, [sys.executable, str(root / '06_TOOLS/COMMANDS/composed_build.py'), *sys.argv[2:]])
 if __name__ == '__main__' and sys.argv[1:2] == ['glossary']:
     sys.path.insert(0, str(root / '02_BACKEND'))
+    if sys.argv[2:3] == ['learn']:
+        from lawrag.pipeline.glossary_learning import main
+        raise SystemExit(main(sys.argv[3:]))
     if sys.argv[2:3] == ['knowledge']:
         from lawrag.pipeline.glossary_knowledge import main
         raise SystemExit(main(sys.argv[3:]))

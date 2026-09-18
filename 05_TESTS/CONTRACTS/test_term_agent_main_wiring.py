@@ -1,4 +1,4 @@
-"""Serving wiring contracts with deterministic provider doubles; no quality eval."""
+"""Previous term-agent route contracts with deterministic providers; retained for explicit rollback."""
 import importlib.util
 import json
 from pathlib import Path
@@ -13,6 +13,7 @@ from semantic_runtime.storage import Store
 from semantic_runtime.term_index import TermIndex
 
 ROOT=next(p for p in Path(__file__).resolve().parents if (p/'00_SYSTEM/WORKSPACE.json').is_file())
+CONTRACTS_ROOT=ROOT/'08_DEPLOYMENT/RELEASES/term-source-rag-20260915-v1/code'
 GENERATION=ROOT/'01_DATA/SEMANTIC/GENERATIONS/term-source-20260915-v1'
 INDEX=ROOT/'01_DATA/SEMANTIC/TERM_INDEX/term-source-navigation-20260915-v1'
 DID='3521c3aaa5a735fd'
@@ -33,7 +34,7 @@ def store():
     s=Store(GENERATION);yield s;s.close()
 
 def test_source_only_uses_terms_definitions_and_generation_scope(store,tmp_path):
-    p=Pipeline(ROOT,store,FixtureProvider(tmp_path/'provider'));r=p.run('영업일은 토요일을 포함하나요?',[DID],False)
+    p=Pipeline(CONTRACTS_ROOT,store,FixtureProvider(tmp_path/'provider'));r=p.run('영업일은 토요일을 포함하나요?',[DID],False)
     assert r['selection']['method']=='term-agent'
     state=r['retrieval']['term_agent'];assert state['status']=='SOURCE_ONLY' and state['calls']==0
     assert all(x['document_id']==DID for x in r['assembly']['context'])
@@ -42,7 +43,7 @@ def test_source_only_uses_terms_definitions_and_generation_scope(store,tmp_path)
     p.contracts.validate(r,'urn:8-agent:term-runtime-v1','Result')
 
 def test_llm_provider_and_grounded_answer_contract(store,tmp_path):
-    provider=FixtureProvider(tmp_path/'provider');p=Pipeline(ROOT,store,provider);r=p.run('영업일의 정의',[DID],True)
+    provider=FixtureProvider(tmp_path/'provider');p=Pipeline(CONTRACTS_ROOT,store,provider);r=p.run('영업일의 정의',[DID],True)
     assert len(provider.calls)>=3 and r['answer']['claims']
     assert 'THIS_UNCITED' not in r['answer']['text']
     assert r['retrieval']['term_agent']['status']=='FINISH'
@@ -50,7 +51,7 @@ def test_llm_provider_and_grounded_answer_contract(store,tmp_path):
     p.contracts.validate(r,'urn:8-agent:term-runtime-v1','Result')
 
 def test_invalid_model_ids_fail_closed_without_stale_answer(store,tmp_path):
-    p=Pipeline(ROOT,store,FixtureProvider(tmp_path/'provider',True));r=p.run('영업일의 정의',[DID],True)
+    p=Pipeline(CONTRACTS_ROOT,store,FixtureProvider(tmp_path/'provider',True));r=p.run('영업일의 정의',[DID],True)
     assert r['retrieval']['term_agent']['status']=='EXECUTION_FAILURE'
     assert not r['answer']['claims'] and not r['assembly']['context']
     assert r['answer']['unresolved'] and 'THIS_UNCITED' not in r['answer']['text']
@@ -72,9 +73,9 @@ def test_bidirectional_reference_reads_original_source(store):
     finally:tools.db.close()
 
 def test_existing_ask_endpoint_scope_status_feedback_and_legacy_fact_guard(tmp_path):
-    app=create_app(tmp_path,GENERATION,contracts_root=ROOT,provider=FixtureProvider(tmp_path/'provider'),vector=False)
+    app=create_app(tmp_path,GENERATION,contracts_root=CONTRACTS_ROOT,provider=FixtureProvider(tmp_path/'provider'),vector=False)
     with TestClient(app) as client:
-        health=client.get('/health').json();assert health['rag_mode']=='term-agent' and not health['quality_certified']
+        health=client.get('/health').json();assert health['rag_mode']=='term-agent-v1' and not health['quality_certified']
         q={'question':'영업일의 정의','document_ids':[DID],'use_llm':True};response=client.post('/v1/rag/ask',json=q);assert response.status_code==200,response.text
         r=response.json();assert r['answer']['claims'] and r['selection']['method']=='term-agent'
         assert client.post('/v1/rag/feedback',json={'run_id':r['run_id'],'signal':'MISSING_EVIDENCE','reason':'wiring fixture'}).status_code==200

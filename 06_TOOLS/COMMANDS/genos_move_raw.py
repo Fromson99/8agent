@@ -16,10 +16,25 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source', default=str(ROOT / 'data/corpus'))
     p.add_argument('--apply', action='store_true')
+    p.add_argument('--replace-internal-pdf', action='store_true', help='Replace RAW/internal with PDF folders; retain recovery backup')
+    p.add_argument('--rollback-internal', type=Path)
     args = p.parse_args(argv)
     os.umask(0o077)
     data = offline_data_root(ROOT)
     try:
+        if args.replace_internal_pdf or args.rollback_internal:
+            from lawrag.pipeline import genos_internal_replace
+            with plain_path(data / '.raw-migration.lock').open('a') as lock:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                if args.rollback_internal:
+                    receipt = json.loads((args.rollback_internal / 'receipt.json').read_text())
+                    if receipt['data'] != str(data):
+                        raise ValueError('Backup belongs to another data root')
+                    result = genos_internal_replace.rollback(args.rollback_internal)
+                else:
+                    result = genos_internal_replace.replace(data, apply=args.apply)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0
         if args.apply:
             data.mkdir(parents=True, exist_ok=True)
             with plain_path(data / '.raw-migration.lock').open('a') as lock:

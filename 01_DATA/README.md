@@ -3,13 +3,19 @@
 현재 전체 흐름은 [ARCHITECTURE](../00_SYSTEM/ARCHITECTURE.md), 데이터 계약은 [DATA_MODEL](../00_SYSTEM/DATA_MODEL.md)을 따른다.
 경로는 `lawrag.platform.workspace`의 논리 `data` root로 해결한다. 완료 세대·RAW·원문 해시는 보존한다.
 
+2026-09-17 팀별 작업 입력을 `RAW/internal/<team>`, `RAW/external/<team>`으로 배치했다.
+`CATALOG/TEAM_LAYOUT.json`이 있으면 신규 기본 구축은 이 작업 트리를 선택한다.
+기존 `BUILD_SCOPE.json`과 원래 파일은 과거 실행 재현용으로 보존하며 `--document-scope`를
+명시하면 이전 범위가 우선한다. 사진 외규 28종과 기존 내규는 risk_team, 지정 80종의
+나머지 외규는 financial_team이다. [전처리 순서·분류·복구 안내](../07_DOCS/REFERENCE/OPERATIONS/GENOS_TEAM_RAW.md).
+
 ## 현재 생성 경로
 
 ```text
-RAW 입력 / 준비된 내부 PDF → STRUCTURE → 용어·정의·참조 색인 → TERM/<run>/<document>/generation
+RAW 입력 (내규·외규, 형식별) → STRUCTURE → 용어·정의·참조 색인 → TERM/<run>/<document>/generation
 ```
 
-- `RAW/<source>`: 원본과 입력 출처·버전·해시. 내규의 준비된 PDF는 현행 입력 선택 정책에 따라 `PDF/internal`에서 선택한다.
+- `RAW/<source>`: 원본과 입력 출처·버전·해시. 내규도 `RAW/internal`에서 PDF/XML/Office 등 형식별로 선택한다. `PDF/internal` 이동은 별도 이행 작업이다.
 - `STRUCTURE/<fingerprint>`: 원문 구조와 `source.sqlite`. 의미 추출 작업은 만들지 않는다. PDF 구조 복원·검수는 유지한다.
 - `LEXICON`: 선택 용어집과 문서 출현·정의 연결. 용어 목록 수집과 정의·관계 수집 완료는 별개다.
 - `TERM/<run>/<document>/generation`: 원문 전용 저장소와 `navigation` 색인. `result.json`은 입력·코드·결과를 결속한다.
@@ -20,12 +26,39 @@ RAW 입력 / 준비된 내부 PDF → STRUCTURE → 용어·정의·참조 색�
 
 ## 실행
 
+2026-09-17 사용자 지정 범위는 사진 목록의 **80종과 그 문서에 딸린 등록 첨부**다.
+`CATALOG/BUILD_SCOPE.json`이 `CATALOG/SCOPES/photo-required-80-hwpx-20260917.json`의
+해시를 고정한다. `build-data-stages`와 이를 호출하는 `build-all`은 이 설정이 있으면
+명시된 파일만 선택하며 목록 밖 RAW를 자동으로 다시 넣지 않는다. 원본 또는 출처 영수증의
+해시가 바뀌면 중단한다. `--document-scope`로 별도 명시 범위를 선택할 수 있다.
+`--only-internal-pdf`는 구성된 범위와 충돌하므로 함께 사용하지 않는다.
+
+제외 원본은 `BACKUPS/photo-out-of-scope-20260917/originals.zip`에 별도 백업했다.
+과거 패키지·릴리스의 원본 참조를 보존하기 위해 기존 RAW 경로도 유지한다.
+공통 용어집은 문서 범위 밖이라는 이유로 제거하지 않는다. 새 입력 범위 설정은 기존
+로컬 활성 159문서 릴리스나 GENOS 현장 상태를 변경하지 않는다.
+[문서별 보유·처리 상태와 복구 안내](../09_ARTIFACTS/AUDITS/20260917-photo-80-scope/README.md).
+
+2026-09-17 공개 법령·거래소·금투협의 HWP 1,287개를 한글 2024의 공식 변환기로
+HWPX 파생본으로 생성했다. 원래 80종 범위와 RAW 원본을 보존하고, 새 DatasetPackage의
+HWPX를 신규 구축 입력으로 선택한다. 전체 1,287개 본문·표/병합 셀 비교 및 HWPX 파서
+읽기 검사, 전체 1,538개 선택 입력의 해시 검사를 통과했다. 내부 제한 입력 11개 표현본은
+그대로 유지한다. 기존 실행의 재개에는 이전 scope를 사용하고, HWPX 입력 구축은 새 run ID를
+사용한다. 기본 구축 범위 변경이며 구조화·색인 재구축이나 MAIN/GENOS 배포는 아니다.
+[변환본·검증·롤백 안내](../09_ARTIFACTS/AUDITS/20260917-hwp-to-hwpx/README.md).
+
 ```bash
 .venv/bin/python -B 06_TOOLS/pipeline.py build-data-stages --run-id term-build-001 --check-only
 .venv/bin/python -B 06_TOOLS/pipeline.py build-data-stages --run-id term-build-001 --stage all --execute
 ```
 
-사전 검토까지 실행하려면 `build-all --run-id term-build-001 --execute`를 사용한다.
+전체 구조화·명시 기존 세대 통합·기존/신규 용어 후보 통합 검토·전체 연결과 서빙 후보 생성까지 실행하려면 `build-all --run-id term-build-001 --execute`를 사용한다.
 단계 실행·재개·GENOS 인계는 [운영 가이드](../07_DOCS/REFERENCE/OPERATIONS/GENOS_FOUR_STAGE.md)를 따른다.
+GENOS PDF 파싱은 [전처리기 ID/URL 환경 설정](../07_DOCS/REFERENCE/OPERATIONS/GENOS_PREPROCESSOR_PARSING.md)을 사용한다.
+동일 폴더의 HWPX/DOCX와 참고 PDF, ZIP 병합·중복 점검, 파일명/폴더 보존은
+[원본 우선 반입](../07_DOCS/REFERENCE/OPERATIONS/GENOS_NATIVE_PRIMARY.md)을 따른다.
+외규 지정 scope가 설정돼 있어도 `--only-internal`로 RAW/internal 전체 형식을 별도 처리한다.
 
 새 입력은 출처·문서 ID·버전·해시·공개/내부·실제/모의 구분을 기록하고 RAW에서 검증한다. 외부·내부 데이터는 DatasetPackage와 명시적 SourceSet 범위를 보존한다. DRAFT 생성은 배포 승인이나 데이터 반출 승인을 뜻하지 않는다. 내부 데이터 처리는 망분리 GENOS에서 수행한다.
+
+`TERM_RELEASES/<run>`은 명시적으로 선택한 기존 세대와 이번 문서의 통합 후보다. 기존 문서 유지는 `build-all --base-generation <path>`로 지정한다. 신규 세대·문서 간 참조·검토·활성화/롤백은 [추가 문서 연결](../07_DOCS/REFERENCE/OPERATIONS/GENOS_DOCUMENT_CONNECTIONS.md)을 따른다.

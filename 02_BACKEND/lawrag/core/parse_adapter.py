@@ -355,6 +355,10 @@ def is_born_digital(path: Path, min_chars: int = 200) -> tuple[bool, dict]:
 
 def pdf_parser_identity(path):
     """Bind parser cache to exact source and explicit OCR assets; no auto download."""
+    from . import genos_preprocessor
+    remote = genos_preprocessor.selected()
+    if remote is not None:
+        return genos_preprocessor.source_identity(path, remote)
     from lawrag.platform.paths import data_path
     born, _ = is_born_digital(Path(path))
     policy = {'version': 'pdf-korean-ocr-v1', 'source_sha256': hashlib.sha256(Path(path).read_bytes()).hexdigest(),
@@ -616,16 +620,52 @@ def _elements_from_docling(doc) -> tuple[list[Element], dict[int, str], dict]:
 
 
 def parse_pdf(path: str | Path, *, recognize_grids=None) -> ParseResult:
+    from . import genos_preprocessor
     p = Path(path)
     born, pdf_stats = is_born_digital(p)
     warnings: list[str] = []
-    if not born:
+    remote = genos_preprocessor.selected()
+    if not born and remote is None:
         warnings.append("한국어 OCR 적용 — 국한문 혼용·작은 글자·표의 원문 대조가 필요합니다")
 
     policy = pdf_parser_identity(p)
-    doc = _converter(ocr=not born, policy=policy).convert(str(p)).document
+    remote_receipt = None
+    if remote is not None:
+        doc, remote_receipt = genos_preprocessor.parse(p, remote)
+        from . import genos_chunks
+        if isinstance(doc, genos_chunks.ChunkDocument):
+            return genos_chunks.parse_result(doc, p, policy, remote_receipt, born, pdf_stats)
+        if set(doc.pages) != set(range(1, pdf_stats['pages'] + 1)):
+            raise ValueError('GENOS preprocessor PDF page set differs from the source')
+        if not born:
+            warnings.append('OCR은 GENOS 전처리기 설정을 따릅니다. 스캔·국한문 품질은 원문 대조가 필요합니다')
+    else:
+        doc = _converter(ocr=not born, policy=policy).convert(str(p)).document
     # picture_uris 는 요소 index → data URI (재정렬 뒤 다시 맞춘다)
     elements, picture_uris, docling_stats = _elements_from_docling(doc)
+    if remote is not None:
+        # Server image paths aren't code-space paths. Recover pixels from the
+        # verified original PDF and the returned coordinates, without fetching URLs.
+        import base64
+        import fitz
+        with fitz.open(p) as original:
+            for element in elements:
+                if not element.is_picture or element.index in picture_uris or not element.bbox:
+                    continue
+                if not 1 <= element.page <= len(original):
+                    raise ValueError('GENOS picture page is outside the source PDF')
+                page = original[element.page - 1]
+                left, top, right, bottom = element.bbox
+                if element.bbox_origin == 'BOTTOMLEFT':
+                    top, bottom = page.rect.height - top, page.rect.height - bottom
+                rect = fitz.Rect(left, top, right, bottom) & page.rect
+                if rect.is_empty or rect.is_infinite:
+                    warnings.append(f'그림 {element.index}의 좌표를 원본에서 렌더할 수 없습니다')
+                    continue
+                pix = page.get_pixmap(matrix=fitz.Matrix(IMAGE_SCALE, IMAGE_SCALE), clip=rect)
+                picture_uris[element.index] = 'data:image/png;base64,' + base64.b64encode(pix.tobytes('png')).decode('ascii')
+                element.meta.update(has_image=True, image_size=[pix.width, pix.height],
+                                    image_source='original_pdf_crop')
 
     # 양식 페이지는 읽기 순서가 좌표와 어긋나 온다(T2b). 요소 index 가 여기서 다시
     # 매겨지므로 **index 를 쓰는 무엇보다 먼저** 돌아야 한다.
@@ -663,6 +703,8 @@ def parse_pdf(path: str | Path, *, recognize_grids=None) -> ParseResult:
         "pictures_with_image": len(images),
         **pdf_stats,
     }
+    if remote_receipt is not None:
+        stats['preprocessor'] = remote_receipt
     if stats["tables"] == 0 and stats["docling_tables"] == 0:
         warnings.append("표가 하나도 인식되지 않았습니다 — 값이 서술로 처리됩니다")
     lost = stats["pictures"] - stats["pictures_with_image"]
@@ -672,8 +714,8 @@ def parse_pdf(path: str | Path, *, recognize_grids=None) -> ParseResult:
 
     return ParseResult(
         path=str(p), doc_id=hashlib.sha256(p.read_bytes()).hexdigest()[:12],
-        parser=f"docling {docling_version()} (ocr={'on' if not born else 'off'}, "
-               f"tables=on, images=on)",
+        parser=(f"GENOS preprocessor Docling ({remote.revision})" if remote else
+                f"docling {docling_version()} (ocr={'on' if not born else 'off'}, tables=on, images=on)"),
         born_digital=born, elements=elements, warnings=warnings, stats=stats,
         images=images)
 
@@ -874,8 +916,8 @@ def parse_hwp(path: str | Path) -> ParseResult:
             raise ValueError(
                 f"'{p.name}' 은 zip 이지만 HWPX(OWPML) 가 아닙니다 — "
                 f"docx 라면 확장자를 .docx 로 바꿔 넣어 주세요")
-        md = hwpx_md.hwpx_to_md(p)
-        parser = "hwpx(zip) → md (core.hwpx_md)"
+        from lawrag.core.hwpx_parse import parse as parse_hwpx
+        return parse_hwpx(p)
     elif kind == "hwp5(ole)":
         convert = _convert_module()
         try:

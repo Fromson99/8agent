@@ -1,3 +1,5 @@
+> 2026-09-16 후속 배선: ID 기반 탐색 루프를 연결했다. [현재 운영 계약](NAVIGATION_MAIN.md)과 활성 포인터를 우선하며, 아래는 이전 에이전트 이력이다.
+
 > 2026-09-15 후속 변경: 의미 스키마를 생성·RAG에서 제거하고 로컬 MAIN generation 13으로 전환했다. [현재 계약·검증](../../../09_ARTIFACTS/AUDITS/20260915-term-only-schema-removal/README.md)을 우선한다. 아래 generation 12 및 실험 설명은 변경 전 기록이다.
 
 # 용어 기반 탐색 에이전트 — MAIN 배선과 실험 기록

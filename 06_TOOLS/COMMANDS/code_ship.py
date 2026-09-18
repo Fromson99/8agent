@@ -4,9 +4,12 @@
 현재 작업판의 실행 코드만 허용목록으로 담는다. .git, .env, 가상환경, 테스트,
 원문 문서, 런타임 데이터는 넣지 않는다. 데이터는 data_ship.sh로 따로 나른다.
 
-    python 06_TOOLS/run_tool.py code_ship.py pack --out 90_RUNTIME/OUT/ship/8agent-code.zip
-    python 06_TOOLS/run_tool.py code_ship.py verify 90_RUNTIME/OUT/ship/8agent-code.zip
-    python 06_TOOLS/run_tool.py code_ship.py list
+    python 06_TOOLS/COMMANDS/code_ship.py pack --out 90_RUNTIME/OUT/ship/8agent-code.zip
+    python 06_TOOLS/COMMANDS/code_ship.py verify 90_RUNTIME/OUT/ship/8agent-code.zip
+    python 06_TOOLS/COMMANDS/code_ship.py list
+
+run_tool.py intentionally selects the historical receipt-bound tool generation.
+Use this maintained command when shipping the current working code and engines.
 """
 from __future__ import annotations
 
@@ -41,6 +44,9 @@ PIPELINE_FILES = (
     "06_TOOLS/ACTIVE_TOOLS.json",
     "06_TOOLS/genos_pipeline.sh",
     "06_TOOLS/AUDIT/legal_semantic_contract.py",
+    "06_TOOLS/OFFLINE/genos_code_replace.py",
+    "06_TOOLS/OFFLINE/genos_unpack_internal.py",
+    "06_TOOLS/OFFLINE/genos_unpack_internal.sh",
     "08_DEPLOYMENT/CONFIG/raw-source-packages.json",
     "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
     "08_DEPLOYMENT/GENOS/pipeline.env.example",
@@ -75,6 +81,11 @@ TREE_ROOTS = (
     "08_DEPLOYMENT/CONFIG/dataset_sync",
 )
 DOC_FILES = (
+    "07_DOCS/REFERENCE/OPERATIONS/GENOS_DOCUMENT_TOOLS.md",
+    "07_DOCS/REFERENCE/OPERATIONS/GENOS_TEAM_RAW.md",
+    "07_DOCS/REFERENCE/OPERATIONS/GENOS_NATIVE_PRIMARY.md",
+    "07_DOCS/REFERENCE/OPERATIONS/GENOS_DOCUMENT_CONNECTIONS.md",
+    "08_DEPLOYMENT/GENOS/preprocessor/README.md",
     "07_DOCS/REFERENCE/OPERATIONS/GENOS_QUICKSTART.md",
     "07_DOCS/REFERENCE/OPERATIONS/GENOS_DEPLOY.md",
     "07_DOCS/REFERENCE/OPERATIONS/GENOS_SITE_RUNBOOK.md",
@@ -85,6 +96,8 @@ DOC_FILES = (
     "07_DOCS/REFERENCE/OPERATIONS/GENOS_UNIFIED_RAW_PIPELINE.md",
     "07_DOCS/REFERENCE/OPERATIONS/GENOS_FOUR_STAGE.md",
     "07_DOCS/REFERENCE/OPERATIONS/GENOS_RECIPE_VLM.md",
+    "07_DOCS/REFERENCE/OPERATIONS/GENOS_PREPROCESSOR_PARSING.md",
+    "07_DOCS/REFERENCE/OPERATIONS/GENOS_CODE_REPLACEMENT.md",
     "07_DOCS/REFERENCE/OPERATIONS/GLOSSARY_ALIGNMENT.md",
     "07_DOCS/REFERENCE/OPERATIONS/GLOSSARY_KNOWLEDGE_BUNDLE.md",
     "07_DOCS/REFERENCE/OPERATIONS/GENOS_CODE_SERVING_CURRENT.md",
@@ -230,6 +243,27 @@ def pack(output: Path | None) -> Path:
     return target
 
 
+def verify_python(path: Path, python: str) -> None:
+    """Use the real target interpreter, not ast feature_version emulation."""
+    script = '''import json,sys,zipfile
+failures=[]; count=0
+with zipfile.ZipFile(sys.argv[1]) as archive:
+    for name in archive.namelist():
+        if name.endswith('.py'):
+            count += 1
+            try: compile(archive.read(name), name, 'exec', dont_inherit=True)
+            except SyntaxError as exc:
+                failures.append({'path':name, 'line':exc.lineno, 'error':exc.msg})
+print(json.dumps({'python':sys.version, 'files':count, 'failures':failures}))
+sys.exit(bool(failures))
+'''
+    done = subprocess.run([python, '-I', '-c', script, str(path.resolve())],
+                          capture_output=True, text=True, timeout=120)
+    print(done.stdout.strip())
+    if done.returncode:
+        raise RuntimeError('Target Python compilation failed: ' + done.stderr.strip())
+
+
 def verify(path: Path) -> None:
     target = path.resolve()
     with zipfile.ZipFile(target) as archive:
@@ -275,6 +309,7 @@ def main() -> int:
     p_pack.add_argument("--out", type=Path, help="출력 ZIP (기본: var/out/ship)")
     p_verify = sub.add_parser("verify", help="코드 ZIP 검증")
     p_verify.add_argument("zip", type=Path)
+    p_verify.add_argument("--python", help="실제 대상 Python 실행 파일로 모든 .py 문법 검사")
     sub.add_parser("list", help="포함될 파일 목록")
     args = parser.parse_args()
     try:
@@ -282,6 +317,8 @@ def main() -> int:
             pack(args.out)
         elif args.command == "verify":
             verify(args.zip)
+            if args.python:
+                verify_python(args.zip, args.python)
         else:
             listing()
     except Exception as exc:

@@ -33,6 +33,7 @@
 
 | 자료 | 사용 범위 |
 |---|---|
+| [전처리기 PDF 파싱·적재](OPERATIONS/GENOS_PREPROCESSOR_PARSING.md) | 환경변수 ID/URL → 파싱용 전처리기 Docling JSON → 기존 원문·용어 DRAFT. 모의 연결 검증, 현장 미검증 |
 | [ZIP → PDF·NFS 현장 기록](OPERATIONS/GENOS_ZIP_TO_PDF_NFS.md) | 2026-09-15 경위·전달 스크립트·API·NFS 사진。 DRM 해제 후 DOC 1건 PDF 확보, 후속 NLTK punkt_tab 누락. 전체 변환·품질은 미확인 |
 | [06_TOOLS/OFFLINE/GENOS_AUTHORING.md](../../06_TOOLS/OFFLINE/GENOS_AUTHORING.md) | 동결 작성 큐/이전 인계본 재현 자료; 현재 기본 실행기로 간주하지 않음 |
 | [06_TOOLS/OFFLINE/GENOS_AUTO_REEXTRACT.md](../../06_TOOLS/OFFLINE/GENOS_AUTO_REEXTRACT.md) | 동결 작성 큐/이전 인계본 재현 자료; 현재 기본 실행기로 간주하지 않음 |

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>골든 답변 채점</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#183047;font:15px/1.6 system-ui}header{background:#142c44;color:white;padding:24px 32px}h1,h2{margin:0 0 12px}header p{margin:6px 0}.toolbar{display:flex;gap:12px;flex-wrap:wrap;background:white;padding:16px 32px}button{background:#14674f;color:white;border:0;border-radius:6px;padding:10px 16px;cursor:pointer;font:inherit}input,textarea,select{font:inherit;padding:8px;border:1px solid #aebdca;border-radius:4px}textarea{width:100%;min-height:85px}main{display:grid;grid-template-columns:270px 1fr;gap:20px;padding:24px 32px}nav{max-height:80vh;overflow:auto}nav button{display:block;background:white;color:#183047;width:100%;text-align:left;margin-bottom:8px;border:1px solid #ccd7e0}nav button.active{border:2px solid #14674f}.card{background:white;border:1px solid #dae1e8;border-radius:8px;padding:22px;margin-bottom:16px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;background:#f4f6f8;padding:12px;max-height:400px;overflow:auto}label{display:block;margin:14px 0}label select{display:block;margin-top:5px;min-width:200px}td,th{text-align:left;padding:8px;border-bottom:1px solid #ddd}.warn,#message{color:#9b3b24}#message{padding:0 32px}small{color:#526779}details{margin:12px 0}summary{cursor:pointer}@media(max-width:800px){main{display:block;padding:16px}nav{max-height:220px}.toolbar{padding:16px}}
+</style>
+<header><h1>최종 답변 채점</h1><p>질문·정답 기준 → 실제 답변·근거 → 항목별 판정 → 채점 완료 → JSON 내려받기</p><p id="summary"></p></header>
+<div class="toolbar"><input id="reviewer" placeholder="검토자 이름" aria-label="검토자 이름"><button id="export">채점본 JSON 내려받기</button><button id="save">작업 저장</button><label style="margin:0">작업 불러오기 <input type="file" id="restore" accept=".json,application/json"></label></div>
+<p id="message" role="status"></p><main><nav id="cases"></nav><section id="editor"></section></main>
+<script type="application/json" id="data">__ANSWER_DATA__</script>
+<script>
+'use strict';
+const bundle=JSON.parse(document.getElementById('data').textContent);
+const original=structuredClone(bundle.review);let review=structuredClone(original),current=0,dirty=false;
+const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const flags=[['behavior_correct','답변·추가 질문·유보 선택이 적절한가'],['citations_supported','인용 원문이 답변의 주장을 뒷받침하는가'],['no_unsupported_claims','근거 없는 주장이 없는가']];
+const stages=[['initial','최초 검색'],['first_round','첫 확장'],['cumulative','누적 검색'],['selected','답변용 선택'],['cited','최종 인용']];
+function itemFor(id){return review.reviews.find(x=>x.case_id===id)}
+function nav(){const done=review.reviews.filter(x=>x.by).length;$('summary').textContent=`전체 ${bundle.cases.length}문항 · 채점 가능 ${review.reviews.length}문항 · 채점 완료 ${done}문항 · 미검토는 통과가 아닙니다`;
+$('cases').innerHTML=bundle.cases.map((x,i)=>`<button class="${i===current?'active':''}" data-case="${i}">${esc(x.gold.id)} · ${itemFor(x.gold.id)?.by?'채점 완료':itemFor(x.gold.id)?'미검토':'채점 불가'}<br><small>${esc(x.gold.question.slice(0,65))}</small></button>`).join('');
+document.querySelectorAll('[data-case]').forEach(b=>b.onclick=()=>{current=Number(b.dataset.case);render()})}
+function judge(label,key,value){return `<label>${esc(label)}<select data-judge="${key}"><option value="" ${value===null?'selected':''}>미판정</option><option value="true" ${value===true?'selected':''}>충족</option><option value="false" ${value===false?'selected':''}>미충족</option></select></label>`}
+function render(){nav();const {gold:c,result:r,sources}=bundle.cases[current],item=itemFor(c.id);
+let content=`<div class="card"><h2>${esc(c.id)}</h2><h3>질문</h3><pre>${esc(c.question)}</pre><h3>기준답변</h3><pre>${esc(c.reference_answer||c.required_points.join('\n'))}</pre><p>기준일 ${esc(c.as_of)} · 기대 동작 ${esc(c.expected_behavior)}</p><h3>실제 답변</h3><pre>${esc(r.answer?.text||'답변 없음')}</pre><p class="warn">실행 상태: ${esc(r.execution_status)}${r.execution_failed?' · 실행 실패':''}${r.citation_ids_outside_context?.length?' · 선택 문맥 밖 근거 인용 오류':''}</p></div>`;
+content+='<div class="card"><h2>정답 근거가 어디까지 전달됐는가</h2><table><tr><th>단계</th><th>필수 근거 회수율</th><th>누락 그룹</th></tr>';
+for(const [key,label] of stages){const m=r.metrics?.[key];content+=`<tr><td>${label}</td><td>${m?.recall==null?'미측정/해당 없음':(m.recall*100).toFixed(1)+'%'}</td><td>${esc(m?.missing_groups?.join(', ')||'—')}</td></tr>`}
+content+='</table><p><small>조문 존재 여부입니다. 답변 의미의 정확성은 아래에서 따로 판정합니다.</small></p>';
+for(const group of c.evidence_groups){content+=`<details><summary>정답 근거 ${esc(group.id)} · ${esc(group.role)}</summary>`;for(const ref of group.any_of)content+=`<p>${esc(ref.locator)} · ${esc(ref.document_id)} · ${esc(ref.source_id)}</p><pre>${esc(ref.quote)}</pre>`;content+='</details>'}
+content+=`<details><summary>답변 주장과 인용 ID</summary><pre>${esc(JSON.stringify(r.answer?.claims||[],null,2))}</pre></details><details><summary>실제 검색·선택된 원문 ${sources.length}건</summary>`;
+for(const s of sources)content+=`<h3>${esc(s.document_name||s.document_id)} ${esc(s.heading||'')}</h3><p>${esc(s.id)}</p><pre>${esc(s.text||s.blocks?.map(b=>b.text).join('\n')||'원문 텍스트 없음 — 원응답을 확인하세요.')}</pre>`;
+content+='</details></div>';
+if(item){content+='<div class="card"><h2>답변 판정</h2>';c.required_points.forEach((p,i)=>content+=judge('필수 내용 '+(i+1)+': '+p,'point:'+i,item.required_points_met[i]));for(const [key,label] of flags)content+=judge(label,key,item[key]);content+=`<label>판정 사유<textarea id="notes">${esc(item.notes)}</textarea></label><button id="complete">이 문항 채점 완료</button><p><small>검토자 선언을 기록합니다. 실행 실패·인용 구조 오류는 충족으로 체크해도 최종 통과가 되지 않습니다.</small></p></div>`}else content+='<div class="card"><p class="warn">유효한 답변이 없어 채점할 수 없습니다. 실패 문항도 전체 문항 수에 포함됩니다.</p></div>';
+$('editor').innerHTML=content;
+if(!item)return;
+const changed=()=>{item.by='';item.at='';dirty=true;nav()};
+document.querySelectorAll('[data-judge]').forEach(select=>select.onchange=()=>{const value=select.value===''?null:select.value==='true';const key=select.dataset.judge;if(key.startsWith('point:'))item.required_points_met[Number(key.slice(6))]=value;else item[key]=value;changed()});
+$('notes').oninput=e=>{item.notes=e.target.value;changed()};
+$('complete').onclick=()=>{const values=[...item.required_points_met,...flags.map(([k])=>item[k])];if(!$('reviewer').value.trim()||values.some(v=>typeof v!=='boolean')){$('message').textContent='검토자와 모든 항목의 충족/미충족 판정이 필요합니다.';return}item.by=$('reviewer').value.trim();item.at=new Date().toISOString();dirty=true;nav();$('message').textContent=c.id+' 채점 완료. JSON을 내려받아 저장하세요.'};}
+function download(value,name){const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);dirty=false}
+$('export').onclick=()=>{download(review,'answers-reviewed.json');$('message').textContent='전체 채점본을 내보냈습니다. 미완료 문항은 미검토로 남습니다.'};
+$('save').onclick=()=>download({schema_version:'golden-answer-work-v1',review},'answers-work.json');
+$('restore').onchange=async e=>{try{if(!e.target.files.length)return;const saved=JSON.parse(await e.target.files[0].text()),x=saved.review;if(saved.schema_version!=='golden-answer-work-v1'||x.suite_sha256!==original.suite_sha256||x.run_binding!==original.run_binding||x.reviews.length!==original.reviews.length)throw Error('다른 골든 또는 평가 실행의 작업 파일입니다.');
+const seen=new Set();for(const item of x.reviews){const ref=original.reviews.find(r=>r.case_id===item.case_id);if(!ref||seen.has(item.case_id)||item.answer_sha256!==ref.answer_sha256||!Array.isArray(item.required_points_met)||item.required_points_met.length!==ref.required_points_met.length||typeof item.by!=='string'||typeof item.notes!=='string'||typeof item.at!=='string')throw Error('문항 또는 답변이 일치하지 않습니다.');seen.add(item.case_id);const values=[...item.required_points_met,...flags.map(([k])=>item[k])];if(values.some(v=>v!==null&&typeof v!=='boolean')||(item.by&&(values.some(v=>v===null)||!Number.isFinite(Date.parse(item.at)))))throw Error('판정 또는 완료 정보가 잘못됐습니다.');}
+review=structuredClone(x);dirty=false;render();$('message').textContent='작업을 불러왔습니다.'}catch(err){$('message').textContent=err.message}};
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});render();
+</script></html>

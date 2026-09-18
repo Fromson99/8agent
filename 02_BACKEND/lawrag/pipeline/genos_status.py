@@ -20,7 +20,24 @@ import re
 import sqlite3
 import uuid
 
-from semantic_runtime.genos_backend import safe
+def safe(value):
+    """Take one credential snapshot per report, not per nested field."""
+    secrets = sorted({v for k, v in os.environ.items()
+                      if v and k.upper() != 'STRUCTURE_RECIPE_MAX_TOKENS'
+                      and any(s in k.upper() for s in ('KEY', 'TOKEN', 'PASSWORD', 'SECRET'))},
+                     key=len, reverse=True)
+    def redact(item):
+        if isinstance(item, str):
+            for secret in secrets:
+                item = item.replace(secret, '[REDACTED]')
+            return item
+        if isinstance(item, dict):
+            return {k: redact(v) for k, v in item.items()}
+        if isinstance(item, (list, tuple)):
+            return [redact(v) for v in item]
+        return item
+    return redact(value)
+
 
 DATABASE = 'term-document-status.sqlite'
 PHASES = ('structure', 'index')
@@ -365,6 +382,8 @@ def export_report(directory, report=None):
     if not report['recorded']:
         raise ValueError(report['note'])
     report = safe(report)
+    from .genos_structure_report import export_images
+    image_reports = export_images(directory, report)
     columns = ['번호', '문서 ID', '제목', '폴더', '상대 경로', '확장자', '출처', '선택 상태', '입력 상태',
                '구조화 경로', '경로 기록', '등록 태그', '엔진',
                *(f'{LABELS[p]} {field}' for p in PHASES for field in ('상태', '처리 방식', '초', '저장 경로', '상세')),
@@ -392,6 +411,11 @@ def export_report(directory, report=None):
             details += '<dt>' + esc(LABELS[phase]) + '</dt><dd>' + esc(entry.get('output_path', '저장 경로 기록 없음'))
             details += '<br>' + esc(entry.get('detail', '')) + '</dd>'
         details += '</dl></details>'
+        visual = image_reports.get(row['document_id'], {})
+        if visual.get('status') == 'ready':
+            details += '<p><a href="' + esc(visual['href']) + '">구조화 이미지 · ' + str(visual['pages']) + '쪽</a></p>'
+        elif visual.get('status') == 'error':
+            details += '<p>' + esc(visual['note']) + '</p>'
         cells = [esc(row['number']), '<strong>' + esc(row['title']) + '</strong><br>' + esc(row['relative']) +
                  '<br><small>' + esc(row['extension']) + ' · ' + esc(row['source']) + '</small>',
                  esc(row['selection']) + '<br>' + esc(row['route']) + '<br><small>' + esc(row['route_record']) +
@@ -414,6 +438,7 @@ th{position:sticky;top:0;background:#e8edf7}tr[data-failed="1"]{background:#fff3
 .passed{color:#176735}.failed,.interrupted{color:#a6200f}.pending,.not_requested{color:#657080}details{margin-top:8px}dd{margin:4px 0 12px}dt{font-weight:600}small{color:#596476}
 </style><h1>''' + title + '''</h1><pre>''' + summary + '''</pre>
 <p>이 HTML은 내보낸 시점의 스냅샷입니다. 최신 상태는 상태 명령을 다시 실행해 확인하세요. 본문·키·모델 응답은 포함하지 않습니다.</p>
+<p><a href="structure-images.html">구조화 이미지 목록</a> — 연결된 이미지 보고서에는 원본 페이지와 본문이 포함됩니다.</p>
 <label>검색 <input id="q" type="search" placeholder="문서명 / 폴더 / 태그 / 오류"></label>
 <label>상태 <select id="state"><option value="">전체</option>''' + ''.join(
         '<option value="' + s + '">' + LABELS[s] + '</option>' for s in STATES) + '''</select></label>
@@ -425,7 +450,8 @@ const rows=[...document.querySelectorAll('tbody tr')],q=document.querySelector('
 function filter(){let count=0;const needle=q.value.toLocaleLowerCase();for(const row of rows){const show=row.textContent.toLocaleLowerCase().includes(needle)&&(!state.value||row.dataset.states.split(' ').includes(state.value))&&(!failed.checked||row.dataset.failed==='1');row.hidden=!show;if(show)count++;}document.querySelector('#count').textContent=`표시 ${count}/${rows.length}문서`;}
 for(const control of [q,state,failed])control.addEventListener('input',filter);filter();
 </script></html>'''
-    paths = {'csv': directory / 'doc-status.csv', 'html': directory / 'doc-status.html'}
+    paths = {'csv': directory / 'doc-status.csv', 'html': directory / 'doc-status.html',
+             'images': directory / 'structure-images.html'}
     _atomic_text(paths['csv'], '\ufeff' + csv_stream.getvalue())
     _atomic_text(paths['html'], document)
     return {k: str(v) for k, v in paths.items()}

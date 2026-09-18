@@ -57,7 +57,7 @@ def binding(directory):
     from . import glossary_knowledge
     knowledge=glossary_knowledge.selected_for(directory)
     knowledge_binding=glossary_knowledge.binding(knowledge) if knowledge else None
-    if knowledge_binding and report['dictionary_sha256']!=knowledge_binding['dictionary_sha256'] and report.get('llm_review',{}).get('source_glossary_sha256')!=knowledge_binding['dictionary_sha256']:
+    if knowledge_binding and knowledge_binding['dictionary_sha256'] not in {report['dictionary_sha256'], report.get('llm_review',{}).get('source_glossary_sha256'), report.get('document_update',{}).get('root_dictionary_sha256')}:
         raise ValueError('Knowledge bundle belongs to another base glossary')
     return {'directory':str(directory),'dictionary_sha256':report['dictionary_sha256'],
             'schema_version':VERSION,'code_sha256':v1.sha(__file__),

@@ -1,0 +1,49 @@
+{
+  "tag": "document-numbering-template",
+  "version": 1,
+  "levels": [["kr_article", "buchik", "style_h:1", "dot_number:2"], ["circled"]],
+  "parent_map": {
+    "kr_article": "$document",
+    "buchik": "$document",
+    "style_h:1": "$document",
+    "dot_number:2": "$document",
+    "circled": "kr_article"
+  },
+  "heading_rules": {
+    "kr_article": {
+      "parent_family": "$document",
+      "heading_position": "line_start",
+      "sequence": "consecutive",
+      "reset_scope": "document",
+      "rationale": "목업 5종의 제1조부터 마지막 조까지가 본문 최상위 표제이다. 문장 중간의 제N조 인용은 제외한다."
+    },
+    "circled": {
+      "parent_family": "kr_article",
+      "heading_position": "line_start_or_parent_title",
+      "sequence": "consecutive",
+      "reset_scope": "parent",
+      "rationale": "①②③은 바로 앞 조의 항이며 새 조에서 다시 시작한다. 표나 페이지 경계에서는 다시 시작하지 않는다."
+    },
+    "buchik": {
+      "parent_family": "$document",
+      "heading_position": "line_start",
+      "sequence": "unordered",
+      "reset_scope": "document",
+      "rationale": "부칙은 마지막 조나 별첨의 자식이 아닌 독립 최상위 표제이다. 시행일 문장은 부칙 본문이다."
+    },
+    "style_h:1": {
+      "parent_family": "$document",
+      "heading_position": "source_style",
+      "sequence": "unordered",
+      "reset_scope": "document",
+      "rationale": "상품관리준칙의 별첨1은 파서가 확인한 1단계 표제이다. 출시 흐름 문장은 별첨 본문으로 유지한다."
+    },
+    "dot_number:2": {
+      "parent_family": "$document",
+      "heading_position": "line_start",
+      "sequence": "increasing",
+      "reset_scope": "document",
+      "rationale": "이 목업의 관측값은 문장 중간의 1.5년·0.8년·1.5% 또는 버전 1.0이다. 모두 위치 조건에서 제외된다. 소수형 구조 표제는 실제로 없으며 이 틀은 이 목업에만 적용한다."
+    }
+  }
+}

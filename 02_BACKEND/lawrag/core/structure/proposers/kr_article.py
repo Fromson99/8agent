@@ -19,17 +19,16 @@ ID = "kr_article"
 ROLE = "proposer"
 LANG = "ko"
 FAMILY = "kr_article"
-SURFACE = "제N조 / 제N조의M"
+SURFACE = "제N조 / 제N조의M / 제N-N-N조"
 
-_FULL = re.compile(r"제\s*(\d{1,4})\s*조(?:\s*의\s*(\d{1,3}))?")
-_FRAGMENT = re.compile(r"(?<![제\d])(\d{1,4})\s*조(?![가-힣])")
+_FULL = re.compile(r"제\s*(\d{1,4}(?:\s*-\s*\d{1,4})*)\s*조(?:\s*의\s*(\d{1,3}))?")
+_FRAGMENT = re.compile(r"(?<![제\d-])(\d{1,4})\s*조(?![가-힣])")
 
 
 def _ordinal(m: re.Match):
     g = m.groups()
-    if len(g) >= 2 and g[1]:
-        return (int(g[0]), int(g[1]))
-    return (int(g[0]),)
+    main = tuple(int(part.strip()) for part in g[0].split('-'))
+    return main + (int(g[1]),) if len(g) >= 2 and g[1] else main
 
 
 def propose(block: Block, lex) -> list[Candidate]:

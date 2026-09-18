@@ -27,7 +27,8 @@ def _redact_secrets(value: str) -> str:
     secrets = [
         item
         for name, item in os.environ.items()
-        if item and any(part in name.upper() for part in _FORBIDDEN_PARTS)
+        if item and name.upper() != 'STRUCTURE_RECIPE_MAX_TOKENS'
+        and any(part in name.upper() for part in _FORBIDDEN_PARTS)
     ]
     for secret in sorted(secrets, key=len, reverse=True):
         result = result.replace(secret, "[REDACTED]")

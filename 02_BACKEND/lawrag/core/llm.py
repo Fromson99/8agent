@@ -188,6 +188,10 @@ class Exchange:
     system: str
     user: str
     raw_response: str = ""
+    # Exact decoded provider events, before content selection/JSON extraction.
+    provider_response: list[dict] = field(default_factory=list)
+    provider_usage: dict = field(default_factory=dict)
+    requested_thinking: Optional[bool] = None
     parsed: Any = None
     model: str = ""
     usage: dict = field(default_factory=dict)
@@ -208,7 +212,10 @@ class Exchange:
                 "images": self.images, "dur_ms": self.dur_ms,
                 "ttft_ms": self.ttft_ms,
                 "system": self.system, "user": self.user,
-                "raw_response": self.raw_response, "error": self.error}
+                "raw_response": self.raw_response, "error": self.error,
+                "provider_response": self.provider_response,
+                "provider_usage": self.provider_usage,
+                "requested_thinking": self.requested_thinking}
 
 
 class LLM:
@@ -373,7 +380,7 @@ class LLM:
 
     def _call_genos(self, ex: Exchange, system: str, user: str, schema: dict,
                     max_tokens: int, images: Optional[list[str]], t0: float,
-                    model: str = "") -> tuple[str, str]:
+                    model: str = "", enable_thinking: Optional[bool] = None) -> tuple[str, str]:
         """(text, stop_reason) 을 돌려준다. stop_reason 은 anthropic 어휘로
         정규화한다 — 호출부의 max_tokens·refusal 처리를 같이 쓰기 위해서다."""
         if not model:
@@ -405,6 +412,10 @@ class LLM:
                     "max_tokens": max_tokens, "stream": True,
                     "messages": [{"role": "system", "content": sys_text},
                                  {"role": "user", "content": content}]}
+            if enable_thinking is not None:
+                # Same serving option already used by GENOS's inference check.
+                # Keep it on schema fallback; never silently turn reasoning back on.
+                body["chat_template_kwargs"] = {"enable_thinking": enable_thinking}
             if mode == "json_schema":
                 body["response_format"] = {
                     "type": "json_schema",
@@ -450,6 +461,7 @@ class LLM:
                 chunk = json.loads(payload)
             except json.JSONDecodeError:
                 continue
+            ex.provider_response.append(chunk)
             response_model = chunk.get("model")
             if response_model is not None:
                 response_model_seen = True
@@ -459,6 +471,7 @@ class LLM:
                     )
             if chunk.get("usage"):
                 u = chunk["usage"]
+                ex.provider_usage = u
                 ex.usage = {"input_tokens": u.get("prompt_tokens", 0),
                             "output_tokens": u.get("completion_tokens", 0)}
             for ch in chunk.get("choices") or []:
@@ -467,6 +480,7 @@ class LLM:
                     if not text:
                         ex.ttft_ms = int((time.perf_counter() - t0) * 1000)
                     text += piece
+                    ex.raw_response = text
                 if ch.get("finish_reason"):
                     finish = ch["finish_reason"]
         if _sealed() and not response_model_seen:
@@ -480,7 +494,8 @@ class LLM:
     def structured(self, kind: str, system: str, user: str, schema: dict,
                    max_tokens: int = 16000, effort: Optional[str] = "high",
                    images: Optional[list[str]] = None,
-                   model: Optional[str] = None) -> Optional[dict]:
+                   model: Optional[str] = None,
+                   enable_thinking: Optional[bool] = None) -> Optional[dict]:
         """structured output 으로 JSON 을 받는다 (§2.3 "structured output").
 
         temperature 는 보내지 않는다 — 이 모델 계열에서 제거되어 400 이 난다.
@@ -520,13 +535,16 @@ class LLM:
         cfg: dict = {"format": {"type": "json_schema", "schema": schema}}
         if effort and "haiku" not in use:
             cfg["effort"] = effort
+        if enable_thinking is not None and type(enable_thinking) is not bool:
+            raise ValueError("enable_thinking must be bool or None")
+        ex.requested_thinking = enable_thinking
         t0 = time.perf_counter()
         try:
             if self.backend in ("local", "genos", "openrouter"):
                 # 그림 블록은 백엔드마다 형식이 다르다 — genos 쪽이 다시 만든다.
                 text, stop = self._call_genos(ex, system, user, schema,
                                               max_tokens, images, t0,
-                                              model=use)
+                                              model=use, enable_thinking=enable_thinking)
                 use = ex.model
             else:
                 # 스트리밍 — 첫 글자 시각(ttft)을 재기 위해서다. 결과는 똑같이
@@ -555,13 +573,14 @@ class LLM:
             if stop == "refusal":
                 ex.error = "모델이 요청을 거절했습니다 (stop_reason=refusal)"
                 return None
-            ex.raw_response = text
+            if self.backend not in ("local", "genos", "openrouter"):
+                ex.raw_response = text
             if stop == "max_tokens":
                 # 잘린 JSON 은 파싱 오류로 나가는데, 원인은 예산이다 — 이름을 바로
                 # 붙여야 호출부가 max_tokens 를 올린다(실측 2026-08-16: 소넷5 는
                 # 사고 토큰이 출력 예산을 먹어 600 에서 절반 넘게 잘렸다).
                 ex.error = (f"출력이 max_tokens={max_tokens} 에서 잘림 "
-                            f"(out {ex.usage.get('output_tokens', '?')}) — 예산을 올려라")
+                            f"(out {ex.usage.get('output_tokens', '?')}) — 원응답·추론 사용량과 서버 설정 확인")
                 return None
             ex.parsed = json.loads(text)
             return ex.parsed

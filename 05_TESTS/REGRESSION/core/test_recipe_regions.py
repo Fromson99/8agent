@@ -94,10 +94,88 @@ def test_resegment_requires_evidence_and_cannot_apply_instance_edits():
     _,recipe=make();data={'recipe':recipe,'source_blocks':[{'idx':6,'text':'new format'}]}
     def call(phase,system,request,schema,vision):
         return {'verdict':'resegment','reviewed_state_id':request['reviewed_state_id'],'issues':[{'blocks':[6],'reason':'different numbering hierarchy begins here'}],'template_changes':[]}
-    result=r.request_review('test',data,{},call)
+    result=r.adjudicate_review('test',data,{},call)
     assert result['verdict']=='resegment' and result['recipe']==recipe
     bad=call('','',{'reviewed_state_id':'x'},None,True);bad['candidate_changes']=[{'candidate_id':'c1'}]
     with pytest.raises(jsonschema.ValidationError):jsonschema.validate(bad,r.review_schema())
+
+
+def test_review_normalizes_only_syntax_and_retains_raw_evidence():
+    _,recipe=make();data={'recipe':recipe,'source_blocks':[{'idx':6,'text':'source'}]};saved={}
+    def call(phase,system,request,schema,vision):
+        return {'verdict':' APPROVE ','reviewed_state_id':request['reviewed_state_id'],'issues':[],'template_changes':[]}
+    answer=r.adjudicate_review('test',data,{},call,save=lambda name,value:saved.update({name:value}))
+    assert answer['verdict']=='approve'
+    assert saved['test-raw-review.json']['verdict']==' APPROVE '
+    assert saved['test-normalization.json']['repairs']==['verdict_case_whitespace']
+
+
+def test_conflicting_review_is_clarified_without_implicit_approval():
+    _,recipe=make();data={'recipe':recipe,'source_blocks':[{'idx':6,'text':'source'}]}
+    tid='outer_number';family=next(iter(recipe['templates'][tid]['heading_rules']))
+    rule=copy.deepcopy(recipe['templates'][tid]['heading_rules'][family]);rule['sequence']='increasing'
+    edit={'template_id':tid,'family':family,'rule':rule};seen=[]
+    def call(phase,system,request,schema,vision):
+        seen.append(copy.deepcopy(request))
+        return {'verdict':'approve' if len(seen)==1 else 'revise','reviewed_state_id':request['reviewed_state_id'],
+                'issues':[],'template_changes':[edit,edit]}
+    answer=r.adjudicate_review('test',data,{},call)
+    assert len(seen)==2 and 'validation_feedback' in seen[1]
+    assert answer['verdict']=='revise' and len(answer['template_changes'])==1
+    assert r.signature(answer['recipe'])!=r.signature(recipe)
+
+
+def test_repeated_conflict_is_pending_and_cannot_turn_into_approval():
+    _,recipe=make();data={'recipe':recipe,'source_blocks':[{'idx':6,'text':'source'}]};seen=[];saved={}
+    def call(phase,system,request,schema,vision):
+        seen.append(phase)
+        return {'verdict':'approve','reviewed_state_id':request['reviewed_state_id'],
+                'issues':[{'blocks':[6],'reason':'still unresolved'}] if len(seen)==1 else [],'template_changes':[]}
+    with pytest.raises(ValueError,match='review_pending'):
+        r.adjudicate_review('test',data,{},call,save=lambda name,value:saved.update({name:value}))
+    assert len(seen)==3 and saved['test-pending.json']['status']=='review_pending'
+
+
+@pytest.mark.parametrize('repeat_previous',[False,True])
+def test_stalled_review_reports_exact_controls_and_reason(repeat_previous):
+    _,recipe=make();data={'recipe':recipe,'source_blocks':[{'idx':6,'text':'private source'}]}
+    tid='outer_number';family=next(iter(recipe['templates'][tid]['heading_rules']))
+    rule=copy.deepcopy(recipe['templates'][tid]['heading_rules'][family])
+    rule['rationale']='private model explanation only'
+    if repeat_previous:rule['sequence']='increasing'
+    edit={'template_id':tid,'family':family,'rule':rule}
+    seen_levels=[r.signature(r.apply(recipe,[edit]))] if repeat_previous else []
+    requests=[];saved={}
+    def call(phase,system,request,schema,vision):
+        requests.append(copy.deepcopy(request))
+        return {'verdict':'revise','reviewed_state_id':request['reviewed_state_id'],
+                'issues':[],'template_changes':[edit]}
+    with pytest.raises(r.ReviewPending) as failure:
+        r.adjudicate_review('test',data,{},call,seen_levels=seen_levels,save=lambda n,v:saved.update({n:copy.deepcopy(v)}))
+    code='REPEATED_STRUCTURE' if repeat_previous else 'NO_EXECUTABLE_CHANGE'
+    assert failure.value.diagnostic['code']==code and len(requests)==3
+    assert code in requests[1]['validation_feedback']
+    assert 'Never invent a rule change' in requests[1]['validation_feedback']
+    comparison=requests[1]['rule_comparison'][0]
+    assert comparison['changed_fields']==(['sequence'] if repeat_previous else [])
+    assert comparison['rationale_changed'] is True
+    pending=saved['test-pending.json']
+    assert pending['code']==code and pending['rule_comparison']==[comparison]
+    assert 'private' not in json.dumps(failure.value.diagnostic)
+
+
+def test_stalled_review_can_return_an_actual_executable_correction():
+    _,recipe=make();data={'recipe':recipe,'source_blocks':[{'idx':6,'text':'source'}]}
+    tid='outer_number';family=next(iter(recipe['templates'][tid]['heading_rules']));seen=[]
+    def call(phase,system,request,schema,vision):
+        seen.append(copy.deepcopy(request))
+        rule=copy.deepcopy(recipe['templates'][tid]['heading_rules'][family])
+        if len(seen)>1:rule['sequence']='increasing'
+        return {'verdict':'revise','reviewed_state_id':request['reviewed_state_id'],'issues':[],
+                'template_changes':[{'template_id':tid,'family':family,'rule':rule}]}
+    result=r.adjudicate_review('test',data,{},call)
+    assert len(seen)==2 and seen[1]['rule_comparison'][0]['changed_fields']==[]
+    assert result['verdict']=='revise' and r.signature(result['recipe'])!=r.signature(recipe)
 
 
 def test_boundary_revision_rebuilds_and_rechecks_prior_window(tmp_path,monkeypatch):
@@ -119,10 +197,11 @@ def test_boundary_revision_rebuilds_and_rechecks_prior_window(tmp_path,monkeypat
                 return {'regions':[{'start_block':i,'template_id':'same_format','label':'synthetic region','reason':'independent numbering scope'} for i in ([0] if detects==1 else [0,4])]}
             if 'families' in schema['properties']:
                 return {'families':{f:{'parent_family':t.ROOT,'heading_position':'line_start','sequence':'increasing','reset_scope':'document','rationale':'source'} for f in data['catalog']}}
+            if 'opinions' in schema['properties']:return {'opinions':[],'summary':'No defects observed'}
             reviews+=1
             if reviews==1:first_approved=data['page_window']
             issues=[{'blocks':[data['source_blocks'][0]['idx']],'reason':'Format restarts; inspect global boundary outline'}] if reviews==2 else []
-            return {'verdict':'resegment' if reviews==2 else 'approve','issues':issues,'template_changes':[],'reviewed_state_id':data['reviewed_state_id']}
+            return {'opinion_decisions':[],'verdict':'resegment' if reviews==2 else 'approve','issues':issues,'template_changes':[],'reviewed_state_id':data['reviewed_state_id']}
     monkeypatch.setattr(runtime,'GenosCalls',Fake)
     result,meta=runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='boundary-contract')
     assert detects==2 and len(result.stats['region_plan'])==2
@@ -135,3 +214,34 @@ def test_boundary_revision_rebuilds_and_rechecks_prior_window(tmp_path,monkeypat
     assert any(e['event']=='recipe.review.start' and e['revision']==2 and e['window_number']==1 for e in events)
     count=len(calls);replay,cached=runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='boundary-contract')
     assert len(calls)==count and cached['model_calls']==0 and loop.tree_record(replay)==loop.tree_record(result)
+
+
+def test_issue_aliases_preserve_source_error_and_do_not_approve():
+    _,recipe=make();data={'recipe':recipe,'source_blocks':[{'idx':6,'text':'source'}]};saved={}
+    def call(phase,system,request,schema,vision):
+        return {'verdict':'source_error','reviewed_state_id':request['reviewed_state_id'],
+                'issues':[{'block':6,'explanation':'Possible duplicated numbering; verify source',
+                           'family':'paren_number:both','kind':'source_error'}],'template_changes':[]}
+    result=r.adjudicate_review('test',data,{},call,save=lambda name,value:saved.update({name:value}))
+    assert result['verdict']=='source_error' and result['recipe']==recipe
+    assert result['issues'][0]['blocks']==[6]
+    assert 'Possible duplicated numbering' in result['issues'][0]['reason']
+    assert 'family: paren_number:both' in result['issues'][0]['reason']
+    assert 'kind: source_error' in result['issues'][0]['reason']
+    assert saved['test-raw-review.json']['issues'][0]['block']==6
+
+
+@pytest.mark.parametrize('issue',[
+    {'block':6,'blocks':[7],'explanation':'finding'},
+    {'block':6,'reason':'one','explanation':'different'},
+    {'block':'6','explanation':'finding'},
+    {'block':True,'explanation':'finding'},
+    {'block':6,'explanation':'finding','unknown':'must not discard'},
+    {'block':99999,'explanation':'unseen source'},
+])
+def test_ambiguous_or_unseen_issue_aliases_remain_pending(issue):
+    _,recipe=make();data={'recipe':recipe,'source_blocks':[{'idx':6,'text':'source'}]}
+    def call(phase,system,request,schema,vision):
+        return {'verdict':'source_error','reviewed_state_id':request['reviewed_state_id'],
+                'issues':[issue],'template_changes':[]}
+    with pytest.raises(ValueError,match='review_pending'):r.adjudicate_review('test',data,{},call)

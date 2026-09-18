@@ -6,7 +6,7 @@ import pytest
 from lawrag.core.structure import pipeline, recipe_pages as pages, recipe_runtime as runtime
 from lawrag.core.structure.model import Block
 from semantic_runtime import genos
-from .test_recipe_runtime import isolated_env, response
+from .test_recipe_runtime import isolated_env, response, install_transport
 
 
 def document(tmp_path, count=20):
@@ -24,9 +24,11 @@ def provider(monkeypatch, *, bad=False, revise=False):
     seen=[];revised=False
     def request(target,path,payload):
         nonlocal revised
-        data=json.loads(payload['messages'][1]['content'][0]['text']);seen.append(data)
-        image_count=len(payload['messages'][1]['content'])-1
-        assert image_count==len(data['page_window'])*(2 if data.get('visual_evidence') else 1)
+        content=payload['messages'][1]['content']
+        data=json.loads(content if isinstance(content,str) else next(b['text'] for b in content if b['type']=='text'));seen.append(data)
+        image_count=0 if isinstance(content,str) else len(content)-1
+        assert image_count==(len(data['page_window'])*2 if data.get('visual_evidence') else 0)
+        if 'recipe' in data and 'reviewed_state_id' not in data:return response({'opinions':[],'summary':'No visual defects observed'})
         if 'outline' in data:
             return response({'regions':[{'start_block':0,'template_id':'body','label':'body','reason':'synthetic source'}]})
         if 'region_instances' in data:
@@ -40,7 +42,7 @@ def provider(monkeypatch, *, bad=False, revise=False):
                 changes=[{'template_id':'body','family':'kr_article','rule':rule}]
             return response({'verdict':'revise','reviewed_state_id':data['reviewed_state_id'],'template_changes':changes,'issues':[]})
         return response({'verdict':'approve','reviewed_state_id':data['reviewed_state_id'],'issues':[],'template_changes':[]})
-    monkeypatch.setattr(genos,'request_json',request)
+    install_transport(monkeypatch,request)
     return seen
 
 
@@ -57,6 +59,8 @@ def test_long_pdf_sampling_full_source_and_cache(tmp_path,monkeypatch):
     assert len(coverage['not_visually_reviewed_pages'])==16
     assert all(len(x['page_window'])<=6 for x in seen if 'recipe' in x)
     assert any(10 in x['page_window'] for x in seen if 'outline' in x)
+    # The model sees every parsed text block even when image windows are sampled.
+    assert all(len(x['source_blocks']) == len(blocks) for x in seen if 'outline' in x)
     assert max(b['idx'] for x in seen for b in x['source_blocks'])==39
     count=len(seen)
     _,cached=runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='long.pdf')
@@ -99,7 +103,7 @@ def test_repair_rebuilds_and_rechecks_before_publish(tmp_path,monkeypatch):
     for i,b in enumerate(blocks):b.idx=i
     seen=provider(monkeypatch,revise='hierarchy')
     _,meta=runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='revise.pdf')
-    reviews=[r for r in seen if 'recipe' in r]
+    reviews=[r for r in seen if 'reviewed_state_id' in r]
     assert reviews[0]['recipe']['templates']['body']['parent_map']['kr_article']=='$document'
     assert reviews[1]['page_window']==reviews[0]['page_window']
     assert all(r['recipe']['templates']['body']['parent_map']['kr_article']=='kr_장' for r in reviews[1:])
@@ -159,3 +163,99 @@ def test_full_review_uses_all_pages_with_bounded_bbox_windows(tmp_path,monkeypat
     assert meta['coverage']['visually_reviewed_pages']==list(range(1,21))
     assert not meta['coverage']['not_visually_reviewed_pages']
     assert all(len(d['page_window'])<=6 for d in seen if 'recipe' in d)
+
+
+def test_chunk_source_forces_all_page_review_even_when_adaptive(tmp_path,monkeypatch):
+    pdf,blocks=document(tmp_path);seen=provider(monkeypatch)
+    monkeypatch.setenv('STRUCTURE_RECIPE_REVIEW_MODE','adaptive')
+    for block in blocks: block.bbox=None
+    evidence={'source_format':'genos-chunks','spatial_fidelity':'unavailable','table_fidelity':'unavailable'}
+    _,meta=runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='chunk-full',source_evidence=evidence)
+    assert meta['coverage']['visually_reviewed_pages']==list(range(1,21))
+    assert meta['coverage']['source_evidence']==evidence
+    assert all(d['visual_evidence']['blocks_without_rectangles'] for d in seen if 'recipe' in d)
+
+
+def test_discovered_model_change_invalidates_recipe_tag(tmp_path,monkeypatch):
+    pdf,blocks=document(tmp_path,count=2);seen=provider(monkeypatch)
+    monkeypatch.delenv('GENOS_QWEN_MODEL',raising=False)
+    monkeypatch.delenv('GENOS_LLM_MODEL',raising=False)
+    selected=['profile-model-a'];discoveries=[]
+    from lawrag.core import llm
+    original=llm.LLM._init_genos
+    def initialize(client, model):
+        # Keep the real shared provider; vary its discovered model response.
+        import requests
+        session_type=requests.Session
+        def session():
+            obj=session_type()
+            get=obj.get
+            def models(*args,**kwargs):
+                discoveries.append(selected[0])
+                reply=get(*args,**kwargs)
+                reply.body={'data':[{'id':selected[0]}]}
+                return reply
+            obj.get=models
+            return obj
+        with monkeypatch.context() as m:
+            m.setattr(requests,'Session',session)
+            original(client,model)
+    monkeypatch.setattr(llm.LLM,'_init_genos',initialize)
+    _,first=runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='same-profile')
+    before=len(seen)
+    _,cached=runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='same-profile')
+    assert cached['reused'] and len(seen)==before
+    selected[0]='profile-model-b'
+    _,changed=runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='same-profile')
+    assert not changed['reused'] and len(seen)>before
+    assert first['model']=='profile-model-a' and changed['model']=='profile-model-b'
+    assert discoveries==['profile-model-a','profile-model-a','profile-model-b']
+
+
+def test_pending_review_resumes_without_recreating_templates_or_approved_windows(tmp_path,monkeypatch):
+    pdf,blocks=document(tmp_path,count=8)
+    monkeypatch.setenv('STRUCTURE_RECIPE_REVIEW_MODE','full')
+    monkeypatch.setenv('STRUCTURE_RECIPE_MAX_PAGES','3')
+    seen=[];fail=[True];first_window=[None]
+    def request(session,url,payload):
+        content=payload['messages'][1]['content']
+        data=json.loads(content if isinstance(content,str) else next(b['text'] for b in content if b['type']=='text'))
+        seen.append(data)
+        if 'recipe' in data and 'reviewed_state_id' not in data:return response({'opinions':[],'summary':'No visual defects observed'})
+        if 'outline' in data:
+            return response({'regions':[{'start_block':0,'template_id':'body','label':'body','reason':'source'}]})
+        if 'region_instances' in data:
+            return response({'families':{f:{'parent_family':'$document','heading_position':'line_start','sequence':'increasing','reset_scope':'document','rationale':'source'} for f in data['catalog']}})
+        if first_window[0] is None:first_window[0]=data['page_window']
+        issues=([{'blocks':[data['source_blocks'][0]['idx']],'reason':'ambiguous review'}]
+                if fail[0] and data['page_window']!=first_window[0] else [])
+        return response({'verdict':'approve','reviewed_state_id':data['reviewed_state_id'],'issues':issues,'template_changes':[]})
+    install_transport(monkeypatch,request)
+    kw=dict(store=tmp_path/'store',document='resume')
+    with pytest.raises(runtime.NeedsReview):runtime.revise_pdf(pipeline,blocks,pdf,**kw)
+    checkpoints=list((tmp_path/'structure-recipe-runs'/'checkpoints').glob('*.json'))
+    assert len(checkpoints)==1
+    state=json.loads(checkpoints[0].read_text())['state']
+    assert state['status']=='review_pending' and len(state['approvals'])==1
+    assert not (tmp_path/'structure-recipes.json').exists()
+    original=checkpoints[0].read_text();broken=json.loads(original)
+    broken['state']['recipe']['regions'][0]['label']='tampered'
+    checkpoints[0].write_text(json.dumps(broken));before=len(seen)
+    with pytest.raises(runtime.NeedsReview) as error:
+        runtime.revise_pdf(pipeline,blocks,pdf,**kw)
+    assert 'checkpoint_digest_mismatch' in str(error.value.__cause__)
+    assert len(seen)==before
+    checkpoints[0].write_text(original)
+    before=len(seen);fail[0]=False
+    _,meta=runtime.revise_pdf(pipeline,blocks,pdf,**kw)
+    resumed=seen[before:]
+    assert meta['status']=='visual_approved'
+    assert resumed and all('recipe' in row for row in resumed)
+    assert 'vlm_opinions' in resumed[0]  # failed window reuses its saved VLM report
+    assert all(row['page_window']!=first_window[0] for row in resumed)
+    assert meta['coverage']['visually_reviewed_pages']==list(range(1,9))
+    # A different resolved model never reuses approvals or generated templates.
+    (tmp_path/'structure-recipes.json').unlink()
+    monkeypatch.setenv('GENOS_QWEN_MODEL','other-model');before=len(seen)
+    runtime.revise_pdf(pipeline,blocks,pdf,**kw)
+    assert any('outline' in row for row in seen[before:])

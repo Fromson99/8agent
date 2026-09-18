@@ -25,7 +25,11 @@
 FIBO/Wikidata의 `shared_external_concept_candidate` 11,458건은 원천 선언과 구분한다.
 데이터 간 겹치는 공식 관계는 원천/가공 원장별로 보존하며 건수를 단순 합산하지 않는다.
 
-## 실제 호출 연결
+## 현행 호출 연결
+
+이 묶음은 `glossary_linking`의 전체 표기 연결과 navigation-v3 색인, 서빙 시 전체 용어 조회에서 소비한다. 추가 문서의 통합·정의 검토·서빙 자원 포장은 [GENOS_DOCUMENT_CONNECTIONS](GENOS_DOCUMENT_CONNECTIONS.md)를 따른다.
+
+## 최초 연결 기록 (의미 작성 단계 폐기 전)
 
 ```text
 pipeline.py build-all
@@ -56,7 +60,7 @@ pipeline.py build-all
 파생 색인이다. 명칭이 같아도 서로 다른 원천 ID를 합치지 않는다.
 
 `manifest.json`의 입력 해시는 원본 파일, 출력 해시는 인덱스가 추가된 새 파일을 가리킨다.
-추출/검토의 법률 의미 출력은 기존 `LEGAL_SCHEMA.json`의 단일 스키마를 그대로 사용한다.
+현행 생성·RAG는 `term-runtime-v1`, 용어집 의미 검토는 `GLOSSARY_SCHEMA.json`을 사용한다. 구 법률 의미 출력 스키마는 신규 경로에서 폐기되었다.
 이 묶음의 원천 predicate를 LegalRelation enum으로 조용히 변환하거나 canonical로 승인하지 않는다.
 
 전체 데이터는 파일/조회 API에 유지한다. 모델 입력은 기존 문서 청크 예산에 맞춰 표기당

@@ -66,7 +66,7 @@ from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 
-from lawrag.platform.paths import persisted_data_path, repository_root
+from lawrag.platform.paths import manifest_asset_path, repository_root
 from lawrag.sources.common import detect_format
 
 REPO_ROOT = repository_root()
@@ -542,14 +542,14 @@ def manifest_index(paths: list[Path]) -> dict[Path, dict]:
                       "enforced": item.get("enforce", ""),
                       "revision_date": item.get("revised", "")}
             if item.get("body_file"):
-                index[persisted_data_path(item["body_file"]).resolve()] = {
+                index[manifest_asset_path(m, item["body_file"]).resolve()] = {
                     **common, "role": "body", "title": f"{item.get('name', '')} 전문",
                     "sha256": item.get("body_sha256", ""),
                 }
             for att in item.get("attachments", []):
                 if not att.get("file"):
                     continue
-                index[persisted_data_path(att["file"]).resolve()] = {
+                index[manifest_asset_path(m, att["file"]).resolve()] = {
                     **common, "role": att.get("role", "attachment"),
                     "title": att.get("title", ""), "source": att.get("url", ""),
                     "sha256": att.get("sha256", ""),

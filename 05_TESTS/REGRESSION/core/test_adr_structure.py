@@ -36,6 +36,126 @@ def test_final_placeholder_scan_ignores_domain_identifier_substrings() -> None:
     assert UNRESOLVED_PLACEHOLDER_RE["TODO"].search("결과: TODO")
 
 
+def _raw_envelope(value: object) -> str:
+    return "```json\n" + json.dumps(value, ensure_ascii=False) + "\n```"
+
+
+def _pinned_raw_artifact(path: Path, value: object) -> dict:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(value, ensure_ascii=False), "utf-8")
+    return {"path": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "bytes": path.stat().st_size}
+
+
+@pytest.mark.parametrize("reference", ["absolute", "relative", "initial", "catalog",
+                                       "journal", "searches"])
+def test_raw_envelope_exact_artifact_and_aliases_are_exempt(tmp_path, monkeypatch, reference):
+    monkeypatch.setattr(adr_structure, "ROOT", tmp_path)
+    target = tmp_path / "adr"
+    names = {"initial": "initial.json", "catalog": "catalog.json",
+             "journal": "journal.json", "searches": "search-records.json"}
+    path = target / "artifacts" / names.get(reference, "result.json")
+    value = {"state": "PENDING", "nested": ["TODO"]}
+    row = _pinned_raw_artifact(path, value)
+    if reference == "relative":
+        row["path"] = str(path.relative_to(tmp_path))
+    key = row["path"] if reference in {"absolute", "relative"} else reference
+    text = "Ordinary metadata: TODO\n" + _raw_envelope({key: value})
+    scanned = adr_structure._placeholder_scan_text(text, target, {"files": [row]})
+    assert scanned == "Ordinary metadata: TODO\n\n[hash-verified raw artifact envelope]\n"
+    assert UNRESOLVED_PLACEHOLDER_RE["TODO"].search(scanned)
+    assert not UNRESOLVED_PLACEHOLDER_RE["PENDING"].search(scanned)
+
+
+@pytest.mark.parametrize("defect", ["hash", "bytes", "value", "missing", "suffix",
+                                    "invalid_json", "symlink", "outside", "metadata"])
+def test_raw_envelope_invalid_bindings_keep_placeholder(tmp_path, defect):
+    target = tmp_path / "adr"
+    path = target / "artifacts" / "initial.json"
+    value = {"state": "PENDING"}
+    row = _pinned_raw_artifact(path, value)
+    key = "initial"
+    if defect == "hash":
+        row["sha256"] = "0" * 64
+    elif defect == "bytes":
+        row["bytes"] += 1
+    elif defect == "value":
+        value = {"state": "PENDING", "extra": True}
+    elif defect == "missing":
+        path.unlink()
+    elif defect == "suffix":
+        other = path.with_suffix(".txt")
+        path.rename(other)
+        row["path"] = key = str(other)
+    elif defect == "invalid_json":
+        path.write_text("PENDING", "utf-8")
+        row.update(sha256=hashlib.sha256(path.read_bytes()).hexdigest(), bytes=path.stat().st_size)
+    elif defect == "symlink":
+        other = path.with_name("payload.json")
+        path.rename(other)
+        path.symlink_to(other)
+    elif defect == "outside":
+        other = tmp_path / "outside" / "initial.json"
+        row = _pinned_raw_artifact(other, value)
+    envelope = {key: value}
+    if defect == "metadata":
+        envelope["ordinary_metadata"] = "TODO"
+    text = _raw_envelope(envelope)
+    assert adr_structure._placeholder_scan_text(text, target, {"files": [row]}) == text
+
+
+def test_raw_envelope_alias_duplicates_and_null_payload(tmp_path):
+    target = tmp_path / "adr"
+    first = _pinned_raw_artifact(target / "artifacts" / "a" / "initial.json", None)
+    second = _pinned_raw_artifact(target / "artifacts" / "b" / "initial.json", {"state": "PENDING"})
+    invalid_duplicate = dict(second, sha256="0" * 64)
+    for value in (None, {"state": "PENDING"}):
+        scanned = adr_structure._placeholder_scan_text(
+            _raw_envelope({"initial": value}), target,
+            {"files": [first, second, invalid_duplicate]})
+        assert scanned == "\n[hash-verified raw artifact envelope]\n"
+
+
+def test_raw_envelope_does_not_load_unrelated_large_artifact_and_caches_references(tmp_path, monkeypatch):
+    target = tmp_path / "adr"
+    path = target / "artifacts" / "initial.json"
+    value = {"state": "PENDING"}
+    row = _pinned_raw_artifact(path, value)
+    unrelated = target / "artifacts" / "retrieval-ledger.json"
+    # A sparse file models the large ledger without allocating or parsing it.
+    with unrelated.open("wb") as handle:
+        handle.truncate(833 * 1024 * 1024)
+    artifacts = {"files": [row, {"path": str(unrelated), "sha256": "0" * 64,
+                                  "bytes": unrelated.stat().st_size}]}
+    original_hash, original_read = adr_structure._sha256, Path.read_text
+    hashed, read = [], []
+
+    def track_hash(candidate):
+        assert candidate != unrelated, "unreferenced ledger must not be hashed"
+        hashed.append(candidate)
+        return original_hash(candidate)
+
+    def track_read(candidate, *args, **kwargs):
+        assert candidate != unrelated, "unreferenced ledger must not be loaded"
+        read.append(candidate)
+        return original_read(candidate, *args, **kwargs)
+
+    monkeypatch.setattr(adr_structure, "_sha256", track_hash)
+    monkeypatch.setattr(Path, "read_text", track_read)
+    metadata = _raw_envelope({"ordinary_metadata": "PENDING"})
+    assert adr_structure._placeholder_scan_text(metadata, target, artifacts) == metadata
+    assert hashed == read == []
+    text = "\n".join([_raw_envelope({str(path): value}), _raw_envelope({"initial": value})])
+    scanned = adr_structure._placeholder_scan_text(text, target, artifacts)
+    assert scanned.count("[hash-verified raw artifact envelope]") == 2
+    assert hashed == read == [path]
+    # Caching is per scan, so mutation never reuses a prior verified payload.
+    path.write_text('{"state":"TODO"}', "utf-8")
+    assert adr_structure._placeholder_scan_text(text, target, artifacts) == text
+    assert hashed == [path, path]
+    assert read == [path]
+
+
 @pytest.mark.parametrize("status,accepted", [
     ("complete", True), ("failed", True), ("invalid", True),
     ("complete_with_corpus_blockers", True), ("completed", False),

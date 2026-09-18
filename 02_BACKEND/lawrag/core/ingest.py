@@ -28,7 +28,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Optional
 
-from lawrag.platform.paths import data_path, persisted_data_path
+from lawrag.platform.paths import data_path, manifest_asset_path, persisted_data_path
 
 # 확장자 → 계열. 계열 어휘는 lineage.ROUTES(경로 선언)와 같아야 한다 —
 # tests/core/test_ingest.py 의 규약 테스트가 어긋남을 잡는다.
@@ -76,7 +76,7 @@ def source_kind(d: Path) -> str:
 #   docxstyle         Word 스타일 통짜 신뢰 (사람이 엔진으로 고른 문서만)
 #   format:<유형>@v<n> 형식 파일 (버전까지 — 틀을 다시 컴파일하면 결과가 낡는다)
 def structured_by(data: dict, kind: str) -> str:
-    if (data.get("recipe_review") or {}).get("status") in {"visual_approved", "visual_sampled"}:
+    if (data.get("recipe_review") or {}).get("status") in {"visual_approved", "visual_sampled", "accepted_with_warnings"}:
         return "recipe-vlm:" + data["recipe_review"]["tag"]
     if kind == "lawxml":
         return "lawxml"
@@ -98,6 +98,16 @@ def ledger_path(store: Path) -> Path:
 # -------------------------------------------------------------------- 해석 공용
 
 
+def native_parse_identity(source: Path, pdf: Path):
+    """Bind native parsing to the original and its synthetic display surface."""
+    from lawrag.core import parse_adapter, hwpx_parse
+    from lawrag.core.structure import synthpdf
+    digest = lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest()
+    return {'source_name': source.name, 'source_sha256': digest(source),
+            'display_pdf_sha256': digest(pdf), 'coordinate_source': 'synthetic_display',
+            'parser_code': {m.__name__: digest(m.__file__) for m in (parse_adapter, hwpx_parse, synthpdf)}}
+
+
 def parse_cached(pdf: Path, cache: Path):
     """파싱은 **한 번만** 한다. 비싼 것은 docling 모델 추론이고 해석(S0~S5)은 싸다.
 
@@ -105,6 +115,21 @@ def parse_cached(pdf: Path, cache: Path):
     캐시가 깨졌으면 조용히 다시 파싱한다 — 낡은 형식 때문에 문서를 못 열면 안 된다.
     """
     from lawrag.core import parse_adapter, typography
+
+    native = next((pdf.parent / ('source.' + ext) for ext in ('hwpx', 'hwp', 'docx')
+                   if (pdf.parent / ('source.' + ext)).is_file()), None)
+    if native is not None and pdf.name == 'source.pdf':
+        if cache.exists() and pdf.exists():
+            try:
+                parsed = parse_adapter.result_from_dump(json.loads(cache.read_text('utf-8')))
+                if parsed.stats.get('native_source_identity') == native_parse_identity(native, pdf):
+                    return parsed
+            except (ValueError, KeyError, TypeError):
+                pass
+        # A stale native cache must rebuild FROM THE ORIGINAL. Parsing the
+        # synthetic PDF would erase styles, cell spans and XML anchors.
+        prepare_converted(pdf.parent, native.read_bytes(), native.suffix)
+        return parse_adapter.result_from_dump(json.loads((pdf.parent/'parse.json').read_text('utf-8')))
 
     expected = parse_adapter.pdf_parser_identity(pdf) if pdf.suffix.lower() == '.pdf' else None
     if cache.exists():
@@ -185,6 +210,21 @@ def interpret_doc(pdf: Path, *, store: Path, cache: Optional[Path] = None,
 
     parsed = parse_cached(pdf, cache or pdf.parent / "parse.json")
     kind = source_kind(pdf.parent)
+    source_evidence = {key: parsed.stats[key] for key in
+                       ('source_format', 'chunk_assembly', 'spatial_fidelity', 'table_fidelity')
+                       if key in getattr(parsed, 'stats', {})}
+    from lawrag.core.structure import recipe_runtime
+    needs_vlm = getattr(parsed, 'stats', {}).get('requires_structure_vlm', False)
+    if needs_vlm and (kind != 'pdf' or not recipe_runtime.enabled()):
+        raise recipe_runtime.NeedsReview('Chunk input requires original PDF and STRUCTURE_RECIPE_VLM=on')
+
+    def with_parser_receipt(data):
+        if getattr(parsed, 'stats', {}).get('preprocessor'):
+            data['preprocessor'] = parsed.stats['preprocessor']
+            data['parser_identity'] = parsed.stats['parser_identity']
+        if source_evidence:
+            data['parser_evidence'] = source_evidence
+        return data
 
     # 스타일 통짜 경로 — 사람이 엔진으로 명시했다. 명시 선택이 연결(binding)보다
     # 세다. docx 전용: PDF 는 레이아웃 모델이 level 을 전부 1로 평면화해 "평면
@@ -204,14 +244,14 @@ def interpret_doc(pdf: Path, *, store: Path, cache: Optional[Path] = None,
         data["parser"] = parsed.parser
         data["engine"] = "docxstyle"
         data["source_kind"] = kind
-        return data
+        return with_parser_receipt(data)
 
     # 형식 바인딩(문서 > 폴더)이 있으면 유도가 아니라 형식 경로다
     bound = binding_of(doc_id, folder) if (binding_of and doc_id) else None
-    if bound:
+    if bound and not needs_vlm:
         data = _interpret_with_format(parsed, pdf, name, bound)
         data["source_kind"] = kind
-        return data
+        return with_parser_receipt(data)
 
     blocks = Block.from_elements(parsed.elements)
     from lawrag.core.structure import recipe_runtime
@@ -222,8 +262,8 @@ def interpret_doc(pdf: Path, *, store: Path, cache: Optional[Path] = None,
         result, review = recipe_runtime.revise_pdf(
             pipeline, blocks, pdf, store=store,
             document=recipe_document or "/".join(x for x in (folder, name or doc_id or pdf.name) if x),
-            hints=structural_hints)
-        if review.get("status") not in {"visual_approved", "visual_sampled"}:
+            hints=structural_hints, **({'source_evidence': source_evidence} if needs_vlm else {}))
+        if review.get("status") not in {"visual_approved", "visual_sampled", "accepted_with_warnings"}:
             raise recipe_runtime.NeedsReview("PDF structure review did not complete")
         data = viewer.payload(result, blocks, pdf_path=pdf, elements=parsed.elements,
                               images=parsed.images)
@@ -231,7 +271,7 @@ def interpret_doc(pdf: Path, *, store: Path, cache: Optional[Path] = None,
                     source_kind=kind, parser=parsed.parser)
         if name:
             data["doc"] = name
-        return data
+        return with_parser_receipt(data)
     # fingerprint 원장은 doc_id 로 관측한다 — 저장 파일명은 전부 source.pdf 라
     # 이름으로 세면 모든 문서가 한 항목으로 뭉개진다. 이름이 바뀌어도 doc_id 는 남는다.
     ledger = fp_mod.Ledger.load(ledger_path(store))
@@ -247,7 +287,7 @@ def interpret_doc(pdf: Path, *, store: Path, cache: Optional[Path] = None,
     data["parser_warnings"] = parsed.warnings
     data["source_kind"] = kind
     data["parser"] = parsed.parser
-    return data
+    return with_parser_receipt(data)
 
 
 def prepare_converted(d: Path, raw: bytes, suffix: str) -> Path:
@@ -267,6 +307,7 @@ def prepare_converted(d: Path, raw: bytes, suffix: str) -> Path:
     pdf_bytes = synthpdf.paginate(parsed.elements)   # 요소에 page·bbox 를 심는다
     pdf = d / "source.pdf"
     pdf.write_bytes(pdf_bytes)
+    parsed.stats['native_source_identity'] = native_parse_identity(src, pdf)
     (d / "parse.json").write_text(
         json.dumps(parse_adapter.result_to_dump(parsed), ensure_ascii=False),
         encoding="utf-8")
@@ -276,25 +317,115 @@ def prepare_converted(d: Path, raw: bytes, suffix: str) -> Path:
 # --------------------------------------------------------------- xml (lawxml)
 
 
-def annex_md_map(item: dict | None) -> dict[str, str]:
-    """manifest 항목의 별표서식 첨부 → {"별표 14의1": 사이드카 md 본문}.
+# 법령 별표 제목 — `[별표 14의1] 제목…`. lawxml 의 별표구분·번호 키와 같은 말이다.
+ANNEX_NUMBERED = re.compile(r"^\[(별표|별지|별첨|서식|부록)\s*(\d+(?:의\d+)?)\]")
+# 협회·거래소 첨부 제목 — `1. 0000_(별지 제1호).hwp`, `2. 0001_[참고 4-1].hwp`.
+# 조문이 인용하는 표기는 괄호 안에 있고 앞의 순번·내부 일련번호는 파일 이름일 뿐이다.
+ANNEX_BRACKETED = re.compile(r"[\[(]\s*([^\]\)]{1,60}?)\s*[\])]\s*(?:\.[A-Za-z0-9]+)?\s*$")
+
+
+def annex_label(title: str, file: str = "") -> str:
+    """첨부 제목 → 조문이 부르는 이름. 못 읽으면 파일 이름을 그대로 쓴다."""
+    title = (title or "").strip()
+    m = ANNEX_NUMBERED.match(title)
+    if m:
+        return f"{m.group(1)} {m.group(2)}"
+    m = ANNEX_BRACKETED.search(title)
+    if m:
+        return m.group(1).strip()
+    return Path(file or title).stem
+
+
+# 첨부 모두가 별표는 아니다. 개정문·신구조문대비표는 그 규정의 **이력**이지 본문이
+# 참조하는 별표가 아니므로 본문에 실으면 원문을 오염시킨다. 수집기가 이미 갈라
+# 놓은 자리(별표서식 폴더)와 번호 붙은 제목만 별표로 본다.
+ANNEX_FOLDER = "별표서식"
+NON_ANNEX_ROLES = {"body", "comparison_table"}
+
+
+def is_annex_attachment(a: dict) -> bool:
+    if a.get("role") in NON_ANNEX_ROLES or not a.get("file"):
+        return False
+    return (Path(a["file"]).parent.name == ANNEX_FOLDER
+            or bool(ANNEX_NUMBERED.match((a.get("title") or "").strip())))
+
+
+def annex_attachments(item: dict | None) -> list[dict]:
+    """manifest 항목에서 별표·서식으로 볼 첨부만. 개수 보고의 분모다."""
+    return [a for a in (item or {}).get("attachments", []) if is_annex_attachment(a)]
+
+
+def annex_sections(item: dict | None, manifest: Path | str | None = None) -> list[dict]:
+    """manifest 항목의 별표·서식 첨부 → 변환된 본문이 있는 것만 순서대로.
 
     사이드카(.md)는 lawrag/core/hwp5_md.py(hwp5)·lawrag/core/hwpx_md.py(hwpx) 가 만든다.
-    없는 별표는 XML 별표내용으로 남는다 — 연결은 있는 것만, 조용한 누락 없이
-    호출부가 개수를 보고한다.
+    변환하지 않은 첨부는 조용히 빠지지 않고 개수 차이로 드러난다 — 호출부가
+    `annex_md`/`annex_have` 로 보고한다.
     """
     if not item:
-        return {}
-    pat = re.compile(r"^\[(별표|별지|별첨|서식|부록)\s*(\d+(?:의\d+)?)\]")
-    out: dict[str, str] = {}
-    for a in item.get("attachments", []):
-        m = pat.match(a.get("title") or "")
-        if not m or not a.get("file"):
+        return []
+    out: list[dict] = []
+    for a in annex_attachments(item):
+        source = (manifest_asset_path(manifest, a["file"] + ".md") if manifest
+                  else persisted_data_path(a["file"] + ".md"))
+        if not source.exists():
             continue
-        sidecar = persisted_data_path(a["file"] + ".md")
-        if sidecar.exists():
-            out[f"{m.group(1)} {m.group(2)}"] = sidecar.read_text(encoding="utf-8")
+        out.append({"label": annex_label(a.get("title") or "", a["file"]),
+                    "title": (a.get("title") or "").strip(),
+                    "file": a["file"], "role": a.get("role", "attachment"),
+                    "markdown": source.read_text(encoding="utf-8")})
     return out
+
+
+def annex_md_map(item: dict | None, manifest: Path | str | None = None) -> dict[str, str]:
+    """번호가 붙은 별표만 {"별표 14의1": md 본문} 으로. lawxml 별표내용 대체용이다.
+
+    번호 없는 첨부(협회의 `[참고 4]` 등)는 XML 별표단위에 대응이 없으므로 여기
+    들어가지 않는다 — 그쪽은 `annex_sections` 로 본문에 실린다.
+    """
+    return {s["label"]: s["markdown"] for s in annex_sections(item, manifest)
+            if ANNEX_NUMBERED.match(s["title"])}
+
+
+def collection_manifest(path: Path | str) -> Path | None:
+    """원본 경로에서 위로 거슬러 수집 manifest 를 찾는다 (RAW/<출처>/manifest.json).
+
+    어느 규정의 첨부인지는 파일이 놓인 자리가 말한다. hwp5_md.manifest_index 와
+    같은 규칙이라 사이드카를 만든 쪽과 읽는 쪽이 같은 manifest 를 본다.
+    """
+    start = Path(path).resolve()
+    start = start if start.is_dir() else start.parent
+    root = data_path().resolve()
+    for candidate in [start, *start.parents]:
+        found = candidate / "manifest.json"
+        if found.exists():
+            return found
+        if candidate == root:
+            break
+    return None
+
+
+def manifest_item_for(path: Path | str, raw: bytes) -> tuple[dict | None, Path | None]:
+    """이 바이트열이 수집분이면 (manifest 항목, manifest 경로).
+
+    본문 해시로만 잇는다 — 이름이 아니라 내용이 같아야 같은 문서다. 협회·거래소는
+    조문 HTML 이 본문이므로 body_html_sha256 도 같은 자격으로 본다.
+    """
+    manifest = collection_manifest(path)
+    if manifest is None:
+        return None, None
+    digest = hashlib.sha256(raw).hexdigest()
+    try:
+        items = json.loads(manifest.read_text("utf-8"))["items"]
+    except Exception:
+        return None, None
+    for item in items:
+        known = {item.get("body_sha256"), item.get("body_html_sha256")}
+        known.update(a.get("sha256") for a in item.get("attachments", [])
+                     if a.get("role") == "body")
+        if digest in known:
+            return item, manifest
+    return None, None
 
 
 def find_manifest_item(raw: bytes) -> dict | None:
@@ -319,14 +450,15 @@ def find_manifest_item(raw: bytes) -> dict | None:
 
 def ingest_lawxml_bytes(raw: bytes, name: str, store: Path, folder: str = "",
                         extra_meta: dict | None = None,
-                        manifest_item: dict | None = None) -> dict:
+                        manifest_item: dict | None = None,
+                        manifest: Path | str | None = None) -> dict:
     """본문 XML 바이트 → 스토어 등록. CLI 와 업로드 API 가 공유하는 유일한 경로."""
     from lawrag.core.structure import lawxml, viewer
 
     doc_id = hashlib.sha256(raw).hexdigest()[:16]
     if manifest_item is None:
         manifest_item = find_manifest_item(raw)
-    annex_md = annex_md_map(manifest_item)
+    annex_md = annex_md_map(manifest_item, manifest)
 
     d = store / doc_id
     extra_meta = dict(extra_meta or {})
@@ -393,12 +525,15 @@ def ingest_lawxml_bytes(raw: bytes, name: str, store: Path, folder: str = "",
 
 def ingest_rulehtml_bytes(raw: bytes, name: str, store: Path, folder: str = "",
                           extra_meta: dict | None = None,
-                          site: str = "krx") -> dict:
+                          site: str = "krx",
+                          manifest_item: dict | None = None,
+                          manifest: Path | str | None = None) -> dict:
     """조문 HTML 바이트 → 스토어 등록 — lawxml 과 같은 결정적 이관 규약.
 
     doc_id 는 HTML 바이트의 sha256 앞 16자리 — manifest 의 body_html_sha256 과
     결정적으로 이어진다(전문 HWP 가 아니라 이 HTML 이 구조화의 본문이다).
-    별표·서식은 HTML 에 없다 — HWP 첨부의 몫으로 남는다.
+    별표·서식은 HTML 에 없다 — 수집 manifest 의 첨부와 그 변환 사이드카가 있으면
+    같은 문서 안 별표 컨테이너로 실린다(manifest_item/manifest).
     """
     from lawrag.core.structure import rulehtml, viewer
 
@@ -412,8 +547,9 @@ def ingest_rulehtml_bytes(raw: bytes, name: str, store: Path, folder: str = "",
             prev = {}
     name = prev.get("name") or name
 
+    sections = annex_sections(manifest_item, manifest)
     result, blocks, pdf_bytes = rulehtml.build(
-        raw.decode("utf-8", errors="replace"), name, site=site)
+        raw.decode("utf-8", errors="replace"), name, site=site, annexes=sections)
 
     d.mkdir(parents=True, exist_ok=True)
     (d / "source.html").write_bytes(raw)
@@ -432,6 +568,7 @@ def ingest_rulehtml_bytes(raw: bytes, name: str, store: Path, folder: str = "",
         "passed": data["fitness"]["passed"], "tier": data["fitness"]["tier"],
         "fingerprint": data.get("fingerprint", {}).get("key"),
         "used_llm": False, "source_kind": "rulehtml", "site": site,
+        "annex_md_used": len(sections),
         "at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         **(extra_meta or {}),
     }
@@ -451,7 +588,9 @@ def ingest_rulehtml_bytes(raw: bytes, name: str, store: Path, folder: str = "",
 
     return {"doc_id": doc_id, "name": name, "pages": meta["pages"],
             "nodes": len(data["nodes"]), "blocks": len(data["blocks"]),
-            "units": data["stats"]["units"], "meta": meta}
+            "units": data["stats"]["units"], "annex_md": len(sections),
+            "annex_have": len(annex_attachments(manifest_item)),
+            "meta": meta}
 
 
 # ------------------------------------------------------------------------ 문
@@ -463,6 +602,7 @@ def ingest(raw: bytes, filename: str, *, store: Path, name: str = "",
            binding_of: Optional[Callable[[str, str], Optional[str]]] = None,
            extra_meta: Optional[dict] = None,
            manifest_item: Optional[dict] = None,
+           manifest: Optional[Path | str] = None,
            raw_via: str = "upload") -> dict:
     """문서 하나를 형식에 맞는 길로 구조화 스토어에 넣는다 — 유일한 문.
 
@@ -490,12 +630,14 @@ def ingest(raw: bytes, filename: str, *, store: Path, name: str = "",
 
     if family == "xml":
         r = ingest_lawxml_bytes(raw, name, store, (folder or "").strip(),
-                                extra_meta=extra_meta, manifest_item=manifest_item)
+                                extra_meta=extra_meta, manifest_item=manifest_item,
+                                manifest=manifest)
         return {"doc_id": r["doc_id"], "meta": r["meta"], "detail": r}
 
     if family == "html":
         r = ingest_rulehtml_bytes(raw, name, store, (folder or "").strip(),
-                                  extra_meta=extra_meta)
+                                  extra_meta=extra_meta, manifest_item=manifest_item,
+                                  manifest=manifest)
         return {"doc_id": r["doc_id"], "meta": r["meta"], "detail": r}
 
     eng = "docxstyle" if engine == "docxstyle" else ""

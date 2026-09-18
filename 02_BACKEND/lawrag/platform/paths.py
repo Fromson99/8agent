@@ -35,6 +35,25 @@ def persisted_data_path(value: str | Path) -> Path:
     return data_path(*relative.parts[1:])
 
 
+def manifest_asset_path(manifest: str | Path, value: str | Path) -> Path:
+    """Resolve a file reference stored inside a collection manifest.
+
+    Collection manifests carry two path conventions and both must keep working.
+    The RAW layer writes them relative to the manifest itself
+    (``표준투자권유준칙/별표서식/0000_[참고 1].hwp``), while the older corpus
+    layout wrote them from the data root (``data/corpus/law/...``).  Callers see
+    one resolver so a layout move cannot silently disconnect annex sidecars from
+    the body that cites them.
+    """
+
+    relative = Path(value)
+    if relative.is_absolute() or not relative.parts or ".." in relative.parts:
+        raise ValueError(f"manifest asset must be a safe relative path: {value!r}")
+    if relative.parts[0] in {"data", "01_DATA"}:
+        return data_path(*relative.parts[1:])
+    return Path(manifest).resolve().parent / relative
+
+
 def data_path(*parts: str) -> Path:
     return root_path("data", *parts)
 

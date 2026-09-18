@@ -1,0 +1,445 @@
+{
+  "observed_at_utc": "2026-09-16T12:14:14.929126+00:00",
+  "environment": "WSL read-only source and metadata inspection; no model or benchmark execution",
+  "git_head": "65463101162354b2a283cf76b0878129ef541ba8",
+  "active": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "navigation-rag-20260916-v1",
+    "generation": 14,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/navigation-rag-20260916-v1/release.json",
+    "release_manifest_sha256": "bf378ef04961a865cadd942293f7ee46ba7e403fbdc9732f045839278ef7c702",
+    "activated_at": "2026-09-16T04:26:00.742989+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "c22af8816a04e87436db783cf1c9270642720e9a9a51cb79652559a4b2405ab6"
+  },
+  "active_pointer_sha256": "e47a1e32ac17ce42f549df07d14a0e9c63eba51c7b58d7e5833b4f46df6e8d40",
+  "release_manifest_hash_ok": true,
+  "release_code_root": "08_DEPLOYMENT/RELEASES/navigation-rag-20260916-v1/code",
+  "release_files_verified": {
+    "00_SYSTEM/PIPELINE.json": true,
+    "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json": true,
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json": true,
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json": true,
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json": true,
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json": true,
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json": true,
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json": true,
+    "02_BACKEND/semantic_runtime/__init__.py": true,
+    "02_BACKEND/semantic_runtime/app.py": true,
+    "02_BACKEND/semantic_runtime/contracts.py": true,
+    "02_BACKEND/semantic_runtime/control.py": true,
+    "02_BACKEND/semantic_runtime/feedback.py": true,
+    "02_BACKEND/semantic_runtime/full_glossary.py": true,
+    "02_BACKEND/semantic_runtime/full_glossary_connections.py": true,
+    "02_BACKEND/semantic_runtime/genos.py": true,
+    "02_BACKEND/semantic_runtime/genos_backend.py": true,
+    "02_BACKEND/semantic_runtime/genos_index.py": true,
+    "02_BACKEND/semantic_runtime/navigation_agent.py": true,
+    "02_BACKEND/semantic_runtime/navigation_loop.py": true,
+    "02_BACKEND/semantic_runtime/navigation_match.py": true,
+    "02_BACKEND/semantic_runtime/observability.py": true,
+    "02_BACKEND/semantic_runtime/pipeline.py": true,
+    "02_BACKEND/semantic_runtime/provider.py": true,
+    "02_BACKEND/semantic_runtime/stages.py": true,
+    "02_BACKEND/semantic_runtime/storage.py": true,
+    "02_BACKEND/semantic_runtime/term_agent.py": true,
+    "02_BACKEND/semantic_runtime/term_index.py": true,
+    "02_BACKEND/semantic_runtime/term_tools.py": true,
+    "02_BACKEND/semantic_runtime/vector.py": true,
+    "06_TOOLS/serve.sh": true,
+    "service.py": true
+  },
+  "data_path": "01_DATA/SEMANTIC/GENERATIONS/navigation-source-20260916-v1",
+  "data_manifest_sha256": "80ac72cb3e99aa138dcdce1f292432bcb13618fce5a1dfadcf749fec769bfb33",
+  "release_data_manifest_hash_ok": true,
+  "generation_id": "term-source-adca5fbe3650f90fb372",
+  "source_store_sha256": "422cfa15b9dba609f3c6105e3d5d3c7dbdb27e90a09469d57ca6bc602b4d9c72",
+  "source_store_hash_ok": true,
+  "navigation": {
+    "path": "navigation",
+    "manifest_sha256": "82fff3c6ef8f4a0517221a264ab5984f9dfabd339a734a7b1ed61fab556fa413"
+  },
+  "files": {
+    "service.py": {
+      "working_sha256": "eb071f8ab4b6ad468d51a8631768aaff4b3a2a58caa4638eeadbbb7bbd6ad4a5",
+      "release_sha256": "eb071f8ab4b6ad468d51a8631768aaff4b3a2a58caa4638eeadbbb7bbd6ad4a5"
+    },
+    "00_SYSTEM/PIPELINE.json": {
+      "working_sha256": "9c4b7660d34b6d723ddcf76747a330b5c69bee7660603aa11f5120065915aa1c",
+      "release_sha256": "aad03c747043a7d84f0ad951ea8d6a80644e877166b1a8d787ec7ee20eb71ab1"
+    },
+    "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json": {
+      "working_sha256": "445ce3b245cf5199742397fe2f46b38d9cb13bc69660d32d8c6e6c72881f22bb",
+      "release_sha256": "445ce3b245cf5199742397fe2f46b38d9cb13bc69660d32d8c6e6c72881f22bb"
+    },
+    "02_BACKEND/semantic_runtime/app.py": {
+      "working_sha256": "55d37bb84d885beca473150600c2d910814c5270b688cc5438ca249b0aeff8b1",
+      "release_sha256": "7977403471b608f06c7cd2d99bf1e6426177259b80aea5aedc57f9a932a3cca4"
+    },
+    "02_BACKEND/semantic_runtime/pipeline.py": {
+      "working_sha256": "0e3db48b47df1aeab38c23e85bf8d44ccafc0847eb46fbc1187de71457e48aa2",
+      "release_sha256": "df244f079e744ba751a6bf9b8481a7ca4d44105d19595b6a12cc439685631280"
+    },
+    "02_BACKEND/semantic_runtime/navigation_agent.py": {
+      "working_sha256": "2733bb5a86e035ffac375b9529379efa5feb6ef251ad6b4aa691a629c811b25f",
+      "release_sha256": "e4bf1373e799ae701a3fde0def1d537955e36a8ebdf7d10e63ad10d812b03c3d"
+    },
+    "02_BACKEND/semantic_runtime/navigation_loop.py": {
+      "working_sha256": "d49da940e27866d7b789b23970c658aa559a8ef8c061598d5b20cc2195c2d1f8",
+      "release_sha256": "43b8508094ccd48db57cc16c6c5eaa4508b58bee8621aa0f153baf0f101947e1"
+    },
+    "02_BACKEND/semantic_runtime/navigation_match.py": {
+      "working_sha256": "4ca988e53466a7f1c44cc3706cbb6fe63bd2357c34a2706c525ddfeba5a31e8a",
+      "release_sha256": "ff7c928732a93860caeda56a0f69c4485182de14deacdfc3583d83b6c9fd8214"
+    },
+    "02_BACKEND/semantic_runtime/term_agent.py": {
+      "working_sha256": "bb89871198a979150e45ce3ef40c7466bf35a103e7d5fcb71d9980b7b95dec32",
+      "release_sha256": "bb89871198a979150e45ce3ef40c7466bf35a103e7d5fcb71d9980b7b95dec32"
+    },
+    "02_BACKEND/semantic_runtime/term_index.py": {
+      "working_sha256": "e63d8ff2c02ac65d3b76c4f1e4f2867064334e10147924ea90b199cf77249ed1",
+      "release_sha256": "85c1424382b2318123e52e4da889f628e5620f3e8a52dfac81c3614aadf915b6"
+    },
+    "02_BACKEND/semantic_runtime/storage.py": {
+      "working_sha256": "e1f864b7c4e33acb09eb296c82ee3a707d0e9aa95009bd0bf52e13a8bc685804",
+      "release_sha256": "e1f864b7c4e33acb09eb296c82ee3a707d0e9aa95009bd0bf52e13a8bc685804"
+    },
+    "02_BACKEND/semantic_runtime/stages.py": {
+      "working_sha256": "6548baace494bd6f2f7c34ac62f4b89ff3350a360a28bfdea14f70abc3e4b463",
+      "release_sha256": "6548baace494bd6f2f7c34ac62f4b89ff3350a360a28bfdea14f70abc3e4b463"
+    },
+    "02_BACKEND/semantic_runtime/provider.py": {
+      "working_sha256": "ad754b2b5b8f8b610b40ab75c70f97eb60c3fcfa00eefb4c6adef4dab88640b2",
+      "release_sha256": "ad754b2b5b8f8b610b40ab75c70f97eb60c3fcfa00eefb4c6adef4dab88640b2"
+    },
+    "02_BACKEND/semantic_runtime/task_harness.py": {
+      "working_sha256": "71eb89e9a5af2344d0ea79b4beec7e429cdad131a51bff3c6cef87df64426217",
+      "release_sha256": null
+    },
+    "02_BACKEND/semantic_runtime/task_policy.py": {
+      "working_sha256": "4672b5cc2455dade7f26a11b4faed70769aac6b92e2d2d91c57b176b1f44135c",
+      "release_sha256": null
+    },
+    "02_BACKEND/lawrag/pipeline/term_generation.py": {
+      "working_sha256": "bc8ae4160467f68bce4bc03f03cc1760199ce78f6db4c204a9b4b6a38393a29f",
+      "release_sha256": null
+    },
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": {
+      "working_sha256": "0d2b1b4fae14f2004c3219d0e35be7f8376c3c8625bcdfe56b0a9a5aec661a21",
+      "release_sha256": null
+    }
+  },
+  "tables": {
+    "document": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "document_id",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "source_artifact_sha256",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "json",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "count": 159
+    },
+    "source_unit": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "document_id",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 1,
+          "name": "unit_id",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "parent_id",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "json",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "count": 230417
+    },
+    "source_block": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "document_id",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 1,
+          "name": "block_id",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "unit_id",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "text",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "source_artifact_sha256",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "json",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "count": 308795
+    }
+  },
+  "source_metadata": {
+    "unit_families": {
+      "kr_장": 883,
+      "kr_article": 29267,
+      "circled": 122741,
+      "dot_number:1": 55735,
+      "hangul_dot": 15741,
+      "kr_절": 525,
+      "buchik": 145,
+      "annex": 44,
+      "kr_편": 193,
+      "roman_upper": 123,
+      "paren_number:right": 195,
+      "paren_number:both": 1160,
+      "kr_관": 94,
+      "hangul_jamo": 2109,
+      "bullet_·": 56,
+      "roman_lower": 16,
+      "bullet_▶": 1382,
+      "bullet_■": 2,
+      "annex_별표": 2,
+      "dot_number:2": 3,
+      "bullet_◆": 1
+    },
+    "unit_json_key_counts": {
+      "attachments": 230417,
+      "block": 230417,
+      "extent": 230417,
+      "family": 230417,
+      "id": 230417,
+      "level": 230417,
+      "n_children": 230417,
+      "ordinal": 230417,
+      "page": 230417,
+      "parent": 230417,
+      "reason": 230417,
+      "span": 230417,
+      "surface": 230417,
+      "title": 230417,
+      "title_reason": 230417,
+      "coordinate_key": 93861,
+      "coordinate_path": 93861,
+      "coordinate_scope": 93861,
+      "legal_coordinate": 84640,
+      "coordinate_component": 5417
+    },
+    "leaf_unit_count": 195210,
+    "invalid_block_span_shape": 0,
+    "unassigned_blocks": 56,
+    "block_text_max_chars": 23506,
+    "blocks_over_2400_chars": 43,
+    "blocks_over_18000_chars": 2,
+    "total_block_chars": 18508408
+  },
+  "navigation_manifest": {
+    "schema_version": "term-navigation-index-v3",
+    "source_store_sha256": "422cfa15b9dba609f3c6105e3d5d3c7dbdb27e90a09469d57ca6bc602b4d9c72",
+    "source_manifest_sha256": "5d930797ca5e5e82a776d8f26d0020697883dcb6ec13267e224d21694d4b92db",
+    "counts": {
+      "term": 253324,
+      "edge": 48101,
+      "source": 33443,
+      "occurrence": 5539572,
+      "definition": 8533,
+      "reference": 105122
+    },
+    "document_count": 159
+  },
+  "navigation_tables": [
+    "definition",
+    "edge",
+    "link_catalogue",
+    "link_occurrence",
+    "occurrence",
+    "occurrence_evidence",
+    "occurrence_origin",
+    "reference",
+    "reference_end",
+    "source",
+    "source_literal",
+    "term",
+    "term_stats",
+    "term_surface"
+  ],
+  "source_card_keys": [
+    "article_coordinate",
+    "block_id",
+    "blocks",
+    "document_id",
+    "document_name",
+    "heading",
+    "id",
+    "source_artifact_sha256",
+    "text",
+    "text_sha256",
+    "unit_id"
+  ],
+  "navigation_text_metadata": {
+    "count": 33443,
+    "max_chars": 271330,
+    "sources_over_2400_chars": 1364,
+    "sources_over_18000_chars": 63
+  },
+  "model_quality_and_latency": "NOT_MEASURED",
+  "structural_inspection": {
+    "parented_units": 226350,
+    "child_spans_not_contained_in_parent_span": 0,
+    "missing_parent_unit": 0,
+    "units_with_attachments": 1370,
+    "units_with_extent": 13286,
+    "title_reasons": {
+      "원천 태그": 217131,
+      "꼬리 전부 (짧고 종결부호 없음)": 3315,
+      "이름 없음 (꼬리가 곧 이 마디의 본문)": 8054,
+      "이름 없음 (꼬리가 본문)": 1511,
+      "같은 블록의 다음 마커('1.') 앞까지": 1,
+      "마커 직후 괄호": 387,
+      "같은 블록의 다음 마커('가.') 앞까지": 5,
+      "마커만 있는 줄 — 다음 블록을 이름으로": 3,
+      "같은 블록의 다음 마커('(1)') 앞까지": 2,
+      "같은 블록의 다음 마커('①') 앞까지": 6,
+      "같은 블록의 다음 마커('1)') 앞까지": 2
+    },
+    "block_kinds": {
+      "text": 306038,
+      "table": 2757
+    },
+    "block_json_keys": {
+      "idx": 308795,
+      "kind": 308795,
+      "level": 308795,
+      "markers": 308795,
+      "node": 308795,
+      "opens": 308795,
+      "page": 308795,
+      "rect": 308795,
+      "text": 308795,
+      "table": 2757
+    },
+    "table_json_keys": {
+      "header_source": 2757,
+      "n_cols": 2757,
+      "n_rows": 2757,
+      "rows": 2757
+    },
+    "marker_keys": {
+      "activated": 18496,
+      "family": 18496,
+      "id": 18496,
+      "level": 18496,
+      "llm": 18496,
+      "note": 18496,
+      "s": 18496,
+      "surface": 18496,
+      "survives": 18496
+    },
+    "document_json_keys": {
+      "applied": 159,
+      "blocks": 159,
+      "coordinate_schema_version": 159,
+      "doc": 159,
+      "fingerprint": 159,
+      "fitness": 159,
+      "ladder": 159,
+      "llm": 159,
+      "nodes": 159,
+      "pages": 159,
+      "parser_warnings": 159,
+      "residual": 159,
+      "residual_ids": 159,
+      "stats": 159,
+      "warnings": 159,
+      "parser": 16,
+      "source_kind": 16
+    },
+    "note": "Shape and containment inspection only; not verification of semantic boundaries or parser accuracy."
+  },
+  "sqlite_capabilities": {
+    "sqlite_version": "3.46.1",
+    "fts5_compiled": true,
+    "note": "Local Python SQLite only; GENOS build and tokenizer behavior not verified."
+  }
+}

@@ -8,6 +8,7 @@ from semantic_runtime.contracts import Contracts,sha
 from semantic_runtime.storage import Store,publish
 from semantic_runtime.term_index import TermIndex
 from semantic_runtime.pipeline import Pipeline
+from semantic_runtime.term_agent import TermAgent
 from semantic_runtime.provider import Haiku
 from lawrag.pipeline import glossary_assembly as assembly,glossary_v1 as v1
 from lawrag.pipeline.term_generation import build_generation
@@ -58,6 +59,8 @@ def test_complete_source_term_build_resume_and_scoped_rag(inputs,tmp_path,monkey
     assert build_generation(source,glossary,output)==result
     with closing(Store(output/'generation')) as store:
         p=Pipeline(ROOT,store,Haiku(ROOT,tmp_path/'provider',False,backend='fixture',trust_zone='internal'))
+        # Explicit old source-only adapter contract; current navigation is tested with a serving bundle.
+        p.term_agent=TermAgent(p, {})
         result=p.run('영업일은 무엇인가요?',['mock-a'],False)
         assert result['assembly']['context']
         assert all(s['document_id']=='mock-a' for s in result['assembly']['context'])
@@ -117,6 +120,7 @@ def test_raw_xml_through_current_data_stages_to_rag(inputs,tmp_path,monkeypatch)
     generated=next((tmp_path/'data/TERM/fixture').glob('*/generation'))
     with closing(Store(generated)) as store:
         p=Pipeline(ROOT,store,Haiku(ROOT,tmp_path/'provider',False,backend='fixture',trust_zone='internal'))
+        p.term_agent=TermAgent(p, {})
         run=p.run('영업일의 정의',use_llm=False)
         assert run['assembly']['context']
         assert '토요일' in run['answer']['text']

@@ -1,0 +1,24 @@
+from runtime import *
+def write(p,v):p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+def main():
+ v=read(A/'verification.json');assert v['passed'];m=read(D/'실험/manifest.json');m['runs'][0].update(status='complete',sha256=sha(A/'verification.json'));m['results'].update(status='complete',by_arm={'baseline':{'execution':'Completed ADR0450/typed rev001 code reference, not replayed'},'mapped':v},comparisons=[],usage={'live_model_calls':0,'external_transmission':False},latency={'not_measured':'ordinary contracts, no quality/performance comparison'},error_taxonomy=[]);write(D/'실험/manifest.json',m)
+ sections=[
+ ('결정 요약','첫 navigation LLM 호출에 질문 의도·범위·표현 매핑을 연결하고, 기존 학습 ledger에 사용자 입력·LLM 제안·승인·철회·재사용을 연결했다. 후보 rev001 구현 완료, 동결 계약21통과, 실제 공개 문서 메타데이터 CLI 연결 확인. 활성 MAIN·GENOS 배포 없음. [사용 안내](GUIDE.md).'),
+ ('문제와 변경 전 구조','부모0450은 저장 이름과 고정 alias를 문자 매칭했다. 내문 같은 미등록 표현은 인지되지 않고 목록 문형에 의해 전체 문서가 반환될 수 있었다. 기존 expression 학습은 term_id만 지원해 폴더/문서 대상과 동작을 구분하지 못했다.'),
+ ('가설과 사전 판정 기준','기존 provider의 첫 탐색 행동에서 실제 타입 후보와 질문 전체를 해석하면 전체 용어를 수동 등록할 필요가 없다. 코드는 핸들·범위·출처를 검증한다. 해석 실패 시 전역 확장 금지, 사용자 등록과 모델 후보 구분, 기존 계약 공존을 기준으로 고정했다. [사전 설계](artifacts/design-before-snapshot.json). 이는 모델 성능 가설을 검증한 결과가 아니다.'),
+ ('실험 설계','완료 ADR0450/typed rev001을 부모로 snapshot/register/freeze했다. 일반 구현·연결 감사이며 모델 비교·답변 평가·baseline 재실행 없음. 모의 provider와 실제 GENOS provider의 모의 request_json만 사용했다. 외부 모델0회, 실제 GENOS 접근0회.'),
+ ('데이터·모델·재현성','부모의 모의 문서·용어 계약을 사용한다. 실제 연결 확인은 현재 선택 세대의 공개 ESG 문서 ID 65731d03bd65c441 한 개를 명시한 allowlist와 검증 origin projection을 사용했다. API키·내부 질의·내부 원문 외부 전송 없음. [입력 해시](artifacts/input-lock.json).'),
+ ('결과','21개 계약 통과. 첫 해석→실제 범위 목록→Result, 사용자 등록→재접속 재사용, LLM 제안→승인→철회, 잘못된 핸들/질문 span/범위/세대/다른 사용자, 기존 v1 expression publisher 공존, 제목 검색, 복수 용어 진입점, 호출 예산, 팩토리·CLI, GENOS mock transport를 검사했다. 실제 selected generation에 CLI 대상조회/등록/목록/철회도 통과했다. [결과](artifacts/verification.json), [계약 출력](artifacts/tests.json), [실제 CLI 기록](artifacts/operator-smoke.json).'),
+ ('사례별 오류 분석','내문 해석은 actual internal 후보에 결속된다. 모르는 약어에서 scope=current/all로 목록 조회하면 차단한다. 빈 분류 루트는 0건이며 전체로 확장하지 않는다. 승인한 내문→internal을 외부로 바꾸려면 충돌 해소가 필요하다. 미확정 매핑은 현재 질문 해석에 사용할 수 있지만 다음 질문의 승인 매핑으로 자동 간주하지 않는다. 개발 중 팩토리 검사에서 origin projection을 생략하면 저장 분류로 되돌아가는 것을 확인했고, 검사는 명시적 projection을 전달하도록 수정했다.'),
+ ('비용·지연·회수 규모','live 모델0회. metadata lookup과 내용 탐색은 기본14호출/300초의 공유 예산을 사용하며 caller limits를 따른다. 첫 해석 이후 내용 탐색의 후속 호출은 필요할 수 있다. 기존 대비 호출·지연 감소나 정답률 개선을 주장하지 않는다.'),
+ ('해석','LLM은 질문 전체, 실제 typed 후보, 승인 mapping을 보고 의도와 범위를 선택한다. 필요한 후보가 없으면 metadata name 조회를 수행한다. 폴더 목록은 원문 근거가 아니고 문서명 검색은 body 검색으로 전환하지 않는다. 여러 용어/구조 매핑은 원래 질문 span을 가진 복수 seed로 합친다. source hash·generation·scope·owner를 붙인 alias는 정본 법률 정의를 바꾸지 않는다.'),
+ ('한계와 일반화 가능 범위','live LLM의 약어 추론 정확도와 실제 GENOS 내부 데이터 성능은 미검증이다. 매핑은 사용자별·세대별이며 조직 공용 자동 승인 기능은 아니다. 여러 요청을 섞지 않도록 대화 객체를 사용자별 생성해야 한다. CLI/Python API는 연결했으나 채팅 UI 승인 버튼·HTTP 라우트·활성 서빙 registry 자동 적용은 하지 않았다. 후보가 부족하거나 의미가 모호하면 사용자에게 선택을 요청한다.'),
+ ('운영 결정·롤백 조건','명시적 runtime.create_conversation이 pipeline.term_agent를 MappedAgent로 연결한다. existing provider→INTERPRET_QUERY/LOOKUP_ENTITIES→metadata 또는 TypedSession→기존 select/assemble/answer로 이어진다. mapping CLI는 기존 glossary_learning parser의 후보 확장이다. 동일 SQLite 파일 내 namespaced tables로 구 expression/recipe 호환성을 보존한다. 부모0450 팩토리로 원복하거나 승인 매핑을 REVOKED하면 롤백한다. 원문 DB/활성 MAIN 변경 없음.'),
+ ('재현 명령','`PYTHONPATH=02_BACKEND ADR451_TEST_FROZEN=1 .venv/bin/python -B -m pytest -q -p no:cacheprovider 06_TOOLS/EXPERIMENTS/adr_0451/test_mapping.py`. verify.py는 완료 결과 덮어쓰기를 거부한다. [명령·입출력·GENOS 설정](GUIDE.md), [최종 검증](VALIDATION.md).')]
+ front=(D/'README.md').read_text().split('---',2)[1];(D/'README.md').write_text('---'+front+'---\n\n# 질문 해석과 사용자·모델 표현 매핑\n'+''.join(f'\n## {i}. {title}\n\n{body}\n' for i,(title,body) in enumerate(sections,1)))
+ (D/'실험/README.md').write_text('# 표현 매핑 구현·연결 감사\n\n일반 계약21개와 실제 선택 세대의 공개 metadata CLI 연결 확인. live LLM 품질 평가 없음.\n\n- [결과](../artifacts/verification.json)\n- [계약](../artifacts/tests.json)\n- [CLI 연결](../artifacts/operator-smoke.json)\n- [계보](manifest.json)\n')
+ index=R/'04_EXPERIMENTS/ADR/README.md';s=index.read_text();line='- [ADR-0451 첫 질문 해석·표현 매핑](ADR-0451-llm-expression-mapping/GUIDE.md) — 기존 provider의 첫 탐색 호출, 사용자 직접 등록·LLM 제안·검토·재사용. 계약21통과, GENOS 통신 모의·live 모델0·MAIN미반영.\n\n'
+ if 'ADR-0451 첫 질문' not in s:index.write_text(s.replace('# ADR workspace\n\n','# ADR workspace\n\n'+line,1))
+ paths=[p for folder in [A,T,C] for p in folder.rglob('*') if p.is_file() and '__pycache__' not in p.parts and p!=A/'manifest.json']
+ write(A/'manifest.json',{'schema_version':'adr-artifacts-v1','adr_id':'ADR-0451','files':[{'path':str(p.relative_to(R)),'sha256':sha(p),'bytes':p.stat().st_size,'description':'Frozen mapped candidate, ordinary contracts, isolated operator ledger and read-only verification'} for p in sorted(paths)]});print('mapped navigation audit recorded')
+if __name__=='__main__':main()

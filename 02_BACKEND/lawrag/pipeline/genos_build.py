@@ -27,25 +27,21 @@ from semantic_runtime.genos_backend import Genos, safe
 EXTENSIONS = {'.xml', '.html', '.htm', '.pdf', '.hwp', '.hwpx', '.docx', '.doc'}
 
 
-def document_metadata(row):
-    """Physical folders are context, never inferred legal facts or source text."""
-    folders = list(Path(row['relative']).parent.parts)
-    title = row['name']
-    display = folders if folders and folders[-1] == title else [*folders, title]
-    return {'document_title': title, 'folder_names': folders,
-            'folder_path': ' > '.join(folders), 'display_name': ' > '.join(display),
-            'relative_path': row['relative'], 'source_category': row['source']}
+from .document_representations import (metadata as document_metadata, select as select_representations,
+                                      PRIORITY as REPRESENTATION_PRIORITY, POLICY as REPRESENTATION_POLICY)
 
 
 def route_summary(row):
     """Describe only the explicitly selected route; never infer a document tag."""
     if row.get('source_parser'):
         return '외규 전용 파서: ' + str(row['source_parser'])
+    suffix = Path(row.get('path') or row['relative']).suffix.lower()
+    if suffix == '.pdf' and os.environ.get('GENOS_PDF_PARSER', 'preprocessor').strip() == 'preprocessor':
+        return 'GENOS 전처리기 Docling JSON → ' + ('등록 형식: ' + row['doc_type'] if row.get('doc_type') else '원문 구조화·용어 적재')
     if row.get('doc_type'):
         from lawrag.core import router
         selected = router.load().get(row['doc_type'])
         return f'등록 형식: {row["doc_type"]} / 파서: {selected.parser}'
-    suffix = Path(row.get('path') or row['relative']).suffix.lower()
     if suffix == '.xml':
         return 'XML 원문 태그 구조화'
     if suffix in {'.html', '.htm'}:
@@ -79,28 +75,6 @@ def isolated(root):
             os.environ['STRUCTURE_LEDGER'] = previous
 
 
-# Priority selects representations of ONE document; it does not prescribe its tree.
-REPRESENTATION_PRIORITY = {'.xml':0,'.pdf':1,'.html':2,'.htm':2,'.docx':3,'.hwpx':4,'.hwp':5,'.doc':6}
-
-def select_representations(rows):
-    groups={};excluded=[]
-    for row in rows:
-        path=Path(row['path'])
-        key=(row['source'],row.get('external_source'),row.get('raw_role','body'),
-             row.get('representation_group') or str(path.parent/path.stem))
-        groups.setdefault(key,[]).append(row)
-    selected=[]
-    for alternatives in groups.values():
-        # Distinct paths of the same format are not assumed equivalent.
-        best=min(REPRESENTATION_PRIORITY.get(Path(r['path']).suffix.lower(),99) for r in alternatives)
-        winners=[r for r in alternatives if REPRESENTATION_PRIORITY.get(Path(r['path']).suffix.lower(),99)==best]
-        selected.extend(winners)
-        for row in alternatives:
-            if row not in winners:
-                excluded.append({'source':row.get('external_source',row['source']),'path':row['path'],
-                                 'selected_paths':[w['path'] for w in winners],
-                                 'reason':'alternate_body_representation','policy':'xml-pdf-html-office-v1'})
-    return sorted(selected,key=lambda r:r['path']),excluded
 
 
 def inventory(input_root, source, bindings=None, *, selected=None, allow_duplicates=False):
@@ -198,16 +172,38 @@ def registered_ingest(raw, filename, row, build):
     # route() still enforces registered assets and parser/type validity.
     routed = router.route(copied, row['doc_type'])
     result, blocks = from_format.result_from_document(routed.parsed, routed.doc, routed.fitness, doc_type=row['doc_type'])
+    review = None
+    parser_evidence = None
+    if routed.parsed.stats.get('requires_structure_vlm'):
+        from lawrag.core.structure import pipeline, recipe_runtime
+        from lawrag.core.structure.model import Block
+        if copied.suffix.lower() != '.pdf' or not recipe_runtime.enabled():
+            raise recipe_runtime.NeedsReview('Chunk input requires original PDF and STRUCTURE_RECIPE_VLM=on')
+        parser_evidence = {key:routed.parsed.stats[key] for key in
+                           ('source_format','chunk_assembly','spatial_fidelity','table_fidelity')}
+        blocks = Block.from_elements(routed.parsed.elements)
+        result, review = recipe_runtime.revise_pdf(pipeline, blocks, copied,
+            store=build/'structure', document=row['document_id'], source_evidence=parser_evidence)
     data = viewer.payload(result, blocks, pdf_path=copied if copied.suffix.lower() == '.pdf' else None,
                           elements=routed.parsed.elements, images=routed.parsed.images)
     data.update(doc=row['name'], bound_doc_type=row['doc_type'], format_version=routed.fmt.format_version,
                 parser=routed.parsed.parser, parser_warnings=routed.parsed.warnings)
+    if routed.parsed.stats.get('preprocessor'):
+        data.update(preprocessor=routed.parsed.stats['preprocessor'],
+                    parser_identity=routed.parsed.stats['parser_identity'])
+    if review:
+        data.update(recipe_review=review, parser_evidence=parser_evidence,
+                    bound_format_scope='reference only; chunk input rebuilt by reviewed recipe')
     folder = build / 'structure' / row['document_id']
     meta = {'doc_id': row['document_id'], 'name': row['name'], 'folder': row['folder'],
             'kind': row.get('kind') or ('internal' if row['source'] == 'internal' else 'law'),
             'passed': routed.fitness.passed, 'score': routed.fitness.score,
             'source_kind': copied.suffix.lower().lstrip('.'),
             'structured_by': f'format:{row["doc_type"]}@v{routed.fmt.format_version}', 'used_llm': False}
+    if review:
+        meta.update(recipe_review=review, used_llm=bool(review['model_calls']),
+                    structured_by='recipe-vlm:'+review['tag'], passed=result.fitness_passed,
+                    score=result.fitness_score)
     atomic(folder / 'result.json', data)
     atomic(folder / 'meta.json', meta)
     return {'doc_id': row['document_id'], 'meta': meta}
@@ -223,12 +219,14 @@ def ingest_files(plan, build, emit):
             import traceback
             error = safe({'document_id': row['document_id'], 'path': row['path'],
                           'error': str(exc), 'type': type(exc).__name__, 'traceback': traceback.format_exc()})
+            if getattr(exc, 'diagnostic', None):
+                error['diagnostic'] = safe(exc.diagnostic)
             errors.append(error)
             emit('[STRUCTURE ERROR] ' + json.dumps(error, ensure_ascii=False))
     atomic(build / 'structure-errors.json', errors)
     if errors:
         reasons = ' / '.join(e['error'] for e in errors[:3])
-        raise ValueError(f'{len(errors)} document(s) failed structure; LLM 호출 전 구조화 실패: {reasons}. 상세: structure-errors.json')
+        raise ValueError(f'{reasons}; {len(errors)} document(s) failed structure; 오류 요약: {build / "structure-errors.json"}')
 
 
 def _ingest_files(plan, build, emit):
@@ -258,34 +256,59 @@ def _ingest_files(plan, build, emit):
             response = ingest_case(raw, filename, row, build)
         elif row.get('external_source') in {'krx', 'kofia'} and original.suffix.lower() in {'.html', '.htm'}:
             from lawrag.core import rawstore
-            from lawrag.core.ingest import ingest_rulehtml_bytes
+            from lawrag.core.ingest import ingest_rulehtml_bytes, manifest_item_for
             rawstore.ensure(raw, filename, name=row['name'], folder=row['folder'], kind=row['kind'],
                             via='genos-all-corpus', corpus=build / 'corpus')
+            # 별표·서식은 조문 HTML 에 없다. 수집 manifest 가 가리키는 첨부의 변환
+            # 사이드카를 같은 문서에 실어야 조문이 부르는 별표가 원문으로 남는다.
+            item, manifest = manifest_item_for(original, raw)
             response = ingest_rulehtml_bytes(raw, row['name'], build / 'structure', row['folder'],
-                                            extra_meta={'kind': row['kind']}, site=row['external_source'])
+                                            extra_meta={'kind': row['kind']}, site=row['external_source'],
+                                            manifest_item=item, manifest=manifest)
+            emit(f'  별표·서식 {response.get("annex_md", 0)}/{response.get("annex_have", 0)}건 적재')
         else:
+            from lawrag.core.ingest import manifest_item_for
+            item, manifest = manifest_item_for(original, raw)
             response = registered_ingest(raw, filename, row, build) if row['doc_type'] else ingest(
                           raw, filename, store=build / 'structure', name=row['name'], folder=row['folder'],
                           use_llm=False, engine=row['engine'],
                           hints=PROFILE if row['source'] == 'internal' else None,
                           binding_of=lambda _id, _folder, tag=row['doc_type']: tag,
                           extra_meta={'kind': row.get('kind') or ('internal' if row['source'] == 'internal' else 'law')},
-                          manifest_item={}, raw_via='genos-build')
+                          manifest_item=item or {}, manifest=manifest, raw_via='genos-build')
         if response['doc_id'] != ident:
             raise ValueError(f'문서 ID 불일치: 예상 {ident}, 결과 {response["doc_id"]}')
         context = document_metadata(row)
-        for key in ('external_source', 'kind', 'raw_role', 'aliases', 'source_metadata', 'conversion', 'input_collection'):
+        for key in ('external_source', 'kind', 'raw_role', 'aliases', 'source_metadata', 'conversion', 'input_collection',
+                    'representations', 'pdf_references', 'representation_policy', 'pairing_basis',
+                    'pairing_content_verified'):
             if key in row:
                 context[key] = row[key]
         data = json.loads(result.read_text())
         metadata = json.loads(meta.read_text())
-        from .genos_admission import validate_structure
+        from .genos_admission import validate_structure, preserve_unowned_source
+        data = preserve_unowned_source(data)
         admission = validate_structure(ident, metadata, data)
         metadata['structure_admission'] = admission
+        for warning in admission['warnings']:
+            emit('[STRUCTURE WARNING] '+warning)
         if not metadata.get('passed', False):
             emit('[STRUCTURE WARNING] 구조 점수는 참고용입니다. 점수로 제외하지 않음: '
                  + str(metadata.get('score')))
         # Stored alongside the structure, not spliced into evidence blocks/offsets.
+        # Companion PDFs are reference artifacts, never substituted for native
+        # parsing coordinates. Their hashes are bound in the structure receipt.
+        references = []
+        for rep in row.get('pdf_references', []):
+            src = Path(rep['path'])
+            if sha(src) != rep['sha256']: raise ValueError('reference PDF changed')
+            dest = result.parent / 'reference-pdfs' / (rep['sha256'] + '.pdf')
+            dest.parent.mkdir(exist_ok=True)
+            if not dest.exists(): shutil.copyfile(src, dest)
+            if sha(dest) != rep['sha256']: raise ValueError('reference PDF copy mismatch')
+            references.append({**rep, 'stored_path': str(dest.relative_to(result.parent)),
+                               'coordinate_alignment': 'unverified', 'purpose': 'visual_reference'})
+        context['pdf_references'] = references
         data.update(document_metadata=context, doc=context['display_name'])
         metadata.update(document_metadata=context, name=context['display_name'])
         atomic(result, data)

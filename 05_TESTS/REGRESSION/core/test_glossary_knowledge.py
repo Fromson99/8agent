@@ -7,8 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 from lawrag.pipeline import glossary_knowledge as k, glossary_v1 as v1
-from .test_ingest_glossary_linking import glossary
-from .test_genos_build import setup, Fake
+from .test_ingest_glossary_linking import glossary, setup
 from lawrag.pipeline import genos_build
 
 
@@ -64,21 +63,15 @@ def test_complete_source_preservation_and_relocated_lookup(knowledge,tmp_path):
     with pytest.raises(ValueError,match='hash mismatch'):k.binding(moved)
 
 
-@pytest.mark.parametrize('mode',['single','staged'])
-def test_source_graph_and_translation_reach_actual_authoring(setup,glossary,knowledge,monkeypatch,mode):
+def test_source_graph_and_translation_reach_actual_links(setup,glossary,knowledge,monkeypatch):
+    from .test_ingest_glossary_linking import invoke
+    from lawrag.pipeline import glossary_linking
     monkeypatch.setattr(k,'selected_for',lambda directory:knowledge)
-    from .test_genos_staged import StagedFake
-    args,raw,out=setup;args.glossary_dir=glossary;args.extraction_mode=mode
-    provider=StagedFake if mode=='staged' else Fake
-    assert genos_build.execute(args,provider_factory=provider,emit=lambda *a:None)['ok']
-    received=[match['definitions']['knowledge'] for call in Fake.instances[-1].calls
-              for match in call.get('source',{}).get('dictionary_lookup',{}).get('matches',[])
-              if 'knowledge' in match['definitions']]
-    assert received
-    assert any({n['source'] for n in r['concepts']}=={'fibo','wikidata','nlsh'} for r in received)
-    assert any(r['official_relations'] and r['legal_relations'] for r in received)
-    with sqlite3.connect(out/'glossary-linked/links.sqlite') as db:
+    args,raw,out=setup;args.glossary_dir=glossary;data=out.parent/'data'
+    assert invoke(args,raw,data,'structure')['ok']
+    src=next((data/'STRUCTURE').glob('*/source.sqlite'))
+    linked,report=glossary_linking.project(src,glossary,out/'links')
+    assert report['llm_calls']==0 and report['knowledge_matches']>0
+    with sqlite3.connect(linked.parent/'links.sqlite') as db:
         assert db.execute('SELECT count(DISTINCT source) FROM knowledge_catalogue_link').fetchone()[0]==3
-    args.resume=True
-    genos_build.execute(args,provider_factory=provider,emit=lambda *a:None)
-    assert not Fake.instances[-1].calls
+    assert glossary_linking.project(src,glossary,out/'links')[1]==report

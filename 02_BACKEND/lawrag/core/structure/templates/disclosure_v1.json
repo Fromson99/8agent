@@ -1,0 +1,19 @@
+{
+  "tag": "basic-engine-template-v1",
+  "version": 1,
+  "levels": [],
+  "parent_map": {},
+  "heading_rules": {},
+  "hints": {
+    "partial_order": [
+      ["kr_부", "kr_장"],
+      ["kr_장", "kr_절"],
+      ["kr_절", "kr_article"],
+      ["kr_article", "circled"],
+      ["kr_article", "writing_guidance"],
+      ["circled", "writing_guidance"],
+      ["writing_guidance", "roman_lower"],
+      ["roman_lower", "hangul_jamo"]
+    ]
+  }
+}

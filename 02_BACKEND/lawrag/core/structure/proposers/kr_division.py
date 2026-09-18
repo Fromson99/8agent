@@ -18,9 +18,9 @@ ID = "kr_division"
 ROLE = "proposer"
 LANG = "ko"
 FAMILY = "kr_division"
-SURFACE = "제N편 / 제N장 / 제N절 / 제N관"
+SURFACE = "제N부 / 제N편 / 제N장 / 제N절 / 제N관"
 
-_UNITS = "편장절관"
+_UNITS = "부편장절관"
 _FULL = re.compile(rf"제(\d{{1,3}})([{_UNITS}])")
 _FRAGMENT = re.compile(rf"제\s+(\d{{1,3}})\s*([{_UNITS}])|(?<![제\d])(\d{{1,3}})\s*([{_UNITS}])(?=\s)")
 

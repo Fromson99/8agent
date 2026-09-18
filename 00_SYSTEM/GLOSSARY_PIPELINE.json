@@ -12,7 +12,7 @@
     "namespace": "MOLEG knowledge_terms, not corpus-presence LEGAL_TERM classification",
     "relation_policy": "preserve original five source codes; normalized hierarchy parent to child; preserve raw paths; hold incompatible kinds and cycles",
     "output": "explicit new directory: relations.sqlite, graph.json, TSV ledgers, report.json, REPORT.md",
-    "consumer": "legal-relations inspect/verify and human graph review; no automatic downstream selection",
+    "consumer": "inspect/verify; explicit selected knowledge bundle -> navigation source hints; no canonical approval",
     "coverage": "all existing edges in selected draft; no implicit remote collection",
     "canonical_approval": false,
     "runtime_promotion": false,
@@ -122,7 +122,7 @@
       "report.json"
     ],
     "schema_version": "glossary-assembly-v2",
-    "consumer": "glossary review prepare; glossary assemble --inspect; build-data-stages structure/llm via glossary_linking; subsequent versioned draft",
+    "consumer": "glossary review; glossary_linking; document-release new-definition draft",
     "live_collection_policy": "short SQLite read transaction; immutable selected response snapshot",
     "rebuild_policy": "same explicit inputs with a new output directory; earlier draft preserved",
     "semantic_approval": false,
@@ -183,7 +183,7 @@
     "genos_live_verified": false,
     "removed": "GAP_PROPOSAL and background-word candidates from dictionary descriptions",
     "transport_contract": "API-compatible structural schema; complete length/cardinality/citation validation stays local",
-    "contract_registry": "00_SYSTEM/LEGAL_SCHEMA.json#authoring_contracts.GLOSSARY_REVIEW",
+    "contract_registry": "00_SYSTEM/GLOSSARY_SCHEMA.json",
     "identity_decisions": [
       "SAME",
       "DIFFERENT",
@@ -204,11 +204,11 @@
     "default_workflow": "06_TOOLS/pipeline.py glossary review complete",
     "current_review_state": {
       "root_id": "data",
-      "path": "LEXICON/glossary-v1/reviews/boundary-20260914-v3-sense-review-v3"
+      "path": "LEXICON/glossary-v1/reviews/boundary-20260914-v3-structure-first-20260916"
     },
     "default_output": {
       "root_id": "data",
-      "path": "LEXICON/glossary-v1/boundary-20260914-v3-reviewed-v3"
+      "path": "LEXICON/glossary-v1/boundary-20260914-v3-reviewed-structure-first-20260916"
     },
     "historical_v2": {
       "current_review_state": {
@@ -242,25 +242,24 @@
       "versioned glossary-assembly-v2 dictionary.sqlite"
     ],
     "steps": [
-      "longest literal surface match with source offsets",
+      "match registered surfaces preserving source offsets",
       "extract current-document definition hints",
-      "preserve source-specific definition candidates",
-      "enrich existing semantic authoring dictionary_lookup"
+      "preserve source-specific catalogue IDs",
+      "compile complete verified links into navigation-v3"
     ],
     "outputs": [
-      "LEXICON/LINKS/<source-and-glossary-fingerprint>/links.sqlite",
-      "LEXICON/LINKS/<source-and-glossary-fingerprint>/authoring-source.sqlite",
-      "LEXICON/LINKS/<source-and-glossary-fingerprint>/report.json"
+      "TERM/<run>/<document>/links/links.sqlite",
+      "TERM/<run>/<document>/generation"
     ],
-    "consumer": "genos_build projects the same linked input in LLM/<run>/<document>/glossary-linked and passes it into the maintained authoring queue",
+    "consumer": "term_generation -> navigation-v3; document-release integrates explicit sources",
     "cache_policy": "structure immutable; glossary changes rebuild links; new run ID for semantic reauthoring",
     "candidate_policy": "same spelling does not approve meaning; reviewed draft retains assertions/conflicts; source-definition hints remain unapproved and bounded; lexical relationship proposals are not automatically applied as synonyms",
     "llm_calls": 0,
     "canonical_approval": false,
-    "rag_integration": false,
+    "rag_integration": true,
     "genos_deployed": false,
-    "composed_build_all": "build-all calls glossary review complete first, then build-data-stages --stage all with the verified reviewed output; pending review stops downstream authoring",
-    "legacy_build_all": "build-all-legacy or genos_pipeline.sh keeps the old knowledge ZIP route and does not consume the v3 review"
+    "composed_build_all": "complete structure; merge explicit sources; review existing pending candidates and new definitions together; compile integrated navigation-v3 and serving assets; no implicit activation",
+    "legacy_build_all": "retired"
   },
   "catalogue_model": {
     "order": [
@@ -291,9 +290,35 @@
     "manifest_sha256": "b36ebd9c0f427e2e4eb1bc38c60f515befd9fa83fef0982081d1af07d81fddaf",
     "entrypoint": "06_TOOLS/pipeline.py glossary knowledge check|lookup|inspect",
     "module": "lawrag.pipeline.glossary_knowledge",
-    "consumer": "build-all preflight -> glossary_linking.project -> authoring_job dictionary_lookup -> existing semantic authoring",
+    "consumer": "glossary_linking -> complete LinkProjector -> navigation-v3; integrated serving glossary resources",
     "scope": "all collected source ledgers, translations, mappings and relationship decisions; DRAFT observations only",
     "canonical_approval": false,
     "runtime_promoted": false
+  },
+  "document_update": {
+    "entrypoint": "06_TOOLS/pipeline.py document-release prepare|build|verify|verify-glossary|activate|rollback",
+    "module": "lawrag.pipeline.document_release",
+    "inputs": [
+      "completed structure selection receipt",
+      "explicit base generations",
+      "hash-bound glossary"
+    ],
+    "steps": [
+      "merge-explicit-source-selection",
+      "append-new-document-definitions-preserving-existing-candidates",
+      "reuse-completed-identical-evidence",
+      "review-combined-pending-candidates-with-GENOS-contract",
+      "compile-full-link-navigation-v3",
+      "package-serving-glossary-and-cache",
+      "verify-immutable-release"
+    ],
+    "output": "TERM_RELEASES/<run>/release.json and serving/generation",
+    "consumer": "build-all -> document-release build; service.py via explicit GENOS generation/CURRENT",
+    "activation": "separate --confirm-main and expected CURRENT hash",
+    "canonical_approval": false,
+    "quality_certified": false,
+    "genos_live_verified": false,
+    "default_glossary": "current_draft; explicit completed --glossary-dir reuses previous observations",
+    "review_state": "TERM_RELEASES/<run>/review; separate from standalone glossary review state"
   }
 }

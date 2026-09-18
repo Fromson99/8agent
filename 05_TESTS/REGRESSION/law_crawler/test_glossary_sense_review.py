@@ -255,10 +255,9 @@ def test_schema_profile_registered_without_changing_serving_contract(modules):
     from semantic_runtime.contracts import Contracts
     from lawrag.platform.paths import repository_root
     root=repository_root();s,r=modules
-    registry=json.loads((root/'00_SYSTEM/LEGAL_SCHEMA.json').read_text())
+    registry=json.loads((root/'00_SYSTEM/GLOSSARY_SCHEMA.json').read_text())
     assert registry['authoring_contracts']['GLOSSARY_REVIEW']['sha256']==r.v1.sha(s.SCHEMA_PATH)
-    assert registry['normative_schema']['sha256']=='25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607'
-    assert Contracts(root).legal['sha256']==registry['normative_schema']['sha256']
+    assert set(Contracts(root).schemas)=={'urn:8-agent:term-runtime-v1'}
 
 
 def test_main_cli_dispatches_existing_review_workflow(modules,prepared,monkeypatch,capsys):

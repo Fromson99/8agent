@@ -505,7 +505,7 @@ def publish_source_only(*, data_root: str | Path | None = None) -> dict[str, Any
     from .term_generation import build_generation
     glossary=glossary_linking.configured(ROOT,root)
     bundle=generations / f"term-source-{receipt['source_store_sha256'][:20]}"
-    result=build_generation(source_store,glossary,bundle)
+    result=build_generation(source_store,glossary,bundle,serving=True,scope=scope)
     output=bundle/'generation'
     manifest=json.loads((output/'manifest.json').read_text())
     pointer = {

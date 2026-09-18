@@ -3,6 +3,7 @@ import copy
 from collections import defaultdict
 import jsonschema
 from .recipe_patch import ROOT, levels_from_parents
+from . import recipe_output
 
 POSITION = ['line_start', 'line_start_or_parent_title', 'source_style']
 SEQUENCE = ['unordered', 'increasing', 'consecutive']
@@ -125,14 +126,25 @@ def compose(data,catalog,call,check,save):
                     'properties':{f:rule_schema() for f in catalog},'required':list(catalog)}},'required':['families']}
     request=copy.deepcopy(data)
     for attempt in range(3):
-        proposed=call('chunk-template' if not attempt else f'chunk-template-repair-{attempt}',GUIDE,request,schema,True)
-        save(f'chunk-template-{attempt}.json',proposed)
+        phase='chunk-template' if not attempt else f'chunk-template-repair-{attempt}'
+        proposed=None
         try:
+            try:
+                proposed=call(phase,GUIDE,request,schema,True)
+            except Exception as exc:
+                if not recipe_output.output_limited(exc) or getattr(exc,'minimal_output',False):raise
+                proposed=recipe_output.family_batches(phase,GUIDE,request,schema,call,save)
+            save(f'chunk-template-{attempt}.json',proposed)
             jsonschema.validate(proposed,schema)
             recipe=compile_recipe(proposed['families'],catalog);check(recipe)
             save('compiled-chunk-template.json',recipe);return recipe
         except (ValueError,KeyError,TypeError,jsonschema.ValidationError) as exc:
-            request['invalid_template']=proposed;request['validation_feedback']=str(exc)
+            recipe_output.feedback(request,exc,proposed,phase=phase,attempt=attempt,attempts=3,
+                invalid_key='invalid_template',constraints={
+                    'required_families':list(catalog),'allowed_parent_families':[ROOT,*catalog],
+                    'parent_graph':'No cycles; maximum depth 16. Each family exactly once.',
+                    'heading_position':POSITION,'sequence':SEQUENCE,'reset_scope':RESET})
+            save(f'{phase}-feedback-input.json',request)
     raise ValueError('document_template_validation_exhausted: '+request['validation_feedback'])
 
 

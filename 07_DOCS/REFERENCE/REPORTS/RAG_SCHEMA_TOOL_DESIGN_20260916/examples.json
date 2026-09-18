@@ -1,0 +1,1430 @@
+{
+  "synthetic_only": true,
+  "purpose": "schema shape validation only; not model or runtime evaluation",
+  "cases": [
+    {
+      "id": "valid-CATALOG",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-CATALOG",
+        "tool": "CATALOG",
+        "args": {},
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-FIND_CONCEPT",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-FIND_CONCEPT",
+        "tool": "FIND_CONCEPT",
+        "args": {
+          "text": "모의 개념",
+          "document_refs": [
+            {
+              "kind": "document",
+              "id": "fixture:doc",
+              "revision": "v1"
+            }
+          ]
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-OPEN_TERM",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-OPEN_TERM",
+        "tool": "OPEN_TERM",
+        "args": {
+          "concept_ref": {
+            "kind": "concept",
+            "id": "fixture:concept",
+            "revision": "v1"
+          },
+          "view": "definitions"
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-GRAPH",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-GRAPH",
+        "tool": "GRAPH",
+        "args": {
+          "concept_ref": {
+            "kind": "concept",
+            "id": "fixture:concept",
+            "revision": "v1"
+          },
+          "direction": "BOTH"
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-LIST",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-LIST",
+        "tool": "LIST",
+        "args": {
+          "concept_refs": [
+            {
+              "kind": "concept",
+              "id": "fixture:concept",
+              "revision": "v1"
+            }
+          ],
+          "match": "any"
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-STRUCTURE",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-STRUCTURE",
+        "tool": "STRUCTURE",
+        "args": {
+          "target": {
+            "kind": "document",
+            "id": "fixture:doc",
+            "revision": "v1"
+          }
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-GREP",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-GREP",
+        "tool": "GREP",
+        "args": {
+          "literal": "모의 문구"
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-SEARCH",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-SEARCH",
+        "tool": "SEARCH",
+        "args": {
+          "query": "모의 질의",
+          "mode": "semantic"
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-READ",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-READ",
+        "tool": "READ",
+        "args": {
+          "target": {
+            "kind": "unit",
+            "id": "fixture:unit",
+            "revision": "v1"
+          },
+          "extent": "OWN"
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-REFERENCES",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-REFERENCES",
+        "tool": "REFERENCES",
+        "args": {
+          "unit_ref": {
+            "kind": "unit",
+            "id": "fixture:unit",
+            "revision": "v1"
+          }
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-SOURCE_CONCEPTS",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-SOURCE_CONCEPTS",
+        "tool": "SOURCE_CONCEPTS",
+        "args": {
+          "unit_ref": {
+            "kind": "unit",
+            "id": "fixture:unit",
+            "revision": "v1"
+          }
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-JUDGE",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-JUDGE",
+        "tool": "JUDGE",
+        "args": {
+          "receipt_id": "fixture:delivery",
+          "issue_id": "fixture:issue",
+          "decision": "ADOPT",
+          "quote": "모의 원문입니다.",
+          "claim": "합성 예시의 문장을 확인했다."
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-REFOCUS",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-REFOCUS",
+        "tool": "REFOCUS",
+        "args": {
+          "target_branch": "fixture:branch"
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-RELEASE",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-RELEASE",
+        "tool": "RELEASE",
+        "args": {
+          "packet_ids": [
+            "fixture:packet"
+          ]
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-HISTORY",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-HISTORY",
+        "tool": "HISTORY",
+        "args": {},
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "valid-FINISH",
+      "definition": "Action",
+      "expected_valid": true,
+      "value": {
+        "action_id": "fixture:action-FINISH",
+        "tool": "FINISH",
+        "args": {
+          "proposed_status": "COMPLETE"
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "catalog-result",
+      "definition": "Envelope",
+      "expected_valid": true,
+      "value": {
+        "result_id": "fixture:result",
+        "action_id": "fixture:action-CATALOG",
+        "status": "OK",
+        "binding": {
+          "generation_id": "fixture-v1",
+          "source_store_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "schema_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "acl_revision": "fixture-v1"
+        },
+        "refs": [
+          {
+            "kind": "document",
+            "id": "fixture:doc",
+            "revision": "v1"
+          }
+        ],
+        "payload": {
+          "documents": [
+            {
+              "ref": {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              },
+              "title": "모의 문서"
+            }
+          ]
+        },
+        "coverage": {
+          "population_id": "fixture:population",
+          "population_kind": "FILTERED_DOCUMENTS",
+          "collection_state": "KNOWN",
+          "total_kind": "EXACT",
+          "total": 1,
+          "returned_count": 1,
+          "enumeration_complete": true,
+          "read_complete": null,
+          "unread_count": null,
+          "next_cursor": null
+        },
+        "available_actions": [
+          {
+            "tool": "STRUCTURE",
+            "input_refs": [
+              {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              }
+            ],
+            "requires": []
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "id": "partial-result",
+      "definition": "Envelope",
+      "expected_valid": true,
+      "value": {
+        "result_id": "fixture:result",
+        "action_id": "fixture:action-CATALOG",
+        "status": "OK",
+        "binding": {
+          "generation_id": "fixture-v1",
+          "source_store_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "schema_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "acl_revision": "fixture-v1"
+        },
+        "refs": [
+          {
+            "kind": "document",
+            "id": "fixture:doc",
+            "revision": "v1"
+          }
+        ],
+        "payload": {
+          "documents": [
+            {
+              "ref": {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              },
+              "title": "모의 문서"
+            }
+          ]
+        },
+        "coverage": {
+          "population_id": "fixture:population",
+          "population_kind": "FILTERED_DOCUMENTS",
+          "collection_state": "KNOWN",
+          "total_kind": "EXACT",
+          "total": 2,
+          "returned_count": 1,
+          "enumeration_complete": false,
+          "read_complete": null,
+          "unread_count": null,
+          "next_cursor": "opaque-fixture-cursor"
+        },
+        "available_actions": [
+          {
+            "tool": "STRUCTURE",
+            "input_refs": [
+              {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              }
+            ],
+            "requires": []
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "id": "empty-result",
+      "definition": "Envelope",
+      "expected_valid": true,
+      "value": {
+        "result_id": "fixture:result",
+        "action_id": "fixture:action-CATALOG",
+        "status": "EMPTY",
+        "binding": {
+          "generation_id": "fixture-v1",
+          "source_store_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "schema_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "acl_revision": "fixture-v1"
+        },
+        "refs": [],
+        "payload": {},
+        "coverage": {
+          "population_id": "fixture:population",
+          "population_kind": "FILTERED_DOCUMENTS",
+          "collection_state": "KNOWN",
+          "total_kind": "EXACT",
+          "total": 0,
+          "returned_count": 0,
+          "enumeration_complete": true,
+          "read_complete": null,
+          "unread_count": null,
+          "next_cursor": null
+        },
+        "available_actions": [
+          {
+            "tool": "STRUCTURE",
+            "input_refs": [
+              {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              }
+            ],
+            "requires": []
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "id": "blocked-result",
+      "definition": "Envelope",
+      "expected_valid": true,
+      "value": {
+        "result_id": "fixture:result",
+        "action_id": "fixture:action-CATALOG",
+        "status": "BLOCKED",
+        "binding": {
+          "generation_id": "fixture-v1",
+          "source_store_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "schema_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "acl_revision": "fixture-v1"
+        },
+        "refs": [],
+        "payload": {},
+        "coverage": null,
+        "available_actions": [
+          {
+            "tool": "STRUCTURE",
+            "input_refs": [
+              {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              }
+            ],
+            "requires": []
+          }
+        ],
+        "error": {
+          "code": "OVERSIZED_ATOM",
+          "message": "모의 원자 단위가 예산을 초과함",
+          "retryable": false,
+          "allowed_recovery": [
+            "STRUCTURE",
+            "FINISH"
+          ]
+        }
+      }
+    },
+    {
+      "id": "read-packet",
+      "definition": "ReadPacket",
+      "expected_valid": true,
+      "value": {
+        "packet_id": "fixture:packet",
+        "target": {
+          "kind": "unit",
+          "id": "fixture:unit",
+          "revision": "v1"
+        },
+        "binding": {
+          "generation_id": "fixture-v1",
+          "source_store_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "schema_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "acl_revision": "fixture-v1"
+        },
+        "evidence_class": "CORPUS_TEXT",
+        "structural_status": "VERIFIED",
+        "extent": "OWN",
+        "complete_extent": true,
+        "spans": [
+          {
+            "span_id": "fixture:span",
+            "document": {
+              "kind": "document",
+              "id": "fixture:doc",
+              "revision": "v1"
+            },
+            "source": {
+              "kind": "source",
+              "id": "fixture:source",
+              "revision": "v1"
+            },
+            "block_id": "fixture:block",
+            "start": 0,
+            "end": 9,
+            "text": "모의 원문입니다.",
+            "text_sha256": "ccd940bc391c1dfd6b70f0b1d57482d3742f62afa4498ee7bf7f5134a8a709df",
+            "source_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+            "role": "OWN"
+          }
+        ],
+        "covered_refs": [
+          {
+            "kind": "unit",
+            "id": "fixture:unit",
+            "revision": "v1"
+          }
+        ],
+        "unread_required_refs": [],
+        "attachment_refs": [],
+        "packet_sha256": "fc36e1fbf47bda0db47958955edb50b94e4eb3cfb320b02e394378c9f380cfe7"
+      }
+    },
+    {
+      "id": "relation",
+      "definition": "RelationRecord",
+      "expected_valid": true,
+      "value": {
+        "ref": {
+          "kind": "relation",
+          "id": "fixture:relation",
+          "revision": "v1"
+        },
+        "source": {
+          "kind": "concept",
+          "id": "fixture:concept",
+          "revision": "v1"
+        },
+        "target": {
+          "kind": "concept",
+          "id": "fixture:concept2",
+          "revision": "v1"
+        },
+        "original_predicate": "fixture:related",
+        "normalized_predicate": "RELATED_TO",
+        "resolution": "RESOLVED",
+        "target_locator": null,
+        "unresolved_reason": null,
+        "traversal_direction": "OUTGOING",
+        "origin": "fixture:dictionary",
+        "evidence_refs": [],
+        "review_status": "UNREVIEWED",
+        "scope_documents": [
+          {
+            "kind": "document",
+            "id": "fixture:doc",
+            "revision": "v1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unresolved-relation",
+      "definition": "RelationRecord",
+      "expected_valid": true,
+      "value": {
+        "ref": {
+          "kind": "relation",
+          "id": "fixture:relation",
+          "revision": "v1"
+        },
+        "source": {
+          "kind": "concept",
+          "id": "fixture:concept",
+          "revision": "v1"
+        },
+        "target": null,
+        "original_predicate": "fixture:related",
+        "normalized_predicate": "RELATED_TO",
+        "resolution": "UNRESOLVED",
+        "target_locator": "fixture:unresolved-name",
+        "unresolved_reason": "합성 대상 미수집",
+        "traversal_direction": "OUTGOING",
+        "origin": "fixture:dictionary",
+        "evidence_refs": [],
+        "review_status": "UNREVIEWED",
+        "scope_documents": [
+          {
+            "kind": "document",
+            "id": "fixture:doc",
+            "revision": "v1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "model-forges-scope",
+      "definition": "Action",
+      "expected_valid": false,
+      "value": {
+        "action_id": "fixture:action-CATALOG",
+        "tool": "CATALOG",
+        "args": {},
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시",
+        "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "id": "read-character-slicing",
+      "definition": "Action",
+      "expected_valid": false,
+      "value": {
+        "action_id": "fixture:action-READ",
+        "tool": "READ",
+        "args": {
+          "target": {
+            "kind": "unit",
+            "id": "fixture:unit",
+            "revision": "v1"
+          },
+          "extent": "OWN",
+          "offset": 2400
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "graph-from-document",
+      "definition": "Action",
+      "expected_valid": false,
+      "value": {
+        "action_id": "fixture:action-GRAPH",
+        "tool": "GRAPH",
+        "args": {
+          "concept_ref": {
+            "kind": "document",
+            "id": "fixture:doc",
+            "revision": "v1"
+          },
+          "direction": "BOTH"
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "unknown-tool",
+      "definition": "Action",
+      "expected_valid": false,
+      "value": {
+        "action_id": "fixture:action-CATALOG",
+        "tool": "EXEC_SQL",
+        "args": {},
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "untyped-args-string",
+      "definition": "Action",
+      "expected_valid": false,
+      "value": {
+        "action_id": "fixture:action-CATALOG",
+        "tool": "CATALOG",
+        "args": "{}",
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "adopt-without-quote",
+      "definition": "Action",
+      "expected_valid": false,
+      "value": {
+        "action_id": "fixture:action-JUDGE",
+        "tool": "JUDGE",
+        "args": {
+          "receipt_id": "fixture:delivery",
+          "issue_id": "fixture:issue",
+          "decision": "ADOPT",
+          "claim": "합성 예시의 문장을 확인했다."
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "invalid-search-mode",
+      "definition": "Action",
+      "expected_valid": false,
+      "value": {
+        "action_id": "fixture:action-SEARCH",
+        "tool": "SEARCH",
+        "args": {
+          "query": "모의 질의",
+          "mode": "auto-invent"
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "empty-list-selector",
+      "definition": "Action",
+      "expected_valid": false,
+      "value": {
+        "action_id": "fixture:action-LIST",
+        "tool": "LIST",
+        "args": {
+          "concept_refs": [],
+          "match": "any"
+        },
+        "issue_ids": [
+          "fixture:issue"
+        ],
+        "reason": "합성 계약 예시"
+      }
+    },
+    {
+      "id": "full-and-next-page",
+      "definition": "Envelope",
+      "expected_valid": false,
+      "value": {
+        "result_id": "fixture:result",
+        "action_id": "fixture:action-CATALOG",
+        "status": "OK",
+        "binding": {
+          "generation_id": "fixture-v1",
+          "source_store_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "schema_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "acl_revision": "fixture-v1"
+        },
+        "refs": [
+          {
+            "kind": "document",
+            "id": "fixture:doc",
+            "revision": "v1"
+          }
+        ],
+        "payload": {
+          "documents": [
+            {
+              "ref": {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              },
+              "title": "모의 문서"
+            }
+          ]
+        },
+        "coverage": {
+          "population_id": "fixture:population",
+          "population_kind": "FILTERED_DOCUMENTS",
+          "collection_state": "KNOWN",
+          "total_kind": "EXACT",
+          "total": 1,
+          "returned_count": 1,
+          "enumeration_complete": true,
+          "read_complete": null,
+          "unread_count": null,
+          "next_cursor": "next"
+        },
+        "available_actions": [
+          {
+            "tool": "STRUCTURE",
+            "input_refs": [
+              {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              }
+            ],
+            "requires": []
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "id": "unknown-total-with-number",
+      "definition": "Envelope",
+      "expected_valid": false,
+      "value": {
+        "result_id": "fixture:result",
+        "action_id": "fixture:action-CATALOG",
+        "status": "OK",
+        "binding": {
+          "generation_id": "fixture-v1",
+          "source_store_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "schema_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "acl_revision": "fixture-v1"
+        },
+        "refs": [
+          {
+            "kind": "document",
+            "id": "fixture:doc",
+            "revision": "v1"
+          }
+        ],
+        "payload": {
+          "documents": [
+            {
+              "ref": {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              },
+              "title": "모의 문서"
+            }
+          ]
+        },
+        "coverage": {
+          "population_id": "fixture:population",
+          "population_kind": "FILTERED_DOCUMENTS",
+          "collection_state": "KNOWN",
+          "total_kind": "UNKNOWN",
+          "total": 1,
+          "returned_count": 1,
+          "enumeration_complete": true,
+          "read_complete": null,
+          "unread_count": null,
+          "next_cursor": null
+        },
+        "available_actions": [
+          {
+            "tool": "STRUCTURE",
+            "input_refs": [
+              {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              }
+            ],
+            "requires": []
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "id": "read-complete-with-unread",
+      "definition": "Envelope",
+      "expected_valid": false,
+      "value": {
+        "result_id": "fixture:result",
+        "action_id": "fixture:action-CATALOG",
+        "status": "OK",
+        "binding": {
+          "generation_id": "fixture-v1",
+          "source_store_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "schema_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "acl_revision": "fixture-v1"
+        },
+        "refs": [
+          {
+            "kind": "document",
+            "id": "fixture:doc",
+            "revision": "v1"
+          }
+        ],
+        "payload": {
+          "documents": [
+            {
+              "ref": {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              },
+              "title": "모의 문서"
+            }
+          ]
+        },
+        "coverage": {
+          "population_id": "fixture:population",
+          "population_kind": "FILTERED_DOCUMENTS",
+          "collection_state": "KNOWN",
+          "total_kind": "EXACT",
+          "total": 1,
+          "returned_count": 1,
+          "enumeration_complete": true,
+          "read_complete": true,
+          "unread_count": 1,
+          "next_cursor": null
+        },
+        "available_actions": [
+          {
+            "tool": "STRUCTURE",
+            "input_refs": [
+              {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              }
+            ],
+            "requires": []
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "id": "blocked-without-error",
+      "definition": "Envelope",
+      "expected_valid": false,
+      "value": {
+        "result_id": "fixture:result",
+        "action_id": "fixture:action-CATALOG",
+        "status": "BLOCKED",
+        "binding": {
+          "generation_id": "fixture-v1",
+          "source_store_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "schema_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "acl_revision": "fixture-v1"
+        },
+        "refs": [],
+        "payload": {},
+        "coverage": null,
+        "available_actions": [
+          {
+            "tool": "STRUCTURE",
+            "input_refs": [
+              {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              }
+            ],
+            "requires": []
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "id": "empty-with-refs",
+      "definition": "Envelope",
+      "expected_valid": false,
+      "value": {
+        "result_id": "fixture:result",
+        "action_id": "fixture:action-CATALOG",
+        "status": "EMPTY",
+        "binding": {
+          "generation_id": "fixture-v1",
+          "source_store_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "schema_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "acl_revision": "fixture-v1"
+        },
+        "refs": [
+          {
+            "kind": "document",
+            "id": "fixture:doc",
+            "revision": "v1"
+          }
+        ],
+        "payload": {
+          "documents": [
+            {
+              "ref": {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              },
+              "title": "모의 문서"
+            }
+          ]
+        },
+        "coverage": {
+          "population_id": "fixture:population",
+          "population_kind": "FILTERED_DOCUMENTS",
+          "collection_state": "KNOWN",
+          "total_kind": "EXACT",
+          "total": 1,
+          "returned_count": 1,
+          "enumeration_complete": true,
+          "read_complete": null,
+          "unread_count": null,
+          "next_cursor": null
+        },
+        "available_actions": [
+          {
+            "tool": "STRUCTURE",
+            "input_refs": [
+              {
+                "kind": "document",
+                "id": "fixture:doc",
+                "revision": "v1"
+              }
+            ],
+            "requires": []
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "id": "partial-body-packet",
+      "definition": "ReadPacket",
+      "expected_valid": false,
+      "value": {
+        "packet_id": "fixture:packet",
+        "target": {
+          "kind": "unit",
+          "id": "fixture:unit",
+          "revision": "v1"
+        },
+        "binding": {
+          "generation_id": "fixture-v1",
+          "source_store_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "schema_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "acl_revision": "fixture-v1"
+        },
+        "evidence_class": "CORPUS_TEXT",
+        "structural_status": "VERIFIED",
+        "extent": "OWN",
+        "complete_extent": false,
+        "spans": [
+          {
+            "span_id": "fixture:span",
+            "document": {
+              "kind": "document",
+              "id": "fixture:doc",
+              "revision": "v1"
+            },
+            "source": {
+              "kind": "source",
+              "id": "fixture:source",
+              "revision": "v1"
+            },
+            "block_id": "fixture:block",
+            "start": 0,
+            "end": 9,
+            "text": "모의 원문입니다.",
+            "text_sha256": "ccd940bc391c1dfd6b70f0b1d57482d3742f62afa4498ee7bf7f5134a8a709df",
+            "source_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+            "role": "OWN"
+          }
+        ],
+        "covered_refs": [
+          {
+            "kind": "unit",
+            "id": "fixture:unit",
+            "revision": "v1"
+          }
+        ],
+        "unread_required_refs": [],
+        "attachment_refs": [],
+        "packet_sha256": "fc36e1fbf47bda0db47958955edb50b94e4eb3cfb320b02e394378c9f380cfe7"
+      }
+    },
+    {
+      "id": "unverified-body-packet",
+      "definition": "ReadPacket",
+      "expected_valid": false,
+      "value": {
+        "packet_id": "fixture:packet",
+        "target": {
+          "kind": "unit",
+          "id": "fixture:unit",
+          "revision": "v1"
+        },
+        "binding": {
+          "generation_id": "fixture-v1",
+          "source_store_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "schema_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "acl_revision": "fixture-v1"
+        },
+        "evidence_class": "CORPUS_TEXT",
+        "structural_status": "UNKNOWN",
+        "extent": "OWN",
+        "complete_extent": true,
+        "spans": [
+          {
+            "span_id": "fixture:span",
+            "document": {
+              "kind": "document",
+              "id": "fixture:doc",
+              "revision": "v1"
+            },
+            "source": {
+              "kind": "source",
+              "id": "fixture:source",
+              "revision": "v1"
+            },
+            "block_id": "fixture:block",
+            "start": 0,
+            "end": 9,
+            "text": "모의 원문입니다.",
+            "text_sha256": "ccd940bc391c1dfd6b70f0b1d57482d3742f62afa4498ee7bf7f5134a8a709df",
+            "source_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+            "role": "OWN"
+          }
+        ],
+        "covered_refs": [
+          {
+            "kind": "unit",
+            "id": "fixture:unit",
+            "revision": "v1"
+          }
+        ],
+        "unread_required_refs": [],
+        "attachment_refs": [],
+        "packet_sha256": "fc36e1fbf47bda0db47958955edb50b94e4eb3cfb320b02e394378c9f380cfe7"
+      }
+    },
+    {
+      "id": "resolved-without-target",
+      "definition": "RelationRecord",
+      "expected_valid": false,
+      "value": {
+        "ref": {
+          "kind": "relation",
+          "id": "fixture:relation",
+          "revision": "v1"
+        },
+        "source": {
+          "kind": "concept",
+          "id": "fixture:concept",
+          "revision": "v1"
+        },
+        "target": null,
+        "original_predicate": "fixture:related",
+        "normalized_predicate": "RELATED_TO",
+        "resolution": "RESOLVED",
+        "target_locator": null,
+        "unresolved_reason": null,
+        "traversal_direction": "OUTGOING",
+        "origin": "fixture:dictionary",
+        "evidence_refs": [],
+        "review_status": "UNREVIEWED",
+        "scope_documents": [
+          {
+            "kind": "document",
+            "id": "fixture:doc",
+            "revision": "v1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unresolved-without-reason",
+      "definition": "RelationRecord",
+      "expected_valid": false,
+      "value": {
+        "ref": {
+          "kind": "relation",
+          "id": "fixture:relation",
+          "revision": "v1"
+        },
+        "source": {
+          "kind": "concept",
+          "id": "fixture:concept",
+          "revision": "v1"
+        },
+        "target": null,
+        "original_predicate": "fixture:related",
+        "normalized_predicate": "RELATED_TO",
+        "resolution": "UNRESOLVED",
+        "target_locator": "fixture:unresolved-name",
+        "unresolved_reason": null,
+        "traversal_direction": "OUTGOING",
+        "origin": "fixture:dictionary",
+        "evidence_refs": [],
+        "review_status": "UNREVIEWED",
+        "scope_documents": [
+          {
+            "kind": "document",
+            "id": "fixture:doc",
+            "revision": "v1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "invented-predicate",
+      "definition": "RelationRecord",
+      "expected_valid": false,
+      "value": {
+        "ref": {
+          "kind": "relation",
+          "id": "fixture:relation",
+          "revision": "v1"
+        },
+        "source": {
+          "kind": "concept",
+          "id": "fixture:concept",
+          "revision": "v1"
+        },
+        "target": {
+          "kind": "concept",
+          "id": "fixture:concept2",
+          "revision": "v1"
+        },
+        "original_predicate": "fixture:related",
+        "normalized_predicate": "AUTOMATIC_LEGAL_EFFECT",
+        "resolution": "RESOLVED",
+        "target_locator": null,
+        "unresolved_reason": null,
+        "traversal_direction": "OUTGOING",
+        "origin": "fixture:dictionary",
+        "evidence_refs": [],
+        "review_status": "UNREVIEWED",
+        "scope_documents": [
+          {
+            "kind": "document",
+            "id": "fixture:doc",
+            "revision": "v1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "corpus-packet-without-document",
+      "definition": "ReadPacket",
+      "expected_valid": false,
+      "value": {
+        "packet_id": "fixture:packet",
+        "target": {
+          "kind": "unit",
+          "id": "fixture:unit",
+          "revision": "v1"
+        },
+        "binding": {
+          "generation_id": "fixture-v1",
+          "source_store_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "schema_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "acl_revision": "fixture-v1"
+        },
+        "evidence_class": "CORPUS_TEXT",
+        "structural_status": "VERIFIED",
+        "extent": "OWN",
+        "complete_extent": true,
+        "spans": [
+          {
+            "span_id": "fixture:span",
+            "document": null,
+            "source": {
+              "kind": "source",
+              "id": "fixture:source",
+              "revision": "v1"
+            },
+            "block_id": "fixture:block",
+            "start": 0,
+            "end": 9,
+            "text": "모의 원문입니다.",
+            "text_sha256": "ccd940bc391c1dfd6b70f0b1d57482d3742f62afa4498ee7bf7f5134a8a709df",
+            "source_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+            "role": "OWN"
+          }
+        ],
+        "covered_refs": [
+          {
+            "kind": "unit",
+            "id": "fixture:unit",
+            "revision": "v1"
+          }
+        ],
+        "unread_required_refs": [],
+        "attachment_refs": [],
+        "packet_sha256": "fc36e1fbf47bda0db47958955edb50b94e4eb3cfb320b02e394378c9f380cfe7"
+      }
+    },
+    {
+      "id": "glossary-read-packet",
+      "definition": "ReadPacket",
+      "expected_valid": true,
+      "value": {
+        "packet_id": "fixture:packet",
+        "target": {
+          "kind": "definition",
+          "id": "fixture:definition",
+          "revision": "v1"
+        },
+        "binding": {
+          "generation_id": "fixture-v1",
+          "source_store_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "schema_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "adapter_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "principal_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "acl_revision": "fixture-v1"
+        },
+        "evidence_class": "GLOSSARY_SOURCE",
+        "structural_status": "VERIFIED",
+        "extent": "OWN",
+        "complete_extent": true,
+        "spans": [
+          {
+            "span_id": "fixture:span",
+            "document": null,
+            "source": {
+              "kind": "source",
+              "id": "fixture:source",
+              "revision": "v1"
+            },
+            "block_id": "fixture:block",
+            "start": 0,
+            "end": 9,
+            "text": "모의 원문입니다.",
+            "text_sha256": "ccd940bc391c1dfd6b70f0b1d57482d3742f62afa4498ee7bf7f5134a8a709df",
+            "source_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+            "role": "OWN"
+          }
+        ],
+        "covered_refs": [
+          {
+            "kind": "definition",
+            "id": "fixture:definition",
+            "revision": "v1"
+          }
+        ],
+        "unread_required_refs": [],
+        "attachment_refs": [],
+        "packet_sha256": "047c43f584bdd07a15ee7c2786a293876f34ffb7aa80ffdbd108f54c1364daee"
+      }
+    }
+  ]
+}

@@ -66,7 +66,7 @@ def test_source_hashes_derives_partial_body_coordinate(tmp_path, monkeypatch):
     }
 
 
-def test_source_only_publish_uses_fresh_common_structure(tmp_path, monkeypatch):
+def test_source_only_publish_uses_fresh_common_structure(tmp_path, monkeypatch, term_glossary):
     from lawrag.pipeline import genos_unified
     from semantic_runtime.pipeline import Pipeline
     from semantic_runtime.storage import Store
@@ -118,11 +118,14 @@ def test_source_only_publish_uses_fresh_common_structure(tmp_path, monkeypatch):
         },
     )
     monkeypatch.setenv("GENOS_DATA_ROOT", str(tmp_path))
+    from lawrag.pipeline import glossary_linking
+    monkeypatch.setattr(glossary_linking, "configured", lambda *a: term_glossary)
     result = genos_unified.publish_source_only(data_root=tmp_path)
 
     assert result["ok"] is True
     assert result["documents"] == 1
-    assert result["manifest"]["counts"]["bundle"] == 0
+    assert set(result["manifest"]["counts"]) == {"document", "source_unit", "source_block"}
+    assert result["manifest"]["glossary"]
     assert result["manifest"]["scope"]["document_version_ids"] == [document_id]
     assert json.loads((tmp_path / "generations/CURRENT.json").read_text())["path"] == result["generation"]
 
@@ -130,8 +133,9 @@ def test_source_only_publish_uses_fresh_common_structure(tmp_path, monkeypatch):
     try:
         pipeline = Pipeline(genos_unified.ROOT, store)
         plan = pipeline.plan("위험관리 기준")
-        retrieval = pipeline.retrieve(plan)
-        assert retrieval["candidates"][0]["document_id"] == document_id
-        assert retrieval["candidates"][0]["text"] == "위험관리 기준을 정한다."
+        retrieval = pipeline.retrieve(plan, use_llm=False)
+        assert retrieval["term_agent"]["status"] == "METADATA_ONLY"
+        assert not retrieval["candidates"]
+        assert store.source(document_id, "0")["text"] == "위험관리 기준을 정한다."
     finally:
         store.close()

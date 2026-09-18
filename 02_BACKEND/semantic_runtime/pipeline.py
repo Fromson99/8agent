@@ -8,12 +8,28 @@ from . import observability as obs
 log = obs.get_logger('rag')
 
 class Pipeline:
-    def __init__(self,root,store,provider=None,vector=None):
+    def __init__(self,root,store,provider=None,vector=None,*,implementation=None):
         self.store=store;self.contracts=Contracts(root);self.provider=provider
         config=next(x for x in self.contracts.pipeline['profiles']['legal-rag']['nodes'] if x['id']=='retrieve')['parameters']['term_agent']
         if not config.get('enabled'):raise ValueError('term navigation is required')
-        from .term_agent import TermAgent
-        self.term_agent=TermAgent(self,config)
+        config = {**config}
+        if implementation is not None:
+            config['implementation'] = implementation
+        implementation=config.get('implementation','term-agent-v1')
+        if implementation=='navigation-loop-v1':
+            from .navigation_agent import ServingNavigationAgent
+            self.term_agent=ServingNavigationAgent(self,config)
+        elif implementation=='document-navigation-v1':
+            from .document_agent import ServingDocumentAgent
+            self.term_agent=ServingDocumentAgent(self,config)
+        elif implementation=='definition-scope-harness-v1':
+            from .task_harness_agent import ServingTaskHarnessAgent
+            self.term_agent=ServingTaskHarnessAgent(self,config)
+        elif implementation=='term-agent-v1':
+            from .term_agent import TermAgent
+            self.term_agent=TermAgent(self,config)
+        else:
+            raise ValueError('unknown term agent implementation: '+implementation)
 
     def plan(self,question,documents=None):
         if not isinstance(question,str) or not question.strip() or len(question)>10000:raise ValueError('question length must be 1..10000')

@@ -9,8 +9,14 @@
     "model_policy": "04_EXPERIMENTS/LEGACY_ADR/STANDARD.md",
     "experiment_policy": "04_EXPERIMENTS/LEGACY_ADR/EXPERIMENT_AGENT_PROMPT.md",
     "change_policy": "00_SYSTEM/PIPELINE.md",
-    "document_ingestion": "07_DOCS/REFERENCE/OPERATIONS/GENOS_RECIPE_VLM.md",
-    "runtime_schema": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json"
+    "document_ingestion": "07_DOCS/REFERENCE/OPERATIONS/GENOS_PREPROCESSOR_PARSING.md",
+    "runtime_schema": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+    "golden_evaluation": "07_DOCS/REFERENCE/OPERATIONS/GENOS_GOLDEN_EVALUATION.md",
+    "document_build": "07_DOCS/REFERENCE/OPERATIONS/GENOS_FOUR_STAGE.md",
+    "document_release": "07_DOCS/REFERENCE/OPERATIONS/GENOS_DOCUMENT_CONNECTIONS.md",
+    "task_harness": "07_DOCS/REFERENCE/OPERATIONS/TASK_HARNESS.md",
+    "raw_preparation": "07_DOCS/REFERENCE/OPERATIONS/GENOS_TEAM_RAW.md",
+    "document_navigation": "07_DOCS/REFERENCE/OPERATIONS/GENOS_DOCUMENT_TOOLS.md"
   },
   "contracts": {
     "runtime.request": {
@@ -118,27 +124,27 @@
   "engines": {
     "term-retrieve@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
-      "sha256": "8505497ab7d7774991188313dff5c7b7fd7dfeec0b0bf30a331a9139f7f79e54"
+      "sha256": "12e77127e8a4b96a26ead5dcff4314c965333fff83346a4e825608c80b0fb679"
     },
     "term-select@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json",
-      "sha256": "4e0f8972adc1b8a8e477357d4ac15207cddc938dd8f1dac13012d47dc8635538"
+      "sha256": "514f5b577e731640b687810cd28079dd5062c7bbccb98ec6fa1c57772a25200d"
     },
     "term-assemble@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
-      "sha256": "f93ebc738fbb58f8602c3967408e4deb07220991e34ce50be1deea41ffb1a91e"
+      "sha256": "2f287898ed3fe980dbfa9f409c36ba0fbf6e1a06639820da089be845aaf196a0"
     },
     "term-answer@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
-      "sha256": "2e08ccf9cf91d546a11d0238dc6396ac57c65de0abb74d10eb0185883e1ca2a2"
+      "sha256": "33728a9788ecb0e9826437bf1ce9d9bf245be1e8f6e595c5bc326e96ec0597a3"
     },
     "term-feedback@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
-      "sha256": "a0f05026d58a9a14f500227ac1013ba5debf1f01acc98fea4703b0db9ddc3d63"
+      "sha256": "f7ed3096c195f8368576a3c2050e9a24502099be7e4946a8cec66b3f201c4391"
     },
     "term-load@1.0.0": {
       "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
-      "sha256": "165e0309f572a0f8d191c6f918600682d72aa533d5300b74f345478d32849ce1"
+      "sha256": "bbad76848aa06190dfeecf6ddc706a8612c6aae2e4dfbe23561976da29114acd"
     }
   },
   "profiles": {
@@ -160,18 +166,38 @@
             "term_agent": {
               "enabled": true,
               "index": {
-                "path": "01_DATA/SEMANTIC/TERM_INDEX/term-source-navigation-20260915-v1",
-                "manifest_sha256": "4e9942bfc462186419df96de003bbc5f9a90f7a218b93d3d0c59879614c58cd5"
+                "path": "01_DATA/SEMANTIC/GENERATIONS/navigation-source-20260916-v1/navigation",
+                "manifest_sha256": "82fff3c6ef8f4a0517221a264ab5984f9dfabd339a734a7b1ed61fab556fa413"
               },
               "quality_certified": false,
               "deployment_basis": "USER_DIRECTED_CUTOVER",
               "limits": {
-                "max_rounds": 3,
-                "max_calls": 9,
-                "wall_seconds": 150,
-                "search_limit": 3,
-                "max_repairs": 1
-              }
+                "max_calls": 14,
+                "max_actions": 56,
+                "wall_seconds": 300,
+                "active_segments": 6,
+                "active_chars": 18000,
+                "context_chars": 60000
+              },
+              "implementation": "document-navigation-v1",
+              "glossary": {
+                "bundle": "glossary/bundle",
+                "dictionary": "glossary/dictionary.sqlite",
+                "cache": "glossary/cache",
+                "manifest_sha256": "b36ebd9c0f427e2e4eb1bc38c60f515befd9fa83fef0982081d1af07d81fddaf",
+                "cache_receipt": "a8f9ba9f19a25d9b09acdc0fa4fa68d9064d1fe4329c06466867c24a4b1a315f.json",
+                "cache_receipt_sha256": "a9e7357ab0d82e7c54340c405b4add5a770b43053cc06acc67140cac253a1234"
+              },
+              "learning": {
+                "capture": false
+              },
+              "origin_projections": [
+                {
+                  "generation_id": "term-source-adca5fbe3650f90fb372",
+                  "path": "01_DATA/PROJECTIONS/document-origins/term-source-adca5fbe3650f90fb372.json",
+                  "sha256": "83e164ed6f961b68b9f0f85e6b53f7561b0d404ce4d2936d2ab08c2d0702686b"
+                }
+              ]
             }
           }
         },

@@ -1,0 +1,499 @@
+{
+  "status": "DESIGN_ONLY_SYNTHETIC",
+  "note": "These examples verify contract shape only. Placeholder hashes/IDs are not actual source evidence. ACL, reading delivery and semantic correctness need runtime checks.",
+  "valid": [
+    {
+      "name": "call_CATALOG",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "CATALOG",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {}
+      }
+    },
+    {
+      "name": "call_GRAPH",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "GRAPH",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "term_id": "term:example",
+          "direction": "both",
+          "hops": 1
+        }
+      }
+    },
+    {
+      "name": "call_LIST",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "LIST",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "term_ids": [
+            "term:example"
+          ],
+          "match": "all"
+        }
+      }
+    },
+    {
+      "name": "call_STRUCTURE",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "STRUCTURE",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "document_id": "doc:example"
+        }
+      }
+    },
+    {
+      "name": "call_SOURCE_TERMS",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "SOURCE_TERMS",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "source_id": "article:example"
+        }
+      }
+    },
+    {
+      "name": "call_GREP",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "GREP",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "literal": "모의표현",
+          "match_mode": "exact"
+        }
+      }
+    },
+    {
+      "name": "call_SEARCH",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "SEARCH",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "mode": "fulltext",
+          "query": "모의 검색어"
+        }
+      }
+    },
+    {
+      "name": "call_READ",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "READ",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "read_unit_id": "read:example"
+        }
+      }
+    },
+    {
+      "name": "call_JUDGE",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "JUDGE",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "read_receipt_id": "receipt:read1",
+          "extent_id": "extent:1",
+          "issue_id": "issue:1",
+          "verdict": "adopted",
+          "quote": "모의 원문 문장입니다.",
+          "claim": "모의 검토 결과"
+        }
+      }
+    },
+    {
+      "name": "call_BRANCH",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "BRANCH",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "operation": "back",
+          "focus_id": "branch:parent"
+        }
+      }
+    },
+    {
+      "name": "call_STOP",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "STOP",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "proposed_status": "partial",
+          "issue_ids": [
+            "issue:1"
+          ],
+          "remaining_explanation": "필수 구조 원문이 아직 미열람"
+        }
+      }
+    },
+    {
+      "name": "catalogue_unknown",
+      "definition": "CatalogueItem",
+      "value": {
+        "document_id": "doc:example",
+        "name": "모의 문서 A",
+        "document_kind": "UNKNOWN",
+        "version_label": null,
+        "metadata_status": "UNKNOWN",
+        "root_structure_ids": [
+          "structure:root"
+        ]
+      }
+    },
+    {
+      "name": "graph_reverse_preserves_source",
+      "definition": "GraphEdge",
+      "value": {
+        "edge_id": "edge:example",
+        "source_term_id": "term:a",
+        "target_term_id": "term:b",
+        "relation_code": "EXAMPLE_CODE",
+        "relation_label": null,
+        "source_status": "UNREVIEWED",
+        "traversed_from": "term:b",
+        "traversed_to": "term:a",
+        "path_edge_ids": [
+          "edge:example"
+        ],
+        "provenance_ref": "binding:example"
+      }
+    },
+    {
+      "name": "catalogue_result",
+      "definition": "ToolResultEnvelope",
+      "value": {
+        "status": "OK",
+        "receipt_id": "receipt:list1",
+        "tool": "CATALOG",
+        "query_fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "generation_id": "generation:example",
+        "scope_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "items": [
+          {
+            "document_id": "doc:example",
+            "name": "모의 문서 A",
+            "document_kind": "UNKNOWN",
+            "version_label": null,
+            "metadata_status": "UNKNOWN",
+            "root_structure_ids": [
+              "structure:root"
+            ]
+          }
+        ],
+        "total": 1,
+        "total_kind": "EXACT",
+        "next_cursor": null,
+        "coverage": {
+          "basis": "CATALOGUE_FILTER",
+          "enumeration_complete": true,
+          "semantic_exhaustiveness": "NOT_CERTIFIED"
+        },
+        "warnings": [],
+        "recovery_options": []
+      }
+    },
+    {
+      "name": "vector_partial_unknown_total",
+      "definition": "ToolResultEnvelope",
+      "value": {
+        "status": "PARTIAL",
+        "receipt_id": "receipt:list1",
+        "tool": "SEARCH",
+        "query_fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "generation_id": "generation:example",
+        "scope_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "items": [],
+        "total": null,
+        "total_kind": "UNKNOWN",
+        "next_cursor": "cursor:example",
+        "coverage": {
+          "basis": "VECTOR_WINDOW",
+          "enumeration_complete": false,
+          "semantic_exhaustiveness": "NOT_CERTIFIED"
+        },
+        "warnings": [
+          "모의 미색인 구조 존재"
+        ],
+        "recovery_options": []
+      }
+    },
+    {
+      "name": "read_unit_not_subtree",
+      "definition": "ReadReceipt",
+      "value": {
+        "read_receipt_id": "receipt:read1",
+        "generation_id": "generation:example",
+        "scope_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "source_store_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "read_unit_ids": [
+          "read:example"
+        ],
+        "legacy_source_ids": [
+          "article:example"
+        ],
+        "extents": [
+          {
+            "extent_id": "extent:1",
+            "document_id": "doc:example",
+            "block_id": "block:1",
+            "start_char": 0,
+            "end_char": 12,
+            "text_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "role": "BODY"
+          }
+        ],
+        "dependency_read_unit_ids": [],
+        "unit_complete": true,
+        "subtree_complete": false,
+        "unread_descendant_cursor": "cursor:children",
+        "structure_warnings": [],
+        "delivery_turn_id": "turn:2"
+      }
+    },
+    {
+      "name": "catalogue_complete",
+      "definition": "Completion",
+      "value": {
+        "kind": "CATALOGUE",
+        "status": "COMPLETE",
+        "generation_id": "generation:example",
+        "scope_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "issue_states": [
+          {
+            "issue_id": "issue:1",
+            "status": "COMPLETE",
+            "receipt_ids": [
+              "receipt:list1"
+            ]
+          }
+        ],
+        "blockers": [],
+        "coverage_basis": "모의 권한 범위의 catalogue 필터 집합",
+        "semantic_exhaustiveness": "NOT_CERTIFIED"
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "read_offset",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "READ",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "read_unit_id": "read:example",
+          "offset": 2400
+        }
+      }
+    },
+    {
+      "name": "read_two_targets",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "READ",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "read_unit_id": "read:example",
+          "structure_id": "structure:example"
+        }
+      }
+    },
+    {
+      "name": "graph_zero_hops",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "GRAPH",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "term_id": "term:example",
+          "direction": "both",
+          "hops": 0
+        }
+      }
+    },
+    {
+      "name": "list_unconstrained",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "LIST",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {}
+      }
+    },
+    {
+      "name": "list_empty_terms",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "LIST",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "term_ids": []
+        }
+      }
+    },
+    {
+      "name": "judge_empty_quote",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "JUDGE",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": {
+          "read_receipt_id": "receipt:read1",
+          "extent_id": "extent:1",
+          "issue_id": "issue:1",
+          "verdict": "adopted",
+          "quote": "",
+          "claim": "모의"
+        }
+      }
+    },
+    {
+      "name": "args_json_string",
+      "definition": "ToolCall",
+      "value": {
+        "tool": "READ",
+        "issue_id": "issue:1",
+        "reason": "모의 질문의 미확인 항목을 확인",
+        "args": "{\"read_unit_id\": \"read:example\"}"
+      }
+    },
+    {
+      "name": "complete_with_blocker",
+      "definition": "Completion",
+      "value": {
+        "kind": "CATALOGUE",
+        "status": "COMPLETE",
+        "generation_id": "generation:example",
+        "scope_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "issue_states": [
+          {
+            "issue_id": "issue:1",
+            "status": "COMPLETE",
+            "receipt_ids": [
+              "receipt:list1"
+            ]
+          }
+        ],
+        "blockers": [
+          {
+            "issue_id": "issue:1",
+            "code": "UNREAD",
+            "detail": "필수 원문 미열람"
+          }
+        ],
+        "coverage_basis": "모의 권한 범위의 catalogue 필터 집합",
+        "semantic_exhaustiveness": "NOT_CERTIFIED"
+      }
+    },
+    {
+      "name": "complete_pending_issue",
+      "definition": "Completion",
+      "value": {
+        "kind": "CATALOGUE",
+        "status": "COMPLETE",
+        "generation_id": "generation:example",
+        "scope_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "issue_states": [
+          {
+            "issue_id": "issue:1",
+            "status": "PENDING",
+            "receipt_ids": [
+              "receipt:list1"
+            ]
+          }
+        ],
+        "blockers": [],
+        "coverage_basis": "모의 권한 범위의 catalogue 필터 집합",
+        "semantic_exhaustiveness": "NOT_CERTIFIED"
+      }
+    },
+    {
+      "name": "empty_with_items",
+      "definition": "ToolResultEnvelope",
+      "value": {
+        "status": "EMPTY",
+        "receipt_id": "receipt:list1",
+        "tool": "CATALOG",
+        "query_fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "generation_id": "generation:example",
+        "scope_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "items": [
+          {
+            "document_id": "doc:example",
+            "name": "모의 문서 A",
+            "document_kind": "UNKNOWN",
+            "version_label": null,
+            "metadata_status": "UNKNOWN",
+            "root_structure_ids": [
+              "structure:root"
+            ]
+          }
+        ],
+        "total": 1,
+        "total_kind": "EXACT",
+        "next_cursor": null,
+        "coverage": {
+          "basis": "CATALOGUE_FILTER",
+          "enumeration_complete": true,
+          "semantic_exhaustiveness": "NOT_CERTIFIED"
+        },
+        "warnings": [],
+        "recovery_options": []
+      }
+    },
+    {
+      "name": "unknown_total_fabricated",
+      "definition": "ToolResultEnvelope",
+      "value": {
+        "status": "PARTIAL",
+        "receipt_id": "receipt:list1",
+        "tool": "SEARCH",
+        "query_fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "generation_id": "generation:example",
+        "scope_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "items": [],
+        "total": 100,
+        "total_kind": "UNKNOWN",
+        "next_cursor": "cursor:example",
+        "coverage": {
+          "basis": "VECTOR_WINDOW",
+          "enumeration_complete": false,
+          "semantic_exhaustiveness": "NOT_CERTIFIED"
+        },
+        "warnings": [
+          "모의 미색인 구조 존재"
+        ],
+        "recovery_options": []
+      }
+    }
+  ]
+}

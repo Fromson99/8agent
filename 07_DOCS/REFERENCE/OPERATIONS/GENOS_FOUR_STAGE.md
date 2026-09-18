@@ -1,41 +1,69 @@
-# 문서 생성 — 구조화·용어 색인
+# 문서 구조화 · 용어집 · 연결과 색인
 
-2026-09-15 이후 기존 의미 추출·벡터 필수 단계는 제거되었다. 이 파일명은 기존 안내 링크를 유지한다.
-현재 Codex 환경에서는 GENOS 현장에 접근할 수 없다. 아래 절차는 현장 인계용이며 현장 실행 완료 기록이 아니다.
+현재 작업 코드의 실행 계약이다. GENOS 전처리기 연결은 사용자 확인 기준이며,
+이번 코드의 GENOS 배포·전체 문서 처리는 별도로 확인해야 한다.
 
-아래는 현재 작업 코드 기준이다. 2026-09-15 사진으로 확인된 구버전 3개 파일에 대한
-`PDF/internal` 입력 수정은 [현장 호환 기록](GENOS_INTERNAL_PDF_COMPAT_20260915.md)과 그 인계 명령을 따른다.
-해당 호환 패치가 아래의 전체 엔진 변경까지 배포하는 것은 아니다.
+## 실행 단위
 
-## 입력과 실행
+- A 문서: `RAW/internal`과 지원 외부 source 폴더의 입력을 수집한다. XML/HTML은
+  출처·형식 전용 파서, PDF는 GENOS 전처리기와 구조 복원·설정된 VLM 검수,
+  Office는 기존 형식 경로를 사용한다. 용어집 없이 `STRUCTURE/<지문>/source.sqlite`를 만든다.
+- B 통합: A의 전체 완료 영수증과 명시한 기존 세대로 원문을 통합하고, 기존 사전에
+  문서의 명시 정의 후보를 추가한다. 기존 미검토 후보·완료 관측은 보존한다.
+- C 검토: 기존 미검토 후보와 새 정의를 하나의 GENOS 검토 계획으로 처리한다.
+  완료된 동일 근거는 재사용한다. 호출 한도 내에 끝나지 않으면 exit 3으로 재개한다.
+- D 연결·색인: 검토된 사전으로 통합 원문 전체의 출현·정의·명시 참조를 연결하고
+  navigation-v3와 서빙 자원을 검증한다. 이 단계의 LLM 호출은 없다.
 
-`06_TOOLS/pipeline.py build-data-stages`와 `build-data`가 같은 유지보수 runner를 실행한다.
-외규는 논리 data root의 `RAW/<source>`, 내규의 준비된 PDF는 `PDF/internal`을 사용한다. 원본·변환 입력은 RAW에 보존한다.
+`build-all --execute`는 A → B → C → D 순서다. B 이후는 기존 `document-release`가 담당한다.
+구조화 실패 시 용어 검토를 시작하지 않는다. 같은 명령으로 구조 캐시·검토 상태를 재사용한다.
+기존 사전·지식 데이터가 없는 환경에서 이 명령이 외부 수집이나 사전 반입을 대신하지 않는다.
 
 ```bash
-.venv/bin/python -B 06_TOOLS/pipeline.py build-data-stages --run-id term-001 --check-only
-.venv/bin/python -B 06_TOOLS/pipeline.py build-data-stages --run-id term-001 --stage structure --execute
-.venv/bin/python -B 06_TOOLS/pipeline.py build-data-stages --run-id term-001 --stage index --execute
+# A: 문서 구조화만 (용어집 불필요)
+bash 06_TOOLS/COMMANDS/genos_data_stages.sh --run-id units-001 --check-only
+bash 06_TOOLS/COMMANDS/genos_data_stages.sh --run-id units-001 --stage structure --execute
+
+# XML/외규를 읽지 않고 내규 PDF 한 건으로 같은 구조화 경로 확인
+bash 06_TOOLS/COMMANDS/genos_data_stages.sh --run-id pdf-structure-001 --only-internal-pdf --limit 1 --stage structure --execute
+
+# 전체 구조화 → 기존/신규 용어 통합 검토 → 전체 연결·색인
+.venv/bin/python -B 06_TOOLS/pipeline.py build-all --run-id units-001 --execute
+
+# 이미 준비된 구조화 결과와 선택 용어집을 연결·색인
+.venv/bin/python -B 06_TOOLS/pipeline.py build-data-stages --run-id units-001 --stage index --execute
 ```
 
-한 번에 실행하려면 `--stage all`을 사용한다. `--glossary-dir` 생략 시 현행 완료 검토 사전 또는 설정된 초안을 선택한다. 사전 검토 완료부터 실행하는 명령은 `pipeline.py build-all --run-id term-001 --execute`다. `--exclude-internal`로 내규 입력을 제외할 수 있다.
+## 입력과 재개
 
-`llm`, `vector`, `--extraction-mode`, 문서 의미 추출 토큰/호출 옵션은 제거했다. 옛 build-all-legacy는 종료 안내를 낸다. 호환 wrapper genos_build_all/genos_data_e2e는 현재 runner에 전달하며 제거된 옵션을 묵인하지 않는다.
+동일 폴더의 원본/PDF는 XML → HTML → HWPX → DOCX → PDF → HWP 순서로 선택하고,
+PDF는 원본 우선 문서의 참고 파일로 연결한다. DOC만 있으면 PDF 반입 오류를 낸다.
+`--only-internal`은 외규 지정 scope와 독립적으로 RAW/internal 전체 형식을 선택한다.
+ZIP 병합·해시 중복 점검, 폴더명/별칭 전달은 [원본 우선 가이드](GENOS_NATIVE_PRIMARY.md)를 따른다.
 
-## 산출물과 재개
+논리 data root 아래 `RAW/internal`, `RAW/law`, `RAW/krx`, `RAW/kofia`, `RAW/expc`,
+`RAW/fsc`, `RAW/moleg`, `RAW/prec`를 읽는다. `PDF/internal`은 더 이상 기본 입력이 아니다.
+파일 이행은 별도 작업이다. PDF 이동·HWP 삭제는 자동으로 실행하지 않는다.
+`--exclude-internal`은 내규를 제외한다. 입력 목록 검사도 목록·상태 파일을 쓴다.
 
-- `STRUCTURE/<fingerprint>/source.sqlite`: 원문·구조·문서만 저장. 원문 좌표와 해시를 검사한다.
-- `LEXICON/LINKS/<fingerprint>`: 원문 출현과 범위 있는 정의 후보.
-- `TERM/<run>/<document>/generation/manifest.json`: term-source-generation-v1, 원문과 navigation 색인 해시 결속.
-- 같은 상위 폴더의 `result.json`: 입력·사전·코드 지문, 산출물 해시, DRAFT 상태.
-- `LOGS/<run>/doc-status.html`, CSV 및 detail/progress 로그: 문서별 구조화·색인 결과.
+A가 `LOGS/<run>/structure-selection.json`에 입력 명세 지문과 문서별 완료 구조화 영수증
+해시를 남긴다. 후속 통합과 단독 index는 이 기록을 검증하며 파서·VLM 환경 설정을 다시 요구하지 않는다.
+이전 실행의 선택 기록이 없으면 동일 입력으로 structure를 먼저 실행한다.
+원문 선택이 바뀌면 새 run ID를 사용한다. 완료 캐시 파일의 변조는 재사용하지 않는다.
+`--only-internal-pdf`는 RAW/internal의 PDF만 선택하며 `--limit`은 이 옵션과 함께만 쓴다.
+한 건 확인 후 전체로 확대할 때 새 run ID를 지정한다. 청크 응답은 VLM을 끄고 적재할 수 없다.
 
-같은 run ID는 같은 입력/코드일 때만 재개한다. 사전 또는 코드를 바꾸면 새 run ID를 사용한다. 구조 캐시의 파서 지문이 일치하면 구조화를 재사용하고 색인만 재생성한다. 의미 추출 모델은 호출하지 않는다. PDF 구조 복원에 필요한 내부 VLM·형식 파서·기존 `requirements-pipeline.txt` 의존성은 유지한다.
+전처리기는 ID 또는 URL과 실제 공유 경로를 사용한다. REVISION은 선택사항이다.
+미설정 시 서버 버전을 확인했다고 간주하지 않고 같은 run ID 안에서만 구조 캐시를 재사용한다.
+서버 설정·모델 변경 시 새 run ID를 사용한다. 명시한 revision이 있다면 캐시에 결속한다.
 
-## 서빙 인계·검증·롤백
+## 결과와 활성화
 
-신규 데이터 생성은 CURRENT/MAIN을 자동 변경하지 않는다. 승인된 결과의 `generation` 디렉터리를 GENOS로 반입하고, 동일 코드 리비전과 의존성·환경 설정 이름을 기록한다. 서비스의 `GENOS_GENERATION`에 그 디렉터리의 절대 경로를 명시한다. generation 안의 navigation 바인딩을 사용하므로 개발 환경의 다른 색인을 자동 선택하지 않는다.
+`LOGS/<run>`의 detail/progress 로그, 문서 상태표와 CSV를 확인한다.
+중단 시 상태 원장에 중단을 기록하며 무거운 상태표를 다시 생성하지 않는다.
+`TERM/<run>/<document>/generation`은 DRAFT다. MAIN/CURRENT·서빙 활성화는 하지 않는다.
+RAG의 LLM 근거 탐색·답변 생성은 질의 시 별도 실행된다. 의미 추출·벡터 필수 단계는 없다.
 
-현장에서는 `/health`의 `term-runtime-v1`, 세대, term-agent 모드와 `/v1/rag/ask`의 `use_llm:false` 정의 조회부터 확인한다. 이후 내부 LLM으로 확인한다. 외부 로컬/모의 테스트는 현장 품질 검증을 대신하지 않는다.
+## 추가 문서의 통합 서빙
 
-이전 코드·데이터 경로·설정 값을 기록하고 문제가 생기면 함께 되돌린다. 새 코드에 옛 의미 세대를 연결하는 방식은 지원하지 않는다. 로컬 MAIN 롤백은 [제거·전환 감사](../../../09_ARTIFACTS/AUDITS/20260915-term-only-schema-removal/README.md)의 명령을 따른다.
+`build-all`은 문서별 색인 단계를 선행하지 않고 통합 원문에 최종 색인을 만든다. `--base-generation`(반복 가능)으로 유지할 기존 세대를 명시하고, `--exclude-document`로 제외할 기존 버전 ID를 지정한다. 통합 용어 검토가 남으면 exit 3으로 재개한다. 기본 산출물은 `TERM_RELEASES/<run>/serving/generation`이며 CURRENT는 변경하지 않는다. [입력·검토·검증·활성화·롤백](GENOS_DOCUMENT_CONNECTIONS.md)을 따른다.

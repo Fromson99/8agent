@@ -13,7 +13,7 @@ from .glossary_alignment import compact
 QUOTED = re.compile(r'["“「]([^"”」\n]{1,100})["”」]\s*(?:이란|란|이라\s*함은|라\s*함은)')
 SCOPE = re.compile(r'이\s*(법률|법|시행령|시행규칙|규정|규칙|세칙|지침|장|절|관|조|항|호)\s*에서')
 END = re.compile(r'(?:말한다|뜻한다|의미한다)\s*[.]')
-REFERENCE = re.compile(r'「([^」]+)」\s*(제\s*\d+(?:-\d+)?\s*조(?:의\s*\d+)?(?:\s*제\s*\d+\s*항)?)[^。\n.]{0,80}?(?:따른|정한|정하는)')
+REFERENCE = re.compile(r'「([^」]+)」\s*(제\s*\d+(?:\s*-\s*\d+)*\s*조(?:의\s*\d+)?(?:\s*제\s*\d+\s*항)?)[^。\n.]{0,80}?(?:따른|정한|정하는)')
 
 
 def tables(db):

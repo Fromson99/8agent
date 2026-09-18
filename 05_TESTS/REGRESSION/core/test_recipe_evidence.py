@@ -39,9 +39,59 @@ def test_overlay_reuses_viewer_rectangles_and_binds_tree(tmp_path):
     assert images[0]!=images[1]
     for image,row in zip(images,manifest['images']):
         assert hashlib.sha256(base64.b64decode(image.split(',',1)[1])).hexdigest()==row['sha256']
+    with fitz.open(path) as pdf:
+        assert base64.b64decode(images[0].split(',',1)[1]) == pdf[0].get_pixmap(
+            matrix=fitz.Matrix(1.5,1.5), alpha=False).tobytes('png')
     old=manifest['tree_sha256'];tree.tree[0].title='changed'
     _,changed=ev.review_images(path,blocks,tree,[1],tmp_path/'changed')
     assert changed['tree_sha256']!=old
+
+
+def test_overlay_labels_unselected_blocks_for_image_only_feedback(tmp_path,monkeypatch):
+    path,blocks=document(tmp_path,1)
+    blocks[0].text='A source heading without a recognized marker'
+    tree=pipeline.interpret(copy.deepcopy(blocks),doc='missing',llm=None,ledger=None)
+    assert not tree.nodes()
+    labels=[];insert=fitz.Page.insert_text
+    def capture(page,point,text,*args,**kwargs):
+        labels.append(text)
+        return insert(page,point,text,*args,**kwargs)
+    monkeypatch.setattr(fitz.Page,'insert_text',capture)
+    images,_=ev.review_images(path,blocks,tree,[1],tmp_path/'images')
+    assert 'b0 BODY' in labels and 'owner=none' in labels and images[0]!=images[1]
+
+
+def test_overlay_owned_body_has_owner_and_labels_do_not_cover_source(tmp_path, monkeypatch):
+    path, blocks = document(tmp_path, 1)
+    blocks.append(Block(1, '표제가 없는 일반 본문입니다.', page=1,
+                        bbox=[50,68,400,90], bbox_origin='TOPLEFT'))
+    tree = pipeline.interpret(copy.deepcopy(blocks), doc='owned-body', llm=None, ledger=None)
+    labels = []
+    insert = fitz.Page.insert_text
+    def capture(page, point, text, *args, **kwargs):
+        labels.append((point, text, kwargs.get('fontsize', 0)))
+        return insert(page, point, text, *args, **kwargs)
+    monkeypatch.setattr(fitz.Page, 'insert_text', capture)
+    _, manifest = ev.review_images(path, blocks, tree, [1], tmp_path/'images')
+    owner = manifest['visible_blocks'][1]['node']
+    assert owner is not None
+    assert f'in n{owner} L0' in [text for _, text, _ in labels]
+    assert 'owner=none' not in [text for _, text, _ in labels]
+    offset = manifest['images'][1]['transform']['source_offset_points']
+    assert all(point[0] < offset[0] and size >= 8.5 for point, _, size in labels)
+    assert ev.block_label({'idx':2, 'opens':[], 'kind':'table', 'node':owner},
+                          {owner:{'id':owner, 'level':0}}) == ['b2 TABLE', f'in n{owner} L0']
+
+
+def test_overlay_blank_page_remains_reviewable(tmp_path):
+    path = tmp_path/'blank.pdf'
+    with fitz.open() as pdf:
+        pdf.new_page()
+        pdf.save(path)
+    result = pipeline.interpret([], doc='blank', llm=None, ledger=None)
+    images, manifest = ev.review_images(path, [], result, [1], tmp_path/'images')
+    assert len(images) == 2 and manifest['visible_blocks'] == []
+    assert manifest['images'][1]['transform']['source_offset_points'] == [168,38]
 
 
 def test_end_to_end_bound_images_full_execution_and_zero_call_cache(tmp_path,monkeypatch):
@@ -61,8 +111,13 @@ def test_end_to_end_bound_images_full_execution_and_zero_call_cache(tmp_path,mon
             for image,row in zip(self.images,data['visual_evidence']['images']):
                 assert hashlib.sha256(base64.b64decode(image.split(',',1)[1])).hexdigest()==row['sha256']
             assert len(self.images)==2*len(data['page_window'])
-            check=dict(data);state=check.pop('reviewed_state_id');assert state==loop.digest(check)
-            return {'verdict':'approve','issues':[],'reviewed_state_id':state,'template_changes':[]}
+            if 'opinions' in schema['properties']:
+                return {'opinions':[],'summary':'No visual defects in synthetic source'}
+            check=dict(data);state=check.pop('reviewed_state_id')
+            assert check.pop('vlm_opinions')==[]
+            assert state==loop.digest(check)
+            return {'verdict':'approve','issues':[],'reviewed_state_id':state,'template_changes':[],
+                    'opinion_decisions':[]}
     monkeypatch.setattr(runtime,'GenosCalls',FakeCalls)
     original=copy.deepcopy(blocks)
     tree,meta=runtime.revise_pdf(pipeline,blocks,path,store=tmp_path/'store',document='contract')

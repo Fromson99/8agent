@@ -21,7 +21,8 @@ from .provider import Haiku
 def safe(value):
     """Redact configured credentials, including echoes in a provider response."""
     secrets = [v for k, v in os.environ.items()
-               if v and any(s in k.upper() for s in ('KEY', 'TOKEN', 'PASSWORD', 'SECRET'))]
+               if v and k.upper() != 'STRUCTURE_RECIPE_MAX_TOKENS'
+               and any(s in k.upper() for s in ('KEY', 'TOKEN', 'PASSWORD', 'SECRET'))]
     if isinstance(value, str):
         for secret in sorted(secrets, key=len, reverse=True):
             value = value.replace(secret, '[REDACTED]')

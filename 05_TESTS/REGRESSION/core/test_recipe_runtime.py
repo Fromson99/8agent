@@ -9,12 +9,18 @@ from lawrag.core.structure import recipe_runtime as runtime
 from lawrag.core.structure import recipe_visual_loop as loop
 from lawrag.core.structure.model import Block, Candidate
 from semantic_runtime import genos
+from lawrag.core import llm
+import requests
 
 RECIPE = {"tag": "test_recipe", "version": 1, "levels": [["heading"], ["number"]]}
 
 
 @pytest.fixture(autouse=True)
 def isolated_env(monkeypatch):
+    # Preserve the previous protocol's regression suite; compact has its own
+    # real-adapter/HTTP-mock integration cases in test_recipe_compact.py.
+    monkeypatch.setenv('STRUCTURE_RECIPE_PROTOCOL','legacy')
+    monkeypatch.setenv('STRUCTURE_RECIPE_ACCEPT_WARNINGS','off')
     monkeypatch.setenv("LLM_BACKEND", "genos")
     monkeypatch.setenv("STRUCTURE_RECIPE_VLM", "on")
     monkeypatch.setenv("GENOS_LLM_PROFILE", "qwen")
@@ -32,9 +38,12 @@ def isolated_env(monkeypatch):
     def no_network(*a, **k):
         raise AssertionError("Live network forbidden in wiring contracts")
     monkeypatch.setattr(genos, "request_json", no_network)
+    monkeypatch.setattr(requests.sessions.Session, "request", no_network)
+    monkeypatch.setattr(llm, "load_env", lambda: None)
 
 
 def response(value, finish="stop"):
+    if "verdict" in value:value={**value,"opinion_decisions":value.get("opinion_decisions",[])}
     return {"model": "test-qwen-vl", "choices": [{"finish_reason": finish,
             "message": {"content": json.dumps(value)}}],
             "usage": {"prompt_tokens": 5, "completion_tokens": 3}}
@@ -65,49 +74,183 @@ def test_numeric_token_setting_does_not_corrupt_json_logs(tmp_path, monkeypatch)
     assert value["image"] == "[IMAGE OMITTED]"
 
 
-def test_multimodal_payload_retry_and_safe_logs(tmp_path, monkeypatch):
-    received = []
-    def request(target, path, payload):
+def install_transport(monkeypatch, callback, models=None):
+    """Mock only HTTP; exercise the unchanged production LLM streaming path."""
+    class Reply:
+        def __init__(self, body, status=200):
+            self.body, self.status_code = body, status
+            self.headers = {}
+            self.text = "synthetic"
+        def raise_for_status(self):
+            if self.status_code >= 400:
+                raise requests.HTTPError("HTTP " + str(self.status_code))
+        def json(self):
+            return self.body
+        def iter_lines(self):
+            choice = self.body['choices'][0]
+            yield ('data: ' + json.dumps({
+                'model': self.body.get('model', 'test-qwen-vl'),
+                'choices': [{'delta': {'content': choice['message']['content']},
+                             'finish_reason': choice['finish_reason']}],
+                'usage': self.body.get('usage', {})})).encode()
+            yield b'data: [DONE]'
+    sessions=[]
+    class Session:
+        def __init__(self):
+            self.headers={}; self.trust_env=True; self.calls=[]; sessions.append(self)
+        def get(self, url, **kwargs):
+            self.calls.append(('GET', url, kwargs))
+            return Reply({'data':[{'id': i} for i in (models() if callable(models) else models or ['test-qwen-vl'])]})
+        def post(self, url, **kwargs):
+            self.calls.append(('POST', url, kwargs))
+            body=callback(self, url, kwargs['json'])
+            return Reply(body) if isinstance(body, dict) else Reply({}, body)
+    monkeypatch.setattr(requests, 'Session', Session)
+    return sessions
+
+
+def test_existing_llm_profile_auth_path_stream_and_images(tmp_path, monkeypatch):
+    monkeypatch.setenv('GENOS_LLM_PROFILE','shared_vl')
+    monkeypatch.setenv('GENOS_SHARED_VL_SERVING_ID','456')
+    monkeypatch.setenv('GENOS_SHARED_VL_KEY','PROFILE-SECRET')
+    monkeypatch.delenv('GENOS_SHARED_VL_MODEL',raising=False)
+    monkeypatch.delenv('GENOS_LLM_MODEL',raising=False)
+    sessions=install_transport(monkeypatch,lambda *a: response(RECIPE),models=['site-vision-model'])
+    journal=runtime.Journal(tmp_path,'profile')
+    provider=runtime.GenosCalls(journal,['data:image/png;base64,aGVsbG8='])
+    assert isinstance(provider.client,llm.LLM)
+    assert provider.model=='site-vision-model'
+    provider('review','test',{'full_text':'whole document'},loop.recipe_schema({'heading':{},'number':{}}),True)
+    session=sessions[0]
+    assert session.trust_env is False
+    post=next(row[2]["json"] for row in session.calls if row[0]=="POST")
+    assert post["chat_template_kwargs"]=={"enable_thinking":False}
+    assert list(journal.directory.glob("call-*-provider-response.json"))
+    assert session.headers['Authorization']=='Bearer PROFILE-SECRET'
+    assert [r[1] for r in session.calls]==[
+        'https://test.invalid/api/gateway/rep/serving/456/v1/models',
+        'https://test.invalid/api/gateway/rep/serving/456/v1/chat/completions']
+    body=session.calls[-1][2]['json']
+    assert body['model']=='site-vision-model' and body['stream'] is True
+    assert body['messages'][1]['content'][0]['type']=='image_url'
+    assert json.loads(body['messages'][1]['content'][1]['text'])=={'full_text':'whole document'}
+    text=''.join(p.read_text() for p in journal.directory.glob('*.json*'))
+    assert 'PROFILE-SECRET' not in text and 'data:image' not in text
+
+
+@pytest.mark.parametrize('finish',['length','content_filter'])
+def test_incomplete_output_holds(tmp_path,monkeypatch,finish):
+    install_transport(monkeypatch,lambda *a: response(RECIPE,finish))
+    calls=runtime.GenosCalls(runtime.Journal(tmp_path,'x'),[])
+    with pytest.raises(runtime.NeedsReview,match='existing_llm_call_failed'):
+        calls('assemble','x',{}, {},False)
+
+
+@pytest.mark.parametrize('status',[401,503])
+def test_existing_llm_failure_not_retried_by_adapter(tmp_path,monkeypatch,status):
+    sessions=install_transport(monkeypatch,lambda *a: status)
+    calls=runtime.GenosCalls(runtime.Journal(tmp_path,'x'),[])
+    with pytest.raises(runtime.NeedsReview,match='existing_llm_call_failed'):
+        calls('assemble','x',{}, {},False)
+    assert len(sessions[0].calls)==1
+
+
+def test_explicit_profile_model_does_not_need_discovery(tmp_path,monkeypatch):
+    sessions=install_transport(monkeypatch,lambda *a: response(RECIPE))
+    provider=runtime.GenosCalls(runtime.Journal(tmp_path,'explicit'),[])
+    assert provider.model=='test-qwen-vl' and not sessions[0].calls
+
+
+def test_genos_documented_first_model_and_user_header(tmp_path,monkeypatch):
+    # GENOS v1.8.6 LLM API: GET /v1/models, data[0].id,
+    # Authorization Bearer and optional x-genos-user-id.
+    monkeypatch.delenv('GENOS_QWEN_MODEL',raising=False)
+    monkeypatch.delenv('GENOS_LLM_MODEL',raising=False)
+    monkeypatch.setenv('GENOS_USER_ID','653')
+    sessions=install_transport(monkeypatch,lambda *a: response(RECIPE),models=['first','second'])
+    provider=runtime.GenosCalls(runtime.Journal(tmp_path,'documented'),[])
+    assert provider.model=='first'
+    assert sessions[0].headers['x-genos-user-id']=='653'
+    assert sessions[0].headers['Authorization']=='Bearer TEST-SECRET-NEVER-LOG'
+    assert sessions[0].calls[0][1].endswith('/v1/models')
+
+
+def test_existing_direct_serving_endpoint_is_preserved(tmp_path,monkeypatch):
+    monkeypatch.setenv('GENOS_LLM_URL','https://configured.invalid/api/gateway/rep/serving/789')
+    sessions=install_transport(monkeypatch,lambda *a: response(RECIPE))
+    provider=runtime.GenosCalls(runtime.Journal(tmp_path,'direct'),['data:image/jpeg;base64,aGVsbG8='])
+    provider('review','test',{}, {},True)
+    assert sessions[0].calls[0][1]=='https://configured.invalid/api/gateway/rep/serving/789/v1/chat/completions'
+    body=sessions[0].calls[0][2]['json']
+    assert body['messages'][1]['content'][0]['image_url']['url']=='data:image/jpeg;base64,aGVsbG8='
+
+
+def test_real_progress_consumer_allows_model_request_and_response(tmp_path,monkeypatch):
+    from io import StringIO
+    from lawrag.pipeline.genos_progress import Progress
+    sessions=install_transport(monkeypatch,lambda *a: response(RECIPE))
+    progress=Progress(tmp_path/'progress',StringIO())
+    try:
+        progress.document(1,1,'synthetic.pdf','구조화')
+        with runtime.progress_events(progress.emit):
+            journal=runtime.Journal(tmp_path/'calls','synthetic.pdf')
+            provider=runtime.GenosCalls(journal,['data:image/png;base64,aGVsbG8='])
+            assert provider('detect-format-regions','test',{}, {},True)==RECIPE
+        assert len(sessions[0].calls)==1
+        events=[json.loads(line) for line in (journal.directory/'events.jsonl').read_text().splitlines()]
+        request=next(row for row in events if row['event']=='model.request')
+        assert request['attempt']==1
+        log=(tmp_path/'progress'/'progress.log').read_text()
+        assert '시도 1' in log and '응답 대기' in log
+        assert '입력/출력 5/3' in progress.state['detail']
+    finally:
+        progress.close()
+
+
+def test_closed_schema_and_no_text_only_review(tmp_path,monkeypatch):
+    sessions=install_transport(monkeypatch,lambda *a: response(RECIPE))
+    calls=runtime.GenosCalls(runtime.Journal(tmp_path,'x'),[])
+    with pytest.raises(runtime.NeedsReview,match='requires_images'):
+        calls('review','x',{}, {},True)
+    calls.images=['malformed-image']
+    with pytest.raises(runtime.NeedsReview,match='invalid_visual_image'):
+        calls('review','x',{}, {},True)
+    assert not sessions[0].calls
+
+
+def test_external_backend_rejected_before_client(tmp_path,monkeypatch):
+    monkeypatch.setenv('LLM_BACKEND','anthropic')
+    monkeypatch.setattr(llm,'LLM',lambda: pytest.fail('must not construct external client'))
+    with pytest.raises(runtime.NeedsReview,match='requires_genos_backend'):
+        runtime.GenosCalls(runtime.Journal(tmp_path,'x'),[])
+
+
+def test_existing_json_mode_fallback_preserves_images(tmp_path,monkeypatch):
+    monkeypatch.setenv('GENOS_LLM_JSON_MODE','json_schema')
+    received=[]
+    def reply(session,url,payload):
         received.append(payload)
-        assert target.root == "https://test.invalid/api/gateway/rep/serving/123"
-        assert path == "/chat/completions"
-        assert target.max_retries == 1
-        if len(received) == 1:
-            raise genos.ServingError("GENOS request failed after 1 attempts: HTTP 429")
-        return response(RECIPE)
-    monkeypatch.setattr(runtime.time, "sleep", lambda _: None)
-    journal = runtime.Journal(tmp_path, "law/test.pdf")
-    calls = runtime.GenosCalls(journal, ["data:image/png;base64,aGVsbG8="], request=request)
-    assert calls("test", "test", {}, loop.recipe_schema({"heading": {}, "number": {}}), True) == RECIPE
-    assert received[0] == received[1]
-    assert received[1]["messages"][1]["content"][1]["type"] == "image_url"
-    text = (journal.directory / "events.jsonl").read_text()
-    assert "model.retry" in text and "input_count" in text
-    assert "TEST-SECRET-NEVER-LOG" not in text and "data:image" not in text
+        return 400 if len(received)==1 else response(RECIPE)
+    install_transport(monkeypatch,reply)
+    provider=runtime.GenosCalls(runtime.Journal(tmp_path,'schema'),['data:image/png;base64,aGVsbG8='])
+    assert provider('review','test',{}, {},True)==RECIPE
+    assert len(received)==2
+    assert received[0]['messages'][1]==received[1]['messages'][1]
+    assert 'response_format' in received[0] and 'response_format' not in received[1]
 
 
-@pytest.mark.parametrize("finish", ["length", "content_filter", None])
-def test_incomplete_output_holds(tmp_path, finish):
-    calls = runtime.GenosCalls(runtime.Journal(tmp_path, "x"), [], request=lambda *a: response(RECIPE, finish))
-    with pytest.raises(runtime.NeedsReview, match="incomplete"):
-        calls("assemble", "x", {}, loop.recipe_schema({"heading": {}, "number": {}}), False)
-
-
-def test_no_auth_retry(tmp_path):
-    count = []
-    def request(*a):
-        count.append(1)
-        raise genos.ServingError("GENOS HTTP 401")
-    calls = runtime.GenosCalls(runtime.Journal(tmp_path, "x"), [], request=request)
-    with pytest.raises(genos.ServingError):
-        calls("assemble", "x", {}, {}, False)
-    assert count == [1]
-
-
-def test_closed_schema_and_no_text_only_review(tmp_path):
-    calls = runtime.GenosCalls(runtime.Journal(tmp_path, "x"), [], request=lambda *a: response(RECIPE))
-    with pytest.raises(runtime.NeedsReview, match="requires_images"):
-        calls("review", "x", {}, {}, True)
+def test_schema_and_call_budget_still_enforced(tmp_path,monkeypatch):
+    import jsonschema
+    from lawrag.core.structure.recipe_output import ResponseError
+    sessions=install_transport(monkeypatch,lambda *a: response({'wrong':True}))
+    provider=runtime.GenosCalls(runtime.Journal(tmp_path,'schema'),[],max_calls=1)
+    with pytest.raises(ResponseError) as failure:
+        provider('assemble','test',{},loop.recipe_schema({'heading':{},'number':{}}),False)
+    assert isinstance(failure.value.__cause__,jsonschema.ValidationError)
+    assert failure.value.response=={'wrong':True}
+    with pytest.raises(runtime.NeedsReview,match='model_call_budget'):
+        provider('assemble','test',{}, {},False)
+    assert len(sessions[0].calls)==1
 
 
 def fixture_tree():
@@ -163,31 +306,16 @@ def test_explicit_format_keeps_precedence(tmp_path, monkeypatch):
     assert result["bound"]
 
 
-def test_exhausted_transient_budget(tmp_path, monkeypatch):
-    attempts = []
-    def request(*a):
-        attempts.append(1)
-        raise genos.ServingError("GENOS request failed after 1 attempts: HTTP 503")
-    monkeypatch.setattr(runtime.time, "sleep", lambda _: None)
-    calls = runtime.GenosCalls(runtime.Journal(tmp_path, "x"), [], request=request)
-    with pytest.raises(genos.ServingError):
-        calls("assemble", "x", {}, {}, False)
-    assert len(attempts) == 2
-
-
-def test_invalid_json_not_retried(tmp_path):
-    attempts = []
-    def request(*a):
-        attempts.append(1)
-        body = response(RECIPE)
-        body["choices"][0]["message"]["content"] = "not JSON"
-        return body
-    calls = runtime.GenosCalls(runtime.Journal(tmp_path, "x"), [], request=request)
-    with pytest.raises(json.JSONDecodeError):
-        calls("assemble", "x", {}, {}, False)
-    assert len(attempts) == 1
-
-
+def test_invalid_json_handed_to_owner_without_adapter_retry(tmp_path,monkeypatch):
+    from lawrag.core.structure.recipe_output import ResponseError
+    body=response(RECIPE);body['choices'][0]['message']['content']='not JSON'
+    sessions=install_transport(monkeypatch,lambda *a: body)
+    calls=runtime.GenosCalls(runtime.Journal(tmp_path,'x'),[])
+    with pytest.raises(ResponseError) as failure:
+        calls('assemble','x',{}, {},False)
+    assert failure.value.response=='not JSON'
+    assert failure.value.diagnostic['code']=='INVALID_MODEL_JSON'
+    assert len(sessions[0].calls)==1
 
 
 def test_off_dispatch_uses_legacy_engine(tmp_path, monkeypatch):
@@ -261,19 +389,146 @@ def regional_document(tmp_path, count=2):
         doc.save(pdf)
     return pdf,blocks
 
-def regional_provider(monkeypatch, verdict='approve', invalid_parent=False):
+def regional_provider(monkeypatch, verdict='approve', invalid_parent=False, fail_phase=None, noop=False,
+                      bad_stage=None, bad_kind='schema'):
     seen=[]
+    injected=False
     def request(target,path,payload):
-        data=json.loads(payload['messages'][1]['content'][0]['text']);seen.append(data)
+        nonlocal injected
+        content=payload['messages'][1]['content']
+        data=json.loads(content if isinstance(content,str) else next(b['text'] for b in content if b['type']=='text'));seen.append(data)
+        stage=('detect' if 'outline' in data else 'template' if 'region_instances' in data
+               else 'adjudicate' if 'reviewed_state_id' in data else 'opinions')
+        if stage==bad_stage and not injected:
+            injected=True
+            if bad_kind=='http':return 401
+            bad=response({'wrong':True})
+            if bad_kind=='json':bad['choices'][0]['message']['content']='{"invalid":'
+            return bad
+        if ((fail_phase == 'detect' and 'outline' in data) or
+                (fail_phase == 'review' and 'recipe' in data and 'reviewed_state_id' not in data)):
+            return response({'private': 'PRIVATE-MODEL-OUTPUT'}, 'length')
+        if 'recipe' in data and 'reviewed_state_id' not in data:return response({'opinions':[],'summary':'No visual defects observed'})
         if 'outline' in data:
             value={'regions':[{'start_block':0,'template_id':'body','label':'body','reason':'continuous format'}]}
         elif 'region_instances' in data:
             value={'families':{f:{'parent_family':'missing' if invalid_parent else '$document','heading_position':'line_start','sequence':'consecutive','reset_scope':'document','rationale':'synthetic source'} for f in data['catalog']}}
         else:
             value={'verdict':verdict,'reviewed_state_id':data['reviewed_state_id'],'issues':[] if verdict=='approve' else [{'blocks':[data['source_blocks'][0]['idx']],'reason':'source requires review'}],'template_changes':[]}
+            if noop:
+                tid=next(iter(data['recipe']['templates']))
+                family=next(iter(data['recipe']['templates'][tid]['heading_rules']))
+                rule=deepcopy(data['recipe']['templates'][tid]['heading_rules'][family])
+                rule['rationale']='Another explanation without executable changes'
+                value.update(verdict='revise',issues=[],template_changes=[{'template_id':tid,'family':family,'rule':rule}])
         return response(value)
-    monkeypatch.setattr(genos,'request_json',request)
+    install_transport(monkeypatch,request)
     return seen
+
+
+@pytest.mark.parametrize('stage,key', [('detect','invalid_plan'),('template','invalid_template'),
+                                     ('opinions','invalid_opinions'),('adjudicate','invalid_review')])
+@pytest.mark.parametrize('kind', ['json','schema'])
+def test_invalid_answers_reach_owning_repair_loop(tmp_path,monkeypatch,stage,key,kind):
+    pdf,blocks=regional_document(tmp_path)
+    seen=regional_provider(monkeypatch,bad_stage=stage,bad_kind=kind)
+    tree,meta=runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='source')
+    repairs=[data for data in seen if key in data]
+    assert len(repairs)==1
+    correction=repairs[0]
+    assert correction[key]==('{"invalid":' if kind=='json' else {'wrong':True})
+    error=correction['repair_feedback']['error']
+    assert error['code']==('INVALID_MODEL_JSON' if kind=='json' else 'INVALID_RESPONSE_SCHEMA')
+    if kind=='schema':assert error['constraint']=='additionalProperties' and error['actual']=={'wrong':True}
+    else:assert error['line']==1 and error['column']==12 and error['message']=='Expecting value'
+    assert correction['repair_feedback']['remaining_attempts']==(1 if stage=='opinions' else 2)
+    assert correction['source_blocks'] and 'TEST-SECRET-NEVER-LOG' not in json.dumps(correction)
+    assert len(tree.nodes())==2 and meta['status']=='visual_approved'
+
+
+@pytest.mark.parametrize('stage', ['detect','template','opinions','adjudicate'])
+def test_http_failure_is_not_repackaged_as_model_repair(tmp_path,monkeypatch,stage):
+    pdf,blocks=regional_document(tmp_path)
+    seen=regional_provider(monkeypatch,bad_stage=stage,bad_kind='http')
+    with pytest.raises(runtime.NeedsReview) as failure:
+        runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='source')
+    assert failure.value.diagnostic['code']=='existing_llm_call_failed'
+    assert len(seen)=={'detect':1,'template':2,'opinions':3,'adjudicate':4}[stage]
+    assert not any('repair_feedback' in data for data in seen)
+    assert not (tmp_path/'structure-recipes.json').exists()
+
+
+def test_noop_review_cause_and_exact_pending_path_survive_runtime(tmp_path,monkeypatch):
+    pdf,blocks=regional_document(tmp_path)
+    regional_provider(monkeypatch,noop=True)
+    with pytest.raises(runtime.NeedsReview) as failure:
+        runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='source')
+    diagnostic=failure.value.diagnostic
+    assert diagnostic['code']=='NO_EXECUTABLE_CHANGE'
+    assert '실행 규칙이 현재와 동일함' in str(failure.value)
+    pending=Path(diagnostic['response_path'])
+    assert pending.is_file() and str(pending) in str(failure.value)
+    assert json.loads(pending.read_text())['rule_comparison'][0]['changed_fields']==[]
+    assert not (tmp_path/'structure-recipes.json').exists()
+
+
+@pytest.mark.parametrize('max_tokens,phase', [(4096, 'detect'), (16384, 'detect'), (16384, 'review')])
+def test_output_limit_reaches_error_summary_console_and_status(tmp_path, monkeypatch, max_tokens, phase):
+    from io import StringIO
+    from lawrag.pipeline import genos_build, genos_status
+    from lawrag.pipeline.genos_progress import Progress
+
+    monkeypatch.setenv('STRUCTURE_RECIPE_MAX_TOKENS', str(max_tokens))
+    pdf, blocks = regional_document(tmp_path)
+    regional_provider(monkeypatch, fail_phase=phase)
+    def ingest(*args):
+        runtime.revise_pdf(pipeline, blocks, pdf, store=tmp_path/'store', document='synthetic')
+    monkeypatch.setattr(genos_build, '_ingest_files', ingest)
+    row = {'document_id': 'synthetic', 'path': str(pdf), 'relative': 'synthetic.pdf', 'source': 'internal'}
+    class Terminal(StringIO):
+        def isatty(self):
+            return True
+    terminal = Terminal()
+    progress = Progress(tmp_path/'logs', terminal)
+    ledger = genos_status.Ledger(tmp_path/'logs').start([row], 'structure')
+    try:
+        progress.document(1, 1, row['relative'], '구조화')
+        with pytest.raises(ValueError) as failure:
+            with runtime.progress_events(progress.emit):
+                genos_build.ingest_files({'files': [row]}, tmp_path, progress.emit)
+        progress.error(failure.value)
+        ledger.update('synthetic', 'structure', 'FAILED', error=str(failure.value))
+        ledger.finish()
+        reports = genos_status.export_report(tmp_path/'logs')
+        entry = json.loads((tmp_path/'structure-errors.json').read_text())[0]
+        diagnosis = entry['diagnostic']
+        assert diagnosis['code'] == 'OUTPUT_LENGTH_LIMIT'
+        assert diagnosis['max_tokens'] == max_tokens
+        assert diagnosis['output_tokens'] == 3
+        response_path = Path(diagnosis['response_path'])
+        assert json.loads(response_path.read_text())['stop_reason'] == 'max_tokens'
+        assert '출력 토큰 한도 초과' in str(failure.value)
+        assert f'max_tokens={max_tokens}' in str(failure.value)
+        if max_tokens == 16384:
+            assert '요청 분할 또는 출력량 축소' in diagnosis['next_action']
+        assert str(response_path) in terminal.getvalue().split('실패 원인: ')[-1]
+        assert 'max_tokens=' + str(max_tokens) in terminal.getvalue()
+        current = json.loads((tmp_path/'logs/current.json').read_text())
+        assert '출력 토큰 한도' in current['detail']
+        assert current['status'] == 'FAILED'
+        for path in reports.values():
+            if Path(path).suffix in {'.html', '.csv'}:
+                report = Path(path).read_text()
+                assert f'max_tokens={max_tokens}' in report
+                assert str(response_path) in report
+        summary = (tmp_path/'structure-errors.json').read_text() + terminal.getvalue()
+        assert 'PRIVATE-MODEL-OUTPUT' not in summary
+        assert 'TEST-SECRET-NEVER-LOG' not in summary
+        assert 'LLM 호출 전 구조화 실패' not in summary
+        assert not (tmp_path/'structure-recipes.json').exists()
+    finally:
+        progress.close()
+        ledger.close()
 
 def test_region_tag_reuses_same_model_source_and_exact_tree(tmp_path,monkeypatch):
     pdf,blocks=regional_document(tmp_path);seen=regional_provider(monkeypatch)

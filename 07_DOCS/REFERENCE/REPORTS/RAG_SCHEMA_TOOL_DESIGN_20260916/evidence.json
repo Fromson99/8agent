@@ -1,0 +1,245 @@
+{
+  "observed_at": "2026-09-16T12:21:50.209980+00:00",
+  "git_head": "65463101162354b2a283cf76b0878129ef541ba8",
+  "active": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "navigation-rag-20260916-v1",
+    "generation": 14,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/navigation-rag-20260916-v1/release.json",
+    "release_manifest_sha256": "bf378ef04961a865cadd942293f7ee46ba7e403fbdc9732f045839278ef7c702",
+    "activated_at": "2026-09-16T04:26:00.742989+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "c22af8816a04e87436db783cf1c9270642720e9a9a51cb79652559a4b2405ab6"
+  },
+  "release_manifest_verified": true,
+  "release_files_verified": true,
+  "data_manifest_verified": true,
+  "data_path": "01_DATA/SEMANTIC/GENERATIONS/navigation-source-20260916-v1",
+  "generation_id": "term-source-adca5fbe3650f90fb372",
+  "store_verified": true,
+  "files": {
+    "service.py": {
+      "working": "eb071f8ab4b6ad468d51a8631768aaff4b3a2a58caa4638eeadbbb7bbd6ad4a5",
+      "release": "eb071f8ab4b6ad468d51a8631768aaff4b3a2a58caa4638eeadbbb7bbd6ad4a5"
+    },
+    "00_SYSTEM/PIPELINE.json": {
+      "working": "9c4b7660d34b6d723ddcf76747a330b5c69bee7660603aa11f5120065915aa1c",
+      "release": "aad03c747043a7d84f0ad951ea8d6a80644e877166b1a8d787ec7ee20eb71ab1"
+    },
+    "00_SYSTEM/DATA_MODEL.md": {
+      "working": "d9f0885e47635a53ae12fed45900626bc30ab3b1349dd0022777b1703b8b20a3",
+      "release": null
+    },
+    "00_SYSTEM/LEGAL_SCHEMA.json": {
+      "working": "487dc54f990b06c61706101fb405fb330610128e953dee04f7d2a44f9410efe6",
+      "release": null
+    },
+    "00_SYSTEM/GLOSSARY_SCHEMA.json": {
+      "working": "9328a14866739dbb302a3314455114dba25645ae04f8755b5acc50e1dbfef4cf",
+      "release": null
+    },
+    "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json": {
+      "working": "445ce3b245cf5199742397fe2f46b38d9cb13bc69660d32d8c6e6c72881f22bb",
+      "release": "445ce3b245cf5199742397fe2f46b38d9cb13bc69660d32d8c6e6c72881f22bb"
+    },
+    "00_SYSTEM/SCHEMAS/legal-semantic-v2.schema.json": {
+      "working": "25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607",
+      "release": null
+    },
+    "00_SYSTEM/SCHEMAS/glossary-sense-review-v3.schema.json": {
+      "working": "4f8125353ab96518cdeed749b29db81bed7dce6169f98a7e0ab92ab7c45ab118",
+      "release": null
+    },
+    "02_BACKEND/semantic_runtime/app.py": {
+      "working": "55d37bb84d885beca473150600c2d910814c5270b688cc5438ca249b0aeff8b1",
+      "release": "7977403471b608f06c7cd2d99bf1e6426177259b80aea5aedc57f9a932a3cca4"
+    },
+    "02_BACKEND/semantic_runtime/pipeline.py": {
+      "working": "0e3db48b47df1aeab38c23e85bf8d44ccafc0847eb46fbc1187de71457e48aa2",
+      "release": "df244f079e744ba751a6bf9b8481a7ca4d44105d19595b6a12cc439685631280"
+    },
+    "02_BACKEND/semantic_runtime/navigation_loop.py": {
+      "working": "d49da940e27866d7b789b23970c658aa559a8ef8c061598d5b20cc2195c2d1f8",
+      "release": "43b8508094ccd48db57cc16c6c5eaa4508b58bee8621aa0f153baf0f101947e1"
+    },
+    "02_BACKEND/semantic_runtime/navigation_agent.py": {
+      "working": "2733bb5a86e035ffac375b9529379efa5feb6ef251ad6b4aa691a629c811b25f",
+      "release": "e4bf1373e799ae701a3fde0def1d537955e36a8ebdf7d10e63ad10d812b03c3d"
+    },
+    "02_BACKEND/semantic_runtime/navigation_match.py": {
+      "working": "4ca988e53466a7f1c44cc3706cbb6fe63bd2357c34a2706c525ddfeba5a31e8a",
+      "release": "ff7c928732a93860caeda56a0f69c4485182de14deacdfc3583d83b6c9fd8214"
+    },
+    "02_BACKEND/semantic_runtime/full_glossary_connections.py": {
+      "working": "a0ef14ab94e59b0bb2bb10735b54b38505b64e97cc9f807199f1bcc217ab5bd4",
+      "release": "a0ef14ab94e59b0bb2bb10735b54b38505b64e97cc9f807199f1bcc217ab5bd4"
+    },
+    "02_BACKEND/semantic_runtime/term_index.py": {
+      "working": "e63d8ff2c02ac65d3b76c4f1e4f2867064334e10147924ea90b199cf77249ed1",
+      "release": "85c1424382b2318123e52e4da889f628e5620f3e8a52dfac81c3614aadf915b6"
+    },
+    "02_BACKEND/semantic_runtime/term_agent.py": {
+      "working": "bb89871198a979150e45ce3ef40c7466bf35a103e7d5fcb71d9980b7b95dec32",
+      "release": "bb89871198a979150e45ce3ef40c7466bf35a103e7d5fcb71d9980b7b95dec32"
+    },
+    "02_BACKEND/semantic_runtime/storage.py": {
+      "working": "e1f864b7c4e33acb09eb296c82ee3a707d0e9aa95009bd0bf52e13a8bc685804",
+      "release": "e1f864b7c4e33acb09eb296c82ee3a707d0e9aa95009bd0bf52e13a8bc685804"
+    },
+    "02_BACKEND/semantic_runtime/stages.py": {
+      "working": "6548baace494bd6f2f7c34ac62f4b89ff3350a360a28bfdea14f70abc3e4b463",
+      "release": "6548baace494bd6f2f7c34ac62f4b89ff3350a360a28bfdea14f70abc3e4b463"
+    },
+    "02_BACKEND/semantic_runtime/task_harness.py": {
+      "working": "71eb89e9a5af2344d0ea79b4beec7e429cdad131a51bff3c6cef87df64426217",
+      "release": null
+    },
+    "02_BACKEND/semantic_runtime/task_policy.py": {
+      "working": "4672b5cc2455dade7f26a11b4faed70769aac6b92e2d2d91c57b176b1f44135c",
+      "release": null
+    },
+    "02_BACKEND/lawrag/pipeline/term_generation.py": {
+      "working": "bc8ae4160467f68bce4bc03f03cc1760199ce78f6db4c204a9b4b6a38393a29f",
+      "release": null
+    },
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": {
+      "working": "0d2b1b4fae14f2004c3219d0e35be7f8376c3c8625bcdfe56b0a9a5aec661a21",
+      "release": null
+    },
+    "07_DOCS/REFERENCE/OPERATIONS/TASK_HARNESS.md": {
+      "working": "2469759c40c9f96cf09cb4687841177d3950feea336fcac8bc776be24d2d3fbc",
+      "release": null
+    }
+  },
+  "source_counts": {
+    "document": 159,
+    "source_unit": 230417,
+    "source_block": 308795
+  },
+  "source_columns": {
+    "document": [
+      "document_id",
+      "name",
+      "source_artifact_sha256",
+      "json"
+    ],
+    "source_unit": [
+      "document_id",
+      "unit_id",
+      "parent_id",
+      "json"
+    ],
+    "source_block": [
+      "document_id",
+      "block_id",
+      "unit_id",
+      "text",
+      "source_artifact_sha256",
+      "json"
+    ]
+  },
+  "unit_families": [
+    [
+      "circled",
+      122741
+    ],
+    [
+      "dot_number:1",
+      55735
+    ],
+    [
+      "kr_article",
+      29267
+    ],
+    [
+      "hangul_dot",
+      15741
+    ],
+    [
+      "hangul_jamo",
+      2109
+    ],
+    [
+      "bullet_▶",
+      1382
+    ],
+    [
+      "paren_number:both",
+      1160
+    ],
+    [
+      "kr_장",
+      883
+    ],
+    [
+      "kr_절",
+      525
+    ],
+    [
+      "paren_number:right",
+      195
+    ],
+    [
+      "kr_편",
+      193
+    ],
+    [
+      "buchik",
+      145
+    ],
+    [
+      "roman_upper",
+      123
+    ],
+    [
+      "kr_관",
+      94
+    ],
+    [
+      "bullet_·",
+      56
+    ],
+    [
+      "annex",
+      44
+    ],
+    [
+      "roman_lower",
+      16
+    ],
+    [
+      "dot_number:2",
+      3
+    ]
+  ],
+  "unit_keys": [
+    "attachments",
+    "block",
+    "extent",
+    "family",
+    "id",
+    "level",
+    "n_children",
+    "ordinal",
+    "page",
+    "parent",
+    "reason",
+    "span",
+    "surface",
+    "title",
+    "title_reason"
+  ],
+  "max_block_chars": 23506,
+  "blocks_without_unit": 56,
+  "navigation_counts": {
+    "term": 253324,
+    "edge": 48101,
+    "source": 33443,
+    "occurrence": 5539572,
+    "definition": 8533,
+    "reference": 105122
+  },
+  "navigation_manifest_verified": true
+}

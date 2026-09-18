@@ -38,6 +38,9 @@ _GET_ALLOWLIST = frozenset(
         "/v1/rag/section",
         "/v1/rag/scopes",
         "/v1/rag/nodes",
+        "/v1/rag/documents",
+        "/v1/rag/document/outline",
+        "/v1/rag/document/read",
         "/v1/rag/links/summary",
         "/v1/rag/links",
     }
@@ -269,6 +272,14 @@ def application():
     vector = None if ((manifest.get("vectors") or {}).get("format") == "genos-sqlite-v1"
                       or importlib.util.find_spec("numpy") is not None) else False
     with obs.step(log, "runtime.create"):
+        options = {}
+        implementation = os.environ.get("GENOS_RAG_IMPLEMENTATION", "").strip()
+        if implementation:
+            if binding.get("mode") == "local-release":
+                raise ValueError("GENOS_RAG_IMPLEMENTATION requires an explicit GENOS generation; local releases retain their pinned configuration")
+            if implementation not in {"navigation-loop-v1", "document-navigation-v1"}:
+                raise ValueError("unsupported GENOS_RAG_IMPLEMENTATION")
+            options["implementation"] = implementation
         _APP = create_app(
             runtime,
             generation,
@@ -276,6 +287,7 @@ def application():
             release=binding,
             provider=_provider(_ROOT, runtime, manifest),
             vector=vector,
+            **options,
         )
     _BINDING = binding
     obs.event(

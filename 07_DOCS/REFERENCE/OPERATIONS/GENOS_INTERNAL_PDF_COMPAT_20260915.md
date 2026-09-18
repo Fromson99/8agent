@@ -97,3 +97,12 @@ docling-core 2.94.1, docling-ibm-models 4.0.2, docling-parse 7.16.0으로 검사
 검증 영수증은 묶음 디렉터리의 `validation-receipt.json`에 보관한다.
 현장 Python 3.11 의존성 조합·모델 반입·실제 내부 문서 품질은 현장 `check_models.py
 --smoke-test`와 처리 결과로 확인해야 한다. VLM 현장 설치 여부는 별도 미확인이다.
+
+## 후속 작업 코드: GENOS 전처리기로 파싱 위임
+
+사용자 지시로 GENOS 문서 구축의 PDF 기본 경로를 전처리기 호출로 수정했다.
+코드스페이스 환경변수의 전처리기 ID/URL을 사용하고, 파싱용 전처리기의 Docling JSON을
+기존 원문·용어 적재에 연결한다. 이 경로는 코드스페이스의 레이아웃 모델 ZIP을 사용하지 않는다.
+위 ZIP과 외부 검증 기록은 이전 로컬 파싱 경로의 이력으로 보존한다.
+[현재 설정·실행·검증 범위](GENOS_PREPROCESSOR_PARSING.md)를 따른다.
+현장 187의 해당 응답 지원·서버 설정·새 코드 배포·실제 PDF 성공은 아직 미확인이다.

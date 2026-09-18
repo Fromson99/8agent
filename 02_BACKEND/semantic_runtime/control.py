@@ -13,6 +13,19 @@ from .contracts import sha,write
 from .storage import publish
 
 
+def copy_learning_bundle(binding, code_root, target_root, generation, terms, documents):
+    """Pin the explicitly selected review bundle into a prepared release, without activation."""
+    from .navigation_learning import load_learning_bundle
+    load_learning_bundle(binding, code_root, generation, terms, documents)
+    source=(Path(code_root)/binding['path']).resolve()
+    target=(Path(target_root)/binding['path']).resolve()
+    target.relative_to(Path(target_root).resolve())
+    target.parent.mkdir(parents=True,exist_ok=True)
+    with target.open('xb') as stream:
+        stream.write(source.read_bytes())
+    if sha(target)!=binding['sha256']:raise ValueError('learning bundle changed during release copy')
+
+
 def prepare(root,code_root,generation,release_id,authorization,validation):
     root=Path(root).resolve();code_root=Path(code_root).resolve();generation=Path(generation).resolve()
     if not release_id or any(c not in 'abcdefghijklmnopqrstuvwxyz0123456789-_' for c in release_id):raise ValueError('invalid release ID')
@@ -28,6 +41,19 @@ def prepare(root,code_root,generation,release_id,authorization,validation):
     dest.mkdir(parents=True)
     shutil.copytree(code_root/'02_BACKEND/semantic_runtime',dest/'code/02_BACKEND/semantic_runtime',ignore=shutil.ignore_patterns('__pycache__','moleg_links.py'))
     shutil.copytree(code_root/'02_BACKEND/ENGINES/term_runtime',dest/'code/02_BACKEND/ENGINES/term_runtime')
+    # Engine manifests may pin shared modules outside semantic_runtime (legal_coordinate.py).
+    # Copy them with their package markers so the release imports and verifies its own bytes.
+    pinned=set()
+    for engine in sorted((code_root/'02_BACKEND/ENGINES/term_runtime').rglob('*.json')):
+        pinned.update(json.loads(engine.read_text()).get('files',{}))
+    for relative in sorted(pinned):
+        if relative.startswith('02_BACKEND/semantic_runtime/'):continue
+        path=Path(relative)
+        if path.is_absolute() or '..' in path.parts or path.parts[0]!='02_BACKEND':raise ValueError('pinned engine file outside backend: '+relative)
+        for marker in [p/'__init__.py' for p in path.parents if len(p.parts)>1]:
+            if (code_root/marker).is_file() and not (dest/'code'/marker).exists():
+                (dest/'code'/marker).parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(code_root/marker,dest/'code'/marker)
+        (dest/'code'/path).parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(code_root/path,dest/'code'/path)
     (dest/'code/06_TOOLS').mkdir(parents=True)
     shutil.copyfile(code_root/'service.py',dest/'code/service.py')
     shutil.copyfile(code_root/'06_TOOLS/serve.sh',dest/'code/06_TOOLS/serve.sh')
@@ -46,9 +72,31 @@ def prepare(root,code_root,generation,release_id,authorization,validation):
         from .term_index import TermIndex
         from .storage import Store
         checked=Store(generation)
-        try:TermIndex(asset,checked)
+        try:
+            index=TermIndex(asset,checked)
+            learning=term.get('learning',{}).get('bundle')
+            if learning is not None:
+                if term.get('implementation')!='navigation-loop-v1':raise ValueError('learning requires navigation-loop-v1')
+                copy_learning_bundle(learning,code_root,dest/'code',generation,
+                                     {t['id']:t for t in index.terms},
+                                     {r[0] for r in checked.db.execute('SELECT document_id FROM document')})
         finally:checked.close()
+        if term.get('implementation') in ('navigation-loop-v1', 'definition-scope-harness-v1', 'document-navigation-v1'):
+            from .navigation_agent import glossary_assets
+            glossary=glossary_assets(generation,term)
+            glossary.close()
+        if term.get('implementation')=='definition-scope-harness-v1':
+            from .task_policy import load_bound_definition
+            load_bound_definition(generation, term['task_policy'])
         if not data.get('navigation'):shutil.copytree(asset,dest/'code'/binding['path'])
+        from .folder_navigation import load_origin_projection
+        for projection in term.get('origin_projections',[]):
+            if projection.get('generation_id')!=data['generation_id']:continue
+            checked=Store(generation)
+            try:load_origin_projection(code_root,term,checked)
+            finally:checked.close()
+            target=(dest/'code'/projection['path']).resolve();target.relative_to((dest/'code').resolve())
+            target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(code_root/projection['path'],target)
     # Preserve the exact pre-cutover launchers and active pointer for explicit rollback.
     (dest/'rollback').mkdir()
     for name,path in [('service.py',root/'service.py'),('serve.sh',root/'06_TOOLS/serve.sh'),('PIPELINE.json',root/'00_SYSTEM/PIPELINE.json')]:

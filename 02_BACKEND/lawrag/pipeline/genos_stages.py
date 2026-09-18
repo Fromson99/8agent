@@ -9,6 +9,7 @@ import importlib.metadata
 import inspect
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import sys
@@ -66,11 +67,14 @@ def verify_structure(folder):
 def parser_identity(root):
     """Excludes semantic authoring settings, but binds the structural VLM policy."""
     from lawrag.core.structure.recipe_runtime import policy_identity
+    from lawrag.core.structure.recipe_basic import resources_identity
     paths = [*sorted((root / '02_BACKEND/lawrag/core').rglob('*.py')),
              *sorted((root / '02_BACKEND/lawrag/core').rglob('*.yaml')),
              *sorted((root / '02_BACKEND/lawrag/sources').rglob('*.py')),
              *[root / '02_BACKEND/lawrag/pipeline' / name for name in
-               ('genos_corpus.py', 'genos_doc.py', 'genos_unified.py', 'genos_e2e.py', 'genos_admission.py')]]
+               ('genos_corpus.py', 'genos_doc.py', 'genos_unified.py', 'genos_e2e.py',
+                'genos_admission.py', 'genos_stages.py', 'document_representations.py', 'document_scope.py',
+                'team_raw.py', 'raw_preprocess.py')]]
     versions = {}
     for name in ('docling', 'docling-core', 'pypdf', 'python-docx', 'lxml', 'beautifulsoup4'):
         try:
@@ -83,7 +87,8 @@ def parser_identity(root):
                              (build.document_metadata, build.registered_ingest, build._ingest_files, build.source_jobs)]),
             'versions': versions, 'python': list(sys.version_info[:3]),
             'converter': sha(Path(converter).resolve()) if converter else None,
-            'recipe': 'prepared-structure-v1', 'visual_structure': policy_identity()}
+            'recipe': 'prepared-structure-v1', 'visual_structure': policy_identity(),
+            'structure_resources_sha256': resources_identity()}
 
 
 def structure_key(row, plan, dependencies):
@@ -91,8 +96,10 @@ def structure_key(row, plan, dependencies):
                    'bindings': plan.get('bindings_sha256'), 'parser': dependencies})
 
 
-def structure(row, plan, data, dependencies, timeout, emit):
+def structure(row, plan, data, dependencies, timeout, emit, *, pdf_parser=None):
     from .genos_doc import prepare
+    from .document_representations import verify_representations
+    verify_representations(row)
     key = structure_key(row, plan, dependencies)
     folder = plain_path(data / 'STRUCTURE' / key)
     locks = plain_path(data / 'STRUCTURE/.locks')
@@ -108,8 +115,11 @@ def structure(row, plan, data, dependencies, timeout, emit):
         folder.mkdir(parents=True, exist_ok=True)
         files_hashes(folder)  # Reject links left in an incomplete cache before writes.
         work = copy.deepcopy(plan)
-        with build.isolated(folder):
-            emit('[STRUCTURE STEP] 파일 변환·파싱 → PDF 구간별 틀 생성·구조화·bbox 검수')
+        from lawrag.core.genos_preprocessor import using
+        with build.isolated(folder), using(pdf_parser, folder / 'preprocessor'):
+            emit('[STRUCTURE STEP] ' + ('GENOS 전처리기 파싱 → Docling JSON 수신 → 구조화·좌표 보존'
+                 if pdf_parser and Path(row['path']).suffix.lower() == '.pdf' else
+                 '파일 변환·파싱 → PDF 구간별 틀 생성·구조화·bbox 검수'))
             work['files'] = [prepare(row, folder / 'conversions', timeout=timeout, emit=emit)]
             from lawrag.core.structure.recipe_runtime import progress_events
             with progress_events(emit):
@@ -142,12 +152,40 @@ def execute(plan, options, data, run_id, stage, *, provider_factory=Genos, progr
     """All structure first; failed documents remain individually accountable."""
     if stage not in {'all','structure','index'}:raise ValueError('Supported stages: structure, index, all; semantic extraction is retired')
     data = plain_path(data)
-    dependencies = dependencies if dependencies is not None else parser_identity(build.ROOT)
+    dependencies = dependencies if dependencies is not None else ({} if stage == 'index' else parser_identity(build.ROOT))
     documents = plan['files']
     if not documents:
         raise ValueError('처리 가능한 원문 문서가 없습니다')
+    from lawrag.core import genos_preprocessor
+    mode = os.environ.get('GENOS_PDF_PARSER', 'preprocessor').strip()
+    if stage != 'index' and mode not in {'preprocessor', 'local'}:
+        raise ValueError('GENOS_PDF_PARSER must be preprocessor or local')
+    pdf_parser = None
+    if stage != 'index' and mode == 'preprocessor' and any(Path(r['path']).suffix.lower() == '.pdf' for r in documents):
+        pdf_parser = genos_preprocessor.Settings.from_env()
+        dependencies = {**dependencies, 'pdf_parser': pdf_parser.identity()}
+        if not pdf_parser.revision:
+            # No declared server version: reuse only within this explicit run.
+            dependencies['unversioned_parser_run'] = run_id
     report = {'stage': stage, 'total': len(documents), 'documents': {}, 'activated': False}
+    if pdf_parser:
+        report['pdf_parser'] = pdf_parser.identity()
+        report['preprocessor_model_calls'] = None  # The public parser response has no model usage contract.
+        report['llm_calls_scope'] = 'source-term-indexing-only; parser/structural-VLM usage is separate'
     prepared = {}
+    selection_path = plain_path(data / 'LOGS' / run_id / 'structure-selection.json')
+    selection = None
+    if stage == 'index':
+        if not selection_path.is_file():
+            raise ValueError('No completed structure selection; run --stage structure first')
+        selection = json.loads(selection_path.read_text())
+        if selection.get('schema_version') != 'structure-selection-v1':
+            raise ValueError('Unsupported structure selection contract')
+        if any(not re.fullmatch(r'[0-9a-f]{64}', item.get('key', ''))
+               for item in selection['documents'].values()):
+            raise ValueError('Invalid structure selection key')
+        if selection['inputs_sha256'] != digest(plan):
+            raise ValueError('Structure input selection changed; run structure with the selected inputs first')
     requested = ('index',) if stage in {'all','index'} else ()
     def record(did, phase, state, **details):
         if status is not None:
@@ -156,7 +194,8 @@ def execute(plan, options, data, run_id, stage, *, provider_factory=Genos, progr
         did = row['document_id']
         progress.document(number, len(documents), row['relative'], '구조화')
         started = time.monotonic()
-        folder = data / 'STRUCTURE' / structure_key(row, plan, dependencies)
+        folder = data / 'STRUCTURE' / (selection['documents'].get(did, {}).get('key', 'missing')
+                                      if selection is not None else structure_key(row, plan, dependencies))
         reused = (folder / 'structure-receipt.json').is_file()
         record(did, 'structure', 'RUNNING', mode='REUSED' if reused else 'NEW', output_path=str(folder),
                route=build.route_summary(row), route_record='SELECTED')
@@ -164,34 +203,30 @@ def execute(plan, options, data, run_id, stage, *, provider_factory=Genos, progr
             if sha(Path(row['path'])) != row['sha256']:
                 raise ValueError('원문이 입력 점검 이후 변경됨')
             if stage in {'all', 'structure'}:
-                folder, work = structure(row, plan, data, dependencies, options.timeout, progress.emit)
+                folder, work = structure(row, plan, data, dependencies, options.timeout, progress.emit,
+                                         pdf_parser=pdf_parser)
             else:
                 if not (folder / 'structure-receipt.json').is_file():
                     raise ValueError('저장된 추출 결과 없음. 먼저 --stage structure 실행')
+                if sha(folder / 'structure-receipt.json') != selection['documents'][did]['receipt_sha256']:
+                    raise ValueError('Selected structure receipt changed')
                 work = verify_structure(folder)['plan']
                 progress.emit('[CACHE] 저장된 추출 결과 확인 (원문 재추출 없음)')
-            glossary_dir=getattr(options,'glossary_dir',None)
-            linkage=None
-            if glossary_dir:
-                from . import glossary_linking
-                # Separate from parser cache: glossary updates never require reparsing.
-                link_key=digest({'source':sha(folder/'source.sqlite'),
-                                 'glossary':glossary_linking.binding(glossary_dir)})
-                _,linkage=glossary_linking.project(folder/'source.sqlite',glossary_dir,
-                                                 data/'LEXICON/LINKS'/link_key)
-                progress.emit(f'[GLOSSARY] 용어 출현 {linkage["occurrences"]}건 / 문서 정의 {linkage["local_definitions"]["records"]}건 연결')
             report['documents'][did] = {'name': row['relative'], 'structure': 'PASSED',
-                                       'structure_mode': 'REUSED' if reused else 'NEW','glossary_linkage':linkage}
+                                       'structure_mode': 'REUSED' if reused else 'NEW'}
             meta = json.loads((folder / 'structure' / work['files'][0]['document_id'] / 'meta.json').read_text())
             admission = meta.get('structure_admission', {})
             review = meta.get('recipe_review')
-            if review is not None and review.get('status') not in {'visual_approved', 'visual_sampled'}:
+            if review is not None and review.get('status') not in {'visual_approved', 'visual_sampled', 'accepted_with_warnings'}:
                 raise ValueError('PDF 구조 검수 미완료: 후속 용어 색인 차단')
             report['documents'][did]['recipe_review'] = review
+            report['documents'][did]['structure_warnings'] = admission.get('warnings',[])
             prepared[did] = (folder, work)
             counts = admission.get('counts', {})
             detail = (f'본문 {counts.get("blocks", "?")}블록 · 구조 {counts.get("nodes", "?")}마디 · '
                       f'구조 점수 {meta.get("score", "미기록")} (참고용, 탈락 기준 아님)')
+            if admission.get('warnings'):
+                detail += f' · 경고 {len(admission["warnings"])}건 (저장 및 후속 단계 진행)'
             record(did, 'structure', 'PASSED', mode='REUSED' if reused else 'NEW',
                    output_path=str(folder), elapsed_seconds=round(time.monotonic()-started, 3),
                    detail=detail, route_record='CACHE_VERIFIED' if reused else 'EXECUTED')
@@ -203,6 +238,14 @@ def execute(plan, options, data, run_id, stage, *, provider_factory=Genos, progr
             for phase in requested:
                 record(did, phase, 'BLOCKED', error='구조화 실패로 실행하지 않음')
             progress.error(exc)
+    if stage != 'index':
+        build.atomic(selection_path, {
+            'schema_version': 'structure-selection-v1', 'inputs_sha256': digest(plan),
+            'completed': len(prepared) == len(documents),
+            'expected_document_ids': sorted(row['document_id'] for row in documents),
+            'documents': {did: {'key': folder.name,
+                               'receipt_sha256': sha(folder / 'structure-receipt.json')}
+                          for did, (folder, _) in prepared.items()}})
     for number,row in enumerate(documents,1):
         did=row['document_id']
         if did not in prepared or not requested:continue

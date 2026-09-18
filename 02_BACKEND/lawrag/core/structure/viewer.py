@@ -306,6 +306,11 @@ def payload(result: StructureResult, blocks: list[Block],
         cands = by_block.get(b.idx, [])
         extra: dict[str, Any] = {}
         el = by_element.get(b.element_index)
+        native = getattr(el, 'meta', None) or {}
+        if native.get('source_format') == 'hwpx':
+            # Preserve XML anchors, style IDs, merged/nested cell context through
+            # result.json -> document/source_unit stores. Not physical PDF boxes.
+            extra['native_metadata'] = native
         if b.kind == "table" and el is not None and el.table is not None:
             extra["table"] = _table_payload(el.table)
         elif b.kind == "figure":
@@ -337,6 +342,9 @@ def payload(result: StructureResult, blocks: list[Block],
 
     residual_ids = {r.split()[1] for r in result.residual}
     warns = list(result.warnings)
+    shared = [n for n in nodes if 'same-block boundary:' in n.get('reason', '')]
+    if shared:
+        warns.append(f'같은 원문 블록에 경계가 겹친 마디 {len(shared)}개는 해당 블록을 공유합니다. 문자 단위 분할·구조 판단은 미검증입니다.')
     if omitted:
         # 조용히 자르지 않는다 — 화면이 "그림이 없다" 와 "너무 커서 안 실었다" 를
         # 구별할 수 있어야 한다.

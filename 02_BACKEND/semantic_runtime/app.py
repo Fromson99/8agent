@@ -2,10 +2,12 @@ from contextlib import asynccontextmanager
 import json
 from pathlib import Path
 import re
+import sqlite3
 import time
 import uuid
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse
+from jsonschema import ValidationError
 from .contracts import Contracts,write
 from .feedback import record_feedback
 from .pipeline import Pipeline
@@ -17,7 +19,7 @@ from . import observability as obs
 log = obs.get_logger("app")
 
 
-def create_app(root,generation,*,contracts_root=None,release=None,provider=None,vector=None):
+def create_app(root,generation,*,contracts_root=None,release=None,provider=None,vector=None,implementation=None):
     root=Path(root);store=Store(generation);contracts_root=Path(contracts_root or root)
     contracts=Contracts(contracts_root)
     runtime=root/'90_RUNTIME/semantic';runs=runtime/'runs';feedback=runtime/'feedback'
@@ -27,7 +29,8 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
                        backend=os.environ.get('SEMANTIC_LLM_BACKEND','anthropic'),
                        endpoint=os.environ.get('SEMANTIC_LLM_ENDPOINT'),
                        trust_zone=os.environ.get('SEMANTIC_LLM_TRUST_ZONE','external'))
-    pipeline=Pipeline(contracts_root,store,provider,vector)
+    pipeline=Pipeline(contracts_root,store,provider,vector,implementation=implementation)
+    pipeline.task_harness_journal = runtime/'task-harness'/'execution.sqlite'
     @asynccontextmanager
     async def lifespan(app):
         yield
@@ -45,6 +48,12 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
         from fastapi.responses import JSONResponse
         return JSONResponse(status_code=404,content={'detail':'요청한 데이터 좌표가 없습니다.'})
 
+    @app.exception_handler(ValidationError)
+    async def bad_contract(request,exc):
+        # A request that fails the runtime contract is the caller's error, not a server fault.
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=422,content={'detail':'request violates term-runtime-v1 contract: '+exc.message})
+
     @app.get('/health')
     @app.get('/v1/pipeline/status')
     def health():
@@ -52,7 +61,7 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
                 'generation_id':store.manifest['generation_id'],'data_status':store.manifest['data_status'],
                 'counts':store.manifest['counts'],'legacy_fallback':False,
                 'quality_certified':False,'vector':'NOT_USED',
-                'llm_model':getattr(provider,'model',None),'rag_mode':'term-agent','term_agent_quality_certified':False,'external_export_allowed':store.manifest['export_allowed']}
+                'llm_model':getattr(provider,'model',None),'rag_mode':pipeline.term_agent.config.get('implementation','term-agent-v1'),'term_agent_quality_certified':False,'external_export_allowed':store.manifest['export_allowed']}
 
     @app.get('/v1/rag/search')
     def search(q:str,doc_id:str|None=None,limit:int=Query(40,ge=1,le=100)):
@@ -63,6 +72,23 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
 
     @app.get('/v1/rag/scopes')
     def scopes():return {'documents':[dict(r) for r in store.db.execute('SELECT document_id,name FROM document ORDER BY name')]}
+
+    @app.get('/v1/rag/documents')
+    def documents(category:str='all',folder:str='',title_query:str='',offset:int=Query(0,ge=0),limit:int=Query(100,ge=1,le=500)):
+        from .document_browser import documents as browse
+        from .folder_navigation import load_origin_projection
+        projection=load_origin_projection(pipeline.contracts.root,pipeline.term_agent.config,store)
+        return browse(store,category=category,folder=folder,title_query=title_query,offset=offset,limit=limit,projection=projection)
+
+    @app.get('/v1/rag/document/outline')
+    def document_outline(doc_id:str,offset:int=Query(0,ge=0),limit:int=Query(100,ge=1,le=500)):
+        from .document_browser import outline
+        return outline(store,doc_id,offset=offset,limit=limit)
+
+    @app.get('/v1/rag/document/read')
+    def document_read(doc_id:str,unit_id:str|None=None,offset:int=Query(0,ge=0),limit:int=Query(50,ge=1,le=500)):
+        from .document_browser import read
+        return read(store,doc_id,unit_id=unit_id,offset=offset,limit=limit)
 
     @app.get('/v1/rag/nodes')
     def nodes(doc_id:str):
@@ -86,6 +112,7 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
         started=time.perf_counter()
         ident=uuid.uuid4().hex
         question=body.get('question',body.get('q'))
+        if not isinstance(question,str) or not question.strip():raise ValueError('question must be a nonempty string')
         docs=body.get('document_ids')
         if docs is not None and (not isinstance(docs,list) or any(not isinstance(x,str) for x in docs)):raise ValueError('document_ids must be a string array')
         use_llm=body.get('use_llm',True)
@@ -100,6 +127,15 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
             except Exception as exc:
                 obs.event(log,'ask.failed',level=40,exc_info=True,error_type=type(exc).__name__,duration_ms=int((time.perf_counter()-started)*1000))
                 raise
+            if (pipeline.term_agent.config.get('learning', {}).get('capture') is True
+                    and pipeline.term_agent.config.get('implementation') != 'definition-scope-harness-v1'):
+                try:
+                    from .learning_store import collect_run
+                    candidate_ids=collect_run(runtime/'learning'/'review.sqlite', runs/(ident+'.json'))
+                    obs.event(log,'learning.collected',candidate_count=len(candidate_ids))
+                except (ValueError, KeyError, TypeError, OSError, sqlite3.Error) as exc:
+                    # The committed run can be replayed with the CLI if collection fails.
+                    obs.event(log,'learning.capture_failed',level=40,error_type=type(exc).__name__)
             answer=run.get('answer',{})
             obs.event(log,'ask.finished',duration_ms=int((time.perf_counter()-started)*1000),answer_chars=len(answer.get('text','')),claim_count=len(answer.get('claims',[])),unresolved_count=len(answer.get('unresolved',[])))
             return run

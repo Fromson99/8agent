@@ -37,12 +37,16 @@ def raw_path(corpus, source, value):
 
 
 def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_internal=False,
-            internal_pdf_root=None):
+            internal_pdf_root=None, only_internal_pdf=False, limit=None, only_internal=False):
     """Select external RAW plus an explicit PDF-only internal root when supplied.
 
-    Legacy callers retain their corpus/internal input contract. The maintained
-    staged CLI supplies the workspace's PDF/internal root, with no RAW fallback.
+    The maintained CLI reads RAW/internal for every supported format.
+    internal_pdf_root is retained only for explicitly selected compatibility callers.
     """
+    if (only_internal_pdf or only_internal) and exclude_internal:
+        raise ValueError('Cannot both select and exclude internal PDFs')
+    if limit is not None and (not only_internal_pdf or type(limit) is not int or limit < 1):
+        raise ValueError('Positive limit requires only_internal_pdf')
     corpus = Path(corpus).expanduser().absolute()
     if any(p.is_symlink() for p in [corpus, *corpus.parents]):
         raise ValueError('corpus root must not be a symlink')
@@ -60,7 +64,7 @@ def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_in
         value = safe({'source': source, 'item': str(item), 'error': str(exc), 'type': type(exc).__name__, 'scope': scope})
         report['errors'].append(value)
         emit('[INPUT ERROR] ' + json.dumps(value, ensure_ascii=False))
-    for folder in sorted(corpus.iterdir()) if corpus.is_dir() else []:
+    for folder in sorted(corpus.iterdir()) if corpus.is_dir() and not only_internal else []:
         if folder.is_dir() and folder.name not in {*SOURCES, 'internal'} and not folder.name.startswith('.'):
             report['excluded'].append({'source':folder.name,'path':str(folder),'reason':'source_not_selected'})
     try:
@@ -71,7 +75,7 @@ def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_in
             emit('[SCOPE] internal 제외: 검사/파싱/LLM/임베딩 대상 아님; 비율 분모에서 제외')
         elif internal_pdf_root is None and not internal_root.exists():
             internal={'files':[],'ignored':[],'format_assets':{},'bindings_sha256':sha(bindings) if bindings else None}
-        elif skip_invalid or internal_pdf_root is not None:
+        elif skip_invalid or internal_pdf_root is not None or only_internal_pdf:
             root = internal_root
             if any(p.is_symlink() for p in (root, *root.parents)) or not root.is_dir():
                 raise ValueError('내규 입력 폴더 없음 또는 심볼릭 링크: ' + str(root))
@@ -86,6 +90,10 @@ def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_in
                     continue
                 if not path.is_symlink() and not path.is_file():
                     continue
+                if only_internal_pdf and path.suffix.lower() != '.pdf':
+                    continue
+                if limit is not None and len(internal['files']) >= limit:
+                    break
                 if internal_pdf_root is not None and path.suffix.lower() != '.pdf' and not path.is_symlink():
                     report['excluded'].append({'source': 'internal', 'path': str(path), 'reason': 'non_pdf_internal'})
                     continue
@@ -104,6 +112,13 @@ def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_in
             internal = builder.inventory(internal_root, 'internal', bindings, allow_duplicates=True)
         for row in internal['files']:
             row['relative'] = 'internal/' + row['relative']
+            for field in ('aliases', 'representations', 'pdf_references'):
+                for entry in row.get(field, []):
+                    if not entry['relative_path'].startswith('internal/'):
+                        entry['relative_path'] = 'internal/' + entry['relative_path']
+                        entry['folder_names'] = ['internal', *entry.get('folder_names', [])]
+                        entry['folder_path'] = ' > '.join(entry['folder_names'])
+                        entry['display_name'] = 'internal > ' + entry['display_name']
             row['kind'] = 'internal'
             if internal_pdf_root is not None:
                 row['input_collection'] = 'PDF/internal'
@@ -126,7 +141,7 @@ def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_in
         report['warnings'].append(safe({'source':source,'item':str(item),'warning':str(exc),
                                         'effect':'optional metadata ignored; physical files remain inputs'}))
 
-    for source in SOURCES:
+    for source in (() if only_internal_pdf or only_internal else SOURCES):
         folder=corpus/source
         if not folder.exists():
             continue
@@ -200,6 +215,9 @@ def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_in
 
     unique, blocked = {}, set()
     for row in report['files']:
+        if Path(row['path']).suffix.lower() == '.doc':
+            error(row['source'], row['relative'], ValueError('구형 DOC의 주 입력 PDF 없음: 같은 폴더에 같은 이름의 PDF를 반입하세요'))
+            continue
         key = row['document_id']
         if key in blocked:
             error(row['source'], row['relative'], ValueError('same content with conflicting source authority/format'))
@@ -216,7 +234,8 @@ def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_in
                     blocked.add(key)
                 continue
             alias = builder.document_metadata(row)
-            previous.setdefault('aliases', []).append(alias)
+            from .document_representations import merge_context
+            merge_context(previous, row)
             report['aliases'].append({'document_id': key, **alias})
     report['files'] = list(unique.values())
     report['unique_documents'] = len(unique)
@@ -224,11 +243,15 @@ def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_in
     plan = {'input_root': str(corpus), 'files': report['files'], 'ignored': report['excluded'],
             'format_assets': assets, 'bindings_sha256': bindings_sha,
             'optional_metadata_hashes': report['manifest_hashes'], 'input_contract':'physical-files-v1',
-            'representation_policy':'xml-pdf-html-office-v1','all_corpus': True}
+            'representation_policy':builder.REPRESENTATION_POLICY,'all_corpus': True}
     if internal_pdf_root is not None:
         plan['input_roots'] = report['input_roots']
     if exclude_internal:
         selection = {'included': list(SOURCES), 'excluded': ['internal']}
+        plan['source_selection'] = selection
+        report['source_selection'] = selection
+    elif only_internal:
+        selection = {'included': ['internal'], 'excluded': list(SOURCES)}
         plan['source_selection'] = selection
         report['source_selection'] = selection
     return plan, report

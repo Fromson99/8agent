@@ -24,7 +24,26 @@ SURFACE = "[별지 N] [별표 N] [서식 N] 부칙"
 _KINDS = "별지|별표|서식|양식"
 _FULL = re.compile(rf"[\[〔(]\s*({_KINDS})\s*(?:제\s*)?(\d{{1,3}})\s*(?:호)?\s*[\]〕)]")
 _FRAGMENT = re.compile(rf"(?<![가-힣])({_KINDS})\s*(\d{{1,3}})(?![가-힣\d])")
-_BUCHIK = re.compile(r"^부\s*칙")
+# Horizontal spaces and source newlines are distinct: never consume the next
+# paragraph as part of a heading. Preserve original offsets, spelling and text.
+_B = r"부[^\S\n]*칙"
+_BRACKETS = [("[", "]"), ("〔", "〕"), ("【", "】"), ("(", ")"), ("（", "）")]
+_MARKER = "|".join(re.escape(a)+r"[^\S\n]*"+_B+r"[^\S\n]*"+re.escape(b)
+                   for a,b in _BRACKETS) + "|" + _B
+_BUCHIK = re.compile(r"(?m)^[^\S\n]*(?P<marker>"+_MARKER+r")(?P<tail>[^\n]*)$")
+_ANNOTATION = re.compile(r"(?:\([^()\n]*\)|（[^（）\n]*）|\[[^\[\]\n]*\]|"
+                         r"〔[^〔〕\n]*〕|<[^<>\n]*>|〈[^〈〉\n]*〉)")
+_DATE = re.compile(r"(?:19|20)\d{2}\s*[.년/-]\s*\d{1,2}\s*[.월/-]\s*\d{1,2}\s*[.일]?")
+
+
+def _heading_tail(tail: str) -> bool:
+    tail = tail.strip()
+    while tail:
+        m = _ANNOTATION.match(tail)
+        if m is None:
+            return bool(_DATE.fullmatch(tail))
+        tail = tail[m.end():].strip()
+    return True
 
 
 def _ordinal(m: re.Match):
@@ -35,13 +54,17 @@ def propose(block: Block, lex) -> list[Candidate]:
     out = scan(block, FAMILY, _FULL, _ordinal, fragment=_FRAGMENT,
                family_of=lambda m: f"annex_{m.group(1)}")
 
-    m = _BUCHIK.match(block.text)
-    if m:
+    for m in _BUCHIK.finditer(block.text):
+        if not _heading_tail(m.group("tail")):
+            continue
         out.append(Candidate(
-            id="", family="buchik", surface=m.group(0).strip(), ordinal=None,
-            block_idx=block.idx, offset=m.start(), end=m.end(), page=block.page,
+            id="", family="buchik", surface=m.group("marker").strip(), ordinal=None,
+            block_idx=block.idx, offset=m.start("marker"), end=m.end("marker"), page=block.page,
             element_index=block.element_index, text=block.text,
-            construction="full", in_paren=False, is_heading=block.is_heading,
+            # Detect merged headings, but do not create overlapping/empty units
+            # inside a source block. The review audit records this as a warning.
+            construction="fragment" if block.text[:m.start("marker")].strip() else "full",
+            in_paren=False, is_heading=block.is_heading,
             bbox=block.bbox, text_x=block.text_x))
     out.sort(key=lambda c: c.offset)
     return out

@@ -56,6 +56,14 @@ def configured(root=None):
 
 
 def selected_for(glossary):
+    report_path = Path(glossary) / 'report.json'
+    report = json.loads(report_path.read_text()) if report_path.is_file() else {}
+    pinned = report.get('knowledge_binding')
+    if pinned:
+        path = Path(pinned['path']).resolve()
+        if sha(path / 'manifest.json') != pinned['manifest_sha256']:
+            raise ValueError('Document glossary knowledge binding changed')
+        return path
     layout = load_layout()
     # Explicit standalone test/custom dictionaries have their own contracts.
     if not Path(glossary).resolve().is_relative_to(layout.inspection_path('data', layout_version='v2').resolve()):

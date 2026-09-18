@@ -43,6 +43,7 @@ from lawrag.core.structure.lawxml import (
     StructureResult,
     U,
     _parse_flat,
+    _strip_md_header,
     assemble,
 )
 
@@ -366,7 +367,30 @@ def lawxml_order(kind: str) -> int:
 SITES = {"krx": krx_tree, "kofia": kofia_tree}
 
 
+def annex_units(sections: list[dict]) -> list[U]:
+    """변환된 별표·서식 첨부 → 최상위 별표 컨테이너 마디.
+
+    조문 HTML 의 별표 자리에는 첨부 **파일 이름**만 있다(`[별표/서식 파일]` 아래
+    `1. 0000_(별지 제1호).hwp`). 그래서 이름이 가리키는 본문을 여기서 같은 문서
+    안에 싣는다 — lawxml 이 별표내용을 HWP 변환 md 로 바꿔 끼우는 것과 같은 자리다.
+    본문은 md 표 그대로라 표가 표로 남는다. 원문 HTML 의 파일 이름 줄은 지우지
+    않는다: 그 줄이 사람이 읽는 목록이고, 여기 마디가 그 목록의 실물이다.
+    """
+    if not sections:
+        return []
+    container = U(kind="별표", surface="별표", title="별표·서식", heading="별표·서식")
+    for section in sections:
+        label = section["label"]
+        heading = f"[{label}] {section['title']}".strip()
+        unit = U(kind="조", surface=label, title=section["title"] or label, heading=heading)
+        unit.children.extend(_parse_flat(_strip_md_header(section["markdown"]),
+                                         allow_div=False, head=unit))
+        container.children.append(unit)
+    return [container] if container.children else []
+
+
 def build(html_text: str, doc_name: str, site: str = "krx",
+          annexes: Optional[list[dict]] = None,
           ) -> tuple[StructureResult, list[Block], bytes]:
     """조문 HTML → (결과, 블록, 합성 PDF). lawxml.assemble 공용 조립."""
     maker = SITES.get(site)
@@ -375,7 +399,10 @@ def build(html_text: str, doc_name: str, site: str = "krx",
     tree = maker(html_text)
     if not tree:
         raise ValueError("조문 HTML 에서 구조를 하나도 못 읽었다 — 마크업 확인 필요")
+    attached = annex_units(annexes or [])
+    note = (f"별표·서식 {len(attached[0].children)}건을 변환 사이드카에서 실었다"
+            if attached else "별표·서식은 HTML 에 없음 — HWP 첨부의 몫")
     result, blocks, pdf_bytes = assemble(
-        tree, doc_name, source_label=f"{site} 조문 HTML", tag="rulehtml",
-        extra_stats={"annex_note": "별표·서식은 HTML 에 없음 — HWP 첨부의 몫"})
+        tree + attached, doc_name, source_label=f"{site} 조문 HTML", tag="rulehtml",
+        extra_stats={"annex_note": note, "annex_md_used": len(attached[0].children) if attached else 0})
     return result, blocks, pdf_bytes

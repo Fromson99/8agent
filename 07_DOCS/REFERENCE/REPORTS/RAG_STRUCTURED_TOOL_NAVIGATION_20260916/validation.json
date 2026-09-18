@@ -1,0 +1,259 @@
+{
+  "validated_at_utc": "2026-09-16T12:34:25.973880+00:00",
+  "scope": "Design JSON/links/arithmetic validation only. No product tests, model calls, performance evaluation, independent review or deployment.",
+  "schema_valid": true,
+  "example_results": [
+    {
+      "name": "call_CATALOG",
+      "definition": "ToolCall",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "call_GRAPH",
+      "definition": "ToolCall",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "call_LIST",
+      "definition": "ToolCall",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "call_STRUCTURE",
+      "definition": "ToolCall",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "call_SOURCE_TERMS",
+      "definition": "ToolCall",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "call_GREP",
+      "definition": "ToolCall",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "call_SEARCH",
+      "definition": "ToolCall",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "call_READ",
+      "definition": "ToolCall",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "call_JUDGE",
+      "definition": "ToolCall",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "call_BRANCH",
+      "definition": "ToolCall",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "call_STOP",
+      "definition": "ToolCall",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "catalogue_unknown",
+      "definition": "CatalogueItem",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "graph_reverse_preserves_source",
+      "definition": "GraphEdge",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "catalogue_result",
+      "definition": "ToolResultEnvelope",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "vector_partial_unknown_total",
+      "definition": "ToolResultEnvelope",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "read_unit_not_subtree",
+      "definition": "ReadReceipt",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "catalogue_complete",
+      "definition": "Completion",
+      "expected": "accept",
+      "actual": "accept",
+      "passed": true
+    },
+    {
+      "name": "read_offset",
+      "definition": "ToolCall",
+      "expected": "reject",
+      "actual": "reject",
+      "passed": true
+    },
+    {
+      "name": "read_two_targets",
+      "definition": "ToolCall",
+      "expected": "reject",
+      "actual": "reject",
+      "passed": true
+    },
+    {
+      "name": "graph_zero_hops",
+      "definition": "ToolCall",
+      "expected": "reject",
+      "actual": "reject",
+      "passed": true
+    },
+    {
+      "name": "list_unconstrained",
+      "definition": "ToolCall",
+      "expected": "reject",
+      "actual": "reject",
+      "passed": true
+    },
+    {
+      "name": "list_empty_terms",
+      "definition": "ToolCall",
+      "expected": "reject",
+      "actual": "reject",
+      "passed": true
+    },
+    {
+      "name": "judge_empty_quote",
+      "definition": "ToolCall",
+      "expected": "reject",
+      "actual": "reject",
+      "passed": true
+    },
+    {
+      "name": "args_json_string",
+      "definition": "ToolCall",
+      "expected": "reject",
+      "actual": "reject",
+      "passed": true
+    },
+    {
+      "name": "complete_with_blocker",
+      "definition": "Completion",
+      "expected": "reject",
+      "actual": "reject",
+      "passed": true
+    },
+    {
+      "name": "complete_pending_issue",
+      "definition": "Completion",
+      "expected": "reject",
+      "actual": "reject",
+      "passed": true
+    },
+    {
+      "name": "empty_with_items",
+      "definition": "ToolResultEnvelope",
+      "expected": "reject",
+      "actual": "reject",
+      "passed": true
+    },
+    {
+      "name": "unknown_total_fabricated",
+      "definition": "ToolResultEnvelope",
+      "expected": "reject",
+      "actual": "reject",
+      "passed": true
+    }
+  ],
+  "synthetic_cross_field_checks": [
+    {
+      "name": "call_JUDGE",
+      "passed": true
+    },
+    {
+      "name": "catalogue_result",
+      "passed": true
+    },
+    {
+      "name": "read_unit_not_subtree",
+      "passed": true
+    }
+  ],
+  "local_links_checked": 34,
+  "missing_local_links": [],
+  "code_fences_paired": true,
+  "formula_sanity": {
+    "status": "SYNTHETIC_ARITHMETIC_ONLY_NOT_FORECAST",
+    "monthly_net_example": -2.0,
+    "break_even_example": 1200.0,
+    "zero_at_break_even": true
+  },
+  "source_binding_checks": {
+    "active_pointer_unchanged": true,
+    "release_manifest_verified_at_inspection": true,
+    "release_code_files_verified_at_inspection": true,
+    "source_store_verified_at_inspection": true
+  },
+  "artifacts": {
+    "contract-examples.json": {
+      "sha256": "20ef02fe3b7bb31e5a0e632c24a69838a4e0e7710947d41a3e9adb8e4316ddaf",
+      "bytes": 14085
+    },
+    "contracts.schema.json": {
+      "sha256": "121f001287b0685d4d10a9aab7bb33a5780af323ee9863ce2b4c43561b125864",
+      "bytes": 37753
+    },
+    "inspection.json": {
+      "sha256": "483afb77e1c7803bdc8f3e939b1822657dc6b9a013b9a8c8f4b20f365cc670f2",
+      "bytes": 14605
+    },
+    "DESIGN.md": {
+      "sha256": "7f7cbf1c43b3fb096c4163890b33b8cd51322c27d40c637812310c04fbf55050",
+      "bytes": 82877
+    },
+    "build_contracts.py": {
+      "sha256": "33b36c88de0bf2c62a14f813bbbc7c23d9d81470f2984795499346f32c754f6a",
+      "bytes": 11495
+    },
+    "validate_design.py": {
+      "sha256": "fccfba5555e3896a5e718b611726c269019b84ac89585d5d2fa2c210fca4cb5b",
+      "bytes": 3906
+    }
+  },
+  "passed": true
+}

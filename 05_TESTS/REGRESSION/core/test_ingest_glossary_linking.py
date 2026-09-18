@@ -1,12 +1,31 @@
-"""File-first ingestion and glossary consumption by the actual authoring queue."""
+"""Current source-only ingestion and complete glossary link contracts."""
 import json
 import sqlite3
 from pathlib import Path
 import pytest
-from .test_genos_build import setup,Fake,XML
-from .test_genos_four_stage import invoke
+from .test_genos_build import XML
+from lawrag.pipeline import genos_stages
+
+def invoke(args,raw,data,stage,run="fixture"):
+    class Progress:
+        def document(self,*a,**kw):pass
+        def emit(self,*a,**kw):pass
+        def finish(self,*a,**kw):pass
+        def error(self,e):raise e
+    return genos_stages.execute(build.inventory(raw,"internal",None),args,data,run,stage,
+        progress=Progress(),dependencies={"fixture":"xml"})
 from lawrag.pipeline import genos_build as build,genos_corpus as corpus
 from lawrag.pipeline import glossary_assembly as assembly,glossary_v1 as v1,glossary_linking as linking
+
+
+@pytest.fixture
+def setup(tmp_path, monkeypatch):
+    from lawrag.core import llm
+    monkeypatch.setattr(llm, 'load_env', lambda: None)
+    raw=tmp_path/'raw';raw.mkdir();(raw/'one.xml').write_text(XML)
+    out=tmp_path/'out'
+    args=build.parser().parse_args(['build','--input-root',str(raw),'--build-dir',str(out),'--execute'])
+    return args,raw,out
 
 
 @pytest.fixture
@@ -49,58 +68,47 @@ def test_broken_or_missing_metadata_never_hides_physical_documents(tmp_path):
     assert len(corpus.collect(tmp_path,emit=lambda *a:None)[0]['files'])==2
 
 
-def test_glossary_hints_reach_model_and_resume_without_changing_structure(setup,glossary):
-    args,raw,out=setup;args.glossary_dir=glossary
-    result=build.execute(args,provider_factory=Fake,emit=lambda *a:None)
-    assert result['ok']
-    received=[c['source']['dictionary_lookup'] for c in Fake.instances[-1].calls if 'source' in c]
-    assert received and any(x['matches'] for x in received)
-    assert all(x['dictionary_sha256']==v1.sha(glossary/'dictionary.sqlite') for x in received)
-    assert '다른 법에서만' not in json.dumps(received,ensure_ascii=False)
-    assert (out/'glossary-linked/links.sqlite').is_file()
-    base_hash=v1.sha(out/'authoring-source.sqlite')
-    args.resume=True;build.execute(args,provider_factory=Fake,emit=lambda *a:None)
-    assert not Fake.instances[-1].calls
-    assert v1.sha(out/'authoring-source.sqlite')==base_hash
-    with (out/'glossary-linked/links.sqlite').open('ab') as f:f.write(b'bad')
-    count=len(Fake.instances)
-    with pytest.raises(ValueError,match='hash mismatch'):build.execute(args,provider_factory=Fake,emit=lambda *a:None)
-    assert len(Fake.instances)==count
+def test_glossary_links_resume_without_changing_structure(setup,glossary):
+    args,raw,out=setup;args.glossary_dir=glossary;data=out.parent/'data'
+    assert invoke(args,raw,data,'structure')['ok']
+    src=next((data/'STRUCTURE').glob('*/source.sqlite'));before=v1.sha(src)
+    linked,report=linking.project(src,glossary,out/'links')
+    assert report['llm_calls']==0 and report['occurrences']>0
+    with sqlite3.connect(linked.parent/'links.sqlite') as db:
+        assert db.execute("SELECT 1 FROM catalogue_link WHERE entry_id='old-definition'").fetchone()
+    from lawrag.pipeline.term_generation import build_generation
+    build_generation(src,glossary,out/'indexed')
+    with sqlite3.connect(out/'indexed/generation/navigation/navigation.sqlite') as db:
+        assert not db.execute("SELECT 1 FROM occurrence WHERE term_id='old-definition'").fetchone()
+    assert linking.project(src,glossary,out/'links')[1]==report
+    assert v1.sha(src)==before
+    with (out/'links/links.sqlite').open('ab') as stream:stream.write(b'drift')
+    with pytest.raises(ValueError,match='hash mismatch'):linking.project(src,glossary,out/'links')
 
 
 def test_phase_major_linkage_and_glossary_change_do_not_reparse(setup,glossary,monkeypatch):
     args,raw,out=setup;args.glossary_dir=glossary;data=out.parent/'data'
-    result=invoke(args,raw,data,'structure')
-    assert result['ok'] and not Fake.instances
-    assert next(iter(result['documents'].values()))['glossary_linkage']['jobs']>0
-    original_hash=v1.sha(next((data/'STRUCTURE').glob('*/authoring-source.sqlite')))
+    assert invoke(args,raw,data,'structure')['ok']
+    original_hash=v1.sha(next((data/'STRUCTURE').glob('*/source.sqlite')))
     monkeypatch.setattr(build,'ingest_files',lambda *a,**k:pytest.fail('glossary update reparsed source'))
-    assert invoke(args,raw,data,'llm')['ok']
-    assert invoke(args,raw,data,'vector')['ok']
+    assert invoke(args,raw,data,'index')['ok']
     other=out.parent/'new-glossary';import shutil;shutil.copytree(glossary,other)
     with sqlite3.connect(other/'dictionary.sqlite') as db:db.execute("UPDATE entry SET definition='새 설명' WHERE source='econedu'")
     report=json.loads((other/'report.json').read_text());report['dictionary_sha256']=v1.sha(other/'dictionary.sqlite')
     (other/'report.json').write_text(json.dumps(report));args.glossary_dir=other
-    assert invoke(args,raw,data,'structure',run='new')['ok']
-    assert v1.sha(next((data/'STRUCTURE').glob('*/authoring-source.sqlite')))==original_hash
-    assert len(list((data/'LEXICON/LINKS').glob('*/report.json')))==2
+    assert invoke(args,raw,data,'all',run='new')['ok']
+    assert v1.sha(next((data/'STRUCTURE').glob('*/source.sqlite')))==original_hash
+    assert len(list((data/'TERM').glob('*/*/links/report.json')))==2
 
 
 def test_longest_match_local_definition_and_full_audit(setup,glossary):
-    args,raw,out=setup
-    # Use the existing source builder, then check definition linkage independent of models.
-    (raw/'one.xml').write_text(XML.replace('BODY','BODY'))
-    build.execute(args,provider_factory=Fake,emit=lambda *a:None)
-    src=out/'authoring-source.sqlite'
+    args,raw,out=setup;data=out.parent/'data'
+    assert invoke(args,raw,data,'structure')['ok']
+    src=next((data/'STRUCTURE').glob('*/source.sqlite'))
     with sqlite3.connect(src) as db:
         row=db.execute('select document_id,block_id from source_block limit 1').fetchone()
         text='이 조에서 “금융투자상품”이란 투자 상품을 말한다. 금융투자상품은 포함된다.'
         db.execute('update source_block set text=? where document_id=? and block_id=?',(text,*row))
-        for jid,payload in db.execute('select job_id,input_json from authoring_job').fetchall():
-            value=json.loads(payload)
-            for block in value['blocks']:
-                if str(block['idx'])==row[1]:block['text']=text
-            db.execute('update authoring_job set input_json=? where job_id=?',(json.dumps(value),jid))
     linked,report=linking.project(src,glossary,out/'new-links')
     assert report['local_definitions']['records']==1
     with sqlite3.connect(linked.parent/'links.sqlite') as db:
