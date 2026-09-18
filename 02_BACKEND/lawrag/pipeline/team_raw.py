@@ -11,6 +11,7 @@ from pathlib import Path
 from .genos_stages import plain_path
 from . import genos_build as builder
 from semantic_runtime.contracts import sha
+from semantic_runtime.document_roles import role_of_row
 
 VERSION = 'team-raw-v1'
 RISK_NAMES = '''금융투자업규정
@@ -277,6 +278,9 @@ def collect(data, bindings=None, *, only_internal=False, exclude_internal=False,
                            'export_allowed': meta.get('export_allowed', False)})
             if meta.get('name'):
                 row['name'] = meta['name']
+            if meta.get('title') and row['raw_role'] != 'body':
+                row['source_title'] = meta['title']
+            row['document_role'] = role_of_row(row)
             if meta.get('scope_document') and row['raw_role'] == 'body':
                 row['representation_group'] = str(path.parent) + '/scope:' + meta['scope_document']
             row['original_path'] = meta.get('original_path', rel)

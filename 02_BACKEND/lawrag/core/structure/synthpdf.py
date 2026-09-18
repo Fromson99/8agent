@@ -96,6 +96,18 @@ class Layout:
         return page, [x0, top, x0 + maxw, bottom]
 
 
+# 원문 들여쓰기를 지면에 옮길 때 넘지 않는 한도 — 그 너머는 글이 설 자리가 없다
+MAX_INDENT = (PAGE_W - 2 * MARGIN) / 2
+
+
+def _indent(e, default=0.0):
+    """원문이 선언한 첫 줄 시작점(pt, 본문 영역 왼쪽 기준). DOCX 의 w:ind 만 싣는다."""
+    twips = ((getattr(e, 'meta', None) or {}).get('docx') or {}).get('start_twips')
+    if twips is None:
+        return default
+    return min(max(twips / 20.0, 0.0), MAX_INDENT)
+
+
 def paginate(elements) -> bytes:
     """요소들을 합성 지면에 찍고, page·bbox(TOPLEFT) 를 **요소에 되돌려 심는다.**
 
@@ -112,8 +124,10 @@ def paginate(elements) -> bytes:
             text, size = e.text or "〔그림〕", BODY_FONT
         else:
             text, size = e.text, HEADING_FONT if e.is_heading else BODY_FONT
-        page, bbox = lay.put(text or " ", 0.0, size)
+        page, bbox = lay.put(text or " ", _indent(e), size)
         e.page, e.bbox, e.bbox_origin = page, bbox, "TOPLEFT"
+        if _indent(e, None) is not None:
+            e.text_x = bbox[0]              # 원문이 선언한 첫 줄 시작점 — 들여쓰기 증거(S3)
     pdf = lay.doc.tobytes()
     lay.doc.close()
     return pdf

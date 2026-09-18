@@ -104,6 +104,9 @@ export GENOS_RAG_IMPLEMENTATION=document-navigation-v1
 
 이어서 `금투협 폴더 트리 보여줘`, `문서명 목차 보여줘`, 실제 원문에 근거가 있는 질문을 확인한다.
 문서 하나에 한정하려면 `document_ids: ["실제 ID"]`를 함께 보낸다.
+`document_ids`가 없으면 기본 스코프 `기본`으로 돈다. 개정문·개정 주요내용·신구조문대비표는 여기서 빠진다.
+개정 이력을 물을 때는 `"scope":"개정이력"`을 보내고, 모두 대상으로 하려면 `"scope":"전체"`를 보낸다.
+`document_ids`와 `scope`는 함께 보낼 수 없다. 스코프별 문서 수와 문서별 역할은 `GET /v1/rag/scopes`에서 확인한다.
 여러 문서 답변은 `retrieval.term_agent.work_state`, `read_source_ids`, `selected_ids`, `answer.claims`로 확인한다.
 실제 현장 모델의 JSON Schema 수용·응답 품질·지연은 현장 확인 전까지 미확인이다.
 

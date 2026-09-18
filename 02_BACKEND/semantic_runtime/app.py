@@ -64,14 +64,19 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
                 'llm_model':getattr(provider,'model',None),'rag_mode':pipeline.term_agent.config.get('implementation','term-agent-v1'),'term_agent_quality_certified':False,'external_export_allowed':store.manifest['export_allowed']}
 
     @app.get('/v1/rag/search')
-    def search(q:str,doc_id:str|None=None,limit:int=Query(40,ge=1,le=100)):
-        return pipeline.retrieve(pipeline.plan(q,[doc_id] if doc_id else None),limit)
+    def search(q:str,doc_id:str|None=None,scope:str|None=None,limit:int=Query(40,ge=1,le=100)):
+        return pipeline.retrieve(pipeline.plan(q,[doc_id] if doc_id else None,scope),limit)
 
     @app.get('/v1/rag/section')
     def section(doc_id:str,node:str):return store.section(doc_id,node)
 
     @app.get('/v1/rag/scopes')
-    def scopes():return {'documents':[dict(r) for r in store.db.execute('SELECT document_id,name FROM document ORDER BY name')]}
+    def scopes():
+        from .document_roles import SCOPES, DEFAULT_SCOPE
+        roles=pipeline.document_roles()
+        return {'documents':[{**dict(r),'document_role':roles[r['document_id']]} for r in store.db.execute('SELECT document_id,name FROM document ORDER BY name')],
+                'scopes':[{'name':name,'description':text,'default':name==DEFAULT_SCOPE,
+                           'document_count':len(pipeline.scope_documents(name))} for name,text in SCOPES.items()]}
 
     @app.get('/v1/rag/documents')
     def documents(category:str='all',folder:str='',title_query:str='',offset:int=Query(0,ge=0),limit:int=Query(100,ge=1,le=500)):
@@ -117,11 +122,13 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
         if docs is not None and (not isinstance(docs,list) or any(not isinstance(x,str) for x in docs)):raise ValueError('document_ids must be a string array')
         use_llm=body.get('use_llm',True)
         if type(use_llm) is not bool:raise ValueError('use_llm must be boolean')
-        if set(body)-{'question','q','document_ids','use_llm'}:raise ValueError('unsupported request fields')
+        scope=body.get('scope')
+        if scope is not None and not isinstance(scope,str):raise ValueError('scope must be a string')
+        if set(body)-{'question','q','document_ids','use_llm','scope'}:raise ValueError('unsupported request fields')
         with obs.context(run_id=ident):
             obs.event(log,'ask.started',question_chars=len(question or '') if isinstance(question,str) else 0,document_filter_count=len(docs or []),use_llm=use_llm)
             try:
-                run=pipeline.run(question,docs,use_llm)
+                run=pipeline.run(question,docs,use_llm,scope)
                 run['run_id']=ident;run['release']=release
                 write(runs/(ident+'.json'),run)
             except Exception as exc:

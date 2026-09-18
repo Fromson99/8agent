@@ -36,6 +36,14 @@
         },
         "use_llm": {
           "type": "boolean"
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "기본",
+            "개정이력",
+            "전체"
+          ]
         }
       },
       "required": [

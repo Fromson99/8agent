@@ -6,6 +6,7 @@ from pathlib import Path, PurePosixPath
 
 from semantic_runtime.contracts import sha
 from semantic_runtime.genos_backend import safe
+from semantic_runtime.document_roles import role_of_row
 from . import genos_build as builder
 
 SOURCES = ('law', 'krx', 'kofia', 'expc', 'fsc', 'moleg', 'prec')
@@ -159,19 +160,19 @@ def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_in
                     if not isinstance(item,dict) or item.get('status') not in (None,'ok','partial'):
                         warning(source,index,'invalid or failed legacy collection metadata');continue
                     group=f'legacy:{source}:{index}'
-                    representations=[(item.get(k),item.get(h),'body',group) for k,h in
+                    representations=[(item.get(k),item.get(h),'body',group,'') for k,h in
                                      [('file','sha256'),('body_file','body_sha256'),('body_html_file','body_html_sha256')]]
                     for attachment in item.get('attachments',[]):
                         role=str(attachment.get('role') or 'attachment')
                         representations.append((attachment.get('file'),attachment.get('sha256'),role,
-                                                group if role=='body' else None))
-                    for value,expected,role,representation in representations:
+                                                group if role=='body' else None,str(attachment.get('title') or '')))
+                    for value,expected,role,representation,title in representations:
                         if not value:continue
                         try:
                             path=raw_path(corpus,source,value)
                             if expected and sha(path)!=expected:
                                 raise ValueError('legacy metadata hash differs; use current file without stale metadata')
-                            hint={'item':item,'role':role,'group':representation}
+                            hint={'item':item,'role':role,'group':representation,'title':title}
                             if str(path) in hints and hints[str(path)]!=hint:
                                 warning(source,value,'ambiguous metadata for same physical file');continue
                             hints[str(path)]=hint
@@ -194,6 +195,8 @@ def collect(corpus, bindings=None, *, emit=print, skip_invalid=False, exclude_in
                 row.update(external_source=source,kind=str(item.get('kind') or source),raw_role=role,
                     source_metadata={k:item[k] for k in ('name','label','case_no','court','enforce','revised','replied','decided','edition') if k in item})
                 if hint.get('group'):row['representation_group']=hint['group']
+                if hint.get('title') and role!='body':row['source_title']=hint['title']
+                row['document_role']=role_of_row(row)
                 if source=='kofia' and role=='body' and path.suffix.lower() in {'.html','.htm'}:
                     from lawrag.core.batch import ATTACHMENT_ONLY_HTML_MARKERS
                     if any(marker in path.read_text(errors='replace') for marker in ATTACHMENT_ONLY_HTML_MARKERS):

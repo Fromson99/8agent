@@ -186,7 +186,8 @@ def attach_derivatives(data, rows):
             raise ValueError('derived companion or original changed')
         parent = by_path.get(str(origin))
         if parent:
-            for key in ('kind', 'external_source', 'raw_role', 'source_metadata', 'name', 'representation_group'):
+            for key in ('kind', 'external_source', 'raw_role', 'source_metadata', 'name', 'representation_group',
+                        'source_title', 'document_role'):
                 if key in parent:
                     row[key] = parent[key]
             row['conversion'] = meta

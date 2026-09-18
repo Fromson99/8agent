@@ -22,6 +22,7 @@ from xml.etree import ElementTree
 from .genos_unified import ROOT, _build_source_store
 from .genos_e2e import paths
 from semantic_runtime.contracts import digest, sha
+from semantic_runtime.document_roles import role_of_row
 from semantic_runtime.genos_backend import Genos, safe
 
 EXTENSIONS = {'.xml', '.html', '.htm', '.pdf', '.hwp', '.hwpx', '.docx', '.doc'}
@@ -281,9 +282,10 @@ def _ingest_files(plan, build, emit):
         context = document_metadata(row)
         for key in ('external_source', 'kind', 'raw_role', 'aliases', 'source_metadata', 'conversion', 'input_collection',
                     'representations', 'pdf_references', 'representation_policy', 'pairing_basis',
-                    'pairing_content_verified'):
+                    'pairing_content_verified', 'source_title'):
             if key in row:
                 context[key] = row[key]
+        context['document_role'] = row.get('document_role') or role_of_row(row)
         data = json.loads(result.read_text())
         metadata = json.loads(meta.read_text())
         from .genos_admission import validate_structure, preserve_unowned_source

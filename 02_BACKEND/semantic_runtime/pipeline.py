@@ -31,26 +31,44 @@ class Pipeline:
         else:
             raise ValueError('unknown term agent implementation: '+implementation)
 
-    def plan(self,question,documents=None):
+    def document_roles(self):
+        """document_id -> role, from hash-bound stored metadata of this generation."""
+        if getattr(self,'_document_roles',None) is None:
+            from .document_roles import role_of_metadata
+            self._document_roles={did:role_of_metadata(json.loads(meta) if meta else {}) for did,meta in self.store.db.execute(
+                "SELECT document_id,json_extract(json,'$.document_metadata') FROM document")}
+        return self._document_roles
+
+    def scope_documents(self,scope):
+        from .document_roles import in_scope
+        return sorted(did for did,role in self.document_roles().items() if in_scope(role,scope))
+
+    def plan(self,question,documents=None,scope=None):
+        from .document_roles import DEFAULT_SCOPE
         if not isinstance(question,str) or not question.strip() or len(question)>10000:raise ValueError('question length must be 1..10000')
         documents=list(documents or [])
         known={x[0] for x in self.store.db.execute('SELECT document_id FROM document')}
         if set(documents)-known:raise ValueError('document filter has unknown IDs')
+        if documents and scope:raise ValueError('choose document_ids OR scope, not both')
+        if not documents:
+            documents=self.scope_documents(scope or DEFAULT_SCOPE)
+            if not documents:raise ValueError('scope has no documents in this generation: '+str(scope or DEFAULT_SCOPE))
         value={'id':'query:'+uuid.uuid4().hex,'question':question,
                'generation_id':self.store.manifest['generation_id'],
-               'scope':{'document_version_ids':documents or sorted(known)}}
+               'scope':{'document_version_ids':documents}}
         return self.contracts.validate(value,'urn:8-agent:term-runtime-v1','Query')
 
     def retrieve(self,plan,limit=40,use_llm=False):
         return self.term_agent.retrieve(plan,use_llm)
 
-    def run(self,question,documents=None,use_llm=True):
+    def run(self,question,documents=None,use_llm=True,scope=None):
         import importlib.util
         from .contracts import sha
         config=self.contracts.pipeline
         profile=config['profiles']['legal-rag']
         started=time.perf_counter()
-        values={'$input.request':{'question':question,'document_ids':documents or [],'use_llm':use_llm}}
+        values={'$input.request':{'question':question,'document_ids':documents or [],'use_llm':use_llm,
+                                  **({'scope':scope} if scope else {})}}
         self.contracts.validate(values['$input.request'],'urn:8-agent:term-runtime-v1','Request')
         obs.event(log,'rag.started',question_chars=len(question or ''),document_filter_count=len(documents or []),use_llm=use_llm)
         for step in profile['nodes']:

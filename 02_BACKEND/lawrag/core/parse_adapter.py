@@ -744,8 +744,19 @@ def parse_docx(path: str | Path) -> ParseResult:
     images = dict(picture_uris)            # 재정렬이 없으니 index 가 그대로다
 
     warnings: list[str] = []
+    # docling 이 버리는 Word 선언(자동 번호·들여쓰기·글꼴)을 원본 XML 에서 되살린다.
+    from lawrag.core import docx_ooxml
+    try:
+        ooxml_stats = docx_ooxml.enrich(p, elements)
+        moved = ooxml_stats.pop('index_map', {})
+        if moved:
+            images = {moved.get(k, k): v for k, v in images.items()}
+    except Exception as exc:               # 원본 XML 이 깨졌어도 docling 결과는 쓴다
+        ooxml_stats = {'docx_ooxml_error': f'{type(exc).__name__}: {exc}'}
+        warnings.append('Word 원본 XML을 읽지 못해 자동 번호·들여쓰기를 되살리지 못했습니다')
     stats = {
         **docling_stats,
+        **ooxml_stats,
         "elements": len(elements),
         "tables": sum(1 for e in elements if e.is_table),
         "pictures": sum(1 for e in elements if e.is_picture),

@@ -3,7 +3,7 @@ from importlib import import_module
 
 def retrieve(inputs,parameters,context):
     p=context['runtime'];request=inputs['request']
-    query=p.plan(request['question'],request.get('document_ids'))
+    query=p.plan(request['question'],request.get('document_ids'),request.get('scope'))
     return {'retrieved':{'request':request,'query':query,'retrieval':p.retrieve(query,use_llm=request.get('use_llm',True))}}
 
 def select(inputs,parameters,context):

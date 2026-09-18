@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 
 from semantic_runtime.contracts import sha
+from semantic_runtime.document_roles import role_of_row
 from . import genos_build as builder
 from .genos_stages import plain_path
 
@@ -71,6 +72,9 @@ def collect(data, scope_path, bindings=None, *, exclude_internal=False, emit=pri
                        scope_document=name, input_collection=scope['scope_id'])
             if item['role'] == 'body':
                 row['representation_group'] = 'scope:' + name
+            elif item.get('title'):
+                row['source_title'] = item['title']
+            row['document_role'] = role_of_row(row)
             rows.append(row)
     rows, alternatives = builder.select_representations(rows)
     ignored.extend(alternatives)
