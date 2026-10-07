@@ -1,0 +1,164 @@
+GENOS RAG 환경변수·데이터 경로 확인 — 2026-10-05
+2026-10-06 후속: 사용자 사진에서 schema-r2 NFS 발행 성공 뒤 서비스가
+unsupported manifest / HTTP 503으로 실패한 것을 확인했다.
+후속 안내: 07_DOCS/REFERENCE/OPERATIONS/GENOS_COMPACT_SERVICE_LOADER_20261006.md
+아래 구축 중·로더 미수정 설명은 10월 5일 확인 시점의 기록이다.
+source v2와 unit fulltext 허용을 함께 수정한 반입 패치가 준비됐다.
+현장 코드 적용·새 리비전 배포·워크플로우 답변 성공은 여전히 미확인이다.
+환경 설정 안내이며 bash 실행 파일이 아닙니다. 실제 인증키는 포함하지 않습니다.
+현장 접근 없이 현재 코드·발송 패키지·사용자 사진을 대조한 기록입니다.
+현장에 현재 저장된 환경변수·서빙 리비전·현재 활성 DB는 미확인입니다.
+
+1. 데이터 선택과 현재 상태
+
+코드서빙 service/service.py는 저장소 루트 service.py를 읽습니다.
+service.py의 데이터 선택 순서:
+  1) GENOS_GENERATION: generation 폴더의 절대경로를 명시 선택
+  2) 없으면 GENOS_DATA_ROOT/generations/CURRENT.json이 지정한 경로와 manifest 해시
+  3) CURRENT도 없으면 로컬 release 선택 경로
+GENOS_DATA_ROOT만 지정한다고 TERM_RELEASES의 최신 run을 검색하지 않습니다.
+잘못된 GENOS_GENERATION을 지정하면 오류로 중단하며 다른 세대로 fallback하지 않습니다.
+GENOS_PREPARED_RUN/GENOS_REUSE_RUN/GENOS_SHARED_ROOT는 구축·발행용이며
+현재 RAG 서비스의 원문 세대 선택에 사용하지 않습니다.
+
+현재 R2 작업 이름: financial-risk-success-20261005-schema-r2
+기존 입력: /workspace/01_DATA/TERM_RELEASES/financial-risk-success-20261001-r3
+구축 임시: /workspace/01_DATA/TERM_RELEASES/financial-risk-success-20261005-schema-r2/serving/.baseline.building
+구축 완료 예정: /workspace/01_DATA/TERM_RELEASES/financial-risk-success-20261005-schema-r2/serving/baseline/generation
+NFS 발행 예정: /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+사용자는 구축 진행 중이라고 보고했으며 완료·발행은 아직 미확인입니다.
+
+중요: 현행 service.py:212는 term-source-generation-v1만 허용합니다.
+새 compact 원문은 term-source-generation-v2를 생성합니다.
+동일 함수의 읽기 전용 모의 확인에서 v1 허용/v2 unsupported manifest 오류를 재현했습니다.
+아래 예정 경로로 서비스 설정을 바꾸기 전에 v2 로더 수정·검증과 발행 완료가 필요합니다.
+수정 및 실제 전환을 이 확인 작업에서 수행하지 않았습니다.
+
+2. 코드서빙 리비전 환경 설정
+
+GENOS_GENERATION=<현재 검증된 generation 절대경로 유지>
+# 로더 수정과 구축·NFS 발행 검증 뒤에만 위 값을 다음 후보로 교체:
+# /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+# /workspace/01_DATA와 .baseline.building은 운영 RAG 세대 경로로 지정하지 않습니다.
+
+GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6
+GENOS_RUNTIME_DIR=/nfs-root/diamo/8-agent/runtime
+GENOS_MEMORY_JOURNAL_MODE=DELETE
+SEMANTIC_LLM_BACKEND=genos
+GENOS_SHARED_LOG_DIR=/nfs-root/diamo/8-agent/rag-request-reports
+GENOS_AUTO_WARMUP=1
+GENOS_DEFER_PUBLICATION=1
+GENOS_MEMORY_SIGNING_KEY=<기존 현장 비밀 값; 워크플로우와 동일; 32자 이상>
+
+개인 기억 활성화에 필요한 서명·memory=true는 워크플로우에서 전송합니다.
+/json 및 /stream에서 서명된 요청을 받는 현재 연결은 코드서빙의
+GENOS_MEMORY_ENABLED에 의존하지 않습니다. 별도 /chat 어댑터를 사용하면
+코드서빙에도 GENOS_MEMORY_ENABLED=1이 필요합니다.
+
+GENOS_RUNTIME_DIR 미지정 시 코드 루트/90_RUNTIME/semantic에 씁니다.
+코드서빙 컨테이너의 로컬 폴더가 NFS 공유 runtime을 대신하지 않게 명시합니다.
+runtime을 바꿔도 이전 이력이 자동 이관되지 않습니다. 기존 runtime은 보존합니다.
+
+3. 코드서빙의 내부 답변 모델 연결
+
+현장의 기존 서빙 URL·ID·키·모델을 재사용합니다. 모델 이름과 ID를 추정하지 않습니다.
+방식 A — 기존 게이트웨이 base + 모델 서빙 ID:
+  GENOS_BASE_URL=<기존 GENOS 플랫폼 주소>
+  GENOS_LLM_SERVING_ID=<기존 답변 LLM 서빙 숫자 ID>
+  GENOS_LLM_KEY=<기존 내부 모델 인증키>
+  GENOS_LLM_MODEL=<실제 모델 ID; 단일 /models 항목이면 공란으로 발견 가능>
+  GENOS_GATEWAY_API_PREFIX=none
+  이 방식에서는 GENOS_LLM_URL을 설정하지 않습니다.
+  실제 호출 root: BASE/api/gateway/rep/serving/LLM_ID
+
+방식 B — 모델 서빙 URL을 직접 지정:
+  GENOS_LLM_URL=<기존 내부 모델 서빙 URL>
+  GENOS_LLM_KEY=<기존 내부 모델 인증키>
+  GENOS_LLM_MODEL=<실제 모델 ID 또는 단일 모델 자동 발견>
+  게이트웨이 URL이면 GENOS_GATEWAY_API_PREFIX=none.
+  직접 OpenAI 호환 서버면 GENOS_LLM_API_PREFIX=/v1 또는 실제 서버에 맞는 none.
+
+GENOS_LLM_URL이 있으면 GENOS_BASE_URL/GENOS_LLM_SERVING_ID보다 우선합니다.
+모델 root에 /chat/completions를 붙여 POST하고 /models로 ID를 확인합니다.
+GENOS_CODESERVING_ID는 RAG 코드서빙 ID이며 모델 서빙 ID와 별개입니다.
+기본 대기 설정: GENOS_RAG_WALL_SECONDS=1800, GENOS_LLM_CONNECT_TIMEOUT=60.
+GENOS_RAG_MAX_OUTPUT_TOKENS가 비어 있으면 현재 기본 6400.
+v6 모델 시도 상한은 기본 프로필의 40이며 실제 호출 수가 아닙니다.
+v6는 기존 LEGAL_AGENT_PROFILE/LEGAL_AGENT_PROFILE_SHA256가 없을 때
+profile-unified-v6.json과 내부 모델 환경변수를 결속하는 경로를 지원합니다.
+기존 v5 프로필 값이 남아 있으면 기본 v6 결속을 가릴 수 있습니다.
+값이 하나라도 설정됐다면 두 값과 실제 프로필의 v6 적합성을 함께 확인합니다.
+
+4. 워크플로우 리비전 환경 설정 — 코드서빙과 별도 화면에 저장
+
+GENOS_BASE_URL=<기존 GENOS 플랫폼 주소>
+GENOS_CODESERVING_ID=<RAG 코드서빙 ID>
+GENOS_CODESERVING_TOKEN=<RAG 코드서빙 인증키>
+GENOS_CODESERVING_TIMEOUT_SECONDS=2100
+GENOS_RAG_PROGRESS_UI=socketio
+GENOS_MEMORY_ENABLED=1
+GENOS_MEMORY_SIGNING_KEY=<코드서빙과 동일한 기존 현장 비밀 값>
+TEAM_ID=risk_team
+# 재무팀 워크플로우는 TEAM_ID=financial_team. 팀 선택에 맞게 명시합니다.
+
+워크플로우는 GENOS_CODESERVING_TOKEN이 없으면 GENOS_CODE_KEY를 읽습니다.
+/api/gateway/code_serving/CODESERVING_ID/json 및 /stream으로 요청을 중계합니다.
+워크플로우는 원문 DB를 직접 열지 않습니다. 코드서빙이 세대를 선택하고 검색합니다.
+TEAM_ID는 워크플로우에서 입력 team_id를 덮어씁니다. 빈 값은 오류입니다.
+실제 플랫폼 user_id/userInfo와 chatId/session_id도 필요합니다.
+신원과 팀을 서명해서 전달하고 두 곳의 signing key가 같아야 개인 이력을 조회합니다.
+memory 활성화 기본값은 0이므로 v6 구현 선택만으로 개인 기록·재사용이 켜지지 않습니다.
+워크플로우 Python 편집기 반영은 Git push와 별도입니다.
+
+5. 세대 내부에서 읽는 데이터와 runtime에 쓰는 데이터
+
+GENOS_GENERATION이 가리키는 폴더:
+  manifest.json                     세대 ID·스키마·각 자산 경로·해시
+  store.sqlite                      구조화된 원문 DB
+  navigation/navigation.sqlite      용어·정의·참조 검색
+  fulltext/...                      전문 검색 (manifest의 fulltext 결속)
+  glossary/dictionary.sqlite        용어 사전
+  glossary/bundle/...                용어집 검색용 지식
+  glossary/cache/...                 미리 구축한 검증 캐시
+위 상대 경로는 실제 manifest를 따라 읽으며 용어집·색인용 env를 따로 지정하지 않습니다.
+서빙 과정에서 누락된 용어집 캐시를 자동 구축하지 않습니다.
+
+GENOS_RUNTIME_DIR=/nfs-root/diamo/8-agent/runtime 아래:
+  case-memory/cases-v3.sqlite        질문·정정·확정 경험·outbox 정본
+  case-memory/wikis/<주체 해시>/...  user_wiki/legal_wiki 파생 파일
+  legal-agent/runs/.../journal.sqlite 모델·원문·판단 원장
+  runs/, feedback/                  결과·피드백
+NFS 경험 DB는 DELETE 저널을 사용합니다. /nfs-root에 WAL을 요청하면 거절합니다.
+서로 다른 호스트·서빙 인스턴스의 동시 NFS 쓰기 안전성은 현장 미검증입니다.
+기존 인계의 단일 instance/worker 조건을 따릅니다.
+
+6. 설정 위치와 확인 방법
+
+현재 R2 TXT의 export는 구축 자식 프로세스에만 적용됩니다.
+부모 터미널·코드서빙 리비전·워크플로우 환경설정에 자동 저장되지 않습니다.
+.env.genos.example은 자동으로 읽는 설정 파일이 아닙니다.
+특히 GENOS_DATA/runtime 및 GLOSSARY_STORE 예시는 현재 사진의 경로와 다릅니다.
+GENOS_RUNTIME_DIR의 기본값도 사진의 NFS runtime과 다르므로 그대로 복사하지 않습니다.
+GENOS_GENERATION이 비어 있을 때 CURRENT는 명시된 포인터이며 최신 날짜 자동 선택이 아닙니다.
+LLM_BACKEND/STRUCTURE_STORE/GLOSSARY_STORE는 구축·과거 경로의 설정으로,
+현재 v6 RAG의 원문·용어집 세대 선택값을 대신하지 않습니다.
+현재 v6 검색의 vector 상태는 NOT_USED이며 EMBED/VDB 값을 채워서
+이번 generation을 선택하거나 새 검색을 켜는 구조가 아닙니다.
+
+코드서빙은 최초 bootstrap/warmup에서 _APP를 만들고 캐시하므로
+환경 설정을 변경한 뒤 실제 새 프로세스/리비전에 반영됐는지 확인해야 합니다.
+확인은 워크플로우 테스트 화면에서만 수행합니다.
+SSE_CHECK는 중계·진행 전송 확인이며 RAG 세대·기억 DB 성공 인증은 아닙니다.
+WARMUP/WARMUP_STATUS의 READY와 실제 질문·정정·확정·새 대화 재사용을 확인합니다.
+서빙 로그의 binding.resolved에서 mode/generation_path/generation_id를 확인합니다.
+runtime.create 및 deployment.entry.loaded의 구현·코드 경로도 함께 확인합니다.
+실제 질문이 사용하는 원문 세대·경험 저장 성공을 확인하기 전에는 전환 완료로 보고하지 않습니다.
+
+근거 코드:
+service.py:201-280 — 세대 선택; 361-444 — runtime/v6/모델 결속
+02_BACKEND/semantic_runtime/navigation_agent.py:158 — 세대 내부 용어집 자산
+02_BACKEND/semantic_runtime/genos.py:109 — 모델 endpoint 환경변수 우선순위
+08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:132,278 — 연결·팀·서명
+02_BACKEND/semantic_runtime/legal_agent/memory_identity.py:23 — 신원 서명 검사
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:87 — NFS 경험 DB 저널
+02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py:15,125 — 사건 DB·위키

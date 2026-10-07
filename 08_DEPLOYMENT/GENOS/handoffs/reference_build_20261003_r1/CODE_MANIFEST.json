@@ -1,0 +1,4525 @@
+{
+  "format": "8agent-code/1",
+  "id": "GENOS_REFERENCE_BUILD_20261003_R1",
+  "scope": "Completed-source/glossary reuse, exact suffix lookup, shared reference bodies, direct construction audit, compact-v2 recovery",
+  "base_code_manifest_sha256": "2cb355820c7f45295938ba8c416ebd31c79552021b4ee68eb0d362a730cc4eb4",
+  "parent_handoff_manifest_sha256": "6ec26b4191b789ed455f91e40c01e40575504459084818cdd6856cf1e9581448",
+  "files": [
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "role": "code",
+      "sha256": "976edff02883791a94362b7e0a17a5c7bc2c470d6be48ccbb4fff2d03a960332",
+      "bytes": 56689,
+      "allowed_predecessors": [
+        "566cab62e3b077266a537906593224ec9b34738caba25f69460b908077d086ca",
+        "9aa621b7628a57e540239954b8814226ea4db9dd19f6ef4df18a384588225573",
+        "fe7ecd0cf8cb210f26bd779f4e9ada6de0c6696c1e6b600d7044b71a6e8ef5d7"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/1.0.0/answer.json",
+      "role": "code",
+      "sha256": "1ffbdac1f788d9382c44aff61d9e7f210abba646c3f7b98b05ac250358077eec",
+      "bytes": 18392,
+      "allowed_predecessors": [
+        "1bcb90028dbc50bb4180b43f4288799b90d4727e931e42e45624506da8dc381a",
+        "222cf78d4a23531c354272f2b4e49926bbe2c2eadac73346b653587c54388c3e",
+        "7ff2be7a53dbc74748daaffac998644945af6737a9b445ffa05e931a5aeea591"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/1.0.0/assemble.json",
+      "role": "code",
+      "sha256": "e04d3efe7e3300258d9a17dd1c7c98881c41e8680af4d20ad9dd62854885b3db",
+      "bytes": 18369,
+      "allowed_predecessors": [
+        "64e210fc73b7556107cafd10123755a3fc505a398a0d28744a7cfd2937ea4ce3",
+        "b9d8661dbca1d58f31dd1814511af62ff4bb1155179b4b1172d94b5a9891ff81",
+        "caacb802a643749ae86c6dd5090b6cd29f37ca3b73a09190e713ba1083ac2edb"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/1.0.0/retrieve.json",
+      "role": "code",
+      "sha256": "078dfa984ecf9c9155b926a69d8eda26d453e85fc8e3c2a2e8855959456b6e42",
+      "bytes": 18427,
+      "allowed_predecessors": [
+        "23c6250564dfc0a6def29eb885ba612bc33e1925ad041799bf6bc526d860eb0f",
+        "739ce10752ac49bce22f3f37fad5eb903aedf6ab79f6ce16888e13b4a8ef68ba",
+        "abf8c1fbdf8aa17ca1ef2f03c1115efea824d0eaa37b57e41474218e99de143b"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/1.0.0/select.json",
+      "role": "code",
+      "sha256": "7326e08fe252ee6142693e450d4d57dff9e65b7aedbc2b5da9e272b523bb5847",
+      "bytes": 18365,
+      "allowed_predecessors": [
+        "3fa38e4620ec956f89a500c5ec21ab4df0f5042c2f00bf8d1b564df4ae27a5c6",
+        "8f8824c0d2a4ef20f7ee699a12b18eced2bfa97a1a28ad30734574ce44eb80a7",
+        "ea1f1d6e27dfa7541693065ae3b980467c65ccbd3b43b50de8f2f149937aa5bf"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/2.0.0/answer.json",
+      "role": "code",
+      "sha256": "6342f7225113328ad07a3352aa6a4422e5c27f454cf72dac8242f6d985838e22",
+      "bytes": 18518,
+      "allowed_predecessors": [
+        "79112bfb00b299052781891528f6aa596511157e8b99c5079a0b065676f4e7ea",
+        "8ae8e6e0004fa356399c5f9c1cde799a7f9f29799cfe5563811c521e17e875fd",
+        "c4e1e273f124e9b2acc33932d9c540da480091f552052a86e28adc712fed307e"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/2.0.0/assemble.json",
+      "role": "code",
+      "sha256": "15804db10188d69961863893b4b451393ca94fec4ddb89390ba324d3a06f0d52",
+      "bytes": 18492,
+      "allowed_predecessors": [
+        "9ff91c9644a9fecf4cfc3647cae5711b40e6c15d0b57510f1a780bc2ffd8bd23",
+        "d01ba5583c0dfaa555ba5cd2e26dc122fcebcfeb6a94cd450a24cc2fa92c8322",
+        "e4ff244316237bae36fac3625bfe28f69c29cfe4419d64856fd850ad20b52560"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/2.0.0/retrieve.json",
+      "role": "code",
+      "sha256": "be0d7c71f3b9ec278b4ee0c838cc8d7566032659e3113166f155fc2170f8e292",
+      "bytes": 18550,
+      "allowed_predecessors": [
+        "6cfe7601f0a4112adfe90a13e9e3a30bf483f2dd57f528108ee7e11b0facbb26",
+        "94a2dad08ec898c0c9707ed793e05dda06245e0b431ae4757a1ca0f43bbe223d",
+        "bbddbfebf2c14116cbdcd86fc5e09ffcdf1d43ae7cb567d1bfbb6985a98c8554"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/2.0.0/select.json",
+      "role": "code",
+      "sha256": "9013016786fdb7dda8216f536786ad3e87f3fa8025dfbe307cab231538daa43e",
+      "bytes": 18488,
+      "allowed_predecessors": [
+        "3f23c2934de2c0284358ac64e2f2a97a91ff13409dad1fdab24a95021dd3d682",
+        "ac57f1bfd4ca54120df52daa2a604d7ce1c99aff024dd6210de1f6387646386e",
+        "e63cd9b5dd72cc5d1ff6aad25848443ed9beb01bcaeab1b503e15131e89ca955"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/3.0.0/answer.json",
+      "role": "code",
+      "sha256": "598825ff37af8b0c3b322aa13a0495695954002c6d51ba4849edc98f1b382629",
+      "bytes": 19352,
+      "allowed_predecessors": [
+        "37f99d18733da577cc631b54bde7b6e796fff67a81630a575f156e1e27d389cb",
+        "97c325bfc0818dc876f73c9e50e798799f9422ffdec2fc8938642accf05fb324",
+        "cc57eb9734c6f4af7d1ebf449c9c5c2acfd2c5307b28c7dabef539fb9fc2dec1"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/3.0.0/assemble.json",
+      "role": "code",
+      "sha256": "f27ab88ac8aa4e394d8b9eac9fd791187bf33f39c29a9a42fab1edc9333410ed",
+      "bytes": 19326,
+      "allowed_predecessors": [
+        "35bb8651cc12b8d75ac04f23fddf79bc7093c835978dbce4a6a4ac0f968a52d5",
+        "a1cee89554a32fda7c76aad1ffa3aa9ff666f805ead523fceff10ef424b2f377",
+        "ec66afa18915552938d4f12c0ae135e993b84b1536ec31537a617620bced5cf8"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/3.0.0/retrieve.json",
+      "role": "code",
+      "sha256": "e56078dab2e5e6b0a34304f47ed589d29f0de749c4ab66dbffaeaf779109b7cd",
+      "bytes": 19384,
+      "allowed_predecessors": [
+        "2f227f8c975c56262816bee5efee395400fb09d5db5e2e9fa6b3d0940d5fb045",
+        "6b4e00530a006ad2a94e1307a96028534f3836818fe10b0ceae014dced8f4dc0",
+        "947f383ca32d86e8c401eb2cd59952771c20ca0f3ea1960a210834e75c9b1e14"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/3.0.0/select.json",
+      "role": "code",
+      "sha256": "d25bf727c0b62f781e7e96324d95d314dc6476bcbe3fcd564de8713fd29ad724",
+      "bytes": 19322,
+      "allowed_predecessors": [
+        "10b41fe220237d6e827689f2d4bd3b0567fabc587f6c000d0baae6051722b05c",
+        "40ffaa9edeeae4a77b25baf3a9cd77f0cf3ab7448f58d433d0688dff3354bbd6",
+        "e16a45da0091c12a961d192c0f51e80fa3310411f7f648532c0caf4064809872"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/4.0.0/answer.json",
+      "role": "code",
+      "sha256": "d42c9cf13bf44c096fea8a48ddf1100c9ffdc64a1ccadb30f055c8362495cfab",
+      "bytes": 19713,
+      "allowed_predecessors": [
+        "7e93ed3709f9e89ac035c67bba87fc599adb8454a54ced85e4b80f3c974461d5",
+        "914c814bf492e21428299497659b3750aec6f39093f2d86b59a3af79ceed552c",
+        "fbd519e6c549e269cf245bcdb620fb81476c346cff546f242d66661747e11b0e"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/4.0.0/assemble.json",
+      "role": "code",
+      "sha256": "1c9824d4fe4cd559dd8e630d93c1fbc1548fe2cbcbed9910a21c98d6fd1e4f8f",
+      "bytes": 19687,
+      "allowed_predecessors": [
+        "39ee8e89b8f44e92f52ac27386a732b88105295c45b95820b1dfb19c27b5c7de",
+        "5a6fea098478fd3df92d0d9cc93f53973aa1fc915dd5420d9c2ab228554ac95f",
+        "8d4f49f534873253419689d7b76a37bae527ad47a73a80910f6d7623900df7e3"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/4.0.0/retrieve.json",
+      "role": "code",
+      "sha256": "5e7d48c9ef6441afdbc513d8871166b0ac15332b535702c402d1e42b54be6f75",
+      "bytes": 19745,
+      "allowed_predecessors": [
+        "04f5c402103275f8d358da94ff6a8c4b06470ee77d4bf5e469374f44f5209a96",
+        "1ed61eea5db082f4562be7c19f1beed99efbd0cd2fe0d4219fbb3baab560e063",
+        "c708647ff991c5ecce19682182915ac3622311a0e688733ccb73f744a236774f"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/4.0.0/select.json",
+      "role": "code",
+      "sha256": "b028f626c6a243fa6ccad7d5979a20a164b5caec04d217ce9b46ac4ddc8996e6",
+      "bytes": 19683,
+      "allowed_predecessors": [
+        "4c29d16e2ab95ce876247675a1fc1c9333c085e010c5f82eb0c4287e31b884a4",
+        "718debc8ca7a02cfb1b79f07051e2237594e925599aa1c3713955abbe8f69d49",
+        "b9e70d25bb7d2d711c54c27ea481e064c7f54402d4407c6d6951ed361ddf59ca"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/5.0.0/answer.json",
+      "role": "code",
+      "sha256": "f2cefe5eacf302210269e3759307d5fd939e032251a22a583b4692a3d975cd5a",
+      "bytes": 20988,
+      "allowed_predecessors": [
+        "30eaf7151fc416a3ae772d89f580164a816107bd05f845a27f9b4a6f5c67c7bb",
+        "4b16ddeec1e0996874bbdf5e0d77ee43cc030de9cec497a4eda608094144cd0d",
+        "c7adb3d9801e59d70a61d0034ec71b6c18b18cefb831ca4cd23676588b4630ed"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/5.0.0/assemble.json",
+      "role": "code",
+      "sha256": "0040b73e894a2fb9f6e6984f0a6d20bd610ad6ab77c629fc14bce8b0d4f68a80",
+      "bytes": 20962,
+      "allowed_predecessors": [
+        "22a4fd55f77fc370297960aafc368601e6618033bf3abb9e443dc1d5807f2689",
+        "2596f9a92ae57ea16f9393d89fab1a57723dedb160b7834229c2dbad31f6d5fc",
+        "293981466913af23d862178d774d7654b709344f60e0430ca7b64d5eac64a4bc"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/5.0.0/retrieve.json",
+      "role": "code",
+      "sha256": "8023531e6175d22f7d12863b7068251af90e65d23beef3415d361fb17c3f10a2",
+      "bytes": 21020,
+      "allowed_predecessors": [
+        "5c4cda7ff7fe5c1aeeddbdb00707d602f7b83e23ebb7ec2b9c9d88c4488efd20",
+        "5d919d90bc1736e51839e0fb2213d4e54020c5cd394e38f89e86179c7cfaee9d",
+        "e4e4e625187520d0de4cdd84dbf8dc39509fe347676fba611bf179cade6d4311"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/5.0.0/select.json",
+      "role": "code",
+      "sha256": "f1115141874856682a1ab15142bea0ed5b8a8be7a32280ad814a5f2a5c8e01f7",
+      "bytes": 20958,
+      "allowed_predecessors": [
+        "2b344e292e1e3f12832d0ed566165a67b7a51bf7cb8869945f445dba6b1cb704",
+        "7a9acca1f6e89dae75ee6047ab495d43ebf76438d07bfd3ed45ff0ccf822074f",
+        "9ec89762c64bbea3a9ba714dbf2f16569a755670dda83fac77265bbcbf18901a"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json",
+      "role": "code",
+      "sha256": "37fe7af7d66a5ed6fb71c90ddbec4e2177778962625d3e6d2c49633fc5e86c89",
+      "bytes": 21712,
+      "allowed_predecessors": [
+        "1bbb7eb7d8ab684839062ec5357d1cab9e779f169c6ee6f532b4164349921091",
+        "4bc368fcedaca9f15578554c0ec31ec4c1aff17adc50e1a62ceb45e2a2d2c69c",
+        "713d3fd29a202ed304a06f1a783d178ca5dacbeea1894a7d94b6132ed617e2e3"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/6.0.0/assemble.json",
+      "role": "code",
+      "sha256": "4cfc326f499c32937bb30376ce1ca1e7d8147144399724c8e5774971972d63b1",
+      "bytes": 21686,
+      "allowed_predecessors": [
+        "507785090e569c2db839a1afe164d9bd0d04ac702a4d5cdf42a95a3482834cf9",
+        "98551c4a58f74f556dc71c2119d4b743225e7c6c265b97cd9f0fdf0574f4d2cd",
+        "fe55107d5968341415eb55aa0de53864937205af3162019cb198dd864b95eacc"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/6.0.0/retrieve.json",
+      "role": "code",
+      "sha256": "b34663a741f7470e4f3848496521b6ac8299f6c7dd7a2cc3adff40865baa2994",
+      "bytes": 21744,
+      "allowed_predecessors": [
+        "38a325b5cde8ed52da933c75d6ef026c9931e94285d5874b0d6d05df9d9c0be8",
+        "968e187ced6cc0b0413e166d80cfac7387c7e9a1938057cf784249fc356dafb9",
+        "bb44e8ab7a841ecce174f2935ae1ccf665c0e79d2c6f835043e7807f5a1ca69a"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/6.0.0/select.json",
+      "role": "code",
+      "sha256": "de9c3a60c8218832b47f08df7b366699151c82d0cae56555e32bb3b346414a3e",
+      "bytes": 21682,
+      "allowed_predecessors": [
+        "1b55aa266d0556535ba038fbd3aef50e793460702fdff922baa48fbaa2d19557",
+        "b7c58fca12419d077698fe75c71ad3d986dfa4b78996ea7170b28e4a34adbc17",
+        "e3e77ced4d97c2a9cb38da60d6c650ae08dde48cb9e49435c463b287de6cfad8"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/semantic_runtime/1.0.0/answer.json",
+      "role": "code",
+      "sha256": "bb04882b696431860d6ab7bfbbe95071248656d088431becb1b6ee66c304c247",
+      "bytes": 3114,
+      "allowed_predecessors": [
+        "4c9aa02704483b4ae0bee9a9dd79e5bbcb42168b93ce14c0a63635e300bb2c99",
+        "e93e87b82241e34523c721344605fc17006cf8e30c0e30b46f5e3b0e3ba7d538"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/semantic_runtime/1.0.0/assemble.json",
+      "role": "code",
+      "sha256": "1a9ce45b6fa476b1effc7ad716cf79a2a1651bb6815be1726926c1bc95c03497",
+      "bytes": 3233,
+      "allowed_predecessors": [
+        "835997e73a7f070a66d7d0bc53f5d26860b05dc29cf8d09b144e6a0a7b83ee67",
+        "ec3b6e736f0511a278f94f3ec405a9a7a5e1299ad97e2db805f1de17ffc29b10"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/semantic_runtime/1.0.0/feedback.json",
+      "role": "code",
+      "sha256": "74041ab94dc786f17a88a865b7f19747a8f8d75699c346865d2d421cbd655e4c",
+      "bytes": 3116,
+      "allowed_predecessors": [
+        "74d5567851fff9698aaee4475603e8f90c9948413ac01c1c743f8a58b12278d8",
+        "a66355b7d02d7d04eb7338b677819fd44456797a8dd4e22e6e38615d77b76c7a"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/semantic_runtime/1.0.0/load.json",
+      "role": "code",
+      "sha256": "dce043188b11a8637202acd9a80a583a62711bf2e41ec05949ee26097d7f3ed3",
+      "bytes": 3117,
+      "allowed_predecessors": [
+        "06ca96e477dcb25cdc37b9e2222dcaf41500295f7830c74cea85df0367dfb9e7",
+        "84d70703dc932ab8288766c2b7fa6aad1b281255fe4b5f138e13825d24c03e61"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/semantic_runtime/1.0.0/retrieve.json",
+      "role": "code",
+      "sha256": "41495aa3a3c6ecbc12615590856fffc61a488fc344dfa03c4dcdfda35225b88d",
+      "bytes": 3181,
+      "allowed_predecessors": [
+        "13c4b99dbc5c118cd184b04254dae210a0c889f1f141df848803813179e081ca",
+        "c1bc06f2d94ea92d5d03cf0cb1388416bd675dddd43eba281f7ed86a9490209d"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/semantic_runtime/1.0.0/select.json",
+      "role": "code",
+      "sha256": "d9ab98b90c17c34204654e65ed11f714cdc2d94455c2442b325160acd9e8fead",
+      "bytes": 3119,
+      "allowed_predecessors": [
+        "41fb0d42f080f0c80ae352422ff5c1f4e5914b13788ed4f8ea0329b75bba70fd",
+        "85b219c08b219b2c0facacca200ee2585f9d3f243c719d9ab9623cdcc54ceeed"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
+      "role": "code",
+      "sha256": "317ef694dc836b57f5bf32a2a558b733b1afc4ec39a29a5ed7beee16cd1d7938",
+      "bytes": 12139,
+      "allowed_predecessors": [
+        "49172346fcd11d640c3e80997befeb6469fe37ef0d43a4eb51c79edd64948411",
+        "83f4dd92a8005dd4513caade8c669903e9e78744eb38bba504071fefe25b244f",
+        "d0619a3df2ad243349d881d187f6acf28e7513b5e1be6e56502bb9f38eb157ad"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
+      "role": "code",
+      "sha256": "e07743684bbb01c177cf1f9584f3c8f424a915ce738620e6e26778bb8ed1bdf8",
+      "bytes": 12168,
+      "allowed_predecessors": [
+        "0fb101fa52494a069422b1642cfc7a801ef7e7c6ed9cce948507308c7eae3771",
+        "28833a605c4c19fbcca12bf2dbd105baa5215f43398c4f3607ef094e9e867fef",
+        "67cf10751bd1fd60095c8cb7f4f9a27beeacf077ecacaeb85dfdea323947f507"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
+      "role": "code",
+      "sha256": "7dbc99801069006206ab285be142e0f3804b1a9a2cc9db0186da3b7b6b89a2aa",
+      "bytes": 12141,
+      "allowed_predecessors": [
+        "8a0d35dac7ed0c52b077caf2118cb90c8634cdd0ef1af00860d415f65348fd99",
+        "b276416d9f48a7938d11c4b2a77defb83c52e513c364fb3c94e3c68dcb1693b4",
+        "e89c7f45cfe123001f205f70f62cd424b08bc7bd629d6d286ca55d9273dfbde9"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
+      "role": "code",
+      "sha256": "06dbd30145c07288f86430ec123ee82fde465bd6b67f2fca9729d9610b8b4e04",
+      "bytes": 12142,
+      "allowed_predecessors": [
+        "614afde3fe38e430cbce71150a103b10fbe107e6a1c2d0a1e9731b4faca6f5cd",
+        "8dea58d67a19a856b9216ab5f1e8c900b96fbcd2f90c08e9baf9677c28438883",
+        "ad06a6418f52fcdaab21721a2ee7071a3aa03e9be90a85177fb6e5066d2854be"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
+      "role": "code",
+      "sha256": "cd3f7ea380629ed7183371c8ed89bfa753d65e5358fc4402c8efd94b0dacf1a2",
+      "bytes": 12206,
+      "allowed_predecessors": [
+        "1dcec9fec7fbcd60701ce85a8bd0b4fa5800021448489f962254688976d4178d",
+        "ee2e6e3fa49957f00e13476379ebfbc9eae2fddf26a14b695015dc1992730d1c",
+        "f8866af6adff5501d7db9a5b813bbc419c4307baf42df6d2752c1cdcc9578228"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json",
+      "role": "code",
+      "sha256": "f244d8377525754fc861f5550caf0421545a6ef7257fee5ef6995c34f2862dbc",
+      "bytes": 12144,
+      "allowed_predecessors": [
+        "4b9bca674558676d90b43ae50e4b0ad3a245d332942cfe84263fdc0f5b50eb43",
+        "b676b7e69ec1da70c13fad27f155e53dd125494e8fd36d40db50c48a46c0d5f7",
+        "cfb2c2d5c904f901e01186692e0bc65c47e01b4ef462a50dd520ea6a5a899425"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/generation_build_steps.py",
+      "role": "code",
+      "sha256": "bc96a0b8469fa385046ee82076ebbb6d8b7b397586a79328e4cf7e6ab1a2732b",
+      "bytes": 7848,
+      "allowed_predecessors": [
+        "9222fb1990998b2a328fef7e163d029a1456cb800a7ea6b07b84c137f26a4b9b"
+      ],
+      "allowed_absent": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_linking.py",
+      "role": "code",
+      "sha256": "40b62eddfa5e3158653e480d5cfed8d116bce2cbd8c7cdc763b131eb0bd43bde",
+      "bytes": 12569,
+      "allowed_predecessors": [
+        "40b62eddfa5e3158653e480d5cfed8d116bce2cbd8c7cdc763b131eb0bd43bde",
+        "43b58ab0ea3feab577529550280193d37755318d8dc9f5f3f773bdfd05fcd617"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_serving.py",
+      "role": "code",
+      "sha256": "0ee8cdafc86dad3389abdd28129d6b93b1e42afefb3cba2cd021987f537ee22e",
+      "bytes": 3733,
+      "allowed_predecessors": [
+        "0ee8cdafc86dad3389abdd28129d6b93b1e42afefb3cba2cd021987f537ee22e"
+      ],
+      "allowed_absent": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/term_generation.py",
+      "role": "code",
+      "sha256": "e341c5eff76c7c96a3700d2f7d1f9ca6b6f478ac2b1bdb857d9147eced6e08c7",
+      "bytes": 11503,
+      "allowed_predecessors": [
+        "1457e0ff71449b9c7e0146181a1e2c501adc860ba4114cf4af26a0b03eda31ec",
+        "9bd8376b8ffe389ed233ecefa5ca80bb896042b0dd978cead649118470986203"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/term_serving_bundle.py",
+      "role": "code",
+      "sha256": "0f283b41943befbf81fba50c1d0c1b10e555b0da102be2ddfb1f995518392cf6",
+      "bytes": 5259,
+      "allowed_predecessors": [
+        "0f283b41943befbf81fba50c1d0c1b10e555b0da102be2ddfb1f995518392cf6",
+        "69bc30cfa6408bc4204656cca13e9b7b9defca049749a55d7a4aeb7dcc5228a5"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/compact_storage.py",
+      "role": "code",
+      "sha256": "65758765dedce82793fa4937d99dc40006cbc0b851fffc981e2764ef14557280",
+      "bytes": 5815,
+      "allowed_predecessors": [
+        "65758765dedce82793fa4937d99dc40006cbc0b851fffc981e2764ef14557280"
+      ],
+      "allowed_absent": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/full_glossary.py",
+      "role": "code",
+      "sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+      "bytes": 52395,
+      "allowed_predecessors": [
+        "ba2c6ced8da72307934e627a7a7508fb29da45e35d09fc3e0a116884a0a5d058",
+        "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/full_glossary_connections.py",
+      "role": "code",
+      "sha256": "19035d9b279ff38fcf26214d83914128062c4bd3df56c00b18cb506fefc27257",
+      "bytes": 11377,
+      "allowed_predecessors": [
+        "19035d9b279ff38fcf26214d83914128062c4bd3df56c00b18cb506fefc27257",
+        "82c0d79f1b4fb0cca0f9bd2d6a5dda86ea680c3f81f1dfb8992c34bdfca1b422"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/fulltext.py",
+      "role": "code",
+      "sha256": "661960e3e5f5d93f537bd01599687d99b007e9f2a0e64e838bfdd3a35b2d6539",
+      "bytes": 24348,
+      "allowed_predecessors": [
+        "60ec426d439855eb005dca64df93cbc2b4937ab56b5c010dfbd817076651cd0c",
+        "661960e3e5f5d93f537bd01599687d99b007e9f2a0e64e838bfdd3a35b2d6539"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py",
+      "role": "code",
+      "sha256": "655fe7624ef67d7ce1954a122439d7b2b6159e10d44515c980d5a2ebcb588799",
+      "bytes": 35035,
+      "allowed_predecessors": [
+        "47b991a83e77f65673252eab86e51501a274f05d42ea50283a67b25201729376",
+        "4982cb5fb6789f878d7814a1ab8fd0293174f704fe1987ee929ca0eee21df86b",
+        "655fe7624ef67d7ce1954a122439d7b2b6159e10d44515c980d5a2ebcb588799"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/journal-v2.sql",
+      "role": "code",
+      "sha256": "6d2da0f6128f7e142d7fd78d675b706292995a0d3f306463cb33556d7aca09e2",
+      "bytes": 13451,
+      "allowed_predecessors": [
+        "54990a989881b31af2ce40fce7d85d7082f00fd291ac29003c1c73a0179a9742",
+        "6d2da0f6128f7e142d7fd78d675b706292995a0d3f306463cb33556d7aca09e2"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/journal-v3.sql",
+      "role": "code",
+      "sha256": "3b32aa8be0db54e76b1967e3d9bb57e2b0a0e80b9fd34c50fa478601029b74d5",
+      "bytes": 15391,
+      "allowed_predecessors": [
+        "3b32aa8be0db54e76b1967e3d9bb57e2b0a0e80b9fd34c50fa478601029b74d5",
+        "c4135dbb08aed8e90049ed297fd51440964ca56d16281a66fb19c4455236f3ec"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/journal-v4.sql",
+      "role": "code",
+      "sha256": "7b9bb3aad10d4616fe29c2aaefe5474d9258d71b0f6a81ea5c8e13a9e0a93b4b",
+      "bytes": 15443,
+      "allowed_predecessors": [
+        "1109edb4d98d297da5fa48c9e40c133c7c4af8809d371940355534af80606bfc",
+        "7b9bb3aad10d4616fe29c2aaefe5474d9258d71b0f6a81ea5c8e13a9e0a93b4b"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/journal-v5.sql",
+      "role": "code",
+      "sha256": "eac6cfc964e994b5ffd072e2fae8bca014ec9cbc4f4ae45f8a571e4be0db31c1",
+      "bytes": 15479,
+      "allowed_predecessors": [
+        "5b913002cdcf347ed999e697c169c5e68ae7ec4f318c31e8136ae68639623e1e",
+        "eac6cfc964e994b5ffd072e2fae8bca014ec9cbc4f4ae45f8a571e4be0db31c1"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "role": "code",
+      "sha256": "e5c977812e79665a2ecb2e64df0ea40380391590d62890b911ae547d313b26a9",
+      "bytes": 16301,
+      "allowed_predecessors": [
+        "c26b8c6a1700ae64af26ad9138ee1f76d257c72021a9e9ad2eb733ad21e9cb6c",
+        "e5c977812e79665a2ecb2e64df0ea40380391590d62890b911ae547d313b26a9"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/journal.sql",
+      "role": "code",
+      "sha256": "bb0db996e7f85ae9fdbb6a7980b22842bd54aafab23392b2c9b51eab5168de0f",
+      "bytes": 12775,
+      "allowed_predecessors": [
+        "898c9e6d5cfe1f21198f7502c371a820b49375976ae9ce7ccbbadee6812cdace",
+        "bb0db996e7f85ae9fdbb6a7980b22842bd54aafab23392b2c9b51eab5168de0f"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/repository.py",
+      "role": "code",
+      "sha256": "92f1a3ece0242e5766208fd65a901f0d92c452dce43929bc7431672e0bca9e80",
+      "bytes": 25261,
+      "allowed_predecessors": [
+        "2b4cfe1d84b3511caf098e9cd618ef99a1a5a50d0c3fe19b0b8b24b745dd28eb",
+        "92f1a3ece0242e5766208fd65a901f0d92c452dce43929bc7431672e0bca9e80"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_tools.py",
+      "role": "code",
+      "sha256": "4cadee6392e4f21c1d49a31d24065c7e3732c0a21b86d00b5326c2a3990b28d6",
+      "bytes": 18818,
+      "allowed_predecessors": [
+        "4cadee6392e4f21c1d49a31d24065c7e3732c0a21b86d00b5326c2a3990b28d6",
+        "7c7237c15112a721b627321423026918ec3f3692fcad37b92e9af53be0c1ac87"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_relation_cards.py",
+      "role": "code",
+      "sha256": "6a901d6751f16fb85261b1804954ff924eb24aecfb1f2351283c1c37a8927281",
+      "bytes": 18699,
+      "allowed_predecessors": [
+        "6a901d6751f16fb85261b1804954ff924eb24aecfb1f2351283c1c37a8927281",
+        "ca9f78976336614d5de5cf2a451c0ac076c4df451bbd97a7cc8bb4b097cff36c"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py",
+      "role": "code",
+      "sha256": "5c844c8f876a135b949210298a93df2a7f9db56be5ac0d1f0c401755031bcda6",
+      "bytes": 40596,
+      "allowed_predecessors": [
+        "5c844c8f876a135b949210298a93df2a7f9db56be5ac0d1f0c401755031bcda6",
+        "69365ded267118d0dd212b82b531d3983977d9c047edf2e51b2ba9df5cb54a6a"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/navigation_build.py",
+      "role": "code",
+      "sha256": "1893fb70c1f7680dc09dfc7466f685522e8095931df5e3ac4866784187483f46",
+      "bytes": 6095,
+      "allowed_predecessors": [],
+      "allowed_absent": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/navigation_storage.py",
+      "role": "code",
+      "sha256": "e33cd88c809e1654a2749af37937db7393e53a25a1a66e47015ddebd57fc6a95",
+      "bytes": 14829,
+      "allowed_predecessors": [
+        "2a21c8148816131a19f322834b0da9634254ab764c1504e8fe25ec9755029542",
+        "6c9d600e6cf754f73a220453c13cd8a11d2f45cec12d0873e3ecd2e3881a24aa"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/reference_build.py",
+      "role": "code",
+      "sha256": "945cf6166a59b8277db79fc8300b69fbcadedc02f88954c033dd7abb5f5b73e9",
+      "bytes": 8305,
+      "allowed_predecessors": [],
+      "allowed_absent": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/storage.py",
+      "role": "code",
+      "sha256": "1d5dcf77b65f2f4c9d7f2e1c295d1c6a641ec8d626edcbda7fe7ddcbafa6db11",
+      "bytes": 8356,
+      "allowed_predecessors": [
+        "1d5dcf77b65f2f4c9d7f2e1c295d1c6a641ec8d626edcbda7fe7ddcbafa6db11",
+        "ab038c340b67210f12c6658489c2d28e582d0c53cd1047d0099d5fd9b1c5749a"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_index.py",
+      "role": "code",
+      "sha256": "13e3ace68f944271e9444c8c18b909346e3af4c3678823728b51b1c6e54cce34",
+      "bytes": 35617,
+      "allowed_predecessors": [
+        "3a9458e57f2e83f730288229b2147e48f227150826e4ba3e9e6d9e32ea8a381b",
+        "db41f6e494a275ff3e2bead52a9f38346e4f6c8c5e2a5d68e9f2fc0a51617b26",
+        "e9920495215244c1dbbe7033088842aa3ca1f3e6d35cd38a7700d0bf751d790e"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_links.py",
+      "role": "code",
+      "sha256": "37cb37302781740c89a09a147a14c37e2e4f11df838e5caef8e4f80541fdc4c7",
+      "bytes": 18335,
+      "allowed_predecessors": [
+        "737cff575ec5c88d55f4e0ef7f9721ce1acb726cc96f289463dec496e56c6806",
+        "920f58ab442edf53b5d870e391736dbec35ffedf3d52b894fc2714779ea65a91"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_references.py",
+      "role": "code",
+      "sha256": "d50631f1fa2f98c4df5e30d2b852543059f0e825306b56da24cda39addb59db0",
+      "bytes": 54220,
+      "allowed_predecessors": [
+        "b75735d18c2487b617ad6faff10374f2c6c0d0546575bbc41e456185755268db"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_references_legacy.py",
+      "role": "code",
+      "sha256": "7091e33444ca580e2a4bc9d0d6bb66e13f4a60ccfc7c486c088619d53bed567a",
+      "bytes": 46725,
+      "allowed_predecessors": [
+        "626e0debb573a738dc48ac2ba006adad9e93f49ecd258cc176914efa049058db"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/unit_fulltext.py",
+      "role": "code",
+      "sha256": "c1d608dd48927c30b9d7946866c73bbacb0213d457bbb97dde266bfd6d00f473",
+      "bytes": 12115,
+      "allowed_predecessors": [
+        "51cb01927cd1d72c3ea700f66a8110a0e68eff20b580aae6aa15b85fcb83570c",
+        "c1d608dd48927c30b9d7946866c73bbacb0213d457bbb97dde266bfd6d00f473"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_generation_e2e.py",
+      "role": "code",
+      "sha256": "3bad2c18ff813a23f39ff1bd96794ce942316f382e40544919de016fc67ee498",
+      "bytes": 17285,
+      "allowed_predecessors": [
+        "3b177e92df8412534016226cdbdd26abe48c5bc46311b0992f0082bbfe993542",
+        "3bad2c18ff813a23f39ff1bd96794ce942316f382e40544919de016fc67ee498",
+        "c715f211876fae3e6a5fb2020ecfd53ab47001e3294bbeeac54640b0d95d24f3"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_release_gate.py",
+      "role": "code",
+      "sha256": "af1339d7e99fdca44b472198aa98fd15bd64cfc3acf3aa95e1f96c3f6c3a6dec",
+      "bytes": 7044,
+      "allowed_predecessors": [
+        "af1339d7e99fdca44b472198aa98fd15bd64cfc3acf3aa95e1f96c3f6c3a6dec",
+        "b35804f4e5737f23280d86e77873488138758a4310fa9586bf64aa9f0f3960fe"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "06_TOOLS/OFFLINE/genos_code_replace.py",
+      "role": "code",
+      "sha256": "deaeed789b7d3421969bf1869e4f91f9ec6526b0c179eedb400b8800331b9c50",
+      "bytes": 13609,
+      "allowed_predecessors": [
+        "deaeed789b7d3421969bf1869e4f91f9ec6526b0c179eedb400b8800331b9c50"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "06_TOOLS/OFFLINE/genos_reindex_only.py",
+      "role": "code",
+      "sha256": "8687f8848f57788b4ba7397cf40a1a3f1aaabd5d1e03010f5f212fdf458a2a67",
+      "bytes": 20129,
+      "allowed_predecessors": [
+        "0ea7d7be494bfc1acb63e91c7a280368155dfe383cc7d5d5bb9280be10ad8bc2",
+        "8687f8848f57788b4ba7397cf40a1a3f1aaabd5d1e03010f5f212fdf458a2a67",
+        "f4e33a0307f8b14e7265576d84b4e255b523ee9d59fc9a7e640f6747afb247b3"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "06_TOOLS/OFFLINE/genos_reindex_runner.py",
+      "role": "code",
+      "sha256": "5cf52af85e8a160581591d96b1bbf94a3f0792cc7224fcec532c1b01eabc1136",
+      "bytes": 14509,
+      "allowed_predecessors": [
+        "16137ffcf507e764d25d40e27630fa0f7e3d6322a127c060a0de4e12bc83b89a",
+        "94c9349ccb4a4a3a3b49682ec0143a3d7b3de6460301bd9a6d30cdaffa1dddc4",
+        "c806a2d43825fddd299ca7ca1b85a2f557bc7a5dc781805aebbd46ee6820c213"
+      ],
+      "allowed_absent": false
+    },
+    {
+      "path": "service.py",
+      "role": "code",
+      "sha256": "0a9e41d7cb0d90dc551afdf5460157a07ae273d222ab15076fd1acb40ebaf1cd",
+      "bytes": 43483,
+      "allowed_predecessors": [
+        "0a9e41d7cb0d90dc551afdf5460157a07ae273d222ab15076fd1acb40ebaf1cd",
+        "1c2144eecd13af1fd58f1de6a1eefe86fa6e5706ca36dcb04b9f7d0b034a6b40"
+      ],
+      "allowed_absent": false
+    }
+  ],
+  "required_files": [
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "role": "code",
+      "sha256": "cc45bb14b2a0acecdd2102e540c1fe667aff2cd33284afc44ed90b31525203f6"
+    },
+    {
+      "path": "00_SYSTEM/DATA_MODEL.md",
+      "role": "code",
+      "sha256": "155fa0ba99472072eb1fc3c28b9590bf09043b03c09d77629ac5520c5234b270"
+    },
+    {
+      "path": "00_SYSTEM/EXPERIMENT_MODEL_POLICY.json",
+      "role": "code",
+      "sha256": "8ef308aa9bbe3685409ac0b8b908028691e0af4f330f34022695ea9859d68bab"
+    },
+    {
+      "path": "00_SYSTEM/GLOSSARY_KNOWLEDGE_SOURCES.json",
+      "role": "code",
+      "sha256": "d467de75c919c8cf30f72a92a89d5306e7b400025e014ea7e60293f7a88ba871"
+    },
+    {
+      "path": "00_SYSTEM/GLOSSARY_PIPELINE.json",
+      "role": "code",
+      "sha256": "ecae8af63ba66579ba380f235bf2e2cd650c4a87c46a644eefbc944ac9a9f588"
+    },
+    {
+      "path": "00_SYSTEM/GLOSSARY_SCHEMA.json",
+      "role": "code",
+      "sha256": "9328a14866739dbb302a3314455114dba25645ae04f8755b5acc50e1dbfef4cf"
+    },
+    {
+      "path": "00_SYSTEM/INTERNAL_LAYOUT.json",
+      "role": "code",
+      "sha256": "3b7eafe6047a98548090af4b01e2d3bec30017d641b490cb29b68c6414567dba"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+      "role": "code",
+      "sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/domain-v1.json",
+      "role": "code",
+      "sha256": "b6ed749d6eb8e58c67b48057ae1f5aacb0b123286a82050ab1943eb98abf45fd"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/domain-v2.json",
+      "role": "code",
+      "sha256": "e53f3c202c809faf944eaec13f8a65ffd4c7f3256b9bee08715c1e6a796b4be7"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/domain-v3.json",
+      "role": "code",
+      "sha256": "111350304c5353101dbbca1105b723c7346201fa4fd2a56a2c88967d7e6f88cd"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/domain-v4.json",
+      "role": "code",
+      "sha256": "ca2354848367cf99d8142d179524ea799024ecea6ee9cb37dd35f6dc464fab30"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/domain-v5.json",
+      "role": "code",
+      "sha256": "3ef0fa0d175080fae4b48e83555541bf0a8ac47d43432c545e51436d8651cb05"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/local-gemma-public.json",
+      "role": "code",
+      "sha256": "fa395b6be3425a44d22aa6451e18e7a345a32737589be6d9ee769711da0cfaa7"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-source-only.json",
+      "role": "code",
+      "sha256": "182f0b707de88e7be10556f71e6663abe2998958765e94552236c7e6a55b153a"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v2.json",
+      "role": "code",
+      "sha256": "fb95ac10850643888ddc5113e6100a2a1d7f498f0115d9783717f6e9c79b8203"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v3.json",
+      "role": "code",
+      "sha256": "da4dc25cdf0c2c9d46fb4c0208a6b9391db04eb98777a1d484ba08fc3978e0b7"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v4.json",
+      "role": "code",
+      "sha256": "05abda28d293b1a0bc9d7a4d77f29fe62d0960ebe3e5a7a4d1d9c0a34858f647"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v5.json",
+      "role": "code",
+      "sha256": "e16e5ce8f6f8fef95263078fa32e3a731d50d080986b307201b695a850c625b9"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json",
+      "role": "code",
+      "sha256": "6ab245ff884ea0fcdb6ddffcdd4b7a3984efb0212bfb2c4c4a9739569d02af0a"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/reference-qwen-openrouter.json",
+      "role": "code",
+      "sha256": "75a38ff1b2cdb7e005094f1891790f1ed9a961fdb7e868ca08afe2121b965a77"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/reference-qwen-public.json",
+      "role": "code",
+      "sha256": "7af533639c0f21f8f9b2c328c55112669ef44e4f39aaea09f5567478080078ce"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/skills/internal-legal-search/SKILL.md",
+      "role": "code",
+      "sha256": "d733d3edf8809e6cae12325225aed47786d3fc9813074ffab219cb0254be2c99"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/skills/internal-legal-search/package.json",
+      "role": "code",
+      "sha256": "35b14b6de541e7452e386bf4ba781787aed23b565029d0b841b26d1816f976b1"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/skills/internal-legal-search/references/adoption.md",
+      "role": "code",
+      "sha256": "7b2d6e7ad316037328296faa8cd05e385eea49e25cfc85305e3ee38279db9990"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/skills/internal-legal-search/references/failure-map.md",
+      "role": "code",
+      "sha256": "949c8b545748c3edca6ee29c91157a741b3138d48ff4786b2810cd14025ef5c6"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/skills/internal-legal-search/validation.json",
+      "role": "code",
+      "sha256": "0b958ef742810b7d23e82cdbb470d52e2d8511b449063c64264c192712044b01"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_SCHEMA.json",
+      "role": "code",
+      "sha256": "487dc54f990b06c61706101fb405fb330610128e953dee04f7d2a44f9410efe6"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260903-permanent-v2-final-v10.json",
+      "role": "code",
+      "sha256": "a5be4abb4b3b4d0daa0c7d9e1e387b841b04973592147e2d816326fb228ff1a3"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260903-permanent-v2-final-v9.json",
+      "role": "code",
+      "sha256": "894be233dae301373fe035b5ab585c2ec4328eb790ae7904ed8b07d3665419a3"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260903-permanent-v2.json",
+      "role": "code",
+      "sha256": "df8499c5184e0b5bed371784e2c778da80bd8dde96097e201746fe9da1fd1e8e"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v10.json",
+      "role": "code",
+      "sha256": "6d632036e9a8fae0e14753a6131acfd5c9aeb805f97d6f03513dc86be878c962"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v11.json",
+      "role": "code",
+      "sha256": "648e804c550237cdb6918b6267c1df2dcb936825c557dc4f60952d7d01b17ab0"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v12.json",
+      "role": "code",
+      "sha256": "aa88b5a07c421f8b12e52abf64ca1538b009e5832b8b54330e3206fbd54804af"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v13.json",
+      "role": "code",
+      "sha256": "2b1dc5d721b809b47b549e6fa051741e9f4f89ea279faedae1e0063f82d39447"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v14.json",
+      "role": "code",
+      "sha256": "9a7a18f3382789b76530652cb49df344d2e5eed404eba60a131be87a086d0a2b"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v15.json",
+      "role": "code",
+      "sha256": "8d73370ec76f997eabfb683b9afaa2de4b676635751fa355aa92179fdb346383"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v16.json",
+      "role": "code",
+      "sha256": "620159fb678e5d01460f766495f1d0b71e2e19f0cc19ac477721cbafba47f548"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v17.json",
+      "role": "code",
+      "sha256": "c4027ca27a0224be59e0aa75a10070fe45583d644b38dac29a4a53fe9f236570"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v18.json",
+      "role": "code",
+      "sha256": "f24b839d9b3d207a3728dca09ff20c9f57b0352afd4e48ea90f0c9d0fec78d29"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v19.json",
+      "role": "code",
+      "sha256": "17cc34169805c1e7a377b3a98598b4c393b5cc14efb28e9ce28da29007ac34b7"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v5.json",
+      "role": "code",
+      "sha256": "ac9038f29d0fcd1763418550630264fe930f304fc9ee468e1f314ccbd9e7c87d"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v6.json",
+      "role": "code",
+      "sha256": "17fa7be655db824d0896f36efac7e3c0b8e8c7d24e1ac20e1fb73dc805254b6f"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v7.json",
+      "role": "code",
+      "sha256": "bc1fad4f1d416442e2ad17e4b6c07ad83bfd6c4f3bf0f1860f1fc5cb6c4dc40a"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v8.json",
+      "role": "code",
+      "sha256": "28443f9efb0399820a684f16d39cc9ea653aecb762f7e5112994c1748cf313cf"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v9.json",
+      "role": "code",
+      "sha256": "7661260201bedd98883b4edd077780b676bcc4e654dc5acd6e9dc2c061aaa6ca"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATION_CANDIDATES/20260903-receipt-bound-v2-v6.json",
+      "role": "code",
+      "sha256": "e6f0c62f39274be13f396f5feedeb35cfb1a38de3f88d5179fb1607057b080a4"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATION_CANDIDATES/20260903-receipt-bound-v2-v7.json",
+      "role": "code",
+      "sha256": "aaf45b2ad3e8895677d5f7176b47fec7c8711b4ec7c13b33a0d55ea8f031f308"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ACTIVATION_CANDIDATES/20260903-receipt-bound-v2.json",
+      "role": "code",
+      "sha256": "5fe45df840a80dbd84133eb020566dbd3f8123a08e6f5ea237fab2cb94a994c7"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/KNOWN_GAPS.md",
+      "role": "code",
+      "sha256": "91fb6ba59bab40f460df635f443b3d868f29f779b3539ae14a833de7c5e826b3"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v10.json",
+      "role": "code",
+      "sha256": "dac6efba1e2da2ea95c91f472da1743908f6d72624101c90d58e40e33bff591e"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v11.json",
+      "role": "code",
+      "sha256": "6552b6811876270680210dd3fc5d0c1f0a151ef4eb3aaf90551ddd1f5b516a44"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v12.json",
+      "role": "code",
+      "sha256": "872762d93b373c317e22c33a8238224abfaa3e8ffe124ce4778c290bcc904293"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v13.json",
+      "role": "code",
+      "sha256": "50ee3fb2a31ca8d477d867fa5741c41fe5e3ced32513ec57d9ac411b16a4efc4"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v14.json",
+      "role": "code",
+      "sha256": "a5db85bab55ef1e7a0cd7ecc72e2a665a81950a65d27cf5614399307ce92b954"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v15.json",
+      "role": "code",
+      "sha256": "fe2166f781367d1c99634e3a70d30a288ed05933519d511b4f8a6c37e3029201"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v16.json",
+      "role": "code",
+      "sha256": "d7e991f6a038d47a51192fedc63236c64661ea9491e47b3c7b230995cecf94e6"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v17.json",
+      "role": "code",
+      "sha256": "9f1897218f6a848d746f96247547946495069f0dc0d63b3fcf0a223c3f87aa7b"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v18.json",
+      "role": "code",
+      "sha256": "972e301c7afa32f60e25bfae73e4f1e3c48cf4594aacfd8a0ee118bb6c1ac1a6"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v19.json",
+      "role": "code",
+      "sha256": "813bff5e3a1eed8eb6550a16770e179c9236643a4611ce4f64c28cc2a7199da1"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v8.json",
+      "role": "code",
+      "sha256": "415c0ff061e7f24fc7702d91c8c9384eada3ce5347b4216e3f605674e011a0ce"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v9.json",
+      "role": "code",
+      "sha256": "75e3b6b02a4a2278e9f41453c1966e8ab6af1b09ba22da0be2b81b2d30c53844"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLAN.md",
+      "role": "code",
+      "sha256": "566b06aa8407360277b5dba135f10d885ae36af28235403c12be5e3ee45f4eb4"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v10.json",
+      "role": "code",
+      "sha256": "4d42080a3eba9da25b201c9eb0473159851230418137b2eef2a3f0d062138094"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v11.json",
+      "role": "code",
+      "sha256": "49fb427c27750a51787c7a87fed6b36af9ac1f74d68c2fd74fdfd056a25b7698"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v12.json",
+      "role": "code",
+      "sha256": "54dc4b041b7d48622a61797079ef07d721297e2f7ab823bab880317b6e31f2fc"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v13.json",
+      "role": "code",
+      "sha256": "77ff276407883e2dad86adc0a38be700d99fa0c9f16338f6679e2a078e2b49a2"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v14.json",
+      "role": "code",
+      "sha256": "edab1e0d52c79dd45dee56c7892d4e3556749a4d0b02b40922020df54ec93ddf"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v15.json",
+      "role": "code",
+      "sha256": "519e5405d13122e2dccdd0a556fa2f726f75586d67eba5e253a5b63f9ae269ee"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v16.json",
+      "role": "code",
+      "sha256": "f4bfe170409a7be3a94b5d2aedb7f5b5abda9bb8eee249cba0211f2887e3056c"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v17.json",
+      "role": "code",
+      "sha256": "a76486aa61885980d2451bd698fb2a18c4ac1556d82fcddd047e463b2c56566b"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v18.json",
+      "role": "code",
+      "sha256": "611e2df67e4b162a80922cf83258b9642cd3002888ad03e78a0a27d52dcacd80"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v19.json",
+      "role": "code",
+      "sha256": "20b761e8b77de02920c2cfbd1b380b2c5bdfbbaf76665407803704c440c1d663"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v5.json",
+      "role": "code",
+      "sha256": "790add506bcfcc300d181929b964f0f47f2430ad74a8f779b716dc01be4eb937"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v6.json",
+      "role": "code",
+      "sha256": "b20e4e4b552cda350b5b84a90b2900bda4950353e74808d306609684ff2a5e14"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v7.json",
+      "role": "code",
+      "sha256": "0efef58f5b2475b146c10de8c19f291ac47b0dcc340f48fec4046973f80dde69"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v8.json",
+      "role": "code",
+      "sha256": "07814740a7d56e24a00b611816832e283c78467f1fe0af44e64eaebad42787a1"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v9.json",
+      "role": "code",
+      "sha256": "95b9a0d15846ec01bfe56c353fb1cf1203ee7e561f0cb8d583a6f340c90bc84e"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-adr-lineage-shadow.copy-verify-0.json",
+      "role": "code",
+      "sha256": "9527cac27fbd1fa2d4428ec28be8d5f7df5cce64bc00e5d45af255af5d35b6ed"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-adr-lineage-shadow.dual-read-compare.json",
+      "role": "code",
+      "sha256": "151e1338419b04a02264451710327ea135098cfd461b6bbb8eebc2aead9a8a8f"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-adr-lineage-shadow.plan.json",
+      "role": "code",
+      "sha256": "9f46ff83ad2499f0d6e59fc2ad68ef7f8de449110e91a86ed0413e645a275e8f"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-backend-shadow.copy-verify-0.json",
+      "role": "code",
+      "sha256": "0bc49c1d912e4087f45f18b14eaeae31ef0d77aa58192933d871eee84a165241"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-backend-shadow.dual-read-compare.json",
+      "role": "code",
+      "sha256": "04e952139893292c425559ab5b042eb3165d7d7b53e9dd1b01ee80d25bd206a5"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-backend-shadow.plan.json",
+      "role": "code",
+      "sha256": "9fc24016d51cf83447563335baa58d4fd17bab29c8e6a5f133aa21848157dc63"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-path-api.copy-verify-0.json",
+      "role": "code",
+      "sha256": "da29d8959c517a4758957563a700e7969bcb1f3f754939a7d66254f6afbe717a"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-path-api.dual-read-compare.json",
+      "role": "code",
+      "sha256": "fc48a378ef6d26039177e67bf9d3aa4e6cd6627c14ea412ebffc760d46311b32"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-path-api.plan.json",
+      "role": "code",
+      "sha256": "a29af4cf21caa592d11e727356e141813af86494c8b4de57963a75f7e956b441"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-refresh.copy-verify-0.json",
+      "role": "code",
+      "sha256": "2b9211020a52884bfcd912fa80e791a15cb0b978aaf9d308cb45adbb1de7f072"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-refresh.dual-read-compare.json",
+      "role": "code",
+      "sha256": "953695f5afe46062556a4c4bde6fff15eced6e0146bce2a0db20d7209623ddfd"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-refresh.plan.json",
+      "role": "code",
+      "sha256": "cf4d37a7070352221b254215544ba53b6ba402dd2e7f5dae19a898a61121d31f"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-data-shadow.copy-verify-0.json",
+      "role": "code",
+      "sha256": "dcc05432d35710a310ca7434104cb951ce9a2f6141b3749bd7643986f9c08958"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-data-shadow.dual-read-compare.json",
+      "role": "code",
+      "sha256": "14c0f0952e267526fcd08bf4682e6ecfade304de597e72e6dec624dc5fde23d1"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-data-shadow.plan.json",
+      "role": "code",
+      "sha256": "a7b741b64027cdb2c0c8b5e5d33c74a1a94ff095a77ac0f993dcb2d9fb11c8e3"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-docs-non-adr-shadow.copy-verify-0.json",
+      "role": "code",
+      "sha256": "a97b439c6d993755c4a1654c75bf5cdedfb1582f3c5de4c3344ed69108dc0767"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-docs-non-adr-shadow.dual-read-compare.json",
+      "role": "code",
+      "sha256": "8c5608ae36b52d75d3558288767506b50d10b168f426d6a05d2bded192018818"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-docs-non-adr-shadow.plan.json",
+      "role": "code",
+      "sha256": "ebd6ffbd1f7b1326754599725f32b6b4e14507c050eb78ac6650ba2a553deecf"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.copy-verify-0.json",
+      "role": "code",
+      "sha256": "db1755bb1c50eaae9d5c8cd08f37ddac1f7335ec7d44ae099c0a832b0136203f"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.dual-read-compare.json",
+      "role": "code",
+      "sha256": "764c4b9fa01dc7a9abe0fb1cfceee3d2ba0910a11eebf79ad361915e78a810a4"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.plan.json",
+      "role": "code",
+      "sha256": "941a882c13399857cfb7531c79629d7522f2cc1ce53e1240c18f8d7c78bb9b1b"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-supporting-roots-shadow.copy-verify-0.json",
+      "role": "code",
+      "sha256": "4a88d92553dd1955e1625ee34bb13fa9c5cdb245ac954ed49f40f5256e3599dd"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-supporting-roots-shadow.dual-read-compare.json",
+      "role": "code",
+      "sha256": "f7bc63616168cedcba2e8b2ccb4c58a1c84eceb1923d76696a6926e8bf85424e"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-supporting-roots-shadow.plan.json",
+      "role": "code",
+      "sha256": "bde8ddb3cf9380a1b832ffbeaf1d077ad9ebbe94bbc87f09d7e113aadcdba0b1"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v10.copy-verify-0.json",
+      "role": "code",
+      "sha256": "3eb51f1bd798488382c50208fc9b9cba8954f9b1136ffa118824d731307b2f29"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v10.dual-read-compare.json",
+      "role": "code",
+      "sha256": "5244cfd7bc759964c3aa4002abfa6a2bd5b58b7dbc283e41f8841ba232ecd610"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v10.final-verify.json",
+      "role": "code",
+      "sha256": "4c161023ed99cc5f7f555053dec9ae41f03b0e6715eb27674313ccb76dde7e4f"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v10.plan.json",
+      "role": "code",
+      "sha256": "7c12c6d15b5f0545c555016a837c14ca0ce8ba5398a8ddd56c4e12da77a03e94"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v2.copy-verify-0.json",
+      "role": "code",
+      "sha256": "e3902bd6b7e0c814801e0daa6560009119946c19d8236975f30aabd24ec4d33d"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v2.dual-read-compare.json",
+      "role": "code",
+      "sha256": "680e05a92aaf12c5c63d76322a6854f13f839c7f2e6a39a7a13faa1b16019121"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v2.final-verify.json",
+      "role": "code",
+      "sha256": "2399fe6ac81c11a4312aeca043bcb2b0c6c85ffc6846516040d4d6a6afdfb76e"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v2.plan.json",
+      "role": "code",
+      "sha256": "d377ca0a7c96bc3802f405ec9c5219aa9a248cfaa1076bca454a498613c3f8e9"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v3.copy-verify-0.json",
+      "role": "code",
+      "sha256": "101ca05614605be2fb071a18a2681335682768b00ba555779c59cdb8f3edfa83"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v3.dual-read-compare.json",
+      "role": "code",
+      "sha256": "83112f06f469f6cbfd15730f61340e304b3c3499094e96fa14162427df9bfb3a"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v3.final-verify.json",
+      "role": "code",
+      "sha256": "f5bbe1e658379613111ed00031e29e588e3ed40ca34ce97af76e80fa0995c62a"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v3.plan.json",
+      "role": "code",
+      "sha256": "430dba305943013d98bab255bf8b91a11963381cd16812452330c0117b24959a"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v4.copy-verify-0.json",
+      "role": "code",
+      "sha256": "fda66b94ba19942dbb344c640160e0945c6f6ef8ae7f55ccf13b71d51654ddd0"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v4.dual-read-compare.json",
+      "role": "code",
+      "sha256": "0f151a60987c5c1d2c7cf3d9350bb577d77eb583cde4cfd75aa6944f7a702d70"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v4.final-verify.json",
+      "role": "code",
+      "sha256": "9c4f90cd213ed43cb1dd1680f6d5eee18c004c1b2efbd8fd7ac7cd12e73a868f"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v4.plan.json",
+      "role": "code",
+      "sha256": "350cdb29a1042d09082876e767e4e2c81e70e555acb7eef45ab4126e43726a1d"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v5.copy-verify-0.json",
+      "role": "code",
+      "sha256": "a1b9c5b0a47f78260d4961ab391102b68357724f471ad15dc165e8c2f707e3fb"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v5.dual-read-compare.json",
+      "role": "code",
+      "sha256": "08e88441dc44c01e6a84a7522ba991b963a586bdc244efe0c5084fc64a91a5c8"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v5.final-verify.json",
+      "role": "code",
+      "sha256": "e341aedbb6a7c2197c55ccf96acc628166ba76f36eb670f7bfc0a8c09b729410"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v5.plan.json",
+      "role": "code",
+      "sha256": "f61a1326d0fbc5945de4c08ac30552eba19c39d1260e2c1c3eab1678cc7d146a"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v6.copy-verify-0.json",
+      "role": "code",
+      "sha256": "0c74f1fb8117f6d056f5b8bc0675a57b5dc4ec225920916a392701c0bfafce30"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v6.dual-read-compare.json",
+      "role": "code",
+      "sha256": "e4bd0be88bbebd893853b8c33767c87baa352f2d319d05902771ff75f74db372"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v6.final-verify.json",
+      "role": "code",
+      "sha256": "db572dd086ff8204597b049126202639fa8c48310e9d563b1ac375ab9a2885e8"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v6.plan.json",
+      "role": "code",
+      "sha256": "ee8f08c3574cfcaf2d57a526b72c27393a4b9b46c7edb35f64f48c249fa988c7"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v7.copy-verify-0.json",
+      "role": "code",
+      "sha256": "bd76dce830fd8aa93f95509fc88f91c5a4e4b6d3ba4f90f33fcff8231e66c9d4"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v7.dual-read-compare.json",
+      "role": "code",
+      "sha256": "75872ece3faba5c451cba31fdba66697600f0d143493de98b555cbbb6a549e02"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v7.final-verify.json",
+      "role": "code",
+      "sha256": "96d86284ee54f987898b823464d193a6c194f728dbc1f5c8b1f38e255c33cf2c"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v7.plan.json",
+      "role": "code",
+      "sha256": "b701394e3fc7b9b4c461efea5a287ea383c977f24aa23f3d18e486f1df555863"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v8.copy-verify-0.json",
+      "role": "code",
+      "sha256": "c017ff7e6400c941aaf6e5dbb58f0f8aff286053401dac43ed4ac13304e43047"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v8.dual-read-compare.json",
+      "role": "code",
+      "sha256": "540c0059590c7240752b4dc8b5bcf5a2040d736c95fa833e587e3aa3fcc18c7d"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v8.final-verify.json",
+      "role": "code",
+      "sha256": "fe069ae966d59123b31fba1d15ad735bf9fe1a11310e9bef7bb3f7ea432219a3"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v8.plan.json",
+      "role": "code",
+      "sha256": "a478e313bf947a4798e53bf29426ba0307169a4e1060e5fd345c45cf0859c2c5"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v9.copy-verify-0.json",
+      "role": "code",
+      "sha256": "e5669770778d4804e78f301abb6dca5aa2e6a2ef4aff660a085daa94f723d34e"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v9.dual-read-compare.json",
+      "role": "code",
+      "sha256": "3447f5be678a22b8dbf83791ef78999b7d1ece74d99616f65e8c11a0ec948ec0"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v9.final-verify.json",
+      "role": "code",
+      "sha256": "1fde0d4a377b0e7010fb057949d0d4b8f64fb62b9e5ed2902358c5042348f37f"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v9.plan.json",
+      "role": "code",
+      "sha256": "2c214565dafb399f4d15864e0047b0973259cabc406505868e93983206744ab5"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final.copy-verify-0.json",
+      "role": "code",
+      "sha256": "042a860ac71367d971e30feac5ff3f0be37876b4e6f5bc6b8faeba13b6b5d80b"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final.dual-read-compare.json",
+      "role": "code",
+      "sha256": "b7202a5f65a533579864625907b999ee876094484c6c0548545751902bd36608"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final.final-verify.json",
+      "role": "code",
+      "sha256": "5ca2fc88b1f7d20e4c47223fc18bb9d83adf07960f7e6e775ed45f364ce8f98c"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final.plan.json",
+      "role": "code",
+      "sha256": "d982a3c87a1edba3e6cacee70852ceaee4f4dcebdca654379dd714006f901246"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v10.copy-verify-0.json",
+      "role": "code",
+      "sha256": "9b7a4450fd8a4e251c3501e7faa0fb599ccbb33500a52cff65f6048474e9b299"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v10.dual-read-compare.json",
+      "role": "code",
+      "sha256": "4515b5ecdc2035665fc1c3cb3870937e934513df2cdf2b7d2355498a5976929f"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v10.final-verify.json",
+      "role": "code",
+      "sha256": "bdc698f20ea4f4d550af439e5586483e4fdc8edc07d9cf0d4dc41c1554722511"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v11.copy-verify-0.json",
+      "role": "code",
+      "sha256": "f44ddebaa2f0665dd5001a4f8fd393b685559a7b7daada832f088ae033e531d2"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v11.dual-read-compare.json",
+      "role": "code",
+      "sha256": "d8bcff2f4beca58637da4d8cbdc600d4876a43f43eca3fe166c6864a179a80de"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v11.final-verify.json",
+      "role": "code",
+      "sha256": "49fb15cc28470b75e50b3c124836123a79b7d36d65bf686f7f226a0433b87c58"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v12.copy-verify-0.json",
+      "role": "code",
+      "sha256": "324d6e17ebee8904dc1b1a596a65369a490f7e8add76235cf74fb467562c35d0"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v12.dual-read-compare.json",
+      "role": "code",
+      "sha256": "a91268654eb82be03c0b90331aaafcf13fc7cab5743fcf97533d494053f40f59"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v12.final-verify.json",
+      "role": "code",
+      "sha256": "4c7f3608e7bc080e614861db6ebe1cbe398831dd3ff1bc154b80ce78f1d72bd5"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v13.copy-verify-0.json",
+      "role": "code",
+      "sha256": "2680d311660fe9e82dc0fc36bfeaa5072b587e052be8a11e2dce284e209d9406"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v13.dual-read-compare.json",
+      "role": "code",
+      "sha256": "82a149447c6b69d62777b0dbcc417af59016ba4ede28879434e346d8d9c75624"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v13.final-verify.json",
+      "role": "code",
+      "sha256": "bdee3b221c68a0d1655e4a22fbb89440daf0303fa5c7252343610390d951333a"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v14.copy-verify-0.json",
+      "role": "code",
+      "sha256": "00cde68821d63c14223f0d43742d1938f89555338d5c3be39a1481b12740c758"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v14.dual-read-compare.json",
+      "role": "code",
+      "sha256": "faadf6473625ead546c08c35655aa51e205872bd7dd825952fb375393ce94765"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v14.final-verify.json",
+      "role": "code",
+      "sha256": "d42a95ff39d5cd7bb4e0a83f62b64d332c6041a4a7f063012b9f1dca948b1ec8"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v15.copy-verify-0.json",
+      "role": "code",
+      "sha256": "96145df803b1e8e989bc2c3c664ad0eced20bc9c85ad7e05b7ab8b34805ff0c4"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v15.dual-read-compare.json",
+      "role": "code",
+      "sha256": "43cf93168a2e32beb6cafb65237f76ebb2013ba54c0df4298151bf664442f237"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v15.final-verify.json",
+      "role": "code",
+      "sha256": "03a45970e978f0efd13e8ac6cb472b70105c9354922efe474d7d60d8e461c410"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v16.copy-verify-0.json",
+      "role": "code",
+      "sha256": "75697879146284333f1616bb7ab61dcb6822613a889f7ed5d4f08a242c0a1645"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v16.dual-read-compare.json",
+      "role": "code",
+      "sha256": "d10ec8a69d7ef23a60fe547b833253d6d6fd06734ca1668a951f9472907e1d65"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v16.final-verify.json",
+      "role": "code",
+      "sha256": "2e84c721ab47315891a06c8b878a68cb9a8e3fc203849a7b103aa2b5082d68a1"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v17.copy-verify-0.json",
+      "role": "code",
+      "sha256": "a50c646f801e3c3776860e10d18e930e0ab3217212d7e22c08eaf40d0b01980f"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v17.dual-read-compare.json",
+      "role": "code",
+      "sha256": "38caeb096945f0f72893ba221fd37b89da083892c1e6b19cf0791cf9d73e2966"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v17.final-verify.json",
+      "role": "code",
+      "sha256": "57b017fe89d2c314c755d0b261c61e5d2a74e7fa8d3724f98e4fb3b470ef6104"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v18.copy-verify-0.json",
+      "role": "code",
+      "sha256": "14774e6e51337fd183a8145a37e2ee08b87a116f8f67e1a80f8bedd1b7546a98"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v18.dual-read-compare.json",
+      "role": "code",
+      "sha256": "013c4aa9e9af1209e2daf4f63155638f8bc96bb51fc5a5785f7a6d4e235c282c"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v18.final-verify.json",
+      "role": "code",
+      "sha256": "e1b66277476e3f4a52eb4914b6ca97ee2d29a84414853414ea2e2357c3d535f6"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v19.copy-verify-0.json",
+      "role": "code",
+      "sha256": "7cc46092292aa77d45d4da6189943b7b7908f0365650515c2694f469953213d9"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v19.dual-read-compare.json",
+      "role": "code",
+      "sha256": "091da846f198cab5536c7871f1f0bd25d816a7f0ad114105680ff601d077eadf"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v19.final-verify.json",
+      "role": "code",
+      "sha256": "e5034f30cfbe0de672a424b7cd129f17568558fd4b1c95ff453fa638c540880d"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v5.copy-verify-0.json",
+      "role": "code",
+      "sha256": "d030c37a45f8484d753f3522adaa5808281cba088d9a1936b89aebe28c9d5817"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v5.dual-read-compare.json",
+      "role": "code",
+      "sha256": "c52b7ddfeef1d45180599d64adbd4210f6f2d10b32309cfa5b6d92fd12c0292f"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v5.final-verify.json",
+      "role": "code",
+      "sha256": "c45b955d052d08c662d81b39d8b15ddc24b103c82d4e344ce11c4fb35128e21d"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v6.copy-verify-0.json",
+      "role": "code",
+      "sha256": "36c9c9b91819d3d9185e190415e2b2f7d9072d04bf36d8deb97b0128631e41f4"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v6.dual-read-compare.json",
+      "role": "code",
+      "sha256": "00c7c080e5be32c704ac76757397a43b8a3fe0360a59b2d5dde294b5b7854923"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v6.final-verify.json",
+      "role": "code",
+      "sha256": "9a2f40411c6aae516c96d15ed32c3f11a4034fbd9efd94be4291d2f37e6c6b06"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v7.copy-verify-0.json",
+      "role": "code",
+      "sha256": "dc475c19717a97b46de3e42ffa905d486fe34ac8a707b8a55f7ee55a2171774e"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v7.dual-read-compare.json",
+      "role": "code",
+      "sha256": "5fa899ea419a1c0ec99763bcf6ce772c413445981d821f063a96b9d30618adcb"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v7.final-verify.json",
+      "role": "code",
+      "sha256": "1856e3833e2f6ca233749f87a9f2d4221483a6ef81bb240147cf0954da2d682a"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v8.copy-verify-0.json",
+      "role": "code",
+      "sha256": "0be0948acb70a7191ab77398208ec81fa68ab0f50275f15b38311e96aa31074a"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v8.dual-read-compare.json",
+      "role": "code",
+      "sha256": "17f41167cd1cd0ee2b20582e13be8b65cc8b388b05aaa9124a5f7a99ae42714b"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v8.final-verify.json",
+      "role": "code",
+      "sha256": "f321d4de541d59ee72bf08755711a39629bfabcc23438b7105d228432dabc538"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v9.copy-verify-0.json",
+      "role": "code",
+      "sha256": "51e22ad1999e07ea764aae2aeba770e0da58fde1fd25b0166c96e49394d1b3a0"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v9.dual-read-compare.json",
+      "role": "code",
+      "sha256": "80074e5dfe4251df52c1be3dbe7deaf15f9c90465daa88dae53f23f92c8fed6a"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v9.final-verify.json",
+      "role": "code",
+      "sha256": "3b2002c36548db5ba3c3cdf9783ebdffe5212aa37c8a966cc99d0564638693d6"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots-final-v10.completion.json",
+      "role": "code",
+      "sha256": "a2f56ee8a0f548ad582569ca30e81a5c0bf3ea714fa7e0b30406353376382619"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots-final-v10.json",
+      "role": "code",
+      "sha256": "c85e568e5d14f3fcd9533ff3da4ccab4aa364b3b43296e933e5cbcf9bc65fda3"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots-final-v9.json",
+      "role": "code",
+      "sha256": "bc7ae9a3e307646a07b6bedd56bf90c61ee04377265dfaaa6a9f694c1db576c1"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots.json",
+      "role": "code",
+      "sha256": "42ad8f208b7c65969db2a7f775c194a12fe59887cfb6976d5be8a1c81612f5fe"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v10.json",
+      "role": "code",
+      "sha256": "bbd6a37f56820c0cadabff1bb5662d0ef933c9071f35ef7f19be99780a511b89"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v11.json",
+      "role": "code",
+      "sha256": "c548749ca8ae279b6d8a1d38cab91a2e66d20e1f5094f13415e0c8fe8c681a6e"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v12.json",
+      "role": "code",
+      "sha256": "bbd9950b80e782841d4f023205d9b3017b92c4babdb886e37e7ffe2112534336"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v13.json",
+      "role": "code",
+      "sha256": "1bcbe053629becd45b068a77498a7a3c043e722875585e3ed8120bf3a9f5699e"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v14.json",
+      "role": "code",
+      "sha256": "7ecd7f0b980b1d0ad418eab9d9e0ddaa3d90fbaef3b5b6d364e08d13b313ced3"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v15.json",
+      "role": "code",
+      "sha256": "6241f9e02aa0653b90624f796d5bc677d6006230e43f1718fcae721f86cdf1b9"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v16.json",
+      "role": "code",
+      "sha256": "e9e4ffcc13dcfc8ef16b52c9ce1c087cde28c9eabc7dd46299388c75e58de304"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v17.json",
+      "role": "code",
+      "sha256": "99770bc3b4cea23028d5fa20a1fc71d541158cd88f9b2a1c36a95f7d0c8705d4"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v18.json",
+      "role": "code",
+      "sha256": "8a4e58d10a3b2d7fe4effd1f080988118cd847ca197694442df413741cf25d66"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v19.json",
+      "role": "code",
+      "sha256": "c8d823c3f84aa2105fd78bb0550c4800c7f0d82075d2b789811b88f1c6d041fd"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v5.json",
+      "role": "code",
+      "sha256": "5e8e332862e44e6f18c659ba216014d7010c0c54de843319f7f13f66b4da3422"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v6.json",
+      "role": "code",
+      "sha256": "090d9f6a4f1c1693ad6f349090dcdc00e118c2a9d5c51e26cbc7588e552f8e0c"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v7.json",
+      "role": "code",
+      "sha256": "368e5ff6ab67b80b24ea4ca0a2e4de45dc06da4e304b23bcffad140646110bfa"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v8.json",
+      "role": "code",
+      "sha256": "6b23c11144ff9ea19a27fb21a5d8859d5df44f7ce6ec1db67438f6383709f5ef"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v9.json",
+      "role": "code",
+      "sha256": "cc0ee7c733d45648fa321362a942072a47818df24eb1fea695f84d36bcd97ea7"
+    },
+    {
+      "path": "00_SYSTEM/MIGRATION/ROOT_CLASSIFICATION.json",
+      "role": "code",
+      "sha256": "3ccf9d9196e6f7bf8b98806aa8b4eb896be28f931c654f10ffaa17e263a67ee7"
+    },
+    {
+      "path": "00_SYSTEM/ONTOLOGY_PIPELINE.json",
+      "role": "code",
+      "sha256": "607561e6af45428411f814d57ba9d373c4346cb38c4ee262c6e5b7f4b4e52fe5"
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.md",
+      "role": "code",
+      "sha256": "cc7b94cba7fbbdcbaf2c1cff4828b4e39ceb3dcf4fd7f45f3de1da1db4ee2e79"
+    },
+    {
+      "path": "00_SYSTEM/README.md",
+      "role": "code",
+      "sha256": "ad416449f7707934b0397b3c4597984182bda71bfb30ae41c7eda582e8ed3270"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/change-candidate-v1.schema.json",
+      "role": "code",
+      "sha256": "79fd0ce3eca389b15e31a900d9beda8296f77ba0b554d25f36402e21f8250615"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/data-review-v1.schema.json",
+      "role": "code",
+      "sha256": "50bafccd4e9f4808063364b359ddbec5efc451517ce39d85c2ce492b5a93b266"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/dataset-package-v2.schema.json",
+      "role": "code",
+      "sha256": "adfe07c6ca71765ee2075f6c0c13ac89936652267fe79d2725b00a9fb6f28522"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/definition-projection-v1.schema.json",
+      "role": "code",
+      "sha256": "6a8854f8889584312a2ec31ce6179485b4903009bb686f955e5f9735f640de7c"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/feedback-event-v1.schema.json",
+      "role": "code",
+      "sha256": "cee5679d8e700be2737acb773ef1baf4eb4ddc14460c43101aecd8b44d9d630c"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/glossary-sense-review-v3.schema.json",
+      "role": "code",
+      "sha256": "4f8125353ab96518cdeed749b29db81bed7dce6169f98a7e0ab92ab7c45ab118"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/grounded-answer-v1.schema.json",
+      "role": "code",
+      "sha256": "6d44aee7dea8a3c564784265b67be0f745998030ff40c3e4e4dfa08c538e103a"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/legacy-shadow-descriptor-v1.schema.json",
+      "role": "code",
+      "sha256": "44960ea725687d20d2a05feb3cd07d0e8640d1377984bda52db675b6470539ee"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/legal-agent-case-memory-v1.draft.sql",
+      "role": "code",
+      "sha256": "420a4605ef1f4fe52244abca6c885762484eb79446aec30a045adec7aec2d268"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/legal-agent-domain-catalogue-v1.draft.sql",
+      "role": "code",
+      "sha256": "36a316dc60b71c353a5de4736e52ac218bd2e6a3227a9bc1682740c96aebabd2"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/legal-agent-domain-control-v1.draft.examples.json",
+      "role": "code",
+      "sha256": "599cc47cd5e1ffb42d7d1e4b174c4c4144eda63d6e0a77f1de93dc9540f12ced"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/legal-agent-domain-control-v1.draft.schema.json",
+      "role": "code",
+      "sha256": "d900501572ace0e15bbec58f3ffeb8203ed49485ada0db89ff03e3fbe01be4a9"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/legal-agent-domain-journal-v1.draft.sql",
+      "role": "code",
+      "sha256": "c4daf1b55f6953ebed5559ac91bdbe2ff6d9414c01999298888463a9d28e157a"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/legal-agent-v1.schema.json",
+      "role": "code",
+      "sha256": "ef70c6986353e3d5d80df64cead9b6836bbda371248faabc49306f648debfafe"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/legal-ontology-lifecycle-v1.schema.json",
+      "role": "code",
+      "sha256": "758ff349b0af2687fb0323658b00ceddb0ebed48de28aba64b203244a688aea7"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/legal-semantic-v2.schema.json",
+      "role": "code",
+      "sha256": "25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/moleg-knowledge-record-v1.schema.json",
+      "role": "code",
+      "sha256": "8bb85d442c9b9d5be066158fa221d7173a08ebf9a4e70b9898c8f5ad9687a3ad"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/pipeline-common-v1.schema.json",
+      "role": "code",
+      "sha256": "0c96a7b44fc76dcedf7be64e13ea7a9d41cb62a646c88dded01e5cf3bb0dfbc9"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json",
+      "role": "code",
+      "sha256": "8b210f508132e4df7b380ef8eb551f7b7359c910026ee21aa5ce5a8ef57099fc"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/pipeline-feedback-v2.schema.json",
+      "role": "code",
+      "sha256": "6fca71f70b1e669be4e481533f1ccf31dc65129de0c268cd1000e039dfaa3dd1"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/pipeline-v1.schema.json",
+      "role": "code",
+      "sha256": "8b784b1d9a69b175da0d4f493cbd8773a4ba089e735737b0d89a0b3d0a4ef755"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/query-shortcut-v1.schema.json",
+      "role": "code",
+      "sha256": "f2a5646d9ecfc29807cd7217f1a7799d05a4d335796ce8f7bcbb701f55dd9e91"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/query-shortcut-v2.schema.json",
+      "role": "code",
+      "sha256": "b42443f18448a513b0528055be51b1530da731fe1fc3f58041dd5fd1e3a6652f"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/rag-content-snapshot-compact-v1.schema.json",
+      "role": "code",
+      "sha256": "4eafcbf78814faaaddc8aee75bc39204df2278ca52cbbd3bacd18fbef8d052fa"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/rag-content-snapshot-v1.schema.json",
+      "role": "code",
+      "sha256": "a6a193b1d1653c5d652a867148abed57d7d7d4466122ab8f7ef14357ec80eee9"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/rag-lexical-index-identity-v1.schema.json",
+      "role": "code",
+      "sha256": "ca30c4de6c45072ebb3bb41b522d15073035a6a010ebbce863be8aa31c0b55e6"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/rag-qdrant-runtime-binding-v1.schema.json",
+      "role": "code",
+      "sha256": "ed775b9d9c26c1b499d83dd2bf4244d114a9e1ba92071a1dac151eea3d88b8ef"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/rag-retrieval-runtime-v1.schema.json",
+      "role": "code",
+      "sha256": "080448aaa66e189555de2e0e5ce60490cf382228e129b5fe4b5d70838df63ee5"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/rag-stage-v2.schema.json",
+      "role": "code",
+      "sha256": "a30cb8e8f8eae3e2f849425e110c6674926696e73021e1c88ea9ad0696909479"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/rag-structure-artifact-v1.schema.json",
+      "role": "code",
+      "sha256": "b7f4de52cb813a4e6f3e264be55e81f7dcc5bd9ea1f2a44362586e57128c220f"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/reference-resolution-v1.schema.json",
+      "role": "code",
+      "sha256": "ba74d27d1863590bf368e082f2d46fe1091b53ee43dd1077cc5f855af00d2e14"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/release-activation-plan-v1.schema.json",
+      "role": "code",
+      "sha256": "d31c7dd07ee46cdb01464d42399acae3aa5f532bce4b0cfebed6002d0a6793f9"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/release-manifest-v1.schema.json",
+      "role": "code",
+      "sha256": "2993563a87c3f1a610512cce13ab2b6a2891523d7a9ac7457e4336ad1dcc901f"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/retrieval-hits-v1.schema.json",
+      "role": "code",
+      "sha256": "8bf9ccd21dff01c74de953eb12012442e581bc3a85251812026537c46016d148"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/runtime-embedding-binding-v1.schema.json",
+      "role": "code",
+      "sha256": "8de40009cd5f2b47249a3e264fb84adc413c5e66d90781361bd9f49fcf14be6a"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/runtime-llm-binding-v1.schema.json",
+      "role": "code",
+      "sha256": "3c5bc8d7fdf4b9e05d2b63f72b2824da6695f5c2e25edc6d6a867de3a184b42c"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/semantic-contract-report-v1.schema.json",
+      "role": "code",
+      "sha256": "f0889d24ca13be2bac58c3c4ad16d18d5cd85f6c0aa5a592d24e7cc1d84db0c4"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/semantic-runtime-ports-v1.schema.json",
+      "role": "code",
+      "sha256": "a47b82cea89e9e4665c350ce16a5e9d3a9ca07d04e309343912f8e6b2f933b73"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/semantic-storage-v1.schema.json",
+      "role": "code",
+      "sha256": "e756f7ddad2b1e1c271961fe9d45ff99a66e3997904379bbee541af2fbb4922b"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/semantic-store-descriptor-v1.schema.json",
+      "role": "code",
+      "sha256": "1ea1d2c4b6439d9ec59de1cd4319573b0e5f1e8fedf07b51cad294c67fe5e467"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/shortcut-experience-v1.draft.sql",
+      "role": "code",
+      "sha256": "8186322356f9ab7339b28b23d71cefe6649aff3fe65f0d66fe2dcc2630e8bc64"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/source-document-v1.schema.json",
+      "role": "code",
+      "sha256": "8661221338a1161db91dd1d1026c7c4679ba3864fd36a3cb7a78513b19a3504b"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/source-set-v1.schema.json",
+      "role": "code",
+      "sha256": "05250ce61bb13906d86adc0fa88ecc5bd720dd3e9425e8e3411ba7ed1cb78efd"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/source-tiers-v4.schema.json",
+      "role": "code",
+      "sha256": "d8502cd8170aad945863c5ee044670dc1cb7d7f5a5cf32d332a042c2eeb81939"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "role": "code",
+      "sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/tool-exploration-v2.schema.json",
+      "role": "code",
+      "sha256": "43a96d24c9a5678657536d6387b640bdb86865e9ccdfd064a3f6d54f1c85cc29"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/tool-exploration-v3.schema.json",
+      "role": "code",
+      "sha256": "7cbe0b7a56f4e298373028bb60f2a4b37eecacabe22ec403a40896e0f5764d7a"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/tool-exploration-v5.schema.json",
+      "role": "code",
+      "sha256": "52d7f6ce4b8ea538ff6c911f579f952119aa880da6ec5c550c88f8b761c9eaa5"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/unified-case-memory-v1.schema.json",
+      "role": "code",
+      "sha256": "5ff112b164ec72d5e2635fb29c7a97a86e2863e0705252ad8f3a6dce838b3ddb"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/workspace-canonical-root-readiness-v2.schema.json",
+      "role": "code",
+      "sha256": "19a9723e33aa81e1d35e21f42ccbdbe80c8c904dc6390c97037c594cc3fcc26c"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/workspace-canonical-root-readiness-v3.schema.json",
+      "role": "code",
+      "sha256": "9455f0e8c03b513970823de099e219cd16b858abf1014403ee3d53898d69b4d5"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/workspace-copy-plan-v1.schema.json",
+      "role": "code",
+      "sha256": "baaafb063974556f37496c5f6628127908c7ae02e9cc9cbcf61cf4d7ac3038bb"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/workspace-layout-activation-v1.schema.json",
+      "role": "code",
+      "sha256": "9be560e8055a2281c77816019eb6c5407398c7832d7edf602b583a771d4442fa"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/workspace-layout-activation-v2.schema.json",
+      "role": "code",
+      "sha256": "c4d91142e99dfc073ec5cca2ac7e5300657d30c31a6246b2731ff5269e4b0ff3"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/workspace-legacy-retirement-authorization-v1.schema.json",
+      "role": "code",
+      "sha256": "84880535b0bc0bf0a2eb997d366146571272b56f80cc34e87b3d9baa06320158"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/workspace-migration-phase-receipt-v4.schema.json",
+      "role": "code",
+      "sha256": "0e3b9e0bb18dc19cfb758202cb143092786e0e889b92cc38b6935c312920ac74"
+    },
+    {
+      "path": "00_SYSTEM/STAGE_SCHEMAS.md",
+      "role": "code",
+      "sha256": "dc93d830ffc4a964564d6af5e47172b30628006d105a31dd0d094112cad1bcc4"
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "role": "code",
+      "sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/README.md",
+      "role": "code",
+      "sha256": "5aa566c0e32436222d57171ea805550aad150c3f70f58ee27aadc7b7d372a71c"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/semantic_contract/1.0.0/engine.json",
+      "role": "code",
+      "sha256": "b9a0b8a5251cae6e3de8a9ae0747d68b5b6b244eb5b5ca8ca42e17be5df0742f"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/semantic_contract/1.0.0/engine.py",
+      "role": "code",
+      "sha256": "ed5b8e25518531b05aea9b5e8d52217fa6c91d4ff3263af42cbd7e69490e1541"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/semantic_migration/1.0.0/engine.json",
+      "role": "code",
+      "sha256": "0f53cdffc7146e173be862c04fab75336a629551384a9f1920ea4917388139e5"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/semantic_migration/1.0.0/engine.py",
+      "role": "code",
+      "sha256": "f29d512a1703cceb6e4c3d2466e4dfe6b195883b52551c3a637623782040de78"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/semantic_runtime/1.0.0/open-template.json",
+      "role": "code",
+      "sha256": "44df869acc8f0a3b796e9db60883fc7f5d48b87a48d9e3d501df92a53c6cb8ed"
+    },
+    {
+      "path": "02_BACKEND/PIPELINE/README.md",
+      "role": "code",
+      "sha256": "a1ad04e709f69135763b83f888b320b64edeb0fd029fa5219a756eedc44d70cd"
+    },
+    {
+      "path": "02_BACKEND/PIPELINE/active_legal.py",
+      "role": "code",
+      "sha256": "14c89af91fae0992e6fa4e4bfdbb24b12a6ac15d91b1e97c6eeb1482b5021c19"
+    },
+    {
+      "path": "02_BACKEND/PIPELINE/engine_host.py",
+      "role": "code",
+      "sha256": "4e827fc06caf459e98d8322e77eeb68380d9bd2b3ba5a5fbd1cfdc23dad9c6c2"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/README.md",
+      "role": "code",
+      "sha256": "299dc65ef7376eb0af9699dc223aca886785119eadeb8d51fe38057aa08698c5"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/__init__.py",
+      "role": "code",
+      "sha256": "593e2eae83903bd8f9a02127a0a7103aa1f016b51e4a83241377c286ec77dde2"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/action_memory.py",
+      "role": "code",
+      "sha256": "015c565c6c1f9647c8594a29297362ea9661ea0b51487d32d4b84e15f4faf5ec"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/batch.py",
+      "role": "code",
+      "sha256": "a45e9471885ed86cb9e94d2feea803f907eb73d8f1a8db496f115bd2cedce86b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/casereview/__init__.py",
+      "role": "code",
+      "sha256": "2ce0eb2ff5da3385fa274d710a1dd768b160bea549e34fed3bf4657beb3f8221"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/casereview/binding.py",
+      "role": "code",
+      "sha256": "61b106a309f3c458395d961f7291f923c90fb0fc5b103137f4689208bf55869e"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/casereview/model.py",
+      "role": "code",
+      "sha256": "961c7b0ebc957e25678dd0117e4ffff3a762d0479b5e59b96937314dc2e55e14"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/casereview/pipeline.py",
+      "role": "code",
+      "sha256": "e64bf1a7f9d7029fe0ae495e6db38eea173e89513eb2ae563ce5749b0a7a0bd8"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/cli.py",
+      "role": "code",
+      "sha256": "998f7fd1b19d7da7debc9b2b5d68af296a261b3c61860de03d428f59f6e39d2b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/defpatterns.py",
+      "role": "code",
+      "sha256": "c98bb05ef33f6e6572758b65402e6bbf2f77603cde374d001c0319d855dd91ec"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/docx_native.py",
+      "role": "code",
+      "sha256": "2ce658ad7ed1bb07d9e8f51da55127cae3f5d02d9224d1cf9366107ac2801ca1"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/docx_ooxml.py",
+      "role": "code",
+      "sha256": "7e5b26e68b6de3aa2e043a9497f0cdd20d2601fb1364e8d92bc575aad6522971"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/__init__.py",
+      "role": "code",
+      "sha256": "17bb0d686019fce5b9a26d33f4e7005f46600c3bfc4f62c118e077edd69d2a40"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/__main__.py",
+      "role": "code",
+      "sha256": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/alignment.py",
+      "role": "code",
+      "sha256": "fd6262f35fd0367eea9aca3119eff67e1903560432b0630c101177721b5c322e"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/approval.py",
+      "role": "code",
+      "sha256": "961686173d85dc7616886c9db7ad39741655ed5ee3c8f256c5e82525a1a26e44"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/builder.py",
+      "role": "code",
+      "sha256": "9c6f1968db3cb6f7a0c45b84922f955b3e13f47755e633b605b12a063271e60a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/candidates.py",
+      "role": "code",
+      "sha256": "376bfb41725cf26590c23adc68c8b5da47a85561813c51623975d402f30cf069"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/canonical.py",
+      "role": "code",
+      "sha256": "c52a94db83c79b2a4de0a3e398e57eff2c52b2e5d6ba895b6064efb5407018fe"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/cli.py",
+      "role": "code",
+      "sha256": "41d3b1a7cd69086059f9da26633cc2a4bcb1f22588eb8de2cb67bbae9ec831e6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/freshness.py",
+      "role": "code",
+      "sha256": "e78c29356905cb8775cf1b6483b587e3088e743e75033785e7c0ccd2c4edd1af"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/grounding.py",
+      "role": "code",
+      "sha256": "ba2a0826fb5b4d42a57081a97fdb326981eca51a98c19c0044e7bf2fc8abb531"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/model.py",
+      "role": "code",
+      "sha256": "08796b7b5ae0b5662adae69c40eeeeaebb5a49dac7ab5ce6bbdad379f3d29de2"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/normative.py",
+      "role": "code",
+      "sha256": "fa30b02560709c7699faa752da3b76b6ea4b24e80fc1e22b5b0a04ab60b03adb"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/oql.py",
+      "role": "code",
+      "sha256": "59467bfa3e343b09f28f6266baa2db84a1e67a88e4c904cb49637af856ead8e9"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/oql_patterns.yaml",
+      "role": "code",
+      "sha256": "53a5dfe429e7fa19c45c0cd282698d6e49c169711b1242ebdada77148a421896"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/requirements.py",
+      "role": "code",
+      "sha256": "70f31a9b977f1625714b22c150e1254fee38ed1297cd4b13938091efa504173a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/spanparts.py",
+      "role": "code",
+      "sha256": "832f9f54032e344eb63cf6e436a8a46bf039b637d7148846d4a112de0ddef1de"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/store.py",
+      "role": "code",
+      "sha256": "c696612b566ecd82db8317dbb8e73a8620e4559bb175c5d8b33aa9df86f3130d"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/tier1.py",
+      "role": "code",
+      "sha256": "337bce138fc0bec195e39e951702c577098dbad12a94da7fc3768a034fd7bd2e"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/uncertainty.py",
+      "role": "code",
+      "sha256": "7ed7fd16b28c6fc2ebd7dae9035217cad4f78ce32500cc58fb544007f7610105"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/embedding.py",
+      "role": "code",
+      "sha256": "c1084f0e8e5d260f7cb69df283dcb6545594736df90ad7b773cb0ee151024a5c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/fitness_gate.py",
+      "role": "code",
+      "sha256": "9c1ec4c2f1d763cdf14d02fe5baade6027c397d15ce3e72d9841054039737519"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/format_induce.py",
+      "role": "code",
+      "sha256": "a07d0fc560bbc9cd52137e012e3a594e28d04a3603b5009aace6100fd8839f6b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/format_model.py",
+      "role": "code",
+      "sha256": "2d367c5ffea2b9b5284a6753f5033fc2dc2b5b74e67de452aaf504cbddead5db"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/genos_chunks.py",
+      "role": "code",
+      "sha256": "d79c7494c87a57fc7989a624c3af37ef9d38df8684f13c69b65856e2f60f0bc5"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/genos_preprocessor.py",
+      "role": "code",
+      "sha256": "6b3165e536fcd63e171b41f9be1db2c2378d38e1c4fb64c31247c1dab6e4da24"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/geometry.py",
+      "role": "code",
+      "sha256": "48ce163f2fb707df6be598507fa80cc7d5b792d8a3a8c8f40a2f46776d593f5b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/glossary.py",
+      "role": "code",
+      "sha256": "75be89328a4adf2f01583c6dd9cdaa799486d2e63d12654c7cc35c4493a9d835"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/grid_recover.py",
+      "role": "code",
+      "sha256": "322117f295b1a15c32d95d8612ac75b77c6a44bbc8e5528d91eb0353948a49e1"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/holdout_check.py",
+      "role": "code",
+      "sha256": "acb262a27146c37e5e21c6f74e453dba232aa7058d6c7a3e573193d2d5530393"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/hwp5_md.py",
+      "role": "code",
+      "sha256": "7b770eb768d917e7ee74997ad80f225918daa716a5388c6019a73eb0914bf16d"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/hwpx_md.py",
+      "role": "code",
+      "sha256": "e06abd8b4a3ec0ca0f4eeaa9d5603ed50d6cbe34d15e2f6e50a828d9fc720658"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/hwpx_parse.py",
+      "role": "code",
+      "sha256": "2bec3a352dae5c7a739c401c865b76f0ae2584c11005b5e4a5d38b7465b8f376"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/ingest.py",
+      "role": "code",
+      "sha256": "36fc154274ff1f172181f7ac0c6881f534e7f31d119cc46bf8168cbd7fb35634"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/internal_rules.py",
+      "role": "code",
+      "sha256": "658f44242ecf4248e3ad67265dfa4a1feb4627e91ed6516258c47ffffe761bda"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/lawnet.py",
+      "role": "code",
+      "sha256": "2469d9cfea83dfb81d0e7cff5a32536874cddbeb7b027b709f02ce6ba72b4d0a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/legal_coordinate.py",
+      "role": "code",
+      "sha256": "d4068443f09b39addedde7f9b2593440ba2a55aec40ef237292706f5819ca822"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/legal_generation.py",
+      "role": "code",
+      "sha256": "49a9021f5bb3e843c086ccd0c3f0fcc29ff39232a36746538ba271a1d4fc7008"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/legal_graph/__init__.py",
+      "role": "code",
+      "sha256": "5d472a493e1f028a1a5f6357d62a793162a4e86803cf03db1759c60d88784da4"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/legal_graph/behavior.py",
+      "role": "code",
+      "sha256": "4bd9f6ed52e7235d5c13092b80cb11c7f4964daaadc45667ea0c24e24a29038e"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/legal_graph/compiler.py",
+      "role": "code",
+      "sha256": "3430c5049a342ce58c7fd7263e9e724deb8196f9e9c139271ce5ea613ffa6405"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/legal_graph/ids.py",
+      "role": "code",
+      "sha256": "c989c6e425b38dc50272e4fda21da88c96f987a749fcf6067a53d6b4611f6a45"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/legal_graph/model.py",
+      "role": "code",
+      "sha256": "4d283638ca3f732b506a8e2b01fc4b205da4c03ba57e55f8709642b5bcbd80b4"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/legal_graph/validation.py",
+      "role": "code",
+      "sha256": "85ad9b100e3876d0dc8fa3d13080ace3adce6dadb3b9404e4b32965230b32599"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/lineage.py",
+      "role": "code",
+      "sha256": "f1dad6a728adbad4300703391901a90d0817fa7c54dd5b3f660b9b93cd4f2172"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/llm.py",
+      "role": "code",
+      "sha256": "7a8494fc7b1fa84edb899f1967ff26500c358871be382554ecaeb0e9e164364a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/logbook.py",
+      "role": "code",
+      "sha256": "25d4cc99e0289ba579ea68c810f0e0ab91250716a774c27dcd3d0962ce79b245"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/normalize.py",
+      "role": "code",
+      "sha256": "3101a5c6c4b874151e2c1bee74f5933d548873f2c2ead30020e13a5defe13ab9"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/parse_adapter.py",
+      "role": "code",
+      "sha256": "2f814cf26af493dab1a788b46eff55afa388c00c83b6c76a85d050492c601c93"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/README.md",
+      "role": "code",
+      "sha256": "ca7201224d61473bd7b6a44cfb04c640ddb43df510b2d195b8e5d953fa2231e5"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/__init__.py",
+      "role": "code",
+      "sha256": "1a69316bf921871f0737e8f1b6d0a314ee6c3396715173c16561ed1717cae571"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/_boundary.py",
+      "role": "code",
+      "sha256": "5a00094f9e3a434e9401efae30cb381bddb31de27c25d44361aaa8afb2a3a9b4"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/answer.py",
+      "role": "code",
+      "sha256": "fb9ececbcfb37eaf4736ceb3ee346d6e8ab0c0d6d431637b9b8465824a722a81"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/approvals.py",
+      "role": "code",
+      "sha256": "b96cb9496986853bd2b4463c6941937055f900a6778282729ca1f1cc93d7cc12"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/article_reachability.py",
+      "role": "code",
+      "sha256": "0d3e10bd38dc86040d7eb7b51cb1df60a7c73f54f8a3a758a4a24820be1d156b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/assertion_shortcuts.py",
+      "role": "code",
+      "sha256": "13e8e3de47e47c9b95868fb463d5ab38aafd17cc29a5238babc63b5f337449d1"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/assertionfirst.py",
+      "role": "code",
+      "sha256": "0bd55843d268f8ae9a2283a48300dad0222d36bd8d4af6fcdec1637beb78be58"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/audit.py",
+      "role": "code",
+      "sha256": "d6fb82047d3a81cc36d5129103eab3a2715265c68a7d3ee335bfe8dc4570fdae"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/bench.py",
+      "role": "code",
+      "sha256": "de9f2cb8e0993a8228ff7636d7b0063fb423fe926bd82f1e5ad2f6219977f982"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/claim_citation_selector.py",
+      "role": "code",
+      "sha256": "6b8a1b8f9eecdf73b63d1c67a081008784637def736de5e9dfa8d44bba19034f"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/claimwise_nondestructive_compiler.py",
+      "role": "code",
+      "sha256": "a2a050756fd1b90721b13cab92d60308866a58dae34ffae069ab66249519bcf8"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/combinations.py",
+      "role": "code",
+      "sha256": "a2d575b8cc77124e40e09b5c80104cc3f812fb5a213f83a9b6bc7ce22e0fa125"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/companion_recovery.py",
+      "role": "code",
+      "sha256": "4010006aae3e5fc7976b3eca33087b380f79f92bae97be7f5ad4ac8c29bc2f36"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/compare.py",
+      "role": "code",
+      "sha256": "f59b26cb9b359c14e4d67ca4bc42404ce0623a83f366be648cca30810fbe83ed"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/conceptfirst.py",
+      "role": "code",
+      "sha256": "7fcaf592e4268d0c25de0979f77b85599ca036ff09b1d4a98d9f1f5e5758d14c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/controls.py",
+      "role": "code",
+      "sha256": "e3ebe09a678c7cfaa01fd2815513c473a2eeccf849f999ca3a2eb3616c51f0f3"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/definitions.py",
+      "role": "code",
+      "sha256": "4d1c2ad87fcdff4257984e8feec802d5a550eb67651be6157987fb30df3679bb"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/delegation.py",
+      "role": "code",
+      "sha256": "a1e82697a0924e200b4a282a10aec9f0a9664175e5d17df172db802b655e99ea"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/evaluation.py",
+      "role": "code",
+      "sha256": "539be89936700571f923612a73e5f0b23898f0f08badc919013001b2f09969a4"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/evidence/__init__.py",
+      "role": "code",
+      "sha256": "68fe41c9637ad62f6501da378e347acdc09b1f65c56399fb7ef08ca6f8199896"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/evidence_confusion.py",
+      "role": "code",
+      "sha256": "4eff99c9ba087eb3629b89aed6b9acd07e7274871d87af3f73b6237ca93fb056"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/evidence_slot_nondropping.py",
+      "role": "code",
+      "sha256": "0df5141de0c62f63ddd5d320f8bd285237e6a8c0cc5c5d400e8d2e5c3d72c78f"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/expand.py",
+      "role": "code",
+      "sha256": "4266e39f788a3a3272293b2624d65ec78d90f88aff354f8640cb85da6b40cd26"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/exploration.py",
+      "role": "code",
+      "sha256": "9969e11cfd090c150621eb44d52b643c66a7111d8ec3d82951885cbfb115eaf3"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/framequery.py",
+      "role": "code",
+      "sha256": "468b68fff3729ed42df0da2f7c6d098d2305605d1690f696a1d6a37926cb1d6b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/frames.py",
+      "role": "code",
+      "sha256": "902e252238515f6bc470ddc71469b1f33ca88dfffaedfb51379cfc98715fc981"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/general_search.py",
+      "role": "code",
+      "sha256": "7312ee904afde9b214c003f23ab4b93ba2178c958bae50ba38f352fdee3110be"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/graph.py",
+      "role": "code",
+      "sha256": "43b897de695ead6581a6896c56c3e0f6e1edcf81425a2af5cd52b98c51550468"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/grounded_witness.py",
+      "role": "code",
+      "sha256": "0f0ef30d1f6087befba07e18d4b3f5fc3986ceaefe6db17b6cfca49894676bc6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/index.py",
+      "role": "code",
+      "sha256": "51b25bc80c136dd1ff80683e14ccc19659db67594c7a9629c1e6a584a3845e64"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/induce.py",
+      "role": "code",
+      "sha256": "33337f22ebca56dfa1766970a9270577120ac2491f95a8b13fd0dea9480d4548"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/internal_compliance.py",
+      "role": "code",
+      "sha256": "08e30b941b404d9f060700b5358fd6c28d9ea9b3deb4f000aaa3e506b81abf3e"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/judge.py",
+      "role": "code",
+      "sha256": "dd1382de07e236bb1c1a7f48512203ac2d23431e862c951f0908a80ee451d180"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/knowledge/__init__.py",
+      "role": "code",
+      "sha256": "5c37d2569c3d216fb7494ece83bf2b8d9f257166e0fb2bfacd6b32509d8b61eb"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/landings.py",
+      "role": "code",
+      "sha256": "fcd6b2740e3711b05fa753b4ccafdba057d273beda5d559285b7be85593e67f6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/latent_discovery_pool.py",
+      "role": "code",
+      "sha256": "4c8b451cf65db12898ece9d31f2565c5e7b08eebac6d3b578d26abc6985d8ba7"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/legal_answer_checklists.py",
+      "role": "code",
+      "sha256": "37b3360d7e89a3792bdbca54cded0a6822db29b22ad63b78e8deb61359b20899"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/legal_conditional_closure.py",
+      "role": "code",
+      "sha256": "0b8d641281f032415e9ddfda10ecd28bb5e96c8c66c8afbdb2386e0d1f7c89c4"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/legal_coordinates.py",
+      "role": "code",
+      "sha256": "bbdb1480d3ed6780d1cad41bede46c524b36604554ed2d6ea0ee4c22c2e059df"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/legal_evidence.py",
+      "role": "code",
+      "sha256": "8b7accba150e6acedfb50384c348b7b636eebec51a6272e80889338eb3bc7ef8"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/legal_graph_closure.py",
+      "role": "code",
+      "sha256": "486d934fb072667675e024680e419d4bb628a098626bd787afaafe93e4715b49"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/legal_graph_store.py",
+      "role": "code",
+      "sha256": "22642074601684067338f12d71b06321fc302983039b82fd8b7c9c021f4869c6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/legal_proposition_compiler.py",
+      "role": "code",
+      "sha256": "fa9812dd3e1aa24c5c8ead9a933084f19a8cb08c5fb79a9009eb6b53f4a0fcd4"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/legal_references.py",
+      "role": "code",
+      "sha256": "8680d0676939b0a357af4adaa552f79275035f4e2794607c9a401ed59a2a8966"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/legal_semantic_search.py",
+      "role": "code",
+      "sha256": "bb9df648c5fa3e6a6301c7cf3779c82f0fbaf978336c68bc447d2f7737c58d0c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/legal_validity.py",
+      "role": "code",
+      "sha256": "50887e17bccea1c389547c069d2b1515bb1362c2fbe696450a11994f1e50c5b5"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/legalclosure.py",
+      "role": "code",
+      "sha256": "caf36821e7f78a123e169f9cc5474c1c84eaf45785a0432f6092e12b88021cf8"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/legalclosure_runtime.py",
+      "role": "code",
+      "sha256": "639f61d7e3b585e6b1e49e09cf890f78baab330ae33c88f79c96554023cfe3af"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/legalissue.py",
+      "role": "code",
+      "sha256": "23184734a7774a7d968bdeac993dc7c62f7654e3c321aabd910df47fd479f29c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/lexicon.py",
+      "role": "code",
+      "sha256": "9cf3a6067a1132a63c633ebd7dadbf31d3bec1896461acfcd4c0564411f22bc1"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/oql.py",
+      "role": "code",
+      "sha256": "ebf7c858102ef4c6f123f41750bf15e7c744873dafe28876750027395ab8d5d2"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/patterns.yaml",
+      "role": "code",
+      "sha256": "5b815d582a086de1a397987e9656c1db751d3a7de851809cd682bc6a40b4870b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/promote.py",
+      "role": "code",
+      "sha256": "9a4ba2b930db7227be2d340097dc7c87424bae7bfe517cf1dce60686df7e0872"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/proof_basis_augmenting.py",
+      "role": "code",
+      "sha256": "9109dbd736945986aaa0fa5f41f03350bcba390c7c5007030cb66a5b3d716691"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/proof_basis_exchange.py",
+      "role": "code",
+      "sha256": "05c07753d51b0c62569c437a9bcc2ff9a5b3e8a3925bbefe11f8b76b29c81255"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/proof_boundary_feedback.py",
+      "role": "code",
+      "sha256": "baab7f8374996ce7ddedb7cda956de7bbae8bf4240c3085dbec70a6eda1fdb83"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/proposition_assessment_shadow.py",
+      "role": "code",
+      "sha256": "88b20279ad199298b979d121b6946f183d1d18ef142730f2910c92c9747f6e8e"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/provider_compatible_span_selector.py",
+      "role": "code",
+      "sha256": "2f47a85a3eae6f5c842cbd78dd79f64dfbc802bb5b96158b7d4a99866e02c0f4"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/qdrant_store.py",
+      "role": "code",
+      "sha256": "7fe1d46188e256146b65e9dab12e6b69ea8cf0ac8b4ad10447511ca840175f2f"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/query_family_runtime.py",
+      "role": "code",
+      "sha256": "606fc1822ae31bd8c0821f9358b9ae5a67b00a07836cd3ab1f06b1d907da7d78"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/query_grounding.py",
+      "role": "code",
+      "sha256": "7e79b18c6e345d1df82b469daf22e17bafb9469759393f296c994bce707620f2"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/queryguide.py",
+      "role": "code",
+      "sha256": "ee32f8b86f231c216a3a12811ad36ee668b6942f439d6dc3d1360805dc6c67a0"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/raw_evidence_selection.py",
+      "role": "code",
+      "sha256": "9f4a24cba7bbaa245ec2bfa830220c1b3ac6c9b7467f474e7cbed449e5599eae"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/reasoning/__init__.py",
+      "role": "code",
+      "sha256": "b602dae631888e345a8bc772e228c58e71a3406f083b761bb4df37cb4bde2966"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/recall_first_feedback.py",
+      "role": "code",
+      "sha256": "1e88e58676d67f013b9fa3fc6fd1410d984c3d6710f2695dfe9ceddcbea6582a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/recover.py",
+      "role": "code",
+      "sha256": "30ee00a680fb6958d3eb64682a834c9344a920ba70d54872686c96d09f6a0262"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/recover_domains.py",
+      "role": "code",
+      "sha256": "796e541e0deffe39b9fa4be3f9aac2b2b55350962309bc480d9873bd3d6f2f8e"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/refs.py",
+      "role": "code",
+      "sha256": "0c5f944aeecd611dca755e643bcac1e748c3cae9bb08bf9dfb936fe88379d981"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/relation_navigation.py",
+      "role": "code",
+      "sha256": "6ad3b54e25a45efc83cede097b75b85521d935669ecabfeb44fe02ca038f1968"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/relations.py",
+      "role": "code",
+      "sha256": "04cd80e6f46c37c7236845120ce30ea903ab76b4b4a072f4e950b209ac637bbf"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/replay.py",
+      "role": "code",
+      "sha256": "982e961af83b7c47b2acb3128a898fcf5a76544862b81f7c5afa78b0e4c1bf88"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/retrieval/__init__.py",
+      "role": "code",
+      "sha256": "d3a1e95f15f091a4eaa8f92dd45d24c262eb984620a45b01adc7e637e5f6b965"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/retrieval_feedback.py",
+      "role": "code",
+      "sha256": "f5f4faacf46c4aea1a60c0b0aecbc3990963979640c16454f80827c38c348d5d"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/rules.py",
+      "role": "code",
+      "sha256": "993e75b8fa917617fe46303a5694d6e9c8885a263d1c72f0f1614b787baf5eb6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/scopes.py",
+      "role": "code",
+      "sha256": "e86598c2533c476a8bea7e7538ab6bbb97611e45c4f0cbf4cb5975dcd7ddcd42"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/search.py",
+      "role": "code",
+      "sha256": "cb11068131815d152a06dea2876d7dfaa72fb40f9b68dd644813bfda78344914"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/search_trace.py",
+      "role": "code",
+      "sha256": "da10c85abf1df75b6655b8e81e9147d3ba06dd9f0c17671cfe33fa69b4b5a64f"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/selective_legal_guide.py",
+      "role": "code",
+      "sha256": "0fefb640e960443320e1beff53606b17426f7a6ce8fcbfba4fbe7b896eed9b28"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/source_registry_admission.py",
+      "role": "code",
+      "sha256": "db56dd9628455e447eb1be961bca8cc0c91bdeae4d1e7afcce3f4d4f8837f151"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/span_feedback.py",
+      "role": "code",
+      "sha256": "abc149f42ed226782335a5ad283e43580b0d45decfa964bcc4e21b233ed67163"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/switches.py",
+      "role": "code",
+      "sha256": "9414316590132d43b499224b2a645773592308faa3e39e62e028be608c726071"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/tags.py",
+      "role": "code",
+      "sha256": "0f14f1a0822c638f6bf20cec5191a8d1dd6b918acbb02c11fd9705477f13044a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/taxonomy.py",
+      "role": "code",
+      "sha256": "4a03de565ea29c2e699921646d878b777a304e1aa24be9da31d479451c40020f"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/term_proposals.py",
+      "role": "code",
+      "sha256": "6710571d5608b71412210bf0a03f6e727d6d46c1929ca852fa9407370ca45473"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/termexplore.py",
+      "role": "code",
+      "sha256": "b57a8d8216a51ca6318e1dca3a666e158993a203e2fe59a75c260f54c11241b2"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/termretrieve.py",
+      "role": "code",
+      "sha256": "82a0cdd9759f94e6f6cbd5bbccc40600a43157c045f11cc109548166ca87f132"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/tuples.py",
+      "role": "code",
+      "sha256": "07926a0e60341c304f956e7ff0eb4ff13b8954b560e6aa159ac1da09a0017875"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/vecfirst.py",
+      "role": "code",
+      "sha256": "39709c1865d56da08fab748dd4f6930950e0a99b1bd69e4544c28e68dadd1b27"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/vector.py",
+      "role": "code",
+      "sha256": "366bc18eee3722e18f44e808841f704d95ea6dd1d30064e8efc272678e6557a4"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/verdicts.py",
+      "role": "code",
+      "sha256": "88aa3f626120403e95c9c7fb8de55432580c5d6493cf88bff049d533f0124326"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/verified_span_coverage_gate.py",
+      "role": "code",
+      "sha256": "2f9bf26dff6707f4c0781d42703de316ec6d4e81bf509491c7a9145860950084"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/verified_span_selector.py",
+      "role": "code",
+      "sha256": "259b24054393a360c2706883bd0f5c40a162baa26af2abdaa41be5825542f2b0"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/wikictx.py",
+      "role": "code",
+      "sha256": "2dc766d2403b5d456ac243b2a33445541ed96ffa07fc7db5916916420a8862a2"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/wikiledger.py",
+      "role": "code",
+      "sha256": "1e812bceab7d548bbd38794844f4855f4af0877d6a9b59453957365dbca0dbe0"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/wikilife.py",
+      "role": "code",
+      "sha256": "5584e003758c8bcfefcc2dc6356d53a9a2aa7b3620e8174ed776b7ba627fe014"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rawstore.py",
+      "role": "code",
+      "sha256": "faef4606824ea68889baa92d14c1be0f1321f2c810428eaa7df2ace8c3b31e10"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/reading_order.py",
+      "role": "code",
+      "sha256": "d82f0b63b2355982cd121c7b86ef57b05b374f537267f78ec54a726b3b55234e"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/reconcile.py",
+      "role": "code",
+      "sha256": "e59e494c6cff621c8f1753aec455b2cdb6988547d155ef5a913f7454c87af7c2"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/reference_coordinate.py",
+      "role": "code",
+      "sha256": "513fda6c756e77f1f40c939d3e6d783d5b825decd9ccb0e972fedcaaa3d96002"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/registry.yaml",
+      "role": "code",
+      "sha256": "a03e49e01ea078496099e89e4328acebec3f38da5eeef8426b2baf64c897dd47"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/review.py",
+      "role": "code",
+      "sha256": "0c39638c30e4f06025cb2defe09ef55df93418cfb59819b40d6225cd8c26459c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/router.py",
+      "role": "code",
+      "sha256": "9d34d971d323cf4f07e15feaab7526085f324d1b2066e265f2ac97405df2bc13"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/__init__.py",
+      "role": "code",
+      "sha256": "78c686f8b90b4e5ae140318956252f7efde137a3a806e967e6879b657eaca232"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/anchors.py",
+      "role": "code",
+      "sha256": "9414bad408d3c605a912971ec52194d62ebff353fb2c1b20730e1ce6969554dd"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/cli.py",
+      "role": "code",
+      "sha256": "7c9437a41b2fd21e32a76167031729e6f70b18e1ff02e4fe196d5d7adce43721"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/custom/_README.md",
+      "role": "code",
+      "sha256": "fe1195ad9311b780515d72eed3f4cfc15416bff6746db90de5d1a7d6fb2f23bd"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/dp.py",
+      "role": "code",
+      "sha256": "1155fad73e8582b60cffb81930caa750f1e2abd7250ebd8ee1eabea215c1b370"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/family/__init__.py",
+      "role": "code",
+      "sha256": "413f6c564cfe9ca349cfed8db5822280bb62d64718166de39ad6d576f0f7d525"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/family/anchor.py",
+      "role": "code",
+      "sha256": "2838fe1ac668b5bfddbc4df38ef8efd9d74b788930d932c998a4042bb91334d5"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/family/run.py",
+      "role": "code",
+      "sha256": "57a36e93ad3bab595beffd4874af336f034744e6cc291765294da5c746250749"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/family/succession.py",
+      "role": "code",
+      "sha256": "5196b1048c55ffd6c532f5e00b42d45d55f54ee5aeb4c2a99ee74e0b6e33cebe"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/fingerprint.py",
+      "role": "code",
+      "sha256": "3f665489f2846882c6cefe1d7877a11e5f1d29591c2d5c8faee9274f171ba0f1"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/from_format.py",
+      "role": "code",
+      "sha256": "20fe978f32c60916dfe59e4f33c11de705f0a2f323a7bb273ca9c574fef6317f"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/from_styles.py",
+      "role": "code",
+      "sha256": "ccfbb1df3d1efbaac75bd4e354875e0e5c905f768543d104b7c47e3839df72c6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/global_inner/__init__.py",
+      "role": "code",
+      "sha256": "435f6785955746abd94781a8ac750454296c67eef21ef93fc15f2c3c7ec3f734"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/global_inner/nesting.py",
+      "role": "code",
+      "sha256": "cd9aae1df9ce38fdb89f9530928b5a7bb37d00259d42b8b407ee45316f69e32d"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/global_inner/ordinal.py",
+      "role": "code",
+      "sha256": "c313b9e7681725d9fef9141a61e0f27126a5e8dd1b88553d808343bb446f2e0a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/global_outer/__init__.py",
+      "role": "code",
+      "sha256": "b8cf182e08c84b468cdfa8f9b24e01e240a04a5218e8362ef54d2e28fca40fbb"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/global_outer/indent.py",
+      "role": "code",
+      "sha256": "1b6a359a620c59c24e25422b2324690875e900e55d5b21eb58497b9cdcde0164"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/global_outer/ladder.py",
+      "role": "code",
+      "sha256": "055534102712a0e6fbba4185eb07f4cb45a741c640266ed97f8b99f3603ff2af"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/global_outer/reg_score.py",
+      "role": "code",
+      "sha256": "99083ab0fe2d33d26163e946239a60c8a2841e7a189264d9a64a685cc6c775e6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/guards/__init__.py",
+      "role": "code",
+      "sha256": "56283604e05b7d442ff05007eddd0b676047488935eed1e3c29a905d41aac66a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/guards/block_pos.py",
+      "role": "code",
+      "sha256": "b049887e56c764060dc4e839a20dc4dc971a98cdb10db0a92d56885e2b7c5adc"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/guards/construction.py",
+      "role": "code",
+      "sha256": "8e1894a109d2b6a505aa4246df94c30f2065d09331d8f794d6a0807f9c185131"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/guards/particle_ko.py",
+      "role": "code",
+      "sha256": "774c125360af6ab1b03d892b535df7521bb97e092399b3d2af352d3eb6c2e3f6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/lawxml.py",
+      "role": "code",
+      "sha256": "d4022de3d982b4d415faa0e08f4ab6373071533ddace859f369828d7ad0c121b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/lexicon.py",
+      "role": "code",
+      "sha256": "72777dee666f6a2910a78721fa21763eb303f82135d3088c352e1b199e4f9586"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/lexicon/josa.yaml",
+      "role": "code",
+      "sha256": "33dbdda8cf821ae9a81b1c8daa4779cb066a42b5985cdab20d7c3fc405f79e3f"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/lexicon/numerals.yaml",
+      "role": "code",
+      "sha256": "f188d0998685555dfc9b4014023013fcadb4b5616ec67ca918b074b77a2291bf"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/lexicon/reference_predicates.yaml",
+      "role": "code",
+      "sha256": "4d15e0d795fcd56246439a18f61e71fd3cb914bb6343627e9804c7a0fbc32f24"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/model.py",
+      "role": "code",
+      "sha256": "f18d13ef8f55ae86bf79513032c1f2ca1c82c6e0c1f60e01e608a2efce007df0"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/pipeline.py",
+      "role": "code",
+      "sha256": "5c352adad46b2a172693f8a1f0dc1fce8b8ed5276ea4529ac50c828a7a93bc4c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/proposers/__init__.py",
+      "role": "code",
+      "sha256": "45236bcec87795d66a523f55be3eb00777d8b4dce5603a0fc847d7ab8edb477e"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/proposers/annex.py",
+      "role": "code",
+      "sha256": "64dd834206bf8e4862a4bbc51b83ed3106e93f57cac8b49aa4e4e479fdd688f2"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/proposers/bullet.py",
+      "role": "code",
+      "sha256": "f513bc83f903e064af9a74cf5bb45e6f8819412568e3c519bfe6464058bdfbf7"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/proposers/circled.py",
+      "role": "code",
+      "sha256": "270efb6aeaf32f0e6393bc8e8b3a70b765e7e31a19de8a61dc80d4c45e417fc4"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/proposers/custom.py",
+      "role": "code",
+      "sha256": "a9c1e6671806339f4cdcd0666c1af7d71911c3f79b3f5b6f57889af800478be6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/proposers/dot_number.py",
+      "role": "code",
+      "sha256": "3b4357c90ce745a72ae7bade812fb40afdb3bcbc8317877c1fc59ee587421ceb"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/proposers/hangul_jamo.py",
+      "role": "code",
+      "sha256": "4bfb9674bcd99ca922a45d8581b80b86fda8c0406fd44cbae55302916e098241"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/proposers/kr_article.py",
+      "role": "code",
+      "sha256": "e2f9002a1c347b7de650ed8ff7518998deaad8f7c0cac3529c4006a76f6552c5"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/proposers/kr_division.py",
+      "role": "code",
+      "sha256": "e24ebbf15a981f4e419840ba2582652703b6294bcf5be71678d8fd693c19d02e"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/proposers/paren_number.py",
+      "role": "code",
+      "sha256": "45c38687b5c159a594dbd8976fee195081c06912cd262103ca0a55500ecfdb47"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/proposers/roman.py",
+      "role": "code",
+      "sha256": "0b29066a40dfb4ec42497e10b58e27ac32e23bd34103f267b2dec529c5aef70a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/proposers/style_heading.py",
+      "role": "code",
+      "sha256": "0118633b455f8dc841696af17793c6c09a12b966b06b18bada65879de13a87e9"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/proposers/writing_guidance.py",
+      "role": "code",
+      "sha256": "0c189c39900b4ac489180c34d6c69cb8daf9b82580e497942878987348b4c1ed"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_basic.py",
+      "role": "code",
+      "sha256": "9f3d502be9839bffee08533585f290969a719a15507fdf28f7db2aae048c0791"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_compact.py",
+      "role": "code",
+      "sha256": "177e1286861671cf5762f4cce98a390c9272467bb57a4770bde0e603aa4046a1"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_evidence.py",
+      "role": "code",
+      "sha256": "5b0bd73cc8a104944bd7e9b64ade5d70724ee4a31eeaaecbe0121abe1dcc5b14"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_output.py",
+      "role": "code",
+      "sha256": "de805ff7bc08fb1c55b5106be727b4b1b0b0ae8711e899feb72d8ac7373f5ae3"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_pages.py",
+      "role": "code",
+      "sha256": "36da3e94adb2a1a073be060f45887c72b54dc4dd031419bf0d0fae36c023bb12"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_patch.py",
+      "role": "code",
+      "sha256": "9953ede9e885c95f13205f31e4e5036a9488b9237454de2209170711ab2b9057"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_regions.py",
+      "role": "code",
+      "sha256": "26aa93274acf5396a0ce9b22a0b871a53644957dd1d5766f52669fc07479628d"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_rules.py",
+      "role": "code",
+      "sha256": "f3106a95f736bb9191586c1f5c89ef08f44152a11fcabc55d7fe64b0f466db2c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_runtime.py",
+      "role": "code",
+      "sha256": "064dbe6751da8000242256762f02c0a281797d8617fec9f350f64b123b2ad556"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_template.py",
+      "role": "code",
+      "sha256": "cbb6cef550c46ae4bbd47861b0f2386d6be7697632d9cf8665a8f9e3ed7ba1a9"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_visual_loop.py",
+      "role": "code",
+      "sha256": "448d0954a728070ca32da3d3bdd87ff6c4ba2d662e3570ce644be009bce1f4af"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/registry.py",
+      "role": "code",
+      "sha256": "2e6a1fc0fa2a531bc4a03bfaa23748803d53077c651cd2e250aea9104c185027"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/resolve.py",
+      "role": "code",
+      "sha256": "bdb52ccb6421ee8c724d445c1cbc8be9e72f21d8a484960f3773347e5f892ee9"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/rulehtml.py",
+      "role": "code",
+      "sha256": "ba82face6102764aec80b309c5253f82d566f8af511880cbae2a9e3636c8bd70"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/scoring.py",
+      "role": "code",
+      "sha256": "7f884a28c0d1cbd2e8590b650eeb65e7982ffe75e510ae68f33d9ade74f6d213"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/source_lines.py",
+      "role": "code",
+      "sha256": "4f843849530423a8219b407e439f5d224256f0d8feae434a6d31d7322bf0e663"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/synthpdf.py",
+      "role": "code",
+      "sha256": "a3c7914e555848444c32d915185f5ba8301e2c072542c26a063c973fd59720b6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/templates/basic_v1.json",
+      "role": "code",
+      "sha256": "8d639633e84088e34dbad57b1de659073f4116f6ab27fdac3b2f8386100ecb87"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/templates/disclosure_v1.json",
+      "role": "code",
+      "sha256": "53c4e44f916fcd720a23a3a71b806f0fdf8a263a91cc66e05febbdc0d80890fa"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/title.py",
+      "role": "code",
+      "sha256": "084684ceb4103dd72a0bbc1a385d88b910ac5d6dd6176f73544edbb872efba9c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/viewer.py",
+      "role": "code",
+      "sha256": "d7bbaa39b13e682f812a7cd7c6a7687c7db145e83b69f0c139a31406859e75f5"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/vlm_heading.py",
+      "role": "code",
+      "sha256": "c86d9abd71b61163062ab89cdc47a2c3dcb0e0641d58cea86b8ea3d0de5b2f1f"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure_fixes.py",
+      "role": "code",
+      "sha256": "62a1c71b79f1379b60ccdec6ba2536f96b14f0f643de1f08c63e42a8ec35fc22"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structurize.py",
+      "role": "code",
+      "sha256": "7ffab3a20c3a1b88dd97b3cc16006d4dbf94aef3c4df5af568ac7791a47c348c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/term_marker.py",
+      "role": "code",
+      "sha256": "a7ce935509444dd063e1ff74721f6a1fbfba963b58d220d40c5a10f008905e7e"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/terms/__init__.py",
+      "role": "code",
+      "sha256": "065b0eb601855abd2b90f2b7378af8cbf145e5a0aae66fd982ea1f16945e1a0c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/terms/__main__.py",
+      "role": "code",
+      "sha256": "d86ef300172a35d919debef2e6c93e2a5f94ddfeba6451eb7d9995f7e0d7d578"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/terms/build.py",
+      "role": "code",
+      "sha256": "dab9e4a66e0b325c9fba29efa99b95a0f6fe316a6c813b4d6cb2666da4619543"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/terms/candidates.py",
+      "role": "code",
+      "sha256": "dea11a3d685dc456c9425fb206d8972ac310b2c61547ca0eadce87096532dba8"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/terms/cluster.py",
+      "role": "code",
+      "sha256": "93bc18d02d0c25e1e2c7a15ee267fcd08d0e074d535d12e78a98f301940a7f00"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/terms/embed.py",
+      "role": "code",
+      "sha256": "28527e39220a2b014454ea178ab279dd0996319eba52716e372b3c7c68e7991d"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/terms/embed_sections.py",
+      "role": "code",
+      "sha256": "258b9aa078cd00d8804150193786b093751fe9cf1b960903c2301502a58aa754"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/terms/gate.py",
+      "role": "code",
+      "sha256": "e0381dc4c162fe42355fdce37d6d72b04a882004d117463ea89e67e66d77c62b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/terms/hierarchy.py",
+      "role": "code",
+      "sha256": "6f6ec2bdc21596ffaf557b1ffabd0a3b04e20077cbb3bfe4b61e53adbe9077ae"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/terms/judge.py",
+      "role": "code",
+      "sha256": "4fb45a9da5542aa64a5adfd43ba6d0cece39092925758fd35fd9bf2fa0f9050a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/terms/relations.py",
+      "role": "code",
+      "sha256": "3270882f9dd374a0442199042bde8e612c532715dc60e44cd0d36bccd468d79b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/terms/stats.py",
+      "role": "code",
+      "sha256": "faa1d27829b09c96c09f5f51e16f7d6d3cb4a023d38a6fbb82d02c2cbd92a9f0"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/terms/suggest.py",
+      "role": "code",
+      "sha256": "09c357ad53eebd727a42837f444748e86fd935cecb949f79dff299a004e5565b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/terms/transcribe.py",
+      "role": "code",
+      "sha256": "2d5fbd0b862fd13d4ffbe4df55a2ca5c926ed0427ee6ab0be1db934ca8c1d7c2"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/typography.py",
+      "role": "code",
+      "sha256": "2a4d67eefbf089b6f710edf9dc742828db83df0718da4a59a6b98a58137f58cb"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/__init__.py",
+      "role": "code",
+      "sha256": "89d8f130231b1cf4ceab0f8febb3dde70d2f82a3b7b44db2b19b7b86c2a25953"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/action_memory.py",
+      "role": "code",
+      "sha256": "1c68d40f12ef498bff20e2424566c55a159c922d1c585fdfbe08957bb4bfd730"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/batch.py",
+      "role": "code",
+      "sha256": "7bf3e3b6ced2d191ea174059e29027c7bd06aafdd84a1927f40ca9c42028847e"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/collect.py",
+      "role": "code",
+      "sha256": "f6f866f296a95755f203f3ab9509e8557db24e799baa6fe374a20132ec50f14c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/collect_expc.py",
+      "role": "code",
+      "sha256": "d2fdb1e828a7ecf3dd04151a6d14797d23f560f8c5c8b095e5681d8e86a6ec95"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/collect_fsc.py",
+      "role": "code",
+      "sha256": "2f0366d8c88d2c7b685126fe509893ef9c59d12d3324b7fd0f928d757a82d64b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/collect_moleg.py",
+      "role": "code",
+      "sha256": "281376fc94b3f5213d4d3596ef5089cfeb1b438ac4d117aa525f1435a53dae40"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/collect_moleg_knowledge.py",
+      "role": "code",
+      "sha256": "8526f83120c16b62b642e99162d4975f36bf95b0ad1b32b85498ae28e6a69fa4"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/collect_prec.py",
+      "role": "code",
+      "sha256": "3a7502b7f466f3f479ac6a7c720c6346af6754f4ea662fbc065b58d3a6856917"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/collect_public_glossaries.py",
+      "role": "code",
+      "sha256": "e23ccd948f40fbdbed23db99936b95910cdf4d593be4e10147a5c6fad14d5cd9"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/convert.py",
+      "role": "code",
+      "sha256": "7a89684052327d81fed091ef83c6ef3045f9ff4b45479b132c0c595381c2da6c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/document_release.py",
+      "role": "code",
+      "sha256": "73ff42461f8c68b93db9863bff11e35df90f102c418ce6e3b7e0e595502236a3"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/document_representations.py",
+      "role": "code",
+      "sha256": "b9ffc28afc457f2e854ee86d1a8fab396cb85947e066298c0ebfd23f3d277f09"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/document_scope.py",
+      "role": "code",
+      "sha256": "d6c507287fa575176051cc07b0b3b496eacd3dbf09623f45b51c48ca558fc7ca"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/fulltext_stage.py",
+      "role": "code",
+      "sha256": "ceb67c28be79931a6be4ec0a9dcdbe7f0efd54597239076128da9af737211a8c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_admission.py",
+      "role": "code",
+      "sha256": "8a92da7a57e46e0d02cbf4152511e0e63bd8908bb3e61b16a89b1eece5d8b46f"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_all_pipeline.py",
+      "role": "code",
+      "sha256": "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_authoring_runtime.py",
+      "role": "code",
+      "sha256": "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_batch.py",
+      "role": "code",
+      "sha256": "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_build.py",
+      "role": "code",
+      "sha256": "a641f0cdf0c1fc87b70a71ba4c7fd9fb411a0e655305f9d4fe265b3e833746c5"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_corpus.py",
+      "role": "code",
+      "sha256": "2c8afc9cdd00942a8b2539f02ceccd68a10ad944fbae4ec98eba9828d5eb78a7"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_doc.py",
+      "role": "code",
+      "sha256": "b9c979f1a1649236521d42565bfbae36876dc0fcbe9b8b720215f6812bb31203"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_e2e.py",
+      "role": "code",
+      "sha256": "8bb8a8a5ee8d576bbd53564531a1ee955bc0f9cfa243974e2ca7c27db93d1a8b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_internal_replace.py",
+      "role": "code",
+      "sha256": "decbfff36437cc7dc0227ee17a0cbeeca68379052f969ff4fa9c3a330e83fd71"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_moleg_compile.py",
+      "role": "code",
+      "sha256": "95a83edf7316b5caeda9413e2aadcb8650dca039b99e6d752c3ca621b9ac9641"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_progress.py",
+      "role": "code",
+      "sha256": "f6e2dfaf8315ab6f35e16bf5649abd951fa56f1d0bff50dae40c6b0734d1a944"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_raw_move.py",
+      "role": "code",
+      "sha256": "93bf3e31d81e7fc091cdae0616b43a60eb8de51d4a50d397c503e0b316af0493"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_staged.py",
+      "role": "code",
+      "sha256": "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_stages.py",
+      "role": "code",
+      "sha256": "f8a43a6410b57c1fd99130f1606c8d34706d2523b64df5241016ae4ac09c0d97"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_status.py",
+      "role": "code",
+      "sha256": "d0b5e53bd799166fe5a6631518a2a7b4340a80787ffa0086456010f130974a2a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_structure_report.py",
+      "role": "code",
+      "sha256": "8e0957cab35a3a85d4513a6489f6d510f984aafc1776bad623e7f46165e8b855"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_unified.py",
+      "role": "code",
+      "sha256": "dffcfb9312ab2afaf84a5b8f3bda9fdb91fc2d3f39bd222fdaf38dfe19c94cd2"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_abbreviation.py",
+      "role": "code",
+      "sha256": "2a9ab38e3e5310f8205e83cb38afc81f3362883a4e4bea0ef8bf0f34018a418b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_alignment.py",
+      "role": "code",
+      "sha256": "01381ab86fa78dfe3e2fded913fd0dbfe795cc7e940f8d05fdbfc02927a5e03b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_assembly.py",
+      "role": "code",
+      "sha256": "ee1684148a14a1ceb0fdf734e0ca50b79abab851fa6bc596be8a4a985124c784"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_definitions.py",
+      "role": "code",
+      "sha256": "a2ff73376af23a0397031a801f46d077da238cb6f44f8c7ec1b9697fa7b59cc2"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_document_update.py",
+      "role": "code",
+      "sha256": "203160cd71deefef6c6b2a5ca40363d781e0449a3d1279083a845c77dd4fca9b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_enrichment.py",
+      "role": "code",
+      "sha256": "361b9a383f123e8b3b362d61794f9caa48b93892d01fbdd30787b5e0a2e5c414"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_knowledge.py",
+      "role": "code",
+      "sha256": "94d666ad1262249dbd4b95886fab3b66cd316ced6cde80fb723280c36b9e0e25"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_learning.py",
+      "role": "code",
+      "sha256": "d7664076161e8a4444cae936de74ff7243de6f96c4791864c4fbcc70a88390f4"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_legal_relations.py",
+      "role": "code",
+      "sha256": "49cc597517fd1eaa8747b531fb3ab2e151d94f4c4882d50a10311dc055dd1654"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_review.py",
+      "role": "code",
+      "sha256": "b462eed26f7d633015777ad2f3176879a6af0a2ff2c50de007e005d4ad74ed69"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_scope.py",
+      "role": "code",
+      "sha256": "8c7c8c2bbaf0335f2b2a2a699f4ae6e61cd472989e48872c0d05ab63fa091f80"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_senses.py",
+      "role": "code",
+      "sha256": "14d091dabfa52261737e271629110b51ed68de01a63730d986001734670ec7d4"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_v1.py",
+      "role": "code",
+      "sha256": "bbd100d339aaecd79521e0f5c93d478bb41ef150b5bc19f029fc2519d6bd1092"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/golden.py",
+      "role": "code",
+      "sha256": "6cda7591d989e06fd4f1350935d5c52c9ad53205ade8972f3be9f3d613981c37"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/golden_answers.html",
+      "role": "code",
+      "sha256": "70447a9e0eec56f330dac2032f44935a79a0e1d490efc709192e3179064995b4"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/golden_authoring.html",
+      "role": "code",
+      "sha256": "aaeb3ab2cb6e0878ccce0d95583c495d7b96c1c68b1610aa16863f3a80d2e591"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/golden_authoring.py",
+      "role": "code",
+      "sha256": "987315482d60418522fa9009d735d7eeaef553c13528ef14f6a5fd9e6c137cc6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/golden_exchange.py",
+      "role": "code",
+      "sha256": "cf3b30926b61ba9f59d567b998b62079cf7506e6253bb8c5cc5c521964212e3c"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/golden_registry.py",
+      "role": "code",
+      "sha256": "3d0e4a9846ecc8dd17771fd1fa4f3cf998adbd4e8f816feb5306e0eca46d63d4"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/golden_run.py",
+      "role": "code",
+      "sha256": "35c81fd8fb7f282efbb12fa2761b8be0dbc5068da372a644e675859dda949135"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/ingest_expc.py",
+      "role": "code",
+      "sha256": "acdf671750dcee30c0c94616d48541fdbaf377ae7f5e1433cd9f545195c09449"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/ingest_files.py",
+      "role": "code",
+      "sha256": "331bb1405283a6f9bb596cc690ac2d7f10ee84f7a4ea907731f7820a00c9f27f"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/ingest_fsc.py",
+      "role": "code",
+      "sha256": "d28b779bd0d67f4a7ed4d5ff89313fff9c858322107c348bee1ff1adc72ef46b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/ingest_lawxml.py",
+      "role": "code",
+      "sha256": "a61d428d750e8122b21915bb25c1553bc0dfc85afbe418b9a8e38b52bec8cc50"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/ingest_naegyu.py",
+      "role": "code",
+      "sha256": "650493313c1bc9f9afab36c86daac10affd93038f28dbc8800a22ec9bf6cf94f"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/ingest_prec.py",
+      "role": "code",
+      "sha256": "a53935f91946cde8850a07e7f9a167183f37976fedb8cf5a18afa3531535788a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/ingest_rulehtml.py",
+      "role": "code",
+      "sha256": "af97b9dfa3f1985c50f288fda81cafebde6c56592912c85057f16dae5658aaab"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/knowledge_transfer.py",
+      "role": "code",
+      "sha256": "65543ead2c1049500e6dcdf70f4d51ccddc422a6798a4288b172b8210838dd2d"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/legal_llm_wiki.py",
+      "role": "code",
+      "sha256": "2824135ebc0867e533f7b44f492cdb2c7246d00e3c7f5c5686fb04a705a90339"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/onsite.py",
+      "role": "code",
+      "sha256": "6fc5739cf6979de0aba44d59b0cc1940974d2c366f4d7f86e759db76e3601242"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/ontology.py",
+      "role": "code",
+      "sha256": "fe424570ebca7ca7814c5443c33d9cd11c459136482033274b84c9b97ef02825"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/raw_prepare.py",
+      "role": "code",
+      "sha256": "9af3bc3a30240d453b896eeae88f6d4a8fcb5d1f9dd56fefbad1b599dc5f20e6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/raw_preprocess.py",
+      "role": "code",
+      "sha256": "510aea260c5146cf6e5659ebd0ec9cca1e4ccc26848eb3cebc3049021430a45d"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/reference_model.py",
+      "role": "code",
+      "sha256": "f1e53155d93d80b9bd2b1709d5a5e105f336dbd225761e4c7a54e888c1ffbe91"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/reference_resolution.py",
+      "role": "code",
+      "sha256": "bb37e61081c3fd6cafb6654029fcb94a52285f1214294b06d36a0deb89f992d1"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/retry_adoption.py",
+      "role": "code",
+      "sha256": "3cb91db3f052aca9c4dcaa9dff3f2819c198b04f19927f91c724631fb8bd26aa"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/structure_selection.py",
+      "role": "code",
+      "sha256": "0376702d880c984bfb61518d5a252d37fa79584849d143c019e7d542fef487c6"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/task_harness.py",
+      "role": "code",
+      "sha256": "4d29d7b36991dc913ee26cc0649f73023631e5297ec92a923f4817ba8ee3a892"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/team_raw.py",
+      "role": "code",
+      "sha256": "47ec3279d0bfa359c846876dd4ff4a3754cadb7e36527b5a539668d562a52bb8"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/team_raw_refresh.py",
+      "role": "code",
+      "sha256": "9cc6f235f01b281e8a02f885722350ae373c93684eab6001ba4fe58a9efe0aab"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/unified_memory.py",
+      "role": "code",
+      "sha256": "19cd0e608643a68300398095621504ed5df152ec707e95846c2a81e40406cf8d"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/union_file.py",
+      "role": "code",
+      "sha256": "376836a6e8fa5adad4a21654804f44099597a61bd669e697b0d332faf7056bfd"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/wiki_triage.py",
+      "role": "code",
+      "sha256": "efba2e4a27f37202d61c365e8c668b0796d3c9d2f6fd4154346060c7b4d52d77"
+    },
+    {
+      "path": "02_BACKEND/lawrag/platform/__init__.py",
+      "role": "code",
+      "sha256": "295d22a04149e41831464b41ad15b329034149ec1420c23091685b9b908370ca"
+    },
+    {
+      "path": "02_BACKEND/lawrag/platform/active_data.py",
+      "role": "code",
+      "sha256": "980cebc3039e5c26bddb9553e27968b7c008f25e6b14e6905e69bae4e0ab10cb"
+    },
+    {
+      "path": "02_BACKEND/lawrag/platform/experiment_store.py",
+      "role": "code",
+      "sha256": "8068900464716ecf28361afbea03c1e8fbefa92840148cbfa47d4a6f71e39eeb"
+    },
+    {
+      "path": "02_BACKEND/lawrag/platform/main_promotion.py",
+      "role": "code",
+      "sha256": "d9c9c753aab1844e6abb1e62d9b094aacf8f7f6e226cb027a0b32e8eae049e21"
+    },
+    {
+      "path": "02_BACKEND/lawrag/platform/paths.py",
+      "role": "code",
+      "sha256": "473da4dbd00a729768444900a47e9f176e9fcb09deb12fa0e5713e0bfb989f8b"
+    },
+    {
+      "path": "02_BACKEND/lawrag/platform/release.py",
+      "role": "code",
+      "sha256": "c97488deaa2eb9fe68c0ec81072719587e06c91a27ec181adf22de6d9bbab1ba"
+    },
+    {
+      "path": "02_BACKEND/lawrag/platform/runtime_services.py",
+      "role": "code",
+      "sha256": "2e69a0478b7f948bea6f9f9df54c21bbab47449bbebaf43cb7a9845c7ea89ccd"
+    },
+    {
+      "path": "02_BACKEND/lawrag/platform/stored_paths.py",
+      "role": "code",
+      "sha256": "255b27bbb9a1745499a87901bae6e392158bc335ae7a9db6f401d5e84e817ebc"
+    },
+    {
+      "path": "02_BACKEND/lawrag/platform/workspace.py",
+      "role": "code",
+      "sha256": "fd2c528d8a9f4175eeb49719cd460df58d950821b9f64b11d22e0ac17776b814"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/__init__.py",
+      "role": "code",
+      "sha256": "ce7278ea23a9ecc8c076c977c7dce1bf2ed04f9ff0d855d8a43b249235a897ba"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/action_memory_store.py",
+      "role": "code",
+      "sha256": "fb114999f198e117db48d7c49404a9d67fbc4f26123108e0f1378b9b99eb25a6"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/app.py",
+      "role": "code",
+      "sha256": "3a6ae4c8514500443a9a04d2e7a4d75c7afe8cdd8f3d92c18339971976e72bff"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/chat_adapter.py",
+      "role": "code",
+      "sha256": "761a7bbbeb11b8320e91a199485f564dabbb11cad9b7c8049e168f2ee511b910"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/compact_handles.py",
+      "role": "code",
+      "sha256": "c04eee3f0fea9abdf9707cf93e5470e09ee7ba2f9e071eb798de0a47ce6c50f1"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/contracts.py",
+      "role": "code",
+      "sha256": "2e0dde5e4d7d4643370fda211886269f5bd48fbb037999033a944f319cf61b8f"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/control.py",
+      "role": "code",
+      "sha256": "fd439ea5ff31d77240dcea86aea3b9db9b0cd31ba6015e5e55d10d89f4b84a4e"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/document_agent.py",
+      "role": "code",
+      "sha256": "dd1210e146338f40d54d0299c6a9a7e09cbdd085b71d6903c7f845f0ccad77e9"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/document_aliases.py",
+      "role": "code",
+      "sha256": "d4700f94b19b6d143e395cfc3d526f5e6cf4129b060bc1c485231534ad5ae804"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/document_browser.py",
+      "role": "code",
+      "sha256": "d68b8ec6bcfe07972005ccf9ced8c9e301ae2929a527d254faf8797f3b5b6224"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/document_navigation.py",
+      "role": "code",
+      "sha256": "e013cd2badcd626ed39f86d3821c484665d2ce20bbc10009eb72228a17c71f20"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/document_roles.py",
+      "role": "code",
+      "sha256": "239ed2b7913d2696604fc501e9a58c3753f29a3deade8cdb3d12a39b986a8f4a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/expression_mapping.py",
+      "role": "code",
+      "sha256": "55f096298cb514f24180777baec8241b28491033911469c19a0bc7b3eafb5803"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/feedback.py",
+      "role": "code",
+      "sha256": "18ba56fc30f5c1879fe8f069e0751a7aa05d19e8b2d5c9a88efc9c62365ffe92"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/folder_navigation.py",
+      "role": "code",
+      "sha256": "7cda2cbad71b2e657b0cd4a61dd3a450a4e129a0a03400bbf6ca29bc8d35f02a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/genos.py",
+      "role": "code",
+      "sha256": "aa38920450b106e673bef0be60fc8a653491c54d8a0e9341ec3cf187a716bdf1"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/genos_backend.py",
+      "role": "code",
+      "sha256": "2ffe046f1105c319038390dcefba558c09d8c964338c299c67f20aa8cdade13b"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/genos_index.py",
+      "role": "code",
+      "sha256": "fba9f1c95596f38d854c9d0e8000262b4523e95a410914579152e5283cf72bd8"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/inherited_navigation.py",
+      "role": "code",
+      "sha256": "d8dc9f442e52d2135457b6addf0e553b3b1165ae06dc9d80674b70ea6c092d9c"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/learning_store.py",
+      "role": "code",
+      "sha256": "15a03fb3c64f57eff6715e6fb3465c7e1a97ae724c2b9809fc8f39fa6be06b72"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/__init__.py",
+      "role": "code",
+      "sha256": "3734e294abd5abedc0e47c42a7106448076c0c7f6af2f108a1cf5aeddba022a7"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/answer_stream.py",
+      "role": "code",
+      "sha256": "9e5767c941cc7143991ce260ed8bf9cdcfe727692683836a0c84a0939fad166e"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/audit_summary.py",
+      "role": "code",
+      "sha256": "726ea471d1c8db687a79908d6d01473a7e6c639041b37cc23116a90ec3b279fb"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py",
+      "role": "code",
+      "sha256": "389cbeb0ac62af8a50194ee9bc23424f764ed393f721fb68f71e97fc97f217cc"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py",
+      "role": "code",
+      "sha256": "01f45df99b48b2131de24b465e65a784bb8674d46ef1171a0b738ae682ba0e25"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/composer.py",
+      "role": "code",
+      "sha256": "76fdb1f7f1f0ecec63a42b07f615284d6041f0b2f69cab0745185ae4fe3e67b2"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/context.py",
+      "role": "code",
+      "sha256": "c24e1a3e34f052d91c31f71f6537e2c48e271cbbc888cda85037d038dad34375"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/coordinator.py",
+      "role": "code",
+      "sha256": "c4e5199e590d66b312dd1c08bad2f26adf7d8ad9680c072c18c84bc447bb6522"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "role": "code",
+      "sha256": "2b8cf11ea6e906e768352510c5dad88f0d1584ee7d8c8a77d7c844190f78659a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/deferred_publication.py",
+      "role": "code",
+      "sha256": "4f1c80a34e67abca63de41f903eae139279063f7ab8410e723c4f3d80c2661ff"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/domain.py",
+      "role": "code",
+      "sha256": "db1f7e4708bfc17efe8626f99450530f21c2ff3445af1f3ca456b70dcfe795a4"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/domain_control.py",
+      "role": "code",
+      "sha256": "d4a8ef4b289161e947ca35c46229b1c54e163da83fc3b29cdb35674139f80c3f"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/errors.py",
+      "role": "code",
+      "sha256": "dcab73c92d60e2509ee6eab407352fd33d8fc5732d5daf59015ba689048f017f"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/final_review_notes.py",
+      "role": "code",
+      "sha256": "4ae79b60e9cdb8f2ea078ec926916341ba2e8ba70e14133cf9604574e9b39744"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/gate.py",
+      "role": "code",
+      "sha256": "7dcaea45b18e0d0aa185b9d29aaf3518a3053c4ca89a72e673c82adcc0bad8ff"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/gateway.py",
+      "role": "code",
+      "sha256": "a24db461e9c999c48f5acaa0b2d3ef2de046337949f33f99d317f437447a51c4"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py",
+      "role": "code",
+      "sha256": "b9c8a4ab8ef5470c6128ca8f7794a8880d7848fb786550bae2afc4572d39507e"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/local_gemma.py",
+      "role": "code",
+      "sha256": "4b5d0abd68658cc66199e5cca53799a70294edc1944667cc307084e2d72da24d"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_binding.py",
+      "role": "code",
+      "sha256": "a2b365cee24bbcda628123cfbed06109d92d12e0c2a352a0ea1a09b284ffdf93"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_identity.py",
+      "role": "code",
+      "sha256": "2ef29ce78c4c1381d4347fd535a60a0845104eefae4d6f19c916697cc99deea6"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_methods.py",
+      "role": "code",
+      "sha256": "c8c82f538459f3c194bdb6a46f47c2c91f5e0fcfd9fb3b4d82919c0d1b1d5ea4"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+      "role": "code",
+      "sha256": "7d16983c034d5f2635837891ed3cadd54bec25f5c4a3a8f8ced5c9c367c677bd"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/numbered_references.py",
+      "role": "code",
+      "sha256": "ce16f1ab356c0db081bc024a3f65df6efb4d1f9cf5c82f5b4dfd36df8f47f2a6"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/obligation_protocol.py",
+      "role": "code",
+      "sha256": "2e8b42e4ae0cc1cb406acf7ef34d88105ef222e63cfbd5612aab73d24d94d646"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/obligation_repository.py",
+      "role": "code",
+      "sha256": "0b9eb7e239c49234073cd0c82e36e84b49b32a9db2d180c76e4d0a246cecda3e"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/packer.py",
+      "role": "code",
+      "sha256": "e96cdd61522a81e9d5ca1271b3cbe7787c82d79d3e7e42a25f571b87e7f3f89a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/protocol.py",
+      "role": "code",
+      "sha256": "455f7c65af9deaf82484dc55c189188f08d2a172b30801915000c55355d5883d"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/publication.py",
+      "role": "code",
+      "sha256": "cfb0c14510cf9755672d11eee96c324162b7984b97df606e21cb01c8292afb6d"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/question_obligations.py",
+      "role": "code",
+      "sha256": "3a37b585cad0d9b2001528f10daa1ac786e86ed11c68065ec56e4290ae0c7b87"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/readable_log.py",
+      "role": "code",
+      "sha256": "0c034b446913a9bc07af2969111cc776de91b573bd103c0a9fdd8e2b9ac5b931"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relation_cards.py",
+      "role": "code",
+      "sha256": "bfbe65c2642ac27b6fd93e5c30cd7292acc5ea09e62631d31d2c330b36fd1127"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relation_views.py",
+      "role": "code",
+      "sha256": "9e3d361aaf7becdbb95229e4128d3eabaf4a824a7876df72be17f8ced03adbaf"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relations_policy.py",
+      "role": "code",
+      "sha256": "f4aa37028258c81ac52544e60658d9b87ebe7de8c9e0c8fe339a4efaf279c7df"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relations_protocol.py",
+      "role": "code",
+      "sha256": "af08a057e84f311d49b23b45d5c87d8bac3d35c5d295ad48b26be59d01064194"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relations_repository.py",
+      "role": "code",
+      "sha256": "3b7360fa5e3c6b564b2af0551dd09f1844552628ca9ae2d808bb7f7cbcac2d7a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relations_session.py",
+      "role": "code",
+      "sha256": "b06028e8d585bb677344b59e3afb9dd0ee55499aad125958a2748090d391fdd4"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relations_tools.py",
+      "role": "code",
+      "sha256": "f9adfd69925573f2b439f5663410d069fa81e5bf83d5a666a3e20b5463e64a1a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/reviewer.py",
+      "role": "code",
+      "sha256": "ead7405793a7acc3394d7b418e7c9b946833d5f491beda0f761a77507def4608"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/session.py",
+      "role": "code",
+      "sha256": "ba6bcc84aa6ba2f53b9f6cefede3f23f16548c2e3869cbfc517dc2f216a24db6"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_bundle.py",
+      "role": "code",
+      "sha256": "d3a7dbedbd0af9bc34655e6e61c96aef5db8b178ad85bf262b73208dbe8559e3"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_candidates.py",
+      "role": "code",
+      "sha256": "a9b7787599cd76794e1627904433feb65782a8e1c82357904b264f8930e55374"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py",
+      "role": "code",
+      "sha256": "965eae11825a387b3f4882a8c0166f5c876540621e1d19fb03b00d2bfe381b0f"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall.py",
+      "role": "code",
+      "sha256": "90aa66f626456eb3697a8281380dc55e46d2e96b1453be3d50dec7c404f9ba5a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py",
+      "role": "code",
+      "sha256": "8286643a5836e6261a2d0b05c7d073ad6e84e1c33faa55b02c533b45fbb05e94"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_selection.py",
+      "role": "code",
+      "sha256": "0e397b1e13ea6cfe1a8c6e593c5858deaf159a7bd56cc26d3b36a449c3a44090"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_tiers_ui.py",
+      "role": "code",
+      "sha256": "367195100b8f2bb788695fc042cde0f31885dfdf15febe7d2ce5863c086e52e2"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/stages.py",
+      "role": "code",
+      "sha256": "f1ecd29b3e3246953dc4a2b864d574ea883479c61664b316a55b8fee0c08b9b0"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/structure_query.py",
+      "role": "code",
+      "sha256": "4525a7b6e0c2c0107cce3630d078b847cba75c43f6e27d017aafb50a874d6153"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tiers_policy.py",
+      "role": "code",
+      "sha256": "1dbb7bfab268cb104fa2ef264f6e86e7798732c3bbb873235d0d9c2698e5bb18"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tiers_protocol.py",
+      "role": "code",
+      "sha256": "df4276bbb6b12e923e32ddeb97c532503eea7e61de6b76d0d394afd723941759"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tiers_repository.py",
+      "role": "code",
+      "sha256": "ab4e40edaab04edfb415164dd83f8a6c8ab8a0029932725f30db27b7b6473013"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tiers_session.py",
+      "role": "code",
+      "sha256": "ae4315cbfe9299019cacba5b382c67e7d5c88601b6ce4c98ef8e5e1b3b1c4a38"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tiers_tools.py",
+      "role": "code",
+      "sha256": "19069c0ddb9ba6697416bb754656258fcce80d907f7fa055789164618197b578"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tiers_views.py",
+      "role": "code",
+      "sha256": "fbbc1b3219055125f05d8a528547cedbc1332ce8da8730f56a4a9a59995f12e0"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tools_policy.py",
+      "role": "code",
+      "sha256": "17c6b96db649d55fb3f2e1f1dc029fc8c9ef4d470ff8fca5340bbf3506d8c80f"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tools_protocol.py",
+      "role": "code",
+      "sha256": "49baa5718a940648b8df12329567ca55a897d3760885d061e13991ea21522c3d"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tools_repository.py",
+      "role": "code",
+      "sha256": "e9ec5c0a234e2902552732b5034d707ba95e88081b1e30fd98bab86635353f46"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tools_session.py",
+      "role": "code",
+      "sha256": "fbd91447fea34256758c2846659225a3d744e52156eb4eef1c6c955769cf6235"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/transport.py",
+      "role": "code",
+      "sha256": "af077e6b8abbfedbcbd5f3e0d8ed75b91b2c925ec5989c02b7824c08e51f558f"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_publication.py",
+      "role": "code",
+      "sha256": "634a2d722b11d613c3503ee9e3058d46f821050af7fe277e81a3a19d333d5ac6"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+      "role": "code",
+      "sha256": "998feb32c6a175a619df12b49ea221aa2b9e5e6cc7a8c5564e5b9925777f7b01"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_repository.py",
+      "role": "code",
+      "sha256": "53a6cfc10f7fc05e061b61925a72a3f52549b586751891cd5816647ecbbdbaef"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "role": "code",
+      "sha256": "2f5dceb9d45fc1f74a21b2c61a34d49b82696c3ceb28748c61cbb2bd5b596f35"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "role": "code",
+      "sha256": "886ce967405428c76401fca2f476f98c588fe60ee3b103039a8eef95021a9c36"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+      "role": "code",
+      "sha256": "e717ac2d74b4c74de974390425c5bc3b3f3da8e4e91e64a164a6bcbb05c546e9"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_selection.py",
+      "role": "code",
+      "sha256": "2477a5cccb1a382f23602bc535d51701c79045aade8021ad8b5c1ac61350cc8f"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/updates.py",
+      "role": "code",
+      "sha256": "475dfaa15cbf0dfbebd9fd9650c335b8f5ebe6b92489e93322abeef8837b0d8d"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/views.py",
+      "role": "code",
+      "sha256": "32122598e6646472bdb870a3fefe2dad8662fa7b138d7a58e3244f342b5e79bf"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py",
+      "role": "code",
+      "sha256": "1b6cba4c059e4a4048c92aa219ebe4e2c97f8a709781d3506ac7b8260ea0d74a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_protocol.py",
+      "role": "code",
+      "sha256": "df19794c4e54f2422d9d28f201e4e1eb9039fe990f9f3bc23d8da92b7141ab1f"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py",
+      "role": "code",
+      "sha256": "29fd4b74e56128b3b691e964b772dc166daa3f46716dfa12ad183c51ab3afe92"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_tools.py",
+      "role": "code",
+      "sha256": "5268853b6955a1a6e47c80bc214105303e1699dd707a26a9334034bf137c62ab"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py",
+      "role": "code",
+      "sha256": "308d71342f7c6625a2f766d4cfa6584aebda688f30e889c0001d59786e32d143"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent_adapter.py",
+      "role": "code",
+      "sha256": "23661c4c54650ecfbf3e9db9326eb3b450c05982547958b838b57cc7832f6df1"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_navigation.py",
+      "role": "code",
+      "sha256": "e08a3da369e4933fbef41a00528c5fc796422920b0b0b7b6a0a069faf06f44da"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/moleg_links.py",
+      "role": "code",
+      "sha256": "a3b31a180a640f9e9e60910ebd3463afa2b5385acea8517f69345e34d8247c0e"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/multi_entry_navigation.py",
+      "role": "code",
+      "sha256": "93a7a36cf6e00d0a2f325c1d1f2585f2ec9d09c174a606b9d076f813c2c5807a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/navigation_agent.py",
+      "role": "code",
+      "sha256": "c4ea627d88484fe392bd682c94d817be8ec83944e467e580a4176de8c613765c"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/navigation_learning.py",
+      "role": "code",
+      "sha256": "274d2b3879fbdc5644a1a2bbc3fef4377729c3a1b0d9211f21b526368e57d59f"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/navigation_loop.py",
+      "role": "code",
+      "sha256": "0ecf0bfae2f9b378c014b5877db0826780648fa7f1400ece5cbe57bace5df28d"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/navigation_match.py",
+      "role": "code",
+      "sha256": "d502d78555c6891f210dd1566f28d7e0060b71f61bdaaecdfd7659c34a41c744"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/navigation_work_state.py",
+      "role": "code",
+      "sha256": "042726aebdfc1e1b0aeca5c9288d2658f04d6e98d0a3f0a6b2387445ff1756ce"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/observability.py",
+      "role": "code",
+      "sha256": "40f83aa44a3df33e4736095bcb8722345fa4f5afd8d6497e3dc7eaba3dc83c28"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/pipeline.py",
+      "role": "code",
+      "sha256": "342ad8fbe637a236655c60154e8a042e89472cec093ba12a279f5721f06ca157"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/progress.py",
+      "role": "code",
+      "sha256": "07e0c1bdcf0ec81cdbaf6c93ee62cde21f8dc845938c7a0759c4733559238577"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/provider.py",
+      "role": "code",
+      "sha256": "ad4f5063359c3efa361e73662c5784fd554ff1a3b73aaeaeef6a68d574b6f811"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/reference_resolution_protocol.py",
+      "role": "code",
+      "sha256": "3d8a6baa411b28f15c5d7e30e4b33db2eaea054a65d0263fb27fa943a7c56fa2"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+      "role": "code",
+      "sha256": "dac43c4bfe88ea929f361725cfbcb67d154fc371ccc4addeb473d1a8bc5af0bc"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/reference_spans.py",
+      "role": "code",
+      "sha256": "e67da69d62cb40c4af410e61039e9617678bbf23f4db3322a904cb0e6458bc7f"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/relation_issues.py",
+      "role": "code",
+      "sha256": "5493d0180ebb2b2095917d02496ba0fc78aaac21819bc8a6ea662a2e7c2e2915"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/release_integration.py",
+      "role": "code",
+      "sha256": "0b8de265cd32e65c703242eae20f3916e39a6a566c00956460f0df3cdd4b6f6b"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/request_report.py",
+      "role": "code",
+      "sha256": "eec7535f94f5b398a2a26b6507e1b2d925bf5634e56c94ba76f50e60a8a8790c"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/request_summary.py",
+      "role": "code",
+      "sha256": "8851df80264431a79685cf499ba56fb16bb7293ef8003527bfc8433ed2956c8a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/stage_runner.py",
+      "role": "code",
+      "sha256": "92c02ce7358d5075a2d95d4df0aec6957ac744afd7ac1deb4d5b9873dd95c93f"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/stages.py",
+      "role": "code",
+      "sha256": "ace52cf958806049b90f7f73a887e522c3b711096cd2c54234acbb231d9a6b4d"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/structure_navigation.py",
+      "role": "code",
+      "sha256": "8bc8acd92913bacb58f2c79c5af9c1bd934bee7d14858f3608b1432ee2637587"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/task_harness.py",
+      "role": "code",
+      "sha256": "71eb89e9a5af2344d0ea79b4beec7e429cdad131a51bff3c6cef87df64426217"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/task_harness_agent.py",
+      "role": "code",
+      "sha256": "c6d8e225c0dd145368faa852d68080bc813ff75b0f03c890e61442fe76d889d5"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/task_policy.py",
+      "role": "code",
+      "sha256": "4bf282d856c284c371d24fc6f88f873717bf348a94d05d25439caa11967d4557"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/team_scope.py",
+      "role": "code",
+      "sha256": "84cab33c67554d8b3ef1e840bc1b980b7494d3115e74df96a5ea29c4b9a671c7"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_agent.py",
+      "role": "code",
+      "sha256": "647b75a49e959127f6c4568e32d5a5c81e275e4e4fd5b7a407611f14110f8c52"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_morph.py",
+      "role": "code",
+      "sha256": "e873c9445fbb3d430a1bf21e469a4b0e85ae49c3eba2348c05d032e4a698d004"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_tools.py",
+      "role": "code",
+      "sha256": "88333de63c897d652e2290e1353a0173bea81a2873a35e8b95f35675f7190d16"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/typed_navigation.py",
+      "role": "code",
+      "sha256": "36a0544d435d60b007f725d95d4249c60ae30d49ef29f5612e51121b1d1537cb"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/vector.py",
+      "role": "code",
+      "sha256": "d5aefa9fffdea12d6808472b10e99c3adb4f4e8cc8e39f9b7e2457bb93bef1ea"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/work_navigation.py",
+      "role": "code",
+      "sha256": "da30a67888d93fbd094a1b7725bba23e02a42647b1f022061e21808a3e645373"
+    },
+    {
+      "path": "06_TOOLS/OFFLINE/genos_meaning_variants.py",
+      "role": "code",
+      "sha256": "2c744af2d13236bb5c80b7cb0187c8b89917643a01c2a82b2373431d06e6996f"
+    },
+    {
+      "path": "06_TOOLS/OFFLINE/genos_reindex_logging.py",
+      "role": "code",
+      "sha256": "07563dc994468a67405251811f4de8a400633366434d8ea3c042a1185544a974"
+    },
+    {
+      "path": "requirements-pipeline.txt",
+      "role": "code",
+      "sha256": "bbb62a4604faf8da3afc7642b04ab52f9b2f43aea31cf9966722a8175a6f4ce5"
+    },
+    {
+      "path": "requirements-serving.txt",
+      "role": "code",
+      "sha256": "bbb62a4604faf8da3afc7642b04ab52f9b2f43aea31cf9966722a8175a6f4ce5"
+    },
+    {
+      "path": "requirements.txt",
+      "role": "code",
+      "sha256": "f756679e3c476656e938b5d1a71db47958e78cbc6cfb6995b56d9f0fc35173a5"
+    },
+    {
+      "path": "service/service.py",
+      "role": "code",
+      "sha256": "c13c68119144a0991754ae5542996c8d0ed3affc1638248a18984b82723436b5"
+    }
+  ],
+  "experiment": "ADR-0634-experiment-v1/compact",
+  "activated": false,
+  "requires_rebuilt_generation": true
+}

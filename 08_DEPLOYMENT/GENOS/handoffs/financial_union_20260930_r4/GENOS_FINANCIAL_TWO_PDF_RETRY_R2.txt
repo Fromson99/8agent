@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+
+# Run only the two registered financial PDFs that failed structure review.
+# This creates a new run and never changes the current serving generation.
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-financial-two-pdf-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+DEPLOY_ROOT="${DEPLOY_ROOT:-/home/genos/DEV}"
+GENOS_DATA_ROOT="${GENOS_DATA_ROOT:-$DEPLOY_ROOT/01_DATA}"
+RUN_ID="${RUN_ID:-financial-pdf-two-retry-20260930-r2}"
+PYTHON_BIN="${PYTHON_BIN:-$DEPLOY_ROOT/.venv/bin/python}"
+if [[ ! -x "$PYTHON_BIN" ]]; then PYTHON_BIN="$(command -v python3)"; fi
+[[ -x "$PYTHON_BIN" ]] || { echo 'Python 3 required'; exit 2; }
+[[ "$(realpath "$GENOS_DATA_ROOT")" == "$(realpath "$DEPLOY_ROOT/01_DATA")" ]] || {
+  echo 'Data root differs from the pipeline workspace 01_DATA'; exit 2;
+}
+DATA_ROOT_REAL="$(realpath "$GENOS_DATA_ROOT")"
+SCOPE_REL='CATALOG/SCOPES/financial-pdf-two-retry-20260930.json'
+printf 'START run=%s data=%s\n' "$RUN_ID" "$DATA_ROOT_REAL"
+"$PYTHON_BIN" - "$DATA_ROOT_REAL" "$SCOPE_REL" <<'PY'
+import hashlib
+import json
+import os
+from pathlib import Path
+import sys
+
+data, rel = Path(sys.argv[1]), sys.argv[2]
+source = data / 'CATALOG/SCOPES/photo-required-80-hwpx-20260917.json'
+layout_path = data / 'CATALOG/TEAM_LAYOUT.json'
+expected_scope_sha = 'aba1df17dbd2648203cf3ceb9719b784f398822bdaf7a163f566765b7cd3025f'
+def digest(path):
+    h = hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            h.update(chunk)
+    return h.hexdigest()
+if digest(source) != expected_scope_sha:
+    raise ValueError('photo61 scope changed')
+scope = json.loads(source.read_text(encoding='utf-8'))
+layout = json.loads(layout_path.read_text(encoding='utf-8'))
+docs = []
+for original in scope['documents'][32:34]:
+    files = []
+    for item in original['files']:
+        rows = [(path, row) for path, row in layout['files'].items()
+                if path.startswith('RAW/external/financial_team/')
+                and row.get('source') == 'external'
+                if row.get('scope_document') == original['name']
+                and row.get('team') == 'financial_team'
+                and row.get('sha256') == item['sha256']
+                and row.get('role') == item['role']]
+        if len(rows) != 1:
+            raise ValueError('one exact financial RAW registration required: ' + original['name'])
+        path, _ = rows[0]
+        raw = data / path
+        if not raw.is_file() or raw.is_symlink() or digest(raw) != item['sha256']:
+            raise ValueError('registered RAW hash differs: ' + path)
+        files.append({**item, 'path': path})
+    docs.append({**original, 'files': files})
+if [d['name'] for d in docs] != ['기업공시서식 작성기준(2026.8.3 시행)', '별지서식(2026.7.28 시행)']:
+    raise ValueError('two PDF selection differs')
+retry = {'schema_version': 'document-build-scope-v1',
+         'scope_id': 'financial-pdf-two-retry-20260930',
+         'policy': 'Only two exact financial PDF bodies; preserve photo61 versions and existing generations.',
+         'provenance': [{'path': str(source.relative_to(data)), 'sha256': expected_scope_sha}],
+         'documents': docs}
+target = data / rel
+target.parent.mkdir(parents=True, exist_ok=True)
+content = json.dumps(retry, ensure_ascii=False, indent=2) + '\n'
+if target.exists():
+    if target.read_text(encoding='utf-8') != content:
+        raise ValueError('retry scope already exists with different content')
+else:
+    temporary = target.with_name(target.name + '.tmp-' + str(os.getpid()))
+    try:
+        temporary.write_text(content, encoding='utf-8')
+        os.replace(temporary, target)
+    finally:
+        temporary.unlink(missing_ok=True)
+print('TWO_PDF_SCOPE=' + str(target))
+print('TWO_PDF_SCOPE_SHA256=' + digest(target))
+PY
+cd -- "$DEPLOY_ROOT"
+"$PYTHON_BIN" -u 06_TOOLS/COMMANDS/genos_data_stages.py \
+  --run-id "$RUN_ID" --document-scope "$DATA_ROOT_REAL/$SCOPE_REL" --check-only
+"$PYTHON_BIN" -u 06_TOOLS/COMMANDS/genos_data_stages.py \
+  --run-id "$RUN_ID" --document-scope "$DATA_ROOT_REAL/$SCOPE_REL" \
+  --stage structure --execute
+printf 'RESULTS %s\n' "$DATA_ROOT_REAL/LOGS/$RUN_ID"

@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Complete executable handoff: keep this TXT beside the matching ZIP.
+set -Eeuo pipefail
+umask 077
+launcher_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+mkdir -p "$launcher_dir/logs"
+launcher_log="$launcher_dir/logs/v6-main-bootstrap-$(date -u +%Y%m%dT%H%M%SZ)-$$.log"
+exec > >(tee -a "$launcher_log") 2>&1
+trap 'bootstrap_exit=$?; trap - EXIT; printf "BOOTSTRAP_EXIT=%s LOG=%s\n" "$bootstrap_exit" "$launcher_log"; exit "$bootstrap_exit"' EXIT
+printf 'HANDOFF_BOOTSTRAP LOG=%s\n' "$launcher_log"
+python3 - "$launcher_dir" <<'PYVERIFY'
+from pathlib import Path,PurePosixPath
+import hashlib,sys,zipfile,stat
+root=Path(sys.argv[1]);stem='GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2';archive=root/(stem+'.zip')
+if hashlib.sha256(archive.read_bytes()).hexdigest()!='164f415809c3d07c55517a01cff6c315fa03de655a46e6cd9732acc2cae8235f':raise ValueError('handoff ZIP hash mismatch')
+with zipfile.ZipFile(archive) as z:
+ if len(z.namelist())!=len(set(z.namelist())):raise ValueError('duplicate ZIP member')
+ for info in z.infolist():
+  path=PurePosixPath(info.filename)
+  if path.is_absolute() or '..' in path.parts or path.parts[0]!=stem or '\\' in info.filename or stat.S_ISLNK(info.external_attr>>16):raise ValueError('unsafe ZIP member')
+  target=root/str(path)
+  if any(p.is_symlink() for p in [target,*target.parents]):raise ValueError('symlink extraction path')
+  raw=z.read(info)
+  if target.exists():
+   if target.read_bytes()!=raw:raise ValueError('existing handoff file changed: '+str(path))
+  else:
+   target.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
+   with target.open('xb') as f:f.write(raw)
+   target.chmod(0o600)
+print('HANDOFF_ZIP verified SHA256='+'164f415809c3d07c55517a01cff6c315fa03de655a46e6cd9732acc2cae8235f')
+PYVERIFY
+handoff_dir="$launcher_dir/GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2"
+set -Eeuo pipefail
+umask 077
+handoff_mode="${1:-check}"
+handoff_root="$(cd -- "${MAIN_DEV_ROOT:-$HOME/DEV}" && pwd -P)"
+handoff_runtime="${GENOS_RUNTIME_DIR:-/nfs-root/diamo/8-agent/runtime}"
+mkdir -p "$handoff_dir/logs"
+handoff_log="$handoff_dir/logs/$(date -u +%Y%m%dT%H%M%SZ)-${handoff_mode}-$$.log"
+exec > >(tee -a "$handoff_log") 2>&1
+trap 'handoff_exit=$?; trap - EXIT; printf "HANDOFF_EXIT=%s MODE=%s LOG=%s\n" "$handoff_exit" "$handoff_mode" "$handoff_log"; exit "$handoff_exit"' EXIT
+printf 'HANDOFF_START ROOT=%s RUNTIME=%s MODE=%s\n' "$handoff_root" "$handoff_runtime" "$handoff_mode"
+cd "$handoff_root"
+python3 "$handoff_dir/verify.py"
+case "$handoff_mode" in
+ check) python3 "$handoff_dir/apply.py" --root "$handoff_root" --archive "$handoff_dir/code.zip" ;;
+ apply)
+  python3 "$handoff_dir/apply.py" --root "$handoff_root" --archive "$handoff_dir/code.zip" --apply
+  python3 "$handoff_dir/verify.py" --root "$handoff_root"
+  ;;
+ verify) python3 "$handoff_dir/verify.py" --root "$handoff_root" ;;
+ runtime)
+  python3 "$handoff_dir/runtime_check.py" --runtime "$handoff_runtime"
+  printf 'Set these in CODE-SERVING revision (shell exports alone do not configure it):\n'
+  printf 'GENOS_RUNTIME_DIR=%s\nGENOS_MEMORY_JOURNAL_MODE=DELETE\nGENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6\n' "$handoff_runtime"
+  ;;
+ gate)
+  : "${GENOS_GENERATION:?Set the exact existing serving generation absolute path; do not use an unfinished reindex directory}"
+  python3 "$handoff_root/06_TOOLS/COMMANDS/genos_release_gate.py" --code-zip "$handoff_dir/code.zip" --deploy-root "$handoff_root" --generation "$GENOS_GENERATION"
+  ;;
+ rollback)
+  : "${2:?Supply the exact code backup folder printed at apply}"
+  python3 "$handoff_dir/apply.py" --root "$handoff_root" --rollback "$2"
+  ;;
+ *) printf 'Modes: check apply verify runtime gate rollback\n'; exit 2 ;;
+esac

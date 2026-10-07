@@ -1,0 +1,73 @@
+R2 추가 현장 검증 (2026-10-02)
+
+기존 R2 코드 ZIP은 변경하지 않았습니다. R1 대신 R2를 사용합니다.
+이 메일의 ZIP, R2.txt, R2_VERIFY.txt를 동일 폴더에 저장합니다.
+기존 R2_GUIDE_UTF8.txt의 적용/롤백/인증 설정이 정본입니다.
+아래 명령은 GENOS 코드스페이스에서 python3를 사용합니다.
+
+1. 기존 ~/DEV에 코드 적용 (미적용일 때만)
+   bash GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2.txt check
+   bash GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2.txt apply
+   기존 파일별 백업을 보존합니다. 데이터 CURRENT는 바꾸지 않습니다.
+
+2. 셸의 검사 대상 설정 (리비전 환경 설정과 별개)
+   export MAIN_DEV_ROOT="$HOME/DEV"
+   export GENOS_RUNTIME_DIR=/nfs-root/diamo/8-agent/runtime
+   export GENOS_MEMORY_JOURNAL_MODE=DELETE
+   export GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6
+   export SEMANTIC_LLM_BACKEND=genos
+   export GENOS_GENERATION='<기존 검증된 실제 generation 절대경로>'
+   꺾쇠 값은 반드시 교체합니다. 미완료 fulltext 재색인 폴더를 선택하지 않습니다.
+   bash GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2_VERIFY.txt preflight
+   bash GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2_VERIFY.txt storage
+   storage는 고유 storage-checks 하위의 작은 DB로 쓰기/롤백/DELETE/동일 호스트 잠금을 확인합니다.
+   실제 업무 DB를 쓰거나 변경하지 않습니다. 서로 다른 NFS 클라이언트의 잠금을 인증하지 않습니다.
+
+3. 기존 ~/DEV의 diff 검토, git diff --check 후 검증할 코드 commit
+   자동 commit/push는 없습니다. commit한 checkout에서 다음 게이트를 실행합니다.
+   bash GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2_VERIFY.txt gate
+   모든 ZIP 파일의 Git 추적 상태와 실제 바이트, 선택 generation의 서빙 자산을 검사합니다.
+   큰 NFS 자산 해시는 오래 걸릴 수 있습니다. 실패 시 pin/manifest 해시를 덮어쓰지 않습니다.
+   통과한 commit을 push하고 같은 commit/generation의 코드서빙 리비전을 배포합니다.
+   코드나 pin을 고친 경우 다시 commit하고 gate를 재실행합니다.
+
+4. 코드서빙 리비전에 실제 환경변수 설정
+   main.py의 /chat 경로를 플랫폼 워크플로우와 연결합니다. 기존 GUIDE의 requirements/설정 참조.
+   리비전에도 2번의 runtime, journal, implementation, backend, 실제 generation을 설정합니다.
+   내부 모델 설정은 기존 유효한 GENOS 값 유지. v5 LEGAL_AGENT_PROFILE/HASH override는 GUIDE 참조.
+   shell export만으로 배포 리비전 설정이 바뀌지 않습니다. replica=1/worker=1.
+   기존 프로세스와 새 프로세스의 동시 쓰기를 중단하고 구 runtime은 그대로 보존합니다.
+   개인 기억 검증은 서명된 어댑터 입력 또는 플랫폼 인증 전달이 먼저 확인되어야 합니다.
+   플랫폼 사용자/세션과 헤더 전달이 미확인인 상태에서 trust를 켜거나 user_id를 위조하지 않습니다.
+
+5. 워크플로우 테스트 화면에서만 테스트
+   bash GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2_VERIFY.txt inputs
+   생성된 01~07 JSON은 입력 예시입니다. 꺾쇠 질문을 현장 실제 질문/조건으로 교체합니다.
+   01 __verify__는 등록 탐침일 뿐 모델/RAG/저장 검증이 아닙니다.
+   02 warmup 후 03 status 결과의 success/readiness/generation을 확인합니다.
+   04 질문 → 같은 대화에서 05 실제 조건 수정 → 06 최종 확정 저장 순서로 실행합니다.
+   조건 수정 전의 근거/판단이 새 답변에 잘못 유지되는지 원문·버전·인용을 직접 확인합니다.
+   07 새 대화의 같은 조건 질문에서 확정 경험이 실제로 재사용되는지 출력/추적을 확인합니다.
+   워크플로우의 code/data 전체 출력 JSON을 코드스페이스에 answer.json, confirmed.json으로 저장합니다.
+   bash GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2_VERIFY.txt answer answer.json
+   bash GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2_VERIFY.txt wiki confirmed.json
+   wiki 모드는 status=STORED인 확정 응답을 사용합니다. 수정 전 응답이면 최신 응답으로 다시 검사합니다.
+   일반 임시 질문이나 __verify__로 개인 기억/위키 저장 성공을 판정하지 않습니다.
+
+6. 검사 결과의 의미와 수동 확인
+   answer: R2 native adapter, in-process, v6 응답, 완료 run, 실제 선택 세대/해시/NFS 경로를 확인.
+   wiki: 위 검사 + case DB schema3/DELETE, 최종 경험 ACTIVE/해시/리비전,
+         user_wiki·legal_wiki의 동일 경험/판단 참조/Markdown 반영을 읽기 전용으로 확인.
+   이 두 위키는 v6 개인 해결 경험입니다. 미사용 기존 legal_llm_wiki와 별개입니다.
+   SQLite 검사에 원본 질문·사용자 ID·키를 로그 출력하지 않습니다. 결과 JSON은 내부에만 보존합니다.
+   저장 파일 존재만으로 법률 답변 품질이나 권한 격리를 인증하지 않습니다.
+   다른 실제 플랫폼 사용자/팀에서 개인 경험이 노출되지 않는지, 새 대화에서 올바른 경험을
+   재사용하는지 워크플로우 화면에서 수동 확인합니다. 출력 전 표시가 실시간인지도 현장 확인합니다.
+   실제 배포 commit, 코드서빙 리비전, 그 리비전 환경 설정/선택 generation은 플랫폼에서
+   별도로 확인해 기록합니다. 스크립트는 코드스페이스 HEAD를 배포 HEAD로 추정하지 않습니다.
+
+모든 실행은 시작부터 field-verification/<UTC>-<mode>-<pid>/verification.log에 기록하며
+종료 코드 FIELD_EXIT를 남깁니다. Python 검사 모드는 receipt.json도 남깁니다.
+PASS는 출력된 scope에 한정됩니다. 배포/워크플로우 실행 전은 현장 검증 미완료입니다.
+실패해도 업무 DB/CURRENT/기존 runtime을 자동 삭제하거나 수정하지 않습니다.
+롤백: 기존 R2.txt rollback '<apply 출력의 정확한 백업 폴더>'와 이전 리비전/검증 세대 사용.

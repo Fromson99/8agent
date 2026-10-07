@@ -1,0 +1,40 @@
+GENOS 진행 표시 교체 — reasoner-display-20261001-r1
+
+사진의 Visible Reasoner 전송 형식을 법률 RAG 워크플로우에 적용합니다.
+기존 rag-progress-v1을 읽고 agentFlowExecutedData 누적 배열로 보냅니다.
+각 노드는 nodeId / nodeLabel=Visible Reasoner / status=FINISHED /
+data.output.content=JSON 문자열(visible_rationale)을 사용합니다.
+FINISHED는 해당 진행 알림 노드의 전달 완료이며 전체 요청 완료를 뜻하지 않습니다.
+기존의 작업 단계·열람 결과·커밋된 판단 요약만 표시합니다.
+
+적용:
+1. 현재 워크플로우 Python 전체와 환경 설정을 별도 백업합니다.
+2. GENOS_REASONER_DISPLAY_20261001_R1_WORKFLOW.py 전체를 같은 Python 단계
+   편집기에 교체합니다. 진입점은 run, 기존 입력 연결을 유지합니다.
+3. 워크플로우 환경에서 GENOS_RAG_PROGRESS_UI=socketio를 설정합니다.
+   주소·코드서빙 ID·인증키·TEAM_ID·timeout은 기존 값을 유지합니다.
+4. 저장·배포하고 채팅 앱을 새 워크플로우 리비전에 연결합니다.
+
+확인:
+워크플로우 테스트 화면에서 {"API_TYPE":"WORKFLOW_SETTINGS"} 입력:
+progress_display_revision=reasoner-display-20261001-r1,
+progress_mode=socketio인지 확인합니다.
+같은 화면에서 {"question":"SSE_CHECK"}로 기존 전송 경로를 확인합니다.
+채팅 소켓이 있는 실행에서 단계가 최종 답변 전에 누적 표시되고,
+진행 문구가 답변 본문에 섞이지 않으며 답변·출처가 중복되지 않는지 확인합니다.
+테스트 입력의 socketIOClientId를 임의로 만들지 않습니다.
+소켓 ID가 없는 테스트 실행에서는 실시간 표시 없이 최종 dict를 반환합니다.
+
+영향과 복구:
+변경 대상은 워크플로우 진행 표시와 표시 revision 진단뿐입니다.
+검색·모델 호출·최종 text·답변 SSE·숫자 참조 제거·출처·팀 범위·warmup·오류
+처리는 기존 경로입니다. 코드서빙·데이터·generation·CURRENT·로컬 MAIN은
+이번 변경으로 교체되지 않습니다. 코드서빙 재배포는 필요하지 않습니다.
+기존 본문 진행 표시가 필요하면 GENOS_RAG_PROGRESS_UI=socketio-inline을 씁니다.
+완전 원복은 백업한 Python과 환경 설정을 복구하고 이전 워크플로우 리비전을 연결합니다.
+socketio-final(기본값)은 답변만 표시하며 off는 소켓 출력을 끕니다.
+
+로컬 검증: 관련 계약·회귀 118개 통과. Python 3.10 문법 검사 통과.
+GENOS 현장 편집기 적용·배포·실시간 렌더링은 아직 미확인입니다.
+원문·키·내부 모델을 외부 호출하지 않았습니다.
+편집기 교체 파일 SHA256: 180502db2d24b68d8bbce74ca16a56ed5791b83b0710b6621ab210f99796d581

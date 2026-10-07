@@ -1,0 +1,36 @@
+{
+  "contracts.xml": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "90",
+    "time": "11.233",
+    "timestamp": "2026-10-06T13:25:31.336659+09:00",
+    "hostname": "hjson"
+  },
+  "shipped-code-contracts.xml": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "55",
+    "time": "10.994",
+    "timestamp": "2026-10-06T13:27:05.946125+09:00",
+    "hostname": "hjson"
+  },
+  "syntax_python311": "PASS",
+  "bash_and_embedded_python": "PASS",
+  "javascript_excluded": true,
+  "code_git_gate": "PASS",
+  "prepared_checkout_commit": "a3f9c523ec798f961da3808fd36017f1c12deaa4",
+  "local_public_generation_check": {
+    "path": "/home/jin/8-AGENT/01_DATA/TERM_RELEASES/pecab-only-public-main-20260929-v1/generation",
+    "manifest_sha256": "7bce6155aa762f2e9cc1453e7622b3186f47ad772cc7cd5251ad7fbc1235dabf",
+    "generation_e2e": "PASS",
+    "full_gate": "FAIL",
+    "failure": "glossary compiler/cache binding mismatch",
+    "genos_equivalence": false
+  },
+  "genos_execution": "NOT_EXECUTED"
+}

@@ -1,0 +1,455 @@
+#!/usr/bin/env bash
+# GENOS 로딩 / FULLTEXT 로그 분리 — 2026-09-28 R1
+# 전달 파일: 이 TXT 한 개. 표준 라이브러리만 사용하며 코드/데이터 배포 없음.
+# 실행: cd -P ~/DEV
+#       bash TRANSFER/GENOS_BOTTLENECK_20260928_R1.txt
+# 기본: 기존 공유 요청 기록에서 최근 10개 입력 선택.
+# 결과: ~/DEV/TRANSFER/bottleneck-reports/<시각-고유번호>/요약.txt
+#       요청별 로딩.txt / FULLTEXT.txt
+# 팀 지정: 위 명령 뒤에 --team risk_team --limit 5
+# 경로 지정: --root /실제/공유/로그/경로
+# 특정 로그: --input /실제/요청.json (또는 .log/.txt/.jsonl)
+# 특정 요청: --request-id <request_id>
+# 결과 경로: --output /쓰기/가능한/경로
+# WARMUP은 현재 공유 요청 기록에 저장되지 않음. 저장한 컨테이너 로그를 --input으로 지정.
+# 세부 step 로그가 없으면 미확인으로 표시. GENOS_LOG_LEVEL=DEBUG로 기록된 로그에서 세부 분리 가능.
+# 기존 워크플로우 테스트 화면에서 실행된 질문 로그를 사용. 새 질의/모델 호출 없음.
+# 실패도 실행 로그와 요약.txt로 보존. 재실행은 별도 결과 폴더를 만들며 원본은 유지.
+set -Eeuo pipefail
+umask 027
+task_runlog_dir="${GENOS_BOTTLENECK_RUN_LOG_DIR:-${GENOS_BOTTLENECK_OUTPUT:-$PWD/TRANSFER/bottleneck-reports}/execution}"
+mkdir -p -- "$task_runlog_dir"
+task_runlog="$task_runlog_dir/EXTRACT_$(date -u +%Y%m%dT%H%M%SZ)_$$.txt"
+exec > >(tee -a "$task_runlog") 2>&1
+trap 'task_exit_code=$?; printf "exit_status=%s\n" "$task_exit_code"' EXIT
+printf 'GENOS bottleneck-extract-20260928-r1\n실행 로그: %s\n' "$task_runlog"
+task_python="${GENOS_BOTTLENECK_PYTHON:-}"
+if [[ -z "$task_python" ]]; then
+    if [[ -x "$PWD/.venv/bin/python" ]]; then
+        task_python="$PWD/.venv/bin/python"
+    else
+        task_python=python3
+    fi
+fi
+"$task_python" - "$@" <<'GENOS_BOTTLENECK_PYTHON'
+#!/usr/bin/env python3
+"""Split existing GENOS loading/fulltext measurements into standalone TXT reports.
+
+Read-only inputs; standard library only. No application imports or model calls.
+Supports completed request JSON, container JSONL, live LOG and readable TXT.
+"""
+from __future__ import annotations
+
+import argparse
+from collections import defaultdict
+from datetime import datetime, timezone
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import re
+import sys
+import uuid
+
+VERSION = 'bottleneck-extract-20260928-r1'
+DEFAULT_ROOT = '/nfs-root/diamo/8-agent/rag-request-reports'
+LOAD_PREFIXES = ('binding.', 'bootstrap.', 'generation.', 'runtime.', 'index.',
+                 'resources.', 'glossary.', 'tools.', 'matcher.', 'catalogue.',
+                 'folder_catalogue.', 'team.metadata_scan', 'session.store',
+                 'session.resources.', 'sources.structure', 'sources.bind_structure',
+                 'sources.validate_structure', 'sources.lexical_schema', 'warmup.')
+BOUNDARIES = {'model.attempt.started', 'model_http.started'}
+CONTEXT_EVENTS = {'request.started', 'request.finished', 'request.returning',
+                  'request.heartbeat', 'logging.queue.loss', 'tool.execution.failed'} | BOUNDARIES
+NUMBERS = frozenset('''duration_ms work_ms thread_cpu_ms start_log_ms elapsed_ms idle_ms
+ sql_execute_ms sql_execute_cpu_ms sql_first_row_ms sql_first_row_cpu_ms
+ sql_fetch_ms sql_fetch_cpu_ms sql_fetch_batch_count sql_fetch_max_batch_ms
+ scope_filter_ms fetched_count selected_count scope_rejected_count allowed_count
+ term_count result_count location_count index_bytes indexed_source_count
+ page_size cache_size mmap_size temp_store facts_ms connect_ms
+ thread_non_cpu_ms scheduler_wait_ms thread_read_bytes_delta thread_read_chars_delta
+ thread_read_syscalls_delta minor_faults_delta major_faults_delta
+ voluntary_switches_delta involuntary_switches_delta cpu_nr_throttled_delta
+ cpu_throttled_usec_delta active_searches_at_start active_searches_at_finish
+ active_searches_peak process_id thread_id checked_count document_count unit_count
+ source_lookup_count source_cache_hits source_sql_count source_load_errors
+ source_sql_execute_ms source_sql_fetch_ms source_sql_cpu_ms source_sql_max_ms
+ source_json_chars source_json_decode_ms source_json_cpu_ms route_handle_ms
+ bounds_tokenize_ms sql_count dropped_count write_error_count progress_event_count
+ batch row_start rows wall_ms cpu_ms http_status'''.split())
+FLAGS = {'cache_hit', 'uses_temp_sort', 'bounds_enabled'}
+LABELS = {'request_id', 'run_id', 'worker_id', 'search_id', 'diagnostic_revision',
+          'observability_revision', 'sqlite_version', 'mount_type', 'sql_status',
+          'mapping_status', 'concurrency_scope', 'error_type', 'file', 'file_size'}
+TOKEN = re.compile(r'[A-Za-z0-9_.:-]{1,160}\Z')
+STAMP = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})\Z')
+TEXT_LINE = re.compile(r'^(\S+)\s+(?:\[service/(\w+)\]|(DEBUG|INFO|WARNING|ERROR|CRITICAL))\s+(\S+)(.*)$')
+PAIR = re.compile(r'(\w+)=([^\s]+)')
+
+
+def number(value):
+    return value if type(value) in (int, float) and math.isfinite(value) else None
+
+
+def name(row):
+    return row.get('step', '') if row.get('event') in {'step.started', 'step.finished', 'step.failed'} else row.get('event', '')
+
+
+def kind(row):
+    label = name(row)
+    if label.startswith(('fulltext.', 'fulltext_tool.')):
+        return 'fulltext'
+    if label.startswith(LOAD_PREFIXES):
+        return 'loading'
+    return 'context' if label in CONTEXT_EVENTS else None
+
+
+def clean(row):
+    """Allow only known counters, fixed event names and bounded labels."""
+    if not isinstance(row, dict):
+        return None
+    event = row.get('event')
+    if not isinstance(event, str) or not TOKEN.fullmatch(event):
+        return None
+    out = {'event': event}
+    step = row.get('step')
+    if isinstance(step, str) and TOKEN.fullmatch(step):
+        out['step'] = step
+    if kind(out) is None:
+        return None
+    for key in NUMBERS:
+        value = row.get(key)
+        if number(value) is not None and (value >= 0 or key == 'cache_size'):
+            out[key] = value
+    for key in FLAGS:
+        if type(row.get(key)) is bool:
+            out[key] = row[key]
+    for key in LABELS:
+        value = row.get(key)
+        if isinstance(value, str) and TOKEN.fullmatch(value):
+            out[key] = value
+    if isinstance(row.get('ts'), str) and STAMP.fullmatch(row['ts']):
+        out['ts'] = row['ts']
+    for key in ('slowest_batches',):
+        if isinstance(row.get(key), list):
+            out[key] = [{k: v for k, v in item.items() if k in NUMBERS and number(v) is not None and v >= 0}
+                        for item in row[key][:5] if isinstance(item, dict)]
+    return out
+
+
+def text_event(line):
+    match = TEXT_LINE.match(line.strip())
+    if not match:
+        return None
+    row = {'ts': match[1], 'event': match[4]}
+    for key, value in PAIR.findall(match[5]):
+        if value in ('true', 'false'):
+            row[key] = value == 'true'
+        elif value == 'null':
+            row[key] = None
+        else:
+            try:
+                row[key] = float(value) if any(c in value for c in '.eE') else int(value)
+            except ValueError:
+                row[key] = value
+    return row
+
+
+def read_events(path):
+    """One immutable read per input; JSON reports are preferred over companion logs."""
+    if path.stat().st_size > 256 * 1024 * 1024:
+        raise ValueError('INPUT_TOO_LARGE')
+    data = path.read_bytes()
+    if len(data) > 256 * 1024 * 1024:
+        raise ValueError('INPUT_TOO_LARGE')
+    text = data.decode('utf-8-sig', errors='replace')
+    meta, rows, coverage = {}, [], 'text/JSONL: 일부 계측 또는 완료 로그가 없을 수 있음'
+    if path.suffix.lower() == '.json':
+        value = json.loads(text)
+        if not isinstance(value, dict) or value.get('schema_version') != 'genos-request-report-v1':
+            raise ValueError('UNSUPPORTED_JSON_SCHEMA')
+        meta = {k: value[k] for k in ('request_id', 'run_id', 'team_id') if k in value}
+        rows = value.get('service_events') or []
+        coverage = '요청 JSON의 service_events; 원장·질문·본문·모델 응답은 제외'
+    else:
+        for line in text.splitlines():
+            row = None
+            start = line.find('{')
+            if start >= 0:
+                try:
+                    value = json.loads(line[start:])
+                    if isinstance(value, dict) and 'event' in value:
+                        row = value
+                except ValueError:
+                    pass
+            rows.append(row if row is not None else text_event(line))
+    events = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        event = clean({**meta, **row})
+        if event is not None:
+            events.append(event)
+    return events, hashlib.sha256(data).hexdigest(), coverage
+
+
+def timestamp(row):
+    try:
+        return datetime.fromisoformat(row['ts'].replace('Z', '+00:00'))
+    except (KeyError, ValueError):
+        return None
+
+
+def span_ms(start, end):
+    a, b = timestamp(start), timestamp(end)
+    return (b-a).total_seconds()*1000 if a is not None and b is not None and b >= a else None
+
+
+def ms(value):
+    return f'{value:,.3f} ms ({value/1000:,.3f}초)' if number(value) is not None else '미확인'
+
+
+def elapsed(row):
+    return row.get('work_ms', row.get('duration_ms'))
+
+
+def event_line(row):
+    fields = [f'{key}={str(value).lower() if type(value) is bool else value}'
+              for key, value in sorted(row.items()) if key not in {'event', 'step', 'ts'}]
+    return ' '.join([row.get('ts', '시간 미확인'), name(row), row['event'], *fields])
+
+
+def header(title, group, rows, source, digest, coverage):
+    workers = sorted({r['worker_id'] for r in rows if 'worker_id' in r})
+    return [title, '=' * 60, f'도구: {VERSION}', f'요청/컨텍스트: {group}',
+            f'worker: {", ".join(workers) or "미확인"}', f'입력: {source}',
+            f'입력 SHA-256: {digest}', f'기록 범위: {coverage}',
+            '중첩 구간은 합산하지 않음. work=구간 작업, duration=시작 로그 비용 포함.',
+            '벽시계-CPU 차이는 I/O·잠금·GIL·스케줄링 등을 포함하며 NFS 원인 확정값이 아님.', '']
+
+
+def pending_steps(rows, category):
+    pending = defaultdict(list)
+    for row in rows:
+        if kind(row) != category:
+            continue
+        if row['event'] == 'step.started':
+            pending[name(row)].append(row)
+        elif row['event'] in {'step.finished', 'step.failed'} and pending[name(row)]:
+            pending[name(row)].pop()
+    last = next((row for row in reversed(rows) if timestamp(row) is not None), {})
+    return [f'{step}: 시작→마지막 기록 {ms(span_ms(start, last))}; 진행 중 또는 완료 로그 누락'
+            for step, starts in pending.items() for start in starts]
+
+
+def loading_report(group, rows, source, digest, coverage):
+    first_model = next((i for i, row in enumerate(rows) if name(row) in BOUNDARIES), len(rows))
+    before = [row for row in rows[:first_model] if kind(row) == 'loading']
+    later = [row for row in rows[first_model:] if kind(row) == 'loading']
+    starts = [row for row in rows[:first_model] if name(row) == 'request.started']
+    ready = [row for row in before if name(row) == 'session.resources.ready']
+    preparation = span_ms(starts[0], ready[0]) if len(starts) == 1 and len(ready) == 1 and not group.startswith('NO_REQUEST_ID') else None
+    measured = [row for row in before if row['event'] in {'step.finished', 'step.failed'} and number(elapsed(row)) is not None]
+    measured.sort(key=lambda row: elapsed(row), reverse=True)
+    lines = header('초반 로딩 병목', group, rows, source, digest, coverage)
+    lines += [f'질문 접수 → 세션 자원 준비: {ms(preparation)}',
+              '이 시간에는 앱·목록·자원 준비와 그 사이의 대기가 포함됨. 서버 최초 기동 전체 시간과 다름.',
+              '초반 구간: 첫 model.attempt.started/model_http.started 이전.' if first_model < len(rows)
+              else '초반 경계 미확인: 첫 모델 시작 기록이 없음. 아래는 기록된 자원 준비 구간.', '']
+    lines.append('초반 구간별 시간 순위 (중첩 포함, 합계 아님)')
+    for rank, row in enumerate(measured, 1):
+        wall, cpu = elapsed(row), row.get('thread_cpu_ms')
+        gap = max(0, wall-cpu) if number(cpu) is not None else None
+        lines.append(f'{rank:02d}. {name(row)} | 작업 {ms(wall)} | CPU {ms(cpu)} | 비CPU {ms(gap)}'
+                     f' | 시작 로그 {ms(row.get("start_log_ms"))} | 완료={row["event"]}')
+    if not measured:
+        lines.append('미확인: 로딩 완료 계측이 없음. 기존 GENOS_LOG_LEVEL=DEBUG 로그가 필요할 수 있음.')
+    cache = [row for row in before if 'cache' in name(row) or 'pool.' in name(row) or 'cache_hit' in row]
+    lines += ['', '캐시/검증 상태 (각 자원의 관측만 표시; worker 전체 warm 판정 아님)']
+    lines.extend(event_line(row) for row in cache)
+    if not cache:
+        lines.append('미확인: 캐시 상태 로그 없음')
+    lines += ['', '초반 로딩 시간순 로그']
+    lines.extend(event_line(row) for row in before)
+    if later:
+        lines += ['', '첫 모델 시작 이후의 자원 준비 (초반 로딩 순위에서 제외)']
+        lines.extend(event_line(row) for row in later)
+    unfinished = pending_steps(rows, 'loading')
+    if unfinished:
+        lines += ['', '완료 로그가 없는 준비 구간 (현재 실행 상태 확정 아님)', *unfinished]
+    if any(name(row) == 'logging.queue.loss' for row in rows):
+        lines += ['', '주의: logging.queue.loss가 있어 일부 로그가 누락됐을 수 있음.']
+    summary = f'로딩 준비={ms(preparation)}; 최장 계측={name(measured[0])} {ms(elapsed(measured[0]))}' if measured else f'로딩 준비={ms(preparation)}; 세부 계측 미확인'
+    return '\n'.join(lines) + '\n', summary
+
+
+def fulltext_report(group, rows, source, digest, coverage):
+    selected = [row for row in rows if kind(row) == 'fulltext']
+    sql = [row for row in selected if name(row) == 'fulltext.sql.timings']
+    location = [row for row in selected if name(row) == 'fulltext.location.timings']
+    lines = header('FULLTEXT 검색 병목', group, rows, source, digest, coverage)
+    lines += ['fulltext.cached는 색인 바인딩 재사용이며 검색 결과 캐시 적중을 뜻하지 않음.',
+              '동시 검색 수는 같은 프로세스 범위. 보관된 다른 generation의 사용 여부를 추정하지 않음.', '']
+    lines += ['검색별 SQL 결과 읽기']
+    for i, row in enumerate(sql, 1):
+        lines += [f'검색 {i}: search_id={row.get("search_id", "미확인")} 상태={row.get("sql_status", "미확인")}',
+                  f'  execute: {ms(row.get("sql_execute_ms"))} / CPU {ms(row.get("sql_execute_cpu_ms"))}',
+                  f'  첫 행: {ms(row.get("sql_first_row_ms"))} / CPU {ms(row.get("sql_first_row_cpu_ms"))}',
+                  f'  이후 fetch: {ms(row.get("sql_fetch_ms"))} / CPU {ms(row.get("sql_fetch_cpu_ms"))}',
+                  f'  범위 필터: {ms(row.get("scope_filter_ms"))}',
+                  '  ' + ' '.join(f'{k}={row.get(k, "미확인")}' for k in ('fetched_count', 'selected_count', 'scope_rejected_count', 'sql_fetch_batch_count', 'sql_fetch_max_batch_ms', 'active_searches_peak'))]
+        for batch in row.get('slowest_batches', []):
+            lines.append('  느린 배치: ' + json.dumps(batch, ensure_ascii=False, sort_keys=True))
+    if not sql:
+        lines.append('미확인: fulltext.sql.timings 없음. rank 단계만 있으면 SQL 내부 원인 분리 불가.')
+    lines += ['', '위치 구성별 본문 조회·변환']
+    for i, row in enumerate(location, 1):
+        lines += [f'위치 구성 {i}: 시간={row.get("ts", "미확인")} 상태={row.get("mapping_status", "미확인")}',
+                  '  SQL execute=' + ms(row.get('source_sql_execute_ms')) + ' / fetch=' + ms(row.get('source_sql_fetch_ms')),
+                  '  JSON 변환=' + ms(row.get('source_json_decode_ms')) + ' / CPU=' + ms(row.get('source_json_cpu_ms')),
+                  '  route=' + ms(row.get('route_handle_ms')) + ' / 범위 형태소 분석=' + ms(row.get('bounds_tokenize_ms')),
+                  '  ' + ' '.join(f'{k}={row.get(k, "미확인")}' for k in ('source_lookup_count', 'source_cache_hits', 'source_sql_count', 'source_json_chars', 'source_sql_max_ms'))]
+    if not location:
+        lines.append('미확인: fulltext.location.timings 없음. 위치 구성 SQL과 JSON 변환 분리 불가.')
+    timed = []
+    for row in selected:
+        if row['event'] in {'step.finished', 'step.failed'} and number(elapsed(row)) is not None:
+            timed.append((elapsed(row), name(row), row))
+        elif name(row) == 'fulltext.sql.timings':
+            timed.extend((row[key], key, row) for key in ('sql_execute_ms', 'sql_first_row_ms', 'sql_fetch_ms') if number(row.get(key)) is not None)
+        elif name(row) == 'fulltext.location.timings':
+            timed.extend((row[key], key, row) for key in ('work_ms', 'source_sql_execute_ms', 'source_sql_fetch_ms', 'source_json_decode_ms') if number(row.get(key)) is not None)
+    timed.sort(key=lambda item: item[0], reverse=True)
+    lines += ['', '검색 구간 시간 순위 (상위 구간과 내부 계측이 중첩되므로 합산 금지)']
+    lines.extend(f'{i:02d}. {label}: {ms(value)} 시각={row.get("ts", "미확인")}' for i, (value, label, row) in enumerate(timed, 1))
+    if not timed:
+        lines.append('미확인: 검색 시간 계측 없음. 검색 미실행과 로그 누락을 구별할 수 없음.')
+    lines += ['', 'FULLTEXT 시간순 로그 (tokenize/scope/rank/SQL/위치/preview/자원)']
+    lines.extend(event_line(row) for row in selected)
+    unfinished = pending_steps(rows, 'fulltext')
+    pending_sql = {row['search_id'] for row in selected if name(row) == 'fulltext.sql.started' and 'search_id' in row}
+    pending_sql -= {row['search_id'] for row in sql if 'search_id' in row}
+    if unfinished or pending_sql:
+        lines += ['', '완료 로그가 없는 검색 구간 (현재 실행 상태 확정 아님)', *unfinished]
+        lines.extend(f'SQL search_id={ident}: 시작 있음 / 완료 계측 없음' for ident in sorted(pending_sql))
+    lines += ['', '판독 기준',
+              '- fetch 벽시계와 CPU가 함께 크면 FTS 계산량을 조사.',
+              '- 벽시계가 크고 CPU가 작으면 파일 읽기·잠금·GIL·스케줄링을 추가 확인.',
+              '- source_sql_*가 크면 위치 구성의 본문 SQL 조회를 조사.',
+              '- source_json_decode_ms가 크면 JSON 변환 작업을 조사.',
+              '- cpu_throttled_usec_delta는 마이크로초이며 cgroup 누적값. 요청 전용 제한 시간 아님.',
+              '- thread_read_bytes_delta는 Linux 블록 I/O 계측이며 NFS 네트워크 읽기량 아님.',
+              '- 계측이 없는 항목을 0ms 또는 정상으로 간주하지 않음.']
+    if any(name(row) == 'logging.queue.loss' for row in rows):
+        lines += ['- logging.queue.loss가 있어 일부 로그가 누락됐을 수 있음.']
+    summary = f'FULLTEXT 완료 SQL={len(sql)}; 최장 계측={timed[0][1]} {ms(timed[0][0])}' if timed else 'FULLTEXT 세부 시간 미확인'
+    return '\n'.join(lines) + '\n', summary
+
+
+def select_files(args):
+    if args.input:
+        return [Path(path).resolve(strict=True) for path in args.input]
+    root = args.root.resolve(strict=True)
+    days = [root / args.day] if args.day else sorted((p for p in root.iterdir() if p.is_dir() and re.fullmatch(r'\d{4}-\d{2}-\d{2}', p.name)), reverse=True)
+    found = []
+    for day in days:
+        if not day.is_dir():
+            continue
+        folders = [day / args.team] if args.team else [day, *(p for p in day.iterdir() if p.is_dir() and not p.name.startswith('_'))]
+        for folder in folders:
+            if not folder.is_dir():
+                continue
+            by_stem = {}
+            for path in folder.iterdir():
+                if path.is_file() and not path.is_symlink() and path.suffix.lower() in {'.json', '.log', '.txt'}:
+                    by_stem.setdefault(path.stem, []).append(path)
+            for choices in by_stem.values():
+                found.append(min(choices, key=lambda p: {'.json': 0, '.log': 1, '.txt': 2}[p.suffix.lower()]))
+        if len(found) >= args.limit and not args.request_id:
+            break
+    return sorted(found, key=lambda p: p.stat().st_mtime_ns, reverse=True)
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--root', type=Path, default=Path(os.environ.get('GENOS_SHARED_LOG_DIR') or DEFAULT_ROOT))
+    parser.add_argument('--input', action='append', help='특정 요청 JSON/LOG/TXT 또는 컨테이너 JSONL. 반복 지정 가능')
+    parser.add_argument('--day', help='한국 날짜 YYYY-MM-DD')
+    parser.add_argument('--team', help='예: risk_team; 입력 선택용이며 접근권한을 부여하지 않음')
+    parser.add_argument('--request-id', help='특정 request_id만 선택')
+    parser.add_argument('--limit', type=int, default=10, help='최근 입력 파일 수, 기본 10')
+    parser.add_argument('--output', type=Path, default=Path(os.environ.get('GENOS_BOTTLENECK_OUTPUT') or 'TRANSFER/bottleneck-reports'))
+    args = parser.parse_args(argv)
+    if not 1 <= args.limit <= 100:
+        parser.error('--limit: 1..100')
+    if args.day and not re.fullmatch(r'\d{4}-\d{2}-\d{2}', args.day):
+        parser.error('--day: YYYY-MM-DD')
+    if args.team and not re.fullmatch(r'[A-Za-z0-9_-]{1,64}', args.team):
+        parser.error('--team: 영문·숫자·밑줄·하이픈만 허용')
+    if args.request_id and not TOKEN.fullmatch(args.request_id):
+        parser.error('invalid --request-id')
+    os.umask(0o027)
+    directory = args.output.resolve() / (datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid.uuid4().hex[:8])
+    directory.mkdir(parents=True, mode=0o750)
+    audit, summaries, produced, accepted = [], [], 0, 0
+    try:
+        paths = select_files(args)
+    except (OSError, ValueError) as exc:
+        paths = []
+        audit.append('입력 선택 실패: ' + type(exc).__name__)
+    for path in paths:
+        if accepted >= args.limit and not args.input:
+            break
+        try:
+            rows, digest, coverage = read_events(path)
+        except (OSError, ValueError) as exc:
+            audit.append(f'{path}: 읽기 실패 {type(exc).__name__}; 원본 유지')
+            continue
+        groups = defaultdict(list)
+        for row in rows:
+            group = row.get('request_id') or 'NO_REQUEST_ID'
+            if args.request_id and group != args.request_id:
+                continue
+            if group == 'NO_REQUEST_ID':
+                # Never correlate unidentified worker/thread events as one request.
+                group += ':' + str(row.get('process_id', 'unknown')) + ':' + str(row.get('thread_id', 'unknown'))
+            groups[group].append(row)
+        if not groups:
+            audit.append(f'{path}: 대상 계측/요청 없음; 다른 로그로 대체하지 않음')
+            continue
+        groups = {group: events for group, events in groups.items()
+                  if any(kind(row) in {'loading', 'fulltext'} for row in events)}
+        if not groups:
+            audit.append(f'{path}: 요청 공통 이벤트만 있음; 로딩/FULLTEXT 계측 미확인')
+            continue
+        accepted += 1
+        for group, events in groups.items():
+            indexed = list(enumerate(events))
+            indexed.sort(key=lambda item: (timestamp(item[1]) or datetime.min.replace(tzinfo=timezone.utc), item[0]))
+            events = [row for _, row in indexed]
+            label = f'{produced+1:02d}-' + re.sub(r'[^A-Za-z0-9_.-]', '_', group)[:100]
+            folder = directory / label
+            folder.mkdir(mode=0o750)
+            loading, load_summary = loading_report(group, events, path, digest, coverage)
+            fulltext, fts_summary = fulltext_report(group, events, path, digest, coverage)
+            (folder / '로딩.txt').write_text(loading, encoding='utf-8')
+            (folder / 'FULLTEXT.txt').write_text(fulltext, encoding='utf-8')
+            summaries += [label, '  ' + load_summary, '  ' + fts_summary, '']
+            produced += 1
+    status = '완료' if produced else '실패: 조건에 맞는 계측 없음'
+    summary = [f'GENOS 로딩/FULLTEXT 병목 분리 — {status}', f'도구: {VERSION}',
+               f'입력 파일={accepted}, 요청/컨텍스트={produced}',
+               '원본 로그·코드·generation·설정은 변경하지 않음.',
+               '실제 병목 판정은 각 TXT의 관측 범위 안에서 수행. 최장 계측은 원인 확정값이 아님.',
+               'NO_REQUEST_ID는 프로세스/스레드별 미결속 기록이며 같은 요청·초반 로딩으로 판정하지 않음.',
+               '', *summaries, '입력 진단', *audit]
+    (directory / '요약.txt').write_text('\n'.join(summary)+'\n', encoding='utf-8')
+    print(f'상태: {status}\n결과: {directory}\n먼저 보기: {directory / "요약.txt"}')
+    return 0 if produced else 2
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
+
+GENOS_BOTTLENECK_PYTHON

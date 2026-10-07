@@ -1,0 +1,54 @@
+{
+  "format": "8agent-code/1",
+  "id": "nfs-data-probe-20261006-r1",
+  "scope": "stdlib NFS/SQL read and committed-code identity probe; preserve existing RAG code/data",
+  "files": [
+    {
+      "path": "02_BACKEND/semantic_runtime/nfs_data_probe.py",
+      "bytes": 16702,
+      "sha256": "6ea84cf5a38440212939f16a966c7b70b65295705482620f9225f6ead1fcee6a",
+      "allowed_predecessors": [
+        "cb4823e70bacacb4d104e03d7febd56df144ca4793aced34de0cabe6ca7b2fa5"
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_nfs_probe_handoff.py",
+      "bytes": 20012,
+      "sha256": "558ce7a0e19346febc099fcb2096c3572fa041026a3856445225506b1973a606",
+      "allowed_predecessors": [
+        "795e75011725d9d4b83017bd1106bcb7cc3d42d08b5275674bd09817acc52bfe"
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_pack_rag_data.sh",
+      "bytes": 555,
+      "sha256": "565a8ac8a7797c1077b6dd0ac4fbb919330f2862a7b8cc4930264b74fab6db09",
+      "allowed_predecessors": [
+        "42ff394015bb4658086e3325b910f1b9273cd58c8569ab7bc4a85c1b6125d63c"
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_rag_data_bundle.py",
+      "bytes": 26585,
+      "sha256": "43059dec161a0d7da34a1a6b9974e0a9efc17959c021997233b9fa23bce748b5",
+      "allowed_predecessors": [
+        "f1796bbf11d2b76ea364129098ea2b21bb23ec28abb3337e9b65a0a01f5ca757"
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/workflow/genos_nfs_data_probe.py",
+      "bytes": 4560,
+      "sha256": "1b52307a84102f3a5629ffd15207b7648114a93c55fa64ff7753fb38d5848f6a",
+      "allowed_predecessors": [
+        "1b52307a84102f3a5629ffd15207b7648114a93c55fa64ff7753fb38d5848f6a"
+      ]
+    }
+  ],
+  "function_hooks": {
+    "service.py": "early NFS_DATA_PROBE branch only",
+    "08_DEPLOYMENT/GENOS/stream_app.py": "early NFS_DATA_PROBE branch only"
+  },
+  "field_commit": null,
+  "field_generation_actual": null,
+  "code_serving_revision": null
+}

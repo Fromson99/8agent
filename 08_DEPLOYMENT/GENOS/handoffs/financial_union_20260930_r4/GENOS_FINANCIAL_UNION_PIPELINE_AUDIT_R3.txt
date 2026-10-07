@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# Read-only. Supersedes GENOS_FINANCIAL_UNION_LOCATE_20260930_R2.txt.
+# GENOS Codespace: bash GENOS_FINANCIAL_UNION_PIPELINE_AUDIT_R3.txt
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-financial-pipeline-audit-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+
+DEPLOY_ROOT="${DEPLOY_ROOT:-/home/genos/DEV}"
+GENOS_DATA_ROOT="${GENOS_DATA_ROOT:-$DEPLOY_ROOT/01_DATA}"
+PYTHON_BIN="${PYTHON_BIN:-$DEPLOY_ROOT/.venv/bin/python}"
+if [[ ! -x "$PYTHON_BIN" ]]; then PYTHON_BIN="$(command -v python3)"; fi
+[[ -x "$PYTHON_BIN" ]] || { echo 'Python 3 required'; exit 2; }
+printf 'START read-only pipeline audit data=%s\n' "$GENOS_DATA_ROOT"
+"$PYTHON_BIN" - "$GENOS_DATA_ROOT" <<'PY'
+import hashlib
+import json
+from pathlib import Path
+import sqlite3
+import sys
+
+data = Path(sys.argv[1]).expanduser()
+scope_path = data / 'CATALOG/SCOPES/photo-required-80-hwpx-20260917.json'
+if not scope_path.is_file():
+    raise FileNotFoundError(scope_path)
+docs = json.loads(scope_path.read_text(encoding='utf-8'))['documents'][:61]
+expected = {d['name']: {f['sha256'][:16] for f in d['files'] if f['role'] == 'body'} for d in docs}
+targets = set().union(*expected.values())
+if len(docs) != 61:
+    raise ValueError('photo61 scope length changed')
+
+def sha(path):
+    h = hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+def names_for(ids):
+    return [name for name, body_ids in expected.items() if body_ids & ids]
+
+def read_store(path):
+    uri = 'file:' + str(path.resolve()) + '?mode=ro'
+    db = sqlite3.connect(uri, uri=True, timeout=2)
+    try:
+        db.execute('PRAGMA query_only=ON')
+        return set(db.execute('SELECT document_id,name FROM document'))
+    finally:
+        db.close()
+
+def title(name):
+    return str(name).rsplit(' > ', 1)[-1].strip()
+
+run_rows = []
+all_selected, all_structured, all_indexed = set(), set(), set()
+all_named_structured, all_named_indexed = set(), set()
+source_cache = {}
+for selection_path in sorted((data / 'LOGS').glob('*/structure-selection.json')):
+    run_id = selection_path.parent.name
+    try:
+        selection = json.loads(selection_path.read_text(encoding='utf-8'))
+        selected = set(selection.get('documents', {})) & targets
+        expected_ids = set(selection.get('expected_document_ids', [])) & targets
+        structured, indexed = set(), set()
+        named_structured, named_indexed = set(), set()
+        errors = []
+        for did, item in sorted(selection['documents'].items()):
+            key = item.get('key', '')
+            receipt = data / 'STRUCTURE' / key / 'structure-receipt.json'
+            source = receipt.parent / 'source.sqlite'
+            try:
+                if key not in source_cache:
+                    source_cache[key] = read_store(source) if source.is_file() else set()
+                matching_names = {title(name) for rid, name in source_cache[key]
+                                  if rid == did and title(name) in expected}
+                if did not in targets and not matching_names:
+                    continue
+                valid = (len(key) == 64 and receipt.is_file()
+                         and sha(receipt) == item.get('receipt_sha256')
+                         and any(rid == did for rid, _ in source_cache[key]))
+            except (OSError, sqlite3.Error) as exc:
+                valid = False
+                errors.append(str(exc)[:100])
+            if valid:
+                named_structured |= matching_names
+                if did in targets:
+                    structured.add(did)
+                if (data / 'TERM' / run_id / did / 'generation/manifest.json').is_file():
+                    named_indexed |= matching_names
+                    if did in targets:
+                        indexed.add(did)
+        all_selected |= selected
+        all_structured |= structured
+        all_indexed |= indexed
+        all_named_structured |= named_structured
+        all_named_indexed |= named_indexed
+        run_rows.append({
+            'run_id': run_id, 'scope_document_ids': len(expected_ids),
+            'selected': len(selected), 'verified_structure': len(structured),
+            'per_document_index': len(indexed),
+            'name_structure': len(named_structured),
+            'name_per_document_index': len(named_indexed),
+            'selection_complete': selection.get('completed'),
+            'inventory_valid': selection.get('input_inventory_valid'),
+            'selection_path': str(selection_path), 'errors': errors[:2],
+        })
+    except (OSError, ValueError, KeyError) as exc:
+        run_rows.append({'run_id': run_id, 'error': str(exc)[:180]})
+run_rows.sort(key=lambda r: (-r.get('verified_structure', -1),
+                             -r.get('per_document_index', -1), r['run_id']))
+print('PIPELINE_RUNS scanned=' + str(len(run_rows)), flush=True)
+for row in run_rows[:15]:
+    print('PIPELINE_RUN ' + json.dumps(row, ensure_ascii=False), flush=True)
+print('PIPELINE_TOTAL selected=' + str(len(names_for(all_selected))) +
+      ' structured=' + str(len(names_for(all_structured))) +
+      ' per_document_indexed=' + str(len(names_for(all_indexed))) +
+      ' name_structured=' + str(len(all_named_structured)) +
+      ' name_indexed=' + str(len(all_named_indexed)), flush=True)
+missing_exact_structure = [d['name'] for d in docs if not expected[d['name']] & all_structured]
+missing_exact_index = [d['name'] for d in docs if not expected[d['name']] & all_indexed]
+missing_name_structure = [d['name'] for d in docs if d['name'] not in all_named_structured]
+print('PIPELINE_NOT_STRUCTURED exact_count=' + str(len(missing_exact_structure)) +
+      ' first12=' + json.dumps(missing_exact_structure[:12], ensure_ascii=False), flush=True)
+print('PIPELINE_NOT_INDEXED exact_count=' + str(len(missing_exact_index)) +
+      ' first12=' + json.dumps(missing_exact_index[:12], ensure_ascii=False), flush=True)
+print('PIPELINE_NOT_STRUCTURED_BY_NAME count=' + str(len(missing_name_structure)) +
+      ' first12=' + json.dumps(missing_name_structure[:12], ensure_ascii=False), flush=True)
+
+# build-all creates a combined candidate separately from per-document TERM output.
+release_rows = []
+for path in sorted((data / 'TERM_RELEASES').glob('*/serving/generation/store.sqlite')):
+    try:
+        rows = read_store(path)
+        exact = {title(name) for did, name in rows if did in expected.get(title(name), set())}
+        named = {title(name) for _, name in rows if title(name) in expected}
+        release_rows.append({'path': str(path.parent), 'exact_versions': len(exact),
+                             'matching_names': len(named)})
+    except (OSError, sqlite3.Error) as exc:
+        release_rows.append({'path': str(path.parent), 'error': str(exc)[:180]})
+release_rows.sort(key=lambda r: (-r.get('exact_versions', -1),
+                                  -r.get('matching_names', -1), r['path']))
+print('BUILD_ALL_RELEASES scanned=' + str(len(release_rows)), flush=True)
+for row in release_rows[:15]:
+    print('BUILD_ALL_RELEASE ' + json.dumps(row, ensure_ascii=False), flush=True)
+print('READ_ONLY_COMPLETE', flush=True)
+PY

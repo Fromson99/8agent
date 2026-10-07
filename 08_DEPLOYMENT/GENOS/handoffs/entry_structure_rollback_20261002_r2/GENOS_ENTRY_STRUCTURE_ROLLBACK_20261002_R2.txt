@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+entry_mode="${1:-check}"
+entry_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+entry_root="$(cd -- "${MAIN_DEV_ROOT:-$HOME/DEV}" && pwd -P)"
+mkdir -p "$entry_dir/logs"
+entry_log="$entry_dir/logs/entry-$(date -u +%Y%m%dT%H%M%SZ)-${entry_mode}-$$.log"
+exec > >(tee -a "$entry_log") 2>&1
+trap 'entry_exit=$?; trap - EXIT; printf "ENTRY_EXIT=%s LOG=%s\n" "$entry_exit" "$entry_log"; exit "$entry_exit"' EXIT
+printf 'ENTRY_START MODE=%s ROOT=%s LOG=%s\n' "$entry_mode" "$entry_root" "$entry_log"
+entry_args=("$entry_mode" --root "$entry_root")
+if [[ -n "${GENOS_ENTRY_BACKUP:-}" ]]; then entry_args+=(--backup "$GENOS_ENTRY_BACKUP"); fi
+python3 - "${entry_args[@]}" <<'PYENTRY'
+"""Restore only the pre-migration root main.py; keep root service.py and v6."""
+import argparse
+import ast
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import stat
+import sys
+
+MIGRATED = '54125097d4e046eaabbc020e47888bfa9debc01f6d43dedaf4d0097c26a1bc9c'
+FULL_ZIP = '727762461aeb697caa4ef5ee74f4b45b301d0ebd985fc6cad968d6660642528b'
+
+def safe(path):
+    p = Path(path).absolute()
+    if any(x.is_symlink() for x in (p, *p.parents)):
+        raise ValueError('Symlink inside selected path: ' + str(p))
+    return p
+
+def snapshot(path):
+    p = safe(path)
+    if not p.exists():
+        return None
+    if not p.is_file():
+        raise ValueError('Expected regular file: ' + str(p))
+    return {'.': ['file', stat.S_IMODE(p.stat().st_mode), hashlib.sha256(p.read_bytes()).hexdigest()]}
+
+def save(p, data):
+    temp = p.with_suffix('.tmp')
+    with temp.open('w') as f:
+        json.dump(data, f, indent=2); f.write('\n'); f.flush(); os.fsync(f.fileno())
+    os.replace(temp, p)
+
+def execute(root, mode, backup=None):
+    root = safe(root)
+    main, service = root/'main.py', root/'service.py'
+    if not (root/'02_BACKEND').is_dir() or not service.is_file():
+        raise ValueError('Select existing DEV root with root service.py and 02_BACKEND')
+    service_before = snapshot(service)
+    tree = ast.parse(service.read_bytes())
+    if not any(isinstance(n, ast.AsyncFunctionDef) and n.name == 'service' for n in tree.body):
+        raise ValueError('Root service.py lacks async service entry')
+    folder = safe(root/'09_ARTIFACTS/BACKUPS/workflow-entry-only-20261002-r2')
+    folder.mkdir(parents=True, exist_ok=True, mode=0o700)
+    record_path = folder/'receipt.json'
+    if record_path.exists():
+        r = json.loads(safe(record_path).read_text())
+        if r['root'] != str(root):
+            raise ValueError('Receipt root differs')
+        if snapshot(service) != r['service']:
+            raise ValueError('service.py changed since operation; preserve and inspect')
+        if mode == 'undo':
+            if r['status'] == 'UNDONE' and snapshot(main) == r['before']:
+                print('ALREADY UNDONE'); return
+            if r['status'] not in ('APPLIED', 'PREPARED') or snapshot(main) not in (None, r['after'], r['before']):
+                raise ValueError('main.py changed; preserve and inspect')
+            preserved = folder/'migrated-main.py'
+            if snapshot(preserved) != r['before']:
+                raise ValueError('Preserved migrated main.py differs')
+            if snapshot(main) != r['before']:
+                temp = safe(folder/'restore-main.tmp')
+                shutil.copy2(preserved, temp); os.replace(temp, main)
+            r['status'] = 'UNDONE'; save(record_path, r)
+            print('UNDO OK: migrated main.py restored; service/v6/data untouched'); return
+        if r['status'] == 'APPLIED':
+            if snapshot(main) != r['after']:
+                raise ValueError('Applied main.py changed; preserve and inspect')
+            print('ALREADY APPLIED; root service.py/v6 unchanged'); return
+        raise ValueError('Existing operation requires undo/review: ' + str(record_path))
+    if mode == 'undo':
+        raise ValueError('No entry-only receipt to undo')
+    if snapshot(main) is None or snapshot(main)['.'][2] != MIGRATED:
+        raise ValueError('Root main.py is not the exact R2 migration; no changes applied')
+    base = root/'09_ARTIFACTS/BACKUPS/code-replacement'
+    choices = [safe(backup)] if backup else [safe(p.parent) for p in base.glob('*/receipt.json')
+        if json.loads(safe(p).read_text()).get('code_zip_sha256') == FULL_ZIP]
+    if len(choices) != 1:
+        raise ValueError('Select exact R2 backup via GENOS_ENTRY_BACKUP; candidates: ' + ', '.join(map(str,choices)))
+    origin = choices[0]
+    receipt = json.loads(safe(origin/'receipt.json').read_text())
+    if receipt['root'] != str(root) or receipt['status'] != 'APPLIED' or receipt.get('code_zip_sha256') != FULL_ZIP:
+        raise ValueError('Not an applied R2 backup for this DEV root')
+    row = receipt['units'].get('main.py')
+    if row is None or snapshot(main) != row['after']:
+        raise ValueError('main.py does not match exact R2 receipt')
+    old = safe(origin/'old/main.py')
+    if snapshot(old) != row['before']:
+        raise ValueError('Previous main.py backup differs')
+    if old.exists():
+        compile(old.read_bytes(), str(old), 'exec')
+    print('PLAN: root service.py retained; migrated main.py -> ' + str(folder/'migrated-main.py'))
+    print('PLAN: previous root main.py ' + ('restored from exact R2 backup' if old.exists() else 'absent before migration; root main.py removed'))
+    if mode == 'check':
+        print('CHECK OK; code not modified'); return
+    r = {'root':str(root),'status':'PREPARED','origin':str(origin),
+         'before':snapshot(main),'after':row['before'],'service':service_before,
+         'generation':'KEEP_ONSITE_UNVERIFIED','serving_revision':'ONSITE_UNVERIFIED'}
+    preserved = safe(folder/'migrated-main.py')
+    if preserved.exists():
+        raise ValueError('Unexpected existing preservation file')
+    shutil.copy2(main, preserved)
+    if snapshot(preserved) != r['before']:
+        raise ValueError('Preservation verification failed')
+    save(record_path, r)
+    if snapshot(main) != r['before'] or snapshot(service) != service_before:
+        raise ValueError('Concurrent code change; stop and inspect')
+    if old.exists():
+        temp = safe(folder/'previous-main.tmp')
+        shutil.copy2(old, temp); os.replace(temp, main)
+    else:
+        main.unlink()
+    if snapshot(main) != r['after'] or snapshot(service) != service_before:
+        raise ValueError('Post-apply verification failed; use undo')
+    r['status']='APPLIED'; save(record_path,r)
+    print('APPLY OK: entry structure restored; root service.py/v6/NFS/data unchanged')
+    print('RECEIPT=' + str(record_path))
+
+if __name__ == '__main__':
+    p=argparse.ArgumentParser(); p.add_argument('mode',choices=['check','apply','undo'])
+    p.add_argument('--root',type=Path,required=True); p.add_argument('--backup',type=Path)
+    a=p.parse_args()
+    # Match the R2 full replacement lock to prevent overlapping installation.
+    lock=safe(a.root/'.genos-code-replacement.lock')
+    lock.parent.mkdir(parents=True,exist_ok=True)
+    with lock.open('a+') as f:
+        fcntl.flock(f,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        print('PYTHON='+sys.executable+' VERSION='+sys.version.replace('\n',' '),flush=True)
+        execute(a.root,a.mode,a.backup)
+
+PYENTRY

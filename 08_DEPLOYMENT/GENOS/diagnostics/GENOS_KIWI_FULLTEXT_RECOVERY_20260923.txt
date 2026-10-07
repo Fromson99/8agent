@@ -1,0 +1,68 @@
+GENOS fulltext 복구 중 kiwipiepy 누락 해결 및 재실행 (2026-09-23, 경로 정정)
+
+이 정정본은 먼저 보낸 GENOS_KIWI_FULLTEXT_RECOVERY_20260923.txt를 대체합니다.
+Kiwi 설치는 확인되었고, 현재 남은 오류는 ~/DEV에서 상대 경로
+06_TOOLS/COMMANDS/genos_fulltext_repair.py를 실행해 파일을 찾지 못한 것입니다.
+아래 CODE_ROOT는 사진에서 성공적으로 사용한 r4 코드 폴더입니다.
+
+사진에서 확인한 실패:
+  FULLTEXT REPAIR building fulltext
+  ModuleNotFoundError: No module named 'kiwipiepy'
+
+원인: r4 코드 ZIP은 Python 패키지를 포함하지 않습니다. 복구 명령을 실행한
+python3 환경에 kiwipiepy가 없습니다. 첨부 requirements.txt에는 이미
+kiwipiepy==0.23.2, kiwipiepy-model==0.23.0이 각각 한 번씩 고정되어 있습니다.
+
+1. 복구 명령에 사용할 동일한 python3로 설치합니다.
+   GENOS의 내부 패키지 저장소가 설정되어 있거나 승인된 휠을 사용할 수 있어야 합니다.
+
+python3 -m pip install 'kiwipiepy==0.23.2' 'kiwipiepy-model==0.23.0'
+
+   외부 접속이 없는 환경에서 내부 휠 폴더를 사용한다면 다음 형식으로 설치합니다.
+   /승인된/휠폴더는 실제 경로로 바꾸세요.
+
+python3 -m pip install --no-index --find-links /승인된/휠폴더 'kiwipiepy==0.23.2' 'kiwipiepy-model==0.23.0'
+
+2. 같은 python3에서 설치와 모델 초기화를 확인합니다.
+
+python3 - <<'PY'
+import importlib.metadata as md
+import sys
+from kiwipiepy import Kiwi
+print('python:', sys.executable)
+print('kiwipiepy:', md.version('kiwipiepy'))
+print('kiwipiepy-model:', md.version('kiwipiepy-model'))
+assert md.version('kiwipiepy') == '0.23.2'
+assert md.version('kiwipiepy-model') == '0.23.0'
+Kiwi(num_workers=1)
+print('Kiwi OK')
+PY
+
+3. 이전에 선택한 원래 GENOS_GENERATION으로 fulltext 복구 명령만 다시 실행합니다.
+   빈 값이거나 경로가 없으면 실행하지 말고 코드서빙 binding.resolved 로그의
+   generation_path를 확인하세요. 전체 build-all/구조화/용어집 구축은 반복하지 않습니다.
+
+CODE_ROOT="$HOME/DEV/TRANSFER/fulltext-aligned-nojs-20260923-r4"
+if [ ! -f "$CODE_ROOT/06_TOOLS/COMMANDS/genos_fulltext_repair.py" ]; then
+  printf 'r4 코드 경로를 확인하세요: %s\n' "$CODE_ROOT" >&2
+fi
+printf '기존 GENOS_GENERATION=%s\n' "$GENOS_GENERATION"
+if [ -f "$CODE_ROOT/06_TOOLS/COMMANDS/genos_fulltext_repair.py" ] && [ -n "$GENOS_GENERATION" ] && [ -d "$GENOS_GENERATION" ]; then
+  python3 "$CODE_ROOT/06_TOOLS/COMMANDS/genos_fulltext_repair.py" --source-generation "$GENOS_GENERATION"
+else
+  printf 'r4 코드 경로 또는 GENOS_GENERATION을 확인하세요.\n' >&2
+fi
+
+   이번 오류는 fulltext 구축 중 발생했고 r4 복구 스크립트는 실패 시 임시
+   staging 복사본을 삭제합니다. 따라서 그 지점부터 이어받을 수는 없으며,
+   source 검증과 NFS 복사는 다시 수행합니다. 원래 generation은 수정하지 않습니다.
+
+4. 성공 출력의 GENOS_GENERATION=<새 경로>를 그대로 사용해 검증합니다.
+
+GENOS_GENERATION='<성공 출력의 새 generation 절대 경로>' python3 "$CODE_ROOT/06_TOOLS/COMMANDS/genos_generation_e2e.py" --code-root "$CODE_ROOT"
+
+   GENERATION_E2E PASS 후 새 코드서빙 리비전과 그 GENOS_GENERATION 결속을
+   별도로 진행합니다. 코드서빙 Python에도 같은 Kiwi 버전이 필요합니다.
+   코드스페이스 설치만으로 코드서빙 환경이 설치되거나 배포되지는 않습니다.
+
+현장 생성·E2E·코드서빙 배포 결과는 아직 확인되지 않았습니다.

@@ -1,0 +1,31 @@
+{
+  "relevant_contracts": {
+    "passed": 48,
+    "deselected_legacy_integration": 2
+  },
+  "broader_diagnostics": {
+    "failed": 4,
+    "predecessor_same_failure_classes_and_first_message_lines": true,
+    "failure_classes": {
+      "test_selected_scopes_drive_durable_assessment_publication_and_reuse[False]": "FileNotFoundError: [Errno 2] No such file or directory: '<root>/06_TOOLS/EXPERIMENTS/adr_0620/package.py'",
+      "test_selected_scopes_drive_durable_assessment_publication_and_reuse[True]": "FileNotFoundError: [Errno 2] No such file or directory: '<root>/06_TOOLS/EXPERIMENTS/adr_0620/package.py'",
+      "test_new_storage_correction_restore_and_reuse": "AssertionError: assert ('legal-agent-...t-response-v1' == 'legal-agent-...d-response-v1'",
+      "test_new_storage_revoked_scope_hides_evidence": "AssertionError: assert 403 == 422"
+    }
+  },
+  "code_only_gate": {
+    "code_files": 40,
+    "commit": "65edf0adb9d1d46969804424362497f87ec3438e",
+    "code_zip_sha256": "66ae72c241aff67bd6e244a96793759b49492a2b14e278f52f0fd7b4ce96f8d9",
+    "code_manifest_sha256": "071b9f21a45db2ceb6db37295a9d2c191ec232c6c3ee0aec41af3bc054af55ff"
+  },
+  "full_field_generation_gate": "NOT_EXECUTED",
+  "genos_execution": "NOT_EXECUTED",
+  "python": "repository .venv/bin/python",
+  "routing_changed": false,
+  "source_recall_timers_removed": [
+    120,
+    180
+  ],
+  "request_deadline_preserved": true
+}

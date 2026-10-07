@@ -1,0 +1,59 @@
+{
+  "patch": "relation-wait-20260928-r1",
+  "time": "2026-09-28T00:55:57.574453+00:00",
+  "verified_code_root": "/home/jin/8-AGENT",
+  "local_checks": {
+    "pytest_passed": 185,
+    "pytest_failed": 0,
+    "python_3_11_syntax": "PASS",
+    "bash_syntax": "PASS",
+    "git_diff_check": "PASS",
+    "engine_pins": "PASS",
+    "data_pins_unchanged_verified": true
+  },
+  "isolated_checkout": {
+    "verified": true,
+    "test": "exact_baseline_apply_reapply_code_gate_rollback",
+    "fixture_root": "/tmp/8agent-relation-wait-gate-nzggyc9y/DEV",
+    "selected_files": 184,
+    "code_gate": "PASS",
+    "python_3_11_syntax": "PASS",
+    "generation": null,
+    "onsite_workflow_verified": false
+  },
+  "runtime_files": {
+    "02_BACKEND/semantic_runtime/legal_agent/relations_policy.py": {
+      "base_sha256": "36235a62938e1616c6fc732908c01636fc7d1eee95700798dfd45491ac9306e7",
+      "new_sha256": "f4aa37028258c81ac52544e60658d9b87ebe7de8c9e0c8fe339a4efaf279c7df"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/relations_tools.py": {
+      "base_sha256": "caec9f6beecc8cf89b2b06a77fc904b9a35a6f11730d4a1fd5a24d19df9d92af",
+      "new_sha256": "b89ea1554d25037289cb32cfc8d6d417a7a75f053aadf967cb26f3b2d5befd4e"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/tiers_tools.py": {
+      "base_sha256": "fc8e0dd1205aa91cf093557c961f7f45841f22c2bf05c7954b81b65df4622c26",
+      "new_sha256": "19069c0ddb9ba6697416bb754656258fcce80d907f7fa055789164618197b578"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": {
+      "base_sha256": "868865e2cf32a2d8ad736606c2ad4cd094bd9368cdd54e908cb3d3f51be61656",
+      "new_sha256": "56dbe2a16c5d4d0448d0473a37910fae2f2a9f3cdca6f18c2489dbe2e9b8a66c"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_tools.py": {
+      "base_sha256": "61463b818b2c05785ea2337046cfde7914fa766c3ef62cdd8db6a84158df434e",
+      "new_sha256": "5268853b6955a1a6e47c80bc214105303e1699dd707a26a9334034bf137c62ab"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_relation_cards.py": {
+      "base_sha256": "8a2725dd0ec4a469c43c99931c9df775a40e02fa759fef5b86ff7f1446fe5130",
+      "new_sha256": "ca9f78976336614d5de5cf2a451c0ac076c4df451bbd97a7cc8bb4b097cff36c"
+    },
+    "02_BACKEND/semantic_runtime/request_report.py": {
+      "base_sha256": "ededae7d67df8bd5a23dd654484f1bea2ed83d2688bcb59d8434b416f18b3862",
+      "new_sha256": "356e0e40c71b2d0bb9fa3672fc55c60af2881ae7b170d0a98519785f928d286a"
+    }
+  },
+  "generation": null,
+  "generation_manifest_sha256": null,
+  "deployment_commit": null,
+  "code_serving_revision": null,
+  "onsite_workflow_verified": false
+}

@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+# Read-only diagnosis of saved jobs. No /run call, file move, or job retry.
+# Keep the same GENOS_RUN_ID used by the failed full-pipeline run.
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-pdf-conversion-diag-XXXXXXXX.log")"
+exec > >(python3 -u -c '
+import sys
+from datetime import datetime, timezone, timedelta
+for line in sys.stdin:
+    print(datetime.now(timezone(timedelta(hours=9))).strftime("[%Y-%m-%d %H:%M:%S KST]"), line.rstrip("\n"), flush=True)
+' | tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "DIAG_FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+DEPLOY_ROOT="${DEPLOY_ROOT:-$HOME/DEV}"
+cd -P "$DEPLOY_ROOT"
+export GENOS_DATA_ROOT="${GENOS_DATA_ROOT:-$PWD/01_DATA}"
+[[ -n "${GENOS_RUN_ID:-}" ]] || { echo 'Set GENOS_RUN_ID to the failed run ID (photo: financial-risk-full-e2e-20260930-r3)'; exit 2; }
+python3 -u - "$GENOS_DATA_ROOT" "$GENOS_RUN_ID" <<'PY'
+import hashlib, json, os, re, sys
+from pathlib import Path
+data = Path(sys.argv[1]).resolve()
+run_id = sys.argv[2]
+if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,79}', run_id):
+    raise SystemExit('Invalid run ID')
+preparation = data / 'LOGS' / run_id / 'preparation'
+if not preparation.is_dir():
+    raise SystemExit('Preparation directory missing: ' + str(preparation))
+print('DIAG_START run=' + run_id + ' preparation=' + str(preparation), flush=True)
+for key in ('GENOS_PREPROCESSOR_ID', 'GENOS_PREPROCESSOR_SHARED_ROOT',
+            'GENOS_PREPROCESSOR_REMOTE_ROOT', 'GENOS_PDF_CONVERTER_ID',
+            'GENOS_PDF_CONVERTER_SHARED_ROOT', 'GENOS_PDF_CONVERTER_REMOTE_ROOT'):
+    print(key + '=' + os.environ.get(key, '(unset in this terminal)'), flush=True)
+print('Converter aliases set inside R5 do not persist in the parent terminal; saved job paths below are authoritative.', flush=True)
+jobs = sorted(preparation.glob('*/conversion.json'), key=lambda p: p.stat().st_mtime_ns, reverse=True)
+print('SAVED_JOB_COUNT=' + str(len(jobs)), flush=True)
+if not jobs:
+    raise SystemExit('No saved conversion.json found; inspect the failed driver log')
+for path in jobs[:20]:
+    evidence = json.loads(path.read_text())
+    request = evidence.get('request') or {}
+    summary = {key: evidence.get(key) for key in ('status', 'http_status', 'api_code',
+              'transport_error_type', 'revision', 'pages')}
+    summary.update(receipt=str(path), staging=evidence.get('staging'),
+                   server_input=request.get('file_path'), saved_pdf=evidence.get('pdf_path'))
+    print('JOB ' + json.dumps(summary, ensure_ascii=False), flush=True)
+    staging_raw = evidence.get('staging')
+    server_raw = request.get('file_path')
+    if not isinstance(staging_raw, str) or not isinstance(server_raw, str):
+        print('JOB_PATHS_MISSING', flush=True)
+        continue
+    staging, server = Path(staging_raw), Path(server_raw)
+    if not staging.is_absolute() or '..' in staging.parts:
+        print('INVALID_STAGING_PATH', flush=True)
+        continue
+    source = staging / server.name
+    expected = source.with_suffix('.pdf')
+    print('EXPECTED_LOCAL_PDF=' + str(expected), flush=True)
+    print('SERVER_AND_LOCAL_INPUT_PATH_EQUAL=' + str(source == server), flush=True)
+    if source.is_file():
+        h = hashlib.sha256()
+        with source.open('rb') as stream:
+            for chunk in iter(lambda: stream.read(1024*1024), b''):
+                h.update(chunk)
+        print('STAGED_SOURCE suffix=' + source.suffix + ' bytes=' + str(source.stat().st_size)
+              + ' original_hash_matches=' + str(h.hexdigest() == evidence.get('input_sha256')), flush=True)
+    else:
+        print('STAGED_SOURCE_MISSING', flush=True)
+    if expected.is_file():
+        with expected.open('rb') as stream:
+            header_ok = stream.read(5) == b'%PDF-'
+        print('EXPECTED_PDF bytes=' + str(expected.stat().st_size) + ' pdf_header=' + str(header_ok), flush=True)
+        try:
+            import fitz
+            with fitz.open(expected) as doc:
+                print('EXPECTED_PDF pages=' + str(doc.page_count) + ' encrypted=' + str(doc.needs_pass), flush=True)
+        except ImportError:
+            print('PyMuPDF unavailable; only file/header checked', flush=True)
+        except Exception as exc:
+            print('EXPECTED_PDF_OPEN_FAILED type=' + type(exc).__name__, flush=True)
+    else:
+        print('EXPECTED_PDF_MISSING', flush=True)
+    if staging.is_dir():
+        # List only this request's immediate artifacts; never print document text.
+        for item in sorted(staging.iterdir(), key=lambda p: p.name)[:30]:
+            print('STAGING_ENTRY ' + json.dumps({'name': item.name, 'is_file': item.is_file(),
+                  'bytes': item.stat().st_size if item.is_file() else None}, ensure_ascii=False), flush=True)
+    else:
+        print('STAGING_DIRECTORY_MISSING', flush=True)
+print('DIAG_END no service request sent; saved jobs and source files unchanged', flush=True)
+PY

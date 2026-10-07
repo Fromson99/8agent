@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+handoff_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+handoff_mode="${1:-check}"
+handoff_root="${MAIN_DEV_ROOT:-$HOME/DEV}"
+handoff_logs="${GENOS_HANDOFF_LOG_DIR:-$handoff_dir/v6-r4-logs}"
+mkdir -p "$handoff_logs"
+handoff_log="$handoff_logs/$(date -u +%Y%m%dT%H%M%SZ)-${handoff_mode}-$$.log"
+exec > >(tee -a "$handoff_log") 2>&1
+trap 'handoff_exit=$?; trap - EXIT; printf "HANDOFF_EXIT=%s MODE=%s LOG=%s\n" "$handoff_exit" "$handoff_mode" "$handoff_log"; exit "$handoff_exit"' EXIT
+printf 'HANDOFF_START ROOT=%s MODE=%s LOG=%s\n' "$handoff_root" "$handoff_mode" "$handoff_log"
+python3 - "$handoff_dir/GENOS_UNIFIED_V6_CUMULATIVE_20261002_R4.zip" "$handoff_root" "$handoff_mode" "${2:-}" <<'GENOS_V6_PY'
+import hashlib,json,os,subprocess,sys,types,zipfile
+from pathlib import Path
+print('PYTHON',sys.executable,sys.version.replace('\n',' '),flush=True)
+if sys.version_info < (3,11): raise ValueError('Python 3.11+ required')
+archive=Path(sys.argv[1]).resolve(strict=True);root=Path(sys.argv[2]).resolve(strict=True)
+mode=sys.argv[3];argument=sys.argv[4]
+expected='70b632248fb30665595baa069061db8b98491afb3c4fea41de43c7a1d58d68d4'
+actual=hashlib.file_digest(archive.open('rb'),'sha256').hexdigest()
+if actual!=expected:raise ValueError('R4 code ZIP SHA256 mismatch')
+print('CODE_ZIP_SHA256',actual,flush=True)
+with zipfile.ZipFile(archive) as z:
+ raw=z.read('06_TOOLS/OFFLINE/genos_code_replace.py')
+ manifest=json.loads(z.read('CODE_MANIFEST.json'))
+ names={r['path']:r for r in manifest['files']}
+ if hashlib.sha256(raw).hexdigest()!=names['06_TOOLS/OFFLINE/genos_code_replace.py']['sha256']:raise ValueError('Installer manifest mismatch')
+ installer=types.ModuleType('r4_checked_installer')
+ installer.__file__=str(archive.parent/'checked-installer.py')
+ exec(compile(raw,'checked-installer.py','exec'),installer.__dict__)
+if mode in ('check','apply'):
+ with installer.plain(root/'.genos-code-replacement.lock').open('a') as stream:
+  import fcntl
+  fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB)
+  installer.install(root,archive.parent,apply=mode=='apply',archive=archive)
+elif mode=='verify':
+ content,units,delivery=installer.full_payload(archive)
+ for name,(raw,permissions) in content.items():
+  target=installer.plain(root/name)
+  if not target.is_file() or installer.sha(target.read_bytes())!=installer.sha(raw):raise ValueError('Installed file differs: '+name)
+ print('INSTALLED_BYTES_VERIFIED',len(content),flush=True)
+elif mode=='gate':
+ command=[sys.executable,str(root/'06_TOOLS/COMMANDS/genos_release_gate.py'),'--code-zip',str(archive),'--deploy-root',str(root)]
+ generation=os.environ.get('GENOS_GENERATION')
+ if generation:
+  selected=Path(generation).resolve(strict=True)
+  print('SELECTED_GENERATION',selected,'MANIFEST_SHA256',installer.sha((selected/'manifest.json').read_bytes()),flush=True)
+  command+=['--generation',str(selected)]
+ subprocess.run(command,cwd=root,check=True)
+elif mode=='rollback':
+ if not argument:raise ValueError('Supply exact BACKUP/RECOVERY path printed by apply')
+ backup=Path(argument).resolve(strict=True)
+ receipt=json.loads((backup/'receipt.json').read_text())
+ if Path(receipt['root']).resolve()!=root:raise ValueError('Rollback root mismatch')
+ with installer.plain(root/'.genos-code-replacement.lock').open('a') as stream:
+  import fcntl
+  fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB)
+  installer.rollback(backup)
+else:raise ValueError('Modes: check apply verify gate rollback')
+print('HANDOFF_MODE_COMPLETE',mode,'GENOS_DEPLOYMENT=NOT_VERIFIED',flush=True)
+GENOS_V6_PY

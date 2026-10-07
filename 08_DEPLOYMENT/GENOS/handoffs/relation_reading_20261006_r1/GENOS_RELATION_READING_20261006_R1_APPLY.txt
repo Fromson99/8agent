@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+task_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+task_mode="${1:-apply}"
+task_logs="${GENOS_HANDOFF_LOG_DIR:-$task_dir/relation-reading-r1-logs}"
+mkdir -p "$task_logs"
+task_log="$task_logs/$(date -u +%Y%m%dT%H%M%SZ)-$task_mode-$$.log"
+exec > >(tee -a "$task_log") 2>&1
+trap 'task_exit=$?; trap - EXIT; printf "SOURCE_RECALL_TIMEOUT_EXIT=%s LOG=%s\n" "$task_exit" "$task_log"; exit "$task_exit"' EXIT
+if [[ -n "${GENOS_PYTHON_DIR:-}" ]]; then export PATH="$GENOS_PYTHON_DIR:$PATH"; elif [[ -x /venv/bin/python3 ]]; then export PATH="/venv/bin:$PATH"; fi
+python3 - "$task_dir/GENOS_RELATION_READING_20261006_R1.zip" "${GENOS_DEV:-$HOME/DEV}" "$task_mode" "${2:-}" <<'LOADER_PY'
+import fcntl,hashlib,importlib.util,json,os,subprocess,sys,types,zipfile
+from pathlib import Path
+print('PYTHON',sys.executable,sys.version.replace('\n',' '),flush=True)
+if sys.version_info<(3,11):raise ValueError('Python 3.11+ required')
+archive=Path(sys.argv[1]).resolve(strict=True);root=Path(sys.argv[2]).resolve(strict=True)
+mode,arg=sys.argv[3:5]
+def sha(path):
+ with Path(path).open('rb') as stream:return hashlib.file_digest(stream,'sha256').hexdigest()
+if sha(archive)!='ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2':raise ValueError('Code ZIP hash mismatch')
+with zipfile.ZipFile(archive) as z:
+ manifest_raw=z.read('CODE_MANIFEST.json');manifest=json.loads(manifest_raw)
+ raw=z.read('06_TOOLS/OFFLINE/genos_code_replace.py')
+ row=next(r for r in manifest['files'] if r['path']=='06_TOOLS/OFFLINE/genos_code_replace.py')
+ if hashlib.sha256(raw).hexdigest()!=row['sha256']:raise ValueError('Installer hash mismatch')
+ installer=types.ModuleType('checked_loader_installer');installer.__file__=str(archive.parent/'checked-installer.py')
+ exec(compile(raw,installer.__file__,'exec'),installer.__dict__)
+print('CODE_ROOT',root,'CODE_ZIP_SHA256',sha(archive),'CODE_MANIFEST_SHA256',hashlib.sha256(manifest_raw).hexdigest(),flush=True)
+def pins(applied):
+ for row in manifest['required_files']+manifest['files']:
+  path=installer.plain(root/row['path']);path.resolve().relative_to(root)
+  allowed={row['sha256']} if applied else {row['sha256'],*row.get('allowed_predecessors',[])}
+  if not path.exists() and not applied and row.get('allow_missing_predecessor'):continue
+  if not path.is_file() or sha(path) not in allowed:
+   raise ValueError('CHECKOUT_DRIFT: '+row['path']+'; existing file preserved')
+env={**os.environ,'PYTHONPATH':str(root/'02_BACKEND'),'LAWRAG_WORKSPACE_ROOT':str(root),'GENOS_AUTO_WARMUP':'0'}
+def selected():
+ value=arg if mode in ('verify','gate') and arg else os.environ.get('GENOS_GENERATION')
+ if not value:raise ValueError('Supply actual GENOS_GENERATION or an explicit existing generation path; no automatic selection')
+ path=Path(value)
+ if not path.is_absolute() or path.is_symlink() or not path.is_dir():raise ValueError('Existing absolute generation directory required')
+ path=path.resolve(strict=True)
+ print('GENERATION',path,'MANIFEST_SHA256',sha(path/'manifest.json'),flush=True)
+ return path
+def loader_check(generation):
+ code="""import importlib.util,os,sys
+from pathlib import Path
+root=Path(sys.argv[1]);os.environ['GENOS_GENERATION']=sys.argv[2]
+spec=importlib.util.spec_from_file_location('field_loader_check',root/'service/service.py')
+entry=importlib.util.module_from_spec(spec);spec.loader.exec_module(entry)
+runtime=entry._runtime
+code_root,generation,binding=runtime._resolve_binding()
+if code_root!=root or generation!=Path(sys.argv[2]):raise ValueError('Unexpected service binding')
+runtime._require_pecab_generation(generation,code_root)
+print('SERVICE_LOADER_CONTRACT PASS',binding['mode'],str(generation),flush=True)
+"""
+ subprocess.run([sys.executable,'-c',code,str(root),str(generation)],cwd=root,env=env,check=True)
+if mode in ('check','apply'):
+ with installer.plain(root/'.genos-code-replacement.lock').open('a') as lock:
+  fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB);pins(False)
+  installer.install(root,archive.parent,apply=mode=='apply',archive=archive)
+  if mode=='apply':pins(True)
+elif mode in ('verify','gate'):
+ pins(True);generation=selected();loader_check(generation)
+ if mode=='verify':
+  subprocess.run([sys.executable,str(root/'06_TOOLS/COMMANDS/genos_generation_e2e.py'),'--code-root',str(root),'--generation',str(generation)],cwd=root,env={**env,'GENOS_GENERATION':str(generation)},check=True)
+ else:
+  subprocess.run([sys.executable,str(root/'06_TOOLS/COMMANDS/genos_release_gate.py'),'--code-zip',str(archive),'--deploy-root',str(root),'--generation',str(generation)],cwd=root,env={**env,'GENOS_GENERATION':str(generation)},check=True)
+elif mode=='rollback':
+ if not arg:raise ValueError('Supply exact backup path printed by apply')
+ backup=installer.plain(Path(arg).resolve(strict=True))
+ if Path(json.loads((backup/'receipt.json').read_text())['root']).resolve()!=root:raise ValueError('Rollback root mismatch')
+ with installer.plain(root/'.genos-code-replacement.lock').open('a') as lock:
+  fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB);installer.rollback(backup)
+else:raise ValueError('Modes: check apply verify gate rollback')
+print('COMPLETE',mode,'ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN',flush=True)
+LOADER_PY

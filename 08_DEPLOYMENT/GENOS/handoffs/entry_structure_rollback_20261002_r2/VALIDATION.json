@@ -1,0 +1,17 @@
+{
+  "tests_passed": 9,
+  "cases": [
+    "remove-only-added-main",
+    "idempotence-and-undo-False",
+    "restore-existing-main",
+    "idempotence-and-undo-True",
+    "refuse-unknown-main",
+    "refuse-changed-backup",
+    "preserve-concurrent-edit-on-undo",
+    "refuse-ambiguous-backup",
+    "refuse-symlink"
+  ],
+  "bash_syntax": "PASS",
+  "python311_syntax": "PASS",
+  "genos_status": "NOT_VERIFIED"
+}

@@ -1,0 +1,83 @@
+RAG 적중 단위 조회·읽기·판단 루프 수정 R3 (2026-10-06)
+
+이번에 적용할 버전은 GENOS_RAG_CONTROL_FLOW_20261006_R3입니다.
+이전 progressive reading R1을 포함한 누적본입니다. RAG control flow R1/R2는 발송하지 않은 검증 중간본입니다.
+
+첨부
+1. GENOS_RAG_CONTROL_FLOW_20261006_R3.zip: 검증한 코드와 engine pin
+2. GENOS_RAG_CONTROL_FLOW_20261006_R3_APPLY.txt: check/apply/verify/gate/rollback 전체 실행 스크립트
+3. GENOS_RAG_CONTROL_FLOW_20261006_R3_WORKFLOW_PASTE_ALL.txt: 워크플로우 Python 단계 전체 교체 코드
+4. GUIDE_UTF8.txt: 이 안내
+
+수정 내용
+- 검색에 걸린 최소 구조화 단위의 미리보기와 좌표를 유지합니다.
+- 큰 원문 때문에 다른 문서의 첫 적중이 밀리지 않도록 묶음 순서를 유지합니다.
+- 읽지 않을 후보의 상위 전체 범위를 미리 계산하지 않습니다.
+- 펼칠 때 이미 검증한 문자 구간을 재사용하고, 읽지 않은 구간만 읽습니다.
+- 충분하면 중단합니다. 확장으로 새 원문이 들어오면 새 원문을 보고 충분성을 다시 확인합니다.
+- 미제시 연결은 다음 메뉴로 이어가며, 같은 검색을 처음부터 반복하지 않습니다.
+- 새 범위에서 드러난 필수 연결을 다시 확인하고, 해소된 보류를 제거합니다.
+- 같은 조건·witness의 판단을 재사용합니다. 요청 중단 시 수락한 선택과 읽기·연결 커서를 복원합니다.
+- 호출별 제한 시간을 실제 모델 호출까지 전달합니다.
+- 워크플로우의 AD 메타데이터를 API에서 수용하고 서명 전에 결속합니다.
+
+검증
+발송 ZIP에서 복원한 코드의 모의 RAG/도구/숏컷/AD 계약 169개 PASS.
+13개 알려진 이전 코드 상태의 적용·재실행·원복과 변조 거부 등 인계 검사 16개 PASS.
+Python 3.11 문법 및 bash 문법 PASS. JavaScript 파일은 ZIP에 없습니다.
+외부 모델 호출은 0회입니다. 실제 내부 LLM 정확도·현장 응답 시간·GENOS 배포는 아직 확인하지 않았습니다.
+
+실행 전 반드시 지정할 값
+GENOS_DEV: 기존 Git checkout 절대경로. 기본값은 ~/DEV입니다.
+GENOS_GENERATION: 현재 코드서빙이 선택하는 실제 generation의 절대경로를 직접 지정합니다.
+기존 NFS generation/캐시/manifest/CURRENT를 수정하거나 재구축하지 않습니다.
+
+아래는 ZIP과 실행 TXT를 같은 폴더에 저장한 뒤 실행합니다.
+GENOS_GENERATION의 예시 문자열은 실제 경로로 교체해야 합니다.
+
+export GENOS_DEV="$HOME/DEV"
+export GENOS_GENERATION="/nfs-root/반드시_현재_서빙의_실제_generation_절대경로로_교체"
+task_script="$(realpath GENOS_RAG_CONTROL_FLOW_20261006_R3_APPLY.txt)"
+task_zip="$(realpath GENOS_RAG_CONTROL_FLOW_20261006_R3.zip)"
+
+bash "$task_script" check "$GENOS_GENERATION"
+bash "$task_script" apply "$GENOS_GENERATION"
+bash "$task_script" verify "$GENOS_GENERATION"
+
+각 명령은 처음부터 지속 로그를 남깁니다. 성공 종료는 RAG_CONTROL_FLOW_EXIT=0입니다.
+apply가 출력한 정확한 backup 경로를 보관합니다. 이미 R3가 적용됐으면 안전하게 재확인합니다.
+알려지지 않은 파일 수정이나 cache compiler 결속 불일치는 기존 파일을 보존하고 중단합니다.
+Python은 python3를 사용하며 실제 실행 파일과 버전을 로그에 남깁니다.
+
+실제 push 대상 checkout에서 다음을 수행합니다. 다른 변경을 함께 stage하지 않습니다.
+
+cd "$GENOS_DEV"
+git diff --check
+mapfile -t task_files < <(python3 - "$task_zip" <<'PATHS_PY'
+import json,sys,zipfile
+with zipfile.ZipFile(sys.argv[1]) as z:
+    for row in json.loads(z.read('CODE_MANIFEST.json'))['files']:
+        print(row['path'])
+print('CODE_MANIFEST.json')
+PATHS_PY
+)
+git add -- "${task_files[@]}"
+git commit -m "Fix structural RAG reads and investigation resume"
+bash "$task_script" gate "$GENOS_GENERATION"
+git rev-parse HEAD
+git push
+
+이후 그 commit과 같은 generation을 선택하는 새 코드서빙 리비전을 배포합니다.
+워크플로우 Python 단계는 WORKFLOW_PASTE_ALL.txt의 전체 내용으로 별도 교체하고 저장합니다.
+이번에는 워크플로우/API 입력 계약도 바뀌므로 편집기 교체가 필요합니다.
+현장 질의 검증은 워크플로우 테스트 화면에서 수행합니다. 직접 코드서빙 테스트 UI/API는 요구하지 않습니다.
+원문 단순 조회, 상위 범위 확장, 필수 연결 확인, 숏컷 재사용을 확인하고 요청 ID와 로그를 보관합니다.
+코드 적용/gate/Git push/리비전 배포/워크플로우 교체/실제 질의 성공은 각각 별도 단계입니다.
+
+원복
+bash "$task_script" rollback "/apply가_출력한_정확한_backup_절대경로"
+이미 새 리비전을 배포했다면 이전 코드 리비전과 그때 검증한 generation으로 복귀합니다.
+워크플로우도 이전 편집기 코드로 복원합니다.
+
+ZIP SHA-256
+4ab0de44253bf21f68cb3ebe6c128d2d6226309ff9d1a3389ca558f799687771

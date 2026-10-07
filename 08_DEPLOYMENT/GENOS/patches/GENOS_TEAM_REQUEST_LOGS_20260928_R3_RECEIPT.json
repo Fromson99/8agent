@@ -1,0 +1,84 @@
+{
+  "patch": "team-request-logs-20260928-r3",
+  "replaces": [
+    "team-request-logs-20260928-r1",
+    "team-request-logs-20260928-r2"
+  ],
+  "package_zip": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/patches/GENOS_TEAM_REQUEST_LOGS_20260928_R3.zip",
+  "package_zip_sha256": "b9d38e57458171b7f5d65e8cf1a5ab50c8320108179fb65525c96ec185eb1903",
+  "code_manifest_sha256": "e381ce96cabf12a30fb4893e6482ee7d171558100b6dd3ebac12f5da48bcf38f",
+  "execution_txt": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/patches/GENOS_TEAM_REQUEST_LOGS_20260928_R3_APPLY.txt",
+  "execution_txt_sha256": "491f8c274b7021c925f83c22b55912f510b36100984cbb0b968131f44a6078d4",
+  "runtime_code_root": "/home/jin/8-AGENT",
+  "push_checkout": null,
+  "deployment_commit": null,
+  "generation_path": null,
+  "generation_manifest_sha256": null,
+  "code_serving_revisions": {
+    "risk_team": null,
+    "financial_team": null
+  },
+  "email_sent": true,
+  "related_tests_passed": 74,
+  "observed_field_report_sha256": "f2dba82613dbe5893074a45d6229f7e04855092e44b08ce7ed02eb8e447d4780",
+  "observed_field_report_bytes": 39247,
+  "field_report_source_verified": false,
+  "report_after_sha256": null,
+  "structural_assets": {
+    "structural_report.py": "4a06c4720c0e4feff2e6f2a423dbb0aa9dceee7d3c1d8a9e00ddd6abf96e7198",
+    "REPORT_TEMPLATES.json": "b1da75e84fbc1363def4281402509d648dd21cdab16a914615d9db239729bae2"
+  },
+  "zip_inventory_hashes_verified": true,
+  "embedded_zip_identical": true,
+  "target_runtime_tested": "actual Python 3.11 subprocess",
+  "attachments": [
+    {
+      "name": "GENOS_TEAM_REQUEST_LOGS_20260928_R3.zip",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/patches/GENOS_TEAM_REQUEST_LOGS_20260928_R3.zip",
+      "bytes": 30944,
+      "sha256": "b9d38e57458171b7f5d65e8cf1a5ab50c8320108179fb65525c96ec185eb1903"
+    },
+    {
+      "name": "GENOS_TEAM_REQUEST_LOGS_20260928_R3_APPLY.txt",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/patches/GENOS_TEAM_REQUEST_LOGS_20260928_R3_APPLY.txt",
+      "bytes": 46808,
+      "sha256": "491f8c274b7021c925f83c22b55912f510b36100984cbb0b968131f44a6078d4"
+    },
+    {
+      "name": "GENOS_TEAM_REQUEST_LOGS_20260928_R3_GUIDE.txt",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/patches/GENOS_TEAM_REQUEST_LOGS_20260928_R3_GUIDE.txt",
+      "bytes": 6683,
+      "sha256": "bfa3c2bc949e0ebad58aee9bc5d5295db6233a7f899434ba0ae00b3d3813d1e5"
+    },
+    {
+      "name": "GENOS_TEAM_REQUEST_LOGS_20260928_R3_SHA256SUMS.txt",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/patches/GENOS_TEAM_REQUEST_LOGS_20260928_R3_SHA256SUMS.txt",
+      "bytes": 330,
+      "sha256": "f80d819dcbde55fa1e09d6347be9737c16761c3327b3a0c13f983dc20463fbdb"
+    }
+  ],
+  "embedded_txt_check_apply_rerun_commit_gate_rollback": "PASS on actual Python 3.11 through DEV symlink for LF and CRLF",
+  "recipient": "hyungjininfocz.son@partner.samsung.com",
+  "message_id": "1a0e6bb06525c845",
+  "sent_at_utc": "2026-09-28T06:37:32.514832+00:00",
+  "sent_attachment_bytes_verified": true,
+  "transport_verification": "sender Gmail stored raw MIME decoded and compared size/SHA-256; recipient download unverified",
+  "sent_attachments": {
+    "GENOS_TEAM_REQUEST_LOGS_20260928_R3.zip": {
+      "bytes": 30944,
+      "sha256": "b9d38e57458171b7f5d65e8cf1a5ab50c8320108179fb65525c96ec185eb1903"
+    },
+    "GENOS_TEAM_REQUEST_LOGS_20260928_R3_APPLY.txt": {
+      "bytes": 46808,
+      "sha256": "491f8c274b7021c925f83c22b55912f510b36100984cbb0b968131f44a6078d4"
+    },
+    "GENOS_TEAM_REQUEST_LOGS_20260928_R3_GUIDE.txt": {
+      "bytes": 6683,
+      "sha256": "bfa3c2bc949e0ebad58aee9bc5d5295db6233a7f899434ba0ae00b3d3813d1e5"
+    },
+    "GENOS_TEAM_REQUEST_LOGS_20260928_R3_SHA256SUMS.txt": {
+      "bytes": 330,
+      "sha256": "f80d819dcbde55fa1e09d6347be9737c16761c3327b3a0c13f983dc20463fbdb"
+    }
+  }
+}

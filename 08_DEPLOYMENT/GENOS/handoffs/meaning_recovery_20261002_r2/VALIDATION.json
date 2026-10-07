@@ -1,0 +1,31 @@
+{
+  "schema_version": "genos-meaning-recovery-validation-r2",
+  "command": ".venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_genos_meaning_recovery_r2.py 05_TESTS/CONTRACTS/test_genos_meaning_recovery.py 05_TESTS/CONTRACTS/test_genos_meaning_variants.py 05_TESTS/CONTRACTS/test_genos_meaning_bulk.py",
+  "tests_passed": 58,
+  "result": "58 passed in 15.76s",
+  "source_root": "/home/jin/8-AGENT",
+  "runner_sha256": "b9eaee02e56458fbf40ff9453aaf64c7e302e03fb7bea71d685749755229079a",
+  "base_runner_sha256": "d3c75593027bf56681d76b36c58ac2695ce5c721f1a385f99a987a8b0754f701",
+  "files": {
+    "GENOS_MEANING_RECOVERY_20261002_R2.zip": "7a2dc758566a6e2c9e63ab7f40b2cc4c3f3d22892c743329fe4d462d9906e3a7",
+    "GENOS_MEANING_RECOVERY_20261002_R2.txt": "e4804e266d2e7fc3f753888cc2c292b0720a8703dcda8b61eeb0a4a7b1c68934",
+    "GENOS_MEANING_RECOVERY_20261002_R2_GUIDE_UTF8.txt": "382028ffb877987569634b65778f2ca5a1b9b160e3d2b307b0c0029d112b16a7"
+  },
+  "python311_compile": {
+    "version": "3.11.15",
+    "units": 8,
+    "passed": true
+  },
+  "photo_immutable_plan_failure_reproduced": true,
+  "actual_alternate_import_path_preflight_verified": true,
+  "plan_and_original_r1_checkpoint_preserved": true,
+  "independent_file_copies_and_real_drift_rejected": true,
+  "data_symlink_policy_preserved": true,
+  "log_viewer_does_not_signal_worker": true,
+  "historical_r1_payloads_unchanged": true,
+  "scripted_models_only": true,
+  "field_build_verified": false,
+  "field_plan_diff_confirmed": false,
+  "field_serving_revision": null,
+  "activated": false
+}

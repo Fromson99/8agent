@@ -1,0 +1,100 @@
+{
+  "basis": "User requested cumulative v6 handoff; functional integration, no model comparison or MAIN promotion",
+  "parent": "ADR-0623/compact-reference/rev-001",
+  "parent_revision_sha256": "dd8129608be5526191725f4b406ea99cbe5d41b6bf266b13a067dcaa2e22c2c6",
+  "adopted": [
+    {
+      "path": "02_BACKEND/semantic_runtime/document_agent.py",
+      "before_sha256": "9aefa423a1749e0929a6572364944b10f27306d5f25bec158a734f2abf389276",
+      "frozen_source_sha256": "dd1210e146338f40d54d0299c6a9a7e09cbdd085b71d6903c7f845f0ccad77e9",
+      "frozen_source_path": "02_BACKEND/lawrag/research/candidates/adr_0623/compact-reference/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/document_agent.py"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent_adapter.py",
+      "before_sha256": "babff01eb220b284f225b90e5aec2976f5c1051e84523026a3eedfd7c5786ad4",
+      "frozen_source_sha256": "dffee418fb18db46ba429069d813af32382301954f69b930437814aa42bf845b",
+      "frozen_source_path": "02_BACKEND/lawrag/research/candidates/adr_0623/compact-reference/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent_adapter.py"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py",
+      "before_sha256": "4e4af194e7faa18e50646a0b8331349c87b49c7a2b7b6dfbbecc7f4456e64107",
+      "frozen_source_sha256": "389cbeb0ac62af8a50194ee9bc23424f764ed393f721fb68f71e97fc97f217cc",
+      "frozen_source_path": "02_BACKEND/lawrag/research/candidates/adr_0623/compact-reference/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+      "before_sha256": "650d64c5a4e0ab55571183dd92c3f18dc05a5ad8aeb50c5b2b07863ac2a3f1d8",
+      "frozen_source_sha256": "572d65f7491f67d67d9d086c0dbaad362deb524610a11205ba0ec6217be9a0b5",
+      "frozen_source_path": "02_BACKEND/lawrag/research/candidates/adr_0623/compact-reference/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/memory_rag.py"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall.py",
+      "before_sha256": "a9048a85c33c3981e233d1220848593bb87aff25088e89df735049d1401402f7",
+      "frozen_source_sha256": "90aa66f626456eb3697a8281380dc55e46d2e96b1453be3d50dec7c404f9ba5a",
+      "frozen_source_path": "02_BACKEND/lawrag/research/candidates/adr_0623/compact-reference/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/source_recall.py"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py",
+      "before_sha256": "c96d5e02bb5416a701f81e2fd3e665e2ea8409443e9c1724acd7a75ef88b0822",
+      "frozen_source_sha256": "8286643a5836e6261a2d0b05c7d073ad6e84e1c33faa55b02c533b45fbb05e94",
+      "frozen_source_path": "02_BACKEND/lawrag/research/candidates/adr_0623/compact-reference/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_selection.py",
+      "before_sha256": "b5e159d1920d92d9915ddcab47be323472be73b620478c69ff501a4cc871be1a",
+      "frozen_source_sha256": "0e397b1e13ea6cfe1a8c6e593c5858deaf159a7bd56cc26d3b36a449c3a44090",
+      "frozen_source_path": "02_BACKEND/lawrag/research/candidates/adr_0623/compact-reference/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/source_selection.py"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_publication.py",
+      "before_sha256": "75d50f9facc3505d2f0255432d04f4b5f712baebe0889278f2de8eda8b5db15d",
+      "frozen_source_sha256": "634a2d722b11d613c3503ee9e3058d46f821050af7fe277e81a3a19d333d5ac6",
+      "frozen_source_path": "02_BACKEND/lawrag/research/candidates/adr_0623/compact-reference/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/unified_publication.py"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+      "before_sha256": "61b6e38db302c800b01f850378b7322209472193a454a12ea7e0b7a917ce05af",
+      "frozen_source_sha256": "a26b3aaca9cbfb7555ee37dd407befb39c1bac3a72e21b75dbadb11070264f2c",
+      "frozen_source_path": "02_BACKEND/lawrag/research/candidates/adr_0623/compact-reference/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/unified_rag.py"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "before_sha256": "e0ce446ea863ae53e4c04db4db2ef6b28310db99f8e78c6be42dff5421283d73",
+      "frozen_source_sha256": "1ae49e21f073302e76ad93d01e6185434e593347647f64dff16960e3a312aa4f",
+      "frozen_source_path": "02_BACKEND/lawrag/research/candidates/adr_0623/compact-reference/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "before_sha256": null,
+      "frozen_source_sha256": "886ce967405428c76401fca2f476f98c588fe60ee3b103039a8eef95021a9c36",
+      "frozen_source_path": "02_BACKEND/lawrag/research/candidates/adr_0623/compact-reference/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/unit_reading.py"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_selection.py",
+      "before_sha256": null,
+      "frozen_source_sha256": "2477a5cccb1a382f23602bc535d51701c79045aade8021ad8b5c1ac61350cc8f",
+      "frozen_source_path": "02_BACKEND/lawrag/research/candidates/adr_0623/compact-reference/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/unit_selection.py"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+      "before_sha256": null,
+      "frozen_source_sha256": "e717ac2d74b4c74de974390425c5bc3b3f3da8e4e91e64a164a6bcbb05c546e9",
+      "frozen_source_path": "02_BACKEND/lawrag/research/candidates/adr_0623/compact-reference/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/unit_relations.py"
+    }
+  ],
+  "preserved_current": [
+    "corrected_memory NFS DELETE journaling",
+    "unit_fulltext validation and streaming builder",
+    "fulltext manifest dispatch",
+    "exploration minimum-unit location",
+    "term_generation and fulltext_stage",
+    "service/service.py adapter"
+  ],
+  "known_unresolved": [
+    "CM003 exception body skipped",
+    "CM051 cross-unit id/scope selection can fail",
+    "reference collection remains article-wide"
+  ],
+  "quality_certified": false,
+  "active_pointer_changed": false
+}

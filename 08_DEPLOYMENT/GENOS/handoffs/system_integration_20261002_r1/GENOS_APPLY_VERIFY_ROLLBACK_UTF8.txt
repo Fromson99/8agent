@@ -1,0 +1,60 @@
+2026-10-02 전체 시스템 통합 R1 — 현장 실행 안내
+
+이 TXT와 RUN.sh, apply.py, verify.py, code.zip, CODE_MANIFEST.json, DELIVERY.json을 같은 반입 폴더에 둡니다.
+현재 터미널에서 그 반입 폴더를 연 상태로 아래 명령을 순서대로 사용합니다.
+기본 적용 대상은 기존 ~/DEV입니다. 새 코드 후보 폴더만 만들지 않습니다.
+RUN.sh는 첫 작업부터 반입 폴더 logs/에 로그와 최종 종료 상태를 남깁니다.
+실제 실행기는 python3이고 경로와 버전을 로그에 기록합니다.
+
+[1] 파일 검증과 적용 전 점검
+bash RUN.sh check
+
+[2] 기존 파일 백업 후 코드 적용과 전체 해시 확인
+bash RUN.sh apply
+
+같은 명령을 다시 실행하면 ALREADY INSTALLED와 파일 동일성을 확인합니다.
+적용 영수증과 수정 전 파일은 ~/DEV/09_ARTIFACTS/BACKUPS/code-replacement/ 아래에 남습니다.
+실패한 설치가 있거나 적용 후 코드가 바뀌었으면 멈춥니다. 무시하고 덮어쓰지 마세요.
+
+[3] 별도 재확인
+bash RUN.sh verify
+
+[4] 기존 현장 설정의 NFS generation 결속 확인
+bash RUN.sh generation
+
+이 명령은 읽기 전용이며 모델을 호출하지 않습니다.
+종료 3은 선택된 데이터가 없어 확인하지 못한 상태입니다. 새 데이터 생성/활성화로 바꾸어 기록하지 않습니다.
+현재 설정과 다른 generation을 이 명령을 통과시키기 위해 임의로 선택하지 않습니다.
+
+[5] 현장 Git와 배포
+해당 코드 변경을 검토하고 현장 Git에서 커밋한 다음 아래 검사를 실행합니다.
+이 폴더의 증거 ZIP, 환경 파일, 비밀키, NFS 데이터와 백업은 커밋하지 않습니다.
+bash RUN.sh gate
+
+검사 통과 후 현장 절차로 Git push 및 코드서빙 리비전 배포를 진행합니다.
+반드시 실제 커밋 SHA, ZIP SHA, 데이터 generation/manifest SHA, 코드서빙 리비전을 기록합니다.
+RUN.sh는 Git commit/push/코드서빙 배포를 자동 실행하지 않습니다.
+
+[6] 워크플로우 편집기
+WORKFLOW_PASTE_ALL.txt의 전체 Python 코드를 워크플로우 Python 단계에 별도로 붙여넣습니다.
+멀티턴 기능 GENOS_MEMORY_ENABLED는 기본 0입니다.
+활성화 조건 및 GENOS_MEMORY_SIGNING_KEY, TEAM_ID, 신뢰된 스튜디오 사용자/대화 ID는 README.md를 확인합니다.
+비밀키를 소스, 채팅이나 출력 로그에 넣지 않습니다.
+질의와 warmup 검증은 워크플로우 테스트 화면에서 수행합니다.
+
+[7] 과거 증거 파일 확인(운영 DB 적재 아님)
+bash RUN.sh evidence
+
+evidence.zip는 연구 이력 보관용입니다. 실험 SQLite를 운영 온톨로지 DB에 복사하지 않습니다.
+
+[8] 코드 복구
+적용 때 생성된 receipt.json의 실제 백업 폴더를 확인한 뒤 다음 형식으로 실행합니다.
+bash RUN.sh rollback /home/실제사용자/DEV/09_ARTIFACTS/BACKUPS/code-replacement/실제백업폴더
+
+위 경로는 예시입니다. 적용 로그에 기록된 실제 절대경로를 사용합니다.
+다른 작업의 코드 변경이 있으면 복구가 중단됩니다. 해당 변경부터 보존·검토합니다.
+Git 상태 복구, 이전 코드서빙 리비전 재선택, 이전 워크플로우 코드 복구는 별도입니다.
+원문 데이터/세대/환경 파일/새 memory-v2 DB를 지우지 않습니다.
+
+현재 상태: 로컬 MAIN 작업 코드 통합 및 반입 준비. 활성 MAIN 전환과 GENOS 현장 배포는 미실행.
+계약 검사: 292개 중 290개 통과, 기존 용어 탐색 실패 2개 유지. 법률 정답률 검증과 구분합니다.

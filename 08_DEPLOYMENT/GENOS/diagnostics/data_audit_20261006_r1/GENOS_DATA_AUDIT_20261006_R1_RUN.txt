@@ -1,0 +1,1218 @@
+#!/usr/bin/env bash
+# GENOS data audit R1: standalone, standard-library Python, no code installation.
+set -Eeuo pipefail
+umask 077
+GENOS_AUDIT_LAUNCHER_ROOT="${GENOS_DATA_AUDIT_LOG_ROOT:-$HOME/DEV/TRANSFER/data-audit-launcher-logs}"
+mkdir -p "$GENOS_AUDIT_LAUNCHER_ROOT"
+GENOS_AUDIT_LAUNCHER_RUN="$(mktemp -d "$GENOS_AUDIT_LAUNCHER_ROOT/run-$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX")"
+exec > >(tee -a "$GENOS_AUDIT_LAUNCHER_RUN/run.log") 2>&1
+trap 'GENOS_AUDIT_EXIT=$?; printf "DATA_AUDIT_EXIT=%s\nLAUNCHER_LOG=%s\n" "$GENOS_AUDIT_EXIT" "$GENOS_AUDIT_LAUNCHER_RUN/run.log"; printf "{\"exit_code\":%s}\n" "$GENOS_AUDIT_EXIT" > "$GENOS_AUDIT_LAUNCHER_RUN/exit.json"' EXIT
+printf 'GENOS DATA AUDIT R1 START UTC=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+command -v python3
+python3 -c 'import sys; print("PYTHON_EXECUTABLE="+sys.executable); print("PYTHON_VERSION="+sys.version.replace("\n"," ")); assert sys.version_info >= (3,11), "Python 3.11+ required"'
+cat > "$GENOS_AUDIT_LAUNCHER_RUN/audit.py" <<'__GENOS_DATA_AUDIT_PY_R1__'
+#!/usr/bin/env python3
+"""GENOS immutable generation inspection. Python 3.11+, standard library only.
+
+No app imports, model/network calls, cache builds, data repair or pointer updates.
+All writes are confined to an explicitly selected, separate report directory.
+"""
+import argparse
+from collections import Counter
+from datetime import datetime, timezone
+import hashlib
+import html
+import json
+import os
+from pathlib import Path
+import platform
+import sqlite3
+import sys
+import time
+
+VERSION = 'genos-data-audit-v1'
+SOURCE_SCHEMAS = {'term-source-generation-v1', 'term-source-generation-v2'}
+NAV_SCHEMAS = {'term-navigation-index-v' + str(i) for i in range(2, 8)}
+FTS_SCHEMAS = {'semantic-fulltext-v2', 'semantic-unit-fulltext-v1'}
+AUDIT_TABLES = ('link_catalogue', 'link_occurrence', 'occurrence_evidence', 'occurrence_origin')
+IDENTITY_OPTIONS = ('audit_root', 'selection', 'status_report', 'status_db', 'status_attempt', 'code_root', 'raw_root')
+LABELS = {'document': '문서 정보', 'units': '마디 구조와 직접 소유 본문', 'blocks': '전체 원문 블록',
+          'sources': '탐색용 조 단위 원문', 'term_links': '이 문서에 연결된 용어', 'definitions': '문서 정의와 적용 범위',
+          'references': '이 문서에서 나가는 명시 참조', 'incoming_references': '이 문서로 들어오는 참조',
+          'reference_candidates': '미확정 참조 후보', 'navigation_unit_map': '탐색 마디 연결', 'structure_anchors': '정확한 구조 범위',
+          'fulltext_units': '최소 단위 전문 색인 원문', 'fulltext_articles': '조 단위 전문 색인',
+          'document_frame': '문서 번호 체계', 'native_document_audit': '보존된 구조화 원문 감사',
+          'original_files': '실제 원본 파일 hash 확인', 'terms': '전체 등록 용어', 'term_edges': '전체 용어 관계',
+          'term_surfaces': '전체 용어 표기', 'audit:link_catalogue': '용어 연결 후보', 'audit:link_occurrence': '실제 용어 출현 구간',
+          'audit:occurrence_evidence': '출현과 용어 후보의 연결 근거', 'audit:occurrence_origin': '출현 연결의 출처'}
+
+
+def encoded(value):
+    return json.dumps(value, ensure_ascii=False, sort_keys=True)
+
+
+def digest(value):
+    return hashlib.sha256(encoded(value).encode()).hexdigest()
+
+
+def text_hash(value):
+    return hashlib.sha256(value.encode()).hexdigest()
+
+
+def stamp():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def signature(path):
+    s = path.stat()
+    return [s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns]
+
+
+def file_hash(path, progress=None):
+    before = signature(path)
+    h = hashlib.sha256()
+    size = before[2]
+    done = 0
+    last = time.monotonic()
+    with path.open('rb') as f:
+        while chunk := f.read(4 * 1024 * 1024):
+            h.update(chunk)
+            done += len(chunk)
+            if progress and time.monotonic() - last >= 5:
+                progress('hash', path=str(path), done=done, total=size)
+                last = time.monotonic()
+    if signature(path) != before:
+        raise ValueError('File changed while hashing: ' + str(path))
+    return h.hexdigest()
+
+
+def decode(text):
+    def unique(pairs):
+        out = {}
+        for key, value in pairs:
+            if key in out:
+                raise ValueError('Duplicate JSON key: ' + key)
+            out[key] = value
+        return out
+    return json.loads(text, object_pairs_hook=unique)
+
+
+def load(path):
+    return decode(path.read_text(encoding='utf-8'))
+
+
+def atomic(path, value):
+    temp = path.with_suffix(path.suffix + '.tmp')
+    with temp.open('w', encoding='utf-8') as f:
+        f.write(encoded(value) + '\n')
+        f.flush()
+        os.fsync(f.fileno())
+    temp.replace(path)
+
+
+def contained(root, name):
+    p = Path(name)
+    if p.is_absolute() or '..' in p.parts or not p.parts:
+        raise ValueError('Invalid relative artifact path: ' + str(name))
+    result = root / p
+    result.resolve().relative_to(root.resolve())
+    if any(part.is_symlink() for part in (result, *result.parents)):
+        raise ValueError('Symlink in artifact path: ' + str(result))
+    return result
+
+
+def read_db(path):
+    if not path.is_file() or path.is_symlink():
+        raise ValueError('Database absent or symlink: ' + str(path))
+    # Completed generations must not depend on WAL/journal recovery. immutable=1
+    # additionally prevents SQLite from creating SHM or journal files on NFS.
+    for suffix in ('-wal', '-shm', '-journal'):
+        sidecar = Path(str(path) + suffix)
+        if sidecar.exists():
+            raise ValueError('Database has a sidecar; use a completed generation: ' + str(sidecar))
+    db = sqlite3.connect(path.resolve().as_uri() + '?mode=ro&immutable=1', uri=True)
+    db.row_factory = sqlite3.Row
+    db.execute('PRAGMA query_only=ON')
+    db.execute('PRAGMA temp_store=MEMORY')
+    return db
+
+
+def objects(db):
+    return {r['name']: r['type'] for r in db.execute(
+        "SELECT name,type FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%'")}
+
+
+def quote(name):
+    return '"' + name.replace('"', '""') + '"'
+
+
+def select_generation(args):
+    value = args.generation or os.environ.get('GENOS_GENERATION', '').strip()
+    pointer = None
+    if not value:
+        root_value = args.data_root or os.environ.get('GENOS_DATA_ROOT', '').strip()
+        if not root_value:
+            raise ValueError('Specify --generation or GENOS_GENERATION, or --data-root / GENOS_DATA_ROOT')
+        root = Path(root_value)
+        if not root.is_absolute():
+            raise ValueError('Data root must be absolute')
+        pointer_path = root / 'generations/CURRENT.json'
+        pointer = load(pointer_path)
+        if pointer.get('schema_version') != 'genos-current-generation-v1':
+            raise ValueError('Unsupported CURRENT pointer')
+        value = pointer.get('path', '')
+        Path(value).resolve().relative_to(root.resolve())
+        if file_hash(Path(value) / 'manifest.json') != pointer.get('manifest_sha256'):
+            raise ValueError('CURRENT manifest binding mismatch')
+        pointer = {'path': str(pointer_path), 'value': pointer, 'sha256': file_hash(pointer_path)}
+    path = Path(value)
+    if not path.is_absolute() or not path.is_dir():
+        raise ValueError('Generation must be an existing absolute directory')
+    if any(p.is_symlink() for p in (path, *path.parents)):
+        raise ValueError('Generation symlinks are forbidden')
+    return path.resolve(), pointer
+
+
+CSS = '''body{font-family:system-ui,sans-serif;margin:24px;line-height:1.55;color:#1f2937}
+table{border-collapse:collapse;width:100%;margin:12px 0}th,td{border:1px solid #d1d5db;padding:8px;text-align:left;vertical-align:top}
+th{background:#f3f4f6}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f8fafc;padding:12px}
+details{border:1px solid #cbd5e1;margin:8px 0;padding:8px}a{color:#0369a1}input,select,button{padding:8px;margin:4px}
+.ERROR{color:#b91c1c}.WARNING{color:#92400e}.muted{color:#64748b}.scroll{overflow:auto}code{overflow-wrap:anywhere}
+'''
+
+
+def esc(value):
+    return html.escape(str(value), quote=True)
+
+
+def header(title):
+    return '<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>' + esc(title) + '</title><style>' + CSS + '</style><body><h1>' + esc(title) + '</h1>'
+
+
+def detail(title, value):
+    return '<details><summary>' + esc(title) + '</summary><pre>' + esc(json.dumps(value, ensure_ascii=False, indent=2)) + '</pre></details>'
+
+
+def doc_file(did):
+    return hashlib.sha256(did.encode()).hexdigest() + '.html'
+
+
+class Audit:
+    def __init__(self, args, generation, pointer):
+        self.args, self.generation, self.pointer = args, generation, pointer
+        self.output = Path(args.output).resolve()
+        if self.output == generation or self.output.is_relative_to(generation) or generation.is_relative_to(self.output):
+            raise ValueError('Report output must be separate from the generation')
+        for protected in (args.audit_root, args.selection, args.status_report, args.status_db, args.raw_root):
+            if protected:
+                p = Path(protected).resolve()
+                if self.output == p or self.output.is_relative_to(p):
+                    raise ValueError('Report output is inside an input location: ' + str(p))
+        if any(p.is_symlink() for p in (Path(args.output), *Path(args.output).parents)):
+            raise ValueError('Report output symlinks are forbidden')
+        exists = self.output.exists()
+        if exists and not args.resume:
+            raise ValueError('Output exists; use a NEW directory or --resume')
+        if not exists and args.resume:
+            raise ValueError('Resume output does not exist')
+        self.output.mkdir(parents=True, exist_ok=True, mode=0o700)
+        import fcntl
+        self.lock = (self.output / 'audit.lock').open('a')
+        fcntl.flock(self.lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        if args.resume:
+            old = load(self.output / 'identity.json')
+            options = {k: getattr(args, k) for k in IDENTITY_OPTIONS}
+            if (old['generation'] != str(generation) or old['options'] != options
+                    or old['script_sha256'] != file_hash(Path(__file__).resolve())):
+                self.lock.close()
+                raise ValueError('Resume identity changed; use a NEW output directory')
+            # Validate BEFORE clearing or replacing any previous report records.
+            for p, expected in old['input_hashes'].items():
+                if file_hash(Path(p)) != expected:
+                    self.lock.close()
+                    raise ValueError('Resume input changed; use a NEW output directory: ' + p)
+        self.log = (self.output / 'run.log').open('a', encoding='utf-8', buffering=1)
+        self.emit('started', python=sys.version, executable=sys.executable, generation=str(generation))
+        self.result = {'schema_version': VERSION, 'started_at': stamp(), 'completed': False,
+                       'quality_certified': False, 'generation_path': str(generation),
+                       'python': platform.python_version(), 'executable': sys.executable,
+                       'network_calls': 0, 'model_calls': 0, 'files': [], 'database_counts': {},
+                       'stages': {}, 'manual_review': 'NOT_REVIEWED', 'deployment_revision_verified': False}
+        self.pins, self.dbs, self.manifests, self.coverage = {}, {}, {}, {}
+        self.issue_counts = Counter()
+        self.record_count = 0
+        self.last_progress = time.monotonic()
+        self.report = sqlite3.connect(self.output / 'report.sqlite')
+        self.report.row_factory = sqlite3.Row
+        self.report.executescript('''
+          CREATE TABLE IF NOT EXISTS record(kind TEXT,document_id TEXT,id TEXT,json TEXT);
+          CREATE INDEX IF NOT EXISTS record_doc ON record(document_id,kind);
+          CREATE INDEX IF NOT EXISTS record_id ON record(kind,id);
+          CREATE TABLE IF NOT EXISTS issue(severity TEXT,document_id TEXT,code TEXT,id TEXT,json TEXT);
+          CREATE INDEX IF NOT EXISTS issue_doc ON issue(document_id);
+          CREATE TABLE IF NOT EXISTS checkpoint(document_id TEXT PRIMARY KEY,html_sha256 TEXT);
+          CREATE TABLE IF NOT EXISTS known_document(id TEXT PRIMARY KEY);
+        ''')
+        self.report.execute('DELETE FROM issue')
+        self.report.execute('DELETE FROM record')
+        self.report.execute('DELETE FROM known_document')
+        self.report.commit()
+        (self.output / 'documents').mkdir(exist_ok=True)
+        (self.output / 'catalogues').mkdir(exist_ok=True)
+
+    def emit(self, event, **values):
+        line = encoded({'at': stamp(), 'event': event, **values})
+        print(line, flush=True)
+        self.log.write(line + '\n')
+
+    def progress(self, event, **values):
+        if time.monotonic() - self.last_progress >= 5:
+            self.emit(event, **values)
+            self.last_progress = time.monotonic()
+
+    def issue(self, severity, code, identifier='', document_id='', **values):
+        self.issue_counts[severity] += 1
+        self.report.execute('INSERT INTO issue VALUES(?,?,?,?,?)',
+                            (severity, document_id or '', code, str(identifier), encoded(values)))
+
+    def record(self, kind, did, ident, value):
+        self.report.execute('INSERT INTO record VALUES(?,?,?,?)', (kind, did or '', str(ident), encoded(value)))
+        self.record_count += 1
+        self.progress('records-progress', kind=kind, document_id=did, rows=self.record_count)
+        if self.record_count % 4096 == 0:
+            self.report.commit()
+
+    def payload(self, raw, kind, ident, did=''):
+        try:
+            value = decode(raw or '{}')
+            if not isinstance(value, dict):
+                raise ValueError('Expected JSON object')
+            return value
+        except (ValueError, TypeError) as exc:
+            self.issue('ERROR', 'INVALID_JSON', ident, did, kind=kind, error=str(exc))
+            return {}
+
+    def check(self, ok, code, ident='', did='', **values):
+        if not ok:
+            self.issue('ERROR', code, ident, did, **values)
+        return ok
+
+    def pin(self, path, expected=None):
+        path = Path(path).resolve()
+        actual = file_hash(path, self.emit)
+        self.pins[str(path)] = {'sha256': actual, 'stat': signature(path)}
+        row = {'path': str(path), 'sha256': actual, 'bytes': path.stat().st_size,
+               'expected': expected, 'hash_verified': expected is not None and actual == expected}
+        self.result['files'].append(row)
+        if expected is not None:
+            self.check(actual == expected, 'HASH_MISMATCH', str(path), expected=expected, actual=actual)
+        return actual
+
+    def manifest(self, label, root, expected=None):
+        path = contained(root, 'manifest.json')
+        self.pin(path, expected)
+        value = load(path)
+        self.manifests[label] = value
+        return value
+
+    def database(self, label, path, expected=None):
+        self.pin(path, expected)
+        db = read_db(path)
+        self.dbs[label] = db
+        db.set_progress_handler(lambda: self.progress('database-working', database=label) or 0, 100000)
+        messages = [r[0] for r in db.execute('PRAGMA integrity_check')]
+        self.check(messages == ['ok'], 'SQLITE_INTEGRITY', label, messages=messages)
+        for row in db.execute('PRAGMA foreign_key_check'):
+            self.issue('ERROR', 'SQLITE_FOREIGN_KEY', label, row=list(row))
+        counts = {}
+        for name in objects(db):
+            counts[name] = db.execute('SELECT count(*) FROM ' + quote(name)).fetchone()[0]
+            self.progress('database-counts', database=label, table=name, count=counts[name])
+        self.result['database_counts'][label] = counts
+        return db
+
+    def expected_counts(self, label, manifest):
+        counts = self.result['database_counts'][label]
+        for name, expected in manifest.get('counts', {}).items():
+            if name in counts:
+                self.check(counts[name] == expected, 'COUNT_MISMATCH', label + ':' + name,
+                           expected=expected, actual=counts[name])
+
+    def stage(self, name, action):
+        self.emit('stage-start', stage=name)
+        try:
+            action()
+            self.result['stages'][name] = 'COMPLETE'
+        except Exception as exc:
+            self.result['stages'][name] = 'INCOMPLETE'
+            self.issue('ERROR', 'STAGE_FAILED', name, error_type=type(exc).__name__, error=str(exc))
+            self.emit('stage-failed', stage=name, error=str(exc))
+        self.report.commit()
+
+    def inventory(self):
+        sm = self.manifest('source', self.generation)
+        if sm.get('schema_version') not in SOURCE_SCHEMAS:
+            raise ValueError('Unsupported source schema: ' + str(sm.get('schema_version')))
+        self.database('source', contained(self.generation, 'store.sqlite'), sm['store_sha256'])
+        self.expected_counts('source', sm)
+        expected_tables = {'document', 'source_unit', 'source_block'} if sm['schema_version'].endswith('v1') else {'document', 'source_unit', 'block_payload'}
+        actual_tables = {k for k, v in objects(self.dbs['source']).items() if v == 'table'}
+        self.check(actual_tables == expected_tables, 'SOURCE_STORAGE_TABLES', expected=sorted(expected_tables), actual=sorted(actual_tables))
+        nav = sm.get('navigation')
+        if not nav:
+            raise ValueError('Generation has no navigation binding')
+        nr = contained(self.generation, nav['path'])
+        nm = self.manifest('navigation', nr, nav['manifest_sha256'])
+        if nm.get('schema_version') not in NAV_SCHEMAS:
+            raise ValueError('Unsupported navigation schema')
+        self.database('navigation', contained(nr, 'navigation.sqlite'), nm['index_sha256'])
+        self.expected_counts('navigation', nm)
+        self.check(nm['generation_id'] == sm['generation_id'] and nm['source_store_sha256'] == sm['store_sha256'],
+                   'NAV_SOURCE_BINDING')
+        canonical = {k: v for k, v in sm.items() if k not in {'navigation', 'fulltext', 'fulltext_derivation'}}
+        # The product canonical JSON uses compact separators; avoid our report encoder.
+        canonical_hash = hashlib.sha256(json.dumps(canonical, ensure_ascii=False, sort_keys=True,
+                                                     separators=(',', ':')).encode()).hexdigest()
+        self.check(nm.get('source_manifest_sha256') == canonical_hash, 'NAV_MANIFEST_BINDING')
+
+    def optional_assets(self):
+        sm = self.manifests['source']
+        for label in ('fulltext', 'glossary', 'audit'):
+            self.stage(label + '-inventory', lambda label=label: self.asset(label, sm))
+        for name, arg in (('selection', self.args.selection), ('status_report', self.args.status_report)):
+            if arg:
+                path = Path(arg).resolve()
+                self.pin(path)
+                self.coverage[name] = load(path)
+            else:
+                if name != 'status_report' or not self.args.status_db:
+                    self.issue('UNVERIFIED', 'INPUT_COVERAGE_NOT_PROVIDED', name,
+                               reason='Generation alone cannot count failed or excluded input documents')
+        if self.args.selection and self.coverage['selection'].get('origin_sha256'):
+            directory = Path(self.args.selection).resolve().parent
+            origin_path = contained(directory, 'selection-origin.json')
+            self.pin(origin_path, self.coverage['selection']['origin_sha256'])
+            origin = load(origin_path)
+            self.check(origin.get('schema_version') == 'structure-selection-origin-v1', 'SELECTION_ORIGIN_SCHEMA')
+            for name, field in (('parent-selection.json', 'parent_selection_sha256'), ('parent-status.json', 'parent_status_sha256')):
+                p = contained(directory, name)
+                self.pin(p, origin[field])
+            self.coverage['origin'] = origin
+            self.coverage['parent_status'] = load(directory / 'parent-status.json')
+            self.check(set(origin['selected_document_ids']) == set(self.coverage['selection']['documents']), 'SELECTION_ORIGIN_DOCUMENT_DIFF')
+        if self.args.status_db:
+            db = self.database('input-status', Path(self.args.status_db).resolve())
+            if db.execute('SELECT version FROM status_meta').fetchone()[0] != 1:
+                raise ValueError('Unsupported input status database')
+            attempts = [dict(r) for r in db.execute('SELECT * FROM attempts')]
+            self.coverage['available_attempts'] = attempts
+            selected = [r for r in attempts if r['id'] == self.args.status_attempt] if self.args.status_attempt else attempts
+            if len(selected) != 1:
+                raise ValueError('Specify --status-attempt; available attempts: ' + ', '.join(r['id'] for r in attempts))
+            if selected[0]['status'] not in {'COMPLETED', 'FAILED', 'COMPLETED_WITH_FAILURES'}:
+                raise ValueError('Input status attempt is not finished; do not inspect an active writer')
+            self.coverage['status_database_report'] = {'attempt': selected[0], 'documents': [json.loads(r[0]) for r in db.execute(
+                'SELECT data FROM documents WHERE attempt=? ORDER BY ordinal', (selected[0]['id'],))]}
+
+    def asset(self, label, sm):
+        if label == 'fulltext':
+            binding = sm.get(label)
+            if not binding:
+                self.issue('UNVERIFIED', 'FULLTEXT_NOT_BOUND')
+                return
+            root = contained(self.generation, binding['path'])
+            m = self.manifest(label, root, binding['manifest_sha256'])
+            if m.get('schema_version') not in FTS_SCHEMAS:
+                raise ValueError('Unsupported fulltext schema')
+            unit = m['schema_version'] == 'semantic-unit-fulltext-v1'
+            self.database(label, contained(root, 'units.sqlite' if unit else 'fulltext.sqlite'),
+                          m['index_sha256'] if unit else m['fulltext_sha256'])
+            self.expected_counts(label, m)
+            self.check(m['generation_id'] == sm['generation_id'] and m['source_store_sha256'] == sm['store_sha256']
+                       and m['navigation_index_sha256'] == self.manifests['navigation']['index_sha256'], 'FTS_BINDING')
+            if binding.get('navigation_index_sha256'):
+                self.check(binding['navigation_index_sha256'] == m['navigation_index_sha256'], 'FTS_POINTER_BINDING')
+        elif label == 'glossary':
+            binding = sm.get(label)
+            if not binding:
+                self.issue('UNVERIFIED', 'GLOSSARY_NOT_BOUND')
+                return
+            root = contained(self.generation, binding['bundle'])
+            m = self.manifest(label, root, binding['manifest_sha256'])
+            if m.get('schema_version') not in {'glossary-serving-v2', 'glossary-knowledge-bundle-v1'}:
+                raise ValueError('Unsupported glossary schema')
+            dictionary = contained(self.generation, binding['dictionary'])
+            dh = self.pin(dictionary, m['dictionary_sha256'])
+            self.database('dictionary', dictionary, dh)
+            for row in m['files']:
+                p = contained(root, row['path'])
+                if p.suffix == '.sqlite':
+                    self.database('glossary:' + row['path'], p, row['sha256'])
+                else:
+                    self.pin(p, row['sha256'])
+                if 'bytes' in row:
+                    self.check(p.stat().st_size == row['bytes'], 'FILE_SIZE_MISMATCH', row['path'])
+            label = 'glossary:nodes.sqlite' if m['schema_version'] == 'glossary-serving-v2' else 'glossary:graph.sqlite'
+            self.expected_counts(label, m)
+            nodes = self.dbs[label]
+            if {'label', 'node'} <= set(objects(nodes)):
+                for row in nodes.execute('SELECT l.source,l.node_id FROM label l LEFT JOIN node n ON n.source=l.source AND n.id=l.node_id WHERE n.id IS NULL'):
+                    self.issue('ERROR', 'GLOSSARY_LABEL_NODE_ORPHAN', row['node_id'], source=row['source'])
+            if self.manifests['navigation'].get('dictionary_sha256'):
+                self.check(self.manifests['navigation']['dictionary_sha256'] == dh, 'NAV_GLOSSARY_DICTIONARY_BINDING')
+            cache = contained(self.generation, binding['cache'])
+            receipt = contained(cache, binding['cache_receipt'])
+            self.pin(receipt, binding['cache_receipt_sha256'])
+            value = load(receipt)
+            self.check(value['binding']['manifest_sha256'] == binding['manifest_sha256']
+                       and value['binding']['dictionary_sha256'] == dh, 'GLOSSARY_CACHE_BINDING')
+            self.database('glossary-cache', receipt.with_suffix('.sqlite'), value['sha256'])
+            if self.args.code_root:
+                compiler = contained(Path(self.args.code_root).resolve(), '02_BACKEND/semantic_runtime/full_glossary.py')
+                actual = self.pin(compiler)
+                self.check(actual == value['binding']['compiler_sha256'], 'GLOSSARY_COMPILER_MISMATCH',
+                           str(compiler), expected=value['binding']['compiler_sha256'], actual=actual)
+            else:
+                self.issue('UNVERIFIED', 'CHECKOUT_COMPILER_NOT_CHECKED')
+        else:
+            if not self.args.audit_root:
+                self.issue('UNVERIFIED', 'BUILD_AUDIT_NOT_PROVIDED', reason='Specify --audit-root containing source/ and navigation/')
+                return
+            root = Path(self.args.audit_root).resolve()
+            if sm.get('source_storage'):
+                binding = sm['source_storage']
+                ar = contained(root, 'source')
+                m = self.manifest('source-audit', ar, binding['audit_manifest_sha256'])
+                self.check(m.get('schema_version') == 'source-storage-projection-v2'
+                           and m['native_store_sha256'] == binding['native_store_sha256']
+                           and m['serving_store_sha256'] == sm['store_sha256'], 'SOURCE_AUDIT_BINDING')
+                self.database('source-audit', contained(ar, m['native_store_file']), m['native_store_sha256'])
+            storage = self.manifests['navigation'].get('storage')
+            if storage:
+                ar = contained(root, 'navigation')
+                m = self.manifest('navigation-audit', ar, storage['audit_manifest_sha256'])
+                self.check(m.get('schema_version') in {'term-navigation-storage-v1', 'term-navigation-storage-v2', 'term-navigation-storage-v3'}
+                           and m['serving_index_sha256'] == self.manifests['navigation']['index_sha256'], 'NAV_AUDIT_BINDING')
+                self.database('navigation-audit', contained(ar, m['audit_file']), m['audit_sha256'])
+                for name, count in m.get('construction_tables', {}).items():
+                    self.check(self.result['database_counts']['navigation-audit'].get(name) == count,
+                               'AUDIT_COUNT_MISMATCH', name)
+
+    def global_checks(self):
+        sd, nd = self.dbs['source'], self.dbs['navigation']
+        self.documents = {r['document_id']: dict(r) for r in sd.execute('SELECT * FROM document ORDER BY document_id')}
+        self.report.executemany('INSERT INTO known_document VALUES(?)', ((did,) for did in self.documents))
+        self.sources = {r['id']: r['document_id'] for r in nd.execute('SELECT id,document_id FROM source')}
+        self.terms = set(r[0] for r in nd.execute('SELECT id FROM term'))
+        self.check(set(self.documents) == set(self.manifests['source']['scope']['document_version_ids']), 'DOCUMENT_SCOPE_MISMATCH')
+        if not self.documents:
+            self.issue('ERROR', 'EMPTY_GENERATION')
+        for row in sd.execute('SELECT u.document_id,u.unit_id FROM source_unit u LEFT JOIN document d USING(document_id) WHERE d.document_id IS NULL'):
+            self.issue('ERROR', 'ORPHAN_UNIT_DOCUMENT', row['unit_id'], row['document_id'])
+        for row in sd.execute('SELECT b.document_id,b.block_id FROM source_block b LEFT JOIN document d USING(document_id) WHERE d.document_id IS NULL'):
+            self.issue('ERROR', 'ORPHAN_BLOCK_DOCUMENT', row['block_id'], row['document_id'])
+        for sid, did in self.sources.items():
+            self.check(did in self.documents, 'ORPHAN_NAV_DOCUMENT', sid, did)
+        no = objects(nd)
+        for table in ('source_unit_map', 'structure_anchor'):
+            if table in no:
+                for row in nd.execute('SELECT u.source_id,u.unit_id FROM ' + quote(table) + ' u LEFT JOIN source s ON s.id=u.source_id WHERE s.id IS NULL'):
+                    self.issue('ERROR', 'NAV_UNIT_SOURCE_ORPHAN', row['unit_id'], source_id=row['source_id'], table=table)
+        # A compact INNER JOIN view can silently hide orphan physical rows.
+        if 'occurrence_keys' in no:
+            for row in nd.execute('SELECT o.* FROM occurrence_keys o LEFT JOIN term t ON t.rowid=o.term_key LEFT JOIN source s ON s.rowid=o.source_key WHERE t.id IS NULL OR s.id IS NULL'):
+                self.issue('ERROR', 'HIDDEN_OCCURRENCE_ORPHAN', row=list(row))
+        if 'reference_payload' in no:
+            for row in nd.execute("SELECT r.id,r.document_id FROM reference_payload r LEFT JOIN reference_body b ON b.sha256=json_extract(r.json,'$.source_text_sha256') WHERE b.sha256 IS NULL"):
+                self.issue('ERROR', 'HIDDEN_REFERENCE_ORPHAN', row['id'], row['document_id'])
+            for row in nd.execute('SELECT * FROM reference_body'):
+                self.check(text_hash(row['text']) == row['sha256'], 'REFERENCE_BODY_HASH', row['sha256'])
+        for row in nd.execute('SELECT o.term_id,o.source_id FROM occurrence o LEFT JOIN term t ON t.id=o.term_id LEFT JOIN source s ON s.id=o.source_id WHERE t.id IS NULL OR s.id IS NULL'):
+            self.issue('ERROR', 'OCCURRENCE_ORPHAN', row['source_id'], self.sources.get(row['source_id'], ''), term_id=row['term_id'])
+        refs = set(r[0] for r in nd.execute('SELECT id FROM reference'))
+        for name in ('reference_end', 'reference_target', 'reference_candidate', 'reference_candidate_end'):
+            if name not in no:
+                self.issue('UNVERIFIED', 'OLDER_SCHEMA_TABLE_ABSENT', name)
+                continue
+            for row in nd.execute('SELECT * FROM ' + quote(name)):
+                r = dict(row)
+                self.check(r['reference_id'] in refs, 'REFERENCE_TABLE_ORPHAN', r['reference_id'], table=name)
+                self.check(r['source_id'] in self.sources, 'REFERENCE_SOURCE_ORPHAN', r['reference_id'], table=name, source_id=r['source_id'])
+        self.term_labels = {}
+        for kind, table in (('terms', 'term'), ('term_edges', 'edge')):
+            for row in nd.execute('SELECT * FROM ' + table):
+                value = self.payload(row['json'], table, row['id'])
+                if table == 'edge':
+                    self.check(value.get('source') in self.terms and value.get('target') in self.terms, 'TERM_EDGE_ORPHAN', row['id'])
+                else:
+                    self.term_labels[row['id']] = value.get('label', '')
+                self.record(kind, '', row['id'], value)
+        if 'term_surface' in no:
+            for row in nd.execute('SELECT * FROM term_surface'):
+                self.check(row['term_id'] in self.terms, 'TERM_SURFACE_ORPHAN', row['term_id'])
+                self.record('term_surfaces', '', row['term_id'], dict(row))
+        if 'term_stats' in no:
+            for row in nd.execute('SELECT t.term_id,t.n,count(o.source_id) AS actual FROM term_stats t LEFT JOIN occurrence o ON o.term_id=t.term_id GROUP BY t.term_id,t.n'):
+                self.check(row['term_id'] in self.terms and row['n'] == row['actual'], 'TERM_STATISTICS_DIFF', row['term_id'])
+        for row in nd.execute('SELECT * FROM occurrence'):
+            self.record('term_links', self.sources.get(row['source_id'], ''), row['term_id'],
+                        {**dict(row), 'inspection_term_label': self.term_labels.get(row['term_id'], '')})
+        self.result['totals'] = {'documents': len(self.documents), 'navigation_sources': len(self.sources),
+                                'registered_terms': len(self.terms),
+                                'term_source_pairs': self.result['database_counts']['navigation']['occurrence'],
+                                'definition_candidates_rejected': self.manifests['navigation'].get('rejected_definitions'),
+                                'reference_unresolved_manifest': self.manifests['navigation'].get('unresolved_references')}
+        self.result['unit_families'] = dict(sd.execute("SELECT coalesce(json_extract(json,'$.family'),'UNKNOWN'),count(*) FROM source_unit GROUP BY 1"))
+        self.check_native_audit_inventory()
+        for table in ('definition', 'reference'):
+            for row in nd.execute('SELECT * FROM ' + table):
+                if row['document_id'] not in self.documents:
+                    self.issue('ERROR', 'ORPHAN_NAV_DOCUMENT', row['id'], row['document_id'], table=table)
+        self.audit_records()
+        for label in self.dbs:
+            if label in ('dictionary', 'glossary-cache') or label.startswith('glossary:'):
+                self.dump_database(label)
+        self.fulltext_records()
+        self.input_coverage()
+
+    def check_native_audit_inventory(self):
+        db = self.dbs.get('source-audit')
+        if db is not None:
+            ids = set(r[0] for r in db.execute('SELECT document_id FROM document'))
+            self.check(ids == set(self.documents), 'NATIVE_DOCUMENT_COVERAGE_DIFF',
+                       missing=sorted(set(self.documents) - ids), extra=sorted(ids - set(self.documents)))
+            for table in ('source_unit', 'source_block'):
+                self.check(self.result['database_counts']['source-audit'][table] == self.result['database_counts']['source'][table],
+                           'NATIVE_TABLE_COUNT_DIFF', table)
+
+    def audit_records(self):
+        db = self.dbs.get('navigation-audit')
+        if db is None and set(AUDIT_TABLES) <= set(objects(self.dbs['navigation'])):
+            db = self.dbs['navigation']
+        if db is None:
+            return
+        for name in AUDIT_TABLES:
+            for i, row in enumerate(db.execute('SELECT * FROM ' + quote(name))):
+                r = dict(row)
+                did = r.get('document_id') or self.sources.get(r.get('source_id'), '')
+                ident = r.get('id') or r.get('occurrence_id') or r.get('term_id') or str(i)
+                self.record('audit:' + name, did, ident, r)
+                if 'source_id' in r and (r['source_id'] is not None or r.get('status') == 'ACCEPTED'):
+                    self.check(r['source_id'] in self.sources, 'AUDIT_SOURCE_ORPHAN', ident, did, table=name)
+                if 'term_id' in r and r.get('status') == 'ACCEPTED':
+                    self.check(r['term_id'] in self.terms, 'AUDIT_TERM_ORPHAN', ident, did, table=name)
+                self.progress('audit-records', table=name, rows=i + 1)
+        self.result['audit_status_counts'] = {}
+        for table in AUDIT_TABLES:
+            columns = {r[1] for r in db.execute('PRAGMA table_info(' + quote(table) + ')')}
+            if 'status' in columns:
+                self.result['audit_status_counts'][table] = dict(db.execute('SELECT status,count(*) FROM ' + quote(table) + ' GROUP BY status'))
+
+    def dump_database(self, label):
+        # Raw authoring facts stay visible; exporting locally is not approval.
+        db = self.dbs[label]
+        for table in objects(db):
+            if table.endswith(('_data', '_idx', '_content', '_docsize', '_config')):
+                continue
+            for i, row in enumerate(db.execute('SELECT * FROM ' + quote(table))):
+                r = dict(row)
+                for key, value in list(r.items()):
+                    if isinstance(value, bytes):
+                        r[key] = {'binary_bytes': len(value), 'sha256': hashlib.sha256(value).hexdigest()}
+                self.record(label + ':' + table, r.get('document_id', ''), r.get('id', str(i)), r)
+                self.progress('glossary-records', database=label, table=table, rows=i + 1)
+
+    def fulltext_records(self):
+        db = self.dbs.get('fulltext')
+        if db is None:
+            return
+        m = self.manifests['fulltext']
+        if m['schema_version'] == 'semantic-unit-fulltext-v1':
+            self.check(db.execute('SELECT count(*) FROM unit').fetchone()[0] == db.execute('SELECT count(*) FROM unit_fts').fetchone()[0], 'FTS_ROW_COUNT')
+            for row in db.execute('SELECT u.key FROM unit u LEFT JOIN unit_fts f ON f.key=u.key WHERE f.key IS NULL'):
+                self.issue('ERROR', 'FTS_ROW_MISSING', row['key'])
+            for row in db.execute('SELECT f.key FROM unit_fts f LEFT JOIN unit u ON u.key=f.key WHERE u.key IS NULL'):
+                self.issue('ERROR', 'FTS_ROW_EXTRA', row['key'])
+            for row in db.execute('SELECT key,count(*) AS n FROM unit_fts GROUP BY key HAVING count(*)>1'):
+                self.issue('ERROR', 'FTS_DUPLICATE_KEY', row['key'], count=row['n'])
+            for row in db.execute('SELECT * FROM unit'):
+                value = self.payload(row['json'], 'fulltext', row['key'], row['document_id'])
+                self.check(value.get('key') == row['key'] and value.get('source_id') == row['source_id']
+                           and value.get('document_id') == row['document_id'], 'FTS_PAYLOAD_ID_MISMATCH', row['key'], row['document_id'])
+                self.record('fulltext_units', row['document_id'], row['key'], value)
+                self.check(row['source_id'] in self.sources and self.sources.get(row['source_id']) == row['document_id'],
+                           'FTS_SOURCE_MISMATCH', row['key'], row['document_id'])
+        else:
+            total = db.execute('SELECT count(*) FROM source_fts').fetchone()[0]
+            self.check(total == m['counts']['source'], 'FTS_ROW_COUNT', expected=m['counts']['source'], actual=total)
+            for row in db.execute('SELECT * FROM source_fts'):
+                sid = row['source_id']
+                self.check(sid in self.sources, 'FTS_SOURCE_MISSING', sid)
+                self.record('fulltext_articles', self.sources.get(sid, ''), sid, dict(row))
+
+    def input_coverage(self):
+        known = set(self.documents)
+        selection = self.coverage.get('selection')
+        if selection is not None:
+            if selection.get('schema_version') != 'structure-selection-v1':
+                raise ValueError('Unsupported structure selection')
+            expected = set(selection.get('expected_document_ids', []))
+            completed = set(selection.get('documents', {}))
+            self.coverage['selection_summary'] = {'expected_count': len(expected), 'completed_count': len(completed),
+                'missing_from_generation': sorted(completed - known), 'generation_not_in_selection': sorted(known - completed),
+                'not_completed': sorted(expected - completed), 'completed_flag': selection.get('completed')}
+            for did in completed - known:
+                self.issue('WARNING', 'SELECTED_DOCUMENT_NOT_IN_GENERATION', did, did)
+            for did in expected - completed:
+                self.issue('WARNING', 'INPUT_NOT_STRUCTURED', did, did)
+        for report_name in ('status_report', 'status_database_report', 'parent_status'):
+            report = self.coverage.get(report_name)
+            if report is None:
+                continue
+            rows = report.get('documents', [])
+            self.coverage[report_name + '_counts'] = {'documents': len(rows),
+                'selection': dict(Counter(r.get('selection', 'UNKNOWN') for r in rows)),
+                'structure': dict(Counter(r.get('phases', {}).get('structure', {}).get('state', 'UNKNOWN') for r in rows)),
+                'not_served': sum(r.get('document_id') not in known for r in rows)}
+            for row in report.get('documents', []):
+                did = row.get('document_id', '')
+                self.record('input_status:' + report_name, did, did, row)
+                if did not in known:
+                    self.issue('WARNING', 'INPUT_DOCUMENT_NOT_SERVED', did, did,
+                               selection=row.get('selection'), phases=row.get('phases'))
+        atomic(self.output / 'input-coverage.json', self.coverage)
+
+    def native_block(self, did, bid):
+        row = self.dbs['source'].execute('SELECT * FROM source_block WHERE document_id=? AND block_id=?', (did, str(bid))).fetchone()
+        return dict(row) if row else None
+
+    def original_files(self, did, meta):
+        metadata = meta.get('document_metadata') or {}
+        reps = metadata.get('representations') or meta.get('representations') or []
+        if not self.args.raw_root or not reps:
+            self.issue('UNVERIFIED', 'ORIGINAL_FILES_NOT_CHECKED', did, did,
+                       reason='Provide --raw-root and declared representation paths/hashes; no filename guessing')
+            return
+        root = Path(self.args.raw_root).resolve()
+        for rep in reps:
+            location = rep.get('path')
+            p = Path(location or '')
+            if p.is_absolute():
+                try:
+                    p.resolve().relative_to(root)
+                except ValueError:
+                    p = Path(rep.get('relative_path') or '')
+            if not p.is_absolute():
+                if not p.parts:
+                    self.issue('UNVERIFIED', 'ORIGINAL_PATH_NOT_RESOLVABLE', did, did, representation=rep)
+                    continue
+                p = contained(root, str(p))
+            if not p.is_file():
+                self.issue('UNVERIFIED', 'ORIGINAL_FILE_ABSENT', did, did, path=str(p), representation=rep)
+                continue
+            if not rep.get('sha256'):
+                self.issue('UNVERIFIED', 'ORIGINAL_FILE_HASH_ABSENT', did, did, path=str(p))
+                continue
+            actual = self.pin(p, rep['sha256'])
+            self.record('original_files', did, str(p), {'path': str(p), 'expected_sha256': rep['sha256'],
+                                                       'actual_sha256': actual, 'semantic_comparison': 'NOT_REVIEWED'})
+
+    def spans(self, spans, did, ident, blocks):
+        for s in spans or []:
+            if not isinstance(s, dict):
+                self.issue('ERROR', 'INVALID_CHARACTER_SPAN', ident, did)
+                continue
+            b = blocks.get(str(s.get('block_id')))
+            a, z = s.get('start_cp'), s.get('end_cp')
+            valid = b is not None and type(a) is int and type(z) is int and 0 <= a <= z <= len(b['text'])
+            self.check(valid, 'INVALID_CHARACTER_SPAN', ident, did, span=s)
+            if b and s.get('block_hash'):
+                self.check(text_hash(b['text']) == s['block_hash'], 'CHARACTER_SPAN_BLOCK_HASH', ident, did)
+
+    def document(self, did, row):
+        sd, nd = self.dbs['source'], self.dbs['navigation']
+        units = {str(r['unit_id']): dict(r) for r in sd.execute('SELECT * FROM source_unit WHERE document_id=?', (did,))}
+        blocks = {str(r['block_id']): dict(r) for r in sd.execute('SELECT * FROM source_block WHERE document_id=? ORDER BY CAST(block_id AS INTEGER),block_id', (did,))}
+        meta = self.payload(row.get('json'), 'document', did, did)
+        self.record('document', did, did, {**row, 'parsed': meta})
+        self.original_files(did, meta)
+        if not blocks:
+            self.issue('WARNING', 'DOCUMENT_WITHOUT_BLOCKS', did, did)
+        done, depths, values = set(), {}, {}
+        own_blocks = {}
+        for b in blocks.values():
+            own_blocks.setdefault(str(b['unit_id']), []).append(b)
+        for uid, u in units.items():
+            value = self.payload(u.get('json'), 'source_unit', uid, did)
+            values[uid] = value
+            chain, visited, current = [], set(), uid
+            while current is not None and current not in done:
+                if current in visited:
+                    self.issue('ERROR', 'PARENT_CYCLE', uid, did, path=chain)
+                    break
+                visited.add(current)
+                chain.append(current)
+                if current not in units:
+                    self.issue('ERROR', 'PARENT_MISSING', uid, did, parent=current)
+                    break
+                p = units[current]['parent_id']
+                current = str(p) if p is not None else None
+            depth = depths.get(current, -1)
+            for node in reversed(chain):
+                depth += 1
+                depths[node] = depth
+            done.update(chain)
+            span = value.get('span')
+            valid = isinstance(span, list) and len(span) == 2 and all(type(x) is int for x in span) and 0 <= span[0] < span[1]
+            self.check(valid, 'UNIT_RANGE_INVALID', uid, did, span=span)
+            if valid:
+                own = own_blocks.get(uid, [])
+                for b in own:
+                    self.check(str(b['block_id']).isdigit() and span[0] <= int(b['block_id']) < span[1],
+                               'BLOCK_OUTSIDE_OWNER_RANGE', b['block_id'], did, unit_id=uid, span=span)
+            self.spans(value.get('own_spans'), did, uid, blocks)
+            self.spans(value.get('subtree_spans'), did, uid, blocks)
+            self.record('units', did, uid, {**u, 'parsed': value, 'depth': depths.get(uid, 0)})
+        for uid, value in values.items():
+            parent = units[uid]['parent_id']
+            if parent is not None and str(parent) in values:
+                child_span, parent_span = value.get('span'), values[str(parent)].get('span')
+                if all(isinstance(s, list) and len(s) == 2 and all(type(x) is int for x in s) for s in (child_span, parent_span)):
+                    self.check(parent_span[0] <= child_span[0] < child_span[1] <= parent_span[1], 'CHILD_RANGE_OUTSIDE_PARENT', uid, did)
+        for bid, b in blocks.items():
+            if b['unit_id'] is not None:
+                self.check(str(b['unit_id']) in units, 'BLOCK_OWNER_MISSING', bid, did, unit_id=b['unit_id'])
+            self.check(b['source_artifact_sha256'] == row['source_artifact_sha256'], 'BLOCK_PROVENANCE_MISMATCH', bid, did)
+            if not b['text'].strip():
+                self.issue('WARNING', 'EMPTY_BLOCK', bid, did)
+            self.payload(b.get('json'), 'source_block', bid, did)
+            self.record('blocks', did, bid, b)
+        native = self.dbs.get('source-audit')
+        if native:
+            for table, key in (('source_unit', 'unit_id'), ('source_block', 'block_id')):
+                expected = units if table == 'source_unit' else blocks
+                seen = set()
+                for original in native.execute('SELECT * FROM ' + table + ' WHERE document_id=?', (did,)):
+                    r = dict(original)
+                    ident = str(r[key]); seen.add(ident)
+                    actual = expected.get(ident)
+                    logical = lambda v: {**v, 'json': json.loads(v.get('json') or '{}')} if v is not None else None
+                    self.check(logical(actual) == logical(r), 'NATIVE_AUDIT_PROJECTION_DIFF', ident, did, table=table)
+                self.check(seen == set(expected), 'NATIVE_AUDIT_COVERAGE_DIFF', did, did, table=table)
+            r = native.execute('SELECT * FROM document WHERE document_id=?', (did,)).fetchone()
+            if r:
+                original = dict(r)
+                source_meta = self.payload(original.get('json'), 'native_document_audit', did, did)
+                source_meta = {k: v for k, v in source_meta.items() if k not in {'nodes', 'blocks'}}
+                self.check({k: v for k, v in original.items() if k != 'json'} == {k: v for k, v in row.items() if k != 'json'}
+                           and source_meta == meta, 'NATIVE_DOCUMENT_METADATA_DIFF', did, did)
+                self.record('native_document_audit', did, did, dict(r))
+            else:
+                self.issue('ERROR', 'NATIVE_DOCUMENT_AUDIT_MISSING', did, did)
+        owners = Counter()
+        for s in nd.execute('SELECT * FROM source WHERE document_id=?', (did,)):
+            value = self.payload(s['json'], 'source', s['id'], did)
+            self.check(value.get('document_id') == did and value.get('id') == s['id'], 'NAV_SOURCE_ID_MISMATCH', s['id'], did)
+            if value.get('source_artifact_sha256') is not None:
+                self.check(value['source_artifact_sha256'] == row['source_artifact_sha256'], 'NAV_SOURCE_PROVENANCE_MISMATCH', s['id'], did)
+            selected = value.get('blocks') or []
+            for b in selected:
+                bid = str(b.get('block_id')); owners[bid] += 1
+                self.check(bid in blocks and b.get('text') == blocks[bid]['text'], 'NAV_BLOCK_CONTENT_MISMATCH', bid, did, source_id=s['id'])
+            text = '\n'.join(b.get('text', '') for b in selected)
+            self.check(value.get('text') == text and value.get('text_sha256') == text_hash(text), 'NAV_SOURCE_TEXT_HASH', s['id'], did)
+            self.record('sources', did, s['id'], value)
+            for incoming in nd.execute('SELECT r.id,r.document_id,r.json FROM reference r JOIN reference_end e ON r.id=e.reference_id WHERE e.source_id=?', (s['id'],)):
+                rvalue = self.payload(incoming['json'], 'incoming_reference', incoming['id'], incoming['document_id'])
+                if s['id'] in (rvalue.get('target_source_ids') or []):
+                    self.record('incoming_references', did, incoming['id'], {'id': incoming['id'], 'source_document_id': incoming['document_id'], 'reference': rvalue})
+        self.check(set(owners) == set(blocks), 'NAV_BLOCK_COVERAGE', did, did,
+                   missing=sorted(set(blocks) - set(owners)), extra=sorted(set(owners) - set(blocks)))
+        for bid, n in owners.items():
+            self.check(n == 1, 'NAV_BLOCK_MULTIPLE_OWNERS', bid, did, count=n)
+        for table in ('definition', 'reference'):
+            for r in nd.execute('SELECT * FROM ' + table + ' WHERE document_id=?', (did,)):
+                value = self.payload(r['json'], table, r['id'], did)
+                self.witness(value, did, r['id'], blocks, definition=table == 'definition')
+                self.record(table + 's', did, r['id'], value)
+        self.check_audit_witnesses(did, blocks)
+        self.navigation_units(did, units, blocks)
+        self.check_fts_document(did, blocks)
+        self.issue('UNVERIFIED', 'ORIGINAL_SEMANTIC_REVIEW_REQUIRED', did, did,
+                   reason='Stored structure and links need human comparison with the actual original file')
+        self.write_document(did, row, values, depths)
+
+    def navigation_units(self, did, units, blocks):
+        nd = self.dbs['navigation']
+        available = objects(nd)
+        for sid in (s for s, d in self.sources.items() if d == did):
+            source_row = nd.execute('SELECT json FROM source WHERE id=?', (sid,)).fetchone()
+            source = self.payload(source_row[0], 'source', sid, did)
+            source_bids = {str(b['block_id']) for b in source.get('blocks') or []}
+            if 'source_unit_map' in available:
+                for r in nd.execute('SELECT * FROM source_unit_map WHERE source_id=?', (sid,)):
+                    v = dict(r); uid = str(v['unit_id']); unit = units.get(uid)
+                    self.check(unit is not None and unit['parent_id'] == v['parent_id'], 'NAV_UNIT_PARENT_DIFF', uid, did, source_id=sid)
+                    bids = json.loads(v['block_ids'])
+                    self.check(set(map(str, bids)) <= source_bids, 'NAV_UNIT_BLOCK_OUTSIDE_SOURCE', uid, did, source_id=sid)
+                    self.record('navigation_unit_map', did, sid + ':' + uid, v)
+            if 'structure_anchor' in available:
+                for r in nd.execute('SELECT * FROM structure_anchor WHERE source_id=?', (sid,)):
+                    value = self.payload(r['json'], 'structure_anchor', r['unit_id'], did)
+                    self.check(str(r['unit_id']) in units, 'STRUCTURE_ANCHOR_UNIT_MISSING', r['unit_id'], did)
+                    self.spans(value.get('own_spans'), did, r['unit_id'], blocks)
+                    self.spans(value.get('subtree_spans'), did, r['unit_id'], blocks)
+                    self.record('structure_anchors', did, sid + ':' + str(r['unit_id']), value)
+        if 'document_frame' in available:
+            for row in nd.execute('SELECT * FROM document_frame WHERE document_id=?', (did,)):
+                self.record('document_frame', did, did, self.payload(row['json'], 'document_frame', did, did))
+
+    def witness(self, value, did, ident, blocks, definition=False):
+        sid = value.get('source_id')
+        self.check(self.sources.get(sid) == did, 'WITNESS_SOURCE_MISMATCH', ident, did, source_id=sid)
+        b = blocks.get(str(value.get('block_id')))
+        text = value.get('source_text')
+        self.check(b is not None and text == b['text'], 'WITNESS_BLOCK_MISMATCH', ident, did)
+        if isinstance(text, str):
+            self.check(text_hash(text) == value.get('source_text_sha256'), 'WITNESS_HASH_MISMATCH', ident, did)
+        if definition:
+            for tid in value.get('term_ids') or []:
+                self.check(tid in self.terms, 'DEFINITION_TERM_MISSING', ident, did, term_id=tid)
+            if not value.get('term_ids'):
+                self.issue('WARNING', 'DEFINITION_WITHOUT_TERM', ident, did)
+            return
+        self.spans(value.get('source_spans'), did, ident, blocks)
+        a, z = value.get('mention_start'), value.get('mention_end')
+        if a is not None or z is not None:
+            valid = isinstance(text, str) and type(a) is int and type(z) is int and 0 <= a <= z <= len(text)
+            self.check(valid, 'REFERENCE_MENTION_RANGE', ident, did)
+            if valid:
+                self.check(text[a:z] == value.get('mention_text'), 'REFERENCE_MENTION_TEXT', ident, did)
+                if value.get('mention_text_sha256'):
+                    self.check(text_hash(text[a:z]) == value['mention_text_sha256'], 'REFERENCE_MENTION_HASH', ident, did)
+        targets = value.get('targets')
+        if not isinstance(targets, list):
+            targets = [{'source_id': s, 'unit_id': value.get('target_unit_id'),
+                        'block_ids': value.get('target_block_ids') or []} for s in value.get('target_source_ids') or []]
+        if not targets or value.get('coverage_state') in ('PARTIAL', 'UNRESOLVED'):
+            self.issue('WARNING', 'REFERENCE_UNRESOLVED_OR_PARTIAL', ident, did,
+                       state=value.get('resolution_state'), reason=value.get('reason'), missing=value.get('unresolved_paths'))
+        self.check(set(value.get('target_source_ids') or []) == {t['source_id'] for t in targets}, 'REFERENCE_TARGET_IDS_DIFF', ident, did)
+        nd = self.dbs['navigation']
+        if 'reference_target' in objects(nd):
+            stored = list(nd.execute('SELECT * FROM reference_target WHERE reference_id=? ORDER BY ordinal', (ident,)))
+            coordinates = [(r['source_id'], r['unit_id'], json.loads(r['block_ids']), json.loads(r['unit_path']), r['target_level']) for r in stored]
+            expected = [(t['source_id'], t.get('unit_id'), t.get('block_ids') or [], t.get('unit_path') or [], t.get('target_level') or 'article') for t in targets]
+            self.check(coordinates == expected, 'REFERENCE_TARGET_TABLE_DIFF', ident, did)
+        ends = set(r[0] for r in nd.execute('SELECT source_id FROM reference_end WHERE reference_id=?', (ident,)))
+        self.check(ends == {sid} | {t['source_id'] for t in targets}, 'REFERENCE_REVERSE_INDEX_DIFF', ident, did)
+        for target in targets:
+            self.target(target, ident, did)
+        if 'reference_candidate' in objects(nd):
+            for candidate in nd.execute('SELECT * FROM reference_candidate WHERE reference_id=?', (ident,)):
+                r = dict(candidate)
+                r['block_ids'] = json.loads(r['block_ids'])
+                self.target(r, ident, did)
+                self.record('reference_candidates', did, r['candidate_id'], r)
+
+    def target(self, target, ident, did):
+        sid = target['source_id']
+        target_did = self.sources.get(sid)
+        self.check(target_did is not None, 'REFERENCE_TARGET_MISSING', ident, did, target=target)
+        if target_did is None:
+            return
+        uid = target.get('unit_id')
+        if uid is not None:
+            exists = self.dbs['source'].execute('SELECT json FROM source_unit WHERE document_id=? AND unit_id=?', (target_did, str(uid))).fetchone()
+            self.check(exists is not None, 'REFERENCE_TARGET_UNIT_MISSING', ident, did, target=target)
+            if exists:
+                unit = self.payload(exists['json'], 'target_unit', str(uid), target_did)
+                span = unit.get('span')
+                if isinstance(span, list) and len(span) == 2 and all(type(x) is int for x in span):
+                    for bid in target.get('block_ids') or []:
+                        self.check(str(bid).isdigit() and span[0] <= int(bid) < span[1], 'REFERENCE_TARGET_BLOCK_OUTSIDE_UNIT', ident, did, block_id=bid, target=target)
+        r = self.dbs['navigation'].execute('SELECT json FROM source WHERE id=?', (sid,)).fetchone()
+        source = self.payload(r[0], 'target_source', sid, target_did)
+        bids = set(str(b['block_id']) for b in source.get('blocks') or [])
+        for bid in target.get('block_ids') or []:
+            self.check(str(bid) in bids, 'REFERENCE_TARGET_BLOCK_OUTSIDE_SOURCE', ident, did, target=target, block_id=bid)
+
+    def check_audit_witnesses(self, did, blocks):
+        for row in self.report.execute("SELECT json FROM record WHERE document_id=? AND kind='audit:link_occurrence'", (did,)):
+            value = json.loads(row[0]); bid = str(value.get('block_id')); b = blocks.get(bid)
+            a, z = value.get('start'), value.get('end')
+            valid = b is not None and type(a) is int and type(z) is int and 0 <= a <= z <= len(b['text'])
+            if value.get('status') != 'ACCEPTED':
+                self.issue('WARNING', 'TERM_OCCURRENCE_HELD', value['id'], did, reason=value.get('reason'))
+                continue
+            self.check(valid, 'TERM_OCCURRENCE_SPAN', value['id'], did)
+            if b:
+                self.check(text_hash(b['text']) == value['source_text_sha256']
+                           and b['source_artifact_sha256'] == value['source_artifact_sha256'], 'TERM_OCCURRENCE_HASH', value['id'], did)
+            # Offsets are Unicode codepoints; matching uses normalized lexical keys.
+            # matched_text is the exact observed source slice, not the normalized key.
+            if valid:
+                self.check(b['text'][a:z] == value['matched_text'], 'TERM_OCCURRENCE_TEXT', value['id'], did)
+                self.check(b['unit_id'] == value.get('unit_id'), 'TERM_OCCURRENCE_OWNER', value['id'], did)
+        for row in self.report.execute("SELECT id,json FROM record WHERE document_id=? AND kind='audit:occurrence_evidence'", (did,)):
+            value = json.loads(row['json'])
+            for kind, ident in (('audit:link_occurrence', value['occurrence_id']), ('audit:link_catalogue', value['catalogue_id'])):
+                found = self.report.execute('SELECT 1 FROM record WHERE kind=? AND id=?', (kind, ident)).fetchone()
+                self.check(found is not None, 'AUDIT_EVIDENCE_ORPHAN', row['id'], did, missing_kind=kind, missing_id=ident)
+            if value.get('status') == 'ACCEPTED':
+                found = self.dbs['navigation'].execute('SELECT 1 FROM occurrence WHERE term_id=? AND source_id=?', (value['term_id'], value['source_id'])).fetchone()
+                self.check(found is not None, 'ACCEPTED_EVIDENCE_NOT_IN_RUNTIME', row['id'], did)
+
+    def check_fts_document(self, did, blocks):
+        db = self.dbs.get('fulltext')
+        if db is None:
+            return
+        m = self.manifests['fulltext']
+        scope = m.get('scope', {}).get('document_version_ids', list(self.documents))
+        if did not in scope:
+            self.issue('WARNING', 'DOCUMENT_OUTSIDE_FTS_SCOPE', did, did)
+            return
+        if m['schema_version'] == 'semantic-unit-fulltext-v1':
+            seen = Counter()
+            for r in self.report.execute("SELECT id,json FROM record WHERE document_id=? AND kind='fulltext_units'", (did,)):
+                value = json.loads(r['json'])
+                selected = [blocks.get(str(b)) for b in value.get('block_ids') or []]
+                text = '\n'.join(b['text'] for b in selected if b is not None)
+                self.check(all(b is not None for b in selected) and text == value.get('text'), 'FTS_BODY_MISMATCH', r['id'], did)
+                for bid in value.get('block_ids') or []:
+                    bid = str(bid); seen[bid] += 1
+                    b = blocks.get(bid)
+                    if b:
+                        self.check(b['unit_id'] == value.get('unit_id'), 'FTS_OWNER_MISMATCH', r['id'], did)
+            self.check(set(seen) == set(blocks), 'FTS_BLOCK_COVERAGE', did, did,
+                       missing=sorted(set(blocks) - set(seen)), extra=sorted(set(seen) - set(blocks)))
+            for bid, n in seen.items():
+                self.check(n == 1, 'FTS_DUPLICATE_BLOCK', bid, did, count=n)
+        else:
+            expected = {s for s, d in self.sources.items() if d == did}
+            found = [r[0] for r in self.report.execute("SELECT id FROM record WHERE document_id=? AND kind='fulltext_articles'", (did,))]
+            self.check(set(found) == expected and len(found) == len(expected), 'FTS_ARTICLE_COVERAGE', did, did)
+
+    def write_document(self, did, row, values, depths):
+        path = self.output / 'documents' / doc_file(did)
+        with path.open('w', encoding='utf-8') as f:
+            f.write(header(row['name']) + '<a href="../index.html">전체 목록</a><p>문서 ID: ' + esc(did) + '</p>')
+            f.write('<p class="muted">자동 검사는 저장 데이터의 일관성을 확인합니다. 원본 PDF/XML/HWPX 등의 의미·누락·표·판본 대조는 직접 검수해야 합니다.</p>')
+            f.write('<label>검수 상태 <select class="review" data-doc="' + esc(did) + '"><option>미검수</option><option>검수 중</option><option>확인 필요</option><option>검수 완료</option></select></label><input class="note" data-doc="' + esc(did) + '" placeholder="검수 메모"><p>검수 기록 내보내기/가져오기는 전체 목록에서 합니다.</p>')
+            f.write('<h2>자동 검사에서 발견한 항목</h2>')
+            for r in self.report.execute('SELECT * FROM issue WHERE document_id=?', (did,)):
+                f.write(detail(r['severity'] + ' · ' + r['code'] + ' · ' + r['id'], json.loads(r['json'])))
+            f.write('<h2>구조 트리</h2><table><tr><th>계층 / 제목</th><th>ID / 부모</th><th>종류 / 범위</th></tr>')
+            for uid in sorted(values, key=lambda u: (int(u) if u.isdigit() else 10**30, u)):
+                v = values[uid]
+                label = '　' * min(depths.get(uid, 0), 30) + str(v.get('surface') or '') + ' ' + str(v.get('title') or '')
+                f.write('<tr><td><a href="#unit-' + text_hash(uid) + '">' + esc(label) + '</a></td><td>' + esc(uid) + ' / ' + esc(self.dbs['source'].execute('SELECT parent_id FROM source_unit WHERE document_id=? AND unit_id=?', (did, uid)).fetchone()[0]) + '</td><td>' + esc(v.get('family')) + ' / ' + esc(v.get('span')) + '</td></tr>')
+            f.write('</table>')
+            kinds = [r[0] for r in self.report.execute('SELECT DISTINCT kind FROM record WHERE document_id=? ORDER BY kind', (did,))]
+            for kind in kinds:
+                f.write('<h2>' + esc(LABELS.get(kind, kind)) + ' <small class="muted">' + esc(kind) + '</small></h2>')
+                for r in self.report.execute('SELECT id,json FROM record WHERE document_id=? AND kind=?', (did, kind)):
+                    value = json.loads(r['json'])
+                    title = r['id']
+                    if kind == 'blocks':
+                        title += ' · ' + str(value.get('text', '')[:100])
+                    if kind == 'term_links':
+                        title = str(value.get('inspection_term_label') or '') + ' · ' + title
+                    if kind == 'definitions':
+                        labels = [self.term_labels.get(t, t) for t in value.get('term_ids') or []]
+                        title += ' · ' + ' / '.join(labels)
+                    if kind == 'units':
+                        f.write('<div id="unit-' + text_hash(r['id']) + '"></div><h3>' + esc(r['id'] + ' · ' + str(value['parsed'].get('surface') or '')) + '</h3>')
+                        for block in self.dbs['source'].execute('SELECT block_id,text FROM source_block WHERE document_id=? AND unit_id=? ORDER BY CAST(block_id AS INTEGER)', (did, r['id'])):
+                            f.write('<p>직접 소유 본문 · 블록 ' + esc(block['block_id']) + '</p><pre>' + esc(block['text']) + '</pre>')
+                    if kind == 'sources':
+                        f.write('<div id="source-' + text_hash(r['id']) + '"></div>')
+                    f.write(detail(title, value))
+                    if kind in ('references', 'reference_candidates'):
+                        targets = value.get('targets') or ([value] if kind == 'reference_candidates' else [])
+                        for t in targets:
+                            target_did = self.sources.get(t.get('source_id'))
+                            if target_did in self.documents:
+                                fragment = 'unit-' + text_hash(str(t['unit_id'])) if t.get('unit_id') is not None else 'source-' + text_hash(t['source_id'])
+                                f.write('<p>연결 대상: <a href="' + doc_file(target_did) + '#' + fragment + '">' + esc(self.documents[target_did]['name']) + '</a> · ' + esc(t.get('source_id')) + ' · 마디 ' + esc(t.get('unit_id')) + '</p>')
+                    if kind == 'incoming_references':
+                        source_did = value.get('source_document_id')
+                        if source_did in self.documents:
+                            f.write('<p>이 문서를 참조한 문서: <a href="' + doc_file(source_did) + '">' + esc(self.documents[source_did]['name']) + '</a></p>')
+            f.write(self.review_script() + '</body></html>')
+        self.report.execute('INSERT OR REPLACE INTO checkpoint VALUES(?,?)', (did, file_hash(path)))
+        self.report.commit()
+
+    def review_script(self):
+        # Only trusted hashes are interpolated. Dataset text is HTML-escaped.
+        binding = self.pins.get(str(self.generation / 'manifest.json'), {}).get('sha256', text_hash(str(self.generation)))
+        return '''<script>
+const binding="''' + binding + '''", storageKey="genos-data-review:"+binding;
+function state(){try{return JSON.parse(localStorage.getItem(storageKey)||"{}")}catch(e){return {}}}
+function save(s){localStorage.setItem(storageKey,JSON.stringify(s))}
+document.querySelectorAll('.review,.note').forEach(el=>{let d=el.dataset.doc,s=state();el.value=(s[d]||{})[el.className]||el.value;el.addEventListener('change',()=>{try{let s=state();s[d]=s[d]||{};s[d][el.className]=el.value;save(s)}catch(e){alert('브라우저 저장 불가: 기록을 내보내 보존하세요.')}})});
+function exportReview(){let data={schema_version:'genos-manual-review-v1',manifest_sha256:binding,documents:state()};let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='manual-review.json';a.click();URL.revokeObjectURL(a.href)}
+function importReview(file){file.text().then(t=>{let v=JSON.parse(t);if(v.schema_version!=='genos-manual-review-v1'||v.manifest_sha256!==binding)throw Error('다른 세대의 검수 기록입니다');save(v.documents);location.reload()}).catch(e=>alert(e.message))}
+function filterDocs(v){document.querySelectorAll('#docs tbody tr').forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(v.toLowerCase()))}
+</script>'''
+
+    def catalogues(self):
+        links = []
+        predicate = 'document_id NOT IN (SELECT id FROM known_document)'
+        kinds = [r[0] for r in self.report.execute('SELECT DISTINCT kind FROM record WHERE ' + predicate + ' ORDER BY kind')]
+        for kind in kinds:
+            token = text_hash(kind)
+            index = 0
+            page = None
+            for i, row in enumerate(self.report.execute('SELECT id,json FROM record WHERE ' + predicate + ' AND kind=?', (kind,))):
+                if i % 500 == 0:
+                    if page:
+                        page.write('</body></html>'); page.close()
+                    index += 1
+                    name = token + '-' + str(index) + '.html'
+                    page = (self.output / 'catalogues' / name).open('w', encoding='utf-8')
+                    page.write(header(LABELS.get(kind, kind) + ' · ' + str(index)) + '<a href="../index.html">전체 목록</a>')
+                    links.append((LABELS.get(kind, kind) + ' · ' + str(index), 'catalogues/' + name))
+                page.write(detail(row['id'], json.loads(row['json'])))
+            if page:
+                page.write('</body></html>'); page.close()
+        return links
+
+    def finish(self):
+        self.emit('stage-start', stage='report')
+        stable = True
+        for path, binding in self.pins.items():
+            ok = signature(Path(path)) == binding['stat']
+            self.check(ok, 'INPUT_CHANGED_DURING_AUDIT', path)
+            stable = stable and ok
+        if self.pointer:
+            ok = file_hash(Path(self.pointer['path'])) == self.pointer['sha256']
+            self.check(ok, 'CURRENT_CHANGED_DURING_AUDIT')
+            stable = stable and ok
+        self.result['stages']['input-stability'] = 'COMPLETE' if stable else 'INCOMPLETE'
+        self.report.commit()
+        self.result['issue_counts'] = dict(self.issue_counts)
+        self.result['schemas'] = {name: m.get('schema_version') for name, m in self.manifests.items()}
+        self.result['finished_at'] = stamp()
+        self.result['completed'] = bool(self.result['stages']) and all(s == 'COMPLETE' for s in self.result['stages'].values())
+        self.result['automatic_status'] = 'INCOMPLETE' if not self.result['completed'] else 'ERRORS_FOUND' if self.issue_counts['ERROR'] else 'CHECKS_COMPLETED'
+        self.result['exit_code'] = 2 if not self.result['completed'] else 1 if self.issue_counts['ERROR'] else 0
+        self.result['limitations'] = ['Original semantic/layout correctness requires human review',
+            'Input failure/exclusion totals require --selection and --status-report',
+            'No actual deployed code revision, model quality or search ranking certification',
+            'FTS checks cover saved rows/bodies/ownership, not tokenizer execution or relevance']
+        atomic(self.output / 'summary.json', self.result)
+        with (self.output / 'issues.jsonl').open('w', encoding='utf-8') as f:
+            for row in self.report.execute('SELECT * FROM issue'):
+                f.write(encoded(dict(row)) + '\n')
+        with (self.output / 'records.jsonl').open('w', encoding='utf-8') as f:
+            for row in self.report.execute('SELECT * FROM record'):
+                f.write(encoded(dict(row)) + '\n')
+                self.progress('report-export', kind=row['kind'])
+        links = self.catalogues()
+        with (self.output / 'index.html').open('w', encoding='utf-8') as f:
+            f.write(header('GENOS 데이터 전수 점검') + '<p>결과: ' + esc(self.result['automatic_status']) + ' · ' + esc(self.result['issue_counts']) + '</p>')
+            f.write('<p>이 보고서는 GENOS 내부 원문을 포함합니다. 현장 내부에서 열어 확인하세요. 검수 완료 상태는 사람이 기록하며 자동 검사 통과와 별개입니다.</p>')
+            f.write(detail('세대·스키마·실제 건수·파일 해시·검사 범위', self.result))
+            f.write(detail('입력 문서 성공·실패·제외·서빙 포함 현황', self.coverage))
+            f.write('<p><a href="summary.json">summary.json</a> · <a href="issues.jsonl">전체 발견 항목</a> · <a href="records.jsonl">전체 구조/연결 기록</a></p>')
+            f.write('<button onclick="exportReview()">검수 기록 내보내기</button><label>기록 가져오기 <input type="file" accept=".json" onchange="importReview(this.files[0])"></label><p>브라우저가 파일별 저장을 분리할 수 있으므로 같은 보고서 폴더를 내부 HTTP 서버로 열면 검수 기록이 함께 유지됩니다.</p>')
+            f.write('<input placeholder="문서명 / ID / 검사 상태 검색" oninput="filterDocs(this.value)"><div class="scroll"><table id="docs"><thead><tr><th>문서</th><th>마디 / 블록</th><th>용어 연결 / 정의 / 참조</th><th>자동 검사</th><th>검수 상태·메모</th></tr></thead><tbody>')
+            with (self.output / 'documents.jsonl').open('w', encoding='utf-8') as listing:
+                for did, row in getattr(self, 'documents', {}).items():
+                    counts = dict(self.report.execute('SELECT kind,count(*) FROM record WHERE document_id=? GROUP BY kind', (did,)))
+                    issues = dict(self.report.execute('SELECT severity,count(*) FROM issue WHERE document_id=? GROUP BY severity', (did,)))
+                    listing.write(encoded({'document_id': did, 'name': row['name'], 'counts': counts, 'issues': issues, 'report': 'documents/' + doc_file(did)}) + '\n')
+                    p = self.output / 'documents' / doc_file(did)
+                    title = '<a href="documents/' + doc_file(did) + '">' + esc(row['name']) + '</a>' if p.exists() else esc(row['name']) + ' · 보고서 미완성'
+                    f.write('<tr><td>' + title + '<br><small>' + esc(did) + '</small></td><td>' + str(counts.get('units', 0)) + ' / ' + str(counts.get('blocks', 0)) + '</td><td>' + ' / '.join(str(counts.get(k, 0)) for k in ('term_links', 'definitions', 'references')) + '</td><td>' + esc(issues) + '</td><td><select class="review" data-doc="' + esc(did) + '"><option>미검수</option><option>검수 중</option><option>확인 필요</option><option>검수 완료</option></select><input class="note" data-doc="' + esc(did) + '" placeholder="메모"></td></tr>')
+            f.write('</tbody></table></div><h2>전체 용어·관계·감사·사전 자료</h2>')
+            for name, link in links:
+                f.write('<p><a href="' + esc(link) + '">' + esc(name) + '</a></p>')
+            f.write('<h2>전체 공통 문제 및 서빙에 없는 문서</h2>')
+            for r in self.report.execute('SELECT * FROM issue'):
+                if r['document_id'] not in getattr(self, 'documents', {}):
+                    f.write(detail(r['severity'] + ' · ' + r['code'] + ' · ' + r['id'], json.loads(r['json'])))
+            f.write(self.review_script() + '</body></html>')
+        self.emit('finished', exit_code=self.result['exit_code'], completed=self.result['completed'],
+                  issues=dict(self.issue_counts), report=str(self.output / 'index.html'))
+        atomic(self.output / 'inputs.json', {'identity': self.identity, 'pins': self.pins})
+        return self.result['exit_code']
+
+    def run(self):
+        self.stage('inventory', self.inventory)
+        if self.result['stages']['inventory'] != 'COMPLETE':
+            # Still write a useful partial summary when a required asset is absent.
+            self.identity = {'generation': str(self.generation)}
+            return self.finish()
+        self.stage('optional-assets', self.optional_assets)
+        self.identity = {'generation': str(self.generation), 'manifest_sha256': self.pins[str(self.generation / 'manifest.json')]['sha256'],
+                         'script_sha256': file_hash(Path(__file__).resolve()),
+                         'options': {k: getattr(self.args, k) for k in IDENTITY_OPTIONS},
+                         'input_hashes': {p: v['sha256'] for p, v in self.pins.items()}}
+        identity_path = self.output / 'identity.json'
+        if self.args.resume:
+            if load(identity_path) != self.identity:
+                raise ValueError('Resume identity changed; use a NEW output directory')
+        else:
+            atomic(identity_path, self.identity)
+        self.stage('global-checks', self.global_checks)
+        self.emit('documents-start', total=len(getattr(self, 'documents', {})))
+        for i, (did, row) in enumerate(getattr(self, 'documents', {}).items(), 1):
+            # Always rescan so the new summary contains every prior finding. Browser
+            # review records remain tied to the same manifest and are not reset.
+            self.stage('document:' + did, lambda did=did, row=row: self.document(did, row))
+            self.progress('documents-progress', done=i, total=len(self.documents))
+        return self.finish()
+
+    def close(self):
+        for db in self.dbs.values():
+            db.close()
+        self.report.close()
+        self.log.close()
+        self.lock.close()
+
+
+def parser():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--generation', help='Actual code-serving GENOS_GENERATION absolute path')
+    p.add_argument('--data-root', help='Explicit GENOS data root for CURRENT selection')
+    p.add_argument('--output', required=True, help='NEW separate report directory')
+    p.add_argument('--audit-root', help='Explicit bound audit directory containing source/ and navigation/')
+    p.add_argument('--selection', help='Explicit structure-selection.json for input coverage')
+    p.add_argument('--status-report', help='Explicit saved doc-status.json or parent-status.json')
+    p.add_argument('--status-db', help='Explicit completed term-document-status.sqlite for input success/failure totals')
+    p.add_argument('--status-attempt', help='Exact attempt ID; required if the status DB has multiple attempts')
+    p.add_argument('--code-root', help='Checkout to compare glossary compiler; this is not deployed revision proof')
+    p.add_argument('--raw-root', help='Explicit original root; verify paths/hashes declared in document metadata')
+    p.add_argument('--resume', action='store_true', help='Same input/script only; rescan while retaining report location and manual review identity')
+    return p
+
+
+def main(argv=None):
+    args = parser().parse_args(argv)
+    audit = None
+    try:
+        generation, pointer = select_generation(args)
+        audit = Audit(args, generation, pointer)
+        return audit.run()
+    except (Exception, KeyboardInterrupt) as exc:
+        if audit:
+            audit.emit('failed', error_type=type(exc).__name__, error=str(exc), exit_code=130 if isinstance(exc, KeyboardInterrupt) else 2)
+            atomic(audit.output / 'failure.json', {'at': stamp(), 'completed': False, 'error_type': type(exc).__name__, 'error': str(exc)})
+            summary_path = audit.output / 'summary.json'
+            if summary_path.exists():
+                value = load(summary_path)
+                value.update(completed=False, automatic_status='INCOMPLETE', exit_code=130 if isinstance(exc, KeyboardInterrupt) else 2)
+                atomic(summary_path, value)
+        print('DATA_AUDIT_FAILED: ' + str(exc), file=sys.stderr, flush=True)
+        return 130 if isinstance(exc, KeyboardInterrupt) else 2
+    finally:
+        if audit:
+            audit.close()
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
+__GENOS_DATA_AUDIT_PY_R1__
+python3 "$GENOS_AUDIT_LAUNCHER_RUN/audit.py" "$@"

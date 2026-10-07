@@ -1,0 +1,37 @@
+{
+  "format": "genos-data-status-handoff-v1",
+  "version": "data-status-20260929-r1",
+  "environment_tested": "WSL /home/jin/8-AGENT",
+  "onsite_executed": false,
+  "requires_code_deployment": false,
+  "read_only_inputs": true,
+  "entrypoint": "bash TRANSFER/GENOS_DATA_STATUS_20260929_R1.txt",
+  "attachments": [
+    {
+      "name": "GENOS_DATA_STATUS_20260929_R1.txt",
+      "sha256": "bb27e10acfe0cbd70f286f114835dee959d87d6a579c50e926c85d9e970d6ebd",
+      "bytes": 20012
+    }
+  ],
+  "reader_source": "02_BACKEND/lawrag/pipeline/genos_status.py",
+  "reader_source_sha256": "d0b5e53bd799166fe5a6631518a2a7b4340a80787ffa0086456010f130974a2a",
+  "scope": "各 run의 마지막 저장 차수; 구축 LOGS만 조회. 실제 서빙 generation 확인은 별도",
+  "validation": {
+    "status": "PASSED",
+    "checks": [
+      "Bash syntax",
+      "Parsing success distinct from later index failure; input failure and blocked documents",
+      "Pending/running and missing outputs remain unconfirmed; presence check only",
+      "Intentional exclusion, Excel escaping and credential redaction",
+      "All source SQLite, fixtures and directory contents unchanged",
+      "Current attempt cannot inherit earlier parsing success",
+      "Missing and corrupt ledgers give explicit unknown/failed query, preserving other runs",
+      "Missing LOGS and invalid run IDs produce a persistent failed execution log"
+    ],
+    "script_sha256": "bb27e10acfe0cbd70f286f114835dee959d87d6a579c50e926c85d9e970d6ebd",
+    "script_bytes": 20012,
+    "source_ingestion": false,
+    "model_calls": 0,
+    "genos_onsite_executed": false
+  }
+}

@@ -1,0 +1,451 @@
+#!/usr/bin/env bash
+# 실행: bash ORACLE_DATAIKU_ORDS_CHECK_20260929_R1.txt
+# Dataiku: bash ORACLE_DATAIKU_ORDS_CHECK_20260929_R1.txt --mode dataiku --connection '실제 Oracle 연결명'
+# 조회만: 위 명령에 --read-only 추가. Python 지정: ORACLE_CHECK_PYTHON=/경로/python bash ...txt
+# 전체 client ID/Secret이 있으면 아래 Python의 EMBEDDED_CLIENT_*에 넣어도 됩니다.
+# 사진의 '..' 생략값은 사용할 수 없어 이 파일에는 넣지 않았습니다.
+# 사용 중인 코드·데이터·CURRENT를 바꾸지 않는 독립 DB 점검입니다.
+set +x
+set -euo pipefail
+umask 077
+oracle_check_base="${ORACLE_CHECK_OUTPUT_DIR:-${HOME}/oracle_checks}"
+mkdir -p "$oracle_check_base"
+oracle_check_dir="$(mktemp -d "$oracle_check_base/ORACLE_CHECK_$(date +%Y%m%d_%H%M%S)_XXXXXX")"
+export ORACLE_CHECK_RUN_DIR="$oracle_check_dir"
+exec > >(tee -a "$oracle_check_dir/check.log") 2>&1
+trap 'oracle_check_status=$?; printf "\n종료 코드: %s\n로그: %s/check.log\n결과: %s/result.json\n" "$oracle_check_status" "$oracle_check_dir" "$oracle_check_dir"' EXIT
+printf 'Oracle 상태 점검 R1 시작 (현장 실행 필요)\n'
+if [[ -n "${ORACLE_CHECK_PYTHON:-}" ]]; then
+    oracle_check_python="$ORACLE_CHECK_PYTHON"
+elif [[ -n "${VIRTUAL_ENV:-}" && -x "$VIRTUAL_ENV/bin/python" ]]; then
+    oracle_check_python="$VIRTUAL_ENV/bin/python"
+elif [[ -x .venv/bin/python ]]; then
+    oracle_check_python=.venv/bin/python
+else
+    oracle_check_python="$(command -v python3 || true)"
+fi
+if [[ -z "$oracle_check_python" || ! -x "$oracle_check_python" ]]; then
+    printf 'BLOCKED: Python 실행 파일 없음. ORACLE_CHECK_PYTHON을 지정하세요.\n'
+    exit 2
+fi
+"$oracle_check_python" - "$@" <<'ORACLE_CHECK_PYTHON'
+import argparse
+import contextlib
+import datetime
+import getpass
+import io
+import json
+import logging
+import os
+import pathlib
+import re
+import signal
+import sys
+import time
+import uuid
+
+# 전체 값으로만 수정하세요. 사진에 표시된 '..' 값은 실제 인증값이 아닙니다.
+EMBEDDED_SCHEMA = "b04"
+EMBEDDED_CLIENT_ID = ""
+EMBEDDED_CLIENT_SECRET = ""
+EMBEDDED_BASE_URL = ""  # 비우면 ORACLE_ORDS_BASE_URL / LLMOPS_ORDS_BASE_URL 사용
+
+logging.disable(logging.CRITICAL)
+parser = argparse.ArgumentParser(description="ORDS 또는 Dataiku Oracle 연결의 조회/DDL/DML/정리 점검")
+parser.add_argument("--mode", choices=("ords", "dataiku"), default="ords")
+parser.add_argument("--connection", default=os.getenv("DATAIKU_ORACLE_CONNECTION", ""))
+parser.add_argument("--read-only", action="store_true")
+parser.add_argument("--read-table", default="", help="선택: 기존 Dataiku 물리 테이블명(owner.table 가능), 내용은 출력하지 않음")
+parser.add_argument("--timeout", type=float, default=30.0, help="ORDS HTTP 호출당 제한(초)")
+args = parser.parse_args()
+if args.timeout <= 0:
+    parser.error("timeout은 0보다 커야 합니다")
+run_dir = pathlib.Path(os.environ["ORACLE_CHECK_RUN_DIR"])
+run_id = uuid.uuid4().hex
+table_name = "RAGCHK_" + run_id[:20].upper()
+index_name = "RAGIX_" + run_id[:20].upper()
+report = {
+    "version": "oracle-check-20260929-r1", "mode": args.mode, "run_id": run_id,
+    "started_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    "reference_commit": "90e07513a82434a677263f790bea0c816be14e2f",
+    "environment": "recipient-runtime", "read_only": args.read_only,
+    "steps": [], "outcome": "RUNNING", "residual_objects": [],
+    "limits": ["실제 데이터 이관/검색 성능은 검사하지 않음", "Oracle Text 및 VECTOR 색인 미검사",
+               "Dataiku 관리형 Dataset/Flow 생성 권한은 별도", "다른 스키마의 기존 테이블 SELECT 권한은 별도"],
+}
+
+def save():
+    temp = run_dir / "result.json.tmp"
+    temp.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    temp.replace(run_dir / "result.json")
+
+class CheckError(Exception):
+    def __init__(self, reason, ora=None):
+        super().__init__(reason)
+        self.reason, self.ora = reason, ora
+
+HINTS = {
+    1031: "DB 권한 부족: 실행 스키마의 CREATE TABLE 등 권한 확인",
+    1950: "테이블스페이스 quota 부족: 해당 DB 사용자 quota 확인",
+    942: "테이블/뷰가 없거나 조회 권한 부족: 실제 owner/접두사/GRANT 확인",
+    955: "동일 객체명 존재: 재사용/삭제하지 않고 중단",
+    904: "컬럼 또는 함수 미지원: DB 버전/SQL 계약 확인",
+    910: "컬럼 길이 제한: DB 버전/타입 확인",
+    40441: "JSON 형식 오류", 2290: "CHECK 제약 위반", 1: "기본키/유일키 중복",
+    12899: "문자 길이/문자셋 제한", 6502: "문자열/타입 변환 오류",
+}
+
+def error_info(exc):
+    if isinstance(exc, CheckError):
+        out = {"type": "CheckError", "reason": exc.reason}
+        if exc.ora is not None:
+            out.update(oracle_code=f"ORA-{exc.ora:05d}", hint=HINTS.get(exc.ora, "DB 오류 코드 확인"))
+        return out
+    # 원문 exception/response/URL/auth_key는 출력·저장하지 않습니다.
+    codes = sorted(set(re.findall(r"ORA-\d{5}", str(exc))))
+    out = {"type": type(exc).__name__}
+    if codes:
+        out["oracle_codes"] = codes
+        out["hint"] = HINTS.get(int(codes[0][4:]), "DB 오류 코드 확인")
+    status = getattr(exc, "status_code", None)
+    if isinstance(status, int):
+        out["http_status"] = status
+        if status in (401, 403):
+            out["hint"] = "인증/ORDS 리소스 허용 범위 확인; 이 응답만으로 DB CREATE TABLE 권한을 단정하지 않음"
+        elif status == 404:
+            out["hint"] = "ORDS 주소/스키마 별칭/REST-Enabled SQL 활성화 확인"
+    if "hint" not in out:
+        out["hint"] = "인증·연결·SDK·DSS 실행 환경 확인; 민감한 원문 오류는 로그에서 생략"
+    return out
+
+def step(name, fn, required=True):
+    print(f"[START] {name}", flush=True)
+    started = time.monotonic()
+    entry = {"name": name, "required": required}
+    try:
+        detail = fn()
+        entry.update(status="PASS", detail=detail)
+        ok = True
+    except Exception as exc:
+        entry.update(status="FAIL" if required else "UNKNOWN", error=error_info(exc))
+        ok = False
+    entry["elapsed_ms"] = round((time.monotonic() - started) * 1000)
+    report["steps"].append(entry)
+    save()
+    print(f"[{entry['status']}] {name}: " + json.dumps(entry.get("detail", entry.get("error")), ensure_ascii=False), flush=True)
+    return ok
+
+def quiet(fn):
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        return fn()
+
+def ident(value):
+    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_$#]{0,127}", value):
+        raise CheckError("현재 DB 스키마가 일반 Oracle 식별자가 아님; 자동 DDL 중단")
+    return '"' + value + '"'
+
+def literal(value):
+    return "'" + str(value).replace("'", "''") + "'"
+
+def normalized_body(response):
+    if isinstance(response, dict):
+        return response
+    raw = getattr(response, "raw", None)
+    if isinstance(raw, dict):
+        return raw
+    candidate = getattr(response, "json", None)
+    body = candidate() if callable(candidate) else candidate
+    if not isinstance(body, dict):
+        raise CheckError("ORDS 응답 형식 미확인")
+    return body
+
+def reject_errors(value):
+    if isinstance(value, dict):
+        code = value.get("errorCode")
+        if code not in (None, 0, "0", "") or value.get("errorMessage"):
+            try:
+                numeric = abs(int(code)) if code not in (None, "") else None
+            except (TypeError, ValueError):
+                numeric = None
+            raise CheckError("ORDS 응답 내부 SQL 오류(HTTP 200도 실패 처리)", numeric)
+        for child in value.values():
+            reject_errors(child)
+    elif isinstance(value, list):
+        for child in value:
+            reject_errors(child)
+
+class OrdsBackend:
+    def __init__(self):
+        from genos.ords import ORDSClient
+        schema = os.getenv("ORACLE_ORDS_SCHEMA", "").strip() or EMBEDDED_SCHEMA
+        cid = os.getenv("ORACLE_ORDS_CLIENT_ID", "").strip() or EMBEDDED_CLIENT_ID
+        secret = os.getenv("ORACLE_ORDS_CLIENT_SECRET", "").strip() or EMBEDDED_CLIENT_SECRET
+        token = os.getenv("ORACLE_ORDS_AUTH_TOKEN", "").strip()
+        if not cid and not token:
+            cid = getpass.getpass("ORDS 전체 client ID 입력 (화면/로그에 표시 안 됨): ")
+        if cid and not secret:
+            secret = getpass.getpass("ORDS 전체 client Secret 입력 (화면/로그에 표시 안 됨): ")
+        if not schema or (not token and not (cid and secret)) or (cid and not secret):
+            raise CheckError("ORDS 설정 누락")
+        if any(value.endswith(("..", "…")) for value in (cid, secret)):
+            raise CheckError("사진의 생략된 인증값은 사용 불가; 전체 값을 입력해야 함")
+        kwargs = {"schema": schema, "auth_key": (cid, secret) if cid else token, "timeout": args.timeout}
+        base = os.getenv("ORACLE_ORDS_BASE_URL", "").strip() or EMBEDDED_BASE_URL
+        if base:
+            kwargs["base_url"] = base
+        self.client = quiet(lambda: ORDSClient(**kwargs))
+        if not callable(getattr(self.client, "request", None)) or not getattr(self.client, "SQL_PATH", None):
+            raise CheckError("쓰기용 request/SQL_PATH 없는 SDK; genos-util 쓰기 지원 버전 필요")
+
+    def execute(self, sql, binds=None):
+        payload = {"statementText": sql}
+        if binds:
+            payload["binds"] = binds
+        body = normalized_body(quiet(lambda: self.client.request("POST", self.client.SQL_PATH, json=payload)))
+        reject_errors(body)
+        items = body.get("items")
+        if not isinstance(items, list) or len(items) != 1 or not isinstance(items[0], dict):
+            raise CheckError("ORDS 단일 SQL 응답 items 형식/개수 미확인")
+        return items[0]
+
+    def query(self, sql):
+        item = self.execute(sql)
+        rs = item.get("resultSet")
+        if not isinstance(rs, dict) or not isinstance(rs.get("items"), list) or rs.get("hasMore"):
+            raise CheckError("ORDS SELECT 결과 없음/잘림; 정상 판정 불가")
+        return [{str(k).upper(): v for k, v in row.items()} for row in rs["items"]]
+
+    def mutate(self, sql, binds=None, expected_rows=None):
+        item = self.execute(sql, binds)
+        if expected_rows is not None and item.get("result") != expected_rows:
+            raise CheckError("DML affected rows 불일치/미노출")
+
+    def close(self):
+        if callable(getattr(self.client, "close", None)):
+            quiet(self.client.close)
+
+class DataikuBackend:
+    def __init__(self):
+        from dataiku import SQLExecutor2
+        name = args.connection
+        if not name:
+            with open("/dev/tty", "r+") as tty:
+                tty.write("Dataiku의 실제 Oracle SQL 연결명 입력: ")
+                tty.flush()
+                name = tty.readline().strip()
+        if not name:
+            raise CheckError("Dataiku Oracle 연결명 누락")
+        self.executor = quiet(lambda: SQLExecutor2(connection=name))
+
+    def query(self, sql):
+        frame = quiet(lambda: self.executor.query_to_df(sql))
+        return [{str(k).upper(): v for k, v in row.items()} for row in frame.to_dict("records")]
+
+    def mutate(self, sql, binds=None, expected_rows=None):
+        if binds:
+            raise CheckError("Dataiku 경로의 진단 SQL에는 바인드를 사용하지 않음")
+        # 주 쿼리는 SELECT, 부작용 SQL은 같은 세션의 pre_queries에서 수행합니다.
+        # DSS의 기본 rollback을 피하려고 DML에도 COMMIT을 명시합니다.
+        frame = quiet(lambda: self.executor.query_to_df(
+            "SELECT 1 AS PROBE_OK FROM dual", pre_queries=[sql], post_queries=["COMMIT"]))
+        records = frame.to_dict("records")
+        if len(records) != 1 or int(next(iter(records[0].values()))) != 1:
+            raise CheckError("Dataiku SQL 실행 확인 결과 불일치")
+
+    def close(self):
+        pass
+
+backend = None
+schema = None
+qualified = None
+created = False
+create_attempted = False
+
+def scalar(sql, key="N"):
+    rows = backend.query(sql)
+    if len(rows) != 1 or key not in rows[0]:
+        raise CheckError("단일 결과/컬럼 계약 불일치")
+    return rows[0][key]
+
+def connect():
+    global backend
+    backend = OrdsBackend() if args.mode == "ords" else DataikuBackend()
+    return {"backend": args.mode, "python": sys.version.split()[0]}
+
+def read_dual():
+    value = int(scalar("SELECT 1 AS N FROM dual"))
+    if value != 1:
+        raise CheckError("DUAL 조회 결과가 1이 아님")
+    return {"probe": value}
+
+def identity():
+    global schema, qualified
+    rows = backend.query("SELECT SYS_CONTEXT('USERENV','SESSION_USER') AS SESSION_USER, "
+                         "SYS_CONTEXT('USERENV','CURRENT_USER') AS CURRENT_USER, "
+                         "SYS_CONTEXT('USERENV','CURRENT_SCHEMA') AS CURRENT_SCHEMA FROM dual")
+    if len(rows) != 1:
+        raise CheckError("DB 실행 계정 확인 실패")
+    schema = rows[0]["CURRENT_SCHEMA"]
+    qualified = ident(schema) + "." + ident(table_name)
+    report["db_identity"] = rows[0]
+    report["test_table"] = qualified
+    report["test_index"] = ident(schema) + "." + ident(index_name)
+    return rows[0]
+
+def read_existing_table():
+    parts = args.read_table.split(".")
+    if len(parts) not in (1, 2):
+        raise CheckError("read-table은 table 또는 owner.table 형태여야 함")
+    name = ".".join(ident(p.upper()) for p in parts)
+    found = int(scalar(f"SELECT COUNT(*) AS N FROM {name} WHERE ROWNUM <= 1"))
+    return {"table": name, "select_allowed": True, "at_least_one_row": bool(found)}
+
+def exists(name, kind):
+    return int(scalar("SELECT COUNT(*) AS N FROM ALL_OBJECTS WHERE OWNER = " + literal(schema)
+                      + " AND OBJECT_NAME = " + literal(name) + " AND OBJECT_TYPE = " + literal(kind)))
+
+def create_table():
+    global create_attempted, created
+    count = int(scalar("SELECT COUNT(*) AS N FROM ALL_OBJECTS WHERE OWNER = " + literal(schema)
+                       + " AND OBJECT_NAME IN (" + literal(table_name) + "," + literal(index_name) + ")"))
+    if count:
+        raise CheckError("생성할 객체명 충돌; 기존 객체는 삭제하지 않음", 955)
+    create_attempted = True
+    backend.mutate(f"CREATE TABLE {qualified} (ID NUMBER PRIMARY KEY, TERM NVARCHAR2(100), "
+                   "PAYLOAD CLOB CHECK (PAYLOAD IS JSON))")
+    created = True  # 서버 성공 확인 뒤에만 이 실행의 소유 객체로 취급
+    if exists(table_name, "TABLE") != 1:
+        raise CheckError("CREATE 성공 응답 뒤 테이블 메타데이터 확인 실패")
+    return {"table": qualified, "types": ["NUMBER", "NVARCHAR2", "CLOB", "IS JSON"]}
+
+def create_index():
+    backend.mutate(f"CREATE INDEX {ident(schema)}.{ident(index_name)} ON {qualified} (TERM)")
+    rows = backend.query("SELECT STATUS FROM ALL_INDEXES WHERE OWNER = " + literal(schema)
+                         + " AND INDEX_NAME = " + literal(index_name) + " AND TABLE_NAME = " + literal(table_name))
+    if len(rows) != 1 or rows[0].get("STATUS") != "VALID":
+        raise CheckError("B-tree 색인 VALID 상태 미확인")
+    return {"index": index_name, "kind": "B-tree", "status": "VALID"}
+
+term = "오라클 용어 이관 점검"
+payload_text = json.dumps({"run_id": run_id, "synthetic": True,
+                           "text": "가상 구조화 문서와 용어 정의 점검. " * 350}, ensure_ascii=False)
+
+def write_row():
+    if args.mode == "ords":
+        backend.mutate(f"INSERT INTO {qualified} (ID,TERM,PAYLOAD) VALUES (:id,:term,:payload)", [
+            {"name": "id", "value": 1, "data_type": "NUMBER"},
+            {"name": "term", "value": term, "data_type": "VARCHAR2"},
+            {"name": "payload", "value": payload_text, "data_type": "CLOB"}], expected_rows=1)
+    else:
+        # 합성 문자열만 리터럴화. 각 조각은 UTF-8 2000 bytes 이하여서 Oracle 리터럴 한도 이내.
+        parts, part = [], ""
+        for char in payload_text:
+            if len((part + char).encode("utf-8")) > 2000:
+                parts.append(part)
+                part = ""
+            part += char
+        if part:
+            parts.append(part)
+        clob = " || ".join("TO_CLOB(" + literal(p) + ")" for p in parts)
+        backend.mutate(f"INSERT INTO {qualified} (ID,TERM,PAYLOAD) VALUES (1,{literal(term)},{clob})")
+    return {"synthetic_rows": 1, "clob_chars": len(payload_text), "clob_utf8_bytes": len(payload_text.encode("utf-8"))}
+
+def read_row():
+    rows = backend.query(f"SELECT TERM, DBMS_LOB.GETLENGTH(PAYLOAD) AS CLOB_CHARS, "
+                         f"JSON_VALUE(PAYLOAD, '$.run_id') AS RUN_ID FROM {qualified} WHERE ID=1")
+    if (len(rows) != 1 or rows[0].get("TERM") != term
+            or int(rows[0].get("CLOB_CHARS", -1)) != len(payload_text)
+            or rows[0].get("RUN_ID") != run_id):
+        raise CheckError("별도 호출 재조회: 한글/CLOB 길이/JSON run_id 불일치; commit·문자셋 확인")
+    return {"separate_call": True, "unicode_clob_json": "MATCH"}
+
+def update_row():
+    backend.mutate(f"UPDATE {qualified} SET TERM={literal(term + ' 수정')} WHERE ID=1",
+                   expected_rows=1 if args.mode == "ords" else None)
+    if scalar(f"SELECT TERM FROM {qualified} WHERE ID=1", "TERM") != term + " 수정":
+        raise CheckError("UPDATE 후 별도 호출 재조회 불일치")
+    return {"update_persisted": True}
+
+def delete_row():
+    backend.mutate(f"DELETE FROM {qualified} WHERE ID=1", expected_rows=1 if args.mode == "ords" else None)
+    if int(scalar(f"SELECT COUNT(*) AS N FROM {qualified}")) != 0:
+        raise CheckError("DELETE 후 행 잔존")
+    return {"remaining_rows": 0}
+
+def cleanup():
+    backend.mutate(f"DROP TABLE {qualified} PURGE")
+    if exists(table_name, "TABLE") or exists(index_name, "INDEX"):
+        raise CheckError("DROP 이후 점검 객체 잔존")
+    return {"table_and_indexes_removed": True}
+
+def residual_check():
+    residual = []
+    for name, kind in ((table_name, "TABLE"), (index_name, "INDEX")):
+        if exists(name, kind):
+            residual.append({"owner": schema, "name": name, "type": kind})
+    report["residual_objects"] = residual
+    if residual:
+        raise CheckError("점검 객체 잔존; result.json의 이름을 확인한 뒤 현장에서 정리")
+    return {"residual_objects": []}
+
+def terminate(signum, frame):
+    raise KeyboardInterrupt()
+
+signal.signal(signal.SIGTERM, terminate)
+save()
+try:
+    print("모드:", args.mode, "| 조회 전용:", args.read_only, flush=True)
+    print("ORDS와 Dataiku는 서로 다른 인증·DB 사용자일 수 있습니다. 결과의 db_identity를 비교하세요.", flush=True)
+    if step("01_runtime_and_auth", connect) and step("02_read_dual", read_dual):
+        if step("03_db_identity", identity):
+            if args.read_table:
+                step("03b_read_existing_table", read_existing_table)
+            step("04_session_privileges", lambda: backend.query(
+                "SELECT PRIVILEGE FROM SESSION_PRIVS WHERE PRIVILEGE IN "
+                "('CREATE TABLE','CREATE ANY TABLE','CREATE ANY INDEX','UNLIMITED TABLESPACE') ORDER BY PRIVILEGE"), False)
+            step("05_user_quota", lambda: backend.query(
+                "SELECT TABLESPACE_NAME, BYTES, MAX_BYTES FROM USER_TS_QUOTAS ORDER BY TABLESPACE_NAME"), False)
+            step("06_db_version", lambda: backend.query(
+                "SELECT VERSION FROM PRODUCT_COMPONENT_VERSION WHERE PRODUCT LIKE 'Oracle Database%'"), False)
+            if args.read_only:
+                report["outcome"] = "READ_ONLY_PASS_DDL_UNTESTED"
+            elif step("07_create_table", create_table):
+                step("08_create_btree_index", create_index)
+                if step("09_insert_unicode_clob_json", write_row):
+                    if step("10_read_after_insert", read_row):
+                        step("11_update_and_read", update_row)
+                    step("12_delete_and_read", delete_row)
+except KeyboardInterrupt:
+    report["interrupted"] = True
+    print("[INTERRUPTED] 이번 실행에서 생성 확인된 임시 테이블을 정리합니다.", flush=True)
+except Exception as exc:
+    report["steps"].append({"name": "unexpected", "required": True, "status": "FAIL", "error": error_info(exc)})
+finally:
+    if created:
+        step("13_drop_table_and_indexes", cleanup)
+    elif create_attempted:
+        # 생성 요청 실패/timeout은 미적용을 보장하지 않음. 소유권 성공 확인이 없어 자동 DROP하지 않음.
+        print("[UNKNOWN] CREATE 요청 결과 미확인. 잔존 객체 조회로 상태를 확인합니다.", flush=True)
+    if create_attempted and backend is not None and schema is not None:
+        if not step("14_residual_objects", residual_check):
+            report["residual_state"] = "PRESENT_OR_UNKNOWN"
+            report["candidate_cleanup_sql"] = f"DROP TABLE {qualified} PURGE"
+    if backend is not None:
+        step("15_client_close", lambda: backend.close(), False)
+    failed = any(s["required"] and s["status"] != "PASS" for s in report["steps"])
+    if report.get("interrupted"):
+        report["outcome"] = "INTERRUPTED"
+    elif failed:
+        report["outcome"] = "FAIL_CHECK_STEPS"
+    elif not args.read_only:
+        required_names = {"07_create_table", "08_create_btree_index", "09_insert_unicode_clob_json",
+                          "10_read_after_insert", "11_update_and_read", "12_delete_and_read",
+                          "13_drop_table_and_indexes", "14_residual_objects"}
+        passed = {s["name"] for s in report["steps"] if s["status"] == "PASS"}
+        report["outcome"] = "DDL_DML_BASIC_INDEX_PASS" if required_names <= passed else "INCOMPLETE"
+    report["finished_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    save()
+    print("\n최종 결과:", report["outcome"], flush=True)
+    print("Oracle Text/VECTOR·이관 전체·RAG 연결·검색 성능·Dataiku Flow 관리는 별도 검증 대상입니다.", flush=True)
+sys.exit(0 if report["outcome"] in ("DDL_DML_BASIC_INDEX_PASS", "READ_ONLY_PASS_DDL_UNTESTED") else 1)
+ORACLE_CHECK_PYTHON

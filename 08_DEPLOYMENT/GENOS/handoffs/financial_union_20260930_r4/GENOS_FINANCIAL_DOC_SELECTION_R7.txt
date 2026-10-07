@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+
+# Read-only: distinguish absent bytes, renamed files, selection exclusions,
+# and actual DOC/DOCX structure failures. No parser or model calls.
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-financial-doc-selection-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+DEPLOY_ROOT="${DEPLOY_ROOT:-/home/genos/DEV}"
+GENOS_DATA_ROOT="${GENOS_DATA_ROOT:-$DEPLOY_ROOT/01_DATA}"
+PYTHON_BIN="${PYTHON_BIN:-$DEPLOY_ROOT/.venv/bin/python}"
+if [[ ! -x "$PYTHON_BIN" ]]; then PYTHON_BIN="$(command -v python3)"; fi
+[[ -x "$PYTHON_BIN" ]] || { echo 'Python 3 required'; exit 2; }
+DATA_ROOT_REAL="$(realpath "$GENOS_DATA_ROOT")"
+"$PYTHON_BIN" - "$DATA_ROOT_REAL" "$DEPLOY_ROOT" <<'PY'
+import hashlib
+import json
+import os
+from pathlib import Path
+import sys
+import unicodedata
+
+data, checkout = map(Path, sys.argv[1:3])
+scope_path = data / 'CATALOG/SCOPES/photo-required-80-hwpx-20260917.json'
+scope_sha = 'aba1df17dbd2648203cf3ceb9719b784f398822bdaf7a163f566765b7cd3025f'
+sizes = [96768, 85504, 84480, 211968, 238592, 455938, 2802688,
+         536576, 450048, 56832, 956416]
+
+def digest(path):
+    h = hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+if digest(scope_path) != scope_sha:
+    raise ValueError('photo scope differs; do not attribute old hashes to this field scope')
+docs = json.loads(scope_path.read_text(encoding='utf-8'))['documents'][51:61]
+files = [(d['name'], f) for d in docs for f in d['files']]
+if len(docs) != 10 or len(files) != len(sizes):
+    raise ValueError('expected ten documents and eleven physical files')
+expected = {f['sha256']: {'name': name, 'file': Path(f['path']).name,
+                           'bytes': size, 'role': f['role']}
+            for (name, f), size in zip(files, sizes)}
+if len(expected) != len(sizes):
+    raise ValueError('duplicate source hash in expected DOC/HWP set')
+layout_path = data / 'CATALOG/TEAM_LAYOUT.json'
+layout = json.loads(layout_path.read_text(encoding='utf-8'))['files']
+def stem(name):
+    return unicodedata.normalize('NFC', Path(name).stem).casefold()
+same_stems = {stem(row['file']) for row in expected.values()}
+possible_sizes = {row['bytes'] for row in expected.values()}
+found = {sha: [] for sha in expected}
+same_stem = {sha: [] for sha in expected}
+scanned = 0
+for root in (data / 'RAW', checkout / 'TRANSFER', data / 'PACKAGES/EXTERNAL'):
+    if not root.is_dir():
+        continue
+    print('SCAN ' + str(root), flush=True)
+    for directory, dirs, names in os.walk(root):
+        dirs[:] = [d for d in dirs if d not in {'.git', 'union_file'}]
+        for name in names:
+            path = Path(directory) / name
+            try:
+                if path.is_symlink() or not path.is_file():
+                    continue
+                size = path.stat().st_size
+                if size not in possible_sizes and stem(name) not in same_stems:
+                    continue
+                scanned += 1
+                sha = digest(path)
+            except OSError:
+                continue
+            if sha in found:
+                found[sha].append(str(path))
+            if stem(name) in same_stems:
+                for target_sha, row in expected.items():
+                    if stem(row['file']) == stem(name) and len(same_stem[target_sha]) < 8:
+                        same_stem[target_sha].append({'path': str(path), 'sha256': sha})
+print('CANDIDATES_HASHED ' + str(scanned), flush=True)
+for name, f in files:
+    sha = f['sha256']
+    registered = [path for path, row in layout.items()
+                  if row.get('sha256') == sha and row.get('scope_document') == name]
+    other_registrations = [{'path': path, 'scope_document': row.get('scope_document')}
+                           for path, row in layout.items()
+                           if row.get('sha256') == sha and row.get('scope_document') != name]
+    same_name_registrations = [{'path': path, 'sha256': row.get('sha256')}
+                               for path, row in layout.items()
+                               if row.get('scope_document') == name and row.get('sha256') != sha]
+    print('SOURCE_DOC ' + json.dumps({
+        'name': name, 'filename': expected[sha]['file'], 'sha256': sha,
+        'registered_paths': registered[:8], 'exact_paths_any_name': found[sha][:8],
+        'other_registrations': other_registrations[:8],
+        'same_name_registrations': same_name_registrations[:8],
+        'same_stem_candidates': same_stem[sha],
+    }, ensure_ascii=False), flush=True)
+
+expected_ids = {sha[:16] for sha in expected}
+doc_results = 0
+for path in sorted((data / 'LOGS').glob('*/result-*.json')):
+    try:
+        result = json.loads(path.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        continue
+    for did, row in result.get('documents', {}).items():
+        label = str(row.get('name', ''))
+        if did not in expected_ids and not label.lower().endswith(('.doc', '.docx')):
+            continue
+        doc_results += 1
+        print('DOC_RUN ' + json.dumps({'run': path.parent.name, 'id': did,
+            'name': label, 'stage': result.get('stage'),
+            'structure': row.get('structure'), 'error': str(row.get('error', ''))[:250]},
+            ensure_ascii=False), flush=True)
+print('DOC_RUN_ROWS ' + str(doc_results), flush=True)
+for path in sorted((data / 'LOGS').glob('*/inventory-*.json')):
+    try:
+        inventory = json.loads(path.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        continue
+    for kind in ('errors', 'excluded'):
+        for row in inventory.get(kind, []):
+            item = str((row.get('item') or row.get('path') or '') if isinstance(row, dict) else row)
+            if Path(item).suffix.lower() not in {'.doc', '.docx'}:
+                continue
+            print('DOC_INVENTORY ' + json.dumps({'run': path.parent.name,
+                'kind': kind, 'path': item,
+                'reason': str(row.get('error') or row.get('reason') or '')[:250] if isinstance(row, dict) else '',
+                'selected_paths': row.get('selected_paths', [])[:3] if isinstance(row, dict) else []},
+                ensure_ascii=False), flush=True)
+print('READ_ONLY_COMPLETE', flush=True)
+PY

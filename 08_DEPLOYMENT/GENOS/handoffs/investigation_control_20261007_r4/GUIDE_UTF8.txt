@@ -1,0 +1,110 @@
+GENOS 조사 제어 통합 R4 — 두 사진의 반입 중단 후속본
+
+사진 1: 조사 제어 R2의 cache 사전 검사는 PASS였고 stream_app.py 해시 검사에서
+코드 교체 전에 중단했습니다. 사진의 stream_app.py 7ea18ce592...와 service.py
+051b508b38...는 검증된 이전 코드에 NFS 진단 훅을 넣으면 정확히 재현됩니다.
+R2 허용 목록에는 이 두 파생 해시가 빠져 있었습니다.
+
+사진 2: NFS R7는 설치에 성공한 뒤 prepare의 checkout_commit_preflight에서
+unrelated tracked changes present로 중단했습니다. NFS prepare가 커밋하는 작은
+파일 범위 밖에 다른 추적 수정이 있다는 뜻입니다. 사진에는 그 파일명이 없습니다.
+이 화면을 데이터 손상이나 push/배포 성공으로 해석하지 않습니다.
+
+같은 첫 사진의 해시 수정 R3도 다른 진행 작업에서 별도로 준비되었습니다.
+이번 R4는 두 해시 수정과 NFS 도구의 통합 반입, 적용 전 Git 충돌 보고서를 포함합니다.
+조사 제어 코드 반입에는 R4 ZIP/APPLY TXT 쌍을 사용합니다. R2/R3 원본은 보존합니다.
+
+파일
+  GENOS_INVESTIGATION_CONTROL_20261007_R4.zip
+  GENOS_INVESTIGATION_CONTROL_20261007_R4_APPLY.txt
+  GENOS_INVESTIGATION_CONTROL_20261007_R4_WORKFLOW_PASTE_ALL.txt
+  GUIDE_UTF8.txt
+
+서빙 265파일은 선택 로컬 MAIN generation 43과 같은 바이트입니다.
+R2의 282파일에 이미 검증된 NFS R7 도구 4개를 추가해 286파일을 반입합니다.
+NFS reader는 R2에도 들어 있으므로 중복 추가하지 않습니다. 워크플로우 전체 TXT는
+R2/R3와 같은 내용입니다. 기존 generation, CURRENT, runtime, SQL DB는 재구축하지 않습니다.
+ZIP에는 원문/DB/키/JavaScript가 없습니다. 모델 호출이나 새 실험은 없습니다.
+
+현장 실행
+ZIP과 APPLY TXT를 기존 ~/DEV/TRANSFER에 저장합니다. 기존 Git checkout에 적용합니다.
+~/DEV 별칭은 사진처럼 /workspace 실제 root로 해결됩니다. 현장은 python3를 사용하며
+실행 로그에 실제 sys.executable과 버전을 남깁니다. Python 3.11 이상이 필요합니다.
+
+cd "$HOME/DEV/TRANSFER"
+export GENOS_DEV="$HOME/DEV"
+export GENOS_GENERATION="/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation"
+bash GENOS_INVESTIGATION_CONTROL_20261007_R4_APPLY.txt inspect
+bash GENOS_INVESTIGATION_CONTROL_20261007_R4_APPLY.txt all "$GENOS_GENERATION"
+
+실제 현장 generation 선택이 달라졌다면 GENOS_GENERATION에 정확한 절대경로를 지정합니다.
+기본값은 사진에서 선택된 기존 generation이며 날짜순 폴더를 자동 선택하지 않습니다.
+
+inspect는 코드/Git 상태를 읽고 CHECKOUT_PREFLIGHT JSON을 기록합니다. 적용/커밋/push는
+수행하지 않습니다. all도 동일 검사를 먼저 수행합니다. 관리 대상의 알려진 해시와
+다른 수정은 덮어쓰지 않고 중단합니다. 관계없는 staged/추적 변경 및 merge 충돌도
+파일 적용 전에 중단합니다. 관리 파일에 working tree와 다른 미확인 staged 내용이
+있어도 보존하고 중단합니다. 원문이나 키 내용은 보고서에 넣지 않습니다.
+
+보고서에는 다음 목록이 있습니다.
+  mismatches: 허용되지 않은 코드의 경로와 실제/목표 해시
+  unrelated_tracked_or_staged_paths: 이번 ZIP 범위 밖의 수정 파일명
+  unknown_staged_bytes: 관리 파일에서 미확인 상태로 staged된 내용의 경로/해시
+  unmerged_paths: merge 충돌 파일명
+사진 2의 미표시 수정 파일명은 이 보고서로 확인할 수 있습니다. 보고서 파일 경로는
+CHECKOUT_PREFLIGHT 이벤트에 출력됩니다. 미확인 변경이 남으면 원래 변경을 검토해
+분리 처리한 뒤 다시 실행합니다. 일괄 reset/checkout/stash/commit으로 우회하지 않습니다.
+
+all 순서
+  적용 전 코드·Git 상태 → 선택 generation/cache 확인 → 파일별 백업/적용 →
+  실제 checkout service/service.py 로더 검사 → generation E2E 및 verify_assets →
+  ZIP 범위 파일만 commit → 같은 checkout release gate → 기존 remote/branch로 push
+
+설치된 R7 helper의 미커밋 변경은 이번 ZIP 범위에 포함되어 조사 제어와 함께 검증/커밋됩니다.
+R4의 일반 RAG 배포를 위해 NFS R7 all/prepare를 먼저 성공시킬 필요는 없습니다.
+NFS 코드 복사 및 진단 리비전 검사가 별도로 필요하다면 R4 push 이후 R7 prepare/push와
+그 검사 ID의 WORKFLOW_PASTE_ALL 절차를 별도 진단 워크플로우에서 실행합니다.
+실제 데이터 ZIP 생성은 기존 R7 pack-data로 별도로 수행합니다. 쓰기가 멈춘 상태에서만
+--writers-stopped를 사용하며 출력은 ~/DEV/TRANSFER입니다. R4 all은 데이터 ZIP을 생성하지 않습니다.
+
+기록
+기본 로그: ~/DEV/TRANSFER/investigation-control-r4-logs/
+RUN.log 역할의 모드별 .log, events.jsonl, CHECKOUT_PREFLIGHT-<시각>-<PID>.json을 보존합니다.
+20초마다 긴 검사 단계의 진행 표시가 나옵니다.
+종료 마커: INVESTIGATION_CONTROL_EXIT=0
+CODE_APPLIED의 backup 경로 및 GIT_PUSHED의 commit/generation/manifest hash를 보관합니다.
+같은 반입본 재실행은 바이트를 대조하며 기존 적용 영수증을 재사용합니다.
+
+단계별 명령
+bash GENOS_INVESTIGATION_CONTROL_20261007_R4_APPLY.txt check "$GENOS_GENERATION"
+bash GENOS_INVESTIGATION_CONTROL_20261007_R4_APPLY.txt apply "$GENOS_GENERATION"
+bash GENOS_INVESTIGATION_CONTROL_20261007_R4_APPLY.txt verify "$GENOS_GENERATION"
+bash GENOS_INVESTIGATION_CONTROL_20261007_R4_APPLY.txt push "$GENOS_GENERATION"
+
+코드서빙·워크플로우는 별도 반영
+GIT_PUSHED/RELEASE_GATE_PASS의 정확한 commit과 같은 generation으로 새 코드서빙
+리비전을 배포합니다. 다음 설정과 기존 내부 모델·임베딩·인증 설정을 대조합니다.
+  SEMANTIC_LLM_BACKEND=genos
+  GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6
+  GENOS_GENERATION=이번 실행에서 검증한 절대경로
+  GENOS_RUNTIME_DIR=/nfs-root/diamo/8-agent/runtime
+키 값을 사진/메일/로그로 출력하지 않습니다. 워크플로우 Python 단계는 제공한
+WORKFLOW_PASTE_ALL TXT 전체를 편집기에 반영합니다. Git push만으로 편집기가 바뀌지 않습니다.
+실제 warmup/질의는 워크플로우 테스트 화면에서만 확인합니다. 코드서빙 직접 테스트
+UI/API 실행을 요구하지 않습니다. 요청 ID·내부 model ID·시간·코드 리비전·generation과
+실제 판단/행동/이유 체인, 원문 인용, 상태 보존을 기록합니다.
+
+원복
+apply가 출력한 정확한 backup 절대경로를 지정합니다.
+bash GENOS_INVESTIGATION_CONTROL_20261007_R4_APPLY.txt rollback "/실제_backup_절대경로"
+이후 변경이 있으면 자동 원복을 거부합니다. 이미 push/배포했다면 검토한 복구 commit과
+이전 코드 리비전/검증된 generation, 이전 워크플로우 전체 코드로 복귀합니다.
+
+현장 R4 적용·실제 generation 전체 gate·push·리비전 배포·내부 질의는 아직 미확인입니다.
+로컬 검증 범위와 해시는 DELIVERY_VALIDATION.json 및 HANDOFF.json에 기록합니다.
+
+로컬 모의 검사 14개 PASS, 20.77초입니다. 실제 R2/R7 TXT의 실패 재현, 알려진 NFS
+상태에서 적용/재실행/원복, 변조/다른 staged 변경 차단, 동일 checkout gate 및
+로컬 bare Git remote push를 확인했습니다. GENOS 현장 실행 성공을 의미하지 않습니다.
+R4 ZIP SHA-256
+9e725446d2a802ee82817c52e4e6020123fc0f6ec432b31dd5295b59f7692a4e

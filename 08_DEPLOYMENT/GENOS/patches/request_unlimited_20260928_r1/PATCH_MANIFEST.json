@@ -1,0 +1,137 @@
+{
+  "format": "8agent-request-unlimited-patch/1",
+  "patch": "request-unlimited-20260928-r1",
+  "baseline": "Exact diagnostic R1 or performance R2 bytes; cumulative performance R2 plus unlimited GENOS requests",
+  "files": {
+    "02_BACKEND/semantic_runtime/app.py": {
+      "base_sha256": "525aeff11cfc308fcfbfcc970b742a64165d6eeb80360b62086c2b7d06888965",
+      "new_sha256": "502b0fdad189f1d1df629dcf8e44cc6247de3fe105d5cb330a09e6faad271f21",
+      "supported_base_sha256": [
+        "502b0fdad189f1d1df629dcf8e44cc6247de3fe105d5cb330a09e6faad271f21"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/folder_navigation.py": {
+      "base_sha256": "fc3a5b82af2c47f6eefa061dbfdfdc608d3e6fbd08d76e9546cc19cadb4705e1",
+      "new_sha256": "3031124049dff3c6d406ac4d01c297919e96548d0f8ffb57be6b79c55528be52",
+      "supported_base_sha256": [
+        "3031124049dff3c6d406ac4d01c297919e96548d0f8ffb57be6b79c55528be52"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/fulltext.py": {
+      "base_sha256": "e5aa89dae1543d0674b4d494c6e2cf57e17767f0c1048b78048f94477530550f",
+      "new_sha256": "8c812c64a39462fccb4628a079963606047d603964654f1f42931df130a5ee26",
+      "supported_base_sha256": [
+        "8c812c64a39462fccb4628a079963606047d603964654f1f42931df130a5ee26"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/inherited_navigation.py": {
+      "base_sha256": "07eb6d8738874f4228686296cdfec55ab835d8d828c3c55717b9be9c8faafcec",
+      "new_sha256": "d8dc9f442e52d2135457b6addf0e553b3b1165ae06dc9d80674b70ea6c092d9c",
+      "supported_base_sha256": [
+        "d8dc9f442e52d2135457b6addf0e553b3b1165ae06dc9d80674b70ea6c092d9c"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py": {
+      "base_sha256": "f2a097d3eed30f9fcfc79ceea342b630d548e5665c2997af734a1e2398b0eda2",
+      "new_sha256": "715633d3f1b85da303782ab9da39941f71798b5b52f87d3b154b97bb2d0a837c",
+      "supported_base_sha256": [
+        "715633d3f1b85da303782ab9da39941f71798b5b52f87d3b154b97bb2d0a837c"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py": {
+      "base_sha256": "034679c381079a4eef15841107aaffc5e3096eb65648cc8c1d935bd396837b58",
+      "new_sha256": "32fd62cc09168f8a9cda7dc1167e88a016bae19eb360fb5d868f33ed2f637e79",
+      "supported_base_sha256": [
+        "32fd62cc09168f8a9cda7dc1167e88a016bae19eb360fb5d868f33ed2f637e79"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/repository.py": {
+      "base_sha256": "6a046dce949ac1590f766d46d85fe4b357d2a5b025ca5ed5c598730612147413",
+      "new_sha256": "809c8c4cdb9b604edcffdea3ba10e7c458d13418dcaeead8c54fea03e64feab7",
+      "supported_base_sha256": [
+        "809c8c4cdb9b604edcffdea3ba10e7c458d13418dcaeead8c54fea03e64feab7"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": {
+      "base_sha256": "d68d946372fbb960c082c04d5c38ced3855ffe7045a94801a91c845c4e17ded0",
+      "new_sha256": "868865e2cf32a2d8ad736606c2ad4cd094bd9368cdd54e908cb3d3f51be61656",
+      "supported_base_sha256": [
+        "868865e2cf32a2d8ad736606c2ad4cd094bd9368cdd54e908cb3d3f51be61656"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py": {
+      "base_sha256": "66160bdc7e760e316825a030ccb968dc87513fd910cba9c933ccf275f3400a17",
+      "new_sha256": "b8176cfe46bce1d560edcc6829f6766a129cf64d8c526f6c7dad0a2612c52be7",
+      "supported_base_sha256": [
+        "b8176cfe46bce1d560edcc6829f6766a129cf64d8c526f6c7dad0a2612c52be7"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/legal_agent_adapter.py": {
+      "base_sha256": "531d3964885adb3a2c3c19d617788a826a42c651079b7a14c5d348978366c548",
+      "new_sha256": "a24ececfb60a6db7e02cdd9de573e251597d3866cc60e96c944496c22b4aa798",
+      "supported_base_sha256": [
+        "68912f1209c8994ca04154edadc36399f4b3c4b5748b5e65b3f626d6c12d67f0"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/multi_entry_navigation.py": {
+      "base_sha256": "d97d91a27a88af4b29b862990b67eeecbf28639343aa06f00457551c9dfc9c41",
+      "new_sha256": "93a7a36cf6e00d0a2f325c1d1f2585f2ec9d09c174a606b9d076f813c2c5807a",
+      "supported_base_sha256": [
+        "93a7a36cf6e00d0a2f325c1d1f2585f2ec9d09c174a606b9d076f813c2c5807a"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/observability.py": {
+      "base_sha256": "96787fbdc609cf88b3e891f8abe01fffd37aeae431d183356260be18557c0a4f",
+      "new_sha256": "cb65cc2eaa0097e4dabdcbf7bd36e3dcaa3a2fb82f74c36fce0ac39dcbc30c72",
+      "supported_base_sha256": [
+        "cb65cc2eaa0097e4dabdcbf7bd36e3dcaa3a2fb82f74c36fce0ac39dcbc30c72"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/pipeline.py": {
+      "base_sha256": "557d6b4c1914a5a61d12103fcbc81fa03523597ac51d2f437f2d8446db7e15b3",
+      "new_sha256": "9a05433243438649c8e210c26f4329b88145bcdfbaf8a6864b025988958ff435",
+      "supported_base_sha256": [
+        "9a05433243438649c8e210c26f4329b88145bcdfbaf8a6864b025988958ff435"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/request_report.py": {
+      "base_sha256": "7a16d852bc268ef913230d31cde9464bf0d490a19a0e6dc4ceb30be8973bc7ff",
+      "new_sha256": "ededae7d67df8bd5a23dd654484f1bea2ed83d2688bcb59d8434b416f18b3862",
+      "supported_base_sha256": [
+        "ededae7d67df8bd5a23dd654484f1bea2ed83d2688bcb59d8434b416f18b3862"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/storage.py": {
+      "base_sha256": "48e8e2eb7f0803b73c8be7e64fe9cf062ba71ae2fd654a41b67ceb3efa92e8e9",
+      "new_sha256": "ab038c340b67210f12c6658489c2d28e582d0c53cd1047d0099d5fd9b1c5749a",
+      "supported_base_sha256": [
+        "ab038c340b67210f12c6658489c2d28e582d0c53cd1047d0099d5fd9b1c5749a"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/structure_navigation.py": {
+      "base_sha256": "73c0a3ed949d5d078a07a12aef30c5f014022b17031aaa4d0882cab223ebd4c8",
+      "new_sha256": "8bc8acd92913bacb58f2c79c5af9c1bd934bee7d14858f3608b1432ee2637587",
+      "supported_base_sha256": [
+        "8bc8acd92913bacb58f2c79c5af9c1bd934bee7d14858f3608b1432ee2637587"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/team_scope.py": {
+      "base_sha256": "6614c715b5dbdb53945d25cf093252413095c9433c1447ed7c44b89e0ed271d7",
+      "new_sha256": "84cab33c67554d8b3ef1e840bc1b980b7494d3115e74df96a5ea29c4b9a671c7",
+      "supported_base_sha256": [
+        "84cab33c67554d8b3ef1e840bc1b980b7494d3115e74df96a5ea29c4b9a671c7"
+      ]
+    },
+    "service.py": {
+      "base_sha256": "63b1952c663f21968b457da266cb2f8bec37d10ad2d212714ca3b4bef4dee192",
+      "new_sha256": "89aa44402cbd33b8e7a2b0512f8ca903a7fefea4d7baf2906bd47d69c0e8c18f",
+      "supported_base_sha256": [
+        "37d75ee664e54a0faa7ac73b5f9790f6cf68f7033cce404797eda3f6f41b45bf"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/domain.py": {
+      "base_sha256": "ce3b46dbd591355ec03d0aedac670702283edffc3497844ea471ea1a4012ba51",
+      "new_sha256": "38f9b80cd8baaf596be4d338ce9f89c275ecef639d603898e5c5dc661b3e72cf"
+    }
+  }
+}

@@ -1,0 +1,125 @@
+GENOS RAG 데이터 ZIP 생성 및 원래 절대경로 복원 — 2026-10-06 R1
+
+이 도구는 GENOS DEV에서 기존 운영 데이터를 ZIP으로 묶는 현장용 스크립트다.
+현재 외부 Codex에서는 실제 GENOS 데이터 ZIP을 만들거나 현장 배포를 수행하지 않았다.
+로컬 공개 RAG generation 42 데이터를 GENOS 현장 세대로 간주하지 않는다.
+
+1. 파일 배치
+
+다음 세 파일을 GENOS의 ~/DEV/TRANSFER/rag_data_bundle_20261006_r1/ 에 둔다.
+  genos_rag_data_bundle.py
+  genos_pack_rag_data.sh
+  GUIDE_UTF8.txt
+Python 표준 라이브러리만 사용한다. 별도 pip 설치, unzip 설치는 필요 없다.
+코드 반입/수정, 모델 호출, SQL 변경, manifest/CURRENT/경로 문자열 치환은 하지 않는다.
+
+2. 기본 포함 데이터와 경로 선택
+
+최근 현장 기록의 기본 generation:
+  /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+그 상위 run 폴더 전체를 포함해 같은 폴더의 share/receipt/audit도 함께 보존한다.
+runtime 기본값:
+  /nfs-root/diamo/8-agent/runtime
+runtime 전체를 포함한다. case-memory의 cases-v3/v4.sqlite, SHORTCUT_CURRENT,
+선택 generations, artifacts, 위키 파생본, AD 상태, legal-agent/runs 요청 journal,
+runs/feedback 등 존재하는 파일과 빈 폴더를 보존한다.
+legal_wiki와 shortcut의 SQL 정본은 cases-v4.sqlite 및 artifacts에 포함된다.
+GENOS_STATE_DIR이 별도 설정되어 있으면 그 case-memory도 추가한다.
+
+우선순위: 명령행 --generation > 실제 환경변수 GENOS_GENERATION >
+DEV .env의 GENOS_GENERATION > GENOS_DATA_ROOT/generations/CURRENT > 위 기록된 기본 경로.
+환경변수는 .env보다 우선한다. .env에서 정해진 경로 키만 읽고 실행하지 않으며
+인증키·토큰을 출력하거나 ZIP에 넣지 않는다. runtime/state도 실제 경로 설정을 우선한다.
+DEV 환경변수와 실제 코드서빙 환경변수가 같다는 것은 도구가 보장하지 않는다.
+PLAN.json의 selection/generation/runtime/state를 실제 운영 설정과 대조한다.
+날짜순 최신 폴더를 자동 선택하지 않는다.
+
+별도 상태 DB가 /var 등 /nfs-root/diamo 밖에 있으면 중단한다. 이 도구로 그 DB의
+절대경로를 NFS 경로로 바꾸지 않는다. 기존 경로를 보존하는 별도 배치가 필요하다.
+다른 rollback generation, 작성 RAW/STRUCTURE, LLM/임베딩 서비스, 코드/.env/venv,
+전체 업로드 허용 root와 전통적인 파일 위키는 기본 ZIP에 포함하지 않는다.
+해당 RAG 경로가 실제로 사용하는 추가 파일 위키/첨부/로컬 모델이
+/nfs-root/diamo 아래에 있으면 --extra-path로 명시한다. 임의로 전체 /nfs-root를 담지 않는다.
+요청 공유 보고서 이력은 --include-request-logs로 포함할 수 있다.
+
+3. ZIP 생성 — GENOS DEV에서
+
+RAG 신규 요청, 진행 중 요청, AD worker 등 데이터 쓰기를 정상 종료한다.
+이 스크립트는 프로세스를 강제 종료하지 않는다. --writers-stopped는 작업자가
+쓰기 중지 상태를 확인했다는 선언이다. 실제 프로세스 상태를 자동 인증하지 않는다.
+SQLite WAL/SHM/journal이 남아 있으면 중단하며 checkpoint/삭제를 자동 수행하지 않는다.
+정상 종료/현장 SQLite 담당 절차로 일관된 원본을 준비한 뒤 다시 실행한다.
+
+  cd ~/DEV
+  bash TRANSFER/rag_data_bundle_20261006_r1/genos_pack_rag_data.sh --writers-stopped
+
+추가 설정 없이 위 한 명령으로 새 TRANSFER/genos-rag-data-<시각>-<ID>/를 만들고
+ZIP, ZIP.sha256, PLAN.json, DATA_MANIFEST.json, RUN.log, STATUS.json을 남긴다.
+시작 단계부터 로그와 실패 상태를 보존한다. STATUS.json=PACKED만 완료다.
+실패 시 .zip.partial은 완성본이 아니다. 기존 출력은 덮어쓰지 않는다.
+NFS 원본은 읽기만 하며 SQLite 접속/쓰기/재해시/세대 재구축을 하지 않는다.
+압축 전 데이터 크기 이상의 출력 여유 공간이 필요하다. ZIP64를 사용한다.
+입력 파일 목록·size/mtime/inode가 압축 도중 변하면 완성 ZIP을 발행하지 않는다.
+선택 manifest, store, navigation/fulltext/glossary manifest의 알려진 해시도 대조한다.
+전체 서빙 계약 검증 및 실제 모델 질의는 이 파일 복사 검증과 별도다.
+
+쓰기 중지 전 계획만 확인하려면:
+  bash TRANSFER/rag_data_bundle_20261006_r1/genos_pack_rag_data.sh --plan-only
+
+최근 기록의 두 경로를 명시적으로 고정하려면:
+  bash TRANSFER/rag_data_bundle_20261006_r1/genos_pack_rag_data.sh --writers-stopped \
+    --generation /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation \
+    --runtime /nfs-root/diamo/8-agent/runtime
+
+공유 요청 로그까지 함께 보관하려면 위 명령에 --include-request-logs를 추가한다.
+추가 RAG 의존성은 --extra-path /nfs-root/diamo/<실제 사용 폴더> 를 반복 지정한다.
+원본 ZIP에 포함된 내부 자료는 GENOS 내부 공유볼륨 이전 용도로 취급한다.
+여기서 만든 ZIP을 외부 모델/외부 서비스로 보내는 절차는 없다.
+
+4. DEV에서 압축을 풀고 새 공유볼륨으로 복사
+
+생성 로그가 해당 ZIP에 맞는 압축 해제와 복원 명령을 정확히 출력한다.
+ZIP.sha256으로 ZIP 무결성을 확인하고 그 명령을 사용한다.
+형식 예시(실제 로그에 출력된 절대경로 사용):
+  python3 -m zipfile -e <생성된-ZIP-절대경로> <DEV>/TRANSFER/RAG_DATA_UNPACK
+
+해제 폴더는 다음 구조다:
+  genos-rag-data-<시각>-<ID>/
+    DATA_MANIFEST.json
+    genos_rag_data_bundle.py
+    RESTORE.sh
+    GUIDE_UTF8.txt
+    payload/nfs-root/diamo/8-agent/term-releases/<동일-run>/generation/...
+    payload/nfs-root/diamo/8-agent/runtime/...
+    payload/nfs-root/diamo/<별도-state>/case-memory/...  (설정 시)
+
+원본 볼륨/ZIP은 보존한다. 대상 새 공유볼륨을 운영 환경에서 /nfs-root/diamo에
+연결한 뒤, 대상 쓰기가 중지된 상태에서 로그에 표시된 복원 명령을 실행한다.
+이 스크립트는 볼륨 mount/unmount나 코드서빙 배포를 수행하지 않는다.
+
+  bash <해제폴더>/RESTORE.sh --writers-stopped
+
+필요 폴더를 만들고 payload의 원래 절대경로로 복사한다. 해제 경로 자체를
+GENOS_GENERATION/GENOS_RUNTIME_DIR로 설정하지 않는다. 단순 cp와 달리 전체 입력
+SHA256·대상 충돌을 먼저 확인하고, 파일별 복사 해시 검증 후 발행한다.
+파일 권한/mtime를 보존한다. UID/GID/ACL/xattr는 자동 이전하지 않으므로 같은
+운영 사용자/공유볼륨 접근권한을 준비한다. 기존 디렉터리의 권한은 변경하지 않는다.
+다른 내용의 기존 파일이나 symlink/SQLite sidecar가 있으면 덮어쓰지 않고 중단한다.
+이미 동일한 파일은 건너뛰므로 실패 후 같은 명령으로 안전하게 재개할 수 있다.
+새 파일 복원 중 실패 시 일부 새 파일이 남을 수 있으며 STATUS.json=FAILED로 남는다.
+복원 로그/STATUS는 실행한 DEV의 TRANSFER/genos-rag-restore-<시각>-<ID>/에 저장된다.
+
+5. 서빙 확인과 복귀
+
+기존 GENOS_GENERATION, GENOS_RUNTIME_DIR, GENOS_STATE_DIR과 코드 root를 그대로 유지한다.
+SQL case_commit.case_db, journal binding.contract_root, artifact payload/해시 등은
+그대로 보존한다. 코드 root /workspace, /app 등의 변경은 이 데이터 도구의 범위 밖이다.
+데이터 복사 후 같은 checkout/서빙 코드에서 기존 읽기 전용 세대 gate를 실행한다:
+  python3 06_TOOLS/COMMANDS/genos_generation_e2e.py --generation /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+실제 선택 경로가 다르면 PLAN.json의 generation을 사용한다. 같은 코드서빙 리비전에서
+새 mount가 보이는지 확인하고 프로세스 재시작/배포로 프로세스 내부 캐시를 갱신한다.
+현장 warmup/기존 대화/새 질문/shortcut/legal_wiki/AD는 워크플로우 테스트 화면에서 확인한다.
+코드서빙 직접 테스트 UI/API 실행을 요구하지 않는다.
+복사 PASS, gate PASS, Git push, 코드서빙 리비전, 워크플로우 실행 성공은 별도 상태다.
+문제가 있으면 쓰기를 중지하고 보존한 원본 볼륨을 기존 mount 위치로 되돌린다.
+새 볼륨에 운영 쓰기를 시작한 뒤에는 새 기록을 보존하고 별도 상태 복귀 절차를 따른다.

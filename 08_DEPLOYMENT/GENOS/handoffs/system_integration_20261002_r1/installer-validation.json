@@ -1,0 +1,69 @@
+{
+  "schema_version": "local-handoff-installer-contract-v1",
+  "environment": "isolated local synthetic checkout",
+  "onsite": false,
+  "model_calls": 0,
+  "status": "PASS",
+  "steps": [
+    {
+      "step": "git-init",
+      "exit_code": 0,
+      "log": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/installer-git-init.log"
+    },
+    {
+      "step": "check",
+      "exit_code": 0,
+      "log": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/installer-check.log"
+    },
+    {
+      "step": "apply",
+      "exit_code": 0,
+      "log": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/installer-apply.log"
+    },
+    {
+      "step": "repeat",
+      "exit_code": 0,
+      "log": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/installer-repeat.log"
+    },
+    {
+      "step": "verify",
+      "exit_code": 0,
+      "log": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/installer-verify.log"
+    },
+    {
+      "step": "git-add",
+      "exit_code": 0,
+      "log": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/installer-git-add.log"
+    },
+    {
+      "step": "fixture-commit",
+      "exit_code": 0,
+      "log": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/installer-fixture-commit.log"
+    },
+    {
+      "step": "committed-code-gate",
+      "exit_code": 0,
+      "log": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/installer-committed-code-gate.log"
+    },
+    {
+      "step": "rollback",
+      "exit_code": 0,
+      "log": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/installer-rollback.log"
+    },
+    {
+      "step": "rollback-repeat",
+      "exit_code": 0,
+      "log": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/installer-rollback-repeat.log"
+    }
+  ],
+  "code_files": 1929,
+  "preserved": [
+    "environment file",
+    "original data",
+    "CURRENT",
+    "runtime state",
+    "unlisted code"
+  ],
+  "code_zip_sha256": "95ba8f7a42d1408a877656dbd23c73f54974b6caa4e0f18d1b47f358ae855914",
+  "rollback_receipt_status": "ROLLED_BACK"
+}

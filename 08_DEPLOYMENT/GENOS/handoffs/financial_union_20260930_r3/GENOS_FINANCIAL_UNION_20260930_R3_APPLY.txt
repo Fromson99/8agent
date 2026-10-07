@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-financial-union-r3-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+printf 'START patch=financial-union-20260930-r3 log=%s\n' "$RUN_LOG"
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ZIP="$SCRIPT_DIR/GENOS_FINANCIAL_UNION_20260930_R3.zip"
+SCOPE_ZIP="$SCRIPT_DIR/GENOS_FINANCIAL_UNION_SCOPE_20260930_R3.zip"
+DEPLOY_ROOT="${DEPLOY_ROOT:-$HOME/DEV}"
+MODE="${MODE:-apply}"
+: "${GENOS_DATA_ROOT:?Set GENOS_DATA_ROOT to the actual 01_DATA absolute path}"
+: "${GENOS_SOURCE_GENERATION:?Set GENOS_SOURCE_GENERATION to the exact source generation directory}"
+: "${GENOS_OUTPUT_ROOT:?Set GENOS_OUTPUT_ROOT to an existing NFS package directory}"
+[[ "$MODE" == apply || "$MODE" == check ]] || { echo 'MODE must be apply or check'; exit 2; }
+[[ -f "$ZIP" ]] || { echo "ZIP missing: $ZIP"; exit 2; }
+[[ -f "$SCOPE_ZIP" ]] || { echo "Scope ZIP missing: $SCOPE_ZIP"; exit 2; }
+printf '%s  %s\n' '1ec75536882bb8f49ecc14848fe358d5d8430f8dd758be279df510966807cab2' "$ZIP" | sha256sum -c -
+printf '%s  %s\n' '53bdfc0da307fc75ae13fb6db1ca3a92e449ea4225298f1047af47825ecb1fb8' "$SCOPE_ZIP" | sha256sum -c -
+[[ -e "$DEPLOY_ROOT/.git" ]] || { echo "Git checkout required: $DEPLOY_ROOT"; exit 2; }
+[[ -d "$GENOS_DATA_ROOT" && -d "$GENOS_SOURCE_GENERATION" && -d "$GENOS_OUTPUT_ROOT" ]] || {
+  echo 'Data, source generation and output root must already exist'; exit 2;
+}
+PYTHON_BIN="${PYTHON_BIN:-$DEPLOY_ROOT/.venv/bin/python}"
+if [[ ! -x "$PYTHON_BIN" ]]; then PYTHON_BIN="$(command -v python3)"; fi
+[[ -x "$PYTHON_BIN" ]] || { echo 'Python 3 required'; exit 2; }
+TRANSFER="$DEPLOY_ROOT/TRANSFER/financial-union-20260930-r3"
+mkdir -p "$TRANSFER"
+UNPACK="$(mktemp -d "$TRANSFER/unpack-XXXXXXXX")"
+BACKUP="$(mktemp -d "$TRANSFER/backup-XXXXXXXX")"
+printf 'MODE=%s CHECKOUT=%s DATA=%s SOURCE=%s OUTPUT=%s BACKUP=%s\n' \
+  "$MODE" "$DEPLOY_ROOT" "$GENOS_DATA_ROOT" "$GENOS_SOURCE_GENERATION" "$GENOS_OUTPUT_ROOT" "$BACKUP"
+
+"$PYTHON_BIN" - "$ZIP" "$UNPACK" "$DEPLOY_ROOT" "$BACKUP" "$MODE" <<'PY'
+import hashlib, json, os, shutil, sys, tempfile, zipfile
+from pathlib import Path, PurePosixPath
+
+archive, unpack, root, backup = map(Path, sys.argv[1:5])
+mode = sys.argv[5]
+with zipfile.ZipFile(archive) as z:
+    names = z.namelist()
+    assert len(names) == len(set(names)) and 'CODE_MANIFEST.json' in names
+    manifest = json.loads(z.read('CODE_MANIFEST.json'))
+    assert manifest['format'] == '8agent-code/1'
+    expected = {row['path']: row for row in manifest['files']}
+    assert set(names) == set(expected) | {'CODE_MANIFEST.json'}
+    for name, row in expected.items():
+        p = PurePosixPath(name)
+        assert not p.is_absolute() and '..' not in p.parts and '\\' not in name
+        assert p.suffix.lower() not in {'.js', '.jsx', '.mjs', '.cjs'}
+        raw = z.read(name)
+        assert len(raw) == row['bytes'] and hashlib.sha256(raw).hexdigest() == row['sha256'], name
+        target = root / name
+        assert not target.is_symlink(), name
+        if target.exists():
+            old = hashlib.sha256(target.read_bytes()).hexdigest()
+            assert old in {row['sha256'], row.get('base_sha256')}, 'checkout code differs: ' + name
+        else:
+            assert row.get('base_sha256') is None, 'existing code file missing: ' + name
+    print('PACKAGE_AND_BASELINE PASS', len(expected), flush=True)
+    if mode == 'check':
+        raise SystemExit(0)
+    for name, row in expected.items():
+        raw = z.read(name)
+        target = root / name
+        prior = target.read_bytes() if target.exists() else None
+        if prior == raw:
+            continue
+        if prior is not None:
+            saved = backup / name
+            saved.parent.mkdir(parents=True, exist_ok=True)
+            saved.write_bytes(prior)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(prefix='.union-', dir=target.parent)
+        try:
+            with os.fdopen(fd, 'wb') as f: f.write(raw)
+            os.replace(tmp, target)
+        finally:
+            Path(tmp).unlink(missing_ok=True)
+    print('CHECKOUT_PATCH_APPLIED backup=' + str(backup), flush=True)
+PY
+
+"$PYTHON_BIN" - "$SCOPE_ZIP" "$GENOS_DATA_ROOT" "$MODE" <<'PY'
+import hashlib, os, sys, tempfile, zipfile
+from pathlib import Path
+
+archive, data, mode = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
+name = 'photo-required-80-hwpx-20260917.json'
+target = data / 'CATALOG/SCOPES' / name
+with zipfile.ZipFile(archive) as z:
+    assert z.namelist() == [name], 'unexpected scope ZIP inventory'
+    raw = z.read(name)
+assert hashlib.sha256(raw).hexdigest() == 'aba1df17dbd2648203cf3ceb9719b784f398822bdaf7a163f566765b7cd3025f'
+if target.is_symlink() or target.parent.is_symlink():
+    raise ValueError('scope path is a symlink')
+if target.exists():
+    assert hashlib.sha256(target.read_bytes()).hexdigest() == hashlib.sha256(raw).hexdigest(), 'existing scope differs'
+    print('SCOPE_REUSED', target, flush=True)
+elif mode == 'check':
+    print('SCOPE_READY_TO_INSTALL', target, flush=True)
+else:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    fd, temp = tempfile.mkstemp(prefix='.scope-', dir=target.parent)
+    try:
+        with os.fdopen(fd, 'wb') as out:
+            out.write(raw)
+        os.link(temp, target)
+    finally:
+        Path(temp).unlink(missing_ok=True)
+    print('SCOPE_INSTALLED', target, flush=True)
+PY
+
+if [[ "$MODE" == check ]]; then
+  echo 'CHECK PASS; run MODE=apply with the same explicit paths.'
+  exit 0
+fi
+
+git -C "$DEPLOY_ROOT" diff --check -- \
+  02_BACKEND/lawrag/pipeline/raw_preprocess.py \
+  02_BACKEND/lawrag/pipeline/team_raw.py
+export GENOS_DATA_ROOT
+export PYTHONPATH="$DEPLOY_ROOT/02_BACKEND${PYTHONPATH:+:$PYTHONPATH}"
+"$PYTHON_BIN" "$DEPLOY_ROOT/09_ARTIFACTS/AUDITS/20260930-financial-photo61-share/apply_shared_scope.py"
+"$PYTHON_BIN" "$DEPLOY_ROOT/09_ARTIFACTS/AUDITS/20260930-financial-photo61-share/apply_shared_scope.py" --apply
+"$PYTHON_BIN" "$DEPLOY_ROOT/06_TOOLS/COMMANDS/genos_financial_union_migrate.py" \
+  --data-root "$GENOS_DATA_ROOT" \
+  --source-generation "$GENOS_SOURCE_GENERATION" \
+  --output-root "$GENOS_OUTPUT_ROOT" \
+  | tee "$TRANSFER/migration-result.txt"
+
+NEW_GENERATION="$(sed -n 's/^GENOS_GENERATION=//p' "$TRANSFER/migration-result.txt" | tail -1)"
+[[ -n "$NEW_GENERATION" && -f "$NEW_GENERATION/manifest.json" ]] || {
+  echo 'Migration did not publish a complete generation'; exit 1;
+}
+"$PYTHON_BIN" "$DEPLOY_ROOT/06_TOOLS/COMMANDS/genos_generation_e2e.py" \
+  --code-root "$DEPLOY_ROOT" --generation "$NEW_GENERATION"
+printf 'NEW_GENERATION=%s\nBACKUP=%s\nLOG=%s\n' "$NEW_GENERATION" "$BACKUP" "$RUN_LOG"
+printf 'Review/commit checkout, run genos_release_gate.py with the exact new generation, then push and select it in a new code-serving revision. Verify actual requests on the workflow test screen.\n'

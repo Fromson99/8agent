@@ -1,0 +1,95 @@
+GENOS 최적화 OFF 재구축 R7 — 패키지 범위 적용 / 파일 반출 불필요
+
+R2~R6의 반복 실패는 현장 전체의 누적 코드·엔진 pin·과거 데이터 상태를
+이번 최적화 패키지의 적용 조건과 함께 검사한 문제였습니다.
+R7는 전체 rehash-engines를 호출하지 않고 패키지에 들어 있는 코드 pin만 변경합니다.
+1. 패키지 파일의 기존 버전·배포 바이트·문법을 먼저 검사합니다.
+2. 코드 적용 전에 엔진/스키마/기존 pin 불일치를 한 번에 기록합니다.
+3. 패키지 밖 코드 pin·미등록 파일·스키마 pin은 그대로 보존합니다. 정상이라고 인증하지 않습니다.
+4. 기존 profiles·데이터 경로·데이터 해시는 변경하지 않습니다. 과거 서빙 데이터 파일이 없어도 복구를 요구하지 않습니다.
+5. 백업 후 알려진 패키지 파일과 해당 엔진 코드 pin만 적용합니다.
+6. 실행 중 새로 생긴 외부 파일/메타데이터 변경은 중단합니다.
+7. 기존 준비본으로 새 OFF 구축을 실행하고 입력·출력·감사·전문색인 검증을 수행합니다.
+8. CURRENT·Git push·서빙 리비전·workflow는 활성화하지 않습니다.
+
+R7 ZIP·TXT를 함께 ~/DEV/TRANSFER에 올리고 실행하세요:
+  cd ~/DEV
+  export GENOS_PREPARED_RUN=financial-risk-success-20261001-r3
+  export GENOS_OPTIMIZED_RUN=financial-risk-success-20261002-opt-r7
+  bash TRANSFER/GENOS_PIPELINE_OPTIMIZATION_20261002_R7.txt
+
+EXISTING STATE PRESERVED는 이전 상태를 바꾸지 않고 기록했다는 뜻입니다.
+그 목록은 현장 로그와 package-engine-plan-*.json에 남습니다. 파일 반출을 요구하지 않습니다.
+기존 코드/준비본/원문/구조화/검토 원장/실패 scratch는 삭제하지 않습니다.
+패키지 파일 자체가 알 수 없는 버전이면 덮어쓰지 않고 정확한 파일·해시를 출력합니다.
+
+GENOS 준비본 재사용·최적화 OFF 재구축 R7 / 2026-10-02
+
+이번 실행에서는 이 R7 ZIP/TXT를 사용합니다. 이전 최적화 R1/복구 R1~R3는 보관합니다.
+R1 최적화의 11개 코드 바이트를 그대로 사용하며 준비본 재사용·명시 참조·지속 로그를 연결했습니다.
+사진에서 완료된 구조화/원문/용어집을 재사용합니다. RAW 변환·구조화·새 용어 의미 검토를 실행하지 않습니다.
+의미 검토는 용어 후보의 SAME/DIFFERENT/UNKNOWN과 관계를 LLM으로 검토하는 별도 단계입니다.
+현재 OFF 구축은 이를 생략하지만 기존 용어집의 정의·관계·과거 검토 산출물은 그대로 사용합니다.
+명시 참조는 '다른 규정 제N조'와 같은 원문 참조를 연결하는 별도 작업으로 기존 내부 모델 경로를 유지합니다.
+
+같이 올릴 파일: GENOS_PIPELINE_OPTIMIZATION_20261002_R7.zip / 같은 이름의 .txt
+  cd ~/DEV
+  export GENOS_PREPARED_RUN=financial-risk-success-20261001-r3
+  export GENOS_OPTIMIZED_RUN=financial-risk-success-20261002-opt-r7
+  bash TRANSFER/GENOS_PIPELINE_OPTIMIZATION_20261002_R7.txt
+
+기본값(위 두 run 값도 기본값입니다):
+  GENOS_DEV=$HOME/DEV                         코드 checkout
+  GENOS_DATA_ROOT=$GENOS_DEV/01_DATA          준비본/로그/출력 data root
+  GENOS_PREPARED_RUN=financial-risk-success-20261001-r3   읽을 준비 run
+  GENOS_OPTIMIZED_RUN=financial-risk-success-20261002-opt-r7   새 출력 run
+  GENOS_REFERENCE_BATCH=8                    명시 참조 요청 묶음(1..32)
+  GENOS_REFERENCE_CASES=10000                한 advance의 사례 한도(1..10000), 완료까지 반복
+  GENOS_LOG_INTERVAL=5                       무출력 구간 생존 로그 간격(초, 0 초과)
+  GENOS_OPTIMIZED_SHARED_ROOT=/nfs-root/diamo/8-agent/term-releases
+      공유 발행 대상. 빈 문자열로 설정하면 로컬 새 출력까지만 생성합니다.
+  GENOS_OPTIMIZATION_ZIP                     ZIP 위치를 바꿀 때만 설정
+
+기존 입력은 run의 plan/source/draft/selection/내부 모델 profile 해시·원문 범위를 확인해 읽습니다.
+source는 TERM_RELEASES/$GENOS_PREPARED_RUN/sources/store.sqlite,
+용어집은 같은 run의 glossary-draft입니다. 입력 파일을 임의 최신 경로로 고르지 않습니다.
+새 출력: TERM_RELEASES/$GENOS_OPTIMIZED_RUN/meaning-variants/off/serving/generation
+새 공유 출력: $GENOS_OPTIMIZED_SHARED_ROOT/$GENOS_OPTIMIZED_RUN-meaning-off/generation
+원래 2,121개 선택본이면 실제 확인 문서 수가 2,121로 나와야 합니다. 다르면 입력 선택을 확인합니다.
+
+순서: 지속 로그 시작 → checkout hash 검사 → 기록된 이전 worker만 SIGINT·종료 확인 →
+준비본 검증 → 코드/pin 백업·적용 → 새 run 계보 동결 → 연결 → 원문 세대 → 용어집 캐시 →
+navigation/감사 색인 → 전문 색인 → 명시 참조 처리/적용 → 검증 → 별도 공유 발행.
+오래 걸리는 hash/copy/cache/참조/검증에도 START/RUNNING/DONE/FAILED와 실제 경로를 남깁니다.
+내부 모델 자격증명은 마스킹하고 원문/요청/응답 근거 파일은 기존 원장 경로에 남습니다.
+RUNNING은 생존 표시입니다. 처리량이 기록되지 않은 구간의 ETA/완료율을 만들어 표시하지 않습니다.
+
+로그는 시작 시 찍힌 $GENOS_DATA_ROOT/LOGS/$GENOS_OPTIMIZED_RUN/optimized-rebuild-r7/<시각-PID>/ 아래:
+  run.log       적용/검증/native stdout/stderr/traceback 전체, 터미널에도 즉시 출력
+  events.jsonl  START/RUNNING/DONE/FAILED/INTERRUPTED/최종 종료 이벤트
+  phases.csv    단계별 상태와 시간
+  current.json  현재/최종 상태
+  summary.txt   종료 코드와 로그 안내
+  payload/      검증해 해제한 ZIP 및 적용/롤백 실행기
+실패도 FINISHED status=...를 남깁니다. 도중 source/hash drift는 성공 처리하지 않습니다.
+
+기존 결과를 삭제할 필요는 없습니다. 새 run으로 분리해 예전 index를 자동 선택하지 않습니다.
+RAW/STRUCTURE/sources/glossary-draft/검토 원장/기존 plan/완료 세대/실패 scratch는 보존합니다.
+기록된 worker만 boot ID/PID 시작시각 확인 후 중단하며 120초 내 종료하지 않으면 적용 전에 멈춥니다.
+모르는 foreground 작업은 해당 터미널에서 정상 중단한 뒤 실행합니다. 일괄 kill/rm을 하지 않습니다.
+구 코드에서 빠진 navigation_storage는 이 ZIP의 검증된 파일만 새로 추가할 수 있습니다.
+그 외 예상 밖 파일 변화는 FILE_DRIFT로 중단합니다. core와 engine/pipeline pin의 백업/영수증이 남습니다.
+
+사전 검사(기존 worker가 끝난 상태에서):
+  bash TRANSFER/GENOS_PIPELINE_OPTIMIZATION_20261002_R7.txt check
+이전 기록 worker 중단만:
+  bash TRANSFER/GENOS_PIPELINE_OPTIMIZATION_20261002_R7.txt stop-old
+재실행은 동일 TXT/ZIP/입력/새 run 설정으로 합니다. 완료한 navigation 뒤 전문 색인이 실패하면
+checkpoint를 검증해 전문 색인부터 재개합니다. 완료 결과는 검증해 재사용합니다.
+실행 코드·입력·설정이 바뀌었으면 기존 plan을 고치지 말고 또 다른 GENOS_OPTIMIZED_RUN을 사용합니다.
+코드 롤백은 로그의 backup 경로로:
+  python3 /로그경로/payload/APPLY.py --rollback /DEV/.genos-pipeline-optimization-backups/실제시각
+
+새 generation·공유 파일 발행과 Git push·CURRENT·서빙 revision·workflow 반영은 별도입니다.
+이 TXT는 활성 포인터/서빙/workflow를 바꾸지 않습니다. 실제 검색/warmup은 workflow 테스트 화면에서 확인합니다.
+로컬 합성 계약 성공은 GENOS 실행·품질·시간 단축을 보증하지 않습니다.

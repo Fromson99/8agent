@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+"""Read-only glossary binding diagnostic. Standard library only; no app imports.
+
+Run in the GENOS codespace with python3 and the actual serving generation.
+No code/data/cache writes, SQLite opens, model calls, or automatic rebuilds.
+Exit: 0 scoped PASS, 1 binding/reader mismatch, 2 invalid or unavailable input.
+"""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+VERSION = "glossary-binding-20261006-r1"
+COMPILER = "02_BACKEND/semantic_runtime/full_glossary.py"
+LEGACY = "ba2c6ced8da72307934e627a7a7508fb29da45e35d09fc3e0a116884a0a5d058"
+COMPACT = "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"
+KNOWN = {
+    LEGACY: "legacy; SQL/AD R5, AD language R1/R2, relation reading R2",
+    COMPACT: "compact; reference build R1, request input R2",
+}
+
+
+def emit(key, value):
+    print(key, json.dumps(value, ensure_ascii=False), flush=True)
+
+
+def read_file(path, limit=2 * 1024 * 1024):
+    before = path.stat()
+    with path.open("rb") as stream:
+        raw = stream.read(limit + 1)
+    after = path.stat()
+    signature = lambda s: (s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns)
+    if len(raw) > limit or signature(before) != signature(after):
+        raise ValueError("Input too large or changed during reading")
+    return raw
+
+
+def digest(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def read_json(path):
+    raw = read_file(path)
+    value = json.loads(raw)
+    if not isinstance(value, dict):
+        raise ValueError("Expected a JSON object")
+    return value, digest(raw)
+
+
+def inside(root, relative):
+    if not isinstance(relative, str) or not relative or Path(relative).is_absolute():
+        raise ValueError("Expected a relative asset path")
+    path = (root / relative).resolve(strict=True)
+    path.relative_to(root)
+    return path
+
+
+def absolute_directory(value):
+    path = Path(value)
+    if not path.is_absolute() or path.is_symlink() or not path.is_dir():
+        raise ValueError("Expected an existing absolute non-symlink directory")
+    return path.resolve(strict=True)
+
+
+def select_generation(argument):
+    if argument:
+        return absolute_directory(argument), "explicit --generation", None
+    configured = os.environ.get("GENOS_GENERATION", "").strip()
+    if configured:
+        return absolute_directory(configured), "shell GENOS_GENERATION", None
+    configured = os.environ.get("GENOS_DATA_ROOT", "").strip()
+    if configured:
+        root = absolute_directory(configured)
+        pointer, _ = read_json(root / "generations/CURRENT.json")
+        if pointer.get("schema_version") != "genos-current-generation-v1":
+            raise ValueError("Unsupported CURRENT pointer")
+        path = absolute_directory(pointer["path"])
+        path.relative_to(root)
+        return path, "shell GENOS_DATA_ROOT/CURRENT.json", pointer["manifest_sha256"]
+    raise ValueError("No generation selected; supply --generation from code-serving settings")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--code-root", type=Path, default=Path.home() / "DEV")
+    parser.add_argument("--generation", help="Actual absolute generation path; overrides shell settings")
+    args = parser.parse_args()
+    emit("CHECK_VERSION", VERSION)
+    emit("PYTHON_EXECUTABLE", sys.executable)
+    emit("PYTHON_VERSION", sys.version.split()[0])
+    emit("SCOPE", "Checkout and selected glossary receipts only; deployed revision unverified")
+    try:
+        code_root = args.code_root.resolve(strict=True)
+        emit("CODE_ROOT", str(code_root))
+        generation, source, pointer_hash = select_generation(args.generation)
+        emit("GENERATION_SELECTION", source)
+        emit("GENERATION", str(generation))
+        emit("ENVIRONMENT_NOTE", "Codespace shell settings are not automatically code-serving settings")
+        manifest, manifest_hash = read_json(generation / "manifest.json")
+        emit("GENERATION_ID", manifest.get("generation_id"))
+        emit("GENERATION_SCHEMA", manifest.get("schema_version"))
+        emit("GENERATION_MANIFEST_SHA256", manifest_hash)
+        if pointer_hash is not None and manifest_hash != pointer_hash:
+            emit("CURRENT_MANIFEST_CHECK", "FAIL")
+            return 1
+        binding = manifest["glossary"]
+        cache_root = inside(generation, binding["cache"])
+        receipt_path = inside(cache_root, binding["cache_receipt"])
+        receipt, receipt_hash = read_json(receipt_path)
+        emit("CACHE_RECEIPT_PATH", str(receipt_path))
+        emit("CACHE_RECEIPT_SHA256", receipt_hash)
+        if receipt_hash != binding["cache_receipt_sha256"]:
+            emit("GLOSSARY_RECEIPT_CHECK", "FAIL")
+            return 1
+        expected = receipt["binding"]["compiler_sha256"]
+        compiler_path = inside(code_root, COMPILER)
+        compiler_raw = read_file(compiler_path)
+        actual = digest(compiler_raw)
+        emit("COMPILER_PATH", str(compiler_path))
+        emit("CACHE_EXPECTED_COMPILER_SHA256", expected)
+        emit("CACHE_EXPECTED_VERSION", KNOWN.get(expected, "unrecognized hash"))
+        emit("CHECKOUT_COMPILER_SHA256", actual)
+        emit("CHECKOUT_COMPILER_VERSION", KNOWN.get(actual, "unrecognized hash"))
+        bundle_manifest, bundle_hash = read_json(inside(generation, binding["bundle"]) / "manifest.json")
+        emit("GLOSSARY_BUNDLE_SCHEMA", bundle_manifest.get("schema_version"))
+        receipt_binding = receipt["binding"]
+        bundle_ok = bundle_hash == binding["manifest_sha256"] == receipt_binding["manifest_sha256"]
+        dictionary_ok = bundle_manifest["dictionary_sha256"] == receipt_binding["dictionary_sha256"]
+        reader_ok = (bundle_manifest.get("schema_version") != "glossary-serving-v2"
+                     or b'"glossary-serving-v2"' in compiler_raw
+                     or b"'glossary-serving-v2'" in compiler_raw)
+        emit("GLOSSARY_RECEIPT_CHECK", "PASS")
+        emit("GLOSSARY_BUNDLE_BINDING_CHECK", "PASS" if bundle_ok else "FAIL")
+        emit("DICTIONARY_METADATA_BINDING_CHECK", "PASS" if dictionary_ok else "FAIL")
+        emit("COMPACT_READER_DECLARATION_CHECK", "PASS" if reader_ok else "FAIL")
+        emit("GLOSSARY_COMPILER_CHECK", "PASS" if expected == actual else "FAIL")
+        try:
+            result = subprocess.run(["git", "-C", str(code_root), "rev-parse", "HEAD"],
+                                    capture_output=True, text=True, timeout=5)
+            emit("CHECKOUT_COMMIT", result.stdout.strip() if result.returncode == 0 else "UNVERIFIED")
+        except (OSError, subprocess.TimeoutExpired):
+            emit("CHECKOUT_COMMIT", "UNVERIFIED")
+        if expected == COMPACT and actual == LEGACY:
+            emit("DIAGNOSIS", "Known compact-to-legacy replacement; present in AD language R1/R2 and relation reading R2")
+        passed = expected == actual and bundle_ok and dictionary_ok and reader_ok
+        emit("RESULT", "PASS" if passed else "FAIL")
+        emit("LIMIT", "No SQLite payload hash/SQL/E2E or deployed revision verification performed")
+        emit("NEXT", "Preserve data and receipts. Confirm the serving generation and deployed code hashes before repair.")
+        return 0 if passed else 1
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        emit("RESULT", "ERROR")
+        emit("ERROR_TYPE", type(exc).__name__)
+        emit("NEXT", "Check CODE_ROOT and the actual absolute generation path; no fallback generation was selected")
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

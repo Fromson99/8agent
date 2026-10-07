@@ -1,0 +1,20 @@
+{
+  "schema_version": "genos-code-patch-v1",
+  "patch_id": "relation-scan-log-20260925",
+  "purpose": "Log reference witness count latency and timeout in the existing per-request .log",
+  "files": {
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_relation_cards.py": {
+      "base_sha256": "e63fd432dff502e92af8018509337db5c0debe05507dd43ef1898b4a136a85a0",
+      "new_sha256": "4848d71c682aff324d6306ec7dc8c007bec56f248954003658966ea4d565ab06"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": {
+      "base_sha256": "ebb5d815d3dec9ceb6f057dfb6d7447b44707b996fd76570bb1753059668364b",
+      "new_sha256": "d393f3ec3841a17b873273005605117f6d41def4c0171eb0a58c018fd4a6c1b4"
+    },
+    "02_BACKEND/semantic_runtime/request_report.py": {
+      "base_sha256": "9562283dc1802c6558f46c14de22c2449a8e833dc3148f7bdea943278382809f",
+      "new_sha256": "70a10c56ca6847fdc9ae1606f7e89a486b2984c98430506dd7e5a1edce9d93ba"
+    }
+  },
+  "apply_script_sha256": "c0526c248a35f9ecf69d1912bc11d91c82ffbdbc5a2285585db348c02e08b601"
+}

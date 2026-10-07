@@ -1,0 +1,80 @@
+GENOS 용어집 결속 오류 검사 · 최근 반입 이력 확인 R1 (2026-10-06)
+
+1. 최근 작업에서 확인한 회귀
+
+사진의 직접 오류: glossary compiler/cache binding mismatch, HTTP 422.
+서빙은 용어집 캐시 receipt의 compiler_sha256과 현재 full_glossary.py의
+전체 파일 SHA256을 비교하다 중단했다. 질의 내용/모델 timeout 오류가 아니다.
+
+실제 보존 ZIP의 파일 바이트와 CODE_MANIFEST.json을 대조했다:
+- reference_build 20261003 R1: compact reader e03dab54...
+- request_input 20261006 R2: 같은 compact reader e03dab54... 보존
+- AD language 20261006 R1/R2: legacy reader ba2c6ced...로 교체
+  두 설치 manifest가 e03dab54...를 허용 predecessor로 명시한다.
+- relation_reading 20261006 R2: AD R2의 ba2c6ced...를 그대로 포함
+
+compact reader는 glossary-serving-v2 / nodes.sqlite 및 오프라인 캐시만
+허용하는 계약을 지원한다. legacy reader에는 이 지원이 없다.
+단순히 receipt hash만 바꾸면 해결되지 않는다.
+
+compact full_glossary.py SHA256:
+e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406
+legacy full_glossary.py SHA256:
+ba2c6ced8da72307934e627a7a7508fb29da45e35d09fc3e0a116884a0a5d058
+
+현장 캐시가 compact hash를 요구하고 현재 서빙 코드가 legacy hash라면
+이 회귀와 사진 오류가 일치한다. 현장 두 해시/세대/리비전은 아직 미확인이다.
+최근 relation R1 기록의 공개 세대 전체 gate는 같은 오류로 FAIL이었다.
+R2 기록도 실제 generation 전체 gate 미수행을 명시한다.
+로컬 공개 데이터의 FAIL을 GENOS 데이터의 실제 해시로 대신하지 않는다.
+
+2. 실행 (읽기 전용)
+
+GENOS_GLOSSARY_BINDING_20261006_R1_RUN.txt 한 파일을 ~/DEV/TRANSFER에 올린다.
+Python 명령은 python3이며 표준 라이브러리만 필요하다.
+코드서빙 설정의 GENOS_GENERATION 또는 binding.resolved generation_path를
+그대로 인자로 지정한다. 워크플로우/셸 환경이 코드서빙과 자동 공유되지는 않는다.
+
+bash ~/DEV/TRANSFER/GENOS_GLOSSARY_BINDING_20261006_R1_RUN.txt /실제/서빙/generation/절대경로
+
+최근 request_input R2에서 지정했던 후보 경로가 지금 실제 선택 경로와 같다면:
+
+bash ~/DEV/TRANSFER/GENOS_GLOSSARY_BINDING_20261006_R1_RUN.txt /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+
+인자를 생략하면 셸 GENOS_GENERATION을 우선 사용하고, 없으면
+셸 GENOS_DATA_ROOT/generations/CURRENT.json의 명시 경로와 hash를 확인한다.
+둘 다 없으면 ERROR로 종료한다. 최신 폴더 검색/임의 후보 선택은 하지 않는다.
+기본 code root는 ~/DEV다. 다른 기존 checkout이면 GENOS_DEV에 정확한 경로를 지정한다.
+
+RUN.txt는 실행 폴더의 glossary-binding-logs/run-.../run.log에 처음부터
+stdout/stderr와 종료 상태를 남긴다. 코드/데이터 변경은 하지 않고 로그만 만든다.
+별도 Python 검사 TXT도 제공하며 다음과 같이 직접 실행할 수 있다:
+
+python3 ~/DEV/TRANSFER/GENOS_GLOSSARY_COMPILER_CHECK_20261006_R1.txt --code-root ~/DEV --generation /실제/서빙/generation/절대경로
+
+3. 결과 해석
+
+CACHE_EXPECTED_COMPILER_SHA256: 선택 캐시가 요구하는 코드 hash
+CHECKOUT_COMPILER_SHA256: 검사한 checkout의 실제 코드 hash
+GLOSSARY_BUNDLE_SCHEMA: 선택된 용어집 데이터 형식
+DIAGNOSIS: 확인된 compact -> legacy 교체 패턴이면 표시
+RESULT / READONLY_GLOSSARY_EXIT: PASS=0, 불일치=1, 경로/입력 오류=2
+
+PASS는 선택된 manifest/receipt의 작은 메타데이터 결속과 compiler 비교에만 해당한다.
+SQLite 전체 바이트·검색·내부 모델·전체 release gate·배포 리비전 확인은 포함하지 않는다.
+checkout PASS인데 서빙은 같은 오류면 배포된 리비전의 compiler/세대를 따로 대조한다.
+CHECKOUT_COMMIT은 HEAD 식별자이며 작업 파일이 HEAD와 같다는 인증은 아니다.
+
+4. 보존과 후속 조치
+
+기존 NFS 데이터/manifest/receipt/CURRENT/이전 ZIP은 그대로 보존한다.
+이 검사기는 app import, SQLite open, 캐시 구축, 모델 호출, rehash, Git 변경,
+데이터 재구축, push, 코드서빙 배포 또는 워크플로우 변경을 하지 않는다.
+현장 두 hash를 확인한 후 데이터 계약에 맞는 검증된 코드로 복구 계획을 정한다.
+반입 시에는 엔진 pin과 소비자까지 결속하고 실제 checkout/세대의 전체 gate를 확인한다.
+
+검사기 검증: 모의 입력 9개에서 일치, 최근 코드 회귀, hash가 같아도 compact reader
+미지원, receipt 변조, 경로 이탈, 명시 세대 부재, CURRENT 결속을 확인했다.
+입력 파일의 바이트·mtime 보존과 Python 3.11 문법 검사를 통과했다.
+망분리 GENOS 접속/현장 실행/복구는 수행하지 않았다.
+근거와 ZIP hash는 VALIDATION_AND_RECENT_WORK.json에 보존했다.

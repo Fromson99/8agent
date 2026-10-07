@@ -1,0 +1,60 @@
+GENOS 코드 일치 설치 안내: JavaScript 제외본 (2026-09-23)
+
+정정판: r4 ZIP의 내용과 SHA256은 그대로입니다. 기존 안내에서 빈 GENOS_GENERATION 사용 및 /health generation_id 단독 확인 문구를 바로잡았습니다.
+
+이 메일의 ZIP이 앞서 보낸 GENOS_FULLTEXT_FIX_20260923.patch.txt와 JS 포함 ZIP(r3)을 대체합니다.
+이전 patch.txt는 적용하지 마세요. git apply --check 실패는 현장 코드가 패치 기준과 다르다는 뜻이며, 파일 변경은 일어나지 않았습니다.
+
+파일: 8agent-genos-fulltext-aligned-nojs-20260923-r4.zip
+SHA256: 4ff6e49741f22b80fac134c61efb214b0e49e86540c553c18f0bed1848f6205d
+내용: 현재 로컬 작업 코드 중 JavaScript 계열(.js/.jsx/.mjs/.cjs)을 뺀 스냅샷 1,724개 파일, CODE_MANIFEST.json 포함. 원문·용어집·NFS 생성 데이터·실제 .env/키도 포함하지 않습니다. 웹 뷰어 UI는 이 묶음으로 동작을 보장하지 않으며 RAG API와 세대 구축·검증에 사용합니다.
+
+1) ZIP과 이 TXT를 GENOS 코드스페이스의 ~/DEV/TRANSFER에 올립니다. 현재 DEV 폴더는 보존하고 새 폴더에 풉니다.
+
+cd -P ~/DEV
+sha256sum TRANSFER/8agent-genos-fulltext-aligned-nojs-20260923-r4.zip
+test ! -e TRANSFER/fulltext-aligned-nojs-20260923-r4
+mkdir -p TRANSFER/fulltext-aligned-nojs-20260923-r4
+python3 -m zipfile -e TRANSFER/8agent-genos-fulltext-aligned-nojs-20260923-r4.zip TRANSFER/fulltext-aligned-nojs-20260923-r4
+python3 TRANSFER/fulltext-aligned-nojs-20260923-r4/06_TOOLS/COMMANDS/code_ship.py verify TRANSFER/8agent-genos-fulltext-aligned-nojs-20260923-r4.zip
+find TRANSFER/fulltext-aligned-nojs-20260923-r4 -type f \( -iname '*.js' -o -iname '*.jsx' -o -iname '*.mjs' -o -iname '*.cjs' \) -print
+
+sha256sum 값이 위 값과 다르거나 verify가 실패하면 여기서 중단합니다. 기존 DEV 코드는 그대로입니다.
+
+2) 새 코드 폴더에서 기존 NFS generation을 입력으로 새 fulltext 결속 세대를 만듭니다. 기존 세대/영수증은 수정하지 않습니다. 코드스페이스에 GENOS_GENERATION이 비어 있으면 아래 명령을 실행하기 전에 코드서빙 binding.resolved 로그의 generation_path를 확인하여 GENOS_GENERATION에 실제 기존 generation 절대 경로를 설정합니다. 빈 문자열을 --source-generation에 전달하지 마세요.
+
+먼저 아래 명령을 복구에 사용할 동일한 Python에서 실행합니다. 코드 ZIP에는 Python 패키지가 들어 있지 않습니다.
+
+python3 - <<'PY'
+import importlib.metadata as md
+import sys
+from kiwipiepy import Kiwi
+print('python:', sys.executable)
+print('kiwipiepy:', md.version('kiwipiepy'))
+print('kiwipiepy-model:', md.version('kiwipiepy-model'))
+Kiwi(num_workers=1)
+print('Kiwi initialization: OK')
+PY
+
+ModuleNotFoundError라면 코드스페이스의 이 python3 환경에 requirements.txt 고정 버전 kiwipiepy==0.23.2, kiwipiepy-model==0.23.0을 GENOS에서 허용된 내부 패키지 소스/휠로 설치한 뒤 위 검사를 다시 실행합니다. 다른 가상환경에 설치하면 이 명령에는 적용되지 않습니다. 향후 코드서빙의 Python 환경에도 같은 버전이 필요하며, 코드스페이스 설치만으로 코드서빙 의존성이 설치되지는 않습니다. 기존 r4 ZIP의 복구 스크립트는 의존성 검사 전에 NFS 복사를 시작하므로, 사진과 같은 실패 뒤에는 아래 검사를 통과한 후 원래 generation 경로로 재실행합니다. 실패한 복사는 임시 staging을 삭제하며 기존 generation을 수정하지 않습니다.
+
+이 재실행은 앞선 build-all/구조화/용어집 구축을 다시 하지 않습니다. 이미 완료된 원래 generation을 사용합니다. 다만 실패한 r4 복구 명령의 임시 복사본은 삭제되었으므로 source 검증과 NFS 복사는 다시 수행합니다.
+
+cd -P ~/DEV/TRANSFER/fulltext-aligned-nojs-20260923-r4
+printf '현재 세대: %s\n' "$GENOS_GENERATION"
+test -n "$GENOS_GENERATION" && test -d "$GENOS_GENERATION" && \
+  python3 06_TOOLS/COMMANDS/genos_fulltext_repair.py --source-generation "$GENOS_GENERATION"
+
+복사·형태소 색인·전체 파일 해시는 NFS에서 오래 걸릴 수 있습니다. 완료 출력의 GENOS_GENERATION=<새 경로>를 기록합니다. 실패하면 새 패키지를 발행하지 않고 임시 산출물을 정리합니다.
+
+3) 출력된 새 경로로 새 코드/세대 E2E를 확인합니다. 아래 따옴표 안은 2번 명령이 실제 출력한 경로로 바꿉니다.
+
+GENOS_GENERATION='<새 경로>' python3 06_TOOLS/COMMANDS/genos_generation_e2e.py --code-root "$PWD"
+
+GENERATION_E2E PASS를 확인합니다. 큰 SQLite 파일 해시 중에는 HASHING 진행 바이트가 출력됩니다.
+
+4) 코드서빙에 쓰는 내부 Git 저장소에 이 검증된 새 폴더의 코드 파일을 반입해 새 커밋을 만들고, 해당 커밋을 push/리비전 배포합니다. 기존 Git 저장소에 JS 파일이 추적되어 있으면 ZIP 반입만으로는 제거되지 않으므로, 새 리비전의 추적 파일 목록에서도 JS 계열이 0개인지 확인합니다. 코드서빙 환경의 GENOS_GENERATION을 2번의 새 경로로 설정합니다. 코드스페이스에 ZIP을 푼 것만으로 실행 중인 코드서빙은 바뀌지 않습니다. .env/키·01_DATA·NFS 데이터·가상환경을 코드 ZIP으로 덮어쓰지 마세요.
+
+5) 새 리비전의 binding.resolved 로그에서 generation_path가 2번의 새 경로인지 확인하고, /health, 원문 읽기, 근거 질문을 확인합니다. 복구 전후 generation_id가 같으므로 /health의 ID만으로 새 세대 선택을 판정하지 마세요. 새 리비전에서 fulltext 사용 경로가 실제 실행되는 질문을 확인합니다. 실패하면 이전 코드 리비전과 이전 GENOS_GENERATION으로 되돌립니다. 기존 공유 세대는 보존합니다.
+
+이 ZIP은 로컬 미커밋 작업판 스냅샷이며 Git commit ID가 아닙니다. ZIP SHA256과 내부 CODE_MANIFEST.json이 이 인계본의 코드 식별자입니다. 로컬 모의 계약 26개 통과, ZIP 파일 해시 검증과 엔진 코드 결속 검사 통과. 이번 검토에서 JS 제외 ZIP 압축 해제 후 Python import도 통과했으나 이는 로컬 Python 3.14 확인입니다. 망분리 GENOS Python 3.11 실행/배포와 실제 NFS 세대는 아직 확인되지 않았습니다.

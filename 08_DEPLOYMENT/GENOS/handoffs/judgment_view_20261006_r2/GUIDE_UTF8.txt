@@ -1,0 +1,97 @@
+GENOS 판단 과정 중첩 토글·Mermaid R2 · 2026-10-06
+
+최종 사용본: GENOS_JUDGMENT_VIEW_20261006_R2.zip
+판단 전체 → 각 단계 → 사용 데이터/행위 → 개별 조항을 접었다 펼친다.
+마지막 Mermaid는 코드에서 생성한다. LLM에 표시 문서 작성을 요청하지 않는다.
+이유가 비어 있으면 이유 문구를 생략한다. 기록된 이유는 표시하고 고정 PLAN은 고정 처리로 표시한다.
+기존 원장/모델 JSON/출처/답변은 보존한다. 완료된 과거 응답에는 소급 표시하지 않는다.
+
+1. 누적 범위
+
+용어집 binding 복구 R1의 compact reader(e03dab54...)와 AD R2/연결 읽기 R2를 유지한다.
+R1 표시 검증본은 보존 기록이며 최종 반입은 이 R2로 한다.
+이전 코드와 알려진 반입본에서 적용 가능하고 알 수 없는 파일 변경은 보존하며 중단한다.
+GENOS의 문서 generation/NFS manifest/cache receipt/CURRENT/환경변수/Git history는 바꾸지 않는다.
+데이터 재구축은 필요 없다. 코드 적용·Git push·코드서빙 리비전·워크플로우 교체는 각각 별도다.
+
+2. 코드 적용 — ZIP과 APPLY.txt를 같은 ~/DEV/TRANSFER에 반입
+
+GENOS_JUDGMENT_VIEW_20261006_R2.zip
+GENOS_JUDGMENT_VIEW_20261006_R2_APPLY.txt
+GENOS_JUDGMENT_VIEW_20261006_R2_WORKFLOW_PASTE_ALL.txt
+
+현장 명령은 python3다. 스크립트 첫 단계부터 실제 Python 경로/버전과 지속 로그를 남긴다.
+기본 checkout은 기존 ~/DEV다. 다른 경로가 실제 checkout이면 GENOS_DEV로 명시한다.
+선택 generation은 자동 추측하지 않는다. 아래 값은 이전 현장 사진의 경로이므로
+현재 코드서빙 GENOS_GENERATION과 일치하는지 대조한 뒤 실제 경로로 설정한다.
+
+cd -P ~/DEV/TRANSFER
+GENOS_VIEW_GENERATION=/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+bash GENOS_JUDGMENT_VIEW_20261006_R2_APPLY.txt check "$GENOS_VIEW_GENERATION"
+bash GENOS_JUDGMENT_VIEW_20261006_R2_APPLY.txt apply "$GENOS_VIEW_GENERATION"
+bash GENOS_JUDGMENT_VIEW_20261006_R2_APPLY.txt verify "$GENOS_VIEW_GENERATION"
+
+각 단계의 JUDGMENT_VIEW_EXIT=0을 확인하고 다음 단계로 진행한다.
+로그는 TRANSFER/judgment-view-r2-logs에 처음부터 저장한다.
+BACKUP/RECOVERY 경로를 보관한다. 재실행은 이미 적용된 바이트를 확인한다.
+verify는 동일 checkout/Python/02_BACKEND로 service loader, generation E2E, verify_assets를 검사한다.
+
+3. Git·배포 — 검토한 변경만 commit한 뒤 gate
+
+cd -P ~/DEV
+git diff --check
+python3 - "$HOME/DEV/TRANSFER/GENOS_JUDGMENT_VIEW_20261006_R2.zip" <<'PY'
+import json, subprocess, sys, zipfile
+with zipfile.ZipFile(sys.argv[1]) as z:
+    paths=[r['path'] for r in json.loads(z.read('CODE_MANIFEST.json'))['files']]
+subprocess.run(['git','add','-f','--',*paths],check=True)
+PY
+
+git diff --cached를 검토해 이번 표시 변경을 commit한다. 그 다음:
+
+cd -P ~/DEV/TRANSFER
+bash GENOS_JUDGMENT_VIEW_20261006_R2_APPLY.txt gate "$GENOS_VIEW_GENERATION"
+
+GENOS_RELEASE_GATE PASS와 JUDGMENT_VIEW_EXIT=0인 commit을 실제 사용하는 remote에 push한다.
+그 commit으로 새 코드서빙 리비전을 배포하고 같은 generation 설정인지 대조한다.
+gate 이후 파일/pin이 바뀌면 새 commit으로 다시 gate를 실행한다.
+
+4. 워크플로우 Python 편집기 — 전체 코드 교체 필수
+
+GENOS_JUDGMENT_VIEW_20261006_R2_WORKFLOW_PASTE_ALL.txt 전체를
+워크플로우 Python 단계 편집기에 교체하고 저장·배포한다.
+코드 ZIP 적용이나 Git push만으로 저장된 워크플로우 코드가 바뀌지 않는다.
+기존 entrypoint run(data), data.text, token/end와 Reasoner 누적 배열을 유지한다.
+추가 JS/CDN/외부 사이트 접근이나 내부 모델 설정 변경은 필요 없다.
+
+워크플로우 테스트 화면에서만 아래 입력을 실행한다:
+{"API_TYPE":"WORKFLOW_SETTINGS"}
+
+judgment_display_revision=judgment-view-20261006-r1 확인.
+R2는 같은 판단 표시 계약에 흐름도를 두 묶음으로 배치한 최종 코드다.
+완료 반입 TXT의 SHA와 실제 편집기 코드를 함께 기록한다.
+다음 WARMUP/WARMUP_STATUS도 같은 워크플로우 테스트 화면에서 실행한다.
+실제 원문 근거 질문과 후속 정정에서 다음을 확인한다:
+- 최종 답변 아래 AI 판단 과정 보기 하나가 처음에는 닫혀 있음
+- 각 단계가 별도 토글이며 데이터/행위와 조·항·호·목·원문을 다시 펼칠 수 있음
+- 기록된 선택 이유와 현재 판단, 미확인 사항을 확인할 수 있음
+- 빈 이유를 ‘이유 없음’으로 표시하지 않음
+- 마지막 판단 흐름도의 Mermaid가 렌더링됨
+- 정정 후 바뀐 단계는 이번 요청 수행, 기존 단계는 현재 판단 유지로 표시됨
+- 스트리밍에도 토글과 최종 답변이 중복되지 않고 end가 도착함
+
+제품 출력은 details/summary HTML과 mermaid fenced block이다.
+GENOS 채팅의 기존 Markdown/HTML renderer가 details/summary 및 Mermaid를 허용해야 한다.
+로컬 Chromium에서 토글·한글·원문·Mermaid 파싱/SVG는 검증했지만 망분리 현장 renderer는
+접근할 수 없어 미확인이다. 펼침이 안 되거나 Mermaid 원문 코드가 보이면 renderer 지원을
+현장 기록으로 확인한다. PREVIEW.html/PNG는 모의 화면이며 실제 현장 성공 증거가 아니다.
+
+5. 원복
+
+기록한 정확한 BACKUP/RECOVERY 경로로:
+bash GENOS_JUDGMENT_VIEW_20261006_R2_APPLY.txt rollback /기록한/정확한/백업경로
+
+이전 검증된 Git commit/코드서빙 리비전으로 복귀하고 워크플로우 Python도 이전 전체 코드로 복구한다.
+원문 generation과 CURRENT는 변경하지 않았으므로 이 표시 변경 때문에 재구축하지 않는다.
+실제 반영/원복/질문 결과의 request ID, commit, generation 경로·manifest hash,
+코드서빙 revision, 워크플로우 반영 여부를 현장 기록에 남긴다.

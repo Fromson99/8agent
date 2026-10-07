@@ -1,0 +1,358 @@
+--- a/02_BACKEND/semantic_runtime/fulltext.py
++++ b/02_BACKEND/semantic_runtime/fulltext.py
+@@ -54,33 +54,40 @@
+     navigation, output = Path(navigation), Path(output)
+     nav_manifest = json.loads((navigation/'manifest.json').read_text())
+     output.mkdir(parents=True, exist_ok=False)
+-    started = time.monotonic()
++    started = last_progress = time.monotonic()
+     src = sqlite3.connect('file:'+str(navigation/'navigation.sqlite')+'?mode=ro', uri=True)
+-    rows = []
+-    for sid, raw in src.execute('SELECT id,json FROM source ORDER BY id'):
+-        record = json.loads(raw)
+-        rows.append((sid, unicodedata.normalize('NFKC', record.get('heading') or ''),
+-                     unicodedata.normalize('NFKC', record.get('text') or '')))
+-    src.close()
+     kiwi = Kiwi(num_workers=workers)
+     db = sqlite3.connect(output/'fulltext.sqlite')
+-    db.execute('CREATE VIRTUAL TABLE source_fts USING fts5(source_id UNINDEXED,heading,body,tokenize="unicode61")')
+-    batch = 512
+-    for i in range(0, len(rows), batch):
+-        part = rows[i:i+batch]
+-        heads = kiwi.tokenize([h for _, h, _ in part])
+-        bodies = kiwi.tokenize([b for _, _, b in part])
+-        db.executemany('INSERT INTO source_fts VALUES(?,?,?)',
+-                       ((sid, ' '.join(forms(h)), ' '.join(forms(b))) for (sid, _, _), h, b in zip(part, heads, bodies)))
+-    db.execute("INSERT INTO source_fts(source_fts) VALUES('optimize')")
+-    db.commit()
+-    db.close()
++    count = 0
++    try:
++        db.execute('CREATE VIRTUAL TABLE source_fts USING fts5(source_id UNINDEXED,heading,body,tokenize="unicode61")')
++        cursor = src.execute('SELECT id,json FROM source ORDER BY id')
++        while batch := cursor.fetchmany(512):
++            part = []
++            for sid, raw in batch:
++                record = json.loads(raw)
++                part.append((sid, unicodedata.normalize('NFKC', record.get('heading') or ''),
++                             unicodedata.normalize('NFKC', record.get('text') or '')))
++            heads = kiwi.tokenize([h for _, h, _ in part])
++            bodies = kiwi.tokenize([b for _, _, b in part])
++            db.executemany('INSERT INTO source_fts VALUES(?,?,?)',
++                           ((sid, ' '.join(forms(h)), ' '.join(forms(b))) for (sid, _, _), h, b in zip(part, heads, bodies)))
++            count += len(part)
++            if time.monotonic() - last_progress >= 30:
++                db.commit()
++                print(f'FULLTEXT build indexed_sources={count} elapsed={time.monotonic()-started:.1f}s', flush=True)
++                last_progress = time.monotonic()
++        db.execute("INSERT INTO source_fts(source_fts) VALUES('optimize')")
++        db.commit()
++    finally:
++        db.close()
++        src.close()
+     manifest = {'schema_version': SCHEMA, 'generation_id': nav_manifest['generation_id'],
+                 'source_store_sha256': nav_manifest['source_store_sha256'],
+                 'navigation_index_sha256': nav_manifest['index_sha256'],
+                 'tokenizer': {'kiwipiepy': kiwi_version(), 'tags': list(TAGS), 'fts5': 'unicode61 over space-joined morphemes'},
+                 'ranking': {'bm25_weights': {'heading': HEADING_WEIGHT, 'body': 1.0}, 'query': 'OR of question morphemes'},
+-                'counts': {'source': len(rows)}, 'fulltext_sha256': sha(output/'fulltext.sqlite'),
++                'counts': {'source': count}, 'fulltext_sha256': sha(output/'fulltext.sqlite'),
+                 'builder_sha256': sha(__file__), 'build_seconds': round(time.monotonic()-started, 1)}
+     (output/'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2)+'\n')
+     return manifest
+--- a/02_BACKEND/semantic_runtime/term_agent.py
++++ b/02_BACKEND/semantic_runtime/term_agent.py
+@@ -28,9 +28,16 @@
+         """Optional morpheme ranking index bound in config; None when not configured."""
+         # Bound to one navigation index: generations sharing a source store and generation ID
+         # still differ by index, and one without this build has no full-text ranking.
+-        binding=self.config.get('fulltext')
++        # A published generation owns its derived fulltext binding. The profile
++        # binding remains a fallback for older, frozen local generations.
++        generation_binding=self.pipeline.store.manifest.get('fulltext')
++        binding=generation_binding if generation_binding is not None else self.config.get('fulltext')
+         index=self.get_index()
+-        if not binding or binding.get('navigation_index_sha256')!=index.manifest['index_sha256']:return None
++        if not binding:return None
++        if binding.get('navigation_index_sha256')!=index.manifest['index_sha256']:
++            if generation_binding is not None:
++                raise ValueError('generation fulltext/navigation binding mismatch')
++            return None
+         with self.lock:
+             if getattr(self,'fulltext',None) is None:
+                 from .fulltext import open_bound
+--- a/02_BACKEND/semantic_runtime/term_index.py
++++ b/02_BACKEND/semantic_runtime/term_index.py
+@@ -138,7 +138,7 @@
+     db.execute('CREATE TABLE term_stats AS SELECT term_id,count(*) AS n FROM occurrence GROUP BY term_id');db.execute('CREATE UNIQUE INDEX term_stats_id ON term_stats(term_id)');db.commit()
+     counts={t:db.execute('SELECT count(*) FROM '+t).fetchone()[0] for t in ['term','edge','source','occurrence','definition','reference']}
+     assert db.execute('PRAGMA integrity_check').fetchone()[0]=='ok';db.close()
+-    manifest={'schema_version':'term-navigation-index-v4','generation_id':store.manifest['generation_id'],'source_store_sha256':store.manifest['store_sha256'],'source_manifest_sha256':digest({k:v for k,v in store.manifest.items() if k!='navigation'}),'legal_sha256':sha(legal),'dictionary_sha256':sha(dictionary),'index_sha256':sha(output/'navigation.sqlite'),'counts':counts,'document_count':docs,'rejected_definitions':rejected_defs,'unresolved_references':unresolved,'reference_inputs_sha256':reference_inputs,'quality_certified':False,'compiler_sha256':sha(__file__),'term_tools_sha256':sha(term_tools_module.__file__)}
++    manifest={'schema_version':'term-navigation-index-v4','generation_id':store.manifest['generation_id'],'source_store_sha256':store.manifest['store_sha256'],'source_manifest_sha256':digest({k:v for k,v in store.manifest.items() if k not in {'navigation','fulltext','fulltext_derivation'}}),'legal_sha256':sha(legal),'dictionary_sha256':sha(dictionary),'index_sha256':sha(output/'navigation.sqlite'),'counts':counts,'document_count':docs,'rejected_definitions':rejected_defs,'unresolved_references':unresolved,'reference_inputs_sha256':reference_inputs,'quality_certified':False,'compiler_sha256':sha(__file__),'term_tools_sha256':sha(term_tools_module.__file__)}
+     if linkage:manifest.update(linkage=linkage)
+     write(output/'manifest.json',manifest);return manifest
+ 
+@@ -216,7 +216,7 @@
+         path=Path(path);self.manifest=json.loads((path/'manifest.json').read_text())
+         m=self.manifest
+         if m.get('schema_version') not in {'term-navigation-index-v2','term-navigation-index-v3','term-navigation-index-v4'}:raise ValueError('unsupported term index schema')
+-        if m['source_store_sha256']!=store.manifest['store_sha256'] or m['source_manifest_sha256']!=digest({k:v for k,v in store.manifest.items() if k!='navigation'}) or m['index_sha256']!=sha(path/'navigation.sqlite'):raise ValueError('term index generation/hash mismatch')
++        if m['source_store_sha256']!=store.manifest['store_sha256'] or m['source_manifest_sha256']!=digest({k:v for k,v in store.manifest.items() if k not in {'navigation','fulltext','fulltext_derivation'}}) or m['index_sha256']!=sha(path/'navigation.sqlite'):raise ValueError('term index generation/hash mismatch')
+         self.path=path;db=ro(path/'navigation.sqlite');self.terms=[json.loads(r[0]) for r in db.execute('SELECT json FROM term')];self.relations=[json.loads(r[0]) for r in db.execute('SELECT json FROM edge')];db.close()
+     def tools(self,scope):return IndexTools(ro(self.path/'navigation.sqlite'),self.terms,self.relations,list(scope))
+ 
+--- a/02_BACKEND/lawrag/pipeline/term_generation.py
++++ b/02_BACKEND/lawrag/pipeline/term_generation.py
+@@ -11,6 +11,7 @@
+ from semantic_runtime.contracts import digest,sha,write
+ from semantic_runtime.storage import Store,publish
+ from semantic_runtime.term_index import compile_index,TermIndex
++from semantic_runtime import fulltext
+ from . import glossary_linking,glossary_knowledge
+ 
+ 
+@@ -29,7 +30,9 @@
+               'serving_builder_sha256':sha(Path(__file__).with_name('term_serving_bundle.py')),
+               'glossary_compiler_sha256':sha(Path(compile_index.__code__.co_filename).with_name('full_glossary.py')),
+               'dependencies':{name:sha(Path(compile_index.__code__.co_filename).with_name(name))
+-                              for name in ('term_links.py','term_references.py','term_tools.py')}
++                              for name in ('term_links.py','term_references.py','term_tools.py')},
++              'fulltext_builder_sha256':sha(Path(fulltext.__file__)) if serving else None,
++              'fulltext_tokenizer':fulltext.kiwi_version() if serving else None}
+     if output.exists():
+         progress('verify-existing.start')
+         value=json.loads((output/'result.json').read_text())
+@@ -93,6 +96,13 @@
+                 monitor.join(timeout=1)
+             progress('compile-navigation.done')
+         manifest['navigation']={'path':'navigation','manifest_sha256':sha(generation/'navigation/manifest.json')}
++        if serving:
++            progress('compile-fulltext.start')
++            fulltext_manifest=fulltext.build(generation/'navigation',generation/'fulltext')
++            manifest['fulltext']={'path':'fulltext',
++                                  'manifest_sha256':sha(generation/'fulltext/manifest.json'),
++                                  'navigation_index_sha256':fulltext_manifest['navigation_index_sha256']}
++            progress('compile-fulltext.done')
+         # This generation has not been published. Index binds all other manifest fields.
+         (generation/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
+         with closing(Store(generation)) as store:TermIndex(generation/'navigation',store)
+--- a/02_BACKEND/lawrag/pipeline/term_serving_bundle.py
++++ b/02_BACKEND/lawrag/pipeline/term_serving_bundle.py
+@@ -45,6 +45,7 @@
+     from semantic_runtime.navigation_agent import glossary_assets
+     from semantic_runtime.storage import Store
+     from semantic_runtime.term_index import TermIndex
++    from semantic_runtime.fulltext import FulltextIndex
+     generation = Path(generation)
+     with_store = Store(generation)
+     try:
+@@ -53,7 +54,16 @@
+         path.relative_to(generation.resolve())
+         if sha(path / 'manifest.json') != nav['manifest_sha256']:
+             raise ValueError('Navigation manifest mismatch')
+-        TermIndex(path, with_store)
++        index = TermIndex(path, with_store)
++        fulltext = with_store.manifest.get('fulltext')
++        if fulltext is not None:
++            fulltext_path = (generation / fulltext['path']).resolve()
++            fulltext_path.relative_to(generation.resolve())
++            if sha(fulltext_path / 'manifest.json') != fulltext['manifest_sha256']:
++                raise ValueError('Fulltext manifest mismatch')
++            if fulltext['navigation_index_sha256'] != index.manifest['index_sha256']:
++                raise ValueError('Fulltext/navigation binding mismatch')
++            FulltextIndex(fulltext_path, index.manifest)
+         bundle = (generation / with_store.manifest['glossary']['bundle']).resolve()
+         bundle.relative_to(generation.resolve())
+         glossary_knowledge.verify(bundle, force=True)
+--- /dev/null
++++ b/06_TOOLS/COMMANDS/genos_fulltext_repair.py
+@@ -0,0 +1,116 @@
++#!/usr/bin/env python3
++"""Build a fulltext-bound copy of one published GENOS generation.
++
++The input generation and its share receipt are never modified. The output is a
++new immutable package containing generation/ and share-receipt.json. Select the
++printed generation path in a new code-serving revision only after the E2E gate.
++"""
++from __future__ import annotations
++
++import argparse
++from datetime import datetime, timezone
++import json
++import os
++from pathlib import Path
++import shutil
++import sys
++import tempfile
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT / "02_BACKEND"))
++
++
++def main(argv: list[str] | None = None) -> int:
++    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
++    parser.add_argument("--source-generation", type=Path,
++                        help="published generation; defaults to GENOS_GENERATION")
++    parser.add_argument("--output-root", type=Path,
++                        help="existing NFS directory for a new package; defaults to the source term-releases directory")
++    parser.add_argument("--package-name", help="new, unused package directory name")
++    parser.add_argument("--workers", type=int, default=8, help="Kiwi worker count")
++    args = parser.parse_args(argv)
++    from semantic_runtime.contracts import sha, write
++    from semantic_runtime.fulltext import build
++    from lawrag.pipeline.term_serving_bundle import verify_assets
++
++    configured = args.source_generation or os.environ.get("GENOS_GENERATION")
++    if not configured:
++        parser.error("set GENOS_GENERATION or pass --source-generation")
++    source_input = Path(configured)
++    source = source_input.resolve(strict=True)
++    if source.name != "generation" or source_input.is_symlink():
++        parser.error("source must be a real generation directory")
++    if args.workers < 1:
++        parser.error("--workers must be positive")
++    if args.output_root is None:
++        if source.parent.name not in {"reviewed", "unreviewed"}:
++            parser.error("pass --output-root for a nonstandard source layout")
++        output_root = source.parents[2]
++    else:
++        output_root = args.output_root.resolve(strict=True)
++    if not output_root.is_dir():
++        parser.error("output root must be an existing directory")
++    manifest_path = source / "manifest.json"
++    source_manifest = json.loads(manifest_path.read_text("utf-8"))
++    if source_manifest.get("fulltext") is not None or (source / "fulltext").exists():
++        parser.error("source already has fulltext; preserve it and diagnose its binding")
++    original_hash = sha(manifest_path)
++    name = args.package_name or ("fulltext-repair-" +
++           datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + original_hash[:8])
++    if name in {"", ".", ".."} or "/" in name or "\\" in name:
++        parser.error("--package-name must be one directory name")
++    target = output_root / name
++    if target.exists():
++        parser.error(f"output already exists: {target}")
++
++    print("FULLTEXT REPAIR verify source", flush=True)
++    verify_assets(source)
++    if sha(manifest_path) != original_hash:
++        raise ValueError("source generation manifest changed during verification")
++    for path in source.rglob("*"):
++        if path.is_symlink():
++            raise ValueError(f"source generation contains a symlink: {path}")
++
++    stage = Path(tempfile.mkdtemp(prefix="." + name + "-", dir=output_root))
++    try:
++        generation = stage / "generation"
++        print(f"FULLTEXT REPAIR copying source to staging: {generation}", flush=True)
++        shutil.copytree(source, generation)
++        if sha(manifest_path) != original_hash:
++            raise ValueError("source generation manifest changed during copy")
++        print("FULLTEXT REPAIR building fulltext", flush=True)
++        ft = build(generation / "navigation", generation / "fulltext", workers=args.workers)
++        repaired = json.loads((generation / "manifest.json").read_text("utf-8"))
++        repaired["fulltext"] = {
++            "path": "fulltext",
++            "manifest_sha256": sha(generation / "fulltext/manifest.json"),
++            "navigation_index_sha256": ft["navigation_index_sha256"],
++        }
++        repaired["fulltext_derivation"] = {"source_manifest_sha256": original_hash}
++        (generation / "manifest.json").write_text(
++            json.dumps(repaired, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
++        print("FULLTEXT REPAIR verifying complete generation", flush=True)
++        verify_assets(generation)
++        files = {str(path.relative_to(generation)): sha(path)
++                 for path in sorted(generation.rglob("*")) if path.is_file()}
++        write(stage / "share-receipt.json", {
++            "schema_version": "term-fulltext-repair-shared-generation-v1",
++            "source_generation": str(source),
++            "source_manifest_sha256": original_hash,
++            "manifest_sha256": sha(generation / "manifest.json"),
++            "files": files,
++        })
++        if target.exists():
++            raise ValueError("output package appeared during repair")
++        os.rename(stage, target)
++    except BaseException:
++        shutil.rmtree(stage)
++        raise
++    print(f"GENOS_GENERATION={target / 'generation'}", flush=True)
++    print(f"SHARE_RECEIPT={target / 'share-receipt.json'}", flush=True)
++    print("NEXT: deploy the patched code revision with the printed GENOS_GENERATION; run the generation E2E gate.", flush=True)
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+--- /dev/null
++++ b/06_TOOLS/COMMANDS/genos_fulltext_repin.py
+@@ -0,0 +1,70 @@
++#!/usr/bin/env python3
++"""Refresh only the three fulltext patch code hashes in pinned engine manifests."""
++from __future__ import annotations
++
++import argparse
++import hashlib
++import json
++from pathlib import Path
++
++PATCHED = (
++    "02_BACKEND/semantic_runtime/fulltext.py",
++    "02_BACKEND/semantic_runtime/term_agent.py",
++    "02_BACKEND/semantic_runtime/term_index.py",
++)
++
++
++def sha(path: Path) -> str:
++    return hashlib.sha256(path.read_bytes()).hexdigest()
++
++
++def replace_once(raw: str, before: str, after: str, path: Path) -> str:
++    if raw.count(before) != 1:
++        raise ValueError(f"expected one hash binding in {path}: {before}")
++    return raw.replace(before, after)
++
++
++def repin(root: Path) -> int:
++    root = root.resolve(strict=True)
++    pipeline_path = root / "00_SYSTEM/PIPELINE.json"
++    pipeline_raw = pipeline_path.read_text("utf-8")
++    pipeline = json.loads(pipeline_raw)
++    changed = 0
++    for engine_id, binding in pipeline["engines"].items():
++        manifest_path = root / binding["manifest"]
++        manifest_raw = manifest_path.read_text("utf-8")
++        manifest = json.loads(manifest_raw)
++        for relative in PATCHED:
++            if relative not in manifest["files"]:
++                continue
++            old = manifest["files"][relative]
++            new = sha(root / relative)
++            if old == new:
++                continue
++            manifest_raw = replace_once(manifest_raw,
++                f'"{relative}": "{old}"', f'"{relative}": "{new}"', manifest_path)
++        if manifest_raw == manifest_path.read_text("utf-8"):
++            continue
++        manifest_path.write_text(manifest_raw, encoding="utf-8")
++        new_hash = sha(manifest_path)
++        old_hash = binding["sha256"]
++        pipeline_raw = replace_once(pipeline_raw,
++            f'"sha256": "{old_hash}"', f'"sha256": "{new_hash}"', pipeline_path)
++        changed += 1
++        print(f"REPinned {engine_id}")
++    if changed:
++        pipeline_path.write_text(pipeline_raw, encoding="utf-8")
++    print(f"PATCHED_ENGINE_MANIFESTS={changed}")
++    return changed
++
++
++def main(argv: list[str] | None = None) -> int:
++    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
++    parser.add_argument("--code-root", type=Path, default=Path.cwd())
++    args = parser.parse_args(argv)
++    repin(args.code_root)
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())

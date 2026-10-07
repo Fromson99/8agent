@@ -1,0 +1,41 @@
+{
+  "format": "8agent-thinking-log-patch/3",
+  "patch": "thinking-log-20260928-r3",
+  "baseline": "Installed report structurally validated and engine-pinned; only display AST nodes change",
+  "assets": {
+    "structural_report.py": "7a747906023c247177ed8d4210920a7b2e087c04970b53205520ebc1117748ea",
+    "REPORT_TEMPLATES.json": "b2c78745086336d1a2516ba4009a81516d5b4a5d57eebffb5f34ab9ec71bd653"
+  },
+  "files": {
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py": {
+      "base_sha256": "6d851380e424e11517f11c96a8c79b1ba261dc5464bbf3efadefb57df93cf006",
+      "new_sha256": "6d851380e424e11517f11c96a8c79b1ba261dc5464bbf3efadefb57df93cf006",
+      "variants": [
+        {
+          "base_sha256": "32fd62cc09168f8a9cda7dc1167e88a016bae19eb360fb5d868f33ed2f637e79",
+          "new_sha256": "7d6459b81bce476a1d9abcd1119eec53d87629ea130f314b94edd29fe9009d9f",
+          "payload_path": "variants/32fd62cc09168f8a9cda7dc1167e88a016bae19eb360fb5d868f33ed2f637e79/02_BACKEND/semantic_runtime/legal_agent/gateway.py"
+        },
+        {
+          "base_sha256": "7d6459b81bce476a1d9abcd1119eec53d87629ea130f314b94edd29fe9009d9f",
+          "new_sha256": "7d6459b81bce476a1d9abcd1119eec53d87629ea130f314b94edd29fe9009d9f",
+          "payload_path": "variants/7d6459b81bce476a1d9abcd1119eec53d87629ea130f314b94edd29fe9009d9f/02_BACKEND/semantic_runtime/legal_agent/gateway.py"
+        }
+      ]
+    },
+    "02_BACKEND/semantic_runtime/observability.py": {
+      "base_sha256": "b0b2e6f5787b30eb2db7afcdb7317b03840701ded6c9cb342903670313a9ba47",
+      "new_sha256": "b0b2e6f5787b30eb2db7afcdb7317b03840701ded6c9cb342903670313a9ba47",
+      "variants": [
+        {
+          "base_sha256": "cb65cc2eaa0097e4dabdcbf7bd36e3dcaa3a2fb82f74c36fce0ac39dcbc30c72",
+          "new_sha256": "b0b2e6f5787b30eb2db7afcdb7317b03840701ded6c9cb342903670313a9ba47",
+          "payload_path": "variants/cb65cc2eaa0097e4dabdcbf7bd36e3dcaa3a2fb82f74c36fce0ac39dcbc30c72/02_BACKEND/semantic_runtime/observability.py"
+        }
+      ]
+    },
+    "02_BACKEND/semantic_runtime/request_report.py": {
+      "strategy": "structural-report"
+    }
+  }
+}

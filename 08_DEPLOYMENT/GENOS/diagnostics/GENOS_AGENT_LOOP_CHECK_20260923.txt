@@ -1,0 +1,197 @@
+# GENOS LEGAL_AGENT 실시간 상태 확인 (Python 3.10+, 표준 라이브러리만 사용)
+# 읽기 전용: 요청/모델을 호출하거나 파일을 변경하지 않습니다.
+#
+# 코드스페이스에서 실행 예시:
+#   python3 TRANSFER/GENOS_AGENT_LOOP_CHECK_20260923.txt --runtime-root ./90_RUNTIME/semantic
+#   python3 TRANSFER/GENOS_AGENT_LOOP_CHECK_20260923.txt --runtime-root /nfs-root/diamo/8-agent/90_RUNTIME/semantic --watch 10 --samples 6
+# 코드서빙의 실시간 이벤트 로그를 파일로 저장/복사한 경우:
+#   python3 TRANSFER/GENOS_AGENT_LOOP_CHECK_20260923.txt --log TRANSFER/code-serving.log --watch 10 --samples 6
+# 특정 실행만 볼 경우 위 명령에 --run-id ID 또는 --request-id ID를 추가합니다.
+#
+# journal.sqlite가 코드서빙 컨테이너 내부에만 있으면 코드스페이스에서 볼 수 없습니다.
+# /nfs-root/diamo/8-agent/rag-request-reports의 JSON은 요청 완료 후에만 생깁니다.
+# 이 파일만으로 실행 중 루프를 판정할 수 없습니다. 코드서빙 UI의 실시간 로그를 저장하여 --log로 보세요.
+
+from __future__ import annotations
+
+import argparse
+from collections import Counter
+from datetime import datetime, timezone
+import json
+from pathlib import Path
+import sqlite3
+import time
+
+
+def utc_now():
+    return datetime.now(timezone.utc)
+
+
+def parse_time(value):
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00")).astimezone(timezone.utc)
+    except (TypeError, ValueError):
+        return None
+
+
+def age_seconds(value):
+    parsed = parse_time(value)
+    return max(0, round((utc_now() - parsed).total_seconds())) if parsed else None
+
+
+def remaining_seconds(value):
+    parsed = parse_time(value)
+    return round((parsed - utc_now()).total_seconds()) if parsed else None
+
+
+def list_journals(root, run_id):
+    path = Path(root).expanduser()
+    if path.is_file() and path.name == "journal.sqlite":
+        return [path]
+    base = path / "legal-agent" / "runs"
+    if not base.is_dir():
+        base = path
+    files = list(base.glob("*/" + (run_id or "*") + "/journal.sqlite"))
+    return sorted(files, key=lambda p: p.stat().st_mtime, reverse=True)[:5]
+
+
+def journal_snapshot(path, stall_seconds):
+    # SQLite URI ro prevents accidental writes; no request/prompt/payload columns are selected.
+    db = sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True, timeout=2)
+    db.row_factory = sqlite3.Row
+    try:
+        run = db.execute("SELECT run_id,status,phase,cycle,gate,state_revision,evidence_revision,"
+                         "next_event_seq,started_at,deadline_at FROM run WHERE singleton=1").fetchone()
+        if run is None:
+            return {"source": "journal", "path": str(path), "state": "NO_RUN_ROW"}
+        last = db.execute("SELECT seq,kind,created_at FROM event ORDER BY seq DESC LIMIT 1").fetchone()
+        attempts = db.execute("SELECT status,count(*) AS n FROM model_attempt GROUP BY status").fetchall()
+        latest_attempt = db.execute("SELECT status,attempt_no,started_at,finished_at FROM model_attempt "
+                                    "ORDER BY created_seq DESC,attempt_no DESC LIMIT 1").fetchone()
+        budget = db.execute("SELECT model_limit,model_reserved,tool_limit,tool_used FROM budget "
+                            "WHERE singleton=1").fetchone()
+        result = {"source": "journal", "path": str(path), "run": dict(run),
+                  "elapsed_seconds": age_seconds(run["started_at"]),
+                  "deadline_remaining_seconds": remaining_seconds(run["deadline_at"]),
+                  "last_event": dict(last) if last else None,
+                  "last_event_age_seconds": age_seconds(last["created_at"]) if last else None,
+                  "model_attempt_status_counts": {row["status"]: row["n"] for row in attempts},
+                  "latest_model_attempt": dict(latest_attempt) if latest_attempt else None,
+                  "budget": dict(budget) if budget else None}
+        if run["status"] in ("COMPLETED", "FAILED", "INTERRUPTED"):
+            result["assessment"] = "FINISHED"
+        elif latest_attempt and latest_attempt["status"] == "SENT":
+            result["assessment"] = "MODEL_WAIT_OR_TRANSPORT"
+        elif last and (age_seconds(last["created_at"]) or 0) >= stall_seconds:
+            result["assessment"] = "NO_RECENT_JOURNAL_EVENT_CHECK_LIVE_LOG"
+        else:
+            result["assessment"] = "PROGRESS_OR_RECENT_ACTIVITY"
+        return result
+    finally:
+        db.close()
+
+
+def log_snapshot(path, request_id, stall_seconds):
+    p = Path(path).expanduser()
+    # Read at most the latest 8 MiB, so a large serving log remains cheap to inspect.
+    with p.open("rb") as stream:
+        stream.seek(0, 2)
+        size = stream.tell()
+        stream.seek(max(0, size - 8 * 1024 * 1024))
+        raw = stream.read().decode("utf-8", errors="replace")
+    if size > len(raw.encode("utf-8", errors="replace")):
+        raw = raw.split("\n", 1)[-1]
+    events = []
+    for line in raw.splitlines():
+        pos = line.find("{")
+        if pos < 0:
+            continue
+        try:
+            obj = json.loads(line[pos:])
+        except ValueError:
+            continue
+        if isinstance(obj, dict) and isinstance(obj.get("event"), str):
+            events.append(obj)
+    if request_id:
+        events = [e for e in events if e.get("request_id") == request_id]
+    elif events:
+        # Use the most recent request in this file, excluding unrelated service events.
+        chosen = next((e.get("request_id") for e in reversed(events) if e.get("request_id")), None)
+        if chosen:
+            events = [e for e in events if e.get("request_id") == chosen]
+    if not events:
+        return {"source": "log", "path": str(p), "assessment": "NO_MATCHING_EVENTS"}
+    last = events[-1]
+    count = Counter(e["event"] for e in events)
+    http_open = {}
+    for event in events:
+        name = event["event"]
+        attempt_id = event.get("attempt_id")
+        if name == "model_http.started":
+            http_open[str(attempt_id)] = event.get("ts")
+        elif name in ("model_http.finished", "model_http.failed"):
+            http_open.pop(str(attempt_id), None)
+    finished = "request.finished" in count
+    if finished:
+        assessment = "REQUEST_FINISHED"
+    elif http_open:
+        assessment = "MODEL_HTTP_IN_FLIGHT"
+    elif (age_seconds(last.get("ts")) or 0) >= stall_seconds:
+        assessment = "NO_RECENT_LOG_EVENT_CHECK_CONTAINER"
+    else:
+        assessment = "PROGRESS_OR_RECENT_ACTIVITY"
+    return {"source": "log", "path": str(p), "request_id": last.get("request_id"),
+            "run_id": last.get("run_id"), "last_event": last.get("event"),
+            "last_event_at": last.get("ts"), "last_event_age_seconds": age_seconds(last.get("ts")),
+            "event_counts": dict(sorted(count.items())),
+            "open_model_http_attempts": len(http_open), "assessment": assessment}
+
+
+def snapshot(args):
+    out = {"checked_at": utc_now().isoformat(), "results": []}
+    if args.runtime_root:
+        paths = list_journals(args.runtime_root, args.run_id)
+        if not paths:
+            out["results"].append({"source": "journal", "assessment": "NO_VISIBLE_JOURNAL",
+                                   "runtime_root": args.runtime_root})
+        for path in paths:
+            try:
+                out["results"].append(journal_snapshot(path, args.stall_seconds))
+            except (OSError, sqlite3.Error) as exc:
+                out["results"].append({"source": "journal", "path": str(path),
+                                       "assessment": "READ_ERROR", "error_type": type(exc).__name__})
+    if args.log:
+        try:
+            out["results"].append(log_snapshot(args.log, args.request_id, args.stall_seconds))
+        except OSError as exc:
+            out["results"].append({"source": "log", "path": args.log,
+                                   "assessment": "READ_ERROR", "error_type": type(exc).__name__})
+    if not args.runtime_root and not args.log:
+        out["results"].append({"assessment": "NO_LIVE_SOURCE",
+                               "hint": "--runtime-root or --log is required"})
+    return out
+
+
+def main():
+    parser = argparse.ArgumentParser(description="GENOS LEGAL_AGENT live progress checker (read only)")
+    parser.add_argument("--runtime-root", help="Code-serving GENOS_RUNTIME_DIR or direct journal.sqlite")
+    parser.add_argument("--log", help="Saved or updating code-serving event log file")
+    parser.add_argument("--run-id", help="Only this journal run ID")
+    parser.add_argument("--request-id", help="Only this log request ID")
+    parser.add_argument("--stall-seconds", type=int, default=60)
+    parser.add_argument("--watch", type=int, default=0, metavar="SECONDS")
+    parser.add_argument("--samples", type=int, default=6)
+    args = parser.parse_args()
+    if args.watch < 0 or args.samples < 1 or args.stall_seconds < 1:
+        parser.error("--watch >= 0, --samples >= 1, --stall-seconds >= 1 required")
+    try:
+        for n in range(args.samples if args.watch else 1):
+            print(json.dumps(snapshot(args), ensure_ascii=False, indent=2), flush=True)
+            if args.watch and n + 1 < args.samples:
+                time.sleep(args.watch)
+    except KeyboardInterrupt:
+        pass
+
+
+if __name__ == "__main__":
+    main()

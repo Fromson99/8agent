@@ -1,0 +1,25 @@
+{
+  "format": "8agent-chat-flow-patch/1",
+  "patch": "chat-flow-20260928-r2",
+  "files": {
+    "02_BACKEND/semantic_runtime/legal_agent/source_tools.py": {
+      "base_sha256": "3ae4f7e2588fdeb5b02477c1219656374d19b7ad6aa8ca7f21b053d41cb9cd58",
+      "new_sha256": "7c7237c15112a721b627321423026918ec3f3692fcad37b92e9af53be0c1ac87"
+    },
+    "02_BACKEND/semantic_runtime/progress.py": {
+      "base_sha256": "988f059d623ea62a71add8a8da4425d83f3c8f134cdb517275686b3fd6fda527",
+      "new_sha256": "1d5d5efec4a790d2f65cfb1df511d8c10046bb5e20a5503a5aaa54b49b3ffb23"
+    },
+    "08_DEPLOYMENT/GENOS/stream_app.py": {
+      "base_sha256": "3dede86f72c1f5f7d1c9166206c9f89ba77bf5bd269c1564f54d3f6dd8562c31",
+      "new_sha256": "c6d65b5ea6e6c1d48b838bad1c5a5dccc885499dcba4360b235670fac2bcff7f"
+    },
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": {
+      "base_sha256": "ca44ae33a7dfa40519ce6f436541408c4ed844bf55f1047d854460b7747fec78",
+      "new_sha256": "4b3e85049a32734bd3ecb0e4ff2f3d62bd2cb7cd7fbebbcebed8a3ffae4a1cd2"
+    }
+  },
+  "generation_change": false,
+  "workflow_editor_replace_required": true,
+  "onsite_verified": false
+}

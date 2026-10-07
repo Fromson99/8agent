@@ -1,0 +1,513 @@
+{
+  "version": "GENOS_INVESTIGATION_CONTROL_20261007_R3",
+  "verified_at": "2026-10-06T23:47:54.107688+00:00",
+  "code_zip_sha256": "76470e056a28596dd45b3ab35abb2c06e9aa3106959c82064b05f2c3ea4ccd31",
+  "code_manifest_sha256": "d0b251352e76eb0e8af34f4fad00f0d33ed6e31d1e103ae1f5ef757b86c0cf39",
+  "apply_txt_sha256": "8f61eb0b546b29be2434607fd1fdaa1dff38aa56ff0780d865f848e2db5b3768",
+  "tests": {
+    "passed": 12,
+    "failed": 0,
+    "seconds": 24.76,
+    "overall_seconds": 25.515
+  },
+  "exact_r2_shipped_code_files": 282,
+  "exact_selected_local_main_serving_files": 265,
+  "main_release_manifest_sha256": "8cd47ee0524677ae3a7ff1b101b8635102d2139747038695a3d510eaaa968b80",
+  "only_two_known_predecessor_hashes_added": true,
+  "photo_stream_hash_independently_reproduced": true,
+  "photo_service_hash_independently_reproduced": true,
+  "original_r2_failure_reproduced_before_code_mutation": true,
+  "known_nfs_apply_rerun_rollback_pass": true,
+  "unknown_field_edits_refused_before_code_mutation": true,
+  "all_conflict_hashes_logged": true,
+  "existing_generation_and_runtime_preserved": true,
+  "gate_and_same_checkout_commit_push_to_local_bare_remote_pass": true,
+  "bash_syntax_pass": true,
+  "python311_source_syntax_pass": true,
+  "workflow_python310_syntax_pass": true,
+  "no_javascript_credentials_or_operating_data": true,
+  "no_model_calls": true,
+  "genos_accessed": false,
+  "field_r3_deployment_verified": false,
+  "retained_logs": [
+    "verification-logs/test_apply_rerun_verify_rollba0/20261006T234609Z-check-101058.log",
+    "verification-logs/test_apply_rerun_verify_rollba0/20261006T234610Z-apply-101065.log",
+    "verification-logs/test_apply_rerun_verify_rollba0/20261006T234611Z-apply-101107.log",
+    "verification-logs/test_apply_rerun_verify_rollba0/20261006T234611Z-verify-101115.log",
+    "verification-logs/test_apply_rerun_verify_rollba0/20261006T234612Z-rollback-101130.log",
+    "verification-logs/test_apply_rerun_verify_rollba0/events.jsonl",
+    "verification-logs/test_apply_rerun_verify_rollba1/20261006T234613Z-apply-101152.log",
+    "verification-logs/test_apply_rerun_verify_rollba1/20261006T234613Z-check-101137.log",
+    "verification-logs/test_apply_rerun_verify_rollba1/20261006T234614Z-apply-101159.log",
+    "verification-logs/test_apply_rerun_verify_rollba1/20261006T234615Z-rollback-101181.log",
+    "verification-logs/test_apply_rerun_verify_rollba1/20261006T234615Z-verify-101166.log",
+    "verification-logs/test_apply_rerun_verify_rollba1/events.jsonl",
+    "verification-logs/test_apply_rerun_verify_rollba2/20261006T234616Z-check-101198.log",
+    "verification-logs/test_apply_rerun_verify_rollba2/20261006T234617Z-apply-101205.log",
+    "verification-logs/test_apply_rerun_verify_rollba2/20261006T234618Z-apply-101212.log",
+    "verification-logs/test_apply_rerun_verify_rollba2/20261006T234619Z-rollback-101254.log",
+    "verification-logs/test_apply_rerun_verify_rollba2/20261006T234619Z-verify-101219.log",
+    "verification-logs/test_apply_rerun_verify_rollba2/events.jsonl",
+    "verification-logs/test_apply_rerun_verify_rollbacurrent/20261006T234616Z-check-101198.log",
+    "verification-logs/test_apply_rerun_verify_rollbacurrent/20261006T234617Z-apply-101205.log",
+    "verification-logs/test_apply_rerun_verify_rollbacurrent/20261006T234618Z-apply-101212.log",
+    "verification-logs/test_apply_rerun_verify_rollbacurrent/20261006T234619Z-rollback-101254.log",
+    "verification-logs/test_apply_rerun_verify_rollbacurrent/20261006T234619Z-verify-101219.log",
+    "verification-logs/test_apply_rerun_verify_rollbacurrent/events.jsonl",
+    "verification-logs/test_full_txt_commits_gates_an0/20261006T234622Z-all-101316.log",
+    "verification-logs/test_full_txt_commits_gates_an0/20261006T234624Z-all-101393.log",
+    "verification-logs/test_full_txt_commits_gates_an0/events.jsonl",
+    "verification-logs/test_full_txt_commits_gates_an1/20261006T234626Z-all-101455.log",
+    "verification-logs/test_full_txt_commits_gates_an1/20261006T234628Z-all-101553.log",
+    "verification-logs/test_full_txt_commits_gates_an1/events.jsonl",
+    "verification-logs/test_full_txt_commits_gates_ancurrent/20261006T234626Z-all-101455.log",
+    "verification-logs/test_full_txt_commits_gates_ancurrent/20261006T234628Z-all-101553.log",
+    "verification-logs/test_full_txt_commits_gates_ancurrent/events.jsonl",
+    "verification-logs/test_original_r2_photo_failure0/20261006T234606Z-all-100987.log",
+    "verification-logs/test_original_r2_photo_failure0/20261006T234606Z-apply-100994.log",
+    "verification-logs/test_original_r2_photo_failure0/events.jsonl",
+    "verification-logs/test_original_r2_photo_failurecurrent/20261006T234606Z-all-100987.log",
+    "verification-logs/test_original_r2_photo_failurecurrent/20261006T234606Z-apply-100994.log",
+    "verification-logs/test_original_r2_photo_failurecurrent/events.jsonl",
+    "verification-logs/test_preflight_rejects_tamperi0/20261006T234620Z-apply-101261.log",
+    "verification-logs/test_preflight_rejects_tamperi0/events.jsonl",
+    "verification-logs/test_preflight_rejects_tamperi1/20261006T234621Z-apply-101293.log",
+    "verification-logs/test_preflight_rejects_tamperi1/events.jsonl",
+    "verification-logs/test_preflight_rejects_tamperi2/20261006T234622Z-apply-101300.log",
+    "verification-logs/test_preflight_rejects_tamperi2/events.jsonl",
+    "verification-logs/test_preflight_rejects_tampericurrent/20261006T234622Z-apply-101300.log",
+    "verification-logs/test_preflight_rejects_tampericurrent/events.jsonl",
+    "verification-logs/test_unknown_edits_after_known0/20261006T234608Z-apply-101051.log",
+    "verification-logs/test_unknown_edits_after_known0/events.jsonl",
+    "verification-logs/test_unknown_edits_after_knowncurrent/20261006T234608Z-apply-101051.log",
+    "verification-logs/test_unknown_edits_after_knowncurrent/events.jsonl"
+  ],
+  "retained_gate_push_drift_events": [
+    {
+      "log": "verification-logs/test_preflight_rejects_tamperi0/events.jsonl",
+      "at": "2026-10-06T23:46:20.606854+00:00",
+      "stage": "CHECKOUT_DRIFT",
+      "conflicts": [
+        {
+          "path": "02_BACKEND/semantic_runtime/app.py",
+          "actual_sha256": "c7cbe4ed0a8abdfb5a37f2dee5696703383aab5e1ed1a4f317c9e58f9407d073",
+          "expected_sha256": "f58011ffede7e4587f81efbaab5c3de3eef7e6340ed3998f37b13987126c76f8",
+          "allowed_sha256": [
+            "97948798f1584262849d75d2d8c1c74f5dfb8629064c354b1c782fe6c6593adc",
+            "d9c8bd0699ea6689a20fc5abaa9b2ec772043574af50a3a1601ecc30c897dbe6",
+            "f58011ffede7e4587f81efbaab5c3de3eef7e6340ed3998f37b13987126c76f8",
+            "f7387ea0cf97b0faf6f864955e969ff767b5b7170513f1e790dcebc85726db7f"
+          ]
+        }
+      ],
+      "existing_files_preserved": true
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_an1/events.jsonl",
+      "at": "2026-10-06T23:46:28.468041+00:00",
+      "stage": "RELEASE_GATE_PASS",
+      "seconds": 0.298
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_an1/events.jsonl",
+      "at": "2026-10-06T23:46:28.621976+00:00",
+      "stage": "GIT_PUSHED",
+      "commit": "0467728d7ec2ba94c37fad924a835420f3871784",
+      "remote": "origin",
+      "branch": "master",
+      "generation": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/investigation_control_20261007_r3/.verification-work/test_full_txt_commits_gates_an1/built/generation",
+      "generation_manifest_sha256": "b963eb1580c46e44bb4bed979e8b9583148f71f12652fb6c6bab6f86cbd600ab"
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_an1/events.jsonl",
+      "at": "2026-10-06T23:46:28.625206+00:00",
+      "stage": "COMPLETE",
+      "mode": "all",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_an1/events.jsonl",
+      "at": "2026-10-06T23:46:30.005722+00:00",
+      "stage": "RELEASE_GATE_PASS",
+      "seconds": 0.284
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_an1/events.jsonl",
+      "at": "2026-10-06T23:46:30.021752+00:00",
+      "stage": "GIT_PUSHED",
+      "commit": "0467728d7ec2ba94c37fad924a835420f3871784",
+      "remote": "origin",
+      "branch": "master",
+      "generation": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/investigation_control_20261007_r3/.verification-work/test_full_txt_commits_gates_an1/built/generation",
+      "generation_manifest_sha256": "b963eb1580c46e44bb4bed979e8b9583148f71f12652fb6c6bab6f86cbd600ab"
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_an1/events.jsonl",
+      "at": "2026-10-06T23:46:30.023981+00:00",
+      "stage": "COMPLETE",
+      "mode": "all",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba0/events.jsonl",
+      "at": "2026-10-06T23:46:10.156216+00:00",
+      "stage": "COMPLETE",
+      "mode": "check",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba0/events.jsonl",
+      "at": "2026-10-06T23:46:11.034937+00:00",
+      "stage": "COMPLETE",
+      "mode": "apply",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba0/events.jsonl",
+      "at": "2026-10-06T23:46:11.776363+00:00",
+      "stage": "COMPLETE",
+      "mode": "apply",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba0/events.jsonl",
+      "at": "2026-10-06T23:46:12.259885+00:00",
+      "stage": "COMPLETE",
+      "mode": "verify",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba0/events.jsonl",
+      "at": "2026-10-06T23:46:12.407378+00:00",
+      "stage": "COMPLETE",
+      "mode": "rollback",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_original_r2_photo_failure0/events.jsonl",
+      "at": "2026-10-06T23:46:07.768214+00:00",
+      "stage": "COMPLETE",
+      "mode": "apply",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_an0/events.jsonl",
+      "at": "2026-10-06T23:46:24.385326+00:00",
+      "stage": "RELEASE_GATE_PASS",
+      "seconds": 0.294
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_an0/events.jsonl",
+      "at": "2026-10-06T23:46:24.532100+00:00",
+      "stage": "GIT_PUSHED",
+      "commit": "b5d5138e936f356c08aa8423a948f8afa720f71d",
+      "remote": "origin",
+      "branch": "master",
+      "generation": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/investigation_control_20261007_r3/.verification-work/test_full_txt_commits_gates_an0/built/generation",
+      "generation_manifest_sha256": "68385002d6fa79497ac71c387198bbf36267542d483176468ef77208d783530a"
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_an0/events.jsonl",
+      "at": "2026-10-06T23:46:24.533972+00:00",
+      "stage": "COMPLETE",
+      "mode": "all",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_an0/events.jsonl",
+      "at": "2026-10-06T23:46:25.899449+00:00",
+      "stage": "RELEASE_GATE_PASS",
+      "seconds": 0.289
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_an0/events.jsonl",
+      "at": "2026-10-06T23:46:25.912920+00:00",
+      "stage": "GIT_PUSHED",
+      "commit": "b5d5138e936f356c08aa8423a948f8afa720f71d",
+      "remote": "origin",
+      "branch": "master",
+      "generation": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/investigation_control_20261007_r3/.verification-work/test_full_txt_commits_gates_an0/built/generation",
+      "generation_manifest_sha256": "68385002d6fa79497ac71c387198bbf36267542d483176468ef77208d783530a"
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_an0/events.jsonl",
+      "at": "2026-10-06T23:46:25.914791+00:00",
+      "stage": "COMPLETE",
+      "mode": "all",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_original_r2_photo_failurecurrent/events.jsonl",
+      "at": "2026-10-06T23:46:07.768214+00:00",
+      "stage": "COMPLETE",
+      "mode": "apply",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_unknown_edits_after_known0/events.jsonl",
+      "at": "2026-10-06T23:46:08.849205+00:00",
+      "stage": "CHECKOUT_DRIFT",
+      "conflicts": [
+        {
+          "path": "08_DEPLOYMENT/GENOS/stream_app.py",
+          "actual_sha256": "762c2ddf2b7ea1dc94595895fb3f94ed270969ebcfa8c91de4b892cce9a1b1a6",
+          "expected_sha256": "31a32d06cd04fe51bb5a0bd6dc2f976a7680ae9aa1234b09558665c4d0f12db8",
+          "allowed_sha256": [
+            "31a32d06cd04fe51bb5a0bd6dc2f976a7680ae9aa1234b09558665c4d0f12db8",
+            "6c38ca65b079f2a9f433cbbc55d559f67e5dd723335c9b43d63fca1755370ea8",
+            "7ea18ce5928757fe17aafdd0eaa78ad7cc46b88786784c4f72a33bdc39d899e8"
+          ]
+        },
+        {
+          "path": "service.py",
+          "actual_sha256": "6c3b1c6cca91488b3dfeb93ec6040f9b5b865288284b063cb704585106f0352d",
+          "expected_sha256": "93d5acb11d2d0a3efd55fc5d0bf1c616cad3cb2dd4abc3325b82d4d5bc8a6e6f",
+          "allowed_sha256": [
+            "051b508b38a829dbd637742309b5d646a916ef8788a29c3d8ddf294d33598aa6",
+            "89adf358fc975d27be9bdc4528ac24f209ffc047d02c0837b28f8ef0fa94b0b4",
+            "93d5acb11d2d0a3efd55fc5d0bf1c616cad3cb2dd4abc3325b82d4d5bc8a6e6f",
+            "c6a601da9d6cf037375ae548b5d6b38ee37ecd294c32fb7479879c68276ac3a7"
+          ]
+        }
+      ],
+      "existing_files_preserved": true
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba2/events.jsonl",
+      "at": "2026-10-06T23:46:17.616589+00:00",
+      "stage": "COMPLETE",
+      "mode": "check",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba2/events.jsonl",
+      "at": "2026-10-06T23:46:18.478389+00:00",
+      "stage": "COMPLETE",
+      "mode": "apply",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba2/events.jsonl",
+      "at": "2026-10-06T23:46:19.224791+00:00",
+      "stage": "COMPLETE",
+      "mode": "apply",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba2/events.jsonl",
+      "at": "2026-10-06T23:46:19.749240+00:00",
+      "stage": "COMPLETE",
+      "mode": "verify",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba2/events.jsonl",
+      "at": "2026-10-06T23:46:19.900246+00:00",
+      "stage": "COMPLETE",
+      "mode": "rollback",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_ancurrent/events.jsonl",
+      "at": "2026-10-06T23:46:28.468041+00:00",
+      "stage": "RELEASE_GATE_PASS",
+      "seconds": 0.298
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_ancurrent/events.jsonl",
+      "at": "2026-10-06T23:46:28.621976+00:00",
+      "stage": "GIT_PUSHED",
+      "commit": "0467728d7ec2ba94c37fad924a835420f3871784",
+      "remote": "origin",
+      "branch": "master",
+      "generation": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/investigation_control_20261007_r3/.verification-work/test_full_txt_commits_gates_an1/built/generation",
+      "generation_manifest_sha256": "b963eb1580c46e44bb4bed979e8b9583148f71f12652fb6c6bab6f86cbd600ab"
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_ancurrent/events.jsonl",
+      "at": "2026-10-06T23:46:28.625206+00:00",
+      "stage": "COMPLETE",
+      "mode": "all",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_ancurrent/events.jsonl",
+      "at": "2026-10-06T23:46:30.005722+00:00",
+      "stage": "RELEASE_GATE_PASS",
+      "seconds": 0.284
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_ancurrent/events.jsonl",
+      "at": "2026-10-06T23:46:30.021752+00:00",
+      "stage": "GIT_PUSHED",
+      "commit": "0467728d7ec2ba94c37fad924a835420f3871784",
+      "remote": "origin",
+      "branch": "master",
+      "generation": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/investigation_control_20261007_r3/.verification-work/test_full_txt_commits_gates_an1/built/generation",
+      "generation_manifest_sha256": "b963eb1580c46e44bb4bed979e8b9583148f71f12652fb6c6bab6f86cbd600ab"
+    },
+    {
+      "log": "verification-logs/test_full_txt_commits_gates_ancurrent/events.jsonl",
+      "at": "2026-10-06T23:46:30.023981+00:00",
+      "stage": "COMPLETE",
+      "mode": "all",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_unknown_edits_after_knowncurrent/events.jsonl",
+      "at": "2026-10-06T23:46:08.849205+00:00",
+      "stage": "CHECKOUT_DRIFT",
+      "conflicts": [
+        {
+          "path": "08_DEPLOYMENT/GENOS/stream_app.py",
+          "actual_sha256": "762c2ddf2b7ea1dc94595895fb3f94ed270969ebcfa8c91de4b892cce9a1b1a6",
+          "expected_sha256": "31a32d06cd04fe51bb5a0bd6dc2f976a7680ae9aa1234b09558665c4d0f12db8",
+          "allowed_sha256": [
+            "31a32d06cd04fe51bb5a0bd6dc2f976a7680ae9aa1234b09558665c4d0f12db8",
+            "6c38ca65b079f2a9f433cbbc55d559f67e5dd723335c9b43d63fca1755370ea8",
+            "7ea18ce5928757fe17aafdd0eaa78ad7cc46b88786784c4f72a33bdc39d899e8"
+          ]
+        },
+        {
+          "path": "service.py",
+          "actual_sha256": "6c3b1c6cca91488b3dfeb93ec6040f9b5b865288284b063cb704585106f0352d",
+          "expected_sha256": "93d5acb11d2d0a3efd55fc5d0bf1c616cad3cb2dd4abc3325b82d4d5bc8a6e6f",
+          "allowed_sha256": [
+            "051b508b38a829dbd637742309b5d646a916ef8788a29c3d8ddf294d33598aa6",
+            "89adf358fc975d27be9bdc4528ac24f209ffc047d02c0837b28f8ef0fa94b0b4",
+            "93d5acb11d2d0a3efd55fc5d0bf1c616cad3cb2dd4abc3325b82d4d5bc8a6e6f",
+            "c6a601da9d6cf037375ae548b5d6b38ee37ecd294c32fb7479879c68276ac3a7"
+          ]
+        }
+      ],
+      "existing_files_preserved": true
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollbacurrent/events.jsonl",
+      "at": "2026-10-06T23:46:17.616589+00:00",
+      "stage": "COMPLETE",
+      "mode": "check",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollbacurrent/events.jsonl",
+      "at": "2026-10-06T23:46:18.478389+00:00",
+      "stage": "COMPLETE",
+      "mode": "apply",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollbacurrent/events.jsonl",
+      "at": "2026-10-06T23:46:19.224791+00:00",
+      "stage": "COMPLETE",
+      "mode": "apply",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollbacurrent/events.jsonl",
+      "at": "2026-10-06T23:46:19.749240+00:00",
+      "stage": "COMPLETE",
+      "mode": "verify",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollbacurrent/events.jsonl",
+      "at": "2026-10-06T23:46:19.900246+00:00",
+      "stage": "COMPLETE",
+      "mode": "rollback",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba1/events.jsonl",
+      "at": "2026-10-06T23:46:13.755186+00:00",
+      "stage": "COMPLETE",
+      "mode": "check",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba1/events.jsonl",
+      "at": "2026-10-06T23:46:14.600848+00:00",
+      "stage": "COMPLETE",
+      "mode": "apply",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba1/events.jsonl",
+      "at": "2026-10-06T23:46:15.362524+00:00",
+      "stage": "COMPLETE",
+      "mode": "apply",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba1/events.jsonl",
+      "at": "2026-10-06T23:46:15.869342+00:00",
+      "stage": "COMPLETE",
+      "mode": "verify",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "log": "verification-logs/test_apply_rerun_verify_rollba1/events.jsonl",
+      "at": "2026-10-06T23:46:16.022911+00:00",
+      "stage": "COMPLETE",
+      "mode": "rollback",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    }
+  ],
+  "synthetic_fixture_file_bytes_removed": 96282867
+}

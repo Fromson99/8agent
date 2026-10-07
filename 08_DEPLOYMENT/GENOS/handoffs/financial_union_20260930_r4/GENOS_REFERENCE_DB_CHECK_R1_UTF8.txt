@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# Read-only live navigation DB inspection; no patch, restart, model call or activation.
+# Run in another terminal: bash TRANSFER/GENOS_REFERENCE_DB_CHECK_R1_UTF8.txt 6456
+# Supply the current baseline Python PID if it has changed.
+set -Eeuo pipefail
+reference_check_log=$(mktemp /tmp/genos-reference-db-check-XXXXXX.log)
+exec > >(tee -a "$reference_check_log") 2>&1
+trap 'reference_check_rc=$?; printf "FINISHED status=%s log=%s\n" "$reference_check_rc" "$reference_check_log"' EXIT
+printf 'READ ONLY: live reference DB inspection; log=%s\n' "$reference_check_log"
+python3 -u - "${1:-6456}" <<'GENOS_REFERENCE_CHECK_PY'
+import json
+import os
+import sqlite3
+import sys
+import time
+from contextlib import closing
+from pathlib import Path
+
+def locate(pid, proc_root=Path('/proc')):
+    process = proc_root / str(pid)
+    args = process.joinpath('cmdline').read_bytes().split(b'\0')
+    if b'baseline' not in args or b'--run-id' not in args:
+        raise ValueError('PID is not the expected baseline driver; check ps and supply its current PID')
+    paths = set()
+    for fd in process.joinpath('fd').iterdir():
+        try:
+            target = os.readlink(fd)
+            if target.endswith('/navigation/navigation.sqlite'):
+                paths.add(target)
+        except FileNotFoundError:
+            continue
+    if len(paths) != 1:
+        raise ValueError('Expected exactly one open navigation.sqlite; found: ' + str(sorted(paths)) +
+                         '; phase may have changed or process may have exited; no fallback DB selected')
+    return Path(paths.pop()).resolve(strict=True)
+
+def inspect_db(path):
+    print('DB=' + str(path), flush=True)
+    print('navigation_bytes=' + str(path.stat().st_size) + '; NOT a completion percentage', flush=True)
+    print('COMMITTED snapshot only: pending writes may be invisible; zero is NOT proof of failure', flush=True)
+    print('legacy candidate=0 may be expected before the later reference LLM stage', flush=True)
+    with closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=0.2)) as db:
+        db.execute('PRAGMA query_only=ON')
+        deadline = time.monotonic() + 5
+        db.set_progress_handler(lambda: int(time.monotonic() > deadline), 10000)
+        db.execute('BEGIN')
+        tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        for table in ('reference', 'reference_target', 'reference_candidate'):
+            count = db.execute('SELECT count(*) FROM ' + table).fetchone()[0] if table in tables else 'NOT CREATED'
+            print(table + '=' + str(count), flush=True)
+        if not {'reference', 'source'} <= tables:
+            print('Reference/source tables not yet committed; samples unavailable', flush=True)
+            return
+        rows = db.execute('''
+            SELECT r.id, json_extract(s.json,'$.document_name'),
+              coalesce(json_extract(r.json,'$.mention_text'),json_extract(r.json,'$.locator')),
+              coalesce(json_extract(r.json,'$.resolution_state'),json_extract(r.json,'$.resolution')),
+              json_extract(t.json,'$.document_name'),json_extract(t.json,'$.heading'),
+              json_extract(r.json,'$.reason')
+            FROM reference r LEFT JOIN source s ON s.id=json_extract(r.json,'$.source_id')
+            LEFT JOIN source t ON t.id=coalesce(json_extract(r.json,'$.targets[0].source_id'),
+                                               json_extract(r.json,'$.target_source_ids[0]'))
+            ORDER BY r.rowid DESC LIMIT 5
+        ''').fetchall()
+        print('REFERENCE SAMPLE (latest 5 visible rows; first target only):', flush=True)
+        for row in rows:
+            print(json.dumps(dict(zip(('ID','출발문서','인용','상태','대상문서','대상조문','미해결사유'), row)),
+                             ensure_ascii=False), flush=True)
+        if not rows:
+            print('No committed reference rows visible; unfinished transaction is possible', flush=True)
+        if 'reference_candidate' in tables:
+            candidates = db.execute('''
+                SELECT c.reference_id,c.candidate_id,json_extract(s.json,'$.document_name'),
+                       json_extract(s.json,'$.heading')
+                FROM reference_candidate c LEFT JOIN source s ON s.id=c.source_id
+                ORDER BY c.rowid DESC LIMIT 5
+            ''').fetchall()
+            print('CANDIDATE SAMPLE (latest 5 visible rows):', flush=True)
+            for row in candidates:
+                print(json.dumps(dict(zip(('참조ID','후보ID','대상문서','대상조문'), row)), ensure_ascii=False), flush=True)
+        print('This confirms stored rows only, NOT legal correctness, full progress or serving readiness', flush=True)
+
+def main():
+    if len(sys.argv) != 2 or not sys.argv[1].isdigit() or int(sys.argv[1]) <= 0:
+        raise ValueError('Supply one positive baseline Python PID')
+    print('PYTHON=' + sys.executable + ' version=' + sys.version.split()[0], flush=True)
+    inspect_db(locate(int(sys.argv[1])))
+
+if __name__ == '__main__':
+    main()
+GENOS_REFERENCE_CHECK_PY

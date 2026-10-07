@@ -1,0 +1,61 @@
+GENOS AD 자연어·멀티턴 해석 R1 (2026-10-06)
+
+이 메일/반입에서는 GENOS_AD_LANGUAGE_20261006_R1.zip과 GENOS_AD_LANGUAGE_20261006_R1_APPLY.txt를 사용합니다.
+기존 SQL AD와 compact reader·누적 수정은 보존합니다. 이번 코드서빙 기능의 후속 반입입니다.
+WORKFLOW 편집기에 이전에 붙여 넣은 AD 대응 PASTE_ALL.txt는 유지할 수 있습니다.
+ZIP의 workflow helper는 코드서빙 /chat에서 읽는 기존 작업 코드 복사본이며 이번 작업에서 수정하지 않았습니다. 편집기 재교체가 이 기능의 필수 조건은 아닙니다.
+기존 full_glossary.py 최신 유지 코드도 바이트 변경 없이 함께 보존합니다.
+
+구현
+AD 활성 상태의 숏컷보여줘, 1번 보여줘, 그 사건의 사실도, 확인 질문에 대한 답변 등 매 턴을 GENOS 내부 LLM으로 해석합니다.
+현재/최근 표·선택·이력은 SQL 맥락으로 전달합니다. 모호한 요청에는 확인 질문을 반환합니다.
+모델 계획을 스키마·대화/공간·행 번호·revision으로 검증한 뒤 기존 SQL 실행기에서 처리합니다.
+목록·상세·상태·변경 결과는 표로 출력합니다. 긴 본문은 계속, 목록은 다음으로 끝까지 조회합니다.
+정확한 시작/종료는 기존 경계를 유지합니다. 다른 provider/model이나 규칙 해석기로 자동 fallback하지 않습니다.
+
+현장 적용: 기존 ~/DEV
+진행 중인 AD 요청이 끝난 뒤 ZIP/TXT를 ~/DEV/TRANSFER에 업로드합니다.
+  bash TRANSFER/GENOS_AD_LANGUAGE_20261006_R1_APPLY.txt check
+  bash TRANSFER/GENOS_AD_LANGUAGE_20261006_R1_APPLY.txt apply
+첫 단계부터 전체 stdout/stderr, 종료 상태, python3 실제 경로/버전이 ad-language-r1-logs에 남습니다.
+기존 파일은 hash 대조 후 파일별 백업·적용합니다. 이미 적용됐다면 같은 바이트를 확인합니다.
+알 수 없는 파일 변경은 보존하고 중단합니다. 원문·DB·.env·.git·CURRENT는 덮어쓰지 않습니다.
+기존 누적 R2/R5 및 작업 기준의 정확한 선행 hash만 허용합니다. 이전 반입의 누락 의존성이 있으면 검사에서 그 파일을 표시합니다.
+
+설정
+코드서빙과 workflow의 TEAM_ID를 같은 실제 팀 값으로 유지합니다(금융팀이면 financial_team).
+기존 GENOS_LLM_* 내부 모델 설정과 GENOS_RAG_MAX_OUTPUT_TOKENS, 상태/로그 경로를 재사용합니다.
+새 라이브러리 설치는 없습니다. 서버가 모델 설정을 갖고 있어야 합니다.
+실행 셸의 GENOS_GENERATION은 실제 코드서빙이 선택할 기존 완료 generation의 절대경로로 사용자가 지정합니다.
+날짜나 디렉터리 이름으로 최신 세대를 자동 선택하지 않습니다.
+
+적용 후 같은 checkout에서 확인
+GENOS_GENERATION을 지정한 환경에서:
+  bash TRANSFER/GENOS_AD_LANGUAGE_20261006_R1_APPLY.txt verify
+변경 파일과 git diff --check를 검토해 commit한 뒤:
+  bash TRANSFER/GENOS_AD_LANGUAGE_20261006_R1_APPLY.txt gate
+gate는 ZIP·Git 추적 commit·선택 generation·assets를 대조합니다. 모델/상주 작업자는 호출하지 않습니다.
+PASS한 commit을 push하고 그 commit과 같은 generation으로 새 코드서빙 리비전을 배포·연결합니다.
+파일 적용, Git push, 코드서빙 배포, 실제 질문 성공은 별도 상태입니다.
+
+워크플로우 테스트 화면에서만 확인
+같은 대화 ID로 [AD모드 시작] → 숏컷보여줘 → 1번 보여줘 → 그 사건의 사실도 보여줘 → 계속/다음 → [AD모드 종료].
+확인 질문 예: 대상 선택 없이 그거 지워줘를 요청하면 번호를 묻고, 뒤의 1번이라는 답변에 원래 의도를 연결해야 합니다.
+삭제/승인 테스트는 실제 변경하려는 자료에서만 하세요. 기록 확인은 shortcut 목록 및 오류 목록을 이용합니다.
+응답의 language_revision=ad-language-v1-20261006-r1, model_receipt, language_action과 표 출력이 확인 지표입니다.
+로그의 ad.language.started/finished/failed, model_http.started/finished/failed가 해석 경로를 보여 줍니다.
+실제 내부 모델의 자연어 이해 품질은 현장 확인 대상이며 모의 검사만으로 성공을 인증하지 않습니다.
+
+복구
+출력된 정확한 BACKUP/RECOVERY 경로로:
+  bash TRANSFER/GENOS_AD_LANGUAGE_20261006_R1_APPLY.txt rollback /출력된/정확한/백업경로
+기존 코드·리비전·generation을 보존하세요. 코드 원복은 DB나 추가된 AD 감사 자료를 삭제하지 않습니다.
+진행 중 요청이 끝난 뒤 원복합니다. 적용이 완료된 원본 코드와 새로운 AD 기록을 구분해 보존합니다.
+
+검증 상태
+관련 모의 계약 52개와 기존 SQL AD 호환 35개 통과. 30개 엔진과 runtime 코드 205개의 hash 대조 일치.
+기존 workflow 회귀의 6개 실패는 이전에 보낸 변경 전 편집기 snapshot에서도 동일하게 재현됨. 이번 변경으로 해결하지 않았습니다.
+외부 모델 호출/GENOS 접근 0회. 실제 내부 모델·현장 배포·워크플로우 품질은 미확인입니다.
+ZIP SHA256: ab2e28bc93b66e735e63ddae8596e9b0be4d3ff495bc175993b945506553a62a
+검증 코드 루트: /home/jin/8-AGENT
+실제 push checkout/commit: 현장 기록 필요. generation 경로/hash, 코드서빙 리비전/hash: 현장 로그에서 확인 필요.

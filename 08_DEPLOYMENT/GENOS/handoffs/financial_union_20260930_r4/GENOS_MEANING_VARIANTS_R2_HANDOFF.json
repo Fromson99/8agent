@@ -1,0 +1,41 @@
+{
+  "schema_version": "genos-meaning-bulk-handoff-v2",
+  "files": {
+    "06_TOOLS/OFFLINE/genos_meaning_variants.py": "2c744af2d13236bb5c80b7cb0187c8b89917643a01c2a82b2373431d06e6996f",
+    "06_TOOLS/OFFLINE/genos_meaning_bulk_v2.py": "69401aa819fd8a9f6b143d11790878488d42919215498358c65b6bd63d303b44",
+    "08_DEPLOYMENT/GENOS/handoffs/financial_union_20260930_r4/GENOS_MEANING_VARIANTS_R2_BULK_UTF8.txt": "057acbd941fcfa5bc71cab03a45de369a04345b035b399de4beebfb16af829db",
+    "08_DEPLOYMENT/GENOS/handoffs/financial_union_20260930_r4/GENOS_MEANING_VARIANTS_R2_BULK_GUIDE_UTF8.txt": "9c62b557ecace57e89baae60c45592e5a83232f269477781c26342f58b60ad16"
+  },
+  "local_checkout": "/home/jin/8-AGENT",
+  "local_checkout_head": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "dirty_worktree": true,
+  "verification": "62 scripted contract/regression tests; Bash and embedded Python compile; no live model calls",
+  "settings": {
+    "meaning_pairs_per_request": 32,
+    "max_concurrent_meaning_requests": 4,
+    "max_tokens": 8192,
+    "read_timeout_seconds": 120,
+    "max_request_chars": 105000,
+    "parse_split_depth": 2,
+    "reference_batch_size": 8,
+    "review_target_hours": 36,
+    "index_reserve_hours": 12
+  },
+  "email": {
+    "to": "hyungjininfocz.son@partner.samsung.com",
+    "id": "1a0f67c6119ad111",
+    "status": "SENT"
+  },
+  "field_status": {
+    "code_root": "/home/genos/DEV",
+    "code_revision": "unverified",
+    "python": "python3; actual executable/version logged at field startup",
+    "generation": "unbuilt; requires field execution",
+    "serving_revision": "unverified and unchanged",
+    "CURRENT_changed": false,
+    "workflow_changed": false,
+    "field_capacity_measured": false,
+    "completion_48h_guaranteed": false
+  },
+  "activation": false
+}

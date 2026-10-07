@@ -1,0 +1,113 @@
+GENOS 용어집 코드·캐시 결속 복구 R1 · 2026-10-06
+
+1. 사진으로 확인한 상태
+
+읽기 전용 검사기의 현장 출력:
+- 선택 generation: financial-risk-success-20261005-schema-r2/generation
+- CODE_ROOT: /workspace (~/DEV의 실제 경로)
+- Python 3.11.15
+- cache expected compiler: e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406
+- checkout compiler: ba2c6ced8da72307934e627a7a7508fb29da45e35d09fc3e0a116884a0a5d058
+- 용어집 schema: glossary-serving-v2
+- receipt / bundle binding / dictionary metadata: PASS
+- compact reader / compiler: FAIL, READONLY_GLOSSARY_EXIT=1
+
+현장 checkout의 compact -> legacy 코드 회귀가 확인됐다.
+SQLite 전체 데이터와 실제 배포 리비전은 사진 검사 범위 밖이다.
+구형 reader를 보낸 AD 언어 R1/R2와 이를 유지한 연결 읽기 R2는 이 compact
+generation에 맞는 최종 코드가 아니다. 이 복구본 R1을 후속으로 사용한다.
+이전 파일/자료는 이력과 원복을 위해 보존한다.
+
+2. 복구 범위와 보존
+
+검증한 reference build R1의 full_glossary.py를 정확한 바이트로 복구한다.
+관련 30개 engine manifest의 compiler pin과 PIPELINE의 해당 manifest hash만 갱신한다.
+연결 읽기 R2 대비 다른 실행 코드 바이트는 동일하다. AD 언어/표/모델/저장소,
+방향별 연결 읽기, NFS SQLite, 요청 입력, workflow 표시 요약을 유지하는 누적본이다.
+기존 관련 반입 순서와 현재 연결 읽기 R2에서 적용할 수 있으며 알 수 없는 변경은 거부한다.
+NFS generation / manifest / cache receipt / CURRENT / 환경변수 / Git history를 변경하지 않는다.
+이번 일치한 캐시에 대한 복구는 데이터 재구축이 필요 없다. 실제 전체 gate는 현장에서 확인한다.
+
+3. 반입과 적용
+
+ZIP과 APPLY.txt를 같은 ~/DEV/TRANSFER에 올린다:
+GENOS_GLOSSARY_BINDING_REPAIR_20261006_R1.zip
+GENOS_GLOSSARY_BINDING_REPAIR_20261006_R1_APPLY.txt
+
+GENOS 현장 명령은 python3이며 적용 로그에 실제 실행 경로/버전을 남긴다.
+기본 기존 checkout은 ~/DEV다. /workspace로 해석돼도 기존 checkout이 맞으면 정상이다.
+다른 checkout이면 GENOS_DEV에 실제 경로를 명시한다.
+아래는 사용자 검사 사진에서 명시 선택한 정확한 generation 경로다.
+현재 코드서빙 GENOS_GENERATION도 이 경로인지 먼저 대조한다.
+
+cd -P ~/DEV/TRANSFER
+GENOS_REPAIR_GENERATION=/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+bash GENOS_GLOSSARY_BINDING_REPAIR_20261006_R1_APPLY.txt check "$GENOS_REPAIR_GENERATION"
+bash GENOS_GLOSSARY_BINDING_REPAIR_20261006_R1_APPLY.txt apply "$GENOS_REPAIR_GENERATION"
+bash GENOS_GLOSSARY_BINDING_REPAIR_20261006_R1_APPLY.txt verify "$GENOS_REPAIR_GENERATION"
+
+각 단계의 GLOSSARY_BINDING_REPAIR_EXIT=0을 확인하고 다음 단계로 진행한다.
+로그는 TRANSFER/glossary-binding-repair-r1-logs에 처음부터 저장한다.
+check/apply 전에 선택 캐시의 receipt hash와 요구 compiler hash를 대조한다.
+다른 코드가 필요한 캐시/변조된 receipt/알 수 없는 파일이면 적용을 중단한다.
+apply는 기존 파일을 백업 후 적용하며 동일 바이트 재실행은 이미 적용된 상태를 확인한다.
+BACKUP/RECOVERY 절대경로를 기록한다. 대용량 데이터 hash 검증은 verify/gate에서 시간이 걸릴 수 있다.
+
+verify는 플랫폼 service/service.py의 실제 root service 경로를 확인하고,
+genos_generation_e2e.py와 verify_assets를 같은 checkout의 Python/02_BACKEND로 실행한다.
+COMPACT_COMPILER_RESTORED e03dab54..., SERVICE_LOADER_CONTRACT PASS,
+GENERATION_E2E PASS, VERIFY_ASSETS PASS와 종료 코드 0을 확인한다.
+코드 적용 자체는 Git push, 코드서빙 리비전 배포, 데이터 활성화를 수행하지 않는다.
+
+4. Git commit과 배포 gate
+
+기존 작업과 이번 변경을 검토하고 git diff --check를 통과시킨다.
+패키지 파일만 staging할 때:
+
+cd -P ~/DEV
+python3 - "$HOME/DEV/TRANSFER/GENOS_GLOSSARY_BINDING_REPAIR_20261006_R1.zip" <<'PY'
+import json, subprocess, sys, zipfile
+with zipfile.ZipFile(sys.argv[1]) as z:
+    paths=[row['path'] for row in json.loads(z.read('CODE_MANIFEST.json'))['files']]
+subprocess.run(['git','add','-f','--',*paths],check=True)
+PY
+
+git diff --cached를 검토하고 이번 복구 변경을 commit한다. 완료 후:
+
+cd -P ~/DEV/TRANSFER
+bash GENOS_GLOSSARY_BINDING_REPAIR_20261006_R1_APPLY.txt gate "$GENOS_REPAIR_GENERATION"
+
+CODE_CHECK PASS, GENERATION_CHECK PASS, GENOS_RELEASE_GATE PASS와
+GLOSSARY_BINDING_REPAIR_EXIT=0인 commit을 실제 사용하는 Git remote에 push한다.
+이후 그 commit으로 새 코드서빙 리비전을 배포하고 같은 GENOS_GENERATION을 설정한다.
+앞서 구형 코드 commit을 push한 상태만으로 복구 완료가 아니다.
+gate 후 파일/pin이 바뀌면 새 commit으로 다시 gate를 실행한다.
+
+workflow Python은 현재 연결 읽기 R2 / AD R2의 것이면 이번 복구로 바꿀 필요가 없다.
+다른 버전이면 기존 workflow 인계 기록에 따라 별도로 확인한다.
+warmup과 실제 질의는 워크플로우 테스트 화면에서만 실행한다.
+WARMUP / WARMUP_STATUS 완료와 원문 근거 질문의 성공을 확인하고 요청 ID·리비전을 기록한다.
+캐시 hash 수동 변경, NFS 재구축, 내부 모델 변경은 이 복구 절차에 포함하지 않는다.
+
+5. 원복
+
+apply 출력의 정확한 BACKUP/RECOVERY 경로를 사용한다:
+
+bash GENOS_GLOSSARY_BINDING_REPAIR_20261006_R1_APPLY.txt rollback /정확한/백업/절대경로
+
+백업 또는 적용 뒤 코드가 변조됐으면 덮어쓰지 않고 거부한다.
+이미 배포했다면 이전 검증된 코드서빙 리비전과 해당 generation 쌍으로 복귀한다.
+사진의 구형 코드 + compact generation 조합은 정상 원복 대상으로 인증된 상태가 아니다.
+NFS 데이터와 로그/이전 반입본은 보존한다.
+
+6. 확인 범위
+
+모의 source/glossary와 scripted model로 필요한 계약 84개를 통과했다.
+9개 알려진 반입 상태의 적용·재실행·정확한 원복·캐시/운영 자료 보존을 확인했다.
+이전 코드의 실제 캐시 오류 재현 후 모의 generation의 verify/E2E/전체 release gate가 PASS다.
+전체 gate 로그는 LOCAL_SYNTHETIC_GATE.log, 검증 기록은 VALIDATION.json에 둔다.
+과거 research 산출물이 필요한 3개 검사는 범위에서 제외했다. 이전 넓은 실행에서 확인한
+구 응답/권한 계약 기대값 두 검사의 불일치는 VALIDATION.json에 남겼고 해당 코드를 변경하지 않았다.
+동일 캐시를 사용해 이전 코드 오류를 재현하고 복구 뒤 전체 local gate를 확인한다.
+현장 실제 generation의 전체 gate, 배포 commit/리비전 및 내부 모델 답변은 별도다.
+로컬 작업 저장소의 활성 frozen MAIN과 GENOS 배포를 변경하지 않았다.

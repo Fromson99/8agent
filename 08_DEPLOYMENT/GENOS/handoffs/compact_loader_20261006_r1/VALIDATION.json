@@ -1,0 +1,43 @@
+{
+  "schema_version": "genos-compact-loader-validation-v1",
+  "field_replica_root": "/tmp/genos-compact-loader-iibr_0kn",
+  "field_replica_baseline": "cumulative-v6-R4 + reference-build-R1",
+  "generation": "/tmp/genos-compact-loader-iibr_0kn/01_DATA/SYNTHETIC_LOADER_TEST/built/generation",
+  "data_kind": "SYNTHETIC",
+  "pytest_passed": 38,
+  "checks": [
+    {
+      "mode": "verify",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "mode": "gate",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "mode": "apply",
+      "passed": true,
+      "returncode": 1
+    },
+    {
+      "mode": "rollback",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "mode": "apply",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "mode": "verify",
+      "passed": true,
+      "returncode": 0
+    }
+  ],
+  "data_environment_preserved": true,
+  "genos_accessed": false,
+  "live_workflow_e2e": "NOT_RUN"
+}

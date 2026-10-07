@@ -1,0 +1,30 @@
+{
+  "patch": "team-request-logs-20260928-r3",
+  "files": {
+    "02_BACKEND/semantic_runtime/request_report.py": {
+      "strategy": "structural-report",
+      "allow_new": false,
+      "assets": {
+        "structural_report.py": "4a06c4720c0e4feff2e6f2a423dbb0aa9dceee7d3c1d8a9e00ddd6abf96e7198",
+        "REPORT_TEMPLATES.json": "b1da75e84fbc1363def4281402509d648dd21cdab16a914615d9db239729bae2"
+      }
+    },
+    "02_BACKEND/semantic_runtime/request_summary.py": {
+      "new_sha256": "8851df80264431a79685cf499ba56fb16bb7293ef8003527bfc8433ed2956c8a",
+      "supported_base_sha256": [
+        null
+      ],
+      "allow_new": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/readable_log.py": {
+      "new_sha256": "ffcde2abc1dbdf760edc38ba5fbe44f663c4682a3dd280124c4e47ddd0eae7d1",
+      "supported_base_sha256": [
+        null
+      ],
+      "allow_new": true
+    }
+  },
+  "generation_change": false,
+  "code_serving_revision": null,
+  "onsite_verified": false
+}

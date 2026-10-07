@@ -1,0 +1,94 @@
+GENOS 조사 제어 통합 R3 — 사진의 CHECKOUT_DRIFT 수정본
+
+조사 제어 반입에는 이전 GENOS_INVESTIGATION_CONTROL_20261007_R2.zip / APPLY.txt
+대신 이번 R3 ZIP과 R3 APPLY.txt를 같은 폴더에 저장하여 사용합니다.
+NFS_READ_R7 데이터 이관 도구와는 별도 목적입니다.
+
+사진에서 확인한 상태
+- 기존 NFS 진단 설치는 service.py와 stream_app.py에 작은 진단 분기를 추가했습니다.
+- 조사 제어 R2 ZIP 검증과 선택 generation의 cache 사전 검사는 통과했습니다.
+- stream_app.py의 알려진 NFS 진단 수정 해시가 허용 목록에서 빠져 적용 전에 중단됐습니다.
+- service.py의 같은 누락도 함께 수정했습니다. 사진의 코드 바이트를 과거 ZIP과
+  과거 설치기로 재현하여 일치한 두 해시만 추가했습니다.
+- 사진 위쪽의 과거 NFS prepare 실패와 아래 조사 제어 R2 실패는 별도 실행입니다.
+
+R3의 변경 범위
+282개 배포 코드와 워크플로우 코드는 R2와 바이트가 같습니다. 로컬 MAIN generation 43의
+서빙 265개 파일도 동일합니다. CODE_MANIFEST.json의 두 선행 코드 해시 및 재현 근거와
+별도 실행 TXT의 진단 로그만 보완했습니다. 알 수 없는 현장 수정은 계속 적용 전에 거절합니다.
+충돌하면 모든 충돌 파일의 실제 SHA-256과 허용 SHA-256을 events.jsonl에 기록합니다.
+원문 데이터, CURRENT, generation, runtime DB, 환경 키를 변경하거나 복사하지 않습니다.
+이전에 발송한 40문항 결과·처리시간 보고서는 그대로 유효합니다.
+
+첨부
+1. GENOS_INVESTIGATION_CONTROL_20261007_R3.zip — 코드 약 1.36MB
+2. GENOS_INVESTIGATION_CONTROL_20261007_R3_APPLY.txt — bash 실행용 전체 TXT
+3. GENOS_INVESTIGATION_CONTROL_20261007_R3_WORKFLOW_PASTE_ALL.txt — 워크플로우 전체 코드
+4. GUIDE_UTF8.txt — 이 안내
+5. COMPATIBILITY_REPORT_UTF8.txt — 원인, 두 해시의 재현 근거, 로컬 검증 결과
+JavaScript, 원문 DB, 인증키는 포함하지 않습니다.
+
+실행 — 사진과 같은 기존 ~/DEV 및 generation 사용
+R3 ZIP/APPLY TXT를 ~/DEV/TRANSFER에 저장합니다. R2 파일을 삭제하거나 원복할 필요는 없습니다.
+
+cd "$HOME/DEV/TRANSFER"
+export GENOS_DEV="$HOME/DEV"
+export GENOS_GENERATION="/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation"
+bash GENOS_INVESTIGATION_CONTROL_20261007_R3_APPLY.txt all "$GENOS_GENERATION"
+
+현장 Python 명령은 python3입니다. 실제 sys.executable과 Python 버전을 처음에 기록합니다.
+~/DEV 별칭을 실제 Git checkout으로 확인하며 기본 로그는 investigation-control-r3-logs입니다.
+GENOS_HANDOFF_LOG_DIR로 로그 경로를 지정할 수 있습니다.
+긴 검사는 20초마다 RUNNING 표시를 남기며 종료 마커와 로그 경로를 보존합니다.
+
+all 순서
+ZIP 검증 → 기존 cache 및 알려진 코드 대조 → 파일별 백업/적용 → 실제 ~/DEV loader와
+generation E2E, verify_assets → 해당 파일만 commit → 같은 checkout의 release gate → push.
+같은 R3로 재실행하면 설치 바이트를 확인하고 같은 백업을 재사용합니다.
+기존 remote/branch를 사용하며 GENOS_PUSH_REMOTE, GENOS_PUSH_BRANCH로 지정할 수 있습니다.
+다른 추적/스테이징 변경은 보존하고 commit 전에 중단합니다.
+
+선택적 단계 실행
+bash GENOS_INVESTIGATION_CONTROL_20261007_R3_APPLY.txt check "$GENOS_GENERATION"
+bash GENOS_INVESTIGATION_CONTROL_20261007_R3_APPLY.txt apply "$GENOS_GENERATION"
+bash GENOS_INVESTIGATION_CONTROL_20261007_R3_APPLY.txt verify "$GENOS_GENERATION"
+bash GENOS_INVESTIGATION_CONTROL_20261007_R3_APPLY.txt push "$GENOS_GENERATION"
+
+성공 종료 마커 INVESTIGATION_CONTROL_EXIT=0과 CODE_APPLIED의 backup,
+GIT_PUSHED의 commit·generation·manifest 해시를 보관합니다.
+CODE_APPLIED만 나온 경우 push 및 코드서빙 리비전 배포 완료가 아닙니다.
+
+코드서빙 리비전 — 플랫폼에서 별도로 반영
+GIT_PUSHED와 RELEASE_GATE_PASS가 기록한 정확한 commit으로 새 리비전을 배포합니다.
+새 리비전의 GENOS_GENERATION은 위에서 검증한 실제 절대경로와 같아야 합니다.
+SEMANTIC_LLM_BACKEND=genos
+GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6
+GENOS_RUNTIME_DIR=/nfs-root/diamo/8-agent/runtime
+기존 내부 모델·임베딩, GENOS_BASE_URL/GENOS_LLM_SERVING_ID/GENOS_LLM_KEY 또는
+GENOS_LLM_URL, API 및 AD/기억 인증 설정은 유지합니다. 실제 키를 메일이나 로그에 적지 않습니다.
+
+워크플로우 편집기 — Git push와 별도로 반영
+Python 단계 전체를 R3 WORKFLOW_PASTE_ALL.txt로 교체하고 기존 URL/인증 연결을 유지합니다.
+내용은 R2 워크플로우 TXT와 같은 바이트입니다. R2 내용을 이미 편집기에 반영했다면
+이 버전만을 이유로 다시 교체할 필요는 없습니다.
+실제 warmup·질의는 워크플로우 테스트 화면에서 확인합니다.
+질문 예: 상법상 대표이사는 누가 선정하고 정관으로 달리 정할 수 있나요?
+요청 ID·내부 모델·총시간·코드 리비전·실제 선택 generation과 답변/근거를 기록합니다.
+로컬 검사 통과나 Git push만으로 GENOS 서빙 성공을 판단하지 않습니다.
+
+원복
+CODE_APPLIED에 나온 정확한 backup 절대경로를 사용합니다.
+bash GENOS_INVESTIGATION_CONTROL_20261007_R3_APPLY.txt rollback "/실제_backup_절대경로"
+후속 현장 수정이 있으면 원복을 거절하여 변경을 보존합니다.
+이미 push했다면 복구 commit을 검토하고 배포 리비전과 워크플로우도 이전 버전으로 복귀합니다.
+기존 데이터·CURRENT·runtime DB는 원복 중에도 보존합니다.
+
+ZIP SHA-256
+76470e056a28596dd45b3ab35abb2c06e9aa3106959c82064b05f2c3ea4ccd31
+
+MAIN release manifest SHA-256
+8cd47ee0524677ae3a7ff1b101b8635102d2139747038695a3d510eaaa968b80
+
+현장 상태
+사진으로 확인한 것은 R2의 사전 검사 통과와 적용 전 중단입니다.
+R3 실제 적용·현장 generation 전체 검사·Git push·리비전 배포·워크플로우 질의는 아직 미확인입니다.

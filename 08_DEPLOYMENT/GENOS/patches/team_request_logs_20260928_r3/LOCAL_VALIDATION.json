@@ -1,0 +1,24 @@
+{
+  "patch": "team-request-logs-20260928-r3",
+  "environment": "local WSL; synthetic requests only; no GENOS access or model calls",
+  "related_tests_passed": 74,
+  "related_tests_output": "/tmp/genos-team-r3-validation.txt",
+  "local_python": "3.14.4",
+  "target_runtime_tested": "Python 3.11.15",
+  "r2_field_error_reproduced": true,
+  "field_constructor_legacy_ast_sha256": "ebec1d1454229f6c8d6d9fbef0b684c6dc61fa6f46d663f172efee0d2898ac54",
+  "signature_format": "canonical-ast-fields-v1",
+  "cross_runtime_signatures_and_transformed_bytes_identical": true,
+  "python_311_check_apply_rerun_commit_gate_rollback_plain_log_and_xlsx_csv": "PASS for LF and CRLF through DEV symlink",
+  "installed_pin_validation_preserved": true,
+  "report_transform_scope": "9 reporting functions + required import; unrelated code bytes preserved",
+  "push_checkout": null,
+  "deployment_commit": null,
+  "generation_path": null,
+  "generation_manifest_sha256": null,
+  "code_serving_revisions": {
+    "risk_team": null,
+    "financial_team": null
+  },
+  "onsite_verified": false
+}

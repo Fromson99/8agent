@@ -1,0 +1,60 @@
+GENOS FULLTEXT DIAGNOSTICS 20260928 R1
+
+사진 분석과 병목 계측 코드 전달본입니다. 검색 품질이나 속도 개선 효과를 주장하는 릴리스가 아닙니다.
+이번 전달본의 적용에는 아래 R1 실행 TXT를 사용하세요. 이전 패치 실행 TXT를 섞어 실행하지 마세요.
+
+첨부
+1. GENOS_FULLTEXT_DIAGNOSTICS_20260928_R1.zip: 설치기, 검증기, 진단 코드, 분석, 해시 목록.
+2. GENOS_FULLTEXT_DIAGNOSTICS_20260928_R1_APPLY.txt: ZIP 전체를 포함한 독립 실행 스크립트.
+3. GENOS_FULLTEXT_DIAGNOSTICS_20260928_R1_ANALYSIS.txt: 사진 분석, 측정값 해석, 후속 최적화 후보.
+4. GENOS_FULLTEXT_DIAGNOSTICS_20260928_R1_PATCH_NOTES.txt: 이 안내.
+5. GENOS_FULLTEXT_DIAGNOSTICS_20260928_R1_SHA256SUMS.txt: 첨부 파일 SHA-256.
+모든 ZIP에서 .js/.jsx/.mjs/.cjs 파일을 제외했습니다.
+
+기존 GENOS Git checkout에 적용
+기본 대상은 ~/DEV입니다. 코드스페이스 터미널에서 첨부 실행 TXT가 있는 위치로 이동한 뒤 실행합니다.
+    bash GENOS_FULLTEXT_DIAGNOSTICS_20260928_R1_APPLY.txt
+기존 checkout이 다른 위치라면 DEPLOY_ROOT에 그 실제 위치를 지정합니다. 새 checkout은 만들지 않습니다.
+    DEPLOY_ROOT=/actual/existing/checkout bash GENOS_FULLTEXT_DIAGNOSTICS_20260928_R1_APPLY.txt
+실행 첫 단계부터 /tmp/genos-fulltext-diagnostics-r1-*.log에 지속 로그와 최종 종료 상태를 남깁니다.
+ZIP을 별도로 해제하지 않아도 됩니다. 기존 Python을 사용하고 패키지를 설치하지 않습니다.
+적용 전 검사만 실행하려면 다음 명령을 사용합니다.
+    MODE=check bash GENOS_FULLTEXT_DIAGNOSTICS_20260928_R1_APPLY.txt
+
+request_report.py 해시 처리
+현장의 request_report.py를 통째로 덮어쓰지 않고 로그 출력 필터에 진단 필드를 추가합니다.
+기존 thinking, 모델 응답, 팀별 요청 로그 등 나머지 구현은 보존합니다.
+이미 전달한 보고서 코드 바이트 또는 동일한 AST의 코드로 확인되는 버전 불일치만 자동 복구합니다.
+해당 파일을 사용하는 모든 선택 엔진의 코드 pin과 PIPELINE의 manifest pin을 함께 갱신합니다.
+KNOWN_REPORT_PIN_REPAIR 로그에 기존 기대/실제/새 해시를 남깁니다.
+임의 수정 코드, 다른 파일의 불일치, 손상된 manifest나 스키마를 무조건 재해시하지 않습니다.
+지원되지 않는 버전이면 대상 코드 변경 전에 중단하고 실제 해시를 출력합니다.
+사용자가 겪은 오류 원문은 아직 확인하지 못했으므로 모든 request_report 오류 해결을 보장하지는 않습니다.
+
+적용 후
+APPLIED 또는 ALREADY_APPLIED를 확인합니다. BACKUP_READY 경로와 changed_files 목록을 보존합니다.
+진단 코드 3개, request_report, 관련 엔진 manifest와 PIPELINE 변경을 검토하고 해당 파일만 Git commit합니다.
+현재 generation의 전체 파일/코드 결속 검사:
+    MODE=verify bash GENOS_FULLTEXT_DIAGNOSTICS_20260928_R1_APPLY.txt
+기존 GENOS 환경 설정/.env/CURRENT/receipt로 선택되는 generation을 사용합니다.
+코드 결속만 검사할 때:
+    MODE=code-only bash GENOS_FULLTEXT_DIAGNOSTICS_20260928_R1_APPLY.txt
+code-only는 generation 검증을 대신하지 않습니다. 검증 성공 후 동일한 checkout commit을 push하고
+각 팀의 코드서빙 리비전을 배포합니다. 코드 적용, generation 검사, Git push, 리비전 배포는 별도입니다.
+새 generation 생성, 재색인, 워크플로우 Python 교체를 요구하는 변경은 없습니다.
+최종 확인은 기존 워크플로우 테스트 화면에서 질문해 수행합니다.
+공유 요청 로그에 fulltext.connection.facts / fulltext.sql.timings / fulltext.location.timings가 보여야 합니다.
+동시 검색 수는 같은 프로세스 범위입니다. 이것만으로 전체 현장 동시성이나 NFS 병목을 확정하지 마세요.
+
+롤백
+BACKUP_READY에 실제 출력된 경로를 ROLLBACK_FROM에 지정합니다.
+    MODE=rollback ROLLBACK_FROM=/actual/BACKUP_READY/path bash GENOS_FULLTEXT_DIAGNOSTICS_20260928_R1_APPLY.txt
+백업 전후 해시를 확인하며 이후 현장 수정이 있으면 덮어쓰지 않고 중단합니다.
+이미 push/배포한 경우 롤백된 코드도 검토/commit/검증/push 후 리비전에 반영해야 합니다.
+
+검증 범위
+WSL의 모의 계약·회귀 테스트 144개가 통과했습니다(42.13초).
+기존 FTS 순위/범위/정확 total/페이지/deadline, 새 계측, 실시간/최종 TXT, 기존 thinking 기록을 확인했습니다.
+독립 실행 TXT의 적용/재실행/모든 소비 엔진 해시 복구/변조 거부/commit 이후 코드 gate/롤백도 확인했습니다.
+Python 3.11 문법, Bash 문법, 선택 엔진 26개/코드 152개/스키마 pin, ZIP 목록·SHA-256을 검사했습니다.
+실제 GENOS의 반입/배포/워크플로우 실행은 미확인입니다.

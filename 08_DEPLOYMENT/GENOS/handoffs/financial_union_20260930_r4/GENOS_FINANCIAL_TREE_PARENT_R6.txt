@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# Read-only structural coordinates for the two failed public PDFs.
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-financial-tree-parent-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+DEPLOY_ROOT="${DEPLOY_ROOT:-/home/genos/DEV}"
+GENOS_DATA_ROOT="${GENOS_DATA_ROOT:-$DEPLOY_ROOT/01_DATA}"
+PYTHON_BIN="${PYTHON_BIN:-$DEPLOY_ROOT/.venv/bin/python}"
+if [[ ! -x "$PYTHON_BIN" ]]; then PYTHON_BIN="$(command -v python3)"; fi
+[[ -x "$PYTHON_BIN" ]] || { echo 'Python 3 required'; exit 2; }
+"$PYTHON_BIN" - "$GENOS_DATA_ROOT" <<'PY'
+import json
+from pathlib import Path
+import re
+import sys
+
+data = Path(sys.argv[1])
+scope = json.loads((data / 'CATALOG/SCOPES/photo-required-80-hwpx-20260917.json').read_text(encoding='utf-8'))['documents'][:61]
+targets = {f['sha256'][:16]: d['name'] for d in scope[32:34]
+           for f in d['files'] if f['role'] == 'body'}
+
+def journal_path(error):
+    match = re.search(r'([^\s;]+/events\.jsonl)', error)
+    if not match:
+        return None
+    path = Path(match.group(1))
+    if path.is_file():
+        return path.parent
+    parts = path.parts
+    if 'STRUCTURE' in parts:
+        return data / Path(*parts[parts.index('STRUCTURE'):]).parent
+    return None
+
+def issues(tree):
+    bad = []
+    def walk(nodes, parent=None):
+        for node in nodes:
+            span = node.get('span', [])
+            if (parent is not None and len(span) == 2 and len(parent.get('span', [])) == 2
+                    and not (parent['span'][0] <= span[0] < span[1] <= parent['span'][1]
+                             and node.get('level', 0) > parent.get('level', 0))):
+                bad.append({
+                    'parent': {k: parent.get(k) for k in ('family', 'level', 'block', 'page', 'span')},
+                    'child': {k: node.get(k) for k in ('family', 'level', 'block', 'page', 'span')},
+                })
+            walk(node.get('children', []), node)
+    walk(tree.get('tree', []))
+    return bad
+
+seen = set()
+for result_path in sorted((data / 'LOGS').glob('*/result-*.json')):
+    try:
+        result = json.loads(result_path.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        continue
+    for did, name in targets.items():
+        row = result.get('documents', {}).get(did) or {}
+        error = str(row.get('error', ''))
+        if 'invalid_tree_parent' not in error:
+            continue
+        folder = journal_path(error)
+        if folder is None or (did, str(folder)) in seen:
+            continue
+        seen.add((did, str(folder)))
+        tree_paths = sorted(folder.glob('window-tree-*.json'),
+                            key=lambda p: int(re.search(r'window-tree-(\d+)\.json', p.name).group(1)))
+        tree_paths += [p for p in [folder / 'final-restructured-tree.json'] if p.is_file()]
+        print('FAILED_PDF ' + json.dumps({
+            'name': name, 'run': result_path.parent.name, 'document_id': did,
+            'journal': str(folder), 'tree_files': len(tree_paths),
+            'result': str(result_path)}, ensure_ascii=False), flush=True)
+        for tree_path in tree_paths[-3:]:
+            try:
+                bad = issues(json.loads(tree_path.read_text(encoding='utf-8')))
+                print('TREE_PARENT ' + json.dumps({
+                    'name': name, 'tree': tree_path.name, 'issue_count': len(bad),
+                    'first8': bad[:8]}, ensure_ascii=False), flush=True)
+            except (OSError, ValueError) as exc:
+                print('TREE_READ_ERROR ' + str(tree_path) + ' ' + str(exc)[:160], flush=True)
+print('READ_ONLY_COMPLETE', flush=True)
+PY

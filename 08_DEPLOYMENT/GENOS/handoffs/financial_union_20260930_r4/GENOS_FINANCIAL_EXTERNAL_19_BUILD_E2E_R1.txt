@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+
+# Uses the existing GENOS pipeline with python3. Processes both teams once,
+# reuses completed structure caches, retries the prior PDF/DOC failures, then
+# builds a new DRAFT generation and runs corrected photo61 and exact-code E2E gates.
+# Does not publish or activate a serving generation.
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-financial-external-build-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+DEPLOY_ROOT="${DEPLOY_ROOT:-$HOME/DEV}"
+cd -P "$DEPLOY_ROOT"
+DEPLOY_ROOT="$(pwd -P)"
+export GENOS_DATA_ROOT="$(realpath "${GENOS_DATA_ROOT:-$DEPLOY_ROOT/01_DATA}")"
+RUN_ID="${GENOS_RUN_ID:-financial-external-19-retry-20260930-r1}"
+BASE="${GENOS_BASE_GENERATION:-${GENOS_GENERATION:-}}"
+command -v python3 >/dev/null || { echo 'python3 not found'; exit 2; }
+[[ -n "$BASE" && -f "$BASE/manifest.json" ]] || {
+  echo 'Set GENOS_BASE_GENERATION to the exact existing generation directory (manifest.json required).'; exit 2;
+}
+BASE="$(realpath "$BASE")"
+for path in \
+  06_TOOLS/COMMANDS/genos_data_stages.py \
+  06_TOOLS/pipeline.py \
+  06_TOOLS/COMMANDS/genos_generation_e2e.py; do
+  [[ -f "$path" ]] || { echo "Required checkout code missing: $path"; exit 2; }
+done
+RECEIPT="$GENOS_DATA_ROOT/CATALOG/TEAM_LAYOUT_HISTORY/financial-external-19-correction-r3/receipt.json"
+[[ -f "$RECEIPT" ]] || { echo 'Corrected external RAW receipt missing; run INSTALL_R3 MODE=apply first.'; exit 2; }
+python3 - "$GENOS_DATA_ROOT" "$RECEIPT" <<'PY'
+import hashlib, json, sys
+from pathlib import Path
+data, receipt = map(Path, sys.argv[1:3])
+r = json.loads(receipt.read_text())
+for rel, key in [('CATALOG/TEAM_LAYOUT.json', 'layout_after_sha256'),
+                 ('RAW/union_file/manifest.json', 'union_after_sha256')]:
+    got = hashlib.sha256((data / rel).read_bytes()).hexdigest()
+    if got != r[key]: raise SystemExit('Corrected data changed: ' + rel)
+if (r.get('status') != 'EXTERNAL_REGISTERED' or r.get('shared_pairs', 0) < 9
+    or r.get('financial_only_form_files') != 11 or len(r.get('shared_document_names', [])) != 9):
+    raise SystemExit('Corrected RAW receipt differs')
+print('CORRECTED_RAW_VERIFIED external_files=' + str(r['financial_external_files'])
+      + ' union_pairs=' + str(r['shared_pairs']), flush=True)
+PY
+
+[[ -n "${GENOS_PDF_CONVERTER_ID:-${GENOS_PDF_CONVERTER_URL:-}}" ]] || {
+  echo 'Set GENOS_PDF_CONVERTER_ID (photo setting: 187) or GENOS_PDF_CONVERTER_URL.'; exit 2;
+}
+[[ -d "${GENOS_PDF_CONVERTER_SHARED_ROOT:-/nonexistent}" ]] || {
+  echo 'Set GENOS_PDF_CONVERTER_SHARED_ROOT to the existing shared PDF output directory.'; exit 2;
+}
+[[ -n "${GENOS_PREPROCESSOR_ID:-${GENOS_PREPROCESSOR_URL:-}}" ]] || {
+  echo 'Set GENOS_PREPROCESSOR_ID or GENOS_PREPROCESSOR_URL for PDF parsing.'; exit 2;
+}
+[[ -d "${GENOS_PREPROCESSOR_SHARED_ROOT:-/nonexistent}" ]] || {
+  echo 'Set GENOS_PREPROCESSOR_SHARED_ROOT to the existing shared parser directory.'; exit 2;
+}
+
+printf 'START run=%s checkout=%s data=%s base=%s python=%s\n' \
+  "$RUN_ID" "$DEPLOY_ROOT" "$GENOS_DATA_ROOT" "$BASE" "$(command -v python3)"
+python3 -B 06_TOOLS/COMMANDS/genos_data_stages.py \
+  --run-id "$RUN_ID" --team risk_team --team financial_team --check-only
+
+set +e
+python3 -B 06_TOOLS/COMMANDS/genos_data_stages.py \
+  --run-id "$RUN_ID" --team risk_team --team financial_team \
+  --stage structure --execute
+structure_status=$?
+set -e
+if (( structure_status != 0 )); then
+  python3 - "$GENOS_DATA_ROOT/LOGS/$RUN_ID" <<'PY'
+import json, sys
+from pathlib import Path
+logs = Path(sys.argv[1])
+results = sorted(logs.glob('result-*.json'), key=lambda p: p.stat().st_mtime_ns)
+if not results:
+    print('STRUCTURE_FAILED no result JSON; inspect detail.log', flush=True)
+    raise SystemExit(0)
+data = json.loads(results[-1].read_text())
+failed = [(did, row) for did, row in data.get('documents', {}).items()
+          if row.get('structure') == 'FAILED' or row.get('index') == 'FAILED']
+for did, row in failed[:40]:
+    print('FAILED_DOCUMENT ' + json.dumps({'id': did, 'name': row.get('name'),
+          'error': str(row.get('error', ''))[:350]}, ensure_ascii=False), flush=True)
+print('FAILED_DOCUMENT_COUNT=' + str(len(failed)), flush=True)
+print('DETAIL_LOG=' + str(logs / 'detail.log'), flush=True)
+PY
+  echo 'Structure is incomplete. Fix the printed failures and rerun this TXT with the same GENOS_RUN_ID.'
+  exit "$structure_status"
+fi
+
+set +e
+python3 -B 06_TOOLS/pipeline.py document-release build \
+  --run-id "$RUN_ID" --base-generation "$BASE" --max-review-jobs 100
+release_status=$?
+set -e
+if (( release_status != 0 )); then
+  echo "RELEASE_INCOMPLETE status=$release_status run=$RUN_ID; inspect $GENOS_DATA_ROOT/TERM_RELEASES/$RUN_ID"
+  echo 'If glossary review is pending (status 3), rerun this TXT with the same GENOS_RUN_ID.'
+  exit "$release_status"
+fi
+
+RELEASE="$GENOS_DATA_ROOT/TERM_RELEASES/$RUN_ID"
+GENERATION="$RELEASE/serving/generation"
+[[ -f "$GENERATION/manifest.json" ]] || { echo 'No complete serving generation was produced'; exit 1; }
+python3 -B 06_TOOLS/pipeline.py document-release verify --release "$RELEASE"
+python3 - "$GENOS_DATA_ROOT" "$RECEIPT" "$GENERATION" <<'PY'
+import json, sqlite3, sys
+from pathlib import Path
+data, receipt_path, generation = map(Path, sys.argv[1:4])
+scope = json.loads((data / 'CATALOG/SCOPES/photo-required-80-hwpx-20260917.json').read_text())['documents'][:61]
+shared = set(json.loads(receipt_path.read_text())['shared_document_names'])
+store = generation / 'store.sqlite'
+if not store.is_file() or len(scope) != 61:
+    raise SystemExit('PHOTO61_GATE_ERROR missing store or scope')
+db = sqlite3.connect('file:' + str(store) + '?mode=ro', uri=True)
+failed = []
+for entry in scope:
+    name = entry['name']
+    expected = {f['sha256'][:16] for f in entry['files'] if f['role'] == 'body'}
+    rows = db.execute('SELECT document_id,json FROM document WHERE name=?', (name,)).fetchall()
+    accepted = False
+    for did, raw in rows:
+        if did not in expected:
+            continue
+        metadata = json.loads(raw).get('document_metadata') or {}
+        locations = [metadata, *(metadata.get('aliases') or [])]
+        teams = {loc.get('team') for loc in locations if isinstance(loc, dict)}
+        blocks = db.execute('SELECT count(*) FROM source_block WHERE document_id=?', (did,)).fetchone()[0]
+        if 'financial_team' in teams and (name not in shared or 'risk_team' in teams) and blocks:
+            accepted = True
+            break
+    if not accepted:
+        failed.append(name)
+print(json.dumps({'photo_documents': 61, 'shared_documents': len(shared),
+                  'accepted': 61-len(failed), 'failed': failed}, ensure_ascii=False), flush=True)
+if failed:
+    raise SystemExit('PHOTO61_GATE_FAILED')
+PY
+env -u GENOS_GENERATION python3 -B 06_TOOLS/COMMANDS/genos_generation_e2e.py \
+  --code-root "$DEPLOY_ROOT" --generation "$GENERATION"
+printf 'DRAFT_E2E_PASS run=%s generation=%s manifest_sha256=%s\n' \
+  "$RUN_ID" "$GENERATION" "$(sha256sum "$GENERATION/manifest.json" | cut -d' ' -f1)"
+printf 'Serving selection and deployment are separate steps. Preserve the old generation and this log.\n'

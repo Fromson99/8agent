@@ -1,0 +1,195 @@
+{
+  "supported_predecessors": [
+    "request-input-r2",
+    "nfs-sqlite-r1",
+    "timeout-r1",
+    "routing-r2"
+  ],
+  "standalone_check_apply_repeat_rollback": "PASS",
+  "unknown_code_preserved": "PASS",
+  "operational_db_preserved": "PASS",
+  "installed_timer_check": "PASS",
+  "engine_pins": "PASS",
+  "compact_reader_preserved": "PASS",
+  "no_javascript": "PASS",
+  "genos_execution": "NOT_EXECUTED",
+  "generation_gate": "NOT_EXECUTED",
+  "outputs": [
+    {
+      "predecessor": "request-input-r2",
+      "mode": "check",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-xvboy2_s/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nFULL_CODE_SYNTAX current=21 frozen_preserved=0\nCHECK OK: package verified; no Git baseline required; files=53\nPreview only. Use --apply to replace maintained code.\nCOMPLETE check ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-xvboy2_s/logs/20261006T042559Z-check-1162897.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "request-input-r2",
+      "mode": "apply",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-xvboy2_s/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nFULL_CODE_SYNTAX current=21 frozen_preserved=0\nCHECK OK: package verified; no Git baseline required; files=53\nBACKUP/RECOVERY: /tmp/source-recall-handoff-xvboy2_s/DEV/09_ARTIFACTS/BACKUPS/code-replacement/20261006T042559Z-aa59d132\nINSTALL OK: full-code-ba01c7d2ec26ed1d4879\nPreserved: 01_DATA, GENOS_DATA, .env, .venv, .git, TRANSFER; no deployment/activation\nCOMPLETE apply ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-xvboy2_s/logs/20261006T042559Z-apply-1162904.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "request-input-r2",
+      "mode": "apply",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-xvboy2_s/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nFULL_CODE_SYNTAX current=21 frozen_preserved=0\nALREADY INSTALLED: full-code-ba01c7d2ec26ed1d4879\nCOMPLETE apply ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-xvboy2_s/logs/20261006T042559Z-apply-1162911.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "request-input-r2",
+      "mode": "rollback",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-xvboy2_s/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nROLLBACK OK: original code restored; data/environment unchanged\nCOMPLETE rollback ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-xvboy2_s/logs/20261006T042600Z-rollback-1162943.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "request-input-r2",
+      "mode": "check",
+      "exit_code": 1,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-xvboy2_s/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nTraceback (most recent call last):\n  File \"<stdin>\", line 49, in <module>\n  File \"<stdin>\", line 24, in pins\nValueError: CHECKOUT_DRIFT: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py; existing file preserved\nSOURCE_RECALL_TIMEOUT_EXIT=1 LOG=/tmp/source-recall-handoff-xvboy2_s/logs/20261006T042600Z-check-1162956.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "request-input-r2",
+      "git_zip_comparison": {
+        "code_files": 52,
+        "commit": "500dbff782461ca490cc06530811dba3b94ad34f",
+        "code_zip_sha256": "ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2",
+        "code_manifest_sha256": "1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924"
+      }
+    },
+    {
+      "predecessor": "nfs-sqlite-r1",
+      "mode": "check",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-yiljzbwc/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nFULL_CODE_SYNTAX current=21 frozen_preserved=0\nCHECK OK: package verified; no Git baseline required; files=53\nPreview only. Use --apply to replace maintained code.\nCOMPLETE check ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-yiljzbwc/logs/20261006T042600Z-check-1162966.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "nfs-sqlite-r1",
+      "mode": "apply",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-yiljzbwc/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nFULL_CODE_SYNTAX current=21 frozen_preserved=0\nCHECK OK: package verified; no Git baseline required; files=53\nBACKUP/RECOVERY: /tmp/source-recall-handoff-yiljzbwc/DEV/09_ARTIFACTS/BACKUPS/code-replacement/20261006T042600Z-102dedc2\nINSTALL OK: full-code-ba01c7d2ec26ed1d4879\nPreserved: 01_DATA, GENOS_DATA, .env, .venv, .git, TRANSFER; no deployment/activation\nCOMPLETE apply ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-yiljzbwc/logs/20261006T042600Z-apply-1162973.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "nfs-sqlite-r1",
+      "mode": "apply",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-yiljzbwc/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nFULL_CODE_SYNTAX current=21 frozen_preserved=0\nALREADY INSTALLED: full-code-ba01c7d2ec26ed1d4879\nCOMPLETE apply ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-yiljzbwc/logs/20261006T042600Z-apply-1162980.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "nfs-sqlite-r1",
+      "mode": "rollback",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-yiljzbwc/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nROLLBACK OK: original code restored; data/environment unchanged\nCOMPLETE rollback ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-yiljzbwc/logs/20261006T042601Z-rollback-1163007.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "nfs-sqlite-r1",
+      "mode": "check",
+      "exit_code": 1,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-yiljzbwc/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nTraceback (most recent call last):\n  File \"<stdin>\", line 49, in <module>\n  File \"<stdin>\", line 24, in pins\nValueError: CHECKOUT_DRIFT: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py; existing file preserved\nSOURCE_RECALL_TIMEOUT_EXIT=1 LOG=/tmp/source-recall-handoff-yiljzbwc/logs/20261006T042601Z-check-1163014.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "nfs-sqlite-r1",
+      "git_zip_comparison": {
+        "code_files": 52,
+        "commit": "586807a28cf298e9f46996bc6c0d3a466b9fff0e",
+        "code_zip_sha256": "ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2",
+        "code_manifest_sha256": "1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924"
+      }
+    },
+    {
+      "predecessor": "timeout-r1",
+      "mode": "check",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-xblcyy78/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nFULL_CODE_SYNTAX current=21 frozen_preserved=0\nCHECK OK: package verified; no Git baseline required; files=53\nPreview only. Use --apply to replace maintained code.\nCOMPLETE check ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-xblcyy78/logs/20261006T042601Z-check-1163021.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "timeout-r1",
+      "mode": "apply",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-xblcyy78/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nFULL_CODE_SYNTAX current=21 frozen_preserved=0\nCHECK OK: package verified; no Git baseline required; files=53\nBACKUP/RECOVERY: /tmp/source-recall-handoff-xblcyy78/DEV/09_ARTIFACTS/BACKUPS/code-replacement/20261006T042601Z-c06fb435\nINSTALL OK: full-code-ba01c7d2ec26ed1d4879\nPreserved: 01_DATA, GENOS_DATA, .env, .venv, .git, TRANSFER; no deployment/activation\nCOMPLETE apply ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-xblcyy78/logs/20261006T042601Z-apply-1163028.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "timeout-r1",
+      "mode": "apply",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-xblcyy78/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nFULL_CODE_SYNTAX current=21 frozen_preserved=0\nALREADY INSTALLED: full-code-ba01c7d2ec26ed1d4879\nCOMPLETE apply ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-xblcyy78/logs/20261006T042602Z-apply-1163035.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "timeout-r1",
+      "mode": "rollback",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-xblcyy78/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nROLLBACK OK: original code restored; data/environment unchanged\nCOMPLETE rollback ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-xblcyy78/logs/20261006T042602Z-rollback-1163062.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "timeout-r1",
+      "mode": "check",
+      "exit_code": 1,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-xblcyy78/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nTraceback (most recent call last):\n  File \"<stdin>\", line 49, in <module>\n  File \"<stdin>\", line 24, in pins\nValueError: CHECKOUT_DRIFT: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py; existing file preserved\nSOURCE_RECALL_TIMEOUT_EXIT=1 LOG=/tmp/source-recall-handoff-xblcyy78/logs/20261006T042602Z-check-1163069.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "timeout-r1",
+      "git_zip_comparison": {
+        "code_files": 52,
+        "commit": "a2fcdd3b8c8d51e23b911da5d30d38adf280f60e",
+        "code_zip_sha256": "ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2",
+        "code_manifest_sha256": "1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924"
+      }
+    },
+    {
+      "predecessor": "routing-r2",
+      "mode": "check",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-4ajmevrc/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nFULL_CODE_SYNTAX current=21 frozen_preserved=0\nCHECK OK: package verified; no Git baseline required; files=53\nPreview only. Use --apply to replace maintained code.\nCOMPLETE check ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-4ajmevrc/logs/20261006T042602Z-check-1163076.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "routing-r2",
+      "mode": "apply",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-4ajmevrc/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nFULL_CODE_SYNTAX current=21 frozen_preserved=0\nCHECK OK: package verified; no Git baseline required; files=53\nBACKUP/RECOVERY: /tmp/source-recall-handoff-4ajmevrc/DEV/09_ARTIFACTS/BACKUPS/code-replacement/20261006T042603Z-6482e177\nINSTALL OK: full-code-ba01c7d2ec26ed1d4879\nPreserved: 01_DATA, GENOS_DATA, .env, .venv, .git, TRANSFER; no deployment/activation\nCOMPLETE apply ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-4ajmevrc/logs/20261006T042603Z-apply-1163083.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "routing-r2",
+      "mode": "apply",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-4ajmevrc/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nFULL_CODE_SYNTAX current=21 frozen_preserved=0\nALREADY INSTALLED: full-code-ba01c7d2ec26ed1d4879\nCOMPLETE apply ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-4ajmevrc/logs/20261006T042603Z-apply-1163090.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "routing-r2",
+      "mode": "rollback",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-4ajmevrc/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nROLLBACK OK: original code restored; data/environment unchanged\nCOMPLETE rollback ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nSOURCE_RECALL_TIMEOUT_EXIT=0 LOG=/tmp/source-recall-handoff-4ajmevrc/logs/20261006T042604Z-rollback-1163117.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "routing-r2",
+      "mode": "check",
+      "exit_code": 1,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/source-recall-handoff-4ajmevrc/DEV CODE_ZIP_SHA256 ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2 CODE_MANIFEST_SHA256 1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924\nTraceback (most recent call last):\n  File \"<stdin>\", line 49, in <module>\n  File \"<stdin>\", line 24, in pins\nValueError: CHECKOUT_DRIFT: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py; existing file preserved\nSOURCE_RECALL_TIMEOUT_EXIT=1 LOG=/tmp/source-recall-handoff-4ajmevrc/logs/20261006T042604Z-check-1163124.log\n",
+      "stderr": ""
+    },
+    {
+      "predecessor": "routing-r2",
+      "git_zip_comparison": {
+        "code_files": 52,
+        "commit": "5aac2ee5110ed0ce36d9c3ebb0b60919f86eae45",
+        "code_zip_sha256": "ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2",
+        "code_manifest_sha256": "1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924"
+      }
+    }
+  ]
+}

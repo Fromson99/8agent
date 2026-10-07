@@ -1,0 +1,71 @@
+{
+  "functional_tests": [
+    {
+      "file": "validated.xml",
+      "tests": 71,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "file": "regression-complete.xml",
+      "tests": 73,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "total_tests_passed": 144,
+  "installer": {
+    "code_files": 1863,
+    "syntax_current_checked": 711,
+    "frozen_python_preserved_not_certified": 317,
+    "javascript_members": 0,
+    "code_zip_sha256": "70b632248fb30665595baa069061db8b98491afb3c4fea41de43c7a1d58d68d4",
+    "code_manifest_sha256": "2cb355820c7f45295938ba8c416ebd31c79552021b4ee68eb0d362a730cc4eb4",
+    "installer_cases": [
+      "check",
+      "apply from R2 plus installed R3 adapter",
+      "verify all bytes",
+      "idempotent reapply",
+      "environment/runtime preservation",
+      "committed mock checkout code-only gate",
+      "rollback exact bytes",
+      "idempotent rollback",
+      "reject tampered archive"
+    ],
+    "genos_deployment": "NOT_VERIFIED",
+    "onsite_generation": null,
+    "onsite_code_serving_revision": null,
+    "local_active_pointer_changed": false
+  },
+  "pins": {
+    "engine_count": 30,
+    "file_pin_checks": 4114,
+    "mismatches": [],
+    "r2_data_bindings_preserved": true,
+    "active_release_changed": false
+  },
+  "frozen_parent_unchanged": true,
+  "verification_code_root": "/home/jin/8-AGENT",
+  "deployment_commit": null,
+  "GENOS_generation_path": null,
+  "GENOS_generation_manifest_sha256": null,
+  "GENOS_code_serving_revision": null,
+  "quality_certified": false,
+  "genos_deployment": "NOT_VERIFIED",
+  "local_active_release_changed": false,
+  "known_unresolved": [
+    "Reference collection remains article-wide; current paragraph/item-only first menu not implemented",
+    "CM003 skipped the exception body in prior probe",
+    "CM051 repeated invalid id/scope in prior probe"
+  ],
+  "failed_or_interrupted_checks_preserved": [
+    "pytest.log",
+    "pytest-final.log",
+    "pytest-pass.log",
+    "regression.log",
+    "pytest-complete.log",
+    "installer-summary.log"
+  ]
+}

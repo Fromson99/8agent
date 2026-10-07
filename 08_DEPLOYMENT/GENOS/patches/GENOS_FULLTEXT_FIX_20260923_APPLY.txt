@@ -1,0 +1,40 @@
+GENOS fulltext 세대 불일치 패치 적용 (2026-09-23)
+
+첨부 파일 3개를 ~/DEV/TRANSFER에 둡니다.
+- GENOS_FULLTEXT_FIX_20260923.patch.txt : 코드 패치
+- GENOS_GENERATION_E2E_CHECK_20260923_R2.txt : 새 세대 검사기
+- GENOS_FULLTEXT_FIX_20260923_APPLY.txt : 이 안내
+
+1. GENOS 코드스페이스의 실제 코드 디렉터리에서 패치가 맞는지 먼저 확인합니다.
+
+cd -P ~/DEV
+git apply --check TRANSFER/GENOS_FULLTEXT_FIX_20260923.patch.txt
+
+여기서 실패하면 적용하지 말고 출력 전체를 보내 주세요. 설치된 코드 리비전이 패치 기준과 다릅니다.
+
+2. 패치를 적용하고, 변경된 세 파일의 엔진 해시를 현재 코드로 갱신합니다.
+
+git apply TRANSFER/GENOS_FULLTEXT_FIX_20260923.patch.txt
+cp TRANSFER/GENOS_GENERATION_E2E_CHECK_20260923_R2.txt 06_TOOLS/COMMANDS/genos_generation_e2e.py
+python3 06_TOOLS/COMMANDS/genos_fulltext_repin.py --code-root "$PWD"
+
+3. 현재 GENOS_GENERATION 경로를 확인합니다. 비어 있으면 코드서빙의 binding.resolved 로그에 나온 실제 generation 경로를 --source-generation으로 지정합니다. 기존 공유 세대는 수정하지 않습니다.
+
+printf '현재 세대: %s\n' "$GENOS_GENERATION"
+python3 06_TOOLS/COMMANDS/genos_fulltext_repair.py --source-generation "$GENOS_GENERATION"
+
+이 명령은 기존 generation을 같은 NFS의 새 불변 패키지로 복사한 뒤 navigation으로 fulltext를 생성합니다. 완료 시 GENOS_GENERATION=<새 경로>를 출력합니다. 대용량 NFS에서는 복사·색인·해시 확인에 시간이 걸립니다. 실패하면 새 패키지를 발행하지 않고 임시 디렉터리를 지웁니다.
+
+4. 출력된 새 경로로 아래 검사기를 실행합니다. 기존 셸의 GENOS_GENERATION이 옛 경로라면 이 명령에서만 새 경로를 지정하세요. 긴 경로를 추측해 입력하지 마세요.
+
+GENOS_GENERATION='<3번 출력의 새 generation 경로>' python3 TRANSFER/GENOS_GENERATION_E2E_CHECK_20260923_R2.txt --code-root "$PWD"
+
+GENERATION_E2E PASS와 fulltext files/index binding/SQLite hash/shared inventory PASS를 확인합니다. 검사기는 큰 SQLite 파일을 끝까지 해시하므로 시간이 걸릴 수 있고 진행 바이트를 출력합니다.
+
+5. 패치된 코드로 새 ZIP과 코드서빙 리비전을 만들고, 코드서빙 환경의 GENOS_GENERATION을 3번의 새 경로로 지정합니다. 실행 중인 기존 코드서빙과 데이터 포인터는 자동 변경되지 않습니다.
+
+python3 06_TOOLS/COMMANDS/code_ship.py pack --ignore-file genosIgnore
+
+새 리비전의 /health generation_id와 문서 원문 조회, 근거 질문을 확인합니다. 실패하면 이전 코드 리비전과 이전 GENOS_GENERATION 값으로 되돌립니다. 기존 NFS 세대는 보존합니다.
+
+패치 내용: 향후 document-release index가 fulltext를 자동 생성하고 세대 manifest에 결속합니다. 기존 세대는 재구축 없이 3번 명령으로 복제·추가합니다. 서빙은 세대 manifest 결속을 우선하며 navigation, fulltext, Kiwi 버전과 발행 파일 해시를 검증합니다.

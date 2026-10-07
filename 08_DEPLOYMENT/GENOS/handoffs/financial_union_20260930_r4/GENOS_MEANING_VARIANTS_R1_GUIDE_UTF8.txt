@@ -1,0 +1,58 @@
+GENOS 용어 의미 검토 OFF/ON — R1
+
+0. 지금 실행 중인 기존 foreground BUILD에서 Ctrl+C 한 번. 프롬프트가 돌아온 뒤 진행.
+   이 R1은 기존 SELECTED_ONLY_BUILD_R3 --build 대신 사용한다. 기존 BUILD와 병행하지 말 것.
+   checkout 코어 파일 패치 없음. 준비된 r3 원문 2,121개와 기존 검토 기록을 그대로 사용.
+
+1. 용어 의미 검토를 별도 백그라운드로 계속 실행(완료 뒤 ON까지 자동 구축):
+   bash TRANSFER/GENOS_MEANING_VARIANTS_R1_UTF8.txt review-background
+
+2. 기다리지 않고 의미 검토 OFF 결과부터 구축(백그라운드와 별도 터미널에서 가능):
+   bash TRANSFER/GENOS_MEANING_VARIANTS_R1_UTF8.txt baseline
+
+3. 진행·실패 요약과 로그 경로:
+   bash TRANSFER/GENOS_MEANING_VARIANTS_R1_UTF8.txt status
+   출력된 worker-output 로그 경로를 tail -f 로 보면 실시간 진행/원래 오류가 나온다.
+   최초 ETA는 unknown, 이후 최근 호출 시간에 따른 근사값이다. 완료 약속이 아니다.
+   준비/색인의 측정 못 한 잔여 수는 unknown이지 0이 아니다.
+
+4. 백그라운드 중단 및 재개:
+   bash TRANSFER/GENOS_MEANING_VARIANTS_R1_UTF8.txt stop-review
+   worker 로그의 FINISHED를 확인한 뒤 나중에 1번 명령을 다시 실행.
+   완료/실패 기록을 보존하고 중단된 진행 작업만 재대기시킨다.
+   실패 작업은 무한 재시도하지 않는다. 연속 10회 실패면 보호 중단(exit 130).
+   서버/컨테이너 재시작 후에는 자동 시작되지 않으므로 같은 명령으로 수동 재개.
+   100건은 반복 묶음 한도이며 API 합본/동시 호출 수가 아니다.
+   캡처의 약 10초/건 속도가 유지되면 249,242건은 순수 호출 시간만 약 29일.
+
+5. 무결성 확인:
+   bash TRANSFER/GENOS_MEANING_VARIANTS_R1_UTF8.txt verify
+   이미 완료된 OFF/ON을 검증하고 미완료 버전은 NOT READY, exit 3으로 표시.
+   실제 입력/코드/결과 해시 불일치는 원래 traceback과 실패 상태로 중단.
+   내부 GENOS 모델 프로필만 허용하며 외부 모델로 fallback하지 않는다.
+
+두 버전의 차이:
+   OFF: 현재 r3 용어 의미 검토 생략. 기존 용어집의 과거 LLM 결과까지 삭제한 것은 아님.
+   ON : 검토된 용어 관계 제안을 소비. PARTIAL/미확정/충돌을 정본으로 승인하지 않음.
+   공통: 구조화/원문 범위 공유. 최종 문서–용어 연결, navigation, fulltext, 명시 참조 overlay 별도.
+   모호한 문서/조문 명시 참조를 보정하는 LLM은 OFF/ON 둘 다 유지.
+   용어 동의어/상하위/관련어 의미 LLM은 현재 의미 검토 작업에 포함되어 OFF에서는 보류.
+   RAG의 질문 탐색·답변 LLM 자체를 끄는 변경이 아님.
+
+RAG 선택용 결과(완료 후):
+   /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261001-r3-meaning-off/generation
+   /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261001-r3-meaning-on/generation
+   각각 상위 폴더의 rag-selection.json에 GENOS_GENERATION 값을 기록.
+   현행 service.py는 서버 시작 시 한 경로를 선택한다. 동시에 쓰려면 별도 서빙 설정/리비전 필요.
+   요청마다 자동으로 ON/OFF를 전환하는 UI 기능을 추가한 것이 아님.
+   이 TXT는 현재 서빙, CURRENT, Git push, 워크플로우, 코드서빙 리비전을 변경하지 않음.
+   서빙 반영 전에는 실제 서빙 checkout의 코드+선택 세대로 배포 게이트를 별도로 통과해야 함.
+   현장 요청 확인은 워크플로우 테스트 화면에서 진행. 외부 모의 검증이 현장 성공을 뜻하지 않음.
+
+실행 환경:
+   현장 명령 python3, 실제 sys.executable/버전/코드 root/로그는 시작 시 출력.
+   기본 코드 root /home/genos/DEV, 데이터 root /workspace/01_DATA.
+   필요한 경우 GENOS_CODE_ROOT, GENOS_DATA_ROOT, GENOS_VARIANTS_SHARED_ROOT를 명시.
+   코어 모델 설정/호출 상한/프로필은 변경하지 않음. 기존 r3 배선이 없으면 silent patch 없이 중단.
+   파일을 메일에서 다운로드해서 TRANSFER에 동일 이름으로 저장 후 실행.
+   이전 세대/원문/실패 원장은 삭제하지 않으므로 이전 서빙 설정으로 복귀 가능.

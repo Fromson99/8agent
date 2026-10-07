@@ -1,0 +1,127 @@
+GENOS SQLite 조회 개선 1차 / 완료 자료 재사용 — 2026-10-03 R1
+
+이번 적용 범위
+정의 검색은 작은 필드를 캐시에 보관하고, 반환 페이지에 필요한 원문 카드만 만든다.
+용어 출현 조회도 반환할 원문을 먼저 골라 카드당 한 번만 생성한다.
+관계의 정의 탐색은 이름/근거 조건을 통과한 뒤 큰 정의 내용과 원문을 읽는다.
+DB 타입·기본키·저장 스키마는 변경하지 않았다. 최초 캐시 적재, 큰 용어집 근거 묶음
+복사/검증 비용은 남아 있다. P2 용어집 서빙 projection과 P3 물리 스키마 이행은 후속이다.
+
+재사용과 재구축 경계
+재사용: 명시 prepared run의 sources/store.sqlite, sources/selection.json, plan.json,
+glossary-draft/dictionary.sqlite, report.json, 선택 knowledge bundle.
+완료된 의미 검토본은 GENOS_COMPLETED_GLOSSARY에 정확한 폴더를 지정하면 completion.json과
+review.sqlite 및 부모 dictionary 결속까지 확인해 그대로 재사용한다. PARTIAL/UNKNOWN
+상태를 COMPLETE 또는 정본 승인으로 바꾸지 않는다. 폴더 날짜로 자동 선택하지 않는다.
+생략 시 prepared run에 고정된 glossary-draft를 재사용하며 의미 검토 완료를 주장하지 않는다.
+재구축: 문서–용어 연결, 규칙 기반 정의/명시 참조/navigation, 감사 색인,
+서빙 용어집 캐시, 항·호·목 단위 전문 색인. 기존 참조 LLM 검토 overlay를 자동 이식하지 않는다.
+이번 실행은 모델 호출 0회이며 RAW 재구조화·용어 생성·의미 검토를 다시 실행하지 않는다.
+원본 입력/이전 세대는 보존한다. 이미 완료된 새 결과는 같은 명령에서 재검증해 재사용한다.
+생성 도중 실패한 미완성 generation은 다음 실행에서 다시 만든다. 모든 내부 단계를
+체크포인트로 재개한다고 보장하지 않는다. 입력/코드/설정 변경 시 새 output run을 사용한다.
+
+사용 조건
+기존 ~/DEV에 누적 v6 R4 코드가 적용된 상태를 기준으로 한다. 변경 파일 39개와 필요한
+미변경 파일 767개의 해시를 검사한다. CHECKOUT_DRIFT면 적용 전 중단하며 기존 수정은 보존한다.
+새 Python 의존성은 없다. 현장 Python 3.11+ 및 기존 PeCab/서빙 의존성이 필요하다.
+ZIP에는 코드와 해시만 들어 있으며 원문, 키, DB, 내부 질문은 들어 있지 않다.
+필요 파일: GENOS_SQLITE_READ_REUSE_20261003_R1.zip + 같은 이름 .txt.
+두 파일을 ~/DEV/TRANSFER에 둔다. 실행 명령은 python3이며 실제 실행기/버전을 기록한다.
+
+1. 설정과 코드 적용
+cd -P ~/DEV
+export GENOS_DEV="$HOME/DEV"
+export GENOS_DATA_ROOT="$GENOS_DEV/01_DATA"
+export GENOS_PREPARED_RUN=financial-risk-success-20261001-r3
+export GENOS_REUSE_RUN=financial-risk-success-20261003-sqlite-r1
+
+GENOS_DATA_ROOT는 기존 prepared run이 들어 있는 실제 root로 설정한다.
+완료 의미 검토본을 재사용할 때는 다음 변수도 실제 경로로 지정한다.
+예: export GENOS_COMPLETED_GLOSSARY="$GENOS_DATA_ROOT/TERM_RELEASES/$GENOS_PREPARED_RUN/glossary-reviewed"
+파일이 없거나 영수증/부모 결속이 다르면 중단한다. draft로 조용히 대체하지 않는다.
+GENOS_REFERENCE_SCOPE_V2는 기존 선택값을 유지한다. 미설정 기본값은 0이며 새 실행 계보에 고정된다.
+
+bash TRANSFER/GENOS_SQLITE_READ_REUSE_20261003_R1.txt check
+bash TRANSFER/GENOS_SQLITE_READ_REUSE_20261003_R1.txt apply
+bash TRANSFER/GENOS_SQLITE_READ_REUSE_20261003_R1.txt verify
+
+check는 코드 기준/알려진 구축 잠금을 확인한다. apply는 기존 ~/DEV 파일을 백업 후 교체한다.
+다른 구축 작업을 강제 종료하지 않는다. 출력된 BACKUP/RECOVERY 경로를 보관한다.
+코드 적용은 Git commit/push, NFS 데이터 생성, 서빙 배포와 각각 별도다.
+
+2. 완료 자료에서 새 서빙 데이터 생성 및 오프라인 검증
+bash TRANSFER/GENOS_SQLITE_READ_REUSE_20261003_R1.txt build
+
+입력/문서 범위/코드 해시 → 새 origin → 연결 → 전체 용어집 서빙 자료 → navigation/감사
+→ unit FTS → Store/TermIndex/Glossary/FTS 검증 → 오프라인 generation E2E 순으로 실행한다.
+원본 용어집 근거 묶음 전체의 무결성 검증과 복사가 있으므로 큰 자료에서는 시간이 든다.
+모델 미호출은 구축이 즉시 완료된다는 뜻이 아니다. 현장 소요 시간/최초 로딩 시간은 미측정이다.
+출력: $GENOS_DATA_ROOT/TERM_RELEASES/$GENOS_REUSE_RUN/serving/
+  baseline/links/                     새 연결
+  baseline/generation/                서빙 세대
+  baseline/audit/navigation/          감사 자료
+  offline-e2e.json                     원문/색인/전문검색 결속 검사
+  release.json                        완료·원본/코드 pin·모델0회·미활성 영수증
+완료 기준: OFFLINE_READY, offline_e2e=PASS, FINISHED status=0.
+live_workflow_e2e=NOT_RUN은 정상 표기다. 생성 완료를 현장 질의 성공으로 해석하지 않는다.
+
+3. 새 공유 세대 복사 — 기존 세대와 CURRENT 보존
+GENOS_SHARED_ROOT에 코드서빙에서도 보이는 기존 NFS 폴더를 지정한다.
+예: export GENOS_SHARED_ROOT=/nfs-root/diamo/8-agent/generations
+bash TRANSFER/GENOS_SQLITE_READ_REUSE_20261003_R1.txt publish
+
+완료 build를 다시 검증하고, 새 공유 경로에 복사/전체 해시 검사한 뒤 원자적으로 게시한다.
+이미 같은 결과가 있으면 검증해 재사용한다. 다른 결과가 있으면 덮어쓰지 않는다.
+shared-publication.json의 generation_path와 manifest_sha256가 실제 선택 후보다.
+CURRENT, GENOS_GENERATION, 기존 서비스 리비전은 자동 변경하지 않는다.
+
+4. 동일 Git 코드와 generation 게이트
+~/DEV의 변경과 새 파일을 검토해 commit한다. 인계 ZIP 및 required_files에 나오는 파일이
+해당 checkout에서 추적되고 commit되어야 한다. 무관한 수정이 있으면 분리·검토한다.
+bash TRANSFER/GENOS_SQLITE_READ_REUSE_20261003_R1.txt gate
+
+기본은 이번 shared-publication.json의 정확한 generation을 사용한다.
+다른 선택을 검사할 때만 gate 뒤에 실제 generation 절대경로를 지정한다.
+검증한 commit/ZIP SHA/manifest SHA/generation 경로를 로그와 함께 보존한다.
+게이트 후 코드나 데이터가 바뀌면 다시 검사한다. 게이트는 push/배포를 실행하지 않는다.
+
+5. GENOS 전체 E2E
+검증한 commit을 push하고 새 코드서빙 리비전이 그 commit과 위 NFS generation을 사용하도록
+배포한다. GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6, 기존 내부 모델/임베딩 설정,
+NFS runtime과 GENOS_MEMORY_JOURNAL_MODE=DELETE를 유지한다. 인증키를 로그에 출력하지 않는다.
+기존 Python 워크플로우 편집기 연결은 별도이며 이 ZIP에서 자동 편집되지 않는다.
+최종 warmup/질문 확인은 반드시 워크플로우 테스트 화면에서 실행한다.
+코드서빙 직접 테스트 UI/API 사용을 요구하지 않는다.
+
+기존 전체 E2E 사례를 동일 버전/동일 질문으로 실행하면서 다음을 기록한다.
+  - 코드 commit/서빙 리비전/선택 generation 및 manifest SHA
+  - 최초 warmup 성공과 시간, 요청 ID, 실제 backend/model ID, 사용량·응답 시간
+  - 원문 단위 READ/펼치기, 용어·정의 조회, 정·역참조 FOLLOW, 인용 원문·범위 일치
+  - 답변 반환, 정정→재검색→확정→기억 저장→새 대화 재사용, 중단 후 재개
+  - 기존 기대 결과 대비 누락/오연결/실패와 각 요청의 단계 로그
+품질·속도 비교를 위한 재평가는 실행 전에 별도 ADR과 사례/기준을 동결한다.
+이번 패키지는 알려진 CM003/CM051 품질 문제의 해결이나 전체 법률 정확도를 인증하지 않는다.
+기존 모델 검토 참조 결정을 재사용해야 하는 사례는 이번 native-rule 재색인과 분리해 평가한다.
+
+로그·재실행·복구
+TXT 시작부터 stdout/stderr와 종료코드를 TXT 옆 sqlite-read-reuse-logs/에 남긴다.
+각 실행 폴더의 events.jsonl, phases.csv, current.json, summary.txt에서 5초 생존/단계별
+시간·상태를 확인한다. 입력/코드/선택 용어집이 같으면 같은 run으로 다시 실행할 수 있다.
+build 후 설정을 바꾼 경우 원본은 보존하고 GENOS_REUSE_RUN을 새 이름으로 지정한다.
+코드 복구:
+bash TRANSFER/GENOS_SQLITE_READ_REUSE_20261003_R1.txt rollback /apply가_출력한_정확한_BACKUP_RECOVERY_폴더
+동시 변경된 파일은 덮어쓰지 않고 중단한다. 새 데이터는 삭제하지 않는다.
+배포 뒤 복구할 때는 이전 검증 코드서빙 리비전과 이전 generation 설정도 함께 되돌린다.
+
+로컬 확인 결과와 한계
+ADR-0627은 중복 카드/격리 의존성 문제로 Rejected, 후속 ADR-0628에서 수정·검증했다.
+새 합성 244-source/11-item-page에서 기존/후보 반환 내용 5종이 동일했다.
+전체 페이지 처리 중 정의 카드 427→61회, 용어 출현(any) 카드 1958→113회,
+용어 출현(all) 카드 780→65회, 반복 정의 SQL 7→0회. 현장 배속 추정치가 아니다.
+후보 검사 95 통과/11 실패. 원본 코드 92 통과/동일 11 실패로 신규 회귀는 없었으나
+저장소 전체 all-green을 주장하지 않는다. 구 adapter/profile/fixture 기대값 문제가 남아 있다.
+최종 인계·재사용·완료 의미 검토본·NFS 복사·변조 거부·게이트 검사 24개 통과.
+기존 ADR 전체 그래프에는 7개 오류가 있어 그대로 기록했다. 이번 두 ADR의 final 검사는 통과했다.
+로컬 작업 코드와 엔진 pin만 갱신했다. ACTIVE_RELEASE/원본 데이터/완료 실험 원본은 보존했다.
+실제 GENOS 반입, 구축 시간, 배포 commit/리비전, 내부 모델 E2E는 아직 미확인이다.

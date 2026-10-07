@@ -1,0 +1,60 @@
+GENOS 진입 파일 구조만 롤백 — 20261002 R2 (직전 연결 전용 R1 대신 사용)
+
+이전 메일의 R1은 Python 워크플로우 소스만 보냈으며 루트 진입 파일 구조는 바꾸지 못했습니다.
+이번 실행 TXT는 기존 ~/DEV의 R2 적용 영수증과 원본 백업을 확인해 main.py만 되돌립니다.
+
+변경 전 R2: ~/DEV/main.py (/chat 이관용), ~/DEV/service.py (v6 실행 입구)
+변경 후:
+ ~/DEV/service.py                 기존 위치·바이트 유지
+ ~/DEV/main.py                    이관 전 파일이 있었으면 그 원본 복원, 없었으면 루트에서 제거
+ ~/DEV/09_ARTIFACTS/BACKUPS/workflow-entry-only-20261002-r2/migrated-main.py
+                                  신규 /chat main.py를 보존한 위치
+ ~/DEV/08_DEPLOYMENT/GENOS/start_sse.py, stream_app.py, workflow/   유지
+ 02_BACKEND의 v6·NFS runtime·원문/색인·CURRENT·환경파일·엔진 pin   유지
+
+service.py를 다른 폴더로 옮기면 __file__ 기준 02_BACKEND/데이터 root와 import service가
+깨지므로 이동하지 않습니다. main.py의 원본은 정확한 R2 파일별 백업에서만 복원합니다.
+R2 적용 영수증/백업이 없거나 코드가 달라졌으면 임의로 삭제/이동하지 않고 중단합니다.
+
+1. 첨부 실행 TXT를 ~/DEV/TRANSFER에 놓습니다. ZIP 해제 없이 TXT 하나로 실행됩니다.
+2. 읽기/계획 확인:
+ bash ~/DEV/TRANSFER/GENOS_ENTRY_STRUCTURE_ROLLBACK_20261002_R2.txt check
+3. 기존 checkout 코드 편집/적용을 멈춘 뒤:
+ bash ~/DEV/TRANSFER/GENOS_ENTRY_STRUCTURE_ROLLBACK_20261002_R2.txt apply
+4. main.py만 변경된 diff와 receipt를 확인해 commit/push합니다.
+   이미 배포된 컨테이너 파일이 TXT로 바로 변경되는 것은 아닙니다.
+5. 코드서빙 Run이 python3 main.py 또는 main:app을 명시한다면 루트 main 제거 전에
+   배포 설정을 아래 유지된 SSE 입구로 바꿉니다.
+   Build: python3 -m pip install -r 08_DEPLOYMENT/GENOS/requirements-sse.txt
+   Run: python3 08_DEPLOYMENT/GENOS/start_sse.py
+   기존 포트 환경이 없으면 기존 수신 포트 --port 값을 그대로 지정합니다.
+   이 Run은 코드서빙 배포 설정입니다. 코드스페이스에서 별도 서버를 켜라는 뜻이 아닙니다.
+   Build/Run 기본 로더로 쓰던 현장은 이전 확인된 설정으로 복귀할 수 있으나,
+   기본 로더의 /stream 지원은 미확인이므로 SSE 지원을 가정하지 않습니다.
+   새 commit으로 코드서빙 리비전을 배포합니다.
+6. 첨부 WORKFLOW_PASTE_ALL.txt 전체를 기존 Python 워크플로우 편집기에 반영합니다.
+   run(data), 기존 v6 코드서빙 ID/게이트웨이/인증키, timeout=2100, 실제 TEAM_ID를 유지합니다.
+   채팅 앱을 해당 Python 워크플로우 리비전에 연결합니다.
+7. 워크플로우 테스트 화면에서 WORKFLOW_SETTINGS → SSE_CHECK → WARMUP_STATUS → 실제 질문.
+   실제 run_id의 내부 로그에서 legal-agent-unified-v6 실행을 확인합니다.
+
+코드서빙 설정은 v6/NFS 유지:
+ GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6
+ GENOS_RUNTIME_DIR=/nfs-root/diamo/8-agent/runtime
+ GENOS_MEMORY_JOURNAL_MODE=DELETE, SEMANTIC_LLM_BACKEND=genos
+ 기존 정확한 GENOS_GENERATION/GENOS_DATA_ROOT와 내부 모델 설정 유지.
+ 개인 기억은 워크플로우·코드서빙에 같은 현장 GENOS_MEMORY_SIGNING_KEY와 memory 설정,
+ 실제 플랫폼 사용자/대화 신원 계약이 필요합니다. DB를 삭제·이동·임의 이행하지 않습니다.
+
+자동 탐색은 정확한 R2 code.zip SHA를 가진 적용 영수증이 하나일 때만 사용합니다.
+복수라면 출력 목록에서 실제 R2 백업 폴더를 선택:
+ export GENOS_ENTRY_BACKUP='<R2 apply가 출력했던 정확한 backup 폴더>'
+ 같은 TXT check/apply 재실행.
+최신 날짜로 선택하지 않습니다. 이미 적용되었으면 파일을 확인하고 종료합니다.
+
+이번 부분 롤백의 원복:
+ bash ~/DEV/TRANSFER/GENOS_ENTRY_STRUCTURE_ROLLBACK_20261002_R2.txt undo
+ 보존한 /chat main.py만 루트에 복원하고 이전 /chat 시작/연결 리비전을 다시 선택합니다.
+ R2 전체 rollback은 실행하지 마세요. v6/데이터까지 되돌리는 범위가 아닙니다.
+ 로그는 TXT 옆 logs, 영수증은 위 entry-only backup 폴더에 남습니다.
+ WSL 모의 검사와 GENOS 현장 적용/배포/답변 성공은 별개입니다.

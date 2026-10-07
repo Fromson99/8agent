@@ -1,0 +1,35 @@
+{
+  "patch": "thinking-log-20260928-r1",
+  "time": "2026-09-28T04:42:46.886780+00:00",
+  "tests": [
+    {
+      "files": [
+        "test_genos_thinking_log.py",
+        "test_genos_wire_schema.py",
+        "test_semantic_observability.py",
+        "test_genos_latency_patch.py"
+      ],
+      "passed": 63
+    },
+    {
+      "files": [
+        "test_genos_thinking_log_handoff.py"
+      ],
+      "passed": 2
+    }
+  ],
+  "total_passed": 65,
+  "txt_shell_syntax": "PASS",
+  "python_311_syntax": "PASS",
+  "changed_source_and_engine_pins": "PASS",
+  "standalone_txt_exact_baseline_apply_reapply_rollback": "PASS",
+  "committed_fixture_code_zip_gate": "PASS",
+  "txt_sha256": "102711ae5a2c72486d55b7034756776225d9efc2c45445699d0a67d472263aa7",
+  "preexisting_out_of_scope_drift": [
+    "02_BACKEND/semantic_runtime/request_report.py"
+  ],
+  "full_workspace_generation_gate": "NOT_RUN",
+  "GENOS_generation": null,
+  "GENOS_code_serving_revision": null,
+  "onsite_workflow_verified": false
+}

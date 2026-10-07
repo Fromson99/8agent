@@ -1,0 +1,29 @@
+{
+  "format": "8agent-final-review-off-patch/1",
+  "patch": "final-review-disabled-20260928-r1",
+  "files": {
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py": {
+      "base_sha256": "069a5fe65c75de0cfaeff0c0d1a89f8d3d1de3e88056da24da1465ef69ecffc7",
+      "new_sha256": "1b6cba4c059e4a4048c92aa219ebe4e2c97f8a709781d3506ac7b8260ea0d74a"
+    },
+    "00_SYSTEM/LEGAL_AGENT/profile-tools-v5.json": {
+      "base_sha256": "4b786404db80106c3894ade51e2a8502d038f7f2477ce87cf101f590beeed16e",
+      "new_sha256": "e16e5ce8f6f8fef95263078fa32e3a731d50d080986b307201b695a850c625b9"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/tools_session.py": {
+      "base_sha256": "c65438d124a6d26f422d2b6bc776d922683b95d02909249a3ab89f0682d459f5",
+      "new_sha256": "b2b914605bd23eb85ee2c1921007325ec7b545e4276a1845a843b9104395a80c"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/question_obligations.py": {
+      "base_sha256": "065f3f1c98ea810ca01c2f8561dfd422f110c4990a0ab6c90637bfabdc2472db",
+      "new_sha256": "2446700c745f70eb2ce2d6ab88d86a0945c4685b8cbc0c7b2c18430c3f6d1c95"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/final_review_notes.py": {
+      "base_sha256": "7c2906de4ca4bcf00501bbdc602a7873d2bf4601d0cdc57c2dd1a4526ab20128",
+      "new_sha256": "5cb4d28b0d9a1a186871e24dbfda6adce6c78198cb23d8cdfbe344a742f81109"
+    }
+  },
+  "generation_change": false,
+  "code_serving_revision": null,
+  "onsite_verified": false
+}

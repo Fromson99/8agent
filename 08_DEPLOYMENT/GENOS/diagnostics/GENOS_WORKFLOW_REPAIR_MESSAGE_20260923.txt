@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+"""NFS 요청 보고서에서 WORKFLOW_REPAIR 오류 문구만 출력한다.
+
+GENOS Jupyter Terminal에서 실행:
+  cd -P ~/DEV
+  python3 TRANSFER/GENOS_WORKFLOW_REPAIR_MESSAGE_20260923.txt
+
+읽기 전용. 질문, 원문, 모델 출력, 도구 인자와 인증 정보는 출력하지 않는다.
+단, 오류 문구 자체에 내부 값이 포함될 수 있으므로 공유 전에 확인한다.
+"""
+
+import json
+from pathlib import Path
+
+
+RUN_ID = "e255e946e21f43279ab3a663114d3a05"
+ROOT = Path("/nfs-root/diamo/8-agent/rag-request-reports")
+
+
+def main():
+    files = sorted(
+        (path for path in ROOT.glob(f"*/{RUN_ID}-*.json") if path.is_file()),
+        key=lambda path: path.stat().st_mtime_ns,
+        reverse=True,
+    )
+    if not files:
+        print("보고서를 찾지 못했습니다.")
+        return 1
+
+    report = json.loads(files[0].read_text(encoding="utf-8"))
+    if report.get("run_id") != RUN_ID:
+        print("보고서 run_id가 일치하지 않습니다.")
+        return 1
+
+    count = 0
+    for row in (report.get("journal") or {}).get("timeline", []):
+        event = row.get("event") or {}
+        if event.get("kind") != "WORKFLOW_REPAIR":
+            continue
+        for error in (event.get("payload") or {}).get("errors", []):
+            print("event_seq:", event.get("seq"))
+            print("field:", error.get("field"))
+            print("message:", error.get("message"))
+            count += 1
+    if not count:
+        print("WORKFLOW_REPAIR 오류가 없습니다.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

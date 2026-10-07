@@ -1,0 +1,53 @@
+{
+  "patch": "response-overhead-20260928-r2",
+  "status": "SENT",
+  "time": "2026-09-28T08:34:21.535431+00:00",
+  "validation_code_root": "/home/jin/8-AGENT",
+  "working_tree_commit": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "working_tree_has_preexisting_changes": true,
+  "python_local": "3.14.4",
+  "python_target": "Python 3.11.15",
+  "tests": {
+    "r2_contracts_passed": 124,
+    "existing_runtime_regressions_passed": 36,
+    "total_passed": 160,
+    "obsolete_r1_variant_runtime_tests_deselected": 10
+  },
+  "r1_rejection_reproduced_before_code_write": true,
+  "prior_repairs": [
+    "thinking_log_20260928_r3",
+    "team_request_logs_20260928_r3"
+  ],
+  "report_changed_functions": 10,
+  "report_added_methods": 2,
+  "other_runtime_file_payloads_unchanged_from_r1": true,
+  "lf_crlf_unrelated_bytes_preserved": true,
+  "canonical_signatures_python311_314_match": true,
+  "actual_python311_final_zip_txt_check_apply_reapply_rollback": true,
+  "actual_python311_committed_byte_gate": true,
+  "actual_python311_mock_team_plain_log_excel_csv": true,
+  "blocked_open_returns_without_waiting": true,
+  "code_zip_sha256": "5b6e8632a856e6b9423c8e532b445e44dd4e6c24966a96e078b0d7419ec73596",
+  "code_manifest_sha256": "a5114e394db647cd8217ac86e172eac16f9a1b64bdc2b0b180d66394c82fe05b",
+  "apply_txt_sha256": "eaba346e48e13d4623438701bbb8eda800604d2d041835ff1abeda7d1ca9f76f",
+  "original_r1_zip_sha256": "89caf4c25ea12e4c10020f37038a4da2a580e634aaf3b834898ad3620c830494",
+  "original_r1_preserved": true,
+  "deploy_root": "~/DEV (physical Git checkout after onsite resolution)",
+  "onsite_commit": null,
+  "generation": null,
+  "generation_manifest_sha256": null,
+  "code_serving_revision": null,
+  "onsite_workflow_verified": false,
+  "actual_genos_latency_measured": false,
+  "email_sent": true,
+  "recipient": "hyungjininfocz.son@partner.samsung.com",
+  "attachments": [
+    "GENOS_RESPONSE_OVERHEAD_20260928_R2.zip",
+    "GENOS_RESPONSE_OVERHEAD_20260928_R2_APPLY.txt",
+    "GENOS_RESPONSE_OVERHEAD_20260928_R2_PATCH_NOTES.txt"
+  ],
+  "javascript_members": [],
+  "apply_txt_bash_syntax_checked": true,
+  "gmail_message_id": "1a0e732f8847e906",
+  "gmail_thread_id": "1a0e732f8847e906"
+}

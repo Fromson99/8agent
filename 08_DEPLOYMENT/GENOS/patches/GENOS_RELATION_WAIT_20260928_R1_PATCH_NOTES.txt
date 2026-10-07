@@ -1,0 +1,53 @@
+GENOS 관계 탐색 5초 제한 해제 — relation-wait-20260928-r1
+
+변경
+follow_relations와 follow_reference의 별도 5초 SQL 중단 및 Python 목록 순회 제한을
+제거합니다. 전체 요청 deadline만 적용합니다. 기존 프로필에 relation_scan_seconds=5가
+있어도 탐색을 중단하지 않습니다. 고정 프로필 파일은 수정하지 않습니다.
+페이지·문자 수·도구 횟수·자동 읽기 깊이·접근 범위·원문/세대 해시 검증은 유지합니다.
+에러를 성공/검색 0건으로 바꾸지 않습니다. 전체 요청 deadline에서는 중단합니다.
+로그의 deadline_scope=request와 failure_kind=REQUEST_DEADLINE으로 전체 시간 초과를
+구분하며, 다른 SQLite 중단은 SQL_INTERRUPTED_UNKNOWN으로 남깁니다.
+
+적용 대상
+latency R2 또는 request-unlimited R1에 포함된 관계 코드의 정확한 바이트가 기준입니다.
+원문/용어집 데이터 없이 runtime 7개 파일만 기존 Git checkout ~/DEV에 백업 후 적용합니다.
+엔진 manifest와 PIPELINE 코드 해시는 설치기가 같은 checkout에서 갱신합니다.
+기존 코드의 해시가 다르거나 무관한 코드/스키마가 변형됐으면 쓰기 전에 중단합니다.
+구형 checkout에 강제로 덮어쓰거나 이전 패치를 다시 덮어 적용하지 않습니다.
+
+적용
+ZIP와 APPLY.txt를 ~/DEV/TRANSFER/code에 함께 올립니다.
+cd ~/DEV/TRANSFER/code
+bash GENOS_RELATION_WAIT_20260928_R1_APPLY.txt
+
+첫 단계부터 /tmp 또는 TMPDIR의 지속 로그와 종료 상태를 남깁니다.
+기존 ~/DEV가 실행·push 대상이며 TRANSFER의 해제 폴더는 설치 도구 보관용입니다.
+BACKUP_READY의 백업 경로와 TRANSFER/relation-wait-20260928-r1의 receipt를 보존합니다.
+재실행은 ALREADY_APPLIED로 확인하며 백업을 덮어쓰지 않습니다.
+
+적용 후 runtime 7개 파일, 갱신된 엔진 manifest와 00_SYSTEM/PIPELINE.json을 검토해
+commit합니다. 아래 경로를 현장에서 실제 선택된 generation 절대경로로 바꿉니다.
+MODE=verify GENOS_GENERATION=/actual/selected/generation bash GENOS_RELATION_WAIT_20260928_R1_APPLY.txt
+게이트는 같은 checkout의 Python·02_BACKEND에서 ZIP/Git 바이트, generation E2E와
+verify_assets를 확인합니다. 통과한 commit을 push하고 같은 generation의 새 코드서빙
+리비전으로 배포합니다. 적용/commit/push/코드서빙 배포/워크플로우 성공은 각각 별도입니다.
+
+데이터 재구축, CURRENT 변경, 환경변수 추가·변경, 워크플로우 Python 교체는 필요 없습니다.
+기존 전체 요청·워크플로우·플랫폼 시간 제한은 그대로 적용됩니다.
+실제 질문 확인은 워크플로우 테스트 화면에서만 합니다.
+
+검증 범위
+로컬 모의 계약으로 SQL/Python 탐색이 5초 이상 진행하는 경우, 전체 deadline 중단,
+페이지 cursor, callback 복원과 v3/v4/v5 연결을 확인합니다. 설치기의 해시 불일치 거절,
+적용/재적용/중단 시 복구/원복, 격리 Git checkout 코드 gate도 확인합니다.
+정확한 로컬 검사 결과와 반입 해시는 같은 폴더의 VALIDATION.json에 기록합니다.
+검증 코드 루트: /home/jin/8-AGENT (WSL 작업 코드).
+현장 generation 경로·manifest 해시·배포 commit·코드서빙 리비전·실제 질문 성공은 미확인입니다.
+성능 실험이나 내부 모델 호출 결과가 아닙니다.
+
+원복
+적용 로그의 BACKUP_READY 경로를 아래 경로에 넣습니다.
+MODE=rollback ROLLBACK_FROM=/actual/backup-directory bash GENOS_RELATION_WAIT_20260928_R1_APPLY.txt
+적용 전 코드와 엔진 pin을 복구합니다. 적용 후 수정된 파일은 자동으로 덮어쓰지 않습니다.
+이미 배포했다면 이전 검증 코드서빙 리비전으로 별도 복귀합니다.

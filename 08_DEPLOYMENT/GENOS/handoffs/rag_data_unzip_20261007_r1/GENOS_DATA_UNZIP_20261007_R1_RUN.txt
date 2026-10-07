@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+cd -- "${GENOS_DEV:-$HOME/DEV}/TRANSFER"
+GENOS_UNZIP_FILE="${1:?사용법: bash GENOS_DATA_UNZIP_20261007_R1_RUN.txt 실제데이터ZIP파일명.zip}"
+if [[ "$GENOS_UNZIP_FILE" == */* || "$GENOS_UNZIP_FILE" != genos-rag-data-*.zip || ! -f "$GENOS_UNZIP_FILE" ]]; then
+  printf 'ERROR: DEV/TRANSFER에 있는 genos-rag-data-*.zip의 실제 파일명을 지정하세요.\n' >&2
+  exit 2
+fi
+GENOS_UNZIP_BUNDLE="$PWD/RAG_DATA_UNPACK/${GENOS_UNZIP_FILE%.zip}"
+if [[ -e "$GENOS_UNZIP_BUNDLE" || -L "$GENOS_UNZIP_BUNDLE" ]]; then
+  printf 'ERROR: 이미 해제된 폴더가 있습니다: %s\n' "$GENOS_UNZIP_BUNDLE" >&2
+  exit 2
+fi
+if [[ -f "$GENOS_UNZIP_FILE.sha256" ]]; then
+  sha256sum -c -- "$GENOS_UNZIP_FILE.sha256"
+fi
+mkdir -p -- RAG_DATA_UNPACK
+python3 -m zipfile -e "$GENOS_UNZIP_FILE" RAG_DATA_UNPACK
+printf '압축 해제 완료: %s\n데이터 위치: %s/payload/nfs-root/diamo/8-agent/\n' "$GENOS_UNZIP_BUNDLE" "$GENOS_UNZIP_BUNDLE"

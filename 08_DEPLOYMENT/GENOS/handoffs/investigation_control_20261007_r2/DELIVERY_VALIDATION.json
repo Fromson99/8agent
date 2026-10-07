@@ -1,0 +1,170 @@
+{
+  "status": "passed",
+  "environment": "WSL synthetic generation and local Git remote; no GENOS access",
+  "tests_passed": 7,
+  "workflow_python_syntax": "3.10",
+  "serving_python_syntax": "3.11",
+  "same_main_files": 265,
+  "zip_code_files": 282,
+  "no_javascript_or_data": true,
+  "existing_cache_data_state_preserved": true,
+  "checkout_alias_apply_rerun_rollback_passed": true,
+  "unknown_code_cache_zip_tamper_blocked": true,
+  "exact_checkout_gate_local_push_rerun_passed": true,
+  "model_calls": 0,
+  "local_synthetic_git_events": [
+    {
+      "at": "2026-10-06T22:55:43.341313+00:00",
+      "stage": "START",
+      "mode": "all",
+      "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/investigation_control_20261007_r2/.verification-work/test_full_txt_commits_gates_an0/DEV"
+    },
+    {
+      "at": "2026-10-06T22:55:43.354107+00:00",
+      "stage": "ZIP_VERIFIED",
+      "code_zip_sha256": "3e2b0ef40adef0a2c47ba367a0205471882990a0e50a2f075e5d54091dd1d294",
+      "code_manifest_sha256": "d9e265c4efa008cc2e13259989ed7a6e89b49ba4745d26020bc853a6b7e10bc0"
+    },
+    {
+      "at": "2026-10-06T22:55:43.356655+00:00",
+      "stage": "GENERATION_SELECTED",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/investigation_control_20261007_r2/.verification-work/test_full_txt_commits_gates_an0/built/generation",
+      "manifest_sha256": "a1105144b3488477536b566285c16ef3c7eba3a6a6101d596740191deefa955f"
+    },
+    {
+      "at": "2026-10-06T22:55:43.358791+00:00",
+      "stage": "CACHE_PREFLIGHT_PASS",
+      "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"
+    },
+    {
+      "at": "2026-10-06T22:55:44.150935+00:00",
+      "stage": "CACHE_PREFLIGHT_PASS",
+      "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"
+    },
+    {
+      "at": "2026-10-06T22:55:44.152952+00:00",
+      "stage": "CODE_APPLIED",
+      "backup": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/investigation_control_20261007_r2/.verification-work/test_full_txt_commits_gates_an0/DEV/09_ARTIFACTS/BACKUPS/code-replacement/20261006T225544Z-75f9775d"
+    },
+    {
+      "at": "2026-10-06T22:55:44.244383+00:00",
+      "stage": "SERVICE_LOADER_PASS",
+      "seconds": 0.089
+    },
+    {
+      "at": "2026-10-06T22:55:44.303000+00:00",
+      "stage": "GENERATION_E2E_PASS",
+      "seconds": 0.056
+    },
+    {
+      "at": "2026-10-06T22:55:44.564288+00:00",
+      "stage": "ASSETS_PASS",
+      "seconds": 0.259
+    },
+    {
+      "at": "2026-10-06T22:55:44.677604+00:00",
+      "stage": "GIT_COMMITTED",
+      "commit": "84a27663f79362d95d588278a21793828bbed330"
+    },
+    {
+      "at": "2026-10-06T22:55:44.982742+00:00",
+      "stage": "RELEASE_GATE_PASS",
+      "seconds": 0.302
+    },
+    {
+      "at": "2026-10-06T22:55:45.130273+00:00",
+      "stage": "GIT_PUSHED",
+      "commit": "84a27663f79362d95d588278a21793828bbed330",
+      "remote": "origin",
+      "branch": "master",
+      "generation": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/investigation_control_20261007_r2/.verification-work/test_full_txt_commits_gates_an0/built/generation",
+      "generation_manifest_sha256": "a1105144b3488477536b566285c16ef3c7eba3a6a6101d596740191deefa955f"
+    },
+    {
+      "at": "2026-10-06T22:55:45.132652+00:00",
+      "stage": "COMPLETE",
+      "mode": "all",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    },
+    {
+      "at": "2026-10-06T22:55:45.214271+00:00",
+      "stage": "START",
+      "mode": "all",
+      "code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/investigation_control_20261007_r2/.verification-work/test_full_txt_commits_gates_an0/DEV"
+    },
+    {
+      "at": "2026-10-06T22:55:45.223910+00:00",
+      "stage": "ZIP_VERIFIED",
+      "code_zip_sha256": "3e2b0ef40adef0a2c47ba367a0205471882990a0e50a2f075e5d54091dd1d294",
+      "code_manifest_sha256": "d9e265c4efa008cc2e13259989ed7a6e89b49ba4745d26020bc853a6b7e10bc0"
+    },
+    {
+      "at": "2026-10-06T22:55:45.226208+00:00",
+      "stage": "GENERATION_SELECTED",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/investigation_control_20261007_r2/.verification-work/test_full_txt_commits_gates_an0/built/generation",
+      "manifest_sha256": "a1105144b3488477536b566285c16ef3c7eba3a6a6101d596740191deefa955f"
+    },
+    {
+      "at": "2026-10-06T22:55:45.228084+00:00",
+      "stage": "CACHE_PREFLIGHT_PASS",
+      "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"
+    },
+    {
+      "at": "2026-10-06T22:55:45.923927+00:00",
+      "stage": "CACHE_PREFLIGHT_PASS",
+      "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"
+    },
+    {
+      "at": "2026-10-06T22:55:45.926637+00:00",
+      "stage": "CODE_APPLIED",
+      "backup": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/investigation_control_20261007_r2/.verification-work/test_full_txt_commits_gates_an0/DEV/09_ARTIFACTS/BACKUPS/code-replacement/20261006T225544Z-75f9775d"
+    },
+    {
+      "at": "2026-10-06T22:55:45.994283+00:00",
+      "stage": "SERVICE_LOADER_PASS",
+      "seconds": 0.066
+    },
+    {
+      "at": "2026-10-06T22:55:46.056110+00:00",
+      "stage": "GENERATION_E2E_PASS",
+      "seconds": 0.058
+    },
+    {
+      "at": "2026-10-06T22:55:46.218063+00:00",
+      "stage": "ASSETS_PASS",
+      "seconds": 0.158
+    },
+    {
+      "at": "2026-10-06T22:55:46.238779+00:00",
+      "stage": "GIT_COMMITTED",
+      "commit": "84a27663f79362d95d588278a21793828bbed330"
+    },
+    {
+      "at": "2026-10-06T22:55:46.518427+00:00",
+      "stage": "RELEASE_GATE_PASS",
+      "seconds": 0.278
+    },
+    {
+      "at": "2026-10-06T22:55:46.534905+00:00",
+      "stage": "GIT_PUSHED",
+      "commit": "84a27663f79362d95d588278a21793828bbed330",
+      "remote": "origin",
+      "branch": "master",
+      "generation": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/investigation_control_20261007_r2/.verification-work/test_full_txt_commits_gates_an0/built/generation",
+      "generation_manifest_sha256": "a1105144b3488477536b566285c16ef3c7eba3a6a6101d596740191deefa955f"
+    },
+    {
+      "at": "2026-10-06T22:55:46.537607+00:00",
+      "stage": "COMPLETE",
+      "mode": "all",
+      "code_serving_revision": "NOT_DEPLOYED",
+      "workflow_editor": "NOT_APPLIED",
+      "workflow_test": "NOT_RUN"
+    }
+  ],
+  "code_zip_sha256": "3e2b0ef40adef0a2c47ba367a0205471882990a0e50a2f075e5d54091dd1d294",
+  "test_log_sha256": "4d3a7a958e83f224e6e1020f14f7733fd2154965a97b14ae8de19fdd1d373537",
+  "field_deployment": "NOT_RUN"
+}

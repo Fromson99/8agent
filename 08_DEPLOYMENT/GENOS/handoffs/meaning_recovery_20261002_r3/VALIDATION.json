@@ -1,0 +1,33 @@
+{
+  "schema_version": "genos-meaning-recovery-validation-r3",
+  "command": ".venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_genos_meaning_recovery_r3.py 05_TESTS/CONTRACTS/test_genos_meaning_recovery_r2.py 05_TESTS/CONTRACTS/test_genos_meaning_recovery.py 05_TESTS/CONTRACTS/test_genos_meaning_variants.py 05_TESTS/CONTRACTS/test_genos_meaning_bulk.py",
+  "result": "67 passed in 20.57s",
+  "tests_passed": 67,
+  "source_root": "/home/jin/8-AGENT",
+  "runners": {
+    "06_TOOLS/OFFLINE/genos_meaning_recover_r1.py": "d3c75593027bf56681d76b36c58ac2695ce5c721f1a385f99a987a8b0754f701",
+    "06_TOOLS/OFFLINE/genos_meaning_recover_r2.py": "b9eaee02e56458fbf40ff9453aaf64c7e302e03fb7bea71d685749755229079a",
+    "06_TOOLS/OFFLINE/genos_meaning_recover_r3.py": "5d81fdd4877e80dc9ed0cf556580ba674f6078eada222ba884c885a152931973"
+  },
+  "files": {
+    "GENOS_MEANING_RECOVERY_20261002_R3.zip": "2421716383e099618caaf92842ec74f7b03951c769986f301ca3f34d19eb96f3",
+    "GENOS_MEANING_RECOVERY_20261002_R3.txt": "eb3e12f0a06a8aa5acc75bb9c6bf381f93e4483c00cfbb06f4ab63965f4a5641",
+    "GENOS_MEANING_RECOVERY_20261002_R3_GUIDE_UTF8.txt": "5a33fc37ff1250b0628521c0ade0b095cd3d05a870ecfce04fc2e3dd07468639"
+  },
+  "python311_compile": {
+    "version": "3.11.15",
+    "units": 10,
+    "passed": true
+  },
+  "actual_missing_navigation_storage_photo_failure_reproduced": true,
+  "synthetic_legacy_backend_used": true,
+  "monolithic_navigation_original_checks_preserved": true,
+  "split_audit_without_module_rejected_before_start": true,
+  "real_missing_module_full_pipeline_reference_and_local_publication_verified": true,
+  "required_callable_and_transitive_dependency_failures_not_hidden": true,
+  "historical_r1_r2_payloads_unchanged": true,
+  "scripted_models_only": true,
+  "field_build_verified": false,
+  "field_serving_revision": null,
+  "activated": false
+}

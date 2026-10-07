@@ -1,0 +1,116 @@
+{
+  "applied": true,
+  "changed_code": [
+    "06_TOOLS/run_tool.py"
+  ],
+  "unlisted_runtime_files": [],
+  "unlisted_added": false,
+  "engine_manifests": [
+    {
+      "engine": "legal-v3-answer@3.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/answer.json",
+      "old": "d03350b16eecad3911c5dfc2bbc043e45bcc71195fb00efa5e174e73a487eb05",
+      "new": "6f9306150a8cfffda4285a00896c5e19b7c2ac0791ec697a6c3561661ddc1f1c"
+    },
+    {
+      "engine": "legal-v3-assemble@3.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/assemble.json",
+      "old": "a87fed34312717b515bfef143a7a66dea22e12a11b9bb9ea64ac9a9f5dbb4416",
+      "new": "831d03197997372e20ed2d8a99d5e64acf4709a7d4cd55b40267c0ce39cf60ad"
+    },
+    {
+      "engine": "legal-v3-retrieve@3.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/retrieve.json",
+      "old": "bde0fb3ee6dca2d98429ee115b8a2cc3ba1587486881d0fde7ed3f27b036210a",
+      "new": "a28e3001485e5f2459eecf3218fc6c9fd627ed527aa2a9c07c95aae3d52e818f"
+    },
+    {
+      "engine": "legal-v3-select@3.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/select.json",
+      "old": "3c4d70ea7f78d773f914023389b44e84597e7077da805a3d06f9b7c52615b350",
+      "new": "a705ca49b5136e8f755f80c0588239ed6cc48ccba86e2e27d3d60438fc433eb8"
+    },
+    {
+      "engine": "legal-v4-answer@4.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/answer.json",
+      "old": "6d3aa88dd6d66a9f3f53b633874e5703d5e5df5716fe8b38c6e46b26274d6abb",
+      "new": "53a35e0fe5fae07dcd37a98f6aebf33c4183b2dee967132ef80aa2e162941e96"
+    },
+    {
+      "engine": "legal-v4-assemble@4.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/assemble.json",
+      "old": "ea69f668330274fdea05a51ff2a0fb631e345664945bf75f0607aa2a9a4364ec",
+      "new": "c7bf0f8629ae2f6df576e716ab95fa14053daab18da99a2574a47e79d430d8eb"
+    },
+    {
+      "engine": "legal-v4-retrieve@4.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/retrieve.json",
+      "old": "9359f50cacce0407c2db0010f5a45eb60b4c1d3995dcde9aa3f0ea23e0d5272e",
+      "new": "7877593e2b04fe061d978e1dd7fa761a7dcd8aa6a748c334e8f3c99dbf05eb94"
+    },
+    {
+      "engine": "legal-v4-select@4.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/select.json",
+      "old": "499daff4fe30eb1df02bc97a6b83b05b58534158d53050ab07ebe55053fd19b6",
+      "new": "34b3ad2a47564cf833d012590a1b26c7789ed608abfaabe95b71eeb262029ca4"
+    },
+    {
+      "engine": "legal-v5-answer@5.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/answer.json",
+      "old": "5c2ac23e7a8438c043a43b00fb5f5cf853f5cab16d000f3cfa1ccdf32819168f",
+      "new": "85399c3570b5a3d52f9a06918d9f1e61cebac86b322e8a07b468a054a490ccd1"
+    },
+    {
+      "engine": "legal-v5-assemble@5.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/assemble.json",
+      "old": "cba3e47328e20a695b92f06847647e9448390c45da17e2e221ed990239c35d0f",
+      "new": "a9d3a9048f4b02ec88a7a7bdabaee36dcdbc500dadfced04b5789a03b7df22ad"
+    },
+    {
+      "engine": "legal-v5-retrieve@5.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/retrieve.json",
+      "old": "1d5a148bf4fea882d1c13f23afe6f2f0f5fb1dc6c041be402f34239d476de618",
+      "new": "1df440b6c74ba804857840a7e4e051644593a1f10676eac982879711775d76ab"
+    },
+    {
+      "engine": "legal-v5-select@5.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/select.json",
+      "old": "3f4f9167615e2265bb1562828daa21488b473b222d2206b7bd83dd4132b920ed",
+      "new": "7ff67dc4bd8a4730c56fcfca6de356883ad85fda804be289abe123706a2ff8f9"
+    }
+  ],
+  "schemas": [],
+  "data_pins_checked_not_rewritten": [
+    {
+      "pin": "index",
+      "path": "01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation/navigation",
+      "ok": true
+    },
+    {
+      "pin": "fulltext",
+      "path": "01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation/fulltext",
+      "ok": true
+    },
+    {
+      "pin": "origin_projections",
+      "path": "01_DATA/PROJECTIONS/document-origins/term-source-adca5fbe3650f90fb372.json",
+      "ok": true
+    },
+    {
+      "pin": "origin_projections",
+      "path": "01_DATA/PROJECTIONS/document-origins/term-source-1acfbe06921527e74a0b.json",
+      "ok": true
+    },
+    {
+      "pin": "alias_projections",
+      "path": "01_DATA/PROJECTIONS/document-aliases/term-source-adca5fbe3650f90fb372.json",
+      "ok": true
+    },
+    {
+      "pin": "alias_projections",
+      "path": "01_DATA/PROJECTIONS/document-aliases/term-source-1acfbe06921527e74a0b.json",
+      "ok": true
+    }
+  ],
+  "next": null
+}

@@ -1,0 +1,38 @@
+{
+  "format": "genos-diagnostic-patch/1",
+  "patch": "latency-20260928-r1",
+  "files": {
+    "02_BACKEND/semantic_runtime/app.py": {
+      "base_sha256": "8aa98856542405ebe4b3af19f7978c10258a3b622dbd19c062d82093afdbd373",
+      "new_sha256": "525aeff11cfc308fcfbfcc970b742a64165d6eeb80360b62086c2b7d06888965"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py": {
+      "base_sha256": "71f7511b4b90cbc0af6e496c6e13ba1b12b7fd75d3d4ec38bcd8fb80aa7f4167",
+      "new_sha256": "f2a097d3eed30f9fcfc79ceea342b630d548e5665c2997af734a1e2398b0eda2"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/source_tools.py": {
+      "base_sha256": "6ca80c918f4af0377d3d56a594f5ba498e47ab297538236010630449afd3273e",
+      "new_sha256": "3ae4f7e2588fdeb5b02477c1219656374d19b7ad6aa8ca7f21b053d41cb9cd58"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": {
+      "base_sha256": "9ab98abda0c5ccd7e56f4e1cf1407e903dee4e4261b0390366818c604afae3f7",
+      "new_sha256": "d68d946372fbb960c082c04d5c38ced3855ffe7045a94801a91c845c4e17ded0"
+    },
+    "02_BACKEND/semantic_runtime/observability.py": {
+      "base_sha256": "93a91ad1b504d7b4fdab4a51a4e2e6b3803047c15e9cbd787b4f529a924cdd4e",
+      "new_sha256": "96787fbdc609cf88b3e891f8abe01fffd37aeae431d183356260be18557c0a4f"
+    },
+    "02_BACKEND/semantic_runtime/pipeline.py": {
+      "base_sha256": "8072ab5f569a69a09fe75420761e3fb0e8f9df85723ee20caf8e0f3ce7e5621d",
+      "new_sha256": "557d6b4c1914a5a61d12103fcbc81fa03523597ac51d2f437f2d8446db7e15b3"
+    },
+    "02_BACKEND/semantic_runtime/request_report.py": {
+      "base_sha256": "70a10c56ca6847fdc9ae1606f7e89a486b2984c98430506dd7e5a1edce9d93ba",
+      "new_sha256": "7a16d852bc268ef913230d31cde9464bf0d490a19a0e6dc4ceb30be8973bc7ff"
+    },
+    "02_BACKEND/semantic_runtime/team_scope.py": {
+      "base_sha256": "20327b82cd28a991dd014d5147a0b2bd7e79c1f0d89b41b27ef4d00b85f10a49",
+      "new_sha256": "6614c715b5dbdb53945d25cf093252413095c9433c1447ed7c44b89e0ed271d7"
+    }
+  }
+}

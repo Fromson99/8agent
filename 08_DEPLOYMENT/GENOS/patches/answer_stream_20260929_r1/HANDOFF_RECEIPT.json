@@ -1,0 +1,34 @@
+{
+  "patch": "answer-stream-20260929-r1",
+  "zip_sha256": "27ceabf30fc48f2e5a63241738c9ae1897d1c57ac2d3344ee070b499b4e8593e",
+  "code_root": "/home/jin/8-AGENT",
+  "runtime_files": {
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py": {
+      "base_sha256": "6d851380e424e11517f11c96a8c79b1ba261dc5464bbf3efadefb57df93cf006",
+      "new_sha256": "ffd8aca708a7a5b53c02e9f3a58787e416e44c0ccd5c62834b315cc327717982"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/transport.py": {
+      "base_sha256": "72be606712c21b86b52faf70c5b47a1d4d7989dfc6fe88a417dc3c257190d18f",
+      "new_sha256": "af077e6b8abbfedbcbd5f3e0d8ed75b91b2c925ec5989c02b7824c08e51f558f"
+    },
+    "08_DEPLOYMENT/GENOS/stream_app.py": {
+      "base_sha256": "c6d65b5ea6e6c1d48b838bad1c5a5dccc885499dcba4360b235670fac2bcff7f",
+      "new_sha256": "848d75cd06fcfa56d214f0b4881f9687ac5be42b2e0b02c5e3f208f9a109da46"
+    },
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": {
+      "base_sha256": "4b3e85049a32734bd3ecb0e4ff2f3d62bd2cb7cd7fbebbcebed8a3ffae4a1cd2",
+      "new_sha256": "1c44ba9c58a17df26cb14e25269f5525d97cad8860b95606451201e5e728c049"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/answer_stream.py": {
+      "base_sha256": null,
+      "new_sha256": "9e5767c941cc7143991ce260ed8bf9cdcfe727692683836a0c84a0939fad166e"
+    }
+  },
+  "workflow_file": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/patches/GENOS_ANSWER_STREAM_20260929_R1_WORKFLOW.py",
+  "generation": null,
+  "generation_manifest_sha256": null,
+  "deployment_checkout": "~/DEV (not yet inspected onsite)",
+  "deployment_commit": null,
+  "code_serving_revision": null,
+  "onsite_workflow_verified": false
+}

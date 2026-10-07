@@ -1,0 +1,135 @@
+"""Offline field receipts only. Never calls a serving API or model."""
+import hashlib, importlib.util, json, os, re, sqlite3, subprocess, sys, time
+from pathlib import Path
+
+def require(ok, message):
+    if not ok: raise ValueError(message)
+
+def digest(value):
+    return hashlib.sha256(json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+
+def read_json(path):
+    require(path.stat().st_size <= 32*1024*1024, 'JSON exceeds 32 MiB; export one result only')
+    return json.loads(path.read_text('utf-8-sig'))
+
+def readonly(path):
+    require(path.is_file(),'missing database: '+str(path))
+    db=sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True,timeout=0.2)
+    db.row_factory=sqlite3.Row
+    deadline=time.monotonic()+5
+    db.set_progress_handler(lambda: int(time.monotonic()>deadline),10000)
+    return db
+
+def check_result(runtime, result_path, generation, wiki=False):
+    wrapper=read_json(result_path)
+    require(wrapper.get('code')==0,'workflow code != 0')
+    data=wrapper.get('data')
+    require(isinstance(data,dict),'save the /chat code/data JSON from the workflow screen')
+    if data.get('text')=='verified' and 'run_id' not in data:
+        require(not wiki,'__verify__ cannot verify memory/wiki')
+        return {'scope':'registration_probe_only','model_called':False,'serving_quality':'NOT_VERIFIED'}
+    require(data.get('chat_adapter_revision')=='main-chat-v6-20261002-r2','wrong native /chat adapter revision')
+    require(data.get('execution_transport')=='in-process','request did not use native in-process adapter')
+    require(data.get('answer_status')=='answered','answer incomplete or failed; inspect workflow output')
+    require(bool(data.get('text')),'empty displayed answer')
+    require(data.get('response_schema')=='legal-agent-unified-response-v1','response is not unified v6')
+    runid=str(data.get('run_id',''))
+    require(bool(re.fullmatch('[a-f0-9]{32}',runid)),'invalid run_id')
+    paths=list((runtime/'legal-agent'/'runs').glob('*/'+runid+'/journal.sqlite'))
+    require(len(paths)==1,'expected exactly one run journal under selected NFS runtime')
+    with readonly(paths[0]) as db:
+        require(db.execute('PRAGMA user_version').fetchone()[0]==6,'wrong journal schema')
+        row=db.execute('SELECT * FROM run WHERE singleton=1').fetchone()
+        require(row is not None and row['run_id']==runid and row['status']=='COMPLETED','run not COMPLETED')
+        binding=json.loads(row['binding_json'])
+        require(digest(binding)==row['binding_hash'],'binding hash mismatch')
+        manifest=read_json(generation/'manifest.json')
+        for key in ('generation_id','store_sha256'):
+            require(key in binding and key in manifest and binding[key]==manifest[key],'selected generation mismatch: '+key)
+        commit=db.execute('SELECT * FROM case_commit WHERE singleton=1').fetchone()
+        require(commit is not None,'case commit missing')
+        commit=dict(commit);expected=commit.pop('payload_hash')
+        require(digest(commit)==expected,'case commit hash mismatch')
+    casepath=runtime/'case-memory'/'cases-v3.sqlite'
+    require(Path(commit['case_db']).resolve()==casepath.resolve(),'actual request used a different case runtime')
+    require(data.get('question_id')==commit['question_id'] and data.get('revision')==commit['revision'],'response/case revision mismatch')
+    report={'scope':'workflow_answer_and_run_binding','run_id':runid,
+        'generation_id':binding['generation_id'],'generation_manifest_sha256':hashlib.sha256((generation/'manifest.json').read_bytes()).hexdigest(),
+        'runtime':str(runtime),'answer_content_correctness':'MANUAL_REVIEW_REQUIRED',
+        'actual_deployed_commit':'NOT_ATTESTED','actual_code_serving_revision':'NOT_ATTESTED'}
+    if not wiki: return report
+    require(data.get('status')=='STORED' and bool(data.get('experience_id')),'use the final successful confirmation response (status STORED)')
+    principal=json.loads(commit['principal_json'])
+    with readonly(casepath) as db:
+        require(db.execute('PRAGMA user_version').fetchone()[0]==3,'wrong case-memory schema')
+        require(db.execute('PRAGMA journal_mode').fetchone()[0].lower()=='delete','NFS case memory must use DELETE')
+        goal=db.execute('SELECT * FROM goal WHERE id=?',(commit['question_id'],)).fetchone()
+        require(goal is not None and goal['revision']==commit['revision'],'goal has moved; verify its current confirmation response')
+        k=db.execute('SELECT * FROM knowledge WHERE id=?',(data['experience_id'],)).fetchone()
+        require(k is not None and k['status']=='ACTIVE','experience is not active')
+        require((k['owner'],k['team'])==(principal['user_id'],principal['team_id']),'experience owner mismatch')
+        require(k['bundle']==commit['question_id'] and k['revision']==commit['revision'],'experience revision mismatch')
+        payload=json.loads(k['payload'])
+        require(digest(payload)==k['hash'],'experience payload hash mismatch')
+        for kind in ('user_wiki','legal_wiki'):
+            folder=runtime/'case-memory'/'wikis'/digest([principal['user_id'],principal['team_id']])/kind
+            snapshot=read_json(folder/'index.json')
+            require(snapshot.get('schema_version')=='unified-experience-wiki-v1' and snapshot.get('kind')==kind,'wiki schema mismatch')
+            require((snapshot.get('owner'),snapshot.get('team'))==(principal['user_id'],principal['team_id']),'wiki owner mismatch')
+            matches=[p for p in snapshot.get('pages',[]) if p.get('experience_id')==k['id']]
+            require(len(matches)==1,'experience missing/duplicated in '+kind)
+            p=matches[0]
+            require(p.get('experience_revision')==k['revision'] and p.get('experience_hash')==k['hash'],'stale wiki: '+kind)
+            require(p.get('question_id')==k['bundle'] and p.get('judgment_refs')==payload.get('judgment_refs'),'wiki judgment references differ: '+kind)
+            text=(folder/'index.md').read_text('utf-8')
+            require(k['id'] in text and k['hash'] in text,'Markdown projection missing current experience: '+kind)
+    report.update(scope='confirmed_experience_and_both_wikis',wiki_projection='PASS',experience_hash=k['hash'])
+    return report
+
+def selected_generation(root):
+    spec=importlib.util.spec_from_file_location('field_generation',root/'06_TOOLS/COMMANDS/genos_generation_e2e.py')
+    mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
+    return mod.operator_generation(root).resolve(strict=True)
+
+def main():
+    mode,rootstr,runtimestr,logstr=sys.argv[1:5]
+    root=Path(rootstr).resolve(strict=True);runtime=Path(runtimestr).resolve();logdir=Path(logstr)
+    require(runtime==Path('/nfs-root/diamo/8-agent/runtime'),'set GENOS_RUNTIME_DIR=/nfs-root/diamo/8-agent/runtime')
+    if mode=='inputs':
+        # No fake identity fields: the real platform must supply trusted identity.
+        inputs=[('01_registration',{'question':'__verify__'}),('02_warmup',{'API_TYPE':'WARMUP'}),
+            ('03_warmup_status',{'API_TYPE':'WARMUP_STATUS'}),
+            ('04_question',{'question':'<현장 검증용 실제 법률 질문>'}),
+            ('05_correction',{'question':'<같은 대화에서 실제 조건 하나를 수정>'}),
+            ('06_confirmation',{'question':'최종 조건과 판단을 확인했습니다. 이 해결 경험을 확정 저장해 주세요.'}),
+            ('07_reuse_new_chat',{'question':'<새 대화에서 같은 조건의 질문: 확정 경험 재사용 여부를 확인>'})]
+        for name,body in inputs:(logdir/(name+'.json')).write_text(json.dumps(body,ensure_ascii=False,indent=2)+'\n','utf-8')
+        report={'scope':'workflow_test_screen_inputs_only','directory':str(logdir),'status':'MANUAL_EXECUTION_REQUIRED'}
+    elif mode=='preflight':
+        for name in ('fastapi','uvicorn','jsonschema'):
+            require(importlib.util.find_spec(name) is not None,'dependency missing: '+name)
+        generation=selected_generation(root)
+        commit=subprocess.run(['git','-C',str(root),'rev-parse','HEAD'],check=True,capture_output=True,text=True).stdout.strip()
+        report={'scope':'codespace_environment_only','python_executable':sys.executable,'python_version':sys.version.split()[0],
+            'checkout':str(root),'checkout_commit':commit,'generation':str(generation),
+            'generation_manifest_sha256':hashlib.sha256((generation/'manifest.json').read_bytes()).hexdigest(),
+            'runtime':str(runtime),'actual_code_serving_revision':'NOT_VERIFIED',
+            'shell_settings':{k:os.environ.get(k,'UNSET') for k in ('GENOS_RAG_IMPLEMENTATION','GENOS_MEMORY_JOURNAL_MODE','SEMANTIC_LLM_BACKEND')},
+            'memory_enabled':os.environ.get('GENOS_MEMORY_ENABLED','0')=='1',
+            'trust_enabled':os.environ.get('GENOS_CHAT_TRUST_PLATFORM_IDENTITY','0')=='1',
+            'signing_key_present':len(os.environ.get('GENOS_MEMORY_SIGNING_KEY',''))>=32,
+            'gateway_token_present':len(os.environ.get('GENOS_CHAT_GATEWAY_TOKEN',''))>=32}
+    elif mode in ('answer','wiki'):
+        require(len(sys.argv)==6,'supply a saved workflow code/data JSON file')
+        report=check_result(runtime,Path(sys.argv[5]),selected_generation(root),wiki=mode=='wiki')
+    else:raise ValueError('unknown verification mode')
+    (logdir/'receipt.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n','utf-8')
+    print(json.dumps(report,ensure_ascii=False,indent=2))
+    print('PASS: '+report['scope'])
+
+if __name__=='__main__':
+    try:main()
+    except Exception as exc:
+        # Do not leak database payloads or identity credentials in logs.
+        print('FIELD_VERIFY_FAILED: '+str(exc) if isinstance(exc,ValueError) else 'FIELD_VERIFY_FAILED: '+type(exc).__name__)
+        sys.exit(1)

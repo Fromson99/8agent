@@ -1,0 +1,38 @@
+{
+  "tests": 49,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "shipped_contracts": 35,
+  "installer_contracts": 14,
+  "supported_predecessors": 11,
+  "local_synthetic_full_gate": "PASS",
+  "local_synthetic_gate_log_sha256": "8b1d9253dea8f35ccc7d2ab5fa900b909b605164a4df017a546e642156d329b4",
+  "deployment_commit": "bdb8d00f7b37bceb85d2aac5f4ab393b29a08df2",
+  "python311_syntax": "PASS",
+  "bash_syntax": "PASS",
+  "zip_inventory_hashes_and_committed_checkout": "PASS",
+  "runtime_code_and_engine_pins": "PASS",
+  "no_javascript_attachments": "PASS",
+  "browser_validation": {
+    "nested_toggles": "PASS",
+    "initial_collapsed": "PASS",
+    "exact_original_on_expand": "PASS",
+    "mermaid_parse_and_svg": "PASS",
+    "markdown_code_fence_preserved": "PASS",
+    "browser": "Linux Chromium",
+    "mermaid_version": "12.1.0",
+    "field_genos_renderer": "NOT_VERIFIED"
+  },
+  "external_model_calls": 0,
+  "genos_deployed": false,
+  "field_generation_gate": "NOT_RUN",
+  "field_renderer": "NOT_VERIFIED",
+  "main_promotion": false,
+  "excluded_historical_fixtures": [
+    "test_genos_main_chat::test_trusted_platform_signs_same_runtime_contract assumes no AD_PROBE before RAG; same known mismatch exists in preserved baseline",
+    "test_genos_main_chat::test_migrated_chat_reaches_real_v6_pipeline_and_stores_both_wikis uses the former unit selector fixture. Current unit selector contracts are exercised by new real-v6 tests."
+  ],
+  "fixture_support_inventory": "TEST_SUPPORT_ADDITIONS.json and parent TEST_SUPPORT.json; unchanged existing /chat entry and generation fixture helpers are not additions to the partial ZIP",
+  "code_zip_sha256": "c4eae5615c2eebba44673e1f0a1e70f3a3fe18891b89f281d3e93ba752b9c2b6"
+}

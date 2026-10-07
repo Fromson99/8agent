@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+"""Read-only comparison of a selected glossary receipt and deployment code.
+
+GENOS codespace (use the generation configured in code serving):
+  cd -P ~/DEV
+  python3 /path/to/GENOS_GLOSSARY_COMPILER_CHECK_20260928.txt \
+    --code-root "$PWD" --generation /actual/selected/generation
+
+No imports from the application, cache construction, or generation writes.
+A PASS covers these bindings only, not the full release or deployed revision.
+"""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+
+
+def sha(path):
+    result = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            result.update(chunk)
+    return result.hexdigest()
+
+
+def inside(root, relative):
+    value = (root / relative).resolve(strict=True)
+    value.relative_to(root)
+    return value
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--code-root", type=Path, default=Path.cwd())
+    parser.add_argument("--generation", type=Path, required=True)
+    args = parser.parse_args()
+    try:
+        code_root = args.code_root.resolve(strict=True)
+        generation = args.generation.resolve(strict=True)
+        manifest_path = generation / "manifest.json"
+        manifest = json.loads(manifest_path.read_text("utf-8"))
+        binding = manifest["glossary"]
+        cache_root = inside(generation, binding["cache"])
+        receipt_path = inside(cache_root, binding["cache_receipt"])
+        receipt_hash = sha(receipt_path)
+        if receipt_hash != binding["cache_receipt_sha256"]:
+            print("GLOSSARY_RECEIPT FAIL: selected receipt hash mismatch")
+            return 1
+        receipt = json.loads(receipt_path.read_text("utf-8"))
+        expected = receipt["binding"]["compiler_sha256"]
+        compiler_path = inside(code_root, "02_BACKEND/semantic_runtime/full_glossary.py")
+        actual = sha(compiler_path)
+        print("CODE_ROOT", code_root)
+        print("GENERATION", generation)
+        print("GENERATION_ID", manifest.get("generation_id"))
+        print("GENERATION_MANIFEST_SHA256", sha(manifest_path))
+        print("CACHE_RECEIPT_SHA256", receipt_hash)
+        print("CACHE_EXPECTED_COMPILER_SHA256", expected)
+        print("CHECKOUT_COMPILER_SHA256", actual)
+        print("GLOSSARY_RECEIPT PASS")
+        if actual == expected:
+            print("GLOSSARY_COMPILER PASS")
+            print("NEXT: verify the code-serving revision uses this checkout and generation.")
+            return 0
+        print("GLOSSARY_COMPILER FAIL")
+        print("NEXT: recover the exact matching compiler from a verified backup, or build a new aligned generation.")
+        print("Preserve the original generation and receipt; run the full release gate before deployment.")
+        return 1
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        # Do not expose arbitrary manifest values or private source content.
+        print("GLOSSARY_CHECK ERROR", type(exc).__name__)
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

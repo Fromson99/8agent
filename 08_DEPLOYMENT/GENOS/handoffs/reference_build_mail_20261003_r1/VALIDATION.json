@@ -1,0 +1,49 @@
+{
+  "schema_version": "genos-reference-build-validation-v1",
+  "code_root": "/home/jin/8-AGENT",
+  "experiment": "ADR-0634-experiment-v1/compact",
+  "applied_code_files": 10,
+  "engine_manifests_updated": 36,
+  "selected_engine_code_pin_errors": [],
+  "other_preexisting_engine_pin_errors": [],
+  "python_311_syntax_files": 29,
+  "packaged_code_files": 72,
+  "required_unchanged_files": 739,
+  "zip_sha256": "48c4c1cfd3cf00ecfbac1094d6222c0d71623ce3435fbdbb3fc043328bd89011",
+  "txt_sha256": "48161ce5fe3dbbf94f80c0711cdbc8d867aed52c316fa56264a6de0d57a1e94d",
+  "guide_sha256": "5655d990588f33f4471a62faac6ca1ccf45939412353312add7855c4f98f5c48",
+  "tests": {
+    "APPLIED-CONTRACTS.log": {
+      "passed": 60,
+      "sha256": "dfc2508a98aa0001dfe63aaad0a8a79750fa2f02c149bb01d62e5d28e02d3ded"
+    },
+    "RUNTIME-CONTRACTS.log": {
+      "passed": 62,
+      "sha256": "6215991f46f36a903f84695dfddcb2e8033da01687029db85d257303aea35496"
+    },
+    "COMPACT-V2-RAG-R2.log": {
+      "passed": 3,
+      "sha256": "0752653f3d8161353e0b28ed23fc80c03269dbf9d503f00041052312595474fd"
+    },
+    "HANDOFF-CONTRACTS.log": {
+      "passed": 2,
+      "sha256": "12d2d99e6dbd90c5009ccf6ee358e1a765839613bc11f731404438673fdd4a47"
+    }
+  },
+  "tests_passed": 127,
+  "known_baseline_test_failures": 5,
+  "known_preexisting_graph_errors": 7,
+  "new_adr_final_validation": "PASS",
+  "field_model_calls": 0,
+  "external_model_calls": 0,
+  "timing_benchmark": "NOT_RUN",
+  "genos_workflow_e2e": "NOT_RUN",
+  "genos_nfs_recovery": "NOT_RUN",
+  "field_commit": null,
+  "field_revision": null,
+  "field_generation": null,
+  "main_activated": false,
+  "git_pushed": false,
+  "genos_deployed": false,
+  "active_release_sha256": "c860cfdb1a57968df4740c1bf2bf08947dfa15c1edbcb7c14d31f85773af3b32"
+}

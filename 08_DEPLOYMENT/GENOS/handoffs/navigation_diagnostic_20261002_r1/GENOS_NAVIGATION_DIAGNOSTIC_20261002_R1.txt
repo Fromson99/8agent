@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+TASK_DEV="${GENOS_DEV:-${HOME}/DEV}"
+TASK_DATA="${GENOS_DATA_ROOT:-$TASK_DEV/01_DATA}"
+TASK_RUN="${GENOS_DIAG_RUN:-financial-risk-success-20261002-index-r8}"
+[[ "$TASK_RUN" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$ ]] || { echo 'Invalid GENOS_DIAG_RUN'; exit 2; }
+TASK_LOG="$TASK_DATA/LOGS/$TASK_RUN/bottleneck-check/$(date -u +%Y%m%dT%H%M%S)-${BASHPID}"
+mkdir -p "$TASK_LOG"
+exec > >(tee -a "$TASK_LOG/run.log") 2>&1
+finish() { task_status=$?; printf 'DIAGNOSTIC FINISHED status=%s output=%s\n' "$task_status" "$TASK_LOG"; }
+trap finish EXIT
+printf 'DIAGNOSTIC START run=%s output=%s\n' "$TASK_RUN" "$TASK_LOG"
+TASK_ZIP="$(dirname "$(realpath "$0")")/GENOS_NAVIGATION_DIAGNOSTIC_20261002_R1.zip"
+python3 -u - "$TASK_ZIP" "$TASK_LOG/payload" <<'VERIFY'
+import ast,hashlib,json,pathlib,sys,zipfile
+if sys.version_info<(3,11):raise SystemExit('Python3.11 or later required')
+p=pathlib.Path(sys.argv[1])
+if hashlib.file_digest(p.open('rb'),'sha256').hexdigest()!='800c6aa4fd9bf983517aa3edaae8f5418f574b78b9599a40d7f51826e0ba1209':raise SystemExit('ZIP hash mismatch')
+with zipfile.ZipFile(p) as z:
+ m=json.loads(z.read('CODE_MANIFEST.json'))
+ if len(z.namelist())!=len(set(z.namelist())) or set(z.namelist())!=set(m['files'])|{'CODE_MANIFEST.json'}:raise SystemExit('Inventory mismatch')
+ for name,sha in m['files'].items():
+  if name not in {'genos_navigation_diagnose.py','GUIDE_UTF8.txt'}:raise SystemExit('Unexpected archive member')
+  if hashlib.sha256(z.read(name)).hexdigest()!=sha:raise SystemExit('Member hash mismatch')
+  if name.endswith('.py'):ast.parse(z.read(name),feature_version=(3,11))
+ z.extractall(sys.argv[2])
+print('ARCHIVE VERIFIED; no checkout files applied',flush=True)
+VERIFY
+python3 -u "$TASK_LOG/payload/genos_navigation_diagnose.py" --dev "$TASK_DEV" --data-root "$TASK_DATA" --run-id "$TASK_RUN" --output "$TASK_LOG" --samples "${GENOS_DIAG_SAMPLES:-7}" --interval "${GENOS_DIAG_INTERVAL:-5}"

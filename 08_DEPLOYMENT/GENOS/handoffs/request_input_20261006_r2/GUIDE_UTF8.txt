@@ -1,0 +1,124 @@
+GENOS v6 요청 해석 입력 정리 · 입력 바이트 상한 제거 R2
+
+1. 변경 내용
+
+- 모델 전송 전 입력 바이트 상한을 제거했다. 입력 구성·원문 페이지 크기를
+  max_input_bytes로 제한하던 경로도 제거했다.
+- GENOS_LLM_MAX_INPUT_BYTES는 더 이상 읽지 않는다. 기존 고정 프로필에
+  max_input_bytes가 있어도 런타임의 입력 제한으로 사용하지 않는다.
+- 요청 해석, 명령 검증, 수정 재시도 입력에서 전체 문서 ID·이름 목록을 제외했다.
+  이전 질문·수정 이력·경험에 반복 저장된 document_ids 목록도 제외한다.
+- 모델은 작업 종류, 질문 대상, 조건 변경, 검색어, 내규·외규 구분을 판단한다.
+  문서 ID를 모델이 추측해서 선택하지 않도록 출력 document_ids는 null이다.
+- 서버 내부에는 문서 목록과 실제 ID를 유지한다. 권한 검사·검색 범위·원래 상태
+  복원은 서버에서 수행한다. 문서명을 지정한 요청은 질문·검색어에 보존한다.
+- 전체 문서 목록 요청의 별도 조회 경로와 내규:/외규: 표시를 유지한다.
+- 멀티턴 이력과 legal_wiki 참고 힌트, 검색 계획·판단의 위키 재검사 경로를 유지한다.
+- 출력 토큰은 일반 GENOS 환경변수 결속에서 GENOS_RAG_MAX_OUTPUT_TOKENS로 관리한다.
+  미지정 시 기존 기본값을 쓴다. LEGAL_AGENT_PROFILE 및 SHA256으로 별도 프로필을
+  지정한 경우에는 그 파일의 max_output_tokens가 적용된다.
+- 원문 페이지의 문자 수, 질문 길이, 호출 횟수·시간·수정 횟수 설정은 기존 값이다.
+  모델 서버 자체의 문맥 길이·출력 토큰 제한은 해당 내부 배포가 적용한다.
+
+2. 누적 반입 범위
+
+SQL/AD 누적 R5를 기반으로 기존 v6·새 기억/위키 저장소·AD 기능을 포함한다.
+이전에 고친 source v2 및 unit fulltext 로더를 포함한다.
+R5의 legacy full_glossary.py로 compact 읽기 기능이 되돌아가지 않도록,
+기존 reference_build R1의 검증된 compact reader 바이트를 보존했다.
+그 reader SHA256: e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406
+현장 코드 및 로컬 작업 파일의 차이는 CODE_MANIFEST.json/HANDOFF.json에 기록한다.
+작업 중 만든 request_input R1은 검증에서 제외했다. R2만 사용한다.
+
+3. 반입 파일
+
+GENOS_V6_REQUEST_INPUT_20261006_R2.zip
+GENOS_V6_REQUEST_INPUT_20261006_R2_APPLY.txt
+GUIDE_UTF8.txt
+
+ZIP과 실행 TXT를 같은 폴더에 둔다. 실행 TXT는 기존 ~/DEV checkout에 파일별
+백업 후 적용한다. 별도 폴더의 후보 코드만 확인하고 배포 성공으로 취급하지 않는다.
+전체 누적 파일의 기존 해시를 확인하며 알려지지 않은 변경은 보존하고 중단한다.
+로그는 첫 단계부터 지속 저장하고 마지막 REQUEST_INPUT_EXIT 값을 확인한다.
+
+4. 적용 및 선택된 데이터 확인
+
+반입 폴더에서:
+
+bash GENOS_V6_REQUEST_INPUT_20261006_R2_APPLY.txt check
+bash GENOS_V6_REQUEST_INPUT_20261006_R2_APPLY.txt apply
+bash GENOS_V6_REQUEST_INPUT_20261006_R2_APPLY.txt verify
+
+기본 checkout: ~/DEV
+다른 기존 checkout이면 GENOS_DEV에 정확한 경로를 지정한다.
+현장 명령은 python3다. 로그의 PYTHON 경로·버전을 확인한다.
+
+verify 기본 generation:
+/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+
+GENOS_GENERATION 환경변수가 있으면 그 값을 쓴다. 다른 세대는 실제 서빙 대상의
+절대경로를 명시한다:
+
+bash GENOS_V6_REQUEST_INPUT_20261006_R2_APPLY.txt verify /실제/generation/절대경로
+
+로그에서 CODE_ZIP_SHA256, CODE_MANIFEST_SHA256, CODE_ROOT, GENERATION,
+MANIFEST_SHA256, SERVICE_LOADER_CONTRACT PASS, GENERATION_E2E PASS를 확인한다.
+코드 적용은 NFS 데이터 생성·CURRENT 변경·Git push·리비전 배포를 수행하지 않는다.
+현재 완료한 generation을 그대로 사용할 수 있으며 데이터 재구축은 필요 없다.
+
+5. 커밋 후 배포 게이트
+
+~/DEV에서 패키지 변경을 검토한다. git diff --check 통과 후 해당 파일을 커밋한다.
+정확한 패키지 파일만 staging하려면 아래 코드에 반입 ZIP의 절대경로를 넣는다.
+
+python3 - /반입폴더/GENOS_V6_REQUEST_INPUT_20261006_R2.zip <<'PY'
+import json, subprocess, sys, zipfile
+with zipfile.ZipFile(sys.argv[1]) as z:
+    paths=[row['path'] for row in json.loads(z.read('CODE_MANIFEST.json'))['files']]
+subprocess.run(['git','add','-f','--',*paths],check=True)
+PY
+
+기존의 다른 작업을 함께 커밋하지 않도록 git diff --cached를 검토한 후 커밋한다.
+커밋 후 반입 폴더에서:
+
+bash GENOS_V6_REQUEST_INPUT_20261006_R2_APPLY.txt gate
+
+gate는 실제 push할 ~/DEV의 커밋·파일을 ZIP과 비교하고, 같은 checkout의 코드로
+선택 generation의 E2E와 verify_assets를 실행한다. 코드 변경 후에는 다시 커밋·gate한다.
+CODE_CHECK PASS, GENERATION_CHECK PASS, GENOS_RELEASE_GATE PASS를 확인한 후
+검증한 커밋을 push하고 그 커밋으로 새 코드서빙 리비전을 배포한다.
+
+코드서빙 환경변수 GENOS_GENERATION은 gate에서 확인한 경로와 같아야 한다.
+GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6 및 기존 내부 모델 URL·ID·키는 유지한다.
+출력 토큰 설정을 유지하려면 기존 GENOS_RAG_MAX_OUTPUT_TOKENS 값을 유지한다.
+이 수정에 워크플로우 Python 편집기 교체는 필요 없다.
+
+6. 실제 현장 확인
+
+질의와 warmup은 워크플로우 테스트 화면에서 실행한다.
+WARMUP → WARMUP_STATUS 완료 확인 후 다음을 확인한다:
+
+- 내규: 실제 근거가 있는 질문 → 원문 근거와 답변
+- 같은 대화의 조건 정정 → 현재 조건으로 재판단
+- 전체 문서 뭐가 있어? → 접근 가능한 문서 목록
+- 입력 바이트 상한에 의한 model.attempt.blocked가 발생하지 않는지
+
+내부 모델·실제 데이터의 답변 결과, 요청 ID, 리비전, 커밋, generation 설정을 기록한다.
+로컬 모의 성공은 현장 답변 성공 또는 법률 품질 인증을 뜻하지 않는다.
+
+7. 롤백
+
+apply 로그의 BACKUP/RECOVERY 절대경로를 정확하게 사용한다:
+
+bash GENOS_V6_REQUEST_INPUT_20261006_R2_APPLY.txt rollback /정확한/백업/절대경로
+
+파일별 백업과 설치 상태를 확인한 뒤 이전 코드를 복원한다.
+이미 배포했다면 이전 검증 코드서빙 리비전과 그 generation 설정으로 돌아간다.
+데이터·환경변수·과거 반입본을 삭제하지 않는다.
+
+8. 검증 범위
+
+검사 결과와 검증한 코드 해시는 VALIDATION.json에 기록한다.
+로컬 WSL의 모의 원문·모의 모델 전송을 사용한다. GENOS 내부 호출은 실행하지 않았다.
+실제 GENOS 커밋·generation manifest SHA256·코드서빙 리비전·워크플로우 결과는
+현장 로그 확인 전까지 미확인이다.

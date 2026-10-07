@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# Read-only follow-up to GENOS_FINANCIAL_UNION_DIAG_20260930_R1.txt.
+# Run in GENOS Codespace: bash GENOS_FINANCIAL_UNION_LOCATE_20260930_R2.txt
+# Optional: GENOS_EXTRA_GENERATION_ROOTS=/another/root:/second/root bash ...
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-financial-union-locate-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+
+DEPLOY_ROOT="${DEPLOY_ROOT:-/home/genos/DEV}"
+GENOS_DATA_ROOT="${GENOS_DATA_ROOT:-$DEPLOY_ROOT/01_DATA}"
+GENOS_SOURCE_GENERATION="${GENOS_SOURCE_GENERATION:-}"
+GENOS_EXTRA_GENERATION_ROOTS="${GENOS_EXTRA_GENERATION_ROOTS:-}"
+PYTHON_BIN="${PYTHON_BIN:-$DEPLOY_ROOT/.venv/bin/python}"
+if [[ ! -x "$PYTHON_BIN" ]]; then PYTHON_BIN="$(command -v python3)"; fi
+[[ -x "$PYTHON_BIN" ]] || { echo 'Python 3 required'; exit 2; }
+printf 'START read-only data=%s source=%s extra_roots=%s\n' "$GENOS_DATA_ROOT" "$GENOS_SOURCE_GENERATION" "$GENOS_EXTRA_GENERATION_ROOTS"
+"$PYTHON_BIN" - "$GENOS_DATA_ROOT" "$GENOS_SOURCE_GENERATION" "$GENOS_EXTRA_GENERATION_ROOTS" <<'PY'
+import hashlib
+import json
+import os
+from pathlib import Path
+import sqlite3
+import sys
+
+data = Path(sys.argv[1]).expanduser()
+selected = Path(sys.argv[2]).expanduser() if sys.argv[2] else None
+extra = [Path(p).expanduser() for p in sys.argv[3].split(':') if p]
+scope_path = data / 'CATALOG/SCOPES/photo-required-80-hwpx-20260917.json'
+layout_path = data / 'CATALOG/TEAM_LAYOUT.json'
+for p in (scope_path, layout_path):
+    if not p.is_file():
+        raise FileNotFoundError(p)
+docs = json.loads(scope_path.read_text(encoding='utf-8'))['documents'][:61]
+layout = json.loads(layout_path.read_text(encoding='utf-8'))
+registered = layout['files']
+missing = []
+for doc in docs:
+    rows = [v for v in registered.values() if v.get('scope_document') == doc['name']]
+    observed = {(v.get('sha256'), v.get('role')) for v in rows}
+    expected = {(f['sha256'], f['role']) for f in doc['files']}
+    if expected - observed:
+        missing.append(doc)
+print('REGISTRATION_MISSING count=' + str(len(missing)), flush=True)
+
+def digest(path):
+    h = hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+need_by_basename = {}
+for doc in missing:
+    for item in doc['files']:
+        need_by_basename.setdefault(Path(item['path']).name, set()).add(item['sha256'])
+raw_candidates = {}
+raw_root = data / 'RAW'
+if raw_root.is_dir():
+    print('SCAN_RAW root=' + str(raw_root), flush=True)
+    for root, dirs, files in os.walk(raw_root):
+        dirs[:] = [d for d in dirs if d not in {'union_file', '.git'}]
+        for filename in files:
+            if filename not in need_by_basename:
+                continue
+            p = Path(root) / filename
+            try:
+                sha = digest(p)
+            except OSError:
+                continue
+            if sha in need_by_basename[filename]:
+                raw_candidates.setdefault(sha, []).append(str(p))
+
+raw_report = []
+for doc in missing:
+    exact_package, exact_raw = 0, 0
+    body_package, body_raw = False, False
+    for item in doc['files']:
+        p = data / item['path']
+        try:
+            package_match = p.is_file() and digest(p) == item['sha256']
+        except OSError:
+            package_match = False
+        raw_match = bool(raw_candidates.get(item['sha256']))
+        exact_package += package_match
+        exact_raw += raw_match
+        if item['role'] == 'body':
+            body_package |= package_match
+            body_raw |= raw_match
+    raw_report.append({
+        'name': doc['name'], 'expected_files': len(doc['files']),
+        'exact_package_files': exact_package, 'exact_raw_files': exact_raw,
+        'body_in_package': body_package, 'body_in_raw': body_raw,
+    })
+for row in raw_report:
+    print('MISSING_RAW ' + json.dumps(row, ensure_ascii=False), flush=True)
+
+roots = [data / 'TERM_RELEASES', data / 'TERM', data / 'generations',
+         Path('/nfs-root/diamo/8-agent')]
+if selected:
+    roots.append(selected.parent)
+roots.extend(extra)
+candidates = set()
+directories_seen = 0
+MAX_DIRS = 20000
+for root in roots:
+    if not root.is_dir():
+        continue
+    print('SCAN_GENERATIONS root=' + str(root), flush=True)
+    base_depth = len(root.parts)
+    for current, dirs, files in os.walk(root):
+        directories_seen += 1
+        if directories_seen > MAX_DIRS:
+            print('SCAN_LIMIT reached=' + str(MAX_DIRS), flush=True)
+            break
+        path = Path(current)
+        if {'manifest.json', 'store.sqlite'} <= set(files):
+            candidates.add(path.resolve())
+            dirs[:] = []
+        elif len(path.parts) - base_depth >= 6:
+            dirs[:] = []
+        else:
+            dirs[:] = [d for d in dirs if d not in {'.git', '.venv', '__pycache__'}]
+    if directories_seen > MAX_DIRS:
+        break
+if selected and (selected / 'store.sqlite').is_file():
+    candidates.add(selected.resolve())
+
+target_names = {doc['name'] for doc in docs}
+target_exact = {
+    doc['name']: {f['sha256'][:16] for f in doc['files'] if f['role'] == 'body'}
+    for doc in docs
+}
+generation_report = []
+for path in sorted(candidates):
+    try:
+        uri = 'file:' + str(path / 'store.sqlite') + '?mode=ro'
+        db = sqlite3.connect(uri, uri=True, timeout=2)
+        try:
+            db.execute('PRAGMA query_only=ON')
+            rows = list(db.execute('SELECT document_id,name FROM document'))
+            blocks = db.execute('SELECT count(*) FROM source_block').fetchone()[0]
+        finally:
+            db.close()
+        names = {name for _, name in rows if name in target_names}
+        exact = {name for doc_id, name in rows
+                 if name in target_exact and doc_id in target_exact[name]}
+        generation_report.append({
+            'path': str(path), 'selected': bool(selected and path == selected.resolve()),
+            'name_count': len(names), 'exact_version_count': len(exact),
+            'source_block_count': blocks,
+            'missing_exact_first12': [d['name'] for d in docs if d['name'] not in exact][:12],
+        })
+    except (OSError, sqlite3.Error) as exc:
+        generation_report.append({'path': str(path), 'error': str(exc)[:180]})
+generation_report.sort(key=lambda r: (-r.get('exact_version_count', -1),
+                                      -r.get('name_count', -1), r['path']))
+print('GENERATION_SCAN directories=' + str(directories_seen) +
+      ' candidates=' + str(len(candidates)), flush=True)
+for row in generation_report[:15]:
+    print('GENERATION_CANDIDATE ' + json.dumps(
+        {k: v for k, v in row.items() if k != 'missing_exact_first12'},
+        ensure_ascii=False), flush=True)
+if generation_report:
+    print('BEST_MISSING_EXACT_FIRST12 ' + json.dumps(
+        generation_report[0].get('missing_exact_first12', []), ensure_ascii=False), flush=True)
+for row in generation_report:
+    if row.get('selected'):
+        print('SELECTED_MISSING_EXACT_FIRST12 ' + json.dumps(
+            row.get('missing_exact_first12', []), ensure_ascii=False), flush=True)
+print('READ_ONLY_COMPLETE', flush=True)
+PY

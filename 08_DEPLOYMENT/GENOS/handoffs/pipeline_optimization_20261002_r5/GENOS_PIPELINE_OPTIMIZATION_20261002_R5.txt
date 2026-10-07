@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+task_action="${1:-build}"
+TASK_DEV="${GENOS_DEV:-${HOME}/DEV}"
+export GENOS_DATA_ROOT="${GENOS_DATA_ROOT:-$TASK_DEV/01_DATA}"
+export GENOS_PREPARED_RUN="${GENOS_PREPARED_RUN:-financial-risk-success-20261001-r3}"
+export GENOS_OPTIMIZED_RUN="${GENOS_OPTIMIZED_RUN:-financial-risk-success-20261002-opt-r5}"
+task_log_run='invalid-run'
+if [[ "$GENOS_OPTIMIZED_RUN" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$ ]]; then task_log_run="$GENOS_OPTIMIZED_RUN"; fi
+TASK_LOG_DIR="$GENOS_DATA_ROOT/LOGS/$task_log_run/optimized-rebuild-r5/$(date -u +%Y%m%dT%H%M%S)-${BASHPID}"
+mkdir -p "$TASK_LOG_DIR"
+exec > >(tee -a "$TASK_LOG_DIR/run.log") 2>&1
+task_heartbeat_pid=''
+finish() {
+  task_status=$?
+  if [[ -n "$task_heartbeat_pid" ]]; then kill "$task_heartbeat_pid" 2>/dev/null || true; fi
+  printf 'FINISHED status=%s log=%s\n' "$task_status" "$TASK_LOG_DIR"
+  printf '전체 종료 코드: %s\n전체 출력: %s/run.log\n' "$task_status" "$TASK_LOG_DIR" >> "$TASK_LOG_DIR/summary.txt"
+  exit "$task_status"
+}
+trap finish EXIT
+trap 'printf "FAILED line=%s\n" "$LINENO"' ERR
+trap 'exit 130' INT
+trap 'exit 143' TERM
+printf 'START UTC=%s action=%s prepared=%s new_run=%s log=%s\n' "$(date -u +%FT%TZ)" "$task_action" "$GENOS_PREPARED_RUN" "$GENOS_OPTIMIZED_RUN" "$TASK_LOG_DIR"
+[[ $# -le 1 ]] || { echo 'Usage: bash SCRIPT.txt [build|check|stop-old]'; exit 2; }
+[[ "$GENOS_PREPARED_RUN" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$ ]] || { echo 'Invalid prepared run ID'; exit 2; }
+[[ "$GENOS_OPTIMIZED_RUN" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$ ]] || { echo 'Invalid output run ID'; exit 2; }
+case "$task_action" in build|check|stop-old) ;; *) echo 'Unknown action'; exit 2 ;; esac
+[[ "$GENOS_PREPARED_RUN" != "$GENOS_OPTIMIZED_RUN" ]] || { echo 'Use a NEW output run ID'; exit 2; }
+[[ -d "$TASK_DEV/02_BACKEND" ]] || { echo "Missing DEV checkout: $TASK_DEV"; exit 2; }
+export PYTHONUNBUFFERED=1
+run_stage() {
+  local task_label="$1"; shift
+  local task_started=$SECONDS
+  local task_rc=0
+  printf 'STAGE %s START\n' "$task_label"
+  (while sleep "${GENOS_LOG_INTERVAL:-5}"; do
+      printf 'STAGE %s RUNNING elapsed=%ss remaining=not_measured\n' "$task_label" "$((SECONDS-task_started))"
+   done) &
+  task_heartbeat_pid=$!
+  if "$@"; then task_rc=0; else task_rc=$?; fi
+  kill "$task_heartbeat_pid" 2>/dev/null || true
+  wait "$task_heartbeat_pid" 2>/dev/null || true
+  task_heartbeat_pid=''
+  printf 'STAGE %s END status=%s elapsed=%ss\n' "$task_label" "$task_rc" "$((SECONDS-task_started))"
+  return "$task_rc"
+}
+exec 9>"$GENOS_DATA_ROOT/LOGS/$GENOS_OPTIMIZED_RUN/optimized-rebuild-r5/launcher.lock"
+flock -n 9 || { echo 'This output run has an active launcher'; exit 1; }
+TASK_ZIP="${GENOS_OPTIMIZATION_ZIP:-$(dirname "$(realpath "$0")")/GENOS_PIPELINE_OPTIMIZATION_20261002_R5.zip}"
+run_stage verify-extract python3 -u - "$TASK_ZIP" "$TASK_LOG_DIR/payload" <<'VERIFY'
+import hashlib,json,pathlib,sys,zipfile
+print('PYTHON',sys.executable,sys.version,flush=True)
+if sys.version_info<(3,11):raise SystemExit('Python 3.11 or later required')
+p=pathlib.Path(sys.argv[1]);digest=hashlib.file_digest(p.open('rb'),'sha256').hexdigest()
+if digest!='98a34881fe04ee7fb8e3674bf8b97c71a2b4bb4b1f4df6ece6694aa6dcb52c10':raise SystemExit('ZIP hash mismatch; stopped before code application')
+print('ZIP_SHA256',digest,flush=True)
+with zipfile.ZipFile(p) as z:
+ m=json.loads(z.read('CODE_MANIFEST.json'))
+ if len(z.namelist())!=len(set(z.namelist())):raise SystemExit('Duplicate ZIP members')
+ if set(z.namelist())!={r['path'] for r in m['files']}|{'CODE_MANIFEST.json'}:raise SystemExit('Inventory mismatch')
+ for r in m['files']:
+  name=pathlib.PurePosixPath(r['path']);item=z.getinfo(r['path'])
+  if name.is_absolute() or '..' in name.parts or name.suffix.lower() in {'.js','.jsx','.mjs','.cjs'}:raise SystemExit('Invalid archive member')
+  if (item.external_attr>>16)&0o170000==0o120000:raise SystemExit('Archive symlink rejected')
+  if hashlib.sha256(z.read(r['path'])).hexdigest()!=r['sha256']:raise SystemExit('Member hash mismatch')
+ z.extractall(sys.argv[2])
+ print('ARCHIVE VERIFIED members='+str(len(z.namelist())),flush=True)
+VERIFY
+task_runner="$TASK_LOG_DIR/payload/06_TOOLS/OFFLINE/genos_optimized_rebuild.py"
+task_args=(--dev "$TASK_DEV" --data-root "$GENOS_DATA_ROOT" --prepared-run "$GENOS_PREPARED_RUN" --run-id "$GENOS_OPTIMIZED_RUN" --code-manifest "$TASK_LOG_DIR/payload/CODE_MANIFEST.json" --log-dir "$TASK_LOG_DIR" --reference-batch "${GENOS_REFERENCE_BATCH:-8}" --reference-cases "${GENOS_REFERENCE_CASES:-10000}" --heartbeat "${GENOS_LOG_INTERVAL:-5}")
+if [[ "$task_action" != stop-old ]]; then
+  run_stage code-preflight python3 -u "$TASK_LOG_DIR/payload/APPLY.py" --dev "$TASK_DEV" --check
+fi
+if [[ "$task_action" == stop-old || "$task_action" == build ]]; then
+  run_stage stop-old python3 -u "$task_runner" stop-old "${task_args[@]}"
+fi
+if [[ "$task_action" == stop-old ]]; then exit 0; fi
+run_stage prepared-input-check python3 -u "$task_runner" check "${task_args[@]}"
+if [[ "$task_action" == check ]]; then exit 0; fi
+run_stage code-apply python3 -u "$TASK_LOG_DIR/payload/APPLY.py" --dev "$TASK_DEV"
+task_shared="${GENOS_OPTIMIZED_SHARED_ROOT-/nfs-root/diamo/8-agent/term-releases}"
+if [[ -n "$task_shared" ]]; then task_args+=(--shared-root "$task_shared"); fi
+run_stage optimized-off-rebuild python3 -u "$TASK_DEV/06_TOOLS/OFFLINE/genos_optimized_rebuild.py" build "${task_args[@]}"

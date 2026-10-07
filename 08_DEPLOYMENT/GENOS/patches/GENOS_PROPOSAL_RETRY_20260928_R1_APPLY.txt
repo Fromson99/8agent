@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+# Keep this TXT and GENOS_PROPOSAL_RETRY_20260928_R1.zip in the same folder.
+# Apply: bash GENOS_PROPOSAL_RETRY_20260928_R1_APPLY.txt
+# Verify after committing: MODE=verify GENOS_GENERATION=/actual/generation bash ...txt
+# Rollback: MODE=rollback ROLLBACK_FROM=/actual/backup-directory bash ...txt
+# Optional: DEPLOY_ROOT=/path/to/DEV PYTHON_BIN=/path/to/python3
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-proposal-retry-r1-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'result=$?; printf "FINISHED status=%s log=%s\n" "$result" "$RUN_LOG"' EXIT
+printf 'START patch=proposal-retry-20260928-r1 log=%s\n' "$RUN_LOG"
+DEPLOY_ROOT="${DEPLOY_ROOT:-$HOME/DEV}"
+MODE="${MODE:-apply}"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PATCH_ZIP="$SCRIPT_DIR/GENOS_PROPOSAL_RETRY_20260928_R1.zip"
+if [[ ! -f "$PATCH_ZIP" ]]; then
+    printf 'ERROR: ZIP missing beside TXT: %s\n' "$PATCH_ZIP" >&2
+    exit 2
+fi
+printf '%s  %s\n' '9ae3f226d9e0d133a32f436fe532242e287cdf2444bde5a4d6b8b16c849cfd04' "$PATCH_ZIP" | sha256sum -c -
+if [[ ! -d "$DEPLOY_ROOT/.git" && ! -f "$DEPLOY_ROOT/.git" ]]; then
+    printf 'ERROR: existing Git checkout required: %s\n' "$DEPLOY_ROOT" >&2
+    exit 2
+fi
+if [[ -z "${PYTHON_BIN:-}" ]]; then
+    if [[ -x "$DEPLOY_ROOT/.venv/bin/python" ]]; then
+        PYTHON_BIN="$DEPLOY_ROOT/.venv/bin/python"
+    else
+        PYTHON_BIN="$(command -v python3 || true)"
+    fi
+fi
+[[ -n "$PYTHON_BIN" && -x "$PYTHON_BIN" ]] || { printf 'ERROR: set PYTHON_BIN to Python 3\n'; exit 2; }
+TRANSFER_DIR="$DEPLOY_ROOT/TRANSFER"
+mkdir -p "$TRANSFER_DIR"
+PATCH_DIR="$(mktemp -d "$TRANSFER_DIR/proposal-retry-r1-unpack-XXXXXXXX")"
+printf 'MODE=%s CHECKOUT=%s PYTHON=%s PACKAGE=%s\n' "$MODE" "$DEPLOY_ROOT" "$PYTHON_BIN" "$PATCH_DIR"
+"$PYTHON_BIN" - "$PATCH_ZIP" "$PATCH_DIR" <<'PY'
+import hashlib, json, sys, zipfile
+from pathlib import Path, PurePosixPath
+with zipfile.ZipFile(sys.argv[1]) as z:
+    names=z.namelist()
+    assert len(names)==len(set(names)), 'duplicate ZIP paths'
+    manifest=json.loads(z.read('CODE_MANIFEST.json'))
+    expected={row['path']:row for row in manifest['files']}
+    assert set(names)==set(expected)|{'CODE_MANIFEST.json'}, 'ZIP inventory mismatch'
+    for name,row in expected.items():
+        path=PurePosixPath(name)
+        assert not path.is_absolute() and '..' not in path.parts and '\\' not in name
+        raw=z.read(name)
+        assert len(raw)==row['bytes'] and hashlib.sha256(raw).hexdigest()==row['sha256'], name
+        target=Path(sys.argv[2])/name
+        target.parent.mkdir(parents=True,exist_ok=True)
+        target.write_bytes(raw)
+print('PACKAGE_HASHES PASS')
+PY
+case "$MODE" in
+    apply)
+        "$PYTHON_BIN" "$PATCH_DIR/apply.py" --deploy-root "$DEPLOY_ROOT"
+        git -C "$DEPLOY_ROOT" diff --check
+        printf 'Review and commit workflow_relations_tools.py and workflow_tiers_session.py, updated engine manifests and 00_SYSTEM/PIPELINE.json.\n'
+        printf 'Then run MODE=verify with the actual GENOS_GENERATION, push that commit and deploy that revision.\n'
+        ;;
+    verify)
+        : "${GENOS_GENERATION:?Set GENOS_GENERATION to the exact absolute selected generation directory}"
+        "$PYTHON_BIN" "$PATCH_DIR/gate.py" \
+            --code-zip "$TRANSFER_DIR/proposal-retry-20260928-r1/applied-code.zip" \
+            --deploy-root "$DEPLOY_ROOT" --generation "$GENOS_GENERATION"
+        "$PYTHON_BIN" - "$DEPLOY_ROOT" "$GENOS_GENERATION" <<'PY'
+import hashlib,json,subprocess,sys
+from datetime import datetime,timezone
+from pathlib import Path
+root=Path(sys.argv[1]).resolve();gen=Path(sys.argv[2]).resolve(strict=True)
+raw=(gen/'manifest.json').read_bytes()
+receipt={'status':'PRE_DEPLOY_GATE_PASS','time':datetime.now(timezone.utc).isoformat(),
+    'deploy_root':str(root),'commit':subprocess.check_output(['git','-C',str(root),'rev-parse','HEAD'],text=True).strip(),
+    'generation':str(gen),'generation_id':json.loads(raw).get('generation_id'),
+    'generation_manifest_sha256':hashlib.sha256(raw).hexdigest(),
+    'code_serving_revision':None,'onsite_workflow_verified':False}
+p=root/'TRANSFER/proposal-retry-20260928-r1'/('gate-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')+'.json')
+p.write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\n')
+print(json.dumps(receipt,ensure_ascii=False));print('RECEIPT',p)
+PY
+        ;;
+    rollback)
+        : "${ROLLBACK_FROM:?Set ROLLBACK_FROM to the BACKUP_READY path from the apply log}"
+        "$PYTHON_BIN" "$PATCH_DIR/apply.py" --deploy-root "$DEPLOY_ROOT" --rollback-from "$ROLLBACK_FROM"
+        git -C "$DEPLOY_ROOT" diff --check
+        ;;
+    *) printf 'ERROR: MODE must be apply, verify or rollback\n' >&2; exit 2 ;;
+esac
+printf 'Request testing: workflow test screen only. Repeat the failed question after deploying the new code-serving revision. No data rebuild, workflow replacement or environment changes required.\n'

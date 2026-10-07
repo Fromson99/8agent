@@ -1,0 +1,79 @@
+{
+  "format": "genos-diagnostic-delivery/1",
+  "patch": "latency-20260928-r1",
+  "files": [
+    {
+      "path": "PATCH_MANIFEST.json",
+      "bytes": 2023,
+      "sha256": "4c9ae7747cdcf73f4163b2b50cf45e52fe424b000f99865f6c0cb341fbb0f0d7"
+    },
+    {
+      "path": "PATCH_NOTES.txt",
+      "bytes": 7906,
+      "sha256": "ed3098e78202c11a3ba105132a97ec471e3390d308e826b5f02abffd23c513a7"
+    },
+    {
+      "path": "apply.py",
+      "bytes": 8988,
+      "sha256": "9314b764ea33e90aeaa1bb2f19ebe6f5e06a9ff5e5c2e73d155e93fe64cd9e45"
+    },
+    {
+      "path": "gate.py",
+      "bytes": 5994,
+      "sha256": "7d1edb9902a45c5888ddf59305b754e4ea57434d493c0d3ea445607e492e7f9e"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/app.py",
+      "bytes": 21583,
+      "sha256": "525aeff11cfc308fcfbfcc970b742a64165d6eeb80360b62086c2b7d06888965"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py",
+      "bytes": 33820,
+      "sha256": "f2a097d3eed30f9fcfc79ceea342b630d548e5665c2997af734a1e2398b0eda2"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/source_tools.py",
+      "bytes": 18151,
+      "sha256": "3ae4f7e2588fdeb5b02477c1219656374d19b7ad6aa8ca7f21b053d41cb9cd58"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py",
+      "bytes": 36058,
+      "sha256": "d68d946372fbb960c082c04d5c38ced3855ffe7045a94801a91c845c4e17ded0"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/observability.py",
+      "bytes": 5765,
+      "sha256": "96787fbdc609cf88b3e891f8abe01fffd37aeae431d183356260be18557c0a4f"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/pipeline.py",
+      "bytes": 11022,
+      "sha256": "557d6b4c1914a5a61d12103fcbc81fa03523597ac51d2f437f2d8446db7e15b3"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/request_report.py",
+      "bytes": 34640,
+      "sha256": "7a16d852bc268ef913230d31cde9464bf0d490a19a0e6dc4ceb30be8973bc7ff"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/team_scope.py",
+      "bytes": 1884,
+      "sha256": "6614c715b5dbdb53945d25cf093252413095c9433c1447ed7c44b89e0ed271d7"
+    },
+    {
+      "path": "summarize.py",
+      "bytes": 2065,
+      "sha256": "1fafaf678e725e2206ed09ece3679c1fe229b4fd5604ef9a820dbc4a95bd419d"
+    }
+  ],
+  "validation_code_root": "/home/jin/8-AGENT",
+  "source_git_head": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "source_working_tree_dirty": true,
+  "generation_path": null,
+  "generation_manifest_sha256": null,
+  "deployment_commit": null,
+  "code_serving_revision": null,
+  "validation": "100 regression + 8 installer tests; 184-file checkout fixture passed"
+}

@@ -1,0 +1,59 @@
+GENOS NFS 상태 SQLite 수정 R1
+
+기존 SQLite를 유지합니다. 새 shortcut/AD/case 저장소는 NFS/CIFS에서 DELETE 저널,
+synchronous=FULL, 외래키 검사, 30초 SQL 잠금 대기를 같은 정책으로 사용합니다.
+SQLite의 파일 잠금과 기존 BEGIN IMMEDIATE 트랜잭션으로 쓰기를 직렬화합니다.
+로컬 디스크는 기존 WAL을 유지하며, 명시적인 DELETE 설정도 사용할 수 있습니다.
+GENOS_MEMORY_JOURNAL_MODE=WAL을 NFS에 명시하면 적용하지 않고 오류를 반환합니다.
+
+기존 설정:
+  GENOS_RUNTIME_DIR=/nfs-root/diamo/8-agent/runtime
+이 값을 그대로 유지합니다. GENOS_STATE_DIR과 DELETE 환경변수를 새로 넣을 필요 없습니다.
+선택한 SHORTCUT_CURRENT.json이 있으면 그대로 사용하고, 없으면 기존 기본 위치인
+runtime/case-memory/cases-v4.sqlite을 사용합니다. v3를 v4로 자동 이행하지 않습니다.
+
+기준 반입본: GENOS_V6_REQUEST_INPUT_20261006_R2.zip
+이번 수정은 NFS 상태 저장 관련 코드 6개(새 공통 모듈 포함)와 그 엔진 pin만 바꿉니다.
+R2 compact 용어집 reader, source v2 로더, 입력 상한 제거와 기존 설정/데이터를 보존합니다.
+모르는 현장 코드 해시가 있으면 파일을 보존하고 적용 전에 중단합니다.
+
+ZIP과 실행 TXT를 같은 TRANSFER 폴더에 올린 뒤 기존 ~/DEV에서:
+
+  bash TRANSFER/GENOS_NFS_STATE_SQLITE_20261006_R1_APPLY.txt check
+  bash TRANSFER/GENOS_NFS_STATE_SQLITE_20261006_R1_APPLY.txt apply
+  bash TRANSFER/GENOS_NFS_STATE_SQLITE_20261006_R1_APPLY.txt state-check
+  bash TRANSFER/GENOS_NFS_STATE_SQLITE_20261006_R1_APPLY.txt verify
+
+check/apply는 기존 코드 백업/파일 적용만 합니다. 실행 중인 코드를 자동 재시작하지 않습니다.
+파일 갱신 도중 새로운 요청을 받지 않도록 유지보수 시간에 적용하세요.
+state-check는 기존 운영 DB를 열지 않고 현재 상태 경로의 새 시험 폴더에서
+shortcut/case/AD의 실제 수정 코드를 실행해 SQL 동작·저널·integrity_check를 확인합니다.
+시험 폴더는 확인용으로 보존됩니다. state-check PASS는 현장 내구성 인증이 아닙니다.
+verify는 선택한 generation을 현재 checkout의 코드로 확인합니다. GENOS_GENERATION이
+셸에 없으면 이전 R2에서 명시한 financial-risk-success-20261005-schema-r2/generation을 씁니다.
+다른 실제 세대를 사용할 때는 verify 뒤에 정확한 절대경로를 지정하세요.
+코드스페이스의 state-check 결과를 코드서빙의 SQL 성공으로 옮겨 보고하지 않습니다.
+
+검토한 변경 파일을 기존 ~/DEV에서 커밋한 뒤:
+  bash TRANSFER/GENOS_NFS_STATE_SQLITE_20261006_R1_APPLY.txt gate
+게이트를 통과한 commit을 push하고 같은 generation으로 새 코드서빙 리비전을 배포합니다.
+워크플로우 Python 교체, 원문/용어집/색인 재구축과 CURRENT 전환은 필요 없습니다.
+현장 질문 확인은 워크플로우 테스트 화면에서만 합니다:
+일반 질문 → 같은 대화의 조건 정정 → [AD모드 시작] → shortcut 목록 → [AD모드 종료].
+정상 답변·기록 저장·다음 질문 및 오류 부재를 요청 ID와 새 리비전으로 확인하세요.
+
+기존 DB가 WAL이면 SQLite가 자신의 DB 잠금 아래에서 저널을 전환합니다.
+전환 오류/잠금 오류가 발생하면 기존 접근 프로세스를 종료한 유지보수 상태에서 확인합니다.
+DB 본체 하나만 복사하거나 -wal/-shm/-journal 파일을 임의 삭제하지 않습니다.
+새 DB 세대나 데이터 승인 상태를 이 패치가 자동 생성/승격하지 않습니다.
+
+원복은 apply에 출력한 정확한 BACKUP/RECOVERY 경로를 사용합니다:
+  bash TRANSFER/GENOS_NFS_STATE_SQLITE_20261006_R1_APPLY.txt rollback /정확한/백업경로
+코드만 원복하며 DB/환경변수는 삭제하지 않습니다. 이전 코드는 NFS 상태 저장을 다시 거부할 수 있습니다.
+이미 배포했다면 이전 검증 리비전과 데이터 generation 설정으로 복귀하세요.
+
+새 라이브러리/SQL 서버는 추가하지 않습니다. 현장 명령은 python3(Python 3.11+)입니다.
+모든 실행은 시작부터 nfs-state-sqlite-logs에 로그와 NFS_STATE_SQLITE_EXIT를 남깁니다.
+NFS 자동 선택 및 HTTP ingress는 로컬 모의 파일시스템 조건으로 검사했습니다.
+실제 GENOS/NFS의 서버 간 잠금, fsync, 장애/재시작 내구성과 응답 성능은 미확인입니다.
+SQLite DELETE의 허용 조건과 근거: https://sqlite.org/useovernet.html

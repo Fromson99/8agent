@@ -1,0 +1,45 @@
+{
+  "code_manifest_sha256": "2763139a6fa6f8a57241b39ae5e09444158f82969d771201d953feb680841f89",
+  "archive_files": 39,
+  "required_files": 767,
+  "archive_current_bytes_match": true,
+  "python_311_syntax": true,
+  "engine_pins_current": true,
+  "active_pointer_unchanged": true,
+  "active_generation_manifest_unchanged": true,
+  "tests": {
+    "candidate_pass": 95,
+    "candidate_existing_failures": 11,
+    "original_pass": 92,
+    "original_same_failures": 11,
+    "new_regressions": 0,
+    "final_handoff_contracts_pass": 24,
+    "final_handoff_contracts_fail": 0
+  },
+  "adr_final_checks": [
+    "ADR-0627 PASS",
+    "ADR-0628 PASS"
+  ],
+  "global_adr_graph_existing_errors": [
+    "ERROR: ADR-0305: invalid run purpose: ordinary local contract checks",
+    "ERROR: ADR-0444: external derived_from lacks parent record: ADR-0432-experiment-v1/navigation",
+    "ERROR: ADR-0541: declared parent not used by any arm: ADR-0539-experiment-v1/hint-plan",
+    "ERROR: ADR-0622: run run-001 artifact missing: artifacts/run-001/result.json",
+    "ERROR: duplicate experiment arm ref: ADR-0542-experiment-v1/baseline",
+    "ERROR: duplicate experiment arm ref: ADR-0542-experiment-v1/hint-plan",
+    "ERROR: graph edge source missing: ADR-0158-experiment-v1/v2-candidate"
+  ],
+  "field": {
+    "build": null,
+    "commit": null,
+    "generation": null,
+    "serving_revision": null,
+    "live_workflow_e2e": "NOT_RUN"
+  },
+  "verification_files": {
+    "APPLICATION.json": "69b4e0d0286c0702c85315993a741decbb71d434d3aaab541a170cc383abe1ff",
+    "VERIFIED_FINAL_TESTS.log": "7461133e0ba271ec7854bc4ca45ccb5bae7045467c7d4cc2a19bb86c9e0bab28",
+    "FINAL_ENGINE_CHECK.json": "0a1380cc4987231e5c880abf024882e033cdd263556a7f4a48fad620047f7c06",
+    "GRAPH.log": "d9d0fc58ac908d2be26c8ac9b3f4b49843c8e6498fbc94243ee8a6f5fec48b68"
+  }
+}

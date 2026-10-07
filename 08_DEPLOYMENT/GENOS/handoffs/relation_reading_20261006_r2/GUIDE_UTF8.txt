@@ -1,0 +1,78 @@
+GENOS 연결 읽기 R2 — AD 언어 R2 적용 후 CHECKOUT_DRIFT 수정 (2026-10-06)
+
+이번 R2 ZIP/APPLY/WORKFLOW를 사용한다. 기존 GENOS_RELATION_READING_20261006_R1은 사용 중단.
+사진에서 AD 언어 R2 check/apply는 성공했고, 이후 연결 읽기 R1 check/apply는
+02_BACKEND/semantic_runtime/ad_gateway.py CHECKOUT_DRIFT로 파일 적용 전에 중단됐다.
+원인은 연결 읽기 R1의 required_files가 이전 AD gateway 해시를 고정한 패키지 기준 누락이다.
+AD R2를 원복하거나 해시 검사를 우회하지 않는다. 이 R2는 검증한 두 반입본을 합친 누적 코드다.
+실제 현장 CODE_ROOT는 사진에서 /workspace였다. 기존 ~/DEV가 같은 경로로 연결되는지는
+TXT가 출력하는 CODE_ROOT로 확인한다. 별도 후보 디렉터리에만 적용하지 않는다.
+
+보존한 기능
+- AD 언어 R2 gateway/context/model/store/table/chat adapter와 HTML 표/구간별 모델 읽기.
+- 연결 읽기 R1: v6 검색 후보의 양방향 참조를 전부 원문 READ하는 경로를 제거하고,
+  먼저 선택한 원문의 명시 연결 종류/방향/답변 적용 범위로 읽는다.
+  준용·정의 범위는 적용할 때 필수, 단순 참조·역방향 준용 사용자·역방향 별첨 인용은 선택.
+  단서·예외·위임·제외·제재·시간·별첨 표준/양식은 적용 여부를 확인한다.
+  조건부 생략에는 적용 제외 근거가 필요하고, 상위 조건과 검토 후 넓힌 범위도 재확인한다.
+  이미 확보한 범위는 재사용한다. 별첨이 답변 기준/양식을 담고 있다면 읽을 수 있다.
+- workflow READ 로그는 열람 중/확보 현황 두 요약을 갱신하고 중복 표시를 줄인다.
+  필요한 READ 감사 원장과 AD 모델 호출 감사 기록은 보존한다.
+- 원문 데이터/generation/CURRENT/DB/.env/.git은 변경하지 않는다. 새 라이브러리 설치 없음.
+
+반입/코드 적용
+진행 중 요청이 끝난 뒤 ZIP과 APPLY TXT를 기존 ~/DEV/TRANSFER에 업로드하고 같은 ~/DEV에서:
+  bash TRANSFER/GENOS_RELATION_READING_20261006_R2_APPLY.txt check
+  bash TRANSFER/GENOS_RELATION_READING_20261006_R2_APPLY.txt apply
+GENOS 현장 실행은 python3이다. TXT는 실제 sys.executable/버전과 코드 루트/ZIP/manifest 해시를 출력한다.
+첫 단계부터 TRANSFER/relation-reading-r2-logs에 지속 로그를 남긴다.
+알 수 없는 코드 변경은 보존하고 중단한다. 백업/복구 경로를 출력하며 이미 적용된 코드는 재검사한다.
+사진의 실패한 연결 읽기 R1 때문에 AD R2를 원복하거나 별도의 삭제 작업을 할 필요는 없다.
+
+검증/배포
+기존에 실제 선택한 완료 generation 절대경로를 GENOS_GENERATION에 지정하거나,
+다음 명령 뒤에 그 실제 절대경로를 인자로 붙인다. 최신 폴더를 자동 선택하지 않는다.
+  bash TRANSFER/GENOS_RELATION_READING_20261006_R2_APPLY.txt verify
+변경 파일과 diff를 검토하고 같은 DEV checkout에서 commit한 뒤:
+  bash TRANSFER/GENOS_RELATION_READING_20261006_R2_APPLY.txt gate
+gate는 인계 ZIP 바이트와 Git 추적 checkout, 그 checkout의 같은 generation을 검증한다.
+게이트 통과 commit을 push하고 같은 generation을 선택하는 새 코드서빙 리비전을 배포·연결한다.
+코드 적용/Git push/코드서빙 배포/워크플로우 편집은 각각 별도다.
+TEAM_ID와 GENOS_LLM_* 내부 모델 및 기존 runtime/DB 설정을 유지한다.
+
+워크플로우 편집기
+GENOS_RELATION_READING_20261006_R2_WORKFLOW_PYTHON.txt 전체를 기존 Python 코드 대신 붙여 넣고 저장/적용한다.
+이 코드에는 AD R2 HTML 선택과 READ 로그 요약이 함께 들어 있다. run 진입점 유지.
+ZIP 반영이나 Git push만으로 편집기 코드가 바뀌지 않는다.
+GENOS가 HTML/CSS를 제거하면 스크롤 표시가 동작하지 않을 수 있다.
+GENOS_AD_TABLE_FORMAT=markdown은 기존 AD 표 fallback 설정이다.
+
+최종 현장 검증은 워크플로우 테스트 화면에서만
+- 질문: 내부 회계 관리자는 누가 지정하나요?
+  원문 위치/최종 근거/별첨 적용 판단/연결 읽기 내역과 화면 요약 노드 수를 확인한다.
+  필요한 단서·준용은 보존하고 근거 없는 별첨 전체 열람이 반복되지 않는지 확인한다.
+- 같은 chatId로 [AD모드 시작] → 숏컷보여줘 → 1번 보여줘 → 계속/다음 → [AD모드 종료].
+  긴 표, 스크롤/헤더, 구간별 모델 읽기, 기존 목록·후속 질문을 확인한다.
+실제 내부 LLM의 관계/적용 판단과 HTML/CSS 렌더링은 현장 검증 전까지 미확인이다.
+
+원복
+apply 출력의 정확한 BACKUP/RECOVERY 경로로:
+  bash TRANSFER/GENOS_RELATION_READING_20261006_R2_APPLY.txt rollback /출력된/정확한/백업경로
+사진처럼 AD R2가 먼저 적용된 상태에서 R2를 원복하면 그 AD R2 코드로 돌아간다.
+이전 코드서빙 리비전/generation과 이전 workflow 편집기 코드도 보존한다.
+원복은 이후 AD 감사/운영 DB 기록을 삭제하지 않는다.
+
+로컬 검증과 한계
+실제 반입 backend를 import한 연결/AD/표/화면/요약/컨텍스트 모의 계약 121개 통과.
+8개 알려진 predecessor에서 check/apply/재실행/정확한 원복/알 수 없는 코드 보존,
+AD R2 및 연결 R1 소스 바이트 보존, 엔진 pin, ZIP과 Git 추적 코드 비교를 검사했다.
+사진 순서의 AD R2 실제 TXT 성공 → 기존 연결 R1 실제 TXT 실패/파일 보존 → 새 R2 적용을 재현했다.
+실제 모델 호출 0회. 기존 로컬 공개 generation의 전체 gate는 GENOS compact reader와
+공개 glossary cache binding 불일치 때문에 미통과였으며 R2는 해당 reader/데이터를 바꾸지 않는다.
+현장 선택 generation의 전체 gate는 현장에서 실행해야 한다. 외부 모의 PASS를 현장 성공으로 간주하지 않는다.
+현장 push commit/generation 절대경로 및 manifest SHA256/코드서빙 리비전은 미확인이다.
+실제 GENOS 접속/배포, 데이터 활성 포인터 변경, 로컬 frozen MAIN 승격은 수행하지 않았다.
+
+ZIP SHA256: 78e4bbb83768b47d30628b5542070b75b11672c73d8967a07141be3c40a83ff7
+CODE_MANIFEST SHA256: f2b71f344f191b7285d44309a1ac475bca6b6b51b888c60fb583da222f804a45
+검증 코드 루트: /home/jin/8-AGENT/09_ARTIFACTS/DELIVERIES/relation_reading_20261006_r2

@@ -1,0 +1,35 @@
+GENOS v5 프롬프트 축약 — prompt-compaction-20260928-r1
+
+이 TXT 하나에 적용 코드와 검증·원복 실행기가 모두 포함되어 있습니다.
+기존 Git checkout ~/DEV에 백업 후 적용합니다. TXT를 GENOS로 옮겨 실행:
+  bash GENOS_PROMPT_COMPACTION_20260928_R1_APPLY.txt
+다른 checkout/Python이면 DEPLOY_ROOT, PYTHON_BIN을 기존 경로로 지정합니다.
+
+코드 4개: gateway.py, bounded_source_session.py, question_obligations.py,
+relations_repository.py. 해당 코드의 엔진 manifest·PIPELINE 해시만 현장 파일에 맞춰 갱신합니다.
+원문 중복/span·스키마 복사·작성 단계 탐색 안내를 줄이고 단계별 지침을 정리합니다.
+원문·좌표·번호 매핑·엄격한 출력 검증과 compact-v5-v1 전송 영수증은 유지합니다.
+검증된 timeout-sync R3 또는 thinking-log R1/R2 gateway 바이트를 지원합니다.
+thinking 진단이 없던 gateway에는 진단을 새로 추가하지 않고 축약만 적용합니다.
+이미 축약된 바이트는 확인 후 ALREADY_APPLIED로 표시합니다.
+다른 파일/스키마의 해시 불일치나 지원하지 않는 코드 판은 변경 전에 중단합니다.
+
+적용 로그 BACKUP_READY에 백업 경로, APPLIED에 적용 파일과 gate ZIP 해시가 남습니다.
+코드/engine manifest/PIPELINE 변경을 검토·commit한 뒤 같은 checkout에서 실행:
+  MODE=verify bash GENOS_PROMPT_COMPACTION_20260928_R1_APPLY.txt
+검증은 기존 GENOS_GENERATION 또는 기존 설정/CURRENT/등록 영수증의 세대를 자동 확인합니다.
+설정을 확인할 수 없으면 실패하며 임의 세대를 선택하지 않습니다.
+해당 checkout의 Python·02_BACKEND로 generation E2E와 verify_assets를 실행합니다.
+검증된 commit을 push하고 새 코드서빙 리비전을 배포하는 것은 별도 절차입니다.
+데이터 재구축, CURRENT/캐시 receipt/환경변수/워크플로우 Python 변경은 필요 없습니다.
+질문·warmup 현장 확인은 워크플로우 테스트 화면에서만 실행합니다.
+
+원복(로그에 나온 실제 백업 경로 지정):
+  MODE=rollback ROLLBACK_FROM=/실제/BACKUP_READY/경로 bash GENOS_PROMPT_COMPACTION_20260928_R1_APPLY.txt
+코드·엔진 manifest·PIPELINE을 함께 원복하며 적용 뒤 다른 변경이 있으면 중단합니다.
+이전 검증 코드서빙 리비전과 데이터 세대도 보존하세요.
+
+검증 범위: 로컬 모의 계약·회귀와 설치 TXT 적용/재실행/원복 검증.
+변경 기록의 기존 계약·회귀 219개 통과는 로컬 검증 기록입니다.
+GENOS 선택 세대·배포 commit·리비전·질문 성공·실제 시간 단축은 미확인입니다.
+로컬 활성 frozen 릴리스와 완료된 실험 이력은 변경하지 않습니다.

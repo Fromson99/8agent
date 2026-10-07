@@ -1,0 +1,78 @@
+GENOS 벌크 의미 검토 + OFF/ON RAG — R2 (R1 대신 이 버전 사용)
+
+먼저 지금 기존 foreground BUILD를 Ctrl+C 한 번으로 종료하고 프롬프트 복귀 확인.
+이미 R1 백그라운드를 켰다면 R1 TXT의 stop-review로 종료 후 FINISHED 확인.
+기존 BUILD / R1 review를 새 R2와 동시에 실행하지 말 것.
+
+1. 연휴 장기 실행(터미널을 닫아도 유지, 끝나면 ON 자동 구축):
+   bash TRANSFER/GENOS_MEANING_VARIANTS_R2_BULK_UTF8.txt review-background
+
+2. OFF RAG부터 따로 구축(다른 터미널에서 실행 가능):
+   bash TRANSFER/GENOS_MEANING_VARIANTS_R2_BULK_UTF8.txt baseline
+
+3. 상태/잔여/ETA/실패 요약 및 worker 로그 경로:
+   bash TRANSFER/GENOS_MEANING_VARIANTS_R2_BULK_UTF8.txt status
+   출력된 worker-output 로그 경로에 tail -f 실행하면 실시간 로그를 볼 수 있음.
+
+4. 중단/재개:
+   bash TRANSFER/GENOS_MEANING_VARIANTS_R2_BULK_UTF8.txt stop-review
+   FINISHED 확인 뒤 1번으로 재개. 서버/컨테이너 재시작 후에도 1번으로 수동 재개.
+   nohup은 터미널 종료만 견디며 서버 재시작 때 자동 실행되지는 않음.
+
+5. 완성 결과 무결성:
+   bash TRANSFER/GENOS_MEANING_VARIANTS_R2_BULK_UTF8.txt verify
+   미완성 버전은 NOT READY/exit 3. 무결성 오류는 원래 traceback과 실패로 종료.
+
+벌크 기본값(첫 실행 계획에 동결):
+   최대 32개 의미 비교 / 물리 API 호출 1회
+   동시에 최대 4개 벌크 API 호출 (의미 검토만의 동시성; OFF 명시 참조 단계는 별도)
+   출력 max_tokens=8192, read timeout=120초, HTTP 자동 재시도 없음
+   전체 JSON 요청 105000자 이내; 원문/근거/범위는 자르지 않고 중복만 공유
+   큰 요청은 32개 미만으로 분리. 따라서 모든 호출이 반드시 32개인 것은 아님.
+   JSON 누락/중복 ID, 중복 JSON 키, NaN, 비JSON 본문, 잘린 출력은 성공 처리하지 않음.
+   잘못된/잘린 전체 JSON은 반씩 나눠 최대 2단계 재시도; 실패 원응답/원장 보존.
+   각 결과는 원래 작업 ID·입력 해시·허용 근거·양쪽 정의 인용을 서버에서 다시 검증.
+   다른 작업의 근거를 잘못 인용한 결과는 반영하지 않음.
+   API 장애는 자동으로 더 많은 호출로 증폭하지 않음. 완전히 실패한 3개 wave 연속이면 중단.
+   기존 실패는 지우거나 무한 재시도하지 않음. 실패/UNKNOWN은 PARTIAL로 남김.
+
+2일 목표:
+   36시간 의미 검토 + 12시간 연결/색인 여유를 목표로 설정.
+   249242개라면 약 1.92개/초가 필요. 32개씩 실제 묶이고 4개 호출이 병렬 처리되면
+   벌크 1회가 평균 약 66초 이하일 때 의미 검토 36시간 조건을 충족.
+   실제 서버 동시 처리 능력, 요청 크기, 오류/분할 재시도, 후속 색인 속도는 미측정.
+   따라서 2일 완료를 보장하지 않음. 로그의 pairs/s, review_ETA,
+   within_48h_estimate / 48h_target_at_risk로 실제 처리율 기반 추정.
+   초기 몇 번의 숫자는 안정된 예상이 아님. field 로그로 확인해야 함.
+   bulk-status.json의 physical_calls는 실제 API 호출 수이고,
+   기존 v3 attempts/llm_calls 카운터는 논리 작업 시도 수이므로 둘을 혼동하지 말 것.
+
+원장/결과:
+   원래 r3 review 원장은 변경하지 않음. 완료/실패 기록을 별도 SQLite snapshot으로 복사.
+   새 벌크 프로토콜/설정/프롬프트/코드 해시를 origin.json과 실행 identity에 명시.
+   각 물리 요청·응답·파싱 오류·ID alias 결속은 새 review/calls 및 review/bulk-calls에 보존.
+   /workspace/01_DATA/TERM_RELEASES/financial-risk-success-20261001-r3/
+     financial-risk-success-20261001-r3-bulk-r2/review
+   원문 구조화는 재실행하지 않으며 기존 성공 범위를 공유.
+   OFF와 ON의 최종 문서–용어 연결·명시 참조 overlay·navigation/fulltext는 따로 생성.
+   OFF는 이번 용어 의미 LLM 검토만 생략. 용어집의 과거 LLM 결과까지 삭제한 버전은 아님.
+   ON은 근거 결속 검토 제안을 소비하며 정본/품질 승인으로 바꾸지 않음.
+   모호한 문서/조문 참조 해소 LLM은 두 경로 모두 유지(기존 batch 8/모델 프로필 유지).
+   RAG 질문 탐색/답변 LLM은 끄거나 변경하지 않음. 내부 GENOS 모델만 사용, 외부 fallback 없음.
+
+RAG용 NFS 결과(각 버전 완료 후):
+   /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261001-r3-bulk-r2-meaning-off/generation
+   /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261001-r3-bulk-r2-meaning-on/generation
+   상위 폴더의 rag-selection.json에 GENOS_GENERATION 값을 기록.
+   서버 시작 때 선택하는 값이며 동시 사용은 별도 서빙 설정/리비전이 필요.
+   요청마다 ON/OFF 전환하는 UI를 추가한 것이 아님.
+   현재 서빙/CURRENT/Git push/코드서빙 리비전/워크플로우를 이 TXT가 바꾸지는 않음.
+   실제 서빙 코드와 선택 generation으로 배포 게이트를 별도로 통과한 뒤 적용.
+   현장 요청 확인은 워크플로우 테스트 화면에서 진행. 외부 모의 검사와 현장 성공은 별도.
+
+실행은 python3. sys.executable/버전/코드 root/로그 경로를 시작 시 출력.
+기본 checkout /home/genos/DEV, 데이터 /workspace/01_DATA.
+원문/완료 결과/실패 원장/이전 세대/기존 서빙을 삭제하지 않음.
+기존 원장 복사 및 별도 OFF/ON 색인용 추가 디스크 공간이 필요.
+아직 반입/실행 전이면 R2를 첫 사용하고, 실행 계획 생성 후 설정을 임의로 바꾸지 말 것.
+기존 R3 release 배선이 없는 현장은 silent patch 없이 중단.

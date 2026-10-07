@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+TASK_DEV="${GENOS_DEV:-${HOME}/DEV}"
+TASK_DATA="${GENOS_DATA_ROOT:-$TASK_DEV/01_DATA}"
+TASK_RUN="${GENOS_FT_RUN:-financial-risk-success-20261002-index-r8}"
+TASK_NAME="${GENOS_FT_NAME:-fulltext-unit-r1}"
+TASK_SHARED="${GENOS_FT_SHARED_ROOT:-/nfs-root/diamo/8-agent/term-releases}"
+[[ "$TASK_RUN" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$ ]] || { echo 'Invalid GENOS_FT_RUN'; exit 2; }
+[[ "$TASK_NAME" =~ ^fulltext-[A-Za-z0-9_-]+$ ]] || { echo 'Invalid GENOS_FT_NAME'; exit 2; }
+TASK_LOG="$TASK_DATA/LOGS/$TASK_RUN/fulltext-continue/$(date -u +%Y%m%dT%H%M%S)-${BASHPID}"
+mkdir -p "$TASK_LOG"
+exec > >(tee -a "$TASK_LOG/run.log") 2>&1
+finish() { task_status=$?; printf 'FULLTEXT CONTINUATION FINISHED status=%s logs=%s\n' "$task_status" "$TASK_LOG"; }
+trap finish EXIT
+printf 'FULLTEXT CONTINUATION START run=%s logs=%s\n' "$TASK_RUN" "$TASK_LOG"
+TASK_ZIP="$(dirname "$(realpath "$0")")/GENOS_FULLTEXT_CONTINUE_20261002_R1.zip"
+python3 -u - "$TASK_ZIP" "$TASK_LOG/payload" <<'VERIFY'
+import ast,hashlib,json,pathlib,sys,zipfile
+if sys.version_info<(3,11):raise SystemExit('Python3.11 or later required')
+p=pathlib.Path(sys.argv[1])
+with p.open('rb') as f:
+ if hashlib.file_digest(f,'sha256').hexdigest()!='944c51c0b4864bf56d9061edbbf1b65039588ca413f064883ef18721aa1e3a8c':raise SystemExit('ZIP SHA mismatch')
+with zipfile.ZipFile(p) as z:
+ m=json.loads(z.read('CODE_MANIFEST.json'))
+ allowed={'genos_fulltext_continue.py','genos_reindex_logging.py','unit_fulltext_selected.py','GUIDE_UTF8.txt'}
+ if set(m['files'])!=allowed or set(z.namelist())!=allowed|{'CODE_MANIFEST.json'} or len(z.namelist())!=len(set(z.namelist())):raise SystemExit('Archive inventory mismatch')
+ for name,expected in m['files'].items():
+  data=z.read(name)
+  if hashlib.sha256(data).hexdigest()!=expected:raise SystemExit('Member SHA mismatch')
+  if name.endswith('.py'):ast.parse(data,feature_version=(3,11))
+ z.extractall(sys.argv[2])
+print('ARCHIVE VERIFIED; standalone tool; product checkout unchanged',flush=True)
+VERIFY
+python3 -u "$TASK_LOG/payload/genos_fulltext_continue.py" --dev "$TASK_DEV" --baseline "$TASK_DATA/TERM_RELEASES/$TASK_RUN/reindex/baseline" --output "$TASK_DATA/TERM_RELEASES/$TASK_RUN/reindex/$TASK_NAME" --log-dir "$TASK_LOG" --workers "${GENOS_FT_WORKERS:-2}" --shared-root "$TASK_SHARED"

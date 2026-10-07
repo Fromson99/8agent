@@ -1,0 +1,24 @@
+{
+  "id": "GENOS_AD_LANGUAGE_20261006_R1",
+  "code_zip_sha256": "ab2e28bc93b66e735e63ddae8596e9b0be4d3ff495bc175993b945506553a62a",
+  "code_manifest_sha256": "1947de5d78851479f1be3d7c547d8a9ba2dee73b24a70fffce714cbbdfc39d41",
+  "verified_code_root": "/home/jin/8-AGENT",
+  "deploy_checkout": "~/DEV (field)",
+  "deployment_commit": null,
+  "generation": null,
+  "generation_manifest_sha256": null,
+  "code_serving_revision": null,
+  "genos_deployed": false,
+  "files": 44,
+  "required_files": 199,
+  "local_installation_validation": {
+    "check_no_code_or_data_mutation": true,
+    "check_creates_lock_and_logs": true,
+    "unknown_code_preserved_and_rejected": true,
+    "apply_byte_hashes": true,
+    "reapply_idempotent": true,
+    "data_env_git_preserved": true,
+    "rollback_exact": true,
+    "field_generation_gate": "not_run_no_genos_access"
+  }
+}

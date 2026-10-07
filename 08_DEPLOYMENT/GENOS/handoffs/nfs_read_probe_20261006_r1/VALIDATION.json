@@ -1,0 +1,37 @@
+{
+  "version": "GENOS_NFS_READ_20261006_R1",
+  "code_zip_sha256": "6ab0047fac29f2537be32ad14c87fa9617bdafaaf64a262255059d6ae5008bb8",
+  "code_manifest_sha256": "f375d6129c8458b5a287b6bb7b1878d4fa4d7ce73a7991f0adc2cc82833aa6f2",
+  "run_txt_sha256": "cf8bdff82508ac8a27ad5c3daea8e0acc419683b8e7556c14acc3a851b091f57",
+  "archive_members_verified": true,
+  "no_javascript_or_credentials_or_operating_data": true,
+  "python311_and_workflow310_syntax": true,
+  "bash_syntax": true,
+  "diagnostic_bundle_tests": {
+    "passed": 28
+  },
+  "existing_service_regression": {
+    "passed": 22,
+    "failed": 1,
+    "failure": "test_genos_input_byte_limit_uses_operator_setting: KeyError max_input_bytes",
+    "reproduced_before_nfs_hook": true,
+    "basis": "earlier user-directed input-byte limit removal"
+  },
+  "verified_local_code_root": "/home/jin/8-AGENT",
+  "field_push_checkout": "~/DEV",
+  "field_commit": null,
+  "field_generation_path_recorded": "/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation",
+  "field_generation_manifest_sha256": null,
+  "code_serving_revision": null,
+  "GENOS_accessed": false,
+  "field_deployment_verified": false,
+  "source_sha256": {
+    "02_BACKEND/semantic_runtime/nfs_data_probe.py": "cb4823e70bacacb4d104e03d7febd56df144ca4793aced34de0cabe6ca7b2fa5",
+    "06_TOOLS/COMMANDS/genos_nfs_probe_handoff.py": "795e75011725d9d4b83017bd1106bcb7cc3d42d08b5275674bd09817acc52bfe",
+    "06_TOOLS/COMMANDS/genos_rag_data_bundle.py": "f1796bbf11d2b76ea364129098ea2b21bb23ec28abb3337e9b65a0a01f5ca757",
+    "06_TOOLS/COMMANDS/genos_pack_rag_data.sh": "42ff394015bb4658086e3325b910f1b9273cd58c8569ab7bc4a85c1b6125d63c",
+    "08_DEPLOYMENT/GENOS/workflow/genos_nfs_data_probe.py": "1b52307a84102f3a5629ffd15207b7648114a93c55fa64ff7753fb38d5848f6a",
+    "service.py": "051b508b38a829dbd637742309b5d646a916ef8788a29c3d8ddf294d33598aa6",
+    "08_DEPLOYMENT/GENOS/stream_app.py": "31a32d06cd04fe51bb5a0bd6dc2f976a7680ae9aa1234b09558665c4d0f12db8"
+  }
+}

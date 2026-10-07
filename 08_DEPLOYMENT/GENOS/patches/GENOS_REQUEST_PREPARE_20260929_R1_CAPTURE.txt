@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+# Actual completed workflow report JSON. No question/body/model answer is printed.
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-request-prepare-capture-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'result=$?; printf "FINISHED status=%s log=%s\n" "$result" "$RUN_LOG"' EXIT
+printf 'START request preparation capture log=%s\n' "$RUN_LOG"
+: "${REPORT_JSON:?Set REPORT_JSON to the actual completed workflow report JSON path}"
+DEPLOY_ROOT="${DEPLOY_ROOT:-$HOME/DEV}"
+if [[ -z "${PYTHON_BIN:-}" ]]; then
+    if [[ -x "$DEPLOY_ROOT/.venv/bin/python" ]]; then PYTHON_BIN="$DEPLOY_ROOT/.venv/bin/python";
+    else PYTHON_BIN="$(command -v python3)"; fi
+fi
+"$PYTHON_BIN" - "$REPORT_JSON" <<'PREPARATION_CAPTURE'
+import json,sys
+from pathlib import Path
+path=Path(sys.argv[1]).expanduser().resolve(strict=True)
+value=json.loads(path.read_text())
+events=value.get('service_events',[])
+rows=[r for r in events if isinstance(r,dict) and r.get('event')=='session.prepare.timings']
+if not rows:
+    raise SystemExit('NO_PREPARATION_EVENT: this report does not confirm the preparation patch; provide the completed report from the new code revision')
+print('PREPARATION ONLY | no latency A/B claim | report='+str(path))
+for r in rows[-3:]:
+    print('\nrevision={} pid={} status={} elapsed={} ms cpu={} ms'.format(r.get('diagnostic_revision','?'),r.get('process_id','?'),r.get('prepare_status','?'),r.get('elapsed_ms','?'),r.get('thread_cpu_ms','?')))
+    phases=r.get('phases',{})
+    for name in ('session.store','session.resources','session.context','session.journal','session.sources','session.gateway'):
+        row=phases.get(name,{})
+        print('  {:18s} wall={:>10} ms cpu={:>10} ms'.format(name,row.get('wall_ms','?'),row.get('cpu_ms','?')))
+print('\nResources includes cache preparation. Compare the same generation/team and PID; first loading may remain.')
+print('A wall/CPU gap does not identify disk or NFS as its sole cause. READY excludes subsequent search/LLM execution.')
+PREPARATION_CAPTURE

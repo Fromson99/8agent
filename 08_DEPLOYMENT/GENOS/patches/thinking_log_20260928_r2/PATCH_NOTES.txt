@@ -1,0 +1,40 @@
+GENOS thinking log R2 (2026-09-28) — R1 공유 .log 표시 누락 수정
+
+R1 TXT 대신 이번 GENOS_THINKING_LOG_20260928_R2_APPLY.txt 하나를 사용합니다.
+R1 적용본에 이어 적용 가능. R1 미적용의 검증된 코드에도 누적 적용 가능.
+별도 ZIP 불필요. 기본 기존 ~/DEV에 백업 후 적용:
+bash GENOS_THINKING_LOG_20260928_R2_APPLY.txt
+
+R1은 JSON 진단 수집에 추가했으나 공유 .log의 출력 허용 목록에서 항목이 빠져
+현장 tail 화면에는 보이지 않았습니다. R2는 그 목록과 요약 .txt 출력까지 연결합니다.
+
+공유 .log에서 실제 보이는 예시 (모의 수치):
+model.attempt.started live_diagnostics_version=thinking-live-20260928-r2 diagnostics_version=thinking-log-20260928-r1 thinking_requested=false stream_requested=false max_tokens=6400
+model.attempt.received live_diagnostics_version=thinking-live-20260928-r2 prompt_tokens=300 completion_tokens=20 reasoning_tokens=null thinking_observation=unknown
+
+thinking_requested=false: 실제 전송 요청. 서버 적용 여부의 증명 아님.
+reasoning_reported: 비어 있지 않은 추론 응답 또는 양수 추론 토큰 보고.
+no_reasoning_reported: 비어 있는 추론 응답 또는 0 토큰 보고.
+unknown/null: 서버가 정보를 주지 않음. OFF/0으로 판정하지 않음.
+빈 thought marker 단독으로 추론 실행 여부를 판정하지 않습니다.
+model_http.finished duration_ms는 모델 HTTP 응답 전체 대기 시간입니다.
+첫 토큰/대기열/입력 처리/출력 생성 시간은 각각 미측정입니다.
+새 진단 줄에 추론 내용/프롬프트/질문/원문/인증값을 출력하지 않습니다.
+기존 내부 journal과 상세 요청 기록 보존은 유지합니다.
+
+gateway/observability/request_report의 정확한 지원 바이트만 적용하며,
+현재의 wire projection·팀별 로그 코드 등 다른 내용은 해당 버전대로 보존합니다.
+현재 코드와 manifest를 백업하고 적용 후 엔진/PIPELINE 해시를 결속합니다.
+지원하지 않는 파일/다른 엔진 의존성 불일치는 덮어쓰지 않고 중단합니다.
+재실행은 ALREADY_APPLIED. 로그는 첫 단계부터 /tmp/genos-thinking-log-r2-*.log에 저장.
+
+적용 diff 검토·commit → MODE=verify GENOS_GENERATION='/실제/선택/generation' bash TXT
+→ 검증한 commit push → 새 코드서빙 리비전 배포 → 워크플로우 테스트 화면에서 질문.
+새 질문의 .log에서 live_diagnostics_version=thinking-live-20260928-r2를 확인합니다.
+기존 .log는 그대로이며 새 리비전의 새 요청부터 표시합니다.
+코드서빙 직접 테스트 UI/API 실행은 요구하지 않습니다.
+데이터 generation/CURRENT, 워크플로우 Python, 모델 설정은 유지합니다.
+실제 GENOS 적용/리비전/모델 thinking 여부/속도 원인은 미확인입니다.
+
+원복: MODE=rollback ROLLBACK_FROM='/BACKUP_READY/경로' bash TXT
+패치 이후 수정 파일은 덮어쓰지 않습니다. 원복 commit/push/이전 리비전 복귀는 별도입니다.

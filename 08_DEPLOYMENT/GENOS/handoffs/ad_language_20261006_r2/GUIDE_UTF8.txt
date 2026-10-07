@@ -1,0 +1,60 @@
+GENOS AD 긴 표·구간별 모델 읽기 R2 (2026-10-06)
+
+반입: GENOS_AD_LANGUAGE_20261006_R2.zip, GENOS_AD_LANGUAGE_20261006_R2_APPLY.txt, GENOS_AD_LANGUAGE_20261006_R2_PASTE_ALL.txt.
+AD R1의 검증한 코드에 이번 AD 변경만 합친 누적 반입본이다.
+동시에 진행된 relation_reading 등 다른 작업 코드는 보존하고 이 반입에 합치지 않았다.
+현장에 이미 다른 후속 반입이 적용됐다면 해시 검사에서 중단한다. 강제 덮어쓰지 않는다.
+
+변경
+스크롤용 HTML 표: 최대 높이 480px, 가로·세로 스크롤, 고정 헤더, 안전한 원문 escape.
+서버 Markdown은 보존하고 workflow 및 /chat에서 HTML을 기본 표시한다.
+큰 값/배열/복잡한 구조는 미리보기와 cursor로 전달한다. 전체 자료는 서버에 보존한다.
+필요할 때 같은 턴의 내부 LLM이 8행/2000문자씩 추가로 읽는다.
+매 후속 호출은 최근 구간 하나와 짧은 메모만 받으며 이미 읽은 원문을 재누적하지 않는다.
+최대 32회 안에 최종 계획이 없으면 AD_CONTEXT_INCOMPLETE 오류로 범위를 좁히게 한다.
+각 호출의 입력/출력/usage/시간/해시는 ad_language_call에 보존한다.
+번호·목록 같은 간단한 요청은 추가 구간을 읽지 않고 한 번의 LLM 해석으로 처리할 수 있다.
+새 Excel 수집기를 만든 변경은 아니며 기존 SQL 표·상세 자료에 구간 읽기를 연결했다.
+
+현장 적용: 기존 ~/DEV
+진행 중 AD 요청이 끝난 뒤 ZIP/APPLY TXT를 ~/DEV/TRANSFER에 업로드:
+  bash TRANSFER/GENOS_AD_LANGUAGE_20261006_R2_APPLY.txt check
+  bash TRANSFER/GENOS_AD_LANGUAGE_20261006_R2_APPLY.txt apply
+현장 Python은 python3다. 경로/버전/진행/실패는 ad-language-r2-logs에 지속 기록한다.
+기존 파일은 정확한 해시로 검사·백업하고 재실행 시 이미 적용된 바이트를 확인한다.
+원문/DB/.env/.git/CURRENT는 덮어쓰지 않는다. 알 수 없는 변경은 보존하고 중단한다.
+TEAM_ID와 GENOS_LLM_* 내부 모델 설정을 유지한다. 새 라이브러리 설치는 없다.
+선택한 기존 완료 세대의 절대경로를 GENOS_GENERATION에 지정한 환경에서:
+  bash TRANSFER/GENOS_AD_LANGUAGE_20261006_R2_APPLY.txt verify
+변경 파일/diff를 검토해 같은 ~/DEV에서 commit한 뒤:
+  bash TRANSFER/GENOS_AD_LANGUAGE_20261006_R2_APPLY.txt gate
+게이트 통과 commit을 push하고 같은 generation의 새 코드서빙 리비전을 배포·연결한다.
+파일 적용, Git push, 코드서빙 배포, 워크플로우 변경은 각각 별도다.
+
+워크플로우 편집기
+GENOS_AD_LANGUAGE_20261006_R2_PASTE_ALL.txt 전체를 기존 Python 코드 대신 붙여 넣고 저장/적용한다. run 진입점을 유지한다.
+R2 스크롤용 HTML 선택에는 편집기 교체도 필요하다. R1 편집기는 Markdown 표를 표시한다.
+GENOS가 HTML/CSS를 제거하면 스크롤이 동작하지 않으므로 현장 화면에서 확인해야 한다.
+이 경우 workflow 설정 GENOS_AD_TABLE_FORMAT=markdown으로 기본 표로 되돌린다.
+스크롤 완성에는 GENOS 채팅 프런트의 HTML/CSS 또는 표 컨테이너 지원이 필요하다.
+내부 모델의 실제 자연어 이해·구간 선택·메모 정확도와 렌더링은 현장 검증 전까지 미확인이다.
+
+워크플로우 테스트 화면에서만 확인
+같은 chatId로 [AD모드 시작] → 숏컷보여줘 → 1번 보여줘 → 계속/다음 → [AD모드 종료].
+긴 본문 표의 세로·가로 스크롤, 헤더 고정, 후속 조회/확인 질문을 확인한다.
+revision: ad-language-v2-20261006-r2 / ad-scroll-table-v1-20261006-r2.
+필요한 추가 읽기: model_call_count/model_receipts 및 ad.language.context_read 로그.
+
+복구
+출력된 정확한 BACKUP/RECOVERY 경로로:
+  bash TRANSFER/GENOS_AD_LANGUAGE_20261006_R2_APPLY.txt rollback /출력된/정확한/백업경로
+이전 코드서빙 리비전·generation과 이전 워크플로우 편집기 코드도 보존한다.
+코드 원복은 추가된 AD 감사 기록/DB를 삭제하지 않는다.
+
+검증
+격리된 검증 루트에서 관련 모의 계약 64개, 기존 SQL AD 35개 통과.
+기존 workflow의 알려진 6개 실패는 이전 R1 보존 기록을 참고한다. 전체 workflow 통과를 인증하지 않는다.
+실제 외부/내부 모델 호출 0회. GENOS 접근·배포·렌더링은 미확인.
+ZIP SHA256: 8fb496866a2439890b230cc5057bd951f53df3be54b349af47fbc6e1e7009b8a
+검증 코드 루트: /home/jin/8-AGENT/09_ARTIFACTS/OPERATIONS/ad_llm_20261006_r2/validation-root
+실제 push checkout/commit, generation 경로/manifest 해시, 코드서빙 리비전은 현장 로그에 기록한다.

@@ -1,0 +1,37 @@
+{
+  "format": "8agent-code/1",
+  "scope": "latest_service_file_entry",
+  "code_root": "/home/jin/8-AGENT",
+  "git_commit": "WORKING_TREE_NOT_COMMITTED",
+  "generation": "KEEP_ONSITE_UNVERIFIED",
+  "deployment_revision": null,
+  "files": [
+    {
+      "path": "service.py",
+      "bytes": 43087,
+      "sha256": "1c2144eecd13af1fd58f1de6a1eefe86fa6e5706ca36dcb04b9f7d0b034a6b40"
+    },
+    {
+      "path": "service/service.py",
+      "bytes": 1498,
+      "sha256": "c13c68119144a0991754ae5542996c8d0ed3affc1638248a18984b82723436b5"
+    },
+    {
+      "path": "service/__init__.py",
+      "bytes": 1098,
+      "sha256": "adcc4d0552bf5bf32b983dc825179e02213f8c4ff81352a90c4f217ab923d50b"
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/code_ship.py",
+      "bytes": 18737,
+      "sha256": "31551587c2ee334ece69d07bef70371a28f86e98747880c742bd54ba917141fb"
+    }
+  ],
+  "required_v6_backend": {
+    "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json": "6ab245ff884ea0fcdb6ddffcdd4b7a3984efb0212bfb2c4c4a9739569d02af0a",
+    "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py": "e0ce446ea863ae53e4c04db4db2ef6b28310db99f8e78c6be42dff5421283d73",
+    "02_BACKEND/semantic_runtime/legal_agent/unified_repository.py": "53a6cfc10f7fc05e061b61925a72a3f52549b586751891cd5816647ecbbdbaef",
+    "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py": "61b6e38db302c800b01f850378b7322209472193a454a12ea7e0b7a917ce05af",
+    "02_BACKEND/semantic_runtime/legal_agent/memory_identity.py": "2ef29ce78c4c1381d4347fd535a60a0845104eefae4d6f19c916697cc99deea6"
+  }
+}

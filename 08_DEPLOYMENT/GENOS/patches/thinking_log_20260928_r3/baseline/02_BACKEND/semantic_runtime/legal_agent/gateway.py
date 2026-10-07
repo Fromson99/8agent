@@ -1,0 +1,310 @@
+"""All retry and JSON repair calls consume the same persistent physical budget."""
+import json
+import logging
+import time
+import uuid
+from copy import deepcopy
+from .. import observability as obs
+from . import protocol
+from .errors import BudgetExhausted, ContractError, ProposalError, StaleProposal, TransportError
+from .repository import encoded
+from .views import SYSTEM, PROMPTS
+
+log = obs.get_logger('legal_agent.model')
+DIAGNOSTICS_VERSION = 'thinking-log-20260928-r1'
+WIRE_PROJECTION = 'compact-v5-v1'
+NUMBER_INSTRUCTIONS = (
+    ' References are request-local integer choices, separate for each field type. '
+    'Copy the matching card number; never an original ID or card text. '
+    'Preserve legal numbers and quoted text. Copy supplied tool arguments.')
+
+
+def compact_wire_view(view, phase):
+    """Project redundant wire data only; original views and receipts stay intact."""
+    result = deepcopy(view)
+    for evidence in result.get('exact_evidence', []):
+        text = evidence.get('text')
+        if not isinstance(text, str):
+            continue
+        for span in evidence.get('spans', []):
+            # Keep coordinates and any text not present in the authoritative body.
+            if isinstance(span.get('text'), str) and span['text'] in text:
+                span.pop('text')
+    if phase == 'compose':
+        # Draft has no tool actions. These fields are used by investigation/review.
+        for key in ('navigation_choices', 'continuations', 'offered_handles',
+                    'corpus_root', 'tool_capabilities', 'last_action_results',
+                    'omitted_action_results', 'relation_menu', 'budgets', 'next_actions'):
+            result.pop(key, None)
+        numbers = result.get('reference_numbers', {})
+        for kind in ('targets', 'blocks', 'cursors'):
+            numbers.pop(kind, None)
+    return result
+
+
+def _count(value):
+    return value if type(value) is int and value >= 0 else None
+
+
+def _response_diagnostics(body):
+    """Project counts and presence flags only; absence never proves thinking OFF."""
+    body = body if isinstance(body, dict) else {}
+    usage = body.get('usage')
+    usage = usage if isinstance(usage, dict) else {}
+    details = usage.get('completion_tokens_details')
+    details = details if isinstance(details, dict) else {}
+    prompt_details = usage.get('prompt_tokens_details')
+    prompt_details = prompt_details if isinstance(prompt_details, dict) else {}
+    reasoning_tokens = _count(details.get('reasoning_tokens'))
+    if reasoning_tokens is None:
+        reasoning_tokens = _count(usage.get('reasoning_tokens'))
+    choices = body.get('choices')
+    choice = choices[0] if isinstance(choices, list) and choices and isinstance(choices[0], dict) else {}
+    message = choice.get('message')
+    message = message if isinstance(message, dict) else {}
+    reasoning_keys = ('reasoning', 'reasoning_content', 'thinking')
+    reasoning_present = any(key in message for key in reasoning_keys)
+    reasoning_nonempty = any(bool(message.get(key)) for key in reasoning_keys)
+    reasoning_chars = sum(len(message[key]) for key in reasoning_keys if isinstance(message.get(key), str))
+    content = message.get('content')
+    content = content if isinstance(content, str) else ''
+    calls = message.get('tool_calls')
+    calls = calls if isinstance(calls, list) else []
+    argument_chars = 0
+    for call in calls:
+        function = call.get('function') if isinstance(call, dict) else None
+        args = function.get('arguments') if isinstance(function, dict) else None
+        if isinstance(args, str):
+            argument_chars += len(args)
+    if reasoning_nonempty or (reasoning_tokens is not None and reasoning_tokens > 0):
+        observed = 'reasoning_reported'
+    elif reasoning_present or reasoning_tokens is not None:
+        observed = 'no_reasoning_reported'
+    else:
+        observed = 'unknown'
+    finish = choice.get('finish_reason')
+    if finish not in ('stop', 'length', 'tool_calls', 'function_call', 'content_filter'):
+        finish = None
+    return {'diagnostics_version': DIAGNOSTICS_VERSION,
+            'prompt_tokens': _count(usage.get('prompt_tokens')),
+            'completion_tokens': _count(usage.get('completion_tokens')),
+            'total_tokens': _count(usage.get('total_tokens')),
+            'cached_tokens': _count(prompt_details.get('cached_tokens')),
+            'reasoning_tokens': reasoning_tokens,
+            'reasoning_field_present': reasoning_present,
+            'reasoning_nonempty': reasoning_nonempty,
+            'reasoning_chars': reasoning_chars,
+            'thinking_observation': observed,
+            'thought_channel_marker_present': '<|channel>thought' in content or '<think>' in content,
+            'response_content_chars': len(content), 'tool_argument_chars': argument_chars,
+            'finish_reason': finish}
+
+
+def genos_wire_schema(value):
+    """Omit JSON Schema keywords unsupported by GENOS's grammar compiler.
+
+    Keep the protocol definitions intact: validate_wire/validate still enforce
+    uniqueness on the decoded model response inside the application.
+    """
+    if isinstance(value, dict):
+        return {key: genos_wire_schema(child) for key, child in value.items()
+                if key != 'uniqueItems'}
+    if isinstance(value, list):
+        return [genos_wire_schema(child) for child in value]
+    return value
+
+
+def available_tool_schema(schema, view):
+    """Limit model choices to search modes available in this serving generation."""
+    if (view.get('tool_capabilities') or {}).get('fulltext') is not False:
+        return schema
+
+    def restrict(node):
+        if isinstance(node, list):
+            for child in node:
+                restrict(child)
+        elif isinstance(node, dict):
+            properties = node.get('properties') or {}
+            if properties.get('tool', {}).get('const') == 'search':
+                mode = (properties.get('args', {}).get('properties') or {}).get('mode', {})
+                if 'enum' in mode:
+                    mode['enum'] = [value for value in mode['enum'] if value != 'fulltext']
+            for child in node.values():
+                restrict(child)
+
+    restrict(schema)
+    return schema
+
+
+class ModelGateway:
+    def __init__(self, repo, context, profile, domain, transport, *, message_protocol=None, system=None, prompts=None):
+        self.repo, self.context, self.profile, self.domain, self.transport = repo, context, profile, domain, transport
+        self.protocol = message_protocol or protocol
+        self.system, self.prompts = system or SYSTEM, prompts or PROMPTS
+        self.compact = profile.get('schema_version') == 'system-harness-profile-v5'
+        if transport.binding != profile['model_binding']:
+            raise ContractError('transport and AgentProfile bindings differ')
+        if not context.binding['export_allowed'] and transport.binding['trust_zone'] != 'internal':
+            validator = getattr(transport, 'validate_authorization', None)
+            if validator is None:
+                raise ContractError('source generation forbids external transmission')
+            validator(context)
+
+    def request(self, phase, view, schema_name, *, references=None):
+        schema = self.protocol.schema(schema_name)
+        if schema_name=='ReviewDecision':
+            claims=[c.get('claim') or c.get('entity_id') for c in view.get('claims',[])]
+            if claims:
+                schema['properties']['checks']['items']['properties']['claim']={'type':'string','enum':claims}
+                schema['properties']['checks']['minItems']=len(claims)
+                schema['properties']['checks']['maxItems']=len(claims)
+        numbered_instructions = ''
+        if self.profile.get('numbered_references_enabled', False):
+            from .numbered_references import NumberedReferences, INSTRUCTIONS
+            references = references or NumberedReferences(view)
+            view, schema = references.view(view), references.schema(schema)
+            numbered_instructions = NUMBER_INSTRUCTIONS if self.compact else INSTRUCTIONS
+        schema = available_tool_schema(schema, view)
+        schema = genos_wire_schema(schema)
+        prompt = self.prompts[phase]
+        if numbered_instructions:
+            prompt = prompt.replace('the ID, such as C1', 'the number, such as 1')
+        if self.compact:
+            view = compact_wire_view(view, phase)
+        user = {'view': view}
+        if not self.compact:
+            user['output_schema'] = schema
+        domain = '' if self.compact else '\nDomainSpec: '+encoded(self.domain)
+        return {'model': self.transport.binding['model'], 'max_tokens': self.profile['max_output_tokens'],
+                   'temperature': 0, 'stream': False, 'chat_template_kwargs': {'enable_thinking': False},
+                   'messages': [{'role': 'system', 'content': self.system+'\n'+prompt+domain+numbered_instructions},
+                                {'role': 'user', 'content': encoded(user)}],
+                   'response_format': {'type': 'json_schema', 'json_schema': {'name': schema_name, 'strict': True, 'schema': schema}}}
+
+    def generate(self, phase, view, schema_name):
+        references = None
+        if self.profile.get('numbered_references_enabled', False):
+            from .numbered_references import NumberedReferences
+            references = NumberedReferences(view)
+        with obs.step(log,'model.request_build',phase=phase):
+            request = self.request(phase, view, schema_name, references=references)
+        logical = 'L'+uuid.uuid4().hex
+        retries = repairs = attempt = 0
+        while True:
+            remaining = self.context.remaining()
+            request_bytes = len(encoded(request).encode())
+            if request_bytes > self.transport.binding['max_input_bytes']:
+                obs.event(log, 'model.attempt.blocked', level=logging.ERROR,
+                          run_id=self.context.run_id, phase=phase, schema=schema_name,
+                          reason='input_byte_limit', request_bytes=request_bytes,
+                          max_input_bytes=self.transport.binding['max_input_bytes'])
+                raise BudgetExhausted('model input exceeds deployment-validated conservative byte limit')
+            attempt += 1
+            numbered_args = {'numbered_references': references} if references is not None else {}
+            if self.compact:
+                numbered_args['wire_projection'] = WIRE_PROJECTION
+            with obs.step(log,'model.attempt_reserve',phase=phase):
+                ident = self.repo.reserve_attempt(view, request, logical, attempt, phase, **numbered_args)
+                self.repo.attempt_sent(ident)
+            attempt_started = time.perf_counter()
+            fields = {'run_id': self.context.run_id, 'attempt_id': ident,
+                      'logical_call_id': logical, 'phase': phase, 'schema': schema_name,
+                      'attempt_no': attempt, 'model': self.transport.binding['model']}
+            template = request.get('chat_template_kwargs')
+            template = template if isinstance(template, dict) else {}
+            thinking = template.get('enable_thinking')
+            thinking = thinking if type(thinking) is bool else None
+            obs.event(log, 'model.attempt.started', **fields,
+                      request_bytes=request_bytes, max_tokens=request['max_tokens'],
+                      diagnostics_version=DIAGNOSTICS_VERSION,
+                      thinking_requested=thinking,
+                      thinking_control_present='enable_thinking' in template,
+                      stream_requested=request.get('stream') is True,
+                      remaining_ms=int(remaining * 1000))
+            try:
+                if self.transport.binding['trust_zone'] == 'external':
+                    self.transport.validate_authorization(self.context)
+                raw = self.transport.send_once(body=request, ticket={'attempt_id': ident, 'remaining_seconds': remaining})
+            except TransportError as exc:
+                self.repo.finish_attempt(ident, 'UNKNOWN' if exc.unknown else 'FAILED', exc.response,
+                                         {'model': self.transport.binding['model'], 'usage': None, 'error': exc.code})
+                retry_scheduled = exc.retryable and retries < self.profile['max_transport_retries']
+                response = exc.response if isinstance(exc.response, dict) else {}
+                obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
+                          failure_kind='transport', error_code=exc.code,
+                          http_status=response.get('status_code'), unknown=exc.unknown,
+                          retryable=exc.retryable, retry_scheduled=retry_scheduled,
+                          duration_ms=int((time.perf_counter() - attempt_started) * 1000))
+                if retry_scheduled:
+                    retries += 1
+                    continue
+                raise
+            except ProposalError as exc:
+                self.repo.finish_attempt(ident, 'FAILED', getattr(exc, 'response', None),
+                                         {'model': self.transport.binding['model'], 'usage': None, 'error': exc.code})
+                obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
+                          failure_kind='proposal', error_code=exc.code,
+                          duration_ms=int((time.perf_counter() - attempt_started) * 1000))
+                raise
+            except Exception as exc:
+                self.repo.finish_attempt(ident, 'UNKNOWN', None, {'model': self.transport.binding['model'], 'usage': None, 'error': type(exc).__name__})
+                obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
+                          failure_kind='adapter', error_type=type(exc).__name__,
+                          duration_ms=int((time.perf_counter() - attempt_started) * 1000))
+                raise TransportError('single-send adapter failed', unknown=True) from exc
+            body = raw.get('body_json')
+            receipt = {'model': body.get('model') if isinstance(body, dict) else None,
+                       'usage': body.get('usage') if isinstance(body, dict) else None, 'attempt_id': ident}
+            status = self.repo.finish_attempt(ident, 'SUCCEEDED', raw, receipt)
+            obs.event(log, 'model.attempt.received', **fields,
+                      http_status=raw.get('status_code'), journal_status=status,
+                      duration_ms=int((time.perf_counter() - attempt_started) * 1000),
+                      response_bytes=raw.get('response_bytes'),
+                      **_response_diagnostics(body))
+            self.context.remaining()
+            if status != 'SUCCEEDED':
+                raise StaleProposal('late model response ignored')
+            if receipt['model'] != self.transport.binding['model']:
+                obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
+                          failure_kind='model_mismatch', actual_model=receipt['model'])
+                raise ContractError('actual response model differs from pinned model')
+            content = None
+            try:
+                if not isinstance(body, dict) or not isinstance(body.get('choices'), list) or len(body['choices']) != 1:
+                    raise ProposalError('expected one structured choice')
+                message = body['choices'][0]['message']
+                content = message.get('content')
+                if not content and len(message.get('tool_calls', [])) == 1:
+                    content = message['tool_calls'][0]['function']['arguments']
+                value = json.loads(content) if isinstance(content, str) else content
+                if references is not None:
+                    value = references.decode(value, request['response_format']['json_schema']['schema'], schema_name)
+                getattr(self.protocol, "validate_wire", self.protocol.validate)(schema_name, value)
+                obs.event(log, 'model.attempt.accepted', **fields, schema_repairs=repairs)
+                return value
+            except (ProposalError, ValueError, KeyError, TypeError) as exc:
+                obs.event(log, 'model.output.invalid', level=logging.WARNING, **fields,
+                          error_type=type(exc).__name__, schema_repairs=repairs,
+                          repair_scheduled=repairs < self.profile['max_schema_repairs'])
+                with self.repo.transaction():
+                    self.repo.event('OUTPUT_SCHEMA_INVALID', {'attempt_id': ident, 'error': str(exc)[:2000]})
+                if repairs >= self.profile['max_schema_repairs']:
+                    error = ProposalError('structured model output invalid after bounded repair')
+                    error.format_error = True
+                    raise error from exc
+                repairs += 1
+                # Raw output is already durable. Repair changes syntax only; IDs,
+                # evidence visibility and semantic state are checked by repository.
+                # Server validation after decoding may mention internal IDs.
+                # Keep repair instructions in the same request-local vocabulary.
+                repair_error = str(exc)[:1000]
+                if references is not None:
+                    for kind, ids in references.ids.items():
+                        for number, ident in sorted(enumerate(ids, 1), key=lambda pair: -len(pair[1])):
+                            repair_error = repair_error.replace(ident, f'<{kind} choice {number}>')
+                valid_claims = (list(range(1, len(references.ids['claims'])+1)) if references is not None
+                               else [c.get('claim') or c.get('entity_id') for c in view.get('claims',[])])
+                request = {**request, 'messages': request['messages'][:2]+[{
+                    'role': 'user', 'content': encoded({'repair': 'Return the complete object matching the response schema; correct the reported error.',
+                                                       'invalid_response_excerpt': content[:4000] if isinstance(content, str) else encoded(content)[:4000], 'error': repair_error,
+                                                       'valid_claim_ids':valid_claims})}]}

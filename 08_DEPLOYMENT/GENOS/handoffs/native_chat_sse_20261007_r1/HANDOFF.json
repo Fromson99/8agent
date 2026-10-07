@@ -1,0 +1,122 @@
+{
+  "version": "GENOS_NATIVE_CHAT_SSE_20261007_R1",
+  "created_at": "2026-10-07T01:15:16.706032+00:00",
+  "code_zip_sha256": "bf8bf1015b1f1109e465f27e770fff7d3905450329abad6d36147028c9c2415e",
+  "code_zip_bytes": 1397135,
+  "code_manifest_sha256": "f23cf387c2d16a6621d046fbc16b61d2f249c9b97e0fe11ef11b8b97393f857b",
+  "code_files": 287,
+  "apply_txt_sha256": "adf22271e98ec712a88fc5a4a660dd3fd454d5433e9d6ed98fcde52ed956cd26",
+  "parent_code_zip_sha256": "9e725446d2a802ee82817c52e4e6020123fc0f6ec432b31dd5295b59f7692a4e",
+  "source_code_root": "/home/jin/8-AGENT",
+  "source_git_head": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "source_has_uncommitted_changes": true,
+  "selected_local_baseline": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "investigation-control-v6-20261007-r1",
+    "generation": 43,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/investigation-control-v6-20261007-r1/release.json",
+    "release_manifest_sha256": "8cd47ee0524677ae3a7ff1b101b8635102d2139747038695a3d510eaaa968b80",
+    "activated_at": "2026-10-06T18:12:51.717751+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "3c7addfb7a8c96cf236a66c6d0540439e1e6364ac895192ca49931bc0962f647",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0677-investigation-main-integrity-generalization/실험/manifest.json",
+        "sha256": "178f9dedc4805c024f099b22f9f8cc799a53709f44c1bc77513aa86b81933dc7"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0677-investigation-main-integrity-generalization/README.md",
+        "sha256": "3990a3f759f26ec4843dafbb5f2de84e11e042b538ba3735837d14488df8460f"
+      },
+      "arm": "integrated",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0677-investigation-main-integrity-generalization/artifacts/run-001/result.json",
+        "sha256": "ef0416d0cbd14f564cd86086770c393c48e1d686a076922292e2711e72bfdfa1"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0677-investigation-main-integrity-generalization/artifacts/design/release-rebase.json",
+        "sha256": "b20e3e5d1243658de8828a5bd5f9125567c9adb493f07dadfba369199b05873e"
+      }
+    }
+  },
+  "changed_payload_files": [
+    "00_SYSTEM/PIPELINE.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/assemble.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/legal_agent/6.0.0/select.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
+    "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json",
+    "02_BACKEND/semantic_runtime/chat_adapter.py",
+    "06_TOOLS/COMMANDS/genos_rag_data_bundle.py",
+    "08_DEPLOYMENT/GENOS/stream_app.py",
+    "main.py"
+  ],
+  "scope": {
+    "transport_files": [
+      "02_BACKEND/semantic_runtime/chat_adapter.py",
+      "08_DEPLOYMENT/GENOS/stream_app.py",
+      "main.py"
+    ],
+    "engine_pin_files": [
+      "00_SYSTEM/PIPELINE.json",
+      "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json",
+      "02_BACKEND/ENGINES/legal_agent/6.0.0/assemble.json",
+      "02_BACKEND/ENGINES/legal_agent/6.0.0/retrieve.json",
+      "02_BACKEND/ENGINES/legal_agent/6.0.0/select.json",
+      "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
+      "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
+      "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
+      "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
+      "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
+      "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json"
+    ],
+    "unchanged_working_files_carried_from_other_tasks": [
+      "06_TOOLS/COMMANDS/genos_rag_data_bundle.py"
+    ]
+  },
+  "upstream": {
+    "remote_ref": "infocz/fde/seungho/cicd",
+    "commit": "388cd39208dd189b902799002884ef8c4d9025b0",
+    "files": [
+      {
+        "path": "02-els-qa/main.py",
+        "sha256": "417d1ceb0ddea975c0479aee621a5fa5f4eaa3aeb3faa466a79f754c211ea21e"
+      },
+      {
+        "path": "07-issuance-note/front/app.py",
+        "sha256": "168c44f5fffc45231ab89fe2a3a056f4ad8bfac6570701b9bee355c0cede9deb"
+      },
+      {
+        "path": "07-issuance-note/front/stream.py",
+        "sha256": "0e9feeb8b12926adfe7c6678e04140a0565f821107d83e2ebee3ea5c42f1ab7c"
+      },
+      {
+        "path": "07-issuance-note/workflow/chat.py",
+        "sha256": "122e46ea8584735fcc28359f8d70183708bbabae83a7b73ebfe07057fe10e073"
+      },
+      {
+        "path": "07-issuance-note/deploy/prod.env",
+        "sha256": "4a9bf13b1cb7cdca6db92c32c80400c4109d2296dc706dbc8cddae501b5028bf"
+      }
+    ],
+    "archive_sha256": "4ca734b6c32486b04621f9112dc89804c2fb9c00d9c8cce9409cb849c6b9cc87",
+    "field_rollback_commit": "36b9cc381bf576b663956b5df19a2c7d61eb6132"
+  },
+  "requires_rebuilt_generation": false,
+  "push_checkout": "~/DEV (existing field Git checkout)",
+  "actual_selected_generation": null,
+  "actual_generation_manifest_sha256": null,
+  "push_commit": null,
+  "code_serving_revision": null,
+  "genos_deployed": false,
+  "field_chat_sse": "NOT_VERIFIED",
+  "local_active_pointer_changed": false,
+  "external_model_calls": 0
+}

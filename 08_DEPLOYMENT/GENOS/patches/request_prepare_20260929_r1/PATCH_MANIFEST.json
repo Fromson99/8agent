@@ -1,0 +1,75 @@
+{
+  "format": "8agent-request-prepare-patch/1",
+  "patch": "request-prepare-20260929-r1",
+  "files": {
+    "02_BACKEND/semantic_runtime/legal_agent/repository.py": {
+      "strategy": "approved-function-only",
+      "qualified": "WorkRepository.__init__",
+      "source_before_sha256": "809c8c4cdb9b604edcffdea3ba10e7c458d13418dcaeead8c54fea03e64feab7",
+      "source_after_sha256": "2b4cfe1d84b3511caf098e9cd618ef99a1a5a50d0c3fe19b0b8b24b745dd28eb",
+      "before": "functions/0-before.txt",
+      "before_ast_sha256": "b79d4c14773c1999b5a0cb7ee3f5fdcfb1edbf1d5e7d56158cf88640bcada1ce",
+      "after": "functions/0-after.txt",
+      "after_ast_sha256": "89a55888da5ae2e4b3314381856d070c6587daeb9ed35a293d12fe0e0517b9d4"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent_adapter.py": {
+      "strategy": "approved-function-only",
+      "qualified": "ServingLegalAgent._open_session",
+      "source_before_sha256": "a24ececfb60a6db7e02cdd9de573e251597d3866cc60e96c944496c22b4aa798",
+      "source_after_sha256": "8b020f60590a27253dc53aa88eaa7e238689512ffc82c83ce5af46df0e27dc93",
+      "before": "functions/1-before.txt",
+      "before_ast_sha256": "7f8dd83e06d353bc4e405f188ac6aeb78cb34312b2e24f233082d152f1c0f755",
+      "after": "functions/1-after.txt",
+      "after_ast_sha256": "91666dc9b61162175ccc7749d6fc4574ee84e72ef4d45795579b5fc7af2e8b57"
+    },
+    "02_BACKEND/semantic_runtime/folder_navigation.py": {
+      "strategy": "approved-function-only",
+      "qualified": "load_origin_projection",
+      "source_before_sha256": "3031124049dff3c6d406ac4d01c297919e96548d0f8ffb57be6b79c55528be52",
+      "source_after_sha256": "a89f32904eebe698e877126687903deb803169a04e465beffcccc4be0edddce8",
+      "before": "functions/2-before.txt",
+      "before_ast_sha256": "e083d5e84fb9e59b16dde4c8370c12e53ccd350a0ed64f7213121375214cf35a",
+      "after": "functions/2-after.txt",
+      "after_ast_sha256": "35bfdc97ce7ae71d0e411d569b3f5b5c17dd1d554d3931086dfdd5e1f9fcc547"
+    },
+    "02_BACKEND/semantic_runtime/document_aliases.py": {
+      "strategy": "approved-function-only",
+      "qualified": "load",
+      "source_before_sha256": "e5dbce1b37611ed7efbaf9d20d8f52f8716e58b72b44ae4360a42d2d98720f2b",
+      "source_after_sha256": "d4700f94b19b6d143e395cfc3d526f5e6cf4129b060bc1c485231534ad5ae804",
+      "before": "functions/3-before.txt",
+      "before_ast_sha256": "b86aa40fd0749869e83fa5139e37176eb7c5cd0ca679bd3469c0def95cd6cffc",
+      "after": "functions/3-after.txt",
+      "after_ast_sha256": "ee313fc3b627e6d114aae1004649bd2c50c587eceeac9b028f6b280ec0dbc23f"
+    }
+  },
+  "assets": {
+    "functions/0-before.txt": "7acc81b6b103f1cac28af3bc316ce6277f25333ba6a0accd0deb293d785431de",
+    "functions/0-after.txt": "20e7688d3071cad949bb47b30a38c27644ae2308bbc4968dcd72c350e4ab789f",
+    "functions/1-before.txt": "ac5cb5aca238ab1951d2ca544cc35f3b4fca906d74e984b87d31dfbd78f84fd8",
+    "functions/1-after.txt": "12d749d382d3f1be5f042c70a867d8c823a5af171cc61c44cb4856a029e6162e",
+    "functions/2-before.txt": "cbf81c8baaa4a037c15f6da0d2358645e9fd7704bfdb7adfe659e29ab9631229",
+    "functions/2-after.txt": "e1e020e1caf7c93e48c1c3eccb8f64445891ba4c73e72c9b29756aac725b2774",
+    "functions/3-before.txt": "8cd819b3528674d4b58139f538da85a69e83a5bcb0970399b5e6dd5a605ee8f2",
+    "functions/3-after.txt": "0afcd58140b509ebffb315743c664f06fe0b6b917b36b94a0f0e6d59ae8c8bc6",
+    "transform.py": "b6d0cdbdce1e0f46384dee0cf33745d63241e322091f58db40801ba78a5e4b93",
+    "apply.py": "786badea65c8cae2316563574bcb3ea99b3a0e16233d5647c93d7bb88f72e487",
+    "NOTES.txt": "6400aa6376caac5ddca07b3d78d25d65c682fc11c2008237b30ecd3774bbabba"
+  },
+  "requirements": [
+    {
+      "path": "02_BACKEND/semantic_runtime/contracts.py",
+      "qualified": "cached_code_sha",
+      "ast_sha256": "1fd74f98252a384794118b3d4ef73ae28c9ee9fa9b64d6548da50960ea48b984"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/navigation_agent.py",
+      "qualified": "_verified_json",
+      "ast_sha256": "175678c4c9b180c301e090dd0a5ef6072fb9c2bbbc70f85fe71e90d32c543b7b"
+    }
+  ],
+  "generation_change": false,
+  "workflow_change": false,
+  "onsite_verified": false,
+  "performance_measured": false
+}

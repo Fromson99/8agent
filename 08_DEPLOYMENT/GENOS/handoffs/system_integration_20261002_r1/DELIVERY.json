@@ -1,0 +1,199 @@
+{
+  "id": "system-integration-20261002-r1",
+  "schema_version": "full-main-memory-integration-v1",
+  "quality_certified": false,
+  "active_main_changed": false,
+  "source_parent": "ADR-0613-experiment-v1/REPAIRED",
+  "source_parent_decision": "Rejected",
+  "quality_gate_override": false,
+  "code_zip_sha256": "95ba8f7a42d1408a877656dbd23c73f54974b6caa4e0f18d1b47f358ae855914",
+  "code_manifest_sha256": "94d819b2f6a18a3a4027aea431ff83e3166713bdaef41b69ec15133e77482a33",
+  "current_main_files": 1923,
+  "code_files": 1929,
+  "added_files": [
+    "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+    "02_BACKEND/semantic_runtime/legal_agent/memory_binding.py",
+    "02_BACKEND/semantic_runtime/legal_agent/memory_identity.py",
+    "02_BACKEND/semantic_runtime/legal_agent/memory_methods.py",
+    "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+    "07_DOCS/REFERENCE/OPERATIONS/SYSTEM_MEMORY_INTEGRATION_20261002.md"
+  ],
+  "changed_files": [
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "before": "3be867f9887d69e455676fa307957f0ed310ecb952f823d9ff3d8301912597ec",
+      "after": "12affd8d5e8311ca240c4d7f8be9afe33cc682c8d89da237c28bd2ac46a46153"
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "before": "d682d57f75ec680a30a2545d7c4f6bd70900ce83477ed16e04daf1925c259424",
+      "after": "8b8f070bf02f5e78933b69b75fcc338b70adbb07583815deeb21f4fc3b655d5e"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/1.0.0/answer.json",
+      "before": "74a4faf708fcb5ef00154ada7dbc81c7e0f7106327125a435af64c5445ea1f3b",
+      "after": "55b425f7d464806a09c099176f0b2cbf386c987ec1260c987ebb394c8a40e43a"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/1.0.0/assemble.json",
+      "before": "eef2dd46fdd85f35bd1dd61e0bd6ec3c41199de2fbbf4707adf600dffc0de7cf",
+      "after": "b09e23388017a3c62dc0e8ecb906326b1d0b26e3e2b7e8c9cb80f8c722b3aaac"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/1.0.0/retrieve.json",
+      "before": "ff3ccb89d82c684ec7761f3aac067c62af8fd6df66899ec9a717d64e1dfc1f3e",
+      "after": "f1be78582a306644d42c13517c1a959d4cc84ec7a49534f3de149b756bee7a44"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/1.0.0/select.json",
+      "before": "d3223836838c2b9d440a0f2e735e0c76d4e04239838fcc88c2101478d86353a5",
+      "after": "dca6567d3e2878f78214d066dc1b539fc61ea8f4e756d5a37a45c05b24dc3a7a"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/2.0.0/answer.json",
+      "before": "a7802ca3e34fc90239d289a0806ef08361e0de40080fe0a3902b5a670517dbf9",
+      "after": "a5d75dd1d95bb353d9c25961055f4a8c757c9bca276e7d99e331365554babc8f"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/2.0.0/assemble.json",
+      "before": "d408a207b4dc63e2692b6af28f74acfb8b4afa1494f9a54298f5514d6b50c102",
+      "after": "acd5fcb22d0c875a5b7b0e1bbf37ababf70249e811d9c9381e023c58e972e298"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/2.0.0/retrieve.json",
+      "before": "22d4aa78ae41a42810f628e7d988f0ff5c6e454670d4656eecee5739f477afb7",
+      "after": "ba508f4ef56bd5d3efb2230bd9d148ede439cc31f839003357ab7f0860675e26"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/2.0.0/select.json",
+      "before": "ef59e2103e8f8fd00c1beefa559877370f7348e7ce4d0132a6cd70641c2b07b5",
+      "after": "4c323eafe83f4dc98781bf49b30747fdf381081eac165555db1f67871cb59efd"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/3.0.0/answer.json",
+      "before": "6af180af57ad37b3ba5a4858c2ac033fb6d7fafce62da3b57c39d5c4eb27e4a4",
+      "after": "d9d5b4e37be69798da6a3097fe66dda9f63b105d9fddc98c552702b61862216b"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/3.0.0/assemble.json",
+      "before": "e77b3713ae10116bf6cfcedd40e4b2276c6d0fe355c62a525cf3bafe3138a345",
+      "after": "893510020cfd536566389114a5a278d1e420dd8d99facfe82bbe3a7408c4da5b"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/3.0.0/retrieve.json",
+      "before": "8d74e114fe97a0c0ed83dd0ecaf403bb04452d177fda83a918c069d4f9e63f7a",
+      "after": "08d8562a0dc9ae9638799af73911c7b8cbc258c9287a327be7045f772ae64cd4"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/3.0.0/select.json",
+      "before": "c9f94bc51d72bd085efd9107fa204203ecc30e37f719bc06a38cff66ef90022e",
+      "after": "e5aa161aacfc0f45b85050cd89be9951e8b50a9149e287de7cd13903105b28d3"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/4.0.0/answer.json",
+      "before": "c6a6aa6d6fcefea3161904d3259b8d5b2bbeabf66494ddc1a939229a95144629",
+      "after": "a9e7ded31a4976072648c8c8145ba20ca9a6b2521c903829cf1f0d4d8b48bb5a"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/4.0.0/assemble.json",
+      "before": "26c342dd1abbd5f1b8324272f4474dc1ee09d60b103a33ca563d3c959b286d5c",
+      "after": "ae1ff61ccafb2b2b030e38651842df83bea2274e0f3722bf2a0117b1d5a0f16a"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/4.0.0/retrieve.json",
+      "before": "0e8ff5bac82e8edf1e5f752ef125cd81d389d176ed64f86768898bc68b4168bc",
+      "after": "dff3aca20793d1ff5333b9f651b7291524c42cfbd731d7766107bf0bfb4f9c40"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/4.0.0/select.json",
+      "before": "1cc4041b561b86f265f58bf3d4bb0c41ab333448fe7d46976b942a3bb3426539",
+      "after": "60f81b14e4456a25be98d8fdbecd9aed1f524cf2790bc7bd19793e3c891e0724"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/5.0.0/answer.json",
+      "before": "0ea2a77cb7e2e2f30627cc934a6b703605ec65e6d6a3af175af2e027f9c2f4ec",
+      "after": "927fdb9db445c2028741a20c44ee768c446d9547e2cd15ad71dcb681d645d42d"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/5.0.0/assemble.json",
+      "before": "a9436111735dbec0fe2075a6999935b2c38aa9a455605d2f949389630af15ea4",
+      "after": "afe6562f7828df80ab175259a71fb6bfca2530da1fe41adefec0aaf9b5d859e6"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/5.0.0/retrieve.json",
+      "before": "ab64290506a64b3bcb087c18f528795cc2619c8c2dcfc25cd1b9f7cc0ab59ae1",
+      "after": "77958aaa2afcd32ebe089e4e1a474cacc940994915b20c712f54dfbe5daa0c1a"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/5.0.0/select.json",
+      "before": "db749b06c0e742775818f12659894a880afe4979580777f57c3129de50140c5e",
+      "after": "5486a29984626d9cc5d303f997da0c3b58533c23e8a0d4440ecb54aac37da1b3"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
+      "before": "080398d0576ea373a0256a0ef14fe506d1c51d419c12ec093a57017de33d90cf",
+      "after": "6bccac78a9edfddb77594b95b2eea31d7b3bedc0fb5aa0b65fde5460083c706e"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
+      "before": "3efcbb2509c059b6c327762689e9c7a7325f178d62b2c1737303f2b2bdc3b05f",
+      "after": "9b6337a3ce630514de3be4d688c77fa1b5645712a28899e2b416604688f91e3e"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
+      "before": "a2efc143dcec264ccaa175854db6bf9adeb8678955f4e2ef3b5c311eae788f30",
+      "after": "10816f0a8946f493aaee95c50d6ea276df6e3e2fd1bc7906f26af920168232cc"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
+      "before": "7ad5b0d6068cb8fe1ed1bdb448dad08ccb0fdc452bf78b75b7fa5e3c890bbb52",
+      "after": "d7a4ce3e2c598078bbefe4b7c4d192c0a24c4e8b75b4d1569eac60e517fe7017"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
+      "before": "1232a1eb36645726eac6f827dcc344a4a59181862aa3d11340874f2be36f8604",
+      "after": "17e8e3992a9c4b99ff937bd170e1f1efefa11ceb7bfdb188e946df92f88ba4d1"
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json",
+      "before": "49d1add22b890181e04bbcb883f6f8e17c5f6572e7c8f4a2bccca85ab28d3c63",
+      "after": "d577beb7ec59454935c25e00237e422fe71a48714e4fc9a61fb00d136ba82849"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/app.py",
+      "before": "0ad6e3ec7422504dcbc40020baa9a1f26eac24c2065f02a7bde45d62dc7ed511",
+      "after": "556e830cd35b84b0052c7ce0f5662c2a970b82fea086c5ead4f24a502fd8c71f"
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+      "before": "180502db2d24b68d8bbce74ca16a56ed5791b83b0710b6621ab210f99796d581",
+      "after": "435544383efd7dcebe0e8bcd7f902a8d203701a944f07981ce25347e6b179ca2"
+    },
+    {
+      "path": "GENOS.md",
+      "before": "abada37e704e03a042458bc5e6b6186f8fa6aed8ee2f583b2aeb68c9181eef4f",
+      "after": "841c2879e7962067261b8bd5d408dd82bf2d472d6b5f151d7c5c3a9014ddc28a"
+    },
+    {
+      "path": "service.py",
+      "before": "71f1901be7dd45f8c4bf30526894d3dbf39cd7c76e64bac4fb203def19c959a6",
+      "after": "8ba99192c9e073f0fd42d80125835f9ec583910fa363162a0bef694139cd8566"
+    }
+  ],
+  "dropped_files": [],
+  "installer_validation": {
+    "id": "full-code-95ba8f7a42d1408a8776",
+    "code_zip_sha256": "95ba8f7a42d1408a877656dbd23c73f54974b6caa4e0f18d1b47f358ae855914",
+    "syntax_current_checked": 673,
+    "frozen_code_preserved_not_certified": 317
+  },
+  "onsite_generation": null,
+  "deployment_commit": null,
+  "code_serving_revision": null,
+  "workflow_verified_onsite": false,
+  "release_status": "WORKING_CODE_INTEGRATED_NOT_ACTIVATED",
+  "working_main_integrated": true,
+  "git_branch": "feature/legal_RAG",
+  "installer_local_status": "PASS",
+  "validation_sha256": "3e11dfdad354b3ed467e5ecbca9643063198004f64a60229d9f09f678dcace19"
+}

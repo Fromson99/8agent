@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# Save ZIP and this TXT together in GENOS DEV/TRANSFER. Run: bash <this>.txt all
+set -euo pipefail
+umask 077
+NFS_ATTACHMENT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+NFS_DRIVER_LOG_BASE="$NFS_ATTACHMENT_DIR/nfs-read-driver-logs"
+mkdir -p -- "$NFS_DRIVER_LOG_BASE"
+NFS_DRIVER_LOG_DIR="$(mktemp -d "$NFS_DRIVER_LOG_BASE/run-$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX")"
+exec > >(tee -a "$NFS_DRIVER_LOG_DIR/RUN.log") 2>&1
+NFS_DRIVER_MODE="${1:-all}"
+if (( $# )); then shift; fi
+printf 'START GENOS_NFS_READ_R5 mode=%s log=%s\n' "$NFS_DRIVER_MODE" "$NFS_DRIVER_LOG_DIR"
+trap 'NFS_DRIVER_EXIT=$?; trap - EXIT; python3 - "$NFS_DRIVER_LOG_DIR/EXIT_STATUS.json" "$NFS_DRIVER_EXIT" "$NFS_DRIVER_MODE" <<"PY"
+import json,sys
+from pathlib import Path
+Path(sys.argv[1]).write_text(json.dumps({"status":"DRIVER_STAGES_PASS" if sys.argv[2]=="0" else "FAILED", "exit_code":int(sys.argv[2]),"mode":sys.argv[3],"field_workflow_verified":False},indent=2)+"\n")
+PY
+printf "GENOS_NFS_READ_EXIT=%s\n" "$NFS_DRIVER_EXIT"; exit "$NFS_DRIVER_EXIT"' EXIT
+NFS_DEV_ROOT="${GENOS_DEV:-$HOME/DEV}"
+if [[ ! -d "$NFS_DEV_ROOT" ]]; then
+  printf 'ERROR: existing DEV checkout missing; set GENOS_DEV to its absolute path.\n'
+  exit 2
+fi
+NFS_ARCHIVE="$NFS_ATTACHMENT_DIR/GENOS_NFS_READ_20261006_R5.zip"
+NFS_ARCHIVE_SHA="1135ea5ba68b5daf99457ff455574ce40b62a84ccef45b821118c2120272b4e1"
+NFS_BOOTSTRAP="$NFS_DRIVER_LOG_DIR/bootstrap"
+python3 - "$NFS_ARCHIVE" "$NFS_ARCHIVE_SHA" "$NFS_BOOTSTRAP" <<'PY'
+import ast,hashlib,json,sys,zipfile
+from pathlib import Path,PurePosixPath
+archive,expected,output=Path(sys.argv[1]),sys.argv[2],Path(sys.argv[3])
+digest=hashlib.sha256()
+with archive.open('rb') as stream:
+    for chunk in iter(lambda:stream.read(1024*1024),b''):digest.update(chunk)
+if digest.hexdigest()!=expected:raise SystemExit('ZIP SHA256 mismatch; preserve files and use this R5 ZIP/TXT pair')
+with zipfile.ZipFile(archive) as z:
+    names=z.namelist();m=json.loads(z.read('CODE_MANIFEST.json'))
+    if m.get('format')!='8agent-code/1' or m.get('id')!='nfs-data-probe-20261006-r1':raise SystemExit('Unexpected CODE_MANIFEST')
+    if len(names)!=len(set(names)) or set(names)!={r['path'] for r in m['files']}|{'CODE_MANIFEST.json'}:raise SystemExit('ZIP member inventory mismatch')
+    for r in m['files']:
+        name=r['path'];p=PurePosixPath(name)
+        if p.is_absolute() or '..' in p.parts or '\\' in name or p.suffix.lower() in {'.js','.jsx','.mjs','.cjs'}:raise SystemExit('Forbidden member')
+        raw=z.read(name)
+        if len(raw)!=r['bytes'] or hashlib.sha256(raw).hexdigest()!=r['sha256']:raise SystemExit('ZIP member hash mismatch')
+        if name.endswith('.py'):ast.parse(raw,feature_version=(3,10) if '/workflow/' in name else (3,11))
+        target=output/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(raw)
+print('ATTACHMENT_VERIFIED bytes and Python syntax')
+PY
+cd -- "$NFS_DEV_ROOT"
+# Field paths confirmed in earlier GENOS build/runtime records.
+# Explicit arguments after these defaults can select another known generation.
+NFS_FIELD_ARGS=(--generation /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation --runtime /nfs-root/diamo/8-agent/runtime)
+NFS_FIELD_STATE_UNSET=1
+for NFS_FIELD_OPTION in "$@"; do
+  case "$NFS_FIELD_OPTION" in --state|--state=*|--state-unset) NFS_FIELD_STATE_UNSET=0 ;; esac
+ done
+if [[ "$NFS_FIELD_STATE_UNSET" == 1 ]]; then NFS_FIELD_ARGS+=(--state-unset); fi
+case "$NFS_DRIVER_MODE" in
+  install)
+    python3 "$NFS_BOOTSTRAP/06_TOOLS/COMMANDS/genos_nfs_probe_handoff.py" install --archive "$NFS_ARCHIVE" --zip-sha256 "$NFS_ARCHIVE_SHA" --code-root "$NFS_DEV_ROOT" "$@"
+    ;;
+  prepare)
+    python3 06_TOOLS/COMMANDS/genos_nfs_probe_handoff.py prepare --code-root "$NFS_DEV_ROOT" "${NFS_FIELD_ARGS[@]}" "$@"
+    ;;
+  push)
+    python3 06_TOOLS/COMMANDS/genos_nfs_probe_handoff.py push --code-root "$NFS_DEV_ROOT" --remote "${GENOS_NFS_REMOTE:-origin}" "$@"
+    ;;
+  all)
+    python3 "$NFS_BOOTSTRAP/06_TOOLS/COMMANDS/genos_nfs_probe_handoff.py" install --archive "$NFS_ARCHIVE" --zip-sha256 "$NFS_ARCHIVE_SHA" --code-root "$NFS_DEV_ROOT"
+    python3 06_TOOLS/COMMANDS/genos_nfs_probe_handoff.py prepare --code-root "$NFS_DEV_ROOT" "${NFS_FIELD_ARGS[@]}" "$@"
+    python3 06_TOOLS/COMMANDS/genos_nfs_probe_handoff.py push --code-root "$NFS_DEV_ROOT" --remote "${GENOS_NFS_REMOTE:-origin}"
+    ;;
+  pack-data)
+    python3 "$NFS_BOOTSTRAP/06_TOOLS/COMMANDS/genos_rag_data_bundle.py" pack --code-root "$NFS_DEV_ROOT" "${NFS_FIELD_ARGS[@]}" "$@"
+    ;;
+  restore-data)
+    python3 "$NFS_BOOTSTRAP/06_TOOLS/COMMANDS/genos_rag_data_bundle.py" restore "$@"
+    ;;
+  *)
+    printf 'Modes: all | install | prepare | push | pack-data | restore-data\n'
+    exit 2
+    ;;
+esac
+printf 'Code-space stage(s) completed. Deploy the exact printed commit and paste its generated WORKFLOW_PASTE_ALL.txt in the workflow test screen.\n'

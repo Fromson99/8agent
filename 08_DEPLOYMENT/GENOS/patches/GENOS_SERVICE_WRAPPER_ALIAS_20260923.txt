@@ -1,0 +1,14 @@
+철회: 이 파일의 이전 service.service = service 적용 제안은 사용하지 마세요.
+
+2026-09-23 재검토: GENOS 공식 코드서빙 활용 문서는 저장소 루트 service.py에
+async def service(config, data) 함수를 정의하는 계약을 제시합니다. 현재 우리
+service.py도 이 계약을 따릅니다. 함수에 .service 속성을 붙이는 제안은
+플랫폼 로더의 실제 import 상태를 확인하지 않은 우회였으므로 코드와 테스트에서
+제거했습니다. 이 파일은 이전 제안의 철회 기록으로만 남깁니다.
+
+공식 문서: https://genos-docs.gitbook.io/default/v1.8.6/basic-tutorials/guides/development/code_serving/usage_code_serving.md
+발송된 r4 ZIP SHA256: 4ff6e49741f22b80fac134c61efb214b0e49e86540c553c18f0bed1848f6205d
+그 안의 루트 service.py SHA256: 8dee23ee6f8ec241fd648b59f4d0ca458c0be20b368b0ca6e4e8fc67a3e6f62f
+
+사진의 /app/src/main.py:110은 플랫폼 컨테이너 경로입니다. 그 코드의 import 구문과
+선택된 배포 커밋, 실제 컨테이너의 service.py를 확인해야 원인을 확정할 수 있습니다.

@@ -1,0 +1,28 @@
+{
+  "patch": "sse-startup-20260928-r1",
+  "code_root": "/home/jin/8-AGENT",
+  "verified_python": "3.14.4",
+  "baseline_commit": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "code_zip_sha256": "920d54f5aaa48c5e4608a0f7aa0ea55d00ad27ca528884e794bdb126dc93d160",
+  "code_manifest_sha256": "91df1a366e682dd47dadec719cfe37461b4d5c34b71ab16f5c962c952cf46cfe",
+  "apply_txt_sha256": "c76e088af5d8bb996bb3d2a50f09bc6cc16e9947c6efbc951e896a97956ca79a",
+  "files": {
+    "08_DEPLOYMENT/GENOS/stream_app.py": "b39cfc24c2a4d954fad4ba967e253db19e5f145d2f480ee494c30be198649db1",
+    "08_DEPLOYMENT/GENOS/start_sse.py": "db033b5373fb1333aec681498a84ec8e25472afc812b541cb4a609a23a6ed14c"
+  },
+  "grammar_python_311_checked": true,
+  "verified_checkout": "isolated mock Git checkout with actual two-file preimage and DEV symlink",
+  "onsite_git_commit": null,
+  "genos_generation_path": null,
+  "genos_generation_manifest_sha256": null,
+  "code_serving_revision": null,
+  "onsite_verified": false,
+  "local_checks": {
+    "patch": "sse-startup-20260928-r1",
+    "local_python": "3.14.4",
+    "regression_passed": 52,
+    "installer_passed": true,
+    "actual_http_startup_passed": true,
+    "genos_onsite_verified": false
+  }
+}

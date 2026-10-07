@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# Keep this TXT and GENOS_RELATION_SCAN_FIX_20260925_R2.zip in one folder.
+# Run: bash GENOS_RELATION_SCAN_FIX_20260925_R2_APPLY_FIXED.txt
+# Optional: DEPLOY_ROOT=/path/to/DEV PYTHON_BIN=/path/to/python3 bash ...
+# Rollback: ROLLBACK_FROM=/backup/path bash ...
+DEPLOY_ROOT="${DEPLOY_ROOT:-$HOME/DEV}"
+TRANSFER_DIR="$DEPLOY_ROOT/TRANSFER"
+mkdir -p "$TRANSFER_DIR"
+RUN_LOG="$TRANSFER_DIR/relation-scan-fix-r2-apply-$(date -u +%Y%m%dT%H%M%SZ).log"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'result=$?; printf "FINISHED status=%s log=%s\n" "$result" "$RUN_LOG"' EXIT
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PATCH_ZIP="$SCRIPT_DIR/GENOS_RELATION_SCAN_FIX_20260925_R2.zip"
+if [[ ! -f "$PATCH_ZIP" ]]; then
+    printf 'ERROR: ZIP missing beside TXT: %s\n' "$PATCH_ZIP" >&2
+    exit 2
+fi
+PYTHON_BIN="${PYTHON_BIN:-$(command -v python3 || true)}"
+if [[ -z "$PYTHON_BIN" || ! -x "$PYTHON_BIN" ]]; then
+    printf 'ERROR: Python 3 missing; set PYTHON_BIN to an executable Python 3 path\n' >&2
+    exit 2
+fi
+if [[ ! -d "$DEPLOY_ROOT/.git" && ! -f "$DEPLOY_ROOT/.git" ]]; then
+    printf 'ERROR: not a Git checkout: %s\n' "$DEPLOY_ROOT" >&2
+    exit 2
+fi
+printf 'ZIP=%s\nPYTHON=%s\nCHECKOUT=%s\n' "$PATCH_ZIP" "$PYTHON_BIN" "$DEPLOY_ROOT"
+printf '%s  %s\n' '7ca97bd17b8a9e30fc2e4ef9b59774918e716bf866a64aeb0367addb2a62beb9' "$PATCH_ZIP" | sha256sum -c -
+
+PATCH_DIR="$(mktemp -d "$TRANSFER_DIR/relation-scan-fix-r2.XXXXXX")"
+unzip -q "$PATCH_ZIP" -d "$PATCH_DIR"
+"$PYTHON_BIN" -m py_compile "$PATCH_DIR/apply.py"
+git -C "$DEPLOY_ROOT" rev-parse HEAD
+if [[ -n "${ROLLBACK_FROM:-}" ]]; then
+    "$PYTHON_BIN" "$PATCH_DIR/apply.py" --deploy-root "$DEPLOY_ROOT" --rollback-from "$ROLLBACK_FROM"
+else
+    "$PYTHON_BIN" "$PATCH_DIR/apply.py" --deploy-root "$DEPLOY_ROOT"
+fi
+git -C "$DEPLOY_ROOT" diff --check
+printf 'GIT_STATUS_BEGIN\n'
+git -C "$DEPLOY_ROOT" status --short --untracked-files=all -- \
+    02_BACKEND/semantic_runtime/legal_agent/workflow_relation_cards.py \
+    02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py \
+    02_BACKEND/semantic_runtime/request_report.py \
+    02_BACKEND/ENGINES 00_SYSTEM/PIPELINE.json
+printf 'GIT_STATUS_END\n'
+"$PYTHON_BIN" - "$DEPLOY_ROOT" <<'PY'
+import hashlib, sys
+from pathlib import Path
+root = Path(sys.argv[1])
+for name in ('workflow_relation_cards.py', 'workflow_relations_tools.py'):
+    path = root / '02_BACKEND/semantic_runtime/legal_agent' / name
+    print('FILE_SHA256', name, hashlib.sha256(path.read_bytes()).hexdigest())
+PY
+printf 'Code checkout prepared. Commit/push and deploy a new code-serving revision separately; then test in the workflow screen.\n'

@@ -1,0 +1,2887 @@
+[
+  {
+    "path": "02_BACKEND/ENGINES/semantic_runtime/1.0.0/answer.json",
+    "sha256": "bb04882b696431860d6ab7bfbbe95071248656d088431becb1b6ee66c304c247",
+    "origin": "verified reference R1 ZIP, test support only"
+  },
+  {
+    "path": "02_BACKEND/ENGINES/semantic_runtime/1.0.0/assemble.json",
+    "sha256": "1a9ce45b6fa476b1effc7ad716cf79a2a1651bb6815be1726926c1bc95c03497",
+    "origin": "verified reference R1 ZIP, test support only"
+  },
+  {
+    "path": "02_BACKEND/ENGINES/semantic_runtime/1.0.0/feedback.json",
+    "sha256": "74041ab94dc786f17a88a865b7f19747a8f8d75699c346865d2d421cbd655e4c",
+    "origin": "verified reference R1 ZIP, test support only"
+  },
+  {
+    "path": "02_BACKEND/ENGINES/semantic_runtime/1.0.0/load.json",
+    "sha256": "dce043188b11a8637202acd9a80a583a62711bf2e41ec05949ee26097d7f3ed3",
+    "origin": "verified reference R1 ZIP, test support only"
+  },
+  {
+    "path": "02_BACKEND/ENGINES/semantic_runtime/1.0.0/retrieve.json",
+    "sha256": "41495aa3a3c6ecbc12615590856fffc61a488fc344dfa03c4dcdfda35225b88d",
+    "origin": "verified reference R1 ZIP, test support only"
+  },
+  {
+    "path": "02_BACKEND/ENGINES/semantic_runtime/1.0.0/select.json",
+    "sha256": "d9ab98b90c17c34204654e65ed11f714cdc2d94455c2442b325160acd9e8fead",
+    "origin": "verified reference R1 ZIP, test support only"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/generation_build_steps.py",
+    "sha256": "bc96a0b8469fa385046ee82076ebbb6d8b7b397586a79328e4cf7e6ab1a2732b",
+    "origin": "verified reference R1 ZIP, test support only"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_linking.py",
+    "sha256": "40b62eddfa5e3158653e480d5cfed8d116bce2cbd8c7cdc763b131eb0bd43bde",
+    "origin": "verified reference R1 ZIP, test support only"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_serving.py",
+    "sha256": "0ee8cdafc86dad3389abdd28129d6b93b1e42afefb3cba2cd021987f537ee22e",
+    "origin": "verified reference R1 ZIP, test support only"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/term_generation.py",
+    "sha256": "e341c5eff76c7c96a3700d2f7d1f9ca6b6f478ac2b1bdb857d9147eced6e08c7",
+    "origin": "verified reference R1 ZIP, test support only"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/term_serving_bundle.py",
+    "sha256": "0f283b41943befbf81fba50c1d0c1b10e555b0da102be2ddfb1f995518392cf6",
+    "origin": "verified reference R1 ZIP, test support only"
+  },
+  {
+    "path": "06_TOOLS/OFFLINE/genos_reindex_only.py",
+    "sha256": "8687f8848f57788b4ba7397cf40a1a3f1aaabd5d1e03010f5f212fdf458a2a67",
+    "origin": "verified reference R1 ZIP, test support only"
+  },
+  {
+    "path": "06_TOOLS/OFFLINE/genos_reindex_runner.py",
+    "sha256": "5cf52af85e8a160581591d96b1bbf94a3f0792cc7224fcec532c1b01eabc1136",
+    "origin": "verified reference R1 ZIP, test support only"
+  },
+  {
+    "path": "00_SYSTEM/GLOSSARY_SCHEMA.json",
+    "sha256": "9328a14866739dbb302a3314455114dba25645ae04f8755b5acc50e1dbfef4cf",
+    "origin": "workspace fixture metadata, test support only"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/golden_authoring.py",
+    "sha256": "987315482d60418522fa9009d735d7eeaef553c13528ef14f6a5fd9e6c137cc6",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_staged.py",
+    "sha256": "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/collect_moleg.py",
+    "sha256": "281376fc94b3f5213d4d3596ef5089cfeb1b438ac4d117aa525f1435a53dae40",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/team_raw.py",
+    "sha256": "47ec3279d0bfa359c846876dd4ff4a3754cadb7e36527b5a539668d562a52bb8",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_document_update.py",
+    "sha256": "203160cd71deefef6c6b2a5ca40363d781e0449a3d1279083a845c77dd4fca9b",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/collect_public_glossaries.py",
+    "sha256": "e23ccd948f40fbdbed23db99936b95910cdf4d593be4e10147a5c6fad14d5cd9",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/__init__.py",
+    "sha256": "89d8f130231b1cf4ceab0f8febb3dde70d2f82a3b7b44db2b19b7b86c2a25953",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/batch.py",
+    "sha256": "7bf3e3b6ced2d191ea174059e29027c7bd06aafdd84a1927f40ca9c42028847e",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/task_harness.py",
+    "sha256": "4d29d7b36991dc913ee26cc0649f73023631e5297ec92a923f4817ba8ee3a892",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/reference_model.py",
+    "sha256": "f1e53155d93d80b9bd2b1709d5a5e105f336dbd225761e4c7a54e888c1ffbe91",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/ingest_files.py",
+    "sha256": "331bb1405283a6f9bb596cc690ac2d7f10ee84f7a4ea907731f7820a00c9f27f",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_assembly.py",
+    "sha256": "ee1684148a14a1ceb0fdf734e0ca50b79abab851fa6bc596be8a4a985124c784",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_stages.py",
+    "sha256": "f8a43a6410b57c1fd99130f1606c8d34706d2523b64df5241016ae4ac09c0d97",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/ingest_lawxml.py",
+    "sha256": "a61d428d750e8122b21915bb25c1553bc0dfc85afbe418b9a8e38b52bec8cc50",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/ontology.py",
+    "sha256": "fe424570ebca7ca7814c5443c33d9cd11c459136482033274b84c9b97ef02825",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/collect.py",
+    "sha256": "f6f866f296a95755f203f3ab9509e8557db24e799baa6fe374a20132ec50f14c",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/retry_adoption.py",
+    "sha256": "3cb91db3f052aca9c4dcaa9dff3f2819c198b04f19927f91c724631fb8bd26aa",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_knowledge.py",
+    "sha256": "94d666ad1262249dbd4b95886fab3b66cd316ced6cde80fb723280c36b9e0e25",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/native_trace.py",
+    "sha256": "380670240508d8baf9b88608c1f73fbbe939e9e803da01576c0d87f4eefbf173",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/document_scope.py",
+    "sha256": "d6c507287fa575176051cc07b0b3b496eacd3dbf09623f45b51c48ca558fc7ca",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/wiki_triage.py",
+    "sha256": "efba2e4a27f37202d61c365e8c668b0796d3c9d2f6fd4154346060c7b4d52d77",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_progress.py",
+    "sha256": "f6e2dfaf8315ab6f35e16bf5649abd951fa56f1d0bff50dae40c6b0734d1a944",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/ingest_expc.py",
+    "sha256": "acdf671750dcee30c0c94616d48541fdbaf377ae7f5e1433cd9f545195c09449",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_definitions.py",
+    "sha256": "a2ff73376af23a0397031a801f46d077da238cb6f44f8c7ec1b9697fa7b59cc2",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/knowledge_transfer.py",
+    "sha256": "65543ead2c1049500e6dcdf70f4d51ccddc422a6798a4288b172b8210838dd2d",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_raw_move.py",
+    "sha256": "93bf3e31d81e7fc091cdae0616b43a60eb8de51d4a50d397c503e0b316af0493",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_senses.py",
+    "sha256": "14d091dabfa52261737e271629110b51ed68de01a63730d986001734670ec7d4",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_corpus.py",
+    "sha256": "2c8afc9cdd00942a8b2539f02ceccd68a10ad944fbae4ec98eba9828d5eb78a7",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/team_raw_refresh.py",
+    "sha256": "9cc6f235f01b281e8a02f885722350ae373c93684eab6001ba4fe58a9efe0aab",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/ingest_naegyu.py",
+    "sha256": "650493313c1bc9f9afab36c86daac10affd93038f28dbc8800a22ec9bf6cf94f",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/onsite.py",
+    "sha256": "6fc5739cf6979de0aba44d59b0cc1940974d2c366f4d7f86e759db76e3601242",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_learning.py",
+    "sha256": "d7664076161e8a4444cae936de74ff7243de6f96c4791864c4fbcc70a88390f4",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_alignment.py",
+    "sha256": "01381ab86fa78dfe3e2fded913fd0dbfe795cc7e940f8d05fdbfc02927a5e03b",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/document_representations.py",
+    "sha256": "b9ffc28afc457f2e854ee86d1a8fab396cb85947e066298c0ebfd23f3d277f09",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_review.py",
+    "sha256": "b462eed26f7d633015777ad2f3176879a6af0a2ff2c50de007e005d4ad74ed69",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/ingest_fsc.py",
+    "sha256": "d28b779bd0d67f4a7ed4d5ff89313fff9c858322107c348bee1ff1adc72ef46b",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_status.py",
+    "sha256": "d0b5e53bd799166fe5a6631518a2a7b4340a80787ffa0086456010f130974a2a",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/ingest_rulehtml.py",
+    "sha256": "af97b9dfa3f1985c50f288fda81cafebde6c56592912c85057f16dae5658aaab",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/golden_registry.py",
+    "sha256": "3d0e4a9846ecc8dd17771fd1fa4f3cf998adbd4e8f816feb5306e0eca46d63d4",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/fulltext_stage.py",
+    "sha256": "ceb67c28be79931a6be4ec0a9dcdbe7f0efd54597239076128da9af737211a8c",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/structure_selection.py",
+    "sha256": "0376702d880c984bfb61518d5a252d37fa79584849d143c019e7d542fef487c6",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/convert.py",
+    "sha256": "7a89684052327d81fed091ef83c6ef3045f9ff4b45479b132c0c595381c2da6c",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_authoring_runtime.py",
+    "sha256": "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_unified.py",
+    "sha256": "dffcfb9312ab2afaf84a5b8f3bda9fdb91fc2d3f39bd222fdaf38dfe19c94cd2",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_e2e.py",
+    "sha256": "8bb8a8a5ee8d576bbd53564531a1ee955bc0f9cfa243974e2ca7c27db93d1a8b",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/collect_moleg_knowledge.py",
+    "sha256": "8526f83120c16b62b642e99162d4975f36bf95b0ad1b32b85498ae28e6a69fa4",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/raw_preprocess.py",
+    "sha256": "510aea260c5146cf6e5659ebd0ec9cca1e4ccc26848eb3cebc3049021430a45d",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_structure_report.py",
+    "sha256": "8e0957cab35a3a85d4513a6489f6d510f984aafc1776bad623e7f46165e8b855",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/collect_prec.py",
+    "sha256": "3a7502b7f466f3f479ac6a7c720c6346af6754f4ea662fbc065b58d3a6856917",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/ingest_prec.py",
+    "sha256": "a53935f91946cde8850a07e7f9a167183f37976fedb8cf5a18afa3531535788a",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_all_pipeline.py",
+    "sha256": "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_moleg_compile.py",
+    "sha256": "95a83edf7316b5caeda9413e2aadcb8650dca039b99e6d752c3ca621b9ac9641",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/document_release.py",
+    "sha256": "73ff42461f8c68b93db9863bff11e35df90f102c418ce6e3b7e0e595502236a3",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_build.py",
+    "sha256": "a641f0cdf0c1fc87b70a71ba4c7fd9fb411a0e655305f9d4fe265b3e833746c5",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/collect_fsc.py",
+    "sha256": "2f0366d8c88d2c7b685126fe509893ef9c59d12d3324b7fd0f928d757a82d64b",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_abbreviation.py",
+    "sha256": "2a9ab38e3e5310f8205e83cb38afc81f3362883a4e4bea0ef8bf0f34018a418b",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_internal_replace.py",
+    "sha256": "decbfff36437cc7dc0227ee17a0cbeeca68379052f969ff4fa9c3a330e83fd71",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_scope.py",
+    "sha256": "8c7c8c2bbaf0335f2b2a2a699f4ae6e61cd472989e48872c0d05ab63fa091f80",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_legal_relations.py",
+    "sha256": "49cc597517fd1eaa8747b531fb3ab2e151d94f4c4882d50a10311dc055dd1654",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/raw_prepare.py",
+    "sha256": "9af3bc3a30240d453b896eeae88f6d4a8fcb5d1f9dd56fefbad1b599dc5f20e6",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/collect_expc.py",
+    "sha256": "d2fdb1e828a7ecf3dd04151a6d14797d23f560f8c5c8b095e5681d8e86a6ec95",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_admission.py",
+    "sha256": "8a92da7a57e46e0d02cbf4152511e0e63bd8908bb3e61b16a89b1eece5d8b46f",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/union_file.py",
+    "sha256": "376836a6e8fa5adad4a21654804f44099597a61bd669e697b0d332faf7056bfd",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/reference_resolution.py",
+    "sha256": "bb37e61081c3fd6cafb6654029fcb94a52285f1214294b06d36a0deb89f992d1",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_enrichment.py",
+    "sha256": "361b9a383f123e8b3b362d61794f9caa48b93892d01fbdd30787b5e0a2e5c414",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_batch.py",
+    "sha256": "8c359683b09b396fcc6ea868cb43f2aaa9608a64ccb01f164c871c3c7048f66c",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/golden_exchange.py",
+    "sha256": "cf3b30926b61ba9f59d567b998b62079cf7506e6253bb8c5cc5c521964212e3c",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/glossary_v1.py",
+    "sha256": "bbd100d339aaecd79521e0f5c93d478bb41ef150b5bc19f029fc2519d6bd1092",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/failure_improvement.py",
+    "sha256": "9bd503647d31c0d92cef21ec9400af4741217e7e5f3918b2c32e453181e02307",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/genos_doc.py",
+    "sha256": "b9c979f1a1649236521d42565bfbae36876dc0fcbe9b8b720215f6812bb31203",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/golden_run.py",
+    "sha256": "680884a2b474e4606574c9a3662ce815955189aa8deb20569225830829d0aed6",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/pipeline/golden.py",
+    "sha256": "f36bc8ddcfdd11637ae7d5f30d29077fcd6d05b3e0d836655b35207463039d38",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/terms/embed_sections.py",
+    "sha256": "258b9aa078cd00d8804150193786b093751fe9cf1b960903c2301502a58aa754",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/terms/hierarchy.py",
+    "sha256": "6f6ec2bdc21596ffaf557b1ffabd0a3b04e20077cbb3bfe4b61e53adbe9077ae",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/terms/__init__.py",
+    "sha256": "065b0eb601855abd2b90f2b7378af8cbf145e5a0aae66fd982ea1f16945e1a0c",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/terms/gate.py",
+    "sha256": "e0381dc4c162fe42355fdce37d6d72b04a882004d117463ea89e67e66d77c62b",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/terms/judge.py",
+    "sha256": "4fb45a9da5542aa64a5adfd43ba6d0cece39092925758fd35fd9bf2fa0f9050a",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/terms/stats.py",
+    "sha256": "faa1d27829b09c96c09f5f51e16f7d6d3cb4a023d38a6fbb82d02c2cbd92a9f0",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/terms/candidates.py",
+    "sha256": "dea11a3d685dc456c9425fb206d8972ac310b2c61547ca0eadce87096532dba8",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/terms/build.py",
+    "sha256": "dab9e4a66e0b325c9fba29efa99b95a0f6fe316a6c813b4d6cb2666da4619543",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/terms/suggest.py",
+    "sha256": "09c357ad53eebd727a42837f444748e86fd935cecb949f79dff299a004e5565b",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/terms/transcribe.py",
+    "sha256": "2d5fbd0b862fd13d4ffbe4df55a2ca5c926ed0427ee6ab0be1db934ca8c1d7c2",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/terms/relations.py",
+    "sha256": "3270882f9dd374a0442199042bde8e612c532715dc60e44cd0d36bccd468d79b",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/terms/embed.py",
+    "sha256": "28527e39220a2b014454ea178ab279dd0996319eba52716e372b3c7c68e7991d",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/terms/__main__.py",
+    "sha256": "d86ef300172a35d919debef2e6c93e2a5f94ddfeba6451eb7d9995f7e0d7d578",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/terms/cluster.py",
+    "sha256": "93bc18d02d0c25e1e2c7a15ee267fcd08d0e074d535d12e78a98f301940a7f00",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/research/experiment_client.py",
+    "sha256": "5391926b62ecb530ae76646dd54c8e53c36d895d8eaf18553389bd335ce49797",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/research/__init__.py",
+    "sha256": "0ed2014c90e7e6db86cb2d8520749b63631b728c555f21ebf33d66e998362270",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/research/adr0178_structure_tree_bound_seed.py",
+    "sha256": "7b08aed43eec50f6ad685af3c88e83f0d10073fb7a1f9fb4eae49c7251961b5c",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/research/adr0167_kofia_body_fallback.py",
+    "sha256": "b02e6f3bb71b2228d8eb0bcc8c95b31cef508eb6a41b206bbbd8ea746006bb1c",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/research/profiles.py",
+    "sha256": "e989041015bba0ac60a4da8f63c4eb2eb7680bcc38278f4abb5ddfb73beb955e",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/research/adr0179_hierarchical_frame_lineage.py",
+    "sha256": "a72e2316186c9125c46b1dacf89ff420f97b2a1d988c4a04c8556e0ee84e6a16",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/research/experiment_catalog.py",
+    "sha256": "7917ffac51e2a798239ba1fc7904cbd8bd133dd9ce11a061426de004e7c39263",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/research/openrouter_legal_adapter.py",
+    "sha256": "5c8499ef2af208cb6ec32ce7823899d0ecf057c888adee19ffb5fcaac3bf5be5",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/research/adr0180_hierarchical_frame_real_model_probe.py",
+    "sha256": "7413abfbf1746c14ef1cb8c1c291f66db61d678b97d880c9ea1a5d354bbb8b87",
+    "origin": "workspace authoring module for synthetic fixture/test imports only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/sources/__init__.py",
+    "sha256": "3d0e71cc882a8aab47e54e44c4ee433523fe4671679a295688efdd205b887037",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/sources/cite.py",
+    "sha256": "548d970fa0c264f5a80204f58b4438896b31920776e3434ea798ccef87623092",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/sources/moleg_knowledge.py",
+    "sha256": "613e80f7b4092943bb1547e5cf713b05c9f60265f550ee25e5b4f9760b696412",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/sources/lawgo.py",
+    "sha256": "6280ca4d8ba23d221a103cea7301e84481fdd076bc3e268429e5f1c0e5157d5d",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/sources/krx.py",
+    "sha256": "2c7eaf42810d0790e4185408f6dc94d38470bca052264b48e73ff9044616e85c",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/sources/fsc.py",
+    "sha256": "10060f64e08accb1829fe0428c3e511ccc263ef3f932f9da6f1e8112f1a3be0e",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/sources/expc.py",
+    "sha256": "034a78c5943a5d6416663a2903fef496b108b2ea2727639281b21f1b4e39b195",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/sources/base.py",
+    "sha256": "7518b1929fb311a70ebf9914a7d4a9ddc0e39839fe266b37e812115a4b311f0a",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/sources/prec.py",
+    "sha256": "113dd1f16d2fd1e00e85fada4cfe8eaf10587d8187cab259d9bf3af045182afa",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/sources/kofia.py",
+    "sha256": "ed38eccd88b14e8e50c593d6c91578e7e19f13f06ba6b0a7162a09db69ce3e13",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/sources/common.py",
+    "sha256": "e013d45781e2ac071133008003b8707eeafd7f9546fc8ea21754bcf13bbb945b",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/parse_adapter.py",
+    "sha256": "2f814cf26af493dab1a788b46eff55afa388c00c83b6c76a85d050492c601c93",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/__init__.py",
+    "sha256": "593e2eae83903bd8f9a02127a0a7103aa1f016b51e4a83241377c286ec77dde2",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/batch.py",
+    "sha256": "a45e9471885ed86cb9e94d2feea803f907eb73d8f1a8db496f115bd2cedce86b",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/reference_coordinate.py",
+    "sha256": "513fda6c756e77f1f40c939d3e6d783d5b825decd9ccb0e972fedcaaa3d96002",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/genos_preprocessor.py",
+    "sha256": "6b3165e536fcd63e171b41f9be1db2c2378d38e1c4fb64c31247c1dab6e4da24",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/review.py",
+    "sha256": "0c39638c30e4f06025cb2defe09ef55df93418cfb59819b40d6225cd8c26459c",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/logbook.py",
+    "sha256": "25d4cc99e0289ba579ea68c810f0e0ab91250716a774c27dcd3d0962ce79b245",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/geometry.py",
+    "sha256": "48ce163f2fb707df6be598507fa80cc7d5b792d8a3a8c8f40a2f46776d593f5b",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/format_model.py",
+    "sha256": "2d367c5ffea2b9b5284a6753f5033fc2dc2b5b74e67de452aaf504cbddead5db",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/internal_rules.py",
+    "sha256": "658f44242ecf4248e3ad67265dfa4a1feb4627e91ed6516258c47ffffe761bda",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/router.py",
+    "sha256": "9d34d971d323cf4f07e15feaab7526085f324d1b2066e265f2ac97405df2bc13",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/ingest.py",
+    "sha256": "36fc154274ff1f172181f7ac0c6881f534e7f31d119cc46bf8168cbd7fb35634",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/format_induce.py",
+    "sha256": "a07d0fc560bbc9cd52137e012e3a594e28d04a3603b5009aace6100fd8839f6b",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/reading_order.py",
+    "sha256": "d82f0b63b2355982cd121c7b86ef57b05b374f537267f78ec54a726b3b55234e",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure_fixes.py",
+    "sha256": "62a1c71b79f1379b60ccdec6ba2536f96b14f0f643de1f08c63e42a8ec35fc22",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/defpatterns.py",
+    "sha256": "c98bb05ef33f6e6572758b65402e6bbf2f77603cde374d001c0319d855dd91ec",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/holdout_check.py",
+    "sha256": "acb262a27146c37e5e21c6f74e453dba232aa7058d6c7a3e573193d2d5530393",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/fitness_gate.py",
+    "sha256": "9c1ec4c2f1d763cdf14d02fe5baade6027c397d15ce3e72d9841054039737519",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/lawnet.py",
+    "sha256": "2469d9cfea83dfb81d0e7cff5a32536874cddbeb7b027b709f02ce6ba72b4d0a",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/grid_recover.py",
+    "sha256": "322117f295b1a15c32d95d8612ac75b77c6a44bbc8e5528d91eb0353948a49e1",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/normalize.py",
+    "sha256": "3101a5c6c4b874151e2c1bee74f5933d548873f2c2ead30020e13a5defe13ab9",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/cli.py",
+    "sha256": "998f7fd1b19d7da7debc9b2b5d68af296a261b3c61860de03d428f59f6e39d2b",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/embedding.py",
+    "sha256": "c1084f0e8e5d260f7cb69df283dcb6545594736df90ad7b773cb0ee151024a5c",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/hwpx_parse.py",
+    "sha256": "2bec3a352dae5c7a739c401c865b76f0ae2584c11005b5e4a5d38b7465b8f376",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/legal_generation.py",
+    "sha256": "49a9021f5bb3e843c086ccd0c3f0fcc29ff39232a36746538ba271a1d4fc7008",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/hwpx_md.py",
+    "sha256": "e06abd8b4a3ec0ca0f4eeaa9d5603ed50d6cbe34d15e2f6e50a828d9fc720658",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/llm.py",
+    "sha256": "7a8494fc7b1fa84edb899f1967ff26500c358871be382554ecaeb0e9e164364a",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rawstore.py",
+    "sha256": "faef4606824ea68889baa92d14c1be0f1321f2c810428eaa7df2ace8c3b31e10",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/docx_native.py",
+    "sha256": "2ce658ad7ed1bb07d9e8f51da55127cae3f5d02d9224d1cf9366107ac2801ca1",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/genos_chunks.py",
+    "sha256": "d79c7494c87a57fc7989a624c3af37ef9d38df8684f13c69b65856e2f60f0bc5",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/glossary.py",
+    "sha256": "75be89328a4adf2f01583c6dd9cdaa799486d2e63d12654c7cc35c4493a9d835",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/hwp5_md.py",
+    "sha256": "7b770eb768d917e7ee74997ad80f225918daa716a5388c6019a73eb0914bf16d",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/term_marker.py",
+    "sha256": "a7ce935509444dd063e1ff74721f6a1fbfba963b58d220d40c5a10f008905e7e",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/typography.py",
+    "sha256": "2a4d67eefbf089b6f710edf9dc742828db83df0718da4a59a6b98a58137f58cb",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/reconcile.py",
+    "sha256": "e59e494c6cff621c8f1753aec455b2cdb6988547d155ef5a913f7454c87af7c2",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structurize.py",
+    "sha256": "7ffab3a20c3a1b88dd97b3cc16006d4dbf94aef3c4df5af568ac7791a47c348c",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/docx_ooxml.py",
+    "sha256": "7e5b26e68b6de3aa2e043a9497f0cdd20d2601fb1364e8d92bc575aad6522971",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/lineage.py",
+    "sha256": "f1dad6a728adbad4300703391901a90d0817fa7c54dd5b3f660b9b93cd4f2172",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/casereview/__init__.py",
+    "sha256": "2ce0eb2ff5da3385fa274d710a1dd768b160bea549e34fed3bf4657beb3f8221",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/casereview/binding.py",
+    "sha256": "61b106a309f3c458395d961f7291f923c90fb0fc5b103137f4689208bf55869e",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/casereview/model.py",
+    "sha256": "961c7b0ebc957e25678dd0117e4ffff3a762d0479b5e59b96937314dc2e55e14",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/casereview/pipeline.py",
+    "sha256": "e64bf1a7f9d7029fe0ae495e6db38eea173e89513eb2ae563ce5749b0a7a0bd8",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/canonical.py",
+    "sha256": "c52a94db83c79b2a4de0a3e398e57eff2c52b2e5d6ba895b6064efb5407018fe",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/__init__.py",
+    "sha256": "17bb0d686019fce5b9a26d33f4e7005f46600c3bfc4f62c118e077edd69d2a40",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/uncertainty.py",
+    "sha256": "7ed7fd16b28c6fc2ebd7dae9035217cad4f78ce32500cc58fb544007f7610105",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/builder.py",
+    "sha256": "9c6f1968db3cb6f7a0c45b84922f955b3e13f47755e633b605b12a063271e60a",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/normative.py",
+    "sha256": "fa30b02560709c7699faa752da3b76b6ea4b24e80fc1e22b5b0a04ab60b03adb",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/requirements.py",
+    "sha256": "70f31a9b977f1625714b22c150e1254fee38ed1297cd4b13938091efa504173a",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/approval.py",
+    "sha256": "961686173d85dc7616886c9db7ad39741655ed5ee3c8f256c5e82525a1a26e44",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/freshness.py",
+    "sha256": "e78c29356905cb8775cf1b6483b587e3088e743e75033785e7c0ccd2c4edd1af",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/cli.py",
+    "sha256": "41d3b1a7cd69086059f9da26633cc2a4bcb1f22588eb8de2cb67bbae9ec831e6",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/tier1.py",
+    "sha256": "337bce138fc0bec195e39e951702c577098dbad12a94da7fc3768a034fd7bd2e",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/spanparts.py",
+    "sha256": "832f9f54032e344eb63cf6e436a8a46bf039b637d7148846d4a112de0ddef1de",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/store.py",
+    "sha256": "c696612b566ecd82db8317dbb8e73a8620e4559bb175c5d8b33aa9df86f3130d",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/candidates.py",
+    "sha256": "376bfb41725cf26590c23adc68c8b5da47a85561813c51623975d402f30cf069",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/model.py",
+    "sha256": "08796b7b5ae0b5662adae69c40eeeeaebb5a49dac7ab5ce6bbdad379f3d29de2",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/grounding.py",
+    "sha256": "ba2a0826fb5b4d42a57081a97fdb326981eca51a98c19c0044e7bf2fc8abb531",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/alignment.py",
+    "sha256": "fd6262f35fd0367eea9aca3119eff67e1903560432b0630c101177721b5c322e",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/__main__.py",
+    "sha256": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/domain_graph/oql.py",
+    "sha256": "59467bfa3e343b09f28f6266baa2db84a1e67a88e4c904cb49637af856ead8e9",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/relation_navigation.py",
+    "sha256": "6ad3b54e25a45efc83cede097b75b85521d935669ecabfeb44fe02ca038f1968",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/lexicon.py",
+    "sha256": "9cf3a6067a1132a63c633ebd7dadbf31d3bec1896461acfcd4c0564411f22bc1",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/recover.py",
+    "sha256": "30ee00a680fb6958d3eb64682a834c9344a920ba70d54872686c96d09f6a0262",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/bench.py",
+    "sha256": "de9f2cb8e0993a8228ff7636d7b0063fb423fe926bd82f1e5ad2f6219977f982",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/__init__.py",
+    "sha256": "1a69316bf921871f0737e8f1b6d0a314ee6c3396715173c16561ed1717cae571",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/evidence_slot_nondropping.py",
+    "sha256": "0df5141de0c62f63ddd5d320f8bd285237e6a8c0cc5c5d400e8d2e5c3d72c78f",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/exploration.py",
+    "sha256": "9969e11cfd090c150621eb44d52b643c66a7111d8ec3d82951885cbfb115eaf3",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/grounded_witness.py",
+    "sha256": "0f0ef30d1f6087befba07e18d4b3f5fc3986ceaefe6db17b6cfca49894676bc6",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/source_registry_admission.py",
+    "sha256": "db56dd9628455e447eb1be961bca8cc0c91bdeae4d1e7afcce3f4d4f8837f151",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/controls.py",
+    "sha256": "e3ebe09a678c7cfaa01fd2815513c473a2eeccf849f999ca3a2eb3616c51f0f3",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/query_grounding.py",
+    "sha256": "7e79b18c6e345d1df82b469daf22e17bafb9469759393f296c994bce707620f2",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/legal_validity.py",
+    "sha256": "50887e17bccea1c389547c069d2b1515bb1362c2fbe696450a11994f1e50c5b5",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/recall_first_feedback.py",
+    "sha256": "1e88e58676d67f013b9fa3fc6fd1410d984c3d6710f2695dfe9ceddcbea6582a",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/proof_boundary_feedback.py",
+    "sha256": "baab7f8374996ce7ddedb7cda956de7bbae8bf4240c3085dbec70a6eda1fdb83",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/combinations.py",
+    "sha256": "a2d575b8cc77124e40e09b5c80104cc3f812fb5a213f83a9b6bc7ce22e0fa125",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/evaluation.py",
+    "sha256": "539be89936700571f923612a73e5f0b23898f0f08badc919013001b2f09969a4",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/termretrieve.py",
+    "sha256": "82a0cdd9759f94e6f6cbd5bbccc40600a43157c045f11cc109548166ca87f132",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/selective_legal_guide.py",
+    "sha256": "0fefb640e960443320e1beff53606b17426f7a6ce8fcbfba4fbe7b896eed9b28",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/switches.py",
+    "sha256": "9414316590132d43b499224b2a645773592308faa3e39e62e028be608c726071",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/landings.py",
+    "sha256": "fcd6b2740e3711b05fa753b4ccafdba057d273beda5d559285b7be85593e67f6",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/recover_domains.py",
+    "sha256": "796e541e0deffe39b9fa4be3f9aac2b2b55350962309bc480d9873bd3d6f2f8e",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/provider_compatible_span_selector.py",
+    "sha256": "2f47a85a3eae6f5c842cbd78dd79f64dfbc802bb5b96158b7d4a99866e02c0f4",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/audit.py",
+    "sha256": "d6fb82047d3a81cc36d5129103eab3a2715265c68a7d3ee335bfe8dc4570fdae",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/judge.py",
+    "sha256": "dd1382de07e236bb1c1a7f48512203ac2d23431e862c951f0908a80ee451d180",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/search_trace.py",
+    "sha256": "da10c85abf1df75b6655b8e81e9147d3ba06dd9f0c17671cfe33fa69b4b5a64f",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/claimwise_nondestructive_compiler.py",
+    "sha256": "a2a050756fd1b90721b13cab92d60308866a58dae34ffae069ab66249519bcf8",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/legal_coordinates.py",
+    "sha256": "bbdb1480d3ed6780d1cad41bede46c524b36604554ed2d6ea0ee4c22c2e059df",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/search.py",
+    "sha256": "cb11068131815d152a06dea2876d7dfaa72fb40f9b68dd644813bfda78344914",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/article_reachability.py",
+    "sha256": "0d3e10bd38dc86040d7eb7b51cb1df60a7c73f54f8a3a758a4a24820be1d156b",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/raw_evidence_selection.py",
+    "sha256": "9f4a24cba7bbaa245ec2bfa830220c1b3ac6c9b7467f474e7cbed449e5599eae",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/legal_conditional_closure.py",
+    "sha256": "0b8d641281f032415e9ddfda10ecd28bb5e96c8c66c8afbdb2386e0d1f7c89c4",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/replay.py",
+    "sha256": "982e961af83b7c47b2acb3128a898fcf5a76544862b81f7c5afa78b0e4c1bf88",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/tuples.py",
+    "sha256": "07926a0e60341c304f956e7ff0eb4ff13b8954b560e6aa159ac1da09a0017875",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/proof_basis_augmenting.py",
+    "sha256": "9109dbd736945986aaa0fa5f41f03350bcba390c7c5007030cb66a5b3d716691",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/verified_span_selector.py",
+    "sha256": "259b24054393a360c2706883bd0f5c40a162baa26af2abdaa41be5825542f2b0",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/legal_proposition_compiler.py",
+    "sha256": "fa9812dd3e1aa24c5c8ead9a933084f19a8cb08c5fb79a9009eb6b53f4a0fcd4",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/legal_evidence.py",
+    "sha256": "8b7accba150e6acedfb50384c348b7b636eebec51a6272e80889338eb3bc7ef8",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/evidence_confusion.py",
+    "sha256": "4eff99c9ba087eb3629b89aed6b9acd07e7274871d87af3f73b6237ca93fb056",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/legalclosure_runtime.py",
+    "sha256": "639f61d7e3b585e6b1e49e09cf890f78baab330ae33c88f79c96554023cfe3af",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/answer.py",
+    "sha256": "fb9ececbcfb37eaf4736ceb3ee346d6e8ab0c0d6d431637b9b8465824a722a81",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/_boundary.py",
+    "sha256": "5a00094f9e3a434e9401efae30cb381bddb31de27c25d44361aaa8afb2a3a9b4",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/promote.py",
+    "sha256": "9a4ba2b930db7227be2d340097dc7c87424bae7bfe517cf1dce60686df7e0872",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/wikiledger.py",
+    "sha256": "1e812bceab7d548bbd38794844f4855f4af0877d6a9b59453957365dbca0dbe0",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/approvals.py",
+    "sha256": "b96cb9496986853bd2b4463c6941937055f900a6778282729ca1f1cc93d7cc12",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/refs.py",
+    "sha256": "0c5f944aeecd611dca755e643bcac1e748c3cae9bb08bf9dfb936fe88379d981",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/general_search.py",
+    "sha256": "7312ee904afde9b214c003f23ab4b93ba2178c958bae50ba38f352fdee3110be",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/framequery.py",
+    "sha256": "468b68fff3729ed42df0da2f7c6d098d2305605d1690f696a1d6a37926cb1d6b",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/legal_answer_checklists.py",
+    "sha256": "37b3360d7e89a3792bdbca54cded0a6822db29b22ad63b78e8deb61359b20899",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/term_proposals.py",
+    "sha256": "6710571d5608b71412210bf0a03f6e727d6d46c1929ca852fa9407370ca45473",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/assertionfirst.py",
+    "sha256": "0bd55843d268f8ae9a2283a48300dad0222d36bd8d4af6fcdec1637beb78be58",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/companion_recovery.py",
+    "sha256": "4010006aae3e5fc7976b3eca33087b380f79f92bae97be7f5ad4ac8c29bc2f36",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/tags.py",
+    "sha256": "0f14f1a0822c638f6bf20cec5191a8d1dd6b918acbb02c11fd9705477f13044a",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/claim_citation_selector.py",
+    "sha256": "6b8a1b8f9eecdf73b63d1c67a081008784637def736de5e9dfa8d44bba19034f",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/rules.py",
+    "sha256": "993e75b8fa917617fe46303a5694d6e9c8885a263d1c72f0f1614b787baf5eb6",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/conceptfirst.py",
+    "sha256": "7fcaf592e4268d0c25de0979f77b85599ca036ff09b1d4a98d9f1f5e5758d14c",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/termexplore.py",
+    "sha256": "b57a8d8216a51ca6318e1dca3a666e158993a203e2fe59a75c260f54c11241b2",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/verdicts.py",
+    "sha256": "88aa3f626120403e95c9c7fb8de55432580c5d6493cf88bff049d533f0124326",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/wikictx.py",
+    "sha256": "2dc766d2403b5d456ac243b2a33445541ed96ffa07fc7db5916916420a8862a2",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/delegation.py",
+    "sha256": "a1e82697a0924e200b4a282a10aec9f0a9664175e5d17df172db802b655e99ea",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/induce.py",
+    "sha256": "33337f22ebca56dfa1766970a9270577120ac2491f95a8b13fd0dea9480d4548",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/query_family_runtime.py",
+    "sha256": "606fc1822ae31bd8c0821f9358b9ae5a67b00a07836cd3ab1f06b1d907da7d78",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/vecfirst.py",
+    "sha256": "39709c1865d56da08fab748dd4f6930950e0a99b1bd69e4544c28e68dadd1b27",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/vector.py",
+    "sha256": "366bc18eee3722e18f44e808841f704d95ea6dd1d30064e8efc272678e6557a4",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/compare.py",
+    "sha256": "f59b26cb9b359c14e4d67ca4bc42404ce0623a83f366be648cca30810fbe83ed",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/internal_compliance.py",
+    "sha256": "08e30b941b404d9f060700b5358fd6c28d9ea9b3deb4f000aaa3e506b81abf3e",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/graph.py",
+    "sha256": "43b897de695ead6581a6896c56c3e0f6e1edcf81425a2af5cd52b98c51550468",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/scopes.py",
+    "sha256": "e86598c2533c476a8bea7e7538ab6bbb97611e45c4f0cbf4cb5975dcd7ddcd42",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/proposition_assessment_shadow.py",
+    "sha256": "88b20279ad199298b979d121b6946f183d1d18ef142730f2910c92c9747f6e8e",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/span_feedback.py",
+    "sha256": "abc149f42ed226782335a5ad283e43580b0d45decfa964bcc4e21b233ed67163",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/wikilife.py",
+    "sha256": "5584e003758c8bcfefcc2dc6356d53a9a2aa7b3620e8174ed776b7ba627fe014",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/qdrant_store.py",
+    "sha256": "7fe1d46188e256146b65e9dab12e6b69ea8cf0ac8b4ad10447511ca840175f2f",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/queryguide.py",
+    "sha256": "ee32f8b86f231c216a3a12811ad36ee668b6942f439d6dc3d1360805dc6c67a0",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/index.py",
+    "sha256": "51b25bc80c136dd1ff80683e14ccc19659db67594c7a9629c1e6a584a3845e64",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/proof_basis_exchange.py",
+    "sha256": "05c07753d51b0c62569c437a9bcc2ff9a5b3e8a3925bbefe11f8b76b29c81255",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/latent_discovery_pool.py",
+    "sha256": "4c8b451cf65db12898ece9d31f2565c5e7b08eebac6d3b578d26abc6985d8ba7",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/verified_span_coverage_gate.py",
+    "sha256": "2f9bf26dff6707f4c0781d42703de316ec6d4e81bf509491c7a9145860950084",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/assertion_shortcuts.py",
+    "sha256": "13e8e3de47e47c9b95868fb463d5ab38aafd17cc29a5238babc63b5f337449d1",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/legal_graph_closure.py",
+    "sha256": "486d934fb072667675e024680e419d4bb628a098626bd787afaafe93e4715b49",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/relations.py",
+    "sha256": "04cd80e6f46c37c7236845120ce30ea903ab76b4b4a072f4e950b209ac637bbf",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/expand.py",
+    "sha256": "4266e39f788a3a3272293b2624d65ec78d90f88aff354f8640cb85da6b40cd26",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/retrieval_feedback.py",
+    "sha256": "f5f4faacf46c4aea1a60c0b0aecbc3990963979640c16454f80827c38c348d5d",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/legalclosure.py",
+    "sha256": "caf36821e7f78a123e169f9cc5474c1c84eaf45785a0432f6092e12b88021cf8",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/frames.py",
+    "sha256": "902e252238515f6bc470ddc71469b1f33ca88dfffaedfb51379cfc98715fc981",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/taxonomy.py",
+    "sha256": "4a03de565ea29c2e699921646d878b777a304e1aa24be9da31d479451c40020f",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/legal_graph_store.py",
+    "sha256": "22642074601684067338f12d71b06321fc302983039b82fd8b7c9c021f4869c6",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/legal_semantic_search.py",
+    "sha256": "bb9df648c5fa3e6a6301c7cf3779c82f0fbaf978336c68bc447d2f7737c58d0c",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/legalissue.py",
+    "sha256": "23184734a7774a7d968bdeac993dc7c62f7654e3c321aabd910df47fd479f29c",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/definitions.py",
+    "sha256": "4d1c2ad87fcdff4257984e8feec802d5a550eb67651be6157987fb30df3679bb",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/legal_references.py",
+    "sha256": "8680d0676939b0a357af4adaa552f79275035f4e2794607c9a401ed59a2a8966",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/oql.py",
+    "sha256": "ebf7c858102ef4c6f123f41750bf15e7c744873dafe28876750027395ab8d5d2",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/legal_graph/__init__.py",
+    "sha256": "5d472a493e1f028a1a5f6357d62a793162a4e86803cf03db1759c60d88784da4",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/legal_graph/behavior.py",
+    "sha256": "4bd9f6ed52e7235d5c13092b80cb11c7f4964daaadc45667ea0c24e24a29038e",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/legal_graph/model.py",
+    "sha256": "4d283638ca3f732b506a8e2b01fc4b205da4c03ba57e55f8709642b5bcbd80b4",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/legal_graph/ids.py",
+    "sha256": "c989c6e425b38dc50272e4fda21da88c96f987a749fcf6067a53d6b4611f6a45",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/legal_graph/compiler.py",
+    "sha256": "3430c5049a342ce58c7fd7263e9e724deb8196f9e9c139271ce5ea613ffa6405",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/legal_graph/validation.py",
+    "sha256": "85ad9b100e3876d0dc8fa3d13080ace3adce6dadb3b9404e4b32965230b32599",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/lexicon.py",
+    "sha256": "72777dee666f6a2910a78721fa21763eb303f82135d3088c352e1b199e4f9586",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/synthpdf.py",
+    "sha256": "a3c7914e555848444c32d915185f5ba8301e2c072542c26a063c973fd59720b6",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/recipe_rules.py",
+    "sha256": "f3106a95f736bb9191586c1f5c89ef08f44152a11fcabc55d7fe64b0f466db2c",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/vlm_heading.py",
+    "sha256": "c86d9abd71b61163062ab89cdc47a2c3dcb0e0641d58cea86b8ea3d0de5b2f1f",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/__init__.py",
+    "sha256": "78c686f8b90b4e5ae140318956252f7efde137a3a806e967e6879b657eaca232",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/from_format.py",
+    "sha256": "20fe978f32c60916dfe59e4f33c11de705f0a2f323a7bb273ca9c574fef6317f",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/recipe_regions.py",
+    "sha256": "26aa93274acf5396a0ce9b22a0b871a53644957dd1d5766f52669fc07479628d",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/recipe_runtime.py",
+    "sha256": "064dbe6751da8000242256762f02c0a281797d8617fec9f350f64b123b2ad556",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/source_lines.py",
+    "sha256": "4f843849530423a8219b407e439f5d224256f0d8feae434a6d31d7322bf0e663",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/anchors.py",
+    "sha256": "9414bad408d3c605a912971ec52194d62ebff353fb2c1b20730e1ce6969554dd",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/recipe_template.py",
+    "sha256": "cbb6cef550c46ae4bbd47861b0f2386d6be7697632d9cf8665a8f9e3ed7ba1a9",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/recipe_compact.py",
+    "sha256": "177e1286861671cf5762f4cce98a390c9272467bb57a4770bde0e603aa4046a1",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/recipe_patch.py",
+    "sha256": "9953ede9e885c95f13205f31e4e5036a9488b9237454de2209170711ab2b9057",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/rulehtml.py",
+    "sha256": "ba82face6102764aec80b309c5253f82d566f8af511880cbae2a9e3636c8bd70",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/recipe_pages.py",
+    "sha256": "36da3e94adb2a1a073be060f45887c72b54dc4dd031419bf0d0fae36c023bb12",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/viewer.py",
+    "sha256": "d7bbaa39b13e682f812a7cd7c6a7687c7db145e83b69f0c139a31406859e75f5",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/resolve.py",
+    "sha256": "bdb52ccb6421ee8c724d445c1cbc8be9e72f21d8a484960f3773347e5f892ee9",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/dp.py",
+    "sha256": "1155fad73e8582b60cffb81930caa750f1e2abd7250ebd8ee1eabea215c1b370",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/cli.py",
+    "sha256": "7c9437a41b2fd21e32a76167031729e6f70b18e1ff02e4fe196d5d7adce43721",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/fingerprint.py",
+    "sha256": "3f665489f2846882c6cefe1d7877a11e5f1d29591c2d5c8faee9274f171ba0f1",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/from_styles.py",
+    "sha256": "ccfbb1df3d1efbaac75bd4e354875e0e5c905f768543d104b7c47e3839df72c6",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/model.py",
+    "sha256": "f18d13ef8f55ae86bf79513032c1f2ca1c82c6e0c1f60e01e608a2efce007df0",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/recipe_evidence.py",
+    "sha256": "5b0bd73cc8a104944bd7e9b64ade5d70724ee4a31eeaaecbe0121abe1dcc5b14",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/lawxml.py",
+    "sha256": "d4022de3d982b4d415faa0e08f4ab6373071533ddace859f369828d7ad0c121b",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/recipe_visual_loop.py",
+    "sha256": "448d0954a728070ca32da3d3bdd87ff6c4ba2d662e3570ce644be009bce1f4af",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/recipe_basic.py",
+    "sha256": "9f3d502be9839bffee08533585f290969a719a15507fdf28f7db2aae048c0791",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/scoring.py",
+    "sha256": "7f884a28c0d1cbd2e8590b650eeb65e7982ffe75e510ae68f33d9ade74f6d213",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/title.py",
+    "sha256": "084684ceb4103dd72a0bbc1a385d88b910ac5d6dd6176f73544edbb872efba9c",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/recipe_output.py",
+    "sha256": "de805ff7bc08fb1c55b5106be727b4b1b0b0ae8711e899feb72d8ac7373f5ae3",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/pipeline.py",
+    "sha256": "5c352adad46b2a172693f8a1f0dc1fce8b8ed5276ea4529ac50c828a7a93bc4c",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/registry.py",
+    "sha256": "2e6a1fc0fa2a531bc4a03bfaa23748803d53077c651cd2e250aea9104c185027",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/global_inner/__init__.py",
+    "sha256": "435f6785955746abd94781a8ac750454296c67eef21ef93fc15f2c3c7ec3f734",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/global_inner/nesting.py",
+    "sha256": "cd9aae1df9ce38fdb89f9530928b5a7bb37d00259d42b8b407ee45316f69e32d",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/global_inner/ordinal.py",
+    "sha256": "c313b9e7681725d9fef9141a61e0f27126a5e8dd1b88553d808343bb446f2e0a",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/guards/particle_ko.py",
+    "sha256": "774c125360af6ab1b03d892b535df7521bb97e092399b3d2af352d3eb6c2e3f6",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/guards/__init__.py",
+    "sha256": "56283604e05b7d442ff05007eddd0b676047488935eed1e3c29a905d41aac66a",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/guards/block_pos.py",
+    "sha256": "b049887e56c764060dc4e839a20dc4dc971a98cdb10db0a92d56885e2b7c5adc",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/guards/construction.py",
+    "sha256": "8e1894a109d2b6a505aa4246df94c30f2065d09331d8f794d6a0807f9c185131",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/family/__init__.py",
+    "sha256": "413f6c564cfe9ca349cfed8db5822280bb62d64718166de39ad6d576f0f7d525",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/family/anchor.py",
+    "sha256": "2838fe1ac668b5bfddbc4df38ef8efd9d74b788930d932c998a4042bb91334d5",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/family/run.py",
+    "sha256": "57a36e93ad3bab595beffd4874af336f034744e6cc291765294da5c746250749",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/family/succession.py",
+    "sha256": "5196b1048c55ffd6c532f5e00b42d45d55f54ee5aeb4c2a99ee74e0b6e33cebe",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/global_outer/__init__.py",
+    "sha256": "b8cf182e08c84b468cdfa8f9b24e01e240a04a5218e8362ef54d2e28fca40fbb",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/global_outer/indent.py",
+    "sha256": "1b6a359a620c59c24e25422b2324690875e900e55d5b21eb58497b9cdcde0164",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/global_outer/reg_score.py",
+    "sha256": "99083ab0fe2d33d26163e946239a60c8a2841e7a189264d9a64a685cc6c775e6",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/global_outer/ladder.py",
+    "sha256": "055534102712a0e6fbba4185eb07f4cb45a741c640266ed97f8b99f3603ff2af",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/proposers/__init__.py",
+    "sha256": "45236bcec87795d66a523f55be3eb00777d8b4dce5603a0fc847d7ab8edb477e",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/proposers/dot_number.py",
+    "sha256": "3b4357c90ce745a72ae7bade812fb40afdb3bcbc8317877c1fc59ee587421ceb",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/proposers/style_heading.py",
+    "sha256": "0118633b455f8dc841696af17793c6c09a12b966b06b18bada65879de13a87e9",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/proposers/bullet.py",
+    "sha256": "f513bc83f903e064af9a74cf5bb45e6f8819412568e3c519bfe6464058bdfbf7",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/proposers/paren_number.py",
+    "sha256": "45c38687b5c159a594dbd8976fee195081c06912cd262103ca0a55500ecfdb47",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/proposers/circled.py",
+    "sha256": "270efb6aeaf32f0e6393bc8e8b3a70b765e7e31a19de8a61dc80d4c45e417fc4",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/proposers/hangul_jamo.py",
+    "sha256": "4bfb9674bcd99ca922a45d8581b80b86fda8c0406fd44cbae55302916e098241",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/proposers/kr_article.py",
+    "sha256": "e2f9002a1c347b7de650ed8ff7518998deaad8f7c0cac3529c4006a76f6552c5",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/proposers/roman.py",
+    "sha256": "0b29066a40dfb4ec42497e10b58e27ac32e23bd34103f267b2dec529c5aef70a",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/proposers/kr_division.py",
+    "sha256": "e24ebbf15a981f4e419840ba2582652703b6294bcf5be71678d8fd693c19d02e",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/proposers/annex.py",
+    "sha256": "64dd834206bf8e4862a4bbc51b83ed3106e93f57cac8b49aa4e4e479fdd688f2",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/proposers/writing_guidance.py",
+    "sha256": "0c189c39900b4ac489180c34d6c69cb8daf9b82580e497942878987348b4c1ed",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/structure/proposers/custom.py",
+    "sha256": "a9c1e6671806339f4cdcd0666c1af7d71911c3f79b3f5b6f57889af800478be6",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/knowledge/__init__.py",
+    "sha256": "5c37d2569c3d216fb7494ece83bf2b8d9f257166e0fb2bfacd6b32509d8b61eb",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/evidence/__init__.py",
+    "sha256": "68fe41c9637ad62f6501da378e347acdc09b1f65c56399fb7ef08ca6f8199896",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/reasoning/__init__.py",
+    "sha256": "b602dae631888e345a8bc772e228c58e71a3406f083b761bb4df37cb4bde2966",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "02_BACKEND/lawrag/core/rag/retrieval/__init__.py",
+    "sha256": "d3a1e95f15f091a4eaa8f92dd45d24c262eb984620a45b01adc7e637e5f6b965",
+    "origin": "workspace authoring fixture dependency only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/GLOSSARY_KNOWLEDGE_SOURCES.json",
+    "sha256": "d467de75c919c8cf30f72a92a89d5306e7b400025e014ea7e60293f7a88ba871",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/INTERNAL_LAYOUT.json",
+    "sha256": "3b7eafe6047a98548090af4b01e2d3bec30017d641b490cb29b68c6414567dba",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/GLOSSARY_PIPELINE.json",
+    "sha256": "ecae8af63ba66579ba380f235bf2e2cd650c4a87c46a644eefbc944ac9a9f588",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/LEGAL_SCHEMA.json",
+    "sha256": "487dc54f990b06c61706101fb405fb330610128e953dee04f7d2a44f9410efe6",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/ONTOLOGY_PIPELINE.json",
+    "sha256": "607561e6af45428411f814d57ba9d373c4346cb38c4ee262c6e5b7f4b4e52fe5",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ROOT_CLASSIFICATION.json",
+    "sha256": "3ccf9d9196e6f7bf8b98806aa8b4eb896be28f931c654f10ffaa17e263a67ee7",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/LEGAL_AGENT/reference-qwen-openrouter.json",
+    "sha256": "75a38ff1b2cdb7e005094f1891790f1ed9a961fdb7e868ca08afe2121b965a77",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/LEGAL_AGENT/reference-qwen-public.json",
+    "sha256": "7af533639c0f21f8f9b2c328c55112669ef44e4f39aaea09f5567478080078ce",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/semantic-contract-report-v1.schema.json",
+    "sha256": "f0889d24ca13be2bac58c3c4ad16d18d5cd85f6c0aa5a592d24e7cc1d84db0c4",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/legal-ontology-lifecycle-v1.schema.json",
+    "sha256": "758ff349b0af2687fb0323658b00ceddb0ebed48de28aba64b203244a688aea7",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/source-document-v1.schema.json",
+    "sha256": "8661221338a1161db91dd1d1026c7c4679ba3864fd36a3cb7a78513b19a3504b",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/tool-exploration-v3.schema.json",
+    "sha256": "7cbe0b7a56f4e298373028bb60f2a4b37eecacabe22ec403a40896e0f5764d7a",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/runtime-embedding-binding-v1.schema.json",
+    "sha256": "8de40009cd5f2b47249a3e264fb84adc413c5e66d90781361bd9f49fcf14be6a",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/feedback-event-v1.schema.json",
+    "sha256": "cee5679d8e700be2737acb773ef1baf4eb4ddc14460c43101aecd8b44d9d630c",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/retrieval-hits-v1.schema.json",
+    "sha256": "8bf9ccd21dff01c74de953eb12012442e581bc3a85251812026537c46016d148",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/tool-exploration-v5.schema.json",
+    "sha256": "52d7f6ce4b8ea538ff6c911f579f952119aa880da6ec5c550c88f8b761c9eaa5",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/pipeline-feedback-v2.schema.json",
+    "sha256": "6fca71f70b1e669be4e481533f1ccf31dc65129de0c268cd1000e039dfaa3dd1",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/rag-content-snapshot-v1.schema.json",
+    "sha256": "a6a193b1d1653c5d652a867148abed57d7d7d4466122ab8f7ef14357ec80eee9",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/legal-semantic-v2.schema.json",
+    "sha256": "25d2ce3bee7e88557b507ca007d88fb847a11278e6f850df6a4c3177151b3607",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/source-tiers-v4.schema.json",
+    "sha256": "d8502cd8170aad945863c5ee044670dc1cb7d7f5a5cf32d332a042c2eeb81939",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/query-shortcut-v2.schema.json",
+    "sha256": "b42443f18448a513b0528055be51b1530da731fe1fc3f58041dd5fd1e3a6652f",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/unified-case-memory-v1.schema.json",
+    "sha256": "5ff112b164ec72d5e2635fb29c7a97a86e2863e0705252ad8f3a6dce838b3ddb",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/workspace-canonical-root-readiness-v3.schema.json",
+    "sha256": "9455f0e8c03b513970823de099e219cd16b858abf1014403ee3d53898d69b4d5",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/legal-agent-domain-control-v1.draft.examples.json",
+    "sha256": "599cc47cd5e1ffb42d7d1e4b174c4c4144eda63d6e0a77f1de93dc9540f12ced",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/change-candidate-v1.schema.json",
+    "sha256": "79fd0ce3eca389b15e31a900d9beda8296f77ba0b554d25f36402e21f8250615",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/legal-agent-domain-control-v1.draft.schema.json",
+    "sha256": "d900501572ace0e15bbec58f3ffeb8203ed49485ada0db89ff03e3fbe01be4a9",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/runtime-llm-binding-v1.schema.json",
+    "sha256": "3c5bc8d7fdf4b9e05d2b63f72b2824da6695f5c2e25edc6d6a867de3a184b42c",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json",
+    "sha256": "8b210f508132e4df7b380ef8eb551f7b7359c910026ee21aa5ce5a8ef57099fc",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/reference-resolution-v1.schema.json",
+    "sha256": "ba74d27d1863590bf368e082f2d46fe1091b53ee43dd1077cc5f855af00d2e14",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/semantic-store-descriptor-v1.schema.json",
+    "sha256": "1ea1d2c4b6439d9ec59de1cd4319573b0e5f1e8fedf07b51cad294c67fe5e467",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/rag-content-snapshot-compact-v1.schema.json",
+    "sha256": "4eafcbf78814faaaddc8aee75bc39204df2278ca52cbbd3bacd18fbef8d052fa",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/pipeline-v1.schema.json",
+    "sha256": "8b784b1d9a69b175da0d4f493cbd8773a4ba089e735737b0d89a0b3d0a4ef755",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/workspace-layout-activation-v2.schema.json",
+    "sha256": "c4d91142e99dfc073ec5cca2ac7e5300657d30c31a6246b2731ff5269e4b0ff3",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/rag-qdrant-runtime-binding-v1.schema.json",
+    "sha256": "ed775b9d9c26c1b499d83dd2bf4244d114a9e1ba92071a1dac151eea3d88b8ef",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+    "sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/workspace-layout-activation-v1.schema.json",
+    "sha256": "9be560e8055a2281c77816019eb6c5407398c7832d7edf602b583a771d4442fa",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/glossary-sense-review-v3.schema.json",
+    "sha256": "4f8125353ab96518cdeed749b29db81bed7dce6169f98a7e0ab92ab7c45ab118",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/definition-projection-v1.schema.json",
+    "sha256": "6a8854f8889584312a2ec31ce6179485b4903009bb686f955e5f9735f640de7c",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/grounded-answer-v1.schema.json",
+    "sha256": "6d44aee7dea8a3c564784265b67be0f745998030ff40c3e4e4dfa08c538e103a",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/workspace-legacy-retirement-authorization-v1.schema.json",
+    "sha256": "84880535b0bc0bf0a2eb997d366146571272b56f80cc34e87b3d9baa06320158",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/release-activation-plan-v1.schema.json",
+    "sha256": "d31c7dd07ee46cdb01464d42399acae3aa5f532bce4b0cfebed6002d0a6793f9",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/semantic-runtime-ports-v1.schema.json",
+    "sha256": "a47b82cea89e9e4665c350ce16a5e9d3a9ca07d04e309343912f8e6b2f933b73",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/release-manifest-v1.schema.json",
+    "sha256": "2993563a87c3f1a610512cce13ab2b6a2891523d7a9ac7457e4336ad1dcc901f",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/dataset-package-v2.schema.json",
+    "sha256": "adfe07c6ca71765ee2075f6c0c13ac89936652267fe79d2725b00a9fb6f28522",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/legacy-shadow-descriptor-v1.schema.json",
+    "sha256": "44960ea725687d20d2a05feb3cd07d0e8640d1377984bda52db675b6470539ee",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/rag-structure-artifact-v1.schema.json",
+    "sha256": "b7f4de52cb813a4e6f3e264be55e81f7dcc5bd9ea1f2a44362586e57128c220f",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/pipeline-common-v1.schema.json",
+    "sha256": "0c96a7b44fc76dcedf7be64e13ea7a9d41cb62a646c88dded01e5cf3bb0dfbc9",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/legal-agent-v1.schema.json",
+    "sha256": "ef70c6986353e3d5d80df64cead9b6836bbda371248faabc49306f648debfafe",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/rag-stage-v2.schema.json",
+    "sha256": "a30cb8e8f8eae3e2f849425e110c6674926696e73021e1c88ea9ad0696909479",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/workspace-canonical-root-readiness-v2.schema.json",
+    "sha256": "19a9723e33aa81e1d35e21f42ccbdbe80c8c904dc6390c97037c594cc3fcc26c",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/rag-retrieval-runtime-v1.schema.json",
+    "sha256": "080448aaa66e189555de2e0e5ce60490cf382228e129b5fe4b5d70838df63ee5",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/source-set-v1.schema.json",
+    "sha256": "05250ce61bb13906d86adc0fa88ecc5bd720dd3e9425e8e3411ba7ed1cb78efd",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/query-shortcut-v1.schema.json",
+    "sha256": "f2a5646d9ecfc29807cd7217f1a7799d05a4d335796ce8f7bcbb701f55dd9e91",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/moleg-knowledge-record-v1.schema.json",
+    "sha256": "8bb85d442c9b9d5be066158fa221d7173a08ebf9a4e70b9898c8f5ad9687a3ad",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/workspace-copy-plan-v1.schema.json",
+    "sha256": "baaafb063974556f37496c5f6628127908c7ae02e9cc9cbcf61cf4d7ac3038bb",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/semantic-storage-v1.schema.json",
+    "sha256": "e756f7ddad2b1e1c271961fe9d45ff99a66e3997904379bbee541af2fbb4922b",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/rag-lexical-index-identity-v1.schema.json",
+    "sha256": "ca30c4de6c45072ebb3bb41b522d15073035a6a010ebbce863be8aa31c0b55e6",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/tool-exploration-v2.schema.json",
+    "sha256": "43a96d24c9a5678657536d6387b640bdb86865e9ccdfd064a3f6d54f1c85cc29",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/data-review-v1.schema.json",
+    "sha256": "50bafccd4e9f4808063364b359ddbec5efc451517ce39d85c2ce492b5a93b266",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/SCHEMAS/workspace-migration-phase-receipt-v4.schema.json",
+    "sha256": "0e3b9e0bb18dc19cfb758202cb143092786e0e889b92cc38b6935c312920ac74",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/LEGAL_AGENT/skills/internal-legal-search/package.json",
+    "sha256": "35b14b6de541e7452e386bf4ba781787aed23b565029d0b841b26d1816f976b1",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/LEGAL_AGENT/skills/internal-legal-search/validation.json",
+    "sha256": "0b958ef742810b7d23e82cdbb470d52e2d8511b449063c64264c192712044b01",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260903-permanent-v2.json",
+    "sha256": "df8499c5184e0b5bed371784e2c778da80bd8dde96097e201746fe9da1fd1e8e",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v16.json",
+    "sha256": "620159fb678e5d01460f766495f1d0b71e2e19f0cc19ac477721cbafba47f548",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v18.json",
+    "sha256": "f24b839d9b3d207a3728dca09ff20c9f57b0352afd4e48ea90f0c9d0fec78d29",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v17.json",
+    "sha256": "c4027ca27a0224be59e0aa75a10070fe45583d644b38dac29a4a53fe9f236570",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v6.json",
+    "sha256": "17fa7be655db824d0896f36efac7e3c0b8e8c7d24e1ac20e1fb73dc805254b6f",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v12.json",
+    "sha256": "aa88b5a07c421f8b12e52abf64ca1538b009e5832b8b54330e3206fbd54804af",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v11.json",
+    "sha256": "648e804c550237cdb6918b6267c1df2dcb936825c557dc4f60952d7d01b17ab0",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v19.json",
+    "sha256": "17cc34169805c1e7a377b3a98598b4c393b5cc14efb28e9ce28da29007ac34b7",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260903-permanent-v2-final-v9.json",
+    "sha256": "894be233dae301373fe035b5ab585c2ec4328eb790ae7904ed8b07d3665419a3",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v15.json",
+    "sha256": "8d73370ec76f997eabfb683b9afaa2de4b676635751fa355aa92179fdb346383",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v7.json",
+    "sha256": "bc1fad4f1d416442e2ad17e4b6c07ad83bfd6c4f3bf0f1860f1fc5cb6c4dc40a",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v14.json",
+    "sha256": "9a7a18f3382789b76530652cb49df344d2e5eed404eba60a131be87a086d0a2b",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260903-permanent-v2-final-v10.json",
+    "sha256": "a5be4abb4b3b4d0daa0c7d9e1e387b841b04973592147e2d816326fb228ff1a3",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v5.json",
+    "sha256": "ac9038f29d0fcd1763418550630264fe930f304fc9ee468e1f314ccbd9e7c87d",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v9.json",
+    "sha256": "7661260201bedd98883b4edd077780b676bcc4e654dc5acd6e9dc2c061aaa6ca",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v13.json",
+    "sha256": "2b1dc5d721b809b47b549e6fa051741e9f4f89ea279faedae1e0063f82d39447",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v10.json",
+    "sha256": "6d632036e9a8fae0e14753a6131acfd5c9aeb805f97d6f03513dc86be878c962",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATIONS/20260904-code-v8.json",
+    "sha256": "28443f9efb0399820a684f16d39cc9ea653aecb762f7e5112994c1748cf313cf",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v11.copy-verify-0.json",
+    "sha256": "f44ddebaa2f0665dd5001a4f8fd393b685559a7b7daada832f088ae033e531d2",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-path-api.dual-read-compare.json",
+    "sha256": "fc48a378ef6d26039177e67bf9d3aa4e6cd6627c14ea412ebffc760d46311b32",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v5.copy-verify-0.json",
+    "sha256": "a1b9c5b0a47f78260d4961ab391102b68357724f471ad15dc165e8c2f707e3fb",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v9.final-verify.json",
+    "sha256": "1fde0d4a377b0e7010fb057949d0d4b8f64fb62b9e5ed2902358c5042348f37f",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v15.copy-verify-0.json",
+    "sha256": "96145df803b1e8e989bc2c3c664ad0eced20bc9c85ad7e05b7ab8b34805ff0c4",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-refresh.copy-verify-0.json",
+    "sha256": "2b9211020a52884bfcd912fa80e791a15cb0b978aaf9d308cb45adbb1de7f072",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v6.final-verify.json",
+    "sha256": "9a2f40411c6aae516c96d15ed32c3f11a4034fbd9efd94be4291d2f37e6c6b06",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v18.final-verify.json",
+    "sha256": "e1b66277476e3f4a52eb4914b6ca97ee2d29a84414853414ea2e2357c3d535f6",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v17.dual-read-compare.json",
+    "sha256": "38caeb096945f0f72893ba221fd37b89da083892c1e6b19cf0791cf9d73e2966",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v10.copy-verify-0.json",
+    "sha256": "9b7a4450fd8a4e251c3501e7faa0fb599ccbb33500a52cff65f6048474e9b299",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.copy-verify-0.json",
+    "sha256": "db1755bb1c50eaae9d5c8cd08f37ddac1f7335ec7d44ae099c0a832b0136203f",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v17.final-verify.json",
+    "sha256": "57b017fe89d2c314c755d0b261c61e5d2a74e7fa8d3724f98e4fb3b470ef6104",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v5.final-verify.json",
+    "sha256": "c45b955d052d08c662d81b39d8b15ddc24b103c82d4e344ce11c4fb35128e21d",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v5.copy-verify-0.json",
+    "sha256": "d030c37a45f8484d753f3522adaa5808281cba088d9a1936b89aebe28c9d5817",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-adr-lineage-shadow.dual-read-compare.json",
+    "sha256": "151e1338419b04a02264451710327ea135098cfd461b6bbb8eebc2aead9a8a8f",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-docs-non-adr-shadow.plan.json",
+    "sha256": "ebd6ffbd1f7b1326754599725f32b6b4e14507c050eb78ac6650ba2a553deecf",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v5.final-verify.json",
+    "sha256": "e341aedbb6a7c2197c55ccf96acc628166ba76f36eb670f7bfc0a8c09b729410",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v19.dual-read-compare.json",
+    "sha256": "091da846f198cab5536c7871f1f0bd25d816a7f0ad114105680ff601d077eadf",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v3.final-verify.json",
+    "sha256": "f5bbe1e658379613111ed00031e29e588e3ed40ca34ce97af76e80fa0995c62a",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-data-shadow.copy-verify-0.json",
+    "sha256": "dcc05432d35710a310ca7434104cb951ce9a2f6141b3749bd7643986f9c08958",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v6.final-verify.json",
+    "sha256": "db572dd086ff8204597b049126202639fa8c48310e9d563b1ac375ab9a2885e8",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-supporting-roots-shadow.plan.json",
+    "sha256": "bde8ddb3cf9380a1b832ffbeaf1d077ad9ebbe94bbc87f09d7e113aadcdba0b1",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v12.copy-verify-0.json",
+    "sha256": "324d6e17ebee8904dc1b1a596a65369a490f7e8add76235cf74fb467562c35d0",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v9.final-verify.json",
+    "sha256": "3b2002c36548db5ba3c3cdf9783ebdffe5212aa37c8a966cc99d0564638693d6",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v8.copy-verify-0.json",
+    "sha256": "0be0948acb70a7191ab77398208ec81fa68ab0f50275f15b38311e96aa31074a",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v5.dual-read-compare.json",
+    "sha256": "08e88441dc44c01e6a84a7522ba991b963a586bdc244efe0c5084fc64a91a5c8",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v8.copy-verify-0.json",
+    "sha256": "c017ff7e6400c941aaf6e5dbb58f0f8aff286053401dac43ed4ac13304e43047",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-refresh.dual-read-compare.json",
+    "sha256": "953695f5afe46062556a4c4bde6fff15eced6e0146bce2a0db20d7209623ddfd",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v15.final-verify.json",
+    "sha256": "03a45970e978f0efd13e8ac6cb472b70105c9354922efe474d7d60d8e461c410",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v10.final-verify.json",
+    "sha256": "bdc698f20ea4f4d550af439e5586483e4fdc8edc07d9cf0d4dc41c1554722511",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v10.dual-read-compare.json",
+    "sha256": "5244cfd7bc759964c3aa4002abfa6a2bd5b58b7dbc283e41f8841ba232ecd610",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-supporting-roots-shadow.dual-read-compare.json",
+    "sha256": "f7bc63616168cedcba2e8b2ccb4c58a1c84eceb1923d76696a6926e8bf85424e",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v7.dual-read-compare.json",
+    "sha256": "5fa899ea419a1c0ec99763bcf6ce772c413445981d821f063a96b9d30618adcb",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v2.plan.json",
+    "sha256": "d377ca0a7c96bc3802f405ec9c5219aa9a248cfaa1076bca454a498613c3f8e9",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v17.copy-verify-0.json",
+    "sha256": "a50c646f801e3c3776860e10d18e930e0ab3217212d7e22c08eaf40d0b01980f",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final.plan.json",
+    "sha256": "d982a3c87a1edba3e6cacee70852ceaee4f4dcebdca654379dd714006f901246",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v6.dual-read-compare.json",
+    "sha256": "00c7c080e5be32c704ac76757397a43b8a3fe0360a59b2d5dde294b5b7854923",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v12.dual-read-compare.json",
+    "sha256": "a91268654eb82be03c0b90331aaafcf13fc7cab5743fcf97533d494053f40f59",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-docs-non-adr-shadow.copy-verify-0.json",
+    "sha256": "a97b439c6d993755c4a1654c75bf5cdedfb1582f3c5de4c3344ed69108dc0767",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v16.dual-read-compare.json",
+    "sha256": "d10ec8a69d7ef23a60fe547b833253d6d6fd06734ca1668a951f9472907e1d65",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v6.copy-verify-0.json",
+    "sha256": "0c74f1fb8117f6d056f5b8bc0675a57b5dc4ec225920916a392701c0bfafce30",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v6.copy-verify-0.json",
+    "sha256": "36c9c9b91819d3d9185e190415e2b2f7d9072d04bf36d8deb97b0128631e41f4",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v2.copy-verify-0.json",
+    "sha256": "e3902bd6b7e0c814801e0daa6560009119946c19d8236975f30aabd24ec4d33d",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-path-api.plan.json",
+    "sha256": "a29af4cf21caa592d11e727356e141813af86494c8b4de57963a75f7e956b441",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v16.copy-verify-0.json",
+    "sha256": "75697879146284333f1616bb7ab61dcb6822613a889f7ed5d4f08a242c0a1645",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.plan.json",
+    "sha256": "941a882c13399857cfb7531c79629d7522f2cc1ce53e1240c18f8d7c78bb9b1b",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final.copy-verify-0.json",
+    "sha256": "042a860ac71367d971e30feac5ff3f0be37876b4e6f5bc6b8faeba13b6b5d80b",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v14.final-verify.json",
+    "sha256": "d42a95ff39d5cd7bb4e0a83f62b64d332c6041a4a7f063012b9f1dca948b1ec8",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v10.dual-read-compare.json",
+    "sha256": "4515b5ecdc2035665fc1c3cb3870937e934513df2cdf2b7d2355498a5976929f",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-adr-lineage-shadow.copy-verify-0.json",
+    "sha256": "9527cac27fbd1fa2d4428ec28be8d5f7df5cce64bc00e5d45af255af5d35b6ed",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v18.copy-verify-0.json",
+    "sha256": "14774e6e51337fd183a8145a37e2ee08b87a116f8f67e1a80f8bedd1b7546a98",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v3.copy-verify-0.json",
+    "sha256": "101ca05614605be2fb071a18a2681335682768b00ba555779c59cdb8f3edfa83",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v18.dual-read-compare.json",
+    "sha256": "013c4aa9e9af1209e2daf4f63155638f8bc96bb51fc5a5785f7a6d4e235c282c",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v4.final-verify.json",
+    "sha256": "9c4f90cd213ed43cb1dd1680f6d5eee18c004c1b2efbd8fd7ac7cd12e73a868f",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-backend-shadow.copy-verify-0.json",
+    "sha256": "0bc49c1d912e4087f45f18b14eaeae31ef0d77aa58192933d871eee84a165241",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final.dual-read-compare.json",
+    "sha256": "b7202a5f65a533579864625907b999ee876094484c6c0548545751902bd36608",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v9.copy-verify-0.json",
+    "sha256": "51e22ad1999e07ea764aae2aeba770e0da58fde1fd25b0166c96e49394d1b3a0",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v10.final-verify.json",
+    "sha256": "4c161023ed99cc5f7f555053dec9ae41f03b0e6715eb27674313ccb76dde7e4f",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v4.plan.json",
+    "sha256": "350cdb29a1042d09082876e767e4e2c81e70e555acb7eef45ab4126e43726a1d",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v13.dual-read-compare.json",
+    "sha256": "82a149447c6b69d62777b0dbcc417af59016ba4ede28879434e346d8d9c75624",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-docs-non-adr-shadow.dual-read-compare.json",
+    "sha256": "8c5608ae36b52d75d3558288767506b50d10b168f426d6a05d2bded192018818",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v11.final-verify.json",
+    "sha256": "49fb15cc28470b75e50b3c124836123a79b7d36d65bf686f7f226a0433b87c58",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-refresh.plan.json",
+    "sha256": "cf4d37a7070352221b254215544ba53b6ba402dd2e7f5dae19a898a61121d31f",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v7.copy-verify-0.json",
+    "sha256": "dc475c19717a97b46de3e42ffa905d486fe34ac8a707b8a55f7ee55a2171774e",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v10.plan.json",
+    "sha256": "7c12c6d15b5f0545c555016a837c14ca0ce8ba5398a8ddd56c4e12da77a03e94",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v7.dual-read-compare.json",
+    "sha256": "75872ece3faba5c451cba31fdba66697600f0d143493de98b555cbbb6a549e02",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v9.copy-verify-0.json",
+    "sha256": "e5669770778d4804e78f301abb6dca5aa2e6a2ef4aff660a085daa94f723d34e",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v14.copy-verify-0.json",
+    "sha256": "00cde68821d63c14223f0d43742d1938f89555338d5c3be39a1481b12740c758",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v4.copy-verify-0.json",
+    "sha256": "fda66b94ba19942dbb344c640160e0945c6f6ef8ae7f55ccf13b71d51654ddd0",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v2.final-verify.json",
+    "sha256": "2399fe6ac81c11a4312aeca043bcb2b0c6c85ffc6846516040d4d6a6afdfb76e",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-backend-shadow.plan.json",
+    "sha256": "9fc24016d51cf83447563335baa58d4fd17bab29c8e6a5f133aa21848157dc63",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v8.dual-read-compare.json",
+    "sha256": "17f41167cd1cd0ee2b20582e13be8b65cc8b388b05aaa9124a5f7a99ae42714b",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v14.dual-read-compare.json",
+    "sha256": "faadf6473625ead546c08c35655aa51e205872bd7dd825952fb375393ce94765",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v9.dual-read-compare.json",
+    "sha256": "3447f5be678a22b8dbf83791ef78999b7d1ece74d99616f65e8c11a0ec948ec0",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v12.final-verify.json",
+    "sha256": "4c7f3608e7bc080e614861db6ebe1cbe398831dd3ff1bc154b80ce78f1d72bd5",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v8.final-verify.json",
+    "sha256": "f321d4de541d59ee72bf08755711a39629bfabcc23438b7105d228432dabc538",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-adr-lineage-shadow.plan.json",
+    "sha256": "9f46ff83ad2499f0d6e59fc2ad68ef7f8de449110e91a86ed0413e645a275e8f",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v19.copy-verify-0.json",
+    "sha256": "7cc46092292aa77d45d4da6189943b7b7908f0365650515c2694f469953213d9",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-code-shadows-path-api.copy-verify-0.json",
+    "sha256": "da29d8959c517a4758957563a700e7969bcb1f3f754939a7d66254f6afbe717a",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v8.dual-read-compare.json",
+    "sha256": "540c0059590c7240752b4dc8b5bcf5a2040d736c95fa833e587e3aa3fcc18c7d",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v13.final-verify.json",
+    "sha256": "bdee3b221c68a0d1655e4a22fbb89440daf0303fa5c7252343610390d951333a",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v6.dual-read-compare.json",
+    "sha256": "e4bd0be88bbebd893853b8c33767c87baa352f2d319d05902771ff75f74db372",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final.final-verify.json",
+    "sha256": "5ca2fc88b1f7d20e4c47223fc18bb9d83adf07960f7e6e775ed45f364ce8f98c",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v16.final-verify.json",
+    "sha256": "2e84c721ab47315891a06c8b878a68cb9a8e3fc203849a7b103aa2b5082d68a1",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v11.dual-read-compare.json",
+    "sha256": "d8bcff2f4beca58637da4d8cbdc600d4876a43f43eca3fe166c6864a179a80de",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v8.plan.json",
+    "sha256": "a478e313bf947a4798e53bf29426ba0307169a4e1060e5fd345c45cf0859c2c5",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-root-loose-copy-verify.dual-read-compare.json",
+    "sha256": "764c4b9fa01dc7a9abe0fb1cfceee3d2ba0910a11eebf79ad361915e78a810a4",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v8.final-verify.json",
+    "sha256": "fe069ae966d59123b31fba1d15ad735bf9fe1a11310e9bef7bb3f7ea432219a3",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-data-shadow.dual-read-compare.json",
+    "sha256": "14c0f0952e267526fcd08bf4682e6ecfade304de597e72e6dec624dc5fde23d1",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-supporting-roots-shadow.copy-verify-0.json",
+    "sha256": "4a88d92553dd1955e1625ee34bb13fa9c5cdb245ac954ed49f40f5256e3599dd",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v15.dual-read-compare.json",
+    "sha256": "43cf93168a2e32beb6cafb65237f76ebb2013ba54c0df4298151bf664442f237",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v6.plan.json",
+    "sha256": "ee8f08c3574cfcaf2d57a526b72c27393a4b9b46c7edb35f64f48c249fa988c7",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-backend-shadow.dual-read-compare.json",
+    "sha256": "04e952139893292c425559ab5b042eb3165d7d7b53e9dd1b01ee80d25bd206a5",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v13.copy-verify-0.json",
+    "sha256": "2680d311660fe9e82dc0fc36bfeaa5072b587e052be8a11e2dce284e209d9406",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v2.dual-read-compare.json",
+    "sha256": "680e05a92aaf12c5c63d76322a6854f13f839c7f2e6a39a7a13faa1b16019121",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v9.plan.json",
+    "sha256": "2c214565dafb399f4d15864e0047b0973259cabc406505868e93983206744ab5",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v7.copy-verify-0.json",
+    "sha256": "bd76dce830fd8aa93f95509fc88f91c5a4e4b6d3ba4f90f33fcff8231e66c9d4",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v3.dual-read-compare.json",
+    "sha256": "83112f06f469f6cbfd15730f61340e304b3c3499094e96fa14162427df9bfb3a",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v7.final-verify.json",
+    "sha256": "96d86284ee54f987898b823464d193a6c194f728dbc1f5c8b1f38e255c33cf2c",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v7.plan.json",
+    "sha256": "b701394e3fc7b9b4c461efea5a287ea383c977f24aa23f3d18e486f1df555863",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v10.copy-verify-0.json",
+    "sha256": "3eb51f1bd798488382c50208fc9b9cba8954f9b1136ffa118824d731307b2f29",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v5.plan.json",
+    "sha256": "f61a1326d0fbc5945de4c08ac30552eba19c39d1260e2c1c3eab1678cc7d146a",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-data-shadow.plan.json",
+    "sha256": "a7b741b64027cdb2c0c8b5e5d33c74a1a94ff095a77ac0f993dcb2d9fb11c8e3",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v4.dual-read-compare.json",
+    "sha256": "0f151a60987c5c1d2c7cf3d9350bb577d77eb583cde4cfd75aa6944f7a702d70",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v19.final-verify.json",
+    "sha256": "e5034f30cfbe0de672a424b7cd129f17568558fd4b1c95ff453fa638c540880d",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v9.dual-read-compare.json",
+    "sha256": "80074e5dfe4251df52c1be3dbe7deaf15f9c90465daa88dae53f23f92c8fed6a",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v7.final-verify.json",
+    "sha256": "1856e3833e2f6ca233749f87a9f2d4221483a6ef81bb240147cf0954da2d682a",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260904-code-v5.dual-read-compare.json",
+    "sha256": "c52b7ddfeef1d45180599d64adbd4210f6f2d10b32309cfa5b6d92fd12c0292f",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RECEIPTS/20260903-workspace-partition-final-v3.plan.json",
+    "sha256": "430dba305943013d98bab255bf8b91a11963381cd16812452330c0117b24959a",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATION_CANDIDATES/20260903-receipt-bound-v2-v7.json",
+    "sha256": "aaf45b2ad3e8895677d5f7176b47fec7c8711b4ec7c13b33a0d55ea8f031f308",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATION_CANDIDATES/20260903-receipt-bound-v2-v6.json",
+    "sha256": "e6f0c62f39274be13f396f5feedeb35cfb1a38de3f88d5179fb1607057b080a4",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/ACTIVATION_CANDIDATES/20260903-receipt-bound-v2.json",
+    "sha256": "5fe45df840a80dbd84133eb020566dbd3f8123a08e6f5ea237fab2cb94a994c7",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v16.json",
+    "sha256": "f4bfe170409a7be3a94b5d2aedb7f5b5abda9bb8eee249cba0211f2887e3056c",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v18.json",
+    "sha256": "611e2df67e4b162a80922cf83258b9642cd3002888ad03e78a0a27d52dcacd80",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v17.json",
+    "sha256": "a76486aa61885980d2451bd698fb2a18c4ac1556d82fcddd047e463b2c56566b",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v6.json",
+    "sha256": "b20e4e4b552cda350b5b84a90b2900bda4950353e74808d306609684ff2a5e14",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v12.json",
+    "sha256": "54dc4b041b7d48622a61797079ef07d721297e2f7ab823bab880317b6e31f2fc",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v11.json",
+    "sha256": "49fb427c27750a51787c7a87fed6b36af9ac1f74d68c2fd74fdfd056a25b7698",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v19.json",
+    "sha256": "20b761e8b77de02920c2cfbd1b380b2c5bdfbbaf76665407803704c440c1d663",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v15.json",
+    "sha256": "519e5405d13122e2dccdd0a556fa2f726f75586d67eba5e253a5b63f9ae269ee",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v7.json",
+    "sha256": "0efef58f5b2475b146c10de8c19f291ac47b0dcc340f48fec4046973f80dde69",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v14.json",
+    "sha256": "edab1e0d52c79dd45dee56c7892d4e3556749a4d0b02b40922020df54ec93ddf",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v5.json",
+    "sha256": "790add506bcfcc300d181929b964f0f47f2430ad74a8f779b716dc01be4eb937",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v9.json",
+    "sha256": "95b9a0d15846ec01bfe56c353fb1cf1203ee7e561f0cb8d583a6f340c90bc84e",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v13.json",
+    "sha256": "77ff276407883e2dad86adc0a38be700d99fa0c9f16338f6679e2a078e2b49a2",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v10.json",
+    "sha256": "4d42080a3eba9da25b201c9eb0473159851230418137b2eef2a3f0d062138094",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/PLANS/20260904-code-v8.json",
+    "sha256": "07814740a7d56e24a00b611816832e283c78467f1fe0af44e64eaebad42787a1",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v16.json",
+    "sha256": "e9e4ffcc13dcfc8ef16b52c9ce1c087cde28c9eabc7dd46299388c75e58de304",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v18.json",
+    "sha256": "8a4e58d10a3b2d7fe4effd1f080988118cd847ca197694442df413741cf25d66",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v17.json",
+    "sha256": "99770bc3b4cea23028d5fa20a1fc71d541158cd88f9b2a1c36a95f7d0c8705d4",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v6.json",
+    "sha256": "090d9f6a4f1c1693ad6f349090dcdc00e118c2a9d5c51e26cbc7588e552f8e0c",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots.json",
+    "sha256": "42ad8f208b7c65969db2a7f775c194a12fe59887cfb6976d5be8a1c81612f5fe",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots-final-v9.json",
+    "sha256": "bc7ae9a3e307646a07b6bedd56bf90c61ee04377265dfaaa6a9f694c1db576c1",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v12.json",
+    "sha256": "bbd9950b80e782841d4f023205d9b3017b92c4babdb886e37e7ffe2112534336",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots-final-v10.json",
+    "sha256": "c85e568e5d14f3fcd9533ff3da4ccab4aa364b3b43296e933e5cbcf9bc65fda3",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v11.json",
+    "sha256": "c548749ca8ae279b6d8a1d38cab91a2e66d20e1f5094f13415e0c8fe8c681a6e",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v19.json",
+    "sha256": "c8d823c3f84aa2105fd78bb0550c4800c7f0d82075d2b789811b88f1c6d041fd",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v15.json",
+    "sha256": "6241f9e02aa0653b90624f796d5bc677d6006230e43f1718fcae721f86cdf1b9",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260903-legacy-roots-final-v10.completion.json",
+    "sha256": "a2f56ee8a0f548ad582569ca30e81a5c0bf3ea714fa7e0b30406353376382619",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v7.json",
+    "sha256": "368e5ff6ab67b80b24ea4ca0a2e4de45dc06da4e304b23bcffad140646110bfa",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v14.json",
+    "sha256": "7ecd7f0b980b1d0ad418eab9d9e0ddaa3d90fbaef3b5b6d364e08d13b313ced3",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v5.json",
+    "sha256": "5e8e332862e44e6f18c659ba216014d7010c0c54de843319f7f13f66b4da3422",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v9.json",
+    "sha256": "cc0ee7c733d45648fa321362a942072a47818df24eb1fea695f84d36bcd97ea7",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v13.json",
+    "sha256": "1bcbe053629becd45b068a77498a7a3c043e722875585e3ed8120bf3a9f5699e",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v10.json",
+    "sha256": "bbd6a37f56820c0cadabff1bb5662d0ef933c9071f35ef7f19be99780a511b89",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/RETIREMENTS/20260904-code-v8.json",
+    "sha256": "6b23c11144ff9ea19a27fb21a5d8859d5df44f7ce6ec1db67438f6383709f5ef",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v16.json",
+    "sha256": "d7e991f6a038d47a51192fedc63236c64661ea9491e47b3c7b230995cecf94e6",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v18.json",
+    "sha256": "972e301c7afa32f60e25bfae73e4f1e3c48cf4594aacfd8a0ee118bb6c1ac1a6",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v17.json",
+    "sha256": "9f1897218f6a848d746f96247547946495069f0dc0d63b3fcf0a223c3f87aa7b",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v12.json",
+    "sha256": "872762d93b373c317e22c33a8238224abfaa3e8ffe124ce4778c290bcc904293",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v11.json",
+    "sha256": "6552b6811876270680210dd3fc5d0c1f0a151ef4eb3aaf90551ddd1f5b516a44",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v19.json",
+    "sha256": "813bff5e3a1eed8eb6550a16770e179c9236643a4611ce4f64c28cc2a7199da1",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v15.json",
+    "sha256": "fe2166f781367d1c99634e3a70d30a288ed05933519d511b4f8a6c37e3029201",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v14.json",
+    "sha256": "a5db85bab55ef1e7a0cd7ecc72e2a665a81950a65d27cf5614399307ce92b954",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v9.json",
+    "sha256": "75e3b6b02a4a2278e9f41453c1966e8ab6af1b09ba22da0be2b81b2d30c53844",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v13.json",
+    "sha256": "50ee3fb2a31ca8d477d867fa5741c41fe5e3ced32513ec57d9ac411b16a4efc4",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v10.json",
+    "sha256": "dac6efba1e2da2ea95c91f472da1743908f6d72624101c90d58e40e33bff591e",
+    "origin": "workspace fixture schema only; not shipped"
+  },
+  {
+    "path": "00_SYSTEM/MIGRATION/OVERLAYS/20260904-code-v8.json",
+    "sha256": "415c0ff061e7f24fc7702d91c8c9384eada3ce5347b4216e3f605674e011a0ce",
+    "origin": "workspace fixture schema only; not shipped"
+  }
+]

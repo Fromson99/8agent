@@ -1,0 +1,27 @@
+{
+  "schema_version": "genos-proposal-retry-patch-v1",
+  "patch": "proposal-retry-20260928-r1",
+  "files": {
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": {
+      "base_sha256": "d5c0a48be5f5486314abce33aa2a4a5afe9259d425cdcae450e5186ede98ce88",
+      "new_sha256": "73df183ff9309a46248c7371388e73709e2fda5cc0b33e83fb93758105781092",
+      "supported_base_sha256": [
+        "328114c4394d980289c3c2fb7c9dfcce81a83bbd9128b5a60bfa9a72ec3630af"
+      ]
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py": {
+      "base_sha256": "b8176cfe46bce1d560edcc6829f6766a129cf64d8c526f6c7dad0a2612c52be7",
+      "new_sha256": "29fd4b74e56128b3b691e964b772dc166daa3f46716dfa12ad183c51ab3afe92"
+    }
+  },
+  "validation_environment": "WSL Linux; synthetic data; no model calls",
+  "validation_code_root": "/tmp/genos-proposal-retry-validation-t4p4zjy0",
+  "workspace_head": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "workspace_dirty": true,
+  "generation": null,
+  "generation_manifest_sha256": null,
+  "deployment_commit": null,
+  "code_serving_revision": null,
+  "onsite_workflow_verified": false,
+  "repository_working_code_root": "/home/jin/8-AGENT"
+}

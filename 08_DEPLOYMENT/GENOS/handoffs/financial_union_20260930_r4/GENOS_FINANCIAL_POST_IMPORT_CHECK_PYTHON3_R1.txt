@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# After RAW_REGISTERED documents=10 files=11 team_locations=22.
+# Read-only: check photo61 registration plan and pipeline input inventory.
+# This does not apply the scope, structure documents, build an index, or deploy.
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-financial-post-import-check-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+
+DEPLOY_ROOT="${DEPLOY_ROOT:-$HOME/DEV}"
+cd -P "$DEPLOY_ROOT"
+DEPLOY_ROOT="$(pwd -P)"
+command -v python3 >/dev/null || { echo 'python3 not found'; exit 2; }
+export GENOS_DATA_ROOT="${GENOS_DATA_ROOT:-$DEPLOY_ROOT/01_DATA}"
+GENOS_DATA_ROOT="$(realpath "$GENOS_DATA_ROOT")"
+[[ -f "$GENOS_DATA_ROOT/CATALOG/SCOPES/photo-required-80-hwpx-20260917.json" ]] || {
+  echo 'photo61 scope missing'; exit 2;
+}
+[[ -f "$GENOS_DATA_ROOT/CATALOG/TEAM_LAYOUT.json" ]] || {
+  echo 'team layout missing'; exit 2;
+}
+[[ -f 09_ARTIFACTS/AUDITS/20260930-financial-photo61-share/apply_shared_scope.py ]] || {
+  echo 'photo61 registration tool missing from checkout; apply the code patch first'; exit 2;
+}
+[[ -f 06_TOOLS/pipeline.py ]] || { echo 'pipeline.py missing from checkout'; exit 2; }
+
+printf 'START checkout=%s data=%s python=%s log=%s\n' \
+  "$DEPLOY_ROOT" "$GENOS_DATA_ROOT" "$(command -v python3)" "$RUN_LOG"
+python3 09_ARTIFACTS/AUDITS/20260930-financial-photo61-share/apply_shared_scope.py
+python3 -B 06_TOOLS/pipeline.py build-data-stages \
+  --run-id financial-photo61-after-import-001 --check-only
+printf 'CHECK_ONLY_COMPLETE; no photo61 admission, structure, index, or serving changes were made.\n'

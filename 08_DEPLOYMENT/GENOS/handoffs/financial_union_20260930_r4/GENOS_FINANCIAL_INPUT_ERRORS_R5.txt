@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# Read-only. Explain two selected-but-unstructured PDFs and locate the other
+# ten photo-scope documents by SHA-256 under GENOS RAW / TRANSFER.
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-financial-input-errors-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+DEPLOY_ROOT="${DEPLOY_ROOT:-/home/genos/DEV}"
+GENOS_DATA_ROOT="${GENOS_DATA_ROOT:-$DEPLOY_ROOT/01_DATA}"
+PYTHON_BIN="${PYTHON_BIN:-$DEPLOY_ROOT/.venv/bin/python}"
+if [[ ! -x "$PYTHON_BIN" ]]; then PYTHON_BIN="$(command -v python3)"; fi
+[[ -x "$PYTHON_BIN" ]] || { echo 'Python 3 required'; exit 2; }
+"$PYTHON_BIN" - "$GENOS_DATA_ROOT" "$DEPLOY_ROOT" <<'PY'
+import hashlib
+import json
+import os
+from pathlib import Path
+import sys
+
+data, checkout = map(Path, sys.argv[1:3])
+scope = json.loads((data / 'CATALOG/SCOPES/photo-required-80-hwpx-20260917.json').read_text(encoding='utf-8'))['documents'][:61]
+if len(scope) != 61 or scope[32]['name'] != '기업공시서식 작성기준(2026.8.3 시행)' or scope[51]['name'] != '상장주선인의 기업실사 체크리스트 작성 가이드(이익미실현기업) [별첨6]':
+    raise ValueError('photo61 scope order changed')
+missing = [*scope[32:34], *scope[51:61]]
+pdf_ids = {f['sha256'][:16]: d['name'] for d in scope[32:34] for f in d['files'] if f['role'] == 'body'}
+
+def digest(path):
+    h = hashlib.sha256()
+    with path.open('rb') as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b''):
+            h.update(block)
+    return h.hexdigest()
+
+print('START read-only missing_documents=' + str(len(missing)), flush=True)
+for path in sorted((data / 'LOGS').glob('*/result-*.json')):
+    try:
+        result = json.loads(path.read_text(encoding='utf-8'))
+        for did, name in pdf_ids.items():
+            row = result.get('documents', {}).get(did)
+            if row is not None:
+                print('PDF_RESULT ' + json.dumps({
+                    'name': name, 'run': path.parent.name, 'stage': result.get('stage'),
+                    'status': row.get('structure'), 'error': str(row.get('error', ''))[:500],
+                    'result': str(path)}, ensure_ascii=False), flush=True)
+    except (OSError, ValueError):
+        continue
+
+needed = {f['sha256']: (d['name'], Path(f['path']).name, f['role'])
+          for d in missing for f in d['files']}
+basenames = {value[1] for value in needed.values()}
+found = {sha: [] for sha in needed}
+for root in (data / 'RAW', checkout / 'TRANSFER'):
+    if not root.is_dir():
+        continue
+    print('SCAN root=' + str(root), flush=True)
+    for directory, dirs, files in os.walk(root):
+        dirs[:] = [d for d in dirs if d not in {'.git', 'union_file'}]
+        for filename in files:
+            if filename not in basenames:
+                continue
+            path = Path(directory) / filename
+            try:
+                sha = digest(path)
+            except OSError:
+                continue
+            if sha in needed:
+                found[sha].append(str(path))
+for doc in missing:
+    files = doc['files']
+    print('SOURCE_FILE ' + json.dumps({
+        'name': doc['name'], 'expected_files': len(files),
+        'exact_files_found': sum(bool(found[f['sha256']]) for f in files),
+        'files': [{'basename': Path(f['path']).name, 'sha256': f['sha256'],
+                   'found_paths': found[f['sha256']][:3]} for f in files],
+    }, ensure_ascii=False), flush=True)
+print('READ_ONLY_COMPLETE', flush=True)
+PY

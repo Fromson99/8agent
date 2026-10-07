@@ -1,0 +1,21 @@
+def load(root, config, store):
+    """Select the pinned alias projection for this exact generation; other generations get none."""
+    bindings = [b for b in (config or {}).get('alias_projections', [])
+                if b.get('generation_id') == store.manifest['generation_id']]
+    if not bindings:
+        return {}
+    if len(bindings) != 1:
+        raise ValueError('multiple alias projections for one generation')
+    base = Path(root).resolve()
+    path = (base / bindings[0]['path']).resolve()
+    path.relative_to(base)
+    data = path.read_bytes()
+    if hashlib.sha256(data).hexdigest() != bindings[0]['sha256']:
+        raise ValueError('alias projection hash mismatch')
+    value = json.loads(data)
+    if value.get('schema_version') != SCHEMA:
+        raise ValueError('unsupported alias projection')
+    for k in ('generation_id', 'store_sha256'):
+        if value.get(k) != store.manifest[k]:
+            raise ValueError('stale alias projection')
+    return {did: tuple(a['surface'] for a in doc['aliases']) for did, doc in value['documents'].items()}

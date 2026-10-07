@@ -1,0 +1,120 @@
+{
+  "status": "LOCAL_SYNTHETIC_PASS",
+  "environment": "WSL local replica; not GENOS",
+  "python": "3.14.4",
+  "code_zip_sha256": "636e42c3d64045e196c7f4d24268302e6743352155c1c2e5a785e98e019b04fd",
+  "code_manifest_sha256": "7cdad9ea3f0cbefdd25f057021ad016068d7bcf2c5afe13caf09b46a250da2cb",
+  "runtime_target_sha256": {
+    "service.py": "89adf358fc975d27be9bdc4528ac24f209ffc047d02c0837b28f8ef0fa94b0b4",
+    "02_BACKEND/semantic_runtime/legal_agent/domain.py": "5dd6365831db8918ca7be371b6be492b442e9baf9bffa8d817b84e0f57387bb4",
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py": "ed5f4e717ce31a70566464132abdbe69c5bccf6365927c7c3d1cee9684d4bb6c",
+    "02_BACKEND/semantic_runtime/legal_agent/relation_views.py": "ef3e739bab8010dc3c71e748a3a20af30be4a871e863170a1b3c1165bf8cdb72",
+    "02_BACKEND/semantic_runtime/legal_agent/tiers_views.py": "8eb7014103685092b458f2d23f7fe724122d72adcc50f3cffc0dea07aa7575b9",
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py": "db85ae5051240d8d4c8f5f2c5bd1baf4d4da5e5e37cb3b4a48a3fe0ca366dcc2",
+    "02_BACKEND/semantic_runtime/legal_agent/relations_tools.py": "6a6252cf219070b256d83b141ee24831aa6405cf82e5b46fe5a6fafadacbf9ae",
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": "4758a3e495310f38abd47b5a53c8e261b568749f5037677a3f24dd20394086a6",
+    "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py": "ce8b7cbf6d206e494ff348618a87f506e13beb6b61f028eb305d7000819c8ffb"
+  },
+  "code_files_verified": 1919,
+  "engine_manifest_and_source_pins": "PASS",
+  "python_311_syntax": "PASS",
+  "shell_syntax": "PASS",
+  "targeted_diff_check": "PASS",
+  "replica_commit": "49318a51dcadf9bae1f1f22d95482dcbbe64ce45",
+  "replica_code_root": "/tmp/genos-request-input-field-hxduppg3",
+  "synthetic_generation": "/tmp/genos-compact-loader-iibr_0kn/01_DATA/SYNTHETIC_LOADER_TEST/built/generation",
+  "synthetic_generation_manifest_sha256": "346007fd30e4791da04149040b8c32978ec838b7eabb0ecad2c70d92ecb197a0",
+  "tests": {
+    "actual_r2_replica_contracts": {
+      "passed": 52
+    },
+    "wire_source_and_environment_contracts": {
+      "passed": 58,
+      "deselected": 1
+    },
+    "current_v6_scripted_contracts": {
+      "passed": 18
+    }
+  },
+  "installer": {
+    "apply": "PASS",
+    "reapply": "PASS",
+    "drift_rejected_without_overwriting_edit": "PASS",
+    "rollback": "PASS",
+    "rollback_preserves_data_and_env": "PASS",
+    "reinstall_exact_bytes": "PASS",
+    "committed_replica_release_gate": "PASS"
+  },
+  "input_capture": {
+    "model_document_count": 0,
+    "server_authorized_document_count": 3,
+    "legal_wiki_retained": true,
+    "multiturn_and_source_category_contracts": "PASS",
+    "model_calls": 0,
+    "boundary": "actual request construction before provider call; not a full model run"
+  },
+  "rejected_candidate": {
+    "revision": "R1",
+    "status": "DO_NOT_APPLY",
+    "reason": "legacy glossary reader lacked compact allow_cache_build contract; R2 preserves verified reference reader"
+  },
+  "legacy_suite_limitations": {
+    "full_legacy_suite_certified": false,
+    "unchanged_parent_r5_failures_reproduced": 3,
+    "cases": [
+      "workflow API profile/authorization expectation",
+      "fabricated quote error text expectation",
+      "revoked scope AD permission response expectation"
+    ],
+    "audit": "validation/parent-regression-audit.log"
+  },
+  "model_calls": {
+    "external": 0,
+    "genos_internal": 0,
+    "contract_test_models": "scripted synthetic doubles"
+  },
+  "field": {
+    "commit": null,
+    "generation_manifest_sha256": null,
+    "revision": null,
+    "deployed": false,
+    "workflow_e2e": "NOT_RUN"
+  },
+  "main_pointer_changed": false,
+  "nfs_data_changed": false,
+  "working_compact_reader_modified": false,
+  "logs": [
+    {
+      "path": "validation/field-contracts.log",
+      "sha256": "8054be3d499251a0edb2bb42fa4ea5fc4af621bfb80240eb298ee22c851cffc4"
+    },
+    {
+      "path": "validation/field-gate.log",
+      "sha256": "9283c87f458cc47f61d858763e690337b6c0174187ff29c88d5a4d985f21ce92"
+    },
+    {
+      "path": "validation/field-drift-rejection.log",
+      "sha256": "9287d12bc5748f7598584101622da526301a6220733a1e3d86aa15cd4c400cee"
+    },
+    {
+      "path": "validation/field-rollback.log",
+      "sha256": "d58c8c40a98468579529b0793ce508667d1a4af9bb5be4937e2c42388c17d41d"
+    },
+    {
+      "path": "validation/field-reapply.log",
+      "sha256": "aa567b8ce0d6d782c6926fec1a919145d58e86f5afeeac20b9a6d72654eab24f"
+    },
+    {
+      "path": "validation/wire-contracts.log",
+      "sha256": "965dffe1c2943a12b4017037a253cb6ead1f6655d64db277b6d6302af3fb10eb"
+    },
+    {
+      "path": "validation/v6-contracts.log",
+      "sha256": "d7b5a218d60333df96f731217ff50e09c3e1a7a79983dd268027a0fde7c8a02d"
+    },
+    {
+      "path": "validation/parent-regression-audit.log",
+      "sha256": "543bdfe3bdb3fb0eb52909bd96cd5d596f051835af5af404880fd608c8146b85"
+    }
+  ]
+}

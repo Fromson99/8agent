@@ -1,0 +1,44 @@
+{
+  "format": "8agent-code/1",
+  "id": "nfs-data-probe-20261006-r1",
+  "scope": "stdlib NFS/SQL read and committed-code identity probe; preserve existing RAG code/data",
+  "files": [
+    {
+      "path": "02_BACKEND/semantic_runtime/nfs_data_probe.py",
+      "bytes": 16692,
+      "sha256": "cb4823e70bacacb4d104e03d7febd56df144ca4793aced34de0cabe6ca7b2fa5",
+      "allowed_predecessors": []
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_nfs_probe_handoff.py",
+      "bytes": 19663,
+      "sha256": "795e75011725d9d4b83017bd1106bcb7cc3d42d08b5275674bd09817acc52bfe",
+      "allowed_predecessors": []
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_pack_rag_data.sh",
+      "bytes": 287,
+      "sha256": "42ff394015bb4658086e3325b910f1b9273cd58c8569ab7bc4a85c1b6125d63c",
+      "allowed_predecessors": []
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_rag_data_bundle.py",
+      "bytes": 24829,
+      "sha256": "f1796bbf11d2b76ea364129098ea2b21bb23ec28abb3337e9b65a0a01f5ca757",
+      "allowed_predecessors": []
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/workflow/genos_nfs_data_probe.py",
+      "bytes": 4560,
+      "sha256": "1b52307a84102f3a5629ffd15207b7648114a93c55fa64ff7753fb38d5848f6a",
+      "allowed_predecessors": []
+    }
+  ],
+  "function_hooks": {
+    "service.py": "early NFS_DATA_PROBE branch only",
+    "08_DEPLOYMENT/GENOS/stream_app.py": "early NFS_DATA_PROBE branch only"
+  },
+  "field_commit": null,
+  "field_generation_actual": null,
+  "code_serving_revision": null
+}

@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# GENOS DEV: save the R2 ZIP and this TXT together in ~/DEV/TRANSFER.
+# Run: bash ~/DEV/TRANSFER/GENOS_RAG_DATA_20261006_R2_RUN.txt --writers-stopped
+set -euo pipefail
+umask 077
+RAG_ATTACHMENT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+RAG_DRIVER_LOG_BASE="$RAG_ATTACHMENT_DIR/rag-data-r2-driver-logs"
+mkdir -p -- "$RAG_DRIVER_LOG_BASE"
+RAG_DRIVER_LOG_DIR="$(mktemp -d "$RAG_DRIVER_LOG_BASE/run-$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX")"
+exec > >(tee -a "$RAG_DRIVER_LOG_DIR/RUN.log") 2>&1
+printf 'START GENOS_RAG_DATA_R2 log=%s\n' "$RAG_DRIVER_LOG_DIR"
+trap 'RAG_EXIT=$?; trap - EXIT; python3 - "$RAG_DRIVER_LOG_DIR/EXIT_STATUS.json" "$RAG_EXIT" <<"PY"
+import json,sys
+from pathlib import Path
+Path(sys.argv[1]).write_text(json.dumps({"status":"PACK_COMMAND_PASS" if sys.argv[2]=="0" else "FAILED","exit_code":int(sys.argv[2]),"GENOS_deployment_verified":False},indent=2)+"\n")
+PY
+printf "GENOS_RAG_DATA_EXIT=%s\n" "$RAG_EXIT"; exit "$RAG_EXIT"' EXIT
+RAG_DEV_ROOT="${GENOS_DEV:-$HOME/DEV}"
+if [[ ! -d "$RAG_DEV_ROOT" ]]; then
+  printf 'ERROR: existing DEV directory missing; set GENOS_DEV to its absolute path.\n'
+  exit 2
+fi
+RAG_BOOTSTRAP="$RAG_DRIVER_LOG_DIR/bootstrap"
+python3 - "$RAG_ATTACHMENT_DIR/GENOS_RAG_DATA_20261006_R2.zip" "2ab9fa552677e76d07bdf5c82d378bd522e333e7788567869c0d10e608fbf62d" "$RAG_BOOTSTRAP" <<'PY'
+import ast,hashlib,json,sys,zipfile
+from pathlib import Path
+archive,expected,output=Path(sys.argv[1]),sys.argv[2],Path(sys.argv[3])
+if hashlib.sha256(archive.read_bytes()).hexdigest()!=expected:raise SystemExit('ZIP SHA256 mismatch; use the matching R2 ZIP/TXT pair')
+with zipfile.ZipFile(archive) as z:
+    names=z.namelist()
+    if len(names)!=len(set(names)) or set(names)!={'genos_rag_data_bundle.py','genos_pack_rag_data.sh','TOOL_MANIFEST.json'}:raise SystemExit('Unexpected archive members')
+    manifest=json.loads(z.read('TOOL_MANIFEST.json'))
+    if manifest.get('revision')!='GENOS_RAG_DATA_20261006_R2' or set(manifest['files'])!={'genos_rag_data_bundle.py','genos_pack_rag_data.sh'}:raise SystemExit('Unexpected manifest')
+    for name,expected_sha in manifest['files'].items():
+        raw=z.read(name)
+        if hashlib.sha256(raw).hexdigest()!=expected_sha:raise SystemExit('Member hash mismatch')
+        if name.endswith('.py'):ast.parse(raw,feature_version=(3,11))
+        output.mkdir(parents=True,exist_ok=True)
+        (output/name).write_bytes(raw)
+print('R2_ATTACHMENT_VERIFIED')
+PY
+GENOS_DEV="$RAG_DEV_ROOT" bash "$RAG_BOOTSTRAP/genos_pack_rag_data.sh" "$@"
+printf 'Default data ZIP location: %s/genos-rag-data-<UTC>-<ID>.zip; use the exact ZIP path printed above.\n' "$RAG_DEV_ROOT"

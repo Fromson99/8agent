@@ -1,0 +1,334 @@
+#!/usr/bin/env bash
+# R3 replaces progress R1/R2: installs reference CLI wiring and full-error logging.
+# bash TRANSFER/GENOS_RELEASE_PROGRESS_R3_UTF8.txt --build
+# Code rollback: bash this.txt --rollback <printed receipt.json>
+set -Eeuo pipefail
+umask 077
+progress_log=$(mktemp /tmp/genos-release-progress-r3-XXXXXX.log)
+exec > >(tee -a "$progress_log") 2>&1
+trap 'progress_rc=$?; printf "FINISHED status=%s log=%s\n" "$progress_rc" "$progress_log"' EXIT
+export GENOS_DATA_ROOT=/workspace/01_DATA
+export PYTHONUNBUFFERED=1
+if [[ "${1:-}" == --build || "${1:-}" == --rollback ]]; then
+python3 -u - "$@" <<'GENOS_RELEASE_WIRE_PY'
+import ast, contextlib, fcntl, hashlib, inspect, json, os, sys, types, uuid
+from pathlib import Path
+from datetime import datetime, timezone
+P = json.loads("{\"release_functions\":{\"build\":\"def build(data, run_id, glossary, *, bases=(), exclude=(), max_jobs=100, retry_failed=False,\\n          prepare_only=False, provider=None, reference_state=None, reference_profile=None,\\n          max_reference_cases=10000, reference_batch_size=8, stage='build', glossary_corpus_policy='append'):\\n    \\\"\\\"\\\"One implementation for merge / prepare / review / index and automatic build.\\n\\n    Explicit index never executes model work. references consumes completed glossary review.\\n    prepare retains its existing merge+draft+review-plan behavior.\\n    \\\"\\\"\\\"\\n    if prepare_only:\\n        stage = 'prepare'\\n    if stage not in {'merge', 'prepare', 'review', 'references', 'index', 'build'}:\\n        raise ValueError('Unknown release stage: ' + stage)\\n    reference_profile = reference_profile or os.environ.get('REFERENCE_RESOLUTION_PROFILE')\\n    if reference_profile and reference_state:\\n        raise ValueError('Select a reference model profile or an existing review state, not both')\\n    if not 1 <= max_reference_cases <= 10000 or not 1 <= reference_batch_size <= 32:\\n        raise ValueError('invalid reference batch or case limit')\\n    reference_model = None\\n    if reference_profile:\\n        reference_profile = genos_stages.plain_path(reference_profile).resolve()\\n        reference_model = {'profile': str(reference_profile), 'sha256': sha(reference_profile),\\n                           'approval_mode': 'automatic'}\\n    if stage == 'references' and not reference_profile:\\n        raise ValueError('references requires --reference-model-profile or REFERENCE_RESOLUTION_PROFILE')\\n    if glossary_corpus_policy not in {'append', 'replace'}:\\n        raise ValueError('Unknown glossary corpus policy')\\n    index_started = time.monotonic()\\n    def index_progress(phase):\\n        if stage == 'index':\\n            print(f'RELEASE INDEX {phase} elapsed={time.monotonic()-index_started:.1f}s', flush=True)\\n    index_progress('select-sources.start')\\n    data = genos_stages.plain_path(data).resolve()\\n    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,79}', run_id):\\n        raise ValueError('Invalid run ID')\\n    sources, pins = selected_sources(data, run_id, bases)\\n    index_progress('select-sources.done')\\n    destination = data / 'TERM_RELEASES' / run_id\\n    destination.mkdir(parents=True, exist_ok=True)\\n    with (destination / '.lock').open('a') as lock:\\n        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)\\n        if stage in {'review', 'references', 'index'} and not (destination / 'review/review.sqlite').is_file():\\n            raise ValueError('Run document-release prepare first')\\n        if stage in {'references', 'index'} and not (destination / 'review/completion.json').is_file():\\n            raise ValueError('Run document-release review to completion first')\\n        from . import glossary_assembly\\n        reference_binding = None\\n        if reference_state is not None:\\n            from . import reference_resolution\\n            reference_state = genos_stages.plain_path(reference_state).resolve()\\n            status = reference_resolution.auto_approve(reference_state)\\n            blocking = sum(status['cases'].get(state, 0) for state in\\n                           ('CANDIDATES_READY', 'MODEL_PENDING', 'MODEL_FAILED', 'MODEL_UNKNOWN', 'VALIDATED'))\\n            if blocking:\\n                return {'completed': False, 'status': 'REFERENCE_REVIEW_PENDING',\\n                        'reference_review': status, 'path': str(destination)}\\n            reference_binding = {'state': str(reference_state),\\n                                 'state_sha256': sha(reference_state / 'review.sqlite'),\\n                                 'schema_version': status['schema_version']}\\n        identity = {'pins': pins, 'glossary_sha256': glossary_assembly.inspect(glossary)['dictionary_sha256'],\\n                    'exclude': sorted(set(exclude)), 'compiler_sha256': sha(__file__),\\n                    'reference_review': reference_binding}\\n        if reference_model:\\n            identity['reference_model'] = reference_model\\n        if glossary_corpus_policy != 'append':\\n            identity['glossary_corpus_policy'] = glossary_corpus_policy\\n        plan = destination / 'plan.json'\\n        if plan.exists() and json.loads(plan.read_text()) != identity:\\n            raise ValueError('Release inputs changed; use a new run ID')\\n        if not plan.exists():\\n            write(plan, identity)\\n        index_progress('merge-sources.start')\\n        source = merge_sources(sources, destination / 'sources', exclude=exclude)\\n        index_progress('merge-sources.done')\\n        origin_path = data / 'LOGS' / run_id / 'selection-origin.json'\\n        coverage = None\\n        if str(origin_path) in pins:\\n            origin = json.loads(origin_path.read_text())\\n            coverage = {key: origin[key] for key in\\n                        ('parent_run_id', 'parent_attempt_id', 'coverage', 'omitted_count')}\\n            coverage['origin_sha256'] = sha(origin_path)\\n            coverage['selected_count'] = len(origin['selected_document_ids'])\\n        def stopped(status, **details):\\n            for path, expected in pins.items():\\n                if sha(path) != expected:\\n                    raise ValueError('Release input changed during preparation')\\n            return {'completed': False, 'stage': stage, 'stage_completed': True,\\n                    'status': status, 'path': str(destination), 'activated': False,\\n                    **({'structure_coverage': coverage} if coverage else {}), **details}\\n        if stage == 'merge':\\n            return stopped('MERGED', source=str(source))\\n        index_progress('prepare-glossary-draft.start')\\n        glossary_document_update.augment(glossary, source, destination / 'glossary-draft',\\n                                         corpus_policy=glossary_corpus_policy)\\n        index_progress('prepare-glossary-draft.done')\\n        state, reviewed = destination / 'review', destination / 'glossary-reviewed'\\n        if not state.exists():\\n            glossary_review.prepare(destination / 'glossary-draft', state)\\n        if stage == 'prepare':\\n            return stopped('PREPARED', review=glossary_review.inspect(state))\\n        if stage in {'references', 'index'}:\\n            index_progress('verify-review.start')\\n            # Reading the verified completion is deliberately separate from complete():\\n            # this command cannot create a provider or make a model request.\\n            verify_glossary(reviewed)\\n            review = json.loads((state / 'completion.json').read_text())\\n            if review['source_glossary_sha256'] != glossary_assembly.inspect(\\n                    destination / 'glossary-draft')['dictionary_sha256']:\\n                raise ValueError('Reviewed glossary belongs to a different draft')\\n            index_progress('verify-review.done')\\n        else:\\n            review = glossary_review.complete(destination / 'glossary-draft', state, reviewed,\\n                                             max_jobs=max_jobs, retry_failed=retry_failed, provider=provider)\\n        if not review['completed']:\\n            return stopped('REVIEW_PENDING', stage_completed=False, review=review)\\n        if stage == 'review':\\n            return stopped('REVIEWED', review=review)\\n        if (destination / 'release.json').exists():\\n            generation, receipt = verify_release(destination)\\n            index_progress('verify-existing-release.done')\\n            return {**receipt, 'path': str(destination), 'generation_path': str(generation), 'cached': True}\\n        selection_path = destination / 'sources/selection.json'\\n        selection = json.loads(selection_path.read_text())\\n        scope = {'document_version_ids': selection['document_ids'], 'source_selection_sha256': sha(selection_path)}\\n        if reference_state is None and reference_profile is None:\\n            index_progress('build-generation.start')\\n            result = build_generation(source, reviewed, destination / 'serving', serving=True, scope=scope)\\n            index_progress('build-generation.done')\\n            generation = destination / 'serving/generation'\\n            reference_apply = None\\n        else:\\n            from . import reference_resolution\\n            baseline = build_generation(source, reviewed, destination / 'serving-baseline', serving=True, scope=scope)\\n            if reference_profile:\\n                reference_state = destination / 'reference-review'\\n                reference_status = reference_resolution.advance(\\n                    destination / 'serving-baseline/generation', reference_state, reference_profile,\\n                    execute=stage in {'build', 'references'}, max_cases=max_reference_cases,\\n                    batch_size=reference_batch_size)\\n                if not reference_status['completed']:\\n                    return stopped('REFERENCE_RESOLUTION_PENDING', stage_completed=False,\\n                                   reference_resolution=reference_status)\\n                reference_binding = {'state': str(reference_state),\\n                                     'state_sha256': sha(reference_state / 'review.sqlite'),\\n                                     'schema_version': reference_status['schema_version']}\\n                if stage == 'references':\\n                    return stopped('REFERENCES_READY', reference_resolution=reference_status)\\n            serving = destination / 'serving'\\n            if serving.exists():\\n                raise ValueError('reference overlay serving output already exists')\\n            serving.mkdir()\\n            reference_apply = reference_resolution.apply(\\n                reference_state, destination / 'serving-baseline/generation', serving / 'generation')\\n            audit = _copy_reference_audit(destination / 'serving-baseline', serving)\\n            generation = serving / 'generation'\\n            generated_manifest = json.loads((generation / 'manifest.json').read_text())\\n            result = {**baseline, 'identity': {**baseline['identity'], 'reference_review': reference_binding},\\n                      'generation': 'generation', 'manifest_sha256': sha(generation / 'manifest.json'),\\n                      'navigation': generated_manifest['navigation'], 'reference_resolution': reference_apply}\\n            if audit:\\n                result['navigation_audit'] = audit\\n            write(serving / 'result.json', result)\\n        index_progress('verify-serving-assets.start')\\n        validation = verify_assets(generation)\\n        _verify_navigation_audit(destination / 'serving')\\n        index_progress('verify-serving-assets.done')\\n        for path, expected in pins.items():\\n            if sha(path) != expected:\\n                raise ValueError('Release input changed during preparation')\\n        receipt = {'schema_version': 'document-release-v1', 'completed': True, 'activated': False,\\n                   'quality_certified': False, 'generation': 'serving/generation', 'review_status': review['review_status'],\\n                   'review_completion_sha256': sha(state / 'completion.json'),\\n                   'plan_sha256': sha(plan), 'reviewed_report_sha256': sha(reviewed / 'report.json'),\\n                   'source_selection_sha256': sha(selection_path), 'source_store_sha256': sha(source),\\n                   'result_sha256': sha(destination / 'serving/result.json'),\\n                   'manifest_sha256': validation['manifest_sha256'], 'counts': result['counts']}\\n        if coverage:\\n            # Copy the exclusion audit into the portable release, pinned by its receipt.\\n            audit = destination / 'structure-selection-origin.json'\\n            if audit.exists() and sha(audit) != coverage['origin_sha256']:\\n                raise ValueError('Release structure selection audit changed')\\n            if not audit.exists():\\n                shutil.copyfile(origin_path, audit)\\n            receipt['structure_coverage'] = coverage\\n        if reference_apply is not None:\\n            receipt['reference_review_state_sha256'] = reference_binding['state_sha256']\\n            receipt['reference_apply_receipt_sha256'] = sha(\\n                generation / 'navigation/reference-resolution-apply.json')\\n            if reference_model:\\n                receipt['reference_model_profile_sha256'] = reference_model['sha256']\\n                receipt['reference_approval_mode'] = 'automatic'\\n        target = destination / 'release.json'\\n        if target.exists() and json.loads(target.read_text()) != receipt:\\n            raise ValueError('Completed release receipt changed')\\n        if not target.exists():\\n            write(target, receipt)\\n        index_progress('release-receipt.done')\\n        return {**receipt, 'path': str(destination), 'generation_path': str(generation)}\\n\",\"_copy_reference_audit\":\"def _copy_reference_audit(baseline, serving):\\n    \\\"\\\"\\\"Preserve immutable construction bytes and bind the approved overlay lineage.\\\"\\\"\\\"\\n    baseline, serving = Path(baseline).resolve(), Path(serving).resolve()\\n    result = json.loads((baseline / 'result.json').read_text())\\n    if not result.get('navigation_audit'):\\n        return None\\n    from semantic_runtime import navigation_storage\\n    navigation_storage.verify_build(baseline)\\n    generation = serving / 'generation'\\n    manifest = json.loads((generation / 'manifest.json').read_text())\\n    navigation = (generation / manifest['navigation']['path']).resolve()\\n    navigation.relative_to(generation)\\n    index = json.loads((navigation / 'manifest.json').read_text())\\n    apply_file = navigation / 'reference-resolution-apply.json'\\n    applied = json.loads(apply_file.read_text())\\n    original = baseline / 'audit/navigation'\\n    audit = json.loads((original / 'manifest.json').read_text())\\n    if (applied['parent_index_sha256'] != audit['serving_index_sha256']\\n            or applied['output_index_sha256'] != index['index_sha256']\\n            or sha(apply_file) != index['reference_resolution']['apply_receipt_sha256']):\\n        raise ValueError('Reference overlay audit lineage mismatch')\\n    target = serving / 'audit/navigation'\\n    target.mkdir(parents=True)\\n    try:\\n        os.link(original / 'navigation.sqlite', target / 'navigation.sqlite')\\n    except OSError:\\n        shutil.copyfile(original / 'navigation.sqlite', target / 'navigation.sqlite')\\n    audit = {**audit, 'serving_index_sha256': index['index_sha256'],\\n             'serving_index_bytes': (navigation / 'navigation.sqlite').stat().st_size,\\n             'parent_audit_manifest_sha256': sha(original / 'manifest.json'),\\n             'reference_resolution_apply_receipt_sha256': sha(apply_file),\\n             'reference_resolution_parent_index_sha256': applied['parent_index_sha256']}\\n    write(target / 'manifest.json', audit)\\n    index['storage'] = {**index['storage'], 'audit_manifest_sha256': sha(target / 'manifest.json')}\\n    (navigation / 'manifest.json').unlink()\\n    write(navigation / 'manifest.json', index)\\n    manifest['navigation'] = {**manifest['navigation'], 'manifest_sha256': sha(navigation / 'manifest.json')}\\n    (generation / 'manifest.json').unlink()\\n    write(generation / 'manifest.json', manifest)\\n    return {'path': 'audit/navigation', 'manifest_sha256': sha(target / 'manifest.json')}\\n\",\"_verify_navigation_audit\":\"def _verify_navigation_audit(build):\\n    \\\"\\\"\\\"Release/resume/publish validates build evidence; requests need only generation.\\\"\\\"\\\"\\n    build = Path(build).resolve()\\n    result = json.loads((build / 'result.json').read_text())\\n    generation = build / 'generation'\\n    manifest = json.loads((generation / 'manifest.json').read_text())\\n    navigation = (generation / manifest['navigation']['path']).resolve()\\n    navigation.relative_to(generation)\\n    index = json.loads((navigation / 'manifest.json').read_text())\\n    if index.get('storage') or result.get('navigation_audit'):\\n        from semantic_runtime import navigation_storage\\n        navigation_storage.verify_build(build)\\n\"},\"reference_functions\":{\"auto_approve\":\"def auto_approve(state):\\n    \\\"\\\"\\\"Accept all validated selections; keep model abstentions as UNKNOWN.\\\"\\\"\\\"\\n    with closing(ReferenceResolutionRepository(Path(state) / 'review.sqlite')) as repo:\\n        approved = unknown = 0\\n        for row in repo.cases(('VALIDATED',)):\\n            observation = repo.observation(row['case_id'])\\n            selected = bool(observation['selected_candidate_ids'])\\n            repo.review_case(row['case_id'], 'APPROVE' if selected else 'UNKNOWN',\\n                             'pipeline:auto-approve', 'User-directed automatic reference approval')\\n            approved += int(selected)\\n            unknown += int(not selected)\\n        return {**repo.summary(), 'auto_approved': approved, 'auto_unknown': unknown}\\n\",\"advance\":\"def advance(generation, state, profile, *, execute=True, max_cases=10000, batch_size=8):\\n    \\\"\\\"\\\"Resume the reference stage against one immutable deterministic baseline.\\\"\\\"\\\"\\n    generation, manifest, navigation, _ = generation_paths(generation)\\n    state, profile = Path(state).resolve(), Path(profile).resolve()\\n    profile_pin = {'profile': str(profile), 'sha256': sha(profile), 'approval_mode': 'automatic'}\\n    if not state.exists():\\n        prepare(generation, state)\\n    with closing(ReferenceResolutionRepository(state / 'review.sqlite')) as repo:\\n        identity = repo.identity()\\n        if (identity['generation_manifest_sha256'] != sha(generation / 'manifest.json')\\n                or identity['index_sha256'] != sha(navigation / 'navigation.sqlite')\\n                or identity['protocol_sha256'] != sha(protocol.__file__)\\n                or identity.get('resolver_sha256') != sha(__file__)):\\n            raise ValueError('reference stage binding drift; use a new run ID')\\n    pin = state / 'model-profile.json'\\n    if pin.exists() and json.loads(pin.read_text()) != profile_pin:\\n        raise ValueError('reference model profile changed; use a new run ID')\\n    if not pin.exists():\\n        write(pin, profile_pin)\\n    status = auto_approve(state)\\n    if execute and status['cases'].get('CANDIDATES_READY', 0):\\n        status = run(state, profile, max_cases=max_cases, batch_size=batch_size)\\n        status = auto_approve(state)\\n    if sha(profile) != profile_pin['sha256']:\\n        raise ValueError('reference model profile changed during execution')\\n    return {**status, 'completed': not any(status['cases'].get(s, 0) for s in ('CANDIDATES_READY', 'MODEL_PENDING', 'MODEL_FAILED', 'MODEL_UNKNOWN', 'VALIDATED')),\\n            'state': str(state), 'approval_mode': 'automatic', 'profile_sha256': profile_pin['sha256']}\\n\"}}")
+root = Path.cwd().resolve()
+sys.path.insert(0, str(root / '02_BACKEND'))
+data = Path(os.environ['GENOS_DATA_ROOT']).resolve(strict=True)
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+allowed = ('02_BACKEND/lawrag/pipeline/document_release.py', '02_BACKEND/lawrag/pipeline/reference_resolution.py')
+def target(rel):
+    p = root / rel
+    if any(x.is_symlink() for x in (p, *p.parents)): raise ValueError('Code symlink refused: ' + rel)
+    return p
+def atomic(p, raw):
+    temp = p.with_name('.release-wire-' + uuid.uuid4().hex)
+    temp.write_bytes(raw)
+    os.chmod(temp, p.stat().st_mode & 0o777)
+    os.replace(temp, p)
+def functions(text, changes):
+    nodes = {n.name:n for n in ast.parse(text).body if isinstance(n, ast.FunctionDef)}
+    lines = text.splitlines(keepends=True)
+    edits = []
+    for name, body in changes.items():
+        if name in nodes:
+            node = nodes[name]
+            edits.append((node.lineno-1, node.end_lineno, body))
+        else:
+            edits.append((len(lines), len(lines), '\n\n' + body))
+    for start, end, body in sorted(edits, reverse=True): lines[start:end] = [body]
+    return ''.join(lines)
+def release_patch(text):
+    nodes = {n.name:n for n in ast.parse(text).body if isinstance(n,ast.FunctionDef)}
+    if 'main' not in nodes or 'build' not in nodes: raise ValueError('Release entry points missing')
+    old = nodes['build']
+    params = {a.arg for a in old.args.args + old.args.kwonlyargs}
+    if not {'stage','reference_state','glossary_corpus_policy'} <= params:
+        raise ValueError('Unsupported field release contract: ' + repr(sorted(params)))
+    main = ast.get_source_segment(text, nodes['main'])
+    if '--reference-review-state' not in main: raise ValueError('Field reference-state CLI is missing')
+    if '--reference-model-profile' not in main:
+        marker = '    a = p.parse_args(argv)'
+        if main.count(marker) != 1: raise ValueError('Field argparse anchor mismatch')
+        main = main.replace(marker, "    p.add_argument('--reference-model-profile', type=Path)\n    p.add_argument('--max-reference-cases', type=int, default=10000)\n    p.add_argument('--reference-batch-size', type=int, default=8)\n" + marker)
+    if 'reference_profile=a.reference_model_profile' not in main:
+        marker = 'reference_state=a.reference_review_state'
+        if main.count(marker) != 1: raise ValueError('Field build call anchor mismatch')
+        main = main.replace(marker, marker + ', reference_profile=a.reference_model_profile, max_reference_cases=a.max_reference_cases, reference_batch_size=a.reference_batch_size')
+    changed = functions(text, {**P['release_functions'], 'main':main+'\n'})
+    imports = [n for n in ast.parse(changed).body if isinstance(n,ast.Import)]
+    if not any(a.name=='time' for n in imports for a in n.names):
+        tree = ast.parse(changed); first = tree.body[0]
+        pos = first.end_lineno if isinstance(first,ast.Expr) and isinstance(first.value,ast.Constant) and isinstance(first.value.value,str) else 0
+        lines = changed.splitlines(keepends=True); lines.insert(pos,'import time\n'); changed=''.join(lines)
+    return changed
+locks = []
+try:
+    for path in [data / '.raw-migration.lock', *list((data / 'LOGS').glob('*/run.lock')),
+                 *list((data / 'LOGS').glob('*/full-e2e-driver.lock')), *list((data / 'TERM_RELEASES').glob('*/.lock'))]:
+        lock=path.open('a'); locks.append(lock); fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+    if len(sys.argv)==3 and sys.argv[1]=='--rollback':
+        receipt_path=Path(sys.argv[2]).resolve(); receipt=json.loads(receipt_path.read_text())
+        if receipt['code_root']!=str(root): raise ValueError('Rollback root mismatch')
+        for row in receipt['files']:
+            if row['path'] not in allowed or sha(target(row['path']).read_bytes())!=row['after_sha256']: raise ValueError('Rollback target hash mismatch')
+            if sha((receipt_path.parent/'before'/row['path']).read_bytes())!=row['before_sha256']: raise ValueError('Rollback backup hash mismatch')
+        for row in receipt['files']: atomic(target(row['path']),(receipt_path.parent/'before'/row['path']).read_bytes())
+        print('RELEASE_WIRE_ROLLBACK_PASS backups retained',flush=True)
+    else:
+        from lawrag.pipeline import document_release as old_release, reference_resolution as old_ref
+        required = ['prepare','run','generation_paths']
+        for name in required:
+            if not callable(getattr(old_ref,name,None)): raise ValueError('Field reference dependency missing: '+name)
+        if not {'max_cases','batch_size'} <= set(inspect.signature(old_ref.run).parameters): raise ValueError('Field reference run contract mismatch')
+        rows=[]
+        for rel in allowed:
+            before=target(rel).read_bytes(); text=before.decode()
+            after=(release_patch(text) if rel.endswith('/document_release.py') else functions(text,P['reference_functions'])).encode()
+            ast.parse(after.decode(),feature_version=(3,11))
+            if before!=after: rows.append((rel,before,after))
+        # Check modified modules and their actual field imports before any source writes.
+        for rel,before,after in rows:
+            candidate=types.ModuleType('lawrag.pipeline._wire_preflight')
+            candidate.__package__='lawrag.pipeline'; candidate.__file__=str(target(rel))
+            exec(compile(after,str(target(rel)),'exec'),candidate.__dict__)
+            if rel.endswith('/document_release.py'):
+                for name in ('verify_glossary','selected_sources','merge_sources','verify_release','verify_assets','build_generation'):
+                    if not callable(getattr(candidate,name,None)): raise ValueError('Field release dependency missing: '+name)
+                with contextlib.redirect_stdout(__import__('io').StringIO()) as output:
+                    try: candidate.main(['build','--help'])
+                    except SystemExit as exc:
+                        if exc.code!=0: raise
+                if '--reference-model-profile' not in output.getvalue(): raise ValueError('CLI preflight failed')
+                plan=data/'TERM_RELEASES/financial-risk-success-20261001-r1/plan.json'
+                if plan.is_file() and json.loads(plan.read_text()).get('compiler_sha256')!=sha(after):
+                    raise ValueError('Existing release plan pins different code; no overwrite performed. Preserve this run and use a new follow-up run.')
+        if rows:
+            backup=root/'TRANSFER/BACKUPS/release-wire-r3'/(datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:6])
+            backup.mkdir(parents=True)
+            record=[]
+            for rel,before,after in rows:
+                for label,raw in [('before',before),('after',after)]:
+                    path=backup/label/rel; path.parent.mkdir(parents=True,exist_ok=True); path.write_bytes(raw)
+                record.append({'path':rel,'before_sha256':sha(before),'after_sha256':sha(after)})
+            receipt=backup/'receipt.json';receipt.write_text(json.dumps({'code_root':str(root),'files':record},indent=2))
+            for rel,before,after in rows: atomic(target(rel),after)
+            print('RELEASE_WIRE_APPLIED receipt='+str(receipt),flush=True)
+        else: print('RELEASE_WIRE_ALREADY_APPLIED',flush=True)
+finally:
+    for lock in reversed(locks): lock.close()
+GENOS_RELEASE_WIRE_PY
+fi
+if [[ "${1:-}" == --rollback ]]; then exit 0; fi
+python3 -u - "$@" <<'GENOS_PROGRESS_PY'
+"""Read-only live counters, or runtime-only logging around the existing release CLI.
+
+No compiler files, input bindings, model settings or active pointers are rewritten.
+"""
+import argparse
+from contextlib import closing
+from datetime import datetime
+import functools
+import json
+import os
+from pathlib import Path
+import re
+import runpy
+import sqlite3
+import sys
+import threading
+import time
+import traceback
+from zoneinfo import ZoneInfo
+
+
+def load(path):
+    if not path.is_file(): return None
+    return json.loads(path.read_text())
+
+
+def counts(path, table, field):
+    if not path.is_file(): return None
+    # Fixed identifiers, not user-controlled SQL. Read snapshots, never create a DB.
+    with closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=.2)) as db:
+        db.execute('PRAGMA query_only=ON')
+        return dict(db.execute(f'SELECT {field},count(*) FROM {table} GROUP BY {field}'))
+
+
+def snapshot(data, run):
+    folder = data / 'TERM_RELEASES' / run
+    selection = load(data / 'LOGS' / run / 'structure-selection.json')
+    source = load(folder / 'sources/selection.json')
+    origin = load(data / 'LOGS' / run / 'selection-origin.json')
+    result = {'선택': f"완료 {len(selection['documents'])}건" if selection else '기록 없음',
+        '원문 통합': f"완료 {len(source['document_ids'])}건" if source else '완료 기록 없음',
+        '용어 후보·검토 계획': '저장됨' if (folder / 'review/plan.json').is_file() else '완료 기록 없음'}
+    if origin: result['보류 문서'] = str(origin['omitted_count']) + '건'
+    jobs = counts(folder / 'review/review.sqlite', 'job', 'status')
+    if jobs is None:
+        result['용어·정의 LLM 검토'] = '대기 또는 계획 생성 중 (전체 수 미확정)'
+    else:
+        total = sum(jobs.values())
+        done, running, failed = (jobs.get(s, 0) for s in ('complete', 'running', 'failed'))
+        remaining = jobs.get('pending', 0) + running
+        ended = (folder / 'review/completion.json').is_file()
+        result['용어·정의 LLM 검토'] = f'완료 {done}/{total} | 남은 처리 {remaining} | 진행 상태 {running} | 실패 {failed} | 검토 종료 기록 {ended}'
+    refs = counts(folder / 'reference-review/review.sqlite', 'case_record', 'state')
+    if refs is None:
+        result['명시 참조 LLM 보정'] = '대기 또는 기준 색인 생성 중 (전체 수 미확정)'
+    else:
+        total = sum(refs.values())
+        done = sum(refs.get(s, 0) for s in ('APPROVED', 'REJECTED', 'UNKNOWN', 'DETERMINISTIC', 'DATA_GAP', 'NO_CANDIDATES'))
+        remaining = sum(refs.get(s, 0) for s in ('CANDIDATES_READY', 'MODEL_PENDING', 'MODEL_FAILED', 'MODEL_UNKNOWN', 'VALIDATED'))
+        retry = sum(refs.get(s, 0) for s in ('MODEL_FAILED', 'MODEL_UNKNOWN'))
+        result['명시 참조 LLM 보정'] = f'종료 판정 {done}/{total} | 남은 판정 {remaining} | 실패·미확인 {retry} (자료부족·후보없음은 해결 성공이 아님)'
+    result['문서–용어 연결·기준 색인'] = '세대 결과 저장됨' if (folder / 'serving-baseline/result.json').is_file() else '완료 기록 없음 (실행 모드에서 내부 기능 로그 표시)'
+    result['최종 색인·서빙 자산 검증'] = 'release 영수증 저장됨; 무결성 인증은 별도 verify 필요' if (folder / 'release.json').is_file() else '완료 기록 없음'
+    return result
+
+
+def processes(root, run):
+    result = []
+    for proc in Path('/proc').iterdir():
+        if not proc.name.isdigit() or int(proc.name) == os.getpid(): continue
+        try:
+            args = proc.joinpath('cmdline').read_bytes().decode().split('\0')
+            if '--run-id' in args and args[args.index('--run-id')+1] == run and proc.joinpath('cwd').resolve() == root:
+                if any('pipeline.py' in a or 'genos_release_progress' in a for a in args):
+                    result.append(int(proc.name))
+        except (OSError, ValueError, IndexError, UnicodeError): pass
+    return sorted(result)
+
+
+class Display:
+    def __init__(self):
+        self.lock = threading.RLock()
+        self.stack = []
+        self.started = time.monotonic()
+    def emit(self, message):
+        with self.lock:
+            stamp = datetime.now(ZoneInfo('Asia/Seoul')).strftime('%H:%M:%S KST')
+            print(f'[{stamp}] {message}', flush=True)
+    def wrap(self, module, name, label):
+        if not callable(getattr(module, name, None)):
+            self.emit(f'로그 호환: {label} / {name} 함수가 현장 코드에 없음; 해당 로그만 생략 (기능 추가·검사 우회 없음)')
+            return None
+        original = getattr(module, name)
+        @functools.wraps(original)
+        def call(*args, **kwargs):
+            started = time.monotonic()
+            with self.lock: self.stack.append((label, started))
+            self.emit('기능 시작: ' + label)
+            try:
+                value = original(*args, **kwargs)
+                self.emit(f'기능 반환: {label} | 경과 {time.monotonic()-started:.1f}초 (전체 완료 여부는 결과 상태 확인)')
+                return value
+            except BaseException as exc:
+                self.emit(f'기능 중단: {label} | {type(exc).__name__}: {exc}')
+                traceback.print_exc()
+                raise
+            finally:
+                with self.lock: self.stack.pop()
+        setattr(module, name, call)
+        return original
+    def show(self, data, run):
+        with self.lock:
+            if self.stack:
+                label, started = self.stack[-1]
+                self.emit(f'현재 기능: {label} | 기능 경과 {time.monotonic()-started:.1f}초')
+        try:
+            values = snapshot(data, run)
+            for label, value in values.items(): self.emit(label + ': ' + value)
+        except (OSError, ValueError, KeyError, sqlite3.Error) as exc:
+            self.emit(f'진행 스냅샷 오류: {type(exc).__name__}: {exc}')
+            traceback.print_exc()
+
+
+def main(argv=None):
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--run-id', default='financial-risk-success-20261001-r1')
+    p.add_argument('--build', action='store_true', help='Resume existing build with function logging; do not run alongside existing build')
+    p.add_argument('--once', action='store_true')
+    p.add_argument('--interval', type=float, default=10)
+    a = p.parse_args(argv)
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,79}', a.run_id) or not 1 <= a.interval <= 60:
+        p.error('Invalid run ID or interval')
+    root = Path.cwd().resolve()
+    data = Path(os.environ.get('GENOS_DATA_ROOT', '/workspace/01_DATA')).resolve(strict=True)
+    d = Display()
+    d.emit('후속 BUILD 재개' if a.build else '읽기 전용 진행 감시')
+    d.emit('시간 ETA·전체 완료율은 계산하지 않음; 저장된 작업 수와 기능별 경과 표시. 서빙 활성화 없음.')
+    if not a.build:
+        try:
+            while True:
+                d.emit('관측된 동일 run 실행 PID=' + str(processes(root, a.run_id)) + ' (없으면 다른 checkout·종료 여부 확인)')
+                d.show(data, a.run_id)
+                if a.once: return 0
+                time.sleep(a.interval)
+        except KeyboardInterrupt:
+            d.emit('감시만 종료; 구축 프로세스는 중단하지 않음')
+            return 0
+    if processes(root, a.run_id):
+        raise ValueError('Existing build active; use watch mode in another terminal')
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    from lawrag.pipeline import document_release as release, glossary_review, term_generation
+    from lawrag.pipeline import glossary_document_update, reference_resolution
+    bindings = [(release, 'selected_sources', '선택 원문·영수증 검증'),
+        (release, 'merge_sources', '원문 통합'), (glossary_document_update, 'augment', '문서 정의·용어 후보 준비'),
+        (glossary_review, 'prepare', '용어 검토 계획'), (glossary_review, 'complete', '용어 검토·완료본 생성'),
+        (glossary_review, 'run', '용어·정의 LLM 검토'),
+        (release, 'build_generation', '문서 연결·색인 세대 생성'),
+        (term_generation.glossary_linking, 'project', '문서–용어 연결'),
+        (term_generation, 'publish', '원문 세대 저장'),
+        (term_generation, 'compile_index', '용어·정의·참조 navigation 색인'),
+        (term_generation.fulltext, 'build', '원문 fulltext 색인'),
+        (reference_resolution, 'advance', '명시 참조 후보·LLM 보정'),
+        (reference_resolution, 'run', '명시 참조 LLM 호출'),
+        (reference_resolution, 'apply', '검증된 참조 보정 반영'),
+        (release, 'verify_assets', '최종 서빙 자산 검증')]
+    installed = []
+    finished = False
+    original_argv = sys.argv
+    stop = threading.Event()
+    def heartbeat():
+        while not stop.wait(a.interval): d.show(data, a.run_id)
+    monitor = threading.Thread(target=heartbeat, daemon=True)
+    try:
+        for module, name, label in bindings:
+            original = d.wrap(module, name, label)
+            if original is not None: installed.append((module, name, original))
+        profile = data / 'LOGS/financial-risk-full-e2e-20260930-r3/reference-model-profile.json'
+        base = '/nfs-root/diamo/8-agent/term-releases/fulltext-repair-20260924T071754Z-31987d27/generation'
+        sys.argv = ['06_TOOLS/pipeline.py', 'document-release', 'build', '--run-id', a.run_id,
+            '--base-generation', base, '--reference-model-profile', str(profile),
+            '--max-review-jobs', '100', '--max-reference-cases', '10000', '--reference-batch-size', '8']
+        monitor.start()
+        d.show(data, a.run_id)
+        runpy.run_path(str(root / '06_TOOLS/pipeline.py'), run_name='__main__')
+        finished = True
+    except SystemExit as exc:
+        if exc.code in (None, 0, 3):
+            d.emit('BUILD 종료 코드=' + str(exc.code) + (' (남은 작업은 같은 명령으로 재개)' if exc.code == 3 else ''))
+            finished = True
+        else:
+            d.emit('BUILD 실패 코드=' + str(exc.code) + ' | 실행 명령=' + repr(sys.argv))
+            traceback.print_exc()
+        raise
+    except BaseException as exc:
+        d.emit(f'BUILD 실패: {type(exc).__name__}: {exc} | 실행 명령={sys.argv!r}')
+        traceback.print_exc()
+        raise
+    finally:
+        stop.set()
+        if monitor.is_alive(): monitor.join(timeout=1)
+        for module, name, original in reversed(installed): setattr(module, name, original)
+        sys.argv = original_argv
+        if finished: d.show(data, a.run_id)
+
+
+if __name__ == '__main__':
+    main()
+GENOS_PROGRESS_PY

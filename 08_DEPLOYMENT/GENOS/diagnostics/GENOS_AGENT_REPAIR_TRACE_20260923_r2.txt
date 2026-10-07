@@ -1,0 +1,218 @@
+#!/usr/bin/env python3
+"""GENOS LEGAL_AGENT 도구 실행 전 거절 지점을 NFS journal에서 읽는다.
+
+코드스페이스에서 실행 (Python 3.10+, 표준 라이브러리만 사용):
+  python3 GENOS_AGENT_REPAIR_TRACE_20260923_r2.txt --run-id <A 응답의 run_id>
+
+기본 입력은 /nfs-root/diamo/8-agent/rag-request-reports/YYYY-MM-DD/*.json.
+읽기 전용이며 모델·서비스를 호출하지 않는다. 내부 질문, 모델 출력,
+도구 인자, 원문, 인증 정보는 출력하지 않는다. 출력에는 상태·횟수·
+고정 오류 분류만 남긴다. 원본 JSON은 외부로 보내지 않는다.
+"""
+from __future__ import annotations
+
+import argparse
+from collections import Counter
+import hashlib
+import json
+from pathlib import Path
+import re
+import sys
+
+
+DEFAULT_ROOT = Path('/nfs-root/diamo/8-agent/rag-request-reports')
+HEX32 = re.compile(r'[a-f0-9]{32}\Z')
+SAFE_TOKEN = re.compile(r'[A-Za-z0-9_.-]{1,60}\Z')
+SAFE_FIELD = re.compile(r'[A-Za-z0-9_.\[\]-]{1,60}\Z')
+ERROR_RULES = (
+    ('QUESTION_PLAN_REQUIRED', 'question_plan required'),
+    ('QUESTION_PLAN_COVERAGE', 'question_plan must account'),
+    ('QUESTION_PLAN_OVERLAP', 'context_refs and answer demands'),
+    ('QUESTION_PLAN_DUPLICATE', 'duplicate answer demand'),
+    ('EMPTY_CONTINUE', 'CONTINUE requires an executable action'),
+    ('ACTION_DEMAND_SCOPE', 'action must address current answer demands'),
+    ('ACTION_INTENT_CONFLICT', 'observe action results before DRAFT/CLARIFY'),
+    ('CLARIFY_FACT_MISSING', 'CLARIFY requires a concrete decisive missing_fact'),
+    ('CANDIDATES_NOT_READ', 'Candidates exist but none read'),
+    ('SOURCE_ACTION_INVALID', 'tool execution failed'),
+    ('WORKFLOW_OPERATION_REJECTED', 'workflow operations rejected'),
+    ('STRUCTURED_OUTPUT_INVALID', 'structured model output invalid'),
+    ('VIEW_MISMATCH', 'view mismatch'),
+    ('OFFERED_HANDLE_MISSING', 'not offered'),
+    ('INVALID_EXTENT', 'extent'),
+    ('INVALID_CURSOR', 'cursor'),
+    ('ACTION_SCHEMA_ONEOF', 'is not valid under any of the given schemas'),
+    ('ACTION_SCHEMA_REQUIRED', 'is a required property'),
+    ('ACTION_SCHEMA_EXTRA', 'additional properties are not allowed'),
+)
+
+
+def obj(value):
+    return value if isinstance(value, dict) else {}
+
+
+def arr(value):
+    return value if isinstance(value, list) else []
+
+
+def token(value):
+    value = str(value or '')
+    return value if SAFE_TOKEN.fullmatch(value) else 'OTHER'
+
+
+def field(value):
+    value = str(value or '')
+    return value if SAFE_FIELD.fullmatch(value) else 'OTHER'
+
+
+def error_code(message):
+    raw = str(message or '')
+    for code, phrase in ERROR_RULES:
+        if phrase.lower() in raw.lower():
+            return code
+    if raw.startswith('TurnDecision') or raw.startswith('SourceSelectionDecision'):
+        return 'PROTOCOL_VALIDATION'
+    return 'OTHER_' + hashlib.sha256(raw.encode('utf-8')).hexdigest()[:12] if raw else 'EMPTY'
+
+
+def choose(root, run_id):
+    if not HEX32.fullmatch(run_id):
+        raise ValueError('run_id는 32자리 소문자 16진수입니다.')
+    if not root.is_dir():
+        raise ValueError('NFS 요청 보고서 디렉터리가 없습니다.')
+    paths = sorted((p for p in root.glob('*/' + run_id + '-*.json')
+                    if p.is_file() and not p.is_symlink()),
+                   key=lambda p: p.stat().st_mtime_ns, reverse=True)
+    for path in paths:
+        report = json.loads(path.read_text(encoding='utf-8'))
+        if obj(report).get('schema_version') == 'genos-request-report-v1' and report.get('run_id') == run_id:
+            return path, report
+    raise ValueError('해당 run_id의 요청 보고서를 찾지 못했습니다.')
+
+
+def records(report, table):
+    journal = obj(report.get('journal'))
+    for entry in arr(journal.get('timeline')):
+        for item in arr(obj(entry).get('created_records')):
+            if obj(item).get('table') == table and isinstance(item.get('record'), dict):
+                yield item['record']
+    for record in arr(obj(journal.get('state')).get(table)):
+        if isinstance(record, dict):
+            yield record
+
+
+def model_decision(attempt):
+    response = obj(attempt.get('response'))
+    body = obj(response.get('body_json'))
+    choices = arr(body.get('choices'))
+    message = obj(obj(choices[0]).get('message')) if choices else {}
+    content = message.get('content')
+    if not content:
+        calls = arr(message.get('tool_calls'))
+        content = obj(obj(calls[0]).get('function')).get('arguments') if len(calls) == 1 else None
+    try:
+        decision = json.loads(content) if isinstance(content, str) else obj(content)
+    except ValueError:
+        decision = {}
+    decision = obj(decision)
+    plan = obj(decision.get('question_plan'))
+    selection = obj(decision.get('source_selection'))
+    actions = arr(decision.get('actions'))
+    action_shapes = []
+    for action in actions:
+        action = obj(action)
+        args = obj(action.get('args'))
+        target = args.get('target')
+        action_shapes.append({
+            'keys': sorted(key for key in action if SAFE_TOKEN.fullmatch(str(key))),
+            'args_keys': sorted(key for key in args if SAFE_TOKEN.fullmatch(str(key))),
+            'target_type': type(target).__name__,
+            'target_handle_kind': target[:1] if isinstance(target, str) and re.fullmatch(r'[A-Za-z0-9_.:-]{1,80}', target) else None,
+            'mode': token(args.get('mode')) if 'mode' in args else None,
+            'cursor_type': type(args.get('cursor')).__name__ if 'cursor' in args else 'missing',
+            'query_chars': len(str(args.get('query') or '')),
+            'question_ref_types': [type(ref).__name__ for ref in arr(action.get('question_refs'))],
+            'expected_information_chars': len(str(action.get('expected_information') or '')),
+        })
+    return {
+        'intent': token(decision.get('intent')) if 'intent' in decision else None,
+        'action_count': len(actions),
+        'action_tools': [token(obj(action).get('tool')) for action in actions],
+        'action_question_ref_counts': [len(arr(obj(action).get('question_refs'))) for action in actions],
+        'action_shapes': action_shapes,
+        'question_plan_present': isinstance(decision.get('question_plan'), dict),
+        'question_plan_demand_count': len(arr(plan.get('demands'))),
+        'source_choice_count': len(arr(selection.get('choices'))),
+        'parsed_output_keys': sorted(key for key in decision if SAFE_TOKEN.fullmatch(str(key))),
+    }
+
+
+def summarize(path, report):
+    journal = obj(report.get('journal'))
+    events = [obj(obj(row).get('event')) for row in arr(journal.get('timeline'))]
+    kinds = Counter(str(row.get('kind') or 'UNKNOWN') for row in events)
+    repairs = []
+    turns = []
+    for event in events:
+        kind = event.get('kind')
+        payload = obj(event.get('payload'))
+        if kind in ('SEMANTIC_REPAIR', 'WORKFLOW_REPAIR', 'SOURCE_SELECTION_RECOVERY', 'OUTPUT_SCHEMA_INVALID'):
+            errors = arr(payload.get('errors'))
+            repairs.append({'event_seq': event.get('seq'), 'kind': token(kind),
+                            'code': token(payload.get('code')) if payload.get('code') else None,
+                            'message_class': error_code(payload.get('message') or payload.get('error')),
+                            'rejected_fields': [field(obj(err).get('field')) for err in errors],
+                            'rejected_message_classes': [error_code(obj(err).get('message')) for err in errors]})
+        if kind == 'WORKFLOW_TURN':
+            decision = obj(payload.get('decision'))
+            turns.append({'event_seq': event.get('seq'), 'intent': token(decision.get('intent')),
+                          'action_count': len(arr(decision.get('actions'))),
+                          'source_choice_count': len(arr(obj(decision.get('source_selection')).get('choices')))})
+    views = {str(row.get('view_id')): row for row in records(report, 'model_view') if row.get('view_id')}
+    attempts = []
+    for row in records(report, 'model_attempt'):
+        view = obj(views.get(str(row.get('view_id'))))
+        view_body = obj(view.get('body'))
+        response = obj(row.get('response'))
+        attempts.append({'phase': token(view.get('phase')), 'journal_status': token(row.get('status')),
+                         'http_status': response.get('status_code'),
+                         'offered_handle_count': len(arr(view_body.get('offered_handles'))),
+                         'exact_evidence_in_view': len(arr(view_body.get('exact_evidence'))),
+                         'decision_shape': model_decision(row)})
+    state = obj(journal.get('state'))
+    run = obj(arr(state.get('run'))[0]) if arr(state.get('run')) else {}
+    body = obj(obj(report.get('result')).get('body'))
+    answer = obj(body.get('answer'))
+    service_errors = [token(obj(row).get('event')) for row in arr(report.get('service_events'))
+                      if obj(row).get('level') == 'ERROR']
+    return {
+        'report_file': str(path), 'request_id': report.get('request_id'), 'run_id': report.get('run_id'),
+        'http_status': obj(report.get('result')).get('status'),
+        'journal_status': journal.get('status'), 'run_status': run.get('status'),
+        'run_gate': run.get('gate'), 'event_kind_counts': dict(sorted(kinds.items())),
+        'model_attempts': attempts, 'accepted_turns': turns,
+        'repair_events': repairs, 'observation_count': len(list(records(report, 'observation'))),
+        'evidence_count': len(list(records(report, 'evidence_unit'))),
+        'claim_count': len(arr(answer.get('claims'))), 'answer_chars': len(str(answer.get('text') or '')),
+        'service_error_events': service_errors,
+        'interpretation': '모델 HTTP 200은 도구 제안 승인이나 원문 열람을 뜻하지 않습니다. repair_events와 decision_shape를 함께 대조하세요.',
+    }
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--run-id', required=True)
+    parser.add_argument('--root', type=Path, default=DEFAULT_ROOT)
+    args = parser.parse_args()
+    try:
+        path, report = choose(args.root, args.run_id)
+        print(json.dumps(summarize(path, report), ensure_ascii=False, indent=2, default=str))
+    except (OSError, ValueError, TypeError, KeyError) as exc:
+        print(json.dumps({'diagnostic_error': type(exc).__name__, 'message_class': error_code(str(exc))},
+                         ensure_ascii=False), file=sys.stderr)
+        return 2
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

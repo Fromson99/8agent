@@ -1,0 +1,206 @@
+#!/usr/bin/env bash
+# ZIP and this TXT go together in ~/DEV/TRANSFER. Default: resume OFF in background.
+set -Eeuo pipefail
+umask 077
+recovery_boot_log=$(mktemp /tmp/genos-meaning-recovery-r3-XXXXXX.log)
+exec > >(tee -a "$recovery_boot_log") 2>&1
+trap 'recovery_rc=$?; printf "RECOVERY HANDOFF FINISHED status=%s boot_log=%s\n" "$recovery_rc" "$recovery_boot_log"' EXIT
+recovery_script=$(realpath "${BASH_SOURCE[0]}")
+recovery_action="${1:-recover-off-background}"
+recovery_internal=0
+if [[ "$recovery_action" == __run ]]; then
+  [[ "$#" == 2 ]] || exit 2
+  recovery_internal=1
+  recovery_action="$2"
+  [[ "$recovery_action" == baseline || "$recovery_action" == review || "$recovery_action" == reviewed ]] || exit 2
+elif [[ "$#" -gt 1 ]]; then
+  printf 'Usage: bash <TXT> [recover-off-background|recover-on-background|review-background|status|check|verify|stop-off|stop-on|stop-review|log-off|log-on|log-review]\n'
+  exit 2
+fi
+case "$recovery_action" in
+  recover-off-background|recover-on-background|review-background|status|check|verify|stop-off|stop-on|stop-review|log-off|log-on|log-review|baseline|review|reviewed) ;;
+  *) printf 'Unknown action\n'; exit 2 ;;
+esac
+recovery_root=$(realpath "${GENOS_CODE_ROOT:-/home/genos/DEV}")
+cd "$recovery_root"
+[[ "$(git rev-parse --show-toplevel)" == "$recovery_root" ]] || { printf 'Use the actual existing Git checkout root\n'; exit 2; }
+export GENOS_CODE_ROOT="$recovery_root"
+export GENOS_DATA_ROOT="${GENOS_DATA_ROOT:-/workspace/01_DATA}"
+export GENOS_VARIANTS_RUN_ID="${GENOS_VARIANTS_RUN_ID:-financial-risk-success-20261001-r3}"
+[[ "$GENOS_VARIANTS_RUN_ID" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$ ]] || exit 2
+export PYTHONPATH="$recovery_root/02_BACKEND${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONUNBUFFERED=1
+recovery_logs="$GENOS_DATA_ROOT/LOGS/$GENOS_VARIANTS_RUN_ID/meaning-recovery-r1"
+mkdir -p "$recovery_logs"
+recovery_log=$(mktemp "$recovery_logs/$recovery_action-XXXXXX.log")
+exec > >(tee -a "$recovery_log") 2>&1
+printf 'RECOVERY START action=%s code_root=%s data_root=%s run=%s log=%s\n' "$recovery_action" "$recovery_root" "$GENOS_DATA_ROOT" "$GENOS_VARIANTS_RUN_ID" "$recovery_log"
+case "$recovery_action" in
+  log-off|log-on|log-review)
+    case "$recovery_action" in
+      log-off) recovery_meta="$recovery_logs/off-worker.json" ;;
+      log-on) recovery_meta="$recovery_logs/on-worker.json" ;;
+      log-review) recovery_meta="$GENOS_DATA_ROOT/LOGS/$GENOS_VARIANTS_RUN_ID/meaning-variants/worker.json" ;;
+    esac
+    python3 -u - "$recovery_meta" <<'GENOS_RECOVERY_LOG_PY'
+import json,os,sys
+from pathlib import Path
+meta=Path(sys.argv[1])
+if not meta.is_file(): raise ValueError('No recorded worker: '+str(meta))
+log=Path(json.loads(meta.read_text())['log'])
+if not log.is_file(): raise ValueError('Recorded log is missing: '+str(log))
+print('WORKER LOG '+str(log)+'; Ctrl+C closes log viewing only',flush=True)
+os.execvp('tail',['tail','-n','100','-f',str(log)])
+GENOS_RECOVERY_LOG_PY
+    exit 0 ;;
+esac
+recovery_zip="${GENOS_RECOVERY_ZIP:-$(dirname "$recovery_script")/GENOS_MEANING_RECOVERY_20261002_R3.zip}"
+recovery_receipt="$recovery_log.install.json"
+python3 -u - "$recovery_zip" "$recovery_root" "$recovery_receipt" <<'GENOS_RECOVERY_INSTALL_PY'
+import hashlib,json,os,subprocess,sys,tempfile,time,zipfile
+from pathlib import Path
+def sha_bytes(b): return hashlib.sha256(b).hexdigest()
+archive,root,receipt=Path(sys.argv[1]),Path(sys.argv[2]),Path(sys.argv[3])
+print('PYTHON',sys.executable,sys.version.split()[0],flush=True)
+if sys.version_info < (3,11): raise RuntimeError('Python 3.11 or later is required')
+if sha_bytes(archive.read_bytes()) != '2421716383e099618caaf92842ec74f7b03951c769986f301ca3f34d19eb96f3': raise ValueError('Recovery ZIP hash mismatch; no files applied')
+with zipfile.ZipFile(archive) as z:
+    manifest=json.loads(z.read('CODE_MANIFEST.json'))
+    if len(z.namelist()) != len(set(z.namelist())): raise ValueError('Duplicate ZIP members')
+    if set(z.namelist()) != {r['path'] for r in manifest['files']} | {'CODE_MANIFEST.json'}: raise ValueError('ZIP inventory differs')
+    for row in manifest['files']:
+        name=Path(row['path'])
+        if name.is_absolute() or '..' in name.parts or name.suffix.lower() in {'.js','.jsx','.mjs','.cjs'}:
+            raise ValueError('Forbidden ZIP path/type')
+        if sha_bytes(z.read(row['path'])) != row['sha256']: raise ValueError('ZIP member hash mismatch')
+    source=z.read('06_TOOLS/OFFLINE/genos_meaning_recover_r3.py')
+    original_bytes=z.read('original/GENOS_MEANING_VARIANTS_R2_BULK_UTF8.txt')
+    compile(source,'06_TOOLS/OFFLINE/genos_meaning_recover_r3.py','exec')
+    if sha_bytes(original_bytes) != '057acbd941fcfa5bc71cab03a45de369a04345b035b399de4beebfb16af829db': raise ValueError('Original R2 payload mismatch')
+    requested=os.environ.get('GENOS_VARIANTS_ORIGINAL')
+    data=Path(os.environ['GENOS_DATA_ROOT']).resolve()
+    run=os.environ['GENOS_VARIANTS_RUN_ID']
+    parent=data/'TERM_RELEASES'/run/(run+'-bulk-r2')/'meaning-variants'
+    pinned=set()
+    for mode in ('off','on'):
+        plan=parent/mode/'plan.json'
+        if plan.is_file():
+            for path,expected in json.loads(plan.read_text()).get('pins',{}).items():
+                if Path(path).name=='GENOS_MEANING_VARIANTS_R2_BULK_UTF8.txt' and expected=='057acbd941fcfa5bc71cab03a45de369a04345b035b399de4beebfb16af829db':
+                    pinned.add(str(Path(path).resolve()))
+    if requested:
+        original=Path(requested).resolve()
+        if pinned and str(original) not in pinned: raise ValueError('Requested original TXT path differs from variant plan')
+    elif len(pinned)==1:
+        original=Path(next(iter(pinned)))
+    elif len(pinned)>1:
+        raise ValueError('Multiple pinned original TXT paths; set GENOS_VARIANTS_ORIGINAL to the actual existing one')
+    else:
+        original=root/'TRANSFER/GENOS_MEANING_VARIANTS_R2_BULK_UTF8.txt'
+    if original.exists():
+        if sha_bytes(original.read_bytes())!='057acbd941fcfa5bc71cab03a45de369a04345b035b399de4beebfb16af829db': raise ValueError('Existing original TXT differs; preserved, no writes')
+    else:
+        # Restore exact historical bytes only to the path already selected above.
+        original.parent.mkdir(parents=True,exist_ok=True)
+        with original.open('xb') as out: out.write(original_bytes)
+    applied=[]
+    for relative in ('06_TOOLS/OFFLINE/genos_meaning_recover_r1.py','06_TOOLS/OFFLINE/genos_meaning_recover_r2.py','06_TOOLS/OFFLINE/genos_meaning_recover_r3.py'):
+        payload=z.read(relative)
+        compile(payload,relative,'exec')
+        target=root/relative
+        for item in [target,*target.parents]:
+            if item==root: break
+            if item.is_symlink(): raise ValueError('Runner target contains a symlink')
+        backup=None
+        if target.exists() and target.read_bytes()!=payload:
+            if relative in ('06_TOOLS/OFFLINE/genos_meaning_recover_r1.py','06_TOOLS/OFFLINE/genos_meaning_recover_r2.py'): raise ValueError('Existing R1/R2 runner differs; preserved, no overwrite')
+            backup=receipt.parent/('runner-r3-before-'+time.strftime('%Y%m%d-%H%M%S')+'-'+str(os.getpid())+'.py')
+            with backup.open('xb') as out: out.write(target.read_bytes())
+        if not target.exists() or target.read_bytes()!=payload:
+            target.parent.mkdir(parents=True,exist_ok=True)
+            fd,temporary=tempfile.mkstemp(prefix='.recovery-install-',dir=target.parent)
+            try:
+                with os.fdopen(fd,'wb') as out:
+                    out.write(payload);out.flush();os.fsync(out.fileno())
+                os.replace(temporary,target)
+            finally:
+                if Path(temporary).exists(): Path(temporary).unlink()
+        if sha_bytes(target.read_bytes())!=sha_bytes(payload): raise ValueError('Applied runner bytes differ')
+        applied.append({'path':str(target),'sha256':sha_bytes(payload),'backup':None if backup is None else str(backup)})
+    value={'schema_version':'genos-meaning-recovery-install-r3','zip_sha256':'2421716383e099618caaf92842ec74f7b03951c769986f301ca3f34d19eb96f3',
+        'code_manifest_sha256':sha_bytes(z.read('CODE_MANIFEST.json')),'checkout':str(root),
+        'git_head':subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),
+        'tracked_dirty':bool(subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=root,text=True)),
+        'applied_files':applied,'runner':str(target),'runner_sha256':sha_bytes(source),'backup':None if backup is None else str(backup),
+        'original_txt':str(original),'original_txt_sha256':'057acbd941fcfa5bc71cab03a45de369a04345b035b399de4beebfb16af829db',
+        'python_executable':sys.executable,'python_version':sys.version,'activated':False,
+        'data_root':str(data),'run_id':run,'serving_revision':None,'selected_serving_generation':None,
+        'git_push':False,'core_modified':False,'workflow_modified':False}
+    receipt.write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n')
+    print('PACKAGE_HASHES PASS; RUNNER APPLIED/VERIFIED '+str(target),flush=True)
+    print('INSTALL_RECEIPT='+str(receipt)+' original_txt='+str(original),flush=True)
+GENOS_RECOVERY_INSTALL_PY
+export GENOS_VARIANTS_ORIGINAL
+GENOS_VARIANTS_ORIGINAL=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["original_txt"])' "$recovery_receipt")
+recovery_runner="$recovery_root/06_TOOLS/OFFLINE/genos_meaning_recover_r3.py"
+recovery_args=(--original-txt "$GENOS_VARIANTS_ORIGINAL" --data-root "$GENOS_DATA_ROOT" --run-id "$GENOS_VARIANTS_RUN_ID" --batch "${GENOS_VARIANTS_BATCH:-32}" --workers "${GENOS_VARIANTS_WORKERS:-4}")
+recovery_old_logs="$GENOS_DATA_ROOT/LOGS/$GENOS_VARIANTS_RUN_ID/meaning-variants"
+mkdir -p "$recovery_old_logs"
+case "$recovery_action" in
+  recover-off-background|recover-on-background|review-background)
+    case "$recovery_action" in
+      recover-off-background) recovery_job=baseline; recovery_meta="$recovery_logs/off-worker.json"; recovery_lock="$recovery_logs/off-launcher.lock" ;;
+      recover-on-background) recovery_job=reviewed; recovery_meta="$recovery_logs/on-worker.json"; recovery_lock="$recovery_logs/on-launcher.lock" ;;
+      review-background) recovery_job=review; recovery_meta="$recovery_old_logs/worker.json"; recovery_lock="$recovery_old_logs/launcher.lock" ;;
+    esac
+    exec 8>"$recovery_lock"
+    if ! flock -n 8; then printf 'A worker already holds this launcher lock; inspect status/log, not started again.\n'; exit 1; fi
+    python3 -u "$recovery_runner" check "${recovery_args[@]}"
+    recovery_worker_log=$(mktemp "$recovery_logs/$recovery_job-worker-r3-XXXXXX.log")
+    nohup bash "$recovery_script" __run "$recovery_job" >"$recovery_worker_log" 2>&1 < /dev/null &
+    recovery_pid=$!
+    python3 -u - "$recovery_pid" "$recovery_worker_log" "$recovery_script" "$recovery_meta" <<'GENOS_RECOVERY_PID_PY'
+import json,os,sys
+from pathlib import Path
+pid=int(sys.argv[1]);proc=Path('/proc')/str(pid)
+if not proc.exists(): raise RuntimeError('Worker exited during startup; inspect '+sys.argv[2])
+stat=proc.joinpath('stat').read_text().rsplit(')',1)[1].split()
+record={'pid':pid,'start_time':stat[19],'boot_id':Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
+        'log':sys.argv[2],'script':sys.argv[3],'recovery_version':'20261002-r3'}
+for path in (Path(sys.argv[2]+'.pid.json'),Path(sys.argv[4])):
+    temporary=path.with_name('.'+path.name+'-'+str(os.getpid()))
+    temporary.write_text(json.dumps(record,indent=2)+'\n');os.replace(temporary,path)
+print('BACKGROUND STARTED pid='+str(pid)+' log='+sys.argv[2]+'; this is not a completion claim',flush=True)
+print('Follow: tail -f '+sys.argv[2],flush=True)
+GENOS_RECOVERY_PID_PY
+    ;;
+  stop-off|stop-on|stop-review|status)
+    python3 -u - "$recovery_action" "$recovery_logs" "$recovery_old_logs" <<'GENOS_RECOVERY_STATUS_PY'
+import json,os,signal,sys
+from pathlib import Path
+action=sys.argv[1]
+paths={'off':Path(sys.argv[2])/'off-worker.json','on':Path(sys.argv[2])/'on-worker.json',
+       'review':Path(sys.argv[3])/'worker.json'}
+for name,path in paths.items():
+    if action!='status' and action!='stop-'+name: continue
+    if not path.is_file(): print(name+': no background PID record',flush=True);continue
+    record=json.loads(path.read_text());proc=Path('/proc')/str(record['pid']);running=False
+    if proc.exists() and record['boot_id']==Path('/proc/sys/kernel/random/boot_id').read_text().strip():
+        fields=proc.joinpath('stat').read_text().rsplit(')',1)[1].split()
+        running=fields[19]==record['start_time'] and fields[0]!='Z'
+    print(name+': running='+str(running)+' pid='+str(record['pid'])+' log='+record['log'],flush=True)
+    if action=='stop-'+name and running:
+        os.kill(record['pid'],signal.SIGINT)
+        print('Interrupt sent only to recorded '+name+' worker; wait for FINISHED, artifacts preserved.',flush=True)
+GENOS_RECOVERY_STATUS_PY
+    if [[ "$recovery_action" == status ]]; then python3 -u "$recovery_runner" status "${recovery_args[@]}"; fi
+    ;;
+  baseline|review|reviewed)
+    recovery_args+=(--shared-root "${GENOS_VARIANTS_SHARED_ROOT:-/nfs-root/diamo/8-agent/term-releases}")
+    if [[ "$recovery_internal" == 1 ]]; then exec python3 -u "$recovery_runner" "$recovery_action" "${recovery_args[@]}"; fi
+    python3 -u "$recovery_runner" "$recovery_action" "${recovery_args[@]}"
+    ;;
+  check|verify)
+    python3 -u "$recovery_runner" "$recovery_action" "${recovery_args[@]}"
+    ;;
+esac

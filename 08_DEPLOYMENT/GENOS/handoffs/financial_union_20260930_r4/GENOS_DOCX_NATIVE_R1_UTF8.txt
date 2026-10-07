@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+# Existing DEV checkout only. Stop/wait for the current pipeline before applying.
+# Apply: bash TRANSFER/GENOS_DOCX_NATIVE_R1_UTF8.txt
+# Undo:  bash TRANSFER/GENOS_DOCX_NATIVE_R1_UTF8.txt --rollback <printed receipt.json>
+set -Eeuo pipefail
+umask 077
+docx_patch_log=$(mktemp /tmp/genos-docx-native-XXXXXX.log)
+exec > >(tee -a "$docx_patch_log") 2>&1
+trap 'patch_rc=$?; printf "[%s] FINISHED status=%s log=%s\n" "$(TZ=Asia/Seoul date "+%Y-%m-%d %H:%M:%S KST")" "$patch_rc" "$docx_patch_log"' EXIT
+printf '[%s] START DOCX native patch\n' "$(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S KST')"
+python3 -u - "$@" <<'GENOS_DOCX_NATIVE_PY'
+import ast, fcntl, hashlib, json, os, sys, uuid
+from pathlib import Path
+from datetime import datetime, timezone
+PAYLOAD = json.loads("{\"old\":\"def parse_docx(path: str | Path) -> ParseResult:\\n    \\\"\\\"\\\"DOCX — 레이아웃 모델도 OCR 도 TableFormer 도 돌지 않는다.\\n\\n    docling 의 msword_backend 가 OOXML 태그를 그대로 읽는다: 문단·표·제목이 파일\\n    안에 선언돼 있어 **추론이 아니라 독해**다. PDF 와 결정적으로 다른 것 둘:\\n\\n    1. 제목 계층이 진짜다 — Word 스타일(outlineLvl·\\\"Heading N\\\")의 level 이\\n       section_header 요소의 meta.level 로 온다. PDF 는 전부 1로 평면화된다.\\n    2. 지면 좌표가 없다 — DOCX 는 리플로우 문서라 페이지·bbox 가 파일에 존재하지\\n       않는다. page=1 고정, 타이포그래피 주석(T2c)·reading_order 재정렬(T2b)·\\n       격자 복구도 없다. iterate_items() 의 순서가 곧 문서 순서다.\\n\\n    구조 판정은 여기서도 형식의 마커가 한다 — meta.level 은 힌트다(§2.2).\\n    \\\"\\\"\\\"\\n    p = Path(path)\\n    doc = _converter(ocr=False).convert(str(p)).document\\n    elements, picture_uris, docling_stats = _elements_from_docling(doc)\\n    images = dict(picture_uris)            # 재정렬이 없으니 index 가 그대로다\\n\\n    warnings: list[str] = []\\n    # docling 이 버리는 Word 선언(자동 번호·들여쓰기·글꼴)을 원본 XML 에서 되살린다.\\n    from lawrag.core import docx_ooxml\\n    try:\\n        ooxml_stats = docx_ooxml.enrich(p, elements)\\n        moved = ooxml_stats.pop('index_map', {})\\n        if moved:\\n            images = {moved.get(k, k): v for k, v in images.items()}\\n    except Exception as exc:               # 원본 XML 이 깨졌어도 docling 결과는 쓴다\\n        ooxml_stats = {'docx_ooxml_error': f'{type(exc).__name__}: {exc}'}\\n        warnings.append('Word 원본 XML을 읽지 못해 자동 번호·들여쓰기를 되살리지 못했습니다')\\n    stats = {\\n        **docling_stats,\\n        **ooxml_stats,\\n        \\\"elements\\\": len(elements),\\n        \\\"tables\\\": sum(1 for e in elements if e.is_table),\\n        \\\"pictures\\\": sum(1 for e in elements if e.is_picture),\\n        \\\"captioned_pictures\\\": sum(1 for e in elements if e.is_picture and e.text),\\n        \\\"pictures_with_image\\\": len(images),\\n        \\\"headings_with_level\\\": sum(1 for e in elements if e.meta.get(\\\"level\\\")),\\n    }\\n    if stats[\\\"tables\\\"] == 0 and stats[\\\"docling_tables\\\"] == 0:\\n        warnings.append(\\\"표가 하나도 인식되지 않았습니다 — 값이 서술로 처리됩니다\\\")\\n\\n    return ParseResult(\\n        path=str(p), doc_id=hashlib.sha256(p.read_bytes()).hexdigest()[:12],\\n        parser=f\\\"docling {docling_version()} (docx, tables=native)\\\",\\n        born_digital=True, elements=elements, warnings=warnings, stats=stats,\\n        images=images)\",\"replacement\":\"def parse_docx(path: str | Path) -> ParseResult:\\n    \\\"\\\"\\\"Read declared Word content natively; no local Docling dependency.\\\"\\\"\\\"\\n    from .docx_native import parse\\n    return parse(path)\",\"module\":\"\\\"\\\"\\\"DOCX OOXML reader without Docling or model downloads.\\n\\nCoordinates are assigned later by the existing synthetic-page renderer, not\\nclaimed to be original Word pagination. Native numbering/styles remain evidence.\\n\\\"\\\"\\\"\\nfrom __future__ import annotations\\nimport base64\\nfrom collections import Counter\\nimport hashlib\\nimport posixpath\\nfrom pathlib import Path\\nimport zipfile\\nfrom xml.etree import ElementTree as ET\\n\\nfrom . import docx_ooxml as ox\\n\\nVERSION = 'docx-ooxml-native-v1'\\nR = '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}'\\nA = '{http://schemas.openxmlformats.org/drawingml/2006/main}'\\nREL = '{http://schemas.openxmlformats.org/package/2006/relationships}'\\n\\n\\ndef parse(path):\\n    from .parse_adapter import Cell, Element, ParseResult, Table\\n    path = Path(path)\\n    elements, images, warnings = [], {}, []\\n    def add(kind, text='', **kw):\\n        item = Element(index=len(elements), type=kind, text=text, page=1, **kw)\\n        elements.append(item)\\n        return item\\n    with zipfile.ZipFile(path) as archive:\\n        document = ET.fromstring(archive.read('word/document.xml'))\\n        body = document.find(ox.W + 'body')\\n        if body is None:\\n            raise ValueError('DOCX word/document.xml has no body')\\n        styles = ox._Styles(ox._read(archive, 'word/styles.xml'))\\n        rows = ox.read(path)\\n        sizes = Counter()\\n        for row in rows:\\n            if row.get('size_pt') and row.get('text', '').strip():\\n                sizes[row['size_pt']] += len(row['text'].strip())\\n        body_size = sizes.most_common(1)[0][0] if sizes else None\\n        blocks = list(ox._blocks(body))\\n        if len(rows) != len(blocks):\\n            raise ValueError('DOCX native paragraph order mismatch')\\n        relations = ox._read(archive, 'word/_rels/document.xml.rels')\\n        rels = {r.get('Id'): r for r in relations} if relations is not None else {}\\n        for block, row in zip(blocks, rows):\\n            if row.get('table'):\\n                cells, active, ncols = [], {}, 0\\n                trs = block.findall(ox.W + 'tr')\\n                for ri, tr in enumerate(trs):\\n                    offset = tr.find(f'{ox.W}trPr/{ox.W}gridBefore')\\n                    col = int(ox._val(offset) or 0)\\n                    continuing = {}\\n                    for tc in tr.findall(ox.W + 'tc'):\\n                        span = int(ox._val(tc.find(f'{ox.W}tcPr/{ox.W}gridSpan')) or 1)\\n                        if span < 1:\\n                            raise ValueError('DOCX invalid table gridSpan')\\n                        vm = tc.find(f'{ox.W}tcPr/{ox.W}vMerge')\\n                        text = '\\\\n'.join(ox._text(p) for p in tc.iter(ox.W + 'p')).strip()\\n                        previous = active.get((col, span))\\n                        if vm is not None and ox._val(vm) != 'restart':\\n                            if previous is None:\\n                                raise ValueError('DOCX vertical merge has no preceding cell')\\n                            previous.row_span += 1\\n                            if text:\\n                                previous.text += '\\\\n' + text\\n                            continuing[(col, span)] = previous\\n                        else:\\n                            cell = Cell(text=text, row=ri, col=col, col_span=span)\\n                            cells.append(cell)\\n                            if vm is not None:\\n                                continuing[(col, span)] = cell\\n                        col += span\\n                    ncols = max(ncols, col)\\n                    active = continuing\\n                table = Table(n_rows=len(trs), n_cols=ncols, cells=cells)\\n                add('table', table.text(), table=table)\\n                if len(list(block.iter(ox.W + 'tbl'))) > 1:\\n                    warnings.append('중첩 표는 외부 셀 안의 텍스트로 보존했습니다; 내부 격자 원문 대조 필요')\\n            else:\\n                text = row['text'].strip()\\n                if text:\\n                    level = row['outline_level']\\n                    ppr = block.find(ox.W + 'pPr')\\n                    sid = ox._val(ppr.find(ox.W + 'pStyle')) if ppr is not None else None\\n                    if level is None:\\n                        import re\\n                        for style in styles.chain(sid):\\n                            name = ox._val(style.find(ox.W + 'name')) or ''\\n                            match = re.fullmatch(r'heading\\\\s*([1-9])', name, re.I)\\n                            if match:\\n                                level = int(match[1]) - 1\\n                                break\\n                    meta = {'docx': {k: row[k] for k in (\\n                        'label', 'num_fmt', 'ilvl', 'left_twips', 'start_twips', 'outline_level')\\n                        if row[k] is not None}}\\n                    if level is not None and 0 <= level <= 8:\\n                        meta['level'] = level + 1\\n                    if row['label']:\\n                        text = row['label'] + (' ' if row['suffix'] else '') + text\\n                    add('section_header' if 'level' in meta else 'text', text,\\n                        meta=meta, font_size=row['size_pt'], bold=row['bold'],\\n                        size_ratio=round(row['size_pt'] / body_size, 3)\\n                        if row['size_pt'] and body_size else None)\\n            for blip in block.iter(A + 'blip'):\\n                relationship = rels.get(blip.get(R + 'embed') or blip.get(R + 'link'))\\n                if relationship is None or relationship.get('TargetMode') == 'External':\\n                    warnings.append('외부/미확인 그림은 다운로드하지 않았습니다; 원문 대조 필요')\\n                    continue\\n                target = posixpath.normpath(posixpath.join('word', relationship.get('Target', '')))\\n                if not target.startswith('word/media/'):\\n                    raise ValueError('DOCX unexpected image relationship: ' + target)\\n                raw = archive.read(target)\\n                suffix = Path(target).suffix.lower()\\n                mime = {'.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',\\n                        '.gif': 'image/gif', '.bmp': 'image/bmp', '.tiff': 'image/tiff'}.get(suffix)\\n                image = add('picture', meta={'native_media': target, 'has_image': bool(mime)})\\n                if mime:\\n                    images[image.index] = 'data:' + mime + ';base64,' + base64.b64encode(raw).decode()\\n                else:\\n                    warnings.append('미지원 그림 형식 ' + suffix + ': 픽셀 검수 미확인')\\n        if list(body.iter(ox.W + 'object')):\\n            warnings.append('DOCX 포함 OLE 객체는 해석하지 않았습니다; 원문 대조 필요')\\n        if list(body.iter(ox.W + 'altChunk')):\\n            raise ValueError('DOCX altChunk content requires conversion; refusing silent omission')\\n        for name in ('footnotes', 'endnotes'):\\n            notes = ox._read(archive, 'word/' + name + '.xml')\\n            if notes is not None:\\n                for note in notes:\\n                    if int(note.get(ox.W + 'id', '0')) <= 0:\\n                        continue\\n                    text = '\\\\n'.join(ox._text(p) for p in note.iter(ox.W + 'p')).strip()\\n                    if text:\\n                        add('text', text, meta={'docx_note': name, 'note_id': note.get(ox.W + 'id')})\\n        warnings.append('DOCX 지면은 합성 좌표입니다; Word 원래 페이지/머리말/꼬리말 배치와 다를 수 있습니다')\\n    if not elements:\\n        raise ValueError('DOCX has no readable paragraphs/tables/images')\\n    return ParseResult(path=str(path), doc_id=hashlib.sha256(path.read_bytes()).hexdigest()[:12],\\n                       parser=VERSION + ' (docx, tables=native)', born_digital=True, elements=elements, images=images,\\n                       warnings=list(dict.fromkeys(warnings)), stats={\\n                           'elements': len(elements), 'tables': sum(e.is_table for e in elements),\\n                           'pictures': sum(e.is_picture for e in elements), 'pictures_with_image': len(images),\\n                           'docx_paragraphs': sum(bool(r.get('text', '').strip()) for r in rows),\\n                           'docx_matched': sum(bool(r.get('text', '').strip()) for r in rows),\\n                           'headings_with_level': sum(bool(e.meta.get('level')) for e in elements)})\\n\"}")
+root = Path.cwd().resolve()
+if not (root / '02_BACKEND/lawrag/core/parse_adapter.py').is_file():
+    raise ValueError('Run from existing DEV checkout')
+sys.path.insert(0, str(root / '02_BACKEND'))
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+def target(rel):
+    dest = root / rel
+    if any(p.is_symlink() for p in (dest, *dest.parents)):
+        raise ValueError('Code symlink refused: ' + rel)
+    return dest
+def write(dest, raw):
+    temp = dest.with_name('.docx-native-' + uuid.uuid4().hex)
+    temp.write_bytes(raw)
+    if dest.exists():
+        os.chmod(temp, dest.stat().st_mode & 0o777)
+    os.replace(temp, dest)
+data_setting = os.environ.get('GENOS_DATA_ROOT')
+if not data_setting:
+    from lawrag.pipeline.genos_stages import offline_data_root
+    data_setting = offline_data_root(root)
+data = Path(data_setting)
+locks = []
+try:
+    # The whole CLI owns the migration lock; no change to a live parser process.
+    for lock_path in [data / '.raw-migration.lock', *list((data / 'LOGS').glob('*/run.lock')),
+                      *list((data / 'LOGS').glob('*/full-e2e-driver.lock'))]:
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+        lock = lock_path.open('a')
+        locks.append(lock)
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    adapter_rel = '02_BACKEND/lawrag/core/parse_adapter.py'
+    native_rel = '02_BACKEND/lawrag/core/docx_native.py'
+    if len(sys.argv) > 1:
+        if len(sys.argv) != 3 or sys.argv[1] != '--rollback':
+            raise ValueError('Usage: bash TXT [--rollback receipt.json]')
+        receipt_path = Path(sys.argv[2]).resolve()
+        receipt = json.loads(receipt_path.read_text())
+        if receipt['code_root'] != str(root):
+            raise ValueError('Rollback code root mismatch')
+        for row in receipt['files']:
+            if row['path'] not in (adapter_rel, native_rel):
+                raise ValueError('Unknown rollback path')
+            dest = target(row['path'])
+            if sha(dest.read_bytes()) != row['after_sha256']:
+                raise ValueError('Rollback current hash changed: ' + row['path'])
+            if row['before_sha256'] is not None:
+                original = (receipt_path.parent / 'before' / row['path']).read_bytes()
+                if sha(original) != row['before_sha256']:
+                    raise ValueError('Rollback backup hash changed')
+        for row in receipt['files']:
+            dest = target(row['path'])
+            if row['before_sha256'] is None:
+                dest.unlink()  # Only this patch-created module; saved receipt makes recovery possible.
+            else:
+                write(dest, (receipt_path.parent / 'before' / row['path']).read_bytes())
+        print('DOCX_NATIVE_ROLLBACK_PASS new module removed if patch-created; backups retained', flush=True)
+    else:
+        adapter = target(adapter_rel)
+        before = adapter.read_bytes()
+        text = before.decode('utf-8')
+        if PAYLOAD['replacement'] in text:
+            after = before
+        elif text.count(PAYLOAD['old']) == 1:
+            after = text.replace(PAYLOAD['old'], PAYLOAD['replacement']).encode('utf-8')
+        else:
+            raise ValueError('DOCX_PATCH_BASE_MISMATCH sha256=' + sha(before))
+        native = target(native_rel)
+        native_before = native.read_bytes() if native.exists() else None
+        native_after = PAYLOAD['module'].encode('utf-8')
+        if native_before is not None and native_before != native_after:
+            raise ValueError('Existing native module differs; no overwrite')
+        ast.parse(after.decode(), feature_version=(3, 11))
+        ast.parse(native_after.decode(), feature_version=(3, 11))
+        plan = [(adapter_rel, before, after), (native_rel, native_before, native_after)]
+        plan = [(rel, old, new) for rel, old, new in plan if old != new]
+        if plan:
+            backup = root / 'TRANSFER/BACKUPS/docx-native-r1' / (
+                datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid.uuid4().hex[:6])
+            backup.mkdir(parents=True)
+            rows = []
+            for rel, old, new in plan:
+                if old is not None:
+                    saved = backup / 'before' / rel
+                    saved.parent.mkdir(parents=True, exist_ok=True)
+                    saved.write_bytes(old)
+                saved_new = backup / 'after' / rel
+                saved_new.parent.mkdir(parents=True, exist_ok=True)
+                saved_new.write_bytes(new)
+                rows.append({'path': rel, 'before_sha256': sha(old) if old is not None else None,
+                             'after_sha256': sha(new)})
+            receipt = backup / 'receipt.json'
+            receipt.write_text(json.dumps({'code_root': str(root), 'files': rows,
+                                           'serving_changed': False}, indent=2))
+            for rel, old, new in plan:
+                write(target(rel), new)
+            print('DOCX_NATIVE_APPLIED receipt=' + str(receipt), flush=True)
+        else:
+            print('DOCX_NATIVE_ALREADY_APPLIED no writes', flush=True)
+        print('Next: run the failed-structure retry TXT after this patch. No Docling install required.', flush=True)
+except BlockingIOError:
+    print('Pipeline active: apply only after the current run exits; no code applied.', flush=True)
+    raise SystemExit(2)
+finally:
+    for lock in reversed(locks):
+        lock.close()
+GENOS_DOCX_NATIVE_PY

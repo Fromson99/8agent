@@ -1,0 +1,35 @@
+{
+  "patch": "reference-main-20260929-r1",
+  "attachment": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/patches/GENOS_REFERENCE_MAIN_AUTO_20260929_R1.txt",
+  "txt_sha256": "0e0993e4cb0ae19011b414c159ac070f2efe6067b09fd99cfa24af2c7f620eb4",
+  "bytes": 48717,
+  "installer_sha256": "3ad6bed91e88f63d919aaaa807030658e64eba5578984a629bc201e1eb229cf6",
+  "code_root": "/home/jin/8-AGENT",
+  "git_commit": null,
+  "code_serving_revision": null,
+  "selected_generation": null,
+  "onsite_verified": false,
+  "live_model_calls_local": 0,
+  "javascript_members": [],
+  "credential_files": [],
+  "openrouter_configuration_included": false,
+  "source_git_commit": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "working_tree_snapshot": true,
+  "validation": {
+    "bash_syntax": "pass",
+    "python_311_syntax": "pass",
+    "combined_contracts": {
+      "passed": 25,
+      "failed": 0
+    },
+    "exact_txt_applied_in_git_checkout": true,
+    "symlink_checkout_entrance": true,
+    "reapply_idempotent": true,
+    "scripted_internal_model_run": true,
+    "cross_mount_copy_fallback": true,
+    "parent_generation_preserved": true,
+    "candidate_assets_verified": true,
+    "no_repeated_completed_model_calls": true,
+    "rollback_restores_original_hashes": true
+  }
+}

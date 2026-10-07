@@ -1,0 +1,21 @@
+GENOS 답변 숫자 참조 표시 제거 — 2026-09-29 R1
+
+적용: GENOS_ANSWER_REFERENCE_DISPLAY_20260929_R1_WORKFLOW_PASTE_ALL.txt 전체를
+기존 GENOS 워크플로우의 Python 편집기에 붙여 넣고 저장·배포합니다.
+진입점 run과 현재 환경변수 설정을 그대로 사용합니다.
+코드서빙 변경이나 데이터 재구축은 필요하지 않습니다.
+
+결과 예: 수집해야 합니다 [4]. → 수집해야 합니다.
+생성 중 표시와 완료 응답에 적용하며 문서명·조문 출처는 유지합니다.
+
+확인: 워크플로우 테스트 화면에 {"question":"SSE_CHECK"}를 입력합니다.
+sse_check.answer_display_revision=answer-reference-display-20260929-r1을 확인합니다.
+그다음 원래 질문을 실행해 본문 숫자 참조가 제거되고 출처가 유지되는지 확인합니다.
+기존 workflow_revision=answer-stream-20260929-r1과 서버 표식은 유지합니다.
+
+복구: 교체 직전 현장 편집기 Python을 백업해 둡니다. 문제가 생기면 그 백업으로
+되돌리고 저장·배포합니다. 첨부 ROLLBACK.py는 로컬 수정 직전 코드이며
+현장의 이전 코드와 다르면 현장 백업을 사용합니다.
+
+로컬 115개 계약·회귀 검사 통과. GENOS 편집기 반영·배포·현장 질문은 미확인입니다.
+메일 발송·Git commit/push는 수행하지 않았습니다.

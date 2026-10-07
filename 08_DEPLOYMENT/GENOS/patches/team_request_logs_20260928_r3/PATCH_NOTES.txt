@@ -1,0 +1,85 @@
+GENOS 팀별 로그·질문 답변 요약 패치 R3 (2026-09-28)
+
+TEAM_REQUEST_LOGS R1/R2 대신 이번 R3 ZIP/실행 TXT를 사용하세요.
+R2의 incompatible report function: DeferredReport.__init__ 오류를 재현했습니다.
+PACKAGE_HASHES PASS 이후 함수 검사에서 소스 쓰기 전에 중단한 실행은 원복할 변경이 없습니다.
+
+원인과 수정
+R2가 Python 3.14에서 ast.dump로 만든 함수 해시를 GENOS에서 비교했습니다.
+Python 3.13부터 빈 AST 필드의 출력 방식이 바뀌어 같은 함수도 3.11과 해시가 달랐습니다.
+Python 3.11에서 사진의 생성자 오류 해시를 정확히 재현했습니다:
+  ebec1d1454229f6c8d6d9fbef0b684c6dc61fa6f46d663f172efee0d2898ac54
+R3는 AST 필드를 고정 형식으로 직렬화해 빈 필드도 보존합니다.
+3.12에 추가된 빈 type_params만 정규화하며 실제 함수/상수/호출 차이는 그대로 검사합니다.
+함수 9개와 필수 import만 수정하고 무관한 현장 코드 바이트는 보존합니다.
+호환되지 않는 함수는 목록으로 함께 표시합니다. 기존 engine/PIPELINE/소스/스키마의
+SHA-256 검증은 그대로 적용합니다. 기존 해시 불일치를 새 pin으로 승인하지 않습니다.
+
+실제 Python 3.11과 로컬 3.14에서 함수 서명·변환 결과 일치를 확인했습니다.
+3.11 프로세스에서 ~/DEV → 실제 Git checkout 링크, LF/CRLF 파일, 적용·재실행·commit
+바이트 검사·원복과 모의 요청의 팀별 plain .log/질문답변.xlsx/CSV 생성을 확인했습니다.
+현장 파일 전체 내용/함수 9개와 generation/서빙 결과는 현장 검증 전까지 미확인입니다.
+
+사진에 함께 나온 SSE 오류
+Symlink is not an apply target: /home/genos/DEV는 별도 SSE R1 설치 오류입니다.
+이미 발송된 GENOS_SSE_20260928_R2_APPLY.txt를 사용하세요. TEAM_REQUEST_LOGS R3가
+SSE 설치기나 워크플로우 본문을 변경하지는 않습니다.
+
+적용
+기존 ~/DEV에서:
+  bash TRANSFER/GENOS_TEAM_REQUEST_LOGS_20260928_R3_APPLY.txt
+첨부 TXT에는 ZIP 전체가 포함되어 있어 별도 ZIP 해제가 필요하지 않습니다.
+파일이 현재 폴더에 있으면 TRANSFER/를 빼고 실행하세요.
+필요할 때만 DEPLOY_ROOT=/기존/실제/Git/checkout, PYTHON_BIN=/기존/python3를 지정합니다.
+첫 단계부터 /tmp/genos-team-logs-r3-*.log에 지속 로그와 종료 상태를 남깁니다.
+코드 쓰기 전 모든 검증을 마치고 BACKUP_READY 경로에 원본 전체와 전후 해시를 보관합니다.
+request_summary.py/readable_log.py를 추가하고 설치된 report의 결과 및 해당 엔진 pin을 갱신합니다.
+적용 실패 시 백업으로 원복합니다. 재실행은 ALREADY_APPLIED로 확인합니다.
+기존 팀 로그 패치가 이미 적용된 경우에도 R3 재실행은 호환 구조/해시를 확인합니다.
+
+commit·push·배포
+changed_files와 git diff를 검토하고 해당 소스·갱신 manifest·PIPELINE만 commit하세요.
+  MODE=verify bash TRANSFER/GENOS_TEAM_REQUEST_LOGS_20260928_R3_APPLY.txt
+실제 push할 ~/DEV commit과 적용 후 TRANSFER/team-request-logs-20260928-r3/applied-code.zip을 비교합니다.
+기존 설정/CURRENT/검증 receipt의 generation을 사용해 그 checkout으로 E2E/verify_assets를 실행합니다.
+임의 날짜의 세대를 선택하지 않습니다. 기존 결속이 없거나 충돌하면 검증은 중단됩니다.
+정확한 기존 선택 경로가 있으면 GENOS_GENERATION=/실제/선택/generation을 지정할 수 있습니다.
+통과한 commit을 push한 뒤 위험관리·재무관리 코드서빙 모두 새 리비전에 반영하세요.
+코드 적용, commit, push, 서빙 리비전, 현장 새 질문 확인은 각각 별도 상태입니다.
+데이터 generation/CURRENT/.env/워크플로우 본문/내부 모델 설정을 자동 변경하지 않습니다.
+
+팀 설정과 결과
+두 코드서빙의 GENOS_SHARED_LOG_DIR은 같은 기존 실제 공유 경로:
+  /nfs-root/diamo/8-agent/rag-request-reports
+위험관리 워크플로우 리비전 환경: TEAM_ID=risk_team
+재무관리 워크플로우 리비전 환경: TEAM_ID=financial_team
+현재 워크플로우는 TEAM_ID를 우선 전달합니다. 환경을 워크플로우 리비전에 반영하세요.
+로그 폴더는 한국 시간 요청 시작일/risk_team 또는 financial_team입니다.
+질문답변.xlsx/CSV와 요청별 .log/JSON/TXT, 복구용 _qa/*.row가 함께 저장됩니다.
+.log의 에이전트 판단은 판단 → 찾은 것 → 이유로 표시합니다. 원본 JSON/journal은 보존합니다.
+표 갱신은 기존 비동기 finalizer에서 수행하고 요청 반환은 파일 쓰기를 기다리지 않습니다.
+두 서빙의 공유 폴더 쓰기·잠금·원자 교체 권한과 NFS 다중 요청 기록은 현장 확인 대상입니다.
+
+기존 기록 요약/표 복구 (모델 호출 없음)
+  MODE=summary bash TRANSFER/GENOS_TEAM_REQUEST_LOGS_20260928_R3_APPLY.txt
+선택: SUMMARY_DATE=2026-09-28 SUMMARY_TEAM=risk_team
+로그 경로가 다르면 GENOS_SHARED_LOG_DIR에 기존 실제 절대경로를 지정합니다.
+기존 JSON/로그 파일은 이동·덮어쓰기하지 않습니다.
+
+원복
+  MODE=rollback ROLLBACK_FROM=/BACKUP_READY/경로 bash TRANSFER/GENOS_TEAM_REQUEST_LOGS_20260928_R3_APPLY.txt
+백업 소스/manifest/PIPELINE을 복구하고 이번에 새로 만든 파일만 제거합니다.
+적용 이후 추가 수정이 있으면 덮어쓰기를 거부합니다. 로그·요약 원본·generation은 삭제하지 않습니다.
+운영 서빙 복귀는 이전 코드서빙 리비전으로 선택합니다.
+
+검증/미확인
+이전 report 조합, thinking R3와 적용 순서, 모의 현장 추가 코드·LF/CRLF, 등록 해시 보존,
+구조·pin·asset 오류 거부, 원복, 쓰기 실패 원복, 실제 비동기 .log/팀별 Excel 계약을 검사했습니다.
+실제 GENOS 원본 report/commit/generation/리비전/NFS/내부 모델 응답은 직접 확인하지 못했습니다.
+현장 질의 확인은 워크플로우 테스트 화면에서만 진행합니다.
+구조 불일치가 남으면 INPUT_CHECK의 실제 SHA와 해당 함수 계약 오류가 로그에 남습니다.
+
+설치·로그 관련 74 tests passed. 실제 Python 3.11 프로세스에서 현장 오류를 재현하고
+수정본의 서명·변환 일치와 링크 경유 적용·기능·재실행·commit 비교·원복을 포함해 검사했습니다.
+
+배포 전 게이트는 작업 파일뿐 아니라 Git commit의 실제 blob SHA도 비교합니다. Git 줄바꿈 정규화로 status가 clean이어도 바이트가 달라지면 배포 전에 중단합니다.

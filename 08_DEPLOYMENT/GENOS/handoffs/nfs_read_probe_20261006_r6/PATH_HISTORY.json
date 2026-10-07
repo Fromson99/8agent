@@ -1,0 +1,36 @@
+{
+  "basis": "user-authorized historical conversations, field photos, repository operating records and selected-store consumer code",
+  "actual_GENOS_accessed": false,
+  "code_checkout": {
+    "logical": "~/DEV",
+    "actual_from_R2_photo": "/workspace",
+    "fs_type_from_historical_findmnt": "nfs"
+  },
+  "known_NFS_mounts": [
+    "/workspace",
+    "/nfs-root/diamo",
+    "/ext_vol/aiweb_upload"
+  ],
+  "mount_evidence": "07_DOCS/REFERENCE/OPERATIONS/GENOS_ZIP_TO_PDF_NFS.md:36",
+  "runtime": "/nfs-root/diamo/8-agent/runtime",
+  "state": null,
+  "generation": "/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation",
+  "build_root": "/nfs-root/diamo/8-agent/01_DATA",
+  "runtime_history_thread": "01a0fb31-d712-74d0-992f-c47c78032961",
+  "runtime_validation_history_thread": "01a0fb69-c5be-7d70-b488-39f514233de8",
+  "generation_history_thread": "01a10e62-26c3-78b1-94ff-fa1f861e41b8",
+  "source_structure_history_thread": "01a109f4-0207-7ff2-a85f-155f1225b966",
+  "runtime_user_confirmation": "GENOS.md GENOS_RUNTIME_DIR confirmed 2026-10-06, GENOS_STATE_DIR unset",
+  "build_guide": "08_DEPLOYMENT/GENOS/handoffs/reference_build_20261003_r1/GENOS_REFERENCE_BUILD_GUIDE_UTF8.txt",
+  "shortcut_legal_wiki_consumer": "02_BACKEND/semantic_runtime/legal_agent/shortcut_store.py:selected_store",
+  "artifact_consumer": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py:ShortcutRepository",
+  "generation_publish_consumer": "02_BACKEND/lawrag/pipeline/document_release.py:publish_shared_generation",
+  "R2_photo_status": "INSTALLED, prepare FAILED symlink path refused; commit not performed",
+  "exact_refused_symlink_path_from_photo": null,
+  "NFS_mount_entry_symlink_from_photo": null,
+  "ZIP_default": "/tmp/genos-rag-data-export",
+  "ZIP_mount_approval": "read /proc/self/mountinfo, reject nfs/nfs4 or unknown filesystem",
+  "field_generation_manifest_sha256": null,
+  "field_code_serving_revision": null,
+  "field_workflow_success_verified": false
+}

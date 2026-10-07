@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+TASK_LOG_DIR="${HOME}/genos_pipeline_optimization_logs/$(date -u +%Y%m%dT%H%M%S)-${BASHPID}"
+mkdir -p "$TASK_LOG_DIR"
+exec > >(tee -a "$TASK_LOG_DIR/run.log") 2>&1
+trap 'task_status=$?; echo "FINISHED status=$task_status log=$TASK_LOG_DIR"; exit "$task_status"' EXIT
+trap 'echo "FAILED line=$LINENO command=$BASH_COMMAND"' ERR
+printf 'START UTC=%s log=%s\n' "$(date -u +%FT%TZ)" "$TASK_LOG_DIR"
+[[ $# == 1 || $# == 4 ]] || { echo "Usage: bash $0 PATCH.zip [COMPLETED_SOURCE.sqlite COMPLETED_GLOSSARY_DIR NEW_OUTPUT]"; exit 2; }
+TASK_ZIP="$1"
+TASK_DEV="${GENOS_DEV:-${HOME}/DEV}"
+[[ -d "$TASK_DEV/02_BACKEND" ]] || { echo "Missing DEV checkout: $TASK_DEV"; exit 2; }
+python3 -c 'import sys; print("PYTHON",sys.executable,sys.version)'
+python3 - "$TASK_ZIP" "$TASK_LOG_DIR/payload" <<'VERIFY'
+import hashlib,pathlib,sys,zipfile
+p=pathlib.Path(sys.argv[1]);digest=hashlib.file_digest(p.open('rb'),'sha256').hexdigest()
+if digest!='c6cd9be1d777c607d334cb6f330890e6d5d122428ecff426e1fb40dffbfc37a5':raise SystemExit('ZIP hash mismatch; stopped before extraction/application')
+print('ZIP_SHA256',digest,flush=True)
+with zipfile.ZipFile(p) as z:
+ for item in z.infolist():
+  name=pathlib.PurePosixPath(item.filename)
+  if name.is_absolute() or '..' in name.parts or name.suffix.lower() in {'.js','.jsx','.mjs','.cjs'}:raise SystemExit('Invalid archive member')
+  if (item.external_attr>>16)&0o170000==0o120000:raise SystemExit('Archive symlink rejected')
+ z.extractall(sys.argv[2])
+VERIFY
+python3 "$TASK_LOG_DIR/payload/APPLY.py" --dev "$TASK_DEV" --check
+python3 "$TASK_LOG_DIR/payload/APPLY.py" --dev "$TASK_DEV"
+if [[ $# == 4 ]]; then
+  python3 "$TASK_LOG_DIR/payload/BUILD.py" --dev "$TASK_DEV" --source "$2" --glossary "$3" --output "$4"
+else
+  echo "Code applied. New generation was not requested; existing review plans/data/CURRENT untouched."
+fi

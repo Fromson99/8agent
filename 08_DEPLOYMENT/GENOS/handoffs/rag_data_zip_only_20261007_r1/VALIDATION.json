@@ -1,0 +1,38 @@
+{
+  "tests_passed": 4,
+  "tests_failed": 0,
+  "cases": [
+    {
+      "case": "pack_restore_dirty_checkout",
+      "passed": true,
+      "exit_code": 0,
+      "original_data_preserved": true,
+      "git_head_and_staged_bytes_preserved": true
+    },
+    {
+      "case": "sqlite_sidecar",
+      "passed": true,
+      "exit_code": 1,
+      "original_data_preserved": true,
+      "git_head_and_staged_bytes_preserved": true
+    },
+    {
+      "case": "tool_hash_mismatch",
+      "passed": true,
+      "exit_code": 1,
+      "original_data_preserved": true,
+      "git_head_and_staged_bytes_preserved": true
+    },
+    {
+      "case": "missing_dev",
+      "passed": true,
+      "exit_code": 1,
+      "original_data_preserved": true,
+      "git_head_and_staged_bytes_preserved": true
+    }
+  ],
+  "attachment_sha256": "9620ce7ae8b5ed3110fcdbca65ace5f022a2789903945f38c79da95062dbb80c",
+  "synthetic_data_only": true,
+  "genos_accessed": false,
+  "field_data_zip_created": false
+}

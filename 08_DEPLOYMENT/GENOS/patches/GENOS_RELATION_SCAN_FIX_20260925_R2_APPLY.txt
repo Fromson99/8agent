@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# Put this TXT and GENOS_RELATION_SCAN_FIX_20260925_R2.zip in the same directory.
+# Optional: DEPLOY_ROOT=/path/to/existing/DEV PYTHON_BIN=/path/to/python bash this-file.txt
+# Rollback: ROLLBACK_FROM=/path/printed/as/backup bash this-file.txt
+DEPLOY_ROOT="${DEPLOY_ROOT:-$HOME/DEV}"
+TRANSFER_DIR="$DEPLOY_ROOT/TRANSFER"
+mkdir -p "$TRANSFER_DIR"
+RUN_LOG="$TRANSFER_DIR/relation-scan-fix-r2-apply-$(date -u +%Y%m%dT%H%M%SZ).log"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'result=$?; printf "FINISHED status=%s log=%s\n" "$result" "$RUN_LOG"' EXIT
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PATCH_ZIP="$SCRIPT_DIR/GENOS_RELATION_SCAN_FIX_20260925_R2.zip"
+PYTHON_BIN="${PYTHON_BIN:-$DEPLOY_ROOT/.venv/bin/python}"
+test -f "$PATCH_ZIP"
+test -x "$PYTHON_BIN"
+printf '%s  %s\n' '7ca97bd17b8a9e30fc2e4ef9b59774918e716bf866a64aeb0367addb2a62beb9' "$PATCH_ZIP" | sha256sum -c -
+
+PATCH_DIR="$(mktemp -d "$TRANSFER_DIR/relation-scan-fix-r2.XXXXXX")"
+unzip -q "$PATCH_ZIP" -d "$PATCH_DIR"
+"$PYTHON_BIN" -m py_compile "$PATCH_DIR/apply.py"
+
+printf 'CHECKOUT=%s\n' "$DEPLOY_ROOT"
+git -C "$DEPLOY_ROOT" rev-parse HEAD
+if [[ -n "${ROLLBACK_FROM:-}" ]]; then
+    "$PYTHON_BIN" "$PATCH_DIR/apply.py" --deploy-root "$DEPLOY_ROOT" --rollback-from "$ROLLBACK_FROM"
+else
+    "$PYTHON_BIN" "$PATCH_DIR/apply.py" --deploy-root "$DEPLOY_ROOT"
+fi
+git -C "$DEPLOY_ROOT" diff --check
+printf 'Selected GENOS_GENERATION=%s\n' "${GENOS_GENERATION:-UNSET_OR_UNKNOWN}"
+printf 'R2 performance fix applied to checkout only. Review/commit/push, code-serving revision deployment, and workflow-screen test are separate steps.\n'
+printf 'In the workflow test, inspect the request .log for relation.query.slow or relation.query.interrupted, step=reference_witness_count, and failure_kind.\n'

@@ -1,0 +1,19 @@
+GENOS 사진 시간 판독 정정 — 2026-10-02
+
+초기 안내의 navigation 3384.2초(56분24초)는 사진 숫자 오독입니다.
+실제 사진: navigation DONE elapsed=33384.2s
+           GENERATION compile-navigation.done elapsed=34002.4s phase=33384.2s
+           GENERATION compile-fulltext.start elapsed=34002.4s phase=0.0s
+
+navigation 전체 구간: 33384.2초 = 9시간16분24.2초.
+색인 generation 시작부터 전문 색인 진입까지: 34002.4초 = 9시간26분42.4초.
+둘의 차이: 618.2초 = 약10분18.2초. navigation 이전에 8시간30분을 썼다는 설명은 철회합니다.
+
+2,121/2,121은 문서별 source 색인 처리 수이며, 이후 참조·용어 연결 정리·감사 분리도
+같은 compile-navigation 내부에 포함됩니다. 이 전체 시간을 별첨 정규식만의 시간으로
+확정하지 않습니다. 별첨 모의 입력의 실측 수치와 최적화 코드/복구 코드에는 변경이 없습니다.
+
+원본 메일 ZIP/TXT/GUIDE와 완료 ADR의 원래 바이트/해시는 보존했습니다.
+초기 GUIDE의 시간 설명 두 줄과 ADR-0614 code-path-audit의 prior_chat_reported_navigation_phase_seconds,
+ADR-0615 README 2절의 현장 navigation 시간은 이 정정으로 대체 해석하십시오.
+검증 정본: 09_ARTIFACTS/AUDITS/20261002-navigation-timing-correction/receipt.json

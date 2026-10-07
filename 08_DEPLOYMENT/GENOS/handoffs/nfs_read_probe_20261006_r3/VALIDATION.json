@@ -1,0 +1,41 @@
+{
+  "version": "GENOS_NFS_READ_20261006_R3",
+  "code_zip_sha256": "795a6578b22eec04ef160c5f09c0c743e76ca44b88312c1d5cd64214537e11da",
+  "code_manifest_sha256": "cf37b5ffc222484606c69538288dc6e46b75f584481ce5a20fedb2bde85a163a",
+  "run_txt_sha256": "c0c8f4fb09e62e836e4496fba41af8b84253be67d85e8f501add2ead772472f4",
+  "archive_members_verified": true,
+  "no_javascript_or_credentials_or_operating_data": true,
+  "python311_and_workflow310_syntax": true,
+  "bash_syntax": true,
+  "diagnostic_bundle_tests": {
+    "passed": 37
+  },
+  "existing_service_regression": {
+    "passed": 22,
+    "failed": 1,
+    "failure": "test_genos_input_byte_limit_uses_operator_setting: KeyError max_input_bytes",
+    "reproduced_before_nfs_hook": true,
+    "basis": "earlier user-directed input-byte limit removal"
+  },
+  "verified_local_code_root": "/home/jin/8-AGENT",
+  "field_push_checkout": "~/DEV",
+  "field_commit": null,
+  "field_generation_path_recorded": "/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation",
+  "field_generation_manifest_sha256": null,
+  "code_serving_revision": null,
+  "NFS_mount_entry_alias_supported_without_path_rewrite": true,
+  "failure_phase_and_requested_symlink_paths_recorded": true,
+  "DEV_alias_resolved_before_strict_file_checks": true,
+  "NFS_data_paths_not_rewritten": true,
+  "GENOS_accessed": false,
+  "field_deployment_verified": false,
+  "source_sha256": {
+    "02_BACKEND/semantic_runtime/nfs_data_probe.py": "e772a35020c5fbe8f85ce9bf1f3064ad8825f5f7b2a4a1f0efb217092c1d2262",
+    "06_TOOLS/COMMANDS/genos_nfs_probe_handoff.py": "b16336786734da8b68dee1c7e8a8d969abc115afe6ccf5de181ceddbf8e672bb",
+    "06_TOOLS/COMMANDS/genos_rag_data_bundle.py": "226ba598de3784f953972461da6da5319dde17d7bb29e954b46e12a246c86973",
+    "06_TOOLS/COMMANDS/genos_pack_rag_data.sh": "565a8ac8a7797c1077b6dd0ac4fbb919330f2862a7b8cc4930264b74fab6db09",
+    "08_DEPLOYMENT/GENOS/workflow/genos_nfs_data_probe.py": "1b52307a84102f3a5629ffd15207b7648114a93c55fa64ff7753fb38d5848f6a",
+    "service.py": "051b508b38a829dbd637742309b5d646a916ef8788a29c3d8ddf294d33598aa6",
+    "08_DEPLOYMENT/GENOS/stream_app.py": "31a32d06cd04fe51bb5a0bd6dc2f976a7680ae9aa1234b09558665c4d0f12db8"
+  }
+}

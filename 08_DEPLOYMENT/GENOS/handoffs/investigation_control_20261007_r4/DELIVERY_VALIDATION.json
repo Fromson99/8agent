@@ -1,0 +1,855 @@
+{
+  "version": "GENOS_INVESTIGATION_CONTROL_20261007_R4",
+  "verified_at": "2026-10-06T23:52:29.944539+00:00",
+  "test_result": {
+    "exit_code": 0,
+    "seconds": 21.432,
+    "command": "PYTHONPATH=02_BACKEND:05_TESTS:05_TESTS/CONTRACTS:<R4> .venv/bin/python -m pytest -p conftest <R4>/test_delivery.py -q"
+  },
+  "tests_passed": 14,
+  "tests_failed": 0,
+  "exact_selected_main_serving_files": 265,
+  "total_code_files": 286,
+  "code_zip_sha256": "9e725446d2a802ee82817c52e4e6020123fc0f6ec432b31dd5295b59f7692a4e",
+  "code_manifest_sha256": "6947ebca7d33d62b845a50c7191a4418935c14eb14759b975838e7d25c9915ae",
+  "apply_txt_sha256": "e7c2c0e12331c158f5d22e2c0990aa847b97d1ca5ae72abdf0c1b4712f9c4ef2",
+  "known_nfs_hook_predecessors": [
+    {
+      "path": "service.py",
+      "base_release": "local-genos-unit-v6-20261006-r1",
+      "base_sha256": "c6a601da9d6cf037375ae548b5d6b38ee37ecd294c32fb7479879c68276ac3a7",
+      "derived_sha256": "051b508b38a829dbd637742309b5d646a916ef8788a29c3d8ddf294d33598aa6",
+      "hook_helper_sha256": "a858059fb564216653a205b3f7bdea88580f0c1035a4dd158d4b86e5cf873030"
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/stream_app.py",
+      "base_release": "local-genos-unit-v6-20261006-r1",
+      "base_sha256": "6c38ca65b079f2a9f433cbbc55d559f67e5dd723335c9b43d63fca1755370ea8",
+      "derived_sha256": "7ea18ce5928757fe17aafdd0eaa78ad7cc46b88786784c4f72a33bdc39d899e8",
+      "hook_helper_sha256": "a858059fb564216653a205b3f7bdea88580f0c1035a4dd158d4b86e5cf873030"
+    }
+  ],
+  "R2_failure_reproduced_before_mutation": true,
+  "actual_R7_driver_checkout_commit_preflight_failure_reproduced_on_synthetic_data": true,
+  "R7_helpers_and_prior_RAG_changes_integrated_in_R4_scope": true,
+  "unrelated_and_unknown_staged_changes_preserved_before_install": true,
+  "apply_rerun_verify_rollback_pass": true,
+  "existing_data_and_state_preserved": true,
+  "same_checkout_gate_and_commit_push_to_local_remote_pass": true,
+  "python311_and_workflow310_syntax_pass": true,
+  "no_external_model_calls": true,
+  "genos_accessed": false,
+  "field_deployment_verified": false,
+  "photos": [
+    {
+      "path": "/tmp/codex-remote-attachments/01a1139b-82bf-7fa2-81e8-0352facdf04d/F753A43A-148C-413A-937C-C1E5C5DB53C8/1-사진-1.jpg",
+      "sha256": "0520df8aa984a227e2024c49b1ba9165fb135977f7bdda7fa22f4ac9c6981b00"
+    },
+    {
+      "path": "/tmp/codex-remote-attachments/01a1139b-82bf-7fa2-81e8-0352facdf04d/F753A43A-148C-413A-937C-C1E5C5DB53C8/2-사진-2.jpg",
+      "sha256": "52f93ee8155015690be5d26852704fd12c5645e1eaa3e55a7db48959826a1477"
+    }
+  ],
+  "photo_unrelated_tracked_filenames": "NOT_VISIBLE; obtain R4 CHECKOUT_PREFLIGHT report",
+  "retained_logs_archive": {
+    "path": "VALIDATION_LOGS.tar.gz",
+    "sha256": "d337c6cfad33b5588462b4d4e836e306d06eccbb2ce2c77c6039c697e03fc2f8",
+    "bytes": 547220,
+    "restore": "tar -xzf VALIDATION_LOGS.tar.gz -C <empty-log-folder>",
+    "members": [
+      {
+        "path": "test_apply_rerun_verify_rollba0/logs/20261006T235111Z-apply-104967.log",
+        "sha256": "ed1da88dae2df4727ee4e0a10a2847193ec758431d5e48f755aaa14d1d056168",
+        "bytes": 2544
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba0/logs/20261006T235111Z-check-104958.log",
+        "sha256": "d9f591e6b61e2b6c0bd1ce180be8e92ff53bbbb06b6a9b0b981ad39213cf56cc",
+        "bytes": 1890
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba0/logs/20261006T235112Z-apply-104974.log",
+        "sha256": "c3140243a27f5f239c9f30afbcfb7ec4fe621ec30b5b4858b942c95123522fec",
+        "bytes": 2225
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba0/logs/20261006T235113Z-rollback-104996.log",
+        "sha256": "b2c7ae048d0950393d4402b8faf3a79a0d5381518da836c4b6af74329e5f66f7",
+        "bytes": 1305
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba0/logs/20261006T235113Z-verify-104981.log",
+        "sha256": "e9f74843c93c5029a6daa688113960312a4daeb9b0572eddef6e9159fd952372",
+        "bytes": 4349
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba0/logs/CHECKOUT_PREFLIGHT-20261006T235111064111Z-104964.json",
+        "sha256": "060b1cd14e9f7349ae3fbbae7baf3de021705fc1b9255410440cafe3d8cfaaf3",
+        "bytes": 79309
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba0/logs/CHECKOUT_PREFLIGHT-20261006T235111765983Z-104973.json",
+        "sha256": "060b1cd14e9f7349ae3fbbae7baf3de021705fc1b9255410440cafe3d8cfaaf3",
+        "bytes": 79309
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba0/logs/CHECKOUT_PREFLIGHT-20261006T235112563730Z-104980.json",
+        "sha256": "c30e637d03bd92d52669b4ef184c271776d958a75698e030dae1050f3cbd725a",
+        "bytes": 81665
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba0/logs/events.jsonl",
+        "sha256": "8444a772d10aa70e2abc7b2d63a11d09d7e9aaba154185c5e19a87cfd73590e1",
+        "bytes": 7099
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba1/logs/20261006T235114Z-apply-105010.log",
+        "sha256": "ab63a301ab8f9751edf5dd733cf50444ac78cc2a3567bf26709a3b50ddd2059c",
+        "bytes": 2544
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba1/logs/20261006T235114Z-check-105003.log",
+        "sha256": "30fbe7a6ce666885727628f9f7e78ab4286bcde6cd6ea3593ac1b37b63ecff3b",
+        "bytes": 1890
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba1/logs/20261006T235115Z-apply-105023.log",
+        "sha256": "ce28e20482c4840024097cc4e01281962684084ee2ca33c609fb5182ac55593c",
+        "bytes": 2225
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba1/logs/20261006T235116Z-rollback-105047.log",
+        "sha256": "4bbd23ea799916aac5e91d73427e6821b73d8b98203d6677930a268f3f635deb",
+        "bytes": 1305
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba1/logs/20261006T235116Z-verify-105030.log",
+        "sha256": "1d3082d8876eb4687187155aaedc92677bd2644b28d66099c6beefcfa14b96a5",
+        "bytes": 4349
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba1/logs/CHECKOUT_PREFLIGHT-20261006T235114050826Z-105009.json",
+        "sha256": "42482630eaf46a3c66ba316956ff27a8a4b5cf092e1bae7579c89459cc74790b",
+        "bytes": 81665
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba1/logs/CHECKOUT_PREFLIGHT-20261006T235114757412Z-105016.json",
+        "sha256": "42482630eaf46a3c66ba316956ff27a8a4b5cf092e1bae7579c89459cc74790b",
+        "bytes": 81665
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba1/logs/CHECKOUT_PREFLIGHT-20261006T235115606766Z-105029.json",
+        "sha256": "42482630eaf46a3c66ba316956ff27a8a4b5cf092e1bae7579c89459cc74790b",
+        "bytes": 81665
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba1/logs/events.jsonl",
+        "sha256": "c18e296ee152884fc34536aa6e43c3cfcd580004bd835fd7ac3967f39a9b66a6",
+        "bytes": 7099
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba2/logs/20261006T235117Z-check-105071.log",
+        "sha256": "7a2407453ffe97c969dae4b1baff9caa6f588145e16ce642e503b3aaab024577",
+        "bytes": 1890
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba2/logs/20261006T235118Z-apply-105082.log",
+        "sha256": "95ef20d1b4812ed81d1069cb4d76d871f3d18fb89c537dc1fb3b359380bf05e6",
+        "bytes": 2544
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba2/logs/20261006T235118Z-apply-105093.log",
+        "sha256": "a5f90384c8b8835c42c3cbe8540136713ec8de354f46df73befc255921b972bb",
+        "bytes": 2225
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba2/logs/20261006T235119Z-verify-105104.log",
+        "sha256": "a5eee50138c32039f40a2d3c52320e79d940439f88d5c0a9ef5dec75241f637e",
+        "bytes": 4349
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba2/logs/20261006T235120Z-rollback-105119.log",
+        "sha256": "a24798d64f045c1a0fd540bc615fed72204376ca79e1692448506dc256ce9978",
+        "bytes": 1305
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba2/logs/CHECKOUT_PREFLIGHT-20261006T235117356777Z-105077.json",
+        "sha256": "d03435b220d8478bb25bff5a005f3b9f6d7f7a1f372a3d58f955559ba5cad73c",
+        "bytes": 79719
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba2/logs/CHECKOUT_PREFLIGHT-20261006T235118095728Z-105088.json",
+        "sha256": "d03435b220d8478bb25bff5a005f3b9f6d7f7a1f372a3d58f955559ba5cad73c",
+        "bytes": 79719
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba2/logs/CHECKOUT_PREFLIGHT-20261006T235118936544Z-105099.json",
+        "sha256": "4524bd8b3f9af3d6a21ab3d0f0ec20f770e2f26a20234056cac46c4da7a90f6b",
+        "bytes": 81703
+      },
+      {
+        "path": "test_apply_rerun_verify_rollba2/logs/events.jsonl",
+        "sha256": "b4f52633c6def54875e61a9ce74050e601019e29681a5aeff044346e14d85fd1",
+        "bytes": 7099
+      },
+      {
+        "path": "test_apply_rerun_verify_rollbacurrent/logs/20261006T235117Z-check-105071.log",
+        "sha256": "7a2407453ffe97c969dae4b1baff9caa6f588145e16ce642e503b3aaab024577",
+        "bytes": 1890
+      },
+      {
+        "path": "test_apply_rerun_verify_rollbacurrent/logs/20261006T235118Z-apply-105082.log",
+        "sha256": "95ef20d1b4812ed81d1069cb4d76d871f3d18fb89c537dc1fb3b359380bf05e6",
+        "bytes": 2544
+      },
+      {
+        "path": "test_apply_rerun_verify_rollbacurrent/logs/20261006T235118Z-apply-105093.log",
+        "sha256": "a5f90384c8b8835c42c3cbe8540136713ec8de354f46df73befc255921b972bb",
+        "bytes": 2225
+      },
+      {
+        "path": "test_apply_rerun_verify_rollbacurrent/logs/20261006T235119Z-verify-105104.log",
+        "sha256": "a5eee50138c32039f40a2d3c52320e79d940439f88d5c0a9ef5dec75241f637e",
+        "bytes": 4349
+      },
+      {
+        "path": "test_apply_rerun_verify_rollbacurrent/logs/20261006T235120Z-rollback-105119.log",
+        "sha256": "a24798d64f045c1a0fd540bc615fed72204376ca79e1692448506dc256ce9978",
+        "bytes": 1305
+      },
+      {
+        "path": "test_apply_rerun_verify_rollbacurrent/logs/CHECKOUT_PREFLIGHT-20261006T235117356777Z-105077.json",
+        "sha256": "d03435b220d8478bb25bff5a005f3b9f6d7f7a1f372a3d58f955559ba5cad73c",
+        "bytes": 79719
+      },
+      {
+        "path": "test_apply_rerun_verify_rollbacurrent/logs/CHECKOUT_PREFLIGHT-20261006T235118095728Z-105088.json",
+        "sha256": "d03435b220d8478bb25bff5a005f3b9f6d7f7a1f372a3d58f955559ba5cad73c",
+        "bytes": 79719
+      },
+      {
+        "path": "test_apply_rerun_verify_rollbacurrent/logs/CHECKOUT_PREFLIGHT-20261006T235118936544Z-105099.json",
+        "sha256": "4524bd8b3f9af3d6a21ab3d0f0ec20f770e2f26a20234056cac46c4da7a90f6b",
+        "bytes": 81703
+      },
+      {
+        "path": "test_apply_rerun_verify_rollbacurrent/logs/events.jsonl",
+        "sha256": "b4f52633c6def54875e61a9ce74050e601019e29681a5aeff044346e14d85fd1",
+        "bytes": 7099
+      },
+      {
+        "path": "test_changes_are_reported_and_0/logs/20261006T235129Z-all-105526.log",
+        "sha256": "fac4ab730643f0f2fa087997ac72c4c898d6154096d962298f89b42ca5d50424",
+        "bytes": 1218
+      },
+      {
+        "path": "test_changes_are_reported_and_0/logs/20261006T235129Z-inspect-105538.log",
+        "sha256": "1bf6bbe1ac1d06fa1d2b89d0239cd0999f73ed509caed6aafb68e623ff91908a",
+        "bytes": 1301
+      },
+      {
+        "path": "test_changes_are_reported_and_0/logs/CHECKOUT_PREFLIGHT-20261006T235129537239Z-105532.json",
+        "sha256": "70a07e2e19c3a432b8cc28715e2d37ce1796f3d6eca315178d3f3cff66fee8b0",
+        "bytes": 79728
+      },
+      {
+        "path": "test_changes_are_reported_and_0/logs/CHECKOUT_PREFLIGHT-20261006T235129654243Z-105544.json",
+        "sha256": "70a07e2e19c3a432b8cc28715e2d37ce1796f3d6eca315178d3f3cff66fee8b0",
+        "bytes": 79728
+      },
+      {
+        "path": "test_changes_are_reported_and_0/logs/events.jsonl",
+        "sha256": "25e928c4e2f7f400d9ddbd7fb919d32cccee5e02a3bf0080fe1558d72054c7f7",
+        "bytes": 1688
+      },
+      {
+        "path": "test_changes_are_reported_and_1/logs/20261006T235130Z-all-105568.log",
+        "sha256": "b48af10bc3883b17d89d8396e49ccfda0b6afe4b0ca98ebf20213e406940e51b",
+        "bytes": 1310
+      },
+      {
+        "path": "test_changes_are_reported_and_1/logs/20261006T235130Z-inspect-105581.log",
+        "sha256": "aa74a94b137d7f6e544d2f85c64227b03be8ed90ca2582e9b8238fcbd76589ff",
+        "bytes": 1393
+      },
+      {
+        "path": "test_changes_are_reported_and_1/logs/CHECKOUT_PREFLIGHT-20261006T235130167986Z-105574.json",
+        "sha256": "f98debba2364c93e8064f9025505c3dd6f3235653b525b403d5f03f528313395",
+        "bytes": 79929
+      },
+      {
+        "path": "test_changes_are_reported_and_1/logs/CHECKOUT_PREFLIGHT-20261006T235130269006Z-105587.json",
+        "sha256": "f98debba2364c93e8064f9025505c3dd6f3235653b525b403d5f03f528313395",
+        "bytes": 79929
+      },
+      {
+        "path": "test_changes_are_reported_and_1/logs/events.jsonl",
+        "sha256": "3c4e0a4c3a6d9188009533fc207eaa95517779d129e323282f93c71639a9c929",
+        "bytes": 1872
+      },
+      {
+        "path": "test_changes_are_reported_and_2/logs/20261006T235130Z-all-105612.log",
+        "sha256": "821cd9e424adfdf07766a6804128cf1cde79259b631eccdc9d33be3177a08c5e",
+        "bytes": 1437
+      },
+      {
+        "path": "test_changes_are_reported_and_2/logs/20261006T235130Z-inspect-105624.log",
+        "sha256": "7710710c5696a52b388b362e158643555c5d6d06f682aaf57eca47d9f7440f3e",
+        "bytes": 1520
+      },
+      {
+        "path": "test_changes_are_reported_and_2/logs/CHECKOUT_PREFLIGHT-20261006T235130777672Z-105618.json",
+        "sha256": "5f5672d7493bc57747127df4affd74ea84d697974d1db3f35c8d2c5833fb1a57",
+        "bytes": 79978
+      },
+      {
+        "path": "test_changes_are_reported_and_2/logs/CHECKOUT_PREFLIGHT-20261006T235130894213Z-105630.json",
+        "sha256": "5f5672d7493bc57747127df4affd74ea84d697974d1db3f35c8d2c5833fb1a57",
+        "bytes": 79978
+      },
+      {
+        "path": "test_changes_are_reported_and_2/logs/events.jsonl",
+        "sha256": "9b292e270d4fe58376714d4066f839985bfed7ef46ba0db2d0006c0b0536fd5a",
+        "bytes": 2126
+      },
+      {
+        "path": "test_changes_are_reported_and_current/logs/20261006T235130Z-all-105612.log",
+        "sha256": "821cd9e424adfdf07766a6804128cf1cde79259b631eccdc9d33be3177a08c5e",
+        "bytes": 1437
+      },
+      {
+        "path": "test_changes_are_reported_and_current/logs/20261006T235130Z-inspect-105624.log",
+        "sha256": "7710710c5696a52b388b362e158643555c5d6d06f682aaf57eca47d9f7440f3e",
+        "bytes": 1520
+      },
+      {
+        "path": "test_changes_are_reported_and_current/logs/CHECKOUT_PREFLIGHT-20261006T235130777672Z-105618.json",
+        "sha256": "5f5672d7493bc57747127df4affd74ea84d697974d1db3f35c8d2c5833fb1a57",
+        "bytes": 79978
+      },
+      {
+        "path": "test_changes_are_reported_and_current/logs/CHECKOUT_PREFLIGHT-20261006T235130894213Z-105630.json",
+        "sha256": "5f5672d7493bc57747127df4affd74ea84d697974d1db3f35c8d2c5833fb1a57",
+        "bytes": 79978
+      },
+      {
+        "path": "test_changes_are_reported_and_current/logs/events.jsonl",
+        "sha256": "9b292e270d4fe58376714d4066f839985bfed7ef46ba0db2d0006c0b0536fd5a",
+        "bytes": 2126
+      },
+      {
+        "path": "test_full_txt_commits_gates_an0/logs/20261006T235121Z-all-105156.log",
+        "sha256": "57c9d4f1f60e0a910ed110ab63949e825ef852d98f51a9a725f585ce63933685",
+        "bytes": 7898
+      },
+      {
+        "path": "test_full_txt_commits_gates_an0/logs/20261006T235122Z-all-105237.log",
+        "sha256": "ca5cc4a26060f28519e31ea29b10911153af0065bee8c0623e818608a2c98460",
+        "bytes": 7593
+      },
+      {
+        "path": "test_full_txt_commits_gates_an0/logs/CHECKOUT_PREFLIGHT-20261006T235121307086Z-105162.json",
+        "sha256": "3841fdefd586e35cb7b47bd255c3a65f55ac6623d449f8b67e445bb1fbe8f5f9",
+        "bytes": 79333
+      },
+      {
+        "path": "test_full_txt_commits_gates_an0/logs/CHECKOUT_PREFLIGHT-20261006T235123016023Z-105243.json",
+        "sha256": "1616d2c6d6b729fbf9a04d34587fada2e41d3d1a7c8fe4fff70c3fe94244b5bb",
+        "bytes": 81689
+      },
+      {
+        "path": "test_full_txt_commits_gates_an0/logs/events.jsonl",
+        "sha256": "ebee11fd266661760083858edf47c651f8b237c0e2c8a2bd55805768c515662a",
+        "bytes": 5178
+      },
+      {
+        "path": "test_full_txt_commits_gates_an1/logs/20261006T235124Z-all-105305.log",
+        "sha256": "b272d1fc29f635bfd30bf07997cfed17ccb0dfd2ec67fe2f5d0add0151f41b18",
+        "bytes": 7898
+      },
+      {
+        "path": "test_full_txt_commits_gates_an1/logs/20261006T235126Z-all-105387.log",
+        "sha256": "7cc4d4138fd3899d9cdb4eaa6ba91763c300360f629f359223c276befccc6c4d",
+        "bytes": 7593
+      },
+      {
+        "path": "test_full_txt_commits_gates_an1/logs/CHECKOUT_PREFLIGHT-20261006T235124788010Z-105311.json",
+        "sha256": "2ec6235078d39e11ea373fa4b5de37fbdc1fcd80d94455e9419918519f1fe580",
+        "bytes": 79705
+      },
+      {
+        "path": "test_full_txt_commits_gates_an1/logs/CHECKOUT_PREFLIGHT-20261006T235126546758Z-105393.json",
+        "sha256": "d71d84a0e0bf8a792fdd95bd45b448bb03151b68a97b10fb76ea369d2418c6ec",
+        "bytes": 81689
+      },
+      {
+        "path": "test_full_txt_commits_gates_an1/logs/events.jsonl",
+        "sha256": "8643e38c88dae5790ec9ed572a497ff1a5cb0bc6c9668cf8b1c339d8a1bafa2f",
+        "bytes": 5178
+      },
+      {
+        "path": "test_full_txt_commits_gates_ancurrent/logs/20261006T235124Z-all-105305.log",
+        "sha256": "b272d1fc29f635bfd30bf07997cfed17ccb0dfd2ec67fe2f5d0add0151f41b18",
+        "bytes": 7898
+      },
+      {
+        "path": "test_full_txt_commits_gates_ancurrent/logs/20261006T235126Z-all-105387.log",
+        "sha256": "7cc4d4138fd3899d9cdb4eaa6ba91763c300360f629f359223c276befccc6c4d",
+        "bytes": 7593
+      },
+      {
+        "path": "test_full_txt_commits_gates_ancurrent/logs/CHECKOUT_PREFLIGHT-20261006T235124788010Z-105311.json",
+        "sha256": "2ec6235078d39e11ea373fa4b5de37fbdc1fcd80d94455e9419918519f1fe580",
+        "bytes": 79705
+      },
+      {
+        "path": "test_full_txt_commits_gates_ancurrent/logs/CHECKOUT_PREFLIGHT-20261006T235126546758Z-105393.json",
+        "sha256": "d71d84a0e0bf8a792fdd95bd45b448bb03151b68a97b10fb76ea369d2418c6ec",
+        "bytes": 81689
+      },
+      {
+        "path": "test_full_txt_commits_gates_ancurrent/logs/events.jsonl",
+        "sha256": "8643e38c88dae5790ec9ed572a497ff1a5cb0bc6c9668cf8b1c339d8a1bafa2f",
+        "bytes": 5178
+      },
+      {
+        "path": "test_photo_r2_failure_is_repro0/logs/20261006T235128Z-apply-105486.log",
+        "sha256": "1780250c99de5bcfcdc6981ea3d8459c93a9b554e7bf82e773c4638da77a4f75",
+        "bytes": 1290
+      },
+      {
+        "path": "test_photo_r2_failure_is_repro0/logs/20261006T235128Z-check-105493.log",
+        "sha256": "9120ba44c5303be3b30e6682ec00a5b2bc125d0514f5f75597219219f19afdea",
+        "bytes": 1876
+      },
+      {
+        "path": "test_photo_r2_failure_is_repro0/logs/CHECKOUT_PREFLIGHT-20261006T235128397112Z-105499.json",
+        "sha256": "fbb54a0a519635d618544c8b7cffd2c8ddda918295f1519192687c1740efa2ed",
+        "bytes": 79705
+      },
+      {
+        "path": "test_photo_r2_failure_is_repro0/logs/events.jsonl",
+        "sha256": "e31adb6d849f047e91115acb6fa53fad74e9c5868b9fb855653319eacf0d0b5e",
+        "bytes": 2202
+      },
+      {
+        "path": "test_photo_r2_failure_is_reprocurrent/logs/20261006T235128Z-apply-105486.log",
+        "sha256": "1780250c99de5bcfcdc6981ea3d8459c93a9b554e7bf82e773c4638da77a4f75",
+        "bytes": 1290
+      },
+      {
+        "path": "test_photo_r2_failure_is_reprocurrent/logs/20261006T235128Z-check-105493.log",
+        "sha256": "9120ba44c5303be3b30e6682ec00a5b2bc125d0514f5f75597219219f19afdea",
+        "bytes": 1876
+      },
+      {
+        "path": "test_photo_r2_failure_is_reprocurrent/logs/CHECKOUT_PREFLIGHT-20261006T235128397112Z-105499.json",
+        "sha256": "fbb54a0a519635d618544c8b7cffd2c8ddda918295f1519192687c1740efa2ed",
+        "bytes": 79705
+      },
+      {
+        "path": "test_photo_r2_failure_is_reprocurrent/logs/events.jsonl",
+        "sha256": "e31adb6d849f047e91115acb6fa53fad74e9c5868b9fb855653319eacf0d0b5e",
+        "bytes": 2202
+      },
+      {
+        "path": "test_preflight_rejects_tamperi0/logs/20261006T235120Z-apply-105126.log",
+        "sha256": "8e893c9bc475abc8648a804429b6170f44e0b2a0f077279b3db1d5cf8fc59e2d",
+        "bytes": 1442
+      },
+      {
+        "path": "test_preflight_rejects_tamperi0/logs/CHECKOUT_PREFLIGHT-20261006T235120412065Z-105132.json",
+        "sha256": "e4aead544b561d9facbb1e13f09e4b7bd2114adb5d4ef9b4a2c1dd90b6ef9600",
+        "bytes": 79569
+      },
+      {
+        "path": "test_preflight_rejects_tamperi0/logs/events.jsonl",
+        "sha256": "896fc149c3bbbfe04c82a584d0f9bb4277b439439443d2ed112b113046b80793",
+        "bytes": 971
+      },
+      {
+        "path": "test_preflight_rejects_tamperi1/logs/20261006T235120Z-apply-105133.log",
+        "sha256": "8c1452c06de3e91cfff83d8e1cdf02f309af7413d048092803e2e16a4f8c2ff7",
+        "bytes": 1417
+      },
+      {
+        "path": "test_preflight_rejects_tamperi1/logs/CHECKOUT_PREFLIGHT-20261006T235120679866Z-105139.json",
+        "sha256": "de05a1716d623b935c0d6e1249d352e7a572f17ef1636c740a2b879e394ccf28",
+        "bytes": 79295
+      },
+      {
+        "path": "test_preflight_rejects_tamperi1/logs/events.jsonl",
+        "sha256": "3542f42c118bba92a483cc7ff3d1d1fb945919645e2c398a91a4db4b8c7d3cd0",
+        "bytes": 1003
+      },
+      {
+        "path": "test_preflight_rejects_tamperi2/logs/20261006T235120Z-apply-105140.log",
+        "sha256": "92907ffc9b8c03f891554dddb019e722cd7fdc07bc7e6ae77a2678eff7357b07",
+        "bytes": 526
+      },
+      {
+        "path": "test_preflight_rejects_tamperi2/logs/events.jsonl",
+        "sha256": "1c6559b10936c777dd56d1fcbb0b09a87ce16bdaf6578e146cb580f0898aa266",
+        "bytes": 175
+      },
+      {
+        "path": "test_preflight_rejects_tampericurrent/logs/20261006T235120Z-apply-105140.log",
+        "sha256": "92907ffc9b8c03f891554dddb019e722cd7fdc07bc7e6ae77a2678eff7357b07",
+        "bytes": 526
+      },
+      {
+        "path": "test_preflight_rejects_tampericurrent/logs/events.jsonl",
+        "sha256": "1c6559b10936c777dd56d1fcbb0b09a87ce16bdaf6578e146cb580f0898aa266",
+        "bytes": 175
+      }
+    ]
+  },
+  "retained_events": [
+    {
+      "log": "test_apply_rerun_verify_rollba0/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_apply_rerun_verify_rollba0/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_apply_rerun_verify_rollba0/logs/events.jsonl",
+      "stage": "CODE_APPLIED"
+    },
+    {
+      "log": "test_apply_rerun_verify_rollba0/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_apply_rerun_verify_rollba0/logs/events.jsonl",
+      "stage": "CODE_APPLIED"
+    },
+    {
+      "log": "test_apply_rerun_verify_rollba1/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_apply_rerun_verify_rollba1/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_apply_rerun_verify_rollba1/logs/events.jsonl",
+      "stage": "CODE_APPLIED"
+    },
+    {
+      "log": "test_apply_rerun_verify_rollba1/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_apply_rerun_verify_rollba1/logs/events.jsonl",
+      "stage": "CODE_APPLIED"
+    },
+    {
+      "log": "test_apply_rerun_verify_rollba2/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_apply_rerun_verify_rollba2/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_apply_rerun_verify_rollba2/logs/events.jsonl",
+      "stage": "CODE_APPLIED"
+    },
+    {
+      "log": "test_apply_rerun_verify_rollba2/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_apply_rerun_verify_rollba2/logs/events.jsonl",
+      "stage": "CODE_APPLIED"
+    },
+    {
+      "log": "test_apply_rerun_verify_rollbacurrent/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_apply_rerun_verify_rollbacurrent/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_apply_rerun_verify_rollbacurrent/logs/events.jsonl",
+      "stage": "CODE_APPLIED"
+    },
+    {
+      "log": "test_apply_rerun_verify_rollbacurrent/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_apply_rerun_verify_rollbacurrent/logs/events.jsonl",
+      "stage": "CODE_APPLIED"
+    },
+    {
+      "log": "test_changes_are_reported_and_0/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [
+        "unrelated.txt"
+      ],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_changes_are_reported_and_0/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [
+        "unrelated.txt"
+      ],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_changes_are_reported_and_1/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [
+        {
+          "path": "service.py",
+          "staged_sha256": "6b7747b03375c6a0d122e7278882dfb318b894ecdb9f8445966ad2599aca8320"
+        }
+      ],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_changes_are_reported_and_1/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [
+        {
+          "path": "service.py",
+          "staged_sha256": "6b7747b03375c6a0d122e7278882dfb318b894ecdb9f8445966ad2599aca8320"
+        }
+      ],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_changes_are_reported_and_2/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_changes_are_reported_and_2/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_changes_are_reported_and_current/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_changes_are_reported_and_current/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_full_txt_commits_gates_an0/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_full_txt_commits_gates_an0/logs/events.jsonl",
+      "stage": "CODE_APPLIED"
+    },
+    {
+      "log": "test_full_txt_commits_gates_an0/logs/events.jsonl",
+      "stage": "RELEASE_GATE_PASS"
+    },
+    {
+      "log": "test_full_txt_commits_gates_an0/logs/events.jsonl",
+      "stage": "GIT_PUSHED",
+      "commit": "cc0f3f5d63aa330b94763e08492207295031169a",
+      "generation": "/tmp/genos-investigation-r4-validation-final/test_full_txt_commits_gates_an0/built/generation",
+      "generation_manifest_sha256": "4d60c89550f9cc44b8c82f38517d5758f54b7721e62b33f1f1f4d7ee8bcae5d3"
+    },
+    {
+      "log": "test_full_txt_commits_gates_an0/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_full_txt_commits_gates_an0/logs/events.jsonl",
+      "stage": "CODE_APPLIED"
+    },
+    {
+      "log": "test_full_txt_commits_gates_an0/logs/events.jsonl",
+      "stage": "RELEASE_GATE_PASS"
+    },
+    {
+      "log": "test_full_txt_commits_gates_an0/logs/events.jsonl",
+      "stage": "GIT_PUSHED",
+      "commit": "cc0f3f5d63aa330b94763e08492207295031169a",
+      "generation": "/tmp/genos-investigation-r4-validation-final/test_full_txt_commits_gates_an0/built/generation",
+      "generation_manifest_sha256": "4d60c89550f9cc44b8c82f38517d5758f54b7721e62b33f1f1f4d7ee8bcae5d3"
+    },
+    {
+      "log": "test_full_txt_commits_gates_an1/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_full_txt_commits_gates_an1/logs/events.jsonl",
+      "stage": "CODE_APPLIED"
+    },
+    {
+      "log": "test_full_txt_commits_gates_an1/logs/events.jsonl",
+      "stage": "RELEASE_GATE_PASS"
+    },
+    {
+      "log": "test_full_txt_commits_gates_an1/logs/events.jsonl",
+      "stage": "GIT_PUSHED",
+      "commit": "2ac9e10afff435293f356140ccc990755195c4a9",
+      "generation": "/tmp/genos-investigation-r4-validation-final/test_full_txt_commits_gates_an1/built/generation",
+      "generation_manifest_sha256": "baec2760126ea8ad509178cbf95f60a50afa17eae63075c052002e70df9fdaba"
+    },
+    {
+      "log": "test_full_txt_commits_gates_an1/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_full_txt_commits_gates_an1/logs/events.jsonl",
+      "stage": "CODE_APPLIED"
+    },
+    {
+      "log": "test_full_txt_commits_gates_an1/logs/events.jsonl",
+      "stage": "RELEASE_GATE_PASS"
+    },
+    {
+      "log": "test_full_txt_commits_gates_an1/logs/events.jsonl",
+      "stage": "GIT_PUSHED",
+      "commit": "2ac9e10afff435293f356140ccc990755195c4a9",
+      "generation": "/tmp/genos-investigation-r4-validation-final/test_full_txt_commits_gates_an1/built/generation",
+      "generation_manifest_sha256": "baec2760126ea8ad509178cbf95f60a50afa17eae63075c052002e70df9fdaba"
+    },
+    {
+      "log": "test_full_txt_commits_gates_ancurrent/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_full_txt_commits_gates_ancurrent/logs/events.jsonl",
+      "stage": "CODE_APPLIED"
+    },
+    {
+      "log": "test_full_txt_commits_gates_ancurrent/logs/events.jsonl",
+      "stage": "RELEASE_GATE_PASS"
+    },
+    {
+      "log": "test_full_txt_commits_gates_ancurrent/logs/events.jsonl",
+      "stage": "GIT_PUSHED",
+      "commit": "2ac9e10afff435293f356140ccc990755195c4a9",
+      "generation": "/tmp/genos-investigation-r4-validation-final/test_full_txt_commits_gates_an1/built/generation",
+      "generation_manifest_sha256": "baec2760126ea8ad509178cbf95f60a50afa17eae63075c052002e70df9fdaba"
+    },
+    {
+      "log": "test_full_txt_commits_gates_ancurrent/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_full_txt_commits_gates_ancurrent/logs/events.jsonl",
+      "stage": "CODE_APPLIED"
+    },
+    {
+      "log": "test_full_txt_commits_gates_ancurrent/logs/events.jsonl",
+      "stage": "RELEASE_GATE_PASS"
+    },
+    {
+      "log": "test_full_txt_commits_gates_ancurrent/logs/events.jsonl",
+      "stage": "GIT_PUSHED",
+      "commit": "2ac9e10afff435293f356140ccc990755195c4a9",
+      "generation": "/tmp/genos-investigation-r4-validation-final/test_full_txt_commits_gates_an1/built/generation",
+      "generation_manifest_sha256": "baec2760126ea8ad509178cbf95f60a50afa17eae63075c052002e70df9fdaba"
+    },
+    {
+      "log": "test_photo_r2_failure_is_repro0/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_photo_r2_failure_is_reprocurrent/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_preflight_rejects_tamperi0/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    },
+    {
+      "log": "test_preflight_rejects_tamperi1/logs/events.jsonl",
+      "stage": "CHECKOUT_PREFLIGHT",
+      "unrelated_paths": [],
+      "unknown_staged_bytes": [],
+      "unmerged_paths": []
+    }
+  ]
+}

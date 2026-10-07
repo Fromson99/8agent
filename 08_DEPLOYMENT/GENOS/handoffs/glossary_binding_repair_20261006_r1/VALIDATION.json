@@ -1,0 +1,39 @@
+{
+  "required_contracts": {
+    "tests": 84,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "historical_artifact_tests_deselected": 3,
+  "supported_predecessors": 9,
+  "installer_cache_preservation_rollback_and_negative_contracts": 12,
+  "selected_shipped_contracts": 72,
+  "local_synthetic_full_gate": "PASS",
+  "gate_logs": [
+    {
+      "source": "/home/jin/8-AGENT/09_ARTIFACTS/DELIVERIES/glossary_binding_repair_20261006_r1/pytest-temp/test_exact_installer_preserves8/logs/20261006T050350Z-gate-1178177.log",
+      "saved": "LOCAL_SYNTHETIC_GATE.log",
+      "sha256": "496e839ac2ac6bd9118e620fa67e4316a39d7b0788e930a7dbf7aef9be1d75c6"
+    }
+  ],
+  "python311_syntax": "PASS",
+  "bash_syntax": "PASS",
+  "zip_inventory_and_hashes": "PASS",
+  "required_runtime_pins": "PASS",
+  "no_javascript": "PASS",
+  "code_zip_sha256": "c52f9334933d07d73adeb0e899068f9c73516cdb471ef45482ec83b891116729",
+  "apply_txt_sha256": "1a328f1259bc07a6880e432744e43913a1d453bdc9c9f899904e3e1339ce8a4f",
+  "source_modification": "Only full_glossary.py runtime code changes relative to relation R2; other engine/PIPELINE changes update compiler pins",
+  "test_support_inventory": "TEST_SUPPORT.json; authoring fixture dependencies are not packaged",
+  "broader_suite_observations": [
+    "Two older compact conversation tests expect the former unified response wrapper / HTTP422 but preserved shipped shortcuts use shortcut response / HTTP403. They were not changed or certified by this repair. Required compact question-to-cited-answer and new installer/full-gate contracts pass.",
+    "Historical frozen-baseline/crash tests need archived research files outside this shipped repair and were not rerun.",
+    "Early isolated fixture setup failures and /tmp capacity failure are preserved in prior XML; final scoped run uses a dedicated Linux disk temporary directory."
+  ],
+  "genos_deployed": false,
+  "field_generation_gate": "NOT_RUN",
+  "field_workflow_e2e": "NOT_RUN",
+  "external_model_calls": 0,
+  "product_main_promoted": false
+}

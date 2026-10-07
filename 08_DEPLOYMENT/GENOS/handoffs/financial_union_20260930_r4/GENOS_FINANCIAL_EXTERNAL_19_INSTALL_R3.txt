@@ -1,0 +1,299 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+
+# MODE=check (default) validates without writes. MODE=apply installs the exact
+# 19 external financial documents using eleven ZIP originals plus GENOS risk_team,
+# fixes the mistaken internal registration,
+# and publishes the nine-document union_file manifest. No structure/index here.
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-financial-external-install-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+DEPLOY_ROOT="${DEPLOY_ROOT:-$HOME/DEV}"
+cd -P "$DEPLOY_ROOT"
+DEPLOY_ROOT="$(pwd -P)"
+DATA_ROOT="$(realpath "${GENOS_DATA_ROOT:-$DEPLOY_ROOT/01_DATA}")"
+SOURCE_ZIP="${SOURCE_ZIP:-$DEPLOY_ROOT/TRANSFER/GENOS_FINANCIAL_EXTERNAL_19_20260930_R3.zip}"
+MODE="${MODE:-check}"
+[[ "$MODE" == check || "$MODE" == apply ]] || { echo 'MODE must be check or apply'; exit 2; }
+[[ -f "$SOURCE_ZIP" && ! -L "$SOURCE_ZIP" ]] || { echo "ZIP missing or symlink: $SOURCE_ZIP"; exit 2; }
+command -v python3 >/dev/null || { echo 'python3 not found'; exit 2; }
+printf '%s  %s\n' '4106cf89bae13502a56d05516406ac2b2977a608d3cd5ebc4926c229cc22ab86' "$SOURCE_ZIP" | sha256sum -c -
+printf 'START mode=%s checkout=%s data=%s zip=%s python=%s\n' "$MODE" "$DEPLOY_ROOT" "$DATA_ROOT" "$SOURCE_ZIP" "$(command -v python3)"
+
+python3 - "$DATA_ROOT" "$SOURCE_ZIP" "$MODE" <<'PY'
+from __future__ import annotations
+import copy
+from collections import Counter
+from datetime import datetime, timezone
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import shutil
+import stat
+import sys
+import uuid
+import zipfile
+
+data, archive_path, mode = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
+layout_path = data / 'CATALOG/TEAM_LAYOUT.json'
+scope_path = data / 'CATALOG/SCOPES/photo-required-80-hwpx-20260917.json'
+union_path = data / 'RAW/union_file/manifest.json'
+history = data / 'CATALOG/TEAM_LAYOUT_HISTORY/financial-external-19-correction-r3'
+backup = data / 'BACKUPS/financial-external-19-correction-r3/misplaced-internal'
+scope_sha = 'aba1df17dbd2648203cf3ceb9719b784f398822bdaf7a163f566765b7cd3025f'
+
+def digest(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+def sha(path):
+    h = hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+def safe(rel):
+    p = PurePosixPath(rel)
+    if p.is_absolute() or '..' in p.parts or not p.parts:
+        raise ValueError('unsafe relative path: ' + rel)
+    target = data
+    for part in p.parts:
+        target = target / part
+        if target.is_symlink():
+            raise ValueError('symlink in data path: ' + str(target))
+    return target
+
+def atomic_bytes(target, raw):
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temp = target.with_name('.' + target.name + '.tmp-' + uuid.uuid4().hex)
+    try:
+        temp.write_bytes(raw)
+        os.replace(temp, target)
+    finally:
+        temp.unlink(missing_ok=True)
+
+if sha(scope_path) != scope_sha:
+    raise ValueError('photo61 scope hash differs')
+scope = json.loads(scope_path.read_text(encoding='utf-8'))['documents'][:61]
+form_by_name = {d['name']: d for d in scope[51:61]}
+if len(form_by_name) != 10 or len(scope) != 61:
+    raise ValueError('photo61 document boundary differs')
+
+with zipfile.ZipFile(archive_path) as archive:
+    if archive.testzip() is not None:
+        raise ValueError('ZIP CRC failed')
+    manifest = json.loads(archive.read('MANIFEST.json'))
+    rows = manifest['records']
+    shared_names = set(manifest.get('shared_document_names', []))
+    if (manifest.get('schema_version') != 'financial-external-19-r3'
+        or manifest.get('scope_sha256') != scope_sha
+        or manifest.get('document_counts') != {'risk_shared': 9, 'financial_external_forms': 10}
+        or manifest.get('file_counts') != {'financial_external_forms': 11}
+        or len(shared_names) != 9 or len(rows) != 11
+        or any(r['role'] != 'financial_external_form' for r in rows)):
+        raise ValueError('handoff manifest contract differs')
+    expected_members = {'MANIFEST.json'} | {'DATA/' + row['target_path'] for row in rows}
+    infos = archive.infolist()
+    if len(infos) != len(expected_members) or {i.filename for i in infos} != expected_members:
+        raise ValueError('ZIP member inventory differs')
+    for info in infos:
+        p = PurePosixPath(info.filename)
+        if (p.is_absolute() or '..' in p.parts or info.is_dir()
+            or stat.S_ISLNK(info.external_attr >> 16)
+            or p.suffix.lower() in {'.js', '.jsx', '.mjs', '.cjs'}):
+            raise ValueError('unsafe ZIP member: ' + info.filename)
+    if len({r['target_path'] for r in rows}) != 11:
+        raise ValueError('duplicate target in handoff')
+    raw_by_target = {}
+    for row in rows:
+        rel = row['target_path']
+        if not rel.startswith('RAW/external/financial_team/'):
+            raise ValueError('target is outside financial external RAW: ' + rel)
+        raw = archive.read('DATA/' + rel)
+        if len(raw) != row['bytes'] or digest(raw) != row['sha256']:
+            raise ValueError('source ZIP hash differs: ' + rel)
+        raw_by_target[rel] = raw
+
+    lock_path = safe('.raw-migration.lock')
+    with lock_path.open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        layout_raw = layout_path.read_bytes()
+        layout = json.loads(layout_raw)
+        if layout.get('schema_version') != 'team-raw-v1' or not isinstance(layout.get('files'), dict):
+            raise ValueError('team RAW layout differs')
+        if history.exists():
+            receipt_path = history / 'receipt.json'
+            if not receipt_path.is_file():
+                raise ValueError('prior install is incomplete; inspect history before rerun')
+            receipt = json.loads(receipt_path.read_text())
+            if (sha(layout_path) != receipt['layout_after_sha256']
+                or sha(union_path) != receipt['union_after_sha256']):
+                raise ValueError('completed repair binding differs')
+            if any(not safe(r['target_path']).is_file() or sha(safe(r['target_path'])) != r['sha256'] for r in rows):
+                raise ValueError('installed external original differs')
+            prior_union = json.loads(union_path.read_text())
+            if len(prior_union['entries']) != receipt['shared_pairs'] or any(
+                sha(safe(e['risk_path'])) != e['sha256'] or
+                sha(safe(e['financial_path'])) != e['sha256'] for e in prior_union['entries']):
+                raise ValueError('installed shared original differs')
+            print('REUSED financial_documents=19 external_files=' + str(receipt['financial_external_files'])
+                  + ' union_pairs=' + str(receipt['shared_pairs']), flush=True)
+            raise SystemExit(0)
+
+        risk_rows = [(rel, item) for rel, item in layout['files'].items()
+                     if rel.startswith('RAW/external/risk_team/')
+                     and item.get('team') == 'risk_team'
+                     and item.get('scope_document') in shared_names]
+        form_rows = rows
+        if (shared_names & set(form_by_name)
+            or {r['document'] for r in form_rows} != set(form_by_name)
+            or {item['scope_document'] for _, item in risk_rows} != shared_names):
+            raise ValueError('shared and form document sets overlap or differ')
+        scope_by_name = {d['name']: d for d in scope}
+        for name in shared_names:
+            expected = Counter((f['sha256'], f['role']) for f in scope_by_name[name]['files'])
+            present = Counter((item['sha256'], item['role']) for _, item in risk_rows
+                              if item['scope_document'] == name)
+            if expected - present:
+                raise ValueError('risk source lacks scoped originals: ' + name)
+
+        after = copy.deepcopy(layout)
+        misplaced = []
+        for doc in form_by_name.values():
+            for item in doc['files']:
+                base = PurePosixPath(item['path']).name
+                for team in ('risk_team', 'financial_team'):
+                    old_rel = 'RAW/internal/' + team + '/forms/' + doc['name'] + '/' + base
+                    old_path = safe(old_rel)
+                    old_record = after['files'].get(old_rel)
+                    if old_record and (old_record.get('sha256') != item['sha256']
+                                       or old_record.get('source') != 'internal'
+                                       or old_record.get('team') != team):
+                        raise ValueError('misplaced registration differs: ' + old_rel)
+                    if old_path.exists() and sha(old_path) != item['sha256']:
+                        raise ValueError('misplaced original changed: ' + old_rel)
+                    if old_path.exists():
+                        misplaced.append((old_rel, item['sha256']))
+                    after['files'].pop(old_rel, None)
+
+        for source_rel, old in risk_rows:
+            origin = safe(source_rel)
+            if (old.get('source') != 'external' or not origin.is_file()
+                or sha(origin) != old['sha256']):
+                raise ValueError('risk source missing or differs: ' + source_rel)
+            target_rel = source_rel.replace('/risk_team/', '/financial_team/', 1)
+            raw_by_target[target_rel] = origin.read_bytes()
+            added = copy.deepcopy(old)
+            added['team'] = 'financial_team'
+            added['shared_from'] = source_rel
+            existing = after['files'].get(target_rel)
+            if existing and any(existing.get(k) != added.get(k)
+                                for k in ('sha256', 'source', 'role', 'team', 'security_class', 'export_allowed')):
+                raise ValueError('financial target registration collision: ' + target_rel)
+            after['files'][target_rel] = added
+
+        for row in form_rows:
+            doc = form_by_name[row['document']]
+            item = next((f for f in doc['files'] if f['sha256'] == row['sha256']), None)
+            if item is None or row['external_source'] not in {'krx', 'klca'}:
+                raise ValueError('form source/version differs: ' + row['document'])
+            new = {**item, 'name': doc['name'] if item['role'] == 'body' else item.get('title', Path(row['target_path']).stem),
+                   'source': 'external', 'external_source': row['external_source'],
+                   'kind': row['kind'], 'team': 'financial_team',
+                   'scope_document': doc['name'],
+                   'source_metadata': {'origin': row['source_origin'],
+                     'classification_correction': 'financial-external-19-r3'},
+                   'original_path': item['path']}
+            existing = after['files'].get(row['target_path'])
+            if existing and any(existing.get(k) != new.get(k)
+                                for k in ('sha256', 'source', 'role', 'team', 'security_class', 'export_allowed')):
+                raise ValueError('external form registration collision: ' + row['target_path'])
+            after['files'][row['target_path']] = new
+
+        shared_names = sorted(shared_names)
+        after.pop('financial_photo61_share', None)  # Its old receipt bound the wrong 19-document classification.
+        after['financial_shared_document_names'] = shared_names
+        after['financial_external_correction'] = {
+            'schema_version': 'financial-external-19-r3', 'scope_sha256': scope_sha,
+            'shared_document_names': shared_names,
+            'financial_form_document_names': sorted(form_by_name)}
+        union = {'schema_version': 'union-file-v1', 'scope_sha256': scope_sha,
+                 'entries': [],
+                 'selection_policy': 'process exact bytes once per run; keep both team paths'}
+        for source_rel, old in sorted(risk_rows):
+            union['entries'].append({
+                'risk_path': source_rel, 'financial_path': source_rel.replace('/risk_team/', '/financial_team/', 1),
+                'sha256': old['sha256'], 'document': old['scope_document'],
+                'source': old['source'], 'role': old['role'],
+                'security_class': old['security_class'],
+                'export_allowed': old['export_allowed']})
+        if union_path.is_file():
+            old_union = json.loads(union_path.read_text())
+            if (old_union.get('schema_version') != 'union-file-v1'
+                or any(e['document'] not in set(shared_names) | set(form_by_name)
+                       for e in old_union.get('entries', []))):
+                raise ValueError('existing union_file has unrelated entries; stop before replacing')
+        if len(raw_by_target) != len(risk_rows) + 11:
+            raise ValueError('duplicate or missing external targets')
+        for rel, raw in raw_by_target.items():
+            target = safe(rel)
+            if target.exists() and sha(target) != digest(raw):
+                raise ValueError('external target collision: ' + rel)
+        print('PREFLIGHT_OK documents=19 risk_shared_files=' + str(len(risk_rows)) +
+              ' financial_forms=11 misplaced_internal_files=' + str(len(misplaced)) +
+              ' union_pairs=' + str(len(risk_rows)), flush=True)
+        if mode == 'check':
+            raise SystemExit(0)
+        if sha(layout_path) != digest(layout_raw):
+            raise ValueError('layout changed during preflight')
+        history.mkdir(parents=True, exist_ok=False)
+        atomic_bytes(history / 'before.json', layout_raw)
+        if union_path.exists():
+            atomic_bytes(history / 'union_before.json', union_path.read_bytes())
+        for rel, raw in raw_by_target.items():
+            target = safe(rel)
+            if not target.exists():
+                target.parent.mkdir(parents=True, exist_ok=True)
+                temp = target.with_name('.' + target.name + '.tmp-' + uuid.uuid4().hex)
+                try:
+                    temp.write_bytes(raw)
+                    if sha(temp) != digest(raw):
+                        raise ValueError('copied external original differs: ' + rel)
+                    os.link(temp, target)
+                except FileExistsError:
+                    if sha(target) != digest(raw):
+                        raise ValueError('concurrent external target collision: ' + rel)
+                finally:
+                    temp.unlink(missing_ok=True)
+        for rel, expected_sha in misplaced:
+            source = safe(rel)
+            target = safe('BACKUPS/financial-external-19-correction-r3/misplaced-internal/' + rel)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if target.exists() or sha(source) != expected_sha:
+                raise ValueError('misplaced backup collision or source changed: ' + rel)
+            os.replace(source, target)
+        after_raw = (json.dumps(after, ensure_ascii=False, indent=2) + '\n').encode()
+        union_raw = (json.dumps(union, ensure_ascii=False, indent=2) + '\n').encode()
+        atomic_bytes(history / 'after.json', after_raw)
+        atomic_bytes(history / 'union_after.json', union_raw)
+        atomic_bytes(layout_path, after_raw)
+        atomic_bytes(union_path, union_raw)
+        receipt = {'status': 'EXTERNAL_REGISTERED', 'scope_sha256': scope_sha,
+                   'layout_before_sha256': digest(layout_raw),
+                   'layout_after_sha256': digest(after_raw),
+                   'union_after_sha256': digest(union_raw),
+                   'financial_external_files': len(raw_by_target), 'shared_pairs': len(risk_rows),
+                   'shared_document_names': shared_names,
+                   'financial_only_form_files': 11,
+                   'misplaced_internal_files_backed_up': len(misplaced),
+                   'misplaced_backup_root': str(backup),
+                   'applied_at': datetime.now(timezone.utc).isoformat()}
+        atomic_bytes(history / 'receipt.json',
+                     (json.dumps(receipt, ensure_ascii=False, indent=2) + '\n').encode())
+        print('EXTERNAL_REGISTERED documents=19 files=' + str(len(raw_by_target)) +
+              ' union_pairs=' + str(len(risk_rows)) +
+              ' misplaced_internal_backed_up=' + str(len(misplaced)), flush=True)
+PY

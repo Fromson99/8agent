@@ -1,0 +1,65 @@
+GENOS latest service/service.py 입구 연결 R3 — 앞선 롤백 R1/R2 적용 금지
+
+사진 1: latest 기본 구조는 repo/service/service.py + 루트 main.py(선택)입니다.
+사진 2: 실제 실행 파일 /app/service/service.py, 직접 오류 unsupported GENOS_RAG_IMPLEMENTATION.
+작업 저장소는 루트 service.py에 v6가 있었고 latest 로더의 service/service.py가 없었습니다.
+사진만으로 환경값 원문/파일 hash는 알 수 없어 v6 미반영 또는 잘못된 값 가능성을 구분합니다.
+
+이번 최종 구조:
+ ~/DEV/service/service.py       latest 기본 로더 진입. 정확한 ../service.py를 호출
+ ~/DEV/service/__init__.py      import service / service.service를 한 모듈·cache로 결속
+ ~/DEV/service.py               유지된 v6 구현·프로젝트 root 계산·로컬/frozen 호환
+ ~/DEV/main.py                  유지. /chat 이관은 선택사항; 임의 삭제하지 않음
+ ~/DEV/02_BACKEND               기존 v6 backend. 이번에 재구축/전체 교체하지 않음
+
+구현을 단순 복사해 두 군데 유지하지 않습니다. 최신 로더가 읽는 입구는 nested이고,
+그 입구가 동일 루트 구현을 정확한 파일 경로로 읽으므로 backend/data root는 repo root입니다.
+service/는 GENOS 플랫폼 요청에 따른 호환 디렉터리이며 새 MAIN 논리 root가 아닙니다.
+코드 ZIP 기본 allowlist/필수 파일에도 두 입구 파일을 연결했습니다.
+
+1. 첨부 GENOS_LATEST_SERVICE_LAYOUT_20261002_R3.txt를 ~/DEV/TRANSFER에 반입.
+   TXT 하나에 코드·실행기가 내장되어 ZIP을 따로 풀 필요가 없습니다.
+2. 기존 DEV에서 검증 계획:
+ bash ~/DEV/TRANSFER/GENOS_LATEST_SERVICE_LAYOUT_20261002_R3.txt check
+   다섯 v6 핵심 코드 hash가 다르면 이전 v6 코드 반입이 먼저 필요합니다.
+   이는 전체 데이터/서빙 인증이 아닙니다. 데이터 재구축이나 pin 조작으로 우회하지 않습니다.
+3. 동일 checkout 코드 편집/적용이 없는 상태에서:
+ bash ~/DEV/TRANSFER/GENOS_LATEST_SERVICE_LAYOUT_20261002_R3.txt apply
+   네 파일만 백업 후 적용. 원문/색인/CURRENT/NFS runtime/환경/Git/엔진 pin/main.py는 보존.
+   로그는 TXT 옆 logs, 영수증은 ~/DEV/09_ARTIFACTS/BACKUPS/latest-service-entry-20261002-r3/receipt.json.
+   재실행은 이미 적용된 정확한 파일을 검사하고 종료. 실제 Python 경로/버전도 로그에 남김.
+4. 바뀐 네 파일을 검토·Git commit/push하고 같은 commit으로 새 코드서빙 리비전을 배포.
+   latest의 service 함수 기본 로더 구조로 복귀합니다. 플랫폼 기본 main.py를 임의 교체하거나
+   /chat으로 연결해야만 한다고 안내하지 않습니다. 실제 리비전의 이전 확인된 Build/Run 설정을
+   사용합니다. 해당 기본 이미지의 Build/Run 상세 원문은 사진에서 확인되지 않았습니다.
+   커스텀 SSE Run을 이미 사용한 현장은 기존 Run/포트를 유지할 수 있습니다.
+   기본 로더의 /stream 지원은 미확인입니다. /stream의 404/405만 기존 /json으로 1회 전환.
+   commit 뒤 push 전 같은 checkout의 결속 검사:
+   GENOS_GENERATION='<현재 정확한 서빙 세대 절대경로>' bash ~/DEV/TRANSFER/GENOS_LATEST_SERVICE_LAYOUT_20261002_R3.txt gate
+   ZIP 네 파일이 committed checkout과 같은지, 선택 세대의 E2E/assets를 함께 확인합니다.
+   현장 generation 경로가 확인되기 전에는 게이트 통과로 기록하지 않습니다.
+5. 기존 Python 워크플로우 유지/복구가 필요하면 첨부 WORKFLOW_PASTE_ALL.txt 전체를 편집기에
+   반영하고 저장·배포·채팅 앱 바인딩. 진입 run(data), 현재 v6 코드서빙 ID와 기존 인증 설정 유지.
+   WORKFLOW_SETTINGS timeout=2100. SSE_CHECK 실패만으로 /json 질의 가능 여부를 확정하지 않습니다.
+6. 워크플로우 테스트 화면에서 WARMUP_STATUS/WARMUP 및 실제 질문 확인.
+   실제 컨테이너 로그에서 deployment.entry.loaded의 entry_path, backend_path,
+   backend_sha256, implementation_requested를 영수증의 hash와 대조합니다.
+   실제 설정 값은 GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6 입니다.
+   main.py 파일 존재/Git push/컨테이너 Success만으로 새 entry/v6 질문 성공을 확정하지 않습니다.
+
+유지할 코드서빙 설정:
+ GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6
+ GENOS_RUNTIME_DIR=/nfs-root/diamo/8-agent/runtime
+ GENOS_MEMORY_JOURNAL_MODE=DELETE
+ SEMANTIC_LLM_BACKEND=genos
+ 기존 정확한 GENOS_GENERATION 또는 GENOS_DATA_ROOT, 내부 모델 URL/ID/키 설정 유지.
+ 인증키·내부 질문/원문은 메일/터미널에 출력하지 않습니다.
+ 개인 기억 확인은 실제 플랫폼 신원과 워크플로우/코드서빙의 같은 memory 서명 설정이 필요합니다.
+
+원복 (데이터/NFS runtime은 그대로):
+ bash ~/DEV/TRANSFER/GENOS_LATEST_SERVICE_LAYOUT_20261002_R3.txt undo
+ 네 파일의 현재 hash와 백업을 먼저 확인하고 이전 파일로 복귀.
+ 이후 이전 검증 commit/리비전과 그 워크플로우 바인딩 선택.
+
+앞선 GENOS_WORKFLOW_ONLY_ROLLBACK R1 / GENOS_ENTRY_STRUCTURE_ROLLBACK R2를 사용하지 마세요.
+사진 이후 WSL mock 검사와 GENOS 실제 적용/배포/내부 모델 답변 품질은 구분합니다.

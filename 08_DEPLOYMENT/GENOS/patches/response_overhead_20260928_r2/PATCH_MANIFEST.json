@@ -1,0 +1,124 @@
+{
+  "format": "8agent-response-overhead-patch/1",
+  "patch": "response-overhead-20260928-r2",
+  "files": {
+    "02_BACKEND/semantic_runtime/contracts.py": {
+      "base_sha256": "23a4d54bd3dfffa8d2a0227e25a2fcd7f049fbbd461a18b618552e8111e26e20",
+      "new_sha256": "2e0dde5e4d7d4643370fda211886269f5bd48fbb037999033a944f319cf61b8f",
+      "variants": {}
+    },
+    "02_BACKEND/semantic_runtime/document_agent.py": {
+      "base_sha256": "f6cbf045dbfeb29d147641ed1f67347cde25df42c3424561b7c261df170b9638",
+      "new_sha256": "9aefa423a1749e0929a6572364944b10f27306d5f25bec158a734f2abf389276",
+      "variants": {}
+    },
+    "02_BACKEND/semantic_runtime/navigation_agent.py": {
+      "base_sha256": "d9b5a02dd83dd9eb046a42d193525a079201d7aec5e5300392a0732a114cb98e",
+      "new_sha256": "c4ea627d88484fe392bd682c94d817be8ec83944e467e580a4176de8c613765c",
+      "variants": {}
+    },
+    "02_BACKEND/semantic_runtime/observability.py": {
+      "base_sha256": "b0b2e6f5787b30eb2db7afcdb7317b03840701ded6c9cb342903670313a9ba47",
+      "new_sha256": "40f83aa44a3df33e4736095bcb8722345fa4f5afd8d6497e3dc7eaba3dc83c28",
+      "variants": {
+        "cb65cc2eaa0097e4dabdcbf7bd36e3dcaa3a2fb82f74c36fce0ac39dcbc30c72": {
+          "path": "variants/cb65cc2eaa0097e4dabdcbf7bd36e3dcaa3a2fb82f74c36fce0ac39dcbc30c72/02_BACKEND/semantic_runtime/observability.py",
+          "new_sha256": "40f83aa44a3df33e4736095bcb8722345fa4f5afd8d6497e3dc7eaba3dc83c28",
+          "source": "08_DEPLOYMENT/GENOS/patches/latency_20260928_r2/payload/02_BACKEND/semantic_runtime/observability.py"
+        }
+      }
+    },
+    "02_BACKEND/semantic_runtime/request_report.py": {
+      "base_sha256": "16efb1fd3a6552f9bb96123b53d7878baa41790b06e4de68444b07227c9b3936",
+      "new_sha256": "55c729bf96a1794b6427e8eade1f4db96c076d5de76b66e1776b90795fdb09c6",
+      "variants": {
+        "ededae7d67df8bd5a23dd654484f1bea2ed83d2688bcb59d8434b416f18b3862": {
+          "path": "variants/ededae7d67df8bd5a23dd654484f1bea2ed83d2688bcb59d8434b416f18b3862/02_BACKEND/semantic_runtime/request_report.py",
+          "new_sha256": "b19b86d994fdca012e5da46d849a9aa52f528bac7821880d363a0fd7d7dc0a9b",
+          "source": "08_DEPLOYMENT/GENOS/patches/latency_20260928_r2/payload/02_BACKEND/semantic_runtime/request_report.py"
+        },
+        "d044299aad24ff0a6be55f3d64251e9490da2e89e80019dd26781d3b385436ba": {
+          "path": "variants/d044299aad24ff0a6be55f3d64251e9490da2e89e80019dd26781d3b385436ba/02_BACKEND/semantic_runtime/request_report.py",
+          "new_sha256": "aed497d494ea50d8ddfaea8369d7b6a1d94c0010da4b5d9b71b6f0dd1b5a8b15",
+          "source": "08_DEPLOYMENT/GENOS/patches/thinking_log_20260928_r2/payload/02_BACKEND/semantic_runtime/request_report.py"
+        },
+        "c6559145758775df3f71f25fae2e94be6070131e0fe63b2d75e3548110486ef8": {
+          "path": "variants/c6559145758775df3f71f25fae2e94be6070131e0fe63b2d75e3548110486ef8/02_BACKEND/semantic_runtime/request_report.py",
+          "new_sha256": "cbda634fbf0d3befa518ecec3aa9408a19af34b80dbc4d98bc36e91ac9ae7fa4",
+          "source": "08_DEPLOYMENT/GENOS/patches/thinking_log_20260928_r2/payload/02_BACKEND/semantic_runtime/request_report.py"
+        },
+        "16e329f62c205bf5fb57c699b22ba2b67cfc4d0a35557abdad31042d79805602": {
+          "path": "variants/16e329f62c205bf5fb57c699b22ba2b67cfc4d0a35557abdad31042d79805602/02_BACKEND/semantic_runtime/request_report.py",
+          "new_sha256": "e87533022c92f601d0d60ab70662ed1b5eca5e8f69342220c51cb71bc06c627b",
+          "source": "08_DEPLOYMENT/GENOS/patches/thinking_log_20260928_r2/variants/7a16d852bc268ef913230d31cde9464bf0d490a19a0e6dc4ceb30be8973bc7ff/02_BACKEND/semantic_runtime/request_report.py"
+        },
+        "addd4371073e4470cda13d7323204a5833e6c90f0909256d5546a58caf9c8c63": {
+          "path": "variants/addd4371073e4470cda13d7323204a5833e6c90f0909256d5546a58caf9c8c63/02_BACKEND/semantic_runtime/request_report.py",
+          "new_sha256": "2239e0907bcf7b8001e73bb6a5116ef99ed3d6e5f68999ac1c4bed845d0242e1",
+          "source": "08_DEPLOYMENT/GENOS/patches/thinking_log_20260928_r2/variants/7a16d852bc268ef913230d31cde9464bf0d490a19a0e6dc4ceb30be8973bc7ff/02_BACKEND/semantic_runtime/request_report.py"
+        },
+        "1079ebbcc9eedb683d57c54bd225f67380d49a2a81a8c59ac25b444a9fd86383": {
+          "path": "variants/1079ebbcc9eedb683d57c54bd225f67380d49a2a81a8c59ac25b444a9fd86383/02_BACKEND/semantic_runtime/request_report.py",
+          "new_sha256": "0e54185a4deea8c462ad3589db34146f3b6100be6c652b0b1e2eebdc86c5518b",
+          "source": "08_DEPLOYMENT/GENOS/patches/thinking_log_20260928_r2/variants/ededae7d67df8bd5a23dd654484f1bea2ed83d2688bcb59d8434b416f18b3862/02_BACKEND/semantic_runtime/request_report.py"
+        },
+        "4e13c488f25141094d42a0adc5d833defa487c0622c9b30124fdb44a551f1044": {
+          "path": "variants/4e13c488f25141094d42a0adc5d833defa487c0622c9b30124fdb44a551f1044/02_BACKEND/semantic_runtime/request_report.py",
+          "new_sha256": "1fd737a19b7d78e5a40df50d45122839cd8812aa156e38746226e85a55903680",
+          "source": "08_DEPLOYMENT/GENOS/patches/thinking_log_20260928_r2/variants/ededae7d67df8bd5a23dd654484f1bea2ed83d2688bcb59d8434b416f18b3862/02_BACKEND/semantic_runtime/request_report.py"
+        },
+        "d50caead87c26f5fa0f62ff9f8ebc6a1ca199c1cf6676f0057626001c7658f22": {
+          "path": "variants/d50caead87c26f5fa0f62ff9f8ebc6a1ca199c1cf6676f0057626001c7658f22/02_BACKEND/semantic_runtime/request_report.py",
+          "new_sha256": "22a5c55456b52d57acfd057323f0f112ac5f787408911c8d580b8c882482fed3",
+          "source": "08_DEPLOYMENT/GENOS/patches/thinking_log_20260928_r2/variants/356e0e40c71b2d0bb9fa3672fc55c60af2881ae7b170d0a98519785f928d286a/02_BACKEND/semantic_runtime/request_report.py"
+        },
+        "73e6949fcf8faa692508bed76f304967243cc8db17dd4f84bac04ced1d31bb48": {
+          "path": "variants/73e6949fcf8faa692508bed76f304967243cc8db17dd4f84bac04ced1d31bb48/02_BACKEND/semantic_runtime/request_report.py",
+          "new_sha256": "ffeacdfdaa9790e12ea6384e71f1d7bb1539bd834df6c52306f1347d42392b30",
+          "source": "08_DEPLOYMENT/GENOS/patches/thinking_log_20260928_r2/variants/356e0e40c71b2d0bb9fa3672fc55c60af2881ae7b170d0a98519785f928d286a/02_BACKEND/semantic_runtime/request_report.py"
+        },
+        "356e0e40c71b2d0bb9fa3672fc55c60af2881ae7b170d0a98519785f928d286a": {
+          "path": "variants/356e0e40c71b2d0bb9fa3672fc55c60af2881ae7b170d0a98519785f928d286a/02_BACKEND/semantic_runtime/request_report.py",
+          "new_sha256": "a50553754470b822003c23f9354e4069e0b7e13cc626089b1700929968d27461",
+          "source": "08_DEPLOYMENT/GENOS/patches/relation_wait_20260928_r1/payload/02_BACKEND/semantic_runtime/request_report.py"
+        }
+      },
+      "strategy": "structural-report",
+      "assets": {
+        "structural_report.py": "4df6d80f8ecfd1210492c8e67485fc869330c9489d2f60bbdb67fd6025d248c3",
+        "REPORT_TEMPLATES.json": "4151c2fd1bd3f9c679736b4512faa7ea7c036761d18d3866009c95a37549e809"
+      }
+    },
+    "02_BACKEND/semantic_runtime/stage_runner.py": {
+      "base_sha256": "51628a0c5cc0b9e794bfe5080c090a034e626c2ff28190ec5a873d34b255deba",
+      "new_sha256": "bbb8a4940457ccf0bee1d3e70da61d95df78ca0c0a45ff5759867e439c1abd9d",
+      "variants": {}
+    },
+    "02_BACKEND/semantic_runtime/term_agent.py": {
+      "base_sha256": "ca9ab36c5cdc989d2bd3bcea4930e65af1069ec8ce6193192bccc60dfb3b82b0",
+      "new_sha256": "647b75a49e959127f6c4568e32d5a5c81e275e4e4fd5b7a407611f14110f8c52",
+      "variants": {}
+    },
+    "02_BACKEND/semantic_runtime/term_index.py": {
+      "base_sha256": "ca656bfc9da314b3da8b85436666f1a4dfc7b093d213aceb6dac8f3d640d0e5d",
+      "new_sha256": "e1557537ec5409c6993aef6d6f064cce212c0fa2f301b49e130848d22ca16ffd",
+      "variants": {}
+    },
+    "service.py": {
+      "base_sha256": "7e51ebcb7bba8843bef911a3b76ec11da3f65538a2245c43067f97514319c507",
+      "new_sha256": "807fb56a935dd1a976bf9d98e6b21c7be7852d29450bc131ca94edb2d0045f57",
+      "variants": {
+        "37d75ee664e54a0faa7ac73b5f9790f6cf68f7033cce404797eda3f6f41b45bf": {
+          "path": "variants/37d75ee664e54a0faa7ac73b5f9790f6cf68f7033cce404797eda3f6f41b45bf/service.py",
+          "new_sha256": "117bd00c829a3e8b0e2f242c7ed2a86feab1a5360393a9914802c8c86e068643",
+          "source": "08_DEPLOYMENT/GENOS/patches/latency_20260928_r2/payload/service.py"
+        },
+        "89aa44402cbd33b8e7a2b0512f8ca903a7fefea4d7baf2906bd47d69c0e8c18f": {
+          "path": "variants/89aa44402cbd33b8e7a2b0512f8ca903a7fefea4d7baf2906bd47d69c0e8c18f/service.py",
+          "new_sha256": "6a6e3ba24fc752374a909a39f51e214a56b866284952ddd9bea30e2489fa45ad",
+          "source": "08_DEPLOYMENT/GENOS/patches/request_unlimited_20260928_r1/payload/service.py"
+        }
+      }
+    }
+  }
+}

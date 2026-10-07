@@ -1,0 +1,34 @@
+class WorkRepository:
+    def __init__(self, path, context=None, profile=None):
+        self.path = Path(path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        create = not self.path.exists()
+        self.db = sqlite3.connect(self.path, isolation_level=None)
+        self.db.row_factory = sqlite3.Row
+        self.db.execute('PRAGMA foreign_keys=ON')
+        self.db.execute('PRAGMA synchronous=FULL')
+        self.db.execute('PRAGMA busy_timeout=5000')
+        self.context = context
+        if create:
+            if context is None or profile is None:
+                self.close()
+                raise ContractError('new journal requires request binding and profile')
+            self.db.executescript(Path(__file__).with_name(self.DDL).read_text())
+            with self.transaction():
+                self.db.execute('''INSERT INTO run(singleton,run_id,query_id,binding_hash,binding_json,request_json,
+                    status,phase,owner_boot_id,started_at,deadline_at) VALUES(1,?,?,?,?,?,'RUNNING','INVESTIGATE',?,?,?)''',
+                    (context.run_id, context.query['id'], context.binding_hash, encoded(context.binding),
+                     encoded(context.request), uuid.uuid4().hex, now(), context.deadline_at))
+                self.db.execute('INSERT INTO budget(singleton,model_limit,finalization_reserve,tool_limit) VALUES(1,?,?,?)',
+                                (profile['max_model_attempts'], profile['finalization_reserve'], profile['max_tool_actions']))
+        elif self.db.execute('PRAGMA user_version').fetchone()[0] != self.VERSION:
+            self.close()
+            raise ContractError('journal migration required')
+        self.binding = json.loads(self.run()['binding_json'])
+        if digest(self.binding) != self.run()['binding_hash']:
+            self.close()
+            raise ContractError('journal binding hash mismatch')
+        if context and context.binding_hash != self.run()['binding_hash']:
+            self.close()
+            raise ContractError('request binding mismatch')
+        self._changed = False

@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+task_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+task_mode="${1:-all}"
+task_logs="${GENOS_HANDOFF_LOG_DIR:-$task_dir/investigation-control-r1-logs}"
+mkdir -p "$task_logs"
+task_log="$task_logs/$(date -u +%Y%m%dT%H%M%SZ)-$task_mode-$$.log"
+exec > >(tee -a "$task_log") 2>&1
+trap 'task_exit=$?; trap - EXIT; printf "INVESTIGATION_CONTROL_EXIT=%s LOG=%s\n" "$task_exit" "$task_log"; exit "$task_exit"' EXIT
+if [[ -n "${GENOS_PYTHON_DIR:-}" ]]; then export PATH="$GENOS_PYTHON_DIR:$PATH"; elif [[ -x /venv/bin/python3 ]]; then export PATH="/venv/bin:$PATH"; fi
+python3 - "$task_dir/GENOS_INVESTIGATION_CONTROL_20261007_R1.zip" "${GENOS_DEV:-$HOME/DEV}" "$task_mode" "${2:-}" "$task_logs" <<'LOADER_PY'
+import fcntl,hashlib,json,os,re,subprocess,sys,threading,time,types,zipfile
+from datetime import datetime,timezone
+from pathlib import Path
+print('PYTHON',sys.executable,sys.version.replace('\n',' '),flush=True)
+if sys.version_info<(3,11):raise ValueError('Python 3.11+ required')
+archive=Path(sys.argv[1]).resolve(strict=True);root=Path(sys.argv[2]).resolve(strict=True)
+mode,arg=sys.argv[3:5];logs=Path(sys.argv[5]);events=logs/'events.jsonl'
+def sha(path):
+ with Path(path).open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+def event(stage,**fields):
+ row={'at':datetime.now(timezone.utc).isoformat(),'stage':stage,**fields}
+ with events.open('a') as f:f.write(json.dumps(row,ensure_ascii=False)+'\n');f.flush();os.fsync(f.fileno())
+ print(json.dumps(row,ensure_ascii=False),flush=True)
+event('START',mode=mode,code_root=str(root))
+if sha(archive)!='307ab74d4466bb88714b7e3116a2ff02a5e7a37f6e5c2c7ccbac4b5c91c0a7d4':raise ValueError('Code ZIP hash mismatch')
+with zipfile.ZipFile(archive) as z:
+ manifest_raw=z.read('CODE_MANIFEST.json');manifest=json.loads(manifest_raw)
+ raw=z.read('06_TOOLS/OFFLINE/genos_code_replace.py')
+ row=next(r for r in manifest['files'] if r['path']=='06_TOOLS/OFFLINE/genos_code_replace.py')
+ if hashlib.sha256(raw).hexdigest()!=row['sha256']:raise ValueError('Installer hash mismatch')
+ installer=types.ModuleType('checked_loader_installer');installer.__file__=str(archive.parent/'checked-installer.py')
+ exec(compile(raw,installer.__file__,'exec'),installer.__dict__)
+event('ZIP_VERIFIED',code_zip_sha256=sha(archive),code_manifest_sha256=hashlib.sha256(manifest_raw).hexdigest())
+def pins(applied):
+ for row in manifest['files']:
+  path=installer.plain(root/row['path']);path.resolve().relative_to(root)
+  allowed={row['sha256']} if applied else {row['sha256'],*row.get('allowed_predecessors',[])}
+  if not path.exists() and not applied and row.get('allow_missing_predecessor'):continue
+  if not path.is_file() or sha(path) not in allowed:raise ValueError('CHECKOUT_DRIFT: '+row['path']+'; existing file preserved')
+ if applied and sha(root/'CODE_MANIFEST.json')!=hashlib.sha256(manifest_raw).hexdigest():raise ValueError('Installed inventory differs')
+env={**os.environ,'PYTHONPATH':str(root/'02_BACKEND'),'LAWRAG_WORKSPACE_ROOT':str(root),'GENOS_AUTO_WARMUP':'0','AD_WORKER_ENABLED':'0','SEMANTIC_LLM_BACKEND':'genos','GENOS_RAG_IMPLEMENTATION':'legal-agent-unified-v6'}
+def selected():
+ value=arg if mode in ('check','apply','verify','gate','push','all') and arg else os.environ.get('GENOS_GENERATION')
+ if not value:value='/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation'
+ path=Path(value)
+ if not path.is_absolute() or path.is_symlink() or not path.is_dir():raise ValueError('Existing absolute generation required; set GENOS_GENERATION if field selection changed')
+ path=path.resolve(strict=True);event('GENERATION_SELECTED',path=str(path),manifest_sha256=sha(path/'manifest.json'))
+ return path
+def cache_preflight(generation):
+ source=json.loads((generation/'manifest.json').read_text());binding=source['glossary']
+ cache=(generation/binding['cache']).resolve(strict=True);cache.relative_to(generation)
+ receipt_path=(cache/binding['cache_receipt']).resolve(strict=True);receipt_path.relative_to(cache)
+ if sha(receipt_path)!=binding['cache_receipt_sha256']:raise ValueError('Cache receipt hash mismatch; preserved')
+ receipt=json.loads(receipt_path.read_text())
+ if receipt['binding']['compiler_sha256']!=manifest['expected_cache_compiler_sha256']:raise ValueError('Cache needs another compiler; no code or data changed')
+ bundle=(generation/binding['bundle']).resolve(strict=True);bundle.relative_to(generation)
+ if sha(bundle/'manifest.json')!=binding['manifest_sha256'] or receipt['binding']['manifest_sha256']!=binding['manifest_sha256']:raise ValueError('Glossary manifest binding mismatch; preserved')
+ event('CACHE_PREFLIGHT_PASS',compiler_sha256=receipt['binding']['compiler_sha256'])
+def command(args,stage,generation=None):
+ stop=threading.Event();started=time.monotonic()
+ def heartbeat():
+  while not stop.wait(20):print('RUNNING',stage,'seconds',round(time.monotonic()-started),flush=True)
+ thread=threading.Thread(target=heartbeat,daemon=True);thread.start()
+ try:
+  subprocess.run(args,cwd=root,env={**env,**({'GENOS_GENERATION':str(generation)} if generation else {})},check=True)
+ finally:stop.set();thread.join()
+ event(stage,seconds=round(time.monotonic()-started,3))
+def loader_check(generation):
+ code="""import importlib.util,os,sys
+from pathlib import Path
+root=Path(sys.argv[1]);os.environ['GENOS_GENERATION']=sys.argv[2]
+spec=importlib.util.spec_from_file_location('field_loader_check',root/'service/service.py')
+entry=importlib.util.module_from_spec(spec);spec.loader.exec_module(entry)
+runtime=entry._runtime
+code_root,generation,binding=runtime._resolve_binding()
+if code_root!=root or generation!=Path(sys.argv[2]):raise ValueError('Unexpected service binding')
+runtime._require_pecab_generation(generation,code_root)
+print('SERVICE_LOADER_CONTRACT PASS',binding['mode'],str(generation),flush=True)
+"""
+ command([sys.executable,'-c',code,str(root),str(generation)],'SERVICE_LOADER_PASS',generation)
+def git(*args):
+ done=subprocess.run(['git','-C',str(root),*args],env=env,capture_output=True,text=True)
+ if done.returncode:
+  safe=re.sub(r'(https?://)[^\s/@]+:[^\s/@]+@',r'\1[redacted]@',done.stderr)
+  print(safe,flush=True);raise ValueError('Git command failed: '+args[0])
+ return done.stdout.strip()
+def commit():
+ if Path(git('rev-parse','--show-toplevel')).resolve()!=root:raise ValueError('Existing Git root required')
+ paths=sorted({r['path'] for r in manifest['files']}|{'CODE_MANIFEST.json'})
+ foreign=set(git('diff','--cached','--name-only').splitlines())-set(paths)
+ foreign|=set(git('diff','--name-only').splitlines())-set(paths)
+ if foreign:raise ValueError('Other tracked/staged changes preserved; review before commit: '+', '.join(sorted(foreign)))
+ git('diff','--check');git('add','-f','--',*paths)
+ if git('diff','--cached','--name-only'):git('commit','-m','Integrate validated investigation control v2 from local MAIN generation 43')
+ head=git('rev-parse','HEAD');event('GIT_COMMITTED',commit=head);return head
+def gate(generation):
+ command([sys.executable,str(root/'06_TOOLS/COMMANDS/genos_release_gate.py'),'--code-zip',str(archive),'--deploy-root',str(root),'--generation',str(generation)],'RELEASE_GATE_PASS',generation)
+def push(generation):
+ gate(generation);head=git('rev-parse','HEAD');remote=os.environ.get('GENOS_PUSH_REMOTE','origin')
+ branch=os.environ.get('GENOS_PUSH_BRANCH') or git('symbolic-ref','--short','HEAD')
+ git('check-ref-format','--branch',branch);git('push',remote,'HEAD:refs/heads/'+branch)
+ event('GIT_PUSHED',commit=head,remote=remote,branch=branch,generation=str(generation),generation_manifest_sha256=sha(generation/'manifest.json'))
+if mode in ('check','apply','all'):
+ generation=selected();before_manifest=sha(generation/'manifest.json');cache_preflight(generation)
+ with installer.plain(root/'.genos-code-replacement.lock').open('a') as lock:
+  fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB);pins(False)
+  backup=installer.install(root,archive.parent,apply=mode!='check',archive=archive)
+  if mode!='check':pins(True);cache_preflight(generation);event('CODE_APPLIED',backup=str(backup))
+ if sha(generation/'manifest.json')!=before_manifest:raise ValueError('Existing generation manifest changed')
+ if mode=='all':
+  loader_check(generation)
+  command([sys.executable,str(root/'06_TOOLS/COMMANDS/genos_generation_e2e.py'),'--code-root',str(root),'--generation',str(generation)],'GENERATION_E2E_PASS',generation)
+  command([sys.executable,'-c',"from lawrag.pipeline.term_serving_bundle import verify_assets; import sys; assert verify_assets(sys.argv[1])['verified'] is True; print('VERIFY_ASSETS PASS')",str(generation)],'ASSETS_PASS',generation)
+  commit();push(generation)
+elif mode in ('verify','gate','push'):
+ pins(True);generation=selected();cache_preflight(generation);loader_check(generation)
+ if mode=='verify':
+  command([sys.executable,str(root/'06_TOOLS/COMMANDS/genos_generation_e2e.py'),'--code-root',str(root),'--generation',str(generation)],'GENERATION_E2E_PASS',generation)
+  command([sys.executable,'-c',"from lawrag.pipeline.term_serving_bundle import verify_assets; import sys; assert verify_assets(sys.argv[1])['verified'] is True; print('VERIFY_ASSETS PASS')",str(generation)],'ASSETS_PASS',generation)
+ elif mode=='gate':gate(generation)
+ else:commit();push(generation)
+elif mode=='rollback':
+ if not arg:raise ValueError('Supply exact backup printed by apply')
+ backup=installer.plain(Path(arg).resolve(strict=True))
+ if Path(json.loads((backup/'receipt.json').read_text())['root']).resolve()!=root:raise ValueError('Rollback root mismatch')
+ with installer.plain(root/'.genos-code-replacement.lock').open('a') as lock:
+  fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB);installer.rollback(backup)
+ event('WORKING_CODE_ROLLED_BACK',backup=str(backup))
+else:raise ValueError('Modes: check apply verify gate push all rollback')
+event('COMPLETE',mode=mode,code_serving_revision='NOT_DEPLOYED',workflow_editor='NOT_APPLIED',workflow_test='NOT_RUN')
+print('Complete the code-serving revision deployment and workflow editor replacement, then test only in the workflow screen.',flush=True)
+LOADER_PY

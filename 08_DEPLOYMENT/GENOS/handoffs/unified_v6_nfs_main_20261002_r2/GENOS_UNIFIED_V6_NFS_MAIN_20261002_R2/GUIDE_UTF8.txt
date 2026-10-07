@@ -1,0 +1,100 @@
+GENOS v6 + NFS runtime + main.py 워크플로우 이관 — 20261002 R2
+이번 메일의 R2만 사용합니다. R1은 발송하지 않은 준비본입니다.
+
+공유 폴더 /nfs-root/diamo/8-agent, 새 기록 /nfs-root/diamo/8-agent/runtime.
+기존 /home/genos/DEV/runtime은 삭제·이동·자동 변환하지 않습니다.
+
+실행 순서 (현장 python3, 기본 기존 ~/DEV checkout에 백업 후 적용):
+ ZIP과 TXT를 함께 ~/DEV/TRANSFER에 반입합니다.
+ bash ~/DEV/TRANSFER/GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2.txt check
+ 기존 checkout 구축 worker/코드 편집을 멈춘 뒤:
+ bash ~/DEV/TRANSFER/GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2.txt apply
+ bash ~/DEV/TRANSFER/GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2.txt runtime
+모든 모드의 시작부터 run.log에 stdout/stderr와 종료 상태를 남깁니다.
+재실행은 이미 설치된 코드를 확인하며 기존 해시가 바뀌면 무작정 덮어쓰지 않습니다.
+파일별 백업·원복 영수증을 보존하고 원문/용어집/색인/CURRENT/.env/.git/기존 runtime은 유지합니다.
+fulltext 재설계 후보의 구축·승격·세대 교체 실행은 포함하지 않습니다.
+
+이번에 옮긴 실행:
+ 채팅앱/플랫폼 워크플로우 → main.py POST /chat → chat_adapter → 같은 프로세스의
+ service.service({}, body) → /v1/rag/ask → Pipeline/Coordinator/legal_agent v6.
+질문 추출·답변/출처 표시·Reasoner 누적 표시 자료를 코드서빙에서 처리합니다.
+기존처럼 외부 코드서빙 URL/토큰을 읽어 자기 자신에게 /json 또는 /stream HTTP를 보내지 않습니다.
+승호님 cicd 5fca5fa353f2f6b1463e38a020bddd64b1f3018e의 main.py/workflow/chat.py 규약 대조:
+ /chat → {"code":0,"data":{원래 채팅 필드, "text":답변}}
+ /chat __verify__ → {"code":0,"data":{"text":"verified"}} (원문·모델 호출 없음)
+ /health,/healthcheck → HTTP 생존 확인 (데이터 준비와 별개)
+ /json, /stream → 이전 API/SSE 호환 경로 유지.
+기존 Python 편집기 전체 코드를 다시 붙이는 방식이 아니라 코드서빙 기반 워크플로우로 이관해
+main.py의 /chat에 연결합니다. 기존 편집기본은 LEGACY_WORKFLOW_FOR_ROLLBACK.txt로 보존합니다.
+
+코드서빙 빌드/시작:
+ 의존성 파일: 08_DEPLOYMENT/GENOS/requirements-sse.txt (기존 serving + uvicorn)
+ 시작 명령: python3 main.py
+ 포트 환경변수가 없으면 기존 리비전 수신 --port 값 그대로 추가합니다.
+ worker=1이며 플랫폼의 코드서빙 기반 워크플로우/채팅 연결에서 같은 리비전의 /chat을 선택합니다.
+기존 service 함수만 여는 로더에서는 /chat이 만들어지지 않습니다.
+코드서빙 환경에 저장 (셸 export와 별도):
+ GENOS_RUNTIME_DIR=/nfs-root/diamo/8-agent/runtime
+ GENOS_MEMORY_JOURNAL_MODE=DELETE
+ GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6
+ SEMANTIC_LLM_BACKEND=genos
+ GENOS_SHARED_LOG_DIR=/nfs-root/diamo/8-agent/rag-request-reports
+기존 GENOS_LLM_URL 또는 GENOS_BASE_URL/GENOS_LLM_SERVING_ID, GENOS_LLM_KEY,
+GENOS_LLM_MODEL을 재사용합니다. 기존 v5 LEGAL_AGENT_PROFILE/PROFILE_SHA256가 남아 있으면
+두 설정을 해제하고 기본 v6 프로필을 내부 모델에 환경 결속합니다. 40회 모델 시도 정책을 보존합니다.
+기존 GENOS_GENERATION 또는 GENOS_DATA_ROOT의 정확한 원문 세대 선택은 유지합니다.
+
+개인 기억 신원 연결:
+ /chat은 요청 본문의 user_id만으로 다른 사람의 기억에 권한을 만들지 않습니다.
+ 1) 기존 신뢰된 adapter가 보낸 memory_authorization 서명 입력은 그대로 받아 runtime에서 검증.
+ 2) 플랫폼 신원을 이관된 /chat에서 처리하려면 실제 플랫폼 전용 인증 연결을 설정:
+    GENOS_MEMORY_ENABLED=1
+    TEAM_ID=<실제 고정 팀: risk_team 또는 financial_team>
+    GENOS_MEMORY_SIGNING_KEY=<현장 32자 이상 내부 키>
+    GENOS_CHAT_TRUST_PLATFORM_IDENTITY=1
+    GENOS_CHAT_GATEWAY_TOKEN=<플랫폼→이 리비전에만 쓰는 32자 이상 인증 토큰>
+    플랫폼 호출의 Authorization: Bearer <같은 토큰>이 main.py까지 전달되어야 합니다.
+    실제 플랫폼 제공 사용자/대화 ID인지와 인증 헤더 전달 여부를 현장에서 확인합니다.
+    이 토큰과 내부 서명 키를 메일·로그·질문·원장에 출력하지 않습니다.
+게이트웨이가 헤더를 제거하거나 신원이 임의 입력이면 2번을 켜지 말고 1번의 신뢰된 adapter를 사용합니다.
+일반 질문 확인은 GENOS_MEMORY_ENABLED=0으로 가능하며 개인 기억 조회 없이 임시 사건을 씁니다.
+서명 없는 memory=true/개인 기억 요청은 거절합니다. 실제 플랫폼 신원 계약은 외부 세션에서 확인하지 못했습니다.
+
+저장:
+ runtime/case-memory/cases-v3.sqlite → 질문·현재 조건·정정·최종 확인 경험·outbox 정본
+ runtime/case-memory/wikis/<주체해시>/{user_wiki,legal_wiki} → 재생 가능한 두 위키
+ runtime/legal-agent/runs/.../journal.sqlite → 실제 모델·원문·판단 원장
+ runtime/runs, feedback → 최종 결과·피드백
+이전 legal_llm_wiki/action-memory의 수집·변환·온라인 연결은 이번 실행에서 하지 않습니다.
+원래 법령 해석 위키 01_DATA/wiki와 새 확정 경험 위키는 별개입니다.
+
+NFS 확인:
+ TXT runtime 모드는 작은 별도 DB로 쓰기·rollback·integrity·다른 프로세스의 SQLite/owner 잠금을 확인합니다.
+같은 호스트 검사이며 다중 NFS 호스트 인증은 아닙니다. 코드서빙 환경에서도 공유 볼륨 쓰기를 확인합니다.
+SQLite WAL은 NFS에서 사용하지 않습니다. DELETE + synchronous=FULL을 사용합니다.
+현장 검증 전 replica=1, worker=1로 운영하고 이전·새 리비전이 같은 경험 DB에 동시에 쓰지 않게 합니다.
+
+적용/배포 결속:
+ GENOS_GENERATION='<기존 정확한 서빙 세대 절대경로>' bash ~/DEV/TRANSFER/GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2.txt gate
+진행 중 색인의 임시 디렉터리를 지정하지 않습니다. gate 실패를 pin 덮어쓰기로 우회하지 않습니다.
+변경 범위를 확인해 commit하고, 같은 commit에서 gate 재확인 뒤 push → 새 코드서빙 리비전 →
+코드서빙 기반 워크플로우/채팅앱 연결을 반영합니다. 각 상태는 별도입니다.
+
+현장 확인은 워크플로우 테스트 화면에서만 합니다.
+ {"question":"__verify__"} → code=0,data.text=verified.
+ 실제 일반 질문 → execution_transport=in-process, chat_adapter_revision=main-chat-v6-20261002-r2.
+ 개인 신원 연결 뒤 같은 대화 질문→정정→복원→최종 확인→새 대화 재사용을 확인.
+ /chat은 JSON 완성 응답과 최종 누적 Reasoner 배열을 반환합니다. 코드서빙에는 main_socketio가 없습니다.
+ 이 경로의 실시간 토큰/Reasoner 표시가 플랫폼에서 되는지는 미확인이며 완료 표시를 실시간으로 과장하지 않습니다.
+ 기존 /stream 호환 경로의 SSE는 유지합니다.
+
+옛 memory-v2 이력이 실제 있으면 양쪽 쓰기/서빙 중지 후 원본을 보존하고 명시 이관:
+ python3 06_TOOLS/pipeline.py unified-memory migrate --source /home/genos/DEV/runtime/corrected-memory/memory-v2.sqlite --runtime /nfs-root/diamo/8-agent/runtime
+파일이 없으면 실행하지 않습니다. legacy 경험은 LEGACY_UNBOUND이며 자동으로 확정 경험이 되지 않습니다.
+기존 v6 cases-v3가 이미 있다면 새 DB와 임의 병합하지 않습니다.
+
+원복: TXT rollback <apply가 출력한 정확한 backup 폴더>.
+이전 commit/리비전/시작 명령/워크플로우/이전 runtime 환경으로 복귀하고 새 NFS 기록은 보존합니다.
+로컬 MAIN 포인터 r3/generation37와 완료 실험 이력은 이 반입본으로 변경하지 않습니다.
+로컬 모의 검증과 GENOS 실제 모델 품질·권한·NFS·서빙 성공은 별개입니다.

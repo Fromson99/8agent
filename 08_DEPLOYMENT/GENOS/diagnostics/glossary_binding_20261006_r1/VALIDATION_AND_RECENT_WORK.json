@@ -1,0 +1,161 @@
+{
+  "diagnostic_version": "glossary-binding-20261006-r1",
+  "kind": "Read-only incident diagnosis and synthetic diagnostic contracts; no model experiment",
+  "packages": [
+    {
+      "package": "reference_build_20261003_r1",
+      "zip_path": "08_DEPLOYMENT/GENOS/handoffs/reference_build_20261003_r1/GENOS_REFERENCE_BUILD_20261003_R1.zip",
+      "zip_sha256": "48c4c1cfd3cf00ecfbac1094d6222c0d71623ce3435fbdbb3fc043328bd89011",
+      "compiler_path": "02_BACKEND/semantic_runtime/full_glossary.py",
+      "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+      "compiler_bytes": 52395,
+      "manifest_pin_verified": true,
+      "allowed_predecessors": [
+        "ba2c6ced8da72307934e627a7a7508fb29da45e35d09fc3e0a116884a0a5d058",
+        "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"
+      ],
+      "supports_compact_schema_literal": true
+    },
+    {
+      "package": "request_input_20261006_r2",
+      "zip_path": "08_DEPLOYMENT/GENOS/handoffs/request_input_20261006_r2/GENOS_V6_REQUEST_INPUT_20261006_R2.zip",
+      "zip_sha256": "636e42c3d64045e196c7f4d24268302e6743352155c1c2e5a785e98e019b04fd",
+      "compiler_path": "02_BACKEND/semantic_runtime/full_glossary.py",
+      "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+      "compiler_bytes": 52395,
+      "manifest_pin_verified": true,
+      "allowed_predecessors": [
+        "ba2c6ced8da72307934e627a7a7508fb29da45e35d09fc3e0a116884a0a5d058",
+        "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"
+      ],
+      "supports_compact_schema_literal": true
+    },
+    {
+      "package": "ad_language_20261006_r1",
+      "zip_path": "08_DEPLOYMENT/GENOS/handoffs/ad_language_20261006_r1/GENOS_AD_LANGUAGE_20261006_R1.zip",
+      "zip_sha256": "ab2e28bc93b66e735e63ddae8596e9b0be4d3ff495bc175993b945506553a62a",
+      "compiler_path": "02_BACKEND/semantic_runtime/full_glossary.py",
+      "compiler_sha256": "ba2c6ced8da72307934e627a7a7508fb29da45e35d09fc3e0a116884a0a5d058",
+      "compiler_bytes": 52086,
+      "manifest_pin_verified": true,
+      "allowed_predecessors": [
+        "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"
+      ],
+      "supports_compact_schema_literal": false
+    },
+    {
+      "package": "ad_language_20261006_r2",
+      "zip_path": "08_DEPLOYMENT/GENOS/handoffs/ad_language_20261006_r2/GENOS_AD_LANGUAGE_20261006_R2.zip",
+      "zip_sha256": "8fb496866a2439890b230cc5057bd951f53df3be54b349af47fbc6e1e7009b8a",
+      "compiler_path": "02_BACKEND/semantic_runtime/full_glossary.py",
+      "compiler_sha256": "ba2c6ced8da72307934e627a7a7508fb29da45e35d09fc3e0a116884a0a5d058",
+      "compiler_bytes": 52086,
+      "manifest_pin_verified": true,
+      "allowed_predecessors": [
+        "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"
+      ],
+      "supports_compact_schema_literal": false
+    },
+    {
+      "package": "relation_reading_20261006_r2",
+      "zip_path": "08_DEPLOYMENT/GENOS/handoffs/relation_reading_20261006_r2/GENOS_RELATION_READING_20261006_R2.zip",
+      "zip_sha256": "78e4bbb83768b47d30628b5542070b75b11672c73d8967a07141be3c40a83ff7",
+      "compiler_path": "02_BACKEND/semantic_runtime/full_glossary.py",
+      "compiler_sha256": "ba2c6ced8da72307934e627a7a7508fb29da45e35d09fc3e0a116884a0a5d058",
+      "compiler_bytes": 52086,
+      "manifest_pin_verified": true,
+      "allowed_predecessors": [
+        "ba2c6ced8da72307934e627a7a7508fb29da45e35d09fc3e0a116884a0a5d058",
+        "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"
+      ],
+      "supports_compact_schema_literal": false
+    }
+  ],
+  "confirmed": "AD language R1/R2 replace the verified compact compiler with legacy bytes; relation reading R2 preserves legacy bytes",
+  "compact_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+  "legacy_sha256": "ba2c6ced8da72307934e627a7a7508fb29da45e35d09fc3e0a116884a0a5d058",
+  "field_compiler_sha256": null,
+  "field_cache_expected_compiler_sha256": null,
+  "field_selected_generation": null,
+  "field_revision": null,
+  "field_cause": "UNCONFIRMED until actual serving generation and code hashes are compared",
+  "diagnostic_contracts": [
+    {
+      "case": "matching_compact_reader_and_receipt",
+      "exit_code": 0,
+      "result": "PASS",
+      "input_bytes_and_mtimes_preserved": true
+    },
+    {
+      "case": "recent_AD_compact_to_legacy_regression",
+      "exit_code": 1,
+      "result": "PASS",
+      "input_bytes_and_mtimes_preserved": true
+    },
+    {
+      "case": "hashes_match_but_compact_schema_reader_missing",
+      "exit_code": 1,
+      "result": "PASS",
+      "input_bytes_and_mtimes_preserved": true
+    },
+    {
+      "case": "receipt_tamper",
+      "exit_code": 1,
+      "result": "PASS",
+      "input_bytes_and_mtimes_preserved": true
+    },
+    {
+      "case": "asset_path_escape",
+      "exit_code": 2,
+      "result": "PASS",
+      "input_bytes_and_mtimes_preserved": true
+    },
+    {
+      "case": "no_implicit_generation_when_shell_unconfigured",
+      "exit_code": 2,
+      "result": "PASS",
+      "input_bytes_and_mtimes_preserved": true
+    },
+    {
+      "case": "CURRENT_path_outside_data_root",
+      "exit_code": 2,
+      "result": "PASS",
+      "input_bytes_and_mtimes_preserved": true
+    },
+    {
+      "case": "CURRENT_manifest_digest_mismatch",
+      "exit_code": 1,
+      "result": "PASS",
+      "input_bytes_and_mtimes_preserved": true
+    },
+    {
+      "case": "matching_CURRENT_selection",
+      "exit_code": 0,
+      "result": "PASS",
+      "input_bytes_and_mtimes_preserved": true
+    }
+  ],
+  "python311_syntax": "PASS",
+  "script_sha256": "41845a6622bcffbd082c0d114d73dc94e0d7e27526afbee84a3b2d650ecfd7ee",
+  "genos_accessed": false,
+  "serving_code_changed": false,
+  "generation_changed": false,
+  "run_txt_sha256": "44268845de83926395383cc76602aea088175d5b5d406babb34c10219c9f2c83",
+  "bash_syntax": "PASS",
+  "run_txt_contracts": [
+    {
+      "case": "explicit_generation_pass",
+      "status": "PASS",
+      "exit_code": 0,
+      "persistent_log_verified": true,
+      "code_and_generation_unchanged": true
+    },
+    {
+      "case": "missing_generation_error",
+      "status": "PASS",
+      "exit_code": 2,
+      "persistent_log_verified": true,
+      "code_and_generation_unchanged": true
+    }
+  ]
+}

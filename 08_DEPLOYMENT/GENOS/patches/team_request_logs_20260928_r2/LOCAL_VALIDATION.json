@@ -1,0 +1,42 @@
+{
+  "patch": "team-request-logs-20260928-r2",
+  "code_root": "/home/jin/8-AGENT",
+  "environment": "local WSL; synthetic requests; no GENOS access/model calls",
+  "related_tests_passed": 89,
+  "related_test_runs": [
+    {
+      "tests_passed": 87,
+      "output": "/tmp/genos-team-r2-core-validation.txt"
+    },
+    {
+      "tests_passed": 1,
+      "test": "working diagnostic fields preserved"
+    },
+    {
+      "tests_passed": 1,
+      "test": "Git committed blob normalization rejected even with clean status"
+    }
+  ],
+  "r1_rejection_reproduced_on_prior_thinking_variant": true,
+  "report_transform_scope": "9 known reporting functions and required import; untouched bytes preserved",
+  "syntax_python_3_11": true,
+  "expanded_workspace_checks": {
+    "passed": 106,
+    "failed": 2,
+    "failures": [
+      "current SSE workflow versus JSON mock transport fixture",
+      "current request_report code hash differs from existing engine pin during another working-code update"
+    ],
+    "scope": "outside R2 installer; no runtime or engine pins rewritten to hide failures"
+  },
+  "push_checkout": null,
+  "deployment_commit": null,
+  "generation_path": null,
+  "generation_manifest_sha256": null,
+  "code_serving_revisions": {
+    "risk_team": null,
+    "financial_team": null
+  },
+  "onsite_verified": false,
+  "embedded_txt_flow": "check/apply/rerun/commit gate/rollback passed with prior thinking variant, Korean extra code and CRLF; generation fixture mocked"
+}

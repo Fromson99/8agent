@@ -1,0 +1,35 @@
+{
+  "format": "8agent-fulltext-diagnostics-patch/1",
+  "patch": "fulltext-diagnostics-20260928-r1",
+  "generation_change": false,
+  "code_serving_revision": null,
+  "onsite_verified": false,
+  "files": {
+    "02_BACKEND/semantic_runtime/fulltext.py": {
+      "base_sha256": "8c812c64a39462fccb4628a079963606047d603964654f1f42931df130a5ee26",
+      "new_sha256": "02aa242f86e34f687b9b5077d5bc86fe7381ad1682386757343f04b42f3a62a8"
+    },
+    "02_BACKEND/semantic_runtime/term_index.py": {
+      "base_sha256": "59a198b619c743c0f0ec2ee8150d319ce8e291c27cf7f99791963bd52df1c5b3",
+      "new_sha256": "ca656bfc9da314b3da8b85436666f1a4dfc7b093d213aceb6dac8f3d640d0e5d"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": {
+      "base_sha256": "56dbe2a16c5d4d0448d0473a37910fae2f2a9f3cdca6f18c2489dbe2e9b8a66c",
+      "new_sha256": "d5c0a48be5f5486314abce33aa2a4a5afe9259d425cdcae450e5186ede98ce88",
+      "variants": [
+        {
+          "base_sha256": "868865e2cf32a2d8ad736606c2ad4cd094bd9368cdd54e908cb3d3f51be61656",
+          "new_sha256": "0b73099dcf814f3c11277b82dbd2fdb82c3e914de199297d1eff72aa443f8907",
+          "payload_path": "variants/868865e2cf32a2d8ad736606c2ad4cd094bd9368cdd54e908cb3d3f51be61656/02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py"
+        }
+      ]
+    },
+    "02_BACKEND/semantic_runtime/request_report.py": {
+      "strategy": "structural-report"
+    }
+  },
+  "assets": {
+    "report_fields.py": "1bf3db7e55af2cb3a54bd2ddcbe29b380d2e3f38042fe103cbc69f21ec385696",
+    "REPORT_CATALOG.json": "d04e56efb8096ef5fa9a63bf8f7b2053ce6a205af80b56430cba64fbf6ae9407"
+  }
+}

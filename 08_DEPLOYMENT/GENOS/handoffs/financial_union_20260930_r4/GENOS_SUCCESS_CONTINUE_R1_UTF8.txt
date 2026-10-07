@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Run from existing ~/DEV checkout:
+# bash TRANSFER/GENOS_SUCCESS_CONTINUE_R1_UTF8.txt
+# Re-run this same command on REVIEW_PENDING; completed work is reused.
+set -Eeuo pipefail
+umask 077
+success_log=$(mktemp /tmp/genos-success-continue-XXXXXX.log)
+exec > >(tee -a "$success_log") 2>&1
+trap 'success_rc=$?; printf "[%s] FINISHED status=%s log=%s\n" "$(TZ=Asia/Seoul date "+%Y-%m-%d %H:%M:%S KST")" "$success_rc" "$success_log"' EXIT
+export GENOS_DATA_ROOT=/workspace/01_DATA
+parent_run=financial-risk-full-e2e-20260930-r3
+success_run=financial-risk-success-20261001-r1
+base_generation=/nfs-root/diamo/8-agent/term-releases/fulltext-repair-20260924T071754Z-31987d27/generation
+reference_profile="$GENOS_DATA_ROOT/LOGS/$parent_run/reference-model-profile.json"
+test -f 06_TOOLS/pipeline.py
+test -f "$base_generation/manifest.json"
+test -f "$reference_profile"
+printf 'START parent=%s successor=%s code_root=%s\n' "$parent_run" "$success_run" "$PWD"
+sha256sum 06_TOOLS/pipeline.py "$base_generation/manifest.json" "$reference_profile"
+python3 06_TOOLS/pipeline.py document-release select \
+  --from-run-id "$parent_run" --run-id "$success_run" \
+  --allow-incomplete \
+  --reason '비정형 서식·점검표 및 미해결 구조화 실패는 보류하고 성공 문서만 후속 처리'
+printf '\nAll remaining structure failures are omitted; RAW is preserved.\n'
+printf 'DOCX retry successes must have been merged into the parent run to be included.\n'
+printf 'Check selected/omitted above. Type YES to build this selected scope: '
+read -r success_confirm
+if [[ "$success_confirm" != YES ]]; then
+  printf 'Stopped after selection. No downstream build or serving activation.\n'
+  exit 0
+fi
+python3 06_TOOLS/pipeline.py document-release build \
+  --run-id "$success_run" --base-generation "$base_generation" \
+  --reference-model-profile "$reference_profile" \
+  --max-review-jobs 100 --max-reference-cases 10000 --reference-batch-size 8
+printf 'BUILD completed. Serving activation/deployment was not requested or performed.\n'

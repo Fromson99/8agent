@@ -1,0 +1,11 @@
+통합·수정 실험 전체 경과 시간 보충 기록
+
+확인 가능한 최초 통합 ADR0674 예약 2026-10-06 22:34:11 KST부터 실제 로컬 MAIN 질의 성공 2026-10-07 03:19:28 KST까지 4시간 45분 17초다. 작업/실험 사이 대기도 포함한 경과이며 실제 노동시간이나 이전 설계 전체의 소요시간은 아니다.
+메일의 EXPERIMENT_RESULTS_UTF8 보고서에 기재한 1시간 31분은 최종 ADR0677 준비·실험·최종 검증, 1시간 40분은 ADR0677 예약부터 실제 MAIN 질의 성공까지의 시간이다. 전체 통합 경과와 구분한다.
+
+ADR-0674-investigation-control-integration: 0시간 30분 29초
+ADR-0675-investigation-control-binding-closure: 1시간 19분 32초
+ADR-0676-investigation-reinspection-repair: 1시간 8분 42초
+ADR-0677-investigation-main-integrity-generalization: 1시간 31분 6초
+
+GENOS 실제 배포·내부 질의 시간은 아직 측정하지 않았다. 원래 메일 첨부와 실험 결과를 변경하지 않고 별도 기록한다.

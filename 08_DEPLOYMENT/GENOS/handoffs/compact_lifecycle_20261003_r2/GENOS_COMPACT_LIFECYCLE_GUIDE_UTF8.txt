@@ -1,0 +1,106 @@
+GENOS 완료 자료 재사용 · compact 전체 구축 — 2026-10-03 R2
+
+이 묶음은 기존 ~/DEV에 코드를 백업 후 적용하고, 완료된 구조화/용어집에서 새로운
+서빙 세대를 만든다. 코드 적용, 데이터 생성, Git push, 코드서빙 리비전 배포는 별도다.
+현재 외부 세션에서는 GENOS에 접근하지 않았으며, 현장 속도와 모델 전체 E2E는 미확인이다.
+
+파일: GENOS_COMPACT_LIFECYCLE_20261003_R2.zip + 같은 이름 .txt
+기준: 누적 v6 20261002 R4 또는 그 위의 SQLite read reuse R1.
+패치 68파일과 미변경 의존 741파일의 해시를 확인한다. 다른 현장 변경을 덮어쓰지 않는다.
+새 의존성은 없다. Python 3.11+, 기존 PeCab와 서비스 의존성이 필요하다.
+/venv/bin/python3가 있으면 그 경로를 우선하며 실제 실행기/버전을 로그에 기록한다.
+다른 환경은 GENOS_PYTHON_DIR에 python3가 있는 디렉터리를 지정한다.
+
+재사용: 선택한 sources/store.sqlite, selection.json, plan.json, glossary-draft 및
+그 원천 knowledge bundle. 완료 의미 검토본은 GENOS_COMPLETED_GLOSSARY로 명시하고
+completion.json/부모 사전/검토 상태를 검증해 그대로 쓴다. PARTIAL 상태는 보존한다.
+재구축: 문서–용어 연결, compact 원문, navigation/감사, 서빙 용어집/캐시, unit FTS.
+RAW 재구조화, 용어 생성, 의미 검토, 참조 LLM 호출은 하지 않는다.
+이전 참조 LLM 판정 overlay는 자동 이식하지 않는다. native 규칙과 미해결 상태를 유지한다.
+
+1) 실제 완료 입력을 지정한다.
+cd -P ~/DEV
+export GENOS_DEV="$HOME/DEV"
+export GENOS_DATA_ROOT="$GENOS_DEV/01_DATA"
+export GENOS_PREPARED_RUN=financial_risk-success-20261002-index-r8
+export GENOS_REUSE_RUN=financial_risk-success-20261003-compact-r2
+
+위 PREPARED_RUN은 과거 현장 기록에서 확인된 이름이다. 이 경로가 index-only 파생 출력이면
+원래 입력 run을 지정해야 한다. plan.json, sources/store.sqlite, sources/selection.json,
+glossary-draft/dictionary.sqlite와 report.json이 있는 원래 prepared run인지 먼저 확인한다.
+파생 출력의 origin.json에 prepared_run/prepared_directory가 있으면 그 원본을 확인한다.
+GENOS_DATA_ROOT 역시 실제 저장 위치로 설정한다. 날짜가 최신이라는 이유로 자동 선택하지 않는다.
+완료 검토본을 사용할 때는 GENOS_COMPLETED_GLOSSARY에 실제 검토 출력 폴더를 지정한다.
+미지정 시 prepared draft를 재사용하며 의미 검토 완료를 주장하지 않는다.
+GENOS_REFERENCE_SCOPE_V2는 기존 값 그대로 유지한다. 미설정은 0이다.
+
+2) 코드 적용 및 확인
+bash TRANSFER/GENOS_COMPACT_LIFECYCLE_20261003_R2.txt check
+bash TRANSFER/GENOS_COMPACT_LIFECYCLE_20261003_R2.txt apply
+bash TRANSFER/GENOS_COMPACT_LIFECYCLE_20261003_R2.txt verify
+
+ZIP/TXT는 ~/DEV/TRANSFER에 함께 둔다. 모든 단계는 처음부터 지속 로그와 종료 상태를 남긴다.
+CHECKOUT_DRIFT면 적용을 중단하고 원래 파일을 보존한다. apply의 BACKUP/RECOVERY 경로를 저장한다.
+기존 구축 작업을 강제 종료하지 않는다. 코드만 바꾼 상태로 기존 세대의 서빙을 재시작하지 않는다.
+이번 full_glossary compiler가 바뀌므로 아래에서 새 캐시까지 만든 코드/세대를 함께 사용한다.
+
+3) 구축/중단 후 재개
+bash TRANSFER/GENOS_COMPACT_LIFECYCLE_20261003_R2.txt build
+
+같은 입력/코드/설정과 같은 run ID로 다시 실행하면 완료 단계 해시를 확인해 재사용한다.
+links → source → glossary → navigation → fulltext 순으로 checkpoint가 생긴다.
+실패한 단계의 미완성 출력만 다시 만들며, 완료 단계가 변조되면 중단한다.
+코드/입력/설정이 바뀌었으면 새 output run ID를 사용한다.
+
+출력: $GENOS_DATA_ROOT/TERM_RELEASES/$GENOS_REUSE_RUN/serving/
+  baseline/generation/            서빙용 작은 세대
+  baseline/audit/source/          native 전체 원문 DB와 결속
+  baseline/audit/navigation/      분리 전 전체 navigation 및 감사 자료
+  baseline/checkpoints/          완료 단계 hash 영수증
+  baseline/links/                 연결표; 원문 DB의 불필요한 복사 없음
+  offline-e2e.json, release.json  결속/스키마/FTS 검사와 완료 영수증
+실행 중에는 baseline 대신 .baseline.building 경로에 동일 단계가 보존된다.
+완료 기준: OFFLINE_READY, offline_e2e=PASS, FINISHED status=0.
+live_workflow_e2e=NOT_RUN과 quality_certified=false는 현장 검증 전 정확한 표기다.
+
+변경된 서빙 물리 계약:
+- term-source-generation-v2: document.json은 metadata만, native nodes/blocks는 audit에 보존.
+  source_unit은 보존하고 source_block view가 기존 블록 JSON을 복원한다.
+- term-navigation-index-v6 / storage-v2: occurrence는 내부 정수 key + 호환 view.
+  외부 term/source ID, 참조 대상, 후보/미해결 판정, 인용 범위는 유지한다.
+- glossary-serving-v2: node 정의/라벨 + lookup/identity/translations. 큰 raw graph는 원천에 보존.
+- 기본 unit FTS, 요청 원장 FULL 동기화 및 기존 NFS DELETE 정책 유지.
+- 작은 색인은 단일 프로세스, 16MiB 초과 입력 DB는 2개 worker. 명시 workers는 유지한다.
+  토큰 결과 cache는 worker별 문자열 8MiB 및 256항목으로 제한한다.
+
+4) NFS 게시와 배포 게이트
+export GENOS_SHARED_ROOT=/nfs-root/diamo/8-agent/generations
+bash TRANSFER/GENOS_COMPACT_LIFECYCLE_20261003_R2.txt publish
+
+실제 코드서빙이 읽을 수 있는 기존 NFS root로 수정한다. 새 디렉터리에 복사/전체 해시 확인 후
+게시하며 CURRENT를 바꾸지 않는다. shared-publication.json의 정확한 generation_path를 보존한다.
+변경/추가 파일을 검토해 Git에 commit한 뒤:
+bash TRANSFER/GENOS_COMPACT_LIFECYCLE_20261003_R2.txt gate
+
+게이트는 ZIP, 추적·commit된 checkout, 선택된 실제 generation을 대조한다.
+통과한 commit을 push하고 같은 commit과 GENOS_GENERATION을 사용하는 새 리비전을 배포한다.
+GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6, 기존 내부 모델/임베딩·권한 설정을 유지한다.
+GENOS_LLM_MAX_INPUT_BYTES는 이제 실제 적용된다. 예전 131072 설정을 무시하지 않는다.
+이는 입력 상한 설정이며 법령 목록이 상한보다 큰 질문을 자동 해결하거나 축약하지 않는다.
+
+5) 워크플로우 화면에서 최종 E2E
+워크플로우 Python 단계 편집은 ZIP/Git push와 별도다. 검증한 세대가 선택되었는지 확인하고
+워크플로우 테스트 화면에서 warmup과 기존 전체 E2E 질문을 실행한다.
+코드서빙 직접 테스트 UI/API 실행을 요구하지 않는다.
+기존과 같은 사례/문서 범위/모델/권한으로 다음을 기록한다.
+- commit, 코드서빙 revision, GENOS_GENERATION, manifest SHA, 실제 backend/model ID
+- 각 구축 단계의 seconds/reused와 용량, 첫 warmup 및 반복 질문 시간
+- 문서·용어·정의 찾기, 원문 읽기/펼치기, 정·역참조, 표/부속/항·호·목 범위
+- 근거 누락/권한 밖 원문 노출 여부, 인용 원문·버전·span 일치, 답변 품질과 오류
+- 첫 요청과 반복 요청을 구분하고 동시 요청 수, NFS 위치, 사용량을 함께 보존
+로컬 측정치는 GENOS 현장 지연이나 전체 RAG 품질 인증을 대신하지 않는다.
+
+6) 원복
+서빙은 이전 코드 commit과 이전 GENOS_GENERATION을 쌍으로 되돌린다.
+코드 checkout 원복: bash TRANSFER/GENOS_COMPACT_LIFECYCLE_20261003_R2.txt rollback <apply가 출력한 백업 절대경로>
+기존 세대/완료 자료는 삭제하지 않는다. 이 스크립트는 CURRENT/리비전/Git push를 자동 변경하지 않는다.

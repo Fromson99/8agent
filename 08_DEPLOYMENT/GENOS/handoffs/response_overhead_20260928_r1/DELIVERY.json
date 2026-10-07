@@ -1,0 +1,36 @@
+{
+  "patch": "response-overhead-20260928-r1",
+  "code_zip_sha256": "89caf4c25ea12e4c10020f37038a4da2a580e634aaf3b834898ad3620c830494",
+  "code_manifest_sha256": "13813b40bb0f46ccc0bec0747faaac2622a28b797320728016b746bd76269b46",
+  "runtime_files": 9,
+  "validation_code_root": "/home/jin/8-AGENT",
+  "deploy_root": "~/DEV (physical Git root after onsite resolution)",
+  "git_checkout_commit": null,
+  "generation": null,
+  "generation_manifest_sha256": null,
+  "code_serving_revision": null,
+  "onsite_workflow_verified": false,
+  "files": {
+    "02_BACKEND/semantic_runtime/contracts.py": "2e0dde5e4d7d4643370fda211886269f5bd48fbb037999033a944f319cf61b8f",
+    "02_BACKEND/semantic_runtime/document_agent.py": "9aefa423a1749e0929a6572364944b10f27306d5f25bec158a734f2abf389276",
+    "02_BACKEND/semantic_runtime/navigation_agent.py": "c4ea627d88484fe392bd682c94d817be8ec83944e467e580a4176de8c613765c",
+    "02_BACKEND/semantic_runtime/observability.py": "40f83aa44a3df33e4736095bcb8722345fa4f5afd8d6497e3dc7eaba3dc83c28",
+    "02_BACKEND/semantic_runtime/request_report.py": "55c729bf96a1794b6427e8eade1f4db96c076d5de76b66e1776b90795fdb09c6",
+    "02_BACKEND/semantic_runtime/stage_runner.py": "bbb8a4940457ccf0bee1d3e70da61d95df78ca0c0a45ff5759867e439c1abd9d",
+    "02_BACKEND/semantic_runtime/term_agent.py": "647b75a49e959127f6c4568e32d5a5c81e275e4e4fd5b7a407611f14110f8c52",
+    "02_BACKEND/semantic_runtime/term_index.py": "e1557537ec5409c6993aef6d6f064cce212c0fa2f301b49e130848d22ca16ffd",
+    "service.py": "807fb56a935dd1a976bf9d98e6b21c7be7852d29450bc131ca94edb2d0045f57"
+  },
+  "status": "PREPARED_LOCAL_CONTRACT_VALIDATION",
+  "local_validation": {
+    "related_tests_passed": 243,
+    "related_tests_failed": 1,
+    "failure_reproduced_on_prechange_code": true,
+    "package_focused_tests_passed": 26,
+    "isolated_git_apply_reapply_rollback": true,
+    "code_only_clean_commit_gate": true,
+    "engine_pins_consistent": true,
+    "actual_genos_latency_measured": false,
+    "report": "09_ARTIFACTS/AUDITS/20260928-response-overhead-r1/VALIDATION.md"
+  }
+}

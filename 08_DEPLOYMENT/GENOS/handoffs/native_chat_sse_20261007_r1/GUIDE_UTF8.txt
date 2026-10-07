@@ -1,0 +1,62 @@
+직접 통합 채팅 /chat + 선택형 SSE — 20261007 R1
+
+승호 cicd 388cd392를 다시 확인했습니다. 보고서 과제는 직접 /chat SSE를 만들었지만
+10월 6일 현장 'function' object has no attribute 'get' 오류 후 REPORT_PROGRESS=off로
+되돌렸습니다. 따라서 우리 통합 복귀는 별도 Python 워크플로우 없이 직접 /chat으로 하되,
+GENOS_CHAT_TRANSPORT=json을 기본으로 사용합니다. SSE 서버의 로컬 성공과 플랫폼
+채팅의 실시간 표시 성공은 별도입니다. 이 ZIP은 플랫폼 자체를 수정하지 않습니다.
+
+같은 폴더에 ZIP과 APPLY TXT를 반입합니다. 기존 ~/DEV에 백업 후 적용합니다.
+ bash ~/DEV/TRANSFER/GENOS_NATIVE_CHAT_SSE_20261007_R1_APPLY.txt check
+ bash ~/DEV/TRANSFER/GENOS_NATIVE_CHAT_SSE_20261007_R1_APPLY.txt apply
+ bash ~/DEV/TRANSFER/GENOS_NATIVE_CHAT_SSE_20261007_R1_APPLY.txt verify
+기존 정확한 generation이 기록된 선택 경로와 다르면 두 번째 인자로 절대경로를 지정합니다.
+현재 기록 기준 경로:
+ /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+apply는 코드만 바꿉니다. 원문/용어집/DB/runtime/CURRENT/.env/.git은 보존합니다.
+TXT는 첫 단계부터 run.log/events.jsonl과 실패 상태, 실제 Python 실행 경로/버전을 남깁니다.
+현장 명령은 python3입니다. 재실행은 설치된 해시를 확인하며 미확인 수정은 보존/차단합니다.
+
+같은 checkout에서 검증하고 정확한 커밋을 push할 때:
+ bash ~/DEV/TRANSFER/GENOS_NATIVE_CHAT_SSE_20261007_R1_APPLY.txt push
+이 모드는 반입 범위만 commit한 뒤 같은 checkout의 generation/ZIP gate와 push를 기록합니다.
+다른 추적/스테이징 수정이 있으면 파일명·해시를 CHECKOUT_PREFLIGHT 보고서에 남기고 중단합니다.
+Git push와 코드서빙 리비전 배포는 별도입니다. GENOS 리비전은 gate 통과 커밋을 선택합니다.
+
+코드서빙의 HTTP 앱을 main:app으로 선택합니다.
+ Build: python3 -m pip install -r 08_DEPLOYMENT/GENOS/requirements-sse.txt
+ Run: python3 main.py
+포트 환경변수가 없으면 기존 시작 명령의 실제 --port 값을 그대로 지정합니다.
+service/service.py만 적재하는 언어별 기본 JSON 로더는 /chat을 등록하지 않습니다.
+데이터 세대/내부 모델/TEAM_ID/NFS runtime/AD/기억 인증 설정은 기존 검증 값을 유지합니다.
+ GENOS_CHAT_TRANSPORT=json
+ GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6
+이 직접 경로에 GENOS_BASE_URL/CODESERVING_TOKEN을 자기 호출용으로 추가하지 않습니다.
+
+채팅앱의 코드서빙 기반 연결을 이 리비전의 /chat으로 선택합니다.
+별도 Python run(data) 워크플로우 편집/배포는 필요하지 않습니다.
+현장 확인은 기존 워크플로우 테스트 화면에서 해당 코드서빙 /chat을 선택해 수행합니다.
+1. {"question":"__verify__"} → {"code":0,"data":{"text":"verified"}}
+2. 일반 질문 → code=0,data.text와 answer_status 확인.
+   execution_transport=in-process, chat_adapter_revision=main-chat-sse-20261007-r1.
+3. SSE만 모델 없이 확인: {"API_TYPE":"SSE_CHECK","stream":true}
+   HTTP는 text/event-stream이며 마지막 이벤트는 result입니다.
+   result.data.text, sse_check.sse_ready=true, chat_stream_transport.route=/chat 확인.
+   JSON과 달리 result.data는 code/data로 다시 감싸지 않습니다.
+4. 이 플랫폼 연결에서 3번이 성공한 뒤에 같은 경로의 일반 질문 조기 답변/진행 표시를 확인합니다.
+   한 요청은 /chat?stream=1 또는 body stream=true로 선택합니다.
+   기본 SSE 선택 설정은 GENOS_CHAT_TRANSPORT=sse입니다.
+   명시 JSON 복귀는 /chat?stream=0 또는 body stream=false입니다.
+   query 설정이 body보다 우선하며 __verify__는 항상 JSON입니다.
+플랫폼에 같은 검증 오류가 나면 일반 직접 실행은 JSON으로 유지합니다. 요청 ID/리비전과
+플랫폼 오류 traceback을 보존합니다. 우리 SSE 서버만 수정했다고 현장 수신 문제가
+해결됐다고 보고하지 않습니다. 빠른 SSE_CHECK는 긴 요청/내부 모델 성공 증명이 아닙니다.
+
+되돌릴 때: apply가 출력한 정확한 backup 폴더로
+ bash ~/DEV/TRANSFER/GENOS_NATIVE_CHAT_SSE_20261007_R1_APPLY.txt rollback /정확한/backup
+이전 커밋·리비전·시작 명령·채팅앱 연결도 각각 재선택합니다. runtime/데이터는 보존합니다.
+JSON만으로 복귀할 때는 코드 롤백 대신 GENOS_CHAT_TRANSPORT=json과 /chat?stream=0을 사용합니다.
+
+로컬 MAIN generation43 활성 포인터와 동결 릴리스는 변경하지 않았습니다.
+현장 적용/generation gate/Git push/리비전 배포/실제 내부 질의/채팅 SSE 렌더링은 미확인입니다.
+메일은 이번 요청에서 발송하지 않았습니다.

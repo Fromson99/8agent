@@ -1,0 +1,71 @@
+{
+  "schema_version": "workflow-display-handoff-v1",
+  "revision": "answer-reference-display-20260929-r1",
+  "created_at": "2026-09-29T08:23:04.080644+00:00",
+  "verified_code_root": "/home/jin/8-AGENT",
+  "intended_git_checkout": "~/DEV",
+  "local_head_commit": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "local_working_tree_dirty": true,
+  "source_path": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+  "before_sha256": "1c44ba9c58a17df26cb14e25269f5525d97cad8860b95606451201e5e728c049",
+  "after_sha256": "52f523ac91d4dde2ac032846438bfa5c884bea4e6678300c09443bbf737baede",
+  "deployment_scope": "workflow_python_editor",
+  "local_active_release_observed": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "legal-agent-structure-catalogue-pecab-repair-20260929-r1",
+    "generation": 31,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/legal-agent-structure-catalogue-pecab-repair-20260929-r1/release.json",
+    "release_manifest_sha256": "e1efaec06421922b8458d5dca22011ea3a4a8f1659658a75a002aee2c446dc03",
+    "activated_at": "2026-09-29T06:27:34.974166+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "4363def1fa2a5c6054a973d8c7085782eac3483b4eeaf3a0bf350ae91df4f960"
+  },
+  "local_main_changed": false,
+  "server_code_changed": false,
+  "generation_changed": false,
+  "genos_deploy_commit": null,
+  "genos_generation_path": null,
+  "genos_generation_manifest_sha256": null,
+  "genos_codeserving_revision": null,
+  "genos_workflow_revision_id": null,
+  "genos_workflow_deployed": false,
+  "genos_question_verified": false,
+  "verification": {
+    "python": "3.14.4",
+    "passed": 115,
+    "failed": 0,
+    "suites": [
+      "05_TESTS/CONTRACTS/test_genos_answer_reference_display.py",
+      "05_TESTS/CONTRACTS/test_genos_answer_stream.py",
+      "05_TESTS/REGRESSION/core/test_genos_rag_chat.py",
+      "05_TESTS/CONTRACTS/test_genos_chat_flow.py",
+      "05_TESTS/CONTRACTS/test_genos_chat_progress.py"
+    ],
+    "existing_warning": "Starlette httpx TestClient deprecation",
+    "synthetic_only": true
+  },
+  "files": [
+    {
+      "path": "GENOS_ANSWER_REFERENCE_DISPLAY_20260929_R1_NOTES.txt",
+      "sha256": "29634b63fc7efc1bd306042fae6dbc8fcf47201008b8d47ca8d94d136f6a0d94",
+      "bytes": 1387
+    },
+    {
+      "path": "GENOS_ANSWER_REFERENCE_DISPLAY_20260929_R1_ROLLBACK.py",
+      "sha256": "1c44ba9c58a17df26cb14e25269f5525d97cad8860b95606451201e5e728c049",
+      "bytes": 42188
+    },
+    {
+      "path": "GENOS_ANSWER_REFERENCE_DISPLAY_20260929_R1_WORKFLOW.py",
+      "sha256": "52f523ac91d4dde2ac032846438bfa5c884bea4e6678300c09443bbf737baede",
+      "bytes": 45387
+    },
+    {
+      "path": "GENOS_ANSWER_REFERENCE_DISPLAY_20260929_R1_WORKFLOW_PASTE_ALL.txt",
+      "sha256": "52f523ac91d4dde2ac032846438bfa5c884bea4e6678300c09443bbf737baede",
+      "bytes": 45387
+    }
+  ]
+}

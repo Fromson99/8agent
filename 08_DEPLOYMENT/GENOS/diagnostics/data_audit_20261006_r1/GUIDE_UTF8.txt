@@ -1,0 +1,137 @@
+GENOS 데이터 전수 점검 · 문서별 열람 R1 (2026-10-06)
+
+1. 반입과 실행
+
+GENOS_DATA_AUDIT_20261006_R1_RUN.txt 한 파일을 ~/DEV/TRANSFER에 올리면 됩니다.
+ZIP 설치·pip·서비스 변경은 필요 없습니다. Python 3.11 이상, 표준 라이브러리만 사용합니다.
+GENOS에서는 python3를 사용하고 실제 실행 파일과 버전을 처음부터 로그로 남깁니다.
+
+현재 코드서빙 설정의 GENOS_GENERATION 값을 아래 절대경로 자리에 넣으세요.
+코드스페이스의 셸 설정과 코드서빙 설정은 자동 공유되지 않습니다.
+이전 사진의 financial-risk-success-20261005-schema-r2라는 이름만으로 지금의 세대를 선택하지 않습니다.
+
+cd ~/DEV
+bash TRANSFER/GENOS_DATA_AUDIT_20261006_R1_RUN.txt \
+  --generation /실제/선택된/generation/절대경로 \
+  --output "$HOME/DEV/TRANSFER/data-audit-report-001" \
+  --code-root "$HOME/DEV"
+
+첫 실행에는 새 output 폴더를 지정하세요. 기존 폴더를 자동 덮어쓰지 않습니다.
+서빙 코드·기존 DB·manifest·receipt·CURRENT·캐시를 변경하지 않고 보고서만 새로 만듭니다.
+모델·네트워크 호출·새 용어 생성·재색인·배포를 수행하지 않습니다.
+완료된 불변 generation을 대상으로 합니다. WAL/SHM/journal이 있는 DB는 읽지 않습니다.
+읽는 중 입력이 변하면 결과를 INCOMPLETE로 표시합니다.
+
+직접 Python으로 실행할 경우 별도 .py 원본도 제공합니다.
+python3 TRANSFER/GENOS_DATA_AUDIT_20261006_R1.py --generation /실제/generation --output /새/보고서/경로
+첫 단계부터 종료 상태를 남기려면 위 RUN.txt를 사용하세요.
+
+2. 구축 감사·입력 실패까지 함께 확인
+
+generation에 들어 있는 문서만으로는 원래 입력 중 실패·제외된 문서를 알 수 없습니다.
+실제 완료 run의 선택 파일과 상태 원장을 알고 있으면 첫 실행에 아래 옵션도 추가하세요.
+파일·폴더는 날짜로 추측하지 않고 해당 세대를 만든 run의 정확한 경로를 지정합니다.
+
+  --audit-root /선택/구축본/audit \
+  --selection /해당/run/structure-selection.json \
+  --status-db /해당/run/term-document-status.sqlite
+
+audit-root에는 source/와 navigation/이 들어 있습니다. 경로뿐 아니라 선택된 세대의
+manifest에 결속된 감사 hash와 DB hash를 검사합니다. 없는 감사 자료를 완료로 처리하지 않습니다.
+새 compact source v2는 감사 원문의 마디·본문과 서빙 데이터를 논리적으로 전수 대조합니다.
+저장된 JSON의 공백·키 순서 차이는 내용 손실로 오판하지 않습니다.
+navigation storage v3의 구축 근거 4개 표, 승인/보류 상태, 원문 구간·해시와 운영 연결을 검사합니다.
+
+상태 원장에 attempt가 여러 개면 후보 ID 목록을 출력하고 종료합니다.
+동일 output에 이어서 진행하지 말고, 새 output과 정확한 --status-attempt ID를 지정하세요.
+실행 중인 attempt는 점검 대상에서 제외합니다. 완료된 원장을 사용하세요.
+이미 저장한 parent-status.json 등은 --status-report /정확한/상태.json으로 지정할 수 있습니다.
+선택 파일에 origin_sha256이 있으면 같은 폴더의 결속된 selection-origin.json,
+parent-selection.json, parent-status.json도 확인해 실패·제외 목록과 이유를 보존합니다.
+미제공 자료는 UNVERIFIED로 표시하며, 성공 문서 수를 원래 입력 전체 수로 간주하지 않습니다.
+
+원본 표현본의 경로와 hash가 document_metadata.representations에 있을 때:
+  --raw-root /실제/원본/루트
+
+선언된 절대경로가 이 루트 안에 있으면 사용하고, 이전 현장 경로라면 선언된 relative_path를
+이 루트 아래에서 해결합니다. 파일명·최신 날짜로 다른 파일을 찾아 붙이지 않습니다.
+원본 파일의 hash를 대조하며 내용·페이지·표·판본의 의미 대조는 사람이 보고 검수해야 합니다.
+
+3. 보고서 열기
+
+실행 종료 로그의 report 경로에 있는 index.html을 GENOS 내부에서 열어 보세요.
+전체 문서 목록에서 제목/ID/검사 상태를 검색하고 문서를 눌러 확인할 수 있습니다.
+source v1/v2, navigation v2~v7, glossary knowledge v1/serving v2,
+article fulltext v2/unit fulltext v1을 구분합니다. 알 수 없는 스키마는 검사 미완료로 남깁니다.
+
+보고서:
+- index.html: 전체 건수·스키마·파일 결속·문서 목록·공통 문제·사전/감사 자료 전체 페이지
+- documents/*.html: 문서 메타데이터, 조·항·호·목 트리, 직접 소유 본문, 전체 블록,
+  용어 연결·출현 근거, 정의, 명시 참조·미해결 이유, 들어오는 참조, 탐색 마디/anchor,
+  단위 fulltext 원문. 참조 대상 문서의 정확한 마디로 이동 가능
+- catalogues/*.html: 전체 용어·용어 관계·표기·사전·용어집·공통 감사 자료, 500행씩 전부 열람
+- summary.json: 실제 건수, 검사 범위/단계 상태, 파일 hash·크기, 오류·경고·미확인 집계
+- documents.jsonl: 문서별 건수·발견 항목·보고서 경로
+- issues.jsonl: 전체 발견 항목과 위치·원인
+- records.jsonl 및 report.sqlite: 전체 구조·관계·감사 기록. 보고서는 일부 샘플만 추리지 않음
+- input-coverage.json: 성공/실패/제외/서빙 포함 여부, 원래 run과 후속 선택 범위의 차이
+- inputs.json/identity.json: 선택 세대·검사 스크립트·입력 hash와 검사 설정
+- run.log: 단계·파일 hash 진행률·처리 문서 수·행 처리 진행률·최종 상태
+
+본문·관계·감사 자료를 보고서에도 저장하므로 보고서 용량이 커질 수 있습니다.
+논리 뷰 복원과 원문 전수 대조·전체 DB 무결성 검사를 수행하므로 실행 시간은 현장 데이터에 따라 다릅니다.
+FTS의 내부 보조 표 건수와 논리 unit/source 건수는 서로 다른 집계입니다.
+용어-source 연결 쌍 수와 단어의 실제 원문 출현 구간 수도 서로 다릅니다.
+
+4. 하나씩 검수하고 기록 보존
+
+문서별로 미검수 / 검수 중 / 확인 필요 / 검수 완료와 메모를 기록할 수 있습니다.
+검수 완료는 자동 판정이 아니라 사용자가 선택하는 상태입니다.
+목록 페이지의 '검수 기록 내보내기'로 manual-review.json을 저장하고,
+다음에 '기록 가져오기'로 복원하세요. 다른 manifest 세대의 기록은 받지 않습니다.
+브라우저의 file:// 저장소 정책에 따라 문서별 저장이 분리될 수 있습니다.
+같은 폴더를 내부 HTTP로 열면 목록/문서 사이의 검수 기록을 같은 저장소에 둡니다.
+
+현장 코드스페이스 내부 브라우저가 loopback 페이지를 열 수 있는 경우 선택적으로:
+python3 -m http.server 8765 --bind 127.0.0.1 --directory "$HOME/DEV/TRANSFER/data-audit-report-001"
+
+같은 환경의 브라우저에서 http://127.0.0.1:8765/index.html을 여세요.
+이 주소는 이 명령을 실행한 코드스페이스의 loopback입니다. 사용자 PC의 localhost와 다릅니다.
+GENOS 내부 파일 미리보기가 없다면 현장의 승인된 내부 포트 미리보기 방식으로 접근하세요.
+보고서 서버는 조회용이며 원본 또는 서비스 API를 실행하지 않습니다. 종료는 Ctrl+C입니다.
+코드서빙 직접 테스트 UI/API 사용을 요구하지 않습니다.
+
+문서 검수 순서:
+원본 파일/버전 확인 → 트리의 경계·부모 확인 → 본문·표·별표 누락/중복 대조
+→ 용어 출현과 정의 범위 확인 → 참조 문언·대상 문서/판본·마디·본문 대조
+→ 미해결 사유와 남은 문제 메모 → 검수 기록 내보내기.
+
+5. 결과 해석·재실행
+
+DATA_AUDIT_EXIT=0: 요청한 자동 검사/보고서 생성이 끝났고 ERROR는 없음. WARNING/UNVERIFIED는 남을 수 있음
+DATA_AUDIT_EXIT=1: 검사는 끝났지만 해시·구조·연결 등의 오류 발견
+DATA_AUDIT_EXIT=2: 경로/스키마/입력/일부 검사/보고서 생성이 미완료
+DATA_AUDIT_EXIT=130: 사용자 중단
+
+CHECKS_COMPLETED는 실제 원본과 구조화의 의미 정확도, 법률 판단, 검색 순위,
+내부 모델 품질, 배포 리비전 또는 전체 파이프라인 완료를 인증하지 않습니다.
+미해결 참조와 보류된 용어 출현은 근거 부족 상태로 보존하며 존재만으로 데이터 손상이라고 단정하지 않습니다.
+--code-root는 검사한 checkout의 용어집 compiler hash를 비교합니다. 실제 배포 코드와 같은지 별도 확인해야 합니다.
+
+같은 입력·같은 TXT·같은 옵션으로 보고서 위치를 유지하며 다시 검사하려면 기존 명령 끝에 --resume을 추가합니다.
+검사는 전수 재실행하며, 브라우저 검수 기록의 세대 ID는 유지합니다. 입력/스크립트가 바뀌면 새 output이 필요합니다.
+실행 중간에 중단된 경우 identity.json 생성 전이면 새 output으로 재실행하세요.
+검사 설정을 추가/변경할 때도 새 output을 사용합니다. 이전 결과·검수 JSON은 보존하세요.
+
+시작 전 오류도 ~/DEV/TRANSFER/data-audit-launcher-logs/run-*/run.log와 exit.json에 남습니다.
+필요하면 GENOS_DATA_AUDIT_LOG_ROOT에 별도 내부 로그 경로를 지정합니다.
+원복할 서비스/데이터 변경은 없습니다. 보고서 서버만 종료하면 됩니다.
+보고서는 내부 원문을 포함하므로 GENOS 내부에서 보관·열람합니다.
+
+6. 검증 범위
+
+로컬 합성 원문으로 legacy/compact 논리 데이터, source audit 전수 대조,
+실제 legacy 색인 생성기의 산출물, glossary serving v2, storage v3의 승인/보류 근거,
+해시 불일치·계층 순환·출처 불일치·숨겨진 compact orphan·FTS 누락·역참조 불일치,
+CURRENT 결속·입력 제외·재실행/이력 보존·HTML escaping·원문 byte/mtime 보존을 검사합니다.
+실제 GENOS 전체 DB·현장 Python·브라우저 표시·전체 처리 시간은 현장 실행 전 미확인입니다.

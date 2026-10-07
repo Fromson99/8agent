@@ -1,0 +1,43 @@
+GENOS AD모드 워크플로우 Python 편집기 교체본 (2026-10-06 R1)
+
+사용할 파일: GENOS_AD_WORKFLOW_EDITOR_20261006_R1_PASTE_ALL.txt
+이 TXT는 설명이 섞이지 않은 Python 전체 코드입니다. 터미널에서 bash로 실행하는 파일이 아닙니다.
+이전에 보낸 WORKFLOW_PASTE_ALL 또는 Python 편집기 교체본 대신 이번 PASTE_ALL.txt를 사용하세요.
+기존 코드서빙 최신 코드 반입은 유지하고, 이번 첨부는 워크플로우 편집기 교체용으로 사용합니다.
+
+원본 위치
+기존 ~/DEV checkout 기준: ~/DEV/08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py
+첨부 genos_rag_chat.py와 PASTE_ALL.txt의 내용은 바이트 단위로 같습니다.
+SHA256: b38a460cb87f1feb40a0ddc5bb9e620755b383a3b33968dc7a059d075ed3f513
+
+교체 위치와 방법
+1. GENOS에서 현재 B03_법규챗봇에 연결된 워크플로우를 엽니다.
+2. 코드서빙 RAG 호출과 최종 text 반환을 담당하는 기존 Python 단계를 엽니다. 정확한 UI 메뉴명/노드명은 현장 화면에서 확인하세요.
+3. 기존 편집기 코드 전체를 별도 파일로 백업합니다.
+4. PASTE_ALL.txt를 UTF-8 텍스트 편집기로 열어 전체 내용을 복사합니다.
+5. 기존 Python 편집기의 내용을 전체 선택한 뒤 첨부 코드 전체로 교체합니다. 일부 함수만 추가하지 마세요.
+6. 진입점 run(data) 및 기존 연결/환경 설정을 유지하고 워크플로우를 저장·배포합니다. 채팅 앱이 이 저장된 워크플로우 버전을 사용하도록 현장 절차에 따라 반영합니다.
+ZIP 적용·Git push·코드서빙 배포는 편집기에 저장된 Python 코드를 자동으로 바꾸지 않습니다.
+이 코드는 기존 코드서빙에 AD_PROBE를 전달합니다. 코드서빙도 AD 지원 코드여야 합니다.
+WORKFLOW_SETTINGS의 workflow_revision은 기존 rag-v6-progress-20261002-r1을 유지하므로 그 문자열만으로 AD 대응 편집기 반영을 판정하지 마세요.
+
+워크플로우 테스트 화면에서 확인
+같은 chatId/sessionId를 유지한 입력으로 아래를 순서대로 확인합니다.
+[AD모드 시작]
+현재 상태
+도움말
+[AD모드 종료]
+정상 시작 응답은 'AD모드를 시작했습니다'와 관리 도움말입니다.
+시작 응답에는 response_schema=ad-mode-v1, ad_mode=true, answer_status=administration이 반환됩니다.
+최종 채팅 text가 Python 단계의 반환 text를 사용하도록 기존 후속 연결도 확인하세요.
+'관련 근거를 찾지 못해...'가 계속 나오면 워크플로우 테스트의 해당 Python 단계 출력에서 위 필드와 text를 확인하세요. 사진만으로 현장 실제 응답 및 적용 버전을 확정할 수 없습니다.
+현재 코드는 AD 결과를 일반 RAG 요청 로그 전에 반환하므로 AD 명령에서 검색·모델 요청 로그가 없을 수 있습니다.
+코드서빙 직접 테스트 UI/API는 사용하지 않습니다.
+
+복구
+문제가 생기면 백업한 기존 Python 편집기 전체 내용을 복원하고 저장·배포합니다.
+데이터 generation, CURRENT, 환경변수 및 DB는 이번 첨부로 변경하지 않습니다.
+
+검증과 한계
+Python 문법 검사와 모의 AD 응답의 시작/현재 상태/종료 전달 및 동일 대화 ID 보존을 확인했습니다.
+외부 모델 호출 및 GENOS 접근은 수행하지 않았습니다. GENOS 배포·실제 UI 표시·내부 SQL 처리는 현장 확인이 필요합니다.

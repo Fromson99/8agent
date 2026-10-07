@@ -1,0 +1,9 @@
+{
+  "initial": {
+    "passed": 10,
+    "failed": 2,
+    "seconds": 24.73,
+    "reason": "Test harness counted the expected empty coordination lock as a code change; no shipped artifact failed",
+    "repair": "Create the coordination lock before recording the whole-checkout baseline. Deployment bytes unchanged."
+  }
+}

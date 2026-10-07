@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# GENOS 데이터 파싱/구조화 현황 — 2026-09-29 R1
+# 이 TXT 한 개를 GENOS 코드스페이스의 기존 ~/DEV/TRANSFER에 넣고 실행합니다.
+# 실행(전체 run 조회, ID 입력 불필요):
+#   cd -P ~/DEV
+#   bash TRANSFER/GENOS_DATA_STATUS_20260929_R1.txt
+# run 요약만: 위 명령 뒤에 --list
+# 특정 run 전체 목록: 위 명령 뒤에 --run-id 실제_RUN_ID --limit 0
+# 다른 구축 기록: --data-root /실제/구축데이터경로 (LOGS의 부모)
+# 다른 checkout: --repo /실제/checkout경로
+# 결과 위치 변경: --output /쓰기가능한/결과폴더 (조회 대상 data root 밖)
+# 결과: TRANSFER/data-status-reports/<UTC시각-고유번호>/요약.txt, 실행요약.csv
+#       각 run/전체.txt, 파싱완료.txt, 실패_보류_중단.txt, 대기_미확인.txt, 의도적제외.txt, 전체.csv
+# 실패 목록에는 구조화 실패와 후속 색인 실패를 구분해 표시합니다.
+# 기본 경로는 pipeline 구축과 같은 workspace 논리 data root입니다.
+# GENOS_DATA_ROOT는 서빙 세대 root 설정이므로 구축 LOGS 경로로 자동 사용하지 않습니다.
+# 현재 조회한 구축 기록과 실제 코드서빙이 선택한 generation은 별도 상태입니다.
+# 입력을 읽기만 합니다. 재파싱/모델 호출/코드 배포/CURRENT 변경은 없습니다.
+# RUNNING은 현재 프로세스 생존 확인이 아닙니다. 원장 없는 이전 run은 미확인입니다.
+# 재실행은 새 결과 폴더를 생성하며 기존 보고서/원장은 보존합니다.
+# 별도 패키지 설치 불필요. 저장소 .venv/bin/python 우선, 없으면 python3 사용.
+set -Eeuo pipefail
+umask 077
+export GENOS_STATUS_OUTPUT_BASE="${GENOS_STATUS_OUTPUT_BASE:-$PWD/TRANSFER/data-status-reports}"
+task_status_log_dir="${GENOS_STATUS_EXECUTION_LOG_DIR:-$GENOS_STATUS_OUTPUT_BASE/execution}"
+mkdir -p -- "$task_status_log_dir"
+task_status_log="$task_status_log_dir/STATUS_$(date -u +%Y%m%dT%H%M%SZ)_$$.txt"
+exec > >(tee -a "$task_status_log") 2>&1
+trap 'task_status_exit=$?; printf "exit_status=%s\n" "$task_status_exit"' EXIT
+printf 'GENOS data-status-20260929-r1\n실행 로그: %s\n' "$task_status_log"
+task_status_python="${GENOS_STATUS_PYTHON:-}"
+if [[ -z "$task_status_python" ]]; then
+    if [[ -x "$PWD/.venv/bin/python" ]]; then
+        task_status_python="$PWD/.venv/bin/python"
+    else
+        task_status_python=python3
+    fi
+fi
+"$task_status_python" - "$@" <<'GENOS_DATA_STATUS_PYTHON'

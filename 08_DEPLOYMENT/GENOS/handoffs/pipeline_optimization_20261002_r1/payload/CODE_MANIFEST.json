@@ -1,0 +1,142 @@
+{
+  "schema_version": "genos-code-optimization-patch-v1",
+  "version": "20261002-r1",
+  "adr": [
+    "ADR-0615",
+    "ADR-0616",
+    "ADR-0617"
+  ],
+  "code_root": "~/DEV",
+  "python": "python3, dependencies unchanged",
+  "files": [
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_linking.py",
+      "sha256": "369a771249702f457c067762ac98926f3c0553e8e5a4cfea0bbad916d29e6dd5",
+      "bytes": 11235,
+      "role": "code",
+      "allowed_predecessors": [
+        "65d2d2eb577a0b2f943be93af8aeb3e074c0ed3d7477f7f374db33d1c3b682a2"
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_alignment.py",
+      "sha256": "01381ab86fa78dfe3e2fded913fd0dbfe795cc7e940f8d05fdbfc02927a5e03b",
+      "bytes": 25266,
+      "role": "code",
+      "allowed_predecessors": [
+        "e7625b80b475363e3ec7b9680ec74928b9ca593dbfacbf7893150b111cb54605"
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_review.py",
+      "sha256": "b462eed26f7d633015777ad2f3176879a6af0a2ff2c50de007e005d4ad74ed69",
+      "bytes": 36189,
+      "role": "code",
+      "allowed_predecessors": [
+        "9220693b34b9922c50ddc28d3b888223a040b686f4e0b2da06f945e5db6e7b96"
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_senses.py",
+      "sha256": "14d091dabfa52261737e271629110b51ed68de01a63730d986001734670ec7d4",
+      "bytes": 15101,
+      "role": "code",
+      "allowed_predecessors": [
+        "0c35ea8c5e1707f9fe4856e2c65c5cd08e9095a6406d6f1a442ada87a6669faa"
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/term_generation.py",
+      "sha256": "d942017d929e50922382ba052170f45175c7e4f3c84211ece573396b4d07c286",
+      "bytes": 9859,
+      "role": "code",
+      "allowed_predecessors": [
+        "a31e6a672e9faeef675fd2b61e101d58fe70910b3818aa564b5141d22c0ed1d1"
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_links.py",
+      "sha256": "737cff575ec5c88d55f4e0ef7f9721ce1acb726cc96f289463dec496e56c6806",
+      "bytes": 17157,
+      "role": "code",
+      "allowed_predecessors": [
+        "b500478c67f34c93eca0aeb011b93f6b0615b54c9badec50030d3d34c4a60f47"
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_index.py",
+      "sha256": "2d17675fea34806df274c1e4cf607fd0f2e1431243abdc4f4c8089b8c4ee5ca2",
+      "bytes": 28908,
+      "role": "code",
+      "allowed_predecessors": [
+        "bc37cf09e396ac746c193add05ff60f802786cf1011511c1a1b0f23b0d806bbc",
+        "f78de936e78792f0a03392411a39f18d50fb6e0ed07f051e4843bda0f13413a2"
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/navigation_storage.py",
+      "sha256": "6c9d600e6cf754f73a220453c13cd8a11d2f45cec12d0873e3ecd2e3881a24aa",
+      "bytes": 14029,
+      "role": "code",
+      "allowed_predecessors": [
+        "2f98dc7161b3b3a13b73a0d44299ab6c943d2a86cb2958aa3bfcc2b28705a6a4"
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/fulltext.py",
+      "sha256": "bff0476d8edc2bb1f7be29261a4e85f0fe9a30aacec727eae8952cbcbad65237",
+      "bytes": 21040,
+      "role": "code",
+      "allowed_predecessors": [
+        "f4bf253507691331a45f1dd536983abf0815597d3465b68772b1a9928f235c6f"
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_tools.py",
+      "sha256": "88333de63c897d652e2290e1353a0173bea81a2873a35e8b95f35675f7190d16",
+      "bytes": 21185,
+      "role": "code",
+      "allowed_predecessors": [
+        "510123b021a49916bbec6438a6a2f9501b178c86094b9baea6568b559e9c5031"
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_references_legacy.py",
+      "sha256": "626e0debb573a738dc48ac2ba006adad9e93f49ecd258cc176914efa049058db",
+      "bytes": 47257,
+      "role": "code",
+      "allowed_predecessors": [
+        "61a0ab6dca033c47f952d2f8fecf792746acb668f08bf922c792fc41b89d1c88"
+      ]
+    },
+    {
+      "path": "APPLY.py",
+      "sha256": "3252c27676bc584eb974377880eb9d7a6559f0cd79a700b56011909448e3ea32",
+      "bytes": 5198,
+      "role": "handoff"
+    },
+    {
+      "path": "BUILD.py",
+      "sha256": "7daea5cdcffed2ff9a327752478fc72bd00d09eabb464389d7f63593deb5e2a4",
+      "bytes": 1520,
+      "role": "handoff"
+    },
+    {
+      "path": "GUIDE_UTF8.txt",
+      "sha256": "acfc692447b74283fd8242a35dd43a6d5fc9b228b44519027483874eeb8079f7",
+      "bytes": 3821,
+      "role": "handoff"
+    }
+  ],
+  "generation": "explicit completed source + glossary, NEW inactive output only",
+  "git_commit": "not_created",
+  "serving_revision": "not_deployed",
+  "workflow": "not_changed",
+  "local_verification": {
+    "working_tests_passed": 151,
+    "baseline_existing_failures": 2,
+    "interval_contracts": 136,
+    "ordered_lexical_cases": 205,
+    "runtime_audit_tokens_and_ranking_equal": true
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "format": "8agent-latency-patch/2",
+  "patch": "latency-20260928-r2",
+  "baseline": "R1 diagnostic installed checkout; exact supported file hashes",
+  "code_root": "/home/jin/8-AGENT/90_RUNTIME/diagnostics/latency-20260928-r2/checkout-fixture",
+  "workspace_head": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "workspace_committed": false,
+  "generation": null,
+  "generation_manifest_sha256": null,
+  "code_serving_revision": null,
+  "onsite_workflow_verified": false,
+  "checks": {
+    "runtime_contract_tests": 135,
+    "installer_contract_tests": 16,
+    "byte_exact_delivery_fixture": "PASS",
+    "python_311_syntax": "PASS",
+    "genos_generation_e2e": "not run"
+  },
+  "files": [
+    {
+      "path": "PATCH_MANIFEST.json",
+      "bytes": 4447,
+      "sha256": "aeb9641318015442365096df5af25e472662524922509aedd3aaceafe1210ae4"
+    },
+    {
+      "path": "PATCH_NOTES.txt",
+      "bytes": 5959,
+      "sha256": "644f845c6f3873d4f3d71e7fa7fd78b3f99481c99677082cb68a18c3a1cd97b9"
+    },
+    {
+      "path": "apply.py",
+      "bytes": 8992,
+      "sha256": "d7ea03fbc71ed387a94bf3f9c65735c40ad75b975092df89def1e3dbeb715d2b"
+    },
+    {
+      "path": "gate.py",
+      "bytes": 5994,
+      "sha256": "7d1edb9902a45c5888ddf59305b754e4ea57434d493c0d3ea445607e492e7f9e"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/app.py",
+      "bytes": 21577,
+      "sha256": "502b0fdad189f1d1df629dcf8e44cc6247de3fe105d5cb330a09e6faad271f21"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/folder_navigation.py",
+      "bytes": 16819,
+      "sha256": "3031124049dff3c6d406ac4d01c297919e96548d0f8ffb57be6b79c55528be52"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/fulltext.py",
+      "bytes": 11435,
+      "sha256": "8c812c64a39462fccb4628a079963606047d603964654f1f42931df130a5ee26"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/inherited_navigation.py",
+      "bytes": 4903,
+      "sha256": "d8dc9f442e52d2135457b6addf0e553b3b1165ae06dc9d80674b70ea6c092d9c"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py",
+      "bytes": 33890,
+      "sha256": "715633d3f1b85da303782ab9da39941f71798b5b52f87d3b154b97bb2d0a837c"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/gateway.py",
+      "bytes": 12978,
+      "sha256": "32fd62cc09168f8a9cda7dc1167e88a016bae19eb360fb5d868f33ed2f637e79"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/repository.py",
+      "bytes": 21504,
+      "sha256": "809c8c4cdb9b604edcffdea3ba10e7c458d13418dcaeead8c54fea03e64feab7"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py",
+      "bytes": 36283,
+      "sha256": "868865e2cf32a2d8ad736606c2ad4cd094bd9368cdd54e908cb3d3f51be61656"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py",
+      "bytes": 25388,
+      "sha256": "b8176cfe46bce1d560edcc6829f6766a129cf64d8c526f6c7dad0a2612c52be7"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent_adapter.py",
+      "bytes": 12059,
+      "sha256": "68912f1209c8994ca04154edadc36399f4b3c4b5748b5e65b3f626d6c12d67f0"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/multi_entry_navigation.py",
+      "bytes": 27897,
+      "sha256": "93a7a36cf6e00d0a2f325c1d1f2585f2ec9d09c174a606b9d076f813c2c5807a"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/observability.py",
+      "bytes": 11044,
+      "sha256": "cb65cc2eaa0097e4dabdcbf7bd36e3dcaa3a2fb82f74c36fce0ac39dcbc30c72"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/pipeline.py",
+      "bytes": 11280,
+      "sha256": "9a05433243438649c8e210c26f4329b88145bcdfbaf8a6864b025988958ff435"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/request_report.py",
+      "bytes": 35834,
+      "sha256": "ededae7d67df8bd5a23dd654484f1bea2ed83d2688bcb59d8434b416f18b3862"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/storage.py",
+      "bytes": 7526,
+      "sha256": "ab038c340b67210f12c6658489c2d28e582d0c53cd1047d0099d5fd9b1c5749a"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/structure_navigation.py",
+      "bytes": 18103,
+      "sha256": "8bc8acd92913bacb58f2c79c5af9c1bd934bee7d14858f3608b1432ee2637587"
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/team_scope.py",
+      "bytes": 3345,
+      "sha256": "84cab33c67554d8b3ef1e840bc1b980b7494d3115e74df96a5ea29c4b9a671c7"
+    },
+    {
+      "path": "payload/service.py",
+      "bytes": 39724,
+      "sha256": "37d75ee664e54a0faa7ac73b5f9790f6cf68f7033cce404797eda3f6f41b45bf"
+    },
+    {
+      "path": "summarize.py",
+      "bytes": 2595,
+      "sha256": "ab66b649a968f93435b2906b4d0b2d1a26c2484b115f58a7216537f591474a1a"
+    }
+  ],
+  "workspace_parallel_drift": "Separate admission setting changes observed after test completion; excluded from the frozen R2 payload."
+}

@@ -1,0 +1,101 @@
+#!/usr/bin/env python3
+# GENOS 현장에서 python3로 실행. 메타데이터 조회만 수행한다.
+# 원문/질문/인증키를 출력하거나 파일/DB/활성 포인터를 변경하지 않는다.
+import json
+import os
+import sys
+from pathlib import Path
+
+def read(path):
+    try:
+        if path.stat().st_size > 32 * 1024 * 1024:
+            print('SKIP_LARGE_METADATA', path)
+            return {}
+        value = json.loads(path.read_text(encoding='utf-8'))
+        return value if isinstance(value, dict) else {}
+    except (OSError, ValueError) as exc:
+        print('METADATA_UNAVAILABLE', path, type(exc).__name__)
+        return {}
+
+def dirs(path):
+    try:
+        return sorted(p for p in path.iterdir() if p.is_dir() and not p.name.startswith('.'))
+    except OSError:
+        return []
+
+def generation(path):
+    manifest = path / 'manifest.json'
+    if not manifest.is_file():
+        return
+    value = read(manifest)
+    print('GENERATION', path, 'SCHEMA', value.get('schema_version'),
+          'ID', value.get('generation_id'), 'COUNTS', value.get('counts'))
+    for receipt in (path.parent / 'share-receipt.json', path.parent / 'release.json'):
+        if receipt.is_file():
+            row = read(receipt)
+            print('  RECEIPT', receipt, 'SCHEMA', row.get('schema_version'),
+                  'RUN', row.get('run_id'), 'ORIGIN', row.get('source_generation'),
+                  'GENERATION_PATH', row.get('generation_path'))
+
+def inventory(data):
+    print('\nDATA_ROOT', data, 'RESOLVED', data.resolve())
+    for name in ('RAW', 'STRUCTURE', 'TERM_RELEASES', 'LOGS'):
+        folder = data / name
+        print('  FOLDER', name, 'PRESENT', folder.is_dir(), 'RESOLVED', folder.resolve())
+    for run in dirs(data / 'LOGS'):
+        selection = run / 'structure-selection.json'
+        if selection.is_file():
+            row = read(selection)
+            docs = row.get('documents', {})
+            print('STRUCTURE_SELECTION', selection, 'COMPLETED', row.get('completed'),
+                  'SELECTED', len(docs), 'EXPECTED', len(row.get('expected_document_ids', [])))
+            key = next((d.get('key') for d in docs.values() if isinstance(d, dict)), None)
+            if isinstance(key, str) and len(key) == 64 and all(c in '0123456789abcdef' for c in key):
+                print('  STRUCTURE_EXAMPLE', data / 'STRUCTURE' / key)
+    for run in dirs(data / 'TERM_RELEASES'):
+        # Presence is an inventory hint, not hash/schema/completion certification.
+        names = ('plan.json', 'sources/store.sqlite', 'sources/selection.json',
+                 'glossary-draft/report.json', 'review/completion.json')
+        present = {name: (run / name).is_file() for name in names}
+        print('PREPARED_CANDIDATE', run, json.dumps(present, ensure_ascii=False))
+        for suffix in ('generation', 'serving/generation', 'serving/baseline/generation',
+                       'reindex/baseline/generation'):
+            generation(run / suffix)
+        publication = run / 'shared-publication.json'
+        if publication.is_file():
+            row = read(publication)
+            print('PUBLICATION', publication, 'TARGET', row.get('generation_path'))
+
+def main():
+    dev = Path(os.environ.get('GENOS_DEV', str(Path.home() / 'DEV')))
+    nfs = Path(os.environ.get('GENOS_LOCATION_NFS', '/nfs-root/diamo/8-agent'))
+    roots = [dev / '01_DATA', Path('/workspace/01_DATA'), nfs, nfs / '01_DATA']
+    if os.environ.get('GENOS_DATA_ROOT'):
+        roots.insert(0, Path(os.environ['GENOS_DATA_ROOT']))
+    # Two directory levels only; do not walk RAW, backups, runtime, or DB contents.
+    skip = {'BACKUPS', 'runtime', 'rag-request-reports', 'pdf-output', 'RAW',
+            'STRUCTURE', 'TERM_RELEASES', 'LOGS', 'term-releases'}
+    for child in dirs(nfs):
+        if child.name not in skip:
+            roots.append(child)
+            roots.extend(p for p in dirs(child) if p.name not in skip)
+    print('PYTHON', sys.executable, sys.version.split()[0])
+    print('READ_ONLY_LOCATION_INVENTORY; NO_HASH_VERIFICATION; NO_ACTIVATION_PROOF')
+    seen = set()
+    for data in roots:
+        if data in seen:
+            continue
+        seen.add(data)
+        if any((data / name).is_dir() for name in ('RAW', 'STRUCTURE', 'TERM_RELEASES', 'LOGS')):
+            inventory(data)
+    shared = nfs / 'term-releases'
+    print('\nNFS_PUBLISHED_ROOT', shared, 'PRESENT', shared.is_dir())
+    for run in dirs(shared):
+        print('NFS_RUN', run)
+        for suffix in ('', 'generation', 'reviewed/generation', 'unreviewed/generation',
+                       'fulltext-unit-r1/generation'):
+            generation(run / suffix)
+    print('\nINVENTORY_COMPLETE; latest complete input must be identified from receipts, not folder dates.')
+
+if __name__ == '__main__':
+    main()

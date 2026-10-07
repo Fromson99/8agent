@@ -1,0 +1,81 @@
+GENOS v6 + 공유 runtime + 승호 방식 SSE 전송 — 20261002 R1
+
+공유 폴더: 사진에서 /nfs-root/diamo/8-agent 확인.
+새 실행 기록: /nfs-root/diamo/8-agent/runtime
+
+1. 메일 ZIP과 실행 TXT를 함께 ~/DEV/TRANSFER에 올립니다.
+   bash ~/DEV/TRANSFER/GENOS_UNIFIED_V6_NFS_20261002_R1.txt check
+   기존 코드 적용은 구축 worker와 코드 편집을 멈춘 뒤 수행합니다.
+   bash ~/DEV/TRANSFER/GENOS_UNIFIED_V6_NFS_20261002_R1.txt apply
+   파일별 백업과 적용 영수증 경로가 출력됩니다. 재실행은 이미 적용된 코드인지 확인합니다.
+   원문·용어집·진행 중 구축 산출물·CURRENT·기존 runtime·.env·Git 이력은 보존합니다.
+   구조화/용어집/색인을 다시 만들거나 fulltext 재설계 후보를 활성화하는 실행은 없습니다.
+
+2. 공유 runtime 쓰기·SQLite 트랜잭션·프로세스 잠금을 점검합니다.
+   bash ~/DEV/TRANSFER/GENOS_UNIFIED_V6_NFS_20261002_R1.txt runtime
+   이 검사는 실행한 코드스페이스의 동일 호스트 조건만 확인합니다.
+   코드서빙 리비전에서도 같은 공유 볼륨의 읽기/쓰기를 확인해야 합니다.
+   실제 NFS/여러 호스트의 SQLite 안전성 인증은 아닙니다. 이번 v6는 서빙 replica 1개,
+   start_sse.py의 worker 1개로 운영하며 이전/새 리비전이 같은 DB에 동시에 쓰지 않게 합니다.
+
+3. 코드서빙 리비전 환경 설정에 다음을 저장합니다. 셸 export와 별도입니다.
+   GENOS_RUNTIME_DIR=/nfs-root/diamo/8-agent/runtime
+   GENOS_MEMORY_JOURNAL_MODE=DELETE
+   GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6
+   SEMANTIC_LLM_BACKEND=genos
+   GENOS_SHARED_LOG_DIR=/nfs-root/diamo/8-agent/rag-request-reports
+   GENOS_MEMORY_SIGNING_KEY=<현장에서 생성한 32자 이상 키; 워크플로우와 같은 값>
+   기존 GENOS_LLM_URL 또는 GENOS_BASE_URL/GENOS_LLM_SERVING_ID와 GENOS_LLM_KEY,
+   GENOS_LLM_MODEL 설정을 재사용합니다. 키를 화면/메일/로그에 출력하지 않습니다.
+   LEGAL_AGENT_PROFILE/LEGAL_AGENT_PROFILE_SHA256가 이전 v5용으로 남아 있다면 해당 설정을
+   해제하고 v6 기본 프로필을 환경 내부 모델에 결속합니다. 모델은 GENOS 내부 모델입니다.
+   GENOS_GENERATION 또는 GENOS_DATA_ROOT의 기존 선택값을 보존합니다.
+   runtime 경로 변경은 원문 generation/CURRENT를 바꾸지 않습니다.
+
+4. 코드서빙: requirements-sse.txt를 사용하는 기존 빌드 설정 확인.
+   시작 명령: python3 08_DEPLOYMENT/GENOS/start_sse.py
+   포트 환경변수가 없으면 기존 시작 명령의 --port 값 그대로 추가합니다.
+   외부 응답 재생성 없이 코드서빙에서 조사/판단/정정/경험 저장을 실행합니다.
+   워크플로우에는 입력·신원 서명·HTTP/SSE 중계·Reasoner 표시가 남습니다.
+   소켓 ID가 없거나 진행 표시가 off여도 /stream을 읽고 heartbeat와 최종 결과를 받습니다.
+   워크플로우 전체를 코드서빙으로 옮긴 것으로 설명하지 않습니다.
+
+5. WORKFLOW_PASTE_ALL.txt 전체를 워크플로우 Python 편집기에 교체·저장·배포합니다.
+   워크플로우 환경: GENOS_MEMORY_ENABLED=1
+   GENOS_MEMORY_SIGNING_KEY=<3번과 동일한 현장 키>
+   TEAM_ID=<실제 고정 팀: risk_team 또는 financial_team>
+   GENOS_RAG_PROGRESS_UI=socketio
+   기존 GENOS_CODESERVING_ID/주소/토큰/2100초 대기를 유지합니다.
+   플랫폼 사용자/대화 ID가 실제 신뢰된 값인지 확인합니다. 임의 user_id를 권한으로 쓰지 않습니다.
+   Git push만으로 워크플로우 편집기의 코드는 변경되지 않습니다.
+
+6. 기존 정확한 서빙 generation에서 적용 checkout과 ZIP을 결속합니다.
+   GENOS_GENERATION='<기존 선택된 generation 절대경로>' bash ~/DEV/TRANSFER/GENOS_UNIFIED_V6_NFS_20261002_R1.txt gate
+   진행 중 reindex의 임시 폴더를 선택하지 않습니다. 게이트 실패를 hash 덮어쓰기로 우회하지 않습니다.
+   확인한 변경만 Git commit하고, 해당 commit에서 gate 재확인 뒤 push합니다.
+   새 코드서빙 리비전의 commit/generation/runtime/implementation을 기록합니다.
+   코드 적용, Git push, 새 리비전, 워크플로우 반영, 실제 요청 성공은 별도 단계입니다.
+
+7. 현장 검증은 워크플로우 테스트 화면에서만 합니다.
+   {"question":"SSE_CHECK"} → sse_ready=true, route=/stream 확인.
+   이어서 실제 질문 → 조건 정정 → 최초 조건 복원 → 최종 확인 → 새 대화의 경험 재사용을 확인.
+   runtime/case-memory/cases-v3.sqlite: 질문·조건·정정·확정 경험·outbox 정본.
+   runtime/case-memory/wikis/<주체 해시>/{user_wiki,legal_wiki}: 파생 위키.
+   runtime/legal-agent/runs/.../journal.sqlite: 모델/원문/판단 원장.
+   runtime/runs, feedback: 최종 결과와 피드백.
+   두 위키는 같은 DB의 경험을 조회하며 개인 확인 경험을 공통 법률 정답으로 자동 승인하지 않습니다.
+
+기존 /home/genos/DEV/runtime은 삭제·이동하지 않습니다. 새 경로에서 기록을 시작합니다.
+옛 runtime을 그대로 복사해 cases-v3 경험으로 승인하지 않습니다.
+기존 memory-v2 이력이 실제로 있으면 양쪽 서빙/쓰기 중지 후 원본을 보존하고 아래 명시 이관을 사용:
+ python3 06_TOOLS/pipeline.py unified-memory migrate --source /home/genos/DEV/runtime/corrected-memory/memory-v2.sqlite --runtime /nfs-root/diamo/8-agent/runtime
+실제 파일이 없으면 실행하지 않습니다. 이관 경험은 LEGACY_UNBOUND, 재조사 필요한 상태로 남습니다.
+기존 v6 cases-v3가 이미 있다면 새 DB와 임의 합치지 말고 원본과 원장 전체를 함께 보존합니다.
+legal_llm_wiki/action-memory 수집·변환·온라인 연결은 이번 실행에서 하지 않습니다.
+
+원복: apply가 출력한 backup 경로로 TXT rollback <backup> 실행.
+이전 commit/리비전/시작 명령/워크플로우와 이전 runtime 설정으로 복귀합니다.
+NFS의 새 runtime DB/위키/원장과 원문 세대는 삭제하지 않습니다.
+
+로컬 모의 계약 성공은 GENOS 실제 모델 품질/서빙 성공 인증이 아닙니다.
+활성 로컬 MAIN 포인터 r3/generation37와 완료 실험 기록은 이번 패키지로 변경하지 않습니다.

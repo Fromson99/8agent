@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# 10월 3일 메일의 GENOS_REFERENCE_E2E_PACKAGE_20261003_R1.zip을
+# ~/DEV/TRANSFER에 저장한 뒤 bash로 실행한다.
+# R2: 현장에 존재하는 glossary-draft를 명시 재사용. 검토 완료를 요구/인증하지 않는다.
+# 이전 R1은 review/completion.json 부재로 구축 전 종료. R1 파일과 로그는 보존한다.
+set -Eeuo pipefail
+umask 077
+export GENOS_DEV="$HOME/DEV"
+export GENOS_DATA_ROOT="/workspace/01_DATA"
+export GENOS_PREPARED_RUN="financial-risk-success-20261001-r3"
+export GENOS_REUSE_RUN="financial-risk-success-20261005-schema-r2"
+# 기존 draft 재사용 경로를 명시한다. 부모 터미널의 완료본 설정도 이번 실행에서 해제한다.
+unset GENOS_COMPLETED_GLOSSARY
+export GENOS_SHARED_ROOT="/nfs-root/diamo/8-agent/term-releases"
+export GENOS_HANDOFF_LOG_DIR="$GENOS_DEV/TRANSFER/reference-e2e-r1/logs/$GENOS_REUSE_RUN"
+if [[ -n "${GENOS_PYTHON_DIR:-}" ]]; then
+  export PATH="$GENOS_PYTHON_DIR:$PATH"
+elif [[ -x /venv/bin/python3 ]]; then
+  export PATH="/venv/bin:$PATH"
+fi
+mkdir -p "$GENOS_HANDOFF_LOG_DIR"
+task_log="$GENOS_HANDOFF_LOG_DIR/launcher-$(date -u +%Y%m%dT%H%M%SZ)-$$.log"
+exec > >(tee -a "$task_log") 2>&1
+trap 'task_exit=$?; trap - EXIT; printf "REBUILD_EXIT=%s LOG=%s\n" "$task_exit" "$task_log"; exit "$task_exit"' EXIT
+cd "$GENOS_DEV"
+
+python3 - <<'PY'
+import hashlib, json, os, sys, zipfile
+from pathlib import Path
+print('PYTHON', sys.executable, sys.version.replace('\n', ' '), flush=True)
+if sys.version_info < (3, 11):
+    raise ValueError('Python 3.11+ required')
+dev = Path(os.environ['GENOS_DEV']).resolve(strict=True)
+data = Path(os.environ['GENOS_DATA_ROOT']).resolve(strict=True)
+if data != (dev / '01_DATA').resolve(strict=True):
+    raise ValueError('DEV/01_DATA and /workspace/01_DATA must be the same data root for this handoff')
+prepared = data / 'TERM_RELEASES' / os.environ['GENOS_PREPARED_RUN']
+required = ('plan.json', 'sources/store.sqlite', 'sources/selection.json',
+            'glossary-draft/report.json', 'glossary-draft/dictionary.sqlite')
+for name in required:
+    if not (prepared / name).is_file():
+        raise ValueError('Required R3 input missing; no regeneration: ' + str(prepared / name))
+print('PREPARED_DIRECTORY', prepared, 'GLOSSARY_INPUT', prepared / 'glossary-draft', flush=True)
+print('GLOSSARY_REVIEW=NOT_SELECTED; PREPARED_DRAFT_REUSED; NO_NEW_MODEL_REVIEW; QUALITY_CERTIFIED=false', flush=True)
+archive = dev / 'TRANSFER/GENOS_REFERENCE_E2E_PACKAGE_20261003_R1.zip'
+with archive.open('rb') as stream:
+    actual = hashlib.file_digest(stream, 'sha256').hexdigest()
+if actual != '6f547bd14d8d088d5e646b3d6cd2f81551d7ef773e12fd6a51042426f4050c11':
+    raise ValueError('October 3 mail package hash mismatch')
+folder = dev / 'TRANSFER/reference-e2e-r1'
+folder.mkdir(exist_ok=True)
+names = ('GENOS_REFERENCE_BUILD_20261003_R1.zip',
+         'GENOS_REFERENCE_BUILD_20261003_R1.txt',
+         'GENOS_REFERENCE_E2E_RUN_20261003_R1.txt')
+with zipfile.ZipFile(archive) as package:
+    payloads = {name: package.read(name) for name in names}
+    for name, raw in payloads.items():
+        target = folder / name
+        if target.is_symlink() or (target.exists() and (not target.is_file() or target.read_bytes() != raw)):
+            raise ValueError('Existing handoff file differs; preserved: ' + str(target))
+    for name, raw in payloads.items():
+        target = folder / name
+        if not target.exists():
+            with target.open('xb') as stream:
+                stream.write(raw)
+print('PACKAGE_READY', folder, flush=True)
+PY
+
+# check -> backup/apply -> verify -> compact-v2 source/glossary/navigation/fulltext -> offline E2E
+bash "$GENOS_DEV/TRANSFER/reference-e2e-r1/GENOS_REFERENCE_E2E_RUN_20261003_R1.txt"
+# Publish a verified copy to a new NFS run directory. No CURRENT or serving revision changes.
+bash "$GENOS_DEV/TRANSFER/reference-e2e-r1/GENOS_REFERENCE_E2E_RUN_20261003_R1.txt" publish
+printf 'BUILT_GENERATION=%s/TERM_RELEASES/%s/serving/baseline/generation\n' "$GENOS_DATA_ROOT" "$GENOS_REUSE_RUN"
+printf 'NFS_GENERATION=%s/%s/generation\n' "$GENOS_SHARED_ROOT" "$GENOS_REUSE_RUN"
+printf 'ACTIVATION=NOT_RUN; LIVE_WORKFLOW_E2E=NOT_RUN\n'

@@ -1,0 +1,2042 @@
+{
+  "files_scanned": 996,
+  "files_with_matches": 94,
+  "records": [
+    {
+      "path": ".env.genos.example",
+      "sha256": "86d889fa1af19e8e4674eb7ac5ed37bbf12c1bb3c6e24c98a829f2da23eff36f",
+      "matches": [
+        {
+          "line": 20,
+          "text": "GENOS_PREPROCESSOR_TIMEOUT=900"
+        },
+        {
+          "line": 53,
+          "text": "GENOS_RAG_WALL_SECONDS=1800"
+        },
+        {
+          "line": 54,
+          "text": "GENOS_LLM_CONNECT_TIMEOUT=60"
+        },
+        {
+          "line": 153,
+          "text": "GENOS_PDF_CONVERTER_TIMEOUT=900"
+        }
+      ]
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-source-only.json",
+      "sha256": "85985b8502153e3299715bc2a5f33de3c3eebaca20bff1d122fb8075d96727cf",
+      "matches": [
+        {
+          "line": 8,
+          "text": "\"wall_seconds\": 300,"
+        }
+      ]
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v2.json",
+      "sha256": "4578e18725e4171d2e92cebb043767f2114b12ffbefbf0edcc30725620ab5cf6",
+      "matches": [
+        {
+          "line": 8,
+          "text": "\"wall_seconds\": 300,"
+        }
+      ]
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v3.json",
+      "sha256": "e341fc28eaf2d2151c3a7260ac0ccfb64634355b1ae067daacb3f0e029bbb7b1",
+      "matches": [
+        {
+          "line": 8,
+          "text": "\"wall_seconds\": 300,"
+        }
+      ]
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v4.json",
+      "sha256": "d2c68ca8e2f27a36e8ca308dadb0731baeb67e3185a28e6f2788bc55739fe0dd",
+      "matches": [
+        {
+          "line": 8,
+          "text": "\"wall_seconds\": 300,"
+        }
+      ]
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v5.json",
+      "sha256": "db5da8dcf98aec46ec6152a2afcfcf11116a677455471ad03bc4b480d18f33b3",
+      "matches": [
+        {
+          "line": 8,
+          "text": "\"wall_seconds\": 300,"
+        }
+      ]
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "sha256": "e53584397ff264230e1a6a6cbd6284fea9ff00b1eabf1099e55dc05d1c745f02",
+      "matches": [
+        {
+          "line": 477,
+          "text": "\"wall_seconds\": 300,"
+        },
+        {
+          "line": 636,
+          "text": "\"wall_seconds\": 300,"
+        },
+        {
+          "line": 753,
+          "text": "\"wall_seconds\": 300,"
+        },
+        {
+          "line": 870,
+          "text": "\"wall_seconds\": 300,"
+        },
+        {
+          "line": 977,
+          "text": "\"wall_seconds\": 300,"
+        },
+        {
+          "line": 1094,
+          "text": "\"wall_seconds\": 300,"
+        },
+        {
+          "line": 1211,
+          "text": "\"wall_seconds\": 300,"
+        }
+      ]
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/rag-retrieval-runtime-v1.schema.json",
+      "sha256": "080448aaa66e189555de2e0e5ce60490cf382228e129b5fe4b5d70838df63ee5",
+      "matches": [
+        {
+          "line": 43,
+          "text": "\"required\": [\"enabled\", \"backend\", \"embedding_model_fingerprint\", \"query_timeout_seconds\", \"trust_zone\", \"encoder\", \"qdrant\"],"
+        },
+        {
+          "line": 48,
+          "text": "\"query_timeout_seconds\": {\"type\": [\"integer\", \"null\"], \"minimum\": 1},"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/domain_graph/builder.py",
+      "sha256": "9c6f1968db3cb6f7a0c45b84922f955b3e13f47755e633b605b12a063271e60a",
+      "matches": [
+        {
+          "line": 41,
+          "text": "\"TIME\": \"MAY_TIME_LIMIT_OF\","
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/embedding.py",
+      "sha256": "c1084f0e8e5d260f7cb69df283dcb6545594736df90ad7b773cb0ee151024a5c",
+      "matches": [
+        {
+          "line": 424,
+          "text": "url + \"/v1/models\", timeout=15, allow_redirects=False"
+        },
+        {
+          "line": 439,
+          "text": "timeout=(15, 300),"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/genos_preprocessor.py",
+      "sha256": "6b3165e536fcd63e171b41f9be1db2c2378d38e1c4fb64c31247c1dab6e4da24",
+      "matches": [
+        {
+          "line": 45,
+          "text": "timeout: int"
+        },
+        {
+          "line": 75,
+          "text": "timeout = int(os.environ.get('GENOS_PREPROCESSOR_TIMEOUT', '900'))"
+        },
+        {
+          "line": 77,
+          "text": "if not 1 <= timeout <= 7200 or not 1 <= limit <= 512:"
+        },
+        {
+          "line": 78,
+          "text": "raise ValueError('GENOS preprocessor timeout must be 1..7200 seconds; response limit 1..512 MiB')"
+        },
+        {
+          "line": 82,
+          "text": "return cls(url, revision, shared, remote, timeout, limit * 1024 * 1024, response_mode)"
+        },
+        {
+          "line": 129,
+          "text": "A timeout may leave a server request running. Keep the unique request directory"
+        },
+        {
+          "line": 171,
+          "text": "with httpx.Client(timeout=settings.timeout, trust_env=False, follow_redirects=False) as client:"
+        },
+        {
+          "line": 224,
+          "text": "raise ValueError('GENOS preprocessor connection/timeout failure; source retained, inspect server before retrying') from None"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/hwp5_md.py",
+      "sha256": "7b770eb768d917e7ee74997ad80f225918daa716a5388c6019a73eb0914bf16d",
+      "matches": [
+        {
+          "line": 22,
+          "text": "- 시간 초과 → 텍스트 폴백: 변환은 파일마다 자식 프로세스에서 돌리고, --timeout 을"
+        },
+        {
+          "line": 73,
+          "text": "DEFAULT_TIMEOUT = 120.0    # 초 — 정상 문서는 수 초, 이걸 넘기면 XSLT 병증이다"
+        },
+        {
+          "line": 455,
+          "text": "class ExtractTimeout(Exception):"
+        },
+        {
+          "line": 484,
+          "text": "def extract_in_child(src: Path, mode: str, timeout: float) -> tuple[str, dict]:"
+        },
+        {
+          "line": 489,
+          "text": "deadline = time.monotonic() + timeout"
+        },
+        {
+          "line": 501,
+          "text": "if time.monotonic() > deadline:"
+        },
+        {
+          "line": 502,
+          "text": "raise ExtractTimeout(f\"{mode} 변환이 {timeout:.0f}초를 넘겼습니다\")"
+        },
+        {
+          "line": 584,
+          "text": "timeout: float = DEFAULT_TIMEOUT, engine: str = DEFAULT_ENGINE) -> dict:"
+        },
+        {
+          "line": 600,
+          "text": "md, stats = extract_in_child(src, engine, timeout)"
+        },
+        {
+          "line": 602,
+          "text": "except ExtractTimeout:"
+        },
+        {
+          "line": 603,
+          "text": "md, stats = extract_in_child(src, \"text\", timeout)"
+        },
+        {
+          "line": 605,
+          "text": "except (ExtractTimeout, ExtractError) as exc:  # 부분 실패 허용 — 기록하고 계속"
+        },
+        {
+          "line": 630,
+          "text": "ap.add_argument(\"--timeout\", type=float, default=DEFAULT_TIMEOUT,"
+        },
+        {
+          "line": 631,
+          "text": "help=f\"파일당 변환 시한(초, 기본 {DEFAULT_TIMEOUT:.0f}) — \""
+        },
+        {
+          "line": 650,
+          "text": "timeout=args.timeout, engine=args.engine)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/llm.py",
+      "sha256": "7a8494fc7b1fa84edb899f1967ff26500c358871be382554ecaeb0e9e164364a",
+      "matches": [
+        {
+          "line": 71,
+          "text": "def anthropic_client(*, timeout: float, max_retries: int = 2):"
+        },
+        {
+          "line": 84,
+          "text": "timeout=timeout,"
+        },
+        {
+          "line": 223,
+          "text": "# timeout 없이는 멈춘 스트림이 영원히 매달린다 — 벤치 실측(2026-08-11):"
+        },
+        {
+          "line": 232,
+          "text": "# ReadTimeout 이 36.9초·35.1초에 났다 — 죽은 연결이 아니라 긴 prefill 을"
+        },
+        {
+          "line": 235,
+          "text": "self._client = anthropic_client(timeout=120.0)"
+        },
+        {
+          "line": 311,
+          "text": "timeout=15,"
+        },
+        {
+          "line": 374,
+          "text": "timeout=15,"
+        },
+        {
+          "line": 417,
+          "text": "timeout=(15, 120), allow_redirects=False)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/parse_adapter.py",
+      "sha256": "53f3f473ddee8a9725523e4bc1e76a0483f71d34195d11ea2540e76da62f7735",
+      "matches": [
+        {
+          "line": 871,
+          "text": "# 판별용 텍스트 추출 시한(초). 전체 변환 시한(convert.DEFAULT_TIMEOUT)보다 짧다 —"
+        },
+        {
+          "line": 873,
+          "text": "_HWP_PROBE_TIMEOUT = 30.0"
+        },
+        {
+          "line": 937,
+          "text": "convert.DEFAULT_TIMEOUT)"
+        },
+        {
+          "line": 938,
+          "text": "except convert.ExtractTimeout:"
+        },
+        {
+          "line": 939,
+          "text": "md, conv = convert.extract_in_child(p, \"text\", convert.DEFAULT_TIMEOUT)"
+        },
+        {
+          "line": 987,
+          "text": "text, _ = convert.extract_in_child(p, \"text\", _HWP_PROBE_TIMEOUT)"
+        },
+        {
+          "line": 988,
+          "text": "except (convert.ExtractTimeout, convert.ExtractError) as exc:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/audit.py",
+      "sha256": "d6fb82047d3a81cc36d5129103eab3a2715265c68a7d3ee335bfe8dc4570fdae",
+      "matches": [
+        {
+          "line": 211,
+          "text": "def drain(timeout: float = 30.0) -> bool:"
+        },
+        {
+          "line": 213,
+          "text": "end = time.monotonic() + timeout"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/rag/qdrant_store.py",
+      "sha256": "7fe1d46188e256146b65e9dab12e6b69ea8cf0ac8b4ad10447511ca840175f2f",
+      "matches": [
+        {
+          "line": 258,
+          "text": "timeout: float = 5.0,"
+        },
+        {
+          "line": 292,
+          "text": "timeout=timeout,"
+        },
+        {
+          "line": 339,
+          "text": "def ping(timeout: float = 5.0,"
+        },
+        {
+          "line": 348,
+          "text": "f\"{server}/collections/{target_collection}\", timeout=timeout,"
+        },
+        {
+          "line": 407,
+          "text": "json=body, timeout=(5, float(os.environ.get(\"QDRANT_TIMEOUT\", \"30\"))),"
+        },
+        {
+          "line": 465,
+          "text": "exists = session.get(target, timeout=5, allow_redirects=False).status_code == 200"
+        },
+        {
+          "line": 467,
+          "text": "response = session.delete(target, timeout=30, allow_redirects=False)"
+        },
+        {
+          "line": 472,
+          "text": "\"distance\": \"Cosine\"}}, timeout=30,"
+        },
+        {
+          "line": 522,
+          "text": "timeout=(5, 120), allow_redirects=False)"
+        },
+        {
+          "line": 528,
+          "text": "timeout=(5, 120), allow_redirects=False)"
+        },
+        {
+          "line": 546,
+          "text": "timeout=(5, 120),"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/collect_public_glossaries.py",
+      "sha256": "e23ccd948f40fbdbed23db99936b95910cdf4d593be4e10147a5c6fad14d5cd9",
+      "matches": [
+        {
+          "line": 61,
+          "text": "self.client = HttpClient(make_session(), logger, timeout=25)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_build.py",
+      "sha256": "4d10e7a715b889f6e4a72d566099187cdf39638dd02dc57d7117abf37034ef46",
+      "matches": [
+        {
+          "line": 433,
+          "text": "p.add_argument('--timeout', type=int, default=300)"
+        },
+        {
+          "line": 442,
+          "text": "if args.timeout < 1:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_doc.py",
+      "sha256": "b9c979f1a1649236521d42565bfbae36876dc0fcbe9b8b720215f6812bb31203",
+      "matches": [
+        {
+          "line": 8,
+          "text": "def prepare(row, directory, *, timeout=120, emit=print):"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_e2e.py",
+      "sha256": "8bb8a8a5ee8d576bbd53564531a1ee955bc0f9cfa243974e2ca7c27db93d1a8b",
+      "matches": [
+        {
+          "line": 260,
+          "text": "provider = Genos(ROOT, output / 'calls', max_tokens=args.max_tokens, timeout=args.timeout, progress=emit)"
+        },
+        {
+          "line": 307,
+          "text": "parser.add_argument('--timeout', type=int, default=120)"
+        },
+        {
+          "line": 311,
+          "text": "('batch_size', 1, 8), ('max_tokens', 256, 80000), ('timeout', 10, 600)]:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_progress.py",
+      "sha256": "05ca037eb4e59032a54d3cc5bfabea44a49336f06e019453b291b9fd4d9e553b",
+      "matches": [
+        {
+          "line": 307,
+          "text": "self.thread.join(timeout=6)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_stages.py",
+      "sha256": "f1b0f48ca78e688a9361fba3cf8ce58ea8f40c1938ec8fcb0924305b18bbd63d",
+      "matches": [
+        {
+          "line": 99,
+          "text": "def structure(row, plan, data, dependencies, timeout, emit, *, pdf_parser=None):"
+        },
+        {
+          "line": 123,
+          "text": "work['files'] = [prepare(row, folder / 'conversions', timeout=timeout, emit=emit)]"
+        },
+        {
+          "line": 146,
+          "text": "provider.targets[kind] = replace(target, max_retries=1, read_timeout=provider.timeout)"
+        },
+        {
+          "line": 206,
+          "text": "folder, work = structure(row, plan, data, dependencies, options.timeout, progress.emit,"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/genos_status.py",
+      "sha256": "d0b5e53bd799166fe5a6631518a2a7b4340a80787ffa0086456010f130974a2a",
+      "matches": [
+        {
+          "line": 108,
+          "text": "self.db = sqlite3.connect(path, timeout=5)"
+        },
+        {
+          "line": 286,
+          "text": "db = sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=5)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_alignment.py",
+      "sha256": "e7625b80b475363e3ec7b9680ec74928b9ca593dbfacbf7893150b111cb54605",
+      "matches": [
+        {
+          "line": 41,
+          "text": "db = sqlite3.connect(state / \"alignment.sqlite\", timeout=1)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_review.py",
+      "sha256": "9220693b34b9922c50ddc28d3b888223a040b686f4e0b2da06f945e5db6e7b96",
+      "matches": [
+        {
+          "line": 258,
+          "text": "self.targets['llm']=replace(target,max_retries=1,read_timeout=self.timeout)"
+        },
+        {
+          "line": 261,
+          "text": "return GlossaryProvider(repository_root(),Path(state)/'calls',max_tokens=80000,timeout=120)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/raw_preprocess.py",
+      "sha256": "f808a11353e9a0d167520ec6b3ae1ae223d7e62f7065a541a7c2310ce0820091",
+      "matches": [
+        {
+          "line": 119,
+          "text": "timeout = int(os.environ.get('GENOS_PDF_CONVERTER_TIMEOUT', '900'))"
+        },
+        {
+          "line": 120,
+          "text": "if not 1 <= timeout <= 7200:"
+        },
+        {
+          "line": 121,
+          "text": "raise ValueError('converter timeout must be 1..7200 seconds')"
+        },
+        {
+          "line": 139,
+          "text": "with httpx.Client(timeout=timeout, trust_env=False, follow_redirects=False) as client:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/reference_resolution.py",
+      "sha256": "b385157a932da46cd94e233f94c6e35f487a865b2b1555816e2c3fd755c11717",
+      "matches": [
+        {
+          "line": 186,
+          "text": "deadline: float"
+        },
+        {
+          "line": 189,
+          "text": "remaining = self.deadline - time.monotonic()"
+        },
+        {
+          "line": 191,
+          "text": "from semantic_runtime.legal_agent.errors import DeadlineExceeded"
+        },
+        {
+          "line": 192,
+          "text": "raise DeadlineExceeded('reference-resolution deadline exceeded')"
+        },
+        {
+          "line": 196,
+          "text": "def run(state, profile, *, max_cases=32, batch_size=8, wall_seconds=None):"
+        },
+        {
+          "line": 204,
+          "text": "seconds = wall_seconds or settings.get('wall_seconds', 300)"
+        },
+        {
+          "line": 408,
+          "text": "batch_size=args.batch_size, wall_seconds=args.wall_seconds)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/term_generation.py",
+      "sha256": "ceab4c33a2b8acde9b38d1a119f7040f75132639e63b910a178ab0ee1d23b885",
+      "matches": [
+        {
+          "line": 103,
+          "text": "with closing(sqlite3.connect(navigation_db.as_uri()+'?mode=ro',uri=True,timeout=0.2)) as snapshot:"
+        },
+        {
+          "line": 118,
+          "text": "monitor.join(timeout=1)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/research/experiment_client.py",
+      "sha256": "8b1f4867a29537ecbe866bbdd59729f413e25b8e2e73fab46b53c307994daf4d",
+      "matches": [
+        {
+          "line": 109,
+          "text": "with httpx.Client(timeout=120,trust_env=False,follow_redirects=False,transport=self.transport) as client:"
+        },
+        {
+          "line": 196,
+          "text": "def chat_completions(self, body: dict, *, phase='generate', timeout_seconds=180):"
+        },
+        {
+          "line": 226,
+          "text": "timeout=max(.001,min(180,float(timeout_seconds)))"
+        },
+        {
+          "line": 227,
+          "text": "with httpx.Client(timeout=timeout,trust_env=False,follow_redirects=False,transport=self.transport) as client:"
+        },
+        {
+          "line": 275,
+          "text": "with httpx.Client(timeout=180,trust_env=False,follow_redirects=False,transport=self.transport) as client:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/research/legacy_rag/legal_research_llm_selector.py",
+      "sha256": "ea7b22854e590071c0e0ccf0e5b89cd9ce012478683fe76190119738b28ad7d7",
+      "matches": [
+        {
+          "line": 60,
+          "text": "TRANSPORT_TIMEOUT_SECONDS = 120.0"
+        },
+        {
+          "line": 309,
+          "text": "timeout=TRANSPORT_TIMEOUT_SECONDS,"
+        },
+        {
+          "line": 1179,
+          "text": "\"TRANSPORT_TIMEOUT_SECONDS\","
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/research/openrouter_legal_adapter.py",
+      "sha256": "5c8499ef2af208cb6ec32ce7823899d0ecf057c888adee19ffb5fcaac3bf5be5",
+      "matches": [
+        {
+          "line": 45,
+          "text": "body, phase=phase, timeout_seconds=ticket['remaining_seconds'])"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/runtime/content_snapshot.py",
+      "sha256": "bc8a42c96cb3330ed0f354a785f5db100a40d87a6f8a87af744c3fc62f2098c9",
+      "matches": [
+        {
+          "line": 897,
+          "text": "\"query_timeout_seconds\","
+        },
+        {
+          "line": 987,
+          "text": "timeout = vector.get(\"query_timeout_seconds\")"
+        },
+        {
+          "line": 1022,
+          "text": "isinstance(timeout, bool) or not isinstance(timeout, int) or timeout <= 0"
+        },
+        {
+          "line": 1024,
+          "text": "raise ContentSnapshotError(\"Qdrant runtime has an invalid query timeout\")"
+        },
+        {
+          "line": 1025,
+          "text": "if vector[\"backend\"] == \"file\" and timeout is not None:"
+        },
+        {
+          "line": 1026,
+          "text": "raise ContentSnapshotError(\"file vector runtime cannot bind a Qdrant timeout\")"
+        },
+        {
+          "line": 1103,
+          "text": "\"query_timeout_seconds\": vector_runtime.get("
+        },
+        {
+          "line": 1104,
+          "text": "\"query_timeout_seconds\""
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/lawrag/sources/common.py",
+      "sha256": "e013d45781e2ac071133008003b8707eeafd7f9546fc8ea21754bcf13bbb945b",
+      "matches": [
+        {
+          "line": 67,
+          "text": "timeout: float = 30.0,"
+        },
+        {
+          "line": 73,
+          "text": "self.timeout = timeout"
+        },
+        {
+          "line": 80,
+          "text": "kwargs.setdefault(\"timeout\", self.timeout)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/document_navigation.py",
+      "sha256": "feb86a0c9734501dfb4ff9fca07074b0ac2eb726316aaa440889f5f7ed4b71a8",
+      "matches": [
+        {
+          "line": 145,
+          "text": "limits={'max_calls':14,'wall_seconds':300,'context_chars':60000,**(self.limits or {})}"
+        },
+        {
+          "line": 149,
+          "text": "if time.monotonic()-started>=limits['wall_seconds']:raise ValueError('질문 해석 시간 한도를 넘었습니다.')"
+        },
+        {
+          "line": 257,
+          "text": "remaining={**(self.limits or {}),'max_calls':max(0,limits['max_calls']-attempts),'wall_seconds':max(0,limits['wall_seconds']-(time.monotonic()-started))}"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/full_glossary.py",
+      "sha256": "ba2c6ced8da72307934e627a7a7508fb29da45e35d09fc3e0a116884a0a5d058",
+      "matches": [
+        {
+          "line": 247,
+          "text": "deadline = time.monotonic() + 3"
+        },
+        {
+          "line": 248,
+          "text": "self.db.set_progress_handler(lambda: int(time.monotonic() > deadline), 10000)"
+        },
+        {
+          "line": 344,
+          "text": "def __init__(self, pipeline, glossary, source_index, corpus=None, *, max_rounds=5, max_calls=7, wall_seconds=150):"
+        },
+        {
+          "line": 345,
+          "text": "if not 1 <= max_rounds <= 5 or not 2 <= max_calls <= 7 or not 0 < wall_seconds <= 150:"
+        },
+        {
+          "line": 348,
+          "text": "self.max_rounds, self.max_calls, self.wall_seconds = max_rounds, max_calls, wall_seconds"
+        },
+        {
+          "line": 380,
+          "text": "if time.monotonic() - start >= self.wall_seconds:"
+        },
+        {
+          "line": 381,
+          "text": "raise SearchIncomplete(\"WALL_TIME_BUDGET\")"
+        },
+        {
+          "line": 455,
+          "text": "if time.monotonic() - start >= self.wall_seconds:"
+        },
+        {
+          "line": 456,
+          "text": "raise SearchIncomplete(\"WALL_TIME_BUDGET\")"
+        },
+        {
+          "line": 462,
+          "text": "if time.monotonic() - start >= self.wall_seconds:"
+        },
+        {
+          "line": 463,
+          "text": "raise SearchIncomplete(\"WALL_TIME_BUDGET\")"
+        },
+        {
+          "line": 578,
+          "text": "if time.monotonic() - start >= self.wall_seconds:"
+        },
+        {
+          "line": 579,
+          "text": "raise SearchIncomplete(\"WALL_TIME_BUDGET\")"
+        },
+        {
+          "line": 590,
+          "text": "if time.monotonic() - start >= self.wall_seconds:"
+        },
+        {
+          "line": 591,
+          "text": "raise SearchIncomplete(\"WALL_TIME_BUDGET\")"
+        },
+        {
+          "line": 774,
+          "text": "if time.monotonic() - start >= self.wall_seconds:"
+        },
+        {
+          "line": 775,
+          "text": "raise SearchIncomplete(\"WALL_TIME_BUDGET\")"
+        },
+        {
+          "line": 782,
+          "text": "if time.monotonic() - start >= self.wall_seconds:"
+        },
+        {
+          "line": 783,
+          "text": "raise SearchIncomplete(\"WALL_TIME_BUDGET\")"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/genos.py",
+      "sha256": "bad98212afb7149f1a43f913c3469505b36e349bacaace097d23450b9709e66e",
+      "matches": [
+        {
+          "line": 35,
+          "text": "connect_timeout: float = 5.0"
+        },
+        {
+          "line": 36,
+          "text": "read_timeout: float = 120.0"
+        },
+        {
+          "line": 75,
+          "text": "connect_timeout: float = 5.0,"
+        },
+        {
+          "line": 76,
+          "text": "read_timeout: float = 120.0,"
+        },
+        {
+          "line": 95,
+          "text": "connect_timeout=connect_timeout,"
+        },
+        {
+          "line": 96,
+          "text": "read_timeout=read_timeout,"
+        },
+        {
+          "line": 120,
+          "text": "connect_timeout = float(settings.get(f'{prefix}_CONNECT_TIMEOUT') or ('60' if kind == 'llm' else '5'))"
+        },
+        {
+          "line": 121,
+          "text": "if not math.isfinite(connect_timeout) or connect_timeout <= 0:"
+        },
+        {
+          "line": 122,
+          "text": "raise ValueError(f'{prefix}_CONNECT_TIMEOUT must be positive and finite')"
+        },
+        {
+          "line": 133,
+          "text": "connect_timeout=connect_timeout,"
+        },
+        {
+          "line": 134,
+          "text": "read_timeout=float(settings.get(f\"{prefix}_TIMEOUT\", \"120\")),"
+        },
+        {
+          "line": 173,
+          "text": "connect_timeout=target.connect_timeout,"
+        },
+        {
+          "line": 174,
+          "text": "read_timeout=target.read_timeout,"
+        },
+        {
+          "line": 182,
+          "text": "timeout=httpx.Timeout(target.read_timeout, connect=target.connect_timeout),"
+        },
+        {
+          "line": 334,
+          "text": "read_timeout=float(os.environ.get(\"GENOS_VDB_TIMEOUT\", \"30\")),"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/genos_backend.py",
+      "sha256": "6b8cb7c89ce0d69a34e4f987ce95eb5f5701e3b082b7414c5249460c187c8f9f",
+      "matches": [
+        {
+          "line": 50,
+          "text": "def __init__(self, root, output_dir, *, max_tokens=80000, timeout=120, progress=print):"
+        },
+        {
+          "line": 55,
+          "text": "self.timeout = timeout"
+        },
+        {
+          "line": 67,
+          "text": "self.targets[kind] = replace(target, max_retries=1, read_timeout=self.timeout)"
+        },
+        {
+          "line": 79,
+          "text": "self.progress(f'API 호출 시작: {role}, 제한 {self.timeout}초, 재시도 없음')"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/learning_store.py",
+      "sha256": "15a03fb3c64f57eff6715e6fb3465c7e1a97ae724c2b9809fc8f39fa6be06b72",
+      "matches": [
+        {
+          "line": 18,
+          "text": "db = sqlite3.connect(path, timeout=15)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py",
+      "sha256": "f07b6ebee5d4638920f6d81bf3fdcf88cb27cf019c7f448bef9531379a54f6bb",
+      "matches": [
+        {
+          "line": 18,
+          "text": "from .errors import BudgetExhausted, DeadlineExceeded, ProposalError, TransportError"
+        },
+        {
+          "line": 58,
+          "text": "def structured(self, system, data, schema, phase, timeout, max_tokens=1536):"
+        },
+        {
+          "line": 64,
+          "text": "context = replace(self.context, deadline=min(self.context.deadline, time.monotonic()+timeout))"
+        },
+        {
+          "line": 160,
+          "text": "except (BudgetExhausted, DeadlineExceeded, ProposalError, TransportError, TimeoutError, ValueError) as exc:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/context.py",
+      "sha256": "c24e1a3e34f052d91c31f71f6537e2c48e271cbbc888cda85037d038dad34375",
+      "matches": [
+        {
+          "line": 1,
+          "text": "\"\"\"Server-owned question coordinates, immutable request binding, and deadlines.\"\"\""
+        },
+        {
+          "line": 8,
+          "text": "from .errors import ContractError, DeadlineExceeded"
+        },
+        {
+          "line": 39,
+          "text": "deadline: float"
+        },
+        {
+          "line": 40,
+          "text": "deadline_at: str"
+        },
+        {
+          "line": 43,
+          "text": "def create(cls, query, request, binding, wall_seconds, run_id=None):"
+        },
+        {
+          "line": 47,
+          "text": "return cls(run_id, query, request, binding, time.monotonic()+wall_seconds,"
+        },
+        {
+          "line": 48,
+          "text": "(datetime.now(timezone.utc)+timedelta(seconds=wall_seconds)).isoformat())"
+        },
+        {
+          "line": 59,
+          "text": "left = self.deadline-time.monotonic()"
+        },
+        {
+          "line": 61,
+          "text": "raise DeadlineExceeded('request deadline exceeded')"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/domain.py",
+      "sha256": "38f9b80cd8baaf596be4d338ce9f89c275ecef639d603898e5c5dc661b3e72cf",
+      "matches": [
+        {
+          "line": 20,
+          "text": "'max_tool_actions': 56, 'wall_seconds': 300, 'max_cycles': 3, 'max_no_progress': 2,"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/errors.py",
+      "sha256": "dcab73c92d60e2509ee6eab407352fd33d8fc5732d5daf59015ba689048f017f",
+      "matches": [
+        {
+          "line": 30,
+          "text": "class DeadlineExceeded(BudgetExhausted):"
+        },
+        {
+          "line": 31,
+          "text": "code = 'DEADLINE_EXCEEDED'"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py",
+      "sha256": "715633d3f1b85da303782ab9da39941f71798b5b52f87d3b154b97bb2d0a837c",
+      "matches": [
+        {
+          "line": 10,
+          "text": "from .errors import ContractError, ProposalError, DeadlineExceeded"
+        },
+        {
+          "line": 34,
+          "text": "matcher.fulltext_db.set_progress_handler(lambda: int(time.monotonic() >= context.deadline), 1000)"
+        },
+        {
+          "line": 197,
+          "text": "if time.monotonic() >= self.context.deadline:"
+        },
+        {
+          "line": 198,
+          "text": "raise DeadlineExceeded('source tool deadline exceeded') from exc"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/local_gemma.py",
+      "sha256": "4c8ead0c2701901f0131baa241b497e112c0b47b0112ba908543ae0b322591e7",
+      "matches": [
+        {
+          "line": 97,
+          "text": "with httpx.Client(timeout=seconds, trust_env=False, follow_redirects=False) as client:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relations_policy.py",
+      "sha256": "f4aa37028258c81ac52544e60658d9b87ebe7de8c9e0c8fe339a4efaf279c7df",
+      "matches": [
+        {
+          "line": 8,
+          "text": "# Relation discovery uses the request deadline; this legacy value is not enforced."
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relations_tools.py",
+      "sha256": "b89ea1554d25037289cb32cfc8d6d417a7a75f053aadf967cb26f3b2d5befd4e",
+      "matches": [
+        {
+          "line": 11,
+          "text": "from .errors import BudgetExhausted, DeadlineExceeded, ContractError, ProposalError"
+        },
+        {
+          "line": 307,
+          "text": "except (BudgetExhausted,DeadlineExceeded,ProposalError) as exc:"
+        },
+        {
+          "line": 316,
+          "text": "scan_deadline=self.context.deadline"
+        },
+        {
+          "line": 319,
+          "text": "db.set_progress_handler(lambda: int(time.monotonic()>=scan_deadline),1000)"
+        },
+        {
+          "line": 343,
+          "text": "db.set_progress_handler(lambda: int(time.monotonic()>=self.context.deadline),1000)"
+        },
+        {
+          "line": 390,
+          "text": "if budget['tool_used']>=budget['tool_limit']-self.profile['tool_finalization_reserve'] or time.monotonic()>=self.context.deadline:"
+        },
+        {
+          "line": 401,
+          "text": "except (BudgetExhausted,DeadlineExceeded) as exc:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/repository.py",
+      "sha256": "809c8c4cdb9b604edcffdea3ba10e7c458d13418dcaeead8c54fea03e64feab7",
+      "matches": [
+        {
+          "line": 38,
+          "text": "self.db.execute('PRAGMA busy_timeout=5000')"
+        },
+        {
+          "line": 47,
+          "text": "status,phase,owner_boot_id,started_at,deadline_at) VALUES(1,?,?,?,?,?,'RUNNING','INVESTIGATE',?,?,?)''',"
+        },
+        {
+          "line": 49,
+          "text": "encoded(context.request), uuid.uuid4().hex, now(), context.deadline_at))"
+        },
+        {
+          "line": 239,
+          "text": "or (self.context is not None and time.monotonic() >= self.context.deadline)):"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/session.py",
+      "sha256": "ba6bcc84aa6ba2f53b9f6cefede3f23f16548c2e3869cbfc517dc2f216a24db6",
+      "matches": [
+        {
+          "line": 4,
+          "text": "from .errors import BudgetExhausted, DeadlineExceeded, ProposalError"
+        },
+        {
+          "line": 71,
+          "text": "except DeadlineExceeded:"
+        },
+        {
+          "line": 119,
+          "text": "except DeadlineExceeded:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall.py",
+      "sha256": "6efb8b48dc1af585f9af537a5a787e3e9e2f8b8819b21740fade022aac0c9d1a",
+      "matches": [
+        {
+          "line": 11,
+          "text": "from .errors import ContractError, BudgetExhausted, DeadlineExceeded"
+        },
+        {
+          "line": 15,
+          "text": "'wall_seconds': 120, 'packet_chars': 50000}"
+        },
+        {
+          "line": 18,
+          "text": "POLICY = {**SCOPED_POLICY, 'source_limit':288, 'action_limit':1024, 'source_char_limit':1600000, 'wall_seconds':180}"
+        },
+        {
+          "line": 134,
+          "text": "if time.monotonic() - self.start >= POLICY['wall_seconds']:"
+        },
+        {
+          "line": 135,
+          "text": "raise DeadlineExceeded('source recall policy time limit')"
+        },
+        {
+          "line": 323,
+          "text": "except (BudgetExhausted, DeadlineExceeded) as exc:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py",
+      "sha256": "ee3ebe9aa7b058e0e4b14d27cc1a3ea8df10ca35d9f5db386de4f517d11b0979",
+      "matches": [
+        {
+          "line": 10,
+          "text": "from .errors import ContractError, BudgetExhausted, DeadlineExceeded"
+        },
+        {
+          "line": 14,
+          "text": "'wall_seconds': 120, 'packet_chars': 50000}"
+        },
+        {
+          "line": 77,
+          "text": "if time.monotonic() - self.start >= POLICY['wall_seconds']:"
+        },
+        {
+          "line": 78,
+          "text": "raise DeadlineExceeded('source recall policy time limit')"
+        },
+        {
+          "line": 212,
+          "text": "except (BudgetExhausted, DeadlineExceeded) as exc:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_selection.py",
+      "sha256": "a5034151f65a26a88553c5b431cfdea04e1b2e2c1601df0efce0584b4a7eec0c",
+      "matches": [
+        {
+          "line": 193,
+          "text": "\"\"\"invoke(system,data,schema,phase,timeout) returns one audited model result.\"\"\""
+        },
+        {
+          "line": 219,
+          "text": "raise TimeoutError('composed retrieval/selection time budget exhausted')"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_tools.py",
+      "sha256": "3ae4f7e2588fdeb5b02477c1219656374d19b7ad6aa8ca7f21b053d41cb9cd58",
+      "matches": [
+        {
+          "line": 8,
+          "text": "from .errors import ContractError, DeadlineExceeded, ProposalError"
+        },
+        {
+          "line": 24,
+          "text": "self.store.db.set_progress_handler(lambda: int(time.monotonic() >= context.deadline), 1000)"
+        },
+        {
+          "line": 25,
+          "text": "self.tools.request_deadline = context.deadline"
+        },
+        {
+          "line": 26,
+          "text": "self.tools.db.set_progress_handler(lambda: int(time.monotonic() >= context.deadline), 1000)"
+        },
+        {
+          "line": 273,
+          "text": "if time.monotonic() >= self.context.deadline:"
+        },
+        {
+          "line": 274,
+          "text": "raise DeadlineExceeded('source query deadline exceeded') from exc"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tiers_session.py",
+      "sha256": "ae4315cbfe9299019cacba5b382c67e7d5c88601b6ce4c98ef8e5e1b3b1c4a38",
+      "matches": [
+        {
+          "line": 10,
+          "text": "from .errors import ProposalError, ContractError, BudgetExhausted, DeadlineExceeded, TransportError"
+        },
+        {
+          "line": 142,
+          "text": "except (ProposalError,BudgetExhausted,DeadlineExceeded,TransportError) as exc:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tools_session.py",
+      "sha256": "c65438d124a6d26f422d2b6bc776d922683b95d02909249a3ab89f0682d459f5",
+      "matches": [
+        {
+          "line": 9,
+          "text": "from .errors import BudgetExhausted, DeadlineExceeded, ProposalError, ContractError, TransportError"
+        },
+        {
+          "line": 157,
+          "text": "except (BudgetExhausted, DeadlineExceeded) as exc:"
+        },
+        {
+          "line": 184,
+          "text": "except (BudgetExhausted, DeadlineExceeded, TransportError) as exc:"
+        },
+        {
+          "line": 315,
+          "text": "except (BudgetExhausted, DeadlineExceeded, ProposalError, TransportError) as exc:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/transport.py",
+      "sha256": "72be606712c21b86b52faf70c5b47a1d4d7989dfc6fe88a417dc3c257190d18f",
+      "matches": [
+        {
+          "line": 1,
+          "text": "\"\"\"GENOS single physical transmission, with an actual total HTTP deadline.\"\"\""
+        },
+        {
+          "line": 87,
+          "text": "'model': self.binding['model'], 'timeout_ms': int(seconds * 1000)}"
+        },
+        {
+          "line": 90,
+          "text": "async with asyncio.timeout(seconds):"
+        },
+        {
+          "line": 92,
+          "text": "timeout=httpx.Timeout(seconds, connect=min(self.target.connect_timeout, seconds))) as client:"
+        },
+        {
+          "line": 116,
+          "text": "except (TimeoutError, httpx.TimeoutException) as exc:"
+        },
+        {
+          "line": 118,
+          "text": "failure_kind='timeout', duration_ms=int((time.perf_counter() - started) * 1000))"
+        },
+        {
+          "line": 134,
+          "text": "response = runner.run(self._request('GET', '/models', None, self.target.read_timeout))"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_relation_cards.py",
+      "sha256": "ca9f78976336614d5de5cf2a451c0ac076c4df451bbd97a7cc8bb4b097cff36c",
+      "matches": [
+        {
+          "line": 121,
+          "text": "failure_kind = ('REQUEST_DEADLINE' if interrupted and now >= self.s.context.deadline"
+        },
+        {
+          "line": 127,
+          "text": "deadline_scope='request',"
+        },
+        {
+          "line": 128,
+          "text": "remaining_ms=max(0, int((self.s.context.deadline-now)*1000)),"
+        },
+        {
+          "line": 135,
+          "text": "deadline_scope='request')"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py",
+      "sha256": "56dbe2a16c5d4d0448d0473a37910fae2f2a9f3cdca6f18c2489dbe2e9b8a66c",
+      "matches": [
+        {
+          "line": 13,
+          "text": "from .errors import BudgetExhausted, DeadlineExceeded, ContractError, ProposalError, ToolExecutionError"
+        },
+        {
+          "line": 167,
+          "text": "db.set_progress_handler(lambda:int(time.monotonic()>=self.context.deadline),1000)"
+        },
+        {
+          "line": 358,
+          "text": "except (BudgetExhausted,DeadlineExceeded,ProposalError) as exc:"
+        },
+        {
+          "line": 369,
+          "text": "scan_deadline=self.context.deadline"
+        },
+        {
+          "line": 372,
+          "text": "self._relation_scan_deadline=scan_deadline"
+        },
+        {
+          "line": 374,
+          "text": "db.set_progress_handler(lambda: int(time.monotonic()>=scan_deadline),1000)"
+        },
+        {
+          "line": 399,
+          "text": "interruption=('; fulltext SQL interrupted: request deadline or explicit SQLite interruption'"
+        },
+        {
+          "line": 413,
+          "text": "self._relation_scan_deadline=None"
+        },
+        {
+          "line": 415,
+          "text": "db.set_progress_handler(lambda: int(time.monotonic()>=self.context.deadline),1000)"
+        },
+        {
+          "line": 456,
+          "text": "if budget['tool_used']>=budget['tool_limit']-self.profile['tool_finalization_reserve'] or time.monotonic()>=self.context.deadline:"
+        },
+        {
+          "line": 471,
+          "text": "except (BudgetExhausted,DeadlineExceeded) as exc:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py",
+      "sha256": "b8176cfe46bce1d560edcc6829f6766a129cf64d8c526f6c7dad0a2612c52be7",
+      "matches": [
+        {
+          "line": 10,
+          "text": "from .errors import ProposalError, ContractError, BudgetExhausted, DeadlineExceeded, TransportError"
+        },
+        {
+          "line": 258,
+          "text": "except (ProposalError,BudgetExhausted,DeadlineExceeded,TransportError) as exc:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent_adapter.py",
+      "sha256": "a24ececfb60a6db7e02cdd9de573e251597d3866cc60e96c944496c22b4aa798",
+      "matches": [
+        {
+          "line": 125,
+          "text": "context = RequestContext.create(query, request, binding, self.profile['wall_seconds'], run_id)"
+        },
+        {
+          "line": 126,
+          "text": "directory = Path(runtime)/'legal-agent/runs'/context.deadline_at[:10].replace('-', '')/context.run_id"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_navigation.py",
+      "sha256": "e08a3da369e4933fbef41a00528c5fc796422920b0b0b7b6a0a069faf06f44da",
+      "matches": [
+        {
+          "line": 308,
+          "text": "if time.monotonic()-self.started>=self.limits['wall_seconds']:break"
+        },
+        {
+          "line": 325,
+          "text": "if self.stop or self.actions>=self.limits['max_actions'] or time.monotonic()-self.started>=self.limits['wall_seconds']:break"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/navigation_agent.py",
+      "sha256": "d9b5a02dd83dd9eb046a42d193525a079201d7aec5e5300392a0732a114cb98e",
+      "matches": [
+        {
+          "line": 103,
+          "text": "# Relation scans install request-deadline progress handlers on all"
+        },
+        {
+          "line": 105,
+          "text": "# expired deadline into the next request."
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/navigation_loop.py",
+      "sha256": "7bc8a1b4474cc9c3a20180db22f10c0cab76a13f811caf3328d987faa7e8c013",
+      "matches": [
+        {
+          "line": 79,
+          "text": "self.limits={'max_calls':14,'max_actions':56,'wall_seconds':300,'active_segments':6,'active_chars':18000,'context_chars':60000,**(limits or {})}"
+        },
+        {
+          "line": 103,
+          "text": "if self.actions >= self.limits['max_actions'] or time.monotonic()-self.started >= self.limits['wall_seconds']:"
+        },
+        {
+          "line": 366,
+          "text": "if time.monotonic()-self.started>=self.limits['wall_seconds']:break"
+        },
+        {
+          "line": 372,
+          "text": "if time.monotonic()-self.started>=self.limits['wall_seconds']:break"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/observability.py",
+      "sha256": "cb65cc2eaa0097e4dabdcbf7bd36e3dcaa3a2fb82f74c36fce0ac39dcbc30c72",
+      "matches": [
+        {
+          "line": 145,
+          "text": "def drain(self, timeout=2):"
+        },
+        {
+          "line": 147,
+          "text": "return self.condition.wait_for(lambda:not self.queue and not self.busy,timeout)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/progress.py",
+      "sha256": "988f059d623ea62a71add8a8da4425d83f3c8f134cdb517275686b3fd6fda527",
+      "matches": [
+        {
+          "line": 68,
+          "text": "self.poller.join(timeout=2)"
+        },
+        {
+          "line": 134,
+          "text": "with sqlite3.connect(f\"file:{matches[0]}?mode=ro\", uri=True, timeout=1) as db:"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/provider.py",
+      "sha256": "ad4f5063359c3efa361e73662c5784fd554ff1a3b73aaeaeef6a68d574b6f811",
+      "matches": [
+        {
+          "line": 100,
+          "text": "http_client=httpx.Client(trust_env=False,timeout=120,follow_redirects=False)) as client:"
+        },
+        {
+          "line": 110,
+          "text": "target=endpoint(self.endpoint,token=key,label='semantic LLM',read_timeout=120,max_retries=3,"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+      "sha256": "dac43c4bfe88ea929f361725cfbcb67d154fc371ccc4addeb473d1a8bc5af0bc",
+      "matches": [
+        {
+          "line": 67,
+          "text": "self.db.execute('PRAGMA busy_timeout=5000')"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/request_report.py",
+      "sha256": "356e0e40c71b2d0bb9fa3672fc55c60af2881ae7b170d0a98519785f928d286a",
+      "matches": [
+        {
+          "line": 177,
+          "text": "\"scan_elapsed_ms\", \"scan_limit_ms\", \"deadline_scope\","
+        },
+        {
+          "line": 310,
+          "text": "self.heartbeat_thread.join(timeout=2)"
+        },
+        {
+          "line": 349,
+          "text": "with sqlite3.connect(f\"file:{self.journal_path}?mode=ro\", uri=True, timeout=1) as db:"
+        },
+        {
+          "line": 498,
+          "text": "handler.writer.worker.join(timeout=2)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/task_harness.py",
+      "sha256": "71eb89e9a5af2344d0ea79b4beec7e429cdad131a51bff3c6cef87df64426217",
+      "matches": [
+        {
+          "line": 89,
+          "text": "if self.calls >= self.limits['max_calls'] or time.monotonic() - self.started >= self.limits['wall_seconds']:"
+        },
+        {
+          "line": 90,
+          "text": "raise BudgetExceeded('CALL_OR_TIME_BUDGET')"
+        },
+        {
+          "line": 99,
+          "text": "if time.monotonic() - self.started >= self.limits['wall_seconds']:"
+        },
+        {
+          "line": 100,
+          "text": "raise BudgetExceeded('TIME_BUDGET')"
+        },
+        {
+          "line": 290,
+          "text": "if time.monotonic() - self.started >= self.limits['wall_seconds']:"
+        },
+        {
+          "line": 291,
+          "text": "raise BudgetExceeded('TIME_BUDGET')"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/task_policy.py",
+      "sha256": "4672b5cc2455dade7f26a11b4faed70769aac6b92e2d2d91c57b176b1f44135c",
+      "matches": [
+        {
+          "line": 27,
+          "text": "'limits': {'max_calls': 20, 'max_actions': 56, 'wall_seconds': 300,"
+        },
+        {
+          "line": 64,
+          "text": "db = sqlite3.connect(path, timeout=15)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_agent.py",
+      "sha256": "c3236de5aad6182b1314afe8416e53a68327ecb4ebaadd966e3bdddb36a9ce26",
+      "matches": [
+        {
+          "line": 15,
+          "text": "DEFAULTS={'max_rounds':3,'max_calls':9,'wall_seconds':150,'search_limit':3,'max_repairs':1}"
+        },
+        {
+          "line": 55,
+          "text": "if calls>=config['max_calls'] or time.monotonic()-start>=config['wall_seconds']:raise ValueError('term-agent execution budget exhausted')"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/term_index.py",
+      "sha256": "59a198b619c743c0f0ec2ee8150d319ce8e291c27cf7f99791963bd52df1c5b3",
+      "matches": [
+        {
+          "line": 297,
+          "text": "request_deadline=getattr(self,'request_deadline',None)"
+        },
+        {
+          "line": 298,
+          "text": "deadline=min(time.monotonic()+3,request_deadline) if request_deadline is not None else time.monotonic()+3"
+        },
+        {
+          "line": 299,
+          "text": "self.db.set_progress_handler(lambda:int(time.monotonic()>deadline),10000)"
+        },
+        {
+          "line": 302,
+          "text": "if request_deadline is None:"
+        },
+        {
+          "line": 305,
+          "text": "self.db.set_progress_handler(lambda:int(time.monotonic()>=request_deadline),1000)"
+        }
+      ]
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/work_navigation.py",
+      "sha256": "da30a67888d93fbd094a1b7725bba23e02a42647b1f022061e21808a3e645373",
+      "matches": [
+        {
+          "line": 276,
+          "text": "data={'work_state':self.work.header(),'requirements':self.requirement_rows(),'entry_paths':self.entries[:16],'keyword_types':types,'candidates':page,'candidate_review':{'pending':len(self.waiting()),'deferred':len(self.deferred),'total':len(self.pool),'order':'unreviewed first; reference targets, model-found, explicit article, then question-morpheme full-text rank (named document when no rank), then distinct question concepts; no cut'},'reference_tasks':self.open_reference_tasks(),'evidence_register':self.evidence_register(),'last_events':[{'id':e['id'],'tool':e['tool'],'status':e['status'],'error':e['error'],'result_sha256':e['result_sha256']} for e in self.work.events[-6:]],'remaining':{'calls':self.limits['max_calls']-self.calls,'reserved_for_synthesis':self.RESERVED_CALLS,'seconds':max(0,self.limits['wall_seconds']-(time.monotonic()-self.started))}}"
+        },
+        {
+          "line": 284,
+          "text": "if self.calls>=self.limits['max_calls'] or time.monotonic()-self.started>=self.limits['wall_seconds']:raise ValueError('shared navigation budget exhausted')"
+        },
+        {
+          "line": 608,
+          "text": "if remaining<self.RESERVED_CALLS or time.monotonic()-self.started>=self.limits['wall_seconds']:"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/GENOS_CHAT_DOCUMENT_SOURCES_WORKFLOW_PASTE_ALL_20260925.txt",
+      "sha256": "e243d9737afad543fe34828c9d0d2c34c6c8dff82dfb6b00a4d2eabbca7c4281",
+      "matches": [
+        {
+          "line": 133,
+          "text": "timeout = float(os.getenv(\"GENOS_CODESERVING_TIMEOUT_SECONDS\", \"360\"))"
+        },
+        {
+          "line": 135,
+          "text": "timeout = 360.0"
+        },
+        {
+          "line": 147,
+          "text": "return endpoint, token, max(1.0, timeout)"
+        },
+        {
+          "line": 200,
+          "text": "endpoint, token, timeout = _settings()"
+        },
+        {
+          "line": 211,
+          "text": "timeout_seconds=timeout,"
+        },
+        {
+          "line": 214,
+          "text": "with urllib.request.urlopen(request, timeout=timeout) as response:"
+        },
+        {
+          "line": 354,
+          "text": "with urllib.request.urlopen(request, timeout=35) as response:"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/GENOS_CHAT_FINAL_PATH_WORKFLOW_PASTE_ALL_20260925.txt",
+      "sha256": "f1eaa24e2211d484d83b58ea6216b4e51d01aeab4d561e07f74c650784cc9cae",
+      "matches": [
+        {
+          "line": 133,
+          "text": "timeout = float(os.getenv(\"GENOS_CODESERVING_TIMEOUT_SECONDS\", \"360\"))"
+        },
+        {
+          "line": 135,
+          "text": "timeout = 360.0"
+        },
+        {
+          "line": 147,
+          "text": "return endpoint, token, max(1.0, timeout)"
+        },
+        {
+          "line": 200,
+          "text": "endpoint, token, timeout = _settings()"
+        },
+        {
+          "line": 211,
+          "text": "timeout_seconds=timeout,"
+        },
+        {
+          "line": 214,
+          "text": "with urllib.request.urlopen(request, timeout=timeout) as response:"
+        },
+        {
+          "line": 354,
+          "text": "with urllib.request.urlopen(request, timeout=35) as response:"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/GENOS_CHAT_READABLE_SOURCES_WORKFLOW_PASTE_ALL_20260925.txt",
+      "sha256": "d790ad10279838517f849eca56f49f83e9d93fbbdedf616aa2d2186da18cae0b",
+      "matches": [
+        {
+          "line": 133,
+          "text": "timeout = float(os.getenv(\"GENOS_CODESERVING_TIMEOUT_SECONDS\", \"360\"))"
+        },
+        {
+          "line": 135,
+          "text": "timeout = 360.0"
+        },
+        {
+          "line": 147,
+          "text": "return endpoint, token, max(1.0, timeout)"
+        },
+        {
+          "line": 200,
+          "text": "endpoint, token, timeout = _settings()"
+        },
+        {
+          "line": 211,
+          "text": "timeout_seconds=timeout,"
+        },
+        {
+          "line": 214,
+          "text": "with urllib.request.urlopen(request, timeout=timeout) as response:"
+        },
+        {
+          "line": 354,
+          "text": "with urllib.request.urlopen(request, timeout=35) as response:"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/GENOS_REQUEST_TIMING_HANDOFF.txt",
+      "sha256": "901aa2e090cb91efc7e926ad53888c038b04814ad57ec2ced4c7c4622b367d3c",
+      "matches": [
+        {
+          "line": 46,
+          "text": "- code_serving.response.received가 없고 timeout이면 코드서빙 또는 게이트웨이 지연이다."
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/code_ship.py",
+      "sha256": "8e80f0277a476927e4ba777ac62c80ece169c265e3930528e5501325593d6e2d",
+      "matches": [
+        {
+          "line": 347,
+          "text": "capture_output=True, text=True, timeout=120)"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/composed_build.py",
+      "sha256": "92dd9ccc6eb914eebf7c821427eea063256afbaae439fcfd999e6b1df3c81791",
+      "matches": [
+        {
+          "line": 67,
+          "text": "process.wait(timeout=5)"
+        },
+        {
+          "line": 68,
+          "text": "except subprocess.TimeoutExpired:"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_call.sh",
+      "sha256": "8cf2435d1a6f861cddc440c69824db4470fec05c1871a8704319ebb1f7f03d41",
+      "matches": [
+        {
+          "line": 24,
+          "text": "timeout=\"${GENOS_CALL_TIMEOUT:-300}\""
+        },
+        {
+          "line": 118,
+          "text": "--connect-timeout 10 --max-time \"$timeout\" \\"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_data_stages.py",
+      "sha256": "37b9adc371fd86c707847d5b50ffdb7bfc58b07b6732bd7c36e1f18267a448d0",
+      "matches": [
+        {
+          "line": 69,
+          "text": "if options.timeout < 1:p.error('timeout must be positive')"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_preflight.py",
+      "sha256": "fc4a75b728387a75ce667f73bdf3dd3daa33a002ee21f8548219c511d5868155",
+      "matches": [
+        {
+          "line": 256,
+          "text": "response = requests.get(url.rstrip(\"/\") + \"/v1/models\", headers=headers, timeout=15)"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_request_timing.py",
+      "sha256": "ebc8a7fe76ecd0254de9fd1dde0e913851855499006fc42c17cf46769f513101",
+      "matches": [
+        {
+          "line": 145,
+          "text": "timeout = started.get(\"timeout_seconds\")"
+        },
+        {
+          "line": 146,
+          "text": "if isinstance(timeout, (int, float)):"
+        },
+        {
+          "line": 147,
+          "text": "lines.append(f\"- code_serving_timeout: {_seconds(timeout)}\")"
+        },
+        {
+          "line": 148,
+          "text": "if wall is not None and wall > timeout:"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_smoke.sh",
+      "sha256": "955b84b51c5b200bf1c0078f245595a00531eb1e7effc675e5f7726b7118bcfa",
+      "matches": [
+        {
+          "line": 27,
+          "text": "GENOS_CALL_TIMEOUT"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_structure_timing.py",
+      "sha256": "e7401812adfd1d30de0498ebbe7b760f2162e62ce6eef3d2c56b2cb5710be066",
+      "matches": [
+        {
+          "line": 108,
+          "text": "self.thread.join(timeout=2)"
+        },
+        {
+          "line": 177,
+          "text": "parser.add_argument('--timeout', type=int, default=300, help='DOC 변환 제한 초')"
+        },
+        {
+          "line": 179,
+          "text": "if args.timeout < 1 or (args.from_run and not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,79}', args.from_run)):"
+        },
+        {
+          "line": 180,
+          "text": "parser.error('timeout/run-id 값 오류')"
+        },
+        {
+          "line": 253,
+          "text": "args.timeout, lambda message: timing.emit('PIPELINE', str(message)))"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/OFFLINE/genos_authoring.py",
+      "sha256": "1dc87bf65f93f69a408ba92ee0000ba383f9dfddc69c1ceaf7099b7d125cf144",
+      "matches": [
+        {
+          "line": 108,
+          "text": "c = sqlite3.connect(self.path.resolve().as_uri() + '?mode=' + mode, uri=True, timeout=30)"
+        },
+        {
+          "line": 322,
+          "text": "def __init__(self, identity, timeout):"
+        },
+        {
+          "line": 328,
+          "text": "self.timeout = timeout"
+        },
+        {
+          "line": 337,
+          "text": "response = self.session.post(self.url, data=packed(request).encode(), timeout=(10, self.timeout), allow_redirects=False)"
+        },
+        {
+          "line": 343,
+          "text": "def run(queue, *, execute=False, max_calls=0, workers=1, timeout=300, provider_factory=None, stop=None):"
+        },
+        {
+          "line": 346,
+          "text": "if max_calls < 1 or workers < 1 or timeout < 1:"
+        },
+        {
+          "line": 347,
+          "text": "raise ValueError('Positive --max-calls, --workers and --timeout required')"
+        },
+        {
+          "line": 363,
+          "text": "provider = provider_factory() if provider_factory else HTTPProvider(queue.identity, timeout)"
+        },
+        {
+          "line": 423,
+          "text": "s.add_argument('--timeout', type=float, default=300)"
+        },
+        {
+          "line": 442,
+          "text": "result = run(q, execute=args.execute, max_calls=args.max_calls, workers=args.workers, timeout=args.timeout, stop=stop)"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/OFFLINE/genos_pipeline.py",
+      "sha256": "82b7977c2f6fb7c423e1e3ba6645b69f1c76490225f5b9bd9a3f98cf6ea1d1ff",
+      "matches": [
+        {
+          "line": 33,
+          "text": "cmd.add_argument('--timeout',type=float,default=300)"
+        },
+        {
+          "line": 92,
+          "text": "result=m.run(q,execute=args.execute,max_calls=args.max_calls,workers=args.workers,timeout=args.timeout)"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/OFFLINE/genos_progress.py",
+      "sha256": "36e06bdcfcb6ec124f610bdf6f2291d44fd4f95269b0c5a505680b70ee529060",
+      "matches": [
+        {
+          "line": 22,
+          "text": "with sqlite3.connect(path.resolve().as_uri() + '?mode=ro', uri=True, timeout=5) as db:"
+        }
+      ]
+    },
+    {
+      "path": "06_TOOLS/OFFLINE/package_docling_2126_models.py",
+      "sha256": "b7dbfb036880cbf0bb4d2b73aae8d2dd9f577fd64b9611b5557251791b69c995",
+      "matches": [
+        {
+          "line": 46,
+          "text": "content = urllib.request.urlopen(url, timeout=30).read()"
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/diagnostics/GENOS_AGENT_LOOP_CHECK_20260923.txt",
+      "sha256": "27b40a3b948cd8082fabdf9a9b1e79eb38dcd042bc8b26a8d0c7337af88091ff",
+      "matches": [
+        {
+          "line": 60,
+          "text": "db = sqlite3.connect(path.resolve().as_uri() + \"?mode=ro\", uri=True, timeout=2)"
+        },
+        {
+          "line": 64,
+          "text": "\"next_event_seq,started_at,deadline_at FROM run WHERE singleton=1\").fetchone()"
+        },
+        {
+          "line": 75,
+          "text": "\"deadline_remaining_seconds\": remaining_seconds(run[\"deadline_at\"]),"
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/diagnostics/GENOS_MISSING_SOURCE_ROOT_CAUSE_20260923.txt",
+      "sha256": "f45c27238259675f7dd6e4350a1183b89c34e5bb901057755bfd2a74176ca592",
+      "matches": [
+        {
+          "line": 137,
+          "text": "with sqlite3.connect(uri, uri=True, timeout=3) as db:"
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/stream_app.py",
+      "sha256": "08af0a3dda3c1f3799af4ba80997480aec609dd645a3e8d25ec9fd5fdeb7ab24",
+      "matches": [
+        {
+          "line": 99,
+          "text": "kind, value = await asyncio.wait_for(queue.get(), timeout=10)"
+        },
+        {
+          "line": 100,
+          "text": "except asyncio.TimeoutError:"
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+      "sha256": "185ef537d68001652ee504d97d71eff821c3458c6d9e2d20871ba8da68739963",
+      "matches": [
+        {
+          "line": 21,
+          "text": "STREAM_SOCKET_TIMEOUT_SECONDS = 35"
+        },
+        {
+          "line": 136,
+          "text": "timeout = float(os.getenv(\"GENOS_CODESERVING_TIMEOUT_SECONDS\", \"2100\"))"
+        },
+        {
+          "line": 138,
+          "text": "timeout = 2100.0"
+        },
+        {
+          "line": 150,
+          "text": "return endpoint, token, max(1.0, timeout)"
+        },
+        {
+          "line": 155,
+          "text": "_, _, timeout = _settings()"
+        },
+        {
+          "line": 160,
+          "text": "\"json_socket_timeout_seconds\": timeout,"
+        },
+        {
+          "line": 161,
+          "text": "\"stream_socket_timeout_seconds\": STREAM_SOCKET_TIMEOUT_SECONDS,"
+        },
+        {
+          "line": 225,
+          "text": "endpoint, token, timeout = _settings()"
+        },
+        {
+          "line": 236,
+          "text": "timeout_seconds=timeout,"
+        },
+        {
+          "line": 239,
+          "text": "with urllib.request.urlopen(request, timeout=timeout) as response:"
+        },
+        {
+          "line": 355,
+          "text": "endpoint, token, configured_timeout = _settings()"
+        },
+        {
+          "line": 381,
+          "text": "socket_timeout_seconds=STREAM_SOCKET_TIMEOUT_SECONDS,"
+        },
+        {
+          "line": 382,
+          "text": "configured_json_timeout_seconds=configured_timeout,"
+        },
+        {
+          "line": 385,
+          "text": "with urllib.request.urlopen(request, timeout=STREAM_SOCKET_TIMEOUT_SECONDS) as response:"
+        }
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/workflow/workflow.env.example",
+      "sha256": "f056551c8081e823759786e077bedcc9841ebc05b26d7b8e36b8be7a984c6334",
+      "matches": [
+        {
+          "line": 5,
+          "text": "GENOS_CODESERVING_TIMEOUT_SECONDS=2100"
+        }
+      ]
+    },
+    {
+      "path": "service.py",
+      "sha256": "89aa44402cbd33b8e7a2b0512f8ca903a7fefea4d7baf2906bd47d69c0e8c18f",
+      "matches": [
+        {
+          "line": 108,
+          "text": "raw = os.environ.get('GENOS_RAG_WALL_SECONDS', '').strip()"
+        },
+        {
+          "line": 110,
+          "text": "seconds = int(raw) if raw else max(value['wall_seconds'], 1800)"
+        },
+        {
+          "line": 112,
+          "text": "raise ValueError('GENOS_RAG_WALL_SECONDS must be a positive integer') from exc"
+        },
+        {
+          "line": 114,
+          "text": "raise ValueError('GENOS_RAG_WALL_SECONDS must be a positive integer')"
+        },
+        {
+          "line": 115,
+          "text": "return {**value, 'wall_seconds': seconds}"
+        },
+        {
+          "line": 406,
+          "text": "obs.event(log, 'runtime.request_budget', wall_seconds=options['legal_agent_profile']['wall_seconds'])"
+        }
+      ]
+    }
+  ]
+}

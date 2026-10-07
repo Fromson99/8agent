@@ -1,0 +1,42 @@
+{
+  "version": "oracle-check-20260929-r1",
+  "to": "hyungjininfocz.son@partner.samsung.com",
+  "email": {
+    "id": "1a0eab04ef9b4567",
+    "thread_id": "1a0eab04ef9b4567",
+    "label_ids": [
+      "SENT"
+    ],
+    "snippet": null,
+    "history_id": null,
+    "internal_date": null,
+    "payload": null,
+    "size_estimate": null,
+    "classification_label_values": null
+  },
+  "attachments": [
+    {
+      "file": "ORACLE_DATAIKU_ORDS_CHECK_20260929_R1.txt",
+      "bytes": 22383,
+      "sha256": "077a0ab2c59f0030ee1b98d4178f98378bd8ed546bb2f82f8a8a7b559fe39c3e"
+    },
+    {
+      "file": "ORACLE_DATAIKU_ORDS_GUIDE_20260929_R1.txt",
+      "bytes": 10866,
+      "sha256": "0d55229dc324a27c8351e0f2ad2abd03e74f45c491e0b74a74e763eab2d9ef7c"
+    }
+  ],
+  "validation": {
+    "bash_syntax": "PASS",
+    "embedded_python_syntax": "PASS",
+    "mock_sdk_cases": 21,
+    "existing_table_identifier_cases": 4,
+    "real_genos_oracle_dataiku_executed": false
+  },
+  "credentials": {
+    "schema": "b04",
+    "embedded_client_id": false,
+    "embedded_client_secret": false,
+    "reason": "Provided image values end in omitted '..'"
+  }
+}

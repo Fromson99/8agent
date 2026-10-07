@@ -1,0 +1,18 @@
+{
+  "status": "PASSED",
+  "checks": [
+    "Bash syntax",
+    "Parsing success distinct from later index failure; input failure and blocked documents",
+    "Pending/running and missing outputs remain unconfirmed; presence check only",
+    "Intentional exclusion, Excel escaping and credential redaction",
+    "All source SQLite, fixtures and directory contents unchanged",
+    "Current attempt cannot inherit earlier parsing success",
+    "Missing and corrupt ledgers give explicit unknown/failed query, preserving other runs",
+    "Missing LOGS and invalid run IDs produce a persistent failed execution log"
+  ],
+  "script_sha256": "bb27e10acfe0cbd70f286f114835dee959d87d6a579c50e926c85d9e970d6ebd",
+  "script_bytes": 20012,
+  "source_ingestion": false,
+  "model_calls": 0,
+  "genos_onsite_executed": false
+}

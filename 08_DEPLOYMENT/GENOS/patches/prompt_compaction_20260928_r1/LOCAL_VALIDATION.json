@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "tests": [
+    {
+      "baseline": "timeout",
+      "apply": "PASS",
+      "reapply": "PASS",
+      "committed_code_gate": "PASS",
+      "rollback": "PASS"
+    },
+    {
+      "baseline": "thinking",
+      "apply": "PASS",
+      "reapply": "PASS",
+      "committed_code_gate": "PASS",
+      "rollback": "PASS"
+    },
+    {
+      "baseline": "current",
+      "apply": "PASS",
+      "reapply": "PASS",
+      "committed_code_gate": "PASS",
+      "rollback": "NO_CHANGE"
+    },
+    {
+      "drift": "target",
+      "fail_before_changes": "PASS"
+    },
+    {
+      "drift": "unrelated",
+      "fail_before_changes": "PASS"
+    }
+  ],
+  "package_inventory": "PASS",
+  "javascript_members": 0,
+  "bash_syntax": "PASS",
+  "python311_syntax": "PASS",
+  "fixture_root": "/tmp/prompt-handoff-check-3h_28z15",
+  "genos_generation_gate": "NOT_RUN_NO_GENOS_ACCESS",
+  "onsite_workflow_verified": false,
+  "regression_tests": {
+    "passed": 221,
+    "warnings": 1,
+    "kind": "synthetic contract and regression",
+    "model_calls": 0
+  },
+  "whitespace_cleanup": "question_obligations.py EOF blank line removed; engine/PIPELINE hashes repinned; executable behavior unchanged"
+}

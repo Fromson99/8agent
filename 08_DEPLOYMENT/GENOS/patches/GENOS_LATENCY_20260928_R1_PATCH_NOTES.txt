@@ -1,0 +1,111 @@
+# GENOS 두 번째 질문 준비 지연 진단 — latency-20260928-r1
+
+2026-09-28 사용자 제공 현장 사진에서 캐시 적중 상태에도 ask.started부터
+rag.started까지 약 23.4초, rag.plan 2.884초, session.open.ready 9.646초,
+그 안의 session.sources 6.124초를 관찰했다. 사진의 마지막은 세션 준비 완료이며
+이후 모델 생성 지연은 이 사진으로 판단하지 않는다. 실제 현장 배포 커밋·세대는 미확인이다.
+
+## 변경 및 실행 경로
+
+`service.py` → `/v1/rag/ask` → `Pipeline.run/plan` → `open_session` →
+`workflow_tiers_tools.TiersTools` → `ExplorationTools/SourceSession`의 기존 경로에
+INFO 진단 로그를 추가했다. 모델·검색·문서 범위·검증 기준·기존 캐시 정책은 유지한다.
+데이터 재구축이나 워크플로우 Python 교체는 이번 패치에 필요하지 않다.
+새 코드서빙 리비전 적용은 필요하다. 이 진단 패치는 속도 개선 완료를 의미하지 않는다.
+
+| 로그 | 구분하는 처리 |
+|---|---|
+| `ask.team_validate` | ask.started 이전 API 팀 입력 검증/문서 조회 |
+| `rag.prepare.started` | run 진입, 진단 버전 `latency-20260928-r1` 확인 |
+| `rag.runner_import`, `rag.runner_init` | 모듈 적재와 실행기 생성 |
+| `rag.team_plan` | rag.started 이전 팀 범위 계획 전체 |
+| `plan.document_ids`, `plan.scope_documents`, `plan.document_roles.load/cached` | 문서 ID·분류·범위 선택 |
+| `plan.team_documents`, `team.metadata_scan` | 팀 메타데이터 DB 순회·JSON 해석 |
+| `plan.query_validate`, `rag.request_validate` | Query·Request 스키마 검증 |
+| `sources.reader/navigator/sqlite_callbacks` | 원문 읽기 도구와 SQLite 콜백 준비 |
+| `sources.folders`, `sources.root_handle` | 폴더 구성 및 요청별 root 핸들 DB 저장 |
+| `sources.structure_validate`, `sources.structure_ready` | 전체 구조 순회·부모/순환/span 검사, 전체/검사 마디 수 |
+| `sources.relation_cards`, `sources.lexical_schema/cached` | 관계 도구 및 용어 스키마 확인 |
+
+기존 `session.store/context/journal/sources/gateway`, `rag.loop.started`와 함께 읽는다.
+진단에는 질문·원문·팀명·키를 추가하지 않는다. 기존 공유 보고서의 원문 기록 정책은
+변경하지 않으므로 원본 로그의 외부 전송 승인을 의미하지 않는다.
+
+## 시간값 읽는 방법
+
+- `duration_ms`: 기존 step 시작부터 완료 이벤트 직전까지. 시작 로그 출력 시간을 포함한다.
+- `work_ms`: 시작 로그 출력이 끝난 뒤부터 실제 블록 종료까지.
+- `thread_cpu_ms`: 그 블록을 실행한 스레드의 CPU 시간. 다른 스레드 CPU는 제외한다.
+- `start_log_ms`: 시작 이벤트 출력 호출에 든 시간.
+- `previous_log_ms`: 같은 요청·run·스레드에서 바로 앞 이벤트의 출력 호출 시간.
+  `previous_event/previous_step`으로 어떤 로그였는지 확인한다. 현재 행의 출력 시간은 다음 행에 나타난다.
+  포맷팅·핸들러 잠금·컨테이너 출력·공유 파일 write/flush를 포함하며 NFS만의 측정값은 아니다.
+- `elapsed_ms`, request/run/worker 식별자를 기존 공유 `.log`에도 표시한다.
+
+중첩 step 시간은 겹치므로 더하지 않는다. `work_ms`와 `thread_cpu_ms`가 함께 크면
+해당 계산/검증 구간을 우선 확인한다. work만 크면 I/O·잠금·스케줄링 대기 등을
+의심할 수 있지만 NFS라고 단정할 수 없다. 로그 시간만 크면 로그 출력 경로를 조사한다.
+블록 내부의 하위 로그 비용은 상위 work 시간에 포함된다. 개별 문서마다 로그를 쓰지 않는다.
+
+## 반입·실행·재개
+
+첨부 ZIP과 `_APPLY.txt`를 같은 폴더에 두고 `bash GENOS_LATENCY_20260928_R1_APPLY.txt`.
+기본 대상은 기존 `~/DEV`이며 `DEPLOY_ROOT`로 명시 변경할 수 있다.
+TXT는 첫 단계에서 TMPDIR 또는 /tmp에 지속 실행 로그를 열고 EXIT에 상태를 기록한다.
+패키지 SHA-256 확인 → 임시 해제 → 기존 checkout 파일 해시 확인 → 백업 → 적용 →
+엔진 파일 해시와 PIPELINE manifest pin 갱신 → 재검증 순이다.
+여덟 실행 파일은 포함된 base 해시와 정확히 같거나 이미 패치된 해시여야 한다.
+다른 판이면 `unsupported installed version`으로 변경 전에 중단한다.
+관련 없는 코드·스키마 불일치도 자동 승인하지 않는다.
+
+백업은 `~/DEV/TRANSFER/latency-20260928-r1/backup-*`에 저장된다.
+같은 TXT 재실행은 이미 적용된 파일을 확인하며 `ALREADY_APPLIED`를 표시한다.
+쓰기 오류 시 백업으로 복구하고 실패로 종료한다. 강제 종료 후에는 같은 TXT를
+재실행하거나 출력된 백업으로 원복한다. 원복 전 이후 사용자 변경 여부를 확인한다.
+
+적용 성공 뒤 변경된 실행 파일·엔진 manifest·PIPELINE.json만 검토해 Git commit한다.
+검증 실행은 다음과 같다(실제 선택 경로를 지정해야 하며 최신 폴더를 추측하지 않는다).
+
+```bash
+MODE=verify GENOS_GENERATION=/실제/선택된/generation bash GENOS_LATENCY_20260928_R1_APPLY.txt
+```
+
+이 모드는 대상 Git checkout이 clean인지 확인하고 적용 과정에서 생성한
+`TRANSFER/latency-20260928-r1/applied-code.zip`의 전체 해시와 해당 commit을 대조한다.
+그 checkout의 `genos_generation_e2e.py`와 `verify_assets`를 동일 Python으로 실행한다.
+NFS 전체 검증에는 시간이 걸릴 수 있다. 세대 ID·절대경로·manifest SHA와 commit을 기록한다.
+검증 후 코드가 바뀌면 새 commit으로 다시 실행해야 한다.
+검증한 commit을 push하고 같은 commit/GENOS_GENERATION으로 코드서빙 새 리비전을 배포한다.
+Git push·서빙 리비전 배포·워크플로우 성공은 각각 별도 확인 상태다.
+
+## 현장 진단
+
+1. 워크플로우 테스트 화면에서 첫 질문과 두 번째 질문을 실행한다.
+2. 기존 공유 요청 `.log`에서 `diagnostic_revision=latency-20260928-r1`을 확인한다.
+3. 두 요청의 worker_id, 캐시 적중 여부와 위 구간을 비교한다.
+4. 선택적으로 `MODE=summary LOG_FILE=/해당/요청.log bash ..._APPLY.txt`로
+   내용 대신 단계·시간·개수·식별자만 출력한다. 원본 로그는 현장에 보존한다.
+5. 패치 ZIP SHA, 적용 영수증, 검증 commit, generation 경로/manifest SHA,
+   실제 코드서빙 리비전과 해당 요청 ID를 함께 보존한다.
+
+새 컨테이너 로그에 진단 버전이 없으면 코드 ZIP 적용과 별개로 실제 선택 리비전을 확인한다.
+코드서빙 직접 테스트 UI/API 실행은 요구하지 않는다.
+
+## 원복
+
+```bash
+MODE=rollback ROLLBACK_FROM=/home/사용자/DEV/TRANSFER/latency-20260928-r1/backup-실제값 bash GENOS_LATENCY_20260928_R1_APPLY.txt
+```
+
+백업 코드와 엔진/pipeline pin을 함께 복원한다. 원복 파일에 이후 다른 수정이 있으면
+덮어쓰지 않고 중단한다. 원복 코드는 별도 commit·push·리비전 배포가 필요하다.
+이미 배포한 서비스는 이전 검증 리비전과 같은 generation으로 돌릴 수도 있다.
+데이터 generation과 CURRENT는 이 패치가 변경하지 않는다.
+
+## 로컬 검증과 미확인
+
+로깅 시간 분리·예외 전파·공유 로그 필드·팀 범위·v5 회귀 100개 통과.
+적용·재적용·원복·해시 불일치 거부·중도 쓰기 실패 복구·사용자 후속 변경 보존 8개 통과.
+이는 로컬 합성 계약 검사이며 실제 현장 지연 원인·성능·GENOS 반입·배포는 미확인이다.
+
+실제 의존 파일 184개로 구성한 로컬 임시 Git checkout에서 적용·재적용·commit된 코드 ZIP 대조 게이트·코드/pin 바이트 단위 원복도 통과했다. 이 임시 commit은 현장 배포 commit이 아니다.

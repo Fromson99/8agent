@@ -1,0 +1,92 @@
+GENOS 연결 종류·방향별 원문 읽기 + 화면 로그 요약 R1
+
+이번 GENOS_RELATION_READING_20261006_R1.zip을 사용하세요.
+앞서 보낸 GENOS_SOURCE_RECALL_TIMEOUT_20261006_R2.zip을 포함한 누적 업데이트입니다.
+대화 입력 분기 R2, 원문 수집 시간 제한 제거, SQL/AD R5, NFS SQLite,
+compact 용어집 reader를 보존합니다. 데이터 재구축·CURRENT 전환은 하지 않습니다.
+
+변경 내용
+1. v6 조 단위 색인에서도 항·호·목의 직접 본문을 먼저 확보하고 필요한 범위를 고릅니다.
+   단순 정방향/역방향 연결을 검색 단계에서 자동 확장하여 별책 전체를 읽지 않습니다.
+2. 연결 문구를 원문 해시와 인용 위치로 검증하고 연결 종류·방향·필수 범위를 전달합니다.
+   구세대의 문장 전체 준용 표시만으로 적용을 확정하지 않습니다.
+3. 준용 대상과 적용 정의는 선언한 범위를 읽거나 미확인(DEFER)으로 남깁니다.
+   상위 항·호의 조건과 본문에 붙은 단서는 함께 읽습니다. 무관한 형제 항목은 자동으로 읽지 않습니다.
+4. 예외·배제·불구하고·의제, 위임·수임·단서 구체화는 적용 여부를 판단합니다.
+   역방향 시행령이 상위 조문 단서를 구체화하면 역방향이라는 이유로 생략할 수 없습니다.
+   조건부 연결을 SKIP하려면 적용되지 않는 구체적인 사유를 남깁니다.
+5. 별표는 답변의 기준·수치가 필요한 부분을, 별지서식은 절차·기재사항이 필요한 경우 읽습니다.
+   단순 역인용 별지·별책은 필수 읽기가 아닙니다. 시간 규정과 제재도 질문의 쟁점으로 판단합니다.
+6. 필수 범위 누락·근거 없는 생략은 실행 전에 거부하고 같은 메뉴에서 한 번 재판단합니다.
+   필수 미해결 연결·읽기 한도는 미확인으로 남깁니다. 선택 읽기 후보의 메뉴 초과만으로 재검색하지 않습니다.
+7. 이미 확보하고 검증한 동일 원문 범위는 재사용합니다. 검토 단계에서 범위를 넓혔으면 새 연결을 확인합니다.
+8. 화면에는 '원문 열람 중/원문 확보 현황' 두 요약을 갱신합니다.
+   항·호마다 Reasoner 노드를 누적하지 않고 문서별 원문 위치 수를 표시합니다.
+   원문·읽기 결정·필수 연결·원장 기록은 보존합니다.
+
+적용 대상은 legal-agent-unified-v6이며 명시적으로 단위 색인을 사용하는 bounded 경로도 같은 정책을 사용합니다.
+구 v5의 조 단위 전용 경로는 보존합니다. 신규 법률 그래프의 전체 의미 분류를 연결했다고 인증하지 않습니다.
+이 정책의 종류 표시는 명시 문구에 기반한 탐색 단서이며, 질문에 대한 법률 적용의 승인값은 아닙니다.
+policy_revision=relation-reading-policy-20261006-r1
+progress_display_revision=reasoner-display-read-summary-20261006-r1
+
+첨부 파일
+- GENOS_RELATION_READING_20261006_R1.zip: 코드 52개와 CODE_MANIFEST.json
+- GENOS_RELATION_READING_20261006_R1_APPLY.txt: 실제 실행 스크립트
+- GENOS_RELATION_READING_20261006_R1_WORKFLOW_PYTHON.txt: 워크플로우 Python 단계에 붙여 넣을 전체 코드
+- GUIDE_UTF8.txt: 이 안내
+
+실행
+ZIP과 APPLY.txt를 같은 ~/DEV/TRANSFER 폴더에 올립니다. 기존 Git checkout ~/DEV에서 실행합니다.
+  cd ~/DEV
+  bash TRANSFER/GENOS_RELATION_READING_20261006_R1_APPLY.txt check
+  bash TRANSFER/GENOS_RELATION_READING_20261006_R1_APPLY.txt apply
+
+첫 단계부터 relation-reading-r1-logs에 stdout/stderr·실패 상태를 기록합니다.
+파일별 백업 후 적용하며 재실행은 이미 설치된 해시를 확인합니다.
+알 수 없는 코드 변경은 보존하고 적용 전에 중단합니다. 이전 네 인계본의 정확한 해시만 허용합니다.
+현장 Python은 python3이며 sys.executable과 Python 버전을 기록합니다. Python 3.11+가 필요합니다.
+새 라이브러리 설치는 필요 없습니다.
+
+실제 사용 중인 generation 절대경로를 반드시 지정합니다. 최신 폴더나 임의 세대는 선택하지 않습니다.
+아래 /실제/generation/절대경로를 현장 값으로 바꿔 실행하세요.
+  bash TRANSFER/GENOS_RELATION_READING_20261006_R1_APPLY.txt verify /실제/generation/절대경로
+
+변경 파일을 검토하고 기존 checkout에 커밋한 뒤 같은 경로로 전체 게이트를 실행합니다.
+  bash TRANSFER/GENOS_RELATION_READING_20261006_R1_APPLY.txt gate /실제/generation/절대경로
+
+전체 게이트가 PASS인 커밋을 push하고 같은 generation 설정으로 새 코드서빙 리비전을 배포합니다.
+파일 적용, Git push, 리비전 배포, 워크플로우 편집은 각각 별도 작업입니다.
+화면 로그 요약을 적용하려면 첨부 WORKFLOW_PYTHON.txt 전체를 워크플로우의 기존 Python 단계에 반영하세요.
+기존 화면/API 키 설정은 현장 값을 유지합니다. CODE_SERVING API 연결 경로는 유지합니다.
+
+검증 기록과 남은 확인
+- 작업 코드의 관련 계약/회귀 검사 90개 PASS.
+- 실제 발송 ZIP의 backend 코드를 import한 핵심 계약 검사 55개 PASS.
+- 네 기존 인계본에서 check/apply/재실행/rollback, 알 수 없는 코드 보존, 운영 DB 보존 PASS.
+- ZIP 파일·필수 의존성 237개의 준비 checkout Git 결속 검사 PASS.
+- Python 3.11 구문, bash/내장 Python 구문, ZIP 해시, JavaScript 첨부 제외 PASS.
+- 합성 원문·모의 응답 검사이며 외부 모델 호출·법률 정확도/속도 비교 실험은 실행하지 않았습니다.
+- 로컬 공개 세대에서는 원문 GENERATION_E2E는 PASS이나 전체 게이트는
+  glossary compiler/cache binding mismatch로 미통과했습니다.
+  GENOS용 compact reader를 그대로 유지한 상태이며 로컬 공개 세대의 캐시 결속과 다릅니다.
+  이번에 full_glossary.py를 바꾸지 않았습니다. 캐시 해시를 덮어쓰거나 실제 세대를 임의 재구축하지 마세요.
+- 실제 GENOS 세대/manifest 해시, 내부 모델 판단 품질, 현장 커밋·리비전·워크플로우 적용은 미확인입니다.
+  실제 현장 세대의 전체 게이트가 통과하기 전에는 배포 성공으로 처리하지 않습니다.
+- 로컬 frozen MAIN/제품 승격은 수행하지 않았습니다.
+
+최종 질의 확인은 워크플로우 테스트 화면에서만 합니다.
+1. '내부 회계 관리자는 누가 지정하나요?'를 새 대화에서 실행합니다.
+   답변에 채택하지 않은 조문의 단순 역인용 별책을 자동으로 전부 읽는지 확인합니다.
+2. 준용 범위가 필요한 질문에서 대상 항·호 전체가 확보되는지 확인합니다.
+3. 상위 조문의 단서를 구체화한 시행령이 역방향이어도 필요하면 읽는지 확인합니다.
+4. 필요한 별표 기준·신고서 기재사항 질문에서는 해당 범위를 읽는지 확인합니다.
+5. Reasoner 원문 요약이 두 노드로 갱신되고 최종 답변/출처가 표시되는지 확인합니다.
+요청 ID, 실제 generation 경로·manifest 해시, 새 코드서빙 리비전과 policy/display revision을 함께 기록합니다.
+이전 질문의 기억을 재사용한 결과를 새 검색·읽기 검증으로 처리하지 않습니다.
+
+원복
+apply에 출력된 정확한 BACKUP/RECOVERY 경로를 사용합니다.
+  bash TRANSFER/GENOS_RELATION_READING_20261006_R1_APPLY.txt rollback /정확한/백업경로
+배포 후에는 이전 검증 코드서빙 리비전과 generation 설정으로 복귀합니다.
+워크플로우 Python 단계도 별도로 이전 코드로 되돌립니다. 데이터·상태 DB·환경변수는 삭제하지 않습니다.

@@ -1,0 +1,29 @@
+{
+  "schema_version": "genos-reference-mail-validation-v1",
+  "created_at": "2026-10-03T09:04:17.969811+00:00",
+  "base_code_zip_sha256": "48c4c1cfd3cf00ecfbac1094d6222c0d71623ce3435fbdbb3fc043328bd89011",
+  "base_execution_txt_sha256": "48161ce5fe3dbbf94f80c0711cdbc8d867aed52c316fa56264a6de0d57a1e94d",
+  "launcher_sha256": "516ee0d13969a6b359a0daebf012d5af39fd973a64e4eeee988d5ad2381183ae",
+  "launcher_bash_syntax": "PASS",
+  "launcher_contract_tests": {
+    "command": ".venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_genos_reference_e2e_launcher.py",
+    "passed": 8,
+    "failed": 0,
+    "delegate": "SIMULATED",
+    "test_source_sha256": "9bda9c82d37e35a0494d2a3529314a87bf34c5e2a040d6ad26ba4637b2d94546"
+  },
+  "base_validation": "VALIDATION.json",
+  "base_code_unchanged": true,
+  "forbidden_extensions": [
+    ".js",
+    ".jsx",
+    ".mjs",
+    ".cjs"
+  ],
+  "matching_members": [],
+  "field_workflow_e2e": "NOT_RUN",
+  "field_timing": "NOT_RUN",
+  "automatic_main_activation": false,
+  "automatic_git_push": false,
+  "automatic_revision_deployment": false
+}

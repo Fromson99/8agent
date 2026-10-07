@@ -1,0 +1,172 @@
+Oracle 이관 전 상태 점검 — 2026-09-29 R1
+
+1. 먼저 실행할 명령
+
+받은 실행 TXT를 내부망의 genos-util SDK가 설치된 Python 환경에서 실행합니다.
+GENOS의 코드스페이스 터미널에서 수행하는 독립 DB 진단입니다.
+코드서빙 직접 테스트 API나 워크플로우 질문 테스트를 요구하지 않습니다.
+
+bash ORACLE_DATAIKU_ORDS_CHECK_20260929_R1.txt
+
+기본값: ORDS 경로, 스키마 별칭 b04, 조회 + 임시 테이블/색인 생성 + 쓰기/재조회 + 정리.
+프로그램은 코드 저장소, 데이터 generation, CURRENT, 운영 테이블을 바꾸지 않습니다.
+RAGCHK_<무작위 식별자> 테이블과 RAGIX_<무작위 식별자> B-tree 색인만 생성합니다.
+PRIMARY KEY의 자동 색인도 해당 테이블 삭제 때 함께 제거합니다.
+테이블은 기본 접속의 실제 CURRENT_SCHEMA를 조회한 뒤 그 스키마에 생성합니다.
+ORDS 스키마 별칭 b04가 실제 DB owner B04와 같다고 가정하지 않습니다.
+
+Python 자동 선택: ORACLE_CHECK_PYTHON → 활성 virtualenv → 현재 폴더 .venv → python3.
+SDK를 찾지 못하면 패키지가 설치된 Python을 직접 지정합니다. 자동 설치하지 않습니다.
+
+ORACLE_CHECK_PYTHON=/실제/환경/bin/python bash ORACLE_DATAIKU_ORDS_CHECK_20260929_R1.txt
+
+2. 인증 설정
+
+사용자 요청대로 인증값을 실행 파일에 넣을 수 있도록 EMBEDDED_CLIENT_ID와
+EMBEDDED_CLIENT_SECRET 칸을 준비했습니다. 제공된 사진은 두 값의 끝이 '..'로
+생략되어 전체 문자열을 확인할 수 없으므로 추측한 문자열은 넣지 않았습니다.
+현재 두 칸은 비어 있으며, 기존 환경변수가 없으면 터미널에서 전체 값을 한 번씩 입력합니다.
+입력 문자열은 화면/점검 로그/결과 JSON에 출력하지 않습니다.
+
+실행 TXT 안의 다음 설정을 전체 값으로 채우면 입력 절차를 생략할 수 있습니다.
+EMBEDDED_SCHEMA = "b04"
+EMBEDDED_CLIENT_ID = "전체 client ID"
+EMBEDDED_CLIENT_SECRET = "전체 client Secret"
+EMBEDDED_BASE_URL = ""  # 환경에 ORDS 주소가 없을 때 실제 주소를 입력
+
+기존 환경변수가 있으면 파일의 값보다 우선합니다.
+ORACLE_ORDS_SCHEMA
+ORACLE_ORDS_CLIENT_ID / ORACLE_ORDS_CLIENT_SECRET
+ORACLE_ORDS_AUTH_TOKEN (OAuth 페어가 없을 때만 사용)
+ORACLE_ORDS_BASE_URL (없으면 SDK의 LLMOPS_ORDS_BASE_URL 사용)
+
+코드서빙/워크플로우에는 기본 주소가 제공된다는 SDK 가이드가 있으나, 코드스페이스의
+주소 제공·패키지 설치는 현장에서 확인해야 합니다. 주소가 없으면 EMBEDDED_BASE_URL을
+채우거나 ORACLE_ORDS_BASE_URL을 지정합니다. .env 파일을 자동으로 읽지는 않습니다.
+
+3. Dataiku를 통한 CREATE TABLE 확인
+
+ORDS 키와 Dataiku Oracle 연결의 DB 계정·권한은 다를 수 있습니다.
+ORDS의 PASS만으로 Dataiku 연결에서도 생성 가능하다고 판정하지 않습니다.
+Dataiku DSS의 실행 문맥과 dataiku 패키지가 있는 환경에서 별도로 실행합니다.
+--connection에는 DSS 설정에 표시된 실제 Oracle SQL 연결명을 넣습니다.
+ORDS OAuth 키를 DSS API 키나 Dataiku 연결명으로 사용하지 않습니다.
+
+bash ORACLE_DATAIKU_ORDS_CHECK_20260929_R1.txt --mode dataiku --connection '실제 Oracle 연결명'
+
+DSS 노트북에서 Bash를 호출할 수 있으면 다음 형태로도 실행 가능합니다.
+!bash /실제/파일경로/ORACLE_DATAIKU_ORDS_CHECK_20260929_R1.txt --mode dataiku --connection '실제 Oracle 연결명'
+
+사용 API: dataiku.SQLExecutor2(connection=...).query_to_df(...).
+DDL/DML은 pre_queries에서 실행하고 post_queries=['COMMIT']을 명시합니다.
+조회형 주 쿼리를 사용하므로 DDL에 DataFrame 반환을 요구하지 않습니다.
+Dataiku 관리형 Dataset/Flow는 생성하지 않습니다. 이 검사 성공은 선택한 SQL 연결을
+통해 해당 CURRENT_SCHEMA에 테이블을 생성할 수 있다는 뜻입니다. Dataset 생성 권한,
+연결의 managed table 정책, 프로젝트별 물리명 접두사·schema 설정은 별도입니다.
+Dataiku의 실제 운영 적재 스키마가 다르면 그 스키마의 권한을 추가 확인해야 합니다.
+
+4. 조회만 하거나 기존 Dataiku 물리 테이블을 확인할 때
+
+bash ORACLE_DATAIKU_ORDS_CHECK_20260929_R1.txt --read-only
+
+기존 테이블의 실제 owner와 물리명/접두사를 알고 있으면 --read-table을 추가합니다.
+아래 OWNER.ACTUAL_TABLE은 현장의 실제 값으로 교체해야 합니다.
+테이블 내용은 출력하지 않고 최대 한 행의 존재 여부와 SELECT 가능 여부만 확인합니다.
+
+bash ORACLE_DATAIKU_ORDS_CHECK_20260929_R1.txt --read-only --read-table OWNER.ACTUAL_TABLE
+
+--read-only는 CREATE TABLE 가능 여부를 판정하지 않습니다.
+SESSION_PRIVS의 CREATE TABLE 표시와 quota 조회는 참고이며 실제 DDL 실행 결과가 기준입니다.
+USER_TS_QUOTAS는 로그인 사용자의 조회이므로 CURRENT_SCHEMA가 다를 때 그 owner quota를
+대신 증명하지 않습니다. quota 조회 0건만으로 용량이 없다고 단정하지 않습니다.
+
+5. 수행하는 확인
+
+01 Python/SDK 또는 DSS 실행 환경, 인증 클라이언트 구성
+02 DUAL 조회
+03 SESSION_USER / CURRENT_USER / CURRENT_SCHEMA
+03b 선택한 기존 테이블 SELECT (--read-table을 지정한 경우)
+04 CREATE TABLE 등 세션 권한 (참고)
+05 사용자 tablespace quota (참고)
+06 Oracle 버전 (참고)
+07 NUMBER / NVARCHAR2 / CLOB / IS JSON 제약으로 임시 테이블 생성
+08 TERM 컬럼의 B-tree 색인 생성 및 VALID 상태 확인
+09 한글 용어·4000 bytes 초과 합성 JSON을 INSERT (ORDS는 CLOB 바인드)
+10 별도 SQL 호출에서 한글·CLOB 길이·JSON run_id 일치 확인
+11 UPDATE 후 별도 SQL 호출로 변경 유지 확인
+12 DELETE 후 행이 0건인지 확인
+13 이번 실행에서 생성 성공을 확인한 테이블을 DROP TABLE ... PURGE
+14 테이블/명시 B-tree 색인 잔존 확인
+15 클라이언트 종료
+
+큰 CLOB 테스트는 합성 데이터만 사용합니다. 실제 용어집/문서 내용은 읽거나 이관하지 않습니다.
+ORDS는 prototype1 어댑터와 동일하게 request('POST', client.SQL_PATH, json=...)를 사용합니다.
+HTTP 200이어도 원본 응답의 errorCode/errorMessage가 있으면 실패로 처리합니다.
+SDK dict/raw/json 응답을 받으며 형식이 미확인·빈 응답·잘린 SELECT는 통과시키지 않습니다.
+ORDS 가이드의 호출별 auto-commit을 전제로 하되 별도 호출 재조회로 유지 여부를 확인합니다.
+이 검사는 다중 문장 트랜잭션·대량 적재의 원자성을 증명하지 않습니다.
+
+6. 결과와 실패 해석
+
+기본 저장 위치: ~/oracle_checks/ORACLE_CHECK_<시각>_<고유번호>/
+check.log: START/PASS/FAIL/UNKNOWN, 시간, 오류 코드, 생성 객체명
+result.json: db_identity, 단계별 상태, 최종 판정, 잔존 객체
+재실행은 새 디렉터리/새 객체명이며 기존 실행을 덮어쓰지 않습니다.
+
+DDL_DML_BASIC_INDEX_PASS:
+선택한 경로에서 조회, 테이블 생성, 한글/CLOB/JSON 쓰기·재조회,
+UPDATE/DELETE, B-tree 생성, DROP와 잔존 0건 확인까지 성공.
+
+READ_ONLY_PASS_DDL_UNTESTED:
+조회 검사 성공. CREATE TABLE/쓰기/색인은 검사하지 않음.
+
+FAIL_CHECK_STEPS / INCOMPLETE / INTERRUPTED:
+실패·미완료. 실패한 단계와 오류 코드, residual_objects를 확인.
+정상 검사는 종료 코드 0, 실패/미완료는 1(쉘 준비 실패는 2).
+권한/quota/버전의 참고 조회 실패는 UNKNOWN으로 기록하고 실제 DDL 판단과 구분.
+
+ORA-01031: DB 실행 계정의 권한 부족
+ORA-01950: tablespace quota 부족
+ORA-00942: 테이블/뷰 부재 또는 SELECT 권한 부족
+HTTP 401/403: 인증 또는 ORDS 리소스 접근 문제; CREATE TABLE 권한 부족으로 단정하지 않음
+HTTP 404: ORDS 주소/스키마 별칭/REST-Enabled SQL 활성화 확인
+ModuleNotFoundError: 패키지가 설치된 Python/DSS 실행 문맥 확인
+
+생성 요청이 timeout/빈 응답 등으로 끝났으면 서버에서 생성됐을 가능성이 있습니다.
+생성 성공을 확인하지 못한 객체는 자동 DROP하지 않습니다. 잔존 여부를 추가 조회하고,
+잔존/조회 실패 때 candidate_cleanup_sql과 정확한 객체명을 result.json에 남깁니다.
+해당 실행의 임시 객체임을 확인한 뒤 현장에서 정리합니다. DROP 자체 실패도 결과에 남깁니다.
+중간 Ctrl-C/SIGTERM은 가능한 범위에서 확인된 임시 테이블을 정리합니다.
+프로세스 강제 종료/전원 종료 시에는 잔존할 수 있으므로 해당 실행 결과를 확인합니다.
+
+ORDS/Dataiku 양쪽 result.json의 db_identity가 다르면 권한도 별도로 판정해야 합니다.
+양쪽에서 CREATE/INSERT/색인이 성공해도 반대 경로에서 같은 객체를 볼 수 있다는 뜻은 아닙니다.
+실제 적재/서빙 스키마 선택 뒤 필요 시 SELECT/INSERT 등 GRANT와 물리명 계약을 맞춥니다.
+
+7. 현재 확인한 근거와 한계
+
+코드·문서 기준:
+https://github.com/infoczAI/GoRAG/tree/90e07513a82434a677263f790bea0c816be14e2f
+samsungsec1/internal-serving/rag/graph_retrieval/cache/ords_access.py
+samsungsec1/internal-serving/rag/graph_retrieval/cache/oracle.py
+samsungsec1/internal-serving/test_ords_access.py
+samsungsec1/docs/genos-ords-sdk-guide.md
+samsungsec1/docs/questions-for-ords-genos.md
+
+questions-for-ords-genos.md는 07-31 CREATE TABLE 권한 확보 기록을 담고 있습니다.
+현재 b04 키/Dataiku 연결에 같은 권한이 적용되는지는 이 현장 검사로 확인해야 합니다.
+확인 시 GitHub 브랜치 head는 6eab4f651bbdaa93fc64a93518293a374f77fba6으로 더 진행됐지만,
+사용자가 지정한 90e0751의 코드·가이드를 고정해 읽었습니다. 내부 배포 리비전은 미확인입니다.
+
+공식 문서:
+Dataiku SQLExecutor2 및 pre_queries/post_queries:
+https://developer.dataiku.com/latest/api-reference/python/sql.html
+Dataiku 쓰기와 COMMIT:
+https://developer.dataiku.com/latest/concepts-and-examples/sql.html
+ORDS REST-Enabled SQL의 CREATE TABLE·DDL/DML 및 응답:
+https://docs.oracle.com/en/database/oracle/oracle-rest-data-services/25.4/orddg/rest-enabled-sql-service.html
+
+외부 검증: Bash 문법, 내장 Python 문법, 모의 SDK로 정상·SQL 오류·권한/quota·정리 실패 등 확인.
+GENOS/Oracle/Dataiku 실제 서버에는 접속하지 않았습니다. 현장 실행 결과는 아직 미확인입니다.
+Oracle Text/한국어 lexer, VECTOR 타입·벡터 색인, 대량 적재 시간, RAG 검색 성능은 미검사입니다.
+현재 파일/SQLite 색인을 Oracle로 실제 바꾸는 구현이나 데이터 generation 활성화도 하지 않습니다.

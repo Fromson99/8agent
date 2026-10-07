@@ -1,0 +1,214 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+
+# Install the exact restricted source-forms DatasetPackage from an approved
+# local-to-GENOS transfer, then register its eleven originals in both team RAW
+# branches. Existing files, catalogs, structure and serving remain preserved.
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-financial-source-forms-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+DEPLOY_ROOT="${DEPLOY_ROOT:-/home/genos/DEV}"
+GENOS_DATA_ROOT="${GENOS_DATA_ROOT:-$DEPLOY_ROOT/01_DATA}"
+SOURCE_ZIP="${SOURCE_ZIP:-$DEPLOY_ROOT/TRANSFER/GENOS_FINANCIAL_SOURCE_FORMS_20260930.zip}"
+PYTHON_BIN="${PYTHON_BIN:-$DEPLOY_ROOT/.venv/bin/python}"
+if [[ ! -x "$PYTHON_BIN" ]]; then PYTHON_BIN="$(command -v python3)"; fi
+[[ -x "$PYTHON_BIN" ]] || { echo 'Python 3 required'; exit 2; }
+[[ -f "$SOURCE_ZIP" && ! -L "$SOURCE_ZIP" ]] || { echo 'Transfer ZIP missing or symlink'; exit 2; }
+DATA_ROOT_REAL="$(realpath "$GENOS_DATA_ROOT")"
+ZIP_SHA='e9cb43378a5efdf3ad9a402d9f88660cdd10df54f887adf567a9f253e4c4baae'
+printf '%s  %s\n' "$ZIP_SHA" "$SOURCE_ZIP" | sha256sum -c -
+"$PYTHON_BIN" - "$DATA_ROOT_REAL" "$SOURCE_ZIP" "$DEPLOY_ROOT" <<'PY'
+import copy
+from datetime import datetime, timezone
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import shutil
+import stat
+import sys
+import uuid
+import zipfile
+
+data, archive_path, checkout = map(Path, sys.argv[1:4])
+scope_path = data / 'CATALOG/SCOPES/photo-required-80-hwpx-20260917.json'
+layout_path = data / 'CATALOG/TEAM_LAYOUT.json'
+scope_sha = 'aba1df17dbd2648203cf3ceb9719b784f398822bdaf7a163f566765b7cd3025f'
+package_rel = Path('PACKAGES/EXTERNAL/source-forms-e95be5b5f8bc3d36/gen-e95be5b5f8bc3d3698cd2146')
+prefix = '01_DATA/' + package_rel.as_posix() + '/'
+manifest_sha = '8b3643d60032a2eeb45b18cf8534ac33047972d30c35628e647437843ff8134e'
+
+def digest(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+def file_sha(path):
+    h = hashlib.sha256()
+    with path.open('rb') as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+def safe(path):
+    if any(p.is_symlink() for p in (path, *path.parents)):
+        raise ValueError('symlink in destination: ' + str(path))
+    return path
+
+def install(source, target, expected):
+    safe(target)
+    if target.exists():
+        if file_sha(target) != expected:
+            raise ValueError('destination collision: ' + str(target))
+        return False
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temp = target.with_name('.' + target.name + '.tmp-' + uuid.uuid4().hex)
+    try:
+        with temp.open('xb') as out:
+            with source.open('rb') as stream:
+                shutil.copyfileobj(stream, out)
+        if file_sha(temp) != expected:
+            raise ValueError('source changed while copying: ' + str(source))
+        try:
+            os.link(temp, target)
+        except FileExistsError:
+            if file_sha(target) != expected:
+                raise ValueError('destination changed while copying: ' + str(target))
+        return True
+    finally:
+        temp.unlink(missing_ok=True)
+
+def atomic_json(path, value):
+    target = safe(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temp = target.with_name('.' + target.name + '.tmp-' + uuid.uuid4().hex)
+    try:
+        temp.write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        os.replace(temp, target)
+    finally:
+        temp.unlink(missing_ok=True)
+
+if file_sha(scope_path) != scope_sha:
+    raise ValueError('photo61 scope hash differs')
+scope = json.loads(scope_path.read_text(encoding='utf-8'))['documents'][51:61]
+expected = [(doc, item) for doc in scope for item in doc['files']]
+if len(scope) != 10 or len(expected) != 11:
+    raise ValueError('expected ten document names and eleven originals')
+with zipfile.ZipFile(archive_path) as archive:
+    infos = archive.infolist()
+    names = [info.filename for info in infos]
+    if len(names) != 13 or len(set(names)) != 13:
+        raise ValueError('source package inventory differs')
+    for info in infos:
+        name = PurePosixPath(info.filename)
+        mode = info.external_attr >> 16
+        if (name.is_absolute() or '..' in name.parts or not info.filename.startswith(prefix)
+                or info.is_dir() or stat.S_ISLNK(mode)):
+            raise ValueError('unsafe package member: ' + info.filename)
+    manifest_name = prefix + 'manifest.json'
+    manifest_raw = archive.read(manifest_name)
+    if digest(manifest_raw) != manifest_sha:
+        raise ValueError('source package manifest changed')
+    manifest = json.loads(manifest_raw)
+    if (manifest.get('schema_version') != 'dataset-package-v2'
+            or manifest.get('security_class') != 'restricted'
+            or manifest.get('export_policy', {}).get('allowed') is not False):
+        raise ValueError('source package security contract differs')
+    entries = {prefix + row['path']: row['sha256'] for row in manifest['artifacts']}
+    if set(names) != set(entries) | {manifest_name}:
+        raise ValueError('source package file list differs')
+    for name, expected_sha in entries.items():
+        if digest(archive.read(name)) != expected_sha:
+            raise ValueError('source package artifact hash differs: ' + name)
+    for doc, item in expected:
+        if (item['source'], item['security_class'], item['export_allowed']) != ('internal', 'restricted', False):
+            raise ValueError('unexpected source authority: ' + doc['name'])
+        member = '01_DATA/' + item['path']
+        if entries.get(member) != item['sha256']:
+            raise ValueError('scope original is not in the source package: ' + doc['name'])
+    print('PACKAGE_VERIFIED originals=11 scope_sha256=' + scope_sha, flush=True)
+
+    lock_path = safe(data / '.raw-migration.lock')
+    with lock_path.open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        layout_before_raw = layout_path.read_bytes()
+        before_sha = digest(layout_before_raw)
+        layout = json.loads(layout_before_raw)
+        if layout.get('schema_version') != 'team-raw-v1' or not isinstance(layout.get('files'), dict):
+            raise ValueError('team RAW layout contract differs')
+        package_targets = []
+        for name in names:
+            relative = name.removeprefix('01_DATA/')
+            target = safe(data / relative)
+            raw = archive.read(name)
+            if target.exists() and file_sha(target) != digest(raw):
+                raise ValueError('existing package file differs: ' + relative)
+            package_targets.append((name, target, digest(raw)))
+
+        additions = {}
+        raw_targets = []
+        for doc, item in expected:
+            basename = Path(item['path']).name
+            for team in ('risk_team', 'financial_team'):
+                rel = Path('RAW/internal') / team / 'forms' / doc['name'] / basename
+                target = safe(data / rel)
+                if target.exists() and file_sha(target) != item['sha256']:
+                    raise ValueError('existing team RAW differs: ' + str(rel))
+                record = {**item, 'name': doc['name'], 'team': team,
+                          'scope_document': doc['name'],
+                          'source_metadata': doc.get('source_metadata', {}),
+                          'original_path': item['path']}
+                if team == 'financial_team':
+                    record['shared_from'] = str(Path('RAW/internal/risk_team/forms') / doc['name'] / basename)
+                old = layout['files'].get(str(rel))
+                if old is not None:
+                    for key in ('sha256', 'role', 'source', 'security_class', 'export_allowed', 'team', 'scope_document'):
+                        if old.get(key) != record.get(key):
+                            raise ValueError('registered RAW authority differs: ' + str(rel))
+                else:
+                    additions[str(rel)] = record
+                raw_targets.append((data / item['path'], target, item['sha256']))
+        if digest(layout_path.read_bytes()) != before_sha:
+            raise ValueError('team layout changed during preflight')
+        for name, target, expected_sha in package_targets:
+            source = archive.open(name)
+            temp = target.with_name('.' + target.name + '.tmp-' + uuid.uuid4().hex)
+            try:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                if not target.exists():
+                    with temp.open('xb') as out:
+                        shutil.copyfileobj(source, out)
+                    if file_sha(temp) != expected_sha:
+                        raise ValueError('package copy hash differs: ' + name)
+                    try:
+                        os.link(temp, target)
+                    except FileExistsError:
+                        if file_sha(target) != expected_sha:
+                            raise ValueError('package target changed: ' + str(target))
+            finally:
+                source.close()
+                temp.unlink(missing_ok=True)
+        for source, target, expected_sha in raw_targets:
+            install(source, target, expected_sha)
+        if additions:
+            after = copy.deepcopy(layout)
+            after['files'].update(additions)
+            stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ') + '-' + uuid.uuid4().hex[:8]
+            history = safe(data / 'CATALOG/TEAM_LAYOUT_HISTORY' / ('financial-source-forms-' + stamp))
+            history.mkdir(parents=True, exist_ok=False)
+            atomic_json(history / 'before.json', layout)
+            atomic_json(history / 'after.json', after)
+            receipt = {'status': 'RAW_REGISTERED', 'scope_sha256': scope_sha,
+                       'package_manifest_sha256': manifest_sha,
+                       'layout_before_sha256': before_sha,
+                       'layout_after_sha256': file_sha(history / 'after.json'),
+                       'added_registration_count': len(additions),
+                       'source_documents': len(scope), 'source_files': len(expected),
+                       'package_path': str(package_rel)}
+            atomic_json(history / 'receipt.json', receipt)
+            if digest(layout_path.read_bytes()) != before_sha:
+                raise ValueError('team layout changed before pointer update')
+            atomic_json(layout_path, after)
+        print('RAW_REGISTERED documents=10 files=11 team_locations=22 new_registrations=' + str(len(additions)), flush=True)
+        print('NEXT_STAGE=photo61 shared registration and structure/index build', flush=True)
+PY

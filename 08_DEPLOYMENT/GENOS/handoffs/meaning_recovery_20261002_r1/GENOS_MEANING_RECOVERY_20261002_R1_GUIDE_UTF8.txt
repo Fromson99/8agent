@@ -1,0 +1,75 @@
+GENOS 의미 검토 R2 / 전문 색인 실패 복구 — 2026-10-02 R1
+
+메일의 ZIP과 실행 TXT 두 파일을 기존 ~/DEV/TRANSFER에 함께 올립니다.
+기존 GENOS_MEANING_VARIANTS_R2_BULK_UTF8.txt는 수정하거나 덮어쓰지 않습니다.
+ZIP을 직접 덮어 풀지 말고 실행 TXT를 사용합니다.
+
+1. 사진에서 실패한 OFF 구축 재개 (백그라운드):
+   cd ~/DEV
+   bash TRANSFER/GENOS_MEANING_RECOVERY_20261002_R1.txt
+   기본 동작은 recover-off-background입니다. 실행 전 원본 해시, 기존 준비 입력,
+   내부 모델 프로필, 실제 Python spawn/PeCab을 검사합니다. 생성된 PID/로그가 출력됩니다.
+   이 시작 메시지는 구축 완료를 뜻하지 않습니다.
+
+2. 상태와 로그:
+   bash TRANSFER/GENOS_MEANING_RECOVERY_20261002_R1.txt status
+   표시된 worker 로그에 tail -f <출력된 로그 절대경로>를 실행합니다.
+   모든 실행은 최초 부팅 로그와 01_DATA/LOGS/<run>/meaning-recovery-r1에 남습니다.
+   meaning 검토 수/실패 및 OFF/ON ready, 보존된 색인 scratch가 함께 표시됩니다.
+
+3. 이미 의미 검토가 끝난 ON 구축이 실패했다면:
+   bash TRANSFER/GENOS_MEANING_RECOVERY_20261002_R1.txt recover-on-background
+   ON은 검토 완료 결과가 있어야 하며, 없으면 성공 처리하지 않고 중단합니다.
+
+4. 의미 검토 자체에 남은 pending이 있다면:
+   bash TRANSFER/GENOS_MEANING_RECOVERY_20261002_R1.txt review-background
+   완료/기존 실패 작업은 유지하고 남은 작업만 원래 R2 방식으로 진행합니다.
+   기존 의미 검토 worker가 실행 중이면 중복 시작하지 않습니다. OFF는 별도 실행 가능.
+   검토가 끝나면 ON을 자동 구축합니다. PARTIAL을 정본 승인/품질 인증으로 바꾸지 않습니다.
+
+5. 중단 / 재개:
+   bash TRANSFER/GENOS_MEANING_RECOVERY_20261002_R1.txt stop-off
+   bash TRANSFER/GENOS_MEANING_RECOVERY_20261002_R1.txt stop-on
+   bash TRANSFER/GENOS_MEANING_RECOVERY_20261002_R1.txt stop-review
+   필요한 대상만 중단합니다. 저장된 PID의 boot ID/시작시간을 검사한 뒤 SIGINT를 보냅니다.
+   FINISHED 확인 후 위의 동일 백그라운드 명령으로 재개합니다.
+   nohup은 터미널 연결 종료를 견디지만 서버/컨테이너 재시작 후에는 수동 재개가 필요합니다.
+
+6. 완성된 OFF/ON 확인:
+   bash TRANSFER/GENOS_MEANING_RECOVERY_20261002_R1.txt verify
+   미완성 버전은 NOT READY / 종료 코드 3입니다. 양쪽 완성과 각각의 해시를 검증합니다.
+
+복구 방식:
+ - 사진의 /workspace/<stdin> 오류는 표준입력 TXT 실행과 multiprocessing spawn 충돌입니다.
+   새 실행기는 실제 .py 파일로 실행하여 기존 PeCab 2프로세스 병렬 색인을 유지합니다.
+ - 기존 .baseline-*에서 원문·선택 범위·용어집·컴파일러·색인·감사 증거를 모두 검증합니다.
+   유효한 후보가 1개이면 원본을 보존한 새 사본으로 전문 색인부터 이어갑니다.
+   유효한 후보가 여러 개이면 최신 파일을 임의 선택하지 않고 중단합니다.
+ - 이전 실패 정리로 완성 색인이 없어졌다면 저장된 구조화 원문/용어 준비본을 사용해
+   문서 연결·참조 색인부터 다시 만듭니다. RAW/문서 구조화/완료된 의미 검토를 다시 돌리지 않습니다.
+ - 새 구축은 전문 색인 시작 전에 해시 결속 checkpoint를 기록합니다. 실패/인터럽트 때
+   scratch를 지우지 않고 원래 traceback을 남깁니다. 불완전 전문 색인은 별도 폴더에 보존합니다.
+   다음 실행은 checkpoint를 검증하고 전문 색인부터 재개합니다. payload 변조는 자동 통과하지 않습니다.
+ - 사진의 이번 색인 생성은 34002.4초(9시간26분42초), 마지막 navigation은 3384.2초
+   (56분24초)였습니다. 전체 작업 시간/복구 잔여 시간은 이 사진으로 확정할 수 없습니다.
+
+기본 선택:
+   코드 checkout: /home/genos/DEV (~/DEV의 실제 Git root)
+   데이터: /workspace/01_DATA
+   run: financial-risk-success-20261001-r3
+   기존 bulk fork: 위 run 폴더 안의 <run>-bulk-r2
+   공유 출력: /nfs-root/diamo/8-agent/term-releases
+   현장 값이 다르면 GENOS_CODE_ROOT, GENOS_DATA_ROOT, GENOS_VARIANTS_RUN_ID,
+   GENOS_VARIANTS_SHARED_ROOT를 실제 기존 값으로 지정합니다. 새 run ID를 임의로 만들지 않습니다.
+   원본 TXT 경로는 기존 variant plan에서 찾습니다. 필요시 GENOS_VARIANTS_ORIGINAL에
+   실제 기존 TXT 경로를 지정합니다. 경로/해시 불일치를 임의 rehash로 우회하지 않습니다.
+
+적용/원복 범위:
+   ~/DEV/06_TOOLS/OFFLINE/genos_meaning_recover_r1.py 한 파일만 추가합니다.
+   이전 같은 경로 파일이 있다면 설치 영수증의 backup 경로에 보존합니다.
+   기존 core checkout/원본 R2 TXT/계획/RAW/완료 세대/CURRENT는 덮어쓰지 않습니다.
+   실행 방식 변경은 install 영수증과 baseline-recovery-r1.json에 별도로 결속합니다.
+   Git push, 활성 세대 전환, 코드서빙 배포, 워크플로우 교체는 이 TXT가 수행하지 않습니다.
+   구축 종료 후 출력되는 GENOS_GENERATION은 별도 서빙 선택값입니다. 현장 실제 구축 성공은 미확인입니다.
+   원복은 worker 종료 확인 후 이 새 runner 사용을 중단하고, 필요한 경우 영수증의 이전 runner
+   사본을 복원합니다. 원래 R2의 구축은 같은 stdin 오류가 있으므로 재사용하지 않습니다.

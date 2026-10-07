@@ -1,0 +1,40 @@
+GENOS thinking logging patch R1 (2026-09-28)
+
+TXT 단독 실행: bash GENOS_THINKING_LOG_20260928_R1_APPLY.txt
+기존 Git checkout ~/DEV에 백업 후 적용합니다. DEPLOY_ROOT로 실제 checkout 지정 가능.
+Python은 checkout .venv/bin/python 우선, 없으면 python3; PYTHON_BIN으로 지정 가능.
+별도 ZIP 다운로드/해제는 필요 없습니다. TXT 내부 payload와 파일 SHA를 검증합니다.
+정확한 latency R2/request-unlimited R1/relation-wait R1의 gateway/observability 바이트에 적용합니다.
+다른 버전/수정 파일/기존 엔진 해시 불일치는 덮어쓰지 않고 중단합니다.
+
+변경: gateway.py + observability.py, 그 파일을 소비하는 엔진 manifest/PIPELINE 해시.
+요청마다 diagnostics_version=thinking-log-20260928-r1을 확인합니다.
+model.attempt.started: thinking_requested=false, thinking_control_present=true,
+stream_requested=false, max_tokens, request_bytes, 실제 모델 ID/phase/attempt ID.
+model.attempt.received: duration_ms, prompt_tokens, completion_tokens, total_tokens,
+cached_tokens, reasoning_tokens, reasoning_field_present, reasoning_nonempty,
+reasoning_chars, thought_channel_marker_present, response_content_chars,
+tool_argument_chars, finish_reason, thinking_observation.
+model_http.finished.duration_ms: 모델 HTTP 응답 전체 대기 시간. 모델 대기열/입력 처리/
+출력 생성/네트워크를 분리하는 수치가 아닙니다. stream=false이므로 첫 토큰 시간은 미측정.
+
+reasoning_reported: 서버가 비어 있지 않은 추론 응답 또는 양수 추론 토큰을 반환.
+no_reasoning_reported: 해당 응답 필드가 비어 있거나 추론 토큰이 0으로 보고됨.
+unknown: 서버가 추론 정보를 제공하지 않음. thinking OFF를 증명하지 않습니다.
+null 토큰은 미제공/형식 미확인입니다. 0으로 해석하지 않습니다.
+thought_channel_marker_present 하나만으로 추론이 실행됐다고 판정하지 않습니다.
+추론 원문/프롬프트/질문/인증키는 새 진단 이벤트에 출력하지 않습니다.
+기존 내부 journal/상세 요청 보고서의 원본 보존은 유지합니다.
+
+적용 후 git diff 검토/commit -> MODE=verify GENOS_GENERATION='<실제 선택 경로>' bash TXT
+-> 검증한 commit push -> 새 코드서빙 리비전 배포 -> 워크플로우 테스트 화면에서 질문.
+기존 워크플로우 Python, 모델 설정, 데이터 generation/CURRENT는 변경하지 않습니다.
+현장 generation/manifest hash/배포 commit/코드서빙 리비전/실제 thinking 여부는 미확인.
+MODE=verify는 실제 checkout과 선택 generation E2E/verify_assets를 검증하며 모델 호출 없음.
+실제 질문은 워크플로우 테스트 화면에서만 실행합니다.
+
+로그는 첫 단계부터 /tmp/genos-thinking-log-r1-*.log에 지속 저장하며 실패 상태를 표시합니다.
+재실행은 ALREADY_APPLIED로 확인합니다.
+원복: MODE=rollback ROLLBACK_FROM='<BACKUP_READY 출력 경로>' bash TXT
+패치 이후 수정 파일은 원복으로 덮어쓰지 않습니다. 코드 원복 commit/push 및 이전 코드서빙
+리비전 복귀는 별도입니다. 인계 TXT의 검증 성공은 현장 배포 성공을 의미하지 않습니다.

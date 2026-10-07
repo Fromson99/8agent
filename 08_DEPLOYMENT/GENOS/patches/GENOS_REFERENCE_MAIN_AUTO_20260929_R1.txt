@@ -1,0 +1,658 @@
+#!/usr/bin/env bash
+# GENOS 참조 LLM 자동 승인 MAIN 배선 — 2026-09-29 R1
+# 이 TXT 하나만 TRANSFER에 저장합니다. 별도 ZIP/Python 파일은 필요 없습니다.
+# 코드 적용(기본): bash TRANSFER/GENOS_REFERENCE_MAIN_AUTO_20260929_R1.txt
+# 기존 세대의 모호한 참조 처리/새 후보 생성:
+#   bash TRANSFER/GENOS_REFERENCE_MAIN_AUTO_20260929_R1.txt run /실제/generation
+# GENOS_GENERATION 또는 GENOS_DATA_ROOT/CURRENT가 있으면 run 뒤 경로 생략 가능.
+# 이미 구조화한 범위의 통합 구축:
+#   bash TRANSFER/GENOS_REFERENCE_MAIN_AUTO_20260929_R1.txt build 실제_RUN_ID [기존 build 옵션]
+# RAW부터 전체 구축:
+#   bash TRANSFER/GENOS_REFERENCE_MAIN_AUTO_20260929_R1.txt all 새로운_RUN_ID [기존 build-all 옵션]
+# 상태: bash 같은TXT status /실제/generation
+# 코드 원복: bash 같은TXT rollback /실제/백업/receipt.json
+# 현장 입력: 기존 GENOS_LLM_URL 또는 GENOS_BASE_URL+GENOS_LLM_SERVING_ID, GENOS_LLM_KEY.
+# 내부 모델이 복수이면 GENOS_LLM_MODEL에 현장의 실제 모델 ID를 지정합니다.
+# 현장 .env와 기존 설정을 읽으며 인증키/내부 데이터는 첨부에 포함되지 않습니다.
+# 내부 LLM을 사용합니다. 외부 Qwen3.8 시험 모델이 GENOS에 설치되었다고 가정하지 않습니다.
+# 모든 유효한 모델 선택 자동 승인, 기권 UNKNOWN. 실패 사례 차단 규칙 추가 없음.
+# apply는 코드 적용/문법/import 검증만 수행합니다. run/build/all에서 실제 모델을 호출합니다.
+# build/all의 기존 용어집 검토 절차는 유지하고, 이번 참조 단계는 사람 승인을 기다리지 않습니다.
+# exit 3이면 실행량 제한/보류 상태입니다. 같은 입력/코드/run ID로 재개합니다.
+# 원문/완료 generation/CURRENT/워크플로우/코드서빙 리비전/Git push는 자동 변경하지 않습니다.
+# 새 서빙 후보를 사용하려면 공유 NFS 발행과 해당 리비전의 GENOS_GENERATION 변경이 별도입니다.
+# 최종 현장 질의는 워크플로우 테스트 화면에서 확인합니다.
+set -Eeuo pipefail
+REFERENCE_LOG="$(mktemp /tmp/genos-reference-main-r1-XXXXXX.log)"
+exec > >(tee -a "$REFERENCE_LOG") 2>&1
+trap 'REFERENCE_EXIT=$?; trap - EXIT; printf "GENOS_REFERENCE_EXIT=%s LOG=%s\n" "$REFERENCE_EXIT" "$REFERENCE_LOG"; exit "$REFERENCE_EXIT"' EXIT
+printf 'GENOS_REFERENCE_START LOG=%s\n' "$REFERENCE_LOG"
+REFERENCE_ROOT="${DEPLOY_ROOT:-}"
+if [[ -z "$REFERENCE_ROOT" ]]; then
+  REFERENCE_ROOT="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null || true)"
+  if [[ -z "$REFERENCE_ROOT" ]]; then REFERENCE_ROOT="$HOME/DEV"; fi
+fi
+REFERENCE_ROOT="$(git -C "$REFERENCE_ROOT" rev-parse --show-toplevel)"
+REFERENCE_ROOT="$(cd -P "$REFERENCE_ROOT" && pwd -P)"
+REFERENCE_PYTHON="${GENOS_PYTHON:-}"
+if [[ -z "$REFERENCE_PYTHON" ]]; then
+  if [[ -x "$REFERENCE_ROOT/.venv/bin/python" ]]; then REFERENCE_PYTHON="$REFERENCE_ROOT/.venv/bin/python";
+  else REFERENCE_PYTHON="$(command -v python3)"; fi
+fi
+REFERENCE_TEMP="$(mktemp -d /tmp/genos-reference-main-payload-XXXXXX)"
+cat > "$REFERENCE_TEMP/payload.b64" <<'REFERENCE_CODE_PAYLOAD'
+eNrtvdtyG1mWGPor2aqOSEAFghfdIcNtlohSs1siZZKq6TYEZySBBJkt3AoJSGLTjLDD47EdY4f9Yj/YfrAj/HDOeXIcO2L8
+PL9y3s5U/8NZl33fOxMJSXU8D+6JKYGZO/dl7bXXba/L7b1Fuhpe3+tE95bZOFtms2G2M03z2c7B3sHjvWcHz3aW+/da0b1x
+PskKaHZ7b+8g+e7wxW97J0e7k/TjMr3aXeSLbJLPsl3VRbLMivlkvcrns/bihj5bZZ9WOMw7+r83y2yRLrNWtFzP4D/Zhzz7
+2IrS2ShKF4vJTTSczItstDOEJ/koXWWR6joyuua+3s3y6WK+XEXp8go6LbJ3s/FyPo2G8xkOOskvI9EAe81nV+I99JsOJ2lR
+ZIVsoB6pPq/T4hp6UH//oZjP1B/zQnQFQLw2xnkDf6pGy0z9LK5h3hP954+TfJU9UH+vsukC4awf5FP4Q4xRZNN0tsqHCYAM
+X7Rxfct0uNKzz6+yYtWCYdJW9HEJfZd9Osmu0kmSXmWzVTtbLudL1cfFMp0V+KuHj+t8fwXb8zG9kR28no+yyUt+VufzlRxQ
+dvAym80LNY2yLkKoBj8XsMGr+VLN5kw2O1OtzlSjkr4jtXGBIRbL+Wo+nE+itIjk77I5rrLlNFG9KBAfnl0cv3jVawGCzpej
+fAawahmDrQCNs1WB+/5u9kPv7Pz49CTqRrE+n3xcdj7sx+9mR4cXh8nLwzfJWe/w/PTkHFrexkenL96+7p1cJK+Pz8+PT17G
+rSg+PDnp/S757vTo98nJ6UVyfJKc9171XlxA7/j6zdnpD8c4lHp7cfb2xcXbs158927We3X88vi7V73wKCeHr3vJ25Oz3vnp
+qx96R9ideicWkBy+/u745dvTt+dx690sCvwvFmCRc8bpfZ+cnhlfwkReH/4ueXF4cnQM6+7hNB4cvJu9AVpEX1yIh41Yt8Ep
+H/0e5/T69Kj3KhGN9YPvD49f8aT577cnvz05/TMCyg+Hr6iTo7j5bnb++/OL3mvciTj+/XzNdOhDFmWfFpN8mMPxmw/XU0Dp
+yNjy+QyIGWHH6joTVC1SVK2IijWQuxyeXd5QiyJbfsiWbRhtvl4CsUMCFuVFBBi1XBcraIgkqhXN5kDuZlE+K+D5kIhhdJ5N
+suFK907kFFBlRGTz+KiAqQK5gAmlxsDzZZReFisg+TDqSQajQ68fcBnQ//FRSy2rhfj+IS9grFYEzfgHfLlaFy3shk41Ut3h
+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
+REFERENCE_CODE_PAYLOAD
+cat > "$REFERENCE_TEMP/apply.py" <<'REFERENCE_INSTALLER'
+"""Installer/launcher embedded in the reference MAIN TXT; no external models."""
+import argparse
+import ast
+import base64
+import fcntl
+import hashlib
+import inspect
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+import zlib
+
+
+PATCH = 'reference-main-20260929-r1'
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def write_json(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n')
+
+
+def atomic(path, raw):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    mode = path.stat().st_mode & 0o777 if path.exists() else 0o644
+    temporary = path.with_name('.' + path.name + '.reference-tmp')
+    temporary.write_bytes(raw)
+    temporary.chmod(mode)
+    os.replace(temporary, path)
+
+
+def replace_functions(raw, replacements):
+    text = raw.decode('utf-8'); lines = text.splitlines(keepends=True)
+    nodes = {n.name: n for n in ast.parse(text).body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
+    for name, source in sorted(replacements.items(), key=lambda pair: nodes[pair[0]].lineno if pair[0] in nodes else -1, reverse=True):
+        if name in nodes:
+            node = nodes[name]
+            start = min([node.lineno, *(d.lineno for d in node.decorator_list)]) - 1
+            lines[start:node.end_lineno] = [source.rstrip() + '\n']
+        else:
+            lines.extend(['\n\n', source.rstrip() + '\n'])
+    result = ''.join(lines)
+    for module in ('os', 'time', 'shutil'):
+        if not any(isinstance(n, ast.Import) and any(a.name == module for a in n.names) for n in ast.parse(result).body):
+            result = 'import ' + module + '\n' + result
+    compile(result, '<reference patch>', 'exec')
+    return result.encode()
+
+
+def check_paths(root, relative):
+    path = root / relative
+    if Path(relative).is_absolute() or '..' in Path(relative).parts:
+        raise ValueError('unsafe patch member')
+    if any(p.is_symlink() for p in (path, *path.parents) if p != root and p.is_relative_to(root)):
+        raise ValueError('symlink inside checkout: ' + relative)
+    return path
+
+
+def install(root, payload, receipt_root):
+    spec = json.loads(zlib.decompress(base64.b64decode(payload)))
+    if spec['patch'] != PATCH:
+        raise ValueError('patch identity mismatch')
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    from semantic_runtime.legal_agent.gateway import ModelGateway
+    if not {'message_protocol', 'system', 'prompts'} <= set(inspect.signature(ModelGateway.__init__).parameters):
+        raise ValueError('Existing GENOS v5 ModelGateway is required; no files applied')
+    if 'term-navigation-index-v4' not in (root / '02_BACKEND/semantic_runtime/term_index.py').read_text():
+        raise ValueError('Existing v4/v5 navigation reader is required; no files applied')
+    import jsonschema
+    jsonschema.Draft202012Validator.check_schema(json.loads(spec['files']['00_SYSTEM/SCHEMAS/reference-resolution-v1.schema.json']['text']))
+    changes = {}
+    for name, row in spec['files'].items():
+        if Path(name).suffix.lower() in {'.js', '.jsx', '.mjs', '.cjs'}:
+            raise ValueError('JavaScript member forbidden')
+        raw = row['text'].encode()
+        if sha(raw) != row['sha256']:
+            raise ValueError('embedded source hash mismatch: ' + name)
+        if name.endswith('.py'):
+            ast.parse(raw.decode(), feature_version=(3, 11)); compile(raw, name, 'exec')
+        changes[name] = raw
+    for name, replacements in spec['functions'].items():
+        existing = check_paths(root, name)
+        if not existing.is_file():
+            raise ValueError('Existing MAIN file required: ' + name)
+        changes[name] = replace_functions(existing.read_bytes(), replacements)
+    name = '02_BACKEND/semantic_runtime/term_references.py'
+    existing = check_paths(root, name)
+    changes[name] = replace_functions(existing.read_bytes(), {'reference_targets': spec['reference_targets']})
+    name = '06_TOOLS/pipeline.py'
+    text = check_paths(root, name).read_text()
+    if 'from lawrag.pipeline.reference_resolution import main' not in text:
+        nodes = ast.parse(text).body
+        root_node = next(n for n in nodes if isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == 'root' for t in n.targets))
+        lines = text.splitlines(keepends=True)
+        lines.insert(root_node.end_lineno, spec['pipeline_route'] + '\n')
+        text = ''.join(lines)
+    changes[name] = text.encode()
+    # Refresh only engine pins that actually consume the changed source bytes.
+    manifests = {}
+    for file in (root / '02_BACKEND/ENGINES').rglob('*.json'):
+        value = json.loads(file.read_text()); changed = False
+        if isinstance(value.get('files'), dict):
+            for name in set(value['files']) & set(changes):
+                expected = sha(changes[name])
+                if value['files'][name] != expected:
+                    value['files'][name] = expected; changed = True
+        if changed:
+            name = str(file.relative_to(root))
+            changes[name] = (json.dumps(value, ensure_ascii=False, indent=2) + '\n').encode()
+            manifests[name] = sha(changes[name])
+    pipeline_path = root / '00_SYSTEM/PIPELINE.json'
+    value = json.loads(pipeline_path.read_text()); changed = False
+    for row in value.get('engines', {}).values():
+        if row['manifest'] in manifests:
+            row['sha256'] = manifests[row['manifest']]; changed = True
+    if changed:
+        changes['00_SYSTEM/PIPELINE.json'] = (json.dumps(value, ensure_ascii=False, indent=2) + '\n').encode()
+    for name, raw in changes.items():
+        check_paths(root, name)
+        if name.endswith('.py'):
+            ast.parse(raw.decode(), feature_version=(3, 11)); compile(raw, name, 'exec')
+    changed_names = [name for name, raw in changes.items() if not (root / name).exists() or (root / name).read_bytes() != raw]
+    if not changed_names:
+        print('CODE_ALREADY_APPLIED files=' + str(len(changes)))
+        return
+    backup = receipt_root / (time.strftime('%Y%m%d-%H%M%S') + '-' + str(os.getpid()))
+    backup.mkdir(parents=True)
+    receipt = {'patch': PATCH, 'code_root': str(root), 'checkout_commit': subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip(),
+               'python': sys.version.split()[0], 'status': 'APPLYING', 'files': {}, 'code_serving_revision': None,
+               'selected_generation': None, 'genos_verified': False, 'push_performed': False}
+    for name in changed_names:
+        target = root / name; original = target.read_bytes() if target.exists() else None
+        if original is not None:
+            saved = backup / 'before' / name; saved.parent.mkdir(parents=True, exist_ok=True); shutil.copy2(target, saved)
+        receipt['files'][name] = {'before_sha256': sha(original) if original is not None else None,
+                                  'after_sha256': sha(changes[name])}
+    write_json(backup / 'receipt.json', receipt)
+    try:
+        for name in changed_names:
+            atomic(root / name, changes[name])
+        for name in changed_names:
+            if sha((root / name).read_bytes()) != receipt['files'][name]['after_sha256']:
+                raise ValueError('checkout file verification failed: ' + name)
+        subprocess.run(['git', '-C', str(root), 'diff', '--check'], check=True)
+        # Fresh process imports the APPLIED checkout, never a candidate extraction.
+        subprocess.run([sys.executable, '-B', str(root / '06_TOOLS/pipeline.py'), 'reference-resolution', '--help'], check=True)
+        subprocess.run([sys.executable, '-B', str(root / '06_TOOLS/pipeline.py'), 'document-release', '--help'], check=True)
+        receipt['status'] = 'APPLIED_AND_IMPORT_VERIFIED'
+    except BaseException:
+        for name, row in receipt['files'].items():
+            if row['before_sha256'] is None:
+                (root / name).unlink(missing_ok=True)
+            else:
+                atomic(root / name, (backup / 'before' / name).read_bytes())
+        receipt['status'] = 'FAILED_ROLLED_BACK'
+        write_json(backup / 'receipt.json', receipt)
+        raise
+    write_json(backup / 'receipt.json', receipt)
+    write_json(backup / 'CODE_MANIFEST.json', {'patch': PATCH, 'files': [{'path': n, 'sha256': sha((root/n).read_bytes())} for n in sorted(changes)]})
+    print('CODE_APPLIED backup_receipt=' + str(backup / 'receipt.json'))
+
+
+def profile(root):
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    from lawrag.core.llm import load_env
+    from semantic_runtime.genos import from_env, advertised_model
+    from semantic_runtime.legal_agent.transport import GenosTransport
+    from lawrag.platform.workspace import load_layout
+    load_env()
+    target, configured = from_env('llm')
+    model = advertised_model(target, configured)
+    binding = {'provider': 'genos', 'trust_zone': 'internal', 'model': model,
+               'adapter_version': 'genos-single-send-v1', 'endpoint_identity': sha(target.root.encode()),
+               'max_input_bytes': 2000000}
+    GenosTransport(target, binding).validate_model()
+    runtime = load_layout(root).inspection_path('runtime', layout_version='v2')
+    path = runtime / 'CONFIG' / ('reference-genos-' + sha(json.dumps(binding, sort_keys=True).encode())[:16] + '.json')
+    value = {'schema_version': 'reference-model-profile-v1', 'model_binding': binding,
+             'max_output_tokens': 4096, 'max_transport_retries': 0, 'max_schema_repairs': 0,
+             'wall_seconds': 1800, 'approval_mode': 'automatic'}
+    if path.exists() and json.loads(path.read_text()) != value:
+        raise ValueError('Existing model profile changed; preserve it and use a new profile')
+    if not path.exists():
+        write_json(path, value)
+    print('INTERNAL_MODEL_BOUND model=' + model + ' profile=' + str(path))
+    return path, runtime
+
+
+def generation(root, argument):
+    if argument:
+        selected = Path(argument).resolve()
+    elif os.environ.get('GENOS_GENERATION'):
+        selected = Path(os.environ['GENOS_GENERATION']).resolve()
+    elif os.environ.get('GENOS_DATA_ROOT'):
+        pointer = Path(os.environ['GENOS_DATA_ROOT']) / 'generations/CURRENT.json'
+        value = json.loads(pointer.read_text())
+        selected = Path(value['path']).resolve()
+    else:
+        raise ValueError('Supply the existing generation path: bash TXT run /actual/generation')
+    if not (selected / 'manifest.json').is_file():
+        raise ValueError('Selected generation manifest is missing')
+    return selected
+
+
+def rollback(root, receipt_file):
+    receipt_file = Path(receipt_file).resolve(); receipt = json.loads(receipt_file.read_text())
+    if receipt['code_root'] != str(root) or receipt['patch'] != PATCH:
+        raise ValueError('Rollback receipt does not match this checkout')
+    for name, row in receipt['files'].items():
+        file = check_paths(root, name)
+        if not file.exists() or sha(file.read_bytes()) != row['after_sha256']:
+            raise ValueError('File changed since apply; preserve newer work: ' + name)
+    for name, row in receipt['files'].items():
+        if row['before_sha256'] is None:
+            (root / name).unlink()
+        else:
+            raw = (receipt_file.parent / 'before' / name).read_bytes()
+            if sha(raw) != row['before_sha256']:
+                raise ValueError('Backup hash mismatch')
+            atomic(root / name, raw)
+    print('CODE_ROLLED_BACK; generated candidates and model journals preserved')
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--root', type=Path, required=True)
+    parser.add_argument('--payload', type=Path, required=True)
+    parser.add_argument('mode', choices=['apply', 'all', 'build', 'run', 'status', 'rollback'])
+    parser.add_argument('arguments', nargs=argparse.REMAINDER)
+    args = parser.parse_args(); root = args.root.resolve()
+    actual = Path(subprocess.check_output(['git', '-C', str(root), 'rev-parse', '--show-toplevel'], text=True).strip()).resolve()
+    if actual != root:
+        raise ValueError('Use the actual Git root')
+    os.environ['LAWRAG_WORKSPACE_ROOT'] = str(root)
+    if sys.version_info < (3, 11):
+        raise ValueError('GENOS codespace Python 3.11+ is required')
+    receipt_root = root / '90_RUNTIME/HANDOFF' / PATCH
+    receipt_root.mkdir(parents=True, exist_ok=True)
+    with (receipt_root / '.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        if args.mode == 'rollback':
+            if len(args.arguments) != 1: raise ValueError('rollback requires the apply receipt path')
+            rollback(root, args.arguments[0]); return
+        if args.mode == 'apply':
+            install(root, args.payload.read_text(), receipt_root); return
+        # Execution verifies that the payload is already applied, without rewriting it.
+        spec = json.loads(zlib.decompress(base64.b64decode(args.payload.read_text())))
+        for name, row in spec['files'].items():
+            if sha((root / name).read_bytes()) != row['sha256']:
+                raise ValueError('Run apply first; checkout source differs: ' + name)
+        for name, replacements in spec['functions'].items():
+            text = (root / name).read_text()
+            nodes = {n.name: n for n in ast.parse(text).body if isinstance(n, ast.FunctionDef)}
+            if any(k not in nodes or ast.get_source_segment(text, nodes[k]).strip() != v.strip() for k, v in replacements.items()):
+                raise ValueError('Applied MAIN function differs; run apply first: ' + name)
+        sys.path.insert(0, str(root / '02_BACKEND'))
+        if args.mode in {'all', 'build'}:
+            if not args.arguments: raise ValueError('Supply a run ID; reuse it only for the same pinned inputs')
+            chosen, _ = profile(root)
+            command = [sys.executable, '-B', str(root / '06_TOOLS/pipeline.py')]
+            if args.mode == 'all':
+                command += ['build-all', '--execute']
+            else:
+                command += ['document-release', 'build']
+            command += ['--run-id', args.arguments[0], '--reference-model-profile', str(chosen), *args.arguments[1:]]
+            raise SystemExit(subprocess.call(command, cwd=root))
+        from lawrag.pipeline import reference_resolution as resolution
+        from lawrag.pipeline.term_serving_bundle import verify_assets
+        from lawrag.platform.workspace import load_layout
+        from lawrag.core.llm import load_env
+        load_env()
+        selected = generation(root, args.arguments[0] if args.arguments else None)
+        runtime = load_layout(root).inspection_path('runtime', layout_version='v2')
+        manifest = json.loads((selected / 'manifest.json').read_text())
+        key = sha((selected / 'manifest.json').read_bytes())[:16] + '-' + sha(Path(resolution.__file__).read_bytes())[:10]
+        work = runtime / 'REFERENCE' / key; state = work / 'review'
+        if args.mode == 'status':
+            print(json.dumps(resolution.inspect(state), ensure_ascii=False, indent=2)); return
+        chosen, _ = profile(root)
+        result = resolution.advance(selected, state, chosen)
+        write_json(work / 'stage-result.json', result)
+        if not result['completed']:
+            print(json.dumps(result, ensure_ascii=False, indent=2)); raise SystemExit(3)
+        output = work / 'candidate/generation'
+        if not output.exists():
+            applied = resolution.apply(state, selected, output)
+            write_json(work / 'apply-result.json', applied)
+        verified = verify_assets(output)
+        write_json(work / 'RUN_RECEIPT.json', {'patch': PATCH, 'code_root': str(root),
+                   'input_generation': str(selected), 'input_generation_manifest_sha256': sha((selected/'manifest.json').read_bytes()),
+                   'output_generation': str(output), 'output_manifest_sha256': verified['manifest_sha256'],
+                   'model_profile_sha256': sha(chosen.read_bytes()), 'approval_mode': 'automatic',
+                   'activated': False, 'code_serving_revision': None})
+        print('CANDIDATE_VERIFIED generation=' + str(output) + '; CURRENT and code-serving revision were not changed')
+
+
+if __name__ == '__main__':
+    main()
+
+REFERENCE_INSTALLER
+"$REFERENCE_PYTHON" - "$REFERENCE_TEMP" <<'REFERENCE_VERIFY'
+import hashlib,sys
+from pathlib import Path
+folder=Path(sys.argv[1])
+for name,expected in [('payload.b64','879e3dd56cbd1c0b7132427f22fa88c5c4f1ab187948e772c153a47a59b8f96e'),('apply.py','3ad6bed91e88f63d919aaaa807030658e64eba5578984a629bc201e1eb229cf6')]:
+    raw=(folder/name).read_bytes().rstrip(b'\n') if name=='payload.b64' else (folder/name).read_bytes()
+    if name=='apply.py': raw=raw.rstrip(b'\n')+b'\n'
+    if hashlib.sha256(raw).hexdigest()!=expected: raise SystemExit('Embedded TXT hash mismatch: '+name)
+print('EMBEDDED_CODE_HASH_PASS')
+REFERENCE_VERIFY
+REFERENCE_MODE="${1:-apply}"
+if [[ $# -gt 0 ]]; then shift; fi
+"$REFERENCE_PYTHON" -B "$REFERENCE_TEMP/apply.py" --root "$REFERENCE_ROOT" --payload "$REFERENCE_TEMP/payload.b64" "$REFERENCE_MODE" "$@"

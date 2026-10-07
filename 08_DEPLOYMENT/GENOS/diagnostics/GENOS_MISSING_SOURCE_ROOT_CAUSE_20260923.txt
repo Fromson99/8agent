@@ -1,0 +1,261 @@
+#!/usr/bin/env python3
+"""GENOS NFS 요청 기록에서 문서 미발견 원인을 단계별로 좁힌다.
+
+GENOS 코드스페이스에서 실행 (Python 3.10+, 표준 라이브러리만 사용):
+  python3 GENOS_MISSING_SOURCE_ROOT_CAUSE_20260923.txt
+  python3 GENOS_MISSING_SOURCE_ROOT_CAUSE_20260923.txt --run-id <A응답의 run_id>
+  python3 GENOS_MISSING_SOURCE_ROOT_CAUSE_20260923.txt --request-id <A응답의 request_id>
+  python3 GENOS_MISSING_SOURCE_ROOT_CAUSE_20260923.txt --generation <코드서빙 GENOS_GENERATION>
+
+기본 대상 제목: 무보증사채 수요예측 모범규준, 기대 팀: financial_team.
+다른 대상을 검사할 때는 --title, --expected-team을 명시한다.
+읽기 전용이다. NFS 보고서와 정확히 결속된 store.sqlite만 읽는다.
+모델 호출, 파일 수정, 네트워크 전송은 하지 않는다.
+질문/원문/프롬프트/모델 답변/키는 출력하지 않는다.
+원본 요청 보고서 JSON은 내부 내용이 있으므로 외부 메일로 보내지 않는다.
+"""
+from __future__ import annotations
+
+import argparse
+from collections import Counter
+import hashlib
+import json
+from pathlib import Path
+import re
+import sqlite3
+import sys
+import unicodedata
+
+
+DEFAULT_REPORTS = Path('/nfs-root/diamo/8-agent/rag-request-reports')
+DEFAULT_SHARED = Path('/nfs-root/diamo/8-agent')
+REPORT_SCHEMA = 'genos-request-report-v1'
+HEX32 = re.compile(r'[a-f0-9]{32}\Z')
+TEAM = re.compile(r'[A-Za-z0-9_-]+_team\Z')
+
+
+def normalized(value):
+    return re.sub(r'\s+', '', unicodedata.normalize('NFKC', str(value))).casefold()
+
+
+def digest(value):
+    return hashlib.sha256(str(value).encode('utf-8')).hexdigest()[:16]
+
+
+def safe_dict(value):
+    return value if isinstance(value, dict) else {}
+
+
+def safe_list(value):
+    return value if isinstance(value, list) else []
+
+
+def report_files(root):
+    if not root.is_dir():
+        raise ValueError('NFS 요청 보고서 디렉터리를 읽을 수 없습니다. 코드서빙 GENOS_SHARED_LOG_DIR와 공유 마운트를 확인하세요.')
+    return sorted((p for p in root.glob('*/*.json') if p.is_file() and not p.is_symlink()),
+                  key=lambda p: p.stat().st_mtime_ns, reverse=True)
+
+
+def choose_report(root, run_id, request_id):
+    if run_id and not HEX32.fullmatch(run_id):
+        raise ValueError('run_id는 32자리 소문자 16진수입니다.')
+    files = report_files(root)
+    for path in files:
+        if run_id and not path.name.startswith(run_id + '-'):
+            continue
+        report = json.loads(path.read_text(encoding='utf-8'))
+        if safe_dict(report).get('schema_version') != REPORT_SCHEMA:
+            continue
+        if request_id and report.get('request_id') != request_id:
+            continue
+        if not run_id and not request_id and report.get('api_type') not in ('LEGAL_AGENT', 'ELS_QUERY', 'RAG_ASK'):
+            continue
+        return path, report
+    raise ValueError('일치하는 요청 보고서가 없습니다. A 응답의 run_id/request_id 또는 NFS 로그 설정을 확인하세요.')
+
+
+def report_records(report, table):
+    journal = safe_dict(report.get('journal'))
+    for entry in safe_list(journal.get('timeline')):
+        for item in safe_list(safe_dict(entry).get('created_records')):
+            if safe_dict(item).get('table') == table:
+                record = safe_dict(item.get('record'))
+                if record:
+                    yield record
+    for record in safe_list(safe_dict(journal.get('state')).get(table)):
+        if isinstance(record, dict):
+            yield record
+
+
+def request_body(report):
+    request = safe_dict(report.get('request'))
+    nested = request.get('json')
+    return nested if isinstance(nested, dict) else request
+
+
+def result_body(report):
+    return safe_dict(safe_dict(report.get('result')).get('body'))
+
+
+def memberships(raw):
+    metadata = safe_dict(safe_dict(json.loads(raw or '{}')).get('document_metadata'))
+    locations = [metadata] + safe_list(metadata.get('aliases'))
+    return {item['team'] for item in locations if isinstance(item, dict)
+            and isinstance(item.get('team'), str) and TEAM.fullmatch(item['team'])}
+
+
+def find_generation(shared_root, generation_id, store_sha):
+    if not generation_id or not store_sha or not shared_root.is_dir():
+        return []
+    found = []
+    for pattern in ('term-releases/*/*/generation/manifest.json', 'generations/*/manifest.json'):
+        for manifest_path in shared_root.glob(pattern):
+            if manifest_path.is_symlink() or not manifest_path.is_file():
+                continue
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+            except (OSError, ValueError):
+                continue
+            if manifest.get('generation_id') == generation_id and manifest.get('store_sha256') == store_sha:
+                found.append(manifest_path.parent)
+    return sorted(set(found))
+
+
+def inspect_generation(path, generation_id, store_sha, title, effective_team):
+    if path.is_symlink() or not path.is_dir():
+        raise ValueError('세대 경로가 디렉터리가 아니거나 심볼릭 링크입니다.')
+    manifest = json.loads((path / 'manifest.json').read_text(encoding='utf-8'))
+    if manifest.get('schema_version') != 'term-source-generation-v1':
+        raise ValueError('지원하지 않는 generation manifest입니다.')
+    id_match = manifest.get('generation_id') == generation_id if generation_id else None
+    sha_match = manifest.get('store_sha256') == store_sha if store_sha else None
+    store = path / 'store.sqlite'
+    if store.is_symlink() or not store.is_file():
+        raise ValueError('세대 store.sqlite를 읽을 수 없습니다.')
+    uri = store.resolve().as_uri() + '?mode=ro'
+    with sqlite3.connect(uri, uri=True, timeout=3) as db:
+        db.execute('PRAGMA query_only=ON')
+        rows = db.execute('SELECT document_id,name,json FROM document').fetchall()
+    title_key = normalized(title)
+    matches = [(did, teams) for did, name, raw in rows
+               if title_key in normalized(name)
+               for teams in [memberships(raw)]]
+    team_counts = Counter(team for _, _, raw in rows for team in memberships(raw))
+    return {
+        'generation_path': str(path),
+        'generation_id_matches_request': id_match,
+        'store_sha256_matches_request': sha_match,
+        'document_count': len(rows),
+        'team_document_counts': dict(sorted(team_counts.items())),
+        'title_match_count_all': len(matches),
+        'title_match_count_effective_team': sum(effective_team in teams for _, teams in matches) if effective_team else None,
+        'title_match_count_unassigned': sum(not teams for _, teams in matches),
+    }
+
+
+def analyze(report, title, expected_team, generation, shared_root):
+    request = request_body(report)
+    body = result_body(report)
+    query = safe_dict(body.get('query'))
+    answer = safe_dict(body.get('answer'))
+    selection = safe_dict(body.get('selection'))
+    retrieval = safe_dict(body.get('retrieval'))
+    bundle = safe_dict(safe_dict(safe_dict(body.get('assembly')).get('term_agent')).get('source_bundle'))
+    question = request.get('question') or request.get('q') or ''
+    effective_team = request.get('team_id')
+    generation_id = query.get('generation_id') or answer.get('generation_id')
+    store_sha = answer.get('source_store_sha256')
+    scope = safe_list(safe_dict(query.get('scope')).get('document_version_ids'))
+    attempts = list(report_records(report, 'model_attempt'))
+    observations = list(report_records(report, 'observation'))
+    evidence = list(report_records(report, 'evidence_unit'))
+    model_http = [safe_dict(row.get('response')).get('status_code') for row in attempts]
+    candidate_paths = find_generation(shared_root, generation_id, store_sha)
+    chosen = generation or (candidate_paths[0] if len(candidate_paths) == 1 else None)
+    catalogue = inspect_generation(chosen, generation_id, store_sha, title, effective_team) if chosen else None
+    findings = []
+    if report.get('api_type') not in ('LEGAL_AGENT', 'ELS_QUERY', 'RAG_ASK'):
+        findings.append('WRONG_REQUEST_TYPE: 이 보고서는 LEGAL_AGENT 질의가 아닙니다.')
+    if normalized(title) not in normalized(question):
+        findings.append('QUESTION_MISMATCH: 선택된 요청의 질문에 대상 제목이 없습니다. A의 run_id로 다시 선택하세요.')
+    if effective_team != expected_team:
+        findings.append('TEAM_MISMATCH: 코드서빙에 도달한 team_id가 기대 팀과 다릅니다. 워크플로우 TEAM_ID 우선 설정을 확인하세요.')
+    http_status = safe_dict(report.get('result')).get('status')
+    if isinstance(http_status, int) and http_status >= 400:
+        findings.append('CODE_SERVING_ERROR: 요청 자체가 실패했습니다. 코드서빙 오류 로그를 확인하세요.')
+    if any(isinstance(code, int) and code >= 400 for code in model_http):
+        findings.append('MODEL_REJECTED: 모델 호출이 실패했습니다. 기존 02_model_rejection.py로 오류 type/code/param을 확인하세요.')
+    if not generation_id or not store_sha:
+        findings.append('GENERATION_UNVERIFIED: 응답에 세대 ID 또는 store SHA가 없어 실제 서빙 세대 결속을 확인할 수 없습니다.')
+    if catalogue is None:
+        findings.append('GENERATION_NOT_VISIBLE: 요청과 해시가 일치하는 NFS 세대를 하나로 정하지 못했습니다. --generation에 코드서빙 GENOS_GENERATION을 지정하세요.')
+    else:
+        if not generation_id or not store_sha:
+            pass  # A supplied path alone does not prove this was the serving generation.
+        elif catalogue['generation_id_matches_request'] is False or catalogue['store_sha256_matches_request'] is False:
+            findings.append('GENERATION_MISMATCH: 지정한 세대가 요청의 세대/해시와 다릅니다. 이 목록으로 원인을 단정하지 마세요.')
+        elif catalogue['title_match_count_all'] == 0:
+            findings.append('TITLE_ABSENT_FROM_GENERATION: 대상 제목이 실제 서빙 세대의 document 목록에 없습니다. RAW 보유와 서빙 색인은 별개입니다.')
+        elif effective_team and catalogue['title_match_count_effective_team'] == 0:
+            findings.append('TITLE_OUTSIDE_TEAM: 문서는 세대에 있지만 요청 팀에는 배정되지 않았습니다.')
+        elif not evidence:
+            findings.append('SOURCE_NOT_READ: 대상 제목은 요청 팀의 세대에 있으나 이번 실행에 원문 evidence가 기록되지 않았습니다. 도구 선택/검색 journal을 확인하세요.')
+        elif not safe_list(answer.get('claims')):
+            findings.append('EVIDENCE_WITHOUT_CLAIMS: 원문은 읽었지만 근거 주장으로 연결되지 않았습니다. 선택/게시 journal을 확인하세요.')
+    if not findings:
+        findings.append('NO_DECISIVE_FAILURE: 기본 결속 검사는 통과했습니다. 03_agent_flow.py로 단계별 선택을 확인하세요.')
+    return {
+        'api_type': report.get('api_type'), 'http_status': http_status,
+        'journal_status': safe_dict(report.get('journal')).get('status'),
+        'request_team_id': effective_team, 'expected_team_id': expected_team,
+        'question_chars': len(str(question)), 'question_sha256_prefix': digest(question),
+        'question_contains_target_title': normalized(title) in normalized(question),
+        'request_generation_id': generation_id,
+        'request_store_sha256_prefix': str(store_sha)[:16] if store_sha else None,
+        'request_scope_document_count': len(scope),
+        'retrieval_candidate_count': len(safe_list(retrieval.get('candidates'))),
+        'selected_count': len(safe_list(selection.get('selected'))),
+        'source_text_evidence_count': len(evidence),
+        'source_bundle_status': bundle.get('status'),
+        'model_attempt_count': len(attempts), 'model_http_statuses': model_http,
+        'tool_observation_counts': dict(sorted(Counter(
+            f"{row.get('tool') if re.fullmatch(r'[A-Za-z0-9_.-]{1,60}', str(row.get('tool'))) else 'OTHER'}:"
+            f"{row.get('status') if re.fullmatch(r'[A-Za-z0-9_.-]{1,40}', str(row.get('status'))) else 'OTHER'}"
+            for row in observations).items())),
+        'answer_chars': len(str(answer.get('text') or '')),
+        'claim_count': len(safe_list(answer.get('claims'))),
+        'unresolved_count': len(safe_list(answer.get('unresolved'))),
+        'matching_nfs_generation_count': len(candidate_paths),
+        'generation_catalogue': catalogue,
+        'findings': findings,
+        'note': 'answer_chars>0/HTTP 200만으로 근거 답변 성공을 판정하지 않습니다. 이 출력은 현장 기록의 진단이며 원본 질문·원문은 출력하지 않습니다.',
+    }
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--root', type=Path, default=DEFAULT_REPORTS)
+    parser.add_argument('--shared-root', type=Path, default=DEFAULT_SHARED)
+    parser.add_argument('--generation', type=Path, help='코드서빙 GENOS_GENERATION의 정확한 generation 디렉터리')
+    parser.add_argument('--run-id', help='A 응답의 32자리 run_id')
+    parser.add_argument('--request-id', help='A 응답의 request_id')
+    parser.add_argument('--title', default='무보증사채 수요예측 모범규준')
+    parser.add_argument('--expected-team', default='financial_team')
+    args = parser.parse_args()
+    if not args.title.strip() or not TEAM.fullmatch(args.expected_team):
+        parser.error('제목과 <이름>_team 형식의 기대 팀이 필요합니다.')
+    try:
+        path, report = choose_report(args.root, args.run_id, args.request_id)
+        result = {'report_file': str(path), 'request_id': report.get('request_id'),
+                  'run_id': report.get('run_id'),
+                  **analyze(report, args.title, args.expected_team, args.generation, args.shared_root)}
+        print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+    except (OSError, ValueError, sqlite3.Error, TypeError, KeyError) as exc:
+        print(json.dumps({'diagnostic_error': type(exc).__name__, 'message': str(exc)}, ensure_ascii=False), file=sys.stderr)
+        return 2
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

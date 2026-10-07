@@ -1,0 +1,169 @@
+{
+  "baseline_code_root": "/home/jin/8-AGENT/09_ARTIFACTS/DELIVERIES/rag_control_flow_20261006_r3",
+  "candidate_code_root": "/home/jin/8-AGENT/09_ARTIFACTS/DELIVERIES/investigation_logging_20261006_r2",
+  "same_failed_test_ids": true,
+  "new_failures": 0,
+  "tests": [
+    {
+      "test": "05_TESTS.CONTRACTS.test_unified_legal_agent::test_v6_still_rejects_fabricated_quote_without_semantic_judge",
+      "candidate_failure": [
+        "E   assert (422 == 422 and 'fabricated source quote' in '{\"detail\":\"unsupported claim[0]: quote must be an exact nonempty substring of the offered original article:bbb3b79da72c6250f25c3377; factual context cannot be quoted as legislation\"}')",
+        "E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code",
+        "E    +  and   '{\"detail\":\"unsupported claim[0]: quote must be an exact nonempty substring of the offered original article:bbb3b79da72c6250f25c3377; factual context cannot be quoted as legislation\"}' = <Response [422 Unprocessable Entity]>.text"
+      ],
+      "baseline_failure": [
+        "E   assert (422 == 422 and 'fabricated source quote' in '{\"detail\":\"unsupported claim[0]: quote must be an exact nonempty substring of the offered original article:bbb3b79da72c6250f25c3377; factual context cannot be quoted as legislation\"}')",
+        "E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code",
+        "E    +  and   '{\"detail\":\"unsupported claim[0]: quote must be an exact nonempty substring of the offered original article:bbb3b79da72c6250f25c3377; factual context cannot be quoted as legislation\"}' = <Response [422 Unprocessable Entity]>.text"
+      ]
+    },
+    {
+      "test": "05_TESTS.CONTRACTS.test_unified_legal_agent::test_u01_u02_full_question_correction_restore_confirmation_two_wikis_new_session",
+      "candidate_failure": [
+        "E   AssertionError: assert ('legal-agent-...t-response-v1' == 'legal-agent-...d-response-v1'",
+        "E     ",
+        "E     - legal-agent-unified-response-v1"
+      ],
+      "baseline_failure": [
+        "E   AssertionError: assert ('legal-agent-...t-response-v1' == 'legal-agent-...d-response-v1'",
+        "E     ",
+        "E     - legal-agent-unified-response-v1"
+      ]
+    },
+    {
+      "test": "05_TESTS.CONTRACTS.test_unified_legal_agent::test_u05_presentation_keeps_confirmed_judgment",
+      "candidate_failure": [
+        "E   AssertionError: {\"detail\":\"AD_REQUIRED: [AD모드 시작]을 단독 입력하세요.\"}",
+        "E   assert 403 == 200",
+        "E    +  where 403 = <Response [403 Forbidden]>.status_code"
+      ],
+      "baseline_failure": [
+        "E   AssertionError: {\"detail\":\"AD_REQUIRED: [AD모드 시작]을 단독 입력하세요.\"}",
+        "E   assert 403 == 200",
+        "E    +  where 403 = <Response [403 Forbidden]>.status_code"
+      ]
+    },
+    {
+      "test": "05_TESTS.CONTRACTS.test_unified_legal_agent::test_u09_owner_scope_and_u14_request_dedup",
+      "candidate_failure": [
+        "E   AssertionError: assert 403 == 422",
+        "E    +  where 403 = <Response [403 Forbidden]>.status_code",
+        "E    +    where <Response [403 Forbidden]> = post('/v1/rag/memory/query', json={'query_kind': 'experience', 'experience_id': 'K883e22c3ee4b2e38a9a324cd'})"
+      ],
+      "baseline_failure": [
+        "E   AssertionError: assert 403 == 422",
+        "E    +  where 403 = <Response [403 Forbidden]>.status_code",
+        "E    +    where <Response [403 Forbidden]> = post('/v1/rag/memory/query', json={'query_kind': 'experience', 'experience_id': 'Kfdd412444c60e3da786dfd68'})"
+      ]
+    },
+    {
+      "test": "05_TESTS.CONTRACTS.test_unified_legal_agent::test_u04_relink_reassesses_current_case_and_preserves_source_experience",
+      "candidate_failure": [
+        "E   AssertionError: {\"code\":\"MODEL_PROPOSAL_INVALID\",\"run_id\":\"1bba1bbee78241e1b84a68f7fe1d2a11\",\"detail\":\"structured model output invalid after bounded repair\"}",
+        "E   assert 502 == 200",
+        "E    +  where 502 = <Response [502 Bad Gateway]>.status_code"
+      ],
+      "baseline_failure": [
+        "E   AssertionError: {\"code\":\"MODEL_PROPOSAL_INVALID\",\"run_id\":\"3175c90a18c743c4823e1436e917fb82\",\"detail\":\"structured model output invalid after bounded repair\"}",
+        "E   assert 502 == 200",
+        "E    +  where 502 = <Response [502 Bad Gateway]>.status_code"
+      ]
+    },
+    {
+      "test": "05_TESTS.CONTRACTS.test_unified_legal_agent::test_u06_failed_correction_resumes_same_request_without_second_correction",
+      "candidate_failure": [
+        "E   sqlite3.OperationalError: no such table: goal"
+      ],
+      "baseline_failure": [
+        "E   sqlite3.OperationalError: no such table: goal"
+      ]
+    },
+    {
+      "test": "05_TESTS.CONTRACTS.test_unified_legal_agent::test_u07_wiki_failure_retains_authority_and_rebuilds",
+      "candidate_failure": [
+        "E   AssertionError: {\"detail\":\"AD_REQUIRED: [AD모드 시작]을 단독 입력하세요.\"}",
+        "E   assert 403 == 200",
+        "E    +  where 403 = <Response [403 Forbidden]>.status_code"
+      ],
+      "baseline_failure": [
+        "E   AssertionError: {\"detail\":\"AD_REQUIRED: [AD모드 시작]을 단독 입력하세요.\"}",
+        "E   assert 403 == 200",
+        "E    +  where 403 = <Response [403 Forbidden]>.status_code"
+      ]
+    },
+    {
+      "test": "05_TESTS.CONTRACTS.test_unified_legal_agent::test_u08_late_model_output_cannot_overwrite_new_revision",
+      "candidate_failure": [
+        "E   assert (502 == 409)",
+        "E    +  where 502 = <Response [502 Bad Gateway]>.status_code"
+      ],
+      "baseline_failure": [
+        "E   assert (502 == 409)",
+        "E    +  where 502 = <Response [502 Bad Gateway]>.status_code"
+      ]
+    },
+    {
+      "test": "05_TESTS.CONTRACTS.test_unified_legal_agent::test_u09_revoked_document_scope_hides_history_and_experience",
+      "candidate_failure": [
+        "E   AssertionError: assert 403 == 422",
+        "E    +  where 403 = <Response [403 Forbidden]>.status_code",
+        "E    +    where <Response [403 Forbidden]> = post('/v1/rag/memory/query', json={'query_kind': 'history', 'question_id': 'G8449e1c6a40a49d2b01c00c9d068ab7e'})"
+      ],
+      "baseline_failure": [
+        "E   AssertionError: assert 403 == 422",
+        "E    +  where 403 = <Response [403 Forbidden]>.status_code",
+        "E    +    where <Response [403 Forbidden]> = post('/v1/rag/memory/query', json={'query_kind': 'history', 'question_id': 'G1101fa8a67fa4a8cb5361791453bf701'})"
+      ]
+    },
+    {
+      "test": "05_TESTS.CONTRACTS.test_unified_legal_agent::test_u10_policy_drift_blocks_exact_reuse",
+      "candidate_failure": [
+        "E   AssertionError: assert 403 == 422",
+        "E    +  where 403 = <Response [403 Forbidden]>.status_code",
+        "E    +    where <Response [403 Forbidden]> = post('/v1/rag/memory/query', json={'query_kind': 'experience', 'experience_id': 'K513c206de077fcca769efb0c'})"
+      ],
+      "baseline_failure": [
+        "E   AssertionError: assert 403 == 422",
+        "E    +  where 403 = <Response [403 Forbidden]>.status_code",
+        "E    +    where <Response [403 Forbidden]> = post('/v1/rag/memory/query', json={'query_kind': 'experience', 'experience_id': 'K1a2e4441614b383c39d48448'})"
+      ]
+    },
+    {
+      "test": "05_TESTS.CONTRACTS.test_unified_legal_agent::test_u12_additional_originals_reenter_existing_source_tools",
+      "candidate_failure": [
+        "E   AssertionError: assert (1 == 2)",
+        "E    +  where 1 = <built-in method count of list object at 0x78c6e8262640>('RECALL')",
+        "E    +    where <built-in method count of list object at 0x78c6e8262640> = ['INTENT', 'PLAN', 'RECALL', 'READ', 'SELECT', 'ASSESS', ...].count"
+      ],
+      "baseline_failure": [
+        "E   AssertionError: assert (1 == 2)",
+        "E    +  where 1 = <built-in method count of list object at 0x7fb055726bc0>('RECALL')",
+        "E    +    where <built-in method count of list object at 0x7fb055726bc0> = ['INTENT', 'PLAN', 'RECALL', 'READ', 'SELECT', 'ASSESS', ...].count"
+      ]
+    },
+    {
+      "test": "05_TESTS.CONTRACTS.test_unified_legal_agent::test_u13_unoffered_domain_choice_blocks_execution_and_publication",
+      "candidate_failure": [
+        "E   assert 200 == 502",
+        "E    +  where 200 = <Response [200 OK]>.status_code"
+      ],
+      "baseline_failure": [
+        "E   assert 200 == 502",
+        "E    +  where 200 = <Response [200 OK]>.status_code"
+      ]
+    },
+    {
+      "test": "05_TESTS.CONTRACTS.test_unified_legal_agent::test_u01_source_scope_correction_recorrection_restores_original_event",
+      "candidate_failure": [
+        "E   AssertionError: {\"detail\":\"AD_REQUIRED: [AD모드 시작]을 단독 입력하세요.\"}",
+        "E   assert 403 == 200",
+        "E    +  where 403 = <Response [403 Forbidden]>.status_code"
+      ],
+      "baseline_failure": [
+        "E   AssertionError: {\"detail\":\"AD_REQUIRED: [AD모드 시작]을 단독 입력하세요.\"}",
+        "E   assert 403 == 200",
+        "E    +  where 403 = <Response [403 Forbidden]>.status_code"
+      ]
+    }
+  ]
+}

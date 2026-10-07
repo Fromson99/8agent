@@ -1,0 +1,37 @@
+{
+  "patch": "reference-main-20260929-r1",
+  "files": {
+    "02_BACKEND/lawrag/pipeline/reference_resolution.py": {
+      "sha256": "bb37e61081c3fd6cafb6654029fcb94a52285f1214294b06d36a0deb89f992d1",
+      "bytes": 30151
+    },
+    "02_BACKEND/semantic_runtime/reference_resolution_repository.py": {
+      "sha256": "dac43c4bfe88ea929f361725cfbcb67d154fc371ccc4addeb473d1a8bc5af0bc",
+      "bytes": 18226
+    },
+    "02_BACKEND/semantic_runtime/reference_resolution_protocol.py": {
+      "sha256": "3d8a6baa411b28f15c5d7e30e4b33db2eaea054a65d0263fb27fa943a7c56fa2",
+      "bytes": 2132
+    },
+    "00_SYSTEM/SCHEMAS/reference-resolution-v1.schema.json": {
+      "sha256": "ba74d27d1863590bf368e082f2d46fe1091b53ee43dd1077cc5f855af00d2e14",
+      "bytes": 2570
+    },
+    "06_TOOLS/COMMANDS/composed_build.py": {
+      "sha256": "2f0d26ea8cc72839eab54a71d4bb1c6ec4a37ed66241e271b8409fafe2e1df19",
+      "bytes": 6271
+    }
+  },
+  "functions": {
+    "02_BACKEND/lawrag/pipeline/document_release.py": [
+      "build",
+      "main",
+      "recorded_status",
+      "verify_release",
+      "_copy_reference_audit",
+      "_verify_navigation_audit"
+    ]
+  },
+  "reference_targets": "def reference_targets(reference):\n    \"\"\"Return per-target extents, with a lossless v4 path and a v2/v3 fallback.\"\"\"\n    if isinstance(reference.get('targets'), list):\n        return [dict(target) for target in reference['targets']]\n    return [{'source_id': source_id,\n             'unit_id': reference.get('target_unit_id'),\n             'unit_path': reference.get('target_unit_path', []),\n             'block_ids': reference.get('target_block_ids', []),\n             'target_level': reference.get('target_level') or 'article'}\n            for source_id in reference.get('target_source_ids', [])]",
+  "pipeline_route": "if __name__ == '__main__' and sys.argv[1:2] == ['reference-resolution']:\n    sys.path.insert(0, str(root / '02_BACKEND'))\n    from lawrag.pipeline.reference_resolution import main\n    raise SystemExit(main(sys.argv[2:]))"
+}

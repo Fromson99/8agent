@@ -1,0 +1,55 @@
+{
+  "format": "8agent-thinking-log-patch/2",
+  "patch": "thinking-log-20260928-r2",
+  "baseline": "Exact byte variants; cumulative R1 metadata plus live log and summary visibility; current wire projection and team logs preserved",
+  "files": {
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py": {
+      "base_sha256": "6d851380e424e11517f11c96a8c79b1ba261dc5464bbf3efadefb57df93cf006",
+      "new_sha256": "6d851380e424e11517f11c96a8c79b1ba261dc5464bbf3efadefb57df93cf006",
+      "variants": [
+        {
+          "base_sha256": "32fd62cc09168f8a9cda7dc1167e88a016bae19eb360fb5d868f33ed2f637e79",
+          "new_sha256": "7d6459b81bce476a1d9abcd1119eec53d87629ea130f314b94edd29fe9009d9f",
+          "payload_path": "variants/32fd62cc09168f8a9cda7dc1167e88a016bae19eb360fb5d868f33ed2f637e79/02_BACKEND/semantic_runtime/legal_agent/gateway.py"
+        },
+        {
+          "base_sha256": "7d6459b81bce476a1d9abcd1119eec53d87629ea130f314b94edd29fe9009d9f",
+          "new_sha256": "7d6459b81bce476a1d9abcd1119eec53d87629ea130f314b94edd29fe9009d9f",
+          "payload_path": "variants/7d6459b81bce476a1d9abcd1119eec53d87629ea130f314b94edd29fe9009d9f/02_BACKEND/semantic_runtime/legal_agent/gateway.py"
+        }
+      ]
+    },
+    "02_BACKEND/semantic_runtime/observability.py": {
+      "base_sha256": "b0b2e6f5787b30eb2db7afcdb7317b03840701ded6c9cb342903670313a9ba47",
+      "new_sha256": "b0b2e6f5787b30eb2db7afcdb7317b03840701ded6c9cb342903670313a9ba47",
+      "variants": [
+        {
+          "base_sha256": "cb65cc2eaa0097e4dabdcbf7bd36e3dcaa3a2fb82f74c36fce0ac39dcbc30c72",
+          "new_sha256": "b0b2e6f5787b30eb2db7afcdb7317b03840701ded6c9cb342903670313a9ba47",
+          "payload_path": "variants/cb65cc2eaa0097e4dabdcbf7bd36e3dcaa3a2fb82f74c36fce0ac39dcbc30c72/02_BACKEND/semantic_runtime/observability.py"
+        }
+      ]
+    },
+    "02_BACKEND/semantic_runtime/request_report.py": {
+      "base_sha256": "17f2e0a76284370b6af67ed8749e9e79942a13fb95e657d6cd9108c55d480bc3",
+      "new_sha256": "d044299aad24ff0a6be55f3d64251e9490da2e89e80019dd26781d3b385436ba",
+      "variants": [
+        {
+          "base_sha256": "ededae7d67df8bd5a23dd654484f1bea2ed83d2688bcb59d8434b416f18b3862",
+          "new_sha256": "1079ebbcc9eedb683d57c54bd225f67380d49a2a81a8c59ac25b444a9fd86383",
+          "payload_path": "variants/ededae7d67df8bd5a23dd654484f1bea2ed83d2688bcb59d8434b416f18b3862/02_BACKEND/semantic_runtime/request_report.py"
+        },
+        {
+          "base_sha256": "356e0e40c71b2d0bb9fa3672fc55c60af2881ae7b170d0a98519785f928d286a",
+          "new_sha256": "d50caead87c26f5fa0f62ff9f8ebc6a1ca199c1cf6676f0057626001c7658f22",
+          "payload_path": "variants/356e0e40c71b2d0bb9fa3672fc55c60af2881ae7b170d0a98519785f928d286a/02_BACKEND/semantic_runtime/request_report.py"
+        },
+        {
+          "base_sha256": "7a16d852bc268ef913230d31cde9464bf0d490a19a0e6dc4ceb30be8973bc7ff",
+          "new_sha256": "16e329f62c205bf5fb57c699b22ba2b67cfc4d0a35557abdad31042d79805602",
+          "payload_path": "variants/7a16d852bc268ef913230d31cde9464bf0d490a19a0e6dc4ceb30be8973bc7ff/02_BACKEND/semantic_runtime/request_report.py"
+        }
+      ]
+    }
+  }
+}

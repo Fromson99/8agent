@@ -1,0 +1,43 @@
+현재 상황 표시 수정 R1 — 기존 SSE 시작 수정 R1 위에 추가 적용합니다.
+고정 안내만 본문에 보냈던 전송 경로와 첫 요청의 진행 수집기 제거 문제를 수정했습니다.
+실제 단계 변경을 채팅 본문과 기존 Visible Reasoner 패널로 함께 보냅니다.
+예: 진행 · 관련 자료를 검색 중 / 진행 · 후보 원문을 열람 중 / 진행 · 답변 초안을 작성 중 · 내부 모델 대기
+대기가 길면 30초마다 마지막 확인 단계와 요청 경과 시간을 표시합니다.
+단계 중복과 잦은 건수 변화는 줄이고, 패널 블록 80개 제한 뒤에도 본문 상태는 계속 표시합니다.
+원문/모델의 숨은 추론을 표시하지 않으며 최종 반환 답변과 근거/원장은 그대로 유지합니다.
+
+1. 기존 ~/DEV에 적용:
+   cd ~/DEV
+   bash TRANSFER/GENOS_CHAT_STATUS_20260928_R1_APPLY.txt
+TXT에 코드 ZIP 전체가 내장되어 있습니다. 별도 압축 해제 없이 실행합니다.
+사전 확인은 MODE=check를 붙입니다. 원본 백업과 처음부터 지속 로그를 남깁니다.
+이미 적용된 파일은 확인하며, 알 수 없는 기존 수정은 덮어쓰지 않습니다.
+
+2. 두 파일만 검토·commit:
+   git add -- 08_DEPLOYMENT/GENOS/stream_app.py 08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py
+   git diff --cached --check
+   git commit -m 'Show live legal-agent status in chat'
+적용 출력의 gate_zip을 같은 checkout의 genos_release_gate.py에 전달하여 기존 선택 generation을 검증합니다.
+통과한 commit을 push하고 새 코드서빙 리비전을 배포합니다. Run/Build 값은 유지합니다.
+
+3. 워크플로우 편집기를 별도로 교체:
+GENOS_CHAT_STATUS_20260928_R1_WORKFLOW_PASTE_ALL.txt 전체를 각 워크플로우 Python 단계에 붙여 넣고 저장·배포합니다.
+이 TXT는 Bash 실행 파일이 아니라 워크플로우 Python 전체 본문입니다.
+GENOS_RAG_PROGRESS_UI=socketio를 사용합니다. 기존 코드서빙 ID/인증/TEAM_ID/대기 설정을 유지합니다.
+Git push나 코드서빙 재배포만으로 이미 저장된 워크플로우 Python이 바뀌지는 않습니다.
+
+4. 워크플로우 테스트 확인:
+   {"question":"SSE_CHECK"}
+workflow_revision=chat-status-20260928-r1, stream_progress_revision=chat-status-20260928-r1을 확인합니다.
+기존 stream_startup_revision=sse-startup-20260928-r1도 유지됩니다.
+실제 채팅에서 최종 답변 전 검색/열람/모델 대기 상태가 본문에 추가되는지 확인합니다.
+워크플로우 테스트에는 채팅 socket ID가 없을 수 있습니다. 같은 실제 채팅 앱의 최신 워크플로우 선택도 확인합니다.
+
+원복:
+   MODE=rollback ROLLBACK_FROM='<BACKUP_READY 경로>' bash TRANSFER/GENOS_CHAT_STATUS_20260928_R1_APPLY.txt
+기존 Git commit/코드서빙 리비전과 이전 워크플로우 Python으로 각각 복귀합니다.
+추가 수정된 파일은 자동 덮어쓰지 않습니다. 데이터/generation/CURRENT/엔진 pin은 변경하지 않습니다.
+
+검증: 수정 전 본문 고정 문구·상태 누락과 첫 요청 SSE 이벤트 유실을 재현했습니다.
+관련 로컬 회귀 61개 통과. 실제 GENOS 채팅 표시 성공은 아직 미확인입니다.
+로컬 Python 3.14 실행 검사와 Python 3.11 문법 검사이며 현장 실제 3.11 실행은 별도입니다.

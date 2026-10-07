@@ -1,0 +1,13 @@
+def load_origin_projection(root,config,store):
+    """Select the pinned projection for this exact generation; other generations get none."""
+    bindings=[b for b in (config or {}).get('origin_projections',[]) if b.get('generation_id')==store.manifest['generation_id']]
+    if not bindings:return None
+    if len(bindings)!=1:raise ValueError('multiple origin projections for one generation')
+    base=Path(root).resolve();path=(base/bindings[0]['path']).resolve();path.relative_to(base)
+    from .navigation_agent import _verified_json
+    try:value=_verified_json(path,bindings[0]['sha256'])
+    except ValueError as exc:raise ValueError('origin projection hash mismatch') from exc
+    if value.get('schema_version')!='document-origin-projection-v1':raise ValueError('unsupported origin projection')
+    for k in ('generation_id','store_sha256'):
+        if value.get(k)!=store.manifest[k]:raise ValueError('stale origin projection')
+    return value

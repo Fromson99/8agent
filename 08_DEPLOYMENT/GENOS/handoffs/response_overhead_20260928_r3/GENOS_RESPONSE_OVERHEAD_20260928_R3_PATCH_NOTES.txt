@@ -1,0 +1,43 @@
+GENOS 응답 준비·로그 비용 패치 R3 — 현장 fulltext 진단 조합 누락 수정
+
+R2 현장 오류를 원본 SHA/크기/함수 서명까지 동일하게 재현했습니다.
+request_report.py: febd2ee7639102e4c376ccbb7ea98dec7a4b0dbd8ded86d32dfc7956c1d18b40
+크기: 44082 bytes
+_LiveLog.emit AST: 4a00a4ad8dd1f9e2e0c9c7e772dd1edb91200703ee467fec8e5d3d579d817bd4
+thinking R3 뒤 적용된 fulltext diagnostics R1 표시 구문이 R2 함수 목록에 빠졌습니다.
+R3는 그 구문과 같은 fulltext 파생 조합을 검증한 비동기 로그 함수로 연결합니다.
+R1/R2 모두 사진의 실행은 코드 백업·쓰기 전 중단했습니다. 해당 실행의 원복은 불필요합니다.
+이전 R1/R2 대신 이번 R3 ZIP/TXT를 함께 사용합니다. 이전 전달본은 이력으로 보존합니다.
+
+이전 같은 장애의 thinking 로그 R3·팀 로그 R3 수정 방식을 반영했습니다.
+request_report.py 전체 해시 목록 대신 필요한 함수 10개의 검증한 구문만 확인·수정하고
+비동기 초기화/질문 기록 메서드 2개를 연결합니다. 다른 함수, thinking R3 표시,
+fulltext 진단, 팀별 plain 로그·XLSX·CSV 및 현장 추가 바이트는 보존합니다.
+팀 R3와 같은 canonical AST JSON 서명으로 Python 3.11/3.14의 ast.dump 차이를 피합니다.
+fulltext 표시 함수·필드·thinking R3 표시와 다른 함수의 바이트를 보존합니다.
+다른 실행 파일 8개의 기존 바이트 승인 목록은 R1/R2와 같습니다. 새 성능 변경은 없습니다.
+구형 동기 _LiveLog 판에는 기존 AsyncHandler writer를 연결해 질문 기록/닫기 누락을 고칩니다.
+CRLF가 있는 현장 파일도 기존 R3와 같은 Git 공백 검사 옵션으로 바이트를 보존합니다.
+
+같은 폴더에 ZIP과 TXT를 놓고 기존 ~/DEV에 적용:
+  bash GENOS_RESPONSE_OVERHEAD_20260928_R3_APPLY.txt
+코드 쓰기 전 검사만 필요하면 MODE=check bash 같은_TXT를 사용합니다.
+
+Python 3.11 이상. 새 의존성·환경변수 변경·데이터 재구축·워크플로우 교체 없음.
+~/DEV 링크를 실제 Git root로 해석합니다. 첫 단계부터 /tmp 지속 로그를 남깁니다.
+INPUT_CHECK: 현장 파일 SHA/크기. STRUCTURAL_CHECK_PASS: 함수 계약 및 before/after SHA.
+모든 기존 소스/엔진/스키마 등록 pin이 실제 바이트와 맞아야 쓰기 전에 통과합니다.
+BACKUP_READY -> APPLIED. 재실행은 ALREADY_APPLIED. 중간 쓰기 실패는 자동 원복합니다.
+호환되지 않는 함수 목록과 실제 해시를 출력하며 기존 파일을 임의 덮어쓰지 않습니다.
+
+적용 diff 검토·commit 후 기존 선택 세대의 정확한 절대 경로로:
+  MODE=verify GENOS_GENERATION='/실제/선택/generation' bash GENOS_RESPONSE_OVERHEAD_20260928_R3_APPLY.txt
+실제 적용 ZIP/커밋 바이트 비교 -> 같은 checkout의 generation E2E/verify_assets -> 영수증.
+검증한 commit push -> 새 GENOS 코드서빙 리비전 배포 -> 워크플로우 테스트에서 질문.
+코드 적용·Git push·리비전 배포·질문 성공은 각각 별도 상태입니다.
+실행 코드 표식은 그대로 observability_revision=response-overhead-20260928-r1입니다.
+실제 현장 적용·선택 generation/hash·commit/revision·속도는 현장 확인 전까지 미확인입니다.
+
+원복:
+  MODE=rollback ROLLBACK_FROM='/BACKUP_READY/경로' bash GENOS_RESPONSE_OVERHEAD_20260928_R3_APPLY.txt
+이후 편집이 있으면 원복을 거부합니다. 서빙은 이전 검증 리비전으로 별도 복귀합니다.

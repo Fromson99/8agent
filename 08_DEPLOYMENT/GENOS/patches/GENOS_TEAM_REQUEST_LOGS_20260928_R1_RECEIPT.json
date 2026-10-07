@@ -1,0 +1,54 @@
+{
+  "patch": "team-request-logs-20260928-r1",
+  "package_zip": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/patches/GENOS_TEAM_REQUEST_LOGS_20260928_R1.zip",
+  "package_zip_sha256": "27e87a1959504e973ba3882b2d899e68688f6bb4e5619641162b76d87f51a81a",
+  "code_manifest_sha256": "bc9b5ee5652df9b616f1af728f54055989fb31647298f9b479779c75c91efa26",
+  "execution_txt": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/patches/GENOS_TEAM_REQUEST_LOGS_20260928_R1_APPLY.txt",
+  "execution_txt_sha256": "d3f7d37d6f18ed4ac81d2006b4b057ba71d6430dcfaa60bd5accc142084b8b16",
+  "runtime_code_root": "/home/jin/8-AGENT",
+  "push_checkout": null,
+  "deployment_commit": null,
+  "generation_path": null,
+  "generation_manifest_sha256": null,
+  "code_serving_revisions": {
+    "risk_team": null,
+    "financial_team": null
+  },
+  "email_sent": true,
+  "checks": {
+    "tests_passed": 72,
+    "bash_syntax": true,
+    "zip_inventory_hashes": true,
+    "javascript_excluded": true,
+    "embedded_txt_apply_rerun_commit_compare_rollback": "passed in isolated mock checkout",
+    "generation_e2e_environment": "mocked fixture only; GENOS unverified"
+  },
+  "runtime_files": {
+    "02_BACKEND/semantic_runtime/legal_agent/readable_log.py": "ffcde2abc1dbdf760edc38ba5fbe44f663c4682a3dd280124c4e47ddd0eae7d1",
+    "02_BACKEND/semantic_runtime/request_report.py": "c6559145758775df3f71f25fae2e94be6070131e0fe63b2d75e3548110486ef8",
+    "02_BACKEND/semantic_runtime/request_summary.py": "8851df80264431a79685cf499ba56fb16bb7293ef8003527bfc8433ed2956c8a"
+  },
+  "recipient": "hyungjininfocz.son@partner.samsung.com",
+  "message_id": "1a0e69514b0418f1",
+  "sent_at_utc": "2026-09-28T05:57:05.171310+00:00",
+  "sent_attachment_bytes_verified": true,
+  "transport_verification": "sender Gmail stored raw MIME decoded and compared byte size/SHA-256; recipient download unverified",
+  "attachments": {
+    "GENOS_TEAM_REQUEST_LOGS_20260928_R1.zip": {
+      "bytes": 33114,
+      "sha256": "27e87a1959504e973ba3882b2d899e68688f6bb4e5619641162b76d87f51a81a"
+    },
+    "GENOS_TEAM_REQUEST_LOGS_20260928_R1_APPLY.txt": {
+      "bytes": 49401,
+      "sha256": "d3f7d37d6f18ed4ac81d2006b4b057ba71d6430dcfaa60bd5accc142084b8b16"
+    },
+    "GENOS_TEAM_REQUEST_LOGS_20260928_R1_GUIDE.txt": {
+      "bytes": 5943,
+      "sha256": "cb7de92afc06fc0b8caf52ce1a6835b64007c26ad7905cb5b2eeb6dc32185211"
+    },
+    "GENOS_TEAM_REQUEST_LOGS_20260928_R1_SHA256SUMS.txt": {
+      "bytes": 330,
+      "sha256": "a508e38c0902f966c7771805363673d4dd63c0fe55b9aa1230ae4e5012e761cb"
+    }
+  }
+}

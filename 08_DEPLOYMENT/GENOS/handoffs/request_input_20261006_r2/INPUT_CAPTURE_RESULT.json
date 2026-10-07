@@ -1,0 +1,47 @@
+{
+  "environment": "local WSL; actual R2 package replica; synthetic data only",
+  "output_directory": "/tmp/genos-resolver-input-20261006/run-cwnhhy2q",
+  "request": "내규: 승인 절차 알려줘",
+  "results": [
+    {
+      "case": "v3-empty-memory",
+      "legal_wiki_count": 0,
+      "model_document_count": 0,
+      "server_authorized_document_count": 3,
+      "input_bytes_without_journal_metadata": 7367,
+      "captured_phase": "memory-resolve",
+      "model_calls": 0
+    },
+    {
+      "case": "v4-empty-wiki",
+      "legal_wiki_count": 0,
+      "model_document_count": 0,
+      "server_authorized_document_count": 3,
+      "input_bytes_without_journal_metadata": 7367,
+      "captured_phase": "memory-resolve",
+      "model_calls": 0
+    },
+    {
+      "case": "v4-synthetic-wiki-page",
+      "legal_wiki_count": 1,
+      "model_document_count": 0,
+      "server_authorized_document_count": 3,
+      "input_bytes_without_journal_metadata": 7550,
+      "captured_phase": "memory-resolve",
+      "model_calls": 0
+    }
+  ],
+  "route_question": [
+    "승인 절차 알려줘",
+    "internal"
+  ],
+  "list_request_is_separate_system_route": true,
+  "code_sha256": {
+    "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py": "ce8b7cbf6d206e494ff348618a87f506e13beb6b61f028eb305d7000819c8ffb",
+    "02_BACKEND/semantic_runtime/legal_agent/case_repository.py": "01f45df99b48b2131de24b465e65a784bb8674d46ef1171a0b738ae682ba0e25",
+    "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py": "6e5bc65bdd79650811fbed9b98af73f7bcc7f8fbf9b7496d3d872bf0e132e760",
+    "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py": "a69ece8382708b54cbfa1a2d3b992ae1b576a810d3e08d11981507cf67159fda",
+    "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py": "389cbeb0ac62af8a50194ee9bc23424f764ed393f721fb68f71e97fc97f217cc"
+  },
+  "code_root": "/tmp/genos-request-input-field-hxduppg3"
+}

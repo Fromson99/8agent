@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+"${PYTHON_BIN:-python3}" - <<'PY'
+import json, math, os, sys
+from pathlib import Path
+bases = [Path.cwd(), *Path.cwd().parents, Path.home() / 'DEV']
+runs = {p.resolve() for b in bases for p in (b / 'TRANSFER/fulltext-location-20260929-r1').glob('offline-*') if p.is_dir()}
+if not runs:
+    sys.exit('결과 폴더가 없습니다. 비교를 실행했던 checkout에서 실행하세요.')
+run = max(runs, key=lambda p: p.name)
+if (run / 'FAILED.json').exists() or not (run / 'RESULTS.json').exists():
+    print('최근 실행: ' + str(run))
+    print('완료 결과 없음 / 실패 여부 확인 필요')
+    if (run / 'FAILED.json').exists():
+        print((run / 'FAILED.json').read_text())
+    partial = run / 'RESULTS_PARTIAL.json'
+    if partial.exists():
+        print('기록된 측정 수:', len(json.loads(partial.read_text())))
+    sys.exit(1)
+result = json.loads((run / 'RESULTS.json').read_text())
+plan = json.loads((run / 'FROZEN_PLAN.json').read_text())
+cases = result['cases']; pages = math.ceil(len(cases) / 4)
+if not pages:
+    sys.exit('요약할 case가 없습니다.')
+def mark(value):
+    return 'O' if value is True else 'X' if value is False else '?'
+def timing(case, kind):
+    a = case['baseline_' + kind + '_p50_ms']; b = case['candidate_' + kind + '_p50_ms']
+    pct = f'{(1-b/a)*100:+.1f}%' if a > 0 else '미확인'
+    return f'{a/1000:.3f}s -> {b/1000:.3f}s / 감소 {pct}'
+for page in range(pages):
+    print('\n' + '=' * 62)
+    print(f'캡처 {page+1}/{pages} | {result.get("status", "?")} | 전 -> 후, 중앙값')
+    print('실행:', run.name)
+    print('세대:', plan.get('generation_id', '?'))
+    print('O=통과 X=미통과 ?=미확인 / 검색=프리뷰 포함 검색 함수 시간')
+    for c in cases[page*4:(page+1)*4]:
+        print(f'\n{c["case_id"]} 동일={mark(c.get("same_results"))} 유효={mark(c.get("nonempty"))} 본문SQL0={mark(c.get("candidate_location_body_sql_zero"))}')
+        print('  검색:', timing(c, 'search'))
+        print('  위치:', timing(c, 'location'))
+        print(f'  개선기준={mark(c.get("observed_location_improvement"))} / 빠른 쌍={c.get("faster_pairs", "?")}/{c.get("pairs", "?")}')
+    workflow = '완료' if result.get('workflow_verified') is True else '미수행' if result.get('workflow_verified') is False else '미확인'
+    print('\nLLM 호출:', result.get('llm_calls', '?'), '/ 워크플로우 검증:', workflow)
+    print('유효=X: 빈 검색 결과 / 이 비교만으로 디스크·NFS 원인 확정 불가')
+    if page + 1 < pages:
+        print('이 화면 캡처 후 Enter -> 다음 화면', flush=True)
+        try:
+            with open('/dev/tty') as tty:
+                tty.readline()
+        except OSError:
+            pass
+PY

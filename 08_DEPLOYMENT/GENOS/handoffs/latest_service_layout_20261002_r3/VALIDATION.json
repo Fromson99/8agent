@@ -1,0 +1,18 @@
+{
+  "runtime_tests_passed": 43,
+  "installer_tests_passed": 8,
+  "installer_cases": [
+    "apply-preserve-main-data-False",
+    "reapply-exact-undo-False",
+    "apply-preserve-main-data-True",
+    "reapply-exact-undo-True",
+    "refuse-unbound-v6-backend",
+    "preserve-new-edit-on-undo",
+    "refuse-unrelated-entry",
+    "refuse-symlink-entry-directory"
+  ],
+  "root_v6_implementation_sha256": "1c2144eecd13af1fd58f1de6a1eefe86fa6e5706ca36dcb04b9f7d0b034a6b40",
+  "genos_status": "NOT_VERIFIED",
+  "existing_unrelated_test_conflict": "Archived R2 code_ship also excludes nav.js; old transport-boundary test expects it included",
+  "syntax": "bash and Python311 PASS"
+}

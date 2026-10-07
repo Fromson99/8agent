@@ -1,0 +1,32 @@
+GENOS fulltext 복구 완료 후 세대 E2E 검사 (2026-09-23)
+
+사용자 사진에서 확인한 현장 출력:
+- FULLTEXT build indexed_sources=66048
+- FULLTEXT REPAIR verifying complete generation
+- GENOS_GENERATION=/nfs-root/diamo/8-agent/term-releases/fulltext-repair-20260923T081336Z-31987d27/generation
+- SHARE_RECEIPT=/nfs-root/diamo/8-agent/term-releases/fulltext-repair-20260923T081336Z-31987d27/share-receipt.json
+
+복구 패키지 생성은 성공했습니다. 아래 경로는 사진을 읽어 적은 것이므로
+실행 전에 화면에 출력된 GENOS_GENERATION= 뒤의 값과 한 글자씩 대조하세요.
+기존 셸의 GENOS_GENERATION은 이전 세대일 수 있으므로 이 검사 명령에서
+새 경로를 명시합니다.
+
+CODE_ROOT="$HOME/DEV/TRANSFER/fulltext-aligned-nojs-20260923-r4"
+NEW_GENERATION='/nfs-root/diamo/8-agent/term-releases/fulltext-repair-20260923T081336Z-31987d27/generation'
+
+if [ -f "$CODE_ROOT/06_TOOLS/COMMANDS/genos_generation_e2e.py" ] && [ -d "$NEW_GENERATION" ]; then
+  GENOS_GENERATION="$NEW_GENERATION" python3 "$CODE_ROOT/06_TOOLS/COMMANDS/genos_generation_e2e.py" --code-root "$CODE_ROOT"
+else
+  printf 'r4 코드 파일 또는 새 generation 경로를 확인하세요.\n' >&2
+fi
+
+GENERATION_E2E PASS를 확인하세요. 검사기는 큰 SQLite 파일을 끝까지 해시하며
+HASHING 진행 바이트를 출력할 수 있으므로 시간이 걸릴 수 있습니다.
+
+PASS 후에만 새 코드서빙 리비전에 이 새 GENOS_GENERATION 경로를 설정하고,
+binding.resolved 로그의 generation_path가 이 경로인지 확인하세요.
+/health의 generation_id는 복구 전후 같을 수 있으므로 그것만으로 새 세대
+선택을 판정하지 마세요. 원문 읽기와 근거 질문도 확인하세요.
+코드스페이스의 패키지 설치와 새 세대 생성만으로 코드서빙 배포는 완료되지 않습니다.
+
+현장 E2E 결과와 코드서빙 배포 결과는 아직 확인되지 않았습니다.

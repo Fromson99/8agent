@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+# Read-only monitor. No conversion call and no pipeline restart.
+cd -P "${DEPLOY_ROOT:-$HOME/DEV}"
+export GENOS_DATA_ROOT="${GENOS_DATA_ROOT:-$PWD/01_DATA}"
+export GENOS_RUN_ID="${GENOS_RUN_ID:-financial-risk-full-e2e-20260930-r3}"
+python3 -u - <<'PY'
+import json, os, time
+from pathlib import Path
+from datetime import datetime, timezone, timedelta
+root = Path(os.environ['GENOS_DATA_ROOT'])/'LOGS'/os.environ['GENOS_RUN_ID']/'preparation'
+print('READ_ONLY_MONITOR run=' + os.environ['GENOS_RUN_ID'] + ' | Ctrl+C stops only this monitor', flush=True)
+if not root.is_dir():
+    raise SystemExit('Preparation directory missing: ' + str(root))
+try:
+    while True:
+        now = datetime.now(timezone(timedelta(hours=9))).strftime('%Y-%m-%d %H:%M:%S KST')
+        progress = root/'pdf-progress.json'
+        if progress.is_file():
+            row = json.loads(progress.read_text())
+            print(now, f'PDF [{row["number"]}/{row["total"]}] 완료 {row["completed"]}/{row["total"]}',
+                  '|', Path(row['source']).name, '|', row['status'], '|', str(row['elapsed_seconds'])+'초',
+                  '| last_update='+row['updated_at'], flush=True)
+        else:
+            records = []
+            for path in root.glob('*/conversion.json'):
+                try:
+                    row = json.loads(path.read_text())
+                    records.append((path.stat().st_mtime_ns, path, row))
+                except (OSError, ValueError) as exc:
+                    print(now, 'READ_ERROR', type(exc).__name__, str(path), flush=True)
+            records.sort(reverse=True)
+            complete = sum(r[2].get('status') in {'CONVERTED', 'PDF_WITH_API_WARNING'} for r in records)
+            print(now, f'저장된 요청 {len(records)}건 / 완료 {complete}건 (전체 대상 수는 기존 실행에 미기록)', flush=True)
+            for _, path, row in records[:2]:
+                print('  JOB', row.get('status'), 'HTTP='+str(row.get('http_status')),
+                      'API='+str(row.get('api_code')), 'receipt='+str(path), flush=True)
+        time.sleep(5)
+except KeyboardInterrupt:
+    print('MONITOR_STOPPED pipeline left running', flush=True)
+PY

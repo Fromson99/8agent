@@ -1,0 +1,56 @@
+{
+  "standalone_txt": "PASS",
+  "apply_repeat": "PASS",
+  "state_check": "PASS",
+  "operational_db_preserved": "PASS",
+  "compact_reader_preserved": "PASS",
+  "all_engine_code_pins": "PASS",
+  "git_zip_comparison": {
+    "code_files": 38,
+    "commit": "dc79e9b12062274121378e08c127e8316d5a6f2e",
+    "code_zip_sha256": "494e7f18716a6fc259d9bc7094641e52fbf57f0f95d235acbe77a26b02c62970",
+    "code_manifest_sha256": "f0995cba5ef71dbc7ff53cf2959eb06195b2f93833ffb3021dffaca7732cde7a"
+  },
+  "rollback": "PASS",
+  "unknown_code_preserved": "PASS",
+  "genos_execution": "NOT_EXECUTED",
+  "generation_gate": "NOT_EXECUTED",
+  "outputs": [
+    {
+      "mode": "check",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/nfs-sqlite-handoff-713r7g30/DEV CODE_ZIP_SHA256 494e7f18716a6fc259d9bc7094641e52fbf57f0f95d235acbe77a26b02c62970 CODE_MANIFEST_SHA256 f0995cba5ef71dbc7ff53cf2959eb06195b2f93833ffb3021dffaca7732cde7a\nFULL_CODE_SYNTAX current=7 frozen_preserved=0\nCHECK OK: package verified; no Git baseline required; files=39\nPreview only. Use --apply to replace maintained code.\nCOMPLETE check ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nNFS_STATE_SQLITE_EXIT=0 LOG=/tmp/nfs-sqlite-handoff-713r7g30/logs/20261006T013706Z-check-1106185.log\n",
+      "stderr": ""
+    },
+    {
+      "mode": "apply",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/nfs-sqlite-handoff-713r7g30/DEV CODE_ZIP_SHA256 494e7f18716a6fc259d9bc7094641e52fbf57f0f95d235acbe77a26b02c62970 CODE_MANIFEST_SHA256 f0995cba5ef71dbc7ff53cf2959eb06195b2f93833ffb3021dffaca7732cde7a\nFULL_CODE_SYNTAX current=7 frozen_preserved=0\nCHECK OK: package verified; no Git baseline required; files=39\nBACKUP/RECOVERY: /tmp/nfs-sqlite-handoff-713r7g30/DEV/09_ARTIFACTS/BACKUPS/code-replacement/20261006T013707Z-cd8cb93c\nINSTALL OK: full-code-494e7f18716a6fc259d9\nPreserved: 01_DATA, GENOS_DATA, .env, .venv, .git, TRANSFER; no deployment/activation\nCOMPLETE apply ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nNFS_STATE_SQLITE_EXIT=0 LOG=/tmp/nfs-sqlite-handoff-713r7g30/logs/20261006T013706Z-apply-1106192.log\n",
+      "stderr": ""
+    },
+    {
+      "mode": "apply",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/nfs-sqlite-handoff-713r7g30/DEV CODE_ZIP_SHA256 494e7f18716a6fc259d9bc7094641e52fbf57f0f95d235acbe77a26b02c62970 CODE_MANIFEST_SHA256 f0995cba5ef71dbc7ff53cf2959eb06195b2f93833ffb3021dffaca7732cde7a\nFULL_CODE_SYNTAX current=7 frozen_preserved=0\nALREADY INSTALLED: full-code-494e7f18716a6fc259d9\nCOMPLETE apply ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nNFS_STATE_SQLITE_EXIT=0 LOG=/tmp/nfs-sqlite-handoff-713r7g30/logs/20261006T013707Z-apply-1106199.log\n",
+      "stderr": ""
+    },
+    {
+      "mode": "state-check",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/nfs-sqlite-handoff-713r7g30/DEV CODE_ZIP_SHA256 494e7f18716a6fc259d9bc7094641e52fbf57f0f95d235acbe77a26b02c62970 CODE_MANIFEST_SHA256 f0995cba5ef71dbc7ff53cf2959eb06195b2f93833ffb3021dffaca7732cde7a\nSQLITE_STATE_CHECK PASS /tmp/nfs-sqlite-handoff-713r7g30/DEV/90_RUNTIME/semantic/.nfs-state-check-g0x7v7ih/cases-v4.sqlite FILESYSTEM=tmpfs JOURNAL=delete FIELD_DURABILITY=NOT_CERTIFIED\nCOMPLETE state-check ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nNFS_STATE_SQLITE_EXIT=0 LOG=/tmp/nfs-sqlite-handoff-713r7g30/logs/20261006T013707Z-state-check-1106206.log\n",
+      "stderr": ""
+    },
+    {
+      "mode": "rollback",
+      "exit_code": 0,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/nfs-sqlite-handoff-713r7g30/DEV CODE_ZIP_SHA256 494e7f18716a6fc259d9bc7094641e52fbf57f0f95d235acbe77a26b02c62970 CODE_MANIFEST_SHA256 f0995cba5ef71dbc7ff53cf2959eb06195b2f93833ffb3021dffaca7732cde7a\nROLLBACK OK: original code restored; data/environment unchanged\nCOMPLETE rollback ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN\nNFS_STATE_SQLITE_EXIT=0 LOG=/tmp/nfs-sqlite-handoff-713r7g30/logs/20261006T013707Z-rollback-1106235.log\n",
+      "stderr": ""
+    },
+    {
+      "mode": "check",
+      "exit_code": 1,
+      "stdout": "PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]\nCODE_ROOT /tmp/nfs-sqlite-handoff-713r7g30/DEV CODE_ZIP_SHA256 494e7f18716a6fc259d9bc7094641e52fbf57f0f95d235acbe77a26b02c62970 CODE_MANIFEST_SHA256 f0995cba5ef71dbc7ff53cf2959eb06195b2f93833ffb3021dffaca7732cde7a\nTraceback (most recent call last):\n  File \"<stdin>\", line 48, in <module>\n  File \"<stdin>\", line 24, in pins\nValueError: CHECKOUT_DRIFT: 02_BACKEND/semantic_runtime/ad_store.py; existing file preserved\nNFS_STATE_SQLITE_EXIT=1 LOG=/tmp/nfs-sqlite-handoff-713r7g30/logs/20261006T013707Z-check-1106242.log\n",
+      "stderr": ""
+    }
+  ]
+}

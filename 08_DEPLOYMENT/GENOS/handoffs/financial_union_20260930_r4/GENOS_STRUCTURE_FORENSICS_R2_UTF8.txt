@@ -1,0 +1,264 @@
+#!/usr/bin/env bash
+# Up to 10 console screens. Read-only; no model calls.
+set -Eeuo pipefail
+umask 077
+diag_terminal_log=$(mktemp /tmp/genos-forensics-r2-XXXXXX.log)
+exec > >(tee -a "$diag_terminal_log") 2>&1
+python3 -u - "$@" <<'GENOS_FORENSICS_PY'
+"""Read-only GENOS structure journals; no model calls, repairs, or activation."""
+import argparse
+from collections import Counter
+from datetime import datetime
+import html
+import json
+import os
+from pathlib import Path
+import sys
+import uuid
+import unicodedata
+from zoneinfo import ZoneInfo
+
+
+def read(path):
+    if any(p.is_symlink() for p in (path, *path.parents)):
+        raise ValueError('Evidence symlink refused: ' + str(path))
+    return json.loads(path.read_text(encoding='utf-8'))
+
+
+def tree_issues(tree, blocks, include_text=False):
+    """Use the same half-open span/ancestry invariants as recipe_pages.audit."""
+    by_id = {b['idx']: b for b in blocks}
+    issues = []
+    def reference(node):
+        result = {k: node.get(k) for k in ('block', 'page', 'span', 'level', 'family', 'candidate')}
+        if include_text:
+            result['surface'] = node.get('surface')
+            result['source_excerpt'] = by_id.get(node.get('block'), {}).get('text', '')[:500]
+        return result
+    def visit(nodes, parent=None):
+        previous = None
+        for node in nodes:
+            lo, hi = node['span']
+            if not 0 <= lo < hi <= len(blocks) or node['block'] != lo:
+                issues.append({'code': 'invalid_tree_source_span', 'node': reference(node)})
+            if previous and lo < previous['span'][1]:
+                issues.append({'code': 'overlapping_sibling_spans',
+                               'same_source_block': previous['block'] == node['block'],
+                               'previous': reference(previous), 'node': reference(node)})
+            if parent and not (parent['span'][0] <= lo < hi <= parent['span'][1]
+                               and node['level'] > parent['level']):
+                issues.append({'code': 'invalid_tree_parent', 'parent': reference(parent),
+                               'node': reference(node)})
+            visit(node.get('children', []), node)
+            previous = node
+    visit(tree)
+    return issues
+
+
+def journal_report(folder, include_text=False):
+    out = {'directory': str(folder), 'trees': [], 'events': [], 'errors': []}
+    blocks = read(folder / 'blocks.json') if (folder / 'blocks.json').exists() else None
+    if blocks is not None:
+        out['blocks'] = {'count': len(blocks), 'by_page': dict(Counter(b['page'] for b in blocks)),
+                         'by_kind': dict(Counter(b.get('kind', 'text') for b in blocks))}
+        if include_text:
+            out['source_blocks'] = blocks
+    paths = sorted({*folder.glob('baseline.json'), *folder.glob('window-tree-*.json'),
+                    *folder.glob('final-restructured-tree.json')})
+    for path in paths:
+        try:
+            value = read(path)
+            if blocks is None:
+                out['trees'].append({'artifact': path.name, 'status': 'blocks_missing_cannot_audit'})
+            else:
+                issues = tree_issues(value['tree'], blocks, include_text)
+                out['trees'].append({'artifact': path.name, 'issues': issues,
+                                     'counts': dict(Counter(i['code'] for i in issues))})
+        except Exception as exc:
+            out['errors'].append({'artifact': path.name, 'error': str(exc)})
+    for name in ('page-inventory.json', 'review-budget.json', 'coverage.json'):
+        if (folder / name).exists():
+            out[name] = read(folder / name)
+    checkpoint = folder / 'review-checkpoint.json'
+    if checkpoint.exists():
+        value = read(checkpoint)
+        value = value.get('state', value)
+        out['checkpoint'] = {k: value.get(k) for k in (
+            'version', 'run_id', 'status', 'corrections', 'replans', 'pending_window')}
+        out['checkpoint'].update(approved_windows=len(value.get('approvals', {})),
+                                 warnings=len(value.get('review_warnings', {})))
+    events = folder / 'events.jsonl'
+    if events.exists():
+        with events.open() as stream:
+            for line in stream:
+                try:
+                    value = json.loads(line)
+                except json.JSONDecodeError:
+                    out['errors'].append({'artifact': 'events.jsonl', 'error': 'partial/malformed event'})
+                    continue
+                if value.get('event') in {'model.request', 'model.response', 'recipe.review.result',
+                                          'recipe.review.warning', 'recipe.review.budget_exhausted',
+                                          'recipe.review.budget', 'run.needs_review', 'run.complete'}:
+                    out['events'].append({k: value[k] for k in (
+                        'ts', 'event', 'phase', 'call', 'attempt', 'seconds', 'finish_reason',
+                        'input_count', 'output_count', 'failed', 'model', 'window_number', 'pages',
+                        'verdict', 'code', 'reason', 'calls', 'max_calls', 'pending_pages',
+                        'pending_windows', 'checkpoint') if k in value})
+    out['event_summary'] = dict(Counter(e['event'] for e in out['events']))
+    out['verdicts'] = dict(Counter(e['verdict'] for e in out['events'] if 'verdict' in e))
+    out['call_budget_exhausted_recorded'] = any(e['event'] == 'recipe.review.budget_exhausted'
+                                               for e in out['events'])
+    out['note'] = 'Each tree is a separate saved revision; baseline errors are not proof of final failure.'
+    return out
+
+
+def capture_screens(result, maximum=10):
+    """Bound console output for photos: at most 10 screens, 22 lines each."""
+    def clipped(value, width=100):
+        out, used = '', 0
+        for char in str(value).replace('\n', ' '):
+            size = 2 if unicodedata.east_asian_width(char) in 'WF' else 1
+            if used + size > width:
+                return out + '…'
+            out += char
+            used += size
+        return out
+    counts = result['phase_counts']
+    overview = ['RUN=' + result['run_id'],
+                '진단 문서=' + str(len(result['documents'])) + ' (재실행 아님)',
+                'STRUCTURE=' + str(counts.get('structure', {})),
+                'INDEX=' + str(counts.get('index', {})),
+                'SELECTED=' + str(result.get('selection', {})),
+                '핵심만 표시; 전체 기록은 diagnostics.json/html에 저장.',
+                '마지막 저장 트리 기준 진단이며 최종 성공 인증은 아님.']
+    pages = [overview]
+    docs = result['documents'][:max(0, maximum-1)]
+    for doc in docs:
+        phase = doc['phases']['structure']
+        lines = ['DOC=' + str(doc.get('title')), 'ID=' + doc['document_id'],
+                 'FILE=' + doc['relative'], 'STATE=' + phase.get('state', '?'),
+                 'ERROR=' + phase.get('error', ''),
+                 'JOURNALS=' + str(len(doc['journals']))]
+        for journal in doc['journals'][-2:]:
+            events = journal['events']
+            calls = [e.get('call', 0) for e in events if isinstance(e.get('call', 0), int)]
+            lines += ['JOURNAL=' + Path(journal['directory']).name,
+                      'CALLS=' + str(max(calls, default=0)) + ' BUDGET_EXHAUSTED='
+                      + str(journal['call_budget_exhausted_recorded']),
+                      'VERDICTS=' + str(journal['verdicts']),
+                      'CHECKPOINT=' + str(journal.get('checkpoint', {}))]
+            trees = journal.get('trees', [])
+            final = [t for t in trees if t['artifact'] == 'final-restructured-tree.json']
+            windows = [t for t in trees if t['artifact'].startswith('window-tree-')]
+            if windows:
+                windows.sort(key=lambda t: int(t['artifact'].split('-')[-1].split('.')[0]))
+            chosen = (final or windows or trees)
+            if chosen:
+                tree = chosen[-1]
+                lines.append('TREE=' + tree['artifact'] + ' COUNTS=' + str(tree.get('counts', {})))
+                for issue in tree.get('issues', [])[:2]:
+                    lines.append('ISSUE=' + issue['code'] + ' SAME_BLOCK=' + str(issue.get('same_source_block', 'n/a')))
+                    for key in ('previous', 'parent', 'node'):
+                        if key in issue:
+                            n = issue[key]
+                            lines.append(key.upper() + ': page=' + str(n.get('page')) + ' block='
+                                         + str(n.get('block')) + ' span=' + str(n.get('span'))
+                                         + ' level=' + str(n.get('level')))
+            else:
+                lines.append('TREE=none (failure may precede tree generation)')
+        if doc.get('evidence_error'):
+            lines.append('EVIDENCE_ERROR=' + doc['evidence_error'])
+        pages.append(lines)
+    omitted = len(result['documents']) - len(docs)
+    if omitted:
+        pages[0].append('미표시 문서=' + str(omitted) + '; --document-id로 단건 선택 가능')
+    output = []
+    for number, lines in enumerate(pages, 1):
+        output.append('===== CAPTURE ' + str(number) + '/' + str(len(pages)) + ' =====')
+        # 1 marker + at most 20 content lines + 1 end marker.
+        kept = lines[:20]
+        if len(lines) > 20:
+            kept[-1] = '(추가 내용 생략; 전체 기록은 진단 파일에 저장)'
+        output.extend(clipped(line) for line in kept)
+        output.extend([''] * (20-len(kept)))
+        output.append('===== END CAPTURE ' + str(number) + ' =====')
+    return output
+
+
+def main(argv=None):
+    os.umask(0o077)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--run-id', required=True, help='Exact original or retry run directory name')
+    parser.add_argument('--format', choices=('all', 'pdf', 'docx', 'hwpx'), default='pdf')
+    parser.add_argument('--document-id', action='append')
+    parser.add_argument('--screens', type=int, choices=range(1, 11), default=10)
+    parser.add_argument('--include-text', action='store_true', help='PRIVATE: source excerpts inside GENOS only')
+    args = parser.parse_args(argv)
+    root = Path.cwd().resolve()
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    from lawrag.pipeline.genos_status import read_report, validate_run_id, safe
+    validate_run_id(args.run_id)
+    setting = os.environ.get('GENOS_DATA_ROOT')
+    if not setting:
+        from lawrag.platform.workspace import load_layout
+        setting = load_layout(root).inspection_path('data', layout_version='v2')
+    data = Path(setting).resolve(strict=True)
+    logs = data / 'LOGS' / args.run_id
+    status = read_report(logs)
+    if not status.get('recorded'):
+        raise ValueError('Status ledger missing: ' + str(logs))
+    wanted = set(args.document_id or [])
+    if wanted - {r['document_id'] for r in status['documents']}:
+        raise ValueError('Unknown document ID')
+    rows = [r for r in status['documents'] if r['selection'] == 'SELECTED'
+            and (r['document_id'] in wanted if wanted else r['phases']['structure']['state'] == 'FAILED')
+            and (args.format == 'all' or Path(r['relative']).suffix.lower() == '.' + args.format)]
+    result = {'run_id': args.run_id, 'attempt': status['attempt'], 'phase_counts': status['counts'],
+              'source_text_included': args.include_text, 'documents': [],
+              'limitations': 'Read-only snapshot; journals can change during a run. No current/serving proof.'}
+    selection = logs / 'structure-selection.json'
+    if selection.exists():
+        value = read(selection)
+        result['selection'] = {'completed': value.get('completed'),
+                               'selected_receipts': len(value.get('documents', {})),
+                               'expected': len(value.get('expected_document_ids', [])),
+                               'failure_retry': value.get('failure_retry')}
+    for number, row in enumerate(rows, 1):
+        item = {k: row.get(k) for k in ('document_id', 'relative', 'title', 'phases')}
+        item['journals'] = []
+        folder = row['phases']['structure'].get('output_path')
+        try:
+            if folder:
+                path = Path(folder)
+                path.relative_to(data / 'STRUCTURE')
+                if any(p.is_symlink() for p in (path, *path.parents)):
+                    raise ValueError('Structure evidence symlink refused')
+                item['artifacts_present'] = {name: (path / name).is_file() for name in (
+                    'structure-receipt.json', 'source.sqlite', 'source.json', 'structure-errors.json')}
+                for journal in sorted(path.glob('structure-recipe-runs/*')):
+                    item['journals'].append(journal_report(journal, args.include_text))
+                if not item['journals']:
+                    item['diagnostic_note'] = 'No recipe journal: may have failed before structural review'
+            else:
+                item['diagnostic_note'] = 'No recorded output_path'
+        except Exception as exc:
+            item['evidence_error'] = str(exc)
+        result['documents'].append(item)
+    result = safe(result)
+    out = data / 'LOGS' / ('structure-forensics-' + datetime.now().strftime('%Y%m%dT%H%M%S')
+                          + '-' + uuid.uuid4().hex[:6])
+    out.mkdir(parents=True, exist_ok=False)
+    (out / 'diagnostics.json').write_text(json.dumps(result, ensure_ascii=False, indent=2))
+    body = html.escape(json.dumps(result, ensure_ascii=False, indent=2))
+    (out / 'diagnostics.html').write_text('<!doctype html><meta charset="utf-8">'
+        '<title>GENOS 구조 진단</title><h1>구조 진단 (읽기 전용)</h1>'
+        '<p>원문 미포함이 기본입니다. 호출/보류 기록과 각 트리의 구간 오류를 확인하세요.</p><pre>'
+        + body + '</pre>')
+    print('\n'.join(capture_screens(result, args.screens)), flush=True)
+    print('SAVED=' + str(out), flush=True)
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
+GENOS_FORENSICS_PY

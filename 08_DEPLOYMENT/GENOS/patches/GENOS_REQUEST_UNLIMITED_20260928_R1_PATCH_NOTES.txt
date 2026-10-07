@@ -1,0 +1,55 @@
+GENOS 동시 요청 제한 해제 — request-unlimited-20260928-r1
+
+이번 파일을 사용하세요
+앞서 보낸 GENOS_LATENCY_20260928_R2 대신 이번 누적 ZIP와 실행 TXT를 사용합니다.
+진단 R1 또는 성능 R2 적용 상태를 파일 해시로 확인하며, 성능 R2 변경을 포함합니다.
+service.py + runtime 18개 파일을 기존 Git checkout ~/DEV에 백업 후 적용합니다.
+
+변경 내용
+GENOS v5의 동시 요청 수 제한을 코드에서 해제했습니다.
+환경변수를 새로 추가하거나 변경할 필요가 없습니다.
+GENOS_RAG_MAX_CONCURRENT_REQUESTS는 더 이상 읽지 않습니다.
+과거 환경에 1/4 또는 다른 값이 남아 있어도 이 제한을 다시 켜지 않습니다.
+환경 모델 결속, 명시 LEGAL_AGENT_PROFILE, source-only 실행에 같은 정책을 적용합니다.
+고정 프로필 파일은 보존하고 실행 프로필에 max_concurrent_requests_per_process=0을 기록합니다.
+부팅 로그 runtime.request_admission의 unlimited=true로 적용 여부를 확인합니다.
+
+변수 안내 정정
+기존 코드·환경 예제에 있던 선택 항목을 사용자가 현장에 설정했다고 확인한 적은 없습니다.
+앞서 안내한 GENOS_RAG_MAX_CONCURRENT_REQUESTS=0 설정 작업은 이번 버전에서는 필요 없습니다.
+그 외 기존 모델·generation 연결 설정은 그대로 사용합니다.
+
+적용
+ZIP와 APPLY.txt를 ~/DEV/TRANSFER/code에 함께 올립니다.
+cd ~/DEV/TRANSFER/code
+bash GENOS_REQUEST_UNLIMITED_20260928_R1_APPLY.txt
+
+첫 단계부터 /tmp 또는 TMPDIR에 지속 로그와 종료 상태를 남깁니다.
+기존 ~/DEV를 백업 후 수정하며 재실행은 ALREADY_APPLIED로 확인합니다.
+지원하지 않는 코드 해시나 무관한 파일 변형은 쓰기 전에 중단합니다.
+출력의 BACKUP_READY 경로와 TRANSFER/request-unlimited-20260928-r1의 receipt를 보존합니다.
+
+코드 적용, Git push, 코드서빙 배포는 별도입니다.
+적용 후 변경된 service.py, runtime 파일, 엔진 manifest, 00_SYSTEM/PIPELINE.json을 검토해 commit합니다.
+아래 /actual/selected/generation만 현장에서 실제 선택된 절대경로로 바꿉니다.
+MODE=verify GENOS_GENERATION=/actual/selected/generation bash GENOS_REQUEST_UNLIMITED_20260928_R1_APPLY.txt
+이것은 검증 명령에 실제 데이터 위치를 전달하는 방법이며 새로운 서빙 환경변수를 추가하는 지시가 아닙니다.
+같은 검증 commit을 push하고 같은 generation의 새 코드서빙 리비전을 배포합니다.
+데이터 재구축과 워크플로우 Python 교체는 필요 없습니다.
+실제 질문 확인은 워크플로우 테스트 화면에서 합니다.
+
+검증과 범위
+로컬 WSL의 모의 계약·회귀 104개 통과.
+6개 실제 요청 세션을 동시에 열어 모두 HTTP 200, 팀별 문서 범위·run ID 격리,
+잘못된 요청 뒤 정상 재요청, 구 환경변수 무시를 확인했습니다. 모델 호출·성능 실험은 아닙니다.
+설치기 적용/재적용/장애/원복, 실제 R1/R2 바이트의 격리 Git checkout 적용과 코드 gate,
+Python 3.11 문법, bash 문법, 최종 ZIP inventory/해시·JavaScript 제외는 함께 검증합니다.
+현장 generation 경로·manifest 해시, 배포할 commit, 코드서빙 리비전, 현장 질문 성공은 미확인입니다.
+이 패치는 request capacity reached 차단을 해제합니다. 요청 지연의 원인 해결을 뜻하지 않습니다.
+출처 발행 큐의 publication capacity reached나 모델·플랫폼의 별도 오류까지 제거하지 않습니다.
+
+원복
+아래 경로를 적용 로그의 BACKUP_READY 경로로 바꿉니다.
+MODE=rollback ROLLBACK_FROM=/actual/backup-directory bash GENOS_REQUEST_UNLIMITED_20260928_R1_APPLY.txt
+적용 전 파일·엔진 해시를 복원합니다. 적용 후 별도 수정된 파일은 자동으로 덮어쓰지 않습니다.
+이미 배포했다면 이전 검증 코드서빙 리비전으로 별도 복귀합니다.

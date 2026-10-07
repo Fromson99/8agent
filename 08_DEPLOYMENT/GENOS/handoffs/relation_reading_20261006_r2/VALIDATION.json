@@ -1,0 +1,25 @@
+{
+  "contracts": 121,
+  "failures": 0,
+  "errors": 0,
+  "supported_predecessors": [
+    "request-input-r2",
+    "nfs-sqlite-r1",
+    "timeout-r1",
+    "routing-r2",
+    "ad-language-r1",
+    "photo-ad-language-r2",
+    "relation-r1",
+    "relation-r1-then-ad-r2"
+  ],
+  "photo_failure_reproduced": "PASS",
+  "installer_and_git_code_gates": "PASS",
+  "shipped_module_origins": "PASS",
+  "workflow_under_test_matches_shipped_bytes": true,
+  "script_bash_syntax": "PASS",
+  "no_javascript": "PASS",
+  "generation_full_gate": "NOT_EXECUTED_R2; previous local-public cache mismatch unchanged",
+  "genos_deployed": false,
+  "external_model_calls": 0,
+  "code_zip_sha256": "78e4bbb83768b47d30628b5542070b75b11672c73d8967a07141be3c40a83ff7"
+}

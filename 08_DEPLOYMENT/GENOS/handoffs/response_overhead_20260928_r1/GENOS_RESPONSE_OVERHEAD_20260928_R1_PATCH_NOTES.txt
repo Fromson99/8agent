@@ -1,0 +1,42 @@
+GENOS 답변 경로 정리 — response-overhead-20260928-r1
+
+효과가 발생하는 위치: 새 GENOS 코드서빙 리비전의 기존 RAG 실행 경로.
+로컬 작업 코드 수정과 모의 검증이며 현장 단축 시간은 아직 미측정입니다.
+
+제거/재사용:
+1. 정상 단계·캐시 적중·원장 세부 INFO 출력은 DEBUG로 이동.
+2. 동일 로그의 반복 정제·JSON 크기 계산, 문자열마다 환경변수 전체 순회 제거.
+3. 공유 로그 폴더 생성/파일 열기/질문 저장은 백그라운드 처리.
+4. navigation manifest·용어집 receipt·engine code hash·스키마 검사기 재사용.
+
+질문·답변 기록, 모델 진행/오류, 원장 commit, 원문·팀 범위·세대·해시 검증 유지.
+기존 로그 디렉터리·팀별 질문답변 표·진단 표식은 설치된 정확한 판을 보존합니다.
+모델/검색/프롬프트/출력 토큰/요청 시간/원문 데이터/CURRENT는 이번 패치가 바꾸지 않습니다.
+실행 파일 9개와 영향받는 engine/PIPELINE pin만 적용합니다. 별도 패키지 판을 덮어쓰지 않습니다.
+
+같은 폴더에 ZIP과 실행 TXT를 놓고:
+  bash GENOS_RESPONSE_OVERHEAD_20260928_R1_APPLY.txt
+기본 대상: 기존 ~/DEV (심볼릭 링크 입구는 실제 Git root로 해석).
+Python 3.11 이상. 새 패키지 설치·데이터 재구축·워크플로우 Python 교체 없음.
+첫 단계부터 /tmp 지속 로그와 실패 상태를 남깁니다. 적용 전 파일 백업과 receipt를 저장합니다.
+재실행은 ALREADY_APPLIED를 확인합니다. 알 수 없는 설치 판/관련 없는 코드 불일치는 쓰기 전에 중단합니다.
+
+적용된 코드·engine manifest·PIPELINE.json을 검토·commit한 뒤:
+  MODE=verify GENOS_GENERATION=/실제/선택된/generation bash GENOS_RESPONSE_OVERHEAD_20260928_R1_APPLY.txt
+ZIP/clean commit 대조 → 같은 checkout에서 generation E2E/verify_assets → 영수증 기록.
+이후 같은 commit push와 코드서빙 새 리비전 배포가 별도로 필요합니다.
+검증/배포/질문 성공은 다른 상태입니다. 현장 질문은 워크플로우 테스트 화면에서만 실행합니다.
+
+기본 INFO를 유지하고 요청 로그에서:
+  observability_revision=response-overhead-20260928-r1
+  session.open.ready / rag.loop.started / model.attempt.started / request.returning
+을 확인합니다. 상세 진단이 필요한 때에만 GENOS_LOG_LEVEL=DEBUG를 사용합니다.
+DEBUG는 상세 처리 비용을 다시 발생시킵니다.
+
+원복:
+  MODE=rollback ROLLBACK_FROM=/실제/TRANSFER/response-overhead-20260928-r1/backup-값 bash GENOS_RESPONSE_OVERHEAD_20260928_R1_APPLY.txt
+후속 편집을 덮어쓰지 않으며 원복 코드도 별도 리비전 배포가 필요합니다.
+
+공유 로그는 파일 준비가 끝난 뒤 나타날 수 있습니다. 늦은 run ID도 복구하여 원장을 읽습니다.
+프로세스 중단/저장 장애에는 공유 사본이 누락될 수 있으며 journal이 감사 정본입니다.
+전체 MAIN 활성화, GENOS generation/manifest/commit/revision과 실제 속도는 현장 확인 전까지 미확인입니다.

@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+"""Read-only check for the three hashes used by TermIndex in the GENOS code."""
+
+import argparse
+import hashlib
+import json
+from pathlib import Path
+
+
+def sha(path):
+    with path.open("rb") as stream:
+        return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
+def digest(value):
+    encoded = json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode()
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--generation", type=Path, required=True,
+                        help="the GENOS_GENERATION path configured in code serving")
+    parser.add_argument("--code-root", type=Path, default=Path.cwd(),
+                        help="the Git code directory pushed for code serving; default: current directory")
+    args = parser.parse_args()
+
+    generation = args.generation.resolve(strict=True)
+    code_root = args.code_root.resolve(strict=True)
+    source = json.loads((generation / "manifest.json").read_text("utf-8"))
+    navigation_path = generation / source["navigation"]["path"]
+    navigation = json.loads((navigation_path / "manifest.json").read_text("utf-8"))
+    base = {key: value for key, value in source.items()
+            if key not in {"navigation", "fulltext", "fulltext_derivation"}}
+
+    print("CODE_ROOT", code_root)
+    print("GENERATION", generation)
+    code_file = code_root / "02_BACKEND/semantic_runtime/term_index.py"
+    print("TERM_INDEX_CODE_SHA256", sha(code_file))
+    reference = code_root / "TRANSFER/fulltext-aligned-nojs-20260923-r4/02_BACKEND/semantic_runtime/term_index.py"
+    if reference.is_file():
+        print("CODE_MATCH_R4", "PASS" if sha(code_file) == sha(reference) else "FAIL")
+
+    checks = {
+        "navigation_manifest": (
+            sha(navigation_path / "manifest.json") == source["navigation"]["manifest_sha256"]
+        ),
+        "source_store": navigation["source_store_sha256"] == source["store_sha256"],
+        "source_manifest": navigation["source_manifest_sha256"] == digest(base),
+        "navigation_sqlite": navigation["index_sha256"] == sha(navigation_path / "navigation.sqlite"),
+    }
+    for name, passed in checks.items():
+        print(name, "PASS" if passed else "FAIL")
+    return 0 if all(checks.values()) else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

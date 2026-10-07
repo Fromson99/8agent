@@ -1,0 +1,42 @@
+GENOS SQL 후보 진단 R1
+
+첨부된 GENOS_SQL_CANDIDATES_20261006_R1.txt 하나만 실행합니다.
+진단 파일이며 코드 패치·DB 이행·배포·환경변수 저장을 수행하지 않습니다.
+사용 중인 코드스페이스 터미널에서:
+
+  cd ~/DEV
+  bash TRANSFER/GENOS_SQL_CANDIDATES_20261006_R1.txt
+
+GENOS_RUNTIME_DIR이 셸에 없으면 사용자가 알려 준 기존 값
+/nfs-root/diamo/8-agent/runtime을 사용합니다. GENOS_STATE_DIR은 새로 요구하지 않습니다.
+전체 로그와 실패 상태는 runtime/sql-candidate-diagnostics/실행별폴더에 남습니다.
+끝에 SUMMARY= 경로가 표시되며 터미널에도 같은 짧은 결과가 나옵니다.
+설정 누락·도달 실패도 정상 진단 결과이며, 스크립트 실행 성공과 후보 SQL 성공은 다릅니다.
+Unix socket 파일 발견은 서비스 응답이나 인증 성공을 의미하지 않습니다.
+서버형 SQL은 현재 셸에 설정된 PostgreSQL/MySQL/SQL Server 주소와
+127.0.0.1의 5432/3306/1433만 접속 확인합니다. 전체 망 스캔·로그인·DDL 실행은 없습니다.
+.env나 비밀 파일을 뒤져 읽지 않으며, 설정 값 대신 설정 유무만 남깁니다.
+SQL 주소를 전달하려면 해당 서비스가 공식 제공한 기존 환경 설정을 로드한 셸에서 실행하세요.
+발견된 주소에 실제 DB 인증·SQL 실행을 시험하는 것은 이 진단 범위 밖입니다.
+
+현재 runtime과 명시 state, 실제 로컬 mount 후보 일부에만 작고 새로 만든
+.sql-candidate-probe-* 폴더로 합성 DB를 생성합니다. 기존 DB는 열지 않습니다.
+합성 폴더는 확인용으로 보존하며 파일은 수십 KB 수준입니다. 일반 로그는 남깁니다.
+SQLite DELETE 테스트 PASS도 같은 호스트의 간단한 검사 결과입니다.
+다른 서버 간 NFS 잠금, 서버 장애/재시작, 전원 장애 내구성은 확인하지 않습니다.
+재배포 후 볼륨 보존과 코드서빙에서의 접근도 미확인으로 표시합니다.
+
+전체 실행은 최대 약 120초입니다(일반적으로 훨씬 짧음).
+개별 SQLite 시험 15초, 개별 SQL 연결 확인 3초로 제한합니다.
+GNU timeout 명령이 없으면 실행하지 않습니다. Linux/GENOS python3를 사용합니다.
+부모 제한 시간이 끝나면 failure.json과 run.log에서 실패 상태를 확인하세요.
+NFS 자체가 멈추면 파일 쓰기/커널 I/O의 종료는 즉시 보장되지 않습니다.
+
+외부로 전체 로그나 내부 환경 정보를 반출할 필요는 없습니다.
+터미널 마지막의 후보 종류·시험 상태·미확인 내용을 알려 주면 후속 구현을 판단할 수 있습니다.
+현재 Codex 세션에서는 GENOS에 접근할 수 없어 현장 실행을 대신 수행하지 못했습니다.
+WSL 모의 진단·문법 검증과 GENOS 실제 SQL 사용 가능성을 구분합니다.
+
+SQLite 근거:
+https://sqlite.org/wal.html
+https://sqlite.org/useovernet.html

@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# ZIP을 해제한 폴더에서 실행: bash GENOS_REFERENCE_E2E_RUN_20261003_R1.txt
+# 필수 사용자 설정: GENOS_DATA_ROOT(완료 자료 루트), GENOS_PREPARED_RUN(완료 prepared run ID)
+# 선택: GENOS_DEV(기본 ~/DEV), GENOS_REUSE_RUN(새 출력 run), GENOS_COMPLETED_GLOSSARY(별도 완료 검토본)
+set -Eeuo pipefail
+umask 077
+task_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+task_logs="${GENOS_HANDOFF_LOG_DIR:-$task_dir/reference-e2e-logs}"
+mkdir -p "$task_logs"
+task_log="$task_logs/$(date -u +%Y%m%dT%H%M%SZ)-e2e-$$.log"
+exec > >(tee -a "$task_log") 2>&1
+trap 'task_exit=$?; trap - EXIT; printf "E2E_LAUNCH_EXIT=%s LOG=%s\n" "$task_exit" "$task_log"; exit "$task_exit"' EXIT
+if [[ -n "${GENOS_PYTHON_DIR:-}" ]]; then
+  export PATH="$GENOS_PYTHON_DIR:$PATH"
+elif [[ -x /venv/bin/python3 ]]; then
+  export PATH="/venv/bin:$PATH"
+fi
+export GENOS_HANDOFF_LOG_DIR="$task_logs"
+export GENOS_DEV="${GENOS_DEV:-$HOME/DEV}"
+export GENOS_REUSE_RUN="${GENOS_REUSE_RUN:-financial_risk-success-20261003-reference-r1}"
+python3 - "$task_dir" <<'CHECK_FILES'
+import hashlib,sys
+from pathlib import Path
+print('PYTHON',sys.executable,sys.version.replace('\n',' '),flush=True)
+if sys.version_info<(3,11):raise ValueError('Python 3.11+ required')
+root=Path(sys.argv[1])
+expected={
+ 'GENOS_REFERENCE_BUILD_20261003_R1.zip':'48c4c1cfd3cf00ecfbac1094d6222c0d71623ce3435fbdbb3fc043328bd89011',
+ 'GENOS_REFERENCE_BUILD_20261003_R1.txt':'48161ce5fe3dbbf94f80c0711cdbc8d867aed52c316fa56264a6de0d57a1e94d'}
+for name,want in expected.items():
+    path=root/name
+    if path.is_symlink() or not path.is_file():raise ValueError('ZIP 해제 폴더의 파일이 필요합니다: '+name)
+    with path.open('rb') as f:actual=hashlib.file_digest(f,'sha256').hexdigest()
+    if actual!=want:raise ValueError('첨부 파일 해시 불일치: '+name)
+print('HANDOFF_FILES_VERIFIED',flush=True)
+CHECK_FILES
+: "${GENOS_DATA_ROOT:?완료 자료가 있는 실제 데이터 루트를 지정하세요. 예: export GENOS_DATA_ROOT=/nfs-root/diamo/8-agent/01_DATA}"
+: "${GENOS_PREPARED_RUN:?완료된 prepared run ID를 지정하세요. 예: export GENOS_PREPARED_RUN=financial_risk-success-20261002-index-r8}"
+task_script="$task_dir/GENOS_REFERENCE_BUILD_20261003_R1.txt"
+task_mode="${1:-e2e}"
+case "$task_mode" in
+  e2e)
+    for task_step in check apply verify build; do
+      printf 'E2E_STEP=%s\n' "$task_step"
+      bash "$task_script" "$task_step"
+    done
+    python3 - <<'VERIFY_RESULT'
+import hashlib,json,os
+from pathlib import Path
+root=Path(os.environ['GENOS_DATA_ROOT']).resolve(strict=True)/'TERM_RELEASES'/os.environ['GENOS_REUSE_RUN']/'serving'
+def sha(path):
+    with path.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+receipt=json.loads((root/'release.json').read_text())
+e2e=root/'offline-e2e.json'
+if not receipt.get('completed') or not receipt.get('serving_verified') or receipt.get('offline_e2e')!='PASS':
+    raise ValueError('서빙/E2E 완료 영수증이 없습니다')
+if receipt['settings'].get('storage_profile')!='compact-v2' or receipt['settings'].get('fulltext_granularity')!='unit':
+    raise ValueError('선택된 저장/색인 설정이 다릅니다')
+if sha(e2e)!=receipt['offline_e2e_sha256'] or json.loads(e2e.read_text()).get('status')!='PASS':
+    raise ValueError('오프라인 E2E 결과 결속 오류')
+generation=Path(receipt['generation_path']).resolve(strict=True)
+if generation!=(root/'baseline/generation').resolve(strict=True):raise ValueError('예상과 다른 generation 경로')
+if sha(generation/'manifest.json')!=receipt['manifest_sha256']:raise ValueError('generation manifest 변경')
+print('OFFLINE_E2E=PASS',flush=True)
+print('GENERATION='+str(generation),flush=True)
+print('MANIFEST_SHA256='+receipt['manifest_sha256'],flush=True)
+print('LIVE_WORKFLOW_E2E=NOT_RUN; 마지막 모델/근거 질문은 워크플로우 테스트 화면에서 확인하세요.',flush=True)
+VERIFY_RESULT
+    ;;
+  check|apply|verify|build|publish|gate|rollback)
+    bash "$task_script" "$task_mode" "${2:-}"
+    ;;
+  *) printf '지원 모드: e2e(기본), check, apply, verify, build, publish, gate, rollback\n' >&2; exit 2 ;;
+esac

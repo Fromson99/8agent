@@ -1,0 +1,38 @@
+{
+  "artifact_kind": "read_only_log_extractor",
+  "version": "bottleneck-extract-20260928-r1",
+  "code_root": "/home/jin/8-AGENT",
+  "git_head": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "working_tree_source": "08_DEPLOYMENT/GENOS/diagnostics/06_bottleneck_report.py",
+  "source_sha256": "fd7e4b8cb1bcf25a2e7bf830979d662a6954f87fc10bf06dbb4bf74d773c9a65",
+  "attachments": [
+    {
+      "name": "GENOS_BOTTLENECK_20260928_R1.txt",
+      "sha256": "5fceb5ecf996ce9966f24ed21e36da1456110d155f0ae44c49d58d14ad8910de",
+      "bytes": 25504
+    }
+  ],
+  "embedded_source_matches": true,
+  "bash_syntax_checked": true,
+  "python_syntax_checked": true,
+  "new_contract_tests": {
+    "passed": 12,
+    "failed": 0
+  },
+  "existing_diagnostics_suite": {
+    "passed": 3,
+    "failed": 1,
+    "failure": "unchanged format_readable_report action string expectation"
+  },
+  "fixture_kind": "synthetic_contract_logs_only",
+  "model_calls": 0,
+  "onsite_executed": false,
+  "code_zip": null,
+  "deployment_checkout": null,
+  "selected_generation": null,
+  "code_serving_revision": null,
+  "serving_code_changed": false,
+  "requires_deployment": false,
+  "requires_rehash": false,
+  "javascript_attachments": []
+}

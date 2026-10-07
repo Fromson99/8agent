@@ -1,0 +1,45 @@
+{
+  "version": "GENOS_NFS_READ_20261006_R6",
+  "code_zip_sha256": "4a1ae4625d3e0bba54fd11973f2ee7f1b3e9f028e974cd0182b3ae9124dfdb8f",
+  "code_manifest_sha256": "fa7b49cc6ea2f60cb6b99d310b9eb6546e5dbbf46802a9b7a49aa8d59b7bbc47",
+  "run_txt_sha256": "72b4477a7cf48fcf295c6067ca4db5b114802c6d7f0793e36d625f6da983c615",
+  "archive_members_verified": true,
+  "no_javascript_or_credentials_or_operating_data": true,
+  "python311_and_workflow310_syntax": true,
+  "bash_syntax": true,
+  "diagnostic_bundle_tests": {
+    "passed": 41
+  },
+  "existing_service_regression": {
+    "passed": 22,
+    "failed": 1,
+    "failure": "test_genos_input_byte_limit_uses_operator_setting: KeyError max_input_bytes",
+    "reproduced_before_nfs_hook": true,
+    "basis": "earlier user-directed input-byte limit removal"
+  },
+  "verified_local_code_root": "/home/jin/8-AGENT",
+  "field_push_checkout": "~/DEV",
+  "field_commit": null,
+  "field_generation_path_recorded": "/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation",
+  "field_generation_manifest_sha256": null,
+  "code_serving_revision": null,
+  "historically_confirmed_field_paths_explicit_in_driver": true,
+  "DEV_is_historically_NFS_not_local_ZIP_output": true,
+  "ZIP_default_outside_NFS_verified_by_mountinfo": true,
+  "stale_DEV_CURRENT_and_state_settings_bypassed": true,
+  "NFS_mount_entry_alias_supported_without_path_rewrite": true,
+  "failure_phase_and_requested_symlink_paths_recorded": true,
+  "DEV_alias_resolved_before_strict_file_checks": true,
+  "NFS_data_paths_not_rewritten": true,
+  "GENOS_accessed": false,
+  "field_deployment_verified": false,
+  "source_sha256": {
+    "02_BACKEND/semantic_runtime/nfs_data_probe.py": "8cf0625e93a2ecc4267ccd345197ebecd1f2abda8c65fe57c0fe097bfd93775e",
+    "06_TOOLS/COMMANDS/genos_nfs_probe_handoff.py": "a858059fb564216653a205b3f7bdea88580f0c1035a4dd158d4b86e5cf873030",
+    "06_TOOLS/COMMANDS/genos_rag_data_bundle.py": "00c93b25ac4e4c49cb7a474327b5ea107df526e09e6a87a12aa20c5a239592dd",
+    "06_TOOLS/COMMANDS/genos_pack_rag_data.sh": "7f7b7a7e9699ec8a610aa3039d43b237ee2896c9314c8ed063c74af08c4872ad",
+    "08_DEPLOYMENT/GENOS/workflow/genos_nfs_data_probe.py": "1b52307a84102f3a5629ffd15207b7648114a93c55fa64ff7753fb38d5848f6a",
+    "service.py": "051b508b38a829dbd637742309b5d646a916ef8788a29c3d8ddf294d33598aa6",
+    "08_DEPLOYMENT/GENOS/stream_app.py": "31a32d06cd04fe51bb5a0bd6dc2f976a7680ae9aa1234b09558665c4d0f12db8"
+  }
+}

@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+task_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+task_mode="${1:-check}"
+task_logs="${GENOS_HANDOFF_LOG_DIR:-$task_dir/sqlite-read-reuse-logs}"
+mkdir -p "$task_logs"
+task_log="$task_logs/$(date -u +%Y%m%dT%H%M%SZ)-$task_mode-$$.log"
+exec > >(tee -a "$task_log") 2>&1
+trap 'task_exit=$?; trap - EXIT; printf "HANDOFF_EXIT=%s LOG=%s\n" "$task_exit" "$task_log"; exit "$task_exit"' EXIT
+python3 - "$task_dir/GENOS_SQLITE_READ_REUSE_20261003_R1.zip" "${GENOS_DEV:-$HOME/DEV}" "$task_mode" "${2:-}" "$task_log" <<'REUSE_PY'
+import hashlib,json,os,subprocess,sys,types,zipfile,fcntl
+from pathlib import Path
+print('PYTHON',sys.executable,sys.version.replace('\n',' '),flush=True)
+if sys.version_info < (3,11): raise ValueError('Python 3.11+ required')
+archive=Path(sys.argv[1]).resolve(strict=True);root=Path(sys.argv[2]).resolve(strict=True)
+mode,arg=sys.argv[3:5];logfile=Path(sys.argv[5]).resolve()
+digest=lambda p:hashlib.file_digest(Path(p).open('rb'),'sha256').hexdigest()
+if digest(archive)!='4e512819e3f57c14f3c873723853368a34d098461e1db4e660e224f643fa2622':raise ValueError('Code ZIP hash mismatch')
+print('CODE_ROOT',root,'CODE_ZIP_SHA256',digest(archive),flush=True)
+with zipfile.ZipFile(archive) as z:
+ manifest_raw=z.read('CODE_MANIFEST.json');manifest=json.loads(manifest_raw)
+ raw=z.read('06_TOOLS/OFFLINE/genos_code_replace.py')
+ row=next(r for r in manifest['files'] if r['path']=='06_TOOLS/OFFLINE/genos_code_replace.py')
+ if hashlib.sha256(raw).hexdigest()!=row['sha256']:raise ValueError('Installer hash mismatch')
+ installer=types.ModuleType('checked_reuse_installer');installer.__file__=str(archive.parent/'checked-installer.py')
+ exec(compile(raw,installer.__file__,'exec'),installer.__dict__)
+data=Path(os.environ.get('GENOS_DATA_ROOT',str(root/'01_DATA'))).resolve(strict=True)
+prepared=os.environ.get('GENOS_PREPARED_RUN','financial-risk-success-20261001-r3')
+run=os.environ.get('GENOS_REUSE_RUN','financial-risk-success-20261003-sqlite-r1')
+def pins(applied):
+ for r in manifest['required_files']+manifest['files']:
+  target=installer.plain(root/r['path']);target.resolve().relative_to(root)
+  allowed=[r['sha256']] if applied else [r['sha256']]+r.get('allowed_predecessors',[])
+  if not target.is_file() or digest(target) not in allowed:
+   raise ValueError('CHECKOUT_DRIFT: '+r['path']+'; preserve local edits and use a matching patch')
+env={**os.environ,'PYTHONPATH':str(root/'02_BACKEND'),'LAWRAG_WORKSPACE_ROOT':str(root)}
+logdir=logfile.with_suffix('');logdir.mkdir(exist_ok=True)
+selected_manifest=logdir/'CODE_MANIFEST.json';selected_manifest.write_bytes(manifest_raw)
+print('CODE_MANIFEST_SHA256',digest(selected_manifest),'PREPARED_RUN',prepared,'OUTPUT_RUN',run,flush=True)
+common=['--dev',str(root),'--data-root',str(data),'--prepared-run',prepared,'--run-id',run,
+        '--code-manifest',str(selected_manifest),'--log-dir',str(logdir),
+        '--serving','--fulltext-granularity','unit']
+if os.environ.get('GENOS_COMPLETED_GLOSSARY'):
+ common+=['--completed-glossary',os.environ['GENOS_COMPLETED_GLOSSARY']]
+if mode in ('check','apply'):
+ with installer.plain(root/'.genos-code-replacement.lock').open('a') as stream:
+  fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB)
+  pins(False)
+  # Refuse known active builds. This never signals or kills another worker.
+  idle="import sys; sys.path.insert(0,'06_TOOLS/OFFLINE'); import genos_reindex_runner as r; r.check_idle(sys.argv[1],sys.argv[2]); r.check_idle(sys.argv[1],sys.argv[3])"
+  subprocess.run([sys.executable,'-c',idle,str(data),prepared,run],cwd=root,env=env,check=True)
+  installer.install(root,archive.parent,apply=mode=='apply',archive=archive)
+  if mode=='apply':pins(True)
+elif mode in ('build','publish','verify'):
+ pins(True)
+ if mode=='verify':print('INSTALLED_BYTES_AND_DEPENDENCIES_VERIFIED',flush=True)
+ else:
+  command=[sys.executable,str(root/'06_TOOLS/OFFLINE/genos_reindex_runner.py'),mode,*common]
+  if mode=='publish':
+   shared=os.environ.get('GENOS_SHARED_ROOT')
+   if not shared:raise ValueError('Set GENOS_SHARED_ROOT to an existing code-serving-visible NFS directory')
+   command+=['--shared-root',shared]
+  subprocess.run(command,cwd=root,env=env,check=True)
+elif mode=='gate':
+ pins(True)
+ if arg:generation=Path(arg).resolve(strict=True)
+ else:
+  p=data/'TERM_RELEASES'/run/'shared-publication.json'
+  if not p.is_file():raise ValueError('Publish first or supply the exact generation path as the second argument')
+  generation=Path(json.loads(p.read_text())['generation_path']).resolve(strict=True)
+ print('GENERATION',generation,'MANIFEST_SHA256',digest(generation/'manifest.json'),flush=True)
+ subprocess.run([sys.executable,str(root/'06_TOOLS/COMMANDS/genos_release_gate.py'),
+  '--code-zip',str(archive),'--deploy-root',str(root),'--generation',str(generation)],cwd=root,env=env,check=True)
+elif mode=='rollback':
+ if not arg:raise ValueError('Supply the exact backup path printed by apply')
+ backup=Path(arg).resolve(strict=True)
+ if Path(json.loads((backup/'receipt.json').read_text())['root']).resolve()!=root:raise ValueError('Rollback root mismatch')
+ with installer.plain(root/'.genos-code-replacement.lock').open('a') as stream:
+  fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB);installer.rollback(backup)
+else:raise ValueError('Modes: check apply verify build publish gate rollback')
+print('COMPLETE',mode,'ACTIVATED=False LIVE_WORKFLOW_E2E=NOT_RUN',flush=True)
+REUSE_PY

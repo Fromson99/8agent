@@ -1,0 +1,328 @@
+#!/usr/bin/env bash
+# DOCX only: bash TRANSFER/GENOS_FAILED_STRUCTURE_RETRY_R2_UTF8.txt --run-id financial-risk-full-e2e-20260930-r3 --format docx --execute --merge
+# PDF diagnostics only (no model calls): same command with --format pdf, without --execute/--merge
+set -Eeuo pipefail
+umask 077
+retry_terminal_log=$(mktemp /tmp/genos-failed-structure-retry-r2-XXXXXX.log)
+exec > >(tee -a "$retry_terminal_log") 2>&1
+trap 'retry_rc=$?; printf "[%s] FINISHED status=%s log=%s\n" "$(TZ=Asia/Seoul date "+%Y-%m-%d %H:%M:%S KST")" "$retry_rc" "$retry_terminal_log"' EXIT
+printf '[%s] START failure-only structure recovery R2\n' "$(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S KST')"
+test -d 02_BACKEND/lawrag || { echo 'Run from the existing DEV checkout'; exit 2; }
+python3 -u - "$@" <<'GENOS_FAILED_RETRY_PY'
+"""Operational failure-only wrapper around genos_stages; no separate ingestion."""
+from __future__ import annotations
+import argparse
+import copy
+import csv
+from datetime import datetime
+import fcntl
+import html
+import io
+import json
+import logging
+import os
+from pathlib import Path
+import re
+import sys
+import uuid
+from zoneinfo import ZoneInfo
+
+
+def classify(error):
+    value = str(error)
+    rules = {
+        'TREE_PARENT': ('invalid_tree_parent',),
+        'TREE_SPANS': ('overlapping_sibling_spans',),
+        'SOURCE_BLOCKS': ('source_blocks_missing_ocr_required',),
+        'DEPENDENCY': ('ModuleNotFoundError', 'ImportError'),
+        'CALL_BUDGET': ('model_call_budget_exhausted', 'model_call_budget'),
+        'SCHEMA_JSON': ('schema', 'INVALID_MODEL_JSON', 'ResponseError', 'required property'),
+        'CONTEXT_OR_OUTPUT_LIMIT': ('INPUT_CONTEXT_LIMIT', 'OUTPUT_LENGTH_LIMIT', 'document_context_budget'),
+        'TRANSPORT': ('Timeout', 'ConnectionError', 'connection/timeout'),
+    }
+    return [name for name, needles in rules.items() if any(n in value for n in needles)] or ['OTHER']
+
+
+def failures(report):
+    return [copy.deepcopy(row) for row in report.get('documents', [])
+            if row.get('selection') == 'SELECTED'
+            and row.get('phases', {}).get('structure', {}).get('state') == 'FAILED']
+
+
+def enrich(rows):
+    """Only journal operational events, never provider prompts or corpus bodies."""
+    from lawrag.pipeline.genos_stages import plain_path
+    for row in rows:
+        phase = row['phases']['structure']
+        row['failure_categories'] = classify(phase.get('error', ''))
+        row['budget_events'] = []
+        row['review_events'] = []
+        folder = phase.get('output_path')
+        if not folder:
+            continue
+        root = plain_path(folder)
+        for path in sorted(root.glob('structure-recipe-runs/*/events.jsonl')):
+            for line in plain_path(path).read_text().splitlines():
+                try:
+                    event = json.loads(line)
+                except json.JSONDecodeError:
+                    # A running writer may not have finished its last event line.
+                    continue
+                if event.get('event') in {'recipe.review.result', 'recipe.review.warning',
+                                          'run.needs_review', 'model.response'}:
+                    row['review_events'].append({k: event[k] for k in (
+                        'event', 'phase', 'call', 'seconds', 'input_count', 'output_count',
+                        'finish_reason', 'failed', 'window_number', 'pages', 'verdict',
+                        'issue_count', 'code', 'reason', 'checkpoint') if k in event})
+                    row['review_events'] = row['review_events'][-50:]
+                if event.get('event') in {'recipe.review.budget', 'recipe.review.budget_exhausted'}:
+                    row['budget_events'].append({k: event[k] for k in (
+                        'event', 'total_pages', 'window_width', 'fresh_pass_min_calls',
+                        'max_calls', 'calls', 'pending_pages', 'pending_windows') if k in event})
+                    if event['event'] == 'recipe.review.budget_exhausted' and 'CALL_BUDGET' not in row['failure_categories']:
+                        row['failure_categories'].append('CALL_BUDGET')
+    return rows
+
+
+def write_reports(directory, report, rows):
+    from lawrag.pipeline.genos_build import atomic
+    from lawrag.pipeline.genos_status import safe
+    payload = safe({'source_run': report['run_id'], 'attempt': report.get('attempt'),
+                    'count': len(rows), 'documents': rows,
+                    'note': 'Only recorded structure FAILED; PENDING/RUNNING/index-only failures excluded.'})
+    atomic(directory / 'failures.json', payload)
+    stream = io.StringIO()
+    writer = csv.writer(stream)
+    writer.writerow(['document_id', 'title', 'path', 'category', 'elapsed_seconds', 'error', 'evidence', 'budget', 'review'])
+    for row in payload['documents']:
+        phase = row['phases']['structure']
+        writer.writerow([row['document_id'], row['title'], row['relative'],
+                         '/'.join(row['failure_categories']), phase.get('elapsed_seconds'),
+                         phase.get('error'), phase.get('output_path'), json.dumps(row['budget_events'], ensure_ascii=False),
+                         json.dumps(row.get('review_events', []), ensure_ascii=False)])
+    # New, unique report directory; never replace historical results.
+    (directory / 'failures.csv').write_text(stream.getvalue(), encoding='utf-8-sig')
+    body = ''.join('<tr><td>' + '</td><td>'.join(html.escape(str(x)) for x in (
+        row['title'], row['relative'], '/'.join(row['failure_categories']),
+        row['phases']['structure'].get('error', ''),
+        json.dumps(row.get('review_events', []), ensure_ascii=False))) + '</td></tr>' for row in payload['documents'])
+    (directory / 'failures.html').write_text(
+        '<!doctype html><meta charset="utf-8"><title>GENOS 구조화 실패 목록</title>'
+        '<h1>구조화 실패 ' + str(len(rows)) + '건</h1><table border="1">'
+        '<tr><th>문서</th><th>경로</th><th>유형</th><th>원래 오류</th><th>최근 검수 기록</th></tr>' + body + '</table>',
+        encoding='utf-8')
+
+
+def select_plan(plan, rows):
+    selected = {row['document_id']: row for row in rows}
+    picked = []
+    for row in plan['files']:
+        if row['document_id'] in selected:
+            recorded = selected[row['document_id']]
+            if row['relative'] != recorded['relative']:
+                raise ValueError('Failed document path changed: ' + row['document_id'])
+            picked.append(row)
+    if {row['document_id'] for row in picked} != set(selected):
+        raise ValueError('Failed inputs no longer selected; do not substitute another file')
+    out = copy.deepcopy(plan)
+    out['files'] = picked
+    return out
+
+
+def verify_inventory_snapshot(logs, report, plan):
+    from semantic_runtime.contracts import digest
+    from lawrag.pipeline.genos_stages import plain_path
+    expected = {r['document_id']: r['relative'] for r in report['documents']
+                if r['selection'] == 'SELECTED'}
+    candidates = {}
+    for path in sorted(logs.glob('inventory-*.json')):
+        files = json.loads(plain_path(path).read_text()).get('files', [])
+        if {r['document_id']: r['relative'] for r in files} == expected:
+            rows = {r['document_id']: r for r in files}
+            candidates[digest(rows)] = rows
+    if len(candidates) != 1:
+        raise ValueError('Original inventory snapshot missing or ambiguous; no newest-file guessing')
+    recorded = next(iter(candidates.values()))
+    if {r['document_id']: r for r in plan['files']} != recorded:
+        raise ValueError('Original inputs/metadata changed since failed attempt')
+
+
+def merge_selection(data, parent, child, plan, source_sha):
+    """Explicit adoption into the existing index consumer; preserve prior selection."""
+    from lawrag.pipeline import genos_build as build, genos_stages as stages
+    from semantic_runtime.contracts import digest, sha
+    target = data / 'LOGS' / parent / 'structure-selection.json'
+    if sha(target) != source_sha:
+        raise ValueError('Parent selection changed during retry; refusing merge')
+    original = json.loads(target.read_text())
+    if original['inputs_sha256'] != digest(plan):
+        raise ValueError('Parent input plan changed; refusing merge')
+    retry = json.loads((data / 'LOGS' / child / 'structure-selection.json').read_text())
+    if retry.get('schema_version') != 'structure-selection-v1':
+        raise ValueError('Unsupported retry selection contract')
+    for did, entry in retry['documents'].items():
+        if not re.fullmatch(r'[0-9a-f]{64}', entry.get('key', '')):
+            raise ValueError('Invalid retry structure key')
+        folder = stages.plain_path(data / 'STRUCTURE' / entry['key'])
+        receipt = stages.verify_structure(folder)
+        if sha(folder / 'structure-receipt.json') != entry['receipt_sha256']:
+            raise ValueError('Retry receipt changed')
+        expected = next(row for row in plan['files'] if row['document_id'] == did)
+        if receipt['input_row'] != expected:
+            raise ValueError('Retry input identity changed')
+    backup = target.with_name('structure-selection-before-retry-' + child + '.json')
+    with backup.open('xb') as out:
+        out.write(target.read_bytes())
+    merged = copy.deepcopy(original)
+    merged['documents'].update(retry['documents'])
+    merged['completed'] = set(merged['documents']) == set(original['expected_document_ids'])
+    merged['failure_retry'] = {'run_id': child, 'previous_selection': str(backup),
+                               'previous_sha256': source_sha}
+    build.atomic(target, merged)
+    return merged['completed']
+
+
+def main(argv=None):
+    os.umask(0o077)
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--run-id', default=os.environ.get('GENOS_RUN_ID'))
+    p.add_argument('--execute', action='store_true', help='Retry only recorded structure failures')
+    p.add_argument('--document-id', action='append', help='Optional subset of failures')
+    p.add_argument('--format', choices=('all', 'docx', 'pdf', 'hwpx'), default='all',
+                   help='Restrict failed inputs by actual selected file extension')
+    p.add_argument('--max-calls', type=int, default=256)
+    p.add_argument('--window-pages', type=int, default=3)
+    p.add_argument('--merge', action='store_true', help='After retry, adopt verified successes into parent structure selection')
+    args = p.parse_args(argv)
+    if not args.run_id:
+        p.error('Set GENOS_RUN_ID or --run-id to the original run')
+    if not 1 <= args.max_calls <= 256 or not 1 <= args.window_pages <= 20:
+        p.error('max-calls must be 1..256; window-pages must be 1..20')
+    if args.merge and not args.execute:
+        p.error('--merge requires --execute')
+    root = Path.cwd().resolve()
+    sys.path.insert(0, str(root / '02_BACKEND'))
+    from lawrag.pipeline import genos_status, genos_stages, genos_build, team_raw
+    from semantic_runtime.contracts import digest, sha
+    from semantic_runtime.genos_backend import safe
+    genos_status.validate_run_id(args.run_id)
+    # Resolve the configured logical root once; symlinks inside it remain forbidden.
+    data = genos_stages.plain_path(Path(os.environ.get('GENOS_DATA_ROOT')
+                                      or genos_stages.offline_data_root(root)).resolve(strict=True))
+    logs = data / 'LOGS' / args.run_id
+    locks = []
+    try:
+        if args.execute:
+            for path in (data / '.raw-migration.lock', logs / 'run.lock', logs / 'full-e2e-driver.lock'):
+                if not path.parent.is_dir():
+                    raise ValueError('Original run directory missing')
+                lock = genos_stages.plain_path(path).open('a')
+                locks.append(lock)
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        report = genos_status.read_report(logs)
+        if not report['recorded']:
+            raise ValueError('Original document status ledger missing')
+        rows = failures(report)
+        if args.format != 'all':
+            rows = [row for row in rows if Path(row['relative']).suffix.lower() == '.' + args.format]
+        if args.document_id:
+            wanted = set(args.document_id)
+            if not wanted <= {r['document_id'] for r in rows}:
+                raise ValueError('Requested document is not a recorded structure failure')
+            rows = [r for r in rows if r['document_id'] in wanted]
+        rows = enrich(rows)
+        tag = datetime.now(ZoneInfo('Asia/Seoul')).strftime('%Y%m%dT%H%M%S') + '-' + uuid.uuid4().hex[:6]
+        child = 'failure-retry-' + tag
+        output = data / 'LOGS' / child
+        output.mkdir(parents=True, exist_ok=False)
+        def emit(message):
+            text = safe(str(message))
+            line = '[' + datetime.now(ZoneInfo('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S KST') + '] ' + text
+            print(line, flush=True)
+            with (output / 'terminal.log').open('a', encoding='utf-8') as stream:
+                stream.write(line + '\n')
+        write_reports(output, report, rows)
+        emit('FAILED_STRUCTURE count=' + str(len(rows)) + ' report=' + str(output / 'failures.html'))
+        for number, row in enumerate(rows, 1):
+            emit(str(number) + '/' + str(len(rows)) + ' ' + row['title'] + ' | '
+                 + '/'.join(row['failure_categories']) + ' | ' + row['phases']['structure'].get('error', ''))
+            emit('DOCUMENT_ID=' + row['document_id'] + ' evidence=' + row['phases']['structure'].get('output_path', ''))
+        if not args.execute or not rows:
+            return 0
+        # These settings affect only this child run and are bound into its parser identity.
+        os.environ['STRUCTURE_RECIPE_MAX_CALLS'] = str(args.max_calls)
+        os.environ['STRUCTURE_RECIPE_MAX_PAGES'] = str(args.window_pages)
+        os.environ['LLM_BACKEND'] = 'genos'
+        emit('RETRY_SETTINGS max_calls=' + str(args.max_calls) + ' window_pages=' + str(args.window_pages)
+             + ' schema/tree checks preserved; no CURRENT/serving changes')
+        teams = sorted({part for row in report['documents'] if row['selection'] == 'SELECTED'
+                        for part in Path(row['relative']).parts if part.endswith('_team')})
+        plan, inventory = team_raw.collect(data, bindings=os.environ.get('FORMAT_BINDINGS_FILE'),
+                                           emit=emit, teams=teams or None)
+        parent_rows = [row for row in report['documents'] if row['selection'] == 'SELECTED']
+        full_plan = select_plan(plan, parent_rows)
+        verify_inventory_snapshot(logs, report, full_plan)
+        retry_plan = select_plan(full_plan, rows)
+        selection = logs / 'structure-selection.json'
+        selection_sha = sha(selection) if selection.is_file() else None
+        if args.merge and (not selection_sha or json.loads(selection.read_text())['inputs_sha256'] != digest(full_plan)):
+            raise ValueError('Original structure selection absent or changed; run retry without --merge')
+        genos_build.atomic(output / 'retry-plan.json', retry_plan)
+        genos_build.atomic(output / 'retry-binding.json', {
+            'parent_run': args.run_id, 'parent_attempt': report['attempt']['id'],
+            'parent_selection_sha256': selection_sha, 'inputs_sha256': digest(retry_plan),
+            'settings': {'max_calls': args.max_calls, 'window_pages': args.window_pages},
+            'code_root': str(root), 'parser_identity': genos_stages.parser_identity(root),
+            'notes': 'Operational recovery, not quality certification. Parent ledger retained.'})
+        options = genos_build.parser().parse_args(['build', '--input-root', str(data / 'RAW'),
+                                                  '--build-dir', str(data / 'TERM' / child)])
+        from lawrag.pipeline.genos_progress import Progress
+        from semantic_runtime import observability
+        progress = Progress(output, sys.stdout)
+        ledger = genos_status.Ledger(output)
+        ledger.start(retry_plan['files'], 'structure')
+        class Sink:
+            def write(self, text):
+                if text.strip():
+                    emit(text.rstrip())
+            def flush(self):
+                pass
+        handler = logging.StreamHandler(Sink())
+        observability.configure()
+        logger = logging.getLogger('genos')
+        logger.addHandler(handler)
+        try:
+            result = genos_stages.execute(retry_plan, options, data, child, 'structure',
+                                         progress=progress, status=ledger)
+            genos_build.atomic(output / 'retry-result.json', result)
+            ledger.finish('COMPLETED' if result['ok'] else 'FAILED')
+            if args.merge:
+                completed = merge_selection(data, args.run_id, child, full_plan, selection_sha)
+                emit('PARENT_SELECTION_MERGED completed=' + str(completed) + ' original ledger preserved')
+            genos_status.export_report(output)
+            emit('RETRY_DONE passed=' + str(result['passed']) + ' remaining=' + str(result['skipped'])
+                 + ' status_report=' + str(output / 'doc-status.html'))
+            return 0 if result['ok'] else 2
+        except KeyboardInterrupt:
+            ledger.finish('INTERRUPTED')
+            genos_status.export_report(output)
+            raise
+        except Exception as exc:
+            ledger.finish('FAILED', error=str(exc))
+            genos_status.export_report(output)
+            raise
+        finally:
+            logger.removeHandler(handler)
+            ledger.close()
+    finally:
+        for lock in reversed(locks):
+            lock.close()
+
+
+if __name__ == '__main__':
+    try:
+        raise SystemExit(main())
+    except BlockingIOError:
+        print('Original pipeline is active. Listing is allowed; retry only after it exits.', flush=True)
+        raise SystemExit(2)
+GENOS_FAILED_RETRY_PY

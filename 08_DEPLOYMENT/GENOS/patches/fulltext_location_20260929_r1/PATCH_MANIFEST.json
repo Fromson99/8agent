@@ -1,0 +1,31 @@
+{
+  "format": "8agent-fulltext-location-patch/1",
+  "patch": "fulltext-location-20260929-r1",
+  "files": {
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": {
+      "strategy": "approved-method-only"
+    }
+  },
+  "assets": {
+    "transform.py": "d6e893b1d2d9c0ff20bdfb28abad6c5e1d1de0418bc504147f26a536521ff3e8",
+    "baseline.py": "1356bdb20557541ba919f95316bbd47cd700a4bc246e63677723856118c64803",
+    "candidate.py": "4a4ea42a4ea27f26efb67d40ccc1860ab6b2d6abe5c63c23cb7de284f5715a80",
+    "benchmark.py": "06d6f95ef7398ce02495c488055ca9ab2aa042b3cbf9f51f4217c14fd904daf0",
+    "MATRIX.json": "fc740b8e8dca1470c4e737e4bb3ea89201fdbeb9faeefd42af14052169f1ee4f"
+  },
+  "source_snapshots": {
+    "baseline.py": {
+      "source_sha256": "73df183ff9309a46248c7371388e73709e2fda5cc0b33e83fb93758105781092",
+      "method_ast_sha256": "e6d751aebe6d6de2ba790ad5d238ce99a9539d4f33db6ef8f7f27fe74b107cd3"
+    },
+    "candidate.py": {
+      "source_sha256": "8f6d96027aa63928b72541b2363f66b8a2db4cc9d4c16af48caec6565dd034f5",
+      "method_ast_sha256": "53af8dc58ed96dbf2e7c50349332f0ca465c7dfbc2d6167e5d898a2b54284e2d"
+    }
+  },
+  "candidate_manifest_sha256": "70e53be44d8c8bf820161fd7d1917c2c7636114bca14dd529dd28f7780b65550",
+  "adr_id": "ADR-0549",
+  "generation_change": false,
+  "workflow_change": false,
+  "onsite_verified": false
+}

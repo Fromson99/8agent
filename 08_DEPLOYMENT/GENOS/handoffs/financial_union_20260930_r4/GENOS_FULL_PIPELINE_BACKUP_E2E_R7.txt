@@ -1,0 +1,647 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+
+# R7: apply exact error-display edits with verified backups, then resume.
+# R6: check PyMuPDF in the actual python3; recover validated saved PDFs without /run.
+# R5: reuse the exact verified r2 backup; preserve interrupted partial archives.
+# R4: unbuffered line reader replaces awk input buffering.
+# R3: existing PREPROCESSOR settings also serve the same /run PDF conversion.
+# All terminal/log lines have KST timestamps; failures name the stage and line.
+# Run in the GENOS Codespace with python3, after INSTALL_R3 MODE=apply.
+# Builds a DRAFT only. It never changes CURRENT or the code-serving revision.
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-full-e2e-XXXXXXXX.log")"
+exec > >(python3 -u -c '
+import sys
+from datetime import datetime, timezone, timedelta
+kst = timezone(timedelta(hours=9))
+for line in sys.stdin:
+    print(datetime.now(kst).strftime("[%Y-%m-%d %H:%M:%S KST]"), line.rstrip("\n"), flush=True)
+' | tee -a "$RUN_LOG") 2>&1
+export PYTHONUNBUFFERED=1
+START_SECONDS=$SECONDS
+STAGE=preflight
+ERROR_LINE=unknown
+stage() {
+  STAGE="$1"
+  printf 'STEP_START stage=%s elapsed_seconds=%s\n' "$STAGE" "$((SECONDS - START_SECONDS))"
+}
+finish() {
+  local code=$?
+  trap - ERR EXIT
+  if (( code != 0 )); then
+    printf 'FAILED stage=%s exit_code=%s line=%s elapsed_seconds=%s\n' "$STAGE" "$code" "$ERROR_LINE" "$((SECONDS - START_SECONDS))"
+    printf 'Read the error above. Full terminal log: %s\n' "$RUN_LOG"
+    if [[ -n "${GENOS_DATA_ROOT:-}" && -n "${RUN_ID:-}" ]]; then
+      printf 'Document details: %s/LOGS/%s/detail.log\n' "$GENOS_DATA_ROOT" "$RUN_ID"
+      printf 'Preparation receipts: %s/LOGS/%s/preparation\n' "$GENOS_DATA_ROOT" "$RUN_ID"
+    fi
+  fi
+  printf 'FINISHED status=%s stage=%s elapsed_seconds=%s log=%s\n' "$code" "$STAGE" "$((SECONDS - START_SECONDS))" "$RUN_LOG"
+  exit "$code"
+}
+trap 'ERROR_LINE=$LINENO' ERR
+trap finish EXIT
+stage preflight
+DEPLOY_ROOT="$(realpath "${DEPLOY_ROOT:-$HOME/DEV}")"
+cd "$DEPLOY_ROOT"
+export GENOS_DATA_ROOT="$(realpath "${GENOS_DATA_ROOT:-$DEPLOY_ROOT/01_DATA}")"
+RUN_ID="${GENOS_RUN_ID:-financial-risk-full-e2e-20260930-r1}"
+BASE="${GENOS_BASE_GENERATION:-}"
+[[ "$RUN_ID" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$ ]] || { echo 'Invalid GENOS_RUN_ID'; exit 2; }
+[[ -n "$BASE" && -f "$BASE/manifest.json" ]] || {
+  echo 'Set GENOS_BASE_GENERATION to the exact previous serving generation directory.'; exit 2;
+}
+BASE="$(realpath "$BASE")"
+# The serving generation can be on a separate NFS mount from Codespace 01_DATA.
+[[ -d "$BASE" && -f "$BASE/manifest.json" ]] || { echo 'Base generation disappeared'; exit 2; }
+command -v python3 >/dev/null || { echo 'python3 missing'; exit 2; }
+export GENOS_RUN_ID="$RUN_ID"
+stage actual_error_code_patch
+python3 - <<'GENOS_ERROR_PATCH_PY'
+"""Apply only verified error-display edits; preserve checkout-specific code."""
+import ast, fcntl, hashlib, json, os, shutil, sys, uuid
+from datetime import datetime, timezone
+from pathlib import Path
+EDITS = json.loads("[{\"path\":\"02_BACKEND/semantic_runtime/genos_backend.py\",\"old\":\"\\ndef unit_vector(values):\",\"new\":\"\\ndef error_detail(value):\\n    \\\"\\\"\\\"Keep each exception type/message and original cause, redacting credentials.\\\"\\\"\\\"\\n    if not isinstance(value, BaseException):\\n        return safe(str(value))\\n    parts, seen = [], set()\\n    current = value\\n    while current is not None and id(current) not in seen:\\n        seen.add(id(current))\\n        parts.append(f'{type(current).__name__}: {current}')\\n        current = current.__cause__ or current.__context__\\n    return safe(' <- caused by: '.join(parts))\\n\\n\\ndef unit_vector(values):\"},{\"path\":\"02_BACKEND/semantic_runtime/genos_backend.py\",\"old\":\"detail = safe(f'{type(exc).__name__}: {exc}')\",\"new\":\"detail = error_detail(exc)\"},{\"path\":\"02_BACKEND/semantic_runtime/genos_backend.py\",\"old\":\"{'error': safe(f'{type(exc).__name__}: {exc}')})\",\"new\":\"{'error': error_detail(exc)})\"},{\"path\":\"02_BACKEND/semantic_runtime/genos_backend.py\",\"old\":\"raise ValueError(f'{role} response validation failed; see {Path(receipt[\\\"path\\\"]).parent}') from None\",\"new\":\"raise ValueError(f'{role} response validation failed: {error_detail(exc)}; see {Path(receipt[\\\"path\\\"]).parent}') from None\"},{\"path\":\"02_BACKEND/lawrag/pipeline/raw_preprocess.py\",\"old\":\"from semantic_runtime.contracts import sha\",\"new\":\"from semantic_runtime.contracts import sha\\nfrom semantic_runtime.genos_backend import error_detail\"},{\"path\":\"02_BACKEND/lawrag/pipeline/raw_preprocess.py\",\"old\":\"    import fitz\\n    path = plain_path(path)\",\"new\":\"    try:\\n        import fitz\\n    except ImportError as exc:\\n        raise ImportError('PyMuPDF (fitz) is unavailable in the executing Python: ' + error_detail(exc)) from exc\\n    path = plain_path(path)\"},{\"path\":\"02_BACKEND/lawrag/pipeline/raw_preprocess.py\",\"old\":\"raise ValueError('empty/encrypted PDF')\",\"new\":\"raise ValueError('empty/encrypted PDF: ' + str(path))\"},{\"path\":\"02_BACKEND/lawrag/pipeline/raw_preprocess.py\",\"old\":\"evidence['transport_error_type'] = type(exc).__name__\",\"new\":\"evidence['transport_error_type'] = type(exc).__name__\\n        evidence['error'] = error_detail(exc)\"},{\"path\":\"02_BACKEND/lawrag/pipeline/raw_preprocess.py\",\"old\":\"raise ValueError('conversion pending; inspect saved staging job before a new run') from exc\",\"new\":\"raise ValueError('conversion pending: ' + error_detail(exc) + '; inspect saved staging job: ' + str(work)) from exc\"},{\"path\":\"02_BACKEND/lawrag/pipeline/raw_preprocess.py\",\"old\":\"    except Exception:\\n        evidence['status'] = 'PENDING' if evidence['http_status'] >= 500 else 'FAILED'\\n        builder.atomic(work / 'conversion.json', evidence)\\n        raise ValueError('converter returned no valid sidecar PDF; inspect ' + str(work))\",\"new\":\"    except Exception as exc:\\n        evidence['status'] = 'PENDING' if evidence['http_status'] >= 500 else 'FAILED'\\n        evidence['error'] = error_detail(exc)\\n        evidence['error_type'] = type(exc).__name__\\n        evidence['expected_pdf'] = str(pdf)\\n        builder.atomic(work / 'conversion.json', evidence)\\n        if isinstance(exc, ImportError):\\n            raise\\n        raise ValueError('PDF validation failed: ' + error_detail(exc)\\n                         + '; HTTP=' + str(evidence['http_status'])\\n                         + ' API code=' + str(evidence['api_code'])\\n                         + '; PDF=' + str(pdf) + '; receipt=' + str(work / 'conversion.json')) from exc\"},{\"path\":\"02_BACKEND/lawrag/pipeline/raw_preprocess.py\",\"old\":\"raise ValueError('previous conversion failed/pending; inspect ' + str(old))\",\"new\":\"raise ValueError('previous conversion ' + str(evidence.get('status'))\\n                                 + ': ' + str(evidence.get('error') or evidence.get('transport_error_type')\\n                                              or 'no original error saved by the previous code')\\n                                 + '; HTTP=' + str(evidence.get('http_status'))\\n                                 + ' API code=' + str(evidence.get('api_code')) + '; receipt=' + str(old))\"},{\"path\":\"02_BACKEND/lawrag/pipeline/raw_preprocess.py\",\"old\":\"report['errors'].append({'source': str(source), 'error': str(exc)})\",\"new\":\"report['errors'].append({'source': str(source), 'error': error_detail(exc), 'error_type': type(exc).__name__})\"},{\"path\":\"02_BACKEND/lawrag/pipeline/genos_progress.py\",\"old\":\"from semantic_runtime.genos_backend import safe\",\"new\":\"from semantic_runtime.genos_backend import safe, error_detail\"},{\"path\":\"02_BACKEND/lawrag/pipeline/genos_progress.py\",\"old\":\"def reason(value):\\n    text = clean(value)\",\"new\":\"def reason(value):\\n    original = clean(error_detail(value))\\n    text = original\"},{\"path\":\"02_BACKEND/lawrag/pipeline/genos_progress.py\",\"old\":\"    return text\\n\\n\\ndef vlm_detail\",\"new\":\"    return original if text == original else original + ' | 설명: ' + text\\n\\n\\ndef vlm_detail\"},{\"path\":\"02_BACKEND/lawrag/pipeline/genos_stages.py\",\"old\":\"from semantic_runtime.genos_backend import Genos\",\"new\":\"from semantic_runtime.genos_backend import Genos, error_detail\"},{\"path\":\"02_BACKEND/lawrag/pipeline/genos_stages.py\",\"old\":\"'structure': 'FAILED', 'error': str(exc)\",\"new\":\"'structure': 'FAILED', 'error': error_detail(exc)\"},{\"path\":\"02_BACKEND/lawrag/pipeline/genos_stages.py\",\"old\":\"record(did, 'structure', 'FAILED', error=str(exc)\",\"new\":\"record(did, 'structure', 'FAILED', error=error_detail(exc)\"},{\"path\":\"02_BACKEND/lawrag/pipeline/genos_stages.py\",\"old\":\"report['documents'][did]['error']=str(exc)\",\"new\":\"report['documents'][did]['error']=error_detail(exc)\"},{\"path\":\"02_BACKEND/lawrag/pipeline/genos_stages.py\",\"old\":\"record(did,'index','FAILED',error=str(exc)\",\"new\":\"record(did,'index','FAILED',error=error_detail(exc)\"},{\"path\":\"06_TOOLS/COMMANDS/genos_data_stages.py\",\"old\":\"status.finish('FAILED', error=str(exc))\",\"new\":\"status.finish('FAILED', error=reason(exc))\"},{\"path\":\"02_BACKEND/lawrag/pipeline/genos_build.py\",\"old\":\"from semantic_runtime.genos_backend import Genos, safe\",\"new\":\"from semantic_runtime.genos_backend import Genos, safe, error_detail\"},{\"path\":\"02_BACKEND/lawrag/pipeline/genos_build.py\",\"old\":\"'error': str(exc), 'type': type(exc).__name__\",\"new\":\"'error': error_detail(exc), 'type': type(exc).__name__\"},{\"path\":\"02_BACKEND/lawrag/pipeline/genos_build.py\",\"old\":\"print(safe(f'BUILD STOPPED: {type(exc).__name__}: {exc}'), file=sys.stderr)\",\"new\":\"print('BUILD STOPPED: ' + error_detail(exc), file=sys.stderr)\"},{\"path\":\"02_BACKEND/semantic_runtime/genos.py\",\"old\":\"        result.update(status=\\\"FAIL\\\", error=type(exc).__name__)\",\"new\":\"        from .genos_backend import error_detail\\n        result.update(status=\\\"FAIL\\\", error=type(exc).__name__, error_detail=error_detail(exc))\"}]")
+ROOT = Path.cwd().resolve()
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+def target(rel):
+    p = Path(rel)
+    if p.is_absolute() or '..' in p.parts:
+        raise ValueError('Unsafe code path: ' + rel)
+    out = ROOT / p
+    if any(q.is_symlink() for q in (out, *out.parents)) or not out.is_file():
+        raise ValueError('Code file missing or symlink: ' + str(out))
+    return out
+def atomic(path, raw):
+    temp = path.with_name('.error-patch-' + uuid.uuid4().hex)
+    try:
+        with temp.open('xb') as out:
+            out.write(raw)
+        if path.exists():
+            os.chmod(temp, path.stat().st_mode & 0o777)
+        os.replace(temp, path)
+    finally:
+        temp.unlink(missing_ok=True)
+data = Path(os.environ['GENOS_DATA_ROOT']).resolve()
+run_id = os.environ['GENOS_RUN_ID']
+locks = []
+for lock_path in (data / '.raw-migration.lock', data / 'LOGS' / run_id / 'full-e2e-driver.lock'):
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    lock = lock_path.open('a')
+    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    locks.append(lock)
+mode = os.environ.get('GENOS_ERROR_PATCH_MODE', 'apply')
+if mode == 'rollback':
+    receipt_path = Path(os.environ['GENOS_ERROR_PATCH_RECEIPT']).resolve()
+    receipt = json.loads(receipt_path.read_text())
+    if receipt['code_root'] != str(ROOT):
+        raise ValueError('Rollback checkout differs')
+    plan = []
+    for row in receipt['files']:
+        dest = target(row['path'])
+        if sha(dest.read_bytes()) != row['after_sha256']:
+            raise ValueError('Rollback current code differs: ' + row['path'])
+        original = (receipt_path.parent / 'before' / row['path']).read_bytes()
+        if sha(original) != row['before_sha256']:
+            raise ValueError('Rollback backup hash differs: ' + row['path'])
+        plan.append((dest, original))
+    for dest, original in plan:
+        atomic(dest, original)
+    print('CODE_PATCH_ROLLBACK_PASS receipt=' + str(receipt_path), flush=True)
+elif mode == 'apply':
+    plan = []
+    for rel in dict.fromkeys(row['path'] for row in EDITS):
+        dest = target(rel)
+        before = dest.read_bytes()
+        text = before.decode()
+        for edit in [row for row in EDITS if row['path'] == rel]:
+            if edit['new'] in text:
+                continue
+            count = text.count(edit['old'])
+            expected = 2 if rel == '02_BACKEND/semantic_runtime/genos.py' else 1
+            if count != expected:
+                raise ValueError('CODE_PATCH_BASE_MISMATCH path=' + rel + ' sha256=' + sha(before)
+                                 + ' anchor_count=' + str(count))
+            text = text.replace(edit['old'], edit['new'])
+        ast.parse(text, filename=rel, feature_version=(3, 11))
+        after = text.encode()
+        if after != before:
+            plan.append((rel, dest, before, after))
+    if not plan:
+        print('CODE_PATCH_ALREADY_APPLIED files=7 (no writes)', flush=True)
+    else:
+        backup = ROOT / 'TRANSFER/BACKUPS/actual-error-details-r1' / (
+            datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid.uuid4().hex[:8])
+        backup.mkdir(parents=True)
+        files = []
+        for rel, dest, before, after in plan:
+            saved = backup / 'before' / rel
+            saved.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(dest, saved)
+            if saved.read_bytes() != before or dest.read_bytes() != before:
+                raise ValueError('Code changed during backup: ' + rel)
+            files.append({'path': rel, 'before_sha256': sha(before), 'after_sha256': sha(after)})
+        receipt = {'schema_version': 'actual-error-details-patch-v1', 'status': 'PREPARED',
+                   'code_root': str(ROOT), 'run_id': run_id, 'files': files,
+                   'created_at': datetime.now(timezone.utc).isoformat(),
+                   'base_generation': os.environ.get('GENOS_BASE_GENERATION')}
+        receipt_path = backup / 'receipt.json'
+        receipt_path.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + '\n')
+        for rel, dest, before, after in plan:
+            if dest.read_bytes() != before:
+                raise ValueError('Code changed before apply: ' + rel)
+            atomic(dest, after)
+            if sha(dest.read_bytes()) != sha(after):
+                raise ValueError('Applied code hash differs: ' + rel)
+        receipt['status'] = 'APPLIED'
+        atomic(receipt_path, (json.dumps(receipt, ensure_ascii=False, indent=2) + '\n').encode())
+        print('CODE_PATCH_APPLIED files=' + str(len(files)) + ' receipt=' + str(receipt_path), flush=True)
+        print('ROLLBACK: GENOS_ERROR_PATCH_MODE=rollback GENOS_ERROR_PATCH_RECEIPT='
+              + str(receipt_path) + ' bash TRANSFER/GENOS_FULL_PIPELINE_BACKUP_E2E_R7.txt', flush=True)
+else:
+    raise ValueError('GENOS_ERROR_PATCH_MODE must be apply or rollback')
+GENOS_ERROR_PATCH_PY
+if [[ "${GENOS_ERROR_PATCH_MODE:-apply}" == rollback ]]; then
+  stage code_patch_rollback_completed
+  exit 0
+fi
+# pdf_check imports fitz; a missing import was previously reported as no PDF.
+stage pdf_validation_dependency
+if ! python3 -c 'import fitz' >/dev/null 2>&1; then
+  echo 'PyMuPDF import failed in the pipeline python3. Installing the checkout-pinned dependency.'
+  python3 -c 'import fitz' || true
+  PDF_REQUIREMENT="$(python3 - <<'PY'
+import re
+from pathlib import Path
+matches = re.findall(r'^pymupdf==([^\\s#]+)', Path('requirements.txt').read_text(), re.M | re.I)
+if len(matches) != 1:
+    raise SystemExit('ERROR: exactly one PyMuPDF pin is required in requirements.txt')
+print('pymupdf==' + matches[0])
+PY
+)"
+  if [[ -n "${GENOS_PDF_WHEEL_ROOT:-}" ]]; then
+    [[ -d "$GENOS_PDF_WHEEL_ROOT" ]] || { echo 'GENOS_PDF_WHEEL_ROOT is missing'; exit 2; }
+    python3 -m pip install --disable-pip-version-check --no-index --find-links "$GENOS_PDF_WHEEL_ROOT" "$PDF_REQUIREMENT"
+  else
+    # Uses Codespace's configured pip index; no hard-coded external index.
+    python3 -m pip install --disable-pip-version-check "$PDF_REQUIREMENT"
+  fi
+fi
+python3 - <<'PY'
+import fitz, sys
+print('PDF_VALIDATOR_READY python=' + sys.executable + ' PyMuPDF=' + str(fitz.VersionBind), flush=True)
+PY
+stage preflight
+command -v tar >/dev/null || { echo 'tar missing'; exit 2; }
+command -v flock >/dev/null || { echo 'flock missing'; exit 2; }
+mkdir -p "$GENOS_DATA_ROOT/LOGS/$RUN_ID"
+exec 9>"$GENOS_DATA_ROOT/LOGS/$RUN_ID/full-e2e-driver.lock"
+flock -n 9 || { echo 'This full E2E run is already active'; exit 2; }
+for path in 06_TOOLS/COMMANDS/genos_data_stages.py 06_TOOLS/pipeline.py \
+  06_TOOLS/COMMANDS/genos_generation_e2e.py 02_BACKEND/lawrag/pipeline/union_file.py \
+  02_BACKEND/lawrag/pipeline/reference_resolution.py; do
+  [[ -f "$path" ]] || { echo "Required checkout code missing: $path"; exit 2; }
+  sha256sum "$path"
+done
+printf 'CHECKOUT=%s BASE_GENERATION=%s RUN_ID=%s\n' "$DEPLOY_ROOT" "$BASE" "$RUN_ID"
+sha256sum "$BASE/manifest.json"
+RECEIPT="$GENOS_DATA_ROOT/CATALOG/TEAM_LAYOUT_HISTORY/financial-external-19-correction-r3/receipt.json"
+[[ -f "$RECEIPT" ]] || { echo 'Run INSTALL_R3 MODE=apply before full E2E'; exit 2; }
+
+# Use the existing parser service for conversion unless a separate converter
+# endpoint is explicitly configured. Both clients use /run with file_path.
+# Explicit converter settings always win; API keys are never printed.
+if [[ -z "${GENOS_PDF_CONVERTER_URL:-}" && -z "${GENOS_PDF_CONVERTER_ID:-}" ]]; then
+  CONVERTER_FROM_PREPROCESSOR=1
+  if [[ -n "${GENOS_PREPROCESSOR_URL:-}" ]]; then
+    export GENOS_PDF_CONVERTER_URL="$GENOS_PREPROCESSOR_URL"
+  elif [[ -n "${GENOS_PREPROCESSOR_ID:-}" ]]; then
+    export GENOS_PDF_CONVERTER_ID="$GENOS_PREPROCESSOR_ID"
+  else
+    echo 'ERROR: set GENOS_PREPROCESSOR_ID or GENOS_PREPROCESSOR_URL in this terminal environment.'
+    exit 2
+  fi
+  for suffix in REMOTE_ROOT REVISION TIMEOUT API_KEY; do
+    converter_key="GENOS_PDF_CONVERTER_$suffix"
+    parser_key="GENOS_PREPROCESSOR_$suffix"
+    if [[ -z "${!converter_key:-}" && -n "${!parser_key:-}" ]]; then
+      export "$converter_key=${!parser_key}"
+    fi
+  done
+  echo 'CONFIG: PDF conversion uses the configured preprocessor service.'
+fi
+if [[ -z "${GENOS_PDF_CONVERTER_SHARED_ROOT:-}" ]]; then
+  if [[ "${CONVERTER_FROM_PREPROCESSOR:-0}" == 1 ]]; then
+    export GENOS_PDF_CONVERTER_SHARED_ROOT="${GENOS_PREPROCESSOR_SHARED_ROOT:-}"
+  else
+    echo 'ERROR: separate converter selected; set its GENOS_PDF_CONVERTER_SHARED_ROOT.'
+    exit 2
+  fi
+fi
+for key in GENOS_PDF_CONVERTER_SHARED_ROOT GENOS_PREPROCESSOR_SHARED_ROOT; do
+  [[ "${!key:-}" == /* && -d "${!key:-/nonexistent}" && -r "${!key}" && -w "${!key}" && -x "${!key}" ]] || {
+    echo "ERROR: $key must be an existing absolute shared directory readable/writable from this terminal."
+    exit 2
+  }
+done
+[[ -n "${GENOS_PREPROCESSOR_ID:-${GENOS_PREPROCESSOR_URL:-}}" ]] || {
+  echo 'ERROR: set GENOS_PREPROCESSOR_ID or GENOS_PREPROCESSOR_URL.'; exit 2;
+}
+python3 - <<'PY'
+import os
+from urllib.parse import urlsplit
+from pathlib import Path
+import sys
+sys.path.insert(0, str(Path.cwd() / '02_BACKEND'))
+from lawrag.core.genos_preprocessor import Settings
+Settings.from_env()
+url = os.environ.get('GENOS_PDF_CONVERTER_URL', '').strip()
+if url:
+    p = urlsplit(url)
+    if (p.scheme not in {'http', 'https'} or not p.hostname or p.username or p.password
+            or p.query or p.fragment or p.path not in {'', '/', '/run'}):
+        raise SystemExit('ERROR: converter requires a service base URL or /run; /parser is parsing-only. Set GENOS_PDF_CONVERTER_ID for conversion.')
+else:
+    if not os.environ.get('GENOS_PDF_CONVERTER_ID', '').isdecimal():
+        raise SystemExit('ERROR: GENOS_PDF_CONVERTER_ID must be numeric.')
+print('PREPROCESSOR_CONFIG_VALID (local configuration only; service execution follows)', flush=True)
+PY
+
+stage union_verification
+# Verify the actual on-site pairs. The local 139-file count is not used.
+python3 - "$GENOS_DATA_ROOT" "$RECEIPT" <<'PY'
+import hashlib, json, sys
+from pathlib import Path
+root, receipt_path = map(Path, sys.argv[1:3])
+sys.path.insert(0, str(Path.cwd() / '02_BACKEND'))
+from lawrag.pipeline import union_file
+r = json.loads(receipt_path.read_text())
+layout_path = root / 'CATALOG/TEAM_LAYOUT.json'
+union_path = root / 'RAW/union_file/manifest.json'
+for path, key in ((layout_path, 'layout_after_sha256'), (union_path, 'union_after_sha256')):
+    if hashlib.sha256(path.read_bytes()).hexdigest() != r[key]:
+        raise SystemExit('Corrected RAW binding differs: ' + str(path))
+layout = json.loads(layout_path.read_text())
+loaded = union_file.load(root, layout)
+made = union_file.make(root, layout, set(r['shared_document_names']), r['scope_sha256'])
+if loaded != made or len(loaded['entries']) != r['shared_pairs']:
+    raise SystemExit('Union manifest does not match registered on-site files')
+if len(r['shared_document_names']) != 9 or r['financial_only_form_files'] != 11:
+    raise SystemExit('Expected financial document classification differs')
+print('UNION_VERIFIED shared_documents=9 actual_pairs=' + str(len(loaded['entries'])), flush=True)
+PY
+
+stage saved_pdf_validation_and_recovery
+# Hold the same RAW lock used by preparation. Only saved artifacts are examined.
+python3 - "$GENOS_DATA_ROOT" "$RUN_ID" <<'PY'
+import fcntl, hashlib, json, os, sys
+from datetime import datetime, timezone
+from pathlib import Path
+sys.path.insert(0, str(Path.cwd() / '02_BACKEND'))
+from lawrag.pipeline import raw_preprocess
+from lawrag.pipeline import genos_build
+from semantic_runtime.contracts import sha
+root, run_id = Path(sys.argv[1]), sys.argv[2]
+preparation = root / 'LOGS' / run_id / 'preparation'
+lock_path = raw_preprocess.plain_path(root / '.raw-migration.lock')
+expected_shared = raw_preprocess.plain_path(os.environ['GENOS_PDF_CONVERTER_SHARED_ROOT'])
+expected_url = os.environ.get('GENOS_PDF_CONVERTER_URL', '').strip()
+if not expected_url:
+    expected_url = 'http://preprocessor-' + os.environ['GENOS_PDF_CONVERTER_ID'] + ':8080/run'
+else:
+    from urllib.parse import urlsplit
+    if urlsplit(expected_url).path in {'', '/'}:
+        expected_url = expected_url.rstrip('/') + '/run'
+recovered = 0
+with lock_path.open('a') as lock:
+    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    for path in sorted(preparation.glob('*/conversion.json')):
+        path = raw_preprocess.plain_path(path)
+        prior = path.read_bytes()
+        record = json.loads(prior)
+        if record.get('status') not in {'FAILED', 'PENDING'}:
+            continue
+        print('SAVED_JOB_CHECK receipt=' + str(path) + ' http_status=' + str(record.get('http_status'))
+              + ' api_code=' + str(record.get('api_code')), flush=True)
+        if record.get('transport_error_type') or not isinstance(record.get('http_status'), int):
+            raise SystemExit('SAVED_JOB_UNCERTAIN: no completed HTTP response; inspect server job before retry')
+        staging = raw_preprocess.plain_path(record['staging'])
+        if (staging.parent.resolve() != expected_shared.resolve() or record.get('url') != expected_url
+                or record.get('revision', '') != os.environ.get('GENOS_PDF_CONVERTER_REVISION', '')):
+            raise SystemExit('SAVED_JOB_BINDING_CHANGED: preserve job and restore its original converter settings')
+        request_name = Path(record['request']['file_path']).name
+        source = raw_preprocess.plain_path(staging / request_name)
+        pdf = raw_preprocess.plain_path(source.with_suffix('.pdf'))
+        if not source.is_file() or sha(source) != record.get('input_sha256'):
+            raise SystemExit('SAVED_JOB_INPUT_CHANGED: original staged input differs')
+        if not pdf.is_file():
+            raise SystemExit('SAVED_PDF_STILL_MISSING: ' + str(pdf) + '; no automatic /run retry')
+        pdf_sha = sha(pdf)
+        try:
+            pages = raw_preprocess.pdf_check(pdf)
+        except Exception as exc:
+            print('SAVED_PDF_VALIDATION_FAILED type=' + type(exc).__name__, flush=True)
+            raise
+        if sha(pdf) != pdf_sha or sha(source) != record['input_sha256']:
+            raise SystemExit('SAVED_JOB_CHANGED_DURING_VALIDATION: preserve files and stop')
+        prior_sha = hashlib.sha256(prior).hexdigest()
+        preserved = path.with_name('conversion-before-recovery-' + prior_sha + '.json')
+        if preserved.exists():
+            if preserved.read_bytes() != prior:
+                raise SystemExit('Recovery history differs')
+        else:
+            with preserved.open('xb') as out:
+                out.write(prior)
+        if path.read_bytes() != prior:
+            raise SystemExit('Receipt changed during recovery')
+        record.update(status='CONVERTED' if record['http_status'] == 200 and record.get('api_code') == 0
+                      else 'PDF_WITH_API_WARNING', pages=pages, pdf_sha256=pdf_sha, pdf_path=str(pdf))
+        record['saved_pdf_recovery'] = {'schema_version': 'saved-pdf-recovery-v1',
+            'prior_receipt': str(preserved), 'prior_receipt_sha256': prior_sha,
+            'validated_at': datetime.now(timezone.utc).isoformat(), 'new_service_requests': 0}
+        genos_build.atomic(path, record)
+        recovered += 1
+        print('SAVED_PDF_RECOVERED pages=' + str(pages) + ' status=' + record['status']
+              + ' sha256=' + pdf_sha + ' prior_receipt=' + str(preserved), flush=True)
+print('SAVED_PDF_RECOVERY_COMPLETE recovered=' + str(recovered) + ' new_service_requests=0', flush=True)
+PY
+
+stage reference_model_binding
+# Pin the GENOS internal model used for LLM reference resolution. No key is written.
+PROFILE="$GENOS_DATA_ROOT/LOGS/$RUN_ID/reference-model-profile.json"
+mkdir -p "$(dirname "$PROFILE")"
+python3 - "$PROFILE" <<'PY'
+import hashlib, json, os, sys
+from pathlib import Path
+sys.path.insert(0, str(Path.cwd() / '02_BACKEND'))
+from semantic_runtime.genos import from_env
+from semantic_runtime.legal_agent.transport import GenosTransport
+target, configured_model = from_env('llm')
+model = (os.environ.get('GENOS_REFERENCE_MODEL') or configured_model or '').strip()
+if not model:
+    import httpx
+    with httpx.Client(trust_env=False, timeout=target.read_timeout) as client:
+        response = client.get(target.url('/models'), headers=target.headers)
+        response.raise_for_status()
+        ids = [v['id'] for v in response.json().get('data', []) if isinstance(v, dict) and isinstance(v.get('id'), str)]
+    if len(set(ids)) != 1:
+        raise SystemExit('Set GENOS_REFERENCE_MODEL to the exact advertised internal model ID')
+    model = ids[0]
+binding = {'provider': 'genos', 'trust_zone': 'internal', 'model': model,
+           'adapter_version': 'genos-single-send-v1',
+           'endpoint_identity': hashlib.sha256(target.root.encode()).hexdigest(),
+           'max_input_bytes': int(os.environ.get('GENOS_LLM_MAX_INPUT_BYTES', '131072'))}
+GenosTransport.from_environment(binding).validate_model()
+profile = {'schema_version': 'reference-model-profile-v1', 'model_binding': binding,
+           'max_output_tokens': 4096, 'max_transport_retries': 0,
+           'max_schema_repairs': 0, 'wall_seconds': 1800, 'approval_mode': 'automatic'}
+path = Path(sys.argv[1])
+raw = (json.dumps(profile, ensure_ascii=False, indent=2, sort_keys=True) + '\n').encode()
+if path.exists():
+    if path.read_bytes() != raw:
+        raise SystemExit('Pinned reference profile changed; use a new GENOS_RUN_ID')
+else:
+    with path.open('xb') as out:
+        out.write(raw)
+print('REFERENCE_PROFILE_PINNED model=' + model + ' sha256=' + hashlib.sha256(raw).hexdigest(), flush=True)
+PY
+
+stage previous_generation_backup
+# Archive the selected prior generation and control files before any conversion.
+# RAW originals and prior immutable STRUCTURE caches are not modified by this run.
+BASE_STORAGE_ROOT="$(dirname "$(dirname "$(dirname "$BASE")")")"
+BACKUP_ROOT="${GENOS_BACKUP_ROOT:-$BASE_STORAGE_ROOT/BACKUPS/full-e2e/$RUN_ID}"
+BACKUP_ROOT="$(realpath -m "$BACKUP_ROOT")"
+[[ "$BACKUP_ROOT" != "$BASE"/* && "$BACKUP_ROOT" != "$BASE" ]] || {
+  echo 'Backup root is inside the selected generation'; exit 2;
+}
+mkdir -p "$BACKUP_ROOT"
+ARCHIVE="$BACKUP_ROOT/previous-generation-and-controls.tar.gz"
+BACKUP_RECEIPT="$BACKUP_ROOT/receipt.json"
+# The supplied field record identifies r2 as the completed previous backup.
+# Reuse only that exact receipt (or an explicitly supplied receipt), after
+# matching the selected generation and every saved control file. No latest scan.
+REUSE_RECEIPT="${GENOS_REUSE_BACKUP_RECEIPT:-$BASE_STORAGE_ROOT/BACKUPS/full-e2e/financial-risk-full-e2e-20260930-r2/receipt.json}"
+if [[ ! -f "$ARCHIVE" && -f "$REUSE_RECEIPT" ]]; then
+  stage previous_backup_binding_check
+  ARCHIVE="$(python3 - "$GENOS_DATA_ROOT" "$BASE" "$REUSE_RECEIPT" <<'PY'
+import hashlib, json, sys
+from pathlib import Path
+root, base, receipt = map(Path, sys.argv[1:4])
+r = json.loads(receipt.read_text())
+if (r.get('schema_version') != 'genos-full-e2e-backup-v1'
+        or Path(r['base_generation']).resolve() != base.resolve()
+        or r['base_manifest_sha256'] != hashlib.sha256((base/'manifest.json').read_bytes()).hexdigest()):
+    raise SystemExit('ERROR: reuse backup generation differs; preserved all backup files')
+controls = r.get('controls', {})
+for required in ('CATALOG/TEAM_LAYOUT.json', 'RAW/union_file/manifest.json'):
+    if required not in controls:
+        raise SystemExit('ERROR: reuse backup has no required control binding: ' + required)
+for rel, expected in controls.items():
+    relative = Path(rel)
+    if relative.is_absolute() or '..' in relative.parts:
+        raise SystemExit('ERROR: invalid backup control path')
+    path = root / relative
+    if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+        raise SystemExit('ERROR: saved backup control differs: ' + rel)
+archive = receipt.parent / 'previous-generation-and-controls.tar.gz'
+if not archive.is_file() or Path(r['archive']).resolve() != archive.resolve():
+    raise SystemExit('ERROR: saved backup archive path differs or is missing')
+if archive.stat().st_size != r['archive_bytes']:
+    raise SystemExit('ERROR: saved backup archive size differs')
+print(archive)
+PY
+)"
+  BACKUP_RECEIPT="$REUSE_RECEIPT"
+  printf 'BACKUP_REUSE_SELECTED receipt=%s archive=%s (SHA256 verification follows)\n' "$BACKUP_RECEIPT" "$ARCHIVE"
+  printf 'Interrupted r3 .partial file is preserved; it is not selected as a valid backup.\n'
+fi
+stage previous_backup_sha256_verification
+python3 - "$GENOS_DATA_ROOT" "$BASE" "$ARCHIVE" "$BACKUP_RECEIPT" <<'PY'
+import hashlib, json, sys
+from pathlib import Path
+root, base, archive, receipt = map(Path, sys.argv[1:5])
+manifest = hashlib.sha256((base / 'manifest.json').read_bytes()).hexdigest()
+if archive.exists() != receipt.exists():
+    raise SystemExit('Partial backup exists; inspect it before rerun')
+if archive.exists():
+    old = json.loads(receipt.read_text())
+    import time
+    h = hashlib.sha256()
+    verified, next_report = 0, 512*1024*1024
+    started = time.monotonic()
+    print('BACKUP_SHA256_START bytes=' + str(archive.stat().st_size), flush=True)
+    with archive.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(8*1024*1024), b''):
+            h.update(chunk)
+            verified += len(chunk)
+            if verified >= next_report:
+                print('BACKUP_VERIFY_PROGRESS bytes=' + str(verified) + '/' + str(archive.stat().st_size)
+                      + ' elapsed_seconds=' + str(round(time.monotonic()-started, 1)), flush=True)
+                next_report = verified + 512*1024*1024
+    if old.get('archive_sha256') != h.hexdigest() or old.get('base_manifest_sha256') != manifest:
+        raise SystemExit('Backup binding differs; use a new GENOS_RUN_ID')
+    print('BACKUP_REUSED bytes=' + str(archive.stat().st_size), flush=True)
+    raise SystemExit(0)
+print('BACKUP_REQUIRED base=' + str(base) + ' manifest_sha256=' + manifest, flush=True)
+PY
+if [[ ! -f "$ARCHIVE" ]]; then
+  BASE_PARENT="$(dirname "$BASE")"
+  BASE_NAME="$(basename "$BASE")"
+  backup_items=(CATALOG/TEAM_LAYOUT.json RAW/union_file/manifest.json)
+  for optional in CATALOG/RAW_DERIVATIVES.json CATALOG/BUILD_SCOPE.json generations/CURRENT.json; do
+    [[ ! -f "$GENOS_DATA_ROOT/$optional" ]] || backup_items+=("$optional")
+  done
+  PARTIAL="$ARCHIVE.partial"
+  if [[ -e "$PARTIAL" ]]; then
+    # The run lock above is held. Preserve the interrupted bytes, never delete.
+    PRESERVED="$PARTIAL.interrupted-$(date -u +%Y%m%dT%H%M%SZ)-$"
+    [[ ! -e "$PRESERVED" ]] || { echo 'Interrupted backup preservation path already exists'; exit 2; }
+    mv -n -- "$PARTIAL" "$PRESERVED"
+    printf 'INTERRUPTED_BACKUP_PRESERVED path=%s\n' "$PRESERVED"
+  fi
+  stage previous_generation_backup_creation
+  printf 'BACKUP_START output=%s\n' "$ARCHIVE"
+  du -sh "$BASE"
+  df -h "$BACKUP_ROOT"
+  tar -czf "$PARTIAL" -C "$BASE_PARENT" "$BASE_NAME" \
+    -C "$GENOS_DATA_ROOT" "${backup_items[@]}"
+  tar -tzf "$PARTIAL" >/dev/null
+  mv -n "$PARTIAL" "$ARCHIVE"
+  python3 - "$BASE" "$ARCHIVE" "$BACKUP_RECEIPT" "$GENOS_DATA_ROOT" <<'PY'
+import hashlib, json, sys
+from datetime import datetime, timezone
+from pathlib import Path
+base, archive, receipt, root = map(Path, sys.argv[1:5])
+def sha(path):
+    h=hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(8*1024*1024), b''):
+            h.update(chunk)
+    return h.hexdigest()
+control = [root/'CATALOG/TEAM_LAYOUT.json', root/'RAW/union_file/manifest.json', root/'generations/CURRENT.json']
+record = {'schema_version': 'genos-full-e2e-backup-v1', 'base_generation': str(base),
+          'base_manifest_sha256': sha(base/'manifest.json'), 'archive': str(archive),
+          'archive_sha256': sha(archive), 'archive_bytes': archive.stat().st_size,
+          'controls': {str(p.relative_to(root)): sha(p) for p in control if p.is_file()},
+          'created_at': datetime.now(timezone.utc).isoformat()}
+with receipt.open('x', encoding='utf-8') as out:
+    json.dump(record, out, ensure_ascii=False, indent=2)
+    out.write('\n')
+print('BACKUP_VERIFIED bytes=' + str(record['archive_bytes']) +
+      ' sha256=' + record['archive_sha256'], flush=True)
+PY
+fi
+
+printf 'PIPELINE_START run=%s data=%s base=%s backup=%s\n' "$RUN_ID" "$GENOS_DATA_ROOT" "$BASE" "$ARCHIVE"
+stage raw_preparation
+python3 -B 06_TOOLS/COMMANDS/genos_data_stages.py \
+  --run-id "$RUN_ID" --team risk_team --team financial_team --stage raw --execute || {
+    code=$?; ERROR_LINE=$LINENO
+    echo "RAW_PREPARATION_INCOMPLETE exit_code=$code: inspect $GENOS_DATA_ROOT/LOGS/$RUN_ID/preparation"; exit "$code";
+  }
+stage structure
+python3 -B 06_TOOLS/COMMANDS/genos_data_stages.py \
+  --run-id "$RUN_ID" --team risk_team --team financial_team --stage structure --execute || {
+    code=$?; ERROR_LINE=$LINENO
+    python3 - "$GENOS_DATA_ROOT/LOGS/$RUN_ID" <<'PY' || true
+import json, sys
+from pathlib import Path
+sys.path.insert(0, str(Path.cwd() / '02_BACKEND'))
+from semantic_runtime.genos_backend import safe
+logs = Path(sys.argv[1])
+results = sorted(logs.glob('result-*.json'), key=lambda p: p.stat().st_mtime_ns)
+if results:
+    result = json.loads(results[-1].read_text())
+    failed = [(did, row) for did, row in result.get('documents', {}).items()
+              if row.get('structure') == 'FAILED' or row.get('index') == 'FAILED']
+    for did, row in failed[:40]:
+        print('FAILED_DOCUMENT ' + json.dumps(safe({'id': did, 'name': row.get('name'),
+              'error': str(row.get('error', ''))[:500]}), ensure_ascii=False), flush=True)
+    print('FAILED_DOCUMENT_COUNT=' + str(len(failed)), flush=True)
+else:
+    print('No result JSON yet; read the exception above and detail.log.', flush=True)
+PY
+    echo "STRUCTURE_INCOMPLETE exit_code=$code: see $GENOS_DATA_ROOT/LOGS/$RUN_ID/doc-status.csv and detail.log"; exit "$code";
+  }
+stage glossary_knowledge_check
+python3 -B 06_TOOLS/pipeline.py glossary knowledge check
+stage draft_release_build
+python3 -B 06_TOOLS/pipeline.py document-release build \
+  --run-id "$RUN_ID" --base-generation "$BASE" \
+  --reference-model-profile "$PROFILE" \
+  --max-review-jobs "${GENOS_MAX_REVIEW_JOBS:-100}" \
+  --max-reference-cases 10000 --reference-batch-size 8 || {
+    code=$?; ERROR_LINE=$LINENO
+    echo "RELEASE_INCOMPLETE exit_code=$code: see $GENOS_DATA_ROOT/TERM_RELEASES/$RUN_ID; rerun with the same GENOS_RUN_ID"; exit "$code";
+  }
+RELEASE="$GENOS_DATA_ROOT/TERM_RELEASES/$RUN_ID"
+GENERATION="$RELEASE/serving/generation"
+[[ -f "$GENERATION/manifest.json" ]] || { echo 'No completed draft generation'; exit 2; }
+stage draft_release_verify
+python3 -B 06_TOOLS/pipeline.py document-release verify --release "$RELEASE"
+
+stage photo61_and_index_verification
+# Check exact photo versions, both team views, glossary/link tables, and model overlay.
+python3 - "$GENOS_DATA_ROOT" "$RECEIPT" "$GENERATION" "$RELEASE" <<'PY'
+import json, sqlite3, sys
+from pathlib import Path
+data, receipt_path, generation, release = map(Path, sys.argv[1:5])
+scope = json.loads((data/'CATALOG/SCOPES/photo-required-80-hwpx-20260917.json').read_text())['documents'][:61]
+shared = set(json.loads(receipt_path.read_text())['shared_document_names'])
+if len(scope) != 61 or len(shared) != 9:
+    raise SystemExit('Photo 61 or shared scope changed')
+with sqlite3.connect('file:' + str(generation/'store.sqlite') + '?mode=ro', uri=True) as db:
+    failures = []
+    risk_ids, finance_ids = set(), set()
+    for did, raw in db.execute('SELECT document_id,json FROM document'):
+        meta = json.loads(raw).get('document_metadata') or {}
+        teams = {loc.get('team') for loc in [meta, *(meta.get('aliases') or [])] if isinstance(loc, dict)}
+        if 'risk_team' in teams: risk_ids.add(did)
+        if 'financial_team' in teams: finance_ids.add(did)
+    for doc in scope:
+        name = doc['name']
+        ids = {f['sha256'][:16] for f in doc['files'] if f['role'] == 'body'}
+        found = False
+        for did in ids:
+            row = db.execute('SELECT name,json FROM document WHERE document_id=?', (did,)).fetchone()
+            if row is None: continue
+            meta = json.loads(row[1]).get('document_metadata') or {}
+            title = meta.get('document_title') or row[0].rsplit(' > ', 1)[-1]
+            blocks = db.execute('SELECT 1 FROM source_block WHERE document_id=? LIMIT 1', (did,)).fetchone()
+            if title == name and did in finance_ids and (name not in shared or did in risk_ids) and blocks:
+                found = True
+                break
+        if not found: failures.append(name)
+if failures:
+    raise SystemExit('PHOTO61_FAILED: ' + ', '.join(failures))
+manifest = json.loads((generation/'manifest.json').read_text())
+nav = generation/manifest['navigation']['path']
+if not (nav/'reference-resolution-apply.json').is_file():
+    raise SystemExit('LLM reference overlay missing')
+if not (generation/'glossary/bundle/manifest.json').is_file():
+    raise SystemExit('Generation glossary bundle missing')
+with sqlite3.connect('file:' + str(nav/'navigation.sqlite') + '?mode=ro', uri=True) as db:
+    counts = {table: db.execute('SELECT count(*) FROM '+table).fetchone()[0]
+              for table in ('term','edge','occurrence','definition','reference','reference_end')}
+if not counts['term'] or not counts['occurrence']:
+    raise SystemExit('Term/document link index is empty')
+print(json.dumps({'photo61': 'PASS', 'shared_document_types': len(shared),
+                  'risk_document_versions': len(risk_ids), 'financial_document_versions': len(finance_ids),
+                  'shared_document_versions': len(risk_ids & finance_ids),
+                  'index_rows': counts, 'reference_overlay': 'PRESENT'}, ensure_ascii=False), flush=True)
+PY
+stage exact_checkout_generation_e2e
+env -u GENOS_GENERATION python3 -B 06_TOOLS/COMMANDS/genos_generation_e2e.py \
+  --code-root "$DEPLOY_ROOT" --generation "$GENERATION" --release "$RELEASE"
+stage completed
+printf 'DRAFT_E2E_PASS run=%s generation=%s manifest_sha256=%s backup=%s\n' \
+  "$RUN_ID" "$GENERATION" "$(sha256sum "$GENERATION/manifest.json" | cut -d' ' -f1)" "$ARCHIVE"
+printf 'CURRENT, code-serving revision, and workflow editor were not changed.\n'
+
+
+
+

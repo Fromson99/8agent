@@ -1,0 +1,175 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# Read-only follow-up. R1/R2 generation-name counts were invalid because
+# document.name stores a breadcrumb such as RAW > law > <title>.
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-financial-source-audit-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+
+DEPLOY_ROOT="${DEPLOY_ROOT:-/home/genos/DEV}"
+GENOS_DATA_ROOT="${GENOS_DATA_ROOT:-$DEPLOY_ROOT/01_DATA}"
+GENOS_SOURCE_GENERATION="${GENOS_SOURCE_GENERATION:-${GENOS_GENERATION:-/nfs-root/diamo/8-agent/term-releases/fulltext-repair-20260924T071754Z-31987d27/generation}}"
+PYTHON_BIN="${PYTHON_BIN:-$DEPLOY_ROOT/.venv/bin/python}"
+if [[ ! -x "$PYTHON_BIN" ]]; then PYTHON_BIN="$(command -v python3)"; fi
+[[ -x "$PYTHON_BIN" ]] || { echo 'Python 3 required'; exit 2; }
+printf 'START read-only data=%s source=%s\n' "$GENOS_DATA_ROOT" "$GENOS_SOURCE_GENERATION"
+"$PYTHON_BIN" - "$GENOS_DATA_ROOT" "$GENOS_SOURCE_GENERATION" <<'PY'
+import hashlib
+import json
+from pathlib import Path
+import sqlite3
+import sys
+
+data, selected = map(Path, sys.argv[1:3])
+scope_path = data / 'CATALOG/SCOPES/photo-required-80-hwpx-20260917.json'
+layout_path = data / 'CATALOG/TEAM_LAYOUT.json'
+for path in (scope_path, layout_path):
+    if not path.is_file():
+        raise FileNotFoundError(path)
+docs = json.loads(scope_path.read_text(encoding='utf-8'))['documents'][:61]
+layout = json.loads(layout_path.read_text(encoding='utf-8'))
+if len(docs) != 61:
+    raise ValueError('photo 61 scope length differs')
+
+def digest(path):
+    h = hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+def title(stored_name, payload=None):
+    metadata = (payload or {}).get('document_metadata') or {}
+    return metadata.get('document_title') or str(stored_name).rsplit(' > ', 1)[-1].strip()
+
+def generation(path):
+    store = path / 'store.sqlite'
+    if not store.is_file():
+        return {'path': str(path), 'error': 'store.sqlite missing'}
+    db = sqlite3.connect('file:' + str(store.resolve()) + '?mode=ro', uri=True)
+    try:
+        db.execute('PRAGMA query_only=ON')
+        rows = list(db.execute('SELECT document_id,name,json FROM document'))
+        by_id = {did: (name, raw) for did, name, raw in rows}
+        all_titles = {title(name) for _, name, _ in rows}
+        exact, with_blocks = set(), set()
+        for doc in docs:
+            for file in doc['files']:
+                if file['role'] != 'body':
+                    continue
+                did = file['sha256'][:16]
+                row = by_id.get(did)
+                if row is None:
+                    continue
+                payload = json.loads(row[1])
+                if title(row[0], payload) != doc['name']:
+                    continue
+                exact.add(doc['name'])
+                if db.execute('SELECT 1 FROM source_block WHERE document_id=? LIMIT 1', (did,)).fetchone():
+                    with_blocks.add(doc['name'])
+        return {
+            'path': str(path), 'document_rows': len(rows),
+            'name_matches': len(all_titles & {d['name'] for d in docs}),
+            'exact_versions': len(exact), 'exact_with_source_blocks': len(with_blocks),
+            'missing_exact_first12': [d['name'] for d in docs if d['name'] not in exact][:12],
+        }
+    finally:
+        db.close()
+
+report = generation(selected)
+print('SELECTED_GENERATION ' + json.dumps(report, ensure_ascii=False), flush=True)
+
+# The runner may have stored structure/index outputs in 01_DATA even if the
+# current code-serving generation is a different release.
+targets = {d['name']: {f['sha256'][:16] for f in d['files'] if f['role'] == 'body'} for d in docs}
+selected_ids, structured_ids, indexed_ids = set(), set(), set()
+for path in sorted((data / 'LOGS').glob('*/structure-selection.json')):
+    try:
+        run = json.loads(path.read_text(encoding='utf-8'))
+        current = set(run.get('documents', {}))
+        for doc in docs:
+            ids = targets[doc['name']] & current
+            if not ids:
+                continue
+            selected_ids.add(doc['name'])
+            for did in ids:
+                entry = run['documents'][did]
+                key = entry.get('key', '')
+                receipt = data / 'STRUCTURE' / key / 'structure-receipt.json'
+                source = receipt.parent / 'source.sqlite'
+                if (len(key) != 64 or not receipt.is_file() or not source.is_file()
+                        or digest(receipt) != entry.get('receipt_sha256')):
+                    continue
+                structured_ids.add(doc['name'])
+                if (data / 'TERM' / path.parent.name / did / 'generation/manifest.json').is_file():
+                    indexed_ids.add(doc['name'])
+    except (OSError, KeyError, ValueError) as exc:
+        print('RUN_READ_ERROR path=' + str(path) + ' error=' + str(exc)[:160], flush=True)
+print('PIPELINE_COUNTS selected=' + str(len(selected_ids)) +
+      ' receipt_verified_structure=' + str(len(structured_ids)) +
+      ' per_document_index=' + str(len(indexed_ids)), flush=True)
+
+missing = [d for d in docs if d['name'] not in structured_ids]
+inventory_errors = []
+for path in sorted((data / 'LOGS').glob('*/inventory-*.json')):
+    try:
+        inv = json.loads(path.read_text(encoding='utf-8'))
+        for error in inv.get('errors', []):
+            inventory_errors.append((path.parent.name, str(error.get('item', '')),
+                                     str(error.get('error', ''))))
+    except (OSError, ValueError):
+        continue
+for doc in missing:
+    name = doc['name']
+    expected_files = {(f['sha256'], f['role']) for f in doc['files']}
+    registered = {(v.get('sha256'), v.get('role')) for v in layout['files'].values()
+                  if v.get('scope_document') == name}
+    body_package = []
+    for file in doc['files']:
+        if file['role'] != 'body':
+            continue
+        path = data / file['path']
+        body_package.append(path.is_file() and digest(path) == file['sha256'])
+    reasons = [{'run': run, 'error': error[:160]}
+               for run, item, error in inventory_errors if name in item][:3]
+    print('MISSING_STRUCTURE ' + json.dumps({
+        'name': name, 'registered_files': len(expected_files & registered),
+        'expected_files': len(expected_files), 'body_package_exact': any(body_package),
+        'inventory_errors': reasons,
+    }, ensure_ascii=False), flush=True)
+
+# Also inspect only standard local composed releases; the selected external
+# generation is reported separately above.
+release_paths = sorted(set((data / 'TERM_RELEASES').glob('*/serving/generation')))
+print('LOCAL_COMPOSED_RELEASES count=' + str(len(release_paths)), flush=True)
+for path in release_paths[:10]:
+    try:
+        row = generation(path)
+        row.pop('missing_exact_first12', None)
+        print('LOCAL_COMPOSED_RELEASE ' + json.dumps(row, ensure_ascii=False), flush=True)
+    except (OSError, sqlite3.Error, ValueError) as exc:
+        print('LOCAL_COMPOSED_RELEASE_ERROR path=' + str(path) + ' error=' + str(exc)[:160], flush=True)
+
+nfs_root = Path('/nfs-root/diamo/8-agent/term-releases')
+nfs_candidates = set()
+if nfs_root.is_dir():
+    for pattern in ('*/generation', '*/*/generation', '*/serving/generation'):
+        nfs_candidates.update(path for path in nfs_root.glob(pattern)
+                              if (path / 'store.sqlite').is_file() and path != selected)
+nfs_rows = []
+for path in sorted(nfs_candidates)[:100]:
+    try:
+        row = generation(path)
+        row.pop('missing_exact_first12', None)
+        nfs_rows.append(row)
+    except (OSError, sqlite3.Error, ValueError) as exc:
+        nfs_rows.append({'path': str(path), 'error': str(exc)[:160]})
+nfs_rows.sort(key=lambda r: (-r.get('exact_with_source_blocks', -1),
+                             -r.get('name_matches', -1), r['path']))
+print('NFS_CANDIDATES found=' + str(len(nfs_candidates)) +
+      ' scanned=' + str(min(len(nfs_candidates), 100)), flush=True)
+for row in nfs_rows[:12]:
+    print('NFS_CANDIDATE ' + json.dumps(row, ensure_ascii=False), flush=True)
+print('READ_ONLY_COMPLETE', flush=True)
+PY

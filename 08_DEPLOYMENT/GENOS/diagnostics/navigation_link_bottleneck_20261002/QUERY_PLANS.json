@@ -1,0 +1,162 @@
+{
+  "environment": "WSL SQLite 3.46.1",
+  "scope": "read-only code diagnostic on empty schema; no timing/performance comparison or GENOS database access",
+  "source": "02_BACKEND/semantic_runtime/term_links.py",
+  "sha256": "737cff575ec5c88d55f4e0ef7f9721ce1acb726cc96f289463dec496e56c6806",
+  "queries": [
+    {
+      "seq": 1,
+      "line": 221,
+      "sql": "UPDATE link_catalogue SET status='HELD',reason='NO_VERIFIED_OCCURRENCE' WHERE status='VALID' AND NOT EXISTS(SELECT 1 FROM link_occurrence o WHERE o.key=link_catalogue.key AND o.status='ACCEPTED')",
+      "plan": [
+        "SCAN link_catalogue",
+        "CORRELATED SCALAR SUBQUERY 1",
+        "SEARCH o USING INDEX link_occurrence_key (key=?)"
+      ]
+    },
+    {
+      "seq": 2,
+      "line": 223,
+      "sql": "UPDATE link_catalogue SET status='HELD',reason='DEFINITION_DOCUMENT_SCOPE' WHERE status='VALID' AND json_extract(json,'$.scope_document_id') IS NOT NULL AND NOT EXISTS(SELECT 1 FROM link_occurrence o WHERE o.key=link_catalogue.key AND o.status='ACCEPTED' AND o.document_id=json_extract(link_catalogue.json,'$.scope_document_id'))",
+      "plan": [
+        "SCAN link_catalogue",
+        "CORRELATED SCALAR SUBQUERY 1",
+        "SEARCH o USING INDEX link_occurrence_key (key=?)"
+      ]
+    },
+    {
+      "seq": 3,
+      "line": 226,
+      "sql": "UPDATE link_catalogue SET status='ACCEPTED' WHERE status='VALID'",
+      "plan": [
+        "SCAN link_catalogue"
+      ]
+    },
+    {
+      "seq": 4,
+      "line": 227,
+      "sql": "CREATE TEMP TABLE scoped_link_catalogue AS SELECT id,key,term_id,status,reason,json_extract(json,'$.scope_document_id') AS scope_document_id FROM link_catalogue",
+      "plan": [
+        "DDL"
+      ]
+    },
+    {
+      "seq": 5,
+      "line": 229,
+      "sql": "CREATE INDEX temp.scoped_link_catalogue_key ON scoped_link_catalogue(key)",
+      "plan": [
+        "DDL / physical index construction"
+      ]
+    },
+    {
+      "seq": 6,
+      "line": 230,
+      "sql": "INSERT INTO occurrence_evidence SELECT o.id,c.id,c.term_id,o.source_id,CASE WHEN o.status='ACCEPTED' AND c.status='ACCEPTED' AND (c.scope_document_id IS NULL OR c.scope_document_id=o.document_id) THEN 'ACCEPTED' ELSE 'HELD' END,CASE WHEN o.status!='ACCEPTED' THEN o.reason WHEN c.status!='ACCEPTED' THEN c.reason WHEN c.scope_document_id!=o.document_id THEN 'DEFINITION_DOCUMENT_SCOPE' ELSE 'VERIFIED_SOURCE_LABEL_CANDIDATE' END FROM link_occurrence o JOIN scoped_link_catalogue c ON c.key=o.key",
+      "plan": [
+        "SCAN c",
+        "SEARCH o USING INDEX link_occurrence_key (key=?)"
+      ]
+    },
+    {
+      "seq": 7,
+      "line": 236,
+      "sql": "DROP TABLE temp.scoped_link_catalogue",
+      "plan": [
+        "DDL"
+      ]
+    },
+    {
+      "seq": 8,
+      "line": 237,
+      "sql": "CREATE INDEX evidence_accepted_catalogue ON occurrence_evidence(catalogue_id) WHERE status='ACCEPTED'",
+      "plan": [
+        "DDL / physical index construction"
+      ]
+    },
+    {
+      "seq": 9,
+      "line": 238,
+      "sql": "UPDATE link_occurrence SET status='HELD',reason='NO_ACCEPTED_CATALOGUE_CANDIDATE' WHERE status='ACCEPTED' AND NOT EXISTS(SELECT 1 FROM occurrence_evidence e WHERE e.occurrence_id=link_occurrence.id AND e.status='ACCEPTED')",
+      "plan": [
+        "SCAN link_occurrence",
+        "CORRELATED SCALAR SUBQUERY 1",
+        "SEARCH e USING INDEX sqlite_autoindex_occurrence_evidence_1 (occurrence_id=?)"
+      ]
+    },
+    {
+      "seq": 10,
+      "line": 240,
+      "sql": "INSERT OR IGNORE INTO occurrence_origin SELECT term_id,source_id,'LEGACY_LABEL_MATCH' FROM occurrence",
+      "plan": [
+        "SCAN occurrence"
+      ]
+    },
+    {
+      "seq": 11,
+      "line": 241,
+      "sql": "INSERT OR IGNORE INTO occurrence_origin SELECT term_id,source_id,'VERIFIED_GLOSSARY_LINK' FROM occurrence_evidence WHERE status='ACCEPTED'",
+      "plan": [
+        "SCAN occurrence_evidence USING INDEX evidence_accepted_catalogue"
+      ]
+    },
+    {
+      "seq": 12,
+      "line": 243,
+      "sql": "INSERT OR IGNORE INTO occurrence SELECT term_id,source_id FROM occurrence_evidence WHERE status='ACCEPTED'",
+      "plan": [
+        "SCAN occurrence_evidence USING INDEX evidence_accepted_catalogue"
+      ]
+    },
+    {
+      "seq": 13,
+      "line": 247,
+      "sql": "SELECT kind,count(*) FROM link_catalogue GROUP BY kind",
+      "plan": [
+        "SCAN link_catalogue",
+        "USE TEMP B-TREE FOR GROUP BY"
+      ]
+    },
+    {
+      "seq": 14,
+      "line": 250,
+      "sql": "SELECT 1 FROM link_catalogue c WHERE c.status='ACCEPTED' AND NOT EXISTS (SELECT 1 FROM occurrence_evidence e WHERE e.catalogue_id=c.id AND e.status='ACCEPTED') LIMIT 1",
+      "plan": [
+        "SCAN c",
+        "CORRELATED SCALAR SUBQUERY 1",
+        "SEARCH e USING COVERING INDEX evidence_accepted_catalogue (catalogue_id=?)"
+      ]
+    }
+  ],
+  "matches_shipped_r8_term_links": true,
+  "findings": [
+    {
+      "priority": 1,
+      "sql_number": 9,
+      "status": "probable currently running statement after photographed sql-8 completion; no GENOS query plan available",
+      "problem": "correlated occurrence_id lookup for each accepted occurrence; primary key covers occurrence_id,catalogue_id but not status; accepted catalogue index cannot cover this lookup",
+      "potential_change": "precompute distinct accepted occurrence IDs or add accepted occurrence_id partial covering index; preserve all held rows and reasons; requires separate validation"
+    },
+    {
+      "priority": 2,
+      "sql_number": 6,
+      "problem": "materializes every occurrence x same-key candidate including held scope mismatches",
+      "row_count_formula": "sum over key of occurrence_count(key) * catalogue_count(key)",
+      "constraint": "Do not silently drop held evidence; changing representation requires schema/consumer migration"
+    },
+    {
+      "priority": 3,
+      "sql_numbers": [
+        11,
+        12
+      ],
+      "problem": "two scans over accepted evidence; planner selects accepted catalogue_id index, but term_id/source_id are not covered; repeats duplicate pair INSERT OR IGNORE work",
+      "potential_change": "materialize distinct accepted term/source pairs once and reuse; verify occurrence_origin and added_term_source_pairs equivalence"
+    },
+    {
+      "priority": 4,
+      "component": "navigation_storage.separate_navigation / verify",
+      "problem": "full database hashes, projection/copy, integrity check, repeated verification cause additional I/O after SQL work",
+      "constraint": "Currently required integrity/audit semantics; do not bypass"
+    }
+  ]
+}

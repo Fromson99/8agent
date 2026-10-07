@@ -1,0 +1,82 @@
+{
+  "schema_version": "genos-native-chat-local-validation-v1",
+  "recorded_at": "2026-10-07T01:19:14.002956+00:00",
+  "candidate": {
+    "version": "GENOS_NATIVE_CHAT_SSE_20261007_R1",
+    "code_zip_sha256": "bf8bf1015b1f1109e465f27e770fff7d3905450329abad6d36147028c9c2415e",
+    "code_manifest_sha256": "f23cf387c2d16a6621d046fbc16b61d2f249c9b97e0fe11ef11b8b97393f857b",
+    "apply_txt_sha256": "adf22271e98ec712a88fc5a4a660dd3fd454d5433e9d6ed98fcde52ed956cd26",
+    "code_root": "/home/jin/8-AGENT",
+    "python_executable": "/home/jin/8-AGENT/.venv/bin/python",
+    "python_version": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+    "source_commit": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+    "uncommitted_changes": true,
+    "files_verified": 287
+  },
+  "contract_tests": {
+    "status": "PASS",
+    "passed": 26,
+    "failed": 0,
+    "seconds": 2.43,
+    "command": ".venv/bin/python -m pytest -q --tb=short --show-capture=no 05_TESTS/CONTRACTS/test_genos_native_chat_sse.py 05_TESTS/CONTRACTS/test_genos_main_chat.py 05_TESTS/CONTRACTS/test_genos_sse_transport.py::test_server_flushes_before_computation_and_heartbeats_until_result 05_TESTS/CONTRACTS/test_genos_sse_transport.py::test_server_probe_never_calls_service 05_TESTS/CONTRACTS/test_genos_sse_transport.py::test_disconnect_after_initial_chunk_releases_reservation_without_computation 05_TESTS/CONTRACTS/test_genos_answer_stream.py::test_server_delivers_answer_before_backend_completion_and_without_loss",
+    "coverage": [
+      "native JSON/SSE input/output parity and secret redaction",
+      "direct in-process execution independent of sockets and self HTTP calls",
+      "answer tokens and HTTP health before backend completes",
+      "heartbeat, slow-consumer backpressure without lost answer fragments",
+      "model-free SSE_CHECK and JSON __verify__ handshake",
+      "JSON rollback and transport precedence",
+      "untrusted memory and existing AD management gates",
+      "synthetic real v6 answer/correction/EXPERIENCE_CONFIRM storage through same endpoint",
+      "existing raw /stream answer and progress behavior"
+    ],
+    "warnings": "4 existing FastAPI/Starlette deprecation warnings"
+  },
+  "delivery_tests": {
+    "status": "PASS",
+    "passed": 4,
+    "failed": 0,
+    "seconds": 8.04,
+    "command": "PYTHONPATH=02_BACKEND:05_TESTS:05_TESTS/CONTRACTS .venv/bin/python -m pytest -q --tb=short --show-capture=no 08_DEPLOYMENT/GENOS/handoffs/native_chat_sse_20261007_r1/test_delivery.py",
+    "coverage": [
+      "287 exact package/working bytes, engine pins and Python 3.11/Bash syntax",
+      "existing DEV symlink checkout apply, repeat, native verify, exact rollback, generation/state preservation",
+      "same committed synthetic checkout generation and asset gate plus local bare-remote Git push",
+      "unknown field edits preserved and apply blocked"
+    ],
+    "warnings": "1 existing Starlette deprecation warning",
+    "log_archive": "LOCAL_DELIVERY_LOGS.tar.gz",
+    "log_archive_sha256": "7e71a754eb908697f8299a39c96df62003e499f3951b5b9f73f8a709080d4a63",
+    "restore_command": "tar -xzf LOCAL_DELIVERY_LOGS.tar.gz -C <empty-directory>"
+  },
+  "synthetic_local_gate": {
+    "environment": "LOCAL_SYNTHETIC_ONLY",
+    "code_root": "/tmp/pytest-of-jin/pytest-15/test_same_checkout_gate_and_lo0/DEV",
+    "generation": "/tmp/pytest-of-jin/pytest-15/test_same_checkout_gate_and_lo0/built/generation",
+    "generation_manifest_sha256": "628c3aaf72fa8c94d5f6bc6ace2638e9d4c6c879a7962bf8bcc9fac2ad0779f4",
+    "local_push_commit": "0dda774b98df97c853223a40a3f59344b97907d6",
+    "remote": "temporary local bare Git repository",
+    "actual_GENOS_push": false
+  },
+  "selected_local_baseline": {
+    "release_id": "investigation-control-v6-20261007-r1",
+    "generation": 43,
+    "active_pointer_sha256": "57890b7744d1397451799773cb29b087c8e45938f6b8c97d25a0acde8281d44d",
+    "pointer_unchanged": true,
+    "frozen_release_unchanged": true
+  },
+  "field_status": {
+    "code_applied": "NOT_VERIFIED",
+    "generation_gate": "NOT_VERIFIED",
+    "push_commit": null,
+    "code_serving_revision": null,
+    "chat_binding": "NOT_SELECTED",
+    "internal_model_query": "NOT_RUN",
+    "chat_SSE_rendering": "NOT_VERIFIED",
+    "upstream_failure_evidence_commit": "36b9cc381bf576b663956b5df19a2c7d61eb6132",
+    "platform_failure_function": "UNKNOWN_TRACEBACK_NOT_AVAILABLE"
+  },
+  "external_model_calls": 0,
+  "experimental_quality_claim": false,
+  "validation_iterations": "Initial fixture failures were corrected for the existing AD_PROBE/TEAM_ID gates; the authorization gate was retained. Engine hashes were refreshed after changing the adapter. Final results above verify the shipped bytes."
+}

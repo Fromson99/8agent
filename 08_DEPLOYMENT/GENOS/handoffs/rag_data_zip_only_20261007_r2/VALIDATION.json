@@ -1,0 +1,39 @@
+{
+  "tests_passed": 4,
+  "tests_failed": 0,
+  "cases": [
+    {
+      "case": "pack_restore_dirty_checkout",
+      "passed": true,
+      "exit_code": 0,
+      "source_sql_updates_only_by_fixture_writer": true,
+      "git_head_and_staged_bytes_preserved": true
+    },
+    {
+      "case": "concurrent_source_changes_and_sqlite_wal",
+      "passed": true,
+      "exit_code": 0,
+      "source_sql_updates_only_by_fixture_writer": true,
+      "git_head_and_staged_bytes_preserved": true
+    },
+    {
+      "case": "tool_hash_mismatch",
+      "passed": true,
+      "exit_code": 1,
+      "source_sql_updates_only_by_fixture_writer": true,
+      "git_head_and_staged_bytes_preserved": true
+    },
+    {
+      "case": "missing_dev",
+      "passed": true,
+      "exit_code": 1,
+      "source_sql_updates_only_by_fixture_writer": true,
+      "git_head_and_staged_bytes_preserved": true
+    }
+  ],
+  "attachment_sha256": "98552135373162f3f22fa31b38a87981884832c606ef2a9725aecba2239cb617",
+  "unit_contracts_passed": 26,
+  "synthetic_data_only": true,
+  "genos_accessed": false,
+  "field_data_zip_created": false
+}

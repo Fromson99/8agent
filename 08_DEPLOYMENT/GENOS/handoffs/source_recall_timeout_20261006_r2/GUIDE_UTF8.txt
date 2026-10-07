@@ -1,0 +1,61 @@
+GENOS 대화 입력 분기 + 원문 수집 시간 제한 제거 R2
+
+이번 R2를 사용하세요. 앞서 보낸 시간 제한 제거 R1에 v6 최상위 대화 입력 분기를 추가한 누적본입니다.
+R2 하나에 원문 수집 120/180초 제한 제거, NFS SQLite R1, compact reader 보존이 포함됩니다.
+기준 코드: GENOS_V6_REQUEST_INPUT_20261006_R2, GENOS_NFS_STATE_SQLITE_20261006_R1,
+또는 GENOS_SOURCE_RECALL_TIMEOUT_20261006_R1. 세 기준 모두에서 검사/적용/원복을 검증합니다.
+
+v6 최초 의미 판단은 source-request-route입니다. 같은 대화의 현재 질문·조건을 참고해 분류합니다.
+Type Your Message 같은 입력창 안내, 의미 없는 글자/기호, 인사/사용법, 무관한 일상 대화는
+짧은 안내 답변으로 끝냅니다. 검색·원문 읽기·법률 판단·기존 검색 절차 replay를 실행하지 않습니다.
+기존 사건 조건/리비전/판단 근거는 이 안내 입력으로 변경하지 않습니다.
+인사와 법률·문서 질문이 함께 있으면 사건 처리로 보냅니다.
+현재 질문에 관한 '대상을 B로 바꿔', '그럼 3년이면?', '표로 보여줘', '기억해줘'도 후속 처리합니다.
+실제 문서에서 Type Your Message라는 문구를 찾아 달라는 요청도 문서 조회로 처리해야 합니다.
+분류 오류나 모델 오류를 임의 안내 답변으로 숨기지 않습니다. 원응답은 MODEL RAW RESPONSE,
+분류와 이유는 대화 입력 분류/REQUEST_ROUTED와 request_routing에 기록합니다.
+분류는 현재 결속된 내부 LLM을 사용하며 실제 현장 분류 품질은 워크플로우에서 확인해야 합니다.
+
+전체 요청 deadline, 모델 통신 timeout, 건수/문자/행동 예산은 유지됩니다.
+v6 기본 파일 프로필의 전체 요청 제한은 1800초이며 실제 선택된 프로필은 현장 설정을 따릅니다.
+데이터/용어집/연결/색인/상태 DB를 재구축하거나 CURRENT를 전환하지 않습니다.
+새 라이브러리·환경변수 추가·워크플로우 Python 교체는 필요 없습니다.
+
+첨부 ZIP과 실행 TXT를 같은 ~/DEV/TRANSFER 폴더에 올리고 기존 Git checkout에서 실행합니다.
+
+  cd ~/DEV
+  bash TRANSFER/GENOS_SOURCE_RECALL_TIMEOUT_20261006_R2_APPLY.txt check
+  bash TRANSFER/GENOS_SOURCE_RECALL_TIMEOUT_20261006_R2_APPLY.txt apply
+  bash TRANSFER/GENOS_SOURCE_RECALL_TIMEOUT_20261006_R2_APPLY.txt verify
+
+모든 실행은 첫 단계부터 source-recall-routing-r2-logs에 stdout/stderr와 종료 상태를 남깁니다.
+apply는 파일별 백업 후 적용하며 재실행 시 이미 설치된 코드를 확인합니다.
+알 수 없는 현장 코드 해시는 그대로 보존하고 적용 전에 중단합니다.
+현장 명령은 python3이며 인터프리터 경로와 버전을 기록합니다.
+verify는 GENOS_GENERATION의 정확한 선택 세대를 현재 checkout의 코드로 검사합니다.
+설정이 없으면 이전 반입본의 명시 후보 경로를 사용합니다.
+  /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+다른 실제 세대라면 다음 명령 마지막 인수로 정확한 절대경로를 넣습니다.
+  bash TRANSFER/GENOS_SOURCE_RECALL_TIMEOUT_20261006_R2_APPLY.txt verify /실제/generation/절대경로
+
+적용 파일을 검토·커밋한 뒤:
+  bash TRANSFER/GENOS_SOURCE_RECALL_TIMEOUT_20261006_R2_APPLY.txt gate
+전체 gate를 통과한 commit으로 같은 generation 설정의 새 코드서빙 리비전을 배포합니다.
+Git push와 리비전 배포는 별도입니다. 파일 적용만으로 실행 중인 기존 리비전이 바뀌지는 않습니다.
+
+현장 확인은 워크플로우 테스트 화면에서만 합니다.
+1. Type Your Message → 짧은 안내, source-request-route DIRECT, 원문 읽기 없음.
+2. asdf 또는 ???? → 안내, 원문 읽기 없음.
+3. 인사와 실제 법률/내규 질문 → 기존 원문 검색과 근거 답변.
+4. 같은 대화에서 무관한 입력 후 '대상을 B로 바꿔' → 기존 질문의 조건 정정.
+5. 실제 문서 내 특정 문구 검색 → 문구의 뜻과 무관하게 문서 조회로 처리.
+6. 긴 원문 수집 → source recall policy time limit이 발생하지 않는지 확인.
+요청 ID, 선택된 generation, 새 리비전과 단계 로그를 함께 확인합니다.
+
+원복은 apply에 출력한 정확한 BACKUP/RECOVERY 경로를 사용합니다.
+  bash TRANSFER/GENOS_SOURCE_RECALL_TIMEOUT_20261006_R2_APPLY.txt rollback /정확한/백업경로
+데이터/상태 DB/환경변수는 삭제하지 않습니다. 배포 후에는 이전 검증 리비전과 generation 설정으로 복귀합니다.
+
+합성 원문·모의 모델·모의 시계로 안내 입력의 검색 0회, LLM 원응답/분류 로그,
+기존 사건 보존과 후속 정정, compact 원문 답변, 시간 제한 제거, 요청 deadline/ACL 보존을 검사합니다.
+실제 GENOS generation manifest 해시·내부 모델 분류·리비전 적용·질의 성공은 현장 확인 전까지 미확인입니다.

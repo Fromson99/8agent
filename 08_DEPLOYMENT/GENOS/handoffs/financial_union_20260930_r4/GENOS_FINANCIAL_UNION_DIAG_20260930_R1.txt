@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-financial-union-diag-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+
+DEPLOY_ROOT="${DEPLOY_ROOT:-/home/genos/DEV}"
+GENOS_DATA_ROOT="${GENOS_DATA_ROOT:-$DEPLOY_ROOT/01_DATA}"
+: "${GENOS_SOURCE_GENERATION:?Set this to the current code-serving GENOS_GENERATION directory}"
+PYTHON_BIN="${PYTHON_BIN:-$DEPLOY_ROOT/.venv/bin/python}"
+if [[ ! -x "$PYTHON_BIN" ]]; then PYTHON_BIN="$(command -v python3)"; fi
+[[ -x "$PYTHON_BIN" ]] || { echo 'Python 3 required'; exit 2; }
+
+printf 'START data=%s source=%s\n' "$GENOS_DATA_ROOT" "$GENOS_SOURCE_GENERATION"
+"$PYTHON_BIN" - "$GENOS_DATA_ROOT" "$GENOS_SOURCE_GENERATION" <<'PY'
+import json
+from pathlib import Path
+import sqlite3
+import sys
+
+data, generation = map(Path, sys.argv[1:3])
+scope_path = data / 'CATALOG/SCOPES/photo-required-80-hwpx-20260917.json'
+layout_path = data / 'CATALOG/TEAM_LAYOUT.json'
+store_path = generation / 'store.sqlite'
+for path in (scope_path, layout_path, store_path):
+    if not path.is_file():
+        raise FileNotFoundError(path)
+docs = json.loads(scope_path.read_text())['documents'][:61]
+layout = json.loads(layout_path.read_text())
+files = layout['files']
+missing_registration, missing_body = [], []
+body_teams = {}
+for doc in docs:
+    name = doc['name']
+    rows = [v for v in files.values() if v.get('scope_document') == name]
+    expected = {(f['sha256'], f['role']) for f in doc['files']}
+    registered = {(v.get('sha256'), v.get('role')) for v in rows}
+    if expected - registered:
+        missing_registration.append(name)
+    if not any((f['sha256'], 'body') in registered
+               for f in doc['files'] if f['role'] == 'body'):
+        missing_body.append(name)
+    body_teams[name] = sorted({v.get('team') for v in rows if v.get('role') == 'body' and v.get('team')})
+db = sqlite3.connect('file:' + str(store_path.resolve()) + '?mode=ro', uri=True)
+db.execute('PRAGMA query_only=ON')
+try:
+    present = set(db.execute('SELECT document_id,name FROM document'))
+finally:
+    db.close()
+source_missing_exact = [
+    d['name'] for d in docs
+    if not any((f['sha256'][:16], d['name']) in present
+               for f in d['files'] if f['role'] == 'body')]
+source_missing_name = [d['name'] for d in docs if not any(name == d['name'] for _, name in present)]
+result = {
+    'photo_documents': len(docs),
+    'layout_scope': layout.get('scope'),
+    'registered_files': len(files),
+    'photo_missing_any_registered_file_count': len(missing_registration),
+    'photo_missing_any_registered_file_first12': missing_registration[:12],
+    'photo_missing_registered_body_count': len(missing_body),
+    'photo_missing_registered_body_first12': missing_body[:12],
+    'photo_body_team_counts': {
+        'risk_team': sum('risk_team' in teams for teams in body_teams.values()),
+        'financial_team': sum('financial_team' in teams for teams in body_teams.values()),
+        'no_registered_body': sum(not teams for teams in body_teams.values()),
+    },
+    'source_missing_exact_version_count': len(source_missing_exact),
+    'source_missing_exact_version_first12': source_missing_exact[:12],
+    'source_missing_name_count': len(source_missing_name),
+    'source_missing_name_first12': source_missing_name[:12],
+}
+print(json.dumps(result, ensure_ascii=False, indent=2), flush=True)
+PY

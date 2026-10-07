@@ -1,0 +1,30 @@
+{
+  "format": "8agent-prompt-compaction-patch/1",
+  "patch": "prompt-compaction-20260928-r1",
+  "baseline": "Exact timeout-sync R3 bytes and thinking-log R1/R2 gateway bytes; preserve installed diagnostics",
+  "files": {
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py": {
+      "base_sha256": "7d6459b81bce476a1d9abcd1119eec53d87629ea130f314b94edd29fe9009d9f",
+      "new_sha256": "6d851380e424e11517f11c96a8c79b1ba261dc5464bbf3efadefb57df93cf006",
+      "variants": [
+        {
+          "base_sha256": "32fd62cc09168f8a9cda7dc1167e88a016bae19eb360fb5d868f33ed2f637e79",
+          "new_sha256": "59a85cdde022493c0d7ba6044604835494b6bf71737ae9039e8d4da42774b64f",
+          "payload_path": "variants/32fd62cc09168f8a9cda7dc1167e88a016bae19eb360fb5d868f33ed2f637e79/02_BACKEND/semantic_runtime/legal_agent/gateway.py"
+        }
+      ]
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py": {
+      "base_sha256": "f07b6ebee5d4638920f6d81bf3fdcf88cb27cf019c7f448bef9531379a54f6bb",
+      "new_sha256": "55049c242db6bf28f8ee6a23b2dc813cb55ac302706b22e6adc9425ac21b37fb"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/question_obligations.py": {
+      "base_sha256": "6709b76b77cecc1cbc777fd877ea9bef1c125211d5f3f8017c7ce8af3ff38571",
+      "new_sha256": "065f3f1c98ea810ca01c2f8561dfd422f110c4990a0ab6c90637bfabdc2472db"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/relations_repository.py": {
+      "base_sha256": "2771a540063d483d7478c0f89fda7e3fe4968e7c9bdb50b755ed5a517afcbff4",
+      "new_sha256": "97d9ed838aed157cf7f05793b6f88af17776b564454fa0c5176fa1156eee7ca8"
+    }
+  }
+}

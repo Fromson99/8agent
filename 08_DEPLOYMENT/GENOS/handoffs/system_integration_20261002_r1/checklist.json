@@ -1,0 +1,511 @@
+{
+  "schema_version": "system-integration-checklist-v1",
+  "items": [
+    {
+      "id": "BASE-01",
+      "group": "기준·보존",
+      "item": "전체 MAIN의 RAW→구조화→용어·정의·참조→색인→RAG→피드백 책임",
+      "status": "대조 완료",
+      "evidence": "00_SYSTEM/ARCHITECTURE.md"
+    },
+    {
+      "id": "BASE-02",
+      "group": "기준·보존",
+      "item": "활성 r3 generation37와 작업 코드의 차이",
+      "status": "대조 완료",
+      "evidence": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json"
+    },
+    {
+      "id": "BASE-03",
+      "group": "기준·보존",
+      "item": "기존 미커밋 변경과 최초 파일 해시 보존",
+      "status": "완료",
+      "evidence": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/before.json"
+    },
+    {
+      "id": "BASE-04",
+      "group": "기준·보존",
+      "item": "최신 MAIN 전체 코드1923개 보존·누적 구현 통합",
+      "status": "통합 완료·전체 코드 1923개 대조",
+      "evidence": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/full-code-inventory.json"
+    },
+    {
+      "id": "BASE-05",
+      "group": "기준·보존",
+      "item": "완료 ADR0590~0613의 계보·실패·원문 응답 보존",
+      "status": "24개 ADR 보존·동결 검사180건 변경0",
+      "evidence": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/history-inventory.json"
+    },
+    {
+      "id": "BASE-06",
+      "group": "기준·보존",
+      "item": "코드·데이터·설계·현장 상태를 별도 기록",
+      "status": "별도 기록 완료",
+      "evidence": "07_DOCS/REFERENCE/OPERATIONS/SYSTEM_MEMORY_INTEGRATION_20261002.md"
+    },
+    {
+      "id": "MAIN-01",
+      "group": "MAIN 구축·기존 기능",
+      "item": "RAW 반입·문서 ID·버전·원문 불변 계약",
+      "status": "원본 포함",
+      "evidence": "01_DATA/README.md"
+    },
+    {
+      "id": "MAIN-02",
+      "group": "MAIN 구축·기존 기능",
+      "item": "PDF 전처리 청크·Docling·VLM 구조화",
+      "status": "원본 포함",
+      "evidence": "07_DOCS/REFERENCE/OPERATIONS/GENOS_PREPROCESSOR_PARSING.md"
+    },
+    {
+      "id": "MAIN-03",
+      "group": "MAIN 구축·기존 기능",
+      "item": "DOCX와 형식별 구조화·실패 상태·재개",
+      "status": "원본 포함",
+      "evidence": "07_DOCS/REFERENCE/OPERATIONS/GENOS_FOUR_STAGE.md"
+    },
+    {
+      "id": "MAIN-04",
+      "group": "MAIN 구축·기존 기능",
+      "item": "선택 성공 문서 통합·중복 원문 충돌 검사",
+      "status": "원본 포함",
+      "evidence": "07_DOCS/REFERENCE/OPERATIONS/GENOS_RELEASE_STAGES.md"
+    },
+    {
+      "id": "MAIN-05",
+      "group": "MAIN 구축·기존 기능",
+      "item": "용어 corpus replace·기존/신규 후보 검토",
+      "status": "원본 포함",
+      "evidence": "07_DOCS/REFERENCE/OPERATIONS/GLOSSARY_ALIGNMENT.md"
+    },
+    {
+      "id": "MAIN-06",
+      "group": "MAIN 구축·기존 기능",
+      "item": "10월1일 의미 검토 OFF/ON·벌크 R2·중단/재개",
+      "status": "현행 인계 자료 포함",
+      "evidence": "GENOS.md"
+    },
+    {
+      "id": "MAIN-07",
+      "group": "MAIN 구축·기존 기능",
+      "item": "문서–용어 출현·정의·명시 참조 연결",
+      "status": "원본 포함",
+      "evidence": "07_DOCS/REFERENCE/OPERATIONS/GENOS_DOCUMENT_CONNECTIONS.md"
+    },
+    {
+      "id": "MAIN-08",
+      "group": "MAIN 구축·기존 기능",
+      "item": "명시 참조 LLM 해소·범위/근거 검증",
+      "status": "원본 포함",
+      "evidence": "07_DOCS/REFERENCE/OPERATIONS/REFERENCE_RESOLUTION.md"
+    },
+    {
+      "id": "MAIN-09",
+      "group": "MAIN 구축·기존 기능",
+      "item": "구축 감사 원장과 서빙 navigation 분리",
+      "status": "원본 포함",
+      "evidence": "07_DOCS/REFERENCE/OPERATIONS/NAVIGATION_STORAGE.md"
+    },
+    {
+      "id": "MAIN-10",
+      "group": "MAIN 구축·기존 기능",
+      "item": "PeCab fulltext 구축·검색 세대 결속",
+      "status": "원본 포함",
+      "evidence": "07_DOCS/REFERENCE/OPERATIONS/GENOS_PECAB_REQUEST_ROUTING_20260929.md"
+    },
+    {
+      "id": "MAIN-11",
+      "group": "MAIN 구축·기존 기능",
+      "item": "내규/외규 접두어·팀/문서 범위 교집합",
+      "status": "모의 계약 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_source_prefix_routing.py"
+    },
+    {
+      "id": "MAIN-12",
+      "group": "MAIN 구축·기존 기능",
+      "item": "인사·안내·목록·내용 요청 분기",
+      "status": "모의 계약 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_request_routing.py"
+    },
+    {
+      "id": "MAIN-13",
+      "group": "MAIN 구축·기존 기능",
+      "item": "구조 원문 우선과 부족 근거 fulltext 확장",
+      "status": "모의 계약 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_structure_first_search.py"
+    },
+    {
+      "id": "MAIN-14",
+      "group": "MAIN 구축·기존 기능",
+      "item": "원문 선별·누락 복구·완독 검증",
+      "status": "모의 계약 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_bounded_source_selection.py"
+    },
+    {
+      "id": "MAIN-15",
+      "group": "MAIN 구축·기존 기능",
+      "item": "모델 형식·교차 필드 오류 수정·예산 유지",
+      "status": "모의 계약 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_model_decision_repair.py"
+    },
+    {
+      "id": "MAIN-16",
+      "group": "MAIN 구축·기존 기능",
+      "item": "질문 의무 추적·최종 검토 설정·원문 인용 검증",
+      "status": "원본 포함",
+      "evidence": "02_BACKEND/semantic_runtime/legal_agent/question_obligations.py"
+    },
+    {
+      "id": "MAIN-17",
+      "group": "MAIN 구축·기존 기능",
+      "item": "모델 실제 수신 원문·thinking·공유 요청 로그",
+      "status": "원본 포함",
+      "evidence": "02_BACKEND/semantic_runtime/request_report.py"
+    },
+    {
+      "id": "MAIN-18",
+      "group": "MAIN 구축·기존 기능",
+      "item": "답변 SSE·숫자 참조 표시·진행 UI",
+      "status": "원본 포함",
+      "evidence": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py"
+    },
+    {
+      "id": "MAIN-19",
+      "group": "MAIN 구축·기존 기능",
+      "item": "데이터/모델 환경 분기·warmup·동시 요청 정책",
+      "status": "원본 포함",
+      "evidence": "service.py"
+    },
+    {
+      "id": "MAIN-20",
+      "group": "MAIN 구축·기존 기능",
+      "item": "피드백 후보·action-memory·legal_llm_wiki·retire overlay",
+      "status": "원본 포함",
+      "evidence": "07_DOCS/REFERENCE/OPERATIONS/LEGAL_LLM_WIKI.md"
+    },
+    {
+      "id": "MAIN-21",
+      "group": "MAIN 구축·기존 기능",
+      "item": "선택형 glossary learning·task harness·golden 평가",
+      "status": "원본 포함",
+      "evidence": "00_SYSTEM/PIPELINE.json"
+    },
+    {
+      "id": "MEM-01",
+      "group": "멀티턴 통합",
+      "item": "질문 원장과 최종 경험 온톨로지 구분",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-02",
+      "group": "멀티턴 통합",
+      "item": "한 질문 묶음 안의 반복 정정·최초 조건 복원",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-03",
+      "group": "멀티턴 통합",
+      "item": "현재 사실과 과거 이력의 모델 입력 분리",
+      "status": "기존 검증 계승",
+      "evidence": "04_EXPERIMENTS/ADR/ADR-0613-cm-memory-current-state-authority"
+    },
+    {
+      "id": "MEM-04",
+      "group": "멀티턴 통합",
+      "item": "12개 닫힌 작업 방법·서버 단계 결정",
+      "status": "작업 코드 반영",
+      "evidence": "02_BACKEND/semantic_runtime/legal_agent/memory_methods.py"
+    },
+    {
+      "id": "MEM-05",
+      "group": "멀티턴 통합",
+      "item": "RAG 7단계 부분 재실행과 현재 head 전환",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-06",
+      "group": "멀티턴 통합",
+      "item": "추가 검색 신호→RECALL/READ/SELECT 재진입",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-07",
+      "group": "멀티턴 통합",
+      "item": "재진입 이전 선택·사유 보존과 1회 한도",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-08",
+      "group": "멀티턴 통합",
+      "item": "재실행 실패 시 이전 정답 재사용 차단·PENDING 복구",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-09",
+      "group": "멀티턴 통합",
+      "item": "현재 답변의 표 변환만 COMPOSE 재실행",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-10",
+      "group": "멀티턴 통합",
+      "item": "실제 정정 이벤트로 이유·이력 조회",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-11",
+      "group": "멀티턴 통합",
+      "item": "사용자 최종 확인 때만 하나의 경험 묶음 게시",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-12",
+      "group": "멀티턴 통합",
+      "item": "정정 전 경험 RETIRED·감사 이력 보존",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-13",
+      "group": "멀티턴 통합",
+      "item": "새 대화 재사용 시 현재 사건으로 판단 노드 재결속",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-14",
+      "group": "멀티턴 통합",
+      "item": "사용자·팀·문서·세대가 다르면 재사용 거부",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-15",
+      "group": "멀티턴 통합",
+      "item": "잘못 찾은 경험의 wiki 연결만 수정",
+      "status": "기존 구현 포함",
+      "evidence": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py"
+    },
+    {
+      "id": "MEM-16",
+      "group": "멀티턴 통합",
+      "item": "읽은 자료/채택 근거/인용·claim SUPPORTED_BY 구분",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-17",
+      "group": "멀티턴 통합",
+      "item": "중복 request ID·CAS 충돌·늦은 결과 처리",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-18",
+      "group": "멀티턴 통합",
+      "item": "기존 실험 SQLite 자동 적재 금지·새 v2 저장소",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "MEM-19",
+      "group": "멀티턴 통합",
+      "item": "빈 근거·의미 판단 오류의 완전 해결",
+      "status": "미완료",
+      "evidence": "04_EXPERIMENTS/ADR/ADR-0613-cm-memory-current-state-authority/artifacts/final-findings.json"
+    },
+    {
+      "id": "MEM-20",
+      "group": "멀티턴 통합",
+      "item": "무제한 긴 대화의 계층 조회·문단 anchor 정정",
+      "status": "미구현 설계 보존",
+      "evidence": "07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_MEMORY_MULTITURN_DESIGN_20261001.md"
+    },
+    {
+      "id": "ONT-01",
+      "group": "온톨로지 본 설계",
+      "item": "승인된 도메인 개념·관계·방법·경로 catalogue",
+      "status": "미구현 설계 보존",
+      "evidence": "07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_ONTOLOGY_CONTROL_DESIGN_20261001.md"
+    },
+    {
+      "id": "ONT-02",
+      "group": "온톨로지 본 설계",
+      "item": "각 판단에 원문·전제·도메인 proof 강제",
+      "status": "미구현 설계 보존",
+      "evidence": "00_SYSTEM/SCHEMAS/legal-agent-domain-journal-v1.draft.sql"
+    },
+    {
+      "id": "ONT-03",
+      "group": "온톨로지 본 설계",
+      "item": "native journal v6와 publication/recovery 연결",
+      "status": "미구현 설계 보존",
+      "evidence": "07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_ONTOLOGY_CONTROL_DESIGN_20261001.md"
+    },
+    {
+      "id": "ONT-04",
+      "group": "온톨로지 본 설계",
+      "item": "용어집 compile·catalogue 버전 변경 시 경험 재검토",
+      "status": "미구현 설계 보존",
+      "evidence": "07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_ONTOLOGY_CONTROL_DESIGN_20261001.md"
+    },
+    {
+      "id": "ONT-05",
+      "group": "온톨로지 본 설계",
+      "item": "일반 법률 지식 승인과 개인 경험 확인 구분",
+      "status": "작업 코드 반영",
+      "evidence": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py"
+    },
+    {
+      "id": "ONT-06",
+      "group": "온톨로지 본 설계",
+      "item": "DB 직접 수정·공통 지식 승인 UI",
+      "status": "사용자 별도 범위",
+      "evidence": "07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_MEMORY_MULTITURN_DESIGN_20261001.md"
+    },
+    {
+      "id": "SHIP-01",
+      "group": "입구·검증·이관",
+      "item": "service가 memory 요청의 세션/사용자 식별자 보존",
+      "status": "작업 코드 반영",
+      "evidence": "service.py"
+    },
+    {
+      "id": "SHIP-02",
+      "group": "입구·검증·이관",
+      "item": "신뢰된 workflow 서명·서버 팀 문서 범위 검증",
+      "status": "통합본 검사 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "SHIP-03",
+      "group": "입구·검증·이관",
+      "item": "식별자 정규화 충돌·익명 세션 공유 방지",
+      "status": "작업 코드 반영",
+      "evidence": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py"
+    },
+    {
+      "id": "SHIP-04",
+      "group": "입구·검증·이관",
+      "item": "서명·인증값을 모델/메모리 기록에서 제외",
+      "status": "작업 코드 반영",
+      "evidence": "02_BACKEND/semantic_runtime/app.py"
+    },
+    {
+      "id": "SHIP-05",
+      "group": "입구·검증·이관",
+      "item": "실제 studio 사용자·세션 필드의 신뢰 경계",
+      "status": "GENOS 현장 확인 필요",
+      "evidence": "GENOS.md"
+    },
+    {
+      "id": "SHIP-06",
+      "group": "입구·검증·이관",
+      "item": "워크플로우 memory 비활성 시 기존 SSE 경로 유지",
+      "status": "모의 계약 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_adapters_v2.py"
+    },
+    {
+      "id": "SHIP-07",
+      "group": "입구·검증·이관",
+      "item": "통합 코드·엔진·PIPELINE 해시 재결속",
+      "status": "반영",
+      "evidence": "00_SYSTEM/PIPELINE.json"
+    },
+    {
+      "id": "SHIP-08",
+      "group": "입구·검증·이관",
+      "item": "일반 계약·회귀 검사 및 정확한 실행 결과 보존",
+      "status": "292개 중290통과·기존 실패2 재현",
+      "evidence": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/working-main-contracts.log"
+    },
+    {
+      "id": "SHIP-09",
+      "group": "입구·검증·이관",
+      "item": "최종 ZIP/CODE_MANIFEST·데이터 제외·원본 동일성 검사",
+      "status": "1929파일 ZIP·작업 코드 전체 해시 일치",
+      "evidence": "08_DEPLOYMENT/GENOS/handoffs/system_integration_20261002_r1/CODE_MANIFEST.json"
+    },
+    {
+      "id": "SHIP-10",
+      "group": "입구·검증·이관",
+      "item": "~/DEV 백업→적용→동일성 검증→재실행→롤백",
+      "status": "로컬 적용·재실행·복구 검증 통과",
+      "evidence": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/installer-validation.json"
+    },
+    {
+      "id": "SHIP-11",
+      "group": "입구·검증·이관",
+      "item": "python3 명령·지속 로그·실패 상태 기록",
+      "status": "지속 로그·종료 상태 인계",
+      "evidence": "08_DEPLOYMENT/GENOS/handoffs/system_integration_20261002_r1/RUN.sh"
+    },
+    {
+      "id": "SHIP-12",
+      "group": "입구·검증·이관",
+      "item": "워크플로우 편집기 전체 코드·환경 설정 인계",
+      "status": "전체 교체본·설정 안내 준비",
+      "evidence": "08_DEPLOYMENT/GENOS/handoffs/system_integration_20261002_r1/README.md"
+    },
+    {
+      "id": "SHIP-13",
+      "group": "입구·검증·이관",
+      "item": "현장 NFS generation·커밋·서빙 리비전 결속",
+      "status": "GENOS 현장 확인 필요",
+      "evidence": "06_TOOLS/COMMANDS/genos_release_gate.py"
+    },
+    {
+      "id": "SHIP-14",
+      "group": "입구·검증·이관",
+      "item": "활성 MAIN 전환: Accepted·분리평가 gate",
+      "status": "미충족·활성화 안 함",
+      "evidence": "AGENTS.md"
+    },
+    {
+      "id": "SHIP-15",
+      "group": "입구·검증·이관",
+      "item": "통합본 실제 모델·CM 법률 품질·지연 평가",
+      "status": "미실행",
+      "evidence": "통합 계약 테스트를 모델 품질로 보고하지 않음"
+    },
+    {
+      "id": "SHIP-16",
+      "group": "입구·검증·이관",
+      "item": "GENOS 내부 데이터·모델·워크플로우 현장 실행",
+      "status": "현장 미확인",
+      "evidence": "GENOS.md"
+    },
+    {
+      "id": "MAIN-22",
+      "group": "MAIN 구축·기존 기능",
+      "item": "단독 영업일 질문의 형태소 오분석과 용어 시작점 누락",
+      "status": "기존 문제·미해결",
+      "evidence": "09_ARTIFACTS/MIGRATIONS/20261002-system-integration/existing-build-check.log"
+    },
+    {
+      "id": "MEM-21",
+      "group": "멀티턴 통합",
+      "item": "한 턴 모델 호출·수정·시간 예산 공유와 종료",
+      "status": "작업 코드 반영·모의 계약 통과",
+      "evidence": "05_TESTS/CONTRACTS/test_memory_runtime_v2.py"
+    },
+    {
+      "id": "SHIP-17",
+      "group": "입구·검증·이관",
+      "item": "runtime 영속성·여러 현장 인스턴스의 SQLite 공유/쓰기 잠금",
+      "status": "GENOS 현장 확인 필요",
+      "evidence": "08_DEPLOYMENT/GENOS/handoffs/system_integration_20261002_r1/README.md"
+    }
+  ],
+  "working_main_integrated": true,
+  "active_release_changed": false
+}

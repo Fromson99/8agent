@@ -1,0 +1,43 @@
+{
+  "version": "GENOS_RELATION_READING_20261006_R1",
+  "code_zip_sha256": "ba01c7d2ec26ed1d487975a9e31c7eeb30929b0da8264819606c682dab7a4ef2",
+  "code_manifest_sha256": "1150f02fe9bb6d365796b517f486704cb6119cb661bc342a8c67ac8efecd6924",
+  "apply_txt_sha256": "a8eb9eb9e8cf66d162b75a4627f614e4f7b27a3c283a2c9d1b95c054ed6bbba9",
+  "deployment_checkout": "/home/jin/8-AGENT/09_ARTIFACTS/DELIVERIES/relation_reading_20261006_r1",
+  "working_validation_root": "/home/jin/8-AGENT",
+  "changed_source": [
+    "02_BACKEND/semantic_runtime/legal_agent/source_recall.py",
+    "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+    "02_BACKEND/semantic_runtime/legal_agent/unit_selection.py",
+    "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+    "02_BACKEND/semantic_runtime/legal_agent/relation_read_policy.py",
+    "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+    "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+    "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py",
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py"
+  ],
+  "code_files": 52,
+  "required_files": 185,
+  "compact_reader_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406",
+  "policy_revision": "relation-reading-policy-20261006-r1",
+  "display_revision": "reasoner-display-read-summary-20261006-r1",
+  "generation_absolute_path": null,
+  "generation_manifest_sha256": null,
+  "field_commit": null,
+  "field_revision": null,
+  "genos_deployed": false,
+  "field_workflow_editor_updated": false,
+  "main_promotion": false,
+  "external_model_calls": 0,
+  "validation_kind": "synthetic unit/integration contracts; no quality/performance experiment",
+  "prepared_checkout_commit": "a3f9c523ec798f961da3808fd36017f1c12deaa4",
+  "git_push": "NOT_REQUESTED",
+  "local_public_generation_check": {
+    "path": "/home/jin/8-AGENT/01_DATA/TERM_RELEASES/pecab-only-public-main-20260929-v1/generation",
+    "manifest_sha256": "7bce6155aa762f2e9cc1453e7622b3186f47ad772cc7cd5251ad7fbc1235dabf",
+    "generation_e2e": "PASS",
+    "full_gate": "FAIL",
+    "failure": "glossary compiler/cache binding mismatch",
+    "genos_equivalence": false
+  }
+}

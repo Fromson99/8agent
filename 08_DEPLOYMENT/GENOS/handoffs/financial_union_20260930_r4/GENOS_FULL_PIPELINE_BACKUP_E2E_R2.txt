@@ -1,0 +1,253 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+
+# Run in the GENOS Codespace with python3, after INSTALL_R3 MODE=apply.
+# Builds a DRAFT only. It never changes CURRENT or the code-serving revision.
+RUN_LOG="$(mktemp "${TMPDIR:-/tmp}/genos-full-e2e-XXXXXXXX.log")"
+exec > >(tee -a "$RUN_LOG") 2>&1
+trap 'code=$?; printf "FINISHED status=%s log=%s\n" "$code" "$RUN_LOG"' EXIT
+DEPLOY_ROOT="$(realpath "${DEPLOY_ROOT:-$HOME/DEV}")"
+cd "$DEPLOY_ROOT"
+export GENOS_DATA_ROOT="$(realpath "${GENOS_DATA_ROOT:-$DEPLOY_ROOT/01_DATA}")"
+RUN_ID="${GENOS_RUN_ID:-financial-risk-full-e2e-20260930-r1}"
+BASE="${GENOS_BASE_GENERATION:-}"
+[[ "$RUN_ID" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$ ]] || { echo 'Invalid GENOS_RUN_ID'; exit 2; }
+[[ -n "$BASE" && -f "$BASE/manifest.json" ]] || {
+  echo 'Set GENOS_BASE_GENERATION to the exact previous serving generation directory.'; exit 2;
+}
+BASE="$(realpath "$BASE")"
+# The serving generation can be on a separate NFS mount from Codespace 01_DATA.
+[[ -d "$BASE" && -f "$BASE/manifest.json" ]] || { echo 'Base generation disappeared'; exit 2; }
+command -v python3 >/dev/null || { echo 'python3 missing'; exit 2; }
+command -v tar >/dev/null || { echo 'tar missing'; exit 2; }
+command -v flock >/dev/null || { echo 'flock missing'; exit 2; }
+mkdir -p "$GENOS_DATA_ROOT/LOGS/$RUN_ID"
+exec 9>"$GENOS_DATA_ROOT/LOGS/$RUN_ID/full-e2e-driver.lock"
+flock -n 9 || { echo 'This full E2E run is already active'; exit 2; }
+for path in 06_TOOLS/COMMANDS/genos_data_stages.py 06_TOOLS/pipeline.py \
+  06_TOOLS/COMMANDS/genos_generation_e2e.py 02_BACKEND/lawrag/pipeline/union_file.py \
+  02_BACKEND/lawrag/pipeline/reference_resolution.py; do
+  [[ -f "$path" ]] || { echo "Required checkout code missing: $path"; exit 2; }
+done
+RECEIPT="$GENOS_DATA_ROOT/CATALOG/TEAM_LAYOUT_HISTORY/financial-external-19-correction-r3/receipt.json"
+[[ -f "$RECEIPT" ]] || { echo 'Run INSTALL_R3 MODE=apply before full E2E'; exit 2; }
+
+# Verify the actual on-site pairs. The local 139-file count is not used.
+python3 - "$GENOS_DATA_ROOT" "$RECEIPT" <<'PY'
+import hashlib, json, sys
+from pathlib import Path
+root, receipt_path = map(Path, sys.argv[1:3])
+sys.path.insert(0, str(Path.cwd() / '02_BACKEND'))
+from lawrag.pipeline import union_file
+r = json.loads(receipt_path.read_text())
+layout_path = root / 'CATALOG/TEAM_LAYOUT.json'
+union_path = root / 'RAW/union_file/manifest.json'
+for path, key in ((layout_path, 'layout_after_sha256'), (union_path, 'union_after_sha256')):
+    if hashlib.sha256(path.read_bytes()).hexdigest() != r[key]:
+        raise SystemExit('Corrected RAW binding differs: ' + str(path))
+layout = json.loads(layout_path.read_text())
+loaded = union_file.load(root, layout)
+made = union_file.make(root, layout, set(r['shared_document_names']), r['scope_sha256'])
+if loaded != made or len(loaded['entries']) != r['shared_pairs']:
+    raise SystemExit('Union manifest does not match registered on-site files')
+if len(r['shared_document_names']) != 9 or r['financial_only_form_files'] != 11:
+    raise SystemExit('Expected financial document classification differs')
+print('UNION_VERIFIED shared_documents=9 actual_pairs=' + str(len(loaded['entries'])), flush=True)
+PY
+
+# Pin the GENOS internal model used for LLM reference resolution. No key is written.
+PROFILE="$GENOS_DATA_ROOT/LOGS/$RUN_ID/reference-model-profile.json"
+mkdir -p "$(dirname "$PROFILE")"
+python3 - "$PROFILE" <<'PY'
+import hashlib, json, os, sys
+from pathlib import Path
+sys.path.insert(0, str(Path.cwd() / '02_BACKEND'))
+from semantic_runtime.genos import from_env
+from semantic_runtime.legal_agent.transport import GenosTransport
+target, configured_model = from_env('llm')
+model = (os.environ.get('GENOS_REFERENCE_MODEL') or configured_model or '').strip()
+if not model:
+    import httpx
+    with httpx.Client(trust_env=False, timeout=target.read_timeout) as client:
+        response = client.get(target.url('/models'), headers=target.headers)
+        response.raise_for_status()
+        ids = [v['id'] for v in response.json().get('data', []) if isinstance(v, dict) and isinstance(v.get('id'), str)]
+    if len(set(ids)) != 1:
+        raise SystemExit('Set GENOS_REFERENCE_MODEL to the exact advertised internal model ID')
+    model = ids[0]
+binding = {'provider': 'genos', 'trust_zone': 'internal', 'model': model,
+           'adapter_version': 'genos-single-send-v1',
+           'endpoint_identity': hashlib.sha256(target.root.encode()).hexdigest(),
+           'max_input_bytes': int(os.environ.get('GENOS_LLM_MAX_INPUT_BYTES', '131072'))}
+GenosTransport.from_environment(binding).validate_model()
+profile = {'schema_version': 'reference-model-profile-v1', 'model_binding': binding,
+           'max_output_tokens': 4096, 'max_transport_retries': 0,
+           'max_schema_repairs': 0, 'wall_seconds': 1800, 'approval_mode': 'automatic'}
+path = Path(sys.argv[1])
+raw = (json.dumps(profile, ensure_ascii=False, indent=2, sort_keys=True) + '\n').encode()
+if path.exists():
+    if path.read_bytes() != raw:
+        raise SystemExit('Pinned reference profile changed; use a new GENOS_RUN_ID')
+else:
+    with path.open('xb') as out:
+        out.write(raw)
+print('REFERENCE_PROFILE_PINNED model=' + model + ' sha256=' + hashlib.sha256(raw).hexdigest(), flush=True)
+PY
+
+# Archive the selected prior generation and control files before any conversion.
+# RAW originals and prior immutable STRUCTURE caches are not modified by this run.
+BASE_STORAGE_ROOT="$(dirname "$(dirname "$(dirname "$BASE")")")"
+BACKUP_ROOT="${GENOS_BACKUP_ROOT:-$BASE_STORAGE_ROOT/BACKUPS/full-e2e/$RUN_ID}"
+BACKUP_ROOT="$(realpath -m "$BACKUP_ROOT")"
+[[ "$BACKUP_ROOT" != "$BASE"/* && "$BACKUP_ROOT" != "$BASE" ]] || {
+  echo 'Backup root is inside the selected generation'; exit 2;
+}
+mkdir -p "$BACKUP_ROOT"
+ARCHIVE="$BACKUP_ROOT/previous-generation-and-controls.tar.gz"
+BACKUP_RECEIPT="$BACKUP_ROOT/receipt.json"
+python3 - "$GENOS_DATA_ROOT" "$BASE" "$ARCHIVE" "$BACKUP_RECEIPT" <<'PY'
+import hashlib, json, sys
+from pathlib import Path
+root, base, archive, receipt = map(Path, sys.argv[1:5])
+manifest = hashlib.sha256((base / 'manifest.json').read_bytes()).hexdigest()
+if archive.exists() != receipt.exists():
+    raise SystemExit('Partial backup exists; inspect it before rerun')
+if archive.exists():
+    old = json.loads(receipt.read_text())
+    h = hashlib.sha256()
+    with archive.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(8*1024*1024), b''):
+            h.update(chunk)
+    if old.get('archive_sha256') != h.hexdigest() or old.get('base_manifest_sha256') != manifest:
+        raise SystemExit('Backup binding differs; use a new GENOS_RUN_ID')
+    print('BACKUP_REUSED bytes=' + str(archive.stat().st_size), flush=True)
+    raise SystemExit(0)
+print('BACKUP_REQUIRED base=' + str(base) + ' manifest_sha256=' + manifest, flush=True)
+PY
+if [[ ! -f "$ARCHIVE" ]]; then
+  BASE_PARENT="$(dirname "$BASE")"
+  BASE_NAME="$(basename "$BASE")"
+  backup_items=(CATALOG/TEAM_LAYOUT.json RAW/union_file/manifest.json)
+  for optional in CATALOG/RAW_DERIVATIVES.json CATALOG/BUILD_SCOPE.json generations/CURRENT.json; do
+    [[ ! -f "$GENOS_DATA_ROOT/$optional" ]] || backup_items+=("$optional")
+  done
+  PARTIAL="$ARCHIVE.partial"
+  [[ ! -e "$PARTIAL" ]] || { echo "Inspect incomplete backup: $PARTIAL"; exit 2; }
+  printf 'BACKUP_START output=%s\n' "$ARCHIVE"
+  du -sh "$BASE"
+  df -h "$BACKUP_ROOT"
+  tar -czf "$PARTIAL" -C "$BASE_PARENT" "$BASE_NAME" \
+    -C "$GENOS_DATA_ROOT" "${backup_items[@]}"
+  tar -tzf "$PARTIAL" >/dev/null
+  mv -n "$PARTIAL" "$ARCHIVE"
+  python3 - "$BASE" "$ARCHIVE" "$BACKUP_RECEIPT" "$GENOS_DATA_ROOT" <<'PY'
+import hashlib, json, sys
+from datetime import datetime, timezone
+from pathlib import Path
+base, archive, receipt, root = map(Path, sys.argv[1:5])
+def sha(path):
+    h=hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(8*1024*1024), b''):
+            h.update(chunk)
+    return h.hexdigest()
+control = [root/'CATALOG/TEAM_LAYOUT.json', root/'RAW/union_file/manifest.json', root/'generations/CURRENT.json']
+record = {'schema_version': 'genos-full-e2e-backup-v1', 'base_generation': str(base),
+          'base_manifest_sha256': sha(base/'manifest.json'), 'archive': str(archive),
+          'archive_sha256': sha(archive), 'archive_bytes': archive.stat().st_size,
+          'controls': {str(p.relative_to(root)): sha(p) for p in control if p.is_file()},
+          'created_at': datetime.now(timezone.utc).isoformat()}
+with receipt.open('x', encoding='utf-8') as out:
+    json.dump(record, out, ensure_ascii=False, indent=2)
+    out.write('\n')
+print('BACKUP_VERIFIED bytes=' + str(record['archive_bytes']) +
+      ' sha256=' + record['archive_sha256'], flush=True)
+PY
+fi
+
+for key in GENOS_PDF_CONVERTER_SHARED_ROOT GENOS_PREPROCESSOR_SHARED_ROOT; do
+  [[ -d "${!key:-/nonexistent}" ]] || { echo "Set $key to the Codespace shared directory"; exit 2; }
+done
+[[ -n "${GENOS_PDF_CONVERTER_ID:-${GENOS_PDF_CONVERTER_URL:-}}" ]] || {
+  echo 'Set GENOS_PDF_CONVERTER_ID or GENOS_PDF_CONVERTER_URL'; exit 2;
+}
+[[ -n "${GENOS_PREPROCESSOR_ID:-${GENOS_PREPROCESSOR_URL:-}}" ]] || {
+  echo 'Set GENOS_PREPROCESSOR_ID or GENOS_PREPROCESSOR_URL'; exit 2;
+}
+printf 'PIPELINE_START run=%s data=%s base=%s backup=%s\n' "$RUN_ID" "$GENOS_DATA_ROOT" "$BASE" "$ARCHIVE"
+python3 -B 06_TOOLS/COMMANDS/genos_data_stages.py \
+  --run-id "$RUN_ID" --team risk_team --team financial_team --stage raw --execute || {
+    echo "RAW_PREPARATION_INCOMPLETE: inspect $GENOS_DATA_ROOT/LOGS/$RUN_ID/preparation"; exit 2;
+  }
+python3 -B 06_TOOLS/COMMANDS/genos_data_stages.py \
+  --run-id "$RUN_ID" --team risk_team --team financial_team --stage structure --execute || {
+    echo "STRUCTURE_INCOMPLETE: see $GENOS_DATA_ROOT/LOGS/$RUN_ID/doc-status.csv and detail.log"; exit 2;
+  }
+python3 -B 06_TOOLS/pipeline.py glossary knowledge check
+python3 -B 06_TOOLS/pipeline.py document-release build \
+  --run-id "$RUN_ID" --base-generation "$BASE" \
+  --reference-model-profile "$PROFILE" \
+  --max-review-jobs "${GENOS_MAX_REVIEW_JOBS:-100}" \
+  --max-reference-cases 10000 --reference-batch-size 8 || {
+    echo "RELEASE_INCOMPLETE: see $GENOS_DATA_ROOT/TERM_RELEASES/$RUN_ID; rerun with the same GENOS_RUN_ID"; exit 3;
+  }
+RELEASE="$GENOS_DATA_ROOT/TERM_RELEASES/$RUN_ID"
+GENERATION="$RELEASE/serving/generation"
+[[ -f "$GENERATION/manifest.json" ]] || { echo 'No completed draft generation'; exit 2; }
+python3 -B 06_TOOLS/pipeline.py document-release verify --release "$RELEASE"
+
+# Check exact photo versions, both team views, glossary/link tables, and model overlay.
+python3 - "$GENOS_DATA_ROOT" "$RECEIPT" "$GENERATION" "$RELEASE" <<'PY'
+import json, sqlite3, sys
+from pathlib import Path
+data, receipt_path, generation, release = map(Path, sys.argv[1:5])
+scope = json.loads((data/'CATALOG/SCOPES/photo-required-80-hwpx-20260917.json').read_text())['documents'][:61]
+shared = set(json.loads(receipt_path.read_text())['shared_document_names'])
+if len(scope) != 61 or len(shared) != 9:
+    raise SystemExit('Photo 61 or shared scope changed')
+with sqlite3.connect('file:' + str(generation/'store.sqlite') + '?mode=ro', uri=True) as db:
+    failures = []
+    risk_ids, finance_ids = set(), set()
+    for did, raw in db.execute('SELECT document_id,json FROM document'):
+        meta = json.loads(raw).get('document_metadata') or {}
+        teams = {loc.get('team') for loc in [meta, *(meta.get('aliases') or [])] if isinstance(loc, dict)}
+        if 'risk_team' in teams: risk_ids.add(did)
+        if 'financial_team' in teams: finance_ids.add(did)
+    for doc in scope:
+        name = doc['name']
+        ids = {f['sha256'][:16] for f in doc['files'] if f['role'] == 'body'}
+        found = False
+        for did in ids:
+            row = db.execute('SELECT name,json FROM document WHERE document_id=?', (did,)).fetchone()
+            if row is None: continue
+            meta = json.loads(row[1]).get('document_metadata') or {}
+            title = meta.get('document_title') or row[0].rsplit(' > ', 1)[-1]
+            blocks = db.execute('SELECT 1 FROM source_block WHERE document_id=? LIMIT 1', (did,)).fetchone()
+            if title == name and did in finance_ids and (name not in shared or did in risk_ids) and blocks:
+                found = True
+                break
+        if not found: failures.append(name)
+if failures:
+    raise SystemExit('PHOTO61_FAILED: ' + ', '.join(failures))
+manifest = json.loads((generation/'manifest.json').read_text())
+nav = generation/manifest['navigation']['path']
+if not (nav/'reference-resolution-apply.json').is_file():
+    raise SystemExit('LLM reference overlay missing')
+if not (generation/'glossary/bundle/manifest.json').is_file():
+    raise SystemExit('Generation glossary bundle missing')
+with sqlite3.connect('file:' + str(nav/'navigation.sqlite') + '?mode=ro', uri=True) as db:
+    counts = {table: db.execute('SELECT count(*) FROM '+table).fetchone()[0]
+              for table in ('term','edge','occurrence','definition','reference','reference_end')}
+if not counts['term'] or not counts['occurrence']:
+    raise SystemExit('Term/document link index is empty')
+print(json.dumps({'photo61': 'PASS', 'shared_document_types': len(shared),
+                  'risk_document_versions': len(risk_ids), 'financial_document_versions': len(finance_ids),
+                  'shared_document_versions': len(risk_ids & finance_ids),
+                  'index_rows': counts, 'reference_overlay': 'PRESENT'}, ensure_ascii=False), flush=True)
+PY
+env -u GENOS_GENERATION python3 -B 06_TOOLS/COMMANDS/genos_generation_e2e.py \
+  --code-root "$DEPLOY_ROOT" --generation "$GENERATION" --release "$RELEASE"
+printf 'DRAFT_E2E_PASS run=%s generation=%s manifest_sha256=%s backup=%s\n' \
+  "$RUN_ID" "$GENERATION" "$(sha256sum "$GENERATION/manifest.json" | cut -d' ' -f1)" "$ARCHIVE"
+printf 'CURRENT, code-serving revision, and workflow editor were not changed.\n'

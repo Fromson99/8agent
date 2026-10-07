@@ -1,0 +1,16 @@
+{
+  "format": "8agent-sse-startup-patch/1",
+  "patch": "sse-startup-20260928-r1",
+  "files": {
+    "08_DEPLOYMENT/GENOS/stream_app.py": {
+      "base_sha256": "0ac7aa917fcfd3613238e5a1dd841741312da2532fbbc67a42b0488a531869a8",
+      "new_sha256": "b39cfc24c2a4d954fad4ba967e253db19e5f145d2f480ee494c30be198649db1"
+    },
+    "08_DEPLOYMENT/GENOS/start_sse.py": {
+      "base_sha256": "fd064fe5e0fe45499c6f233e926977acfae0a8d3951bc794cb8d0e376bc97410",
+      "new_sha256": "db033b5373fb1333aec681498a84ec8e25472afc812b541cb4a609a23a6ed14c"
+    }
+  },
+  "generation_change": false,
+  "onsite_verified": false
+}

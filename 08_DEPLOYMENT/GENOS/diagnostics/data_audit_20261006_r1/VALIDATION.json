@@ -1,0 +1,44 @@
+{
+  "schema_version": "genos-data-audit-validation-v1",
+  "checked_at": "2026-10-06T07:17:38.960279+00:00",
+  "runtime": {
+    "environment": "WSL local",
+    "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+    "executable": "/home/jin/8-AGENT/.venv/bin/python"
+  },
+  "files": [
+    {
+      "path": "GENOS_DATA_AUDIT_20261006_R1.py",
+      "sha256": "d69a9093c6503101a117e3181ae30586a657ed9ad808aa9b7f1fa3f82ed3e0a4",
+      "bytes": 78609
+    },
+    {
+      "path": "GENOS_DATA_AUDIT_20261006_R1_RUN.txt",
+      "sha256": "6df94a15553640ecb0789c8bffcf4cdbf03dbd5a1f595c272a1c0ac213bbacb7",
+      "bytes": 79703
+    },
+    {
+      "path": "GUIDE_UTF8.txt",
+      "sha256": "e30a35e1242de9fbdac2885bca4123edef7ce7a1fbde83788a68c687c07b14f3",
+      "bytes": 10204
+    }
+  ],
+  "checks": {
+    "contract_tests": {
+      "command": ".venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_genos_data_audit.py",
+      "passed": 17
+    },
+    "python_311_syntax": "PASS",
+    "bash_syntax": "PASS",
+    "embedded_source_parity": "PASS",
+    "input_bytes_and_mtime_preserved": "PASS",
+    "standalone_launcher_success_and_failure_exit_log": "PASS"
+  },
+  "genos_field_execution": "NOT_RUN",
+  "actual_genos_counts": "UNVERIFIED",
+  "genos_rendering": "UNVERIFIED",
+  "service_or_data_changed": false,
+  "model_calls": 0,
+  "network_calls": 0,
+  "quality_certified": false
+}

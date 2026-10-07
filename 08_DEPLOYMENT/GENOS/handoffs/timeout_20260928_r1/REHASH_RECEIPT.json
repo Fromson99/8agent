@@ -1,0 +1,210 @@
+{
+  "applied": true,
+  "changed_code": [
+    "00_SYSTEM/LEGAL_AGENT/profile-source-only.json",
+    "00_SYSTEM/LEGAL_AGENT/profile-tools-v2.json",
+    "00_SYSTEM/LEGAL_AGENT/profile-tools-v3.json",
+    "00_SYSTEM/LEGAL_AGENT/profile-tools-v4.json",
+    "00_SYSTEM/LEGAL_AGENT/profile-tools-v5.json",
+    "02_BACKEND/semantic_runtime/document_navigation.py",
+    "02_BACKEND/semantic_runtime/full_glossary.py",
+    "02_BACKEND/semantic_runtime/legal_agent/domain.py",
+    "02_BACKEND/semantic_runtime/navigation_loop.py",
+    "02_BACKEND/semantic_runtime/task_policy.py",
+    "02_BACKEND/semantic_runtime/term_agent.py"
+  ],
+  "unlisted_runtime_files": [],
+  "unlisted_added": false,
+  "engine_manifests": [
+    {
+      "engine": "legal-answer@candidate-v1",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/answer.json",
+      "old": "6f5a517c14a362e6776efba04208e06e2f75626e927afea18889765cb7ad90c7",
+      "new": "4b4101dd0af903a7328dc7fe9c6446d0663495f262bfc074f45362a1ca4c12ac"
+    },
+    {
+      "engine": "legal-assemble@candidate-v1",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/assemble.json",
+      "old": "21586655f5117365af1163119129a108b9dddfb0e189cd7696b7ea11fd93eddf",
+      "new": "48242e7f0786b34c49f6a02bcf9a95a9724d0566ab0049f0f51a1244fa8d4f16"
+    },
+    {
+      "engine": "legal-retrieve@candidate-v1",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/retrieve.json",
+      "old": "57adbed6e6daed3cbfdd38235ba664962988027bf98670557c2f73025a31d539",
+      "new": "f3c71ade994f41925df132127f683521459de5b2432a6c67e0842297f89be6c4"
+    },
+    {
+      "engine": "legal-select@candidate-v1",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/1.0.0/select.json",
+      "old": "7ceb0d0bcd6ca62392daec62ca133a3ffc60afc29eb74a6e55093daf54f0e801",
+      "new": "7321a1dec026db589113c50da9c29cf9a74ff2d2c67b49e5b37328c63a5badad"
+    },
+    {
+      "engine": "legal-v2-answer@2.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/answer.json",
+      "old": "b646cad18da1a73f652294d101dbc563871829786628c9bd0fc21907c5979ff2",
+      "new": "74171635b7286b8ff297f42d4ef727d91d4df2222e091f3c36c6b236248ed5c2"
+    },
+    {
+      "engine": "legal-v2-assemble@2.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/assemble.json",
+      "old": "696212f8e88b2f7c23e04bffea6b567c0de60363e20babb6b128699944ebf5a2",
+      "new": "a3507ffe60ca298fc9a550f86715f34b528bbfb8c3b1c9f3c51d4b7c0320ce1a"
+    },
+    {
+      "engine": "legal-v2-retrieve@2.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/retrieve.json",
+      "old": "ff1ba1c50cd632d757733bd7bc7accf36b413da6c9177164d7963bd015bc9d49",
+      "new": "5c0e7b46d5ad408eb4bd3e842da9ccd9275e5613607d48c086c62a77a813bdff"
+    },
+    {
+      "engine": "legal-v2-select@2.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/2.0.0/select.json",
+      "old": "3aebafe59aecd6ae08ccbcabf6f2ea74e9548ef9c13427037c1fd0100c155e90",
+      "new": "b628e3e94c8dd49cf5a6cbf796500fd8f1bed2347ea1b5c5c3ba41ada0946975"
+    },
+    {
+      "engine": "legal-v3-answer@3.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/answer.json",
+      "old": "fec617adafd1319472f0d1d2dff839082f7b384d9479d79e6b86497361ebcc6e",
+      "new": "d03350b16eecad3911c5dfc2bbc043e45bcc71195fb00efa5e174e73a487eb05"
+    },
+    {
+      "engine": "legal-v3-assemble@3.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/assemble.json",
+      "old": "53e471be84aa418b466833ebee410909dd704ca35373618adf8c183152365cdb",
+      "new": "a87fed34312717b515bfef143a7a66dea22e12a11b9bb9ea64ac9a9f5dbb4416"
+    },
+    {
+      "engine": "legal-v3-retrieve@3.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/retrieve.json",
+      "old": "a0c7df035bcc2a4ea29a1244d7e84ccd5f1fe330cb39b06c437ce458bd822b55",
+      "new": "bde0fb3ee6dca2d98429ee115b8a2cc3ba1587486881d0fde7ed3f27b036210a"
+    },
+    {
+      "engine": "legal-v3-select@3.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/3.0.0/select.json",
+      "old": "78fbcc5e32c56b901832bc059b4a30101f113eeb865d248934a5f6926f738032",
+      "new": "3c4d70ea7f78d773f914023389b44e84597e7077da805a3d06f9b7c52615b350"
+    },
+    {
+      "engine": "legal-v4-answer@4.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/answer.json",
+      "old": "8ed14f8cd1c569798e3c3c6360b7c0779ba7d388b32b6d83aab911f29c21416f",
+      "new": "6d3aa88dd6d66a9f3f53b633874e5703d5e5df5716fe8b38c6e46b26274d6abb"
+    },
+    {
+      "engine": "legal-v4-assemble@4.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/assemble.json",
+      "old": "96c9cfcc7210f409da0761cbc5c60628c686d6e85e884a353f250495395c1991",
+      "new": "ea69f668330274fdea05a51ff2a0fb631e345664945bf75f0607aa2a9a4364ec"
+    },
+    {
+      "engine": "legal-v4-retrieve@4.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/retrieve.json",
+      "old": "80211824ee458d8b4fbd62ef2971a60f336475c5363b096d8a5bf24b82d65f45",
+      "new": "9359f50cacce0407c2db0010f5a45eb60b4c1d3995dcde9aa3f0ea23e0d5272e"
+    },
+    {
+      "engine": "legal-v4-select@4.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/4.0.0/select.json",
+      "old": "88ed5820d6b8537eed672218f6cc70bf869abbc78e826961a3d106958a5533f0",
+      "new": "499daff4fe30eb1df02bc97a6b83b05b58534158d53050ab07ebe55053fd19b6"
+    },
+    {
+      "engine": "legal-v5-answer@5.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/answer.json",
+      "old": "f88af461adfde9c66ab32879284bca37223cef467b931e00e19dede6e0adbac3",
+      "new": "5c2ac23e7a8438c043a43b00fb5f5cf853f5cab16d000f3cfa1ccdf32819168f"
+    },
+    {
+      "engine": "legal-v5-assemble@5.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/assemble.json",
+      "old": "135c2ccda094303edff79b8a2696abc69dd221aec9fe0c913d1548bcb35fc53f",
+      "new": "cba3e47328e20a695b92f06847647e9448390c45da17e2e221ed990239c35d0f"
+    },
+    {
+      "engine": "legal-v5-retrieve@5.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/retrieve.json",
+      "old": "7924df9c9ea40f1c9a68656f8e8dee10a926b74cda9c0dd8515e3104852c3c85",
+      "new": "1d5a148bf4fea882d1c13f23afe6f2f0f5fb1dc6c041be402f34239d476de618"
+    },
+    {
+      "engine": "legal-v5-select@5.0.0",
+      "manifest": "02_BACKEND/ENGINES/legal_agent/5.0.0/select.json",
+      "old": "d0ce3705f3d2336d9f46a97ceb271d16fd384faff4b8e85323b5c78a786c8e2e",
+      "new": "3f4f9167615e2265bb1562828daa21488b473b222d2206b7bd83dd4132b920ed"
+    },
+    {
+      "engine": "term-answer@1.0.0",
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
+      "old": "d74a70fa41a23b8f4b029103472668095afb607e7d5f8a67055ee268afdafac4",
+      "new": "2913d19cc2220ee4ae08705d965496e18933d63957370cc98cf8c016ec3c094e"
+    },
+    {
+      "engine": "term-assemble@1.0.0",
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
+      "old": "330d56899e19aabb034c6f76528d0579a08344821fcfa20d7630aeef999243eb",
+      "new": "5879eca28526dc36c1488813d27638d3ceadd91afac92ec6716236c9c0c33f29"
+    },
+    {
+      "engine": "term-feedback@1.0.0",
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
+      "old": "0f1f73696c2ac1429544e77861738effe4f381118066f4c44c53a0f93c00a768",
+      "new": "ad2bb3a8b06c1be35ccac3847c5aa3e0121dc759c595a09b0f4d814e31163f0f"
+    },
+    {
+      "engine": "term-load@1.0.0",
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
+      "old": "4fe8a5f8f332398ea49b0df0cde39fc72363dc5b2a518aa32c459bfd776075b7",
+      "new": "333b3f59bcdc1b42676be2cf452d7bd6c29c3585c487c2b3acacd40d096083d0"
+    },
+    {
+      "engine": "term-retrieve@1.0.0",
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
+      "old": "c56a4bda4786f94726f112bd6f832e355a704e8737c9458a460875d375218e5b",
+      "new": "5858ab94a68fc000a47a3c6b06bbfae6f3bbe8ffedcaeceece4c7d58d94f42e9"
+    },
+    {
+      "engine": "term-select@1.0.0",
+      "manifest": "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json",
+      "old": "4c9f6b278b0d5eb48fdb9048168f17badcc7a8154c65a1b430a814481ab1512c",
+      "new": "25af138b7a14cd9a5734ff2b22082726ed5f1f567a1cdf88617d22a05bc69800"
+    }
+  ],
+  "schemas": [],
+  "data_pins_checked_not_rewritten": [
+    {
+      "pin": "index",
+      "path": "01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation/navigation",
+      "ok": true
+    },
+    {
+      "pin": "fulltext",
+      "path": "01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation/fulltext",
+      "ok": true
+    },
+    {
+      "pin": "origin_projections",
+      "path": "01_DATA/PROJECTIONS/document-origins/term-source-adca5fbe3650f90fb372.json",
+      "ok": true
+    },
+    {
+      "pin": "origin_projections",
+      "path": "01_DATA/PROJECTIONS/document-origins/term-source-1acfbe06921527e74a0b.json",
+      "ok": true
+    },
+    {
+      "pin": "alias_projections",
+      "path": "01_DATA/PROJECTIONS/document-aliases/term-source-adca5fbe3650f90fb372.json",
+      "ok": true
+    },
+    {
+      "pin": "alias_projections",
+      "path": "01_DATA/PROJECTIONS/document-aliases/term-source-1acfbe06921527e74a0b.json",
+      "ok": true
+    }
+  ],
+  "next": null
+}

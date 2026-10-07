@@ -1,0 +1,28 @@
+{
+  "id": "GENOS_UNIFIED_V6_NFS_MAIN_20261002_R2",
+  "code_zip_sha256": "727762461aeb697caa4ef5ee74f4b45b301d0ebd985fc6cad968d6660642528b",
+  "code_manifest_sha256": "6dffc088ac82c547a617393d46c46af12c5b815b884ae6431db9088747ebeabc",
+  "runtime": "/nfs-root/diamo/8-agent/runtime",
+  "entrypoint": "main:app",
+  "chat_path": "/chat",
+  "implementation": "legal-agent-unified-v6",
+  "memory_journal_mode": "DELETE",
+  "local_active_pointer_changed": false,
+  "onsite_deployment_commit": null,
+  "onsite_generation_path": null,
+  "onsite_generation_manifest_sha256": null,
+  "onsite_code_serving_revision": null,
+  "onsite_request_id": null,
+  "onsite_status": "NOT_VERIFIED",
+  "legal_llm_wiki_enabled": false,
+  "reference": {
+    "ref": "infocz/fde/seungho/cicd",
+    "commit": "5fca5fa353f2f6b1463e38a020bddd64b1f3018e",
+    "paths": [
+      "02-els-qa/main.py",
+      "02-els-qa/workflow/chat.py",
+      "02-els-qa/tests/test_main.py",
+      "02-els-qa/workflow/tests/test_chat.py"
+    ]
+  }
+}
