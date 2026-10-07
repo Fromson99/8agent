@@ -4,27 +4,36 @@ from types import MethodType
 import json,hashlib,threading
 from . import legal_navigation as previous
 from lawrag.core.legal_coordinate import LegalCoordinate,parse_label,find_coordinates
+from .team_scope import generation_key
 
 # Validated stored units of one immutable generation; read-only after construction.
 _UNITS_CACHE={};_UNITS_LOCK=threading.Lock()
 
 def stored_units(store):
-    key=(store.manifest['generation_id'],store.manifest['store_sha256'])
+    key=generation_key(store)
     with _UNITS_LOCK:
         if key in _UNITS_CACHE:return _UNITS_CACHE[key]
+        units = _load_units(store)
+        if generation_key(store) != key:raise ValueError('source changed during structure preparation')
+        _UNITS_CACHE.clear()
+        _UNITS_CACHE[key] = units
+        return units
+
+def _load_units(store):
     units={}
     for row in store.db.execute('SELECT document_id,unit_id,parent_id,json FROM source_unit ORDER BY document_id,CAST(unit_id AS INTEGER)'):
         raw=json.loads(row['json']);parent=str(row['parent_id']) if row['parent_id'] is not None else None
         if raw.get('parent') is not None and str(raw['parent'])!=parent:raise ValueError('stored structure parent mismatch')
         units[(row['document_id'],str(row['unit_id']))]={**raw,'parent':parent,'raw_structure':raw}
-    for (did,uid),unit in units.items():
-        if unit['parent'] is not None and (did,unit['parent']) not in units:raise ValueError('stored parent missing')
+    done=set()
+    for did,uid in units:
         seen=set();cur=uid
-        while (did,cur) in units:
+        while cur is not None and (did,cur) not in done:
+            if (did,cur) not in units:raise ValueError('stored parent missing')
             if cur in seen:raise ValueError('stored structure cycle')
             seen.add(cur);cur=units[(did,cur)]['parent']
-    with _UNITS_LOCK:
-        return _UNITS_CACHE.setdefault(key,units)
+        done.update((did,u) for u in seen)
+    return units
 
 
 def bind_structure(matcher,store):
@@ -50,9 +59,11 @@ def stored_coordinate(units,did,uid,seen=None):
         raise ValueError('stored legal_coordinate disagrees with shared coordinate contract')
     # Older source generations retain surface/ordinal + scope/key but no full object.
     # Reuse ingestion's shared label grammar; never inspect the article title/body.
-    component=parse_label(raw.get('surface',''))
+    component=(LegalCoordinate(raw['role'],raw['ordinal'][0],
+                               sub=raw['ordinal'][1] if len(raw['ordinal'])>1 else None)
+               if raw.get('role') and raw.get('ordinal') else parse_label(raw.get('surface','')))
     if component is None:return None
-    if component.unit in ('항','호','목'):
+    if component.unit in ('항','호','목','세목','세세목','세세세목'):
         parent=u['parent']
         if parent is None:return None
         base=stored_coordinate(units,did,parent,seen)
@@ -64,7 +75,7 @@ class BoundSession(previous.LegalSession):
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
         if not hasattr(self.m,'structure_binding'):raise ValueError('stored structure adapter required')
-        self.read_handles={};self.handle_by_source={};self.offered_handles=set();self.route_actions=[]
+        self.read_handles={};self.handle_by_source={};self.handle_by_extent={};self.offered_handles=set();self.route_actions=[]
         # inherited_navigation.bind_structure precomputes every stored coordinate once per generation.
         computed=getattr(self.m,'stored_coordinates',None)
         if computed is None:
@@ -77,6 +88,52 @@ class BoundSession(previous.LegalSession):
             self.handle_by_source[sid]=handle;self.read_handles[handle]={'source_id':sid,'document_id':source['document_id'],'text_sha256':source['text_sha256'],'binding':deepcopy(self.m.structure_binding)}
         handle=self.handle_by_source[sid]
         return {**card,'read_handle':handle,'read_action':{'tool':'READ','args':{'source_id':handle}}}
+    def bind_reference_extent(self,sid,extents):
+        """Issue a READ handle bound to verified stored subtrees, never caller-selected blocks."""
+        if not extents:raise ValueError('reference extent is empty')
+        source=self.t.sources[sid];did=source['document_id'];normalized=[]
+        source_order=[str(b['block_id']) for b in source['blocks']];source_ids=set(source_order)
+        for raw in extents:
+            uid=raw.get('unit_id');requested=list(dict.fromkeys(map(str,raw.get('block_ids') or [])))
+            if uid is None or not requested:raise ValueError('reference extent requires a stored unit and blocks')
+            unit=self.m.units.get((did,str(uid)))
+            if unit is None:raise ValueError('reference extent unit is not in the bound generation')
+            scoped=bool(raw.get('spans'))
+            if scoped:
+                from .reference_spans import canonical,contains
+                spans=canonical(source,raw['spans'])
+                if set(requested)!={p['block_id'] for p in spans}:raise ValueError('reference blocks disagree with character scope')
+                row=self.t.db.execute('SELECT json FROM structure_anchor WHERE source_id=? AND unit_id=?',(sid,str(uid))).fetchone()
+                if row is None:raise ValueError('reference structure anchor is missing')
+                anchor=json.loads(row[0])
+                allowed=canonical(source,anchor.get('subtree_spans') or [])
+                if not allowed or not contains(allowed,spans):raise ValueError('reference scope leaves its stored anchor')
+                expected=[bid for bid in source_order if bid in set(requested)]
+            else:
+                lo,hi=unit.get('span') or (None,None)
+                expected=[bid for bid in source_order if bid.isdigit() and lo is not None and lo<=int(bid)<hi]
+                if set(requested)!=set(expected) or not set(requested)<=source_ids:
+                    raise ValueError('reference extent disagrees with the stored unit subtree')
+                spans=[]
+            normalized.append({'relation_id':raw['relation_id'],'unit_id':str(uid),
+                               'unit_path':list(raw.get('unit_path') or []),'block_ids':expected,'spans':spans})
+        union=[bid for bid in source_order if any(bid in e['block_ids'] for e in normalized)]
+        from .reference_spans import canonical
+        scoped_spans=canonical(source,[p for e in normalized for p in e['spans']]) if any(e['spans'] for e in normalized) else []
+        if scoped_spans and any(not e['spans'] for e in normalized):raise ValueError('cannot combine scoped and legacy extents')
+        key=(sid,tuple(union),tuple(sorted(e['relation_id'] for e in normalized)))
+        if key not in self.handle_by_extent:
+            handle='RH'+str(len(self.read_handles)+1);self.handle_by_extent[key]=handle
+            kind='REFERENCE_PROVISION_SUBTREE' if len(normalized)==1 else 'REFERENCE_PROVISION_SUBTREES'
+            self.read_handles[handle]={'source_id':sid,'document_id':did,'text_sha256':source['text_sha256'],
+                                       'binding':deepcopy(self.m.structure_binding),
+                                       'extent':{'kind':kind,'block_ids':union,'relations':normalized,
+                                                 'spans':scoped_spans}}
+        handle=self.handle_by_extent[key];extent=self.read_handles[handle]['extent']
+        return {'read_handle':handle,'read_action':{'tool':'READ','args':{'source_id':handle}},
+                'read_extent':extent['kind'],'read_block_ids':list(extent['block_ids']),
+                'read_unit_paths':[e['unit_path'] for e in extent['relations']],
+                'read_relation_ids':[e['relation_id'] for e in extent['relations']]}
     def structure_card(self,key):
         card=super().structure_card(key);did,uid=self.structure_keys[key];u=self.m.units[(did,uid)]
         return {**card,'coordinate_scope':u.get('coordinate_scope'),'coordinate_key':u.get('coordinate_key'),'legal_coordinate':u.get('legal_coordinate'),'read_action':None,'read_instruction':'FIND_ARTICLE or LIST returns a server-issued read_handle; structure IDs cannot be READ source_id.'}
@@ -162,6 +219,14 @@ class BoundSession(previous.LegalSession):
             if handle not in self.offered_handles or handle not in self.read_handles:raise ValueError('READ_HANDLE_REQUIRED: use currently offered RH read_action')
             binding=self.read_handles[handle];sid=binding['source_id']
             if binding['document_id'] not in self.scope or self.t.sources[sid]['text_sha256']!=binding['text_sha256'] or binding['binding']!=self.m.structure_binding:raise ValueError('stale read handle')
+            extent=binding.get('extent')
+            if extent is not None:
+                unit_id=a.get('unit_id','')
+                if unit_id:
+                    if extent.get('spans'):raise ValueError('scoped reference cannot widen to an original block')
+                    if str(unit_id) not in extent['block_ids']:raise ValueError('original block is outside the bound reference extent')
+                    return self.read(sid,a.get('offset',0),str(unit_id))
+                return self.read(sid,a.get('offset',0),block_ids=extent['block_ids'],extent=extent)
             a={**a,'source_id':sid}
         result=super().execute(tool,a)
         if tool=='LIST' and result.get('total')==0:

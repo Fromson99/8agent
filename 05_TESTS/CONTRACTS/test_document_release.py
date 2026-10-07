@@ -60,7 +60,7 @@ def test_full_link_index_bundle_and_scoped_navigation(tmp_path, glossary):
     assert verify_assets(generation)['verified']
     assert build_generation(original, glossary, tmp_path / 'built', serving=True) == result
     manifest = json.loads((generation / 'navigation/manifest.json').read_text())
-    assert manifest['schema_version'] == 'term-navigation-index-v3'
+    assert manifest['schema_version'] == 'term-navigation-index-v4'
     with closing(Store(generation)) as store:
         index = TermIndex(generation / 'navigation', store)
         tools = index.tools(['internal:v1', 'law:v1'])
@@ -167,6 +167,16 @@ def test_release_build_review_pause_activation_rollback(tmp_path, glossary, monk
     assert result['completed'] and not result['activated']
     release = Path(result['path'])
     document_release.verify_release(release)
+    shared_root = tmp_path / 'shared'
+    shared_root.mkdir()
+    shared = document_release.publish_shared_generation(release, shared_root)
+    assert shared['published'] and not shared['activated'] and not shared['cached']
+    assert verify_assets(shared['generation_path'])['verified']
+    assert document_release.publish_shared_generation(release, shared_root)['cached']
+    shared_manifest = Path(shared['generation_path']) / 'manifest.json'
+    shared_manifest.write_text(shared_manifest.read_text() + ' ')
+    with pytest.raises(ValueError, match='Shared generation differs'):
+        document_release.publish_shared_generation(release, shared_root)
     with pytest.raises(ValueError, match='confirm'):
         document_release.change_pointer(tmp_path, release=release, expected_current='absent')
     event = document_release.change_pointer(tmp_path, release=release, expected_current='absent', confirm=True)

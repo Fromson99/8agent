@@ -24,7 +24,7 @@ DEFAULT = {
     ],
     'tools': ALL_TOOLS,
     'transitions': {'EXPLORING': list(ALL_TOOLS)},
-    'limits': {'max_calls': 20, 'max_actions': 56, 'wall_seconds': 300,
+    'limits': {'max_calls': 20, 'max_actions': 56, 'wall_seconds': 1800,
                'active_segments': 6, 'active_chars': 18000, 'context_chars': 60000,
                'max_errors': 3, 'max_no_progress': 4},
     'completion': 'reviewed_evidence_for_every_obligation_v1',

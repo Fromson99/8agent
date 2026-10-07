@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# CodeSpace: put this TXT and GENOS_FAIL_FAST_R3_DELTA_20260925.zip in ~/DEV/TRANSFER.
+# Run: bash ~/DEV/TRANSFER/GENOS_FAIL_FAST_R3_DEV_APPLY_20260925.txt
+# This updates the existing ~/DEV checkout only. It does not push or deploy.
+set -euo pipefail
+dev_root="${GENOS_DEV_ROOT:-$HOME/DEV}"
+dev_root="$(realpath "$dev_root")"
+transfer="$dev_root/TRANSFER"
+archive="$transfer/GENOS_FAIL_FAST_R3_DELTA_20260925.zip"
+mkdir -p "$transfer"
+log="$transfer/GENOS_FAIL_FAST_R3_DEV_APPLY_20260925.log"
+exec > >(tee -a "$log") 2>&1
+trap 'status=$?; echo "APPLY_EXIT_STATUS=$status"; exit "$status"' EXIT
+echo "APPLY_STARTED=$(date -Is)"
+echo "DEV_ROOT=$dev_root"
+echo "ARCHIVE=$archive"
+test -f "$archive"
+test "$(git -C "$dev_root" rev-parse --show-toplevel | xargs realpath)" = "$dev_root"
+python3.11 - "$dev_root" "$archive" "$transfer" <<'PY'
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import shutil
+import sys
+import tempfile
+import time
+import zipfile
+
+root, archive, transfer = map(Path, sys.argv[1:])
+expected_zip = '271b3ca3e19c023f3831e803b82419b32958ad2db5e648ad6278f236c464d7dd'
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+def file_sha(path):
+    return sha(path.read_bytes())
+
+if file_sha(archive) != expected_zip:
+    raise SystemExit('STOP: ZIP SHA-256 mismatch')
+with zipfile.ZipFile(archive) as bundle:
+    manifest = json.loads(bundle.read('PATCH_MANIFEST.json'))
+    rows = manifest['files']
+    expected_names = {'PATCH_MANIFEST.json', *(row['path'] for row in rows)}
+    if set(bundle.namelist()) != expected_names:
+        raise SystemExit('STOP: ZIP member list mismatch')
+    if len(rows) != 37:
+        raise SystemExit('STOP: unexpected patch file count')
+    pending = []
+    for row in rows:
+        name = row['path']
+        rel = PurePosixPath(name)
+        if rel.is_absolute() or '..' in rel.parts or not name.endswith(('.py', '.json')):
+            raise SystemExit('STOP: unsafe patch member '+name)
+        target = root.joinpath(*rel.parts)
+        if not target.is_file() or target.is_symlink():
+            raise SystemExit('STOP: missing or symlink target '+name)
+        data = bundle.read(name)
+        if sha(data) != row['after_sha256']:
+            raise SystemExit('STOP: payload hash mismatch '+name)
+        actual = file_sha(target)
+        if actual == row['after_sha256']:
+            continue
+        if actual != row['before_sha256']:
+            raise SystemExit('STOP: DEV differs from validated r2 baseline: '+name)
+        pending.append((name, target, data))
+
+    print('PREFLIGHT_PASS_FILES='+str(len(rows)))
+    if not pending:
+        print('ALREADY_APPLIED=1')
+    else:
+        backup = transfer/'BACKUP'/('fail-fast-r3-'+time.strftime('%Y%m%d-%H%M%S'))
+        backup.mkdir(parents=True, exist_ok=False)
+        for name,target,_ in pending:
+            saved=backup/name
+            saved.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(target,saved)
+        print('BACKUP_DIR='+str(backup),flush=True)
+        replaced=[]
+        try:
+            for name,target,data in pending:
+                fd,temp=tempfile.mkstemp(prefix='.fail-fast-r3-',dir=target.parent)
+                try:
+                    with os.fdopen(fd,'wb') as stream:
+                        stream.write(data)
+                        stream.flush()
+                        os.fsync(stream.fileno())
+                    os.chmod(temp,target.stat().st_mode & 0o777)
+                    os.replace(temp,target)
+                finally:
+                    if os.path.exists(temp): os.unlink(temp)
+                replaced.append((name,target))
+            for row in rows:
+                if file_sha(root/row['path']) != row['after_sha256']:
+                    raise RuntimeError('post-apply hash mismatch '+row['path'])
+        except BaseException:
+            for name,target in reversed(replaced):
+                shutil.copy2(backup/name,target)
+            print('ROLLBACK_FROM_BACKUP=1',flush=True)
+            raise
+        print('APPLIED_FILES='+str(len(replaced)))
+    print('POST_APPLY_HASH_PASS=1')
+PY
+git -C "$dev_root" diff --check
+echo "GIT_DIFF_CHECK=PASS"
+echo "NEXT: review git diff; commit and push the checked DEV checkout, run the release gate against the selected generation, then deploy that commit as a new code-serving revision."
+echo "NEXT: paste 08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py into the workflow Python step and save/deploy it separately."

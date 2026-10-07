@@ -1,11 +1,33 @@
 """Immutable original-text generations for term navigation; no meaning extraction."""
 import json
 import sqlite3
+import threading
 from pathlib import Path
-from .contracts import sha, write
+from .contracts import sha, write, digest
 
 VERSION = 'term-source-generation-v1'
 TABLES = ('document', 'source_unit', 'source_block')
+_VERIFIED_STORE = {}
+_VERIFY_LOCK = threading.Lock()
+
+
+def verify_store_binding(path, expected):
+    """Reuse a process-local hash proof while an immutable store's stat is fixed."""
+    path = Path(path).resolve()
+    def signature():
+        stat = path.stat()
+        return (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
+    with _VERIFY_LOCK:
+        before = signature()
+        if _VERIFIED_STORE.get((path, expected)) == before:
+            return
+        actual = sha(path)
+        after = signature()
+        if before != after or actual != expected:
+            raise ValueError('generation artifact hash mismatch')
+        if len(_VERIFIED_STORE) >= 128:
+            _VERIFIED_STORE.pop(next(iter(_VERIFIED_STORE)))
+        _VERIFIED_STORE[(path, expected)] = after
 
 
 def publish(root, source_store, output, *, data_status='DRAFT', export_allowed=False, scope=None):
@@ -55,23 +77,47 @@ class Store:
     def __init__(self,path,*,verify=True):
         self.path=Path(path).resolve()
         self.manifest=json.loads((self.path/'manifest.json').read_text())
-        if self.manifest['schema_version']!=VERSION:raise ValueError('source generation migration required')
-        if verify and sha(self.path/'store.sqlite')!=self.manifest['store_sha256']:
-            raise ValueError('generation artifact hash mismatch')
+        self._binding_state = self.binding_signature()
+        if self.manifest['schema_version'] not in {VERSION, 'term-source-generation-v2'}:raise ValueError('source generation migration required')
+        if verify:
+            verify_store_binding(self.path/'store.sqlite', self.manifest['store_sha256'])
         self.db=sqlite3.connect((self.path/'store.sqlite').as_uri()+'?mode=ro',uri=True,check_same_thread=False)
         self.db.row_factory=sqlite3.Row
         self.db.execute('PRAGMA query_only=ON')
         tables={r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-        if tables!=set(TABLES):
+        expected = set(TABLES) if self.manifest['schema_version']==VERSION else {'document','source_unit','block_payload'}
+        if tables!=expected:
             self.db.close()
             raise ValueError('source generation contains unexpected tables')
 
     def close(self):self.db.close()
 
+    def binding_signature(self):
+        states = []
+        for name in ('manifest.json', 'store.sqlite'):
+            s = (self.path/name).stat()
+            states.append((s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns))
+        return (str(self.path), digest(self.manifest), *states)
+
+    def check_unchanged(self):
+        if self.binding_signature() != self._binding_state:
+            raise ValueError('source generation changed; reopen and verify before reuse')
+
     def source(self,did,bid):
         r=self.db.execute('SELECT * FROM source_block WHERE document_id=? AND block_id=?',(did,str(bid))).fetchone()
         if not r:raise KeyError((did,bid))
         return dict(r)
+
+    def sources(self, did, bids):
+        """Bounded batch read preserving caller order, duplicates and missing-ID errors."""
+        ids = [str(b) for b in bids]
+        found = {}
+        for start in range(0, len(ids), 800):
+            part = list(dict.fromkeys(ids[start:start+800]))
+            marks = ','.join('?' for _ in part)
+            found.update((str(r['block_id']), dict(r)) for r in self.db.execute(
+                'SELECT * FROM source_block WHERE document_id=? AND block_id IN ('+marks+')', [did,*part]))
+        return [found[b] if b in found else self.source(did,b) for b in ids]
 
     def source_scope(self,did,bid):
         source=self.source(did,bid)

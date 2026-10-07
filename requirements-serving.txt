@@ -1,8 +1,2 @@
-# GENOS Python 3.11.15 minimal code-serving runtime.
-# Local vector/model and standalone uvicorn dependencies are installed separately.
-jsonschema==4.26.0
-referencing==0.37.0
-requests==2.34.2
-python-dotenv==1.2.2
-fastapi==0.141.1
-httpx==0.28.1
+# Compatibility entrypoint. Edit requirements.txt only.
+-r requirements.txt

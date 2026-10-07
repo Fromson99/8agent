@@ -725,53 +725,9 @@ def parse_pdf(path: str | Path, *, recognize_grids=None) -> ParseResult:
 # ---------------------------------------------------------------------------
 
 def parse_docx(path: str | Path) -> ParseResult:
-    """DOCX — 레이아웃 모델도 OCR 도 TableFormer 도 돌지 않는다.
-
-    docling 의 msword_backend 가 OOXML 태그를 그대로 읽는다: 문단·표·제목이 파일
-    안에 선언돼 있어 **추론이 아니라 독해**다. PDF 와 결정적으로 다른 것 둘:
-
-    1. 제목 계층이 진짜다 — Word 스타일(outlineLvl·"Heading N")의 level 이
-       section_header 요소의 meta.level 로 온다. PDF 는 전부 1로 평면화된다.
-    2. 지면 좌표가 없다 — DOCX 는 리플로우 문서라 페이지·bbox 가 파일에 존재하지
-       않는다. page=1 고정, 타이포그래피 주석(T2c)·reading_order 재정렬(T2b)·
-       격자 복구도 없다. iterate_items() 의 순서가 곧 문서 순서다.
-
-    구조 판정은 여기서도 형식의 마커가 한다 — meta.level 은 힌트다(§2.2).
-    """
-    p = Path(path)
-    doc = _converter(ocr=False).convert(str(p)).document
-    elements, picture_uris, docling_stats = _elements_from_docling(doc)
-    images = dict(picture_uris)            # 재정렬이 없으니 index 가 그대로다
-
-    warnings: list[str] = []
-    # docling 이 버리는 Word 선언(자동 번호·들여쓰기·글꼴)을 원본 XML 에서 되살린다.
-    from lawrag.core import docx_ooxml
-    try:
-        ooxml_stats = docx_ooxml.enrich(p, elements)
-        moved = ooxml_stats.pop('index_map', {})
-        if moved:
-            images = {moved.get(k, k): v for k, v in images.items()}
-    except Exception as exc:               # 원본 XML 이 깨졌어도 docling 결과는 쓴다
-        ooxml_stats = {'docx_ooxml_error': f'{type(exc).__name__}: {exc}'}
-        warnings.append('Word 원본 XML을 읽지 못해 자동 번호·들여쓰기를 되살리지 못했습니다')
-    stats = {
-        **docling_stats,
-        **ooxml_stats,
-        "elements": len(elements),
-        "tables": sum(1 for e in elements if e.is_table),
-        "pictures": sum(1 for e in elements if e.is_picture),
-        "captioned_pictures": sum(1 for e in elements if e.is_picture and e.text),
-        "pictures_with_image": len(images),
-        "headings_with_level": sum(1 for e in elements if e.meta.get("level")),
-    }
-    if stats["tables"] == 0 and stats["docling_tables"] == 0:
-        warnings.append("표가 하나도 인식되지 않았습니다 — 값이 서술로 처리됩니다")
-
-    return ParseResult(
-        path=str(p), doc_id=hashlib.sha256(p.read_bytes()).hexdigest()[:12],
-        parser=f"docling {docling_version()} (docx, tables=native)",
-        born_digital=True, elements=elements, warnings=warnings, stats=stats,
-        images=images)
+    """Read declared Word content natively; no local Docling dependency."""
+    from .docx_native import parse
+    return parse(path)
 
 
 # ---------------------------------------------------------------------------

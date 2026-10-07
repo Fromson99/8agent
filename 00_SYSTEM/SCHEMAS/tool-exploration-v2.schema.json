@@ -1,0 +1,1960 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:tool-exploration-v2",
+  "$defs": {
+    "ToolAction": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "browse"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "target": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "relation": {
+                  "type": "string",
+                  "enum": [
+                    "self",
+                    "parent",
+                    "document",
+                    "root"
+                  ]
+                },
+                "view": {
+                  "type": "string",
+                  "enum": [
+                    "children",
+                    "outline",
+                    "tree",
+                    "neighbors"
+                  ]
+                },
+                "depth": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 160
+                }
+              },
+              "required": [
+                "target",
+                "relation",
+                "view",
+                "depth",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "search"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 10000
+                },
+                "target": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "fulltext",
+                    "literal",
+                    "title"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 160
+                }
+              },
+              "required": [
+                "query",
+                "target",
+                "mode",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "match_terms"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 10000
+                },
+                "target": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "strategy": {
+                  "type": "string",
+                  "enum": [
+                    "auto",
+                    "direct",
+                    "bridge"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 160
+                }
+              },
+              "required": [
+                "text",
+                "target",
+                "strategy",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "term_occurrences"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "terms": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "minItems": 1,
+                  "maxItems": 16,
+                  "uniqueItems": true
+                },
+                "target": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "match": {
+                  "type": "string",
+                  "enum": [
+                    "any",
+                    "all"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 160
+                }
+              },
+              "required": [
+                "terms",
+                "target",
+                "match",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "locate"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "locator": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 10000
+                },
+                "target": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "branch": {
+                  "type": "string",
+                  "enum": [
+                    "body",
+                    "addendum",
+                    "annex",
+                    "any"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 160
+                }
+              },
+              "required": [
+                "locator",
+                "target",
+                "branch",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "lookup_definition"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 10000
+                },
+                "target": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 160
+                }
+              },
+              "required": [
+                "query",
+                "target",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "follow_reference"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "evidence": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "outgoing",
+                    "incoming",
+                    "both"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 160
+                }
+              },
+              "required": [
+                "evidence",
+                "direction",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "read"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "target": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "extent": {
+                  "type": "string",
+                  "enum": [
+                    "exact",
+                    "subtree",
+                    "article"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 160
+                }
+              },
+              "required": [
+                "target",
+                "extent",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "inspect"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "section": {
+                  "type": "string",
+                  "enum": [
+                    "history",
+                    "evidence",
+                    "candidates",
+                    "questions",
+                    "challenges",
+                    "budget"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 160
+                }
+              },
+              "required": [
+                "section",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "TurnDecision": {
+      "type": "object",
+      "properties": {
+        "actions": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "browse"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "target": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      },
+                      "relation": {
+                        "type": "string",
+                        "enum": [
+                          "self",
+                          "parent",
+                          "document",
+                          "root"
+                        ]
+                      },
+                      "view": {
+                        "type": "string",
+                        "enum": [
+                          "children",
+                          "outline",
+                          "tree",
+                          "neighbors"
+                        ]
+                      },
+                      "depth": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 4
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 160
+                      }
+                    },
+                    "required": [
+                      "target",
+                      "relation",
+                      "view",
+                      "depth",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "search"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "query": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 10000
+                      },
+                      "target": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "fulltext",
+                          "literal",
+                          "title"
+                        ]
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 160
+                      }
+                    },
+                    "required": [
+                      "query",
+                      "target",
+                      "mode",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "match_terms"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 10000
+                      },
+                      "target": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      },
+                      "strategy": {
+                        "type": "string",
+                        "enum": [
+                          "auto",
+                          "direct",
+                          "bridge"
+                        ]
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 160
+                      }
+                    },
+                    "required": [
+                      "text",
+                      "target",
+                      "strategy",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "term_occurrences"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "terms": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 160
+                        },
+                        "minItems": 1,
+                        "maxItems": 16,
+                        "uniqueItems": true
+                      },
+                      "target": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      },
+                      "match": {
+                        "type": "string",
+                        "enum": [
+                          "any",
+                          "all"
+                        ]
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 160
+                      }
+                    },
+                    "required": [
+                      "terms",
+                      "target",
+                      "match",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "locate"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "locator": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 10000
+                      },
+                      "target": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      },
+                      "branch": {
+                        "type": "string",
+                        "enum": [
+                          "body",
+                          "addendum",
+                          "annex",
+                          "any"
+                        ]
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 160
+                      }
+                    },
+                    "required": [
+                      "locator",
+                      "target",
+                      "branch",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "lookup_definition"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "query": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 10000
+                      },
+                      "target": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 160
+                      }
+                    },
+                    "required": [
+                      "query",
+                      "target",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "follow_reference"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "evidence": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      },
+                      "direction": {
+                        "type": "string",
+                        "enum": [
+                          "outgoing",
+                          "incoming",
+                          "both"
+                        ]
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 160
+                      }
+                    },
+                    "required": [
+                      "evidence",
+                      "direction",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "read"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "target": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      },
+                      "extent": {
+                        "type": "string",
+                        "enum": [
+                          "exact",
+                          "subtree",
+                          "article"
+                        ]
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 160
+                      }
+                    },
+                    "required": [
+                      "target",
+                      "extent",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "inspect"
+                  },
+                  "args": {
+                    "type": "object",
+                    "properties": {
+                      "section": {
+                        "type": "string",
+                        "enum": [
+                          "history",
+                          "evidence",
+                          "candidates",
+                          "questions",
+                          "challenges",
+                          "budget"
+                        ]
+                      },
+                      "cursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 160
+                      }
+                    },
+                    "required": [
+                      "section",
+                      "cursor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "tool",
+                  "args",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "assessments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "evidence": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 10000
+              },
+              "disposition": {
+                "type": "string",
+                "enum": [
+                  "ADOPT",
+                  "REJECT",
+                  "DEFER"
+                ]
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "SUPPORT",
+                  "CHALLENGE",
+                  "CONTEXT"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 10000
+              },
+              "question_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "minItems": 0,
+                "maxItems": 64,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "evidence",
+              "summary",
+              "disposition",
+              "role",
+              "reason",
+              "question_refs"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "candidate_decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "candidate": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "decision": {
+                "type": "string",
+                "enum": [
+                  "PARK",
+                  "REOPEN"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 10000
+              }
+            },
+            "required": [
+              "candidate",
+              "decision",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "route_decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "route": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "decision": {
+                "type": "string",
+                "enum": [
+                  "REJECT",
+                  "RESTORE",
+                  "DEFER"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 10000
+              }
+            },
+            "required": [
+              "route",
+              "decision",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "question_updates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "minItems": 1,
+                "maxItems": 64,
+                "uniqueItems": true
+              },
+              "interpretation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 10000
+              },
+              "missing_fact": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 10000
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 10000
+              }
+            },
+            "required": [
+              "question_refs",
+              "interpretation",
+              "missing_fact",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "intent": {
+          "type": "string",
+          "enum": [
+            "CONTINUE",
+            "DRAFT",
+            "CLARIFY",
+            "STOP_PARTIAL"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10000
+        }
+      },
+      "required": [
+        "actions",
+        "assessments",
+        "candidate_decisions",
+        "route_decisions",
+        "question_updates",
+        "intent",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "Draft": {
+      "type": "object",
+      "properties": {
+        "paragraphs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 10000
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "minItems": 1,
+                "maxItems": 64,
+                "uniqueItems": true
+              },
+              "question_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "minItems": 1,
+                "maxItems": 64,
+                "uniqueItems": true
+              },
+              "fact_dependencies": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 10000
+                },
+                "minItems": 0,
+                "maxItems": 64
+              }
+            },
+            "required": [
+              "text",
+              "evidence",
+              "question_refs",
+              "fact_dependencies"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 32
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "minItems": 0,
+          "maxItems": 64
+        }
+      },
+      "required": [
+        "paragraphs",
+        "limitations"
+      ],
+      "additionalProperties": false
+    },
+    "ReviewDecision": {
+      "type": "object",
+      "properties": {
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "claim": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "verdict": {
+                "type": "string",
+                "enum": [
+                  "SUPPORTED",
+                  "NEEDS_RESEARCH",
+                  "NEEDS_REWRITE",
+                  "UNCERTAIN"
+                ]
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "minItems": 0,
+                "maxItems": 64,
+                "uniqueItems": true
+              },
+              "issue": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 10000
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 10000
+              },
+              "actions": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "browse"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "target": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 160
+                            },
+                            "relation": {
+                              "type": "string",
+                              "enum": [
+                                "self",
+                                "parent",
+                                "document",
+                                "root"
+                              ]
+                            },
+                            "view": {
+                              "type": "string",
+                              "enum": [
+                                "children",
+                                "outline",
+                                "tree",
+                                "neighbors"
+                              ]
+                            },
+                            "depth": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 4
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "maxLength": 160
+                            }
+                          },
+                          "required": [
+                            "target",
+                            "relation",
+                            "view",
+                            "depth",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 10000
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "search"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "query": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 10000
+                            },
+                            "target": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 160
+                            },
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "fulltext",
+                                "literal",
+                                "title"
+                              ]
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "maxLength": 160
+                            }
+                          },
+                          "required": [
+                            "query",
+                            "target",
+                            "mode",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 10000
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "match_terms"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 10000
+                            },
+                            "target": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 160
+                            },
+                            "strategy": {
+                              "type": "string",
+                              "enum": [
+                                "auto",
+                                "direct",
+                                "bridge"
+                              ]
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "maxLength": 160
+                            }
+                          },
+                          "required": [
+                            "text",
+                            "target",
+                            "strategy",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 10000
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "term_occurrences"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "terms": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "minItems": 1,
+                              "maxItems": 16,
+                              "uniqueItems": true
+                            },
+                            "target": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 160
+                            },
+                            "match": {
+                              "type": "string",
+                              "enum": [
+                                "any",
+                                "all"
+                              ]
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "maxLength": 160
+                            }
+                          },
+                          "required": [
+                            "terms",
+                            "target",
+                            "match",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 10000
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "locate"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "locator": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 10000
+                            },
+                            "target": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 160
+                            },
+                            "branch": {
+                              "type": "string",
+                              "enum": [
+                                "body",
+                                "addendum",
+                                "annex",
+                                "any"
+                              ]
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "maxLength": 160
+                            }
+                          },
+                          "required": [
+                            "locator",
+                            "target",
+                            "branch",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 10000
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "lookup_definition"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "query": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 10000
+                            },
+                            "target": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 160
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "maxLength": 160
+                            }
+                          },
+                          "required": [
+                            "query",
+                            "target",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 10000
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "follow_reference"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "evidence": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 160
+                            },
+                            "direction": {
+                              "type": "string",
+                              "enum": [
+                                "outgoing",
+                                "incoming",
+                                "both"
+                              ]
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "maxLength": 160
+                            }
+                          },
+                          "required": [
+                            "evidence",
+                            "direction",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 10000
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "read"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "target": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 160
+                            },
+                            "extent": {
+                              "type": "string",
+                              "enum": [
+                                "exact",
+                                "subtree",
+                                "article"
+                              ]
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "maxLength": 160
+                            }
+                          },
+                          "required": [
+                            "target",
+                            "extent",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 10000
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "tool": {
+                          "const": "inspect"
+                        },
+                        "args": {
+                          "type": "object",
+                          "properties": {
+                            "section": {
+                              "type": "string",
+                              "enum": [
+                                "history",
+                                "evidence",
+                                "candidates",
+                                "questions",
+                                "challenges",
+                                "budget"
+                              ]
+                            },
+                            "cursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "maxLength": 160
+                            }
+                          },
+                          "required": [
+                            "section",
+                            "cursor"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 10000
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "args",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 8
+              }
+            },
+            "required": [
+              "claim",
+              "verdict",
+              "evidence",
+              "issue",
+              "reason",
+              "actions"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "question": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "RESOLVED",
+                "PARTIAL",
+                "MISSING_FACT",
+                "UNRESOLVED"
+              ]
+            },
+            "question_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "minItems": 0,
+              "maxItems": 64,
+              "uniqueItems": true
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10000
+            }
+          },
+          "required": [
+            "status",
+            "question_refs",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "checks",
+        "question"
+      ],
+      "additionalProperties": false
+    },
+    "Rebuttal": {
+      "type": "object",
+      "properties": {
+        "claim": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "minItems": 1,
+          "maxItems": 64,
+          "uniqueItems": true
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10000
+        },
+        "requested_resolution": {
+          "type": "string",
+          "enum": [
+            "REVIEW_AGAIN",
+            "WITHDRAW_CLAIM"
+          ]
+        }
+      },
+      "required": [
+        "claim",
+        "evidence",
+        "reason",
+        "requested_resolution"
+      ],
+      "additionalProperties": false
+    },
+    "Control": {
+      "type": "object",
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": [
+            "FINAL",
+            "RESEARCH",
+            "RECOMPOSE",
+            "REVIEW"
+          ]
+        },
+        "gate": {
+          "type": "string",
+          "enum": [
+            "READY",
+            "BOUNDED",
+            "CLARIFY"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10000
+        },
+        "state_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence_revision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "decision",
+        "gate",
+        "reason",
+        "state_revision",
+        "evidence_revision"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

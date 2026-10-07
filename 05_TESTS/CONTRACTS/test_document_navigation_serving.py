@@ -74,6 +74,86 @@ def app_for(tmp_path,generation,provider):
     return create_app(tmp_path,generation,contracts_root=ROOT,provider=provider,implementation='document-navigation-v1')
 
 
+def relation_generation(tmp_path,term_glossary):
+    """A CM003-shaped source with unrelated sibling paragraphs around the linked paragraph."""
+    source=tmp_path/'relation-source.sqlite'
+    ladder={'rungs':[{'families':['kr_article']},{'families':['circled']},{'families':['dot_number:1']}]}
+    with sqlite3.connect(source) as db:
+        db.executescript('''CREATE TABLE document(document_id TEXT PRIMARY KEY,name TEXT,source_artifact_sha256 TEXT,json TEXT);
+        CREATE TABLE source_unit(document_id TEXT,unit_id TEXT,parent_id TEXT,json TEXT);
+        CREATE TABLE source_block(document_id TEXT,block_id TEXT,unit_id TEXT,text TEXT,source_artifact_sha256 TEXT,json TEXT);''')
+        def document(did,name,units,blocks):
+            artifact=hashlib.sha256(json.dumps(blocks,ensure_ascii=False).encode()).hexdigest()
+            db.execute('INSERT INTO document VALUES (?,?,?,?)',(did,name,artifact,json.dumps({'ladder':ladder})))
+            for uid,parent,value in units:
+                db.execute('INSERT INTO source_unit VALUES (?,?,?,?)',(did,uid,parent,json.dumps(value,ensure_ascii=False)))
+            for bid,uid,text in blocks:
+                db.execute('INSERT INTO source_block VALUES (?,?,?,?,?,?)',(did,bid,uid,text,artifact,'{}'))
+        document('reg','코스닥시장 상장규정',[
+            ('100',None,{'family':'kr_article','surface':'제26조','title':'신규상장 의무보유','span':[0,2],'coordinate_scope':'body','coordinate_key':'body:제26조'}),
+            ('101','100',{'family':'circled','surface':'①','ordinal':[1],'span':[0,2]}),
+            ('103','101',{'family':'dot_number:1','surface':'3.','ordinal':[3],'span':[1,2]}),
+        ],[('0','101','① 다음 각 호의 주식은 의무보유한다.'),
+           ('1','103','3. 제3자 배정으로 취득한 주식. 다만, 세칙으로 정하는 경우는 제외한다.')])
+        document('rule','코스닥시장 상장규정 시행세칙',[
+            ('200',None,{'family':'kr_article','surface':'제23조','title':'의무보유 예외','span':[0,5],'coordinate_scope':'body','coordinate_key':'body:제23조'}),
+            ('201','200',{'family':'circled','surface':'①','ordinal':[1],'span':[0,1]}),
+            ('204','200',{'family':'circled','surface':'④','ordinal':[4],'span':[1,4]}),
+            ('2041','204',{'family':'dot_number:1','surface':'1.','ordinal':[1],'span':[2,3]}),
+            ('2042','204',{'family':'dot_number:1','surface':'2.','ordinal':[2],'span':[3,4]}),
+            ('205','200',{'family':'circled','surface':'⑤','ordinal':[5],'span':[4,5]}),
+        ],[('0','201','① 이 항은 관계없는 앞 항이다.'),
+           ('1','204','④ 규정 제26조제1항제3호 단서에서 “세칙으로 정하는 경우”란 다음 각 호를 말한다.'),
+           ('2','2041','1. 종업원이 취득한 경우'),
+           ('3','2042','2. 벤처금융 또는 전문투자자가 취득한 경우'),
+           ('4','205','⑤ 규정 제26조제1항제3호의 다른 절차를 정한다.')])
+    build_generation(source,term_glossary,tmp_path/'relation-built',serving=True)
+    return tmp_path/'relation-built/generation'
+
+
+def test_reference_scope_v2_rebuilds_from_existing_structure(tmp_path,term_glossary,monkeypatch):
+    """The opt-in build enriches a copied structured store and binds a v5 index."""
+    monkeypatch.setenv('GENOS_REFERENCE_SCOPE_V2','1')
+    generation=relation_generation(tmp_path,term_glossary)
+    from lawrag.pipeline.term_serving_bundle import verify_assets
+    assert verify_assets(generation)['verified']
+    from semantic_runtime.storage import Store
+    from semantic_runtime.term_index import TermIndex
+    from contextlib import closing
+    with closing(Store(generation)) as store:
+        index=TermIndex(generation/'navigation',store)
+        assert index.manifest['schema_version']=='term-navigation-index-v5'
+        assert index.manifest['scope_contract']=='reference-scope-v2'
+        with sqlite3.connect(generation/'navigation/navigation.sqlite') as db:
+            assert db.execute('SELECT count(*) FROM structure_anchor').fetchone()[0]>0
+            assert db.execute('SELECT sum(n) FROM reference_witness_count').fetchone()[0] == \
+                db.execute('SELECT count(*) FROM reference').fetchone()[0]
+            rows=[json.loads(raw) for (raw,) in db.execute('SELECT json FROM reference')]
+        hits=[r for r in rows if '제26조제1항제3호' in r.get('mention_text','')]
+        assert hits and any(r.get('targets') for r in hits)
+    from semantic_runtime.work_navigation import WorkSession
+    app=app_for(tmp_path,generation,ScriptedProvider('content'))
+    try:
+        with app.state.pipeline.term_agent.resources(['reg','rule']) as (_,tools,glossary,matcher):
+            session=WorkSession(matcher,tools,glossary,'연결 범위 확인',['reg','rule'])
+            try:
+                reg=next(sid for sid,v in tools.sources.items() if v['document_id']=='reg')
+                rule=next(sid for sid,v in tools.sources.items() if v['document_id']=='rule')
+                session.discover_references(reg)
+                extents=session.reference_extents(rule)
+                assert extents and any(e['spans'] for e in extents)
+                session.source_card(rule)
+                bound=session.bind_reference_extent(rule,[extents[0]])
+                segment=session.read(rule,block_ids=bound['read_block_ids'],
+                                     extent=session.read_handles[bound['read_handle']]['extent'])
+                assert segment['read_extent']['spans']
+                assert '관계없는 앞 항' not in segment['text']
+            finally:
+                if session.fts:session.fts.close()
+    finally:
+        app.state.pipeline.store.close()
+
+
 def test_http_catalogue_outline_full_read_and_gateway(tmp_path,generation,monkeypatch):
     p=ScriptedProvider();app=app_for(tmp_path,generation,p)
     with TestClient(app) as client:
@@ -174,6 +254,46 @@ def test_stored_reference_targets_reach_work_queue(tmp_path,generation):
                 if s.fts:s.fts.close()
 
 
+def test_incoming_reference_reads_only_the_bound_paragraph_subtree(tmp_path,term_glossary):
+    """CM003 generalization: incoming relation reads paragraph 4 and its items, not sibling paragraphs."""
+    from semantic_runtime.work_navigation import WorkSession
+    generation=relation_generation(tmp_path,term_glossary)
+    app=app_for(tmp_path,generation,ScriptedProvider('content'));agent=app.state.pipeline.term_agent
+    try:
+        with agent.resources(['reg','rule']) as (_,tools,glossary,matcher):
+            s=WorkSession(matcher,tools,glossary,'연결 범위 확인', ['reg','rule'])
+            try:
+                reg_sid=next(sid for sid,v in tools.sources.items() if v['document_id']=='reg')
+                rule_sid=next(sid for sid,v in tools.sources.items() if v['document_id']=='rule')
+                s.discover_references(reg_sid)
+                relation=next(r for r in s.references_work.values() if r['direction']=='INCOMING')
+                assert relation['target_unit_id']=='204'
+                assert relation['target_unit_path']==['④']
+                assert relation['target_block_ids']==['1','2','3']
+                with pytest.raises(ValueError,match='stored unit subtree'):
+                    s.bind_reference_extent(rule_sid,[{'relation_id':'forged','unit_id':'204','unit_path':['④'],'block_ids':['1','2']}])
+                # A normal search hit may coexist with the relation. The exact relation read stays
+                # primary while the whole article remains explicitly available as another option.
+                s.add_candidate(rule_sid,'entry:independent-search',{'fulltext_rank':1})
+                data=s.context();card=next(c for c in data['candidates']['items'] if c['id']==rule_sid)
+                assert card['read_extent']=='REFERENCE_PROVISION_SUBTREE'
+                exact=[o for o in card['read_options'] if o['read_extent']=='REFERENCE_PROVISION_SUBTREE']
+                assert {tuple(o['read_block_ids']) for o in exact}=={('1','2','3'),('4',)}
+                assert card['read_options'][-1]['read_extent']=='WHOLE_ARTICLE'
+                assert {o['read_handle'] for o in card['read_options']}<=s.offered_handles
+                paragraph4=next(o for o in exact if o['read_block_ids']==['1','2','3'])
+                assert s.read_batch([paragraph4['read_handle']])[0]['status']=='SEGMENT'
+                segment=next(v for v in s.read_segments.values() if v['source_id']==rule_sid)
+                assert segment['kind']=='REFERENCE_PROVISION_SUBTREE'
+                assert segment['block_ids']==['1','2','3']
+                assert '관계없는 앞 항' not in segment['text'] and '다른 절차' not in segment['text']
+                assert '벤처금융 또는 전문투자자' in segment['text']
+            finally:
+                if s.fts:s.fts.close()
+    finally:
+        app.state.pipeline.store.close()
+
+
 def test_http_mapping_proposal_is_reported_as_not_saved(tmp_path,generation):
     class MappingProvider(ScriptedProvider):
         def call(self,role,system,data,schema):
@@ -216,3 +336,53 @@ def test_origin_projection_classifies_only_its_own_generation(tmp_path,generatio
         with pytest.raises(ValueError,match='source artifact mismatch'):
             documents(store,projection=load_origin_projection(tmp_path,forged,store))
     finally:store.close()
+
+
+def test_named_document_ranks_first_without_hiding_other_documents(tmp_path,generation):
+    """A content question naming one document may still need another (rule + decree)."""
+    class ContentProvider(ScriptedProvider):
+        def call(self,role,system,data,schema):
+            self.calls.append((role,data))
+            if role=='structured_navigation' and 'work_state' not in data:
+                return {'action':{'tool':'INTERPRET_QUERY','args':{'intent':'content','scope':'current','bindings':[],
+                        'title_query':'','clarification':''},'reason':'fixture'}},{'kind':'scripted','role':role}
+            if role=='navigation_requirements':
+                return {'requirements':[{'id':'Q1','text':'영업일 절차','question_span':'영업일'}]},{'kind':'scripted','role':role}
+            if role=='structured_navigation':
+                self.board=data['candidates']['items']
+                return {'action':{'tool':'STOP','args':{'reason':'순서만 확인'},'reason':'fixture'}},{'kind':'scripted','role':role}
+            raise AssertionError(role)
+    provider=ContentProvider()
+    with TestClient(app_for(tmp_path,generation,provider)) as client:
+        response=client.post('/v1/rag/ask',json={'question':'가상외규의 영업일 절차는?'})
+        assert response.status_code==200,response.text
+        state=response.json()['retrieval']['term_agent']
+        assert state['failure'] is None and state['mentioned_document_ids']==['public']
+        # Full scope retained, but the named document is offered first.
+        assert set(state['effective_document_ids'])>={'hr','public'}
+        assert provider.board[0]['document_name']=='가상외규' and provider.board[0]['named_document'] is True
+        assert any(c['document_name']!='가상외규' for c in provider.board)
+
+
+def test_content_title_query_that_names_no_document_keeps_the_scope(tmp_path,generation):
+    """A topic in title_query must not empty the search scope for a content question."""
+    class TopicProvider(ScriptedProvider):
+        def call(self,role,system,data,schema):
+            self.calls.append((role,data))
+            if role=='structured_navigation' and 'work_state' not in data:
+                return {'action':{'tool':'INTERPRET_QUERY','args':{'intent':'content','scope':'current','bindings':[],
+                        'title_query':'주식매수선택권','clarification':''},'reason':'fixture'}},{'kind':'scripted','role':role}
+            if role=='navigation_requirements':
+                return {'requirements':[{'id':'Q1','text':'영업일 절차','question_span':'영업일'}]},{'kind':'scripted','role':role}
+            if role=='structured_navigation':
+                return {'action':{'tool':'STOP','args':{'reason':'범위만 확인'},'reason':'fixture'}},{'kind':'scripted','role':role}
+            raise AssertionError(role)
+    provider=TopicProvider()
+    with TestClient(app_for(tmp_path,generation,provider)) as client:
+        response=client.post('/v1/rag/ask',json={'question':'주식매수선택권 영업일 절차는?'})
+        assert response.status_code==200,response.text
+        state=response.json()['retrieval']['term_agent']
+        assert state['title_query_matched_no_document'] is True
+        assert len(state['effective_document_ids'])==3      # scope kept, not emptied
+        assert state['candidate_review']['total']>0          # the work loop actually started
+        assert 'navigation_requirements' in [r for r,_ in provider.calls]

@@ -24,12 +24,11 @@ def test_one_document_existing_pipeline(tmp_path, monkeypatch, case, source_kind
     monkeypatch.setattr(llm, 'load_env', lambda: None)
     monkeypatch.setenv('GENOS_BASE_URL', 'http://genos.invalid:30908')
     monkeypatch.setenv('GENOS_GATEWAY_API_PREFIX', '/v1')
-    monkeypatch.setenv('GENOS_LLM_PROFILE', 'qwen')
-    monkeypatch.setenv('GENOS_QWEN_SERVING_ID', '226')
-    monkeypatch.setenv('GENOS_QWEN_KEY', 'dummy-secret')
+    monkeypatch.setenv('GENOS_LLM_SERVING_ID', '226')
+    monkeypatch.setenv('GENOS_LLM_KEY', 'dummy-secret')
     monkeypatch.setenv('GENOS_EMBED_SERVING_ID', '19')
     monkeypatch.setenv('GENOS_EMBED_KEY', 'dummy-embed-secret')
-    for key in ('GENOS_LLM_URL', 'GENOS_EMBED_URL', 'GENOS_QWEN_MODEL', 'GENOS_LLM_MODEL', 'GENOS_EMBED_MODEL'):
+    for key in ('GENOS_LLM_URL', 'GENOS_EMBED_URL', 'GENOS_LLM_MODEL', 'GENOS_LLM_MODEL', 'GENOS_EMBED_MODEL'):
         monkeypatch.delenv(key, raising=False)
     untouched = tmp_path / 'existing-structure'
     untouched.mkdir()

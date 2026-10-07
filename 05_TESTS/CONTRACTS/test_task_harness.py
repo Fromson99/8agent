@@ -169,7 +169,7 @@ def test_late_model_response_cannot_advance_state(session):
     class Late(Provider):
         def call(self, *args):
             value = super().call(*args)
-            session.started -= 301
+            session.started -= session.limits['wall_seconds'] + 1
             return value
     result = session.run(Late())
     assert result['calls'] == 1 and session.interpretation is None

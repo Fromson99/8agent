@@ -1,6 +1,7 @@
 """Term-first research agent tools; no legal schema, ontology objects or glue."""
 import math
 from collections import defaultdict
+from types import MappingProxyType
 PLAN_SYSTEM='''질문을 조사하기 위한 짧은 계획을 만든다. 법률의 결론을 미리 답하지 않는다.
 확인할 내용을 자연어 질문 최대4개로 정리하고, 먼저 검색할 사전 표제어를 최대4개 제안한다.
 제공된 질문 내 표제어 후보를 우선 사용하되, 일상 표현을 찾기 위한 적절한 법률용어를 제안할 수 있다. 제안은 코드가 실제 용어집에 존재하는지 확인한다.
@@ -34,22 +35,47 @@ def validate_review(value,source_ids,term_ids):
  if value['next_action']=='ASK_USER' and (not value['question_for_user'].strip() or not any(g['kind']=='USER_FACT' for g in value['open_questions'])):raise ValueError('ASK_USER requires a missing fact and question')
  return value
 
+def freeze_label_trie(root):
+ """Immutable shared serving trie; iterative to support arbitrarily long labels."""
+ pending=[(root,False)];frozen={}
+ while pending:
+  node,expanded=pending.pop()
+  if not expanded:
+   pending.append((node,True))
+   pending.extend((child,False) for key,child in node.items() if key is not None)
+  else:
+   frozen[id(node)]=MappingProxyType({key:(child if key is None else frozen[id(child)]) for key,child in node.items()})
+ return frozen[id(root)]
+
+
 class TermTools:
  def __init__(self,sources,terms,relations):
   self.sources={s['id']:s for s in sources};self.terms={t['id']:t for t in terms};self.labels=defaultdict(list);self.prefix=defaultdict(list);self.edges=defaultdict(list)
   for t in terms:self.labels[t['label']].append(t['id'])
   for label in self.labels:self.prefix[label[:2]].append(label)
   for prefix in self.prefix:self.prefix[prefix].sort(key=lambda s:(-len(s),s))
+  self._rebuild_label_trie()
   for e in relations:
    if e['source'] in self.terms and e['target'] in self.terms:
     self.edges[e['source']].append(e);self.edges[e['target']].append(e)
   self.source_terms={sid:set(self.match(s['text'])) for sid,s in self.sources.items()};self.df={}
   for values in self.source_terms.values():
    for t in values:self.df[t]=self.df.get(t,0)+1
+ def _rebuild_label_trie(self):
+  self._label_trie={}
+  for label in self.labels:
+   # The original two-character scan never selected shorter labels.
+   if len(label)<2:continue
+   node=self._label_trie
+   for character in label:node=node.setdefault(character,{})
+   node[None]=label
  def match(self,text):
   found=[];i=0
   while i<len(text)-1:
-   word=next((w for w in self.prefix.get(text[i:i+2],[]) if text.startswith(w,i)),None)
+   node=self._label_trie;stop=i;word=None
+   while stop<len(text) and text[stop] in node:
+    node=node[text[stop]];stop+=1
+    if None in node:word=node[None]
    if word:found.extend(self.labels[word]);i+=len(word)
    else:i+=1
   return list(dict.fromkeys(found))
@@ -127,9 +153,13 @@ class TermTools(BaseTermTools):
   for r in references:
    s=self.sources[r['source_id']];b=next(b for b in s['blocks'] if b['block_id']==r['block_id'])
    if b['text']!=r['source_text'] or s['document_id']!=r['document_id']:raise ValueError('reference source mismatch')
-   if b['text'][r['mention_start']:r['mention_end']]!=r['locator']:raise ValueError('reference span mismatch')
-   for target in r['target_source_ids']:
-    if self.sources[target]['document_id']!=r['document_id'] or not self.sources[target]['heading'].startswith(r['locator']+' '):raise ValueError('reference target mismatch')
+   mention=b['text'][r['mention_start']:r['mention_end']]
+   if r.get('mention_text') is not None:
+    if mention!=r['mention_text']:raise ValueError('reference span mismatch')
+   elif mention!=r['locator']:raise ValueError('reference span mismatch')
+   from .term_references import reference_targets
+   for target in reference_targets(r):
+    if target['source_id'] not in self.sources:raise ValueError('reference target mismatch')
  def navigation_menu(self,seen,searched,question,scope,attempted=(),definition_limit=8,reference_limit=12):
   known=set(searched)|set(self.match(question));known|=set().union(*(self.source_terms[s] for s in seen)) if seen else set();literal=set(self.match(question))
   ds=[d for d in self.definitions.values() if d['document_id'] in scope and d['id'] not in attempted and (set(d['term_ids'])&known or d['key'] in question)]

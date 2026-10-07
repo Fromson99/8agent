@@ -7,9 +7,12 @@ import uuid
 from jsonschema import Draft202012Validator
 from . import term_tools as agent
 from .contracts import sha
-from .term_index import TermIndex
+from .term_index import cached_serving_index
+from . import observability as obs
 
-DEFAULTS={'max_rounds':3,'max_calls':9,'wall_seconds':150,'search_limit':3,'max_repairs':1}
+log = obs.get_logger('term-index')
+
+DEFAULTS={'max_rounds':3,'max_calls':9,'wall_seconds':1800,'search_limit':3,'max_repairs':1}
 
 class TermAgent:
     def __init__(self,pipeline,config):
@@ -21,9 +24,29 @@ class TermAgent:
                 if not binding:raise ValueError('term-agent requires a version-bound navigation index')
                 root=self.pipeline.store.path if self.pipeline.store.manifest.get('navigation') else self.pipeline.contracts.root
                 path=(root/binding['path']).resolve();path.relative_to(root)
-                if sha(path/'manifest.json')!=binding['manifest_sha256']:raise ValueError('term index manifest mismatch')
-                self.index=TermIndex(path,self.pipeline.store)
+                with obs.step(log, 'index.open'):
+                    self.index=cached_serving_index(path,self.pipeline.store,
+                        expected_manifest_sha256=binding['manifest_sha256'])
             return self.index
+    def get_fulltext(self):
+        """Optional morpheme ranking index bound in config; None when not configured."""
+        # Bound to one navigation index: generations sharing a source store and generation ID
+        # still differ by index, and one without this build has no full-text ranking.
+        # A published generation owns its derived fulltext binding. The profile
+        # binding remains a fallback for older, frozen local generations.
+        generation_binding=self.pipeline.store.manifest.get('fulltext')
+        binding=generation_binding if generation_binding is not None else self.config.get('fulltext')
+        index=self.get_index()
+        if not binding:return None
+        if binding.get('navigation_index_sha256')!=index.manifest['index_sha256']:
+            if generation_binding is not None:
+                raise ValueError('generation fulltext/navigation binding mismatch')
+            return None
+        with self.lock:
+            if getattr(self,'fulltext',None) is None:
+                from .fulltext import cached_open_bound
+                self.fulltext=cached_open_bound(self.pipeline.store.path,binding,index.manifest)
+            return self.fulltext
     def retrieve(self,plan,use_llm):
         p=self.pipeline;config={**DEFAULTS,**self.config.get('limits',{})};index=self.get_index();scope=plan['scope']['document_version_ids'];tools=index.tools(scope);question=plan['question'];seen=[];searched=[];attempted=[];outcomes=[];trace=[];receipts=[];repairs=0;calls=0;start=time.monotonic();final=agent.failure_output();status='STOP';failure=None
         def call(role,prompt,data,schema):
@@ -103,4 +126,18 @@ def answer(p,plan,assembly):
     if navigation and state.get('implementation') == 'document-navigation-v1':
         result['text'] = navigation['text']
         result['unresolved'] = [{'reason': x} for x in navigation['unresolved']]
+    if state.get('reference_terms'):
+        result['text'] = '\n\n'.join(x for x in (result['text'], reference_note(state['reference_terms'])) if x)
     p.contracts.validate(result,'urn:8-agent:term-runtime-v1','Answer');return result
+
+REFERENCE_SOURCE_NAMES={'econedu':'경제교육 경제용어사전','nts':'국세청 세무용어사전','bok':'한국은행 경제금융용어',
+                        'kofia':'금융투자협회 용어집','krx':'한국거래소 용어사전'}
+
+def reference_note(rows):
+    """Orphan glossary headwords: the source definition as a labelled note, never a claim."""
+    lines=['참고 용어 설명 (공개 용어사전 설명이며 선택한 문서의 근거가 아닙니다)']
+    for r in rows:
+        name=REFERENCE_SOURCE_NAMES.get(r['source'],r['source'])
+        lines.append('- '+r['label']+' ('+name+'): '+r['definition']+(' …' if r['definition_truncated'] else ''))
+        lines.append('  선택한 문서 범위에는 이 용어를 직접 다루는 조문이 없습니다.')
+    return '\n'.join(lines)

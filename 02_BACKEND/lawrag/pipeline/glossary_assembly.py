@@ -315,7 +315,8 @@ def inspect(directory,term=None):
         entries = [dict(r) for r in db.execute('''SELECT DISTINCT e.*,c.corpus_class,q.status AS review_status
            FROM surface s JOIN entry e ON e.id=s.entry_id JOIN classification c ON c.entry_id=e.id
            LEFT JOIN review_queue q ON q.entry_id=e.id WHERE s.key=? ORDER BY e.id''',(compact(term),))]
-        classes={'CORPUS_PRESENT':'LEGAL_TERM','GENERAL_IN_THIS_CORPUS':'EVERYDAY_TERM'}
+        # 본문용어/참고용어: 선택 본문 출현 여부. 법제처 법령용어·일상용어 목록 구분과 무관하다.
+        classes={'CORPUS_PRESENT':'CORPUS_TERM','GENERAL_IN_THIS_CORPUS':'REFERENCE_TERM'}
         for entry in entries:entry['term_class']=classes[entry['corpus_class']]
         ids = [e['id'] for e in entries]
         candidates=[];official={}

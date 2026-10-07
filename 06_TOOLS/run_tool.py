@@ -75,15 +75,19 @@ def main() -> None:
             sys.argv=[sys.argv[0],*sys.argv[2:]]
             semantic_main()
             return
-    if name == 'adr_structure.py':
-        # Model policy administration follows user-edited working policy. Serving
-        # and all other receipt-bound tools retain their selected generations.
+    if name in ('adr_structure.py', 'legal_agent_trace.py', 'legal_agent_contracts.py',
+                'genos_preflight.py', 'genos_call.sh', 'genos_smoke.sh'):
+        # Explicit working-code policy/contract tools and operator trace. Other
+        # receipt-bound tools retain their selected generations.
         command_root = root / '06_TOOLS' / 'COMMANDS'
         target = command_root / name
         if not target.is_file() or target.is_symlink():
-            raise SystemExit('ADR policy tool unavailable')
+            raise SystemExit('working policy/contract tool unavailable')
         sys.path.insert(0, str(command_root))
-        sys.argv = [str(target), *sys.argv[2:]]
+        arguments = sys.argv[2:]
+        if target.suffix == '.sh':
+            os.execv('/usr/bin/bash', ['bash', str(target), *arguments])
+        sys.argv = [str(target), *arguments]
         runpy.run_path(str(target), run_name='__main__')
         return
     backend, tools = _targets(root)

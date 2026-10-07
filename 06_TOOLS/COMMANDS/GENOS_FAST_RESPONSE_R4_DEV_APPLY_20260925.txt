@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# CodeSpace: put this TXT and GENOS_FAST_RESPONSE_R4_DELTA_20260925.zip in ~/DEV/TRANSFER.
+# Run: bash ~/DEV/TRANSFER/GENOS_FAST_RESPONSE_R4_DEV_APPLY_20260925.txt
+# Requires the previously mailed r3 delta already applied to ~/DEV.
+# This updates DEV only; commit, push, revision deployment and workflow tests are separate.
+set -euo pipefail
+dev_root="${GENOS_DEV_ROOT:-$HOME/DEV}"
+dev_root="$(realpath "$dev_root")"
+transfer="$dev_root/TRANSFER"
+archive="$transfer/GENOS_FAST_RESPONSE_R4_DELTA_20260925.zip"
+mkdir -p "$transfer"
+log="$transfer/GENOS_FAST_RESPONSE_R4_DEV_APPLY_20260925.log"
+exec > >(tee -a "$log") 2>&1
+trap 'status=$?; echo "APPLY_EXIT_STATUS=$status"; exit "$status"' EXIT
+echo "APPLY_STARTED=$(date -Is)"
+echo "DEV_ROOT=$dev_root"
+echo "ARCHIVE=$archive"
+test -f "$archive"
+test "$(git -C "$dev_root" rev-parse --show-toplevel | xargs realpath)" = "$dev_root"
+python3.11 - "$dev_root" "$archive" "$transfer" <<'PY'
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import shutil
+import sys
+import tempfile
+import time
+import zipfile
+
+root, archive, transfer = map(Path, sys.argv[1:])
+expected_zip = '8a7cb34745b26717ce267fbdc0ab571f6af89eedbea43ac6f67eee17ff600a7c'
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+def file_sha(path):
+    return sha(path.read_bytes())
+
+if file_sha(archive) != expected_zip:
+    raise SystemExit('STOP: R4 ZIP SHA-256 mismatch')
+with zipfile.ZipFile(archive) as bundle:
+    patch = json.loads(bundle.read('PATCH_MANIFEST.json'))
+    code = json.loads(bundle.read('CODE_MANIFEST.json'))
+    rows = patch['files']
+    names = {'PATCH_MANIFEST.json', 'CODE_MANIFEST.json', *(row['path'] for row in rows)}
+    if set(bundle.namelist()) != names or len(bundle.namelist()) != len(names):
+        raise SystemExit('STOP: ZIP member list mismatch')
+    if len(rows) != 42 or code['base_archive_sha256'] != patch['base_archive_sha256']:
+        raise SystemExit('STOP: R4 manifest mismatch')
+    if {row['path']: row['sha256'] for row in code['files']} != {
+            row['path']: row['after_sha256'] for row in rows}:
+        raise SystemExit('STOP: code manifest file hashes differ')
+    pending = []
+    for row in rows:
+        name = row['path']
+        rel = PurePosixPath(name)
+        if rel.is_absolute() or '..' in rel.parts or name.endswith(('.js', '.jsx', '.mjs', '.cjs')):
+            raise SystemExit('STOP: unsafe patch member '+name)
+        target = root.joinpath(*rel.parts)
+        if target.is_symlink() or any(parent.is_symlink() for parent in target.parents if parent != root):
+            raise SystemExit('STOP: symlink target or parent '+name)
+        data = bundle.read(name)
+        if sha(data) != row['after_sha256']:
+            raise SystemExit('STOP: payload hash mismatch '+name)
+        if target.is_file():
+            actual = file_sha(target)
+            if actual == row['after_sha256']:
+                continue
+            if actual != row['before_sha256']:
+                raise SystemExit('STOP: DEV differs from mailed r3 baseline: '+name)
+        elif row['before_sha256'] is not None:
+            raise SystemExit('STOP: missing r3 baseline file '+name)
+        pending.append((name, target, data, target.is_file()))
+
+    print('PREFLIGHT_PASS_FILES='+str(len(rows)), flush=True)
+    if not pending:
+        print('ALREADY_APPLIED=1', flush=True)
+    else:
+        backup = transfer/'BACKUP'/('fast-response-r4-'+time.strftime('%Y%m%d-%H%M%S'))
+        backup.mkdir(parents=True, exist_ok=False)
+        for name, target, _, existed in pending:
+            if existed:
+                saved = backup/name
+                saved.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(target, saved)
+        print('BACKUP_DIR='+str(backup), flush=True)
+        replaced = []
+        try:
+            for name, target, data, existed in pending:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                fd, temp = tempfile.mkstemp(prefix='.fast-response-r4-', dir=target.parent)
+                try:
+                    with os.fdopen(fd, 'wb') as stream:
+                        stream.write(data)
+                        stream.flush()
+                        os.fsync(stream.fileno())
+                    os.chmod(temp, (target.stat().st_mode & 0o777) if existed else 0o644)
+                    os.replace(temp, target)
+                finally:
+                    if os.path.exists(temp): os.unlink(temp)
+                replaced.append((name, target, existed))
+            for row in rows:
+                if file_sha(root/row['path']) != row['after_sha256']:
+                    raise RuntimeError('post-apply hash mismatch '+row['path'])
+        except BaseException:
+            for name, target, existed in reversed(replaced):
+                if existed:
+                    shutil.copy2(backup/name, target)
+                else:
+                    target.unlink(missing_ok=True)
+            print('ROLLBACK_FROM_BACKUP=1', flush=True)
+            raise
+        print('APPLIED_FILES='+str(len(replaced)), flush=True)
+    print('POST_APPLY_HASH_PASS=1', flush=True)
+PY
+git -C "$dev_root" diff --check
+echo "GIT_DIFF_CHECK=PASS"
+echo "NEXT: review git diff, commit the DEV checkout, run its release gate against the actual selected GENOS generation, push, and deploy that commit as a new code-serving revision."
+echo "NEXT: test only from the workflow test screen. Compare request.started to rag.loop.started.elapsed_ms; check request.returning and publication.completed separately."
+echo "NOTE: publication_status=PENDING means the answer returned; source URLs may say '출처 발행 중입니다.' until publication.completed."

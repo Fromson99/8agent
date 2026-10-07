@@ -78,7 +78,7 @@ def _safe_remote(url: str) -> str:
 
 def _requirements() -> set[str]:
     found: set[str] = set()
-    path = ROOT / "requirements-serving.txt"
+    path = ROOT / "requirements.txt"
     for raw in path.read_text("utf-8").splitlines():
         line = raw.split("#", 1)[0].strip()
         if not line or line.startswith("-"):
@@ -156,7 +156,7 @@ def source_checks(c: Checks) -> None:
             c.fail("서빙 의존성", "직접 선언 누락: " + ", ".join(missing_deps))
         else:
             heavy = sorted(
-                name for name in ("numpy", "torch", "sentence-transformers", "uvicorn")
+                name for name in ("torch", "sentence-transformers", "uvicorn")
                 if name in declared
             )
             if heavy:
@@ -263,10 +263,28 @@ def _probe_models(url: str, key: str) -> str:
 def runtime_checks(c: Checks, probe_upstreams: bool) -> None:
     from lawrag.platform import active_runtime_paths
 
+    selected_generation_id = None
+    if os.environ.get("GENOS_GENERATION", "").strip() or os.environ.get("GENOS_DATA_ROOT", "").strip():
+        try:
+            from genos_generation_e2e import audit, selected_generation
+            generation = selected_generation()
+            binding_report = audit(ROOT, generation)
+            selected_generation_id = binding_report["generation_id"]
+            for row in binding_report["checks"]:
+                detail = f"{row['check']}: {row['detail']}"
+                if row["status"] == "FAIL":
+                    c.fail("세대/fulltext 결속", detail)
+            if binding_report["status"] == "PASS":
+                c.ok("세대/fulltext 결속", f"generation={selected_generation_id} · index open verified")
+        except Exception as exc:
+            c.fail("세대/fulltext 결속", f"{type(exc).__name__}: {exc}")
+    else:
+        c.warn("세대/fulltext 결속", "GENOS_GENERATION 또는 GENOS_DATA_ROOT 미설정; 실제 서빙 세대를 확인하지 못함")
+
     imports = {
         "FastAPI": "fastapi", "Pydantic": "pydantic", "PyYAML": "yaml",
         "Requests": "requests", "NumPy": "numpy", "PyMuPDF": "fitz",
-        "Docling": "docling",
+        "Docling core": "docling_core",
     }
     for label, module in imports.items():
         c.capture(f"import {label}", lambda module=module: (
@@ -297,14 +315,7 @@ def runtime_checks(c: Checks, probe_upstreams: bool) -> None:
         if not url:
             base = os.environ.get("GENOS_BASE_URL", "").strip().rstrip("/")
             if label == "GenOS LLM":
-                profile = os.environ.get("GENOS_LLM_PROFILE", "").strip().upper()
-                if profile and not profile.replace("_", "").isalnum():
-                    profile = ""
-                serving_id = ((os.environ.get(f"GENOS_{profile}_SERVING_ID", "")
-                               if profile else "")
-                              or os.environ.get("GENOS_LLM_SERVING_ID", "")).strip()
-                if profile:
-                    key = os.environ.get(f"GENOS_{profile}_KEY", "").strip() or key
+                serving_id = os.environ.get("GENOS_LLM_SERVING_ID", "").strip()
             else:
                 serving_id = os.environ.get("GENOS_EMBED_SERVING_ID", "").strip()
             if base and serving_id.isdigit():
@@ -343,6 +354,11 @@ def runtime_checks(c: Checks, probe_upstreams: bool) -> None:
             c.fail("service health", json.dumps(health, ensure_ascii=False)[:1000])
         else:
             c.ok("service health", f"HTTP 200 · generation={body.get('generation_id')}")
+            if selected_generation_id is not None:
+                if body.get("generation_id") == selected_generation_id:
+                    c.ok("health 세대 일치", selected_generation_id)
+                else:
+                    c.fail("health 세대 일치", f"selected={selected_generation_id} health={body.get('generation_id')}")
 
 
 def render(rows: list[Result], as_json: bool) -> None:

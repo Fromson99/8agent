@@ -303,12 +303,12 @@ def main(argv=None):
     parser.add_argument('--chunk-chars', type=int, default=1400)
     parser.add_argument('--max-chunks', type=int, default=64)
     parser.add_argument('--batch-size', type=int, default=4)
-    parser.add_argument('--max-tokens', type=int, default=4096)
+    parser.add_argument('--max-tokens', type=int, default=80000)
     parser.add_argument('--timeout', type=int, default=120)
     parser.add_argument('--execute', action='store_true')
     args = parser.parse_args(argv)
     for key, low, high in [('chunk_chars', 200, 4000), ('max_chunks', 1, 512),
-                           ('batch_size', 1, 8), ('max_tokens', 256, 16384), ('timeout', 10, 600)]:
+                           ('batch_size', 1, 8), ('max_tokens', 256, 80000), ('timeout', 10, 600)]:
         if not low <= getattr(args, key) <= high:
             parser.error(f'--{key.replace("_", "-")}: {low}..{high}')
     if not args.question.strip() or len(args.question) > 10000:

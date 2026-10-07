@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# GENOS 코드스페이스 터미널에서: bash GENOS_FULLTEXT_ERROR_CHECK.txt
+# 기존 실행 저널만 읽습니다. 워크플로우를 다시 테스트할 필요는 없습니다.
+set -euo pipefail
+cd "$HOME/DEV"
+python3.11 - <<'PY'
+import json, os, sqlite3
+from pathlib import Path
+
+root = Path(os.environ.get("GENOS_RUNTIME_DIR") or "90_RUNTIME/semantic")
+paths = sorted((root / "legal-agent/runs").glob("*/*/journal.sqlite"),
+               key=lambda p: p.stat().st_mtime, reverse=True)
+for path in paths[:20]:
+    with sqlite3.connect(f"file:{path}?mode=ro", uri=True) as db:
+        row = db.execute("""
+            SELECT result_json FROM observation
+            WHERE tool='search' AND status='ERROR'
+            ORDER BY created_seq DESC LIMIT 1
+        """).fetchone()
+    if row:
+        result = json.loads(row[0])
+        print("JOURNAL:", path)
+        print("ERROR:", result.get("server_reason") or result.get("error"))
+        print("DURATION_MS:", result.get("budget", {}).get("duration_ms"))
+        break
+else:
+    print("최근 실행 저널에서 search ERROR를 찾지 못했습니다.")
+PY

@@ -25,12 +25,12 @@ def main():
             cmd.add_argument('--authority-generation',default='genos-structured-prellm-v1')
             cmd.add_argument('--max-attempts',type=int,default=3)
             cmd.add_argument('--segment-chars',type=int,default=12000)
-            cmd.add_argument('--max-tokens',type=int,default=8192)
+            cmd.add_argument('--max-tokens',type=int,default=80000)
         if name=='run':
             cmd.add_argument('--execute',action='store_true')
             cmd.add_argument('--max-calls',type=int,default=10)
             cmd.add_argument('--workers',type=int,default=1)
-            cmd.add_argument('--timeout',type=float,default=300)
+            cmd.add_argument('--timeout',type=float,default=1800)
         if name=='status':
             cmd.add_argument('--watch',type=float,default=0);cmd.add_argument('--json',action='store_true');cmd.add_argument('--failures',type=int,default=5)
         if name=='publish':

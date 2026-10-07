@@ -13,7 +13,7 @@ from typing import Optional
 
 
 UNITS = "편장절관"
-MOK_LETTERS = "가나다라마바사아자차카타파하"
+MOK_LETTERS = "가나다라마바사아자차카타파하거너더러머버서어저처커터퍼허고노도로모보소오조초코토포호구누두루무부"
 
 # 질문·본문은 문장 중간을 훑고, 문서 라벨은 같은 문법을 문자열 시작에서 읽는다.
 ARTICLE_PATTERN = re.compile(
@@ -86,7 +86,7 @@ class LegalCoordinate:
 
     def append_part(self, part: "LegalCoordinate") -> "LegalCoordinate":
         """조문 좌표 뒤에 실제 자식 항·호·목 좌표를 붙인다."""
-        if self.unit != "조" or part.unit not in {"항", "호", "목"}:
+        if self.unit != "조" or part.unit not in {"항", "호", "목", "세목", "세세목", "세세세목"}:
             raise ValueError(f"조문 하강 좌표가 아닙니다: {self!r} + {part!r}")
         subs = list(self.chain_subs or (None,) * len(self.chain))
         subs.append(part.sub)
@@ -107,7 +107,13 @@ class LegalCoordinate:
                 text += f"의{self.sub}"
             subs = self.chain_subs or (None,) * len(self.chain)
             for (unit, number), sub in zip(self.chain, subs):
-                if unit is None:
+                if unit == "세목":
+                    text += f"{number})"
+                elif unit == "세세목":
+                    text += f"({number})"
+                elif unit == "세세세목":
+                    text += f"({MOK_LETTERS[number - 1]})"
+                elif unit is None:
                     text += f"({number})"
                 elif unit == "목" and 0 < number <= len(MOK_LETTERS):
                     text += f"{MOK_LETTERS[number - 1]}목"

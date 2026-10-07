@@ -52,8 +52,9 @@ def check():
     def settings():
         if os.environ.get('SEMANTIC_LLM_BACKEND')!='genos':raise ValueError('Set SEMANTIC_LLM_BACKEND=genos')
         if os.environ.get('GENOS_RAG_IMPLEMENTATION')!='document-navigation-v1':raise ValueError('Set GENOS_RAG_IMPLEMENTATION=document-navigation-v1')
-        missing=[k for k in ('GENOS_BASE_URL','GENOS_QWEN_SERVING_ID','GENOS_QWEN_KEY') if not os.environ.get(k,'').strip()]
-        if missing:raise ValueError('Missing setting names: '+', '.join(missing))
+        from semantic_runtime.genos import from_env
+        target, _ = from_env('llm')
+        if not target.headers.get('Authorization'):raise ValueError('Missing setting name: GENOS_LLM_KEY')
         return {'backend':'genos','implementation':'document-navigation-v1','credentials_present':True}
     record('settings',settings)
 

@@ -2,6 +2,10 @@
 from copy import deepcopy
 from collections import defaultdict
 import json,re,time,sqlite3
+import threading
+from types import MappingProxyType
+from .team_scope import generation_key
+from .contracts import digest
 from . import inherited_navigation as previous
 from . import folder_navigation as folders
 legal=previous.previous.previous
@@ -14,12 +18,79 @@ SYSTEM=legal.SYSTEM+'''\n현재는 복수 진입점 후보를 먼저 합치는 �
 
 
 def bind_structure(matcher,store,origin_projection=None):
-    return folders.bind_catalogue(previous.bind_structure(matcher,store),store,origin_projection)
+    bound = folders.bind_catalogue(previous.bind_structure(matcher,store),store,origin_projection)
+    key = (generation_key(store), digest(origin_projection),
+           tuple(sorted(getattr(matcher,'projection_aliases',{}).items())), id(matcher.sources))
+    with _PREPARED_LOCK:
+        value = _PREPARED.get(key)
+        if value is None:
+            units = FrozenDict({k: freeze(v) for k,v in bound.units.items()})
+            by_document = defaultdict(list)
+            for key_unit in units:by_document[key_unit[0]].append(key_unit)
+            sources = defaultdict(list)
+            for ordinal,(sid,source) in enumerate(matcher.sources.items()):
+                sources[source['document_id']].append((ordinal,sid))
+            value = {'units':units, 'unit_index':MappingProxyType({d:tuple(v) for d,v in by_document.items()}),
+                     'source_index':MappingProxyType({d:tuple(v) for d,v in sources.items()}),
+                     'validated':frozenset(), 'lock':threading.Lock()}
+            _PREPARED.clear()
+            _PREPARED[key] = value
+        bound.units = value['units']
+        bound.prepared_structure = value
+    return bound
+
+
+_PREPARED = {}
+_PREPARED_LOCK = threading.Lock()
+
+
+class FrozenDict(dict):
+    def _deny(self,*args,**kwargs):raise TypeError('generation data is immutable')
+    __setitem__=__delitem__=clear=pop=popitem=setdefault=update=__ior__=_deny
+    def __deepcopy__(self,memo):return {deepcopy(k,memo):deepcopy(v,memo) for k,v in self.items()}
+
+
+class FrozenList(list):
+    def _deny(self,*args,**kwargs):raise TypeError('generation data is immutable')
+    __setitem__=__delitem__=append=extend=insert=pop=remove=clear=reverse=sort=__iadd__=__imul__=_deny
+    def __deepcopy__(self,memo):return [deepcopy(v,memo) for v in self]
+
+
+def freeze(value):
+    if isinstance(value,dict):return FrozenDict({k:freeze(v) for k,v in value.items()})
+    if isinstance(value,list):return FrozenList(freeze(v) for v in value)
+    return value
+
+
+def validate_structure(matcher, scope):
+    """Cache successful checks only for the final immutable binding; mutable adapters rescan."""
+    from .legal_agent.errors import ContractError
+    prepared = getattr(matcher,'prepared_structure',None)
+    reusable = prepared is not None and matcher.units is prepared['units']
+    guard = prepared['lock'] if reusable else threading.Lock()
+    with guard:
+        pending = set(scope) - prepared['validated'] if reusable else set(scope)
+        done=set();checked=0
+        keys = (key for d in sorted(pending) for key in prepared['unit_index'].get(d,())) if reusable else (
+            key for key in matcher.units if key[0] in pending)
+        for did,uid in keys:
+            span=matcher.units[(did,uid)].get('span')
+            if (not isinstance(span,list) or len(span)!=2 or any(type(v) is not int for v in span)
+                or span[0]<0 or span[1]<span[0]):raise ContractError('stored structure span missing/invalid')
+            seen=set();cur=uid
+            while cur is not None and (did,str(cur)) not in done:
+                cur=str(cur);key=(did,cur)
+                if cur in seen or key not in matcher.units:raise ContractError('missing/cyclic stored parent')
+                seen.add(cur);cur=matcher.units[key]['parent']
+            done.update((did,u) for u in seen);checked+=1
+        if reusable:prepared['validated'] = prepared['validated'] | pending
+        return checked
 
 
 RESOLVED_REFERENCES = {'RESOLVED', 'EXACT_NAMED_DOCUMENT_ARTICLE', 'EXACT_SAME_DOCUMENT_ARTICLE',
-                       'EXACT_SAME_ARTICLE_PROVISION', 'EXACT_CONTINUED_PROVISION',
-                       'EXACT_NAMED_DOCUMENT_ANNEX', 'EXACT_SAME_DOCUMENT_ANNEX'}
+                       'EXACT_SAME_ARTICLE_PROVISION', 'EXACT_CONTINUED_PROVISION', 'EXACT_SAME_DOCUMENT_PROVISION',
+                       'EXACT_NAMED_DOCUMENT_ANNEX', 'EXACT_SAME_DOCUMENT_ANNEX', 'OFFICIAL_DELEGATION',
+                       'EXACT_COMPLETE_COORDINATE', 'EXACT_FRAME_PATH', 'EXACT_DETERMINISTIC_RANGE'}
 
 
 def reference_resolved(value):
@@ -81,7 +152,21 @@ class MultiSession(previous.InheritedSession):
         if entry not in origins:origins[entry]=route or {}
     def source_card(self,sid):
         self.add_candidate(sid,self.source_origin)
-        card=super().source_card(sid);return {**card,'entry_ids':sorted(self.pool[sid])}
+        card=super().source_card(sid);hits=self.term_hits(sid)
+        return {**card,'entry_ids':sorted(self.pool[sid]),**({'term_hits':hits} if hits else {})}
+    def term_hits(self,sid,limit=3,width=60):
+        # Where the entry terms sit in the article: a short preview, not a read segment.
+        if not hasattr(self,'_has_spans'):
+            self._has_spans=bool(self.t.db.execute("SELECT 1 FROM sqlite_master WHERE name='occurrence_span'").fetchone())
+        if not self._has_spans:return []
+        tids=[r['term_id'] for route in self.pool.get(sid,{}).values() for r in route.get('routes',[])]
+        text=self.t.sources[sid]['text'];hits=[]
+        for tid in dict.fromkeys(tids):
+            row=self.t.db.execute('SELECT start,end FROM occurrence_span WHERE term_id=? AND source_id=? ORDER BY start LIMIT 1',(tid,sid)).fetchone()
+            if row:
+                s,e=row;hits.append({'label':self.t.terms[tid]['label'],'context':text[max(0,s-width):e+width],'preview_only':True})
+            if len(hits)>=limit:break
+        return hits
     def candidates(self,offset=0):
         ids=sorted(self.pool);page=self.page(ids,offset);page['items']=[self.source_card(s) for s in page['items']];self.pool_pages[offset]=[x['id'] for x in page['items']]
         return {**page,'pending':len(self.pending_candidates()),'content_read':False,'initial_entry_count':len(self.entries),'initial_union_count':len(self.initial_pool_ids),'deduplication':'source identity; all entry paths preserved'}

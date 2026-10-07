@@ -65,6 +65,44 @@ def test_endpoint_defaults_to_branch_gateway_and_keeps_direct_v1():
     )
 
 
+def test_llm_connect_timeout_is_sixty_seconds_and_configurable():
+    settings = {'GENOS_BASE_URL': 'https://genos.example', 'GENOS_LLM_SERVING_ID': '123'}
+    assert genos.from_env('llm', environ=settings)[0].connect_timeout == 60.0
+    settings['GENOS_LLM_CONNECT_TIMEOUT'] = '90'
+    assert genos.from_env('llm', environ=settings)[0].connect_timeout == 90.0
+    for value in ('0', '-1', 'nan', 'inf'):
+        with pytest.raises(ValueError, match='CONNECT_TIMEOUT'):
+            genos.from_env('llm', environ={**settings, 'GENOS_LLM_CONNECT_TIMEOUT': value})
+
+
+@pytest.mark.parametrize('remaining, expected', [(1800, 60), (10, 10)])
+def test_agent_transport_uses_connection_setting_inside_total_deadline(monkeypatch, remaining, expected):
+    import asyncio
+    import hashlib
+    from semantic_runtime.legal_agent.transport import GenosTransport
+    target = genos.from_env('llm', environ={'GENOS_BASE_URL': 'https://genos.example', 'GENOS_LLM_SERVING_ID': '123'})[0]
+    binding = {'provider': 'genos', 'trust_zone': 'internal', 'adapter_version': 'genos-single-send-v1',
+               'endpoint_identity': hashlib.sha256(target.root.encode()).hexdigest(), 'model': 'fixture'}
+    configured = []
+    class Client:
+        def __init__(self, **kwargs):
+            configured.append(kwargs['timeout'])
+        async def __aenter__(self):
+            return self
+        async def __aexit__(self, *args):
+            pass
+        async def request(self, *args, **kwargs):
+            return httpx.Response(200, json={'data': [{'id': 'fixture'}]})
+    monkeypatch.setattr(httpx, 'AsyncClient', Client)
+    transport = GenosTransport(target, binding)
+    asyncio.run(transport._request('POST', '/chat/completions', {}, remaining))
+    assert configured[-1].connect == expected
+    assert configured[-1].read == remaining
+    transport.validate_model()
+    assert configured[-1].read == 120
+    assert configured[-1].connect == 60
+
+
 @pytest.mark.parametrize(
     "value",
     ["", "ftp://genos.example", "https://user:pw@genos.example/v1", "https://x/v1?q=1"],
@@ -130,14 +168,17 @@ def test_supplied_session_keeps_caller_environment_policy():
     assert session.trust_env is False
 
 
-def test_profile_environment_builds_llm_and_embedding(monkeypatch):
+def test_generic_environment_builds_llm_and_embedding_ignoring_old_profile(monkeypatch):
     monkeypatch.setenv("GENOS_BASE_URL", "https://genos.example")
-    monkeypatch.setenv("GENOS_LLM_PROFILE", "qwen")
-    monkeypatch.setenv("GENOS_QWEN_SERVING_ID", "226")
-    monkeypatch.setenv("GENOS_QWEN_KEY", "qwen-key")
-    monkeypatch.setenv("GENOS_QWEN_MODEL", "qwen-model")
+    monkeypatch.setenv("GENOS_LLM_SERVING_ID", "226")
+    monkeypatch.setenv("GENOS_LLM_KEY", "qwen-key")
+    monkeypatch.setenv("GENOS_LLM_MODEL", "qwen-model")
     monkeypatch.setenv("GENOS_EMBED_SERVING_ID", "19")
     monkeypatch.setenv("GENOS_EMBED_KEY", "embed-key")
+    monkeypatch.setenv("GENOS_LLM_PROFILE", "gemma")
+    monkeypatch.setenv("GENOS_GEMMA_SERVING_ID", "999")
+    monkeypatch.setenv("GENOS_GEMMA_KEY", "stale-key")
+    monkeypatch.setenv("GENOS_GEMMA_MODEL", "stale-model")
 
     llm, llm_model = genos.from_env("llm")
     embed, _embed_model = genos.from_env("embed")
@@ -147,13 +188,19 @@ def test_profile_environment_builds_llm_and_embedding(monkeypatch):
     assert embed.headers["Authorization"] == "Bearer embed-key"
 
 
+def test_brand_only_settings_do_not_silently_select_a_model():
+    with pytest.raises(ValueError, match='GENOS_LLM serving ID'):
+        genos.from_env('llm', environ={
+            'GENOS_BASE_URL': 'https://genos.example', 'GENOS_LLM_PROFILE': 'qwen',
+            'GENOS_QWEN_SERVING_ID': '123', 'GENOS_QWEN_KEY': 'obsolete'})
+
+
 def test_gateway_ignores_legacy_prefix_without_changing_url_or_environment(monkeypatch):
     monkeypatch.delenv("GENOS_LLM_URL", raising=False)
     monkeypatch.delenv("GENOS_GATEWAY_API_PREFIX", raising=False)
     monkeypatch.setenv("GENOS_BASE_URL", "http://genos.example:12345")
-    monkeypatch.setenv("GENOS_LLM_PROFILE", "qwen")
-    monkeypatch.setenv("GENOS_QWEN_SERVING_ID", "226")
-    monkeypatch.setenv("GENOS_QWEN_KEY", "dummy")
+    monkeypatch.setenv("GENOS_LLM_SERVING_ID", "226")
+    monkeypatch.setenv("GENOS_LLM_KEY", "dummy")
     monkeypatch.setenv("GENOS_LLM_API_PREFIX", "/v1")
     target, _ = genos.from_env("llm")
     assert target.url("/models") == "http://genos.example:12345/api/gateway/rep/serving/226/models"

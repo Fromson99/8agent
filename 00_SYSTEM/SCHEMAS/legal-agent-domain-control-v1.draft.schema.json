@@ -1,0 +1,1497 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:legal-agent-domain-control-v1-draft",
+  "title": "Domain catalogue and judgment control design draft",
+  "description": "Design only. Not registered in PIPELINE or consumed by runtime. Dynamic offered-ID membership, hashes, scope, prerequisites, actual reads, acyclicity and semantic entailment require server validators; this schema only validates shapes. Runtime wire schemas are projected per phase and offered catalogue, not this root union.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/CatalogueDraft"
+    },
+    {
+      "$ref": "#/$defs/ActionChoice"
+    },
+    {
+      "$ref": "#/$defs/UnresolvedChoice"
+    },
+    {
+      "$ref": "#/$defs/AtomicJudgment"
+    },
+    {
+      "$ref": "#/$defs/CorrectionPlan"
+    },
+    {
+      "$ref": "#/$defs/AnswerAnchor"
+    }
+  ],
+  "$defs": {
+    "EntityRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entity_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "run_id",
+        "kind",
+        "entity_id",
+        "version",
+        "payload_hash"
+      ]
+    },
+    "FactRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "case_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branch_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fact_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "value_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "basis": {
+          "enum": [
+            "USER_ASSERTED",
+            "SOURCE_VERIFIED",
+            "ASSUMPTION",
+            "UNKNOWN"
+          ]
+        }
+      },
+      "required": [
+        "case_id",
+        "branch_id",
+        "fact_id",
+        "version",
+        "value_hash",
+        "basis"
+      ]
+    },
+    "SourceBasis": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "generation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "document_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifact_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "block_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "block_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "start_cp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end_cp": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "quote": {
+          "type": "string",
+          "minLength": 1
+        },
+        "read_receipt_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "delivered_view_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "generation_id",
+        "document_id",
+        "source_id",
+        "artifact_hash",
+        "block_id",
+        "block_hash",
+        "start_cp",
+        "end_cp",
+        "quote",
+        "read_receipt_hash",
+        "delivered_view_id"
+      ]
+    },
+    "Binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "catalogue_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ontology_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_generation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_manifest_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "navigation_manifest_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "glossary_binding_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "method_policy_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "schema_version": {
+          "const": "legal-agent-domain-control-v1-draft"
+        }
+      },
+      "required": [
+        "catalogue_id",
+        "ontology_version",
+        "source_generation_id",
+        "source_manifest_hash",
+        "navigation_manifest_hash",
+        "glossary_binding_hash",
+        "method_policy_hash",
+        "schema_version"
+      ]
+    },
+    "Object": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "TERM",
+            "SCOPED_DEFINITION",
+            "SOURCE_LOCATION",
+            "INTERPRETIVE_CONCEPT"
+          ]
+        },
+        "scope_document_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approval": {
+          "enum": [
+            "NAVIGATION_REVIEWED",
+            "DOMAIN_REVIEWED"
+          ]
+        },
+        "payload": {
+          "type": "object"
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "origin_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "scope_document_id",
+        "approval",
+        "payload",
+        "payload_hash",
+        "origin_refs"
+      ]
+    },
+    "Relation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "relation_type": {
+          "enum": [
+            "DEFINITION_OF",
+            "EXPLICIT_REFERENCE_TO",
+            "OCCURRENCE_OF",
+            "STRUCTURE_CHILD_OF",
+            "SUBTYPE_OF",
+            "SCOPE_OF",
+            "EXCEPTION_TO",
+            "CONDITION_FOR"
+          ]
+        },
+        "source_object_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_object_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approval": {
+          "enum": [
+            "NAVIGATION_REVIEWED",
+            "DOMAIN_REVIEWED"
+          ]
+        },
+        "payload": {
+          "type": "object"
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "origin_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "relation_type",
+        "source_object_id",
+        "target_object_id",
+        "approval",
+        "payload",
+        "payload_hash",
+        "origin_refs"
+      ]
+    },
+    "MethodStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "step_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allowed_relation_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "precheck_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "postcheck_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "allowed_next_step_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "watch_fact_keys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "step_id",
+        "operation",
+        "allowed_relation_types",
+        "precheck_ids",
+        "postcheck_ids",
+        "allowed_next_step_ids",
+        "watch_fact_keys"
+      ]
+    },
+    "Method": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "allowed_stages": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "INTENT",
+              "PLAN",
+              "RECALL",
+              "READ",
+              "SELECT",
+              "ASSESS",
+              "COMPOSE"
+            ]
+          },
+          "minItems": 1
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MethodStep"
+          },
+          "minItems": 1
+        },
+        "completion_check_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "review_receipt_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "review_receipt_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "purpose_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "allowed_stages",
+        "steps",
+        "completion_check_ids",
+        "review_receipt_ref",
+        "review_receipt_hash",
+        "purpose_id"
+      ]
+    },
+    "PathTemplate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "method_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "slot_kinds": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "TERM",
+                "SCOPED_DEFINITION",
+                "SOURCE_LOCATION",
+                "INTERPRETIVE_CONCEPT"
+              ]
+            },
+            "minItems": 1
+          }
+        },
+        "scope_check_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "review_receipt_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "review_receipt_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "method_id",
+        "slot_kinds",
+        "scope_check_id",
+        "review_receipt_ref",
+        "review_receipt_hash",
+        "payload_hash"
+      ]
+    },
+    "CatalogueDraft": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contract_kind": {
+          "const": "CATALOGUE_DRAFT"
+        },
+        "binding": {
+          "$ref": "#/$defs/Binding"
+        },
+        "objects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Object"
+          },
+          "minItems": 0
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Relation"
+          },
+          "minItems": 0
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Method"
+          },
+          "minItems": 1
+        },
+        "path_templates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PathTemplate"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "contract_kind",
+        "binding",
+        "objects",
+        "relations",
+        "methods",
+        "path_templates"
+      ]
+    },
+    "ActionChoice": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contract_kind": {
+          "const": "ACTION_CHOICE"
+        },
+        "offer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "question_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "enum": [
+            "INTENT",
+            "PLAN",
+            "RECALL",
+            "READ",
+            "SELECT",
+            "ASSESS",
+            "COMPOSE"
+          ]
+        },
+        "method_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path_template_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path_instance_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "step_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "concept_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "relation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "target_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "fact_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FactRef"
+          },
+          "minItems": 0
+        },
+        "parent_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "minItems": 0
+        },
+        "expected_information": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "purpose_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "use_role": {
+          "enum": [
+            "DISCOVERY",
+            "NAVIGATION",
+            "APPLICATION",
+            "PRESENTATION"
+          ]
+        }
+      },
+      "required": [
+        "contract_kind",
+        "offer_id",
+        "question_id",
+        "stage",
+        "method_id",
+        "path_template_id",
+        "path_instance_id",
+        "step_id",
+        "concept_ids",
+        "relation_ids",
+        "target_ids",
+        "fact_refs",
+        "parent_refs",
+        "expected_information",
+        "reason",
+        "purpose_id",
+        "use_role"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "use_role": {
+                "enum": [
+                  "APPLICATION",
+                  "PRESENTATION"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "concept_ids": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "UnresolvedChoice": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contract_kind": {
+          "const": "UNRESOLVED_CHOICE"
+        },
+        "offer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "question_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "NEED_MORE_CONTEXT",
+            "NO_ALLOWED_PATH"
+          ]
+        },
+        "missing_object_or_check": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "contract_kind",
+        "offer_id",
+        "question_id",
+        "status",
+        "missing_object_or_check",
+        "reason"
+      ]
+    },
+    "CheckResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "check_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "SATISFIED",
+            "VIOLATED",
+            "UNKNOWN",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "fact_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FactRef"
+          },
+          "minItems": 0
+        },
+        "basis_spans": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceBasis"
+          },
+          "minItems": 0
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "check_id",
+        "status",
+        "fact_refs",
+        "basis_spans",
+        "reason"
+      ]
+    },
+    "AtomicJudgment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contract_kind": {
+          "const": "ATOMIC_JUDGMENT"
+        },
+        "question_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "judgment_ref": {
+          "$ref": "#/$defs/EntityRef"
+        },
+        "choice_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "binding": {
+          "$ref": "#/$defs/Binding"
+        },
+        "concept_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "relation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "method_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path_instance_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fact_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FactRef"
+          },
+          "minItems": 0
+        },
+        "watch_fact_keys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "facts_snapshot_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "basis_spans": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceBasis"
+          },
+          "minItems": 0
+        },
+        "parent_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "minItems": 0
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CheckResult"
+          },
+          "minItems": 1
+        },
+        "disposition": {
+          "enum": [
+            "ADOPT",
+            "REJECT",
+            "DEFER"
+          ]
+        },
+        "claim": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntityRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "purpose_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "contract_kind",
+        "question_id",
+        "judgment_ref",
+        "choice_id",
+        "binding",
+        "concept_ids",
+        "relation_ids",
+        "method_id",
+        "path_instance_id",
+        "fact_refs",
+        "watch_fact_keys",
+        "facts_snapshot_hash",
+        "basis_spans",
+        "parent_refs",
+        "checks",
+        "disposition",
+        "claim",
+        "reason",
+        "supersedes",
+        "purpose_id"
+      ],
+      "description": "Host-owned persisted record. Model wire proposals exclude server-generated IDs, hashes, binding and receipt fields; offered IDs are validated before the host creates this object."
+    },
+    "Patch": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "target_id",
+            "base_hash",
+            "replacement"
+          ],
+          "properties": {
+            "kind": {
+              "const": "SET_FACT"
+            },
+            "target_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "base_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "replacement": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "fact_key",
+                "value",
+                "basis",
+                "source_event_id"
+              ],
+              "properties": {
+                "fact_key": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {},
+                "basis": {
+                  "enum": [
+                    "USER_ASSERTED",
+                    "ASSUMPTION",
+                    "UNKNOWN"
+                  ]
+                },
+                "source_event_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "target_id",
+            "base_hash",
+            "replacement"
+          ],
+          "properties": {
+            "kind": {
+              "const": "RETRACT_FACT"
+            },
+            "target_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "base_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "replacement": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "source_event_id",
+                "reason"
+              ],
+              "properties": {
+                "source_event_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reason": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "target_id",
+            "base_hash",
+            "replacement"
+          ],
+          "properties": {
+            "kind": {
+              "const": "REBIND_CONCEPT"
+            },
+            "target_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "base_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "replacement": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "concept_ids",
+                "offer_id"
+              ],
+              "properties": {
+                "concept_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "offer_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "target_id",
+            "base_hash",
+            "replacement"
+          ],
+          "properties": {
+            "kind": {
+              "const": "REBIND_SCOPE"
+            },
+            "target_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "base_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "replacement": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "document_ids",
+                "source_category"
+              ],
+              "properties": {
+                "document_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "source_category": {
+                  "enum": [
+                    "internal",
+                    "external",
+                    "KEEP"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "target_id",
+            "base_hash",
+            "replacement"
+          ],
+          "properties": {
+            "kind": {
+              "const": "REPLACE_RELATION"
+            },
+            "target_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "base_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "replacement": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "relation_ids",
+                "offer_id"
+              ],
+              "properties": {
+                "relation_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "offer_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "target_id",
+            "base_hash",
+            "replacement"
+          ],
+          "properties": {
+            "kind": {
+              "const": "RESELECT_SOURCE"
+            },
+            "target_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "base_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "replacement": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "source_ids",
+                "offer_id"
+              ],
+              "properties": {
+                "source_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 0
+                },
+                "offer_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "target_id",
+            "base_hash",
+            "replacement"
+          ],
+          "properties": {
+            "kind": {
+              "const": "REENTER_OPERATION"
+            },
+            "target_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "base_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "replacement": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "stage",
+                "operation"
+              ],
+              "properties": {
+                "stage": {
+                  "enum": [
+                    "INTENT",
+                    "PLAN",
+                    "RECALL",
+                    "READ",
+                    "SELECT",
+                    "ASSESS",
+                    "COMPOSE"
+                  ]
+                },
+                "operation": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "target_id",
+            "base_hash",
+            "replacement"
+          ],
+          "properties": {
+            "kind": {
+              "const": "REMAP_EXPERIENCE"
+            },
+            "target_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "base_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "replacement": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "link_id",
+                "experience_id",
+                "experience_revision"
+              ],
+              "properties": {
+                "link_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "experience_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "experience_revision": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "target_id",
+            "base_hash",
+            "replacement"
+          ],
+          "properties": {
+            "kind": {
+              "const": "PRESENT_ONLY"
+            },
+            "target_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "base_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "replacement": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "format",
+                "instruction"
+              ],
+              "properties": {
+                "format": {
+                  "enum": [
+                    "prose",
+                    "table"
+                  ]
+                },
+                "instruction": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "CorrectionPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contract_kind": {
+          "const": "CORRECTION_PLAN"
+        },
+        "case_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branch_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "question_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_state_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "utterance_event_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "minItems": 0
+        },
+        "target_correction_event_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "original_event_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "patches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Patch"
+          },
+          "minItems": 1
+        },
+        "invalidated_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "minItems": 0
+        },
+        "applicability_recheck_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "minItems": 0
+        },
+        "preserved_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "minItems": 0
+        },
+        "unresolved_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "contract_kind",
+        "case_id",
+        "branch_id",
+        "question_id",
+        "base_state_revision",
+        "utterance_event_id",
+        "target_refs",
+        "target_correction_event_ids",
+        "original_event_refs",
+        "patches",
+        "invalidated_refs",
+        "applicability_recheck_refs",
+        "preserved_refs",
+        "unresolved_refs",
+        "reason"
+      ]
+    },
+    "AnswerAnchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contract_kind": {
+          "const": "ANSWER_ANCHOR"
+        },
+        "answer_artifact_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "paragraph_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "judgment_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityRef"
+          },
+          "minItems": 1
+        },
+        "route_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "route_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "answer_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "contract_kind",
+        "answer_artifact_id",
+        "paragraph_id",
+        "judgment_refs",
+        "route_id",
+        "route_revision",
+        "answer_hash"
+      ]
+    }
+  }
+}

@@ -917,3 +917,20 @@ def test_code_isolation_allows_planned_hashes_then_verifies_artifacts(
     assert any(
         "runner sha256 mismatch" in error for error in validate_adr(target)
     )
+
+
+def test_lossless_compressed_retrieval_ledger_keeps_content_and_file_hash_checks(tmp_path):
+    import gzip
+    target=scaffold_adr(tmp_path,182,'compressed-ledger','압축 원장','holdout',['q1'])
+    ledger_path,ledger,_=_measured_stage_fixture(target)
+    compressed=ledger_path.with_suffix('.json.gz')
+    compressed.write_bytes(gzip.compress(ledger_path.read_bytes(),mtime=0))
+    manifest_path=target/'실험/manifest.json';manifest=json.loads(manifest_path.read_text())
+    config=manifest['retrieval_accounting']['stage_ledger'];config.update(artifact_path=str(compressed),sha256=hashlib.sha256(compressed.read_bytes()).hexdigest())
+    manifest_path.write_text(json.dumps(manifest,ensure_ascii=False))
+    assert validate_adr(target)==[]
+    config['sha256']='0'*64;manifest_path.write_text(json.dumps(manifest,ensure_ascii=False))
+    assert any('stage ledger artifact hash mismatch' in e for e in validate_adr(target))
+    compressed.write_bytes(b'not a gzip file');config['sha256']=hashlib.sha256(compressed.read_bytes()).hexdigest()
+    manifest_path.write_text(json.dumps(manifest,ensure_ascii=False))
+    assert any('invalid retrieval stage ledger artifact' in e for e in validate_adr(target))

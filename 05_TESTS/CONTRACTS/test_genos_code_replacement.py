@@ -135,3 +135,55 @@ def test_recover_after_hard_interruption(fixture, monkeypatch):
     backup = next((root / '09_ARTIFACTS/BACKUPS/code-replacement').iterdir())
     rollback(backup)
     original_intact(root, original)
+
+
+def full_archive(bundle, files):
+    path = bundle / 'full.zip'
+    with zipfile.ZipFile(path, 'w') as archive:
+        for name, raw in files.items():
+            archive.writestr(name, raw)
+        archive.writestr('CODE_MANIFEST.json', json.dumps({'format': '8agent-code/1', 'files': [
+            {'path': name, 'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()}
+            for name, raw in files.items()]}))
+    return path
+
+
+def test_full_overlay_repeat_and_rollback_preserve_environment_data_and_js(fixture):
+    root, bundle, original = fixture
+    js = root / '02_BACKEND/viewer.js'; js.write_text('preserved')
+    archive = full_archive(bundle, {'service.py': b'VALUE=1800\n',
+        '02_BACKEND/new.py': b'VALUE=1800\n', '08_DEPLOYMENT/GENOS/workflow/example.py': b'VALUE=2100\n'})
+    backup = installer.install(root, bundle, True, archive=archive)
+    assert (root / 'service.py').read_text() == 'VALUE=1800\n'
+    assert (root / '.env').read_text() == original['.env']
+    assert (root / 'GENOS_DATA/CURRENT.json').read_text() == original['GENOS_DATA/CURRENT.json']
+    assert js.read_text() == 'preserved'
+    assert installer.install(root, bundle, True, archive=archive) == backup
+    installer.rollback(backup)
+    original_intact(root, original)
+    assert not (root / '02_BACKEND/new.py').exists()
+    assert js.read_text() == 'preserved'
+
+
+@pytest.mark.parametrize('name', ['.env', '01_DATA/RAW/private.json', '02_BACKEND/private.js', '../escape.py'])
+def test_full_overlay_rejects_private_data_and_unsafe_paths_before_writing(fixture, name):
+    root, bundle, original = fixture
+    archive = full_archive(bundle, {name: b'VALUE=1\n'})
+    with pytest.raises(ValueError):
+        installer.install(root, bundle, True, archive=archive)
+    original_intact(root, original)
+
+
+def test_full_overlay_failure_recovers_before_any_second_install(fixture, monkeypatch):
+    root, bundle, original = fixture
+    archive = full_archive(bundle, {'service.py': b'VALUE=1800\n', '02_BACKEND/new.py': b'VALUE=1800\n'})
+    move = installer.move
+    def fail(source, destination):
+        if source == root / 'service.py':
+            raise OSError('synthetic full update interruption')
+        move(source, destination)
+    monkeypatch.setattr(installer, 'move', fail)
+    with pytest.raises(OSError):
+        installer.install(root, bundle, True, archive=archive)
+    original_intact(root, original)
+    assert not (root / '02_BACKEND/new.py').exists()

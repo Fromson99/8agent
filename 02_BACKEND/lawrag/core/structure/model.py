@@ -95,6 +95,7 @@ class Block:
     # PDF 는 전부 1로 평면화되고 hwp 는 아예 없다(§00.4.1). 스타일을 안 쓴
     # docx 도 None 이다. 이 값이 있다는 것은 **작성자가 제목이라 선언했다**는 뜻.
     heading_level: Optional[int] = None
+    source_range: Optional[dict] = None  # Exact text slice; original page/element/bbox preserved.
 
     @property
     def proposes(self) -> bool:
@@ -157,6 +158,8 @@ class Block:
              "is_heading": self.is_heading, "element_index": self.element_index}
         if self.heading_level is not None:
             d["heading_level"] = self.heading_level
+        if self.source_range is not None:
+            d["source_range"] = self.source_range
         if self.kind != "text":
             d["kind"] = self.kind
         if self.size_ratio is not None:

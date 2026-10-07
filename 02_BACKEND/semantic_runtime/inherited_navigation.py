@@ -3,18 +3,19 @@ from collections import defaultdict
 from copy import deepcopy
 import threading
 from . import structure_navigation as previous
+from .team_scope import generation_key
 
 _BOUND_CACHE={};_BOUND_LOCK=threading.Lock()
 
 
 def bind_structure(matcher,store):
     bound=previous.bind_structure(matcher,store)
-    key=(store.manifest['generation_id'],store.manifest['store_sha256'])
+    key=generation_key(store)
     with _BOUND_LOCK:
         cached=_BOUND_CACHE.get(key)
-    if cached is None:
-        cached=_derive_bindings(bound.units)
-        with _BOUND_LOCK:
+        if cached is None:
+            cached=_derive_bindings(bound.units)
+            _BOUND_CACHE.clear()
             cached=_BOUND_CACHE.setdefault(key,cached)
     bound.units,bound.stored_coordinates=cached
     return bound

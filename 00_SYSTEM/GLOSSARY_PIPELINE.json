@@ -9,7 +9,7 @@
       "same collection's complete knowledge_terms/everyday_terms catalogue"
     ],
     "matching": "exact label; zero legal candidates excluded, one mapped, multiple held unless one reciprocal relation candidate with unique source anchor",
-    "namespace": "MOLEG knowledge_terms, not corpus-presence LEGAL_TERM classification",
+    "namespace": "MOLEG knowledge_terms (법제처 지식용어), not the corpus-presence CORPUS_TERM (본문용어) classification",
     "relation_policy": "preserve original five source codes; normalized hierarchy parent to child; preserve raw paths; hold incompatible kinds and cycles",
     "output": "explicit new directory: relations.sqlite, graph.json, TSV ledgers, report.json, REPORT.md",
     "consumer": "inspect/verify; explicit selected knowledge bundle -> navigation source hints; no canonical approval",
@@ -270,8 +270,8 @@
       "connect legal terms to law/article coordinates"
     ],
     "classification": {
-      "CORPUS_PRESENT": "LEGAL_TERM",
-      "GENERAL_IN_THIS_CORPUS": "EVERYDAY_TERM"
+      "CORPUS_PRESENT": "CORPUS_TERM (본문용어)",
+      "GENERAL_IN_THIS_CORPUS": "REFERENCE_TERM (참고용어)"
     },
     "classification_basis": "selected corpus headword occurrence; independent of MOLEG/finance/tax provider category; not legal authority or semantic equivalence",
     "term_relations": "preserve original source/target IDs, direction and relation code; endpoints classified by corpus presence; finance label correspondence remains a candidate",
@@ -320,5 +320,37 @@
     "genos_live_verified": false,
     "default_glossary": "current_draft; explicit completed --glossary-dir reuses previous observations",
     "review_state": "TERM_RELEASES/<run>/review; separate from standalone glossary review state"
+  },
+  "abbreviation_review": {
+    "entrypoint": "06_TOOLS/pipeline.py glossary abbreviation prepare|run|status|apply",
+    "module": "lawrag.pipeline.glossary_abbreviation",
+    "stage": "after a navigation generation is built; derives a new generation",
+    "target": "(term, article) links resting on a Latin abbreviation alone (2-8 chars, 2+ capitals); a longer name of the term in the article exempts the link",
+    "deterministic": "abbreviation not a standalone token in the article (L P G, Cu-Ni) -> NO_STANDALONE, dropped",
+    "llm": "GENOS, one job per abbreviation: candidate headwords (names + dictionary/MOLEG/bundle definition) x up to 16 article contexts; model picks candidate IDs (MATCHED), OTHER or UNKNOWN",
+    "outcome": "SAME kept, DIFFERENT dropped, UNKNOWN and NOT_OFFERED kept; source generation unchanged; decisions stored in abbreviation_review",
+    "backend": "genos",
+    "external_fallback": false,
+    "canonical_approval": false,
+    "runtime_promotion": false,
+    "genos_live_verified": false
+  },
+  "public_label_parts": {
+    "module": "lawrag.pipeline.glossary_v1.label_parts",
+    "scope": "public glossary labels (not moleg, not corpus_definition)",
+    "rule": "trailing parenthetical gloss -> head + Hangul/Latin-abbreviation parts (SOURCE_LABEL_PART), English phrase (SOURCE_ENGLISH); infix parenthesis -> head only; 'old→ new' renames -> both names; hanja glosses dropped",
+    "effect": "new assembly generations only; existing drafts unchanged",
+    "approved_synonym": false
+  },
+  "reference_terms": {
+    "consumer": "semantic_runtime.navigation_match.starts -> references; work_navigation.reference_terms; term_agent.reference_note",
+    "rule": "public glossary headword matched in a question with no article in scope and no MOLEG bridge: never an article seed; its source definition is appended to the answer as a labelled note (not evidence)",
+    "sources": [
+      "econedu",
+      "nts",
+      "bok",
+      "kofia",
+      "krx"
+    ]
   }
 }

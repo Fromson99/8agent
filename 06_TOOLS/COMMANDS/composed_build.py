@@ -26,6 +26,16 @@ def parser():
     p.add_argument('--retry-review-failed', action='store_true')
     p.add_argument('--exclude-internal', action='store_true')
     p.add_argument('--glossary-dir', type=Path, help='Explicit previously reviewed glossary; completion receipt required')
+    p.add_argument('--glossary-corpus-policy', choices=['append', 'replace'], default='append',
+                   help='How the selected glossary document evidence is combined with this run')
+    p.add_argument(
+        '--reference-review-state', type=Path,
+        help=('Explicit completed reference-resolution state to apply to the serving candidate; '
+              'omission keeps the deterministic-only navigation index'))
+    p.add_argument('--reference-model-profile', type=Path,
+                   help='Model profile for automatic reference resolution and approval in the final release build')
+    p.add_argument('--max-reference-cases', type=int, default=10000)
+    p.add_argument('--reference-batch-size', type=int, default=8)
     p.add_argument('--base-generation', action='append', default=[], help='Explicit existing source generation to retain')
     p.add_argument('--exclude-document', action='append', default=[], help='Explicit old document-version ID to omit from the integrated generation')
     mode = p.add_mutually_exclusive_group()
@@ -40,12 +50,17 @@ def run(argv=None, *, call=None):
         parser().error('--run-id must be 1..80 letters, numbers, dots, underscores or hyphens')
     if not 1 <= args.max_review_jobs <= 1000:
         parser().error('--max-review-jobs must be 1..1000')
+    if args.reference_model_profile and args.reference_review_state:
+        parser().error('select --reference-model-profile or --reference-review-state')
+    if not 1 <= args.max_reference_cases <= 10000 or not 1 <= args.reference_batch_size <= 32:
+        parser().error('invalid reference case or batch limit')
     # The old ZIP route cannot consume a v3 glossary. Keep it under an
     # explicitly named compatibility command instead of silently mixing them.
     owned = {'--knowledge-zip', '--publish', '--stage', '--glossary-dir',
+             '--reference-review-state', '--reference-model-profile', '--max-reference-cases', '--reference-batch-size',
              '--run-id', '--execute', '--check-only', '--max-review-jobs',
              '--retry-review-failed', '--input-root', '--external-root',
-             '--build-dir', '--data-root', '--source', '--resume'}
+             '--build-dir', '--data-root', '--source', '--resume', '--glossary-corpus-policy'}
     if any(token.split('=', 1)[0] in owned for token in rest):
         parser().error('ZIP/--publish are retired; use document-release activate after build-all')
     def invoke(command):
@@ -90,6 +105,16 @@ def run(argv=None, *, call=None):
 
     release = ['document-release', 'build', '--run-id', args.run_id, '--glossary-dir', str(selected),
                '--max-review-jobs', str(args.max_review_jobs)]
+    if args.glossary_corpus_policy != 'append':
+        release += ['--glossary-corpus-policy', args.glossary_corpus_policy]
+    if args.reference_review_state:
+        release += ['--reference-review-state', str(args.reference_review_state.resolve())]
+    if args.reference_model_profile:
+        release += ['--reference-model-profile', str(args.reference_model_profile.resolve())]
+    if args.max_reference_cases != 10000:
+        release += ['--max-reference-cases', str(args.max_reference_cases)]
+    if args.reference_batch_size != 8:
+        release += ['--reference-batch-size', str(args.reference_batch_size)]
     for base in args.base_generation:
         release += ['--base-generation', base]
     for did in args.exclude_document:

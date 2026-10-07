@@ -178,7 +178,6 @@ def test_chunk_source_forces_all_page_review_even_when_adaptive(tmp_path,monkeyp
 
 def test_discovered_model_change_invalidates_recipe_tag(tmp_path,monkeypatch):
     pdf,blocks=document(tmp_path,count=2);seen=provider(monkeypatch)
-    monkeypatch.delenv('GENOS_QWEN_MODEL',raising=False)
     monkeypatch.delenv('GENOS_LLM_MODEL',raising=False)
     selected=['profile-model-a'];discoveries=[]
     from lawrag.core import llm
@@ -256,6 +255,6 @@ def test_pending_review_resumes_without_recreating_templates_or_approved_windows
     assert meta['coverage']['visually_reviewed_pages']==list(range(1,9))
     # A different resolved model never reuses approvals or generated templates.
     (tmp_path/'structure-recipes.json').unlink()
-    monkeypatch.setenv('GENOS_QWEN_MODEL','other-model');before=len(seen)
+    monkeypatch.setenv('GENOS_LLM_MODEL','other-model');before=len(seen)
     runtime.revise_pdf(pipeline,blocks,pdf,**kw)
     assert any('outline' in row for row in seen[before:])

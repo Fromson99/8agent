@@ -99,50 +99,46 @@ def endpoint(
     )
 
 
-def _profile() -> str:
-    value = os.environ.get("GENOS_LLM_PROFILE", "qwen").strip().upper()
-    if value and not re.fullmatch(r"[A-Z0-9_]+", value):
-        raise ValueError("invalid GENOS LLM profile")
-    return value
-
-
-def from_env(kind: str) -> tuple[Endpoint, str]:
+def from_env(kind: str, *, environ=None) -> tuple[Endpoint, str]:
     """Resolve the LLM or embedding endpoint and configured model from env."""
 
     if kind not in {"llm", "embed"}:
         raise ValueError("kind must be llm or embed")
+    settings = os.environ if environ is None else environ
     prefix = "GENOS_LLM" if kind == "llm" else "GENOS_EMBED"
-    profile = _profile() if kind == "llm" else ""
 
     def value(suffix: str) -> str:
-        profiled = os.environ.get(f"GENOS_{profile}_{suffix}", "") if profile else ""
-        return (profiled or os.environ.get(f"{prefix}_{suffix}", "")).strip()
+        return (settings.get(f"{prefix}_{suffix}") or "").strip()
 
-    direct = os.environ.get(f"{prefix}_URL", "").strip()
+    direct = (settings.get(f"{prefix}_URL") or "").strip()
     serving_id = value("SERVING_ID")
-    base = direct or os.environ.get("GENOS_BASE_URL", "").strip()
+    base = direct or (settings.get("GENOS_BASE_URL") or "").strip()
     if not base:
         raise ValueError(f"{prefix} endpoint is not configured")
     if not direct and not serving_id:
         raise ValueError(f"{prefix} serving ID is not configured")
+    connect_timeout = float(settings.get(f'{prefix}_CONNECT_TIMEOUT') or ('60' if kind == 'llm' else '5'))
+    if not math.isfinite(connect_timeout) or connect_timeout <= 0:
+        raise ValueError(f'{prefix}_CONNECT_TIMEOUT must be positive and finite')
     target = endpoint(
         base,
         serving_id="" if direct else serving_id,
         token=value("KEY"),
         user_id=(
-            os.environ.get("GENOS_USER_ID", "").strip()
+            (settings.get("GENOS_USER_ID") or "").strip()
             if kind == "llm"
-            else os.environ.get("GENOS_EMBED_TENANT_ID", "").strip()
+            else (settings.get("GENOS_EMBED_TENANT_ID") or "").strip()
         ),
         label=f"GENOS {kind}",
-        read_timeout=float(os.environ.get(f"{prefix}_TIMEOUT", "120")),
-        max_retries=int(os.environ.get(f"{prefix}_MAX_RETRIES", "3")),
+        connect_timeout=connect_timeout,
+        read_timeout=float(settings.get(f"{prefix}_TIMEOUT", "120")),
+        max_retries=int(settings.get(f"{prefix}_MAX_RETRIES", "3")),
         # Integration branch gateways expose /models and /chat/completions
         # directly. Legacy *_API_PREFIX applies only to direct model servers.
         api_prefix=(
-            os.environ.get("GENOS_GATEWAY_API_PREFIX", "none")
+            settings.get("GENOS_GATEWAY_API_PREFIX", "none")
             if not direct or "/api/gateway/rep/serving/" in urlsplit(base).path
-            else os.environ.get(f"{prefix}_API_PREFIX", "/v1")
+            else settings.get(f"{prefix}_API_PREFIX", "/v1")
         ),
     )
     return target, value("MODEL")
@@ -315,7 +311,8 @@ def check(
             result["inference"] = "NOT_RUN"
         result["status"] = "PASS"
     except Exception as exc:
-        result.update(status="FAIL", error=type(exc).__name__)
+        from .genos_backend import error_detail
+        result.update(status="FAIL", error=type(exc).__name__, error_detail=error_detail(exc))
     result["seconds"] = round(time.monotonic() - started, 3)
     return result
 
@@ -381,7 +378,8 @@ def check_vdb(vector: list[float]) -> dict[str, Any]:
             dimensions=len(vector),
         )
     except Exception as exc:
-        result.update(status="FAIL", error=type(exc).__name__)
+        from .genos_backend import error_detail
+        result.update(status="FAIL", error=type(exc).__name__, error_detail=error_detail(exc))
     result["seconds"] = round(time.monotonic() - started, 3)
     return result
 

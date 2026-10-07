@@ -14,6 +14,7 @@ from semantic_runtime.contracts import sha
 from semantic_runtime.document_roles import role_of_row
 
 VERSION = 'team-raw-v1'
+FINANCIAL_PHOTO61_SCOPE_SHA256 = 'aba1df17dbd2648203cf3ceb9719b784f398822bdaf7a163f566765b7cd3025f'
 RISK_NAMES = '''금융투자업규정
 금융투자업규정시행세칙
 자본시장과 금융투자업에 관한 법률
@@ -100,9 +101,22 @@ def migrate(data, *, apply=False):
         for rel, item in existing['files'].items():
             if sha(plain_path(data / rel)) != item['sha256']:
                 raise ValueError('migrated file changed: ' + rel)
+        if existing.get('financial_shared_document_names'):
+            from . import union_file
+            union_file.publish(data, existing, set(existing['financial_shared_document_names']),
+                               existing['scope']['sha256'])
         return {'status': 'REUSED', 'files': len(existing['files'])}
     scope_path = document_scope.configured(data)
     scope = json.loads(scope_path.read_text()) if scope_path else {'documents': []}
+    # The original 61-document financial collection overlaps the later risk
+    # collection. Bind this sharing decision to that exact immutable scope.
+    financial_shared = set()
+    if scope_path and sha(scope_path) == FINANCIAL_PHOTO61_SCOPE_SHA256:
+        photo61 = scope['documents'][:61]
+        if (len(photo61) != 61 or photo61[0]['name'] != '상법'
+                or photo61[-1]['name'] != '상장회사 표준정관(2025)'):
+            raise ValueError('photo 61 boundary changed')
+        financial_shared = {doc['name'] for doc in photo61}
     for receipt in scope.get('provenance', []):
         if sha(document_scope.local_path(data, receipt['path'])) != receipt['sha256']:
             raise ValueError('scope provenance changed')
@@ -147,25 +161,27 @@ def migrate(data, *, apply=False):
             if sha(origin) != item['sha256']:
                 raise ValueError('scope source changed: ' + item['path'])
             source = item['source']
-            team = 'risk_team' if source == 'internal' or doc['name'].replace(' ', '') in risk else 'financial_team'
+            primary_team = 'risk_team' if source == 'internal' or doc['name'].replace(' ', '') in risk else 'financial_team'
             # Preserve original basename and document grouping, including attachments.
             parts = origin.parts
             matching = [i for i, part in enumerate(parts[:-1]) if part == doc['name']]
             tail = parts[matching[-1] + 1:] if matching else (origin.name,)
-            rel = '/'.join(('RAW', source, team, segment(item['external_source']), segment(doc['name']), *tail))
-            add(origin, rel, {**item, 'name': doc['name'] if item['role'] == 'body' else item.get('title', origin.stem),
-                'team': team, 'scope_document': doc['name'], 'source_metadata': doc.get('source_metadata', {})})
-            if source == 'external' and item.get('security_class') == 'public' and origin.suffix.lower() in {'.hwp', '.hwpx'}:
-                fingerprint = hwpx_origins.get(item['sha256'], item['sha256'])
-                receipt = data / 'DERIVED/hancom-pdf-20260917' / fingerprint / 'receipt.json'
-                pdf = receipt.with_name('source.pdf')
-                if receipt.exists():
-                    rendered = json.loads(plain_path(receipt).read_text())
-                    if rendered['original_sha256'] != fingerprint or sha(pdf) != rendered['pdf_sha256']:
-                        raise ValueError('official PDF receipt mismatch')
-                    add(pdf, str(Path(rel).with_suffix('.pdf')), {**rows[rel],
-                        'render_origin': rel, 'conversion_receipt': str(receipt.relative_to(data)),
-                        'conversion_receipt_sha256': sha(receipt)})
+            teams = (primary_team, 'financial_team') if primary_team == 'risk_team' and doc['name'] in financial_shared else (primary_team,)
+            for team in teams:
+                rel = '/'.join(('RAW', source, team, segment(item['external_source']), segment(doc['name']), *tail))
+                add(origin, rel, {**item, 'name': doc['name'] if item['role'] == 'body' else item.get('title', origin.stem),
+                    'team': team, 'scope_document': doc['name'], 'source_metadata': doc.get('source_metadata', {})})
+                if source == 'external' and item.get('security_class') == 'public' and origin.suffix.lower() in {'.hwp', '.hwpx'}:
+                    fingerprint = hwpx_origins.get(item['sha256'], item['sha256'])
+                    receipt = data / 'DERIVED/hancom-pdf-20260917' / fingerprint / 'receipt.json'
+                    pdf = receipt.with_name('source.pdf')
+                    if receipt.exists():
+                        rendered = json.loads(plain_path(receipt).read_text())
+                        if rendered['original_sha256'] != fingerprint or sha(pdf) != rendered['pdf_sha256']:
+                            raise ValueError('official PDF receipt mismatch')
+                        add(pdf, str(Path(rel).with_suffix('.pdf')), {**rows[rel],
+                            'render_origin': rel, 'conversion_receipt': str(receipt.relative_to(data)),
+                            'conversion_receipt_sha256': sha(receipt)})
     if not scope_path:
         from .genos_corpus import SOURCES
         for external_source in SOURCES:
@@ -194,6 +210,7 @@ def migrate(data, *, apply=False):
     result = {'schema_version': VERSION, 'status': 'COMPLETED' if apply else 'PLANNED',
               'scope': {'path': str(scope_path.relative_to(data)), 'sha256': sha(scope_path)} if scope_path else None,
               'files': rows, 'risk_document_names': RISK_NAMES,
+              'financial_shared_document_names': sorted(financial_shared),
               'legacy_policy': 'historical paths retained, excluded from new team builds',
               'security_policy': 'team is metadata only; original security/export restrictions retained'}
     if apply:
@@ -212,6 +229,9 @@ def migrate(data, *, apply=False):
                 (data / 'RAW' / source / team).mkdir(parents=True, exist_ok=True)
         builder.atomic(data / 'LOGS/team-raw-migration/receipt.json', result)
         builder.atomic(data / 'CATALOG/TEAM_LAYOUT.json', result)
+        if financial_shared:
+            from . import union_file
+            union_file.publish(data, result, financial_shared, result['scope']['sha256'])
     return {'status': result['status'], 'files': len(rows), 'scope': result['scope'],
             'counts': {s + '/' + t: sum(r.startswith('RAW/' + s + '/' + t + '/') for r in rows)
                        for s in ('internal', 'external') for t in ('risk_team', 'financial_team')}}
@@ -241,6 +261,8 @@ def collect(data, bindings=None, *, only_internal=False, exclude_internal=False,
             only_internal_pdf=False, limit=None):
     """Pair native/PDF inputs and keep origin/team/category names in source.sqlite."""
     cfg = config(data) or {'files': {}}
+    from . import union_file
+    union = union_file.load(data, cfg)
     rows, ignored, errors, assets = [], [], [], {}
     from .raw_preprocess import catalog
     derived_catalog = catalog(data)
@@ -259,6 +281,13 @@ def collect(data, bindings=None, *, only_internal=False, exclude_internal=False,
         return {}
     for path, source, team in inputs(data, only_internal=only_internal or only_internal_pdf,
                                     exclude_internal=exclude_internal, teams=teams):
+        from .raw_preprocess import SPREADSHEET_SUFFIXES, SPREADSHEET_EXCLUSION
+        derivative = derivatives.get(str(path.relative_to(data)), {})
+        if (path.suffix.lower() in SPREADSHEET_SUFFIXES
+                or Path(derivative.get('origin', '')).suffix.lower() in SPREADSHEET_SUFFIXES):
+            ignored.append({'path': str(path), 'reason': SPREADSHEET_EXCLUSION,
+                            'sha256': sha(path), 'original_preserved': True})
+            continue
         if derivatives.get(str(path.relative_to(data)), {}).get('kind') == 'xml_markdown_projection' or path.suffix.lower() not in builder.EXTENSIONS:
             ignored.append({'path': str(path), 'reason': 'archive_or_auxiliary'})
             continue
@@ -311,6 +340,7 @@ def collect(data, bindings=None, *, only_internal=False, exclude_internal=False,
     rows = list(unique.values())[:limit]
     plan = {'input_root': str(data / 'RAW'), 'files': rows, 'ignored': ignored, 'format_assets': assets,
             'bindings_sha256': sha(bindings) if bindings else None, 'input_contract': VERSION,
+            'union_file_sha256': sha(data / union_file.RELATIVE) if union['entries'] else None,
             'representation_policy': builder.REPRESENTATION_POLICY, 'all_corpus': True}
     report = {'files': rows, 'errors': errors, 'excluded': ignored, 'sources': {}, 'warnings': [],
               'aliases': [], 'manifest_hashes': {}, 'ok': bool(rows) and not errors, 'unique_documents': len(rows)}

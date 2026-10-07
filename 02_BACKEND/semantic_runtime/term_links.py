@@ -1,5 +1,6 @@
 """Verified projection of frozen glossary spans into source navigation IDs."""
 import hashlib
+import time
 import json
 from pathlib import Path
 import re
@@ -29,8 +30,12 @@ def ro(path):
 
 
 class LinkProjector:
-    def __init__(self, db, store, links, glossary, report, knowledge=None):
+    def __init__(self, db, store, links, glossary, report, knowledge=None, *, direct_audit=False):
         self.db, self.store = db, store
+        self.direct_audit = direct_audit
+        if direct_audit:
+            from .navigation_build import AuditSQL
+            self.db = AuditSQL(db)
         self.paths = [Path(links), Path(glossary)]
         self.pins = {str(p): sha(p) for p in self.paths}
         value = json.loads(Path(report).read_text()) if not isinstance(report, dict) else report
@@ -39,7 +44,10 @@ class LinkProjector:
             raise ValueError("linkage SQLite binding mismatch")
         if identity["source_sha256"] not in {store.manifest["store_sha256"], store.manifest.get("source_store_sha256")}:
             raise ValueError("linkage belongs to another source generation")
-        if value["files"]["source.sqlite"] != identity["source_sha256"]:
+        if identity.get("source_mode") == "immutable-input-reference":
+            if "source.sqlite" in value["files"]:
+                raise ValueError("unexpected linked source copy")
+        elif value["files"].get("source.sqlite") != identity["source_sha256"]:
             raise ValueError("linkage source copy binding mismatch")
         if identity["glossary"]["dictionary_sha256"] != self.pins[str(self.paths[1])]:
             raise ValueError("linkage belongs to another glossary")
@@ -72,7 +80,10 @@ class LinkProjector:
             self.lookup = ro(lp)
             self.binding["knowledge_manifest_sha256"] = mh
         self.visited = set()
-        db.executescript("""
+        if direct_audit and db.execute("SELECT 1 FROM sqlite_master WHERE name='term_surface'").fetchone():
+            self.visited = {r[0] for r in db.execute("SELECT item FROM navigation_checkpoint WHERE stage='document'")}
+            return
+        self.db.executescript("""
           CREATE TABLE term_surface(term_id TEXT,key TEXT,text TEXT,kind TEXT,
             PRIMARY KEY(term_id,key,text,kind));
           CREATE INDEX term_surface_key ON term_surface(key);
@@ -178,6 +189,7 @@ class LinkProjector:
     def document(self, did, blocks, block_sources):
         self.visited.add(did)
         values = []
+        block_hashes = {}
         for raw in self.links.execute("SELECT * FROM occurrence WHERE document_id=? ORDER BY block_id,start,end,key", (did,)):
             row = dict(raw); block = blocks.get(str(row["block_id"]))
             sid = block_sources.get(str(row["block_id"]))
@@ -185,7 +197,11 @@ class LinkProjector:
             if not block or not sid:
                 reason = "SOURCE_BLOCK_MISSING"
             else:
-                text = block["text"]; block_hash = hashlib.sha256(text.encode()).hexdigest()
+                text = block["text"]
+                bid = str(row["block_id"])
+                if bid not in block_hashes:
+                    block_hashes[bid] = hashlib.sha256(text.encode()).hexdigest()
+                block_hash = block_hashes[bid]
                 artifact_hash = block["source_artifact_sha256"]
                 if row["unit_id"] != block["unit_id"]:
                     reason = "SOURCE_UNIT_MISMATCH"
@@ -197,38 +213,58 @@ class LinkProjector:
                         reason = "SPAN_SURFACE_MISMATCH"
             values.append((digest(row), row["key"], did, str(row["block_id"]), row["unit_id"], row["start"], row["end"],
                 sid, block_hash, artifact_hash, matched, "ACCEPTED" if reason == "VERIFIED_EXACT_SOURCE_SPAN" else "HELD", reason))
+            if len(values) >= 2048:
+                self.db.executemany("INSERT INTO link_occurrence VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", values)
+                values.clear()
         self.db.executemany("INSERT INTO link_occurrence VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", values)
 
     def finish(self):
+        sequence = 0
+        def execute(sql, *args):
+            nonlocal sequence
+            sequence += 1
+            started, cpu = time.monotonic(), time.thread_time()
+            result = self.db.execute(sql, *args)
+            print(f'NAVIGATION glossary-evidence.sql-{sequence} elapsed={time.monotonic()-started:.3f}s '
+                  f'thread_cpu={time.thread_time()-cpu:.3f}s', flush=True)
+            return result
         for did, in self.links.execute("SELECT DISTINCT document_id FROM occurrence"):
             if did not in self.visited:
                 self.document(did, {}, {})
-        self.db.execute("UPDATE link_catalogue SET status='HELD',reason='NO_VERIFIED_OCCURRENCE' WHERE status='VALID' "
+        if self.direct_audit:
+            execute("CREATE INDEX link_occurrence_accepted ON link_occurrence(key,document_id) WHERE status='ACCEPTED'")
+        execute("UPDATE link_catalogue SET status='HELD',reason='NO_VERIFIED_OCCURRENCE' WHERE status='VALID' "
             "AND NOT EXISTS(SELECT 1 FROM link_occurrence o WHERE o.key=link_catalogue.key AND o.status='ACCEPTED')")
-        self.db.execute("UPDATE link_catalogue SET status='HELD',reason='DEFINITION_DOCUMENT_SCOPE' WHERE status='VALID' "
+        execute("UPDATE link_catalogue SET status='HELD',reason='DEFINITION_DOCUMENT_SCOPE' WHERE status='VALID' "
             "AND json_extract(json,'$.scope_document_id') IS NOT NULL AND NOT EXISTS(SELECT 1 FROM link_occurrence o "
             "WHERE o.key=link_catalogue.key AND o.status='ACCEPTED' AND o.document_id=json_extract(link_catalogue.json,'$.scope_document_id'))")
-        self.db.execute("UPDATE link_catalogue SET status='ACCEPTED' WHERE status='VALID'")
-        self.db.execute("INSERT INTO occurrence_evidence SELECT o.id,c.id,c.term_id,o.source_id,"
-            "CASE WHEN o.status='ACCEPTED' AND c.status='ACCEPTED' AND (json_extract(c.json,'$.scope_document_id') IS NULL OR "
-            "json_extract(c.json,'$.scope_document_id')=o.document_id) THEN 'ACCEPTED' ELSE 'HELD' END,"
+        execute("UPDATE link_catalogue SET status='ACCEPTED' WHERE status='VALID'")
+        execute("CREATE TEMP TABLE scoped_link_catalogue AS SELECT id,key,term_id,status,reason,"
+                        "json_extract(json,'$.scope_document_id') AS scope_document_id FROM link_catalogue")
+        execute("CREATE INDEX temp.scoped_link_catalogue_key ON scoped_link_catalogue(key)")
+        execute("INSERT INTO occurrence_evidence SELECT o.id,c.id,c.term_id,o.source_id,"
+            "CASE WHEN o.status='ACCEPTED' AND c.status='ACCEPTED' AND (c.scope_document_id IS NULL OR "
+            "c.scope_document_id=o.document_id) THEN 'ACCEPTED' ELSE 'HELD' END,"
             "CASE WHEN o.status!='ACCEPTED' THEN o.reason WHEN c.status!='ACCEPTED' THEN c.reason "
-            "WHEN json_extract(c.json,'$.scope_document_id')!=o.document_id THEN 'DEFINITION_DOCUMENT_SCOPE' "
-            "ELSE 'VERIFIED_SOURCE_LABEL_CANDIDATE' END FROM link_occurrence o JOIN link_catalogue c ON c.key=o.key")
-        self.db.execute("CREATE INDEX evidence_accepted_catalogue ON occurrence_evidence(catalogue_id) WHERE status='ACCEPTED'")
-        self.db.execute("UPDATE link_occurrence SET status='HELD',reason='NO_ACCEPTED_CATALOGUE_CANDIDATE' "
+            "WHEN c.scope_document_id!=o.document_id THEN 'DEFINITION_DOCUMENT_SCOPE' "
+            "ELSE 'VERIFIED_SOURCE_LABEL_CANDIDATE' END FROM link_occurrence o JOIN scoped_link_catalogue c ON c.key=o.key")
+        execute("DROP TABLE temp.scoped_link_catalogue")
+        execute("CREATE INDEX evidence_accepted_catalogue ON occurrence_evidence(catalogue_id) WHERE status='ACCEPTED'")
+        execute("UPDATE link_occurrence SET status='HELD',reason='NO_ACCEPTED_CATALOGUE_CANDIDATE' "
             "WHERE status='ACCEPTED' AND NOT EXISTS(SELECT 1 FROM occurrence_evidence e WHERE e.occurrence_id=link_occurrence.id AND e.status='ACCEPTED')")
-        self.db.execute("INSERT OR IGNORE INTO occurrence_origin SELECT term_id,source_id,'LEGACY_LABEL_MATCH' FROM occurrence")
-        self.db.execute("INSERT OR IGNORE INTO occurrence_origin SELECT term_id,source_id,'VERIFIED_GLOSSARY_LINK' "
+        execute("INSERT OR IGNORE INTO occurrence_origin SELECT term_id,source_id,'LEGACY_LABEL_MATCH' FROM occurrence")
+        execute("INSERT OR IGNORE INTO occurrence_origin SELECT term_id,source_id,'VERIFIED_GLOSSARY_LINK' "
                         "FROM occurrence_evidence WHERE status='ACCEPTED'")
-        added = self.db.execute("INSERT OR IGNORE INTO occurrence SELECT term_id,source_id FROM occurrence_evidence WHERE status='ACCEPTED'").rowcount
+        before_pairs = self.db.execute('SELECT count(*) FROM occurrence').fetchone()[0] if self.direct_audit else 0
+        added = execute("INSERT OR IGNORE INTO occurrence SELECT term_id,source_id FROM occurrence_evidence WHERE status='ACCEPTED'").rowcount
+        if self.direct_audit:added = self.db.execute('SELECT count(*) FROM occurrence').fetchone()[0]-before_pairs
         counts = {}
         for table in ("link_occurrence", "link_catalogue", "occurrence_evidence"):
-            counts[table] = dict(self.db.execute("SELECT status,count(*) FROM " + table + " GROUP BY status"))
-        counts["candidate_kinds"] = {kind: n for kind, n in self.db.execute("SELECT kind,count(*) FROM link_catalogue GROUP BY kind")}
+            counts[table] = dict(execute("SELECT status,count(*) FROM " + table + " GROUP BY status"))
+        counts["candidate_kinds"] = {kind: n for kind, n in execute("SELECT kind,count(*) FROM link_catalogue GROUP BY kind")}
         counts["input_occurrences"] = self.links.execute("SELECT count(*) FROM occurrence").fetchone()[0]
         counts["added_term_source_pairs"] = added
-        if self.db.execute("SELECT 1 FROM link_catalogue c WHERE c.status='ACCEPTED' AND NOT EXISTS "
+        if execute("SELECT 1 FROM link_catalogue c WHERE c.status='ACCEPTED' AND NOT EXISTS "
                 "(SELECT 1 FROM occurrence_evidence e WHERE e.catalogue_id=c.id AND e.status='ACCEPTED') LIMIT 1").fetchone():
             raise ValueError("accepted catalogue candidate has no accepted evidence")
         if sum(counts["link_occurrence"].values()) != counts["input_occurrences"]:

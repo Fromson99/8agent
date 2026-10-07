@@ -1,6 +1,6 @@
 """Tier 2+3 빌드 — 통계 깔때기 전체를 한 번에 (ontology_kg §3.2 [C][D], §4.9).
 
-    후보(Kiwi) → 지표 4종+Borda → [임베딩 군집] → [LLM 판정] → 게이트 → 등재
+    후보(PeCab) → 지표 4종+Borda → [임베딩 군집] → [LLM 판정] → 게이트 → 등재
     부산물: 공기 증거(§5.8b)·PROTO_REL 집계·계층 후보(⑥)·커버리지 공백 지도
 
 무거운 단은 전부 끌 수 있다: --no-embed(정규형만으로 군집), --no-llm(무판정
@@ -27,7 +27,7 @@ DEFAULT_TOP = 400
 
 
 def _user_words(terms_file) -> list[str]:
-    """수기·tier1 용어를 Kiwi 사용자 사전에 — 분석기가 도메인 용어를 쪼개는
+    """수기·tier1 용어를 PeCab 사용자 사전에 — 분석기가 도메인 용어를 쪼개는
     것을 막는다 (§4.8). tombstone 은 거부된 것이라 주입하지 않는다."""
     words = []
     for t in _load_terms(terms_file).values():

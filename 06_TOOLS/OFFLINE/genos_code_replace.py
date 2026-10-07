@@ -19,6 +19,8 @@ import zipfile
 
 TREES = {'00_SYSTEM', '02_BACKEND', '06_TOOLS'}
 PRESERVED = {'01_DATA', '.git', '.venv', 'GENOS_DATA', 'TRANSFER', '90_RUNTIME', '99_ARCHIVE'}
+FROZEN_CODE_PREFIXES = ('02_BACKEND/GENERATIONS/', '06_TOOLS/GENERATIONS/',
+                        '02_BACKEND/lawrag/research/candidates/')
 
 
 def sha(raw):
@@ -101,6 +103,53 @@ def payload(bundle):
     return result, units, manifest
 
 
+def full_payload(archive):
+    """Overlay an inventoried full code ZIP; data and old code snapshots stay separate."""
+    archive = plain(archive)
+    result = {}
+    syntax_checked = frozen_preserved = 0
+    with zipfile.ZipFile(archive) as z:
+        names = z.namelist()
+        if len(names) != len(set(names)) or 'CODE_MANIFEST.json' not in names:
+            raise ValueError('Duplicate archive paths or missing CODE_MANIFEST.json')
+        code = json.loads(z.read('CODE_MANIFEST.json'))
+        if code.get('format') != '8agent-code/1':
+            raise ValueError('Unsupported full code archive')
+        expected = {r['path']: r for r in code['files']}
+        if len(expected) != len(code['files']) or set(names) != set(expected) | {'CODE_MANIFEST.json'}:
+            raise ValueError('Unlisted archive members')
+        for name in names:
+            p = PurePosixPath(name)
+            if p.is_absolute() or '..' in p.parts or '\\' in name or str(p) != name:
+                raise ValueError('Unsafe archive path')
+            data_declaration = (name == '01_DATA/README.md' or
+                                name.startswith(('01_DATA/CONTRACTS/', '01_DATA/SOURCE_SETS/')))
+            if ((p.parts[0] in PRESERVED and not data_declaration) or
+                    (p.name.startswith('.env') and not p.name.endswith('.example')) or
+                    p.suffix.lower() in {'.js', '.jsx', '.mjs', '.cjs', '.key', '.pem', '.p12', '.pfx',
+                                         '.sqlite', '.sqlite3', '.db', '.log'}):
+                raise ValueError('Data, credentials or excluded attachment in code archive: ' + name)
+            info = z.getinfo(name)
+            if stat.S_ISLNK(info.external_attr >> 16):
+                raise ValueError('Archive symlink')
+            raw = z.read(name)
+            if name in expected and (len(raw) != expected[name]['bytes'] or sha(raw) != expected[name]['sha256']):
+                raise ValueError('Payload hash mismatch: ' + name)
+            if name.endswith('.py'):
+                if name.startswith(FROZEN_CODE_PREFIXES):
+                    frozen_preserved += 1
+                else:
+                    compile(raw, name, 'exec', dont_inherit=True)
+                    ast.parse(raw, filename=name, feature_version=(3, 11))
+                    syntax_checked += 1
+            result[name] = (raw, ((info.external_attr >> 16) & 0o777) or 0o644)
+    print(f'FULL_CODE_SYNTAX current={syntax_checked} frozen_preserved={frozen_preserved}', flush=True)
+    digest = sha(archive.read_bytes())
+    return result, sorted(result), {'id': 'full-code-' + digest[:20], 'code_zip_sha256': digest,
+                                   'syntax_current_checked': syntax_checked,
+                                   'frozen_code_preserved_not_certified': frozen_preserved}
+
+
 def move(source, destination):
     destination.parent.mkdir(parents=True, exist_ok=True)
     source.rename(destination)
@@ -143,11 +192,16 @@ def rollback(folder):
     print('ROLLBACK OK: original code restored; data/environment unchanged')
 
 
-def install(root, bundle, apply=False):
+def install(root, bundle, apply=False, archive=None):
     root, bundle = plain(root), plain(bundle)
     if not (root / 'service.py').is_file() or not (root / '02_BACKEND').is_dir():
         raise ValueError('Run from the existing physical DEV project root')
-    content, units, delivery = payload(bundle)
+    content, units, delivery = full_payload(archive) if archive is not None else payload(bundle)
+    if archive is not None:
+        for name, (raw, _) in content.items():
+            target = plain(root / name)
+            if name.startswith(FROZEN_CODE_PREFIXES) and target.exists() and sha(target.read_bytes()) != sha(raw):
+                raise ValueError('Immutable code snapshot differs; preserve and inspect: ' + name)
     base = plain(root / '09_ARTIFACTS/BACKUPS/code-replacement')
     # Unfinished transactions require recovery, never a second blind installation.
     for p in sorted(base.glob('*/receipt.json')) if base.exists() else []:
@@ -173,6 +227,10 @@ def install(root, bundle, apply=False):
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_bytes(raw); p.chmod(mode)
     record = {'delivery': delivery['id'], 'root': str(root), 'status': 'PREPARED',
+              'code_zip_sha256': delivery.get('code_zip_sha256'),
+              'generation': None, 'generation_manifest_sha256': None,
+              'deployment_commit': None, 'code_serving_revision': None,
+              'onsite_workflow_verified': False,
               'units': {n: {'before': before[n], 'after': snapshot(folder / 'new' / n)} for n in units}}
     receipt = folder / 'receipt.json'
     save(receipt, record)
@@ -201,6 +259,7 @@ def install(root, bundle, apply=False):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--root', type=Path, default=Path.cwd())
+    p.add_argument('--archive', type=Path, help='Full code_ship.py ZIP; back up and overlay its inventoried files')
     mode = p.add_mutually_exclusive_group()
     mode.add_argument('--apply', action='store_true')
     mode.add_argument('--rollback', type=Path)
@@ -218,7 +277,7 @@ def main():
                     raise ValueError('Backup belongs to a different project root')
                 rollback(args.rollback)
             else:
-                install(root, Path(__file__).resolve().parent, args.apply)
+                install(root, Path(__file__).resolve().parent, args.apply, archive=args.archive)
     except Exception as exc:
         p.exit(2, 'STOP: ' + str(exc) + '\n')
 

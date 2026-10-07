@@ -93,24 +93,12 @@ def anthropic_client(*, timeout: float, max_retries: int = 2):
     )
 
 
-def _genos_profile() -> str:
-    """선택한 GenOS 프로필의 환경변수 접두사(qwen/gemma 등).
-
-    프로필을 비우면 기존 GENOS_LLM_* 계약만 사용한다. 환경변수 이름으로
-    안전하게 쓸 수 없는 값은 무시한다.
-    """
-    profile = (os.environ.get("GENOS_LLM_PROFILE") or "").strip().upper()
-    return profile if profile.replace("_", "").isalnum() else ""
-
-
 def _genos_llm_url() -> str:
     """직접 URL 또는 GenOS 기본 주소 + 서빙 ID로 완성한 LLM endpoint."""
     direct = (os.environ.get("GENOS_LLM_URL") or "").strip()
     if direct:
         return direct.rstrip("/")
-    profile = _genos_profile()
-    serving_id = ((os.environ.get(f"GENOS_{profile}_SERVING_ID") if profile else "")
-                  or os.environ.get("GENOS_LLM_SERVING_ID", "")).strip()
+    serving_id = os.environ.get("GENOS_LLM_SERVING_ID", "").strip()
     base = (os.environ.get("GENOS_BASE_URL") or "").strip().rstrip("/")
     if not base or not serving_id or not serving_id.isdigit():
         return ""
@@ -118,15 +106,11 @@ def _genos_llm_url() -> str:
 
 
 def _genos_llm_key() -> str:
-    profile = _genos_profile()
-    return ((os.environ.get(f"GENOS_{profile}_KEY") if profile else "")
-            or os.environ.get("GENOS_LLM_KEY", "")).strip()
+    return os.environ.get("GENOS_LLM_KEY", "").strip()
 
 
 def _genos_llm_model() -> str:
-    profile = _genos_profile()
-    return ((os.environ.get(f"GENOS_{profile}_MODEL") if profile else "")
-            or os.environ.get("GENOS_LLM_MODEL", "")).strip()
+    return os.environ.get("GENOS_LLM_MODEL", "").strip()
 
 
 def backend() -> str:
@@ -509,6 +493,12 @@ class LLM:
 
         받는 형식은 `data:image/png;base64,...` (뷰어가 이미 그 형태로 페이지를 렌더한다).
         """
+        # GENOS product calls share one output budget, including callers that
+        # still pass a smaller historical per-task value.
+        # Structure recipe records its own budget in a durable journal, so it
+        # supplies the same 80k value through its dedicated configuration.
+        if self.backend == "genos" and not kind.startswith("structure_recipe_"):
+            max_tokens = 80000
         use = model or self.model      # 호출마다 다른 모델을 쓸 수 있다 —
                                        # 가르기만 하는 판정은 싼 모델로 충분하다
         if _sealed():

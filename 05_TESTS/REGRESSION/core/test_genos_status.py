@@ -24,13 +24,12 @@ def test_phase_states_success_is_not_entire_pipeline(tmp_path):
     ledger.update('abc', 'structure', 'PASSED', mode='NEW', elapsed_seconds=164.25,
                   output_path='/workspace/01_DATA/STRUCTURE/key', route_record='ACTUAL')
     ledger.update('def', 'structure', 'FAILED', error='빈 구조')
-    ledger.update('def', 'llm', 'BLOCKED', error='구조화 실패')
-    ledger.update('def', 'vector', 'BLOCKED', error='구조화 실패')
+    ledger.update('def', 'index', 'BLOCKED', error='구조화 실패')
     report = read_report(tmp_path)
     assert report['counts']['structure']['PASSED'] == 1
     assert report['counts']['structure']['FAILED'] == 1
-    assert report['counts']['llm']['PASSED'] == 0
-    assert report['counts']['llm']['PENDING'] == 1
+    assert report['counts']['index']['PASSED'] == 0
+    assert report['counts']['index']['PENDING'] == 1
     assert report['documents'][0]['phases']['structure']['elapsed_seconds'] == 164.25
     assert report['documents'][0]['route_record'] == 'ACTUAL'
     assert report['documents'][1]['route'] == 'registered:hwp-form'
@@ -52,7 +51,7 @@ def test_resume_attempt_preserved_reused_explicit(tmp_path):
     current = read_report(tmp_path)
     assert current['counts']['structure']['PENDING'] == 2
     assert current['counts']['structure']['PASSED'] == 0
-    assert current['counts']['llm']['NOT_REQUESTED'] == 2
+    assert current['counts']['index']['NOT_REQUESTED'] == 2
     old = ledger.db.execute('SELECT status FROM attempts WHERE id=?', (first,)).fetchone()
     assert old[0] == 'INTERRUPTED'
     old_doc = json.loads(ledger.db.execute('SELECT data FROM documents WHERE attempt=? AND id=?', (first, 'def')).fetchone()[0])
@@ -73,7 +72,7 @@ def test_interrupt_never_turns_pending_success(tmp_path):
     assert report['attempt']['status'] == 'INTERRUPTED'
     assert report['counts']['structure']['INTERRUPTED'] == 1
     assert report['counts']['structure']['PENDING'] == 1
-    assert report['counts']['llm']['PENDING'] == 2
+    assert report['counts']['index']['PENDING'] == 2
     with pytest.raises(ValueError, match='finished attempt'):
         ledger.update('abc', 'structure', 'PASSED')
     ledger.finish('FAILED')  # Idempotent cleanup cannot rewrite earlier interruption.

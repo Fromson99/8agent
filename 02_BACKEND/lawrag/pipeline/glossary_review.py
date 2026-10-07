@@ -80,8 +80,59 @@ def locked(state, name='.lock'):
         yield
 
 
+
+def _summary_counters(db):
+    """One migration scan; subsequent summaries read small transactional counters.
+
+    Both historical decision paths are counted, so changing the selected review
+    version never reinterprets old results. Triggers share the job transaction
+    (including rollback/retry); job IDs and raw JSON stay authoritative.
+    """
+    if db.execute("SELECT value FROM meta WHERE key='summary_counter_version'").fetchone():
+        return
+    setup = ["BEGIN IMMEDIATE;", "CREATE TABLE review_summary_counter(bucket TEXT,key TEXT,n INTEGER NOT NULL,PRIMARY KEY(bucket,key));"]
+    dimensions = [
+        ('jobs', 'json_quote({row}.status)', None),
+        ('job_types', "json_quote(json_extract({row}.input_json,'$.task_type'))", None),
+        ('decisions_v2', "json_quote(json_extract({row}.result_json,'$.decision'))", "{row}.status='complete'"),
+        ('decisions_v3', "json_quote(json_extract({row}.result_json,'$.identity.decision'))", "{row}.status='complete'"),
+    ]
+    for bucket, expression, condition in dimensions:
+        where = ' WHERE ' + condition.format(row='job') if condition else ''
+        setup.append(f"INSERT INTO review_summary_counter SELECT '{bucket}',{expression.format(row='job')},count(*) FROM job{where} GROUP BY 2;")
+    def changes(row, delta):
+        statements = []
+        for bucket, expression, condition in dimensions:
+            where = ' WHERE ' + condition.format(row=row) if condition else ' WHERE 1'
+            statements.append(f"INSERT INTO review_summary_counter SELECT '{bucket}',{expression.format(row=row)},{delta}{where} "
+                "ON CONFLICT(bucket,key) DO UPDATE SET n=n+excluded.n;")
+        return ''.join(statements)
+    # Install counters/triggers/version in one transaction, including the backfill.
+    setup.append(
+        'CREATE TRIGGER review_summary_insert AFTER INSERT ON job BEGIN '+changes('NEW',1)+'END;'
+        'CREATE TRIGGER review_summary_delete AFTER DELETE ON job BEGIN '+changes('OLD',-1)+'END;'
+        'CREATE TRIGGER review_summary_update AFTER UPDATE OF id,input_json,status,result_json ON job BEGIN '
+        +changes('OLD',-1)+changes('NEW',1)+'END;')
+    setup.extend(["INSERT INTO meta VALUES ('summary_counter_version','1');", "COMMIT;"])
+    try:
+        db.executescript(''.join(setup))
+    except BaseException:
+        db.rollback()
+        raise
+
+
+def _counter_groups(db, bucket):
+    def decode(raw):
+        value = json.loads(raw)
+        # SQLite json_extract returns JSON containers as compact text.
+        return json.dumps(value,ensure_ascii=False,separators=(',',':')) if isinstance(value,(dict,list)) else value
+    return {decode(key): n for key,n in db.execute(
+        "SELECT key,n FROM review_summary_counter WHERE bucket=? AND n>0 ORDER BY json_extract(key,'$')", (bucket,))}
+
+
 def ledger(path):
     db=sqlite3.connect(path);db.row_factory=sqlite3.Row
+    db.execute("PRAGMA recursive_triggers=ON")
     db.executescript('''CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY,value TEXT);
       CREATE TABLE IF NOT EXISTS job(id TEXT PRIMARY KEY,external_id TEXT,target_id TEXT,
         input_json TEXT,input_sha256 TEXT,status TEXT,result_json TEXT,receipt_json TEXT,error TEXT);
@@ -89,7 +140,11 @@ def ledger(path):
         PRIMARY KEY(external_id,target_id,reason));
       CREATE TABLE IF NOT EXISTS attempt(id INTEGER PRIMARY KEY,job_id TEXT,started_at REAL,
         status TEXT,result_json TEXT,receipt_json TEXT,error TEXT);
-      CREATE INDEX IF NOT EXISTS job_status ON job(status,id);''')
+      CREATE INDEX IF NOT EXISTS job_status ON job(status,id);
+      CREATE INDEX IF NOT EXISTS job_bulk_order ON job(status,external_id,target_id,id);
+      CREATE INDEX IF NOT EXISTS job_external_status ON job(external_id,status);
+      CREATE INDEX IF NOT EXISTS deferred_reason ON deferred(reason);''')
+    _summary_counters(db)
     return db
 
 
@@ -235,15 +290,16 @@ def validate(value,job,context):
 
 
 def summary(db):
-    states=dict(db.execute('SELECT status,count(*) FROM job GROUP BY status'))
+    counters=db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='review_summary_counter'").fetchone() is not None
+    states=_counter_groups(db,'jobs') if counters else dict(db.execute('SELECT status,count(*) FROM job GROUP BY status'))
     saved=db.execute("SELECT value FROM meta WHERE key='identity'").fetchone()
     version=json.loads(saved[0]).get('version',VERSION) if saved else VERSION
     decision_path='$.decision' if version=='glossary-llm-review-v2' else '$.identity.decision'
     reused = db.execute('SELECT count(*) FROM reused_job').fetchone()[0] if db.execute("SELECT 1 FROM sqlite_master WHERE name='reused_job'").fetchone() else 0
     return {'schema_version':version,'jobs':states,'total_jobs':sum(states.values()),'reused_jobs':reused,
-            'job_types':dict(db.execute("SELECT json_extract(input_json,'$.task_type'),count(*) FROM job GROUP BY 1")),
+            'job_types':_counter_groups(db,'job_types') if counters else dict(db.execute("SELECT json_extract(input_json,'$.task_type'),count(*) FROM job GROUP BY 1")),
             'deferred':dict(db.execute('SELECT reason,count(*) FROM deferred GROUP BY reason')),
-            'decisions':dict(db.execute("SELECT json_extract(result_json,?),count(*) FROM job WHERE status='complete' GROUP BY 1",(decision_path,))),
+            'decisions':_counter_groups(db,'decisions_v2' if version=='glossary-llm-review-v2' else 'decisions_v3') if counters else dict(db.execute("SELECT json_extract(result_json,?),count(*) FROM job WHERE status='complete' GROUP BY 1",(decision_path,))),
             'attempts':db.execute('SELECT count(*) FROM attempt').fetchone()[0],
             'canonical_approval':False,'runtime_promoted':False}
 
@@ -258,7 +314,7 @@ def provider_for(state):
             self.targets['llm']=replace(target,max_retries=1,read_timeout=self.timeout)
             self.models['llm']=genos.advertised_model(self.targets['llm'],configured)
             return {'backend':'genos','model':self.models['llm'],'endpoint':target.root}
-    return GlossaryProvider(repository_root(),Path(state)/'calls',max_tokens=2500,timeout=120)
+    return GlossaryProvider(repository_root(),Path(state)/'calls',max_tokens=80000,timeout=120)
 
 
 def run(state,*,max_jobs=10,retry_failed=False,provider=None,continue_on_error=False):

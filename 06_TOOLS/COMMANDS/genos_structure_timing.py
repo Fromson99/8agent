@@ -174,7 +174,7 @@ def main(argv=None):
     selection.add_argument('--document', help='RAW 기준 정확한 상대 경로')
     selection.add_argument('--cache', help='기존 STRUCTURE/<지문> 절대 경로')
     parser.add_argument('--rebuild', action='store_true', help='별도 진단 폴더에 신규 구조화; 기본은 캐시 검증')
-    parser.add_argument('--timeout', type=int, default=300, help='DOC 변환 제한 초')
+    parser.add_argument('--timeout', type=int, default=900, help='DOC 변환 제한 초')
     args = parser.parse_args(argv)
     if args.timeout < 1 or (args.from_run and not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,79}', args.from_run)):
         parser.error('timeout/run-id 값 오류')

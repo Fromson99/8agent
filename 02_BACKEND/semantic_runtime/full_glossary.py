@@ -17,6 +17,7 @@ import time
 import unicodedata
 
 from jsonschema import Draft202012Validator
+from .storage import verify_store_binding
 
 
 def norm(value):
@@ -45,24 +46,24 @@ def concept_id(source, node):
 class Glossary:
     """Whole selected bundle on disk; only bounded result pages enter prompts."""
 
-    def __init__(self, bundle, dictionary, cache, *, manifest_sha256, connection_factory=None, span_factory=None):
+    def __init__(self, bundle, dictionary, cache, *, manifest_sha256, connection_factory=None, span_factory=None, allow_cache_build=False):
         self.bundle, self.dictionary, cache = map(Path, (bundle, dictionary, cache))
         if sha(self.bundle / "manifest.json") != manifest_sha256:
             raise ValueError("glossary manifest mismatch")
         manifest = json.loads((self.bundle / "manifest.json").read_text())
-        if manifest.get("schema_version") != "glossary-knowledge-bundle-v1":
+        compact = manifest.get("schema_version") == "glossary-serving-v2"
+        if manifest.get("schema_version") not in {"glossary-knowledge-bundle-v1", "glossary-serving-v2"}:
             raise ValueError("unsupported glossary bundle")
-        if sha(self.dictionary) != manifest["dictionary_sha256"]:
-            raise ValueError("dictionary binding mismatch")
+        verify_store_binding(self.dictionary, manifest["dictionary_sha256"])
         files = {row["path"]: row for row in manifest["files"]}
-        consumed = ("graph.sqlite", "translations.sqlite", "identity.sqlite", "lookup.sqlite")
+        graph_file = "nodes.sqlite" if compact else "graph.sqlite"
+        consumed = (graph_file, "translations.sqlite", "identity.sqlite", "lookup.sqlite")
         self.pins = []
         for name in consumed:
             path = self.bundle / name
             if path.is_symlink() or Path(str(path) + "-wal").exists():
                 raise ValueError("unbound glossary file")
-            if sha(path) != files[name]["sha256"]:
-                raise ValueError("glossary payload mismatch: " + name)
+            verify_store_binding(path, files[name]["sha256"])
             self.pins.append((path, self.stat(path)))
         self.pins.extend((p, self.stat(p)) for p in (self.dictionary, self.bundle / "manifest.json"))
         self.binding = {"manifest_sha256": manifest_sha256,
@@ -72,6 +73,8 @@ class Glossary:
         key = hashlib.sha256(encoded(self.binding).encode()).hexdigest()
         target, receipt = cache / (key + ".sqlite"), cache / (key + ".json")
         if not receipt.exists():
+            if compact and not allow_cache_build:
+                raise ValueError("Glossary serving cache must be prepared offline")
             fd, temp = tempfile.mkstemp(prefix=".glossary-", suffix=".sqlite", dir=cache)
             os.close(fd)
             try:
@@ -88,7 +91,7 @@ class Glossary:
                              for r in lookup.execute("SELECT * FROM surface")))
                     # Preserve normalized source spellings such as 채권계약 beside
                     # the original NLSH display label 채권 계약[債權契約].
-                    with closing(ro(self.bundle / "graph.sqlite")) as graph_db:
+                    with closing(ro(self.bundle / graph_file)) as graph_db:
                         out.executemany("INSERT OR IGNORE INTO label VALUES (?,?,?,?,?)",
                             ((norm(r["normalized"]), r["source"], r["node_id"], r["normalized"], "SOURCE_NORMALIZED")
                              for r in graph_db.execute("SELECT source,node_id,normalized FROM label WHERE normalized<>''")))
@@ -106,9 +109,10 @@ class Glossary:
             finally:
                 Path(temp).unlink(missing_ok=True)
         value = json.loads(receipt.read_text())
-        if value["binding"] != self.binding or sha(target) != value["sha256"]:
+        verify_store_binding(target, value["sha256"])
+        if value["binding"] != self.binding:
             raise ValueError("glossary cache drift")
-        self.dbs = {name: ro(self.bundle / (name + ".sqlite"))
+        self.dbs = {name: ro(self.bundle / (graph_file if name == "graph" else name + ".sqlite"))
                     for name in ("graph", "translations", "identity")}
         self.dbs.update(dictionary=ro(self.dictionary), lookup=ro(target))
         self.pins.append((target, self.stat(target)))

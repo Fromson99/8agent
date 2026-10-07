@@ -11,7 +11,7 @@ import traceback
 import unicodedata
 
 from .genos_build import atomic
-from semantic_runtime.genos_backend import safe
+from semantic_runtime.genos_backend import safe, error_detail
 
 
 def clean(value):
@@ -19,7 +19,8 @@ def clean(value):
 
 
 def reason(value):
-    text = clean(value)
+    original = clean(error_detail(value))
+    text = original
     if 'schema path' in text:
         text = text[text.index('schema path'):]
         text = text.replace('schema path', '스키마 필드')
@@ -34,7 +35,7 @@ def reason(value):
                      ('model_call_budget_exhausted', '문서별 모델 호출 횟수 상한 도달'),
                      ('authoring incomplete; nothing loaded.', '미통과 청크가 남아 문서 적재 보류.')]:
         text = text.replace(old, new)
-    return text
+    return original if text == original else original + ' | 설명: ' + text
 
 
 def vlm_detail(row):

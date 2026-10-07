@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>용어집</title>
+<link rel="stylesheet" href="/ui/ui.css">
+<link rel="stylesheet" href="styles.css">
+<script src="/ui/nav.js" defer></script>
+</head>
+<body>
+<header class="ui-bar">
+  <nav class="ui-nav" data-nav="glossary"></nav>
+  <span class="ui-meta" id="summary">불러오는 중…</span>
+  <span class="grow"></span>
+  <div class="ui-acts">
+    <a class="btn" href="/knowledge/">지식 그래프</a>
+    <button id="reviewLink" title="잠정 용어를 승인·반려한다">검수 큐<b id="reviewN" class="badge hidden"></b></button>
+    <button id="relLink" title="용어 사이 관계">관계</button>
+  </div>
+</header>
+<h1 class="sr">용어집</h1>
+
+<main class="cols">
+  <section class="pane list">
+    <div class="dochead"><b>문서</b>
+      <label class="chk"><input type="checkbox" id="allDocs" checked> 전체 선택</label>
+      <span class="grow"></span><span class="sub" id="docCount"></span></div>
+    <div id="docTree" class="doctree"></div>
+    <input id="q" type="search" placeholder="용어 찾기">
+    <div class="seg" id="filterSeg">
+      <button data-f="all" class="on">전체</button>
+      <button data-f="heading" title="그 말 자체가 구역 제목인 특화 어휘">제목 용어</button>
+      <button data-f="body" title="본문에만 나오는 말 — 범용 어휘일 가능성">본문만</button>
+      <button data-f="shared">여러 문서</button>
+      <button data-f="user">직접 추가</button>
+    </div>
+    <!-- 제목 용어의 구역 깊이 — L1(장 급)이 굵은 주제, 깊을수록 세목 -->
+    <div class="seg" id="levelSeg" title="제목 용어를 구역 깊이로 가른다">
+      <button data-l="0" class="on">깊이 전체</button>
+      <button data-l="1">L1</button>
+      <button data-l="2">L2</button>
+      <button data-l="3">L3</button>
+      <button data-l="4">L4+</button>
+    </div>
+    <!-- 사람이 아는 말은 제목이 아니라 본문 한가운데 있을 수 있다. 줄바꿈으로 여러 개. -->
+    <details class="addbox">
+      <summary>용어 더하기</summary>
+      <textarea id="addText" rows="4"
+        placeholder="설명의무&#10;원금손실 가능성&#10;숙려기간"></textarea>
+      <div class="row"><button id="addBtn">모든 문서에서 찾아 잇기</button>
+        <button id="rescanBtn" title="문서를 새로 올렸다면 — 더한 용어 전부의 출현을 갱신">다시 훑기</button>
+        <span id="addMsg" class="sub"></span></div>
+    </details>
+    <div id="terms" class="scroll"></div>
+  </section>
+
+  <section class="pane main">
+    <div id="main" class="scroll"></div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

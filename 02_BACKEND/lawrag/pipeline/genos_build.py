@@ -23,7 +23,7 @@ from .genos_unified import ROOT, _build_source_store
 from .genos_e2e import paths
 from semantic_runtime.contracts import digest, sha
 from semantic_runtime.document_roles import role_of_row
-from semantic_runtime.genos_backend import Genos, safe
+from semantic_runtime.genos_backend import Genos, safe, error_detail
 
 EXTENSIONS = {'.xml', '.html', '.htm', '.pdf', '.hwp', '.hwpx', '.docx', '.doc'}
 
@@ -133,16 +133,21 @@ def inventory(input_root, source, bindings=None, *, selected=None, allow_duplica
             for asset in (router.DEFAULT_REGISTRY, route.format_path(), route.glossary_path()):
                 if asset:
                     assets[str(asset.relative_to(ROOT))] = sha(asset)
-        title = tags.get('name')
-        if not title and path.suffix.lower() == '.xml':
+        title = tags.get('name');abbreviation = None
+        if path.suffix.lower() == '.xml':
             try:
-                title = ElementTree.fromstring(path.read_bytes()).findtext('.//법령명_한글')
+                law = ElementTree.fromstring(path.read_bytes())
+                # law.go.kr 법령명약칭 (자본시장법) names the same document; only with the XML's own title.
+                official = (law.findtext('.//법령명_한글') or '').strip()
+                abbreviation = (law.findtext('.//법령명약칭') or '').strip() if official else None
+                title = title or official
             except ElementTree.ParseError:
                 pass  # The registered ingest parser will report the malformed source.
         row = {'path': str(path), 'relative': str(rel), 'sha256': fingerprint,
                'document_id': fingerprint[:16], 'source': source, 'folder': folder,
                'name': title.strip() if title and title.strip() else path.stem, 'doc_type': doc_type, 'engine': engine,
-               'sidecar_sha256': sha(sidecar) if sidecar.exists() else None}
+               'sidecar_sha256': sha(sidecar) if sidecar.exists() else None,
+               **({'official_abbreviation': abbreviation} if abbreviation else {})}
         if row['document_id'] in seen and not allow_duplicates:
             raise ValueError('duplicate content/document ID: ' + seen[row['document_id']] + ' / ' + str(path))
         seen[row['document_id']] = str(path)
@@ -219,7 +224,7 @@ def ingest_files(plan, build, emit):
         except Exception as exc:
             import traceback
             error = safe({'document_id': row['document_id'], 'path': row['path'],
-                          'error': str(exc), 'type': type(exc).__name__, 'traceback': traceback.format_exc()})
+                          'error': error_detail(exc), 'type': type(exc).__name__, 'traceback': traceback.format_exc()})
             if getattr(exc, 'diagnostic', None):
                 error['diagnostic'] = safe(exc.diagnostic)
             errors.append(error)
@@ -425,7 +430,7 @@ def parser():
     p.add_argument('--bindings', default=os.environ.get('FORMAT_BINDINGS_FILE'))
     p.add_argument('--build-dir', required=True)
     p.add_argument('--glossary-dir',type=Path,help='versioned glossary for term and definition indexing')
-    p.add_argument('--timeout', type=int, default=300)
+    p.add_argument('--timeout', type=int, default=1800)
     p.add_argument('--resume', action='store_true')
     p.add_argument('--execute', action='store_true', help='explicit authorization to call configured onsite models')
     return p
@@ -443,7 +448,7 @@ def main(argv=None):
                    '외부 다운로드가 막혀 있으면 사내 패키지 미러/승인된 오프라인 wheel을 사용하세요. 구조화 미완료 문서는 적재하지 않았습니다.'), file=sys.stderr)
         return 1
     except Exception as exc:
-        print(safe(f'BUILD STOPPED: {type(exc).__name__}: {exc}'), file=sys.stderr)
+        print('BUILD STOPPED: ' + error_detail(exc), file=sys.stderr)
         return 1
 
 

@@ -18,7 +18,7 @@ import uuid
 
 from . import genos_build as build
 from semantic_runtime.contracts import digest, sha
-from semantic_runtime.genos_backend import Genos
+from semantic_runtime.genos_backend import Genos, error_detail
 
 
 def offline_data_root(root):
@@ -233,8 +233,8 @@ def execute(plan, options, data, run_id, stage, *, provider_factory=Genos, progr
             progress.finish('저장된 구조화 재사용 완료' if reused else '신규 구조화 완료')
         except Exception as exc:
             prepared.pop(did, None)
-            report['documents'][did] = {'name': row['relative'], 'structure': 'FAILED', 'error': str(exc)}
-            record(did, 'structure', 'FAILED', error=str(exc), elapsed_seconds=round(time.monotonic()-started, 3))
+            report['documents'][did] = {'name': row['relative'], 'structure': 'FAILED', 'error': error_detail(exc)}
+            record(did, 'structure', 'FAILED', error=error_detail(exc), elapsed_seconds=round(time.monotonic()-started, 3))
             for phase in requested:
                 record(did, phase, 'BLOCKED', error='구조화 실패로 실행하지 않음')
             progress.error(exc)
@@ -263,8 +263,8 @@ def execute(plan, options, data, run_id, stage, *, provider_factory=Genos, progr
             record(did,'index','PASSED',output_path=str(output),elapsed_seconds=round(time.monotonic()-started,3))
             progress.finish('용어·정의·참조 색인 및 DRAFT 적재 완료')
         except Exception as exc:
-            report['documents'][did]['index']='FAILED';report['documents'][did]['error']=str(exc)
-            record(did,'index','FAILED',error=str(exc),elapsed_seconds=round(time.monotonic()-started,3))
+            report['documents'][did]['index']='FAILED';report['documents'][did]['error']=error_detail(exc)
+            record(did,'index','FAILED',error=error_detail(exc),elapsed_seconds=round(time.monotonic()-started,3))
             progress.error(exc)
     last='index' if stage=='all' else stage
     passed=sum(v.get(last)=='PASSED' for v in report['documents'].values())

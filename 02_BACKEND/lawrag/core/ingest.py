@@ -253,7 +253,8 @@ def interpret_doc(pdf: Path, *, store: Path, cache: Optional[Path] = None,
         data["source_kind"] = kind
         return with_parser_receipt(data)
 
-    blocks = Block.from_elements(parsed.elements)
+    from lawrag.core.structure.source_lines import split as split_source_lines
+    blocks = split_source_lines(Block.from_elements(parsed.elements))
     from lawrag.core.structure import recipe_runtime
     if kind == "pdf" and recipe_runtime.enabled():
         # This is a separate, bounded structural call budget; GENOS's use_llm=False

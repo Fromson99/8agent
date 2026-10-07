@@ -1,0 +1,74 @@
+{
+  "validated_at": "2026-09-22T01:37:46.115509+00:00",
+  "scope": "static skill structure, local links and current v5 contract assertions only",
+  "skill_quick_validate": "passed",
+  "local_links_checked": 23,
+  "local_links_missing": 0,
+  "contracts": {
+    "working_tree": {
+      "status": "passed",
+      "tool_contracts": [
+        "follow_reference",
+        "follow_relations",
+        "inspect",
+        "inspect_relation",
+        "locate",
+        "lookup_definition",
+        "match_terms",
+        "read",
+        "search",
+        "term_occurrences",
+        "view_page"
+      ],
+      "turn_fields": [
+        "actions",
+        "assessments",
+        "intent",
+        "question_plan",
+        "reason",
+        "relation_assessments",
+        "source_selection"
+      ],
+      "source_choice_contract": "choices/source/decision/reason",
+      "numbered_references": true
+    },
+    "selected_release": {
+      "status": "passed",
+      "tool_contracts": [
+        "follow_reference",
+        "follow_relations",
+        "inspect",
+        "inspect_relation",
+        "locate",
+        "lookup_definition",
+        "match_terms",
+        "read",
+        "search",
+        "term_occurrences",
+        "view_page"
+      ],
+      "turn_fields": [
+        "actions",
+        "assessments",
+        "intent",
+        "question_plan",
+        "reason",
+        "relation_assessments",
+        "source_selection"
+      ],
+      "source_choice_contract": "choices/source/decision/reason",
+      "numbered_references": true
+    }
+  },
+  "content_sha256": {
+    "SKILL.md": "d733d3edf8809e6cae12325225aed47786d3fc9813074ffab219cb0254be2c99",
+    "references/adoption.md": "7b2d6e7ad316037328296faa8cd05e385eea49e25cfc85305e3ee38279db9990",
+    "references/failure-map.md": "949c8b545748c3edca6ee29c91157a741b3138d48ff4786b2810cd14025ef5c6"
+  },
+  "package_sha256": "35b14b6de541e7452e386bf4ba781787aed23b565029d0b841b26d1816f976b1",
+  "skill_body_characters": 3829,
+  "skill_line_count": 62,
+  "behavioral_evaluation_run": false,
+  "model_calls": 0,
+  "quality_claim": null
+}

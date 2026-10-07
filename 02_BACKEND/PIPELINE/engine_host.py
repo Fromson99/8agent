@@ -186,6 +186,24 @@ def execute(config, profile_name, input_artifacts, output_dir, overrides=None, r
             release=read(contained(root,pointer['manifest_path']))
             store=Store(contained(root,release['data_path']))
             runtime=Pipeline(root,store,Haiku(root,root/'90_RUNTIME/semantic/provider',store.manifest['export_allowed']))
+        # Legal-agent stages require one request-local session and may re-enter.
+        # Use the same coordinator/outbox as the HTTP API, not four linear calls.
+        if runtime is not None and runtime.profile_id.startswith('legal-agent-rag-'):
+            requested = config['profiles'][profile_name]
+            selected = config['profiles'][runtime.profile_id]
+            if requested['nodes'] != selected['nodes'] or overrides:
+                raise ContractError('legal-agent execution requires its complete bound profile; stage overrides are not a coherent session')
+            request = values['$input.request']
+            result = runtime.run(request['question'], request.get('document_ids'), request['use_llm'], request.get('scope'),
+                execution_context={'runtime':root/'90_RUNTIME/semantic','release':pointer,'publish':True})
+            value = {k:v for k,v in result.items() if k not in ('run_id','release')}
+            validate_value(config, 'runtime.result', value, root)
+            target = output_dir/'answer--result.json'; dump(target,value)
+            receipt['execution'] = {'kind':'REQUEST_LOCAL_LEGAL_COORDINATOR','run_id':result['run_id'],
+                                    'journal':result.get('journal'), 'profile':runtime.profile_id}
+            receipt['outputs']['result'] = {'path':target.name,'sha256':sha(target),'contract':'runtime.result'}
+            receipt['status'] = 'COMPLETE'
+            return receipt
         for step in frozen_plan['steps']:
             manifest = engine(config, step['engine'], frozen_plan['mode'], root)
             module_path = contained(root, manifest['entrypoint']['path'])

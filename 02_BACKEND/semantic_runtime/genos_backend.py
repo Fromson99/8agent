@@ -34,6 +34,19 @@ def safe(value):
     return value
 
 
+def error_detail(value):
+    """Keep each exception type/message and original cause, redacting credentials."""
+    if not isinstance(value, BaseException):
+        return safe(str(value))
+    parts, seen = [], set()
+    current = value
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        parts.append(f'{type(current).__name__}: {current}')
+        current = current.__cause__ or current.__context__
+    return safe(' <- caused by: '.join(parts))
+
+
 def unit_vector(values):
     if (not isinstance(values, list) or not 1 <= len(values) <= 65536
             or any(type(x) not in (int, float) or not math.isfinite(x) for x in values)):
@@ -47,7 +60,7 @@ def unit_vector(values):
 class Genos(Haiku):
     """Use the same selection/grounded-answer contracts with an explicit backend."""
 
-    def __init__(self, root, output_dir, *, max_tokens=4096, timeout=120, progress=print):
+    def __init__(self, root, output_dir, *, max_tokens=80000, timeout=120, progress=print):
         if os.environ.get('LAWRAG_SERVING_SEALED', '').lower() in {'1', 'true', 'yes', 'on'}:
             raise ValueError('GENOS E2E cannot override a sealed product model policy')
         super().__init__(root, output_dir, backend='genos', trust_zone='internal')
@@ -89,7 +102,7 @@ class Genos(Haiku):
             return raw, {'id': 'receipt:' + run.name, 'contract': 'provider.receipt',
                          'path': str(run / 'receipt.json'), 'sha256': sha(run / 'receipt.json')}
         except Exception as exc:
-            detail = safe(f'{type(exc).__name__}: {exc}')
+            detail = error_detail(exc)
             write(run / 'failure.json', {'error': detail, 'seconds': time.monotonic() - started})
             raise RuntimeError(f'{role}: {detail}; 기록: {run}') from None
 
@@ -126,8 +139,8 @@ class Genos(Haiku):
             return value, receipt
         except Exception as exc:
             write(Path(receipt['path']).parent / 'validation-error.json',
-                  {'error': safe(f'{type(exc).__name__}: {exc}')})
-            raise ValueError(f'{role} response validation failed; see {Path(receipt["path"]).parent}') from None
+                  {'error': error_detail(exc)})
+            raise ValueError(f'{role} response validation failed: {error_detail(exc)}; see {Path(receipt["path"]).parent}') from None
 
     def embed(self, texts, role):
         raw, receipt = self.request('embed', '/embeddings',

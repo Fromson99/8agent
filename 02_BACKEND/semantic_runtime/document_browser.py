@@ -9,13 +9,16 @@ def page_args(offset, limit):
         raise ValueError('invalid pagination')
 
 
-def documents(store, *, category='all', folder='', title_query='', offset=0, limit=100, projection=None):
+def documents(store, *, category='all', folder='', title_query='', offset=0, limit=100, projection=None, document_ids=None):
     page_args(offset, limit)
     if category not in ('all', 'internal', 'external', 'unknown'):
         raise ValueError('invalid document category')
     if len(title_query) > 500 or len(folder) > 1000:
         raise ValueError('document filter too long')
     catalogue = bind_catalogue(SimpleNamespace(), store, projection).document_catalogue
+    if document_ids is not None:
+        allowed = set(document_ids)
+        catalogue = {did: row for did, row in catalogue.items() if did in allowed}
     rows = [row for row in catalogue.values()
             if (category == 'all' or row['category'] == category)
             and (not title_query or normalized(title_query) in normalized(row['name']))

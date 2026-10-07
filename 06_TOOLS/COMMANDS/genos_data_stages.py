@@ -48,6 +48,8 @@ def main(argv=None):
     if any(a.split('=')[0] in forbidden for a in rest):
         p.error('경로는 논리 data root로 고정합니다. 같은 run-id는 자동 재개합니다.')
     data = genos_stages.offline_data_root(ROOT)
+    if (data / 'LOGS' / args.run_id / 'selection-origin.json').exists():
+        p.error('성공 문서 선택으로 고정된 run-id입니다. document-release의 merge/prepare/review/index/build를 사용하세요. 새 구조화에는 새 run-id가 필요합니다.')
     from lawrag.pipeline import document_scope, team_raw, raw_preprocess
     if args.only_internal and (args.document_scope or args.only_internal_pdf):
         p.error('--only-internal conflicts with --document-scope/--only-internal-pdf')
@@ -103,7 +105,8 @@ def main(argv=None):
                     if args.stage != 'index':
                         preparation = raw_preprocess.run(ROOT, data, logs / 'preparation', execute=args.execute,
                             unzip=args.unzip == 'on', xml_md=args.xml_markdown == 'on', pdf=args.pdf_conversion == 'on',
-                            only_internal=args.only_internal or args.only_internal_pdf, exclude_internal=args.exclude_internal, teams=args.team)
+                            only_internal=args.only_internal or args.only_internal_pdf, exclude_internal=args.exclude_internal, teams=args.team,
+                            emit=lambda message: (terminal.write(message + '\n'), terminal.flush(), progress.emit(message)))
                     plan, inventory = team_raw.collect(data, options.bindings, emit=progress.emit,
                         only_internal=args.only_internal, only_internal_pdf=args.only_internal_pdf, limit=args.limit,
                         exclude_internal=args.exclude_internal, teams=args.team)
@@ -164,7 +167,7 @@ def main(argv=None):
             return 130
         except Exception as exc:
             if status is not None and status.attempt is not None:
-                status.finish('FAILED', error=str(exc))
+                status.finish('FAILED', error=reason(exc))
                 export_report(logs)
             progress.emit(__import__('traceback').format_exc())
             progress._newline()

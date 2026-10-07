@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# GENOS 코드스페이스에서: bash GENOS_FULLTEXT_ERROR_CHECK_r2.txt
+# 코드서빙 컨테이너의 로컬 runtime은 코드스페이스에서 보이지 않을 수 있습니다.
+# 이 스크립트는 공유 NFS 보고서만 읽으며 질문을 다시 실행하지 않습니다.
+set -euo pipefail
+python3.11 - <<'PY'
+import json
+import os
+from pathlib import Path
+
+root = Path(os.environ.get('GENOS_SHARED_LOG_DIR') or '/nfs-root/diamo/8-agent/rag-request-reports')
+print('SHARED_LOG_DIR:', root)
+if not root.is_dir():
+    print('공유 로그 디렉터리가 코드스페이스에서 보이지 않습니다.')
+    print('코드서빙 환경의 GENOS_SHARED_LOG_DIR 설정과 NFS 마운트를 확인하세요.')
+    raise SystemExit(0)
+
+reports = sorted(root.glob('*/*.json'), key=lambda p: p.stat().st_mtime, reverse=True)
+logs = sorted(root.glob('*/*.log'), key=lambda p: p.stat().st_mtime, reverse=True)
+print('JSON_COUNT:', len(reports), 'LIVE_LOG_COUNT:', len(logs))
+if logs:
+    print('LATEST_LIVE_LOG:', logs[0])
+
+for path in reports[:30]:
+    try:
+        report = json.loads(path.read_text(encoding='utf-8'))
+    except (OSError, ValueError) as exc:
+        print('UNREADABLE_REPORT:', path, type(exc).__name__)
+        continue
+    journal = report.get('journal') or {}
+    for event in reversed(journal.get('timeline') or []):
+        for created in event.get('created_records') or []:
+            if created.get('table') != 'observation':
+                continue
+            record = created.get('record') or {}
+            if record.get('tool') != 'search' or record.get('status') != 'ERROR':
+                continue
+            result = record.get('result') or {}
+            if not isinstance(result, dict):
+                continue
+            print('REPORT:', path)
+            print('ERROR:', result.get('server_reason') or result.get('error'))
+            print('DURATION_MS:', (result.get('budget') or {}).get('duration_ms'))
+            raise SystemExit(0)
+
+print('최근 30개 완료 JSON에서 search ERROR를 찾지 못했습니다.')
+if reports:
+    print('LATEST_REPORT:', reports[0])
+    print('LATEST_JOURNAL_STATUS:', (json.loads(reports[0].read_text(encoding='utf-8')).get('journal') or {}).get('status'))
+else:
+    print('공유 NFS에 완료 JSON이 없습니다. live .log 끝부분의 shared_report.failed를 확인하세요.')
+PY

@@ -165,7 +165,7 @@ def test_plan_rejects_completed_adr_and_code_drift(draft, generation, tmp_path, 
            'experiment_id': 'fixture-only', 'runs': [{'id': 'run-001', 'arm_ids': ['baseline'], 'status': 'planned'}]}
     write(ap, adr)
     monkeypatch.setenv('SEMANTIC_LLM_BACKEND', 'genos'); monkeypatch.setenv('GENOS_BASE_URL', 'https://internal.invalid')
-    monkeypatch.setenv('GENOS_QWEN_SERVING_ID', 'mock-serving')
+    monkeypatch.setenv('GENOS_LLM_SERVING_ID', 'mock-serving')
     plan = runner.make_plan(sp, generation, ap, 'run-001', 'baseline', 'internal-mock')
     assert runner.check_plan(plan) == suite
     monkeypatch.setattr(runner, 'code_binding', lambda: {'changed': 'hash'})
@@ -215,8 +215,8 @@ def test_full_run_receipts_review_report_and_replay_guard(draft, generation, tmp
     monkeypatch.setattr(Haiku, 'call', call)
     monkeypatch.setenv('SEMANTIC_LLM_BACKEND', 'genos')
     monkeypatch.setenv('GENOS_BASE_URL', 'https://internal.invalid')
-    monkeypatch.setenv('GENOS_QWEN_SERVING_ID', 'mock')
-    monkeypatch.setenv('GENOS_QWEN_KEY', 'never-store-this-value')
+    monkeypatch.setenv('GENOS_LLM_SERVING_ID', 'mock')
+    monkeypatch.setenv('GENOS_LLM_KEY', 'never-store-this-value')
     sp = tmp_path / 'suite.json'; write(sp, g.freeze(draft, generation))
     ap = tmp_path / 'adr.json'
     write(ap, {'reservation': {'status': 'in_progress'}, 'design': {'criteria_frozen_before_run': True, 'success_criteria': ['contract only']},

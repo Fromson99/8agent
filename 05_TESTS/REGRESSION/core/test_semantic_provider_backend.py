@@ -23,8 +23,11 @@ def svc(monkeypatch):
         "SEMANTIC_LLM_BACKEND",
         "SEMANTIC_LLM_ENDPOINT",
         "GENOS_BASE_URL",
-        "GENOS_QWEN_SERVING_ID",
-        "GENOS_QWEN_KEY",
+        "GENOS_LLM_SERVING_ID",
+        "GENOS_LLM_KEY",
+        "GENOS_LLM_URL",
+        "GENOS_LLM_MODEL",
+        "GENOS_GATEWAY_API_PREFIX",
     ):
         monkeypatch.delenv(name, raising=False)
     sys.modules.pop("service", None)
@@ -38,8 +41,8 @@ def test_service_selects_anthropic_or_genos_provider(svc, monkeypatch, tmp_path)
 
     monkeypatch.setenv("SEMANTIC_LLM_BACKEND", "genos")
     monkeypatch.setenv("GENOS_BASE_URL", "https://genos.example")
-    monkeypatch.setenv("GENOS_QWEN_SERVING_ID", "226")
-    monkeypatch.setenv("GENOS_QWEN_KEY", "secret")
+    monkeypatch.setenv("GENOS_LLM_SERVING_ID", "226")
+    monkeypatch.setenv("GENOS_LLM_KEY", "secret")
     genos = svc._provider(ROOT, tmp_path, {"export_allowed": False})
     assert genos.backend == "genos"
     assert genos.trust_zone == "internal"
@@ -52,13 +55,32 @@ def test_service_rejects_unknown_backend(svc, monkeypatch, tmp_path):
         svc._provider(ROOT, tmp_path, {"export_allowed": True})
 
 
+def test_service_direct_generic_url_needs_no_serving_id(svc, monkeypatch, tmp_path):
+    monkeypatch.setenv('SEMANTIC_LLM_BACKEND', 'genos')
+    monkeypatch.setenv('GENOS_LLM_URL', 'https://internal.invalid/v1')
+    monkeypatch.setenv('GENOS_LLM_KEY', 'test-key')
+    assert svc._provider(ROOT, tmp_path, {'export_allowed': False}).backend == 'genos'
+
+
+def test_provider_uses_generic_file_settings_without_mutating_environment(svc, monkeypatch, tmp_path):
+    from semantic_runtime import genos
+    from semantic_runtime.provider import Haiku
+    monkeypatch.setattr(genos, 'request_json', lambda *a: {'data': [{'id': 'internal-gemma'}]})
+    p = Haiku(tmp_path, tmp_path/'provider', backend='genos', trust_zone='internal')
+    target, model = p._resolve_genos({'GENOS_BASE_URL': 'https://internal.invalid',
+        'GENOS_LLM_SERVING_ID': '456', 'GENOS_LLM_KEY': 'synthetic-key'})
+    assert target.root.endswith('/serving/456') and model == 'internal-gemma'
+    assert target.headers['Authorization'] == 'Bearer synthetic-key'
+    assert 'GENOS_LLM_KEY' not in __import__('os').environ
+
+
 def test_genos_discovers_and_records_actual_model(monkeypatch, tmp_path):
     from semantic_runtime import genos
     from semantic_runtime.provider import Haiku, obj, STR
 
     monkeypatch.setenv("GENOS_BASE_URL", "https://genos.example")
-    monkeypatch.setenv("GENOS_QWEN_SERVING_ID", "226")
-    monkeypatch.setenv("GENOS_QWEN_KEY", "qwen-key")
+    monkeypatch.setenv("GENOS_LLM_SERVING_ID", "226")
+    monkeypatch.setenv("GENOS_LLM_KEY", "qwen-key")
     calls = []
 
     def request(target, path, payload=None):
@@ -86,7 +108,7 @@ def test_genos_discovers_and_records_actual_model(monkeypatch, tmp_path):
     assert [call[1] for call in calls] == ["/models", "/chat/completions"]
     target = calls[0][0]
     assert target.root == (
-        "https://genos.example/api/gateway/rep/serving/226/v1"
+        "https://genos.example/api/gateway/rep/serving/226"
     )
     assert target.headers["Authorization"] == "Bearer qwen-key"
     assert calls[1][2]["model"] == "actual-qwen-model"

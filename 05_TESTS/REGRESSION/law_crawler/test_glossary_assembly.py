@@ -141,9 +141,9 @@ def test_definitions_translations_and_navigation_are_not_collapsed(assembly_inpu
 def test_catalogue_classification_independent_of_source_and_official_relation(assembly_inputs):
     a.build(*assembly_inputs,emit=lambda *a,**k:None)
     daily=a.inspect(assembly_inputs[-1],'수탁')
-    assert daily['entries'] and all(e['term_class']=='EVERYDAY_TERM' for e in daily['entries'])
+    assert daily['entries'] and all(e['term_class']=='REFERENCE_TERM' for e in daily['entries'])
     legal=a.inspect(assembly_inputs[-1],'신탁')
-    assert any(e['source']=='econedu' and e['term_class']=='LEGAL_TERM' for e in legal['entries'])
+    assert any(e['source']=='econedu' and e['term_class']=='CORPUS_TERM' for e in legal['entries'])
     assert legal['official_relations']
     assert all('source_term_class' in r and 'target_term_class' in r for r in legal['official_relations'])
     assert legal['article_connections']['official_api_links']=='NOT_COMPILED_IN_THIS_DRAFT'

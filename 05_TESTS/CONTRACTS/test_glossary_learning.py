@@ -219,8 +219,14 @@ def test_http_capture_cli_publish_and_serving_reuse(tmp_path, term_glossary, mon
     root = Path(__file__).resolve().parents[2]
     # Only copy contracts and code; do not alter any active release or real data.
     contracts = tmp_path/'code'
-    for relative in ['00_SYSTEM/PIPELINE.json', '00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json',
+    for relative in ['00_SYSTEM/PIPELINE.json',
                      '02_BACKEND/lawrag/core/legal_coordinate.py']:
+        target = contracts/relative; target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(root/relative, target)
+    # Contracts verifies every schema declared by the current pipeline, including
+    # legal-agent schemas that are not executed by this navigation-loop fixture.
+    pipeline = json.loads((root/'00_SYSTEM/PIPELINE.json').read_text())
+    for relative in {c['schema_path'] for c in pipeline['contracts'].values()}:
         target = contracts/relative; target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(root/relative, target)
     for relative in ['02_BACKEND/semantic_runtime', '02_BACKEND/ENGINES/term_runtime']:

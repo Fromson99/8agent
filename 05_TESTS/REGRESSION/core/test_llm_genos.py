@@ -136,15 +136,18 @@ def test_backend_selection(monkeypatch):
     assert llm_mod.backend() == "anthropic" and not llm_mod.available()
 
 
-def test_profile_builds_endpoint_and_selects_its_key(monkeypatch):
+def test_generic_settings_ignore_stale_brand_profile(monkeypatch):
     llm_mod = _fresh()
     monkeypatch.setattr(llm_mod, "load_env", lambda: None)
     monkeypatch.delenv("GENOS_LLM_URL", raising=False)
     monkeypatch.setenv("GENOS_BASE_URL", "https://genos.example/")
-    monkeypatch.setenv("GENOS_LLM_PROFILE", "qwen")
-    monkeypatch.setenv("GENOS_QWEN_SERVING_ID", "226")
-    monkeypatch.setenv("GENOS_QWEN_KEY", "qwen-secret")
-    monkeypatch.setenv("GENOS_QWEN_MODEL", "qwen-served-name")
+    monkeypatch.setenv("GENOS_LLM_SERVING_ID", "226")
+    monkeypatch.setenv("GENOS_LLM_KEY", "qwen-secret")
+    monkeypatch.setenv("GENOS_LLM_MODEL", "qwen-served-name")
+    monkeypatch.setenv("GENOS_LLM_PROFILE", "gemma")
+    monkeypatch.setenv("GENOS_GEMMA_SERVING_ID", "999")
+    monkeypatch.setenv("GENOS_GEMMA_KEY", "stale-key")
+    monkeypatch.setenv("GENOS_GEMMA_MODEL", "stale-model")
 
     assert llm_mod._genos_llm_url() == "https://genos.example/api/gateway/rep/serving/226"
     assert llm_mod._genos_llm_key() == "qwen-secret"

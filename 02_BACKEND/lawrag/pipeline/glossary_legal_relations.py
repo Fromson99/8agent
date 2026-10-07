@@ -328,27 +328,27 @@ def build(glossary, catalogue_db, output, emit=print):
     result['files'] = {p.name: sha(p) for p in sorted(temp.iterdir()) if p.is_file()}
     (temp/'report.json').write_text(json.dumps(result, ensure_ascii=False, indent=2)+'\n')
     d = counts['decisions']; reasons = counts['decision_reasons']
-    lines = ['# 법률용어 간 관계 구축 결과', '',
-             '법제처 지식베이스 법률용어 ID끼리 연결한 사용자 규칙 기반 DRAFT다.',
+    lines = ['# 법제처 지식용어 간 관계 구축 결과', '',
+             '법제처 지식용어(knowledge_terms) ID끼리 연결한 사용자 규칙 기반 DRAFT다. 본문 출현 기준의 본문용어/참고용어 분류와는 별개다.',
              '동일 표기 대응과 원천 관계를 보존하며 법적 의미 정본 승인·MAIN/RAG 활성화는 별도다.', '',
              '## 범위와 결과', '',
              f"- 입력: 선택된 용어집의 공식 관계 **{counts['input_relations']:,}건 전부**.",
              f"- 연결된 원천 관계: **{d.get('CONNECTED', 0):,}건**.",
-             f"- 중복 경로를 합친 법률용어 관계: **{counts['edges'].get('CONNECTED', 0):,}개**, 노드 **{counts['connected_legal_nodes']:,}개**.",
-             f"- 보류: **{d.get('HELD', 0):,}건** / 관련 일상용어 **{counts['distinct_held_daily_terms']:,}개**.",
-             f"- 동일명 법률용어 없음으로 제외: **{d.get('EXCLUDED', 0):,}건** / 일상용어 **{counts['distinct_excluded_observed_daily_terms']:,}개**.",
+             f"- 중복 경로를 합친 법제처 지식용어 관계: **{counts['edges'].get('CONNECTED', 0):,}개**, 노드 **{counts['connected_legal_nodes']:,}개**.",
+             f"- 보류: **{d.get('HELD', 0):,}건** / 관련 법제처 일상용어 **{counts['distinct_held_daily_terms']:,}개**.",
+             f"- 동일명 법제처 지식용어 없음으로 제외: **{d.get('EXCLUDED', 0):,}건** / 법제처 일상용어 **{counts['distinct_excluded_observed_daily_terms']:,}개**.",
              f"- 자기 동의어(별도 간선 불필요): **{d.get('IDENTITY_ONLY', 0):,}건**.", '',
              '## 원천 관계별 처리 사유', '', '| 사유 | 건수 |', '|---|---:|']
     lines += [f'| {reason} | {count:,} |' for reason, count in sorted(reasons.items())]
     lines += ['', '## 산출물', '',
-              '- [법률 관계 목록](legal-relations.tsv): 연결·보류 간선, 양 끝 법률 ID, 근거 경로 수.',
+              '- [지식용어 관계 목록](legal-relations.tsv): 연결·보류 간선, 양 끝 법제처 지식용어 ID, 근거 경로 수.',
               '- [원천 관계별 판정](decisions.tsv): 원천 관계 전수의 연결·보류·제외·동일항목 처리.',
-              '- [일상용어 대응 목록](daily-mapping.tsv): 전체 목록의 동일명 법률 후보와 관측 관계 수.',
+              '- [법제처 일상용어 대응 목록](daily-mapping.tsv): 전체 목록의 동일명 지식용어 후보와 관측 관계 수.',
               '- [그래프](graph.json): 연결 규칙을 통과한 노드·간선.',
               '- [재현·검증 영수증](report.json), [원천 및 처리 DB](relations.sqlite).', '',
               '## 수집 범위', '',
-              '법률→일상 수집 간선을 역으로 읽어 일상→법률 연결의 관측 부분을 재사용했다. 새 API 호출은 없다.',
-              '같은 이름의 법률용어가 있지만 이 snapshot에서 관계가 관측되지 않은 일상용어는 '
+              '지식용어→일상용어 수집 간선을 역으로 읽어 일상용어→지식용어 연결의 관측 부분을 재사용했다(모두 법제처 목록). 새 API 호출은 없다.',
+              '같은 이름의 법제처 지식용어가 있지만 이 snapshot에서 관계가 관측되지 않은 법제처 일상용어는 '
               f"{counts['eligible_daily_without_observed_edges']:,}개다. 무관계·규칙 실패로 단정하지 않는다.",
               '관계의 누락 범위와 사전 전체를 새로 조회한 결과는 이번 전수 처리 범위가 아니다.', '',
               '## 재개·롤백', '',

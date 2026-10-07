@@ -1,6 +1,6 @@
 """Tier 2 후보 생성 — 형태소 분석 + 품사 패턴 (ontology_kg §4.2 ①②, §4.8).
 
-Kiwi 로 문장을 가르고, 명사 연쇄(NNG·NNP·SL)에서 모든 연속 부분열을
+PeCab으로 문장을 가르고, 명사 연쇄(NNG·NNP·SL)에서 모든 연속 부분열을
 후보로 낸다 — 부분열까지 내는 이유는 C-value 다: "압력 안전 밸브"가 나올 때
 "안전 밸브"의 출현도 세어져야 중첩 보정이 성립한다.
 
@@ -8,7 +8,7 @@ Kiwi 로 문장을 가르고, 명사 연쇄(NNG·NNP·SL)에서 모든 연속 �
 공기 쌍은 최대 명사구(부분열이 아니라)끼리만 만든다. 부분열끼리 쌍을 만들면
 "안전"과 "밸브"가 공기했다는 무의미한 증거가 폭발한다.
 
-사용자 사전: 수기 용어집 + Tier 1 산출을 Kiwi 에 주입한다 — 분석기가
+사용자 사전: 수기 용어집 + Tier 1 산출을 PeCab에 주입한다 — 분석기가
 도메인 용어를 쪼개는 것(§4.8 "원금보장안" 문제의 반대 방향)을 막는다.
 """
 
@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from typing import Iterable, Optional
 
 from lawrag.core.rag.index import DocView
+from semantic_runtime import term_morph
 
 # 후보가 될 수 있는 품사 — 일반명사·고유명사·로마자.
 _NOUN_TAGS = {"NNG", "NNP", "SL"}
@@ -88,21 +89,28 @@ class HarvestResult:
 _ENUM_SEP = re.compile(r"^[\s,·ㆍ、и및과와또는등의()\d.]*$")
 
 
-def _kiwi(user_words: Iterable[str]):
-    from kiwipiepy import Kiwi
+def _analyzer(user_words: Iterable[str]):
+    from pecab import PeCab
+    if term_morph.installed_version() != term_morph.PIN:
+        raise RuntimeError(f"PeCab {term_morph.PIN} required")
+    return PeCab(user_dict=sorted({w for w in user_words if w and len(w) >= 2}))
 
-    kiwi = Kiwi()
-    for w in sorted({w for w in user_words if w and len(w) >= 2}):
-        try:
-            kiwi.add_user_word(w, "NNP", 0.0)
-        except Exception:
-            continue
-    return kiwi
+
+def _tokens(text: str, analyzer=None) -> list[term_morph.Token]:
+    if analyzer is None:
+        return term_morph.tokenize(text)
+    value = analyzer._tokenize(text)
+    terms, offsets, tags = (value[key] for key in ("terms", "offsets", "pos_tags"))
+    if not (len(terms) == len(offsets) == len(tags)):
+        raise RuntimeError("PeCab token span lengths differ")
+    return [term_morph.Token(form, tag.split("+", 1)[0], start, end - start)
+            for form, (start, end), tag in zip(terms, offsets, tags)
+            if tag != "SP" and 0 <= start < end <= len(text)]
 
 
 def harvest(views: list[DocView], user_words: Iterable[str] = ()) -> HarvestResult:
     """문서들을 한 번 훑어 후보 출현·공기 쌍·토큰 통계를 모두 거둔다."""
-    kiwi = _kiwi(user_words)
+    analyzer = _analyzer(user_words)
     out = HarvestResult()
 
     for v in views:
@@ -114,13 +122,12 @@ def harvest(views: list[DocView], user_words: Iterable[str] = ()) -> HarvestResu
             out.n_blocks += 1
             owner = v.owner(b.get("idx")) or {}
             in_heading = b.get("idx") in title_blocks
-            try:
-                sents = kiwi.split_into_sents(text, return_tokens=True)
-            except Exception:
-                continue
-            for si, sent in enumerate(sents):
+            # Preserve source offsets; PeCab has no Kiwi sentence object.
+            sents = ((m.group(), m.start()) for m in re.finditer(r"[^.!?。！？\n]+[.!?。！？]?", text)
+                     if m.group().strip())
+            for si, (sent_text, sent_start) in enumerate(sents):
                 out.n_sents += 1
-                runs = _noun_runs(sent.tokens or [])
+                runs = _noun_runs(_tokens(sent_text, analyzer))
                 maximal: list[tuple] = []          # (start_char, end_char, key)
                 for run in runs:
                     out.n_tokens += len(run)
@@ -129,7 +136,7 @@ def harvest(views: list[DocView], user_words: Iterable[str] = ()) -> HarvestResu
                         if i + 1 < len(run):
                             pair = (t.form, run[i + 1].form)
                             out.bigram[pair] = out.bigram.get(pair, 0) + 1
-                    spans = _spans(run, sent.text, sent.start)
+                    spans = _spans(run, sent_text, 0)
                     for (sfc, toks, s0, s1, is_max) in spans:
                         key = norm(sfc)
                         if not _ok(key, toks):
@@ -139,13 +146,13 @@ def harvest(views: list[DocView], user_words: Iterable[str] = ()) -> HarvestResu
                                     node=owner.get("id"), block=b.get("idx"),
                                     page=b.get("page"), sent=si,
                                     in_heading=in_heading,
-                                    text=sent.text[:160] if is_max else "")
+                                    text=sent_text[:160] if is_max else "")
                         out.mentions.setdefault(key, []).append(m)
                         if is_max:
                             maximal.append((s0, s1, key))
                             out.sent_terms.setdefault(
                                 (v.doc_id, b.get("idx"), si), set()).add(key)
-                _pairs(out, maximal, sent.text, sent.start, v.doc_id,
+                _pairs(out, maximal, sent_text, 0, v.doc_id,
                        b.get("idx"), si)
     return out
 

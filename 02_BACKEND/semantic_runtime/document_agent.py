@@ -5,33 +5,55 @@ from tempfile import TemporaryDirectory
 
 from .document_navigation import MappedAgent, EntityRegistry
 from .folder_navigation import FolderNavigator, load_origin_projection
+from .document_aliases import load as load_aliases
 from .multi_entry_navigation import bind_structure
 from .navigation_agent import ServingNavigationAgent, glossary_assets
 from .navigation_match import ReverseMatcher
+from . import observability as obs
 
 IMPLEMENTATION = 'document-navigation-v1'
+log = obs.get_logger('resources')
 
 
 class ServingDocumentAgent(ServingNavigationAgent):
     @contextmanager
     def resources(self, scope):
-        index = self.get_index()
-        tools = index.tools(scope)
-        glossary = None
+        with obs.step(log, 'resources.index'):
+            index = self.get_index()
+        with obs.step(log, 'resources.tools'):
+            tools = index.tools(scope)
+        glossary = fulltext_db = unit_fulltext_db = None
         try:
-            glossary = glossary_assets(self.pipeline.store.path, self.config)
-            projection = load_origin_projection(self.pipeline.contracts.root, self.config,
-                                                self.pipeline.store)
-            manifest = self.pipeline.store.manifest
-            cache_key = (manifest['generation_id'], manifest['store_sha256'],
-                         glossary.binding['manifest_sha256'], glossary.binding['dictionary_sha256'])
-            matcher = bind_structure(ReverseMatcher(self.pipeline.store.db, tools, glossary, cache_key=cache_key),
-                                     self.pipeline.store, projection)
-            matcher.navigation_store = self.pipeline.store
+            with obs.step(log, 'resources.glossary'):
+                glossary = glossary_assets(self.pipeline.store.path, self.config,
+                                           manifest=self.pipeline.store.manifest)
+            with obs.step(log, 'resources.projections'):
+                projection = load_origin_projection(self.pipeline.contracts.root, self.config,
+                                                    self.pipeline.store)
+                aliases = load_aliases(self.pipeline.contracts.root, self.config, self.pipeline.store)
+            with obs.step(log, 'resources.matcher'):
+                manifest = self.pipeline.store.manifest
+                cache_key = (manifest['generation_id'], manifest['store_sha256'], str(getattr(index, 'path', '')),
+                             glossary.binding['manifest_sha256'], glossary.binding['dictionary_sha256'],
+                             tuple(sorted(aliases.items())))
+                matcher = bind_structure(ReverseMatcher(self.pipeline.store.db, tools, glossary, cache_key=cache_key,
+                                                        document_aliases=aliases),
+                                         self.pipeline.store, projection)
+                matcher.navigation_store = self.pipeline.store
+            with obs.step(log, 'resources.fulltext'):
+                matcher.fulltext = fulltext = self.get_fulltext()
+                matcher.fulltext_db = fulltext_db = fulltext.connect() if fulltext else None
+                matcher.unit_fulltext = getattr(getattr(self.pipeline,'term_agent',self.pipeline),'unit_fulltext',None)
+                if matcher.unit_fulltext is not None:
+                    matcher.unit_fulltext_db = unit_fulltext_db = matcher.unit_fulltext.connect()
             yield index, tools, glossary, matcher
             glossary.check_unchanged()
         finally:
             tools.db.close()
+            if unit_fulltext_db is not None:
+                unit_fulltext_db.close()
+            if fulltext_db is not None:
+                fulltext_db.close()
             if glossary is not None:
                 glossary.close()
 
@@ -56,6 +78,13 @@ class ServingDocumentAgent(ServingNavigationAgent):
                         '모델 미사용: 등록된 문서·폴더·용어 시작점입니다. 문서 목록과 원문 조회 API를 사용할 수 있습니다.',
                         'METADATA_ONLY', {})
                     result['term_agent'].update(status='METADATA_ONLY', use_llm=False)
+                ledger = getattr(self.pipeline, 'relation_issues', None)
+                rejections = result['term_agent'].get('relation_rejections')
+                if ledger and rejections:
+                    from .relation_issues import record
+                    record(ledger, rejections, generation_id=self.pipeline.store.manifest['generation_id'],
+                           index_sha256=index.manifest['index_sha256'], question=plan['question'], run_id=plan.get('id'))
                 result['term_agent'].update(implementation=IMPLEMENTATION,
-                    mapping_persistence='REQUEST_ONLY', quality_certified=False)
+                    mapping_persistence='REQUEST_ONLY', quality_certified=False,
+                    document_alias_sources=dict(getattr(matcher, 'alias_sources', {})))
                 return result

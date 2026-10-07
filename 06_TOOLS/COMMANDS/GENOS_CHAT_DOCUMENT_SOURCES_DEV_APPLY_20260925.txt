@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# GENOS CodeSpace: place this file and GENOS_CHAT_DOCUMENT_SOURCES_WORKFLOW_PASTE_ALL_20260925.txt
+# in ~/DEV/TRANSFER, then run:
+# bash ~/DEV/TRANSFER/GENOS_CHAT_DOCUMENT_SOURCES_DEV_APPLY_20260925.txt
+# This updates only the DEV checkout. Paste the whole workflow TXT into the
+# GENOS workflow Python editor separately, then save and deploy that workflow.
+set -Eeuo pipefail
+
+dev_root="${GENOS_DEV_ROOT:-$HOME/DEV}"
+transfer_root="${GENOS_TRANSFER_ROOT:-$dev_root/TRANSFER}"
+payload="$transfer_root/GENOS_CHAT_DOCUMENT_SOURCES_WORKFLOW_PASTE_ALL_20260925.txt"
+target="$dev_root/08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py"
+before_sha="f1eaa24e2211d484d83b58ea6216b4e51d01aeab4d561e07f74c650784cc9cae"
+after_sha="e243d9737afad543fe34828c9d0d2c34c6c8dff82dfb6b00a4d2eabbca7c4281"
+stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+mkdir -p "$transfer_root"
+log="$transfer_root/GENOS_CHAT_DOCUMENT_SOURCES_APPLY_$stamp.log"
+exec > >(tee -a "$log") 2>&1
+trap 'status=$?; echo "FINISHED status=$status log=$log"' EXIT
+
+test -f "$payload" || { echo "STOP: workflow TXT missing: $payload"; exit 1; }
+test -f "$target" && test ! -L "$target" || { echo "STOP: DEV workflow file missing or symlink"; exit 1; }
+test "$(git -C "$dev_root" rev-parse --show-toplevel)" = "$(realpath "$dev_root")" || {
+  echo "STOP: DEV is not the selected Git checkout"; exit 1;
+}
+printf '%s  %s\n' "$after_sha" "$payload" | sha256sum -c -
+python3 - "$payload" <<'PY'
+import ast, pathlib, sys
+ast.parse(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'))
+print('PYTHON_SYNTAX=PASS')
+PY
+
+actual_sha="$(sha256sum "$target" | cut -d ' ' -f 1)"
+if [[ "$actual_sha" == "$after_sha" ]]; then
+  echo "ALREADY_APPLIED=1"
+elif [[ "$actual_sha" != "$before_sha" ]]; then
+  echo "STOP: DEV workflow differs from the previously mailed final-path baseline. Existing file was not changed."
+  echo "EXPECTED_BASE_SHA256=$before_sha"
+  echo "ACTUAL_SHA256=$actual_sha"
+  exit 1
+else
+  backup="$transfer_root/BACKUP/chat-document-sources-$stamp"
+  mkdir -p "$backup/08_DEPLOYMENT/GENOS/workflow"
+  cp -p "$target" "$backup/08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py"
+  echo "BACKUP=$backup"
+  temp="$(mktemp "$target.tmp.XXXXXX")"
+  trap 'rm -f "${temp:-}"' ERR
+  cp "$payload" "$temp"
+  chmod --reference="$target" "$temp"
+  mv -f "$temp" "$target"
+  temp=""
+  printf '%s  %s\n' "$after_sha" "$target" | sha256sum -c -
+  echo "APPLIED=1"
+fi
+
+git -C "$dev_root" diff --check
+git -C "$dev_root" status --short -- "$target"
+echo "NEXT: review the DEV diff, commit and push the checkout when ready."
+echo "NEXT: paste the entire workflow TXT into the existing GENOS Python step, set GENOS_RAG_PROGRESS_UI=socketio-final, save and deploy the workflow, then bind the chat app to that revision."
+echo "TEST: use only the workflow test screen. The chat should contain the final answer and selected core/supplemental document names and article locations with source links, without raw source excerpts or a limitations section."

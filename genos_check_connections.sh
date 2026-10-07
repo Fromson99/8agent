@@ -36,7 +36,7 @@ try:
     load_dotenv(root / '.env', override=False)
     from semantic_runtime import genos
 except ImportError:
-    raise SystemExit('의존성 누락: 설치 폴더에서 .venv/bin/pip install -r requirements-pipeline.txt 를 실행하세요.')
+    raise SystemExit('의존성 누락: 설치 폴더에서 .venv/bin/pip install -r requirements-genos.txt 를 실행하세요.')
 
 def present(name):
     return bool(os.environ.get(name, '').strip())

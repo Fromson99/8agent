@@ -18,6 +18,7 @@ def code_binding():
     files = {layout.root / 'service.py', layout.path('tools') / 'pipeline.py',
              layout.path('system') / 'PIPELINE.json',
              layout.path('backend') / 'lawrag/pipeline/golden.py',
+             layout.path('backend') / 'lawrag/pipeline/native_trace.py',
              layout.path('backend') / 'lawrag/pipeline/golden_authoring.py',
              layout.path('backend') / 'lawrag/pipeline/golden_authoring.html',
              layout.path('backend') / 'lawrag/pipeline/golden_exchange.py',
@@ -32,7 +33,7 @@ def code_binding():
 def environment_binding():
     # Secrets are neither copied nor hashed into persistent evaluation records.
     return {key: os.environ.get(key, '') for key in
-            ('GENOS_BASE_URL', 'GENOS_QWEN_SERVING_ID', 'SEMANTIC_LLM_BACKEND')}
+            ('GENOS_BASE_URL', 'GENOS_LLM_SERVING_ID', 'SEMANTIC_LLM_BACKEND')}
 
 
 def check_adr(path, run_id, arm_id):
@@ -55,7 +56,7 @@ def make_plan(suite_path, generation, adr_manifest, run_id, arm_id, model):
         raise ValueError('gold mapping requires revalidation for this generation')
     adr = check_adr(adr_manifest, run_id, arm_id)
     env = environment_binding()
-    if env['SEMANTIC_LLM_BACKEND'] != 'genos' or not env['GENOS_BASE_URL'] or not env['GENOS_QWEN_SERVING_ID']:
+    if env['SEMANTIC_LLM_BACKEND'] != 'genos' or not env['GENOS_BASE_URL'] or not env['GENOS_LLM_SERVING_ID']:
         raise ValueError('plan in GENOS with explicit internal model environment')
     if not model.strip(): raise ValueError('exact internal model ID required')
     return seal({'schema_version': 'term-golden-plan-v1', 'created_at': now(),
@@ -84,7 +85,7 @@ def check_plan(plan):
     return suite
 
 
-async def run_cases(suite, call, output):
+async def run_cases(suite, call, output, *, native_journal_resolver=None):
     """call receives only a product request; gold is applied after raw output is saved."""
     rows = []
     for index, case in enumerate(suite['cases']):
@@ -95,7 +96,8 @@ async def run_cases(suite, call, output):
         try:
             result = await call(request)
             write(folder / 'response.json', result)
-            row = score(case, result, suite['binding'])
+            journal = native_journal_resolver(result) if native_journal_resolver is not None else None
+            row = score(case, result, suite['binding'], native_journal=journal)
             row['answer'] = result['answer']
         except Exception as exc:
             # Error messages may contain credentials or provider response text.
@@ -112,7 +114,7 @@ async def run_cases(suite, call, output):
 def execute(plan_path, output):
     plan = verify(read(plan_path))
     suite = check_plan(plan)
-    if os.environ.get('SEMANTIC_LLM_BACKEND') != 'genos' or not os.environ.get('GENOS_QWEN_KEY'):
+    if os.environ.get('SEMANTIC_LLM_BACKEND') != 'genos' or not os.environ.get('GENOS_LLM_KEY'):
         raise ValueError('GENOS internal provider credentials required; no fallback')
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=False)

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """GenOS 망 반입용 코드 ZIP을 만들고 검증한다.
 
-현재 작업판의 실행 코드만 허용목록으로 담는다. .git, .env, 가상환경, 테스트,
-원문 문서, 런타임 데이터는 넣지 않는다. 데이터는 data_ship.sh로 따로 나른다.
+--ignore-file genosIgnore는 해당 제외 규칙 이외의 작업판 전체를 담는다.
+옵션이 없으면 기존 실행 코드 허용목록을 사용한다. 데이터는 별도 반입한다.
 
     python 06_TOOLS/COMMANDS/code_ship.py pack --out 90_RUNTIME/OUT/ship/8agent-code.zip
     python 06_TOOLS/COMMANDS/code_ship.py verify 90_RUNTIME/OUT/ship/8agent-code.zip
@@ -19,6 +19,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
@@ -30,8 +31,8 @@ ROOT = next(
     if (path / "00_SYSTEM" / "WORKSPACE.json").is_file()
 )
 MANIFEST = "CODE_MANIFEST.json"
-# The maintained DRAFT builder verifies these exact historical source files.
-# Preserve their paths and bytes; do not ship unrelated research candidates.
+# Retained by the historical DRAFT/code ZIP contract. Preserve their paths and
+# bytes for compatibility; do not ship unrelated research candidates.
 AUTHORING_SUPPORT_ROOT = "02_BACKEND/lawrag/research/candidates/adr_0252/source-ids/revisions/rev-001/snapshot/06_TOOLS/OFFLINE"
 AUTHORING_SUPPORT_FILES = tuple(
     f"{AUTHORING_SUPPORT_ROOT}/{name}"
@@ -54,6 +55,9 @@ PIPELINE_FILES = (
 )
 REQUIRED_FILES = (
     "service.py",
+    "service/service.py",
+    "service/__init__.py",
+    "requirements.txt",
     "pyproject.toml",
     "requirements-serving.txt",
     "requirements-pipeline.txt",
@@ -66,9 +70,10 @@ REQUIRED_FILES = (
 
 ROOT_FILES = (
     ".gitignore", ".env.example", ".env.genos.example", ".env.onsite.example",
-    "README.md", "service.py", "genos_install.sh", "genos_git_publish.sh",
+    "README.md", "service.py", "service/service.py", "service/__init__.py", "genos_install.sh", "genos_git_publish.sh",
     "genos_unpack_all.sh", "pyproject.toml",
     "requirements.txt", "requirements-serving.txt", "requirements-pipeline.txt",
+    "requirements-genos.txt", "genosIgnore",
     *PIPELINE_FILES,
 )
 TREE_ROOTS = (
@@ -81,10 +86,17 @@ TREE_ROOTS = (
     "08_DEPLOYMENT/CONFIG/dataset_sync",
 )
 DOC_FILES = (
+    "07_DOCS/REFERENCE/OPERATIONS/STRUCTURE_FIRST_SEARCH.md",
+    "07_DOCS/REFERENCE/OPERATIONS/GENOS_ANSWER_STREAMING_20260929.md",
+    "07_DOCS/REFERENCE/OPERATIONS/RAG_USER_DIRECTED_MAIN_20260929.md",
+    "07_DOCS/REFERENCE/OPERATIONS/GENOS_PECAB_FULLTEXT_20260924.md",
+    "07_DOCS/REFERENCE/OPERATIONS/GENOS_PECAB_REQUEST_ROUTING_20260929.md",
+    "07_DOCS/REFERENCE/OPERATIONS/GENOS_REQUEST_ROUTING_20260929.md",
     "07_DOCS/REFERENCE/OPERATIONS/GENOS_DOCUMENT_TOOLS.md",
     "07_DOCS/REFERENCE/OPERATIONS/GENOS_TEAM_RAW.md",
     "07_DOCS/REFERENCE/OPERATIONS/GENOS_NATIVE_PRIMARY.md",
     "07_DOCS/REFERENCE/OPERATIONS/GENOS_DOCUMENT_CONNECTIONS.md",
+    "07_DOCS/REFERENCE/OPERATIONS/GENOS_RELEASE_STAGES.md",
     "08_DEPLOYMENT/GENOS/preprocessor/README.md",
     "07_DOCS/REFERENCE/OPERATIONS/GENOS_QUICKSTART.md",
     "07_DOCS/REFERENCE/OPERATIONS/GENOS_DEPLOY.md",
@@ -117,11 +129,91 @@ SKIP_PREFIXES = (
 )
 BLOCKED_NAMES = {".env", ".env.local"}
 BLOCKED_SUFFIXES = {
+    # The GENOS replacement contract excludes frontend script attachments.
+    ".js", ".jsx", ".mjs", ".cjs",
     ".key", ".pem", ".p12", ".pfx",
     ".pdf", ".hwp", ".hwpx", ".doc", ".docx", ".xls", ".xlsx",
     ".ppt", ".pptx", ".zip", ".tar", ".gz", ".7z", ".bak", ".pyc",
-    ".orig", ".ps1", ".js",
+    ".orig", ".ps1",
 }
+
+
+class IgnoreRules:
+    """Use Git's pattern semantics without local/global Git exclude settings."""
+
+    def __init__(self, raw: bytes):
+        self.temp = tempfile.TemporaryDirectory(prefix="genos-ignore-")
+        self.root = Path(self.temp.name)
+        try:
+            subprocess.run(["git", "init", "-q", str(self.root)], check=True,
+                           capture_output=True)
+            (self.root / ".gitignore").write_bytes(raw)
+        except BaseException:
+            self.close()
+            raise
+
+    def close(self):
+        self.temp.cleanup()
+
+    def excluded(self, names: Iterable[str]) -> set[str]:
+        names = list(names)
+        if not names:
+            return set()
+        # Git needs real directory entries for directory-only rules and ancestor
+        # negation. A trailing slash alone also makes `dir/*` match `dir/`.
+        normalized = {name.rstrip("/"): name for name in names}
+        for name in names:
+            path = self.root / name
+            (path if name.endswith("/") else path.parent).mkdir(parents=True, exist_ok=True)
+        result = subprocess.run(
+            ["git", "-C", str(self.root), "-c", "core.excludesFile=/dev/null",
+             "-c", "core.ignoreCase=false", "check-ignore", "--no-index", "-z", "--stdin"],
+            input=("\0".join(normalized) + "\0").encode("utf-8"), capture_output=True,
+        )
+        if result.returncode not in (0, 1):
+            raise RuntimeError("genosIgnore 확인 실패: " + result.stderr.decode("utf-8"))
+        return {normalized[name] for name in result.stdout.decode("utf-8").split("\0") if name}
+
+
+def _private(rel: str) -> bool:
+    path = PurePosixPath(rel)
+    return (".git" in path.parts
+            or (path.name.startswith(".env") and not path.name.endswith(".example"))
+            or path.suffix.lower() in {".key", ".pem", ".p12", ".pfx"})
+
+
+def _ignore_files(ignore_file: Path) -> list[Path]:
+    ignore_file = ignore_file.resolve()
+    ignore_name = ignore_file.relative_to(ROOT).as_posix()
+    rules = IgnoreRules(ignore_file.read_bytes())
+    selected = []
+    pending = [ROOT]
+    try:
+        while pending:
+            entries = sorted(p for directory in pending for p in directory.iterdir())
+            names = {p: p.relative_to(ROOT).as_posix() + ("/" if p.is_dir() else "")
+                     for p in entries}
+            excluded = rules.excluded(names.values())
+            pending = []
+            for path, name in names.items():
+                if name in excluded or _private(name.rstrip("/")):
+                    continue
+                if path.is_symlink():
+                    raise RuntimeError(f"심볼릭 링크는 코드 ZIP에 넣지 않습니다: {name}")
+                if path.is_dir():
+                    pending.append(path)
+                elif path.is_file() and name != MANIFEST:
+                    selected.append(path)
+                else:
+                    raise RuntimeError(f"일반 파일이 아닙니다: {name}")
+    finally:
+        rules.close()
+    actual = {p.relative_to(ROOT).as_posix() for p in selected}
+    missing = set(REQUIRED_FILES) | {ignore_name, ".gitignore"}
+    missing -= actual
+    if missing:
+        raise RuntimeError("필수 파일이 제외되었습니다: " + ", ".join(sorted(missing)))
+    return sorted(selected)
 
 
 def _git(*args: str) -> str:
@@ -192,16 +284,16 @@ def _rows(paths: Iterable[Path]) -> tuple[list[dict], dict[str, bytes]]:
 def _default_output() -> Path:
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     rev = _git("rev-parse", "--short", "HEAD") or "nogit"
-    return ROOT / "90_RUNTIME" / "LEGACY_VAR" / "out" / "ship" / f"8agent-code-{stamp}-{rev}.zip"
+    return ROOT / "90_RUNTIME" / "OUT" / "ship" / f"8agent-code-{stamp}-{rev}.zip"
 
 
-def pack(output: Path | None) -> Path:
+def pack(output: Path | None, ignore_file: Path | None = None) -> Path:
     target = (output or _default_output()).resolve()
     if target.exists():
         raise RuntimeError(f"이미 존재합니다: {target}")
     target.parent.mkdir(parents=True, exist_ok=True)
 
-    rows, payloads = _rows(_files())
+    rows, payloads = _rows(_ignore_files(ignore_file) if ignore_file else _files())
     status = _git("status", "--porcelain=v1")
     manifest = {
         "format": "8agent-code/1",
@@ -212,9 +304,13 @@ def pack(output: Path | None) -> Path:
             "dirty": bool(status),
             "status_rows": len(status.splitlines()) if status else 0,
         },
-        "note": "코드 전용. 런타임 데이터는 scripts/data_ship.sh로 별도 반입.",
+        "note": "코드 전용. 원문·용어·런타임 데이터는 별도 반입.",
         "files": rows,
     }
+    if ignore_file:
+        name = ignore_file.resolve().relative_to(ROOT).as_posix()
+        manifest["selection"] = {"mode": "genos-ignore", "path": name,
+                                 "sha256": _sha256(payloads[name])}
     manifest_raw = json.dumps(manifest, ensure_ascii=False, indent=2).encode("utf-8") + b"\n"
 
     partial = target.with_suffix(target.suffix + ".part")
@@ -272,15 +368,34 @@ def verify(path: Path) -> None:
             raise RuntimeError("ZIP 안에 중복 경로가 있습니다")
         for name in names:
             pure = PurePosixPath(name)
-            if pure.is_absolute() or ".." in pure.parts or "" in pure.parts:
+            if (pure.is_absolute() or ".." in pure.parts or "\\" in name
+                    or str(pure) != name):
                 raise RuntimeError(f"안전하지 않은 ZIP 경로: {name}")
-            if name != MANIFEST and (not _allowed(name) or _blocked(name)):
-                raise RuntimeError(f"허용되지 않은 파일이 들어 있습니다: {name}")
+            if _private(name) or (archive.getinfo(name).external_attr >> 16) & 0o170000 == 0o120000:
+                raise RuntimeError(f"비밀 파일 또는 심볼릭 링크: {name}")
         if MANIFEST not in names:
             raise RuntimeError(f"{MANIFEST} 없음")
         manifest = json.loads(archive.read(MANIFEST))
         if manifest.get("format") != "8agent-code/1":
             raise RuntimeError("모르는 코드 ZIP 형식")
+        selection = manifest.get("selection")
+        if selection:
+            if selection.get("mode") != "genos-ignore":
+                raise RuntimeError("모르는 파일 선택 방식")
+            raw = archive.read(selection["path"])
+            if _sha256(raw) != selection["sha256"]:
+                raise RuntimeError("genosIgnore SHA256 불일치")
+            rules = IgnoreRules(raw)
+            try:
+                forbidden = rules.excluded(n for n in names if n != MANIFEST)
+            finally:
+                rules.close()
+            if forbidden:
+                raise RuntimeError("제외 규칙 위반: " + ", ".join(sorted(forbidden)))
+        else:
+            for name in names:
+                if name != MANIFEST and (not _allowed(name) or _blocked(name)):
+                    raise RuntimeError(f"허용되지 않은 파일이 들어 있습니다: {name}")
         expected = {row["path"]: row for row in manifest.get("files") or []}
         actual = set(names) - {MANIFEST}
         if actual != set(expected):
@@ -295,32 +410,37 @@ def verify(path: Path) -> None:
     print(f"검증 OK: {target} · 파일 {len(expected)}개")
 
 
-def listing() -> None:
-    rows, _payloads = _rows(_files())
-    for row in rows:
-        print(f"{row['bytes']:>10}  {row['path']}")
-    print(f"합계: {sum(row['bytes'] for row in rows) / 1024 / 1024:.1f}MB · {len(rows)}개")
+def listing(ignore_file: Path | None = None) -> None:
+    paths = _ignore_files(ignore_file) if ignore_file else _files()
+    total = 0
+    for path in paths:
+        size = path.stat().st_size
+        total += size
+        print(f"{size:>10}  {path.relative_to(ROOT).as_posix()}")
+    print(f"합계: {total / 1024 / 1024:.1f}MB · {len(paths)}개")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     p_pack = sub.add_parser("pack", help="코드 ZIP 생성")
-    p_pack.add_argument("--out", type=Path, help="출력 ZIP (기본: var/out/ship)")
+    p_pack.add_argument("--out", type=Path, help="출력 ZIP (기본: 90_RUNTIME/OUT/ship)")
+    p_pack.add_argument("--ignore-file", type=Path, help="제외 규칙 파일 (genosIgnore)")
     p_verify = sub.add_parser("verify", help="코드 ZIP 검증")
     p_verify.add_argument("zip", type=Path)
     p_verify.add_argument("--python", help="실제 대상 Python 실행 파일로 모든 .py 문법 검사")
-    sub.add_parser("list", help="포함될 파일 목록")
+    p_list = sub.add_parser("list", help="포함될 파일 목록")
+    p_list.add_argument("--ignore-file", type=Path, help="제외 규칙 파일 (genosIgnore)")
     args = parser.parse_args()
     try:
         if args.command == "pack":
-            pack(args.out)
+            pack(args.out, args.ignore_file)
         elif args.command == "verify":
             verify(args.zip)
             if args.python:
                 verify_python(args.zip, args.python)
         else:
-            listing()
+            listing(args.ignore_file)
     except Exception as exc:
         print(f"오류: {exc}", file=sys.stderr)
         return 2

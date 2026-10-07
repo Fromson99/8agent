@@ -140,5 +140,5 @@ def test_python311_installed_entrypoints(tmp_path):
                           env={**os.environ,'PYTHONPATH':str(root/'02_BACKEND'),
                                'LAWRAG_WORKSPACE_ROOT':str(root),'LAWRAG_TOOL_WORKSPACE_ROOT':str(root),
                                'SEMANTIC_LLM_BACKEND':'genos','GENOS_BASE_URL':'http://genos.invalid',
-                               'GENOS_QWEN_SERVING_ID':'226','GENOS_QWEN_KEY':'synthetic-only'})
+                               'GENOS_LLM_SERVING_ID':'226','GENOS_LLM_KEY':'synthetic-only'})
     assert result.returncode==0,result.stdout+result.stderr

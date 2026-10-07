@@ -21,7 +21,7 @@ set -euo pipefail
 
 url="${GENOS_CODE_URL:-}"
 key="${GENOS_CODE_KEY:-}"
-timeout="${GENOS_CALL_TIMEOUT:-300}"
+timeout="${GENOS_CALL_TIMEOUT:-2100}"
 
 [[ -n "$url" ]] || { printf '오류: GENOS_CODE_URL을 설정하세요.\n' >&2; exit 2; }
 [[ -n "$key" ]] || { printf '오류: GENOS_CODE_KEY를 설정하세요.\n' >&2; exit 2; }

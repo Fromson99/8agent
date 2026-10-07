@@ -244,27 +244,39 @@ def detect_conflicts(db):
     rows = [dict(zip(('id','axis','value','source','target','scope_key'), r)) for r in
             db.execute('SELECT id,axis,value,source,target,scope_key FROM sense_assertion')]
     conflicts = []
-    for scope in sorted({r['scope_key'] for r in rows}):
-        group = [r for r in rows if r['scope_key'] == scope]
+    groups = {}
+    for row in rows:
+        groups.setdefault(row['scope_key'], []).append(row)
+    for scope in sorted(groups):
+        group = groups[scope]
         same = [r for r in group if r['axis'] == 'IDENTITY' and r['value'] == 'SAME']
         broader = [r for r in group if r['axis'] == 'RELATION' and r['value'] == 'BROADER_THAN']
-        def path(edges, start, target, symmetric=False):
+        def adjacency(edges, symmetric=False):
+            result = {}
+            for edge in edges:
+                result.setdefault(edge['source'], []).append((edge['target'], edge['id']))
+                if symmetric and edge['target'] != edge['source']:
+                    result.setdefault(edge['target'], []).append((edge['source'], edge['id']))
+            return result
+        same_neighbors = adjacency(same, True)
+        broader_neighbors = adjacency(broader)
+        def path(neighbors, start, target, exclude=None):
             stack = [(start, [])]; visited = set()
             while stack:
                 node, ids = stack.pop()
                 if node == target: return ids
                 if node in visited: continue
                 visited.add(node)
-                for edge in edges:
-                    if edge['source'] == node: stack.append((edge['target'], ids+[edge['id']]))
-                    elif symmetric and edge['target'] == node: stack.append((edge['source'], ids+[edge['id']]))
+                for neighbor, identity in neighbors.get(node, ()):
+                    if identity != exclude:
+                        stack.append((neighbor, ids+[identity]))
             return None
         for row in group:
             if row['axis'] == 'IDENTITY' and row['value'] == 'DIFFERENT':
-                ids = path(same, row['source'], row['target'], True)
+                ids = path(same_neighbors, row['source'], row['target'])
                 if ids is not None: conflicts.append(('IDENTITY_CONTRADICTION', sorted(set(ids+[row['id']]))))
         for row in broader:
-            ids = path([r for r in broader if r['id'] != row['id']], row['target'], row['source'])
+            ids = path(broader_neighbors, row['target'], row['source'], row['id'])
             if ids is not None: conflicts.append(('BROADER_CYCLE', sorted(set(ids+[row['id']]))))
     for kind, ids in conflicts:
         db.execute('INSERT OR IGNORE INTO sense_conflict VALUES (?,?,?)', ('lexconflict:'+digest([kind,ids]),kind,json.dumps(ids)))

@@ -262,7 +262,7 @@ class Queue:
             os.fsync(f.fileno())
 
 
-def prepare(directory, source, system, schema, *, model, revision, endpoint, max_tokens=8192, max_attempts=3):
+def prepare(directory, source, system, schema, *, model, revision, endpoint, max_tokens=80000, max_attempts=3):
     directory, source = Path(directory), Path(source)
     if not model.strip() or not revision.strip() or max_tokens < 1 or max_attempts < 1:
         raise ValueError('Exact model, revision and positive limits required')
@@ -340,7 +340,7 @@ class HTTPProvider:
         return response.content.decode('utf-8')
 
 
-def run(queue, *, execute=False, max_calls=0, workers=1, timeout=300, provider_factory=None, stop=None):
+def run(queue, *, execute=False, max_calls=0, workers=1, timeout=1800, provider_factory=None, stop=None):
     if not execute:
         return queue.status()
     if max_calls < 1 or workers < 1 or timeout < 1:
@@ -411,7 +411,7 @@ def main():
     init.add_argument('--model', required=True)
     init.add_argument('--model-revision', required=True)
     init.add_argument('--endpoint', required=True)
-    init.add_argument('--max-tokens', type=int, default=8192)
+    init.add_argument('--max-tokens', type=int, default=80000)
     init.add_argument('--max-attempts', type=int, default=3)
     for command in ('status', 'run', 'export', 'retry'):
         s = sub.add_parser(command)
@@ -420,7 +420,7 @@ def main():
             s.add_argument('--execute', action='store_true')
             s.add_argument('--max-calls', type=int, default=0)
             s.add_argument('--workers', type=int, default=1)
-            s.add_argument('--timeout', type=float, default=300)
+            s.add_argument('--timeout', type=float, default=1800)
         if command == 'retry':
             s.add_argument('--job-id', required=True)
             s.add_argument('--reason', required=True)

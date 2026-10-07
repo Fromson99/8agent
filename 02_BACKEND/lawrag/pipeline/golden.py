@@ -176,7 +176,7 @@ def product_request(case):
     return {'question': case['question'], 'document_ids': case['document_ids'], 'use_llm': True}
 
 
-def score(case, result, binding):
+def score(case, result, binding, *, native_journal=None):
     answer = result['answer']
     if answer['generation_id'] != binding['generation_id'] or answer['source_store_sha256'] != binding['store_sha256']:
         raise ValueError('result generation mismatch')
@@ -186,15 +186,21 @@ def score(case, result, binding):
         raise ValueError('result scope mismatch')
     retrieval = result['retrieval']
     state = retrieval['term_agent']
-    if state.get('use_llm') is not True:
+    native = None
+    if result.get('response_schema') == 'legal-agent-unified-response-v1':
+        if native_journal is None:
+            raise ValueError('native golden scoring requires an explicit journal')
+        from .native_trace import native_result_stages
+        native = native_result_stages(result, native_journal)
+    elif state.get('use_llm') is not True:
         raise ValueError('source-only result cannot evaluate answer quality')
-    trace = state['trace']
+    trace = state.get('trace', [])
     # No resolved term is an observed empty search; absent trace on failure is unknown.
     first = trace[0] if trace else None
     initial = ([r['id'] for r in first['search_results']] if first and 'search_results' in first
-               else ([] if state['status'] == 'NO_RESOLVED_TERM' else None))
+               else ([] if state.get('status') == 'NO_RESOLVED_TERM' else None))
     first_round = first.get('after_evidence_ids') if first else initial
-    stages = {'initial': initial, 'first_round': first_round,
+    stages = {name: native['stages'][name] for name in STAGES} if native else {'initial': initial, 'first_round': first_round,
               'cumulative': [s['id'] for s in retrieval['candidates']],
               'selected': [s['id'] for s in result['assembly']['context']],
               'cited': [sid for c in answer['claims'] for sid in c['source_ids']]}
@@ -212,13 +218,18 @@ def score(case, result, binding):
                          'all_required': len(hits) == len(groups) if groups and observed else None,
                          'lost_groups_from_previous': sorted(previous - hits) if observed else []}
         previous = hits if observed else set()
-    selected = set(stages['selected'])
-    return {'case_id': case['id'], 'execution_status': state['status'],
-            'execution_failed': state['status'] == 'EXECUTION_FAILURE',
-            'provider_calls': state.get('calls'),
-            'metrics': metrics, 'citation_ids_outside_context': sorted(set(stages['cited']) - selected),
+    selected = set(stages['selected'] or [])
+    row = {'case_id': case['id'], 'execution_status': native['run_status'] if native else state['status'],
+            'execution_failed': native['run_status'] != 'COMPLETED' if native else state['status'] == 'EXECUTION_FAILURE',
+            'provider_calls': native['usage']['attempts'] if native else state.get('calls'),
+            'metrics': metrics, 'citation_ids_outside_context': sorted(set(stages['cited'] or []) - selected),
             'answer_quality': 'PENDING_HUMAN_REVIEW', 'answer_sha256': digest(answer),
             'note': 'Article presence is not semantic support or paragraph-level answer correctness.'}
+    if native:
+        # IDs indicate presence. These spans independently expose acquisition and delivery.
+        row['native_evidence'] = {k: native[k] for k in ('journal_path', 'snapshot_sha256', 'run_id', 'stage_refs', 'selection_basis', 'evidence_coverage', 'presentation_coverage', 'usage')}
+        row['native_evidence']['presented_source_ids'] = native['stages']['presented']
+    return row
 
 
 def review_template(suite, rows):
@@ -340,6 +351,9 @@ def main(argv=None):
     for flag in ('run_id', 'arm_id', 'model'): p.add_argument('--' + flag.replace('_', '-'), required=True)
     p = sub.add_parser('run'); p.add_argument('--plan', required=True, type=Path); p.add_argument('--output', required=True, type=Path)
     p = sub.add_parser('report'); p.add_argument('--run', required=True, type=Path); p.add_argument('--reviews', type=Path); p.add_argument('--output', required=True, type=Path)
+    p = sub.add_parser('score-native', help='명시한 완료 v6 기록과 저장 답변을 대조하여 오프라인 채점')
+    for flag in ('suite', 'response', 'journal', 'output'): p.add_argument('--' + flag, required=True, type=Path)
+    p.add_argument('--case-id', required=True)
     args = parser.parse_args(argv)
     if args.command == 'template': write(args.output, template())
     elif args.command == 'catalog': write(args.output, catalog(args.generation))
@@ -373,6 +387,11 @@ def main(argv=None):
     elif args.command == 'run':
         from .golden_run import execute
         execute(args.plan, args.output)
+    elif args.command == 'score-native':
+        suite = verify(read(args.suite))
+        matches = [c for c in suite['cases'] if c['id'] == args.case_id]
+        if len(matches) != 1: raise ValueError('exact native golden case required')
+        write(args.output, score(matches[0], read(args.response), suite['binding'], native_journal=args.journal))
     elif args.command == 'report':
         from .golden_exchange import checked_run
         suite, rows, _ = checked_run(args.run)

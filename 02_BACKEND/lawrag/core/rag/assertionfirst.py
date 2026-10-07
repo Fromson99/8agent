@@ -1,7 +1,7 @@
 """임베딩 없이 정본 표현에서 Assertion 좌표로 가는 구조 검색.
 
 원문 조문을 검색하지 않는다. active Concept의 label·alias·definition·example과
-active Assertion의 query_cue만 역색인한다. 질문의 정확 구와 Kiwi 형태소가 정본
+active Assertion의 query_cue만 역색인한다. 질문의 정확 구와 PeCab 형태소가 정본
 표현에 걸리면 Concept→Assertion 또는 cue→Assertion 간선을 따라 원문 좌표를 연다.
 질문에서 추측한 역할은 쓰지 않고 Assertion에 저장된 역할을 그대로 반환한다.
 """
@@ -44,26 +44,19 @@ def _fallback_tokens(value: str) -> tuple[str, ...]:
         if len(token) >= 2))
 
 
-@lru_cache(maxsize=1)
-def _kiwi():
-    from kiwipiepy import Kiwi
-
-    return Kiwi()
-
-
 def _token_values(rows) -> list[tuple[str, ...]]:
-    """Kiwi가 없으면 실행을 막지 않고 보수적인 공백 토큰으로 내려간다."""
+    """PeCab 분석 실패 시 보수적인 공백 토큰으로 내려간다."""
     texts = list(rows)
     try:
-        kiwi = _kiwi()
+        from semantic_runtime import term_morph
         out = []
-        for tokens in kiwi.tokenize(texts):
+        for text in texts:
             values = []
-            for token in tokens:
+            for token in term_morph.tokenize(text):
                 if not (token.tag.startswith(_CONTENT_TAGS)
                         or token.tag in _CONTENT_TAGS):
                     continue
-                value = str(token.lemma or token.form).casefold()
+                value = str(token.form).casefold()
                 if len(value) < 2 and not token.tag.startswith(("SL", "SN")):
                     continue
                 values.append(value)

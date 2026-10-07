@@ -97,59 +97,97 @@ def _candidates(glossary, linked, key, did):
     return {'candidates':selected,'total':total,'truncated':total>len(selected),'canonical_approval':False}
 
 
-def project(source, directory, output):
+def maximal_hits(hits):
+    """Keep original order and equal spans; remove only strict containment.
+
+    Earlier start groups supply the maximum end seen so far. Within an equal
+    start group only a strictly larger end contains a hit. No pairwise scans.
+    """
+    ordered = sorted(range(len(hits)), key=lambda i: hits[i][1])
+    keep = [True] * len(hits)
+    prior_end = None
+    offset = 0
+    while offset < len(ordered):
+        stop = offset + 1
+        start = hits[ordered[offset]][1]
+        while stop < len(ordered) and hits[ordered[stop]][1] == start:
+            stop += 1
+        group_end = max(hits[ordered[i]][2] for i in range(offset, stop))
+        for i in ordered[offset:stop]:
+            end = hits[i][2]
+            keep[i] = not ((prior_end is not None and prior_end >= end) or group_end > end)
+        prior_end = group_end if prior_end is None else max(prior_end, group_end)
+        offset = stop
+    return [hit for hit, accepted in zip(hits, keep) if accepted]
+
+
+def project(source, directory, output, *, copy_source=True):
+    progress = globals().get('_BUILD_PROGRESS', lambda **kw: None)
+    progress(task='input-verification', completed=0, total=None, unit='checks')
     source,directory,output=map(lambda p:Path(p).resolve(),(source,directory,output))
     identity={'source_sha256':v1.sha(source),'glossary':binding(directory)}
+    if not copy_source: identity['source_mode']='immutable-input-reference'
     if output.exists():
         report=json.loads((output/'report.json').read_text())
         if report['identity']!=identity:raise ValueError('Glossary/source changed; use a new link output')
         if any(v1.sha(output/name)!=value for name,value in report['files'].items()):
             raise ValueError('Glossary linkage output hash mismatch')
-        return output/'source.sqlite',report
+        return (output/'source.sqlite' if copy_source else source),report
     output.parent.mkdir(parents=True,exist_ok=True)
     temp=Path(tempfile.mkdtemp(prefix='.'+output.name+'-',dir=output.parent))
-    shutil.copyfile(source,temp/'source.sqlite')
+    if copy_source: shutil.copyfile(source,temp/'source.sqlite')
     from . import glossary_knowledge
     knowledge_path=glossary_knowledge.selected_for(directory)
-    with (closing(glossary_knowledge.Knowledge(knowledge_path)) if knowledge_path else nullcontext(None)) as knowledge, closing(v1.read_db(directory/'dictionary.sqlite')) as glossary,closing(v1.read_db(source)) as original,closing(sqlite3.connect(temp/'links.sqlite')) as links,closing(sqlite3.connect(temp/'source.sqlite')) as target:
+    with (closing(glossary_knowledge.Knowledge(knowledge_path)) if knowledge_path else nullcontext(None)) as knowledge, closing(v1.read_db(directory/'dictionary.sqlite')) as glossary,closing(v1.read_db(source)) as original,closing(sqlite3.connect(temp/'links.sqlite')) as links,(closing(sqlite3.connect(temp/'source.sqlite')) if copy_source else nullcontext(None)) as target:
         links.row_factory=sqlite3.Row
         v1.create_tables(links);definitions.tables(links)
         links.execute('CREATE INDEX occurrence_block ON occurrence(document_id,block_id)')
+        progress(task='local-definition-projection', completed=0, total=None, unit='definitions')
         definitions.add(links,original,identity['source_sha256'])
         keys={r[0] for r in glossary.execute('SELECT DISTINCT key FROM surface')}
         if knowledge: keys.update(knowledge.surfaces())
         keys.update(r[0] for r in links.execute('SELECT DISTINCT key FROM surface'))
+        progress(task='matcher-preparation', completed=0, total=None, unit='keys')
         matcher=Matcher([(key,key) for key in sorted(keys)])
+        total_blocks=original.execute('SELECT count(*) FROM source_block').fetchone()[0]
+        done_blocks=0
+        progress(task='block-matching', completed=0, total=total_blocks, unit='blocks')
         for did,bid,uid,text in original.execute('SELECT document_id,block_id,unit_id,text FROM source_block ORDER BY document_id,block_id'):
             hits=list(matcher.find(text))
             links.executemany('INSERT OR IGNORE INTO occurrence VALUES (?,?,?,?,?,?)',
-                [(key,did,str(bid),uid,lo,hi) for key,lo,hi,_ in hits
-                 if not any(a<=lo and hi<=b and (a<lo or hi<b) for _,a,b,_ in hits)])
+                [(key,did,str(bid),uid,lo,hi) for key,lo,hi,_ in maximal_hits(hits)])
+            done_blocks+=1
+            progress(task='block-matching', completed=done_blocks, total=total_blocks, unit='blocks')
         # The catalogue reference and per-surface candidate IDs permit complete lookup
         # even when the LLM's bounded hints omit entries. Never erase raw occurrences.
         links.executescript('''CREATE TABLE catalogue_link(key TEXT,entry_id TEXT,
             PRIMARY KEY(key,entry_id));
             CREATE TABLE knowledge_catalogue_link(key TEXT,source TEXT,node_id TEXT,label TEXT,kind TEXT,
             PRIMARY KEY(key,source,node_id,label,kind));''')
-        for key, in links.execute('SELECT DISTINCT key FROM occurrence').fetchall():
+        matched_keys=links.execute('SELECT DISTINCT key FROM occurrence').fetchall()
+        progress(task='catalogue-linking', completed=0, total=len(matched_keys), unit='surfaces')
+        for done_keys,(key,) in enumerate(matched_keys,1):
             links.executemany('INSERT OR IGNORE INTO catalogue_link VALUES (?,?)',
                 [(key,r[0]) for r in glossary.execute('SELECT DISTINCT entry_id FROM surface WHERE key=?',(key,))])
             if knowledge:
                 links.executemany('INSERT OR IGNORE INTO knowledge_catalogue_link VALUES (?,?,?,?,?)',
                     [(key,r['source'],r['node_id'],r['label'],r['kind']) for r in knowledge.matches(key)])
-        target.commit();links.commit()
+            progress(task='catalogue-linking', completed=done_keys, total=len(matched_keys), unit='surfaces')
+        progress(task='link-integrity-and-hashes', completed=0, total=None, unit='checks')
+        if target is not None: target.commit()
+        links.commit()
         report={'identity':identity,'occurrences':links.execute('SELECT count(*) FROM occurrence').fetchone()[0],
                 'matched_surfaces':links.execute('SELECT count(DISTINCT key) FROM occurrence').fetchone()[0],
                 'local_definitions':definitions.counts(links),
                 'llm_calls':0,'canonical_approval':False,'runtime_promoted':False,
                 'knowledge_matches':links.execute('SELECT count(*) FROM knowledge_catalogue_link').fetchone()[0]}
-        for db in (links,target):
+        for db in ((links,target) if target is not None else (links,)):
             if db.execute('PRAGMA integrity_check').fetchone()[0]!='ok' or db.execute('PRAGMA foreign_key_check').fetchone():
                 raise ValueError('Glossary linkage integrity failure')
     if v1.sha(source)!=identity['source_sha256'] or binding(directory)!=identity['glossary']:
         raise ValueError('Source/glossary changed while linking')
-    report['files']={name:v1.sha(temp/name) for name in ('links.sqlite','source.sqlite')}
+    report['files']={name:v1.sha(temp/name) for name in (('links.sqlite','source.sqlite') if copy_source else ('links.sqlite',))}
     _atomic_json(temp/'report.json',report)
     if output.exists():raise ValueError('Link output appeared during build')
     os.rename(temp,output)
-    return output/'source.sqlite',report
+    return (output/'source.sqlite' if copy_source else source),report

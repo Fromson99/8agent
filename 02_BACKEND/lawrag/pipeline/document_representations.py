@@ -24,6 +24,7 @@ def metadata(row):
             'folder_path': ' > '.join(folders), 'display_name': ' > '.join(display),
             'relative_path': row['relative'], 'source_category': row['source'],
             **({'team': row['team']} if row.get('team') else {}),
+            **({'official_abbreviation': row['official_abbreviation']} if row.get('official_abbreviation') else {}),
             **({'original_path': row['original_path']} if row.get('original_path') else {})}
 
 

@@ -1,0 +1,119 @@
+{
+  "schema_version": "legal-search-skill-package-v1",
+  "name": "internal-legal-search",
+  "version": "1.0.0",
+  "created_at": "2026-09-22T01:37:46.108893+00:00",
+  "status": "authored_static_validated",
+  "target_protocol": "legal-agent-tools-v5",
+  "entrypoint": "SKILL.md",
+  "runtime_connected": false,
+  "model_quality_verified": false,
+  "genos_verified": false,
+  "main_changed": false,
+  "content_sha256": {
+    "SKILL.md": "d733d3edf8809e6cae12325225aed47786d3fc9813074ffab219cb0254be2c99",
+    "references/adoption.md": "7b2d6e7ad316037328296faa8cd05e385eea49e25cfc85305e3ee38279db9990",
+    "references/failure-map.md": "949c8b545748c3edca6ee29c91157a741b3138d48ff4786b2810cd14025ef5c6"
+  },
+  "baseline": {
+    "release_id": "legal-agent-v5-20260922-r3",
+    "active_generation": 20,
+    "active_pointer_sha256": "f352bbdcea435b98d8f98c4f00c147d60d8d6ae754120aed056ea5b8edcc9695",
+    "release_manifest": "08_DEPLOYMENT/RELEASES/legal-agent-v5-20260922-r3/release.json",
+    "release_manifest_sha256": "6358b307421e045a44790e8dc4fd3109858b100c9c74c6a9f47076789e5e67c4",
+    "code_root": "08_DEPLOYMENT/RELEASES/legal-agent-v5-20260922-r3/code",
+    "data_path": "01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation",
+    "data_manifest_sha256": "c1b5d2ef3f30f9a806e8c5b929388877380a01a508f0941e27a9dd9c863a8294",
+    "quality_certified": false
+  },
+  "profiles": {
+    "working_tree": {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v5.json",
+      "sha256": "547936a54dde96a9a3600f29b83ea90a20ab82ad0351e06f4fcc88db003ff449",
+      "max_context_chars": 100000
+    },
+    "selected_release": {
+      "path": "08_DEPLOYMENT/RELEASES/legal-agent-v5-20260922-r3/code/00_SYSTEM/LEGAL_AGENT/profile-tools-v5.json",
+      "sha256": "e53d90c6fa59b28ada7c0ecaa231c2c1257a7085c07382636dc2fd155ef7c0ca",
+      "max_context_chars": 60000
+    }
+  },
+  "inspected_code": {
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py": {
+      "working_sha256": "fb82aacdf69b6b3e813e01bcf345fd1852e09e9c4ec80e47b0f3cf0e1388d28b",
+      "selected_sha256": "fb82aacdf69b6b3e813e01bcf345fd1852e09e9c4ec80e47b0f3cf0e1388d28b",
+      "same_bytes": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/question_obligations.py": {
+      "working_sha256": "f233c10404528b6a723ffdb9a702de1d9267446e3fc318e991b143ca2b74ae2c",
+      "selected_sha256": "f233c10404528b6a723ffdb9a702de1d9267446e3fc318e991b143ca2b74ae2c",
+      "same_bytes": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/obligation_protocol.py": {
+      "working_sha256": "afe01cef713a53f25e69bdde98ada3e438b93bb50d7a1f92c5f21d66342d1842",
+      "selected_sha256": "afe01cef713a53f25e69bdde98ada3e438b93bb50d7a1f92c5f21d66342d1842",
+      "same_bytes": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py": {
+      "working_sha256": "7ee56684047ea3b4d81e6d29640b53edb223b2f822740f3f693781be5ef9df40",
+      "selected_sha256": "7ee56684047ea3b4d81e6d29640b53edb223b2f822740f3f693781be5ef9df40",
+      "same_bytes": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_protocol.py": {
+      "working_sha256": "0f9a1e6061be9fe25c43e88290d1bdc082a693df363bae1b1d19409883b67d1d",
+      "selected_sha256": "0f9a1e6061be9fe25c43e88290d1bdc082a693df363bae1b1d19409883b67d1d",
+      "same_bytes": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/relations_protocol.py": {
+      "working_sha256": "af08a057e84f311d49b23b45d5c87d8bac3d35c5d295ad48b26be59d01064194",
+      "selected_sha256": "af08a057e84f311d49b23b45d5c87d8bac3d35c5d295ad48b26be59d01064194",
+      "same_bytes": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/tools_protocol.py": {
+      "working_sha256": "49baa5718a940648b8df12329567ca55a897d3760885d061e13991ea21522c3d",
+      "selected_sha256": "49baa5718a940648b8df12329567ca55a897d3760885d061e13991ea21522c3d",
+      "same_bytes": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/numbered_references.py": {
+      "working_sha256": "edf851e047647a3218fe531d8074fe2d32b2039ab18cd855041be86cb6222b10",
+      "selected_sha256": "edf851e047647a3218fe531d8074fe2d32b2039ab18cd855041be86cb6222b10",
+      "same_bytes": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py": {
+      "working_sha256": "fd285a0dcac49ab665ece6495ba5e57370407043fb30f2f71991afbe7e388ddc",
+      "selected_sha256": "fd285a0dcac49ab665ece6495ba5e57370407043fb30f2f71991afbe7e388ddc",
+      "same_bytes": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_tools.py": {
+      "working_sha256": "61463b818b2c05785ea2337046cfde7914fa766c3ef62cdd8db6a84158df434e",
+      "selected_sha256": "61463b818b2c05785ea2337046cfde7914fa766c3ef62cdd8db6a84158df434e",
+      "same_bytes": true
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": {
+      "working_sha256": "522bc704e8e6d5ac70f083ad9b51f95d4a28e7759fa29731dff60315fe154231",
+      "selected_sha256": "522bc704e8e6d5ac70f083ad9b51f95d4a28e7759fa29731dff60315fe154231",
+      "same_bytes": true
+    },
+    "02_BACKEND/semantic_runtime/navigation_match.py": {
+      "working_sha256": "b4333ec7ee6d9c8b4fbb8d011b39ff71c92e8256e521f9f58842f28450a285c2",
+      "selected_sha256": "b4333ec7ee6d9c8b4fbb8d011b39ff71c92e8256e521f9f58842f28450a285c2",
+      "same_bytes": true
+    }
+  },
+  "reference_documents": {
+    "04_EXPERIMENTS/ADR/ADR-0428-reverse-match-structural-path/README.md": "44a3e63944b0f3c5248801836d3843c13965c6bacf4b674e858f87aff7526170",
+    "04_EXPERIMENTS/ADR/ADR-0506-gemma-v5-main-three-case-probe/README.md": "4b875dffa2d277a5420550bba2c0b289c4cbe20f30cf825161c0dc240e518575",
+    "04_EXPERIMENTS/ADR/ADR-0507-v5-priority-reverse-matching/README.md": "658dea38f9b9afc95a7c091df8e46f276923b026edf975003a99f5cd859321aa",
+    "04_EXPERIMENTS/ADR/ADR-0508-v5-maximal-reference-context/CASE_REVIEW.md": "f04399ea76976a65a60502ee276c04156abe387177c79c2cf0a78da07021414e",
+    "04_EXPERIMENTS/ADR/ADR-0508-v5-maximal-reference-context/README.md": "53e8a069f9fcbc2258de853a9b0803051dc54a3de3372537129975184d3d4537",
+    "04_EXPERIMENTS/LEGACY_ADR/EXPERIMENT_AGENT_PROMPT.md": "566c0988707a1a7155c0457d3e463095f04bf44aa403b1755d67c8927d910e8f",
+    "04_EXPERIMENTS/LEGACY_ADR/STANDARD.md": "0cf73a1daf49cc306c17e0e1147e0dd41fdbf159b89daf21c4ef6cbc42c32f9c",
+    "07_DOCS/REFERENCE/REPORTS/ADR-0474_PHASE0_TRAJECTORY_AUDIT_20260920.md": "d995d3118d49c236bee1ce84c9dde6cfd99a98f6de8b2d39943d4f55117f9817",
+    "07_DOCS/REFERENCE/REPORTS/CM003_TOOL_LOOP_DIAGNOSIS_20260921.md": "89b067d1f55f6860d9a98e60b7ef9af87d76b2df6721565b9fd2e6674afa29e6",
+    "07_DOCS/REFERENCE/REPORTS/GEMMA_OBLIGATION_PROBE_20260922/README.md": "a47827cb42099c68dc6db38cfb84216531125775e90391158c44f9f5dcd5106b",
+    "07_DOCS/REFERENCE/REPORTS/LEGAL_SEARCH_SKILL_DESIGN_20260922/README.md": "be7a234c834770b2efa9dd0be8d07148e5ec451f2ce429602fe1798a8befc7f1",
+    "07_DOCS/REFERENCE/REPORTS/RAG_SOURCE_WORKFLOW_IMPLEMENTATION_20260921/QWEN_BEHAVIOR_DIAGNOSIS.md": "e2fc9f489db045b5d9ddad6c037fd2abee233acb67e341e5364aa5f0c7f5304a",
+    "07_DOCS/REFERENCE/REPORTS/SOURCE_TIERS_EDGE_CASES_20260921/README.md": "d78519ae73968c336577fe805254111efe9fd09b5b13d8f5818fbe04d3208781"
+  },
+  "loading_note": "Product skill artifact only. No runtime loader or profile setting was added. Maintenance references are excluded from proposed model input."
+}

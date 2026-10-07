@@ -23,11 +23,10 @@ def isolated_env(monkeypatch):
     monkeypatch.setenv('STRUCTURE_RECIPE_ACCEPT_WARNINGS','off')
     monkeypatch.setenv("LLM_BACKEND", "genos")
     monkeypatch.setenv("STRUCTURE_RECIPE_VLM", "on")
-    monkeypatch.setenv("GENOS_LLM_PROFILE", "qwen")
     monkeypatch.setenv("GENOS_BASE_URL", "https://test.invalid")
-    monkeypatch.setenv("GENOS_QWEN_SERVING_ID", "123")
-    monkeypatch.setenv("GENOS_QWEN_MODEL", "test-qwen-vl")
-    monkeypatch.setenv("GENOS_QWEN_KEY", "TEST-SECRET-NEVER-LOG")
+    monkeypatch.setenv("GENOS_LLM_SERVING_ID", "123")
+    monkeypatch.setenv("GENOS_LLM_MODEL", "test-qwen-vl")
+    monkeypatch.setenv("GENOS_LLM_KEY", "TEST-SECRET-NEVER-LOG")
     monkeypatch.setenv("GENOS_GATEWAY_API_PREFIX", "none")
     monkeypatch.setenv("GENOS_LLM_MAX_RETRIES", "2")
     monkeypatch.setenv("GENOS_LLM_TIMEOUT", "30")
@@ -52,9 +51,9 @@ def response(value, finish="stop"):
 def test_switch_and_policy(monkeypatch):
     assert runtime.enabled()
     before = runtime.policy_identity()
-    monkeypatch.setenv("GENOS_QWEN_KEY", "NEW-SECRET")
+    monkeypatch.setenv("GENOS_LLM_KEY", "NEW-SECRET")
     assert runtime.policy_identity() == before
-    monkeypatch.setenv("GENOS_QWEN_MODEL", "other")
+    monkeypatch.setenv("GENOS_LLM_MODEL", "other")
     assert runtime.policy_identity() != before
     monkeypatch.setenv("STRUCTURE_RECIPE_VLM", "off")
     assert not runtime.enabled()
@@ -109,16 +108,15 @@ def install_transport(monkeypatch, callback, models=None):
     return sessions
 
 
-def test_existing_llm_profile_auth_path_stream_and_images(tmp_path, monkeypatch):
-    monkeypatch.setenv('GENOS_LLM_PROFILE','shared_vl')
-    monkeypatch.setenv('GENOS_SHARED_VL_SERVING_ID','456')
-    monkeypatch.setenv('GENOS_SHARED_VL_KEY','PROFILE-SECRET')
-    monkeypatch.delenv('GENOS_SHARED_VL_MODEL',raising=False)
+def test_existing_llm_generic_auth_path_stream_and_images(tmp_path, monkeypatch):
+    monkeypatch.setenv('GENOS_LLM_SERVING_ID','456')
+    monkeypatch.setenv('GENOS_LLM_KEY','PROFILE-SECRET')
     monkeypatch.delenv('GENOS_LLM_MODEL',raising=False)
     sessions=install_transport(monkeypatch,lambda *a: response(RECIPE),models=['site-vision-model'])
     journal=runtime.Journal(tmp_path,'profile')
     provider=runtime.GenosCalls(journal,['data:image/png;base64,aGVsbG8='])
-    assert isinstance(provider.client,llm.LLM)
+    from lawrag.core import llm as current_llm
+    assert isinstance(provider.client,current_llm.LLM)
     assert provider.model=='site-vision-model'
     provider('review','test',{'full_text':'whole document'},loop.recipe_schema({'heading':{},'number':{}}),True)
     session=sessions[0]
@@ -164,7 +162,6 @@ def test_explicit_profile_model_does_not_need_discovery(tmp_path,monkeypatch):
 def test_genos_documented_first_model_and_user_header(tmp_path,monkeypatch):
     # GENOS v1.8.6 LLM API: GET /v1/models, data[0].id,
     # Authorization Bearer and optional x-genos-user-id.
-    monkeypatch.delenv('GENOS_QWEN_MODEL',raising=False)
     monkeypatch.delenv('GENOS_LLM_MODEL',raising=False)
     monkeypatch.setenv('GENOS_USER_ID','653')
     sessions=install_transport(monkeypatch,lambda *a: response(RECIPE),models=['first','second'])
@@ -472,7 +469,7 @@ def test_noop_review_cause_and_exact_pending_path_survive_runtime(tmp_path,monke
     assert not (tmp_path/'structure-recipes.json').exists()
 
 
-@pytest.mark.parametrize('max_tokens,phase', [(4096, 'detect'), (16384, 'detect'), (16384, 'review')])
+@pytest.mark.parametrize('max_tokens,phase', [(4096, 'detect'), (80000, 'detect'), (80000, 'review')])
 def test_output_limit_reaches_error_summary_console_and_status(tmp_path, monkeypatch, max_tokens, phase):
     from io import StringIO
     from lawrag.pipeline import genos_build, genos_status
@@ -509,7 +506,7 @@ def test_output_limit_reaches_error_summary_console_and_status(tmp_path, monkeyp
         assert json.loads(response_path.read_text())['stop_reason'] == 'max_tokens'
         assert '출력 토큰 한도 초과' in str(failure.value)
         assert f'max_tokens={max_tokens}' in str(failure.value)
-        if max_tokens == 16384:
+        if max_tokens == 80000:
             assert '요청 분할 또는 출력량 축소' in diagnosis['next_action']
         assert str(response_path) in terminal.getvalue().split('실패 원인: ')[-1]
         assert 'max_tokens=' + str(max_tokens) in terminal.getvalue()
@@ -567,4 +564,4 @@ def test_region_font_and_model_settings_invalidate_cache(tmp_path,monkeypatch):
     runtime.revise_pdf(pipeline,blocks,pdf,**kw);count=len(seen)
     blocks[0].font_name='ChangedFont';_,meta=runtime.revise_pdf(pipeline,blocks,pdf,**kw)
     assert not meta['reused'] and len(seen)>count
-    before=runtime.policy_identity();monkeypatch.setenv('GENOS_QWEN_MODEL','stronger-model');assert runtime.policy_identity()!=before
+    before=runtime.policy_identity();monkeypatch.setenv('GENOS_LLM_MODEL','stronger-model');assert runtime.policy_identity()!=before

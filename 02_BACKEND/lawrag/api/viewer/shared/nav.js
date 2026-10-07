@@ -14,7 +14,7 @@
     { label: "지식 구축", items: [
       { key:"structure", href:"/structure/", label:"구조 검수", short:"구조", icon:"layers", desc:"원문 구조와 계층 교정" },
       { key:"bindings", href:"/bindings/", label:"구조화 설계", short:"틀", icon:"blocks", desc:"문서·폴더와 틀 연결" },
-      { key:"glossary", href:"/glossary/", label:"법률 용어", short:"용어", icon:"tag", desc:"용어와 개념 검수" },
+      { key:"glossary", href:"/glossary/", label:"용어집", short:"용어", icon:"tag", desc:"용어와 개념 검수" },
       { key:"knowledge", href:"/knowledge/", label:"지식 그래프", short:"그래프", icon:"network", desc:"개념·규범·근거 연결 탐색" },
       { key:"links", href:"/links/", label:"법률 연결", short:"참조", icon:"link", desc:"조문 참조와 연결 그래프" },
     ]},

@@ -62,12 +62,80 @@ def add_entry(db, ident, source, label, definition='', english='', hanja='', pro
     db.execute('INSERT INTO surface VALUES (?,?,?,?)', (compact(label), label, ident, 'SOURCE_LABEL'))
     if english and compact(english) != compact(label):
         db.execute('INSERT OR IGNORE INTO surface VALUES (?,?,?,?)', (compact(english), english, ident, 'SOURCE_ENGLISH'))
-    # Closed label shape only. These are source label parts, NOT approved synonyms.
-    pair = re.fullmatch(r'([A-Z][A-Z0-9-]{1,15})\(([가-힣][가-힣 ]{1,40})\)', label)
-    if pair:
-        for part in pair.groups():
-            db.execute('INSERT OR IGNORE INTO surface VALUES (?,?,?,?)',
-                       (compact(part), part, ident, 'SOURCE_LABEL_PART'))
+    # Closed label shapes only. These are source label parts, NOT approved synonyms.
+    # Statute-derived labels (moleg, corpus definitions) keep their literal form.
+    if source in ('moleg', 'corpus_definition'): return
+    for part, kind in label_parts(label):
+        if compact(part) != compact(label):
+            db.execute('INSERT OR IGNORE INTO surface VALUES (?,?,?,?)', (compact(part), part, ident, kind))
+
+
+RENAME_NOTE = re.compile(r'\((?:제목|용어)\s*(?:개정|변경)\)')
+PAREN = re.compile(r'\([^()]*\)')
+LATIN_TOKEN = re.compile(r'[A-Za-z][A-Za-z0-9&.\-]{0,15}')
+
+
+def trailing_gloss(text):
+    """(head, inner) when text ends with one balanced parenthetical gloss, else None."""
+    text = text.strip()
+    if not text.endswith(')'):
+        return None
+    depth = 0
+    for i in range(len(text) - 1, -1, -1):
+        depth += {')': 1, '(': -1}.get(text[i], 0)
+        if depth == 0:
+            return text[:i].strip(), text[i + 1:-1]
+    return None
+
+
+def top_level_split(text):
+    parts, depth, start = [], 0, 0
+    for i, char in enumerate(text):
+        depth += {'(': 1, ')': -1}.get(char, 0)
+        if depth == 0 and char in ',:;':
+            parts.append(text[start:i]); start = i + 1
+    return [p.strip() for p in parts + [text[start:]] if p.strip()]
+
+
+def gloss_part(part):
+    """A Hangul name or a Latin abbreviation is a part; an English phrase is SOURCE_ENGLISH."""
+    nested = trailing_gloss(part)
+    if nested and nested[0]:
+        return gloss_part(nested[0]) + [x for p in top_level_split(nested[1]) for x in gloss_part(p)]
+    if len(compact(part)) < 2 or '(' in part:
+        return []
+    if re.search(r'[가-힣]', part) and len(part) <= 40:
+        return [(part, 'SOURCE_LABEL_PART')]
+    if LATIN_TOKEN.fullmatch(part):
+        return [(part, 'SOURCE_LABEL_PART')]
+    if re.fullmatch(r'[A-Za-z0-9&.\- ]{2,80}', part):
+        return [(part, 'SOURCE_ENGLISH')]
+    return []  # hanja glosses (受再) and mixed prose
+
+
+def label_parts(label):
+    """Headword parts a public glossary label spells out.
+
+    '린치핀(Linchpin)' -> 린치핀, Linchpin; 'AML(Anti-Money Laundering System, 자금세탁방지제도)' ->
+    AML, 자금세탁방지제도 and the English phrase; '접대비→ 기업업무추진비(용어변경)' -> both names;
+    '관리(대상)종목' -> 관리종목 only (an infix parenthesis is optional text, not a gloss).
+    """
+    if '→' in label:
+        result = []
+        for side in label.split('→'):
+            side = RENAME_NOTE.sub('', side).strip()
+            if len(compact(side)) >= 2:
+                result += [(side, 'SOURCE_LABEL_PART')] + label_parts(side)
+        return result
+    gloss = trailing_gloss(label)
+    if gloss and gloss[0] and '(' not in gloss[0]:
+        head, inner = gloss
+        return gloss_part(head) + [x for p in top_level_split(inner) for x in gloss_part(p)]
+    head = label
+    while PAREN.search(head):
+        head = PAREN.sub('', head)
+    head = head.strip()
+    return [(head, 'SOURCE_LABEL_PART')] if head != label.strip() and len(compact(head)) >= 2 else []
 
 
 def apply_review(db, review):

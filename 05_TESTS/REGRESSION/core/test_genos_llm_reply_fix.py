@@ -25,7 +25,7 @@ def test_reply_repair_without_network(tmp_path, monkeypatch, capsys, transport, 
     target_file.parent.mkdir(parents=True)
     target_file.write_text(original)
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setenv('GENOS_QWEN_KEY', 'dummy-secret')
+    monkeypatch.setenv('GENOS_LLM_KEY', 'dummy-secret')
     monkeypatch.setattr('signal.signal', lambda *args: None)
     monkeypatch.setattr('signal.alarm', lambda *args: None)
     target = types.SimpleNamespace(headers={'Authorization': 'Bearer dummy-secret'},

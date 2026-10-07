@@ -44,7 +44,7 @@ def test_code_bundle_contains_the_workspace_contract_but_not_data_roots():
     assert "00_SYSTEM/WORKSPACE.json" in paths
     assert "00_SYSTEM/SCHEMAS/dataset-package-v2.schema.json" in paths
     assert "pyproject.toml" in paths
-    assert not any(path.lower().endswith(".js") for path in paths)
+    assert "02_BACKEND/lawrag/api/viewer/shared/nav.js" in paths
     assert {
         path for path in paths if path.startswith("02_BACKEND/lawrag/research/")
     } == set(CODE_SHIP.AUTHORING_SUPPORT_FILES)
@@ -111,7 +111,7 @@ def test_minimal_verified_code_bundle_can_bootstrap_workspace_after_extract(tmp_
         "02_BACKEND/semantic_runtime/app.py",
         "02_BACKEND/semantic_runtime/genos.py",
     ]
-    paths = [ROOT / relative for relative in relative_paths]
+    paths = [ROOT / relative for relative in sorted(set(relative_paths) | set(CODE_SHIP.REQUIRED_FILES))]
     assert all(path.is_file() for path in paths)
     rows, payloads = CODE_SHIP._rows(paths)
     bundle = tmp_path / "minimal-code.zip"

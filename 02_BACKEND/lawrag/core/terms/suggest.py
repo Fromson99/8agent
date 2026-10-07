@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Optional
 
 from lawrag.core.rag.index import store_path, terms_path
-from lawrag.core.terms.candidates import STOP_SOLO, _MARKER
+from lawrag.core.terms.candidates import STOP_SOLO, _MARKER, _tokens
 from lawrag.core.terms.transcribe import _load_docs, _load_terms, _save_terms, norm
 
 NEAR = 0.90             # 이 이상이면 "같은 부류" — 실측 조정 대상
@@ -32,11 +32,11 @@ MAX_PHRASES_PER_QUERY = 6
 
 
 # ---------------------------------------------------------------- 명사구
-def _phrases(kiwi, query: str) -> list[str]:
+def _phrases(query: str) -> list[str]:
     """질의의 최대 명사 연쇄 — 후보 생성(candidates.py)과 같은 품사 규칙."""
     out = []
     try:
-        toks = kiwi.tokenize(query)
+        toks = _tokens(query)
     except Exception:
         return out
     run: list = []
@@ -73,7 +73,6 @@ def run(store: Optional[Path] = None, glossary: Optional[Path] = None,
 
     from lawrag.core import embedding
     from lawrag.core.rag import tuples
-    from kiwipiepy import Kiwi
 
     glossary = glossary or (store.parent / "glossary.json" if store
                             else terms_path())
@@ -90,10 +89,9 @@ def run(store: Optional[Path] = None, glossary: Optional[Path] = None,
                 active_surfaces.append(sfc)
 
     # 질의 로그 → 미지의 명사구 카운트
-    kiwi = Kiwi()
     counts: dict[str, dict] = {}
     for rec in tuples.read(limit=limit_queries):
-        for sfc in _phrases(kiwi, rec.get("질의", "")):
+        for sfc in _phrases(rec.get("질의", "")):
             key = norm(sfc)
             if key in known_keys:
                 continue

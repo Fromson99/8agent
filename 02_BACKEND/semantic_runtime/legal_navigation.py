@@ -160,7 +160,7 @@ class StructuredSession(NavigationSession):
             ids=[r[0] for r in self.fts.execute('SELECT source_id FROM body WHERE body MATCH ? ORDER BY bm25(body),source_id',(match,)) if r[0] in eligible]
         p=self.page(ids,offset);p['items']=[self.source_card(sid) for sid in p['items']]
         return {**p,'status':'MATCHES' if ids else 'EMPTY','mode':mode,'query':query,'query_exhaustive_in_scope':True,'semantic_completeness':False,'order':'BM25 then source ID' if mode=='fulltext' else 'source ID','content_read':False}
-    def read(self,sid,offset=0,unit_id=''):
+    def read(self,sid,offset=0,unit_id='',block_ids=None,extent=None):
         origin=None
         if sid in self.known_structures:
             origin=sid;targets=[s for s in self.m._unit_sources(*self.structure_keys[sid]) if s in self.metadata]
@@ -168,18 +168,37 @@ class StructuredSession(NavigationSession):
             sid=targets[0];self.source_card(sid)
             # Existing index is article-granular. Never label an ancestor article as a child-only read.
         self.require(sid,self.known_sources,'source');source=self.t.sources[sid];blocks=source['blocks']
-        if unit_id:
+        if block_ids is not None:
+            wanted=list(dict.fromkeys(map(str,block_ids)))
+            selected=[b for b in blocks if str(b['block_id']) in set(wanted)]
+            if not wanted or len(selected)!=len(wanted) or {str(b['block_id']) for b in selected}!=set(wanted):
+                raise ValueError('bound read extent contains an unknown original block')
+            ordered=[str(b['block_id']) for b in selected]
+            if (extent or {}).get('spans'):
+                from .reference_spans import canonical
+                spans=canonical(source,extent['spans'])
+                if {p['block_id'] for p in spans}!=set(ordered):
+                    raise ValueError('bound character scope disagrees with selected blocks')
+                text='\n'.join(b['text'][p['start_cp']:p['end_cp']]
+                               for b in selected for p in spans if p['block_id']==str(b['block_id']))
+            else:
+                text='\n'.join(b['text'] for b in selected)
+            fingerprint=hashlib.sha256(('|'.join(ordered)+'|'+json.dumps(extent or {},sort_keys=True,ensure_ascii=False)).encode()).hexdigest()[:24]
+            key=sid+'#extent:'+fingerprint;block_ids=ordered;kind=(extent or {}).get('kind','BOUND_BLOCK_EXTENT')
+        elif unit_id:
             found=[b for b in blocks if str(b['block_id'])==unit_id]
             if len(found)!=1:raise ValueError('unknown original block in selected article')
             text=found[0]['text'];key=sid+'#block:'+unit_id;block_ids=[unit_id];kind='ORIGINAL_BLOCK'
         else:
             text=source['text'];key=sid+'#whole';block_ids=[str(b['block_id']) for b in blocks];kind='WHOLE_ARTICLE'
         if len(text)>self.limits['active_chars']:
-            p=self.page([{'unit_id':str(b['block_id']),'chars':len(b['text']),'kind':'original_source_block','readable':len(b['text'])<=self.limits['active_chars']} for b in blocks],offset)
+            visible=set(block_ids)
+            p=self.page([{'unit_id':str(b['block_id']),'chars':len(b['text']),'kind':'original_source_block','readable':len(b['text'])<=self.limits['active_chars']} for b in blocks if str(b['block_id']) in visible],offset)
             return {'status':'INDIVISIBLE_UNIT_TOO_LARGE' if unit_id else 'CHOOSE_STRUCTURAL_UNIT','source_id':sid,'selected_structure_id':origin,'actual_article_unit_id':source['unit_id'],'units':p,'total_chars':len(text),'silent_truncation':False}
         if offset:raise ValueError('READ offset pages structure metadata only; use unit_id for original blocks')
         if key not in self.active and (len(self.active)>=self.limits['active_segments'] or sum(len(s['text']) for s in self.active.values())+len(text)>self.limits['active_chars']):raise ValueError('ACTIVE_LIMIT: JUDGE or RELEASE before reading another unit')
-        segment={'id':key,'source_id':sid,'text':text,'text_sha256':source['text_sha256'],'segment_sha256':hashlib.sha256(text.encode()).hexdigest(),'source_artifact_sha256':source['source_artifact_sha256'],'heading':source['heading'],'document_name':source['document_name'],'kind':kind,'block_ids':block_ids,'selected_structure_id':origin,'actual_article_unit_id':source['unit_id'],'next_offset':None,'complete_article':not unit_id}
+        segment={'id':key,'source_id':sid,'text':text,'text_sha256':source['text_sha256'],'segment_sha256':hashlib.sha256(text.encode()).hexdigest(),'source_artifact_sha256':source['source_artifact_sha256'],'heading':source['heading'],'document_name':source['document_name'],'kind':kind,'block_ids':block_ids,'selected_structure_id':origin,'actual_article_unit_id':source['unit_id'],'next_offset':None,'complete_article':not unit_id and extent is None}
+        if extent is not None:segment['read_extent']=deepcopy(extent)
         refs=[]
         def bind_quote(kind,block_ids,text):
             fingerprint=hashlib.sha256(text.encode()).hexdigest()
@@ -248,6 +267,7 @@ class StructuredSession(NavigationSession):
             return {'name':name or 'ROOT','active_segment_ids':list(self.active),'judgments_preserved':len(self.judgments),'initial':self.initial}
         if tool=='REOPEN':
             self.require(a['segment_id'],self.read_segments,'segment');s=self.read_segments[a['segment_id']]
+            if s.get('read_extent') is not None:return self.read(s['source_id'],block_ids=s['block_ids'],extent=s['read_extent'])
             return self.read(s['source_id'],unit_id=s['block_ids'][0] if s['kind']=='ORIGINAL_BLOCK' else '')
         if tool=='HISTORY':return self.page([{'number':i,'tool':r['tool'],'args':r['args'],'status':r['status'],'error':r.get('error'),'reason':r['reason']} for i,r in enumerate(self.history)],a.get('offset',0))
         if tool=='STOP' and a.get('status')=='catalogue':
@@ -519,6 +539,14 @@ class RoutedSession(StructuredSession):
         if not self.korean or mode!='fulltext':return super().search(query,document_id,offset,mode)
         if document_id and document_id not in self.scope:raise ValueError('document outside scope')
         if not isinstance(query,str) or not query.strip() or len(query)>300:raise ValueError('bounded query required')
+        if getattr(self.m,'fulltext',None) is not None:
+            # Prebuilt morpheme index of this generation; no per-request corpus copy.
+            from .fulltext import question_terms
+            terms=question_terms(query)
+            if not terms:raise ValueError('query has no content words')
+            ids=self.m.fulltext.rank(self.m.fulltext_db,terms,allowed={sid for sid in self.metadata if not document_id or self.metadata[sid]['document_id']==document_id})
+            p=self.page(ids,offset);p['items']=[self.source_card(s) for s in p['items']]
+            return {**p,'status':'MATCHES' if ids else 'EMPTY','mode':'fulltext','query':query,'query_terms':terms,'lexical_policy':'PeCab content morphemes, OR, BM25 heading weighted; not semantic analysis','content_read':False,'semantic_completeness':False}
         if self.fts is None:
             self.fts=sqlite3.connect(':memory:');self.fts.execute('CREATE VIRTUAL TABLE body USING fts5(source_id UNINDEXED,text,tokenize="unicode61")')
             self.fts.executemany('INSERT INTO body VALUES (?,?)',((sid,self.t.sources[sid]['text']) for sid in sorted(self.metadata)))

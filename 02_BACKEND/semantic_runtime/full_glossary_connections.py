@@ -79,7 +79,8 @@ class ConnectionReader:
             if entry["source"] == "moleg":
                 rows = db.execute("SELECT d.*,c.match_kind FROM definition_candidate c "
                     "JOIN definition_record d ON d.id=c.definition_id WHERE c.entry_id=? "
-                    "AND d.content_type='EXPLANATION' ORDER BY d.id,c.match_kind LIMIT ?", (node, end))
+                    "AND d.content_type IN ('EXPLANATION','TRANSLATION') "
+                    "ORDER BY d.content_type,d.id,c.match_kind LIMIT ?", (node, end))
                 return [{k: r[k] for k in ("id", "source_id", "label", "kind", "content_type",
                         "request_id", "response_sha256", "match_kind")} | self._text(r["text"]) |
                         {"entry_id": node, "source_fields": json.loads(r["payload"]).get("fields", {}),
@@ -136,8 +137,9 @@ class ConnectionReader:
         result = self._mappings(source, node, end)
         db = self.dbs["identity"]
         if source == "dictionary":
-            rows = db.execute("SELECT * FROM official_relation WHERE source_id=? UNION "
-                "SELECT * FROM official_relation WHERE target_id=? ORDER BY id LIMIT ?", (node, node, end))
+            fields = ','.join('"'+r[1].replace('"','""')+'"' for r in db.execute('PRAGMA table_info(official_relation)') if r[1] != 'payload')
+            rows = db.execute('SELECT '+fields+' FROM official_relation WHERE source_id=? UNION '
+                'SELECT '+fields+' FROM official_relation WHERE target_id=? ORDER BY id LIMIT ?', (node, node, end))
             for raw in rows:
                 row = dict(raw); row.pop("payload", None)
                 outgoing = row["source_id"] == node

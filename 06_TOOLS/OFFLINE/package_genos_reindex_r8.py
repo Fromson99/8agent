@@ -1,0 +1,95 @@
+"""Ship only the requested rebuild path on the known R7 code baseline."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import zipfile
+import package_genos_optimized_rebuild_r7 as previous
+
+ROOT = previous.ROOT
+OUT = ROOT / '08_DEPLOYMENT/GENOS/handoffs/reindex_only_20261002_r8'
+STEM = 'GENOS_REINDEX_ONLY_20261002_R8'
+PREVIOUS = previous.OUT / (previous.STEM + '.zip')
+PREVIOUS_SHA = 'eeeb291debec496b911fa7dada0f5197d349fb0e05b8a8ce62013c21efb82a69'
+GUIDE = '''GENOS R8 — 구조화·용어집 재사용 / 문서–용어 연결·색인만 재구축
+
+같이 올릴 파일: GENOS_REINDEX_ONLY_20261002_R8.zip / 같은 이름 .txt
+  cd ~/DEV
+  export GENOS_PREPARED_RUN=financial-risk-success-20261001-r3
+  export GENOS_OPTIMIZED_RUN=financial-risk-success-20261002-index-r8
+  bash TRANSFER/GENOS_REINDEX_ONLY_20261002_R8.txt
+
+완료된 sources/store.sqlite와 glossary-draft를 명시적으로 재사용합니다.
+작업: 입력 결속 확인 → 문서–용어 연결 재구성 → 규칙 기반 참조/navigation·감사 색인 → 전문 색인 → 새 결과 검증.
+실행하지 않는 작업: RAW 구조화, 용어 의미 검토, 정의/번역 생성, 내부 모델 명시 참조 검토,
+전체 14.7GB 근거 묶음 검사/복사, 서빙 용어집 캐시 생성, 공유/NFS 발행, CURRENT/Git/workflow 활성화.
+모델 검토가 없는 모호한 참조는 native 규칙의 미해결 상태를 유지합니다.
+실제로 읽는 lookup.sqlite·legal.sqlite와 선택 manifest만 검증합니다. 원본 근거 파일은 보존합니다.
+전체 근거 묶음과 서빙 준비가 완료됐다고 인증하지 않습니다.
+
+현재 사용자/같은 코드 checkout/동일 prepared-run의 알려진 구축 실행기를 기록·SIGINT·종료 확인합니다.
+기존 입력과 R7 출력은 삭제하지 않고 R8을 새 출력으로 만듭니다. 원문 데이터 파일 반출은 필요 없습니다.
+R7의 패키지 범위 코드 pin 갱신·백업/원복 정책을 그대로 사용합니다.
+새 실행기/로그/범위 어댑터만 추가하며 이미 적용된 최적화 코드는 그대로입니다.
+
+출력 root: $GENOS_DATA_ROOT/TERM_RELEASES/$GENOS_OPTIMIZED_RUN/reindex/
+  baseline/links/                    새 문서–용어 연결
+  baseline/generation/navigation/    새 navigation/명시 참조 색인
+  baseline/audit/navigation/         감사 근거
+  fulltext/                         새 전문 색인
+  release.json                      연결·색인 전용 검증 영수증(서빙 패키지 아님)
+navigation 완료 후 전문 색인이 실패하면 같은 R8 명령으로 완료 navigation을 검증해 재사용합니다.
+미완료 전문 색인은 별도 이름으로 보존하고 다시 만듭니다. 입력/코드가 바뀌면 새 출력 run을 사용합니다.
+
+로그: 실행 시작에 표시한 LOGS/<output-run>/reindex-only-r8/<시각-PID>/
+  run.log: stdout/stderr 전체
+  events.jsonl: 모든 시작/종료/실패/5초 생존 이벤트, 누락 없이 파일로 기록
+  phases.csv / current.json / summary.txt: 단계 시간·현재/최종 상태
+이벤트는 즉시 기록하되 current.json의 디스크 동기화는 최대 초당 한 번으로 제한합니다.
+일반 무출력 구간도 5초 생존 로그가 표시됩니다. 완료 여부는 reindex VERIFIED와 FINISHED status=0으로 확인합니다.
+
+설정: GENOS_DEV=$HOME/DEV, GENOS_DATA_ROOT=$GENOS_DEV/01_DATA,
+GENOS_LOG_INTERVAL=5. 위 prepared/output run 값은 기본값과 같습니다.
+별도 내부 모델 profile이나 키를 새로 지정할 필요가 없습니다. 실제 sys.executable/버전은 로그에 기록합니다.
+사전 검사만: bash TRANSFER/GENOS_REINDEX_ONLY_20261002_R8.txt check
+기존 해당 실행 중단만: bash TRANSFER/GENOS_REINDEX_ONLY_20261002_R8.txt stop-old
+롤백: python3 /실행로그/payload/APPLY.py --rollback /DEV/.genos-pipeline-optimization-backups/실제백업
+GENOS 실제 실행/시간/서빙은 현장 검증 전까지 미확인입니다.
+'''
+
+
+def main():
+    assert hashlib.sha256(PREVIOUS.read_bytes()).hexdigest() == PREVIOUS_SHA
+    with zipfile.ZipFile(PREVIOUS) as z: payload = {n: z.read(n) for n in z.namelist()}
+    manifest = json.loads(payload.pop('CODE_MANIFEST.json'))
+    for name in ('genos_reindex_runner.py', 'genos_reindex_only.py', 'genos_reindex_logging.py'):
+        path = '06_TOOLS/OFFLINE/' + name; content = (ROOT / path).read_bytes(); payload[path] = content
+        manifest['files'].append({'path': path, 'role': 'code', 'allow_missing': True, 'allowed_predecessors': [],
+                                 'sha256': hashlib.sha256(content).hexdigest()})
+    payload['GUIDE_UTF8.txt'] = GUIDE.encode()
+    for row in manifest['files']: row['sha256'] = hashlib.sha256(payload[row['path']]).hexdigest()
+    manifest.update(schema_version='genos-reindex-only-r8', base_r7_zip_sha256=PREVIOUS_SHA)
+    payload['CODE_MANIFEST.json'] = (json.dumps(manifest, ensure_ascii=False, indent=2) + '\n').encode()
+    OUT.mkdir(parents=True, exist_ok=True); archive = OUT / (STEM + '.zip')
+    with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED) as z:
+        for name, content in payload.items():
+            assert Path(name).suffix.lower() not in {'.js', '.jsx', '.mjs', '.cjs'}
+            z.writestr(name, content)
+    zip_sha = hashlib.sha256(archive.read_bytes()).hexdigest()
+    old_zip_sha = json.loads((previous.OUT / 'HANDOFF.json').read_text())['files'][previous.STEM + '.zip']
+    script = (previous.OUT / (previous.STEM + '.txt')).read_text().replace(previous.STEM, STEM).replace(old_zip_sha, zip_sha)
+    script = script.replace('financial-risk-success-20261002-opt-r7', 'financial-risk-success-20261002-index-r8').replace('optimized-rebuild-r7', 'reindex-only-r8')
+    script = script.replace('genos_optimized_rebuild.py', 'genos_reindex_runner.py').replace('optimized-off-rebuild', 'connections-index-rebuild')
+    a = script.index('task_shared='); b = script.index('run_stage connections-index-rebuild', a)
+    script = script[:a] + script[b:]
+    script = script.replace(' --reference-batch "${GENOS_REFERENCE_BATCH:-8}" --reference-cases "${GENOS_REFERENCE_CASES:-10000}"', '')
+    runnable = OUT / (STEM + '.txt'); runnable.write_text(script)
+    subprocess.run(['bash', '-n', str(runnable)], check=True)
+    guide = OUT / 'GENOS_REINDEX_ONLY_R8_GUIDE_UTF8.txt'; guide.write_text(GUIDE)
+    record = {'files': {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in (archive, runnable, guide)},
+              'code_manifest_sha256': hashlib.sha256(payload['CODE_MANIFEST.json']).hexdigest(),
+              'model_calls': 0, 'operation': 'connections-navigation-fulltext-only', 'field_built': False, 'serving_packaged': False}
+    (OUT / 'HANDOFF.json').write_text(json.dumps(record, ensure_ascii=False, indent=2) + '\n'); print(json.dumps(record))
+
+
+if __name__ == '__main__': main()

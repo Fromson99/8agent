@@ -1,0 +1,409 @@
+{
+  "data_kind": "SYNTHETIC_DESIGN_EXAMPLES",
+  "runtime_executed": false,
+  "description": "Static design shapes only. No document ingestion, catalogue publication, semantic review or model invocation. Hashes are mock values, not real receipts. Correction refs are illustrative and not a replay-ready history.",
+  "examples": [
+    {
+      "contract_kind": "CATALOGUE_DRAFT",
+      "binding": {
+        "catalogue_id": "mock:catalogue:001",
+        "ontology_version": "mock-domain-v1",
+        "source_generation_id": "mock:source-generation:001",
+        "source_manifest_hash": "073171f7f5e1438ae632cb252bda87d19e1bfab1a0ba309e91bdd645886f24ea",
+        "navigation_manifest_hash": "9e13b2d3d1ebc59411a1465720c3c596993d510b0652451fb60ee6614e916564",
+        "glossary_binding_hash": "a04c47befac7b458d2ec6b2814bba704529dcddb046a9f4c515a1a1e7ab99e83",
+        "method_policy_hash": "17ad92e63c962393c0329c658937d16eccaea13036412a3d1d0a5b6b8f29d738",
+        "schema_version": "legal-agent-domain-control-v1-draft"
+      },
+      "objects": [
+        {
+          "id": "mock:term:target",
+          "kind": "TERM",
+          "scope_document_id": "mock:document:001",
+          "approval": "NAVIGATION_REVIEWED",
+          "payload": {
+            "label": "대상자"
+          },
+          "payload_hash": "49b10478ee072049613df045a37558aa5aa26e944ceb57398caa699a9a523084",
+          "origin_refs": [
+            "mock:reviewed-navigation:001"
+          ]
+        },
+        {
+          "id": "mock:definition:target",
+          "kind": "SCOPED_DEFINITION",
+          "scope_document_id": "mock:document:001",
+          "approval": "NAVIGATION_REVIEWED",
+          "payload": {
+            "label": "모의 규정의 대상자 정의",
+            "source_id": "mock:source:definition"
+          },
+          "payload_hash": "e2d72e7659f0a3c9040c5276e644c0d3767b78c8ce88047e1bd566741233bd61",
+          "origin_refs": [
+            "mock:reviewed-navigation:001"
+          ]
+        },
+        {
+          "id": "mock:source:definition",
+          "kind": "SOURCE_LOCATION",
+          "scope_document_id": "mock:document:001",
+          "approval": "NAVIGATION_REVIEWED",
+          "payload": {
+            "source_id": "mock:source:definition"
+          },
+          "payload_hash": "d885f8a1cad7fc37bc18f07c8d76b32394cafff1712728882af36dcde7edfd14",
+          "origin_refs": [
+            "mock:reviewed-navigation:001"
+          ]
+        },
+        {
+          "id": "mock:purpose:target-applicability",
+          "kind": "INTERPRETIVE_CONCEPT",
+          "scope_document_id": "mock:document:001",
+          "approval": "DOMAIN_REVIEWED",
+          "payload": {
+            "label": "대상자 해당 여부 확인",
+            "description": "모의 대상자 해당 여부를 확인하는 도메인 작업 목적"
+          },
+          "payload_hash": "e36e12702e8af85a2d00aed2554de19b5a7b9f5b5e810fa98ef93a8c254ac604",
+          "origin_refs": [
+            "mock:reviewed-purpose:001"
+          ]
+        }
+      ],
+      "relations": [
+        {
+          "id": "mock:relation:definition",
+          "relation_type": "DEFINITION_OF",
+          "source_object_id": "mock:definition:target",
+          "target_object_id": "mock:term:target",
+          "approval": "NAVIGATION_REVIEWED",
+          "payload": {
+            "document_id": "mock:document:001",
+            "source_id": "mock:source:definition"
+          },
+          "payload_hash": "24e3243cd06a45f86a7458f100c33924a6e065e99bf4760be73640fb9f0cc993",
+          "origin_refs": [
+            "mock:reviewed-definition:001"
+          ]
+        }
+      ],
+      "methods": [
+        {
+          "id": "mock:method:definition-first",
+          "version": 1,
+          "allowed_stages": [
+            "READ",
+            "ASSESS"
+          ],
+          "steps": [
+            {
+              "step_id": "read-definition",
+              "operation": "read",
+              "allowed_relation_types": [
+                "DEFINITION_OF"
+              ],
+              "precheck_ids": [
+                "SAME_DOCUMENT_DEFINITION"
+              ],
+              "postcheck_ids": [
+                "EXACT_READ_DELIVERY"
+              ],
+              "allowed_next_step_ids": [
+                "assess-definition"
+              ],
+              "watch_fact_keys": [
+                "source_scope"
+              ]
+            },
+            {
+              "step_id": "assess-definition",
+              "operation": "assess",
+              "allowed_relation_types": [
+                "DEFINITION_OF"
+              ],
+              "precheck_ids": [
+                "EXACT_READ_DELIVERY"
+              ],
+              "postcheck_ids": [
+                "FACT_DEFINITION_MATCH"
+              ],
+              "allowed_next_step_ids": [],
+              "watch_fact_keys": [
+                "location",
+                "source_scope"
+              ]
+            }
+          ],
+          "completion_check_ids": [
+            "FACT_DEFINITION_MATCH"
+          ],
+          "review_receipt_ref": "mock:method-review:001",
+          "review_receipt_hash": "eb2b33ee27192ec44f16155694a336fec2b13daf1c07973d88d90756a50c952c",
+          "purpose_id": "mock:purpose:target-applicability"
+        }
+      ],
+      "path_templates": [
+        {
+          "id": "mock:path-template:definition",
+          "method_id": "mock:method:definition-first",
+          "slot_kinds": {
+            "term": [
+              "TERM"
+            ],
+            "definition": [
+              "SCOPED_DEFINITION"
+            ],
+            "source": [
+              "SOURCE_LOCATION"
+            ]
+          },
+          "scope_check_id": "SAME_DOCUMENT_DEFINITION",
+          "review_receipt_ref": "mock:path-review:001",
+          "review_receipt_hash": "8f964a93d50bf3338147246473423157e13da1e6513ec1ffcd055e12cc9a4295",
+          "payload_hash": "a9d0bd9318c958979ed5f04b7b449ca97fec27c19b60e5a59fbef1f3714c07a4"
+        }
+      ]
+    },
+    {
+      "contract_kind": "ACTION_CHOICE",
+      "offer_id": "mock:offer:001",
+      "question_id": "mock:question:001",
+      "stage": "READ",
+      "method_id": "mock:method:definition-first",
+      "path_template_id": "mock:path-template:definition",
+      "path_instance_id": "mock:path-instance:001",
+      "step_id": "read-definition",
+      "concept_ids": [
+        "mock:term:target"
+      ],
+      "relation_ids": [
+        "mock:relation:definition"
+      ],
+      "target_ids": [
+        "mock:source:definition"
+      ],
+      "fact_refs": [
+        {
+          "case_id": "mock:case:001",
+          "branch_id": "actual",
+          "fact_id": "mock:fact:location",
+          "version": 1,
+          "value_hash": "c4364fb3d28d8fbed4ff12aabd7efa59050bd3c34eca3d238a34bedc5a972eff",
+          "basis": "USER_ASSERTED"
+        }
+      ],
+      "parent_refs": [],
+      "expected_information": "모의 규정의 대상자 정의와 범위를 확인한다.",
+      "reason": "질문 대상 규정에 결속된 대상자 정의를 확인하기 위해 이 정의 조항을 읽는다.",
+      "purpose_id": "mock:purpose:target-applicability",
+      "use_role": "NAVIGATION"
+    },
+    {
+      "contract_kind": "ACTION_CHOICE",
+      "offer_id": "mock:offer:002",
+      "question_id": "mock:question:001",
+      "stage": "ASSESS",
+      "method_id": "mock:method:definition-first",
+      "path_template_id": "mock:path-template:definition",
+      "path_instance_id": "mock:path-instance:001",
+      "step_id": "assess-definition",
+      "concept_ids": [
+        "mock:term:target"
+      ],
+      "relation_ids": [
+        "mock:relation:definition"
+      ],
+      "target_ids": [
+        "mock:source:definition"
+      ],
+      "fact_refs": [
+        {
+          "case_id": "mock:case:001",
+          "branch_id": "actual",
+          "fact_id": "mock:fact:location",
+          "version": 1,
+          "value_hash": "c4364fb3d28d8fbed4ff12aabd7efa59050bd3c34eca3d238a34bedc5a972eff",
+          "basis": "USER_ASSERTED"
+        }
+      ],
+      "parent_refs": [],
+      "expected_information": "모의 정의와 사건 사실을 대조한다.",
+      "reason": "정의 원문을 확인했으므로 현재 사건 조건이 그 정의에 해당하는지 검토한다.",
+      "purpose_id": "mock:purpose:target-applicability",
+      "use_role": "APPLICATION"
+    },
+    {
+      "contract_kind": "ATOMIC_JUDGMENT",
+      "question_id": "mock:question:001",
+      "judgment_ref": {
+        "run_id": "mock:run:001",
+        "kind": "assessment",
+        "entity_id": "mock:judgment:target",
+        "version": 1,
+        "payload_hash": "901ef6c7ddce2d51616dc1cba499c49aa3ddb2379363cdc2a12dbfea854950f1"
+      },
+      "choice_id": "mock:choice:002",
+      "binding": {
+        "catalogue_id": "mock:catalogue:001",
+        "ontology_version": "mock-domain-v1",
+        "source_generation_id": "mock:source-generation:001",
+        "source_manifest_hash": "073171f7f5e1438ae632cb252bda87d19e1bfab1a0ba309e91bdd645886f24ea",
+        "navigation_manifest_hash": "9e13b2d3d1ebc59411a1465720c3c596993d510b0652451fb60ee6614e916564",
+        "glossary_binding_hash": "a04c47befac7b458d2ec6b2814bba704529dcddb046a9f4c515a1a1e7ab99e83",
+        "method_policy_hash": "17ad92e63c962393c0329c658937d16eccaea13036412a3d1d0a5b6b8f29d738",
+        "schema_version": "legal-agent-domain-control-v1-draft"
+      },
+      "concept_ids": [
+        "mock:term:target"
+      ],
+      "relation_ids": [
+        "mock:relation:definition"
+      ],
+      "method_id": "mock:method:definition-first",
+      "path_instance_id": "mock:path-instance:001",
+      "fact_refs": [
+        {
+          "case_id": "mock:case:001",
+          "branch_id": "actual",
+          "fact_id": "mock:fact:location",
+          "version": 1,
+          "value_hash": "c4364fb3d28d8fbed4ff12aabd7efa59050bd3c34eca3d238a34bedc5a972eff",
+          "basis": "USER_ASSERTED"
+        }
+      ],
+      "watch_fact_keys": [
+        "location",
+        "source_scope"
+      ],
+      "facts_snapshot_hash": "a3d0586bd9f04605217924c8a9d15350b01ad0fc9995fb4f7c308720cfde887d",
+      "basis_spans": [
+        {
+          "generation_id": "mock:source-generation:001",
+          "document_id": "mock:document:001",
+          "source_id": "mock:source:definition",
+          "artifact_hash": "2e2ce6fd558a888eb19b7df49ec3e1a425bea2a0fce67656ff05fbc333f54aea",
+          "block_id": "mock:block:001",
+          "block_hash": "2e2ce6fd558a888eb19b7df49ec3e1a425bea2a0fce67656ff05fbc333f54aea",
+          "start_cp": 0,
+          "end_cp": 28,
+          "quote": "이 규정의 대상자는 국내에 소재한 신청인으로 한다.",
+          "read_receipt_hash": "6f3658822a73dc4c1d09ba64a062d0d1ef89fb250f5f5923c3a1755c2f63b1db",
+          "delivered_view_id": "mock:view:002"
+        }
+      ],
+      "parent_refs": [],
+      "checks": [
+        {
+          "check_id": "FACT_DEFINITION_MATCH",
+          "status": "SATISFIED",
+          "fact_refs": [
+            {
+              "case_id": "mock:case:001",
+              "branch_id": "actual",
+              "fact_id": "mock:fact:location",
+              "version": 1,
+              "value_hash": "c4364fb3d28d8fbed4ff12aabd7efa59050bd3c34eca3d238a34bedc5a972eff",
+              "basis": "USER_ASSERTED"
+            }
+          ],
+          "basis_spans": [
+            {
+              "generation_id": "mock:source-generation:001",
+              "document_id": "mock:document:001",
+              "source_id": "mock:source:definition",
+              "artifact_hash": "2e2ce6fd558a888eb19b7df49ec3e1a425bea2a0fce67656ff05fbc333f54aea",
+              "block_id": "mock:block:001",
+              "block_hash": "2e2ce6fd558a888eb19b7df49ec3e1a425bea2a0fce67656ff05fbc333f54aea",
+              "start_cp": 0,
+              "end_cp": 28,
+              "quote": "이 규정의 대상자는 국내에 소재한 신청인으로 한다.",
+              "read_receipt_hash": "6f3658822a73dc4c1d09ba64a062d0d1ef89fb250f5f5923c3a1755c2f63b1db",
+              "delivered_view_id": "mock:view:002"
+            }
+          ],
+          "reason": "제공된 사건 사실의 소재지가 모의 정의의 소재지 조건에 부합한다."
+        }
+      ],
+      "disposition": "ADOPT",
+      "claim": "제공된 사실을 전제로 모의 규정의 대상자 정의에 해당한다.",
+      "reason": "모의 규정은 국내 소재 신청인을 대상자로 정의하고, 사용자가 제공한 현재 소재지는 국내다.",
+      "supersedes": null,
+      "purpose_id": "mock:purpose:target-applicability"
+    },
+    {
+      "contract_kind": "CORRECTION_PLAN",
+      "case_id": "mock:case:001",
+      "branch_id": "actual",
+      "question_id": "mock:question:001",
+      "base_state_revision": 2,
+      "utterance_event_id": "mock:event:correction-2",
+      "target_refs": [
+        {
+          "run_id": "mock:run:001",
+          "kind": "assessment",
+          "entity_id": "mock:judgment:target",
+          "version": 1,
+          "payload_hash": "901ef6c7ddce2d51616dc1cba499c49aa3ddb2379363cdc2a12dbfea854950f1"
+        }
+      ],
+      "target_correction_event_ids": [
+        "mock:event:correction-1"
+      ],
+      "original_event_refs": [
+        "mock:event:original"
+      ],
+      "patches": [
+        {
+          "kind": "SET_FACT",
+          "target_id": "mock:fact:location",
+          "base_hash": "94d4a0c54ced5d4066610e26e7cd97def5a93167a9dfef6d27810529edbdc43d",
+          "replacement": {
+            "fact_key": "location",
+            "value": "국내",
+            "basis": "USER_ASSERTED",
+            "source_event_id": "mock:event:correction-2"
+          }
+        }
+      ],
+      "invalidated_refs": [
+        {
+          "run_id": "mock:run:001",
+          "kind": "assessment",
+          "entity_id": "mock:judgment:target",
+          "version": 1,
+          "payload_hash": "901ef6c7ddce2d51616dc1cba499c49aa3ddb2379363cdc2a12dbfea854950f1"
+        }
+      ],
+      "applicability_recheck_refs": [],
+      "preserved_refs": [],
+      "unresolved_refs": [],
+      "reason": "1차 정정의 해외 변경을 철회하고 최초 원발언을 확인해 새 국내 사실 버전을 만든다. 기존 사실을 덮어쓰지 않는다."
+    },
+    {
+      "contract_kind": "ANSWER_ANCHOR",
+      "answer_artifact_id": "mock:answer-artifact:001",
+      "paragraph_id": "p1",
+      "judgment_refs": [
+        {
+          "run_id": "mock:run:001",
+          "kind": "assessment",
+          "entity_id": "mock:judgment:target",
+          "version": 1,
+          "payload_hash": "901ef6c7ddce2d51616dc1cba499c49aa3ddb2379363cdc2a12dbfea854950f1"
+        }
+      ],
+      "route_id": "mock:route:001",
+      "route_revision": 1,
+      "answer_hash": "b2437a6aa53010b70011f253d0ef2e75d5a15350811531d9b82c27e77a706081"
+    },
+    {
+      "contract_kind": "UNRESOLVED_CHOICE",
+      "offer_id": "mock:offer:001",
+      "question_id": "mock:question:001",
+      "status": "NO_ALLOWED_PATH",
+      "missing_object_or_check": "질문 개념에 적용 가능한 검토 경로",
+      "reason": "현재 제공된 카탈로그에서 이 판단을 진행할 허용 경로가 없다."
+    }
+  ]
+}

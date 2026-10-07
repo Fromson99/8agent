@@ -1,7 +1,12 @@
 """Generation-bound metadata navigation. No body search or inferred legal structure."""
 from copy import deepcopy
 from pathlib import Path,PurePosixPath
-import hashlib,json,re,secrets,unicodedata
+import hashlib,json,re,secrets,threading,unicodedata
+from . import observability as obs
+
+_CATALOGUE_CACHE = {}
+_CATALOGUE_LOCK = threading.Lock()
+log = obs.get_logger('folder_catalogue')
 
 PUBLIC_PROVIDERS=frozenset(('kofia','krx','law','moleg','fsc','expc','prec'))
 
@@ -29,9 +34,9 @@ def load_origin_projection(root,config,store):
     if not bindings:return None
     if len(bindings)!=1:raise ValueError('multiple origin projections for one generation')
     base=Path(root).resolve();path=(base/bindings[0]['path']).resolve();path.relative_to(base)
-    with path.open('rb') as stream:data=stream.read()
-    if hashlib.sha256(data).hexdigest()!=bindings[0]['sha256']:raise ValueError('origin projection hash mismatch')
-    value=json.loads(data)
+    from .navigation_agent import _verified_json
+    try:value=_verified_json(path,bindings[0]['sha256'])
+    except ValueError as exc:raise ValueError('origin projection hash mismatch') from exc
     if value.get('schema_version')!='document-origin-projection-v1':raise ValueError('unsupported origin projection')
     for k in ('generation_id','store_sha256'):
         if value.get(k)!=store.manifest[k]:raise ValueError('stale origin projection')
@@ -39,6 +44,15 @@ def load_origin_projection(root,config,store):
 
 def bind_catalogue(matcher,store,projection=None):
     """Origin projection supplied explicitly; old stores remain unknown without provenance."""
+    projection_hash = hashlib.sha256(json.dumps(projection,sort_keys=True,ensure_ascii=False).encode()).hexdigest() if projection is not None else None
+    from .team_scope import generation_key
+    key = (generation_key(store),projection_hash)
+    with _CATALOGUE_LOCK:
+        cached = _CATALOGUE_CACHE.get(key)
+    if cached is not None:
+        matcher.document_catalogue = cached
+        obs.event(log,'folder_catalogue.cached')
+        return matcher
     origins={}
     if projection is not None:
         for k in ('generation_id','store_sha256'):
@@ -82,7 +96,10 @@ def bind_catalogue(matcher,store,projection=None):
                     if origin.get('source_artifact_sha256')!=expected:raise ValueError('origin source artifact mismatch')
                 record.update(classify_path(origin['raw_relative_path']));record['origin']=deepcopy(origin)
         catalogue[did]=record
-    matcher.document_catalogue=catalogue
+    with _CATALOGUE_LOCK:
+        _CATALOGUE_CACHE.clear()
+        matcher.document_catalogue=_CATALOGUE_CACHE.setdefault(key,catalogue)
+    obs.event(log,'folder_catalogue.ready')
     return matcher
 
 class FolderNavigator:
@@ -169,7 +186,11 @@ def request(question):
     category='internal' if '내규' in q or '내부문서' in q else 'external' if '외부문서' in q else 'all'
     provider=next((x for x in PUBLIC_PROVIDERS if re.search(r'(?<![A-Za-z])'+x+r'(?![A-Za-z])',question,re.I)), '')
     if '금융투자협회' in question:provider='kofia'
-    listing=any(w in q for w in ('전체목록','문서목록','내규목록','어떤문서','어떤게있','어떤것이있','뭐가있','문서들','문서리스트')) or ('db' in q and '문서' in q and '알려' in q)
+    available = re.search(r'(?:볼|읽을|조회할|열람할|검색할|접근할)수있는(?:문서|자료)'
+                          r'(?:가|는|들|들을|를)?(?:뭐야|뭐지|무엇이야|무엇인가요|알려줘|보여줘|알려주세요|보여주세요|목록)?[?!?.]*$', q)
+    listing=any(w in q for w in ('전체목록','문서목록','자료목록','내규목록','어떤문서','어떤게있','어떤것이있','뭐가있','문서들','문서리스트','문서가뭐','문서뭐있','자료뭐있')) or bool(available) or ('db' in q and '문서' in q and '알려' in q)
+    listing = listing or ('데이터' in q and any(w in q for w in
+                           ('뭐있', '뭐가있', '무엇이있', '어떤게있', '어떤것이있', '목록', '보여줘', '알려줘')))
     if not listing:return None
     if any(w in q for w in ('지급기준','지급조건','승인요건','해석해','적용해','내용을')):return None
     title='';m=re.search(r'(?:중에서|중에|중)\s*(.+?)\s*관련(?:한|된)?',question)
@@ -183,7 +204,10 @@ def request(question):
     if not title:
         # Explicit topic directly followed by 문서들/문서 목록.
         m=re.search(r'([^\s]+)\s+문서(?:들|\s*목록)',question)
-        if m and m.group(1) not in ('외부','내부','전체','있는','보유한'):title=m.group(1)
+        if m:
+            modifier=normalized(m.group(1))
+            generic=modifier in ('외부','내부','전체','있는','보유한','등록된','저장된','현재','지금','어떤','모든','우리','내','해당','가능한') or re.fullmatch(r'(?:현재|지금)?(?:볼|읽을|조회할|열람할|검색할|접근할)수있는',modifier)
+            if not generic:title=m.group(1)
     return dict(category=category,provider=provider,title_query=title)
 
 def search_structure(navigator,authorized,*,context,document_id='',root_unit_id,query,field='structure_title',offset=0,limit=100):

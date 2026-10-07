@@ -1,0 +1,17 @@
+{
+  "schema_version": "reference-model-profile-v1",
+  "model_binding": {
+    "provider": "openrouter",
+    "model": "qwen/qwen3.8-27b",
+    "trust_zone": "external",
+    "adapter_version": "openrouter-reference-v1",
+    "endpoint_identity": "76ef4ad6f0c8a4ae66efb13875c107cee40c78997a212353d379acfbb2f45591",
+    "max_input_bytes": 2000000
+  },
+  "max_output_tokens": 4096,
+  "max_transport_retries": 0,
+  "max_schema_repairs": 0,
+  "wall_seconds": 1800,
+  "export_grant": "reference-qwen-public.json",
+  "export_grant_sha256": "7af533639c0f21f8f9b2c328c55112669ef44e4f39aaea09f5567478080078ce"
+}

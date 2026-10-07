@@ -168,6 +168,9 @@ class Matcher:
                 node = node.setdefault(char, {})
             node.setdefault(None, []).append(identity)
 
+    _suffix = re.compile(r"[^\Wㆍ·]+")
+    _definition = re.compile(r'[\"”」]\s*(?:이란|란|이라 함은|라 함은)')
+
     def find(self, text):
         positions = [i for i, c in enumerate(text) if not c.isspace()]
         value = "".join(text[i] for i in positions)
@@ -181,14 +184,14 @@ class Matcher:
                 if None not in node:
                     continue
                 end = positions[stop - 1] + 1
-                suffix = re.match(r"[^\Wㆍ·]+", text[end:])
+                suffix = self._suffix.match(text, end)
                 if suffix and suffix.group() not in JOSA:
                     continue
                 # Exact quoted target followed by a definition marker, not merely
                 # another word appearing inside an article entitled '정의'.
                 is_definition = bool(
                     original and text[original - 1] in '\"“「'
-                    and re.match(r'[\"”」]\s*(?:이란|란|이라 함은|라 함은)', text[end:])
+                    and self._definition.match(text, end)
                 )
                 for identity in node[None]:
                     yield identity, original, end, is_definition
@@ -253,8 +256,8 @@ def export(db, state):
         definition = any(x["definition_hint"] for x in occurrences)
         terms.append({"id": row["id"], "term": source["label"], "key": row["key"],
                       "surfaces": [source["label"]], "status": "활성" if occurrences else "잠정",
-                      "classification": "정의" if definition else ("법령용어" if occurrences else
-                          ("일상용어" if source["entity_type"] == "everyday_terms" else "미확인")),
+                      # 본문용어/참고용어는 본문 출현 기준이다. 법제처 목록 구분은 source.entity_type에 남는다.
+                      "classification": "정의" if definition else ("본문용어" if occurrences else "참고용어"),
                       "source_definition": source.get("fields", {}).get("사전구분코드") == "011402",
                       "definition_hint": definition,
                       "occurrences": occurrences, "source": source})

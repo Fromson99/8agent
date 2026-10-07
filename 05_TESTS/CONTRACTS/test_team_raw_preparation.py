@@ -5,7 +5,7 @@ from pathlib import Path
 import zipfile
 import fitz
 import pytest
-from lawrag.pipeline import team_raw as teams, raw_preprocess as prep, genos_build as build
+from lawrag.pipeline import team_raw as teams, raw_preprocess as prep, genos_build as build, union_file
 from semantic_runtime.contracts import sha
 
 def put(p, raw):
@@ -45,6 +45,44 @@ def test_order_zip_xml_pdf_and_resume(tmp_path, monkeypatch):
     assert all(build.document_metadata(r)['team'] == 'new_team' for r in plan['files'])
     prep.run(build.ROOT, tmp_path, tmp_path / 'LOGS/run', execute=True)
     assert len(called) == 1
+
+
+def test_union_processes_shared_original_once_and_keeps_team_sidecars(tmp_path, monkeypatch):
+    files = {}
+    for name, ext in [('공통법', '.xml'), ('공통서식', '.hwp')]:
+        for team in ('risk_team', 'financial_team'):
+            p = put(tmp_path / 'RAW/external' / team / 'law' / name / (name + ext), name)
+            files[str(p.relative_to(tmp_path))] = {
+                'sha256': sha(p), 'team': team, 'source': 'external',
+                'role': 'body', 'scope_document': name,
+                'security_class': 'public', 'export_allowed': True,
+                'external_source': 'law', 'kind': 'law', 'name': name}
+    layout = {'schema_version': teams.VERSION, 'files': files,
+              'financial_shared_document_names': ['공통법', '공통서식']}
+    build.atomic(tmp_path / 'CATALOG/TEAM_LAYOUT.json', layout)
+    union_file.publish(tmp_path, layout, set(layout['financial_shared_document_names']), 'test-scope')
+    calls = {'xml': 0, 'pdf': 0}
+    def xml(source):
+        calls['xml'] += 1
+        return b'# shared projection\n'
+    def convert(source, work):
+        calls['pdf'] += 1
+        return pdf(work / 'source.pdf'), {'status': 'CONVERTED'}
+    monkeypatch.setattr(prep, 'xml_markdown', xml)
+    monkeypatch.setattr(prep, 'convert', convert)
+    prep.run(build.ROOT, tmp_path, tmp_path / 'logs', execute=True, unzip=False)
+    assert calls == {'xml': 1, 'pdf': 1}
+    for name, ext, sidecar in [('공통법', '.xml', '.xml.md'), ('공통서식', '.hwp', '.pdf')]:
+        risk = tmp_path / 'RAW/external/risk_team/law' / name / (name + sidecar)
+        financial = tmp_path / 'RAW/external/financial_team/law' / name / (name + sidecar)
+        assert risk.is_file() and financial.is_file() and sha(risk) == sha(financial)
+    plan, report = teams.collect(tmp_path, emit=lambda _: None)
+    assert report['ok'] and len(plan['files']) == 2
+    assert all({'risk_team', 'financial_team'} <= {
+        plan_row['team'], *(a['team'] for a in plan_row.get('aliases', []))}
+        for plan_row in plan['files'])
+    prep.run(build.ROOT, tmp_path, tmp_path / 'logs', execute=True, unzip=False)
+    assert calls == {'xml': 1, 'pdf': 1}
 
 def test_off_and_check_never_convert_or_require_env(tmp_path, monkeypatch):
     p = put(tmp_path / 'RAW/internal/risk_team/규정.docx', 'original')
@@ -98,8 +136,14 @@ def test_pending_request_is_not_resubmitted(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match='pending'):
         prep.run(build.ROOT, tmp_path, tmp_path / 'logs', execute=True)
 
-@pytest.mark.parametrize('api_code,make_pdf,expected', [(0, True, 'CONVERTED'), (1, True, 'PDF_WITH_API_WARNING'), (0, False, 'FAILED')])
+@pytest.mark.parametrize('api_code,make_pdf,expected', [(0, True, 'CONVERTED'), (1, True, 'PDF_WITH_API_WARNING'), (0, False, 'PENDING')])
 def test_converter_contract_requires_real_pdf(tmp_path, monkeypatch, api_code, make_pdf, expected):
+    monkeypatch.setenv('GENOS_PDF_OUTPUT_WAIT_SECONDS', '0')
+    import time
+    def tick(_):
+        if not make_pdf:
+            raise KeyboardInterrupt()
+    monkeypatch.setattr(time, 'sleep', tick)
     import httpx
     shared = tmp_path / 'shared'; shared.mkdir()
     monkeypatch.setenv('GENOS_PDF_CONVERTER_SHARED_ROOT', str(shared))
@@ -122,7 +166,7 @@ def test_converter_contract_requires_real_pdf(tmp_path, monkeypatch, api_code, m
         output, evidence = prep.convert(source, work)
         assert prep.pdf_check(output) == 1 and evidence['status'] == expected
     else:
-        with pytest.raises(ValueError, match='no valid'):
+        with pytest.raises(KeyboardInterrupt):
             prep.convert(source, work)
     assert json.loads((work / 'conversion.json').read_text())['status'] == expected
     assert source.read_text() == 'native'

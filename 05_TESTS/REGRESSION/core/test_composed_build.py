@@ -67,3 +67,39 @@ def test_explicit_completed_glossary_reused_and_bases_forwarded(tmp_path, monkey
                              call=lambda argv: calls.append(argv[3:]) or 0) == 0
     assert ['document-release', 'verify-glossary', '--glossary-dir', str(glossary)] == calls[1]
     assert calls[-1][-7:] == ['--max-review-jobs', '7', '--base-generation', '/selected/base', '--exclude-document', 'old-id', '--retry-review-failed']
+
+
+def test_completed_reference_review_is_forwarded_only_to_release(tmp_path, monkeypatch):
+    _paths(tmp_path, monkeypatch)
+    review = tmp_path / 'reference-review'
+    calls = []
+    assert composed_build.run(
+        ['--run-id', 'with-references', '--execute',
+         '--reference-review-state', str(review)],
+        call=lambda argv: calls.append(argv[3:]) or 0,
+    ) == 0
+    assert all('--reference-review-state' not in call for call in calls[:-1])
+    assert calls[-1][-2:] == ['--reference-review-state', str(review.resolve())]
+
+
+def test_replace_glossary_document_evidence_reaches_release(tmp_path, monkeypatch):
+    _paths(tmp_path, monkeypatch)
+    calls = []
+    assert composed_build.run(
+        ['--run-id', 'fresh-linked', '--execute', '--glossary-corpus-policy', 'replace'],
+        call=lambda argv: calls.append(argv[3:]) or 0,
+    ) == 0
+    assert all('--glossary-corpus-policy' not in call for call in calls[:-1])
+    assert calls[-1][-2:] == ['--glossary-corpus-policy', 'replace']
+
+
+def test_reference_model_and_budgets_reach_final_release_only(tmp_path, monkeypatch):
+    _paths(tmp_path, monkeypatch)
+    calls = []
+    profile = tmp_path / 'reference-profile.json'
+    assert composed_build.run(['--run-id', 'model-linked', '--execute',
+                              '--reference-model-profile', str(profile), '--max-reference-cases', '16',
+                              '--reference-batch-size', '4'], call=lambda argv: calls.append(argv[3:]) or 0) == 0
+    assert all('--reference-model-profile' not in call for call in calls[:-1])
+    assert calls[-1][-6:] == ['--reference-model-profile', str(profile.resolve()),
+                              '--max-reference-cases', '16', '--reference-batch-size', '4']

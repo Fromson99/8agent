@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
+from lawrag.core.legal_coordinate import MOK_LETTERS
 from lawrag.core.structure.model import (
     Block,
     Fingerprint,
@@ -58,8 +59,8 @@ _JO_TITLE_RE = re.compile(r"^제[\d-]+조(?:의\d+)?\s*\(([^)]*)\)")
 # 항 번호: ①-㊿ 그리고 51항 이상… 이 아니라 **16항 이상**은 원문이 <16> 으로 찍는다 (실측)
 _HANG_RE = re.compile(r"^([①-㊿]|<\d{1,2}>)")
 _HO_RE = re.compile(r"^(\d+(?:의\d+)?)\.\s")       # 호 가지 "10의2." 실재 (실측 60건)
-_MOK_RE = re.compile(r"^([가-힣])\.\s")
-_MOK_SEQ = "가나다라마바사아자차카타파하"
+_MOK_RE = re.compile(rf"^([{MOK_LETTERS}])\.\s")
+_MOK_SEQ = MOK_LETTERS
 
 
 @dataclass

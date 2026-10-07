@@ -158,10 +158,18 @@ data/_archive/
 /GENOS_UPLOAD/
 /TRANSFER/
 /runtime/
-/02_BACKEND/GENERATIONS/
-/02_BACKEND/lawrag/research/candidates/
+/02_BACKEND/GENERATIONS/*
+!/02_BACKEND/GENERATIONS/20260904-code-v19/
+/02_BACKEND/lawrag/research/candidates/*
+!/02_BACKEND/lawrag/research/candidates/adr_0252/
+/02_BACKEND/lawrag/research/candidates/adr_0252/**
+!/02_BACKEND/lawrag/research/candidates/adr_0252/**/
+!/02_BACKEND/lawrag/research/candidates/adr_0252/source-ids/revisions/rev-001/snapshot/06_TOOLS/OFFLINE/genos_authoring.py
+!/02_BACKEND/lawrag/research/candidates/adr_0252/source-ids/revisions/rev-001/snapshot/06_TOOLS/OFFLINE/source_candidates.py
+!/02_BACKEND/lawrag/research/candidates/adr_0252/source-ids/revisions/rev-001/snapshot/06_TOOLS/OFFLINE/definition_patterns.py
 /05_TESTS/GENERATIONS/
-/06_TOOLS/GENERATIONS/
+/06_TOOLS/GENERATIONS/*
+!/06_TOOLS/GENERATIONS/20260904-code-v19/
 /08_DEPLOYMENT/RELEASES/
 
 # 01_DATA contains local/source/derived data. Keep only its contracts and small
@@ -194,3 +202,59 @@ data/_archive/
 *.zip
 *.zip.part*
 *.b64.txt
+
+# Local/GENOS shared development and runtime exclusions.
+# The selected code-v19 trees above are dependencies of run_tool.py;
+# the three authoring support files preserve the historical code ZIP contract.
+/.agents/
+/.codex/
+/.claude/
+venv/
+env/
+node_modules/
+.mypy_cache/
+.cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.idea/
+.vscode/
+*.p12
+*.pfx
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.db-wal
+*.db-shm
+*.safetensors
+*.ckpt
+*.log
+/CODE_MANIFEST.json
+
+# Transfer authoring source, installer fixtures and guides remain versioned.
+# Local mail bodies (including encoded attachments), copied working backups,
+# test output and rendered reports are preserved locally outside Git history.
+/.sql-candidate-probe-*/
+*.sqlite-journal
+/08_DEPLOYMENT/GENOS/**/EMAIL_*.json
+/08_DEPLOYMENT/GENOS/**/MAIL_*.json
+/08_DEPLOYMENT/GENOS/**/SEND_*.json
+/08_DEPLOYMENT/GENOS/**/SENT_*.json
+/08_DEPLOYMENT/GENOS/handoffs/**/before-working/
+/08_DEPLOYMENT/GENOS/handoffs/**/local-before/
+/08_DEPLOYMENT/GENOS/handoffs/**/before/
+/08_DEPLOYMENT/GENOS/handoffs/**/verification-logs/
+/08_DEPLOYMENT/GENOS/handoffs/**/HISTORY_MANIFEST.json
+/08_DEPLOYMENT/GENOS/**/*.xml
+/08_DEPLOYMENT/GENOS/**/*.tar.gz
+/07_DOCS/REFERENCE/REPORTS/**/preview/
+/07_DOCS/REFERENCE/REPORTS/**/*.docx
+/07_DOCS/REFERENCE/REPORTS/**/*.pdf
+/07_DOCS/REFERENCE/REPORTS/REFERENCE_CONNECTION_REPAIR_PLAN_20260922/audit.json
+/07_DOCS/REFERENCE/REPORTS/REFERENCE_CONNECTION_REPAIR_PLAN_20260922/hierarchy_audit.json
+/07_DOCS/REFERENCE/REPORTS/PORTFOLIO_HANDOFF_20260924/adr_catalog.json
+/07_DOCS/REFERENCE/REPORTS/PORTFOLIO_HANDOFF_20260924/adr_catalog.csv
+/07_DOCS/REFERENCE/REPORTS/PORTFOLIO_HANDOFF_20260924/adr_appendix.md

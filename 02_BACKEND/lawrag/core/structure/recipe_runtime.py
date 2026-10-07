@@ -62,8 +62,8 @@ def call_failure(exchange, *, phase, max_tokens, response_path):
         code = 'OUTPUT_LENGTH_LIMIT'
         summary = f'출력 토큰 한도 초과로 응답 잘림 (max_tokens={max_tokens})'
         action = ('모델 지원 한도 내 STRUCTURE_RECIPE_MAX_TOKENS 조정 후 재실행'
-                  if max_tokens < 16384 else
-                  '현재 코드의 출력 상한 16384 도달; 요청 분할 또는 출력량 축소 필요')
+                  if max_tokens < 80000 else
+                  '현재 코드의 출력 상한 80000 도달; 요청 분할 또는 출력량 축소 필요')
     elif exchange.stop_reason == 'refusal':
         code, summary = 'MODEL_REFUSAL', '모델이 요청을 거절함'
     elif exchange.error.startswith('JSONDecodeError:'):
@@ -101,9 +101,8 @@ def policy_identity():
     active = enabled()
     if not active:
         return {"enabled": False, "version": VERSION}
-    profile = os.environ.get("GENOS_LLM_PROFILE", "").strip().upper()
     names = ["GENOS_BASE_URL", "GENOS_LLM_URL", "GENOS_GATEWAY_API_PREFIX", "GENOS_LLM_API_PREFIX",
-             "GENOS_LLM_MODEL", f"GENOS_{profile}_MODEL", "GENOS_LLM_SERVING_ID", f"GENOS_{profile}_SERVING_ID",
+             "GENOS_LLM_MODEL", "GENOS_LLM_SERVING_ID",
              "GENOS_LLM_JSON_MODE", "GENOS_LLM_TEMPERATURE", "STRUCTURE_RECIPE_MAX_PAGES",
              "STRUCTURE_RECIPE_MAX_CHARS", "STRUCTURE_RECIPE_MAX_TOKENS",
              "STRUCTURE_RECIPE_REVIEW_MODE", "STRUCTURE_RECIPE_MAX_DOCUMENT_PAGES",
@@ -226,7 +225,7 @@ class GenosCalls:
             raise ValueError('STRUCTURE_RECIPE_PROTOCOL must be basic, compact or legacy')
         self.calls = 0
         self.max_calls = max_calls
-        self.max_tokens = integer("STRUCTURE_RECIPE_MAX_TOKENS", 4096, 256, 16384)
+        self.max_tokens = integer("STRUCTURE_RECIPE_MAX_TOKENS", 80000, 256, 80000)
         self.client = llm.LLM()
         self.model = self.client.model
         if not self.model:
@@ -264,7 +263,7 @@ class GenosCalls:
         self.calls += 1
         max_tokens = self.max_tokens
         if self.protocol == 'basic' and accepts_warnings():
-            max_tokens = min(max_tokens, integer('STRUCTURE_RECIPE_REVIEW_MAX_TOKENS',1024,256,16384))
+            max_tokens = min(max_tokens, integer('STRUCTURE_RECIPE_REVIEW_MAX_TOKENS',80000,256,80000))
         self.journal.save(f"call-{self.calls}-{phase}-input.json", {
             "system": system, "data": data, "schema": schema, "model": self.model,
             "image_count": len(self.images) if vision else 0, "max_tokens":max_tokens,

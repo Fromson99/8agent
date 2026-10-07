@@ -1,11 +1,2 @@
-# GENOS raw ingest + common pipeline.  The smaller request/search-only image can
-# continue to install requirements-serving.txt instead.
--r requirements-serving.txt
-docling==2.117.0
-# Explicit Korean OCR profile uses the validated RapidOCR model/enum interface.
-rapidocr==3.9.2
-python-docx==1.2.0
-olefile==0.47
-PyMuPDF==1.28.0
-pyhwp==0.1b15
-PyYAML==6.0.3
+# Compatibility entrypoint. Edit requirements.txt only.
+-r requirements.txt

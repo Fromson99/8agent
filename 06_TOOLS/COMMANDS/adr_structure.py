@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from datetime import date, datetime, timezone
 import getpass
+import gzip
 import hashlib
 import json
 import os
@@ -16,6 +17,15 @@ import sys
 from typing import Any
 
 from workspace_paths import StoredPathError, resolve_stored_path
+
+
+def _read_retrieval_ledger(path: Path) -> Any:
+    """Read losslessly compressed audit data; hashes still bind stored bytes."""
+    if path.suffix == ".gz":
+        with gzip.open(path, "rt", encoding="utf-8") as stream:
+            return json.load(stream)
+    with path.open(encoding="utf-8") as stream:
+        return json.load(stream)
 
 
 _SCRIPT_ROOT = Path(__file__).resolve().parents[1]
@@ -39,14 +49,26 @@ TEMPLATE_ROOT = ROOT / "04_EXPERIMENTS" / "LEGACY_ADR" / "templates"
 HAIKU_MODEL = "claude-haiku-4-5-20251001"
 EXPERIMENT_POLICY_PATH = ROOT / "00_SYSTEM/EXPERIMENT_MODEL_POLICY.json"
 EXPERIMENT_POLICY = json.loads(EXPERIMENT_POLICY_PATH.read_text("utf-8"))
-GEMINI_MODEL = EXPERIMENT_POLICY["model"]
-GEMINI_POLICY_VERSION = EXPERIMENT_POLICY["policy_version"]
-GEMINI_FIRST_ADR = EXPERIMENT_POLICY["effective_from_adr"]
-if (EXPERIMENT_POLICY.get("provider") != "gemini"
-        or EXPERIMENT_POLICY.get("allowed_models") != [GEMINI_MODEL]
-        or not GEMINI_MODEL.startswith("gemini-")
+# Historical policies stay readable after a default-model switch.
+GEMINI_MODEL = "gemini-3.1-flash-lite"
+GEMINI_POLICY_VERSION = "gemini-experiments-v1"
+GEMINI_FIRST_ADR = 383
+DEFAULT_MODEL = EXPERIMENT_POLICY["model"]
+DEFAULT_POLICY_VERSION = EXPERIMENT_POLICY["policy_version"]
+DEFAULT_PROVIDER = EXPERIMENT_POLICY["provider"]
+DEFAULT_FIRST_ADR = EXPERIMENT_POLICY["effective_from_adr"]
+if ((DEFAULT_PROVIDER, DEFAULT_MODEL, DEFAULT_POLICY_VERSION) not in {
+        ("gemini", GEMINI_MODEL, GEMINI_POLICY_VERSION),
+        ("openrouter", "qwen/qwen3.5-122b-a10b", "qwen-experiments-v1"),
+        ("openrouter", "google/gemma-4-31b-it", "gemma-experiments-v1"),
+        ("openrouter", "qwen/qwen3.8-27b", "qwen38-experiments-v1")}
+        or EXPERIMENT_POLICY.get("allowed_models") != [DEFAULT_MODEL]
         or EXPERIMENT_POLICY.get("fallback_allowed") is not False):
     raise ValueError("Invalid experiment model policy")
+# ADR-0463: GenOS 대리 모델은 사용자 승인 ADR의 product 역할에만 연다. 기본값·채점은 Gemini 그대로.
+GENOS_PROXY_POLICY = EXPERIMENT_POLICY.get("genos_proxy") or {}
+GENOS_PROXY_MODELS = set(GENOS_PROXY_POLICY.get("models", []))
+GENOS_PROXY_FIRST_ADR = int(GENOS_PROXY_POLICY.get("effective_from_adr", 10**9))
 SONNET_MODEL = "claude-sonnet-5"
 OPUS_MODEL = "claude-opus-5"
 OFFLINE_EVALUATOR_MODELS = {HAIKU_MODEL, SONNET_MODEL, OPUS_MODEL}
@@ -507,8 +529,11 @@ def scaffold_adr(
     if parent_specs and parent_manifest is not None:
         raise ValueError("use either legacy parent arguments or parent_specs, not both")
     new_policy = number >= GEMINI_FIRST_ADR
-    judge_model = judge_model or (GEMINI_MODEL if new_policy else HAIKU_MODEL)
-    approved_judges = {GEMINI_MODEL} if new_policy else OFFLINE_EVALUATOR_MODELS
+    selected_model = DEFAULT_MODEL if number >= DEFAULT_FIRST_ADR else GEMINI_MODEL
+    selected_policy = DEFAULT_POLICY_VERSION if number >= DEFAULT_FIRST_ADR else GEMINI_POLICY_VERSION
+    selected_provider = DEFAULT_PROVIDER if number >= DEFAULT_FIRST_ADR else 'gemini'
+    judge_model = judge_model or (selected_model if new_policy else HAIKU_MODEL)
+    approved_judges = {selected_model} if new_policy else OFFLINE_EVALUATOR_MODELS
     if judge_model not in approved_judges:
         raise ValueError(f"judge model must be one of {sorted(approved_judges)}")
     owner = (owner or _default_owner()).strip()
@@ -765,18 +790,18 @@ def scaffold_adr(
         manifest_path = experiment_dir / "manifest.json"
         manifest = json.loads(manifest_path.read_text("utf-8"))
         manifest["llm_policy"] = {
-            "policy_version": GEMINI_POLICY_VERSION, "provider": "gemini",
-            "required_model": GEMINI_MODEL, "product_required_model": GEMINI_MODEL,
-            "offline_evaluator_allowed_models": [GEMINI_MODEL],
+            "policy_version": selected_policy, "provider": selected_provider,
+            "required_model": selected_model, "product_required_model": selected_model,
+            "offline_evaluator_allowed_models": [selected_model],
             "fallback_allowed": False,
             "llm_calls": [
-                {"role": "product", "class": "product", "model": GEMINI_MODEL, "repeats": 1},
-                {"role": "judge", "class": "offline_evaluator", "model": GEMINI_MODEL, "repeats": 1},
+                {"role": "product", "class": "product", "model": selected_model, "repeats": 1},
+                {"role": "judge", "class": "offline_evaluator", "model": selected_model, "repeats": 1},
             ],
         }
         manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", "utf-8")
         for markdown in [target / "README.md", *experiment_dir.glob("*.md")]:
-            markdown.write_text(markdown.read_text("utf-8").replace(HAIKU_MODEL, GEMINI_MODEL), "utf-8")
+            markdown.write_text(markdown.read_text("utf-8").replace(HAIKU_MODEL, selected_model), "utf-8")
     return target
 
 
@@ -1616,8 +1641,8 @@ def _validate_measured_stage_ledger(
     if expected_hash != actual_hash:
         errors.append(f"retrieval stage ledger artifact hash mismatch: {raw_path}")
     try:
-        ledger = json.loads(artifact_path.read_text("utf-8"))
-    except (json.JSONDecodeError, OSError) as exc:
+        ledger = _read_retrieval_ledger(artifact_path)
+    except (json.JSONDecodeError, OSError, EOFError, UnicodeError) as exc:
         return errors + [f"invalid retrieval stage ledger artifact: {exc}"]
     if not isinstance(ledger, dict):
         return errors + ["retrieval stage ledger artifact must be an object"]
@@ -1852,8 +1877,8 @@ def _validate_retrieval_accounting_v4(
         if stage_config.get("sha256") != _sha256(artifact_path):
             errors.append(f"inherited retrieval stage ledger hash mismatch: {raw_path}")
         try:
-            inherited = json.loads(artifact_path.read_text("utf-8"))
-        except (json.JSONDecodeError, OSError) as exc:
+            inherited = _read_retrieval_ledger(artifact_path)
+        except (json.JSONDecodeError, OSError, EOFError, UnicodeError) as exc:
             return errors + [f"invalid inherited retrieval stage ledger: {exc}"]
         if not isinstance(inherited, dict):
             return errors + ["inherited retrieval stage ledger must be an object"]
@@ -1899,8 +1924,30 @@ def _validate_code_isolation(
     if isolation.get("schema_version") != "adr-code-isolation-v1":
         errors.append("code_isolation schema_version must be adr-code-isolation-v1")
     mode = isolation.get("mode")
-    if mode not in {"candidate_snapshot", "not_applicable"}:
-        errors.append("code_isolation mode must be candidate_snapshot or not_applicable")
+    if mode not in {"candidate_snapshot", "not_applicable", "user_directed_cutover"}:
+        errors.append("code_isolation mode must be candidate_snapshot, not_applicable or user_directed_cutover")
+    if mode == "user_directed_cutover":
+        if (manifest.get("phase") != "audit" or manifest.get("in_sample") is not False
+                or manifest.get("decision_eligible") is not False
+                or isolation.get("production_paths_modified_before_decision") is not True
+                or isolation.get("runtime_import_allowed") is not True
+                or isolation.get("production_registry_registered") is not True
+                or isolation.get("main_wiring_unchanged") is not False
+                or not isinstance(isolation.get("reason"), str)
+                or not isolation["reason"].strip()
+                or isolation.get("candidates") != []):
+            return ["user-directed cutover requires an explicit audit record and truthful runtime flags"]
+        release = isolation.get("release", {})
+        try:
+            release_path = resolve_stored_path(ROOT, release["manifest_path"])
+            release_record = json.loads(release_path.read_text("utf-8"))
+            if (_sha256(release_path) != release["sha256"]
+                    or release_record.get("release_id") != release["release_id"]
+                    or release_record.get("deployment_basis") != "USER_DIRECTED_CUTOVER"):
+                raise ValueError("release manifest identity mismatch")
+        except (KeyError, TypeError, ValueError, OSError) as exc:
+            return [f"user-directed cutover release binding invalid: {exc}"]
+        return []
     expected_flags = {
         "production_paths_modified_before_decision": False,
         "runtime_import_allowed": False,
@@ -2100,9 +2147,13 @@ def _gemini_scoped_model_override(
                 or auth.get("fallback_allowed") is not False):
             raise ValueError("requires a recorded explicit user request and no fallback")
         raw = override.get("allowed_models")
+        number = ADR_DIR_RE.fullmatch(path.name)
+        proxy_models = (GENOS_PROXY_MODELS
+                        if number and int(number.group(1)) >= GENOS_PROXY_FIRST_ADR else set())
         if (not isinstance(raw, list) or not raw or len(raw) != len(set(raw))
-                or any(not isinstance(model, str) or not model.startswith("gemini-") for model in raw)):
-            raise ValueError("requires a closed unique Gemini model list")
+                or any(not isinstance(model, str)
+                       or not (model.startswith("gemini-") or model in proxy_models) for model in raw)):
+            raise ValueError("requires a closed unique Gemini or GenOS-proxy model list")
         design_path = (ROOT / override["frozen_design_path"]).resolve()
         if (not design_path.is_relative_to((path / "artifacts").resolve())
                 or _sha256(design_path) != override.get("frozen_design_sha256")):
@@ -2116,9 +2167,65 @@ def _gemini_scoped_model_override(
             config = configs.get(call.get("arm_id"), {})
             if any(call.get(key) != config.get(key) for key in ("model", "thinking_level")):
                 raise ValueError("call model/thinking differs from its frozen arm")
+            if call.get("model") in proxy_models and call.get("class") != "product":
+                raise ValueError("GenOS proxy models are product-only")
         return set(raw), []
     except (KeyError, TypeError, ValueError, OSError) as exc:
         return {default_model}, [f"Invalid experiment model override: {exc}"]
+
+
+def _openrouter_scoped_benchmark_override(path: Path, manifest: dict, meta: dict):
+    """Validate an explicit user-requested model without changing the default policy."""
+    override = manifest.get('llm_policy', {}).get('experiment_override')
+    if override is None:
+        return None, []
+    try:
+        policy_path = (ROOT / override['policy_path']).resolve()
+        product = override.get('schema_version') == 'user-authorized-openrouter-product-v2'
+        if (override.get('schema_version') not in {'user-authorized-openrouter-benchmark-v1', 'user-authorized-openrouter-product-v2'}
+                or not policy_path.is_relative_to((path / 'artifacts').resolve())
+                or _sha256(policy_path) != override.get('policy_sha256')):
+            raise ValueError('scoped policy location or hash mismatch')
+        scoped = json.loads(policy_path.read_text('utf-8'))
+        auth = scoped.get('authorization', {})
+        routing = scoped.get('provider_routing', {})
+        model = scoped.get('model')
+        if (scoped.get('schema_version') != override['schema_version']
+                or scoped.get('adr_id') != manifest.get('adr_id')
+                or scoped.get('experiment_id') != manifest.get('experiment_id')
+                or not isinstance(model, str) or not re.fullmatch(r'[a-z0-9_.-]+/[a-z0-9_.:-]+', model)
+                or scoped.get('allowed_models') != [model]
+                or scoped.get('provider') != 'openrouter'
+                or scoped.get('endpoint') != 'https://openrouter.ai/api/v1'
+                or scoped.get('fallback_allowed') is not False
+                or routing.get('allow_fallbacks') is not False
+                or routing.get('quantizations') != ['fp8']
+                or not routing.get('only') or routing.get('order') != routing['only']
+                or routing.get('require_parameters') is not True
+                or not scoped.get('allowed_upstream_providers')
+                or scoped.get('reasoning') not in ({'enabled': False}, {'effort': 'none'})
+                or scoped.get('source_scope') != (['public'] if product else ['synthetic'])
+                or auth.get('source') != 'user_message' or not auth.get('text')
+                or not auth.get('scope') or not auth.get('session_id') or auth.get('model') != model
+                or auth.get('fallback_allowed') is not False
+                or meta.get('main_wiring') != 'unchanged' or scoped.get('main_wiring') != 'unchanged'
+                or manifest.get('in_sample') is not True or manifest.get('decision_eligible') is not False):
+            raise ValueError('invalid isolated FP8 experiment authorization')
+        design_path = (ROOT / override['frozen_design_path']).resolve()
+        if (not design_path.is_relative_to((path / 'artifacts').resolve())
+                or _sha256(design_path) != override.get('frozen_design_sha256')):
+            raise ValueError('frozen design location or hash mismatch')
+        design = json.loads(design_path.read_text('utf-8'))
+        if design.get('scope_authorization') != auth:
+            raise ValueError('frozen authorization mismatch')
+        for call in manifest.get('llm_policy', {}).get('llm_calls', []):
+            config = design.get('configs', {}).get(call.get('arm_id'), {})
+            if (call.get('class') != ('product' if product else OFFLINE_BENCHMARK_CLASS) or call.get('model') != model
+                    or any(call.get(k) != config.get(k) for k in ('model', 'thinking_level'))):
+                raise ValueError('calls differ from the closed benchmark configuration')
+        return model, []
+    except (KeyError, TypeError, ValueError, OSError) as exc:
+        return None, [f'Invalid scoped OpenRouter benchmark override: {exc}']
 
 
 def validate_adr(path: Path, *, final: bool = False) -> list[str]:
@@ -2217,7 +2324,111 @@ def validate_adr(path: Path, *, final: bool = False) -> list[str]:
         errors.extend(_validate_integration(manifest))
 
     policy = manifest.get("llm_policy", {})
-    if policy.get("policy_version") == GEMINI_POLICY_VERSION:
+    if policy.get("policy_version") == "qwen38-experiments-v1":
+        qwen38 = "qwen/qwen3.8-27b"
+        if match and int(match.group(1)) < 583:
+            transition = policy.get("transition_authorization", {})
+            if not (int(match.group(1)) == 582
+                    and transition.get("source") == "user_message"
+                    and transition.get("model") == qwen38
+                    and transition.get("source_scope") == ["public"]
+                    and transition.get("fallback_allowed") is False
+                    and transition.get("text") == "Gemma말고 qwen 3.8설정해둔 모델을 기본으로 해 이제는"):
+                errors.append("Qwen3.8 default policy predates effective ADR")
+        if (policy.get("provider") != "openrouter" or policy.get("fallback_allowed") is not False
+                or policy.get("required_model") != qwen38
+                or policy.get("product_required_model") != qwen38
+                or policy.get("offline_evaluator_allowed_models") != [qwen38]):
+            errors.append("Qwen3.8 experiments require the exact approved model/provider without fallback")
+        for call in policy.get("llm_calls", []):
+            if call.get("model") != qwen38:
+                errors.append("All new experiment roles must use " + qwen38)
+            if call.get("class") not in {"product", "offline_evaluator", OFFLINE_BENCHMARK_CLASS}:
+                errors.append("Invalid Qwen3.8 experiment role class")
+            if (call.get("class") == OFFLINE_BENCHMARK_CLASS
+                    and policy.get("offline_benchmark_isolation") != {
+                        "may_change_product_answer": False,
+                        "may_enter_product_context": False,
+                        "judge_only_use": True}):
+                errors.append("offline benchmark isolation contract is invalid")
+    elif policy.get("policy_version") == "gemma-experiments-v1":
+        gemma = "google/gemma-4-31b-it"
+        scoped_model, scoped_errors = _openrouter_scoped_benchmark_override(path, manifest, meta)
+        errors.extend(scoped_errors)
+        if match and not 538 <= int(match.group(1)) < 583:
+            errors.append("Gemma default policy predates effective ADR")
+        scoped_class = 'product' if policy.get('experiment_override', {}).get('schema_version') == 'user-authorized-openrouter-product-v2' else OFFLINE_BENCHMARK_CLASS
+        if (policy.get("provider") != "openrouter" or policy.get("fallback_allowed") is not False
+                or policy.get("required_model") != gemma
+                or policy.get("product_required_model") != (scoped_model if scoped_model and scoped_class == 'product' else gemma)
+                or policy.get("offline_evaluator_allowed_models") != [gemma]):
+            errors.append("Gemma experiments require the exact approved model/provider without fallback")
+        for call in policy.get("llm_calls", []):
+            expected_model = scoped_model if scoped_model and call.get('class') == scoped_class else gemma
+            if call.get("model") != expected_model:
+                errors.append("All new experiment roles must use " + gemma)
+            if call.get("class") not in {"product", "offline_evaluator", OFFLINE_BENCHMARK_CLASS}:
+                errors.append("Invalid Gemma experiment role class")
+            if (call.get("class") == OFFLINE_BENCHMARK_CLASS
+                    and policy.get("offline_benchmark_isolation") != {
+                        "may_change_product_answer": False,
+                        "may_enter_product_context": False,
+                        "judge_only_use": True}):
+                errors.append("offline benchmark isolation contract is invalid")
+    elif policy.get("policy_version") == "qwen-experiments-v1":
+        qwen = "qwen/qwen3.5-122b-a10b"
+        if match and int(match.group(1)) >= 538:
+            errors.append('Historical Qwen3.5 policy cannot be a new experiment default')
+        # User-authorized, frozen product comparison; the default and evaluator
+        # remain Qwen. This does not register a serving model or fallback.
+        product_override = None
+        override = policy.get("experiment_override")
+        if override is not None:
+            try:
+                scoped_path = (ROOT / override["policy_path"]).resolve()
+                if (override.get("schema_version") != "user-authorized-openrouter-product-v1"
+                        or not scoped_path.is_relative_to((path / "artifacts").resolve())
+                        or _sha256(scoped_path) != override.get("policy_sha256")):
+                    raise ValueError("scoped policy path/hash mismatch")
+                scoped = json.loads(scoped_path.read_text("utf-8"))
+                routing = scoped.get("provider_routing", {})
+                auth = scoped.get("authorization", {})
+                if (scoped.get("schema_version") != override["schema_version"]
+                        or scoped.get("adr_id") != manifest.get("adr_id")
+                        or scoped.get("experiment_id") != manifest.get("experiment_id")
+                        or scoped.get("model") != "google/gemma-4-31b-it"
+                        or scoped.get("provider") != "openrouter"
+                        or scoped.get("endpoint") != "https://openrouter.ai/api/v1"
+                        or scoped.get("fallback_allowed") is not False
+                        or routing.get("allow_fallbacks") is not False
+                        or routing.get("quantizations") != ["fp8"]
+                        or not routing.get("only") or not scoped.get("allowed_upstream_providers")
+                        or scoped.get("reasoning") != {"enabled": False}
+                        or auth.get("source") != "user_message" or not auth.get("text")
+                        or not auth.get("scope") or not auth.get("session_id")
+                        or auth.get("fallback_allowed") is not False
+                        or scoped.get("main_wiring") != "unchanged" or meta.get("main_wiring") != "unchanged"
+                        or manifest.get("in_sample") is not True or manifest.get("decision_eligible") is not False
+                        or scoped.get("source_scope") != ["public"] or scoped.get("judge_model") != qwen):
+                    raise ValueError("invalid isolated Gemma FP8 authorization")
+                product_override = scoped["model"]
+            except (KeyError, TypeError, ValueError, OSError) as exc:
+                errors.append(f"Invalid Qwen experiment product override: {exc}")
+        if (policy.get("provider") != "openrouter" or policy.get("fallback_allowed") is not False
+                or policy.get("required_model") != qwen or policy.get("product_required_model") != qwen
+                or policy.get("offline_evaluator_allowed_models") != [qwen]):
+            errors.append("Qwen experiments require the exact approved model/provider without fallback")
+        for call in policy.get("llm_calls", []):
+            expected_model = product_override if call.get("class") == "product" and product_override else qwen
+            if call.get("model") != expected_model:
+                errors.append("All new experiment roles must use " + qwen)
+            if call.get("class") not in {"product", "offline_evaluator", OFFLINE_BENCHMARK_CLASS}:
+                errors.append("Invalid Qwen experiment role class")
+            if call.get("class") == OFFLINE_BENCHMARK_CLASS and policy.get("offline_benchmark_isolation") != {"may_change_product_answer": False, "may_enter_product_context": False, "judge_only_use": True}:
+                errors.append("offline benchmark isolation contract is invalid")
+    elif policy.get("policy_version") == GEMINI_POLICY_VERSION:
+        if DEFAULT_POLICY_VERSION in ('qwen-experiments-v1','gemma-experiments-v1','qwen38-experiments-v1') and match and int(match.group(1)) >= DEFAULT_FIRST_ADR:
+            errors.append('New experiments require '+DEFAULT_POLICY_VERSION+'; historical Gemini records are read-only')
         record_model = GEMINI_MODEL
         if manifest.get("results", {}).get("status") == "complete":
             for artifact in artifacts.get("files", []):
@@ -2247,7 +2458,7 @@ def validate_adr(path: Path, *, final: bool = False) -> list[str]:
                 if policy.get("offline_benchmark_isolation") != {"may_change_product_answer": False, "may_enter_product_context": False, "judge_only_use": True}:
                     errors.append("offline benchmark isolation contract is invalid")
     elif match and int(match.group(1)) >= GEMINI_FIRST_ADR:
-        errors.append(f"ADR-{GEMINI_FIRST_ADR:04d}+ requires {GEMINI_POLICY_VERSION}; historical Haiku policy is read-only")
+        errors.append(f"ADR-{GEMINI_FIRST_ADR:04d}+ requires a versioned experiment policy ({DEFAULT_POLICY_VERSION} for new work); historical Haiku policy is read-only")
     else:
         if policy.get("required_model") != HAIKU_MODEL:
             errors.append(f"required product model must be {HAIKU_MODEL}")
@@ -2388,7 +2599,11 @@ def validate_adr(path: Path, *, final: bool = False) -> list[str]:
             if UNRESOLVED_PLACEHOLDER_RE["PENDING"].search(text):
                 errors.append(f"final ADR contains PENDING: {file_path.relative_to(path)}")
         design = manifest.get("design", {})
-        if design.get("criteria_frozen_before_run") is not True:
+        operational_audit = (manifest.get("phase") == "audit"
+                             and design.get("operational_audit") is True
+                             and manifest.get("decision_eligible") is False
+                             and manifest.get("llm_policy", {}).get("llm_calls") == [])
+        if design.get("criteria_frozen_before_run") is not True and not operational_audit:
             errors.append("final ADR must freeze criteria before run")
         if manifest.get("results", {}).get("status") == "not_run":
             errors.append("final ADR results are not_run")
@@ -2581,7 +2796,7 @@ def _parser() -> argparse.ArgumentParser:
         "--related-adr", action="append", nargs=3,
         metavar=("ADR_PATH", "RELATION", "NOTE"),
         help="repeat to record non-lineage ADR relationships with an immutable record hash")
-    new.add_argument("--judge-model", choices=sorted(OFFLINE_EVALUATOR_MODELS | {GEMINI_MODEL}),
+    new.add_argument("--judge-model", choices=sorted(OFFLINE_EVALUATOR_MODELS | {GEMINI_MODEL, DEFAULT_MODEL}),
                      default=None)
     new.add_argument(
         "--owner", default=None,

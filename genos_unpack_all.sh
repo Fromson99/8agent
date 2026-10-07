@@ -110,7 +110,7 @@ cat <<EOF
 다음 명령:
   cd '$target_dir'
   python3.11 -m venv .venv
-  .venv/bin/pip install -r requirements-pipeline.txt
+  .venv/bin/pip install -r requirements-genos.txt
 
 환경값:
   GENOS_DATA_ROOT=$target_dir/GENOS_DATA
