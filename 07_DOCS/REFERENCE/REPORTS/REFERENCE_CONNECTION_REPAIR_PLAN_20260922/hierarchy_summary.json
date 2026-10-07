@@ -1,0 +1,32 @@
+{
+  "kind": "read_only_public_hierarchy_and_reference_audit",
+  "generation": "01_DATA/TERM_RELEASES/adr0523-gemma-bound-fulltext-v1/generation",
+  "scope_document_count": 145,
+  "scope_sha256": "92fd67f057db847592c577c3624b179565daed6767d25df5e63cc44aab3c71ef",
+  "navigation_sha256_from_manifest": "c2a765f62f8a82638d75e009726b3b42dbf11abf85cddef5c6283ee8713f726e",
+  "navigation_hash_recomputed": false,
+  "compiler_sha256": "3258bd58c43c010c182904841ea715ca3068a54c07e47549f6902bb90afab0ab",
+  "compiler_matches_rebuild_receipt": true,
+  "counts": {
+    "all_reference_rows": 133727,
+    "public_reference_rows": 133116,
+    "unconsumed_head_only_qualifier": 2852,
+    "unconsumed_head_only_qualifier_exact": 2511,
+    "unconsumed_number_after_mok": 398,
+    "unconsumed_number_after_mok_exact": 337
+  },
+  "public_unit_map_families": {
+    "circled": 120379,
+    "dot_number:1": 49228,
+    "hangul_dot": 15501,
+    "kr_article": 11419,
+    "bullet_▶": 1
+  },
+  "public_unit_map_children_of_hangul_dot": {},
+  "limitations": [
+    "Screen counts are not adjudicated error counts or retrieval measurements.",
+    "Only public scope of the explicitly pinned candidate generation inspected.",
+    "No compiler/model execution, product modification, DB rebuild, or activation.",
+    "Current lawxml code is explanatory; original ingestion revision was not verified."
+  ]
+}

@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:law-grouped-navigation-decision-v1:draft",
+  "$comment": "Design-only shape contract. Runtime must bind presented handles, validate action combinations, scope, revision, evidence delivery, branch dependencies and completion. Not installed in a provider or production schema registry.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "law-grouped-navigation-decision-v1"
+    },
+    "presentation_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "law_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "law_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "INVESTIGATE",
+              "DEFER"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "issue_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "uniqueItems": true
+          },
+          "basis_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "law_id",
+          "status",
+          "reason",
+          "issue_refs",
+          "basis_refs"
+        ]
+      }
+    },
+    "branch_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "branch_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "KEEP",
+              "DEFER",
+              "EXCLUDE"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "issue_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "uniqueItems": true
+          },
+          "basis_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "branch_id",
+          "status",
+          "reason",
+          "issue_refs",
+          "basis_refs"
+        ]
+      }
+    },
+    "next_action": {
+      "type": "string",
+      "enum": [
+        "READ_PARENT",
+        "READ_SCOPE",
+        "OPEN_LAW",
+        "NEXT_LAWS",
+        "NEXT_ARTICLES",
+        "NEXT_HITS",
+        "FOLLOW_CONNECTION",
+        "RESEARCH",
+        "PENDING",
+        "FINISH"
+      ]
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "uniqueItems": true
+    },
+    "queries": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "uniqueItems": true
+    },
+    "issue_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "uniqueItems": true
+    },
+    "basis_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "uniqueItems": true
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "evidence_sufficient": {
+      "type": "boolean"
+    },
+    "sufficiency_reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "contract_version",
+    "presentation_id",
+    "law_decisions",
+    "branch_decisions",
+    "next_action",
+    "targets",
+    "queries",
+    "issue_refs",
+    "basis_refs",
+    "reason",
+    "evidence_sufficient",
+    "sufficiency_reason"
+  ]
+}

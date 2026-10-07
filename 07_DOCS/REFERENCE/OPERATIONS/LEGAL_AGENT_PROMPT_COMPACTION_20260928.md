@@ -1,0 +1,101 @@
+# v5 MAIN 작업 코드의 LLM 입력 축약
+
+2026-09-28 사용자 요청으로 현재 MAIN 작업 기본 `legal-agent-tools-v5`의 요청 전송을
+정리했다. 최초 변경은 일반 코드 수정과 모의 계약·회귀 검증이었다. 이후 사용자 요청으로
+Gemma 고정 입력 실측(ADR-0548)을 별도로 수행했다. 법률 품질·GENOS 현장 속도는 미측정이다. GENOS 내부 모델, 데이터 세대, CURRENT와 로컬
+활성 frozen release를 변경하지 않는다.
+
+## 적용 경로와 실행 상태
+
+`service.py` → 기존 Pipeline → `ServingLegalAgent` → `ObligationSession` 또는
+`BoundedSourceSession` → `ModelGateway`/`_Gateway`에 적용한다.
+`system-harness-profile-v5`인 요청에서 자동 사용하며 신규 실행기·환경변수는 없다.
+기존 v1~v4 전송 형식은 유지한다. 영향을 받는 기존 engine의 파일 해시와
+`PIPELINE.json`의 manifest 해시를 다시 결속했다. 데이터·프로필·도메인·출력 계약은 유지한다.
+
+현재 `01_DATA/ACTIVE/local/ACTIVE_RELEASE.json`은
+`legal-agent-local-gemma-20260923-r3`, pointer generation 24를 선택한다.
+이 릴리스는 frozen 코드이므로 이번 작업 코드 수정으로 실행 바이트가 바뀌지 않는다.
+로컬 활성 릴리스와 GENOS 코드서빙 리비전 적용은 별도다.
+내부 모델 환경변수로 결속하는 GENOS 기본 프로필은 `bounded_source_selection_enabled=false`인
+도구 탐색 v5이며, 로컬 pinned 프로필은 `true`인 원문 회수·2회 선별 v5다.
+두 경로 모두 새 작업 코드에서는 같은 축약 전송을 사용한다.
+
+## 전송에서 제거한 중복
+
+- 스키마는 `response_format.json_schema` 한 곳에 유지한다. `messages`의 `output_schema` 복사본을 제거한다.
+- 반복 `DomainSpec` JSON은 전달하지 않는다. 도메인 결속·해시는 서버에 유지하고 지침에 핵심 제약을 남긴다.
+- v2/v3/v5 지침을 누적하던 공통 문자열을 v5 단계별 지침으로 정리한다.
+- `exact_evidence.text`에 이미 있는 `spans[].text`만 전송에서 제외한다. 원문에 없는 추가 span 문맥과 모든 좌표는 보존한다.
+- 도구를 실행하지 않는 작성 단계에서는 탐색 목록·커서 안내·검색 결과·도구 예산을 전송하지 않는다. 검토 단계의 후속 행동·관계 안내는 유지한다.
+- 형식 보정 메시지에는 모델 출력과 오류를 전달한다. usage·모델 envelope를 함께 복사하지 않는다.
+
+현재 고정 지침의 문자 수(공통 + 단계 + 번호 안내, 원문·스키마 제외)는
+탐색 2,164자, 선별 1,174자, 작성 1,341자, 검토 2,036자다.
+문자 수는 모델 토큰 수나 시간 절감률이 아니다.
+원문은 줄이거나 요약하지 않으며 읽기·선별·작성·검토의 호출 순서와 호출 예산은 유지한다.
+
+## 근거와 전송 검증
+
+저장된 model_view, evidence와 span은 그대로 둔다. 전송 시에만 순수 projection
+`compact-v5-v1`을 적용한다. 원장의 attempt 예약은 저장 view에서 동일 projection을
+재계산하여 실제 전송 view와 대조한다. 본문·좌표·참조 번호 변조는 여전히 거부한다.
+`WIRE_PROJECTION` 이벤트에 projection 버전, 저장 view hash와 wire view hash를 기록한다.
+번호 매핑 영수증과 출력의 엄격한 JSON/인용/질문 요구 검증도 유지한다.
+
+## 작성과 보정의 의미
+
+`compose`는 사용자에게 표시하는 답변 문장을 구조화된 paragraphs로 작성한다.
+문장은 claim으로 저장되고 `review`가 원문·질문과 대조한다.
+현재 v5는 검토 문제를 필요사항으로 표시하며, 별도 LLM 호출로 최종 본문을 다시 쓰지 않는다.
+결과 envelope·출처 발행·채팅 표시는 기존 경로를 따른다.
+
+JSON 파싱/출력 스키마 검증이 실패한 경우에만 `max_schema_repairs` 범위에서 보정한다.
+정상 출력에는 보정 호출이 붙지 않는다. 작업 기본값은 스키마 보정 최대 1회이며,
+행동·선별·작성 commit의 의미 검증 보정과 transport 재시도는 별도 기존 예산이다.
+bounded 회수·선별의 작은 structured 호출은 기존처럼 스키마 보정 0회다.
+
+## 검증과 원복
+
+새 projection·원문/좌표 보존·변조 거부·strict 출력·정상 1회/오류 시 보정의
+모의 계약 테스트를 추가했다. 기본 v5·번호 매핑·최종 검토 계약 115개,
+bounded 경로·출처·구 v3·실패·진단·service 회귀 104개로 총 219개 통과했다.
+실제 모델의 법률 답변 품질과 GENOS 지연은 미측정이다.
+
+반입·배포가 필요하면 기존 GENOS 코드 ZIP·리비전 절차를 따르고,
+워크플로우 테스트 화면에서만 질문을 확인한다. 이 변경은 워크플로우 Python 수정과
+데이터 재구축을 요구하지 않는다. 원복은 수정 전 코드와 해당 engine/PIPELINE 해시 결속을
+함께 복구한다. 완료된 실험·릴리스 원장은 수정하지 않는다.
+
+## 후속 Gemma 실측 (2026-09-28)
+
+[ADR-0548](../../../../04_EXPERIMENTS/ADR/ADR-0548-gemma-recorded-compose-compaction/README.md)는
+기존 실제 정관 질문의 compose view(공개 원문 20개)를 고정해 축약 전·후를 각각 3회 비교했다.
+Gemma `google/gemma-4-31b-it`, Parasail FP8, thinking off, 실제 12회 물리 호출이며
+모든 요청·응답·사용량·의존성 해시를 보존했다. 원문과 인용 좌표는 동일하다.
+
+| 측정 | 축약 전 | 축약 후 | 변화 |
+|---|---:|---:|---:|
+| 최초 작성 요청 입력 | 32,927토큰 | 19,420토큰 | −41.0% |
+| 최초 응답 p50 | 25.788초 | 22.613초 | −12.3% |
+| 형식 보정 포함 논리 호출 p50 | 39.144초 | 40.257초 | +2.8% |
+| 3회 전체 입력(보정 포함) | 200,771토큰 | 118,750토큰 | −40.9% |
+| 3회 전체 출력 | 3,234토큰 | 3,977토큰 | +23.0% |
+| 실제 형식 보정 호출 | 3회 | 3회 | 동일 |
+| 정상 형식 완료 | 0/3 | 0/3 | 동일 실패 |
+
+저장된 과거 view는 `answer_obligations=[]`, `question_plan=null`인데 출력 계약은
+`obligation_refs`를 비어 있지 않게 요구한다. 양쪽 모두 빈 참조 배열을 생성해 보정 뒤에도 실패했다.
+따라서 입력 감소는 실측했지만 **정상 최종답변 완료 시간·형식 안정성·법률 의미 품질 개선을
+인증하지 않는다.** 출력량 증가, provider 시간 변동, 실제 prefix cache를 함께 고려해야 한다.
+고정 입력 작성 지연 20% 감소라는 사전 기준은 충족하지 못했다. 과거 실패 view 결과를
+현재 작업 코드나 GENOS의 동일 실패 발생으로 확대하지 않는다.
+
+[ADR-0547](../../../../04_EXPERIMENTS/ADR/ADR-0547-gemma-main-prompt-compaction-measurement/README.md)의
+현재 작업 코드 전체 실행은 선택 로컬 데이터의 fulltext schema 불일치와 실행 중 control hash
+변경으로 model call 이전에 중단했다. 이 시간은 LLM 작성 지연이 아니며 전체 요청 시간은 미측정이다.
+이번 실측으로 제품 MAIN 승격·활성 frozen release 교체·GENOS 리비전 배포를 수행하지 않았다.
+
+ADR-0547/0548 `validate --final` 및 candidate 검사는 통과했다. 전체 ADR graph 생성은 기존
+ADR-0305/0444/0541/0542/0158의 계보 오류6건으로 실패했고, 이번 두 ADR만 포함한 graph는
+오류0으로 통과했다. 기존 완료 ADR의 계보를 이 작업에서 고치지 않았다.

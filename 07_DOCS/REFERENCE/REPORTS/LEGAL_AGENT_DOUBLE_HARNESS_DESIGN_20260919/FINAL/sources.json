@@ -1,0 +1,230 @@
+{
+  "basis": "2026-09-19 read-only snapshot; no live GENOS access",
+  "git_head": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "sources": [
+    {
+      "id": "S01",
+      "title": "MAIN 아키텍처",
+      "path": "/home/jin/8-AGENT/00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "c58bd29e771036eff762062f229e4af8f4d18e6d42fac263584442a636d8db68",
+      "bytes": 8111
+    },
+    {
+      "id": "S02",
+      "title": "법률 에이전트 구조·실험 경과",
+      "path": "/home/jin/8-AGENT/07_DOCS/REFERENCE/ARCHITECTURE/LEGAL_AGENT_SYSTEM.md",
+      "sha256": "25976c2d8070514d051a4c38a6acc6cad2a55c69785966c4f2d33bdc2c41d18f",
+      "bytes": 18328
+    },
+    {
+      "id": "S03",
+      "title": "이전 작업 하네스 실패 기록",
+      "path": "/home/jin/8-AGENT/07_DOCS/REFERENCE/OPERATIONS/TASK_HARNESS.md",
+      "sha256": "2469759c40c9f96cf09cb4687841177d3950feea336fcac8bc776be24d2d3fbc",
+      "bytes": 9946
+    },
+    {
+      "id": "S04",
+      "title": "ADR-0466 원시 집계",
+      "path": "/home/jin/8-AGENT/04_EXPERIMENTS/ADR/ADR-0466-legal-agent-composer-audit/artifacts/metrics.json",
+      "sha256": "9585dfd93f91f4f609a2860fa82689748566eb58691cd0fcded41d4077e19339",
+      "bytes": 12721
+    },
+    {
+      "id": "S05",
+      "title": "ADR-0469 모델별 규칙 비교",
+      "path": "/home/jin/8-AGENT/04_EXPERIMENTS/ADR/ADR-0469-legal-agent-loop-rev2/artifacts/metrics.json",
+      "sha256": "cb3e7b41adcf4e5047f629563e5dafecc9c2542cfedf92784d0dd9391ec22db7",
+      "bytes": 7003
+    },
+    {
+      "id": "S06",
+      "title": "ADR-0472 완료 실험",
+      "path": "/home/jin/8-AGENT/04_EXPERIMENTS/ADR/ADR-0472-legal-agent-loop-rev3/README.md",
+      "sha256": "ace3e438c02783d5606671f6778f8fa536bedcbae7c2112ee37cc42724d96951",
+      "bytes": 15860
+    },
+    {
+      "id": "S07",
+      "title": "ADR-0473 중간 위임 짝 관문",
+      "path": "/home/jin/8-AGENT/04_EXPERIMENTS/ADR/ADR-0473-legal-agent-loop-rev4/artifacts/s1-gate.json",
+      "sha256": "931164b5dccf67acd10f501d78528461f4565ae8f43c08b18d8181ccf495bb05",
+      "bytes": 2111
+    },
+    {
+      "id": "S08",
+      "title": "기존 요청 payload·연결 진단",
+      "path": "/home/jin/8-AGENT/07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_DOUBLE_HARNESS_DESIGN_20260919/existing-run-diagnostics.json",
+      "sha256": "3af465c067bc08005b5e22b0c1f1d41bacca4cd4f1c0e378b75ed8a8b54ebdf9",
+      "bytes": 9836
+    },
+    {
+      "id": "S09",
+      "title": "이전 모의 코드 재현 결과",
+      "path": "/mnt/c/Users/Jin/.codex/visualizations/2026/09/19/01a0b8bb-63c3-7c20-a211-df3661760a5d/legal-agent-review-checks.json",
+      "sha256": "39e36c12dbfe1408f52f954fc281592cc718f9d36745430301811860090564d0",
+      "bytes": 679
+    },
+    {
+      "id": "S10",
+      "title": "완료 rev3 탐색 루프",
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/loop.py",
+      "sha256": "93f018b17a89cfe8c6583d7401946613b338e5d4fa3b3c1d44619647cc0ade69",
+      "bytes": 15366
+    },
+    {
+      "id": "S11",
+      "title": "완료 rev3 조립기",
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/composer.py",
+      "sha256": "7095efbd1a9f9db6c4a50e7cf81409a8176ea6cdecba534eca506e09c7daa757",
+      "bytes": 6810
+    },
+    {
+      "id": "S12",
+      "title": "완료 rev3 인용 렌더러",
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/citations.py",
+      "sha256": "b1c1681598a952c830fc8c69b6ea00c20be0e018f6a2d3abc9de48c9d0a894af",
+      "bytes": 1358
+    },
+    {
+      "id": "S13",
+      "title": "완료 rev3 참조 해소기",
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/references.py",
+      "sha256": "8615fa94a9448a5f4c8121f6bdcaa95cb217fe4bf50d33da5957f5134184de32",
+      "bytes": 10556
+    },
+    {
+      "id": "S14",
+      "title": "기존 폴더·목차·구간 탐색",
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/folder_navigation.py",
+      "sha256": "9621d134e3c8f06c2837e579bbfc74e9569c177bb96a560021b5aba7a11068eb",
+      "bytes": 16078
+    },
+    {
+      "id": "S15",
+      "title": "원문 Store",
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/storage.py",
+      "sha256": "e1f864b7c4e33acb09eb296c82ee3a707d0e9aa95009bd0bf52e13a8bc685804",
+      "bytes": 6265
+    },
+    {
+      "id": "S16",
+      "title": "현재 파이프라인 실행기",
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/pipeline.py",
+      "sha256": "09ea902e17c90dc931cf1d66ef1cd0154779bb8d0adbed706debe5094be5a6de",
+      "bytes": 6722
+    },
+    {
+      "id": "S17",
+      "title": "현재 단계 포트",
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/stages.py",
+      "sha256": "ace52cf958806049b90f7f73a887e522c3b711096cd2c54234acbb231d9a6b4d",
+      "bytes": 1698
+    },
+    {
+      "id": "S18",
+      "title": "현재 외부 RAG 계약",
+      "path": "/home/jin/8-AGENT/00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "bytes": 14004
+    },
+    {
+      "id": "S19",
+      "title": "GENOS 요청 정규화",
+      "path": "/home/jin/8-AGENT/service.py",
+      "sha256": "42fb64405e33f1ca977ef724ab69706fcf7eef2ce5a1554a64b5cb1ffcaf3c0d",
+      "bytes": 23340
+    },
+    {
+      "id": "S20",
+      "title": "HTTP 요청·최종 저장",
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/app.py",
+      "sha256": "aa4a4566f7cf8cc27a80af33ae1741a1c8e97d43f991c6c8b35eede3e3e19e69",
+      "bytes": 10583
+    },
+    {
+      "id": "S21",
+      "title": "GENOS 답변·출처 소비자",
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+      "sha256": "0d2b1b4fae14f2004c3219d0e35be7f8376c3c8625bcdfe56b0a9a5aec661a21",
+      "bytes": 12836
+    },
+    {
+      "id": "S22",
+      "title": "현재 피드백 제안",
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/feedback.py",
+      "sha256": "18ba56fc30f5c1879fe8f069e0751a7aa05d19e8b2d5c9a88efc9c62365ffe92",
+      "bytes": 1393
+    },
+    {
+      "id": "S23",
+      "title": "선행 상세 설계",
+      "path": "/home/jin/8-AGENT/07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_DOUBLE_HARNESS_DESIGN_20260919/DESIGN.md",
+      "sha256": "f9365e42118dc225543ea337835597fb10d9b2512a38444d6eddd452c9642af3",
+      "bytes": 50974
+    },
+    {
+      "id": "S24",
+      "title": "선행 반복 탐색 설계",
+      "path": "/home/jin/8-AGENT/07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_DOUBLE_HARNESS_DESIGN_20260919/AGENTIC_EXPLORATION_IMPLEMENTATION.md",
+      "sha256": "30c82c172c1332c7251dc17b791bdc5d28ccf75c7e14e49ee1fc0de87f72bf1f",
+      "bytes": 33327
+    },
+    {
+      "id": "S25",
+      "title": "로컬 활성 포인터",
+      "path": "/home/jin/8-AGENT/01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "sha256": "f8e98000dc8b49264ed6d94d1e67abd030806337e27bbe13ab13bec01e04d1cb",
+      "bytes": 574
+    },
+    {
+      "id": "S26",
+      "title": "ADR-0473 진행 상태",
+      "path": "/home/jin/8-AGENT/04_EXPERIMENTS/ADR/ADR-0473-legal-agent-loop-rev4/README.md",
+      "sha256": "8d9cc380f5ecaca31741d7cf5ef4ffc7830a052f55b4d67ac730ea005f9f173d",
+      "bytes": 5534
+    },
+    {
+      "id": "S27",
+      "title": "계약 registry/validator",
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/contracts.py",
+      "sha256": "14a4fa8952aa40d043a719da24caa602b70a39bc7445a38ee85a4bb2bafd52ec",
+      "bytes": 1958
+    },
+    {
+      "id": "S28",
+      "title": "현재 문서 agent 자원·요청 격리",
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/document_agent.py",
+      "sha256": "0c3f0eea0d71da619f4ec36a0d1a908fd9e81d54ed2ebadd0d33c4ae4da8db2a",
+      "bytes": 4490
+    },
+    {
+      "id": "S29",
+      "title": "현재 파이프라인 선언",
+      "path": "/home/jin/8-AGENT/00_SYSTEM/PIPELINE.json",
+      "sha256": "b2d5d698d4f5cdb97ba99a593778f87e6726ba69ffcb413e90baff04c0a80795",
+      "bytes": 10626
+    },
+    {
+      "id": "S30",
+      "title": "GENOS 접근·실행 경계",
+      "path": "/home/jin/8-AGENT/GENOS.md",
+      "sha256": "aca896f10aa2770af2aa1463e728dcefce701f04e168909df2c8205e3e33b30e",
+      "bytes": 25234
+    },
+    {
+      "id": "S31",
+      "title": "현재 도메인 초기 규칙",
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/harness.py",
+      "sha256": "267adda153d60197ddee869bf62c9b44c80af52b4e1ef70705df434ac3d531cc",
+      "bytes": 2673
+    },
+    {
+      "id": "S32",
+      "title": "현재 조립 의미·수치 검사",
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/checker.py",
+      "sha256": "2a0d9bf7432849970c858285837ce5519b2fede6ba31022ebf1b7cbe75766e7c",
+      "bytes": 2215
+    }
+  ]
+}

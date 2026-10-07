@@ -1,0 +1,78 @@
+[
+  {
+    "id": "P1",
+    "input": [
+      "article:bbb3b79da72c6250f25c3377#unit:3",
+      "B#unit:5",
+      "article:bbb3b79da72c6250f25c3377#unit:4"
+    ],
+    "output": [
+      "article:bbb3b79da72c6250f25c3377#unit:3",
+      "article:bbb3b79da72c6250f25c3377#unit:4",
+      "B#unit:5"
+    ],
+    "method": "real grouping, stub scope sizes"
+  },
+  {
+    "id": "P2",
+    "leaf_pages": 1,
+    "expansion_pages": 4,
+    "repeated_block": "3",
+    "new_evidence_ids": [
+      "E27190019363776b56379451dbd0e",
+      "E7448048e721eca9b2cdb749ecc1a",
+      "E7dbb8838f90adffad60a39adab56",
+      "Ecfa05ae42584f6d3be5293f934b0"
+    ],
+    "method": "real source reader"
+  },
+  {
+    "id": "P3",
+    "error": "action ID reused with different canonical proposal",
+    "method": "real reader, same journal, reset state as prepare does"
+  },
+  {
+    "id": "P4",
+    "navigation_pending_sequence": [
+      true,
+      false
+    ],
+    "final_pending": true,
+    "needs_fulltext": true,
+    "method": "real selector/expansion, scripted navigation status"
+  },
+  {
+    "id": "P5",
+    "review_count": 1,
+    "new_original_in_review": false,
+    "new_original_in_final": true,
+    "needs_fulltext": true,
+    "method": "real selector/reader, scripted sufficiency"
+  },
+  {
+    "id": "P6",
+    "model_phases": [
+      "source-reference-batch-1"
+    ],
+    "reported_pending": false,
+    "unexamined_required_connections_after_expansion": 1,
+    "scanned_sources": [
+      "article:b1584236474930f3f08b02e3",
+      "article:bbb3b79da72c6250f25c3377"
+    ],
+    "method": "real reference index/catalog/navigation/reader"
+  },
+  {
+    "id": "P7",
+    "identical_menu_model_calls": 2,
+    "method": "real catalog/navigation; consecutive calls as candidate selector performs"
+  },
+  {
+    "id": "P8",
+    "max_context_chars": 6498,
+    "fresh_candidate_read": true,
+    "fresh_candidate_presented": false,
+    "retained_old_preview_count": 1,
+    "method": "real selector/acquisition at a controlled context boundary"
+  }
+]

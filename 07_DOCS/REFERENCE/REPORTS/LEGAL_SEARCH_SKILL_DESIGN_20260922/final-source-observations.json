@@ -1,0 +1,365 @@
+{
+  "schema_version": "design-source-observations-v1",
+  "captured_at": "2026-09-22T01:08:57.949163+00:00",
+  "original_inventory": "source-inventory.json",
+  "active_pointer_unchanged": true,
+  "working_profile": {
+    "schema_version": "system-harness-profile-v5",
+    "profile_id": "hardened-obligations-v5",
+    "model_binding": null,
+    "max_model_attempts": 14,
+    "finalization_reserve": 3,
+    "max_tool_actions": 56,
+    "wall_seconds": 300,
+    "max_cycles": 3,
+    "max_no_progress": 2,
+    "max_schema_repairs": 1,
+    "max_transport_retries": 1,
+    "max_context_chars": 100000,
+    "max_output_tokens": 6400,
+    "max_read_chars": 12000,
+    "page_size": 40,
+    "max_concurrent_requests_per_process": 4,
+    "browse_depth_limit": 4,
+    "max_same_error_repairs": 1,
+    "max_review_disputes": 1,
+    "preview_chars": 360,
+    "max_preview_chars": 3600,
+    "relation_page_size": 12,
+    "max_relation_chars": 14000,
+    "relation_scan_seconds": 5,
+    "auto_reference_read_depth": 1,
+    "max_auto_reference_reads_per_request": 12,
+    "max_auto_reference_chars_per_request": 12000,
+    "tool_finalization_reserve": 4,
+    "max_summary_items": 60,
+    "question_obligations_enabled": true,
+    "numbered_references_enabled": true,
+    "max_core_sources": 5,
+    "max_supplemental_sources": 5,
+    "max_source_excerpt_chars": 1600,
+    "source_page_size": 4,
+    "source_selection_attempts": 2,
+    "selection_time_reserve_seconds": 30
+  },
+  "selected_release_profile": {
+    "schema_version": "system-harness-profile-v5",
+    "profile_id": "hardened-obligations-v5",
+    "model_binding": null,
+    "max_model_attempts": 14,
+    "finalization_reserve": 3,
+    "max_tool_actions": 56,
+    "wall_seconds": 300,
+    "max_cycles": 3,
+    "max_no_progress": 2,
+    "max_schema_repairs": 1,
+    "max_transport_retries": 1,
+    "max_context_chars": 60000,
+    "max_output_tokens": 6400,
+    "max_read_chars": 12000,
+    "page_size": 40,
+    "max_concurrent_requests_per_process": 4,
+    "browse_depth_limit": 4,
+    "max_same_error_repairs": 1,
+    "max_review_disputes": 1,
+    "preview_chars": 360,
+    "max_preview_chars": 3600,
+    "relation_page_size": 12,
+    "max_relation_chars": 14000,
+    "relation_scan_seconds": 5,
+    "auto_reference_read_depth": 1,
+    "max_auto_reference_reads_per_request": 12,
+    "max_auto_reference_chars_per_request": 12000,
+    "tool_finalization_reserve": 4,
+    "max_summary_items": 60,
+    "question_obligations_enabled": true,
+    "numbered_references_enabled": true,
+    "max_core_sources": 5,
+    "max_supplemental_sources": 5,
+    "max_source_excerpt_chars": 1600,
+    "source_page_size": 4,
+    "source_selection_attempts": 2,
+    "selection_time_reserve_seconds": 30
+  },
+  "changed_files": [
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "initial_sha256": "bbb89d719baa03a513c05dac25c903c1cfb9e79e99b23ecdd9c0b28977665832",
+      "current_sha256": "92bfe5d7d44a96fdd94a524919b253e1164f4a34393db1603114d06ef5bd748c",
+      "changed": true
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v5.json",
+      "initial_sha256": "e53d90c6fa59b28ada7c0ecaa231c2c1257a7085c07382636dc2fd155ef7c0ca",
+      "current_sha256": "547936a54dde96a9a3600f29b83ea90a20ab82ad0351e06f4fcc88db003ff449",
+      "changed": true
+    }
+  ],
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "initial_sha256": "9cb30a282096339721488453f3f471031e4b433e73ed1f549c99893c8d0fbd3a",
+      "current_sha256": "9cb30a282096339721488453f3f471031e4b433e73ed1f549c99893c8d0fbd3a",
+      "changed": false
+    },
+    {
+      "path": "GENOS.md",
+      "initial_sha256": "a6efd097524a53184096d6b36a5ee40e21cc4f9b2e7739e72cbcad352c05000c",
+      "current_sha256": "a6efd097524a53184096d6b36a5ee40e21cc4f9b2e7739e72cbcad352c05000c",
+      "changed": false
+    },
+    {
+      "path": "service.py",
+      "initial_sha256": "95beb0801f85b673e586692d4734589d2064cee1f5067243698d52e353acbc3b",
+      "current_sha256": "95beb0801f85b673e586692d4734589d2064cee1f5067243698d52e353acbc3b",
+      "changed": false
+    },
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "initial_sha256": "0e500a0828f81a9e86f83628e2606b6ee896abb03e09604a517cc278dd177199",
+      "current_sha256": "0e500a0828f81a9e86f83628e2606b6ee896abb03e09604a517cc278dd177199",
+      "changed": false
+    },
+    {
+      "path": "00_SYSTEM/DATA_MODEL.md",
+      "initial_sha256": "fc1ea15de047e90d236786b1b517e7a29a7aab7497710a1a722367d1a86eb411",
+      "current_sha256": "fc1ea15de047e90d236786b1b517e7a29a7aab7497710a1a722367d1a86eb411",
+      "changed": false
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "initial_sha256": "bbb89d719baa03a513c05dac25c903c1cfb9e79e99b23ecdd9c0b28977665832",
+      "current_sha256": "92bfe5d7d44a96fdd94a524919b253e1164f4a34393db1603114d06ef5bd748c",
+      "changed": true
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "initial_sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6",
+      "current_sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6",
+      "changed": false
+    },
+    {
+      "path": "00_SYSTEM/EXPERIMENT_MODEL_POLICY.json",
+      "initial_sha256": "49dea4d108f2d5fd633756908ce838717238e9437b86633925384fbb33f5ea3b",
+      "current_sha256": "49dea4d108f2d5fd633756908ce838717238e9437b86633925384fbb33f5ea3b",
+      "changed": false
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-tools-v5.json",
+      "initial_sha256": "e53d90c6fa59b28ada7c0ecaa231c2c1257a7085c07382636dc2fd155ef7c0ca",
+      "current_sha256": "547936a54dde96a9a3600f29b83ea90a20ab82ad0351e06f4fcc88db003ff449",
+      "changed": true
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/domain-v5.json",
+      "initial_sha256": "3ef0fa0d175080fae4b48e83555541bf0a8ac47d43432c545e51436d8651cb05",
+      "current_sha256": "3ef0fa0d175080fae4b48e83555541bf0a8ac47d43432c545e51436d8651cb05",
+      "changed": false
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "initial_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "current_sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/pipeline.py",
+      "initial_sha256": "6bfbe0470f7cc682deaa86f2484497643adb2b82c92b0f5fe98d57144bcf60b2",
+      "current_sha256": "6bfbe0470f7cc682deaa86f2484497643adb2b82c92b0f5fe98d57144bcf60b2",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/app.py",
+      "initial_sha256": "d14e8902d958bb7b4ba63e0599425d9b9249b55ac9ad000dc3359bac88da27dd",
+      "current_sha256": "d14e8902d958bb7b4ba63e0599425d9b9249b55ac9ad000dc3359bac88da27dd",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent_adapter.py",
+      "initial_sha256": "70bfdfaa2b0dbeab2ef2835c09debc34ac7c1b31902e29f11fb44f930326e428",
+      "current_sha256": "70bfdfaa2b0dbeab2ef2835c09debc34ac7c1b31902e29f11fb44f930326e428",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/document_agent.py",
+      "initial_sha256": "0c3f0eea0d71da619f4ec36a0d1a908fd9e81d54ed2ebadd0d33c4ae4da8db2a",
+      "current_sha256": "0c3f0eea0d71da619f4ec36a0d1a908fd9e81d54ed2ebadd0d33c4ae4da8db2a",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/fulltext.py",
+      "initial_sha256": "7df4d52c4e9cc47d136a3106ce8ae9e715456012d1c328c998f59283657a8f29",
+      "current_sha256": "7df4d52c4e9cc47d136a3106ce8ae9e715456012d1c328c998f59283657a8f29",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/navigation_match.py",
+      "initial_sha256": "b4333ec7ee6d9c8b4fbb8d011b39ff71c92e8256e521f9f58842f28450a285c2",
+      "current_sha256": "b4333ec7ee6d9c8b4fbb8d011b39ff71c92e8256e521f9f58842f28450a285c2",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/question_obligations.py",
+      "initial_sha256": "f233c10404528b6a723ffdb9a702de1d9267446e3fc318e991b143ca2b74ae2c",
+      "current_sha256": "f233c10404528b6a723ffdb9a702de1d9267446e3fc318e991b143ca2b74ae2c",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py",
+      "initial_sha256": "7ee56684047ea3b4d81e6d29640b53edb223b2f822740f3f693781be5ef9df40",
+      "current_sha256": "7ee56684047ea3b4d81e6d29640b53edb223b2f822740f3f693781be5ef9df40",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py",
+      "initial_sha256": "fd285a0dcac49ab665ece6495ba5e57370407043fb30f2f71991afbe7e388ddc",
+      "current_sha256": "fd285a0dcac49ab665ece6495ba5e57370407043fb30f2f71991afbe7e388ddc",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py",
+      "initial_sha256": "dfb54ef14655f6d2ece2f669e6e7a97fb68b8d8b27a29a51ede2e06cd32bfa7a",
+      "current_sha256": "dfb54ef14655f6d2ece2f669e6e7a97fb68b8d8b27a29a51ede2e06cd32bfa7a",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_protocol.py",
+      "initial_sha256": "0f9a1e6061be9fe25c43e88290d1bdc082a693df363bae1b1d19409883b67d1d",
+      "current_sha256": "0f9a1e6061be9fe25c43e88290d1bdc082a693df363bae1b1d19409883b67d1d",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py",
+      "initial_sha256": "522bc704e8e6d5ac70f083ad9b51f95d4a28e7759fa29731dff60315fe154231",
+      "current_sha256": "522bc704e8e6d5ac70f083ad9b51f95d4a28e7759fa29731dff60315fe154231",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py",
+      "initial_sha256": "71f7511b4b90cbc0af6e496c6e13ba1b12b7fd75d3d4ec38bcd8fb80aa7f4167",
+      "current_sha256": "71f7511b4b90cbc0af6e496c6e13ba1b12b7fd75d3d4ec38bcd8fb80aa7f4167",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/obligation_protocol.py",
+      "initial_sha256": "afe01cef713a53f25e69bdde98ada3e438b93bb50d7a1f92c5f21d66342d1842",
+      "current_sha256": "afe01cef713a53f25e69bdde98ada3e438b93bb50d7a1f92c5f21d66342d1842",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/obligation_repository.py",
+      "initial_sha256": "0b9eb7e239c49234073cd0c82e36e84b49b32a9db2d180c76e4d0a246cecda3e",
+      "current_sha256": "0b9eb7e239c49234073cd0c82e36e84b49b32a9db2d180c76e4d0a246cecda3e",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/journal-v5.sql",
+      "initial_sha256": "5b913002cdcf347ed999e697c169c5e68ae7ec4f318c31e8136ae68639623e1e",
+      "current_sha256": "5b913002cdcf347ed999e697c169c5e68ae7ec4f318c31e8136ae68639623e1e",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/numbered_references.py",
+      "initial_sha256": "edf851e047647a3218fe531d8074fe2d32b2039ab18cd855041be86cb6222b10",
+      "current_sha256": "edf851e047647a3218fe531d8074fe2d32b2039ab18cd855041be86cb6222b10",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/gateway.py",
+      "initial_sha256": "fb82aacdf69b6b3e813e01bcf345fd1852e09e9c4ec80e47b0f3cf0e1388d28b",
+      "current_sha256": "fb82aacdf69b6b3e813e01bcf345fd1852e09e9c4ec80e47b0f3cf0e1388d28b",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/coordinator.py",
+      "initial_sha256": "d8832b0b0d4b952605345cc86cbab178553bafa4da88dbecd6ce67a93dc2aa54",
+      "current_sha256": "d8832b0b0d4b952605345cc86cbab178553bafa4da88dbecd6ce67a93dc2aa54",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/stages.py",
+      "initial_sha256": "f1ecd29b3e3246953dc4a2b864d574ea883479c61664b316a55b8fee0c08b9b0",
+      "current_sha256": "f1ecd29b3e3246953dc4a2b864d574ea883479c61664b316a55b8fee0c08b9b0",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tools_session.py",
+      "initial_sha256": "b4f76d188aeda13095f0c15ecde559c861821cb9b97724daa2886998f2d6cca0",
+      "current_sha256": "b4f76d188aeda13095f0c15ecde559c861821cb9b97724daa2886998f2d6cca0",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_bundle.py",
+      "initial_sha256": "2dadcd5c92d20a902a320eefe4dd0177930b7daa06ecead9d0e508ebc87f611f",
+      "current_sha256": "2dadcd5c92d20a902a320eefe4dd0177930b7daa06ecead9d0e508ebc87f611f",
+      "changed": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_candidates.py",
+      "initial_sha256": "a9b7787599cd76794e1627904433feb65782a8e1c82357904b264f8930e55374",
+      "current_sha256": "a9b7787599cd76794e1627904433feb65782a8e1c82357904b264f8930e55374",
+      "changed": false
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/GLOSSARY_LEARNING.md",
+      "initial_sha256": "628784affe6182725cf6f727e3c8c6fbb171bf9a31f0d5cb1d7b59265eba1d63",
+      "current_sha256": "628784affe6182725cf6f727e3c8c6fbb171bf9a31f0d5cb1d7b59265eba1d63",
+      "changed": false
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/LEGAL_AGENT_V5.md",
+      "initial_sha256": "4fb4129785502e34c7cbf0fcb4b4df873aebf15d9438c0219b91316286be2c21",
+      "current_sha256": "4fb4129785502e34c7cbf0fcb4b4df873aebf15d9438c0219b91316286be2c21",
+      "changed": false
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/CM003_TOOL_LOOP_DIAGNOSIS_20260921.md",
+      "initial_sha256": "89b067d1f55f6860d9a98e60b7ef9af87d76b2df6721565b9fd2e6674afa29e6",
+      "current_sha256": "89b067d1f55f6860d9a98e60b7ef9af87d76b2df6721565b9fd2e6674afa29e6",
+      "changed": false
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ADR-0474_PHASE0_TRAJECTORY_AUDIT_20260920.md",
+      "initial_sha256": "d995d3118d49c236bee1ce84c9dde6cfd99a98f6de8b2d39943d4f55117f9817",
+      "current_sha256": "d995d3118d49c236bee1ce84c9dde6cfd99a98f6de8b2d39943d4f55117f9817",
+      "changed": false
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_V5_COMPLETION_20260922/README.md",
+      "initial_sha256": "c9acd92bafaa308be5049eb0cbb59d34563879482f89d758bf6c4525a4e4aea9",
+      "current_sha256": "c9acd92bafaa308be5049eb0cbb59d34563879482f89d758bf6c4525a4e4aea9",
+      "changed": false
+    },
+    {
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "initial_sha256": "f352bbdcea435b98d8f98c4f00c147d60d8d6ae754120aed056ea5b8edcc9695",
+      "current_sha256": "f352bbdcea435b98d8f98c4f00c147d60d8d6ae754120aed056ea5b8edcc9695",
+      "changed": false
+    },
+    {
+      "path": "08_DEPLOYMENT/RELEASES/legal-agent-v5-20260922-r3/release.json",
+      "initial_sha256": "6358b307421e045a44790e8dc4fd3109858b100c9c74c6a9f47076789e5e67c4",
+      "current_sha256": "6358b307421e045a44790e8dc4fd3109858b100c9c74c6a9f47076789e5e67c4",
+      "changed": false
+    },
+    {
+      "path": "01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation/manifest.json",
+      "initial_sha256": "c1b5d2ef3f30f9a806e8c5b929388877380a01a508f0941e27a9dd9c863a8294",
+      "current_sha256": "c1b5d2ef3f30f9a806e8c5b929388877380a01a508f0941e27a9dd9c863a8294",
+      "changed": false
+    },
+    {
+      "path": "01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation/navigation/manifest.json",
+      "initial_sha256": "cef370382676762b5738316e6725d2919700d9e1dba1ce3f2915ab466895247e",
+      "current_sha256": "cef370382676762b5738316e6725d2919700d9e1dba1ce3f2915ab466895247e",
+      "changed": false
+    },
+    {
+      "path": "01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation/fulltext/manifest.json",
+      "initial_sha256": "bd3b9798b1fed637c751bf80ae8c09fb1f1c04d4167f9da00644b103d3f60b46",
+      "current_sha256": "bd3b9798b1fed637c751bf80ae8c09fb1f1c04d4167f9da00644b103d3f60b46",
+      "changed": false
+    }
+  ],
+  "note": "Concurrent working-tree changes are observations, not edits by this documentation task. Does not certify a running process or GENOS deployment."
+}

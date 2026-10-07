@@ -1,0 +1,280 @@
+{
+  "status": "DESIGN_ONLY_SYNTHETIC",
+  "description": "법령명·질문·handle은 합성. 제품 서버 실행 결과가 아님. acceptance 조건은 구현 요구다.",
+  "examples": [
+    {
+      "name": "법령 선택과 부모 호 읽기",
+      "decision": {
+        "contract_version": "law-grouped-navigation-decision-v1",
+        "presentation_id": "PRESENTATION-SYNTHETIC-CURRENT",
+        "law_decisions": [
+          {
+            "law_id": "LAW-A",
+            "status": "INVESTIGATE",
+            "reason": "신청 대상 구분이 실제 적중 원문에 있어 조사한다.",
+            "issue_refs": [
+              "ISSUE-CHANGE-APPLICATION"
+            ],
+            "basis_refs": [
+              "PREVIEW-A"
+            ]
+          }
+        ],
+        "branch_decisions": [],
+        "next_action": "READ_PARENT",
+        "targets": [
+          "READ-PARENT-A-ITEM1"
+        ],
+        "queries": [],
+        "issue_refs": [
+          "ISSUE-CHANGE-APPLICATION"
+        ],
+        "basis_refs": [
+          "PREVIEW-A"
+        ],
+        "reason": "적중 목만으로 대상 구분을 확인하기 어려워 같은 호의 형제를 읽는다.",
+        "evidence_sufficient": false,
+        "sufficiency_reason": ""
+      },
+      "server_acceptance_conditions": [
+        "모든 handle이 현재 presentation에 제시됨",
+        "PREVIEW는 선택 설명에만 사용, 최종 claim 근거가 아님",
+        "부모 범위는 동일 canonical source 안의 실제 호 subtree"
+      ]
+    },
+    {
+      "name": "원문 확인 후 잘못된 경로에서 다른 법령 이동",
+      "decision": {
+        "contract_version": "law-grouped-navigation-decision-v1",
+        "presentation_id": "PRESENTATION-SYNTHETIC-CURRENT",
+        "law_decisions": [
+          {
+            "law_id": "LAW-B",
+            "status": "INVESTIGATE",
+            "reason": "B의 제시 원문에 기존 신청의 변경 절차가 적혀 있다.",
+            "issue_refs": [
+              "ISSUE-CHANGE-APPLICATION"
+            ],
+            "basis_refs": [
+              "PREVIEW-B"
+            ]
+          }
+        ],
+        "branch_decisions": [
+          {
+            "branch_id": "BRANCH-A",
+            "status": "EXCLUDE",
+            "reason": "A의 확보한 원문은 신규 신청 대상이며 현재 쟁점은 기존 신청의 변경이다.",
+            "issue_refs": [
+              "ISSUE-CHANGE-APPLICATION"
+            ],
+            "basis_refs": [
+              "EVIDENCE-A-DELIVERED"
+            ]
+          }
+        ],
+        "next_action": "OPEN_LAW",
+        "targets": [
+          "LAW-B"
+        ],
+        "queries": [],
+        "issue_refs": [
+          "ISSUE-CHANGE-APPLICATION"
+        ],
+        "basis_refs": [
+          "EVIDENCE-A-DELIVERED",
+          "PREVIEW-B"
+        ],
+        "reason": "A의 읽은 원문은 신규 신청에 관한 내용이므로 변경 신청을 다루는 B를 조사한다.",
+        "evidence_sufficient": false,
+        "sufficiency_reason": ""
+      },
+      "server_acceptance_conditions": [
+        "제외 이유의 refs가 실제 전달된 원문임",
+        "A 경로의 원문·의무를 다른 활성 경로가 요구하면 그 의무 유지",
+        "제외로 미충족된 쟁점은 OPEN으로 유지",
+        "B 법령의 다음 조 페이지 조회가 가능함"
+      ]
+    },
+    {
+      "name": "미해결 연결을 보류한 상태로 다른 법령 조사",
+      "decision": {
+        "contract_version": "law-grouped-navigation-decision-v1",
+        "presentation_id": "PRESENTATION-SYNTHETIC-CURRENT",
+        "law_decisions": [],
+        "branch_decisions": [
+          {
+            "branch_id": "BRANCH-A",
+            "status": "DEFER",
+            "reason": "A의 적용 대상을 확인할 정의 원문이 아직 없다.",
+            "issue_refs": [
+              "ISSUE-CHANGE-APPLICATION"
+            ],
+            "basis_refs": [
+              "EVIDENCE-A-DELIVERED"
+            ]
+          }
+        ],
+        "next_action": "OPEN_LAW",
+        "targets": [
+          "LAW-B"
+        ],
+        "queries": [],
+        "issue_refs": [
+          "ISSUE-CHANGE-APPLICATION"
+        ],
+        "basis_refs": [
+          "EVIDENCE-A-DELIVERED",
+          "PREVIEW-B"
+        ],
+        "reason": "A의 정의 참조를 미해결로 보존하고 다른 근거 후보 B를 읽는다.",
+        "evidence_sufficient": false,
+        "sufficiency_reason": ""
+      },
+      "server_acceptance_conditions": [
+        "A의 REQUIRED obligation은 미해결 유지",
+        "A를 최종 근거로 남기면 FINISH 거부",
+        "자료 미확보만으로 EXCLUDE하지 않음"
+      ]
+    },
+    {
+      "name": "새 원문 표현으로 허용 전체 범위 재검색",
+      "decision": {
+        "contract_version": "law-grouped-navigation-decision-v1",
+        "presentation_id": "PRESENTATION-SYNTHETIC-CURRENT",
+        "law_decisions": [],
+        "branch_decisions": [],
+        "next_action": "RESEARCH",
+        "targets": [
+          "SEARCH-EFFECTIVE-SCOPE"
+        ],
+        "queries": [
+          "신청 내용 변경"
+        ],
+        "issue_refs": [
+          "ISSUE-CHANGE-APPLICATION"
+        ],
+        "basis_refs": [
+          "EVIDENCE-A-DELIVERED"
+        ],
+        "reason": "현재 후보에 변경 절차 근거가 없어 원문 표현을 바꿔 재검색한다.",
+        "evidence_sufficient": false,
+        "sufficiency_reason": ""
+      },
+      "server_acceptance_conditions": [
+        "compiled expression/query-set fingerprint가 새로움",
+        "검색 범위는 사용자 제한과 권한의 교집합",
+        "새 round에서도 경로·읽기·미해결 의무 상태 유지"
+      ]
+    },
+    {
+      "name": "동일 검색어로 좁은 법령 범위에서 허용 전체 범위로 이동",
+      "decision": {
+        "contract_version": "law-grouped-navigation-decision-v1",
+        "presentation_id": "PRESENTATION-SYNTHETIC-CURRENT",
+        "law_decisions": [],
+        "branch_decisions": [],
+        "next_action": "RESEARCH",
+        "targets": [
+          "SEARCH-EFFECTIVE-SCOPE"
+        ],
+        "queries": [
+          "신청 변경"
+        ],
+        "issue_refs": [
+          "ISSUE-CHANGE-APPLICATION"
+        ],
+        "basis_refs": [],
+        "reason": "A 안에서 수행한 검색을 같은 검색어로 전체 허용 문서에 적용한다.",
+        "evidence_sufficient": false,
+        "sufficiency_reason": ""
+      },
+      "server_acceptance_conditions": [
+        "이전 검색 view가 A이고 전체 허용 범위 검색은 아직 수행하지 않았음",
+        "동일 검색어라는 이유만으로 거부하지 않음",
+        "이미 수행한 전체 검색이면 해당 결과 OPEN/NEXT를 제공"
+      ]
+    },
+    {
+      "name": "긴 부모 묶음의 이어읽기",
+      "decision": {
+        "contract_version": "law-grouped-navigation-decision-v1",
+        "presentation_id": "PRESENTATION-SYNTHETIC-CURRENT",
+        "law_decisions": [],
+        "branch_decisions": [],
+        "next_action": "READ_PARENT",
+        "targets": [
+          "READ-PARENT-A-NEXT-PAGE"
+        ],
+        "queries": [],
+        "issue_refs": [
+          "ISSUE-CHANGE-APPLICATION"
+        ],
+        "basis_refs": [
+          "EVIDENCE-A-PAGE1-DELIVERED"
+        ],
+        "reason": "부모 항에 아직 제시되지 않은 형제 호가 있어 이어읽는다.",
+        "evidence_sufficient": false,
+        "sufficiency_reason": ""
+      },
+      "server_acceptance_conditions": [
+        "group handle과 다음 page가 같은 부모에 결속됨",
+        "신규 span 또는 이미 확보했지만 미전달된 page가 있음",
+        "group_complete가 실제 전달·검토 완료까지 false"
+      ]
+    },
+    {
+      "name": "미확인 보류",
+      "decision": {
+        "contract_version": "law-grouped-navigation-decision-v1",
+        "presentation_id": "PRESENTATION-SYNTHETIC-CURRENT",
+        "law_decisions": [],
+        "branch_decisions": [],
+        "next_action": "PENDING",
+        "targets": [],
+        "queries": [],
+        "issue_refs": [
+          "ISSUE-CHANGE-APPLICATION"
+        ],
+        "basis_refs": [
+          "EVIDENCE-A-DELIVERED"
+        ],
+        "reason": "채택한 원문이 요구하는 정의 자료가 없어 적용 대상을 확인할 수 없다.",
+        "evidence_sufficient": false,
+        "sufficiency_reason": ""
+      },
+      "server_acceptance_conditions": [
+        "unresolved obligation과 부족한 쟁점 및 재개 handle 저장",
+        "status를 완료·규정 없음으로 바꾸지 않음",
+        "기존 미확인/오류 응답 계약과 신규 내부 status 소비자 확인"
+      ]
+    },
+    {
+      "name": "조사 완료 요청",
+      "decision": {
+        "contract_version": "law-grouped-navigation-decision-v1",
+        "presentation_id": "PRESENTATION-SYNTHETIC-CURRENT",
+        "law_decisions": [],
+        "branch_decisions": [],
+        "next_action": "FINISH",
+        "targets": [],
+        "queries": [],
+        "issue_refs": [
+          "ISSUE-CHANGE-APPLICATION"
+        ],
+        "basis_refs": [
+          "EVIDENCE-B-PARENT-DELIVERED",
+          "EVIDENCE-B-DEFINITION-DELIVERED"
+        ],
+        "reason": "현재 변경 신청 쟁점의 근거와 필수 연결을 확보했다.",
+        "evidence_sufficient": true,
+        "sufficiency_reason": "현재 쟁점의 부모 범위와 필요한 연결을 전달·검토했다."
+      },
+      "server_acceptance_conditions": [
+        "활성 근거의 필요한 부모 범위 및 상위 조건이 전달·검토 완료",
+        "활성 필수 연결·공유 의무·미검토 예외가 남아 있지 않음",
+        "현재 원문 binding과 issue coverage 검증 후 ASSESS로 진행"
+      ]
+    }
+  ]
+}

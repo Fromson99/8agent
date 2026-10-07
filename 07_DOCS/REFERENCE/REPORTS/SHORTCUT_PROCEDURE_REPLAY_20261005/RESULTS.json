@@ -1,0 +1,365 @@
+{
+  "scope": "검증된 조사 절차 재실행 prototype; 최종 법률 판단/답변은 새로 생성",
+  "replay_rows": [
+    {
+      "case": "개인정보 정의",
+      "adr": "ADR-0646",
+      "calls": 2,
+      "seconds": 17.79667527100537,
+      "restart": false,
+      "quality": "두 평가 모두 통과"
+    },
+    {
+      "case": "정보공개 원칙",
+      "adr": "ADR-0646",
+      "calls": 2,
+      "seconds": 7.449117048992775,
+      "restart": false,
+      "quality": "두 평가 모두 통과"
+    },
+    {
+      "case": "상법 적용 순서",
+      "adr": "ADR-0648",
+      "calls": 2,
+      "seconds": 42.603727587964386,
+      "restart": true,
+      "quality": "두 평가 모두 통과"
+    }
+  ],
+  "fixed_method_calls": 0,
+  "unchanged_procedural_calls": 0,
+  "contract_tests": 80,
+  "synthetic_exceptions": [
+    {
+      "scenario": "learn",
+      "model_calls": 1,
+      "deviation": {
+        "phase": "source-reference-batch-1",
+        "request": "0",
+        "status": "DISCOVERY",
+        "reason": "NO_VERIFIED_PROCEDURE",
+        "step_id": null,
+        "expected_input": null,
+        "actual_input": {
+          "question": "모의규정 제1조의 준용 대상을 읽어라.",
+          "anchor": "제1조: 제2조를 준용한다.",
+          "menu": [
+            {
+              "id": "R1",
+              "article": "제2조",
+              "text": "제2조: 승인은 위원회가 한다."
+            },
+            {
+              "id": "R2",
+              "article": "제3조",
+              "text": "제3조: 보고는 담당자가 한다."
+            }
+          ],
+          "schema": {
+            "type": "object",
+            "properties": {
+              "selected": {
+                "type": "string",
+                "enum": [
+                  "R1",
+                  "R2"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "selected",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "expected_binding": null,
+        "actual_binding": "86a3d4f91f6bc62a9ed373fd865450b3b84b707bc7054b4093971e9f2634c8c0",
+        "expected_input_hash": null,
+        "actual_input_hash": "f7c699aa071ab85b900a0ff3ad1eab578b4e075a4017ef05c204966089d80343"
+      },
+      "result": {
+        "selected": "R1",
+        "reason": "Anchor인 제1조는 '제2조를 준용한다'고 명시하고 있으므로, menu에서 조항 번호가 '제2조'인 R1이 정답입니다."
+      }
+    },
+    {
+      "scenario": "unchanged",
+      "model_calls": 0,
+      "deviation": null,
+      "result": {
+        "reason": "Anchor인 제1조는 '제2조를 준용한다'고 명시하고 있으므로, menu에서 조항 번호가 '제2조'인 R1이 정답입니다.",
+        "selected": "R1"
+      }
+    },
+    {
+      "scenario": "relation_changed",
+      "model_calls": 1,
+      "deviation": {
+        "phase": "source-reference-batch-1",
+        "request": "2",
+        "status": "DEVIATION",
+        "reason": "EXPECTED_INPUT_CHANGED",
+        "step_id": 1,
+        "expected_input": {
+          "anchor": "제1조: 제2조를 준용한다.",
+          "menu": [
+            {
+              "article": "제2조",
+              "id": "R1",
+              "text": "제2조: 승인은 위원회가 한다."
+            },
+            {
+              "article": "제3조",
+              "id": "R2",
+              "text": "제3조: 보고는 담당자가 한다."
+            }
+          ],
+          "question": "모의규정 제1조의 준용 대상을 읽어라.",
+          "schema": {
+            "additionalProperties": false,
+            "properties": {
+              "reason": {
+                "type": "string"
+              },
+              "selected": {
+                "enum": [
+                  "R1",
+                  "R2"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "selected",
+              "reason"
+            ],
+            "type": "object"
+          }
+        },
+        "actual_input": {
+          "question": "모의규정 제1조의 준용 대상을 읽어라.",
+          "anchor": "제1조: 제3조를 준용한다.",
+          "menu": [
+            {
+              "id": "R1",
+              "article": "제2조",
+              "text": "제2조: 승인은 위원회가 한다."
+            },
+            {
+              "id": "R2",
+              "article": "제3조",
+              "text": "제3조: 보고는 담당자가 한다."
+            }
+          ],
+          "schema": {
+            "type": "object",
+            "properties": {
+              "selected": {
+                "type": "string",
+                "enum": [
+                  "R1",
+                  "R2"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "selected",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "expected_binding": "86a3d4f91f6bc62a9ed373fd865450b3b84b707bc7054b4093971e9f2634c8c0",
+        "actual_binding": "86a3d4f91f6bc62a9ed373fd865450b3b84b707bc7054b4093971e9f2634c8c0",
+        "expected_input_hash": "f7c699aa071ab85b900a0ff3ad1eab578b4e075a4017ef05c204966089d80343",
+        "actual_input_hash": "e254f46ee6812559cf92122f5a3a8a51cefee9b0872ece1d45bf981363555e17"
+      },
+      "result": {
+        "selected": "R2",
+        "reason": "Anchor인 '제1조: 제3조를 준용한다.'에서 명시적으로 준용 대상이 '제3조'로 지정되어 있으므로, Menu에서 '제3조'에 해당하는 R2를 선택한다."
+      }
+    },
+    {
+      "scenario": "source_changed",
+      "model_calls": 1,
+      "deviation": {
+        "phase": "source-reference-batch-1",
+        "request": "3",
+        "status": "DEVIATION",
+        "reason": "SOURCE_OR_CONFIGURATION_CHANGED",
+        "step_id": 2,
+        "expected_input": {
+          "anchor": "제1조: 제3조를 준용한다.",
+          "menu": [
+            {
+              "article": "제2조",
+              "id": "R1",
+              "text": "제2조: 승인은 위원회가 한다."
+            },
+            {
+              "article": "제3조",
+              "id": "R2",
+              "text": "제3조: 보고는 담당자가 한다."
+            }
+          ],
+          "question": "모의규정 제1조의 준용 대상을 읽어라.",
+          "schema": {
+            "additionalProperties": false,
+            "properties": {
+              "reason": {
+                "type": "string"
+              },
+              "selected": {
+                "enum": [
+                  "R1",
+                  "R2"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "selected",
+              "reason"
+            ],
+            "type": "object"
+          }
+        },
+        "actual_input": {
+          "question": "모의규정 제1조의 준용 대상을 읽어라.",
+          "anchor": "제1조: 제2조를 준용한다.",
+          "menu": [
+            {
+              "id": "R1",
+              "article": "제2조",
+              "text": "제2조: 승인은 위원회가 한다."
+            },
+            {
+              "id": "R2",
+              "article": "제3조",
+              "text": "제3조: 보고는 담당자가 한다."
+            }
+          ],
+          "schema": {
+            "type": "object",
+            "properties": {
+              "selected": {
+                "type": "string",
+                "enum": [
+                  "R1",
+                  "R2"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "selected",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "expected_binding": "86a3d4f91f6bc62a9ed373fd865450b3b84b707bc7054b4093971e9f2634c8c0",
+        "actual_binding": "5a3fbf028f13993687db4015da11407160054ed5a5606e4d3618f71272044ba4",
+        "expected_input_hash": "e254f46ee6812559cf92122f5a3a8a51cefee9b0872ece1d45bf981363555e17",
+        "actual_input_hash": "f7c699aa071ab85b900a0ff3ad1eab578b4e075a4017ef05c204966089d80343"
+      },
+      "result": {
+        "selected": "R1",
+        "reason": "Anchor인 '제1조: 제2조를 준용한다.'에서 명시적으로 준용 대상이 '제2조'로 지정되어 있으므로, Menu에서 '제2조'에 해당하는 R1을 선택한다."
+      }
+    },
+    {
+      "scenario": "question_changed",
+      "model_calls": 1,
+      "deviation": {
+        "phase": "source-reference-batch-1",
+        "request": "4",
+        "status": "DISCOVERY",
+        "reason": "NO_VERIFIED_PROCEDURE",
+        "step_id": null,
+        "expected_input": null,
+        "actual_input": {
+          "question": "모의규정의 보고 조항을 읽어라.",
+          "anchor": "보고는 제3조를 따른다.",
+          "menu": [
+            {
+              "id": "R1",
+              "article": "제2조",
+              "text": "제2조: 승인은 위원회가 한다."
+            },
+            {
+              "id": "R2",
+              "article": "제3조",
+              "text": "제3조: 보고는 담당자가 한다."
+            }
+          ],
+          "schema": {
+            "type": "object",
+            "properties": {
+              "selected": {
+                "type": "string",
+                "enum": [
+                  "R1",
+                  "R2"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "selected",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "expected_binding": null,
+        "actual_binding": "86a3d4f91f6bc62a9ed373fd865450b3b84b707bc7054b4093971e9f2634c8c0",
+        "expected_input_hash": null,
+        "actual_input_hash": "1ba0290e2eddeb5b68d46f1177c0fdbde55aed45ebcb5f92a60f60758933ece9"
+      },
+      "result": {
+        "selected": "R2",
+        "reason": "Anchor가 '보고는 제3조를 따른다'고 명시하고 있으므로, menu에서 제3조에 해당하는 R2를 선택한다."
+      }
+    }
+  ],
+  "initial_commercial_failure": {
+    "baseline": true,
+    "candidate": true,
+    "cause": "source selector returned empty choices",
+    "unresolved": true
+  },
+  "code_identical_646_648": true,
+  "main_unchanged": true,
+  "active_release": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "legal-agent-source-prefix-20260930-r3",
+    "generation": 37,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/legal-agent-source-prefix-20260930-r3/release.json",
+    "release_manifest_sha256": "06e47cc365538a94332d08290c26faa4f610ac72a9a91a5a782d528c469de8b6",
+    "activated_at": "2026-09-30T07:59:35.901795+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "c5edaad71a5105c00b8ea8f515b3f9b11360aa095ba72c28b2f9f045237c9823"
+  },
+  "limitations": [
+    "동일 질문과 동일 입력 계약을 보수적으로 재사용; 의미상 유사한 질문/새 매개변수 자동 일반화는 아님",
+    "기존 원문 선별의 최초 실패 미해결",
+    "관찰한 소표본 probe; 독립 holdout 및 GENOS 미검증",
+    "ADR0647 실험 DB 사본이 WAL 완료 기록을 누락;648에서 SQLite backup으로 수정",
+    "ADR0647 최종 metadata 검사 실패(unchanged retrieval reason 누락)는 완료 기록 보존;648 검사 통과",
+    "전역 graph에 기존 오류 남음"
+  ]
+}

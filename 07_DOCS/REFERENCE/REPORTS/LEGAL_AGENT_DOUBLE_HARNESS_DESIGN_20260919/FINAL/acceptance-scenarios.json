@@ -1,0 +1,165 @@
+{
+  "scope": "planned product acceptance scenarios, not executed tests",
+  "scenarios": [
+    {
+      "id": "T01",
+      "decision_id": "D01",
+      "name": "모델 프로파일 변경",
+      "input": "같은 DomainSpec으로 서로 다른 표현·스키마 정책 선택",
+      "expected": "법률상 필수 확인·부재 의미를 바꾸는 설정은 별도 DomainSpec 변경으로 처리; profile이 의미를 덮어쓰지 않음",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T02",
+      "decision_id": "D02",
+      "name": "문서명과 개념이 겹치는 질문",
+      "input": "문서 범위와 용어 후보가 함께 매칭됨",
+      "expected": "문서 handle은 scope/목차에, 용어는 내용 탐색에 사용; 후보 상한 때문에 원문 읽기 전에 조용히 종료하지 않음",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T03",
+      "decision_id": "D03",
+      "name": "일부 근거만 확보",
+      "input": "필수 원칙은 확인, 질문과 무관한 유형 및 미확인 예외가 존재",
+      "expected": "무관한 항목은 활성화하지 않음; 미확인 예외가 결론을 바꾸면 BOUNDED/CLARIFY; 전수 후보 판정 강제 없음",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T04",
+      "decision_id": "D04",
+      "name": "하위 목차·별표 탐색",
+      "input": "검색 상위에 없지만 문서 목차/참조에 대상이 있음",
+      "expected": "목록→목차→구간/참조 읽기와 pagination 보존; 여러 source article인 장은 분할; 누락 별표는 DATA_GAP",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T05",
+      "decision_id": "D05",
+      "name": "새 카드 생성 후 종료 제안",
+      "input": "서버가 원문을 확보했지만 모델 요청에는 아직 안 들어감",
+      "expected": "전달 영수증 전에는 해당 모델의 검토·채택 완료로 집계하지 않음; 다음 입력 또는 미확인 처리",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T06",
+      "decision_id": "D06",
+      "name": "긴 조문과 모델 좌표 오류",
+      "input": "뒤쪽 항의 예외·한글 원문 block이 필요",
+      "expected": "모델이 좌표를 계산하지 않음; exact span/hash 보존, 새구간 새handle; 절단 누락을 기록",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T07",
+      "decision_id": "D07",
+      "name": "채택 근거 철회",
+      "input": "E1이 I1/I2 두 쟁점에 연결된 뒤 I1 부적합 판단",
+      "expected": "I1 관계만 재평가; I1 의존 Claim/Review/Draft stale, I2와 원문은 유지; 오래된 review 거부",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T08",
+      "decision_id": "D08",
+      "name": "채택 0 fallback",
+      "input": "초기 카드를 모두 명시적으로 제외",
+      "expected": "제외 자료가 자동 근거가 되지 않음; 명시 재검토와 사유 또는 근거 미확인 응답",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T09",
+      "decision_id": "D09",
+      "name": "검색 실패와 사용자 사실 누락",
+      "input": "규정 미발견 또는 규정은 있으나 사실 unknown",
+      "expected": "SEARCHED_UNRESOLVED에 시도·범위 필요; unknown facts를 부적용/부재로 바꾸지 않음",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T10",
+      "decision_id": "D10",
+      "name": "맞는 주장에 잘못된 비판",
+      "input": "다른 적용 주체 원문으로 challenge, 또는 근거 없는 반복 비판",
+      "expected": "challenge 적용 범위 검토 후 기각 가능; 반복 비판만으로 무한재검색·자동 결론 반전 없음",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T11",
+      "decision_id": "D11",
+      "name": "참조 대상 부재·순환",
+      "input": "명시 단서가 옛 target과 다르고 실제 새 target 없음",
+      "expected": "옛target 무효화; UNRESOLVED_TARGET; 순환 방문 중복 제어; 역참조는 자동 법적 위임/채택 아님",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T12",
+      "decision_id": "D12",
+      "name": "조립 이후 재탐색",
+      "input": "새 예외 필요 또는 같은 근거로 표현만 수정",
+      "expected": "RESEARCH는 같은 query/binding 유지, 이후 산출물 무효화; RECOMPOSE는 같은 evidence revision; FINAL 전 공개 금지",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T13",
+      "decision_id": "D13",
+      "name": "없는 핸들과 부정 반전",
+      "input": "존재하지 않는 E999 또는 유효 핸들에 반대 의미 문장",
+      "expected": "없는 출처 주장은 수리/보류; 알려진핸들 통과만으로 의미정답 판정 안 함; 새 법률주장 review 등록",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T14",
+      "decision_id": "D14",
+      "name": "예산·지연·빈 문맥 몫",
+      "input": "카드 잔여 0, schema retry, provider timeout, 종료예약",
+      "expected": "0이면 추가카드 0; 모든 physical attempt 계수; deadline 뒤 전이 거부; 비용 미상과 0 구분",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T15",
+      "decision_id": "D15",
+      "name": "세대 변경·시행일 미상",
+      "input": "실행 중 store/index 변경 또는 과거 사건 질문",
+      "expected": "binding 불일치 거부/새 실행; 저장세대와 법적 효력 별개; 검증 없는 현재/역사적 적용 단정 없음",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T16",
+      "decision_id": "D16",
+      "name": "허용 범위 밖 참조",
+      "input": "문서 필터·좁힌context·trusted allowed가 다름 또는 권한 취소",
+      "expected": "검색·원문·참조·인용 동일교집합; 필터를 ACL로 신뢰하지 않음; 결과전 권한 재검사",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T17",
+      "decision_id": "D17",
+      "name": "실제 API와 출처 브릿지",
+      "input": "현재 Request/Result fixture + workflow metadata",
+      "expected": "본문/metadata 분리, 새adapter 실제선택, required/const 준수; claims.source_ids만 실제 출처로 표시",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T18",
+      "decision_id": "D18",
+      "name": "중복·늦은응답·중단",
+      "input": "같은 event, stale expected revision, final checkpoint 실패",
+      "expected": "중복 적용 없음; late result 거부; interrupted 기록; 저장실패를 completed로 공개하지 않음",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T19",
+      "decision_id": "D19",
+      "name": "피드백과 판본 변경",
+      "input": "과거오답·사람 정정·새 source generation",
+      "expected": "PROPOSED→검토→검증 분리; 과거 답 정본 자동승격 없음; stale 경로 재검토 후 사용",
+      "status": "pending_product_implementation_and_validation"
+    },
+    {
+      "id": "T20",
+      "decision_id": "D20",
+      "name": "반복의 회복과 회귀",
+      "input": "기준/후보의 고정 사례와 모델·판본·평가 설정",
+      "expected": "신규정답/잃은정답/미답변/비용 별도 집계; 독립사례 분리·제품/평가 데이터 분리; 결과전 기준 동결",
+      "status": "pending_product_implementation_and_validation"
+    }
+  ]
+}

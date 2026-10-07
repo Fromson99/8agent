@@ -1,0 +1,136 @@
+{
+  "status": "PROPOSED_NOT_IMPLEMENTED",
+  "id_policy": "All example handles and span IDs below are illustrative, not live source evidence.",
+  "contracts": {
+    "action_chain": "investigation-action-chain-v2",
+    "candidate_navigation": "law-candidate-navigation-v4",
+    "read_scope": "investigation-read-scope-v2",
+    "assessment": "investigation-assessment-v2"
+  },
+  "sample_input": {
+    "question": "상증세법 시행령 제49조 제1항의 구조는?",
+    "question_revision": 1,
+    "issues": [
+      {
+        "id": "Q1",
+        "kind": "STRUCTURE",
+        "origin": "USER_EXPLICIT",
+        "requested_scope": "제49조 제1항 전체",
+        "status": "OPEN"
+      }
+    ],
+    "current_scope": {
+      "locator": {
+        "document_version_id": "example-document-version",
+        "source_id": "example-article-49",
+        "unit_id": "example-paragraph-1-number-1",
+        "ancestry": [
+          {
+            "unit_id": "example-article-49",
+            "role": "ARTICLE",
+            "label": "제49조"
+          },
+          {
+            "unit_id": "example-paragraph-1",
+            "role": "PARAGRAPH",
+            "label": "제1항"
+          },
+          {
+            "unit_id": "example-paragraph-1-number-1",
+            "role": "ITEM",
+            "label": "제1호"
+          }
+        ]
+      },
+      "extent": "SUBTREE",
+      "display_path": "상증세법 시행령 제49조 제1항 제1호 전체",
+      "acquired_complete_for_selected_scope": true,
+      "delivered_complete_for_selected_scope": true,
+      "delivered_complete_for_issue_Q1": false,
+      "ancestor_context_is_complete_issue": false
+    },
+    "inventory": [
+      {
+        "id": "example-material-1",
+        "availability": "DELIVERED",
+        "decisions": [
+          {
+            "issue_id": "Q1",
+            "status": "DEFER",
+            "judgment_id": "J1"
+          }
+        ],
+        "view_saved_action": "A-SAVED-1"
+      }
+    ],
+    "gaps": [
+      {
+        "id": "G1",
+        "issue_id": "Q1",
+        "kind": "MISSING_SCOPE",
+        "reason": "제1호만 전달되어 제2호 이하 구조가 확인되지 않음",
+        "suggested_action": "A-READ-PARAGRAPH-1"
+      }
+    ]
+  },
+  "return_example": {
+    "destination_frame": "F-SEARCH-1",
+    "reason": "현재 원문은 질문의 전체 항 범위를 확인하지 못해 최초 후보에서 다른 조문을 다시 선택",
+    "restored_menu_kind": "SEARCH",
+    "restored_menu_is_immutable": true,
+    "subsequent_actions_and_judgments_kept": true,
+    "adopted_and_saved_inventory_kept": true,
+    "acl_and_versions_revalidated": true
+  },
+  "assessment_example": {
+    "disposition": "NEEDS_INVESTIGATION",
+    "issue_assessments": [
+      {
+        "issue_id": "Q1",
+        "coverage": "PARTIAL",
+        "gap_ids": [
+          "G1"
+        ]
+      }
+    ],
+    "claims": [],
+    "gaps": [
+      "G1"
+    ],
+    "claims_note": "Intermediate ASSESS gap branch may contain no claims; final no-evidence publication is a separate explicitly scoped change."
+  },
+  "completion_example": {
+    "investigation_status": "COMPLETED",
+    "stop_reason": "BUDGET_LIMIT_AFTER_VALID_EVIDENCE",
+    "answer_coverage": "PARTIAL",
+    "issue_statuses": [
+      {
+        "issue_id": "Q1",
+        "coverage": "PARTIAL",
+        "limitation": "제1호 범위만 확인했고 제2호 이하의 전체 구조는 확인하지 못함"
+      }
+    ],
+    "unresolved_connections": [
+      {
+        "target": "example-missing-related-rule",
+        "resolution": "MISSING",
+        "blocks_completion": false
+      }
+    ],
+    "blocking_execution_errors": []
+  },
+  "initial_proposed_settings": {
+    "schema_repair_limit": 1,
+    "assessment_reentry_limit": 2,
+    "no_progress_page_warning": 3,
+    "allow_unresolved_completion": true
+  },
+  "main_done_definition": [
+    "WORKING_CODE_INTEGRATED",
+    "FROZEN_INTEGRATED_CODE_VERIFIED",
+    "QUALIFIED_PROMOTION",
+    "RELEASE_PREPARED",
+    "POINTER_APPLIED",
+    "LIVE_SERVICE_BINDING_AND_RUN_VERIFIED"
+  ]
+}

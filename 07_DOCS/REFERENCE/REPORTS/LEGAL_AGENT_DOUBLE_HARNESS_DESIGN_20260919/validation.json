@@ -1,0 +1,84 @@
+{
+  "scope": "Schema, synthetic cross-reference rules and current Result compatibility only. No proposed runtime state machine, source hash verification, real model or legal quality certified.",
+  "passed": 15,
+  "failed": 0,
+  "checks": [
+    {
+      "case": "valid_internal_state",
+      "passed": true
+    },
+    {
+      "case": "valid_current_runtime_result",
+      "passed": true
+    },
+    {
+      "case": "global_absence_status_forbidden",
+      "passed": true,
+      "rejected_by": "ValidationError"
+    },
+    {
+      "case": "unknown_handle",
+      "passed": true,
+      "rejected_by": "AssertionError"
+    },
+    {
+      "case": "unknown_span",
+      "passed": true,
+      "rejected_by": "AssertionError"
+    },
+    {
+      "case": "span_offset_reversed",
+      "passed": true,
+      "rejected_by": "AssertionError"
+    },
+    {
+      "case": "cross_generation",
+      "passed": true,
+      "rejected_by": "AssertionError"
+    },
+    {
+      "case": "unknown_facts_complete",
+      "passed": true,
+      "rejected_by": "AssertionError"
+    },
+    {
+      "case": "searched_without_attempt",
+      "passed": true,
+      "rejected_by": "ValidationError"
+    },
+    {
+      "case": "evidence_without_reference",
+      "passed": true,
+      "rejected_by": "ValidationError"
+    },
+    {
+      "case": "attempt_budget_overrun",
+      "passed": true,
+      "rejected_by": "AssertionError"
+    },
+    {
+      "case": "duplicate_handle",
+      "passed": true,
+      "rejected_by": "AssertionError"
+    },
+    {
+      "case": "current_answer_extra_citations",
+      "passed": true,
+      "rejected_by": "ValidationError"
+    },
+    {
+      "case": "claim_outside_context",
+      "passed": true,
+      "rejected_by": "AssertionError"
+    },
+    {
+      "case": "report_references_and_fences",
+      "passed": true
+    }
+  ],
+  "artifact_sha256": {
+    "DESIGN.md": "f9365e42118dc225543ea337835597fb10d9b2512a38444d6eddd452c9642af3",
+    "contracts.schema.json": "5c92306d862dc29a58314456351c593e30f8836547d4c08177a28450e0a18339",
+    "examples.json": "f9896fe1b0e6c2ccc7e5cb79ce2ea3f5b0554a01ad16fd5900c49900afaaa72b"
+  }
+}

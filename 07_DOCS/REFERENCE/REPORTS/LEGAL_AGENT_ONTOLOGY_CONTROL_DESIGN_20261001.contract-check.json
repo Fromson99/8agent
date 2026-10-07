@@ -1,0 +1,215 @@
+{
+  "kind": "DESIGN_CONTRACT_CHECK_ONLY",
+  "schema_meta_valid": true,
+  "passed": 37,
+  "total": 37,
+  "checks": [
+    {
+      "name": "shape accepts CATALOGUE_DRAFT example1",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "shape accepts ACTION_CHOICE example2",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "shape accepts ACTION_CHOICE example3",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "shape accepts ATOMIC_JUDGMENT example4",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "shape accepts CORRECTION_PLAN example5",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "shape accepts ANSWER_ANCHOR example6",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "shape accepts UNRESOLVED_CHOICE example7",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "choice requires purpose_id",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "choice requires method_id",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "choice requires offer_id",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "choice requires reason",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "choice closes unknown fields",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "application requires selected concept",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "judgment requires check results",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "judgment closes disposition",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "binding requires hash format",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "patch closes DB path fields",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "correction revision is nonnegative",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "patch closes action registry",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "catalogue DDL parses",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "catalogue relation endpoint exists",
+      "pass": true,
+      "details": "IntegrityError"
+    },
+    {
+      "name": "interpretive relation requires domain review",
+      "pass": true,
+      "details": "IntegrityError"
+    },
+    {
+      "name": "catalogue method purpose exists",
+      "pass": true,
+      "details": "IntegrityError"
+    },
+    {
+      "name": "catalogue path method exists",
+      "pass": true,
+      "details": "IntegrityError"
+    },
+    {
+      "name": "catalogue objects immutable",
+      "pass": true,
+      "details": "IntegrityError"
+    },
+    {
+      "name": "catalogue foreign key check",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "native v5 plus new journal fragment parses",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "new journal version is6",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "choice requires existing offer",
+      "pass": true,
+      "details": "IntegrityError"
+    },
+    {
+      "name": "MODEL offer requires model view",
+      "pass": true,
+      "details": "IntegrityError"
+    },
+    {
+      "name": "successful execution requires actual observation",
+      "pass": true,
+      "details": "IntegrityError"
+    },
+    {
+      "name": "proof requires native entity version",
+      "pass": true,
+      "details": "IntegrityError"
+    },
+    {
+      "name": "fact dependency requires native fact version",
+      "pass": true,
+      "details": "IntegrityError"
+    },
+    {
+      "name": "choice records immutable",
+      "pass": true,
+      "details": "IntegrityError"
+    },
+    {
+      "name": "proof records immutable",
+      "pass": true,
+      "details": "IntegrityError"
+    },
+    {
+      "name": "native journal foreign key check",
+      "pass": true,
+      "details": null
+    },
+    {
+      "name": "user correction cannot assert source verification",
+      "pass": true,
+      "details": "Source verification is host-owned after actual evidence review."
+    }
+  ],
+  "limits": {
+    "offered_id_membership": "not implemented; shape schema accepts unknown method ID",
+    "semantic_validation": "not executed",
+    "actual_model_calls": 0,
+    "runtime_wiring": "not executed"
+  },
+  "live_db_modified": false,
+  "artifact_hashes": {
+    "00_SYSTEM/SCHEMAS/legal-agent-domain-control-v1.draft.schema.json": "d900501572ace0e15bbec58f3ffeb8203ed49485ada0db89ff03e3fbe01be4a9",
+    "00_SYSTEM/SCHEMAS/legal-agent-domain-control-v1.draft.examples.json": "599cc47cd5e1ffb42d7d1e4b174c4c4144eda63d6e0a77f1de93dc9540f12ced",
+    "00_SYSTEM/SCHEMAS/legal-agent-domain-catalogue-v1.draft.sql": "36a316dc60b71c353a5de4736e52ac218bd2e6a3227a9bc1682740c96aebabd2",
+    "00_SYSTEM/SCHEMAS/legal-agent-domain-journal-v1.draft.sql": "c4daf1b55f6953ebed5559ac91bdbe2ff6d9414c01999298888463a9d28e157a"
+  },
+  "initial_scratch_checker_error": "First in-memory check used12 placeholders for13 dq_choice columns; checker corrected. Draft DDL unchanged for this error.",
+  "revisions": [
+    {
+      "previous_schema_sha256": "98f87e5015ad9b57bae59723011fdcd13771e97ced951e48c25fcc8f1223728d",
+      "change": "User fact patch cannot assign SOURCE_VERIFIED; persisted judgment is host-owned",
+      "rechecked_examples": 7,
+      "schema_meta_valid": true
+    }
+  ]
+}

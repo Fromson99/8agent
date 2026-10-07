@@ -1,0 +1,280 @@
+{
+  "status": "synthetic schema examples only",
+  "valid": [
+    {
+      "kind": "RESEARCH",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER"
+    },
+    {
+      "kind": "RECOMPOSE",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "FORMAT_REPAIR"
+    },
+    {
+      "kind": "FINAL",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "GATE_ASSESSED",
+      "gate": "READY"
+    },
+    {
+      "kind": "FINAL",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "GATE_ASSESSED",
+      "gate": "BOUNDED"
+    },
+    {
+      "kind": "FINAL",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "GATE_ASSESSED",
+      "gate": "CLARIFY"
+    }
+  ],
+  "invalid": [
+    {
+      "kind": "RESEARCH",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": -1,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER"
+    },
+    {
+      "kind": "FREE_RESTART",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER"
+    },
+    {
+      "kind": "FINAL",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER"
+    },
+    {
+      "kind": "RESEARCH",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER",
+      "gate": "READY"
+    },
+    {
+      "kind": "RESEARCH",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER"
+    },
+    {
+      "kind": "RESEARCH",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [],
+      "reason_code": "MISSED_QUALIFIER"
+    },
+    {
+      "kind": "RESEARCH",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "unknown",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER"
+    },
+    {
+      "kind": "RESEARCH",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER"
+    },
+    {
+      "kind": "RESEARCH",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER",
+      "extra": "not allowed"
+    },
+    {
+      "kind": "FINAL",
+      "event_id": "event-demo",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER",
+      "gate": "FAILED"
+    },
+    {
+      "kind": "RESEARCH",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "binding_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_state_revision": 7,
+      "evidence_revision": 5,
+      "answer_revision": 2,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER"
+    }
+  ]
+}

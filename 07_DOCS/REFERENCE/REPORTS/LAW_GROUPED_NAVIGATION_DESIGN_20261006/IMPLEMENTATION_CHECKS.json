@@ -1,0 +1,176 @@
+{
+  "schema_version": "law-navigation-implementation-checks-v1",
+  "date": "2026-10-06",
+  "environment": "WSL local working code; synthetic sources and scripted transport",
+  "contract": "law-candidate-navigation-v1",
+  "completion_policy": "ALLOW_UNRESOLVED_CONNECTIONS",
+  "profile": {
+    "path": "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json",
+    "sha256": "fe69c8569adfec997731d2e532d5a01c906f97317f4c35ebc5941740aaf8cf4a"
+  },
+  "code_and_document_hashes": {
+    "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json": "fe69c8569adfec997731d2e532d5a01c906f97317f4c35ebc5941740aaf8cf4a",
+    "00_SYSTEM/PIPELINE.json": "ff83ba48c43a7a1c8fd2cd18aa1935a99bebf1c7f30bfde2cedc6babf85320d5",
+    "02_BACKEND/semantic_runtime/unit_fulltext.py": "5338d535ed9cff6e8d594feb5e1ed66eaeb5652e289b5b9813122bf211760f65",
+    "02_BACKEND/semantic_runtime/progress.py": "890fc7e8eeb709340087935f5e50af9f0325ff4fbaaf38aa0ecf0e1c4bdea732",
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": "8739d46a505d24064347baf594cf5b0e8f10b9774497c1647776404edc6bcfea",
+    "05_TESTS/CONTRACTS/test_law_grouped_navigation.py": "73cd2b06a86b8c2feb9f074a9f90066466d0f175d0b6be131a4ef3f3ce740a0f",
+    "02_BACKEND/semantic_runtime/legal_agent/source_recall.py": "39f3b9bb488eddb02874206b4d79a1b673f52db25007022a33b02a8c03bf90de",
+    "02_BACKEND/semantic_runtime/legal_agent/source_selection.py": "10d4c1044f43577e64f30b43624e458811c50d64022e0349434ceff91b765a1e",
+    "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py": "c9eb3f2c9ab48932bca6e568115dc0e6d78ba146f08782eb7fa8653494ba25c1",
+    "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py": "af248477b66afe3e071bbc46b2fbe7f3564f5ef25e3310617f7e4b1016b818b3",
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py": "b5520a0293c4a8612f16437b69544f0ebcd76dddaec34c003e69be446718625a",
+    "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py": "b25506364c9067ebde67d84ef19a33d0ec43a65e361d9d1accf12b6955d183b3",
+    "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py": "1634198487a93a6407edb710cc9715a591ea277d676b16a33968be6fb277b4bd",
+    "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py": "8083ad0ab2dfc31093c3400a579b0d139e0d373e3b7d93a53fbcdd3691918d4d",
+    "02_BACKEND/semantic_runtime/legal_agent/judgment_view.py": "346db118a1841b7e84d284a49bc26f26e0fbf486d3719ae23ef89588a93eab67",
+    "02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py": "9d6f8e5ea0136c99902fbf18f3c17a3936766f5e94f28d3a8ee8a093cda31c4e",
+    "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py": "bc67ec099adecfc35abce9d6e996c056b37f9b67882de311308e2308a5474efd",
+    "02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py": "f53cc0727dbd1ac87b90bdbb5fbefb4ad3aea6502b84ff15666d4d817c75ed6b",
+    "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py": "947774aa9fca7c169c9c8b39adf693711560f6cbab94584ea23f699247078edf",
+    "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": "b6b4cd66c735bec3244bd34a1a3008924fb66a967b58ed993e9b32ce471a4988",
+    "02_BACKEND/semantic_runtime/legal_agent/readable_log.py": "bfc4cdd3a8c7e7ea19c8e01f1a0d87ce688327d561e35b98da36f4ecf9643d42",
+    "00_SYSTEM/ARCHITECTURE.md": "019242347e95c3cdb26e7628ae11e85e428929284a165de296daf46d706d1977",
+    "00_SYSTEM/DATA_MODEL.md": "9067f2190a8a5d744d44348cec80336949789fb4db9f86d6c73bdf525609f330",
+    "GENOS.md": "0c1175160d926c4fd6bbbc98dd3d42cbfbf2f7e5d4bce28b7eec7ca018686e9c",
+    "07_DOCS/README.md": "e8875ac2048527d11ba6723aae21d325eb9f4a46386091f6cadb4d70aa812ac7",
+    "07_DOCS/REFERENCE/OPERATIONS/MINIMUM_UNIT_FULLTEXT_20261002.md": "b917970be96d092339d3823570e5a66a14d28116a345147fee078acf778e3eb3",
+    "07_DOCS/REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/IMPLEMENTATION.md": "869f80afefd75a2d8abf4d9fbaf0c962c9b63400cef22979758247759c3f22f2"
+  },
+  "engine_pin_check": {
+    "passed": true,
+    "profile_descriptor_count": 1,
+    "engines_with_new_modules": [
+      "term-retrieve@1.0.0",
+      "term-select@1.0.0",
+      "term-assemble@1.0.0",
+      "term-answer@1.0.0",
+      "term-feedback@1.0.0",
+      "term-load@1.0.0",
+      "legal-retrieve@candidate-v1",
+      "legal-select@candidate-v1",
+      "legal-assemble@candidate-v1",
+      "legal-answer@candidate-v1",
+      "legal-v2-retrieve@2.0.0",
+      "legal-v2-select@2.0.0",
+      "legal-v2-assemble@2.0.0",
+      "legal-v2-answer@2.0.0",
+      "legal-v3-retrieve@3.0.0",
+      "legal-v3-select@3.0.0",
+      "legal-v3-assemble@3.0.0",
+      "legal-v3-answer@3.0.0",
+      "legal-v4-retrieve@4.0.0",
+      "legal-v4-select@4.0.0",
+      "legal-v4-assemble@4.0.0",
+      "legal-v4-answer@4.0.0",
+      "legal-v5-retrieve@5.0.0",
+      "legal-v5-select@5.0.0",
+      "legal-v5-assemble@5.0.0",
+      "legal-v5-answer@5.0.0",
+      "legal-v6-retrieve@6.0.0",
+      "legal-v6-select@6.0.0",
+      "legal-v6-assemble@6.0.0",
+      "legal-v6-answer@6.0.0"
+    ],
+    "stale_code_schema_manifest_pins": []
+  },
+  "local_active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "sql-ad-mode-v6-20261006-r1",
+    "generation": 41,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/sql-ad-mode-v6-20261006-r1/release.json",
+    "release_manifest_sha256": "b03c32172e1d184f434ab33d3330636ea603092b958e18ab1a1e9c8af17916f9",
+    "activated_at": "2026-10-05T17:19:43.593698+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "0bb3011ecc70fca5e40cbd54fe9cbd52495fa0341554761dcefe68bb08c4e67b",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0657-sql-ad-mode-control/실험/manifest.json",
+        "sha256": "0ff75b507c86085fa579b09415ae3f69f47210c461875704c849859b2e3787f9"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0657-sql-ad-mode-control/README.md",
+        "sha256": "a58c41fe2c4cf2903d9ad7d0e812304e9e2d567cb1efc50f3e2749e2a0889a66"
+      },
+      "arm": "integrated",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0657-sql-ad-mode-control/artifacts/run-001/result.json",
+        "sha256": "ed7cc27b28961af29f53bbffad8ef7fb388cb270993abb93789643dab9a9608d"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0657-sql-ad-mode-control/artifacts/design/release-rebase.json",
+        "sha256": "0e29d32efaba078ada0c2bd0b41eb971700ef724fcf58c6ba5ba72fb57789d3d"
+      }
+    }
+  },
+  "local_active_pointer_sha256": "912d65161ba5d4230afefec26b9729401d3b70d561b1150f2302deb2d298ed24",
+  "status": {
+    "working_code_implemented": true,
+    "local_frozen_release_activated": false,
+    "genos_deployed": false,
+    "genos_model_verified": false,
+    "legal_quality_certified": false,
+    "external_model_calls": 0
+  },
+  "review_mode": "same-author self review; no independent reviewer or external expert",
+  "baseline_method": "Scoped pre-change source backups restored in a temporary import tree; common current contracts/workspace routing and identical scripted tests. Production pointers and data unchanged.",
+  "baseline_backup_caveat": "unit_fulltext backup was taken after adding directory methods; unrelated changes preserved; no whole-workspace rollback inferred.",
+  "checks": {
+    "python_compileall": "PASS",
+    "wsl_environment": "PASS",
+    "tests": {
+      "passed": 124,
+      "failed": 0,
+      "warning_count": 1,
+      "warning": "Existing Starlette/httpx deprecation",
+      "log": "07_DOCS/REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/validation/final-contracts.txt",
+      "seconds": 26.82,
+      "scope": "New law navigation and existing own-block reader/reference/candidate/control-flow/pipeline/GENOS display/progress contracts",
+      "new_contract_test_count": 19
+    },
+    "legacy_unified": {
+      "same_failure_list_before_after": true,
+      "failure_count": 13,
+      "tests": [
+        "05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u01_source_scope_correction_recorrection_restores_original_event",
+        "05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u01_u02_full_question_correction_restore_confirmation_two_wikis_new_session",
+        "05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u04_relink_reassesses_current_case_and_preserves_source_experience",
+        "05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u05_presentation_keeps_confirmed_judgment",
+        "05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u06_failed_correction_resumes_same_request_without_second_correction",
+        "05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u07_wiki_failure_retains_authority_and_rebuilds",
+        "05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u08_late_model_output_cannot_overwrite_new_revision",
+        "05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u09_owner_scope_and_u14_request_dedup",
+        "05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u09_revoked_document_scope_hides_history_and_experience",
+        "05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u10_policy_drift_blocks_exact_reuse",
+        "05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u12_additional_originals_reenter_existing_source_tools",
+        "05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_u13_unoffered_domain_choice_blocks_execution_and_publication",
+        "05_TESTS/CONTRACTS/test_unified_legal_agent.py::test_v6_still_rejects_fabricated_quote_without_semantic_judge"
+      ],
+      "working_log": "07_DOCS/REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/validation/api-regression.txt",
+      "before_source_log": "07_DOCS/REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/validation/baseline-unified.txt"
+    },
+    "legacy_progress": {
+      "same_failure_list_before_after": true,
+      "failure_count": 3,
+      "tests": [
+        "05_TESTS/CONTRACTS/test_genos_v6_progress.py::test_additional_source_reentry_and_failure_never_invent_completion",
+        "05_TESTS/CONTRACTS/test_genos_v6_progress.py::test_confirmed_experience_rebinding_is_not_new_research",
+        "05_TESTS/CONTRACTS/test_genos_v6_progress.py::test_invalid_domain_choice_has_no_accepted_checkpoint"
+      ],
+      "working_log": "07_DOCS/REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/validation/contracts.txt",
+      "before_source_log": "07_DOCS/REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/validation/baseline-progress.txt"
+    },
+    "new_document_links": "PASS",
+    "receipt_file_hashes": "PASS"
+  },
+  "git_head": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "log_hashes": {
+    "07_DOCS/REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/validation/api-regression.txt": "9f9ab5140d163a293905282aefb077ae7d0226087e4a5052040c8a0723da7942",
+    "07_DOCS/REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/validation/baseline-progress.txt": "4b857a1019b89f3af9891c276a9a0cd454564f0050ab4b7842e53195b7253047",
+    "07_DOCS/REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/validation/baseline-unified.txt": "430f400ffc322dec9836ee3e487b0cea4a20e3fddf12e74a4311bc3cf98f7f5c",
+    "07_DOCS/REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/validation/contracts.txt": "3e08443a61584daced9d7e2ce5739e082d8c7c00fdbe3d3a6199b9150aba9e22",
+    "07_DOCS/REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/validation/final-contracts.txt": "9ceebe75195f6ec80f605ced5dffbdb88c9941483e5eac29ac7fa02418fbe647"
+  }
+}

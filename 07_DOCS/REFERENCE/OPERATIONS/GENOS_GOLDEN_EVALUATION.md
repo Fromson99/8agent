@@ -115,6 +115,48 @@ HTML은 서버·인터넷 없이 실행되고 외부 전송을 차단한다. 파
 import 출력은 `questions.csv`, `draft.json`, `mapping.json`, `review.html`, `receipt.json`이다.
 입력·원문 세대·파일 해시를 보존한다. 이는 골든 작성/매핑이며 RAG 성능 측정은 아니다.
 
+## 골든 등록부 — CM·내규 묶음을 한 곳에서 관리
+
+골든 묶음은 각자 원래 작성 원본을 유지한다. CM은 `01_DATA/review/cm_core_e2e_v3.json`,
+내규는 `RAW/internal/risk_team/.staging/internal-rules-20260916-v1/golden/내규_골든_질문셋.csv`다.
+등록부는 두 원본을 다시 읽어 만든 **파생 파일**이다. 직접 고치지 않는다. 답변·근거를 채우려면
+원본(내규는 CSV 또는 같은 열의 xlsx)을 수정하고 등록부를 새 파일로 다시 만든다.
+
+```bash
+python 06_TOOLS/pipeline.py golden registry \
+  --cm 01_DATA/review/cm_core_e2e_v3.json \
+  --internal ".../golden/내규_골든_질문셋.csv" \
+  [--annotations 태그.json] --output 01_DATA/GOLDEN/registry-v2.json
+python 06_TOOLS/pipeline.py golden registry-status --registry 01_DATA/GOLDEN/registry-v2.json
+python 06_TOOLS/pipeline.py golden import --format registry \
+  --input 01_DATA/GOLDEN/registry-v2.json --generation /현장/선택세대 --output /현장/평가/작성-v1
+```
+
+문항마다 `collection`(cm/internal), 단계, 막힌 이유를 계산한다.
+
+| 단계 | 뜻 | import |
+|---|---|---|
+| `question_only` | 기준답변 없음 | 제외, `import_provenance.deferred`에 사유와 함께 기록 |
+| `incomplete` | 답은 있으나 기준일·필수 근거 없음 또는 질문 전사 미완(`partial`·`uncertain`·`source_placeholder`) | 제외, 사유 기록 |
+| `ready` | 질문·기준답변·기준일·필수 근거가 모두 있음 | 초안으로 변환 |
+
+`ready`도 승인이 아니다. 이후 경로는 위의 review.html → receive/freeze와 같다.
+경고(`transcription_unverified`, `duplicate_of:…`)는 막지 않고 검토 화면에 넘긴다.
+원본 77·86행처럼 같은 질문이 두 행이면 둘 다 남는다. 묶음별 점수는 중복을 감안해 읽는다.
+
+2026-09-18 첫 등록부(`01_DATA/GOLDEN/registry-v1.json`): 전체 156문항, CM 51문항 전부 `ready`,
+내규 105문항 전부 `question_only`(실제 내규 원문·기준답변 미제공, 전사 미완 5문항).
+
+**태그.** `--annotations`는 `{"문항ID": {"tags": ["reconciliation", "temporal"]}}`이다. 사람이 붙인다.
+- `reconciliation`: 여러 규범을 함께 정리해야 답이 나온다(법↔시행령↔감독규정 위계, 특별법 우선,
+  내규↔외규). freeze는 필수 근거가 서로 다른 문서 둘 이상에 걸쳐야 통과시킨다.
+  등록부의 `signals.required_documents`는 후보 신호일 뿐이다(CM 51문항 중 22문항이 2문서 이상).
+- `temporal`: 개정·시행일·부칙 경과규정이 답을 가른다.
+
+`collection`과 `tags`는 초안 → 검토 → suite까지 문항에 붙어 간다. 제품 요청에는 들어가지 않는다.
+`report`는 전체 요약 외에 `by_collection`·`by_tag`로 같은 지표를 나눠 낸다.
+작은 층일수록 두 판 사이의 노이즈 폭이 크므로 층별 비교도 같은 코드 두 판으로 폭부터 잰다.
+
 ## 입력과 산출물 계약
 
 | 단계 | 입력 | 출력 / 소비자 |
@@ -185,8 +227,8 @@ python 06_TOOLS/pipeline.py golden freeze \
 동결 표시, run/arm 존재를 확인하는 최소 gate다. 표준의 모든 요구를 자동 승인하는 validator는
 아니다. 운영 승격 자격과 표준 stage-ledger artifact는 별도 표준 검사 대상이다.
 
-환경: `SEMANTIC_LLM_BACKEND=genos`, `GENOS_BASE_URL`, `GENOS_QWEN_SERVING_ID`,
-`GENOS_QWEN_KEY`. 키를 명령 인자나 골든 파일에 쓰지 않는다. plan은 키를 저장하지 않는다.
+환경: `SEMANTIC_LLM_BACKEND=genos`, `GENOS_BASE_URL`, `GENOS_LLM_SERVING_ID`,
+`GENOS_LLM_KEY`. 키를 명령 인자나 골든 파일에 쓰지 않는다. plan은 키를 저장하지 않는다.
 provider의 `/models` 응답에서 사용할 정확한 내부 모델 ID를 `--model`로 지정한다.
 
 ```bash

@@ -1,0 +1,3431 @@
+{
+  "kind": "read_only_existing_trace_amplification_audit",
+  "runs": [
+    {
+      "adr": "0523",
+      "case": "cm-009",
+      "graph_path": "04_EXPERIMENTS/ADR/ADR-0523-gemma-scoped-exploration-probe/artifacts/run-001/cm-009/guarded/graph.json.gz",
+      "graph_file_sha256": "5eca2aa4c7088878e786da11df42f896969c40d9f57a6f2692503f228dc97b07",
+      "checkpoint_hash": "8dc52e64b3b739ce5daf528f09c601289a449d6e69b7ef8bc73ad74c0c369d34",
+      "binding": "789b9d279c109d1811bb48187b12849a31d70470eedc1473e66b5867bd04264c",
+      "status": "PARTIAL",
+      "checkpoint_hash_verified": true,
+      "roots": [
+        {
+          "root_id": "E7f87ac55fa7692f8d5d008f3e203",
+          "source_id": "article:ece2450f99b261c5d36eb688",
+          "label": "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+          "blocks": [
+            "187",
+            "188",
+            "189",
+            "190",
+            "191",
+            "192",
+            "193",
+            "194",
+            "195",
+            "196",
+            "197",
+            "198",
+            "199",
+            "200",
+            "201",
+            "202",
+            "203",
+            "204",
+            "205",
+            "206",
+            "207",
+            "208",
+            "209"
+          ],
+          "article_blocks": 23,
+          "first_edges": {
+            "incoming": 13,
+            "outgoing": 10
+          },
+          "first_target_sources": 8
+        },
+        {
+          "root_id": "E0d56bb573d2b333037e481f2e97a",
+          "source_id": "article:2fb3a39c3796bcda1905733a",
+          "label": "유가증권시장 상장규정 / 제13조 상장주선인의 의무",
+          "blocks": [
+            "146",
+            "147",
+            "148",
+            "149",
+            "150",
+            "151",
+            "152",
+            "153",
+            "154",
+            "155"
+          ],
+          "article_blocks": 10,
+          "first_edges": {
+            "incoming": 15,
+            "outgoing": 7
+          },
+          "first_target_sources": 13
+        }
+      ],
+      "sources": 1027,
+      "states": 3471,
+      "unique_physical_extents": 2276,
+      "expanded_states": 356,
+      "unique_expanded_physical_extents": 299,
+      "pending": 3121,
+      "expanded_also_pending": 6,
+      "expanded_pending_examples": [
+        "6dc882a648e237d51ab0cec40c863661ec243704a8ceca7405cc08a946be1576",
+        "7282cd28a0cb80731ba0fb6b3a6f31a2007cd54fe3a8eedb651451535c9847d6",
+        "8a457b64460ca0b64f0ba3a78c7ed7878f3385ee6e9078f18720f1240cc3cbc9",
+        "94b86ea7d94fe8341523f26bfea45fcedd11ba38006052aef3da544e9935f3c0",
+        "b44ebd784c0629d4cf66a17ac957cfdb14dce3393a8434b221e7b0ed29305230"
+      ],
+      "expanded_pending_self_loop_edges": [
+        {
+          "reference_id": "ref:205820f5f10e163d220e944a",
+          "direction": "incoming",
+          "from_state": "6dc882a648e237d51ab0cec40c863661ec243704a8ceca7405cc08a946be1576",
+          "target_states": [
+            "6dc882a648e237d51ab0cec40c863661ec243704a8ceca7405cc08a946be1576"
+          ]
+        },
+        {
+          "reference_id": "ref:45aa26fa42bfd4e95575bdc0",
+          "direction": "incoming",
+          "from_state": "bbfb0120e4239387b578da3f8fe889477329ca72605818647a1a0a1f01b4e1dd",
+          "target_states": [
+            "bbfb0120e4239387b578da3f8fe889477329ca72605818647a1a0a1f01b4e1dd"
+          ]
+        },
+        {
+          "reference_id": "ref:82f8c844a396913b29a4c183",
+          "direction": "incoming",
+          "from_state": "94b86ea7d94fe8341523f26bfea45fcedd11ba38006052aef3da544e9935f3c0",
+          "target_states": [
+            "94b86ea7d94fe8341523f26bfea45fcedd11ba38006052aef3da544e9935f3c0"
+          ]
+        },
+        {
+          "reference_id": "ref:b1633d1bb15d576be64ac835",
+          "direction": "incoming",
+          "from_state": "b44ebd784c0629d4cf66a17ac957cfdb14dce3393a8434b221e7b0ed29305230",
+          "target_states": [
+            "b44ebd784c0629d4cf66a17ac957cfdb14dce3393a8434b221e7b0ed29305230"
+          ]
+        },
+        {
+          "reference_id": "ref:be7dff816d5bd45bb4da95ae",
+          "direction": "incoming",
+          "from_state": "8a457b64460ca0b64f0ba3a78c7ed7878f3385ee6e9078f18720f1240cc3cbc9",
+          "target_states": [
+            "8a457b64460ca0b64f0ba3a78c7ed7878f3385ee6e9078f18720f1240cc3cbc9"
+          ]
+        },
+        {
+          "reference_id": "ref:66781a8efb1ec60dbbb762fb",
+          "direction": "incoming",
+          "from_state": "7282cd28a0cb80731ba0fb6b3a6f31a2007cd54fe3a8eedb651451535c9847d6",
+          "target_states": [
+            "7282cd28a0cb80731ba0fb6b3a6f31a2007cd54fe3a8eedb651451535c9847d6"
+          ]
+        }
+      ],
+      "edges": 5188,
+      "edges_ignoring_arrival_guard": 4083,
+      "edge_directions": {
+        "incoming": 2279,
+        "outgoing": 2909
+      },
+      "suppressed_returns": 354,
+      "sources_by_shortest_recorded_hop": {
+        "0": 2,
+        "1": 18,
+        "2": 40,
+        "3": 231,
+        "4": 736
+      },
+      "top_repeated_extents": [
+        {
+          "source_id": "article:bc277caa4dee384e61be2bab",
+          "label": "자본시장과 금융투자업에 관한 법률 / 제174조 미공개중요정보 이용행위 금지",
+          "block_ids": [
+            "1725",
+            "1726",
+            "1727",
+            "1728",
+            "1729",
+            "1730",
+            "1731",
+            "1732",
+            "1733",
+            "1734",
+            "1735",
+            "1736",
+            "1737",
+            "1738",
+            "1739",
+            "1740",
+            "1741",
+            "1742",
+            "1743",
+            "1744",
+            "1745",
+            "1746"
+          ],
+          "state_count": 43
+        },
+        {
+          "source_id": "article:2a4c657c225ce66203ed52f8",
+          "label": "자본시장과 금융투자업에 관한 법률 / 제178조 부정거래행위 등의 금지",
+          "block_ids": [
+            "1781",
+            "1782",
+            "1783",
+            "1784",
+            "1785",
+            "1786"
+          ],
+          "state_count": 43
+        },
+        {
+          "source_id": "article:316c866a5cee590508a1b1a9",
+          "label": "자본시장과 금융투자업에 관한 법률 / 제180조 공매도의 제한",
+          "block_ids": [
+            "1808",
+            "1809",
+            "1810",
+            "1811",
+            "1812",
+            "1813",
+            "1814",
+            "1815",
+            "1816"
+          ],
+          "state_count": 27
+        },
+        {
+          "source_id": "article:b35ee478b5c6bc75e38807ba",
+          "label": "자본시장과 금융투자업에 관한 법률 / 제406조 주식소유의 제한",
+          "block_ids": [
+            "4306"
+          ],
+          "state_count": 16
+        },
+        {
+          "source_id": "article:b35ee478b5c6bc75e38807ba",
+          "label": "자본시장과 금융투자업에 관한 법률 / 제406조 주식소유의 제한",
+          "block_ids": [
+            "4307"
+          ],
+          "state_count": 16
+        }
+      ],
+      "incoming_outgoing_pivots": [
+        {
+          "sources": [
+            "article:ece2450f99b261c5d36eb688",
+            "article:af4d6957c006feaf9b4ed8b9",
+            "article:af4d6957c006feaf9b4ed8b9"
+          ],
+          "labels": [
+            "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+            "코스닥시장 상장규정 시행세칙 / 제15조 상장주선인의 의무이행 등",
+            "코스닥시장 상장규정 시행세칙 / 제15조 상장주선인의 의무이행 등"
+          ],
+          "state_ids": [
+            "ba97999cd0126e61a4170d2f1ac32365531b30f325ae1bb620a4549bca2a2f2e",
+            "b865d21013a39d2945f1ddeabfc4f51ad92540d7839a770b73304774c2787f15",
+            "846ad818ef19ff286110d0e3baf58c2b3c8ae45faae805412fa83c6737cae9ec"
+          ],
+          "references": [
+            "ref:066aa1f299f64536f57ecfd5",
+            "ref:adc9ef6b7cb3dc9427527e5b"
+          ],
+          "locators": [
+            "제13조제9항",
+            "제6항"
+          ]
+        },
+        {
+          "sources": [
+            "article:ece2450f99b261c5d36eb688",
+            "article:ece2450f99b261c5d36eb688",
+            "article:a70a998a1d8db68d8cfe4cf3"
+          ],
+          "labels": [
+            "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+            "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+            "코스닥시장 상장규정 / 제31조 신속이전기업에 대한 특례"
+          ],
+          "state_ids": [
+            "ba97999cd0126e61a4170d2f1ac32365531b30f325ae1bb620a4549bca2a2f2e",
+            "f22a3928e219386f9f1b010a051ee888a31f9f25d8f85381e0a15e4a9359554e",
+            "721fe0d0131c8b9e889f19884d48855edebb6786589444be486d30c3b251d817"
+          ],
+          "references": [
+            "ref:b27db79942543e43e82cb0aa",
+            "ref:8cd74bb1f1817d3df4358391"
+          ],
+          "locators": [
+            "제5항",
+            "제31조제1항제3호마목"
+          ]
+        },
+        {
+          "sources": [
+            "article:ece2450f99b261c5d36eb688",
+            "article:ece2450f99b261c5d36eb688",
+            "article:a70a998a1d8db68d8cfe4cf3"
+          ],
+          "labels": [
+            "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+            "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+            "코스닥시장 상장규정 / 제31조 신속이전기업에 대한 특례"
+          ],
+          "state_ids": [
+            "ba97999cd0126e61a4170d2f1ac32365531b30f325ae1bb620a4549bca2a2f2e",
+            "e9e4215bf9797f636d299ed3c1980d02a1c23dbf2857ef4eb9e11802417ea724",
+            "721fe0d0131c8b9e889f19884d48855edebb6786589444be486d30c3b251d817"
+          ],
+          "references": [
+            "ref:bee2d5d9471c9b678c44b55a",
+            "ref:8cd74bb1f1817d3df4358391"
+          ],
+          "locators": [
+            "제5항",
+            "제31조제1항제3호마목"
+          ]
+        },
+        {
+          "sources": [
+            "article:ece2450f99b261c5d36eb688",
+            "article:84b29933c65f93c686c2f2ea",
+            "article:84b29933c65f93c686c2f2ea"
+          ],
+          "labels": [
+            "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+            "증권 인수업무 등에 관한 규정 / 제6조 공동주관회사",
+            "증권 인수업무 등에 관한 규정 / 제6조 공동주관회사"
+          ],
+          "state_ids": [
+            "ba97999cd0126e61a4170d2f1ac32365531b30f325ae1bb620a4549bca2a2f2e",
+            "18dbb3ccf80ac25152ceca7357230b4ad0cd1d8625d36b8c03d6eb254085ccb1",
+            "f96064a420abbecf0dad9998b319f58ef7565b6323a5b20ca31d1eec8320d702"
+          ],
+          "references": [
+            "ref:d37bc2c237e4a9d33d5ef96c",
+            "ref:e1e3a84035e0dce6724235fb"
+          ],
+          "locators": [
+            "제13조제5항제1호",
+            "제2항"
+          ]
+        },
+        {
+          "sources": [
+            "article:ece2450f99b261c5d36eb688",
+            "article:84b29933c65f93c686c2f2ea",
+            "article:84b29933c65f93c686c2f2ea"
+          ],
+          "labels": [
+            "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+            "증권 인수업무 등에 관한 규정 / 제6조 공동주관회사",
+            "증권 인수업무 등에 관한 규정 / 제6조 공동주관회사"
+          ],
+          "state_ids": [
+            "ba97999cd0126e61a4170d2f1ac32365531b30f325ae1bb620a4549bca2a2f2e",
+            "18dbb3ccf80ac25152ceca7357230b4ad0cd1d8625d36b8c03d6eb254085ccb1",
+            "58b6082a3a7545d9c1dfe1397d57c6c332bfbb0dfd19cc47fbf8ff34d98bfee8"
+          ],
+          "references": [
+            "ref:d37bc2c237e4a9d33d5ef96c",
+            "ref:f048a4f39241a108c7452e36"
+          ],
+          "locators": [
+            "제13조제5항제1호",
+            "제1항"
+          ]
+        }
+      ],
+      "unique_scoped_blocks": 8223,
+      "scoped_text_chars": 718594,
+      "whole_original_text_chars_for_reached_sources": 1792153,
+      "bundle_actually_saved": true,
+      "saved_bundle_original_chars": 1792153,
+      "removal_preview_inner_checks_per_call_from_code": 16890042,
+      "exclusive_blocks_by_root": {
+        "E7f87ac55fa7692f8d5d008f3e203": 4617,
+        "E0d56bb573d2b333037e481f2e97a": 3
+      },
+      "views": [
+        {
+          "view_id": "V4878d4ef74c0433c956bf8109f79d705",
+          "phase": "investigate",
+          "chars": 2275,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 0,
+            "relation_menu": 0,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 2,
+            "relation_menu": 2,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "V52994900c31343dcbd0a677e3b2eb8c8",
+          "phase": "investigate",
+          "chars": 2369,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 0,
+            "relation_menu": 0,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 2,
+            "relation_menu": 2,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "V1e901aefa3514deab8d8c5491360bc71",
+          "phase": "investigate",
+          "chars": 50582,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 0,
+            "relation_menu": 0,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 2,
+            "relation_menu": 2,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "Ve103973316bd4a29ae926c3fa22ed585",
+          "phase": "investigate",
+          "chars": 43502,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 4,
+            "relation_menu": 12,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 19392,
+            "relation_menu": 18021,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 10,
+            "last_action_results": 0,
+            "relation_menu": 54,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "V202aeb8941e74809a6deffa5a8f4cebc",
+          "phase": "select_sources",
+          "chars": 58685,
+          "successful_attempts": 0,
+          "exploration": {
+            "expanded_this_call": 357,
+            "pending_scopes": 3121,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "PARTIAL"
+          },
+          "shown_counts": {
+            "exact_evidence": 3,
+            "relation_menu": 0,
+            "root_removal_impacts": 12
+          },
+          "shown_section_chars": {
+            "exact_evidence": 18225,
+            "relation_menu": 2,
+            "root_removal_impacts": 35743
+          },
+          "omitted_counts": {
+            "exact_evidence": 1,
+            "last_action_results": 0,
+            "relation_menu": 66,
+            "relation_notices": 0,
+            "root_removal_impacts": 175
+          },
+          "impact_hashes": [
+            "6df18cd857940fbbfcb1dfeeff4e5e50b802b962b598773bb12f1ad232f2536b",
+            "6df18cd857940fbbfcb1dfeeff4e5e50b802b962b598773bb12f1ad232f2536b",
+            "6df18cd857940fbbfcb1dfeeff4e5e50b802b962b598773bb12f1ad232f2536b",
+            "6df18cd857940fbbfcb1dfeeff4e5e50b802b962b598773bb12f1ad232f2536b",
+            "6df18cd857940fbbfcb1dfeeff4e5e50b802b962b598773bb12f1ad232f2536b",
+            "6df18cd857940fbbfcb1dfeeff4e5e50b802b962b598773bb12f1ad232f2536b",
+            "6df18cd857940fbbfcb1dfeeff4e5e50b802b962b598773bb12f1ad232f2536b",
+            "6df18cd857940fbbfcb1dfeeff4e5e50b802b962b598773bb12f1ad232f2536b",
+            "6df18cd857940fbbfcb1dfeeff4e5e50b802b962b598773bb12f1ad232f2536b",
+            "6df18cd857940fbbfcb1dfeeff4e5e50b802b962b598773bb12f1ad232f2536b",
+            "6df18cd857940fbbfcb1dfeeff4e5e50b802b962b598773bb12f1ad232f2536b",
+            "6df18cd857940fbbfcb1dfeeff4e5e50b802b962b598773bb12f1ad232f2536b"
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "code": "MODEL_PROPOSAL_INVALID",
+          "message": "context_refs and answer demands must be disjoint"
+        },
+        {
+          "code": "MODEL_TRANSPORT_ERROR",
+          "message": "model provider temporarily failed"
+        }
+      ],
+      "evidence_count": 14
+    },
+    {
+      "adr": "0524",
+      "case": "cm-025",
+      "graph_path": "04_EXPERIMENTS/ADR/ADR-0524-gemma-fp8-scoped-retrieval/artifacts/run-001/cm-025/guarded/graph.json.gz",
+      "graph_file_sha256": "56f91f9a59e3f4056311ba734b572c59d5db496cb70759891a2057d763486d40",
+      "checkpoint_hash": "80bcb88f70cecdf5620a394d5199f17da0a59f96e67d21d74f7ce3aeea6bd841",
+      "binding": "ed2e2f06c4b282e291632e00d0a2b3efec501f99a3d1cbcab2dd8a2cbda4d5d8",
+      "status": "PARTIAL",
+      "checkpoint_hash_verified": true,
+      "roots": [
+        {
+          "root_id": "Ee5b8d8aae713d634abd8794191b3",
+          "source_id": "article:11be547c87ef4628bd4effab",
+          "label": "상속세 및 증여세법 시행령 / 제31조의3 주식등의 상장 등에 따른 이익의 계산방법 등",
+          "blocks": [
+            "497",
+            "498",
+            "499",
+            "500",
+            "501",
+            "502",
+            "503",
+            "504",
+            "505",
+            "506",
+            "507",
+            "508",
+            "509",
+            "510",
+            "511"
+          ],
+          "article_blocks": 15,
+          "first_edges": {
+            "incoming": 18,
+            "outgoing": 20
+          },
+          "first_target_sources": 9
+        },
+        {
+          "root_id": "E8288f125b7d41b28905f2495925d",
+          "source_id": "article:a4458afbd62775e34ef48540",
+          "label": "상속세 및 증여세법 / 제41조의3 주식등의 상장 등에 따른 이익의 증여",
+          "blocks": [
+            "345",
+            "346",
+            "347",
+            "348",
+            "349",
+            "350",
+            "351",
+            "352",
+            "353",
+            "354",
+            "355",
+            "356",
+            "357",
+            "358",
+            "359"
+          ],
+          "article_blocks": 15,
+          "first_edges": {
+            "outgoing": 19,
+            "incoming": 38
+          },
+          "first_target_sources": 20
+        }
+      ],
+      "sources": 1826,
+      "states": 10218,
+      "unique_physical_extents": 4778,
+      "expanded_states": 1893,
+      "unique_expanded_physical_extents": 1150,
+      "pending": 8334,
+      "expanded_also_pending": 9,
+      "expanded_pending_examples": [
+        "301a943b97fbffc092f52f12aea1b078096eef3ce3ad34a7eefb04d042a59335",
+        "4136a68b34d233053013c11bb5291a6890c982cb416b93f57381e6d08d585be1",
+        "58f3a084f08549a62524fc0a5d1db376a704eeeebdb43d671d8badc5d8f48bc2",
+        "5d1a6fad19cbd2080c2be4c77d5b63afc3304a99dccb882a15ddd8a347965234",
+        "6989ce07b680d92427a30346d02041c5c633a0af682c40bc7f9ecf713da34131"
+      ],
+      "expanded_pending_self_loop_edges": [
+        {
+          "reference_id": "ref:01eb5507c479b55d1b4d876c",
+          "direction": "incoming",
+          "from_state": "6ff2e35d019d0f2b6489e278920d988395dbe1f3e0fbb3c39d0d4a88b67af558",
+          "target_states": [
+            "6ff2e35d019d0f2b6489e278920d988395dbe1f3e0fbb3c39d0d4a88b67af558"
+          ]
+        },
+        {
+          "reference_id": "ref:26328d365eaf4921ba361bd8",
+          "direction": "incoming",
+          "from_state": "4136a68b34d233053013c11bb5291a6890c982cb416b93f57381e6d08d585be1",
+          "target_states": [
+            "4136a68b34d233053013c11bb5291a6890c982cb416b93f57381e6d08d585be1"
+          ]
+        },
+        {
+          "reference_id": "ref:2e45897ba771d7507266345e",
+          "direction": "incoming",
+          "from_state": "a668ae5fb0a99d3ec7f8e633244c0e14982eb1b810aa92fb5bdb37cedc7eca75",
+          "target_states": [
+            "a668ae5fb0a99d3ec7f8e633244c0e14982eb1b810aa92fb5bdb37cedc7eca75"
+          ]
+        },
+        {
+          "reference_id": "ref:5f6e9906c76c57e16f24d432",
+          "direction": "incoming",
+          "from_state": "301a943b97fbffc092f52f12aea1b078096eef3ce3ad34a7eefb04d042a59335",
+          "target_states": [
+            "301a943b97fbffc092f52f12aea1b078096eef3ce3ad34a7eefb04d042a59335"
+          ]
+        },
+        {
+          "reference_id": "ref:9e9434664c04be68e29d4b00",
+          "direction": "incoming",
+          "from_state": "70d050403ffc277645afa0120adef1aad977b70e326355f48a6d0f0ffef7cdc6",
+          "target_states": [
+            "70d050403ffc277645afa0120adef1aad977b70e326355f48a6d0f0ffef7cdc6"
+          ]
+        },
+        {
+          "reference_id": "ref:6026f90a7339896fdc560c48",
+          "direction": "incoming",
+          "from_state": "edb803b34d0e475d95071d578d61ddf538b9b3680df4606a929d263c6d29934a",
+          "target_states": [
+            "edb803b34d0e475d95071d578d61ddf538b9b3680df4606a929d263c6d29934a"
+          ]
+        },
+        {
+          "reference_id": "ref:fffacdc4aeef45f07e06a4e9",
+          "direction": "incoming",
+          "from_state": "6989ce07b680d92427a30346d02041c5c633a0af682c40bc7f9ecf713da34131",
+          "target_states": [
+            "6989ce07b680d92427a30346d02041c5c633a0af682c40bc7f9ecf713da34131"
+          ]
+        },
+        {
+          "reference_id": "ref:793c3c6960dbd392cc21812a",
+          "direction": "incoming",
+          "from_state": "5d1a6fad19cbd2080c2be4c77d5b63afc3304a99dccb882a15ddd8a347965234",
+          "target_states": [
+            "5d1a6fad19cbd2080c2be4c77d5b63afc3304a99dccb882a15ddd8a347965234"
+          ]
+        },
+        {
+          "reference_id": "ref:601afd8787b7db271127f33f",
+          "direction": "incoming",
+          "from_state": "58f3a084f08549a62524fc0a5d1db376a704eeeebdb43d671d8badc5d8f48bc2",
+          "target_states": [
+            "58f3a084f08549a62524fc0a5d1db376a704eeeebdb43d671d8badc5d8f48bc2"
+          ]
+        }
+      ],
+      "edges": 30650,
+      "edges_ignoring_arrival_guard": 15121,
+      "edge_directions": {
+        "incoming": 20996,
+        "outgoing": 9654
+      },
+      "suppressed_returns": 1891,
+      "sources_by_shortest_recorded_hop": {
+        "0": 2,
+        "1": 25,
+        "2": 278,
+        "3": 1095,
+        "4": 426
+      },
+      "top_repeated_extents": [
+        {
+          "source_id": "article:0e9d3b14cdb7aac610a9567b",
+          "label": "상속세 및 증여세법 시행규칙 / 부칙 부칙 <제00001호, 20260102>",
+          "block_ids": [
+            "566",
+            "567",
+            "568"
+          ],
+          "state_count": 64
+        },
+        {
+          "source_id": "article:b1ecd013fdcb6fe823fec174",
+          "label": "상속세 및 증여세법 / 제60조 평가의 원칙 등",
+          "block_ids": [
+            "615",
+            "616",
+            "617",
+            "618",
+            "619",
+            "620",
+            "621",
+            "622"
+          ],
+          "state_count": 64
+        },
+        {
+          "source_id": "article:f3419407510ebe8e726e7ede",
+          "label": "상속세 및 증여세법 시행령 / 부칙 부칙 <제35947호, 20251230>",
+          "block_ids": [
+            "2381",
+            "2382",
+            "2383"
+          ],
+          "state_count": 62
+        },
+        {
+          "source_id": "article:56c63e1097c9e816c0e860e2",
+          "label": "상속세 및 증여세법 시행령 / 부칙 부칙 <제20720호, 20080229>",
+          "block_ids": [
+            "1833",
+            "1834",
+            "1835",
+            "1836",
+            "1837",
+            "1838"
+          ],
+          "state_count": 53
+        },
+        {
+          "source_id": "article:0bc4f9a8c29ee39ddcf37d67",
+          "label": "상속세 및 증여세법 / 제61조 부동산 등의 평가",
+          "block_ids": [
+            "623",
+            "624",
+            "625",
+            "626",
+            "627",
+            "628",
+            "629",
+            "630",
+            "631",
+            "632",
+            "633",
+            "634",
+            "635"
+          ],
+          "state_count": 29
+        }
+      ],
+      "incoming_outgoing_pivots": [
+        {
+          "sources": [
+            "article:11be547c87ef4628bd4effab",
+            "article:eac5ac3410678d8b195d0b45",
+            "article:e85a7b88f5b9fbfa074e2e67"
+          ],
+          "labels": [
+            "상속세 및 증여세법 시행령 / 제31조의3 주식등의 상장 등에 따른 이익의 계산방법 등",
+            "상속세 및 증여세법 시행령 / 제31조의5 합병에 따른 상장 등 이익의 계산방법 등",
+            "상속세 및 증여세법 / 제41조의5 합병에 따른 상장 등 이익의 증여"
+          ],
+          "state_ids": [
+            "70238d4571a5affa0e595d92bef08c0d02e7933cdd097adc84bc45b58374e69c",
+            "425368292facff8613ced430a87f237cefdaf0b5760737e91290d2d4eb971cc4",
+            "f00678e00cb901876fc0eb5e6e3e98e366f075572a4cbb1435c297d954b96895"
+          ],
+          "references": [
+            "ref:14a3f06c44c6556fc3192a63",
+            "ref:1136a4e7ecae0640fc242c30"
+          ],
+          "locators": [
+            "제31조의3제3항",
+            "제41조의5제1항"
+          ]
+        },
+        {
+          "sources": [
+            "article:11be547c87ef4628bd4effab",
+            "article:f3419407510ebe8e726e7ede",
+            "article:27376b16e32c44ab8e0e1514"
+          ],
+          "labels": [
+            "상속세 및 증여세법 시행령 / 제31조의3 주식등의 상장 등에 따른 이익의 계산방법 등",
+            "상속세 및 증여세법 시행령 / 부칙 부칙 <제35947호, 20251230>",
+            "상속세 및 증여세법 시행령 / 제31조의2 초과배당에 따른 이익의 계산방법 등"
+          ],
+          "state_ids": [
+            "70238d4571a5affa0e595d92bef08c0d02e7933cdd097adc84bc45b58374e69c",
+            "12d88f8d92e719c87e75f5bc88a6b01243b9198c84854a2e711439d6b2863c3e",
+            "1d110cfd7c73b70a2645523c71d57997e64f0b6ed2eea2cd168ec74359786a00"
+          ],
+          "references": [
+            "ref:1e1f66d991f5c19b7047ceb1",
+            "ref:002048d8449af987f9e17c2e"
+          ],
+          "locators": [
+            "제31조의3제5항",
+            "제31조의2제3항제2호"
+          ]
+        },
+        {
+          "sources": [
+            "article:11be547c87ef4628bd4effab",
+            "article:f3419407510ebe8e726e7ede",
+            "article:dc9e0899e816cd5e64084319"
+          ],
+          "labels": [
+            "상속세 및 증여세법 시행령 / 제31조의3 주식등의 상장 등에 따른 이익의 계산방법 등",
+            "상속세 및 증여세법 시행령 / 부칙 부칙 <제35947호, 20251230>",
+            "상속세 및 증여세법 시행령 / 제43조의2 공익법인등에 대한 감사인 지정 등"
+          ],
+          "state_ids": [
+            "70238d4571a5affa0e595d92bef08c0d02e7933cdd097adc84bc45b58374e69c",
+            "12d88f8d92e719c87e75f5bc88a6b01243b9198c84854a2e711439d6b2863c3e",
+            "9b5b683ac91185d808cab26c5203fb0e08d0b6fe753a3f34616f19d337fd191c"
+          ],
+          "references": [
+            "ref:1e1f66d991f5c19b7047ceb1",
+            "ref:032f050366d50fab8153bce3"
+          ],
+          "locators": [
+            "제31조의3제5항",
+            "제43조의2제2항"
+          ]
+        },
+        {
+          "sources": [
+            "article:11be547c87ef4628bd4effab",
+            "article:f3419407510ebe8e726e7ede",
+            "article:1e5682037bc06644554d8627"
+          ],
+          "labels": [
+            "상속세 및 증여세법 시행령 / 제31조의3 주식등의 상장 등에 따른 이익의 계산방법 등",
+            "상속세 및 증여세법 시행령 / 부칙 부칙 <제35947호, 20251230>",
+            "상속세 및 증여세법 시행령 / 제80조 가산세 등"
+          ],
+          "state_ids": [
+            "70238d4571a5affa0e595d92bef08c0d02e7933cdd097adc84bc45b58374e69c",
+            "12d88f8d92e719c87e75f5bc88a6b01243b9198c84854a2e711439d6b2863c3e",
+            "1db45b19707cc1dad0d3d83c6998c5799395ba61c12fb0b2f345727a940d84c3"
+          ],
+          "references": [
+            "ref:1e1f66d991f5c19b7047ceb1",
+            "ref:0532294f1da2af755e16862e"
+          ],
+          "locators": [
+            "제31조의3제5항",
+            "제80조제10항"
+          ]
+        },
+        {
+          "sources": [
+            "article:11be547c87ef4628bd4effab",
+            "article:f3419407510ebe8e726e7ede",
+            "article:e8b42c8c600385cab1fea34f"
+          ],
+          "labels": [
+            "상속세 및 증여세법 시행령 / 제31조의3 주식등의 상장 등에 따른 이익의 계산방법 등",
+            "상속세 및 증여세법 시행령 / 부칙 부칙 <제35947호, 20251230>",
+            "상속세 및 증여세법 시행령 / 제20조 재난의 범위등"
+          ],
+          "state_ids": [
+            "70238d4571a5affa0e595d92bef08c0d02e7933cdd097adc84bc45b58374e69c",
+            "12d88f8d92e719c87e75f5bc88a6b01243b9198c84854a2e711439d6b2863c3e",
+            "242b91e56c77c3bbb26cb2ec4d2568a15bdeb9d0ee5a81249b00d2418654959c"
+          ],
+          "references": [
+            "ref:1e1f66d991f5c19b7047ceb1",
+            "ref:0723891fa913094be11ca509"
+          ],
+          "locators": [
+            "제31조의3제5항",
+            "제20조제3항"
+          ]
+        }
+      ],
+      "unique_scoped_blocks": 12204,
+      "scoped_text_chars": 1267335,
+      "whole_original_text_chars_for_reached_sources": 4456753,
+      "bundle_actually_saved": false,
+      "saved_bundle_original_chars": 0,
+      "removal_preview_inner_checks_per_call_from_code": 44569008,
+      "exclusive_blocks_by_root": {
+        "Ee5b8d8aae713d634abd8794191b3": 1,
+        "E8288f125b7d41b28905f2495925d": 0
+      },
+      "views": [
+        {
+          "view_id": "Vb994deb1008646bd8a1bb97f22306db8",
+          "phase": "investigate",
+          "chars": 2305,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 0,
+            "relation_menu": 0,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 2,
+            "relation_menu": 2,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "Vf2ef5fb89419403298b21758a5d6b7f9",
+          "phase": "investigate",
+          "chars": 2399,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 0,
+            "relation_menu": 0,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 2,
+            "relation_menu": 2,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "V9b206219d81546f796ef014513a74c0e",
+          "phase": "investigate",
+          "chars": 51359,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 0,
+            "relation_menu": 0,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 2,
+            "relation_menu": 2,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "Vfae865028cf44bdd8c9ba95e74e81582",
+          "phase": "investigate",
+          "chars": 37485,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 2,
+            "relation_menu": 10,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 16440,
+            "relation_menu": 15248,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "Vb1d8ba67ad23435cb0a60c2a432d3a32",
+          "phase": "investigate",
+          "chars": 39469,
+          "successful_attempts": 0,
+          "exploration": {
+            "expanded_this_call": 1899,
+            "pending_scopes": 8334,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "PARTIAL"
+          },
+          "shown_counts": {
+            "exact_evidence": 2,
+            "relation_menu": 10,
+            "root_removal_impacts": 2
+          },
+          "shown_section_chars": {
+            "exact_evidence": 16440,
+            "relation_menu": 15248,
+            "root_removal_impacts": 927
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": [
+            "ab7d16727a2fb665b531a1da7a4f4041eb30a6c625e1592995fcb9fbc3e013af",
+            "4c6fca3c702800a04f0a6591a8302231422d3fbd535525521971df7163fefbe9"
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "code": "MODEL_PROPOSAL_INVALID",
+          "message": "context_refs and answer demands must be disjoint"
+        },
+        {
+          "code": "OPERATION_REJECTED",
+          "owner": "MODEL",
+          "state": "OPEN",
+          "errors": [
+            {
+              "field": "assessments",
+              "message": "Use source choices for relevance. Legal claims are composed and independently reviewed after source selection."
+            }
+          ],
+          "valid_sources": [
+            "Ee5b8d8aae713d634abd8794191b3",
+            "E8288f125b7d41b28905f2495925d"
+          ],
+          "preserved_selections": [
+            {
+              "selection_id": "SSa3e79d58dcb448525c5a012b2e76",
+              "version": 1,
+              "evidence_id": "Ee5b8d8aae713d634abd8794191b3",
+              "tier": "CORE",
+              "status": "SELECTED"
+            },
+            {
+              "selection_id": "SSbef1be674e6b0f73a412a1080ba6",
+              "version": 1,
+              "evidence_id": "E8288f125b7d41b28905f2495925d",
+              "tier": "CORE",
+              "status": "SELECTED"
+            }
+          ],
+          "message": "Correct only rejected operations using this view. Successful source choices remain stored."
+        },
+        {
+          "code": "MODEL_PROPOSAL_INVALID",
+          "message": "workflow operations rejected f187a4522fe3; inspect structured errors and retry; valid selections preserved"
+        }
+      ],
+      "evidence_count": 2
+    },
+    {
+      "adr": "0524",
+      "case": "cm-040",
+      "graph_path": "04_EXPERIMENTS/ADR/ADR-0524-gemma-fp8-scoped-retrieval/artifacts/run-001/cm-040/guarded/graph.json.gz",
+      "graph_file_sha256": "79ffb87c419a0f30e203e0e9b6a95e00fd2431a87ff24969c10a1cc3ad9f21e5",
+      "checkpoint_hash": "f070160e4ba640d7645b43018fd1852bcfce568b0ba875e3fc4398dfcc282844",
+      "binding": "ed2e2f06c4b282e291632e00d0a2b3efec501f99a3d1cbcab2dd8a2cbda4d5d8",
+      "status": "PARTIAL",
+      "checkpoint_hash_verified": true,
+      "roots": [
+        {
+          "root_id": "E85d9590fdac87e74c6144b621d8a",
+          "source_id": "article:f0f56bc1afb33f8abe4ab6a9",
+          "label": "상법 / 제361조 총회의 권한",
+          "blocks": [
+            "1373"
+          ],
+          "article_blocks": 1,
+          "first_edges": {},
+          "first_target_sources": 0
+        },
+        {
+          "root_id": "E422926b673b206ac787838c3194e",
+          "source_id": "article:816aee85d53f84a3b2f322dd",
+          "label": "상법 / 제434조 정관변경의 특별결의",
+          "blocks": [
+            "1772"
+          ],
+          "article_blocks": 1,
+          "first_edges": {
+            "incoming": 27,
+            "outgoing": 1
+          },
+          "first_target_sources": 27
+        },
+        {
+          "root_id": "Eff10b92c39512524e89c8bf0fac4",
+          "source_id": "article:d7bc3cc9b3f778ea70b1ab2d",
+          "label": "상법 / 제433조 정관변경의 방법",
+          "blocks": [
+            "1769",
+            "1770",
+            "1771"
+          ],
+          "article_blocks": 3,
+          "first_edges": {
+            "outgoing": 1,
+            "incoming": 1
+          },
+          "first_target_sources": 2
+        }
+      ],
+      "sources": 5870,
+      "states": 40426,
+      "unique_physical_extents": 16876,
+      "expanded_states": 5810,
+      "unique_expanded_physical_extents": 3274,
+      "pending": 34628,
+      "expanded_also_pending": 12,
+      "expanded_pending_examples": [
+        "029bc8f76d95680c5e948051cbb88135dbc06daddf885a746412a16f33411508",
+        "033cacfe3ee2697b61668147a186744c0c2d27050b0d4bb4f68daeef7df7be82",
+        "145b4f142c8d46fc4013fc283279b5c09b88ca497fe51a57d2273dfa437c31e1",
+        "1625c8e33c4e520ea65eda75252c19edb704c9fa57bfd052adf8dc138593dc90",
+        "36c8565ea35b46f2de0577eb69cd6158aa249db4a28e9f341d54a2b7f4b5e625"
+      ],
+      "expanded_pending_self_loop_edges": [
+        {
+          "reference_id": "ref:4ef3317b14bfb44259fd2fa0",
+          "direction": "incoming",
+          "from_state": "3864c99dd89268a5b4ea1da365fa3d6ad485816a7532306f7f5ba47b588f7424",
+          "target_states": [
+            "3864c99dd89268a5b4ea1da365fa3d6ad485816a7532306f7f5ba47b588f7424"
+          ]
+        },
+        {
+          "reference_id": "ref:8a3a1bf59789a28cee98016c",
+          "direction": "incoming",
+          "from_state": "36c8565ea35b46f2de0577eb69cd6158aa249db4a28e9f341d54a2b7f4b5e625",
+          "target_states": [
+            "36c8565ea35b46f2de0577eb69cd6158aa249db4a28e9f341d54a2b7f4b5e625"
+          ]
+        },
+        {
+          "reference_id": "ref:8a3a1bf59789a28cee98016c",
+          "direction": "outgoing",
+          "from_state": "1625c8e33c4e520ea65eda75252c19edb704c9fa57bfd052adf8dc138593dc90",
+          "target_states": [
+            "3bb8828a473554057fa17a23a414d9096d909d8df0d9507ed244abc7f62ca381",
+            "405b1056bc0166cabd76d0bc0c0ce5c84cb091838cc8ac43db90b7021ddbe345",
+            "1625c8e33c4e520ea65eda75252c19edb704c9fa57bfd052adf8dc138593dc90",
+            "2a8ba7cb6250bb34d6a488079a175d7226ecfb9a5b88bd66aa617262572cbc31"
+          ]
+        },
+        {
+          "reference_id": "ref:afe155afe6724aaff80ea9d0",
+          "direction": "outgoing",
+          "from_state": "a44f9ef3a8c47d16702bf77191549b36d91bf63fdf54621258b02ce310a5433c",
+          "target_states": [
+            "a44f9ef3a8c47d16702bf77191549b36d91bf63fdf54621258b02ce310a5433c"
+          ]
+        },
+        {
+          "reference_id": "ref:afe155afe6724aaff80ea9d0",
+          "direction": "incoming",
+          "from_state": "145b4f142c8d46fc4013fc283279b5c09b88ca497fe51a57d2273dfa437c31e1",
+          "target_states": [
+            "145b4f142c8d46fc4013fc283279b5c09b88ca497fe51a57d2273dfa437c31e1"
+          ]
+        },
+        {
+          "reference_id": "ref:b36dc1d71eef0f2309683a84",
+          "direction": "incoming",
+          "from_state": "7c0c07663b8267cda7e104e4a3bee4adacf3f788b3253222e4e264cc9767ad6b",
+          "target_states": [
+            "7c0c07663b8267cda7e104e4a3bee4adacf3f788b3253222e4e264cc9767ad6b"
+          ]
+        },
+        {
+          "reference_id": "ref:c15455a634310d27d0f064bd",
+          "direction": "incoming",
+          "from_state": "b2b96a8b331f70685d5cbdd19444bb3b936049bfcdbe0a1825558b0d9b04a9e6",
+          "target_states": [
+            "b2b96a8b331f70685d5cbdd19444bb3b936049bfcdbe0a1825558b0d9b04a9e6"
+          ]
+        },
+        {
+          "reference_id": "ref:aaf61398d96d4fd2e2da9bf7",
+          "direction": "incoming",
+          "from_state": "033cacfe3ee2697b61668147a186744c0c2d27050b0d4bb4f68daeef7df7be82",
+          "target_states": [
+            "033cacfe3ee2697b61668147a186744c0c2d27050b0d4bb4f68daeef7df7be82"
+          ]
+        },
+        {
+          "reference_id": "ref:bbab2b97ed783758922f250f",
+          "direction": "incoming",
+          "from_state": "a5c23f8aaa9069e9d288934658748675f02e45200291529b36760f8e4228204d",
+          "target_states": [
+            "a5c23f8aaa9069e9d288934658748675f02e45200291529b36760f8e4228204d"
+          ]
+        },
+        {
+          "reference_id": "ref:c52176bbf7523dd1a4ea6102",
+          "direction": "incoming",
+          "from_state": "47563be7c43e7dac34763cb61234194d424514a0e720a7d0b09dc93761dadfcb",
+          "target_states": [
+            "47563be7c43e7dac34763cb61234194d424514a0e720a7d0b09dc93761dadfcb"
+          ]
+        },
+        {
+          "reference_id": "ref:d6437256d5fa51048266c7db",
+          "direction": "incoming",
+          "from_state": "cbb82b07160c65a99f26cd5db140c8ba6dd67c591cc4ec78bf69defc33bc82b7",
+          "target_states": [
+            "cbb82b07160c65a99f26cd5db140c8ba6dd67c591cc4ec78bf69defc33bc82b7"
+          ]
+        },
+        {
+          "reference_id": "ref:3f771ddd8f8cbd261d9071c0",
+          "direction": "incoming",
+          "from_state": "029bc8f76d95680c5e948051cbb88135dbc06daddf885a746412a16f33411508",
+          "target_states": [
+            "029bc8f76d95680c5e948051cbb88135dbc06daddf885a746412a16f33411508"
+          ]
+        }
+      ],
+      "edges": 139852,
+      "edges_ignoring_arrival_guard": 60966,
+      "edge_directions": {
+        "incoming": 102488,
+        "outgoing": 37364
+      },
+      "suppressed_returns": 5807,
+      "sources_by_shortest_recorded_hop": {
+        "0": 3,
+        "1": 27,
+        "2": 138,
+        "3": 1010,
+        "4": 3352,
+        "5": 1340
+      },
+      "top_repeated_extents": [
+        {
+          "source_id": "article:b2cf38efbc915bd830523655",
+          "label": "자본시장과 금융투자업에 관한 법률 / 별표 1 금융투자업자 및 그 임직원에 대한 처분 및 업무 위탁계약 취소·변경 명령의 사유(제43조제2항제4호, 제420조제1항제6호·제3항 및 제422조제1항·제2항 관련)",
+          "block_ids": [
+            "6786"
+          ],
+          "state_count": 277
+        },
+        {
+          "source_id": "article:09ca2ad84dfe78e51a19e2f7",
+          "label": "자본시장과 금융투자업에 관한 법률 / 별표 2 투자회사등에 대한 처분 사유(제253조제1항제7호·제2항 관련)",
+          "block_ids": [
+            "6791"
+          ],
+          "state_count": 176
+        },
+        {
+          "source_id": "article:5e2fea62187c475f7c13b4fb",
+          "label": "자본시장과 금융투자업에 관한 법률 시행령 / 별표 22 과태료의 부과기준(제390조 관련)",
+          "block_ids": [
+            "9277",
+            "9278",
+            "9279",
+            "9280",
+            "9281",
+            "9282",
+            "9283",
+            "9284",
+            "9285",
+            "9286",
+            "9287",
+            "9288",
+            "9289",
+            "9290",
+            "9291",
+            "9292",
+            "9293",
+            "9294",
+            "9295",
+            "9296",
+            "9297",
+            "9298",
+            "9299",
+            "9300",
+            "9301",
+            "9302",
+            "9303",
+            "9304",
+            "9305",
+            "9306",
+            "9307",
+            "9308",
+            "9309",
+            "9310",
+            "9311",
+            "9312",
+            "9313",
+            "9314",
+            "9315",
+            "9316",
+            "9317",
+            "9318",
+            "9319",
+            "9320",
+            "9321",
+            "9322",
+            "9323",
+            "9324",
+            "9325",
+            "9326",
+            "9327",
+            "9328",
+            "9329",
+            "9330",
+            "9331",
+            "9332",
+            "9333",
+            "9334",
+            "9335",
+            "9336",
+            "9337",
+            "9338",
+            "9339",
+            "9340",
+            "9341",
+            "9342",
+            "9343",
+            "9344",
+            "9345",
+            "9346",
+            "9347",
+            "9348",
+            "9349",
+            "9350",
+            "9351",
+            "9352",
+            "9353",
+            "9354",
+            "9355",
+            "9356",
+            "9357",
+            "9358",
+            "9359",
+            "9360",
+            "9361",
+            "9362",
+            "9363",
+            "9364",
+            "9365",
+            "9366",
+            "9367",
+            "9368",
+            "9369",
+            "9370",
+            "9371",
+            "9372",
+            "9373",
+            "9374",
+            "9375",
+            "9376",
+            "9377",
+            "9378",
+            "9379",
+            "9380",
+            "9381",
+            "9382",
+            "9383",
+            "9384",
+            "9385",
+            "9386",
+            "9387",
+            "9388",
+            "9389",
+            "9390",
+            "9391",
+            "9392",
+            "9393",
+            "9394",
+            "9395"
+          ],
+          "state_count": 174
+        },
+        {
+          "source_id": "article:fe82475f0b9f6875cdafebb1",
+          "label": "자본시장과 금융투자업에 관한 법률 시행령 / 별표 20 금융위원회 또는 증권선물위원회가 금융감독원장에게 위탁하는 권한의 범위(제387조제3항 관련)",
+          "block_ids": [
+            "9265"
+          ],
+          "state_count": 172
+        },
+        {
+          "source_id": "article:589ce9166f905c9dc6f31354",
+          "label": "자본시장과 금융투자업에 관한 법률 / 부칙 부칙 <제08863호, 20080229>",
+          "block_ids": [
+            "5614",
+            "5615",
+            "5616",
+            "5617",
+            "5618",
+            "5619",
+            "5620",
+            "5621",
+            "5622",
+            "5623",
+            "5624",
+            "5625",
+            "5626",
+            "5627",
+            "5628",
+            "5629",
+            "5630",
+            "5631",
+            "5632",
+            "5633",
+            "5634",
+            "5635",
+            "5636",
+            "5637",
+            "5638",
+            "5639",
+            "5640",
+            "5641",
+            "5642",
+            "5643",
+            "5644",
+            "5645",
+            "5646",
+            "5647",
+            "5648",
+            "5649",
+            "5650",
+            "5651",
+            "5652",
+            "5653",
+            "5654",
+            "5655",
+            "5656",
+            "5657",
+            "5658",
+            "5659",
+            "5660",
+            "5661",
+            "5662",
+            "5663",
+            "5664",
+            "5665",
+            "5666",
+            "5667",
+            "5668",
+            "5669",
+            "5670",
+            "5671",
+            "5672",
+            "5673",
+            "5674",
+            "5675",
+            "5676",
+            "5677",
+            "5678",
+            "5679",
+            "5680",
+            "5681",
+            "5682",
+            "5683",
+            "5684",
+            "5685",
+            "5686",
+            "5687",
+            "5688",
+            "5689",
+            "5690",
+            "5691",
+            "5692",
+            "5693",
+            "5694",
+            "5695",
+            "5696",
+            "5697",
+            "5698",
+            "5699",
+            "5700",
+            "5701",
+            "5702",
+            "5703",
+            "5704",
+            "5705",
+            "5706",
+            "5707",
+            "5708",
+            "5709",
+            "5710",
+            "5711",
+            "5712",
+            "5713",
+            "5714",
+            "5715",
+            "5716",
+            "5717",
+            "5718",
+            "5719",
+            "5720",
+            "5721",
+            "5722",
+            "5723",
+            "5724",
+            "5725",
+            "5726",
+            "5727",
+            "5728",
+            "5729",
+            "5730",
+            "5731",
+            "5732",
+            "5733",
+            "5734",
+            "5735",
+            "5736",
+            "5737",
+            "5738",
+            "5739",
+            "5740",
+            "5741",
+            "5742",
+            "5743",
+            "5744",
+            "5745",
+            "5746",
+            "5747",
+            "5748",
+            "5749",
+            "5750",
+            "5751",
+            "5752",
+            "5753",
+            "5754",
+            "5755",
+            "5756",
+            "5757",
+            "5758",
+            "5759",
+            "5760",
+            "5761",
+            "5762",
+            "5763",
+            "5764",
+            "5765",
+            "5766",
+            "5767",
+            "5768",
+            "5769",
+            "5770",
+            "5771",
+            "5772",
+            "5773",
+            "5774",
+            "5775",
+            "5776",
+            "5777",
+            "5778",
+            "5779",
+            "5780",
+            "5781",
+            "5782",
+            "5783",
+            "5784",
+            "5785",
+            "5786",
+            "5787",
+            "5788",
+            "5789",
+            "5790",
+            "5791",
+            "5792",
+            "5793",
+            "5794",
+            "5795",
+            "5796",
+            "5797",
+            "5798",
+            "5799"
+          ],
+          "state_count": 141
+        }
+      ],
+      "incoming_outgoing_pivots": [
+        {
+          "sources": [
+            "article:816aee85d53f84a3b2f322dd",
+            "article:c277d9ed26c5b030c77f5892",
+            "article:c277d9ed26c5b030c77f5892"
+          ],
+          "labels": [
+            "상법 / 제434조 정관변경의 특별결의",
+            "상법 / 제360조의16 주주총회에 의한 주식이전의 승인",
+            "상법 / 제360조의16 주주총회에 의한 주식이전의 승인"
+          ],
+          "state_ids": [
+            "5f6074c0c6b9996b219357e493869d123ac26112bedab80767be5b656d8f87dc",
+            "e094c489bb3ad59ce23e16016d70fb3a3bf1dea924e0830f82cb6cf5e8f128d2",
+            "19c7a623f7cbaab8cf59e8057b24ad22b643228f4d1cc7a1fe96173785a3b8a8"
+          ],
+          "references": [
+            "ref:0013ee31add254313bd59ca3",
+            "ref:a76ecf3d9f7a3420175bfc26"
+          ],
+          "locators": [
+            "제434조",
+            "제1항"
+          ]
+        },
+        {
+          "sources": [
+            "article:816aee85d53f84a3b2f322dd",
+            "article:07664b7d960181ea04b8833a",
+            "article:1c6b009f0451e03f15309839"
+          ],
+          "labels": [
+            "상법 / 제434조 정관변경의 특별결의",
+            "상법 / 제516조의2 신주인수권부사채의 발행",
+            "상법 / 제418조 신주인수권의 내용 및 배정일의 지정ㆍ공고"
+          ],
+          "state_ids": [
+            "5f6074c0c6b9996b219357e493869d123ac26112bedab80767be5b656d8f87dc",
+            "e550818a5ce7b166ad41f790408fb463a5d3e8b98e5426ed460fdff7a32e8a01",
+            "069f68eeac007be425f81f048281a207583b1f54a1fae9f2cdbb1887139abf10"
+          ],
+          "references": [
+            "ref:3c422964a89bc19933d739a3",
+            "ref:82537c3384a3ca9814bc4d71"
+          ],
+          "locators": [
+            "제434조",
+            "제418조제2항"
+          ]
+        },
+        {
+          "sources": [
+            "article:816aee85d53f84a3b2f322dd",
+            "article:dcc3317283926f3415025f0b",
+            "article:2ee38312454bd34c19d7e717"
+          ],
+          "labels": [
+            "상법 / 제434조 정관변경의 특별결의",
+            "상법 / 제175조 동전-설립위원",
+            "상법 / 제585조 정관변경의 특별결의"
+          ],
+          "state_ids": [
+            "5f6074c0c6b9996b219357e493869d123ac26112bedab80767be5b656d8f87dc",
+            "e8c64f4de6ac85c2356e6340bf914a6edc61a3db032beb5de751d0e8972d995b",
+            "78e8262640bc5c459ae0dc110b0eaede46078e2a51867ad41adc077820b2a0ac"
+          ],
+          "references": [
+            "ref:3db9a8d2245d7b6b2dadf8bb",
+            "ref:1ee5b29696665ed031a1fa01"
+          ],
+          "locators": [
+            "제434조",
+            "제585조"
+          ]
+        },
+        {
+          "sources": [
+            "article:816aee85d53f84a3b2f322dd",
+            "article:dcc3317283926f3415025f0b",
+            "article:e9a9f3592ae1e11ae7c31c00"
+          ],
+          "labels": [
+            "상법 / 제434조 정관변경의 특별결의",
+            "상법 / 제175조 동전-설립위원",
+            "상법 / 제230조 합병의 결의"
+          ],
+          "state_ids": [
+            "5f6074c0c6b9996b219357e493869d123ac26112bedab80767be5b656d8f87dc",
+            "e8c64f4de6ac85c2356e6340bf914a6edc61a3db032beb5de751d0e8972d995b",
+            "11250864051bf370ae97c5c6f3fd613019a52cc4d81e4255efc995b22f40b164"
+          ],
+          "references": [
+            "ref:3db9a8d2245d7b6b2dadf8bb",
+            "ref:6ae262f6bc6c02a94b2a2bc6"
+          ],
+          "locators": [
+            "제434조",
+            "제230조"
+          ]
+        },
+        {
+          "sources": [
+            "article:816aee85d53f84a3b2f322dd",
+            "article:7f2c59a65016357c0d46a755",
+            "article:7f2c59a65016357c0d46a755"
+          ],
+          "labels": [
+            "상법 / 제434조 정관변경의 특별결의",
+            "상법 / 제530조의3 분할계획서ㆍ분할합병계약서의 승인",
+            "상법 / 제530조의3 분할계획서ㆍ분할합병계약서의 승인"
+          ],
+          "state_ids": [
+            "5f6074c0c6b9996b219357e493869d123ac26112bedab80767be5b656d8f87dc",
+            "040af3f9cef39be4f360cc0298bdbc9736215b079d8f626da44dae69c1657bfe",
+            "8afa8e6367b8e036d18fa8b612f73d08854161279d266e5a8289a3f0329bfafe"
+          ],
+          "references": [
+            "ref:40ccf0e307486fedf54a328f",
+            "ref:2e4ded8721218ac76419ee1e"
+          ],
+          "locators": [
+            "제434조",
+            "제1항"
+          ]
+        }
+      ],
+      "unique_scoped_blocks": 39294,
+      "scoped_text_chars": 3644374,
+      "whole_original_text_chars_for_reached_sources": 8413131,
+      "bundle_actually_saved": false,
+      "saved_bundle_original_chars": 0,
+      "removal_preview_inner_checks_per_call_from_code": 691967340,
+      "exclusive_blocks_by_root": {
+        "E85d9590fdac87e74c6144b621d8a": 1,
+        "E422926b673b206ac787838c3194e": 0,
+        "Eff10b92c39512524e89c8bf0fac4": 1
+      },
+      "views": [
+        {
+          "view_id": "V4744b59c872e4f1b8b2321254b44abf9",
+          "phase": "investigate",
+          "chars": 2271,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 0,
+            "relation_menu": 0,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 2,
+            "relation_menu": 2,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "V88e2ac315b2440d2be9b836f7b91ffac",
+          "phase": "investigate",
+          "chars": 2365,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 0,
+            "relation_menu": 0,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 2,
+            "relation_menu": 2,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "Vf2b87d5e2a0f416ab086cfca2de21ec6",
+          "phase": "investigate",
+          "chars": 55423,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 0,
+            "relation_menu": 0,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 2,
+            "relation_menu": 2,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 9,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "V982823dc8785472cb6b0f7dd9a718572",
+          "phase": "investigate",
+          "chars": 30941,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 4,
+            "relation_menu": 12,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 7373,
+            "relation_menu": 18007,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "V2cb85afb5a454a05a12df88f1d8f3d19",
+          "phase": "investigate",
+          "chars": 34126,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 1217,
+            "pending_scopes": 9537,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "PARTIAL"
+          },
+          "shown_counts": {
+            "exact_evidence": 4,
+            "relation_menu": 12,
+            "root_removal_impacts": 3
+          },
+          "shown_section_chars": {
+            "exact_evidence": 7373,
+            "relation_menu": 18007,
+            "root_removal_impacts": 1472
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": [
+            "5b012f2ccae20965f29b58f0f0a051477a567ff72aa9976774d0047a46ac9610",
+            "092fd1323435d3aa8c9c56ab1ab72b321fe28776185b75f71a07bfc5e5f14b33",
+            "03f64e656e730dd8246e19b828fbfdf8525b71960aa94644e7af130a60560232"
+          ]
+        },
+        {
+          "view_id": "Vf656c9904da7440487fa07e91cc3ff8f",
+          "phase": "investigate",
+          "chars": 34001,
+          "successful_attempts": 0,
+          "exploration": {
+            "expanded_this_call": 2211,
+            "pending_scopes": 23337,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "PARTIAL"
+          },
+          "shown_counts": {
+            "exact_evidence": 4,
+            "relation_menu": 12,
+            "root_removal_impacts": 3
+          },
+          "shown_section_chars": {
+            "exact_evidence": 7373,
+            "relation_menu": 18007,
+            "root_removal_impacts": 1472
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": [
+            "50aa6095c6939fd890ce1f4f4db8ad98018da74fcc2815ce64d143d3098b68f9",
+            "919fec63f8ef465158bc54eee555eb1ff15e0748408b26aa6db2d697eab5fb3b",
+            "4ccd1fdeebd7961f38a92872ef66a8c6200bf3934bbf6210458fdfe6916a5ded"
+          ]
+        },
+        {
+          "view_id": "Va30f96f5fcc24998a5a13d3e7eb697ed",
+          "phase": "select_sources",
+          "chars": 32970,
+          "successful_attempts": 0,
+          "exploration": {
+            "expanded_this_call": 2382,
+            "pending_scopes": 34628,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "PARTIAL"
+          },
+          "shown_counts": {
+            "exact_evidence": 4,
+            "relation_menu": 12,
+            "root_removal_impacts": 3
+          },
+          "shown_section_chars": {
+            "exact_evidence": 7373,
+            "relation_menu": 18007,
+            "root_removal_impacts": 1472
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": [
+            "6a9f464d71c90f8d0a3e4473affb68a06ab61387cdea38dad18f0d4dea1d98cb",
+            "51663bf68bc4379dd3822ebf1b7ddf0863ef4f6efebe7b548426c3e4ccd41331",
+            "9906639aac75897434026f8324cf43c60b1c954a027831c9cd3f29cf021168f4"
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "code": "MODEL_PROPOSAL_INVALID",
+          "message": "context_refs and answer demands must be disjoint"
+        },
+        {
+          "code": "OPERATION_REJECTED",
+          "owner": "MODEL",
+          "state": "OPEN",
+          "errors": [
+            {
+              "field": "choices[2]",
+              "actual": {
+                "source": "E4da5bccb62a51be86595f76283d5",
+                "decision": "KEEP_SUPPLEMENTAL",
+                "reason": "정관 변경 의안 통지 절차에 관한 보완적 정보를 제공함"
+              },
+              "expected": "delivered source + KEEP_CORE/KEEP_SUPPLEMENTAL/DEFER/REJECT + reason",
+              "message": "linked evidence is protected; decide its independent root instead"
+            },
+            {
+              "field": "assessments",
+              "message": "Use source choices for relevance. Legal claims are composed and independently reviewed after source selection."
+            }
+          ],
+          "valid_sources": [
+            "E85d9590fdac87e74c6144b621d8a",
+            "Eff10b92c39512524e89c8bf0fac4",
+            "E4da5bccb62a51be86595f76283d5",
+            "E422926b673b206ac787838c3194e"
+          ],
+          "preserved_selections": [
+            {
+              "selection_id": "SS1352a827c657fdd19547b71745bd",
+              "version": 1,
+              "evidence_id": "E85d9590fdac87e74c6144b621d8a",
+              "tier": "CORE",
+              "status": "SELECTED"
+            },
+            {
+              "selection_id": "SSc540a9943ef7ba399a7aa37e4458",
+              "version": 1,
+              "evidence_id": "E422926b673b206ac787838c3194e",
+              "tier": "CORE",
+              "status": "SELECTED"
+            },
+            {
+              "selection_id": "SSee7fc86d47a450b345d4f4700d0d",
+              "version": 1,
+              "evidence_id": "Eff10b92c39512524e89c8bf0fac4",
+              "tier": "CORE",
+              "status": "SELECTED"
+            }
+          ],
+          "message": "Correct only rejected operations using this view. Successful source choices remain stored."
+        },
+        {
+          "code": "MODEL_PROPOSAL_INVALID",
+          "message": "workflow operations rejected 2b71767d1c26; inspect structured errors and retry; valid selections preserved"
+        },
+        {
+          "code": "OPERATION_REJECTED",
+          "owner": "MODEL",
+          "state": "OPEN",
+          "errors": [
+            {
+              "field": "choices[0]",
+              "actual": {
+                "source": "E4da5bccb62a51be86595f76283d5",
+                "decision": "KEEP_SUPPLEMENTAL",
+                "reason": "정관 변경 의안의 통지 절차(제363조)에 관한 보완적 정보를 제공하여 절차적 요건을 완성함"
+              },
+              "expected": "delivered source + KEEP_CORE/KEEP_SUPPLEMENTAL/DEFER/REJECT + reason",
+              "message": "linked evidence is protected; decide its independent root instead"
+            }
+          ],
+          "valid_sources": [
+            "E85d9590fdac87e74c6144b621d8a",
+            "Eff10b92c39512524e89c8bf0fac4",
+            "E4da5bccb62a51be86595f76283d5",
+            "E422926b673b206ac787838c3194e"
+          ],
+          "preserved_selections": [
+            {
+              "selection_id": "SS1352a827c657fdd19547b71745bd",
+              "version": 1,
+              "evidence_id": "E85d9590fdac87e74c6144b621d8a",
+              "tier": "CORE",
+              "status": "SELECTED"
+            },
+            {
+              "selection_id": "SSc540a9943ef7ba399a7aa37e4458",
+              "version": 1,
+              "evidence_id": "E422926b673b206ac787838c3194e",
+              "tier": "CORE",
+              "status": "SELECTED"
+            },
+            {
+              "selection_id": "SSee7fc86d47a450b345d4f4700d0d",
+              "version": 1,
+              "evidence_id": "Eff10b92c39512524e89c8bf0fac4",
+              "tier": "CORE",
+              "status": "SELECTED"
+            }
+          ],
+          "message": "Correct only rejected operations using this view. Successful source choices remain stored."
+        },
+        {
+          "code": "MODEL_PROPOSAL_INVALID",
+          "message": "workflow operations rejected c46180570ba7; inspect structured errors and retry; valid selections preserved"
+        },
+        {
+          "code": "DEADLINE_EXCEEDED",
+          "message": "request deadline exceeded"
+        }
+      ],
+      "evidence_count": 4
+    },
+    {
+      "adr": "0524",
+      "case": "cm-009",
+      "graph_path": "04_EXPERIMENTS/ADR/ADR-0524-gemma-fp8-scoped-retrieval/artifacts/run-001/cm-009/guarded/graph.json.gz",
+      "graph_file_sha256": "dc806f0a34da49e8eb6ea532834736c115487a605e3f7e8d9c0164626e23348e",
+      "checkpoint_hash": "6df6b6b79ac3fc3c3943b7162dd52e82e357a0d0a33e4d285bcdc0767949cd7a",
+      "binding": "ed2e2f06c4b282e291632e00d0a2b3efec501f99a3d1cbcab2dd8a2cbda4d5d8",
+      "status": "PARTIAL",
+      "checkpoint_hash_verified": true,
+      "roots": [
+        {
+          "root_id": "E7f87ac55fa7692f8d5d008f3e203",
+          "source_id": "article:ece2450f99b261c5d36eb688",
+          "label": "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+          "blocks": [
+            "187",
+            "188",
+            "189",
+            "190",
+            "191",
+            "192",
+            "193",
+            "194",
+            "195",
+            "196",
+            "197",
+            "198",
+            "199",
+            "200",
+            "201",
+            "202",
+            "203",
+            "204",
+            "205",
+            "206",
+            "207",
+            "208",
+            "209"
+          ],
+          "article_blocks": 23,
+          "first_edges": {
+            "incoming": 13,
+            "outgoing": 10
+          },
+          "first_target_sources": 8
+        },
+        {
+          "root_id": "E0d56bb573d2b333037e481f2e97a",
+          "source_id": "article:2fb3a39c3796bcda1905733a",
+          "label": "유가증권시장 상장규정 / 제13조 상장주선인의 의무",
+          "blocks": [
+            "146",
+            "147",
+            "148",
+            "149",
+            "150",
+            "151",
+            "152",
+            "153",
+            "154",
+            "155"
+          ],
+          "article_blocks": 10,
+          "first_edges": {
+            "incoming": 15,
+            "outgoing": 7
+          },
+          "first_target_sources": 13
+        }
+      ],
+      "sources": 4635,
+      "states": 34604,
+      "unique_physical_extents": 14903,
+      "expanded_states": 6525,
+      "unique_expanded_physical_extents": 3935,
+      "pending": 28097,
+      "expanded_also_pending": 18,
+      "expanded_pending_examples": [
+        "053ede4b860c6db2cbaf8f21e90531d3e517ed2047fd663c2fe2d87db4ea319d",
+        "29dec76116c18974a4c60a2aa6cfdfc736822ce03456f70a1ca2c6a88f0b8a46",
+        "3d8526f40a7e60bd8c6b857db860c2444cdc9106131cec060ece512be7229eee",
+        "41d23d9c57c298a5996315392570cae7c4045af3aa3d3cdd5d681438387eee2a",
+        "4665767c9ca336f6a769b43e7d89e4248a9da233774d5302da8266f37deda09e"
+      ],
+      "expanded_pending_self_loop_edges": [
+        {
+          "reference_id": "ref:c5a7dcf6dcddf84b8d69bb89",
+          "direction": "outgoing",
+          "from_state": "6ae661bff452e7f8921cefcfba25dcc8eaef6251fa04adfc0470715a205ffb71",
+          "target_states": [
+            "6ae661bff452e7f8921cefcfba25dcc8eaef6251fa04adfc0470715a205ffb71"
+          ]
+        },
+        {
+          "reference_id": "ref:c5a7dcf6dcddf84b8d69bb89",
+          "direction": "incoming",
+          "from_state": "c08badc774b422fea0b20af4f3988857b8b0e20f903748c1d5bfe29f35c8f5f2",
+          "target_states": [
+            "c08badc774b422fea0b20af4f3988857b8b0e20f903748c1d5bfe29f35c8f5f2"
+          ]
+        },
+        {
+          "reference_id": "ref:48844d9c80db772958d3426e",
+          "direction": "incoming",
+          "from_state": "41d23d9c57c298a5996315392570cae7c4045af3aa3d3cdd5d681438387eee2a",
+          "target_states": [
+            "41d23d9c57c298a5996315392570cae7c4045af3aa3d3cdd5d681438387eee2a"
+          ]
+        },
+        {
+          "reference_id": "ref:473c4569ec25b511f0072de2",
+          "direction": "incoming",
+          "from_state": "8f6fb12e6ecb793745dae7d30e9d0ac1a583d027c566bdf506d8821d4db1abcc",
+          "target_states": [
+            "8f6fb12e6ecb793745dae7d30e9d0ac1a583d027c566bdf506d8821d4db1abcc"
+          ]
+        },
+        {
+          "reference_id": "ref:2201ace0a33655b6b6e00616",
+          "direction": "incoming",
+          "from_state": "d315ffcdbfa2ae27ee78a8b0f56fb32efa32fa0478277ab20d1133bb82680b38",
+          "target_states": [
+            "d315ffcdbfa2ae27ee78a8b0f56fb32efa32fa0478277ab20d1133bb82680b38"
+          ]
+        },
+        {
+          "reference_id": "ref:3a558927ca7d43e09470d8be",
+          "direction": "incoming",
+          "from_state": "a390515eee38d44694824e07419ce07c9350cb2e1f589f778118c5575e3a1793",
+          "target_states": [
+            "a390515eee38d44694824e07419ce07c9350cb2e1f589f778118c5575e3a1793"
+          ]
+        },
+        {
+          "reference_id": "ref:5d64c666ec8775997f9f3189",
+          "direction": "outgoing",
+          "from_state": "4665767c9ca336f6a769b43e7d89e4248a9da233774d5302da8266f37deda09e",
+          "target_states": [
+            "4665767c9ca336f6a769b43e7d89e4248a9da233774d5302da8266f37deda09e"
+          ]
+        },
+        {
+          "reference_id": "ref:5d64c666ec8775997f9f3189",
+          "direction": "incoming",
+          "from_state": "e7fd5b813b5bcc30da2b002c6324505b4bdee445c038c06b381d102c13caea9c",
+          "target_states": [
+            "e7fd5b813b5bcc30da2b002c6324505b4bdee445c038c06b381d102c13caea9c"
+          ]
+        },
+        {
+          "reference_id": "ref:68c0acd9d5bb976a1d94b7c2",
+          "direction": "outgoing",
+          "from_state": "8e07dbe861c7e1ab4fc47afe688b345c92ebeb173c0d6c7d41949d4ac60bcfe6",
+          "target_states": [
+            "8e07dbe861c7e1ab4fc47afe688b345c92ebeb173c0d6c7d41949d4ac60bcfe6"
+          ]
+        },
+        {
+          "reference_id": "ref:68c0acd9d5bb976a1d94b7c2",
+          "direction": "incoming",
+          "from_state": "722ffbfdb3e98aa7ea792cb9fa7216d5a93e3b067415ee94c81bf048e19156e3",
+          "target_states": [
+            "722ffbfdb3e98aa7ea792cb9fa7216d5a93e3b067415ee94c81bf048e19156e3"
+          ]
+        },
+        {
+          "reference_id": "ref:9661e7082c8c8bd1307f447c",
+          "direction": "incoming",
+          "from_state": "3d8526f40a7e60bd8c6b857db860c2444cdc9106131cec060ece512be7229eee",
+          "target_states": [
+            "3d8526f40a7e60bd8c6b857db860c2444cdc9106131cec060ece512be7229eee"
+          ]
+        },
+        {
+          "reference_id": "ref:9ff5d0db1f3b0b1ef821c3ca",
+          "direction": "outgoing",
+          "from_state": "6d8c3df782e0c252c604bcb5c006d96bf1f661766040b3b07cfeeff2da16e40b",
+          "target_states": [
+            "6d8c3df782e0c252c604bcb5c006d96bf1f661766040b3b07cfeeff2da16e40b"
+          ]
+        },
+        {
+          "reference_id": "ref:9ff5d0db1f3b0b1ef821c3ca",
+          "direction": "incoming",
+          "from_state": "5ff5ac74b5d11e0d566fe844bf86327d155086a6ac3ce3835bb65aaab02b9178",
+          "target_states": [
+            "5ff5ac74b5d11e0d566fe844bf86327d155086a6ac3ce3835bb65aaab02b9178"
+          ]
+        },
+        {
+          "reference_id": "ref:9aeb1a7156e9062673a4d3ee",
+          "direction": "incoming",
+          "from_state": "053ede4b860c6db2cbaf8f21e90531d3e517ed2047fd663c2fe2d87db4ea319d",
+          "target_states": [
+            "053ede4b860c6db2cbaf8f21e90531d3e517ed2047fd663c2fe2d87db4ea319d"
+          ]
+        },
+        {
+          "reference_id": "ref:c474a64311489122d1eee58e",
+          "direction": "incoming",
+          "from_state": "f9d54b35c95a731f5ed9869dbb7d28b8d46cb785783d66dbb4982e401fea445d",
+          "target_states": [
+            "f9d54b35c95a731f5ed9869dbb7d28b8d46cb785783d66dbb4982e401fea445d"
+          ]
+        },
+        {
+          "reference_id": "ref:f369765c670bb0e2b5e126ee",
+          "direction": "incoming",
+          "from_state": "48dbda0e2e86c7c0f7a6a6614cd3a33d9b04b8311cfadee2689d2cb27ec2c3d6",
+          "target_states": [
+            "48dbda0e2e86c7c0f7a6a6614cd3a33d9b04b8311cfadee2689d2cb27ec2c3d6"
+          ]
+        },
+        {
+          "reference_id": "ref:252cb9b87b185be17115cc21",
+          "direction": "incoming",
+          "from_state": "545c1c37143f1218585c864086115ba276adddb1575b5595c445f3a2a8eb319d",
+          "target_states": [
+            "545c1c37143f1218585c864086115ba276adddb1575b5595c445f3a2a8eb319d"
+          ]
+        },
+        {
+          "reference_id": "ref:a98ed53fd796faa0d8dc805e",
+          "direction": "incoming",
+          "from_state": "29dec76116c18974a4c60a2aa6cfdfc736822ce03456f70a1ca2c6a88f0b8a46",
+          "target_states": [
+            "29dec76116c18974a4c60a2aa6cfdfc736822ce03456f70a1ca2c6a88f0b8a46"
+          ]
+        }
+      ],
+      "edges": 156184,
+      "edges_ignoring_arrival_guard": 61904,
+      "edge_directions": {
+        "incoming": 97850,
+        "outgoing": 58334
+      },
+      "suppressed_returns": 6523,
+      "sources_by_shortest_recorded_hop": {
+        "0": 2,
+        "1": 18,
+        "2": 40,
+        "3": 231,
+        "4": 1127,
+        "5": 3036,
+        "6": 181
+      },
+      "top_repeated_extents": [
+        {
+          "source_id": "article:5e2fea62187c475f7c13b4fb",
+          "label": "자본시장과 금융투자업에 관한 법률 시행령 / 별표 22 과태료의 부과기준(제390조 관련)",
+          "block_ids": [
+            "9277",
+            "9278",
+            "9279",
+            "9280",
+            "9281",
+            "9282",
+            "9283",
+            "9284",
+            "9285",
+            "9286",
+            "9287",
+            "9288",
+            "9289",
+            "9290",
+            "9291",
+            "9292",
+            "9293",
+            "9294",
+            "9295",
+            "9296",
+            "9297",
+            "9298",
+            "9299",
+            "9300",
+            "9301",
+            "9302",
+            "9303",
+            "9304",
+            "9305",
+            "9306",
+            "9307",
+            "9308",
+            "9309",
+            "9310",
+            "9311",
+            "9312",
+            "9313",
+            "9314",
+            "9315",
+            "9316",
+            "9317",
+            "9318",
+            "9319",
+            "9320",
+            "9321",
+            "9322",
+            "9323",
+            "9324",
+            "9325",
+            "9326",
+            "9327",
+            "9328",
+            "9329",
+            "9330",
+            "9331",
+            "9332",
+            "9333",
+            "9334",
+            "9335",
+            "9336",
+            "9337",
+            "9338",
+            "9339",
+            "9340",
+            "9341",
+            "9342",
+            "9343",
+            "9344",
+            "9345",
+            "9346",
+            "9347",
+            "9348",
+            "9349",
+            "9350",
+            "9351",
+            "9352",
+            "9353",
+            "9354",
+            "9355",
+            "9356",
+            "9357",
+            "9358",
+            "9359",
+            "9360",
+            "9361",
+            "9362",
+            "9363",
+            "9364",
+            "9365",
+            "9366",
+            "9367",
+            "9368",
+            "9369",
+            "9370",
+            "9371",
+            "9372",
+            "9373",
+            "9374",
+            "9375",
+            "9376",
+            "9377",
+            "9378",
+            "9379",
+            "9380",
+            "9381",
+            "9382",
+            "9383",
+            "9384",
+            "9385",
+            "9386",
+            "9387",
+            "9388",
+            "9389",
+            "9390",
+            "9391",
+            "9392",
+            "9393",
+            "9394",
+            "9395"
+          ],
+          "state_count": 371
+        },
+        {
+          "source_id": "article:b2cf38efbc915bd830523655",
+          "label": "자본시장과 금융투자업에 관한 법률 / 별표 1 금융투자업자 및 그 임직원에 대한 처분 및 업무 위탁계약 취소·변경 명령의 사유(제43조제2항제4호, 제420조제1항제6호·제3항 및 제422조제1항·제2항 관련)",
+          "block_ids": [
+            "6786"
+          ],
+          "state_count": 368
+        },
+        {
+          "source_id": "article:fe82475f0b9f6875cdafebb1",
+          "label": "자본시장과 금융투자업에 관한 법률 시행령 / 별표 20 금융위원회 또는 증권선물위원회가 금융감독원장에게 위탁하는 권한의 범위(제387조제3항 관련)",
+          "block_ids": [
+            "9265"
+          ],
+          "state_count": 219
+        },
+        {
+          "source_id": "article:589ce9166f905c9dc6f31354",
+          "label": "자본시장과 금융투자업에 관한 법률 / 부칙 부칙 <제08863호, 20080229>",
+          "block_ids": [
+            "5614",
+            "5615",
+            "5616",
+            "5617",
+            "5618",
+            "5619",
+            "5620",
+            "5621",
+            "5622",
+            "5623",
+            "5624",
+            "5625",
+            "5626",
+            "5627",
+            "5628",
+            "5629",
+            "5630",
+            "5631",
+            "5632",
+            "5633",
+            "5634",
+            "5635",
+            "5636",
+            "5637",
+            "5638",
+            "5639",
+            "5640",
+            "5641",
+            "5642",
+            "5643",
+            "5644",
+            "5645",
+            "5646",
+            "5647",
+            "5648",
+            "5649",
+            "5650",
+            "5651",
+            "5652",
+            "5653",
+            "5654",
+            "5655",
+            "5656",
+            "5657",
+            "5658",
+            "5659",
+            "5660",
+            "5661",
+            "5662",
+            "5663",
+            "5664",
+            "5665",
+            "5666",
+            "5667",
+            "5668",
+            "5669",
+            "5670",
+            "5671",
+            "5672",
+            "5673",
+            "5674",
+            "5675",
+            "5676",
+            "5677",
+            "5678",
+            "5679",
+            "5680",
+            "5681",
+            "5682",
+            "5683",
+            "5684",
+            "5685",
+            "5686",
+            "5687",
+            "5688",
+            "5689",
+            "5690",
+            "5691",
+            "5692",
+            "5693",
+            "5694",
+            "5695",
+            "5696",
+            "5697",
+            "5698",
+            "5699",
+            "5700",
+            "5701",
+            "5702",
+            "5703",
+            "5704",
+            "5705",
+            "5706",
+            "5707",
+            "5708",
+            "5709",
+            "5710",
+            "5711",
+            "5712",
+            "5713",
+            "5714",
+            "5715",
+            "5716",
+            "5717",
+            "5718",
+            "5719",
+            "5720",
+            "5721",
+            "5722",
+            "5723",
+            "5724",
+            "5725",
+            "5726",
+            "5727",
+            "5728",
+            "5729",
+            "5730",
+            "5731",
+            "5732",
+            "5733",
+            "5734",
+            "5735",
+            "5736",
+            "5737",
+            "5738",
+            "5739",
+            "5740",
+            "5741",
+            "5742",
+            "5743",
+            "5744",
+            "5745",
+            "5746",
+            "5747",
+            "5748",
+            "5749",
+            "5750",
+            "5751",
+            "5752",
+            "5753",
+            "5754",
+            "5755",
+            "5756",
+            "5757",
+            "5758",
+            "5759",
+            "5760",
+            "5761",
+            "5762",
+            "5763",
+            "5764",
+            "5765",
+            "5766",
+            "5767",
+            "5768",
+            "5769",
+            "5770",
+            "5771",
+            "5772",
+            "5773",
+            "5774",
+            "5775",
+            "5776",
+            "5777",
+            "5778",
+            "5779",
+            "5780",
+            "5781",
+            "5782",
+            "5783",
+            "5784",
+            "5785",
+            "5786",
+            "5787",
+            "5788",
+            "5789",
+            "5790",
+            "5791",
+            "5792",
+            "5793",
+            "5794",
+            "5795",
+            "5796",
+            "5797",
+            "5798",
+            "5799"
+          ],
+          "state_count": 182
+        },
+        {
+          "source_id": "article:09ca2ad84dfe78e51a19e2f7",
+          "label": "자본시장과 금융투자업에 관한 법률 / 별표 2 투자회사등에 대한 처분 사유(제253조제1항제7호·제2항 관련)",
+          "block_ids": [
+            "6791"
+          ],
+          "state_count": 179
+        }
+      ],
+      "incoming_outgoing_pivots": [
+        {
+          "sources": [
+            "article:ece2450f99b261c5d36eb688",
+            "article:af4d6957c006feaf9b4ed8b9",
+            "article:af4d6957c006feaf9b4ed8b9"
+          ],
+          "labels": [
+            "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+            "코스닥시장 상장규정 시행세칙 / 제15조 상장주선인의 의무이행 등",
+            "코스닥시장 상장규정 시행세칙 / 제15조 상장주선인의 의무이행 등"
+          ],
+          "state_ids": [
+            "ba97999cd0126e61a4170d2f1ac32365531b30f325ae1bb620a4549bca2a2f2e",
+            "b865d21013a39d2945f1ddeabfc4f51ad92540d7839a770b73304774c2787f15",
+            "846ad818ef19ff286110d0e3baf58c2b3c8ae45faae805412fa83c6737cae9ec"
+          ],
+          "references": [
+            "ref:066aa1f299f64536f57ecfd5",
+            "ref:adc9ef6b7cb3dc9427527e5b"
+          ],
+          "locators": [
+            "제13조제9항",
+            "제6항"
+          ]
+        },
+        {
+          "sources": [
+            "article:ece2450f99b261c5d36eb688",
+            "article:ece2450f99b261c5d36eb688",
+            "article:a70a998a1d8db68d8cfe4cf3"
+          ],
+          "labels": [
+            "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+            "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+            "코스닥시장 상장규정 / 제31조 신속이전기업에 대한 특례"
+          ],
+          "state_ids": [
+            "ba97999cd0126e61a4170d2f1ac32365531b30f325ae1bb620a4549bca2a2f2e",
+            "f22a3928e219386f9f1b010a051ee888a31f9f25d8f85381e0a15e4a9359554e",
+            "721fe0d0131c8b9e889f19884d48855edebb6786589444be486d30c3b251d817"
+          ],
+          "references": [
+            "ref:b27db79942543e43e82cb0aa",
+            "ref:8cd74bb1f1817d3df4358391"
+          ],
+          "locators": [
+            "제5항",
+            "제31조제1항제3호마목"
+          ]
+        },
+        {
+          "sources": [
+            "article:ece2450f99b261c5d36eb688",
+            "article:ece2450f99b261c5d36eb688",
+            "article:a70a998a1d8db68d8cfe4cf3"
+          ],
+          "labels": [
+            "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+            "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+            "코스닥시장 상장규정 / 제31조 신속이전기업에 대한 특례"
+          ],
+          "state_ids": [
+            "ba97999cd0126e61a4170d2f1ac32365531b30f325ae1bb620a4549bca2a2f2e",
+            "e9e4215bf9797f636d299ed3c1980d02a1c23dbf2857ef4eb9e11802417ea724",
+            "721fe0d0131c8b9e889f19884d48855edebb6786589444be486d30c3b251d817"
+          ],
+          "references": [
+            "ref:bee2d5d9471c9b678c44b55a",
+            "ref:8cd74bb1f1817d3df4358391"
+          ],
+          "locators": [
+            "제5항",
+            "제31조제1항제3호마목"
+          ]
+        },
+        {
+          "sources": [
+            "article:ece2450f99b261c5d36eb688",
+            "article:84b29933c65f93c686c2f2ea",
+            "article:84b29933c65f93c686c2f2ea"
+          ],
+          "labels": [
+            "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+            "증권 인수업무 등에 관한 규정 / 제6조 공동주관회사",
+            "증권 인수업무 등에 관한 규정 / 제6조 공동주관회사"
+          ],
+          "state_ids": [
+            "ba97999cd0126e61a4170d2f1ac32365531b30f325ae1bb620a4549bca2a2f2e",
+            "18dbb3ccf80ac25152ceca7357230b4ad0cd1d8625d36b8c03d6eb254085ccb1",
+            "f96064a420abbecf0dad9998b319f58ef7565b6323a5b20ca31d1eec8320d702"
+          ],
+          "references": [
+            "ref:d37bc2c237e4a9d33d5ef96c",
+            "ref:e1e3a84035e0dce6724235fb"
+          ],
+          "locators": [
+            "제13조제5항제1호",
+            "제2항"
+          ]
+        },
+        {
+          "sources": [
+            "article:ece2450f99b261c5d36eb688",
+            "article:84b29933c65f93c686c2f2ea",
+            "article:84b29933c65f93c686c2f2ea"
+          ],
+          "labels": [
+            "코스닥시장 상장규정 / 제13조 상장주선인의 의무",
+            "증권 인수업무 등에 관한 규정 / 제6조 공동주관회사",
+            "증권 인수업무 등에 관한 규정 / 제6조 공동주관회사"
+          ],
+          "state_ids": [
+            "ba97999cd0126e61a4170d2f1ac32365531b30f325ae1bb620a4549bca2a2f2e",
+            "18dbb3ccf80ac25152ceca7357230b4ad0cd1d8625d36b8c03d6eb254085ccb1",
+            "58b6082a3a7545d9c1dfe1397d57c6c332bfbb0dfd19cc47fbf8ff34d98bfee8"
+          ],
+          "references": [
+            "ref:d37bc2c237e4a9d33d5ef96c",
+            "ref:f048a4f39241a108c7452e36"
+          ],
+          "locators": [
+            "제13조제5항제1호",
+            "제1항"
+          ]
+        }
+      ],
+      "unique_scoped_blocks": 34971,
+      "scoped_text_chars": 2993968,
+      "whole_original_text_chars_for_reached_sources": 6831608,
+      "bundle_actually_saved": false,
+      "saved_bundle_original_chars": 0,
+      "removal_preview_inner_checks_per_call_from_code": 324181170,
+      "exclusive_blocks_by_root": {
+        "E7f87ac55fa7692f8d5d008f3e203": 10,
+        "E0d56bb573d2b333037e481f2e97a": 0
+      },
+      "views": [
+        {
+          "view_id": "V79b4c5d4f86649f5a63f0f94706efdcd",
+          "phase": "investigate",
+          "chars": 2275,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 0,
+            "relation_menu": 0,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 2,
+            "relation_menu": 2,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "V39b840ae89a64098a6d0a1249dd85928",
+          "phase": "investigate",
+          "chars": 2369,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 0,
+            "relation_menu": 0,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 2,
+            "relation_menu": 2,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "Ve8994d0f22184d69a99b5d9cae30e324",
+          "phase": "investigate",
+          "chars": 50475,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 0,
+            "relation_menu": 0,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 2,
+            "relation_menu": 2,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 0,
+            "last_action_results": 0,
+            "relation_menu": 0,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "V7235f4fef34f4ee49c380c626cd2ae68",
+          "phase": "investigate",
+          "chars": 43500,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 0,
+            "pending_scopes": 0,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "COMPLETE"
+          },
+          "shown_counts": {
+            "exact_evidence": 4,
+            "relation_menu": 12,
+            "root_removal_impacts": 0
+          },
+          "shown_section_chars": {
+            "exact_evidence": 19392,
+            "relation_menu": 18021,
+            "root_removal_impacts": 2
+          },
+          "omitted_counts": {
+            "exact_evidence": 10,
+            "last_action_results": 0,
+            "relation_menu": 54,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": []
+        },
+        {
+          "view_id": "V9cb308aab0f743cdab2ca13e6b338837",
+          "phase": "investigate",
+          "chars": 59601,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 1494,
+            "pending_scopes": 16076,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "PARTIAL"
+          },
+          "shown_counts": {
+            "exact_evidence": 4,
+            "relation_menu": 4,
+            "root_removal_impacts": 12
+          },
+          "shown_section_chars": {
+            "exact_evidence": 8755,
+            "relation_menu": 6109,
+            "root_removal_impacts": 38404
+          },
+          "omitted_counts": {
+            "exact_evidence": 10,
+            "last_action_results": 2,
+            "relation_menu": 62,
+            "relation_notices": 0,
+            "root_removal_impacts": 572
+          },
+          "impact_hashes": [
+            "336db75026970145ac3305a36088236b72156927d402d9c25164fcc735052593",
+            "336db75026970145ac3305a36088236b72156927d402d9c25164fcc735052593",
+            "336db75026970145ac3305a36088236b72156927d402d9c25164fcc735052593",
+            "336db75026970145ac3305a36088236b72156927d402d9c25164fcc735052593",
+            "336db75026970145ac3305a36088236b72156927d402d9c25164fcc735052593",
+            "336db75026970145ac3305a36088236b72156927d402d9c25164fcc735052593",
+            "336db75026970145ac3305a36088236b72156927d402d9c25164fcc735052593",
+            "336db75026970145ac3305a36088236b72156927d402d9c25164fcc735052593",
+            "336db75026970145ac3305a36088236b72156927d402d9c25164fcc735052593",
+            "336db75026970145ac3305a36088236b72156927d402d9c25164fcc735052593",
+            "336db75026970145ac3305a36088236b72156927d402d9c25164fcc735052593",
+            "336db75026970145ac3305a36088236b72156927d402d9c25164fcc735052593"
+          ]
+        },
+        {
+          "view_id": "Vbf6b68f485134cca84179fec05874734",
+          "phase": "investigate",
+          "chars": 59380,
+          "successful_attempts": 1,
+          "exploration": {
+            "expanded_this_call": 3954,
+            "pending_scopes": 23120,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "PARTIAL"
+          },
+          "shown_counts": {
+            "exact_evidence": 4,
+            "relation_menu": 3,
+            "root_removal_impacts": 12
+          },
+          "shown_section_chars": {
+            "exact_evidence": 8755,
+            "relation_menu": 4532,
+            "root_removal_impacts": 39535
+          },
+          "omitted_counts": {
+            "exact_evidence": 10,
+            "last_action_results": 2,
+            "relation_menu": 63,
+            "relation_notices": 0,
+            "root_removal_impacts": 611
+          },
+          "impact_hashes": [
+            "7b21d6670c02fe2a62a3f77514418bcf343452bed759f330f534c43012ba56cd",
+            "7b21d6670c02fe2a62a3f77514418bcf343452bed759f330f534c43012ba56cd",
+            "7b21d6670c02fe2a62a3f77514418bcf343452bed759f330f534c43012ba56cd",
+            "7b21d6670c02fe2a62a3f77514418bcf343452bed759f330f534c43012ba56cd",
+            "7b21d6670c02fe2a62a3f77514418bcf343452bed759f330f534c43012ba56cd",
+            "7b21d6670c02fe2a62a3f77514418bcf343452bed759f330f534c43012ba56cd",
+            "7b21d6670c02fe2a62a3f77514418bcf343452bed759f330f534c43012ba56cd",
+            "7b21d6670c02fe2a62a3f77514418bcf343452bed759f330f534c43012ba56cd",
+            "7b21d6670c02fe2a62a3f77514418bcf343452bed759f330f534c43012ba56cd",
+            "7b21d6670c02fe2a62a3f77514418bcf343452bed759f330f534c43012ba56cd",
+            "7b21d6670c02fe2a62a3f77514418bcf343452bed759f330f534c43012ba56cd",
+            "7b21d6670c02fe2a62a3f77514418bcf343452bed759f330f534c43012ba56cd"
+          ]
+        },
+        {
+          "view_id": "V3c9a5f988c4847b9b499868bbd14f2cf",
+          "phase": "select_sources",
+          "chars": 34618,
+          "successful_attempts": 0,
+          "exploration": {
+            "expanded_this_call": 2580,
+            "pending_scopes": 28097,
+            "resume": "The next investigate/select_sources view resumes this checkpoint; PARTIAL is never complete.",
+            "status": "PARTIAL"
+          },
+          "shown_counts": {
+            "exact_evidence": 4,
+            "relation_menu": 12,
+            "root_removal_impacts": 2
+          },
+          "shown_section_chars": {
+            "exact_evidence": 8755,
+            "relation_menu": 17859,
+            "root_removal_impacts": 2178
+          },
+          "omitted_counts": {
+            "exact_evidence": 1,
+            "last_action_results": 0,
+            "relation_menu": 57,
+            "relation_notices": 0,
+            "root_removal_impacts": 0
+          },
+          "impact_hashes": [
+            "48aa56a352058904b2065bef1ff9c1987e43c9eb4bc797a8f29cd39aaf2e923c",
+            "037ef0f6d82b8e95d374e7a401c276d4fdd6e1a1966005957d0899e0b494ecb1"
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "code": "MODEL_PROPOSAL_INVALID",
+          "message": "context_refs and answer demands must be disjoint"
+        },
+        {
+          "code": "OPERATION_REJECTED",
+          "owner": "MODEL",
+          "state": "OPEN",
+          "errors": [
+            {
+              "field": "assessments",
+              "message": "Use source choices for relevance. Legal claims are composed and independently reviewed after source selection."
+            }
+          ],
+          "valid_sources": [
+            "E0d56bb573d2b333037e481f2e97a",
+            "E7f87ac55fa7692f8d5d008f3e203",
+            "Ef28066b05d286f99355e1d31a0e9",
+            "Edc8b76d449e6474aee77ec16d79f"
+          ],
+          "preserved_selections": [
+            {
+              "selection_id": "SS4a51aee421dbf7ae89980f80e7a7",
+              "version": 1,
+              "evidence_id": "E7f87ac55fa7692f8d5d008f3e203",
+              "tier": "CORE",
+              "status": "SELECTED"
+            },
+            {
+              "selection_id": "SS84088fcb13e66a49fd79812ba31e",
+              "version": 1,
+              "evidence_id": "E0d56bb573d2b333037e481f2e97a",
+              "tier": "CORE",
+              "status": "SELECTED"
+            }
+          ],
+          "message": "Correct only rejected operations using this view. Successful source choices remain stored."
+        },
+        {
+          "code": "MODEL_PROPOSAL_INVALID",
+          "message": "workflow operations rejected f187a4522fe3; inspect structured errors and retry; valid selections preserved"
+        },
+        {
+          "code": "MODEL_TRANSPORT_ERROR",
+          "message": "model provider temporarily failed"
+        }
+      ],
+      "evidence_count": 15
+    }
+  ],
+  "code_hashes": {
+    "04_EXPERIMENTS/ADR/ADR-0523-gemma-scoped-exploration-probe/artifacts/runtime-guarded/02_BACKEND/semantic_runtime/reference_exploration.py": "2072041658b31f6968d53ffd7f71f7ddf117d703dbe2688e147571058468754e",
+    "04_EXPERIMENTS/ADR/ADR-0523-gemma-scoped-exploration-probe/artifacts/runtime-guarded/02_BACKEND/semantic_runtime/legal_agent/source_selection.py": "9f5ae9cdbc7a02d48b24d6f64826d1ae8fc30ee63be3a7d94bbf24f83c7d2dbb",
+    "04_EXPERIMENTS/ADR/ADR-0523-gemma-scoped-exploration-probe/artifacts/runtime-guarded/02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py": "4c59e13085be95197d92a14860a23865a23849de2ce8fb57cd087c93af77b59a",
+    "04_EXPERIMENTS/ADR/ADR-0523-gemma-scoped-exploration-probe/artifacts/runtime-guarded/02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py": "913916f3a970dbd185e9cd649694b22dddcdf6937c080daed947cbdc71bf2232"
+  },
+  "pivot_reference_witnesses": {
+    "ref:3c422964a89bc19933d739a3": {
+      "id": "ref:3c422964a89bc19933d739a3",
+      "source_id": "article:07664b7d960181ea04b8833a",
+      "document_id": "7bbe815ff43b6635",
+      "block_id": "2127",
+      "source_text": "④주주외의 자에 대하여 신주인수권부사채를 발행하는 경우에 그 발행할 수 있는 신주인수권부사채의 액, 신주인수권의 내용과 신주인수권을 행사할 수 있는 기간에 관하여 정관에 규정이 없으면 제434조의 결의로써 이를 정하여야 한다. 이 경우 제418조제2항 단서의 규정을 준용한다. <개정 2001.7.24>",
+      "source_text_sha256": "3b66dfb74da37155a0831e65c2533b3eb766fac5a513ad0ca9e7d8ea5f06c82d",
+      "mention_text": "제434조",
+      "mention_text_sha256": "e54ee74cb61b0c3d694cce4fee4766f8c212dde260a2b38e649edb27700d3a18",
+      "locator": "제434조",
+      "mention_start": 103,
+      "mention_end": 108,
+      "document_name_hint": null,
+      "target_source_ids": [
+        "article:816aee85d53f84a3b2f322dd"
+      ],
+      "targets": [
+        {
+          "source_id": "article:816aee85d53f84a3b2f322dd",
+          "unit_id": null,
+          "unit_path": [],
+          "block_ids": [],
+          "target_level": "article"
+        }
+      ],
+      "target_unit_ids": [
+        null
+      ],
+      "document_hint_basis": null,
+      "source_unit_id": "2127",
+      "source_unit_path": [
+        "④"
+      ],
+      "source_block_ids": [
+        "2127"
+      ],
+      "source_level": "provision",
+      "target_unit_id": null,
+      "target_unit_path": [],
+      "target_block_ids": [],
+      "target_level": "article",
+      "reference_role": "CITES",
+      "reference_role_basis": "mention_following_clause",
+      "resolution": "EXACT_SAME_DOCUMENT_ARTICLE",
+      "resolution_state": "RESOLVED",
+      "resolution_basis": "deterministic",
+      "review_receipt_sha256": null,
+      "case_id": "refcase:f931bb4c8f38f7f8e91fc82f51d1fb17",
+      "reason": null,
+      "navigation_hint": "준용 단서",
+      "origins": [
+        "raw_explicit_article_hint"
+      ],
+      "canonical_approval": false,
+      "inspection_targets": [],
+      "coordinate_status": "EXACT",
+      "relation_contract": "reference-scope-v1",
+      "source_namespace": "body"
+    },
+    "ref:82537c3384a3ca9814bc4d71": {
+      "id": "ref:82537c3384a3ca9814bc4d71",
+      "source_id": "article:07664b7d960181ea04b8833a",
+      "document_id": "7bbe815ff43b6635",
+      "block_id": "2127",
+      "source_text": "④주주외의 자에 대하여 신주인수권부사채를 발행하는 경우에 그 발행할 수 있는 신주인수권부사채의 액, 신주인수권의 내용과 신주인수권을 행사할 수 있는 기간에 관하여 정관에 규정이 없으면 제434조의 결의로써 이를 정하여야 한다. 이 경우 제418조제2항 단서의 규정을 준용한다. <개정 2001.7.24>",
+      "source_text_sha256": "3b66dfb74da37155a0831e65c2533b3eb766fac5a513ad0ca9e7d8ea5f06c82d",
+      "mention_text": "제418조제2항 ",
+      "mention_text_sha256": "dea3752fbb7056cd0314df637971c8e5f8465e8cd718e879eb12af0feb762db9",
+      "locator": "제418조제2항",
+      "mention_start": 132,
+      "mention_end": 141,
+      "document_name_hint": null,
+      "target_source_ids": [
+        "article:1c6b009f0451e03f15309839"
+      ],
+      "targets": [
+        {
+          "source_id": "article:1c6b009f0451e03f15309839",
+          "unit_id": "1701",
+          "unit_path": [
+            "②"
+          ],
+          "block_ids": [
+            "1701"
+          ],
+          "target_level": "provision"
+        }
+      ],
+      "target_unit_ids": [
+        "1701"
+      ],
+      "document_hint_basis": null,
+      "source_unit_id": "2127",
+      "source_unit_path": [
+        "④"
+      ],
+      "source_block_ids": [
+        "2127"
+      ],
+      "source_level": "provision",
+      "target_unit_id": "1701",
+      "target_unit_path": [
+        "②"
+      ],
+      "target_block_ids": [
+        "1701"
+      ],
+      "target_level": "provision",
+      "reference_role": "APPLIES_MUTATIS_MUTANDIS",
+      "reference_role_basis": "mention_following_clause",
+      "resolution": "EXACT_SAME_DOCUMENT_ARTICLE",
+      "resolution_state": "RESOLVED",
+      "resolution_basis": "deterministic",
+      "review_receipt_sha256": null,
+      "case_id": "refcase:49136bd1b610730b72760c641e29a255",
+      "reason": null,
+      "navigation_hint": "준용 단서",
+      "origins": [
+        "raw_explicit_article_hint"
+      ],
+      "canonical_approval": false,
+      "inspection_targets": [],
+      "coordinate_status": "EXACT",
+      "relation_contract": "reference-scope-v1",
+      "source_namespace": "body"
+    },
+    "ref:1e1f66d991f5c19b7047ceb1": {
+      "id": "ref:1e1f66d991f5c19b7047ceb1",
+      "source_id": "article:f3419407510ebe8e726e7ede",
+      "document_id": "0798989e52ca0254",
+      "block_id": "2382",
+      "source_text": "제2조의2제1항제3호가목ㆍ나목, 제8조제1항제3호, 제9조제1항, 제11조제1항제2호 후단, 제15조제2항제3호, 같은 조 제4항, 같은 조 제8항제2호다목, 같은 조 제22항ㆍ제23항, 제16조제3항 각 호 외의 부분, 같은 조 제6항제7호, 같은 조 제11항ㆍ제12항, 제17조제3항, 제18조제2항, 같은 조 제4항 전단, 제19조제1항ㆍ제3항, 제20조제3항, 제20조의2제2항제2호ㆍ제3호, 제21조제2항, 제26조제5항 단서, 제27조제2항 후단, 같은 조 제3항 계산식 외의 부분 전단, 같은 항 계산식, 제30조제1항제2호 각 목 외의 부분 본문, 제31조의2제3항제2호, 같은 조 제4항제2호, 제31조의3제5항 각 호 외의 부분 전단, 같은 항 제1호, 제31조의4제1항 본문, 제32조제3항제1호, 제33조제2항, 제34조의3제1항 각 호 외의 부분 본문, 같은 조 제3항제1호, 제34조의4제2항, 같은 조 제3항 단서, 제38조제13항제1호 각 목 외의 부분, 제39조제2항제2호, 제40조제1항제2호의2 계산식, 제41조제1항 각 호 외의 부분, 같은 항 제5호, 같은 조 제2항ㆍ제3항, 제41조의2제7항ㆍ제9항, 제43조제5항제4호, 같은 조 제6항ㆍ제8항, 제43조의2제1항제3호, 같은 조 제2항 본문, 같은 조 제13항, 제43조의3제6항, 제43조의4제7항 전단, 같은 조 제8항제3호, 같은 조 제10항 전단, 제43조의5제4항, 제43조의6제2항, 제45조의2제7항ㆍ제8항, 같은 조 제9항제1호, 제49조제1항제2호 각 목 외의 부분 본문, 같은 조 제4항, 같은 조 제8항 전단, 제50조제7항 계산식, 제51조제1항 전단, 같은 조 제2항 본문, 같은 조 제4항 전단, 제52조제3항제1호, 제52조의2제3항, 제54조제1항 계산식, 제55조제2항, 제56조제2항 각 호 외의 부분, 같은 항 제1호, 같은 조 제3항 단서, 같은 조 제4항제1호마목, 같은 항 제2호다목, 같은 조 제5항제1호ㆍ제2호, 제57조제3항, 제58조제1항제2호나목 단서, 같은 조 제2항 본문, 제58조의2제2항제1호가목 전단, 제58조의3제2항, 제59조제2항 계산식 외의 부분 본문, 같은 항 계산식, 같은 조 제5항 전단ㆍ후단, 같은 조 제6항 본문, 제61조제1항제2호나목 계산식 외의 부분, 같은 목 계산식, 제62조제1호 계산식, 제63조제2항, 제64조제1항, 같은 조 제2항제2호, 제65조제1항, 제67조제1항 본문, 제69조의2제1항제1호, 제69조의3제8항, 제70조제8항, 제71조제1항제1호라목, 같은 항 제2호마목, 제74조제1항제2호 각 목 외의 부분 본문, 제75조제1항제1호 본문ㆍ단서, 같은 항 제3호라목, 제75조의2제3항 후단, 제75조의3제5항, 제75조의4제1항제4호, 제76조제6항ㆍ제7항, 제80조제10항 전단, 제84조제1항 본문, 같은 조 제2항ㆍ제3항ㆍ제5항, 같은 조 제8항 각 호 외의 부분, 제87조제1항제5호 및 같은 조 제2항 중 \"기획재정부령\"을 각각 \"재정경제부령\"으로 한다.",
+      "source_text_sha256": "212426b3f0332874acc385bd4f230cb0837861732ec6645973969631da3cf1da",
+      "mention_text": "제31조의3제5항 ",
+      "mention_text_sha256": "9a99a00021b3b54e403dae7fad84995dabf0b8bdaa505fa7066bb62f74494a92",
+      "locator": "제31조의3제5항",
+      "mention_start": 342,
+      "mention_end": 352,
+      "document_name_hint": null,
+      "target_source_ids": [
+        "article:11be547c87ef4628bd4effab"
+      ],
+      "targets": [
+        {
+          "source_id": "article:11be547c87ef4628bd4effab",
+          "unit_id": "507",
+          "unit_path": [
+            "⑤"
+          ],
+          "block_ids": [
+            "507",
+            "508",
+            "509"
+          ],
+          "target_level": "provision"
+        }
+      ],
+      "target_unit_ids": [
+        "507"
+      ],
+      "document_hint_basis": null,
+      "source_unit_id": "2156",
+      "source_unit_path": [
+        "제6조",
+        "<41>"
+      ],
+      "source_block_ids": [
+        "2381",
+        "2382",
+        "2383"
+      ],
+      "source_level": "provision",
+      "target_unit_id": "507",
+      "target_unit_path": [
+        "⑤"
+      ],
+      "target_block_ids": [
+        "507",
+        "508",
+        "509"
+      ],
+      "target_level": "provision",
+      "reference_role": "UNKNOWN",
+      "reference_role_basis": "mention_following_clause",
+      "resolution": "EXACT_SAME_DOCUMENT_ARTICLE",
+      "resolution_state": "RESOLVED",
+      "resolution_basis": "deterministic",
+      "review_receipt_sha256": null,
+      "case_id": "refcase:0a08b4af891d5a89d5fabd6137411b65",
+      "reason": null,
+      "navigation_hint": "인용 단서",
+      "origins": [
+        "raw_explicit_article_hint"
+      ],
+      "canonical_approval": false,
+      "inspection_targets": [],
+      "coordinate_status": "EXACT",
+      "relation_contract": "reference-scope-v1",
+      "source_namespace": "supplement"
+    },
+    "ref:002048d8449af987f9e17c2e": {
+      "id": "ref:002048d8449af987f9e17c2e",
+      "source_id": "article:f3419407510ebe8e726e7ede",
+      "document_id": "0798989e52ca0254",
+      "block_id": "2382",
+      "source_text": "제2조의2제1항제3호가목ㆍ나목, 제8조제1항제3호, 제9조제1항, 제11조제1항제2호 후단, 제15조제2항제3호, 같은 조 제4항, 같은 조 제8항제2호다목, 같은 조 제22항ㆍ제23항, 제16조제3항 각 호 외의 부분, 같은 조 제6항제7호, 같은 조 제11항ㆍ제12항, 제17조제3항, 제18조제2항, 같은 조 제4항 전단, 제19조제1항ㆍ제3항, 제20조제3항, 제20조의2제2항제2호ㆍ제3호, 제21조제2항, 제26조제5항 단서, 제27조제2항 후단, 같은 조 제3항 계산식 외의 부분 전단, 같은 항 계산식, 제30조제1항제2호 각 목 외의 부분 본문, 제31조의2제3항제2호, 같은 조 제4항제2호, 제31조의3제5항 각 호 외의 부분 전단, 같은 항 제1호, 제31조의4제1항 본문, 제32조제3항제1호, 제33조제2항, 제34조의3제1항 각 호 외의 부분 본문, 같은 조 제3항제1호, 제34조의4제2항, 같은 조 제3항 단서, 제38조제13항제1호 각 목 외의 부분, 제39조제2항제2호, 제40조제1항제2호의2 계산식, 제41조제1항 각 호 외의 부분, 같은 항 제5호, 같은 조 제2항ㆍ제3항, 제41조의2제7항ㆍ제9항, 제43조제5항제4호, 같은 조 제6항ㆍ제8항, 제43조의2제1항제3호, 같은 조 제2항 본문, 같은 조 제13항, 제43조의3제6항, 제43조의4제7항 전단, 같은 조 제8항제3호, 같은 조 제10항 전단, 제43조의5제4항, 제43조의6제2항, 제45조의2제7항ㆍ제8항, 같은 조 제9항제1호, 제49조제1항제2호 각 목 외의 부분 본문, 같은 조 제4항, 같은 조 제8항 전단, 제50조제7항 계산식, 제51조제1항 전단, 같은 조 제2항 본문, 같은 조 제4항 전단, 제52조제3항제1호, 제52조의2제3항, 제54조제1항 계산식, 제55조제2항, 제56조제2항 각 호 외의 부분, 같은 항 제1호, 같은 조 제3항 단서, 같은 조 제4항제1호마목, 같은 항 제2호다목, 같은 조 제5항제1호ㆍ제2호, 제57조제3항, 제58조제1항제2호나목 단서, 같은 조 제2항 본문, 제58조의2제2항제1호가목 전단, 제58조의3제2항, 제59조제2항 계산식 외의 부분 본문, 같은 항 계산식, 같은 조 제5항 전단ㆍ후단, 같은 조 제6항 본문, 제61조제1항제2호나목 계산식 외의 부분, 같은 목 계산식, 제62조제1호 계산식, 제63조제2항, 제64조제1항, 같은 조 제2항제2호, 제65조제1항, 제67조제1항 본문, 제69조의2제1항제1호, 제69조의3제8항, 제70조제8항, 제71조제1항제1호라목, 같은 항 제2호마목, 제74조제1항제2호 각 목 외의 부분 본문, 제75조제1항제1호 본문ㆍ단서, 같은 항 제3호라목, 제75조의2제3항 후단, 제75조의3제5항, 제75조의4제1항제4호, 제76조제6항ㆍ제7항, 제80조제10항 전단, 제84조제1항 본문, 같은 조 제2항ㆍ제3항ㆍ제5항, 같은 조 제8항 각 호 외의 부분, 제87조제1항제5호 및 같은 조 제2항 중 \"기획재정부령\"을 각각 \"재정경제부령\"으로 한다.",
+      "source_text_sha256": "212426b3f0332874acc385bd4f230cb0837861732ec6645973969631da3cf1da",
+      "mention_text": "제31조의2제3항제2호",
+      "mention_text_sha256": "0f67b5caff6c32490a8147c4bce9f266314e7a1865cefc32b50615efa817486d",
+      "locator": "제31조의2제3항제2호",
+      "mention_start": 315,
+      "mention_end": 327,
+      "document_name_hint": null,
+      "target_source_ids": [
+        "article:27376b16e32c44ab8e0e1514"
+      ],
+      "targets": [
+        {
+          "source_id": "article:27376b16e32c44ab8e0e1514",
+          "unit_id": "491",
+          "unit_path": [
+            "③",
+            "2."
+          ],
+          "block_ids": [
+            "491"
+          ],
+          "target_level": "provision"
+        }
+      ],
+      "target_unit_ids": [
+        "491"
+      ],
+      "document_hint_basis": null,
+      "source_unit_id": "2156",
+      "source_unit_path": [
+        "제6조",
+        "<41>"
+      ],
+      "source_block_ids": [
+        "2381",
+        "2382",
+        "2383"
+      ],
+      "source_level": "provision",
+      "target_unit_id": "491",
+      "target_unit_path": [
+        "③",
+        "2."
+      ],
+      "target_block_ids": [
+        "491"
+      ],
+      "target_level": "provision",
+      "reference_role": "UNKNOWN",
+      "reference_role_basis": "mention_following_clause",
+      "resolution": "EXACT_SAME_DOCUMENT_ARTICLE",
+      "resolution_state": "RESOLVED",
+      "resolution_basis": "deterministic",
+      "review_receipt_sha256": null,
+      "case_id": "refcase:d5280a69b6c001c2977a587c9fc91fd4",
+      "reason": null,
+      "navigation_hint": "인용 단서",
+      "origins": [
+        "raw_explicit_article_hint"
+      ],
+      "canonical_approval": false,
+      "inspection_targets": [],
+      "coordinate_status": "EXACT",
+      "relation_contract": "reference-scope-v1",
+      "source_namespace": "supplement"
+    }
+  },
+  "limitations": [
+    "No graph replay, evaluator, model calls, code fix, DB rebuild or activation.",
+    "Physical-extent grouping is diagnostic, not a proposed blind deduplication: return guards have semantics.",
+    "Recorded partial graphs only; no causal attribution of all reached sources to any single defect.",
+    "Whole-original characters quantify preservation footprint, not model-delivered token count.",
+    "Removal preview check count is a code-derived operation count, not measured wall time."
+  ]
+}

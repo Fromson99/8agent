@@ -1,0 +1,72 @@
+{
+  "schema_version": "genos-reference-build-plan-evidence-v1",
+  "created_at": "2026-10-03T07:33:17.137199+00:00",
+  "scope": "planning and source inspection only",
+  "plan": {
+    "path": "07_DOCS/REFERENCE/REPORTS/GENOS_REFERENCE_BUILD_PLAN_20261003/PLAN.md",
+    "sha256": "6770d1395a4a5313e038c928ad141293ad80897eeefda4320a45d78397fa5ec9"
+  },
+  "review_mode": "author self-review, not independent review",
+  "git_head": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "file_pins": {
+    "AGENTS.md": "c5d7a102d06c85f2f3d69b6c86296261dadc8d2a6debb2b44e954bebf5a9879b",
+    "GENOS.md": "2ff42b8de81b316979073e9e2f7b0daa168bb26a5517f1fd07adc1361bfe1549",
+    "00_SYSTEM/ARCHITECTURE.md": "cc45bb14b2a0acecdd2102e540c1fe667aff2cd33284afc44ed90b31525203f6",
+    "00_SYSTEM/DATA_MODEL.md": "155fa0ba99472072eb1fc3c28b9590bf09043b03c09d77629ac5520c5234b270",
+    "00_SYSTEM/PIPELINE.json": "566cab62e3b077266a537906593224ec9b34738caba25f69460b908077d086ca",
+    "00_SYSTEM/WORKSPACE.json": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6",
+    "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json": "c860cfdb1a57968df4740c1bf2bf08947dfa15c1edbcb7c14d31f85773af3b32",
+    "02_BACKEND/semantic_runtime/term_references_legacy.py": "626e0debb573a738dc48ac2ba006adad9e93f49ecd258cc176914efa049058db",
+    "02_BACKEND/semantic_runtime/term_references.py": "b75735d18c2487b617ad6faff10374f2c6c0d0546575bbc41e456185755268db",
+    "02_BACKEND/semantic_runtime/term_index.py": "db41f6e494a275ff3e2bead52a9f38346e4f6c8c5e2a5d68e9f2fc0a51617b26",
+    "02_BACKEND/semantic_runtime/term_links.py": "920f58ab442edf53b5d870e391736dbec35ffedf3d52b894fc2714779ea65a91",
+    "02_BACKEND/semantic_runtime/navigation_storage.py": "2a21c8148816131a19f322834b0da9634254ab764c1504e8fe25ec9755029542",
+    "02_BACKEND/semantic_runtime/compact_storage.py": "65758765dedce82793fa4937d99dc40006cbc0b851fffc981e2764ef14557280",
+    "02_BACKEND/lawrag/pipeline/generation_build_steps.py": "9222fb1990998b2a328fef7e163d029a1456cb800a7ea6b07b84c137f26a4b9b",
+    "02_BACKEND/lawrag/pipeline/term_generation.py": "9bd8376b8ffe389ed233ecefa5ca80bb896042b0dd978cead649118470986203",
+    "02_BACKEND/lawrag/pipeline/reference_resolution.py": "bb37e61081c3fd6cafb6654029fcb94a52285f1214294b06d36a0deb89f992d1",
+    "02_BACKEND/lawrag/pipeline/term_serving_bundle.py": "0f283b41943befbf81fba50c1d0c1b10e555b0da102be2ddfb1f995518392cf6",
+    "06_TOOLS/OFFLINE/genos_reindex_runner.py": "94c9349ccb4a4a3a3b49682ec0143a3d7b3de6460301bd9a6d30cdaffa1dddc4",
+    "06_TOOLS/OFFLINE/genos_reindex_only.py": "8687f8848f57788b4ba7397cf40a1a3f1aaabd5d1e03010f5f212fdf458a2a67",
+    "06_TOOLS/COMMANDS/genos_generation_e2e.py": "3bad2c18ff813a23f39ff1bd96794ce942316f382e40544919de016fc67ee498",
+    "09_ARTIFACTS/AUDITS/20261002-navigation-timing-correction/receipt.json": "7a594b4a7bdab0dfec52019776b803a85a53d0221e67e6877ad348c770fa493e",
+    "09_ARTIFACTS/AUDITS/20261002-navigation-timing-correction/photo2-timing-crop.png": "2f287ea6eba26510f58c7632fc622148af979ea08fd8e72d89be1014d00f1bf5",
+    "08_DEPLOYMENT/GENOS/handoffs/compact_lifecycle_20261003_r2/CODE_MANIFEST.json": "6ec26b4191b789ed455f91e40c01e40575504459084818cdd6856cf1e9581448",
+    "08_DEPLOYMENT/GENOS/handoffs/compact_lifecycle_20261003_r2/GENOS_COMPACT_LIFECYCLE_GUIDE_UTF8.txt": "bed00d968636259490b88eb05573f53bf25d56ab9dfe93e33705ec1c15d9e7a3"
+  },
+  "checks": {
+    "local_links": 10,
+    "broken_links": 0,
+    "existing_test_files": 8,
+    "proposal_helper_exists": false
+  },
+  "numerical_review": {
+    "navigation_seconds": 33384.2,
+    "navigation_hms": [
+      9,
+      16,
+      24.2
+    ],
+    "generation_elapsed_seconds": 34002.4,
+    "observed_navigation_bytes": 25666207744,
+    "observed_navigation_decimal_gb": 25.666207744,
+    "proposed_name_latency_reduction": 0.5,
+    "proposed_whole_build_latency_reduction": 0.2,
+    "performance_targets_are_predictions": false
+  },
+  "status": {
+    "source_implementation_changed": false,
+    "new_experiment_reserved": false,
+    "new_measurements_run": false,
+    "llm_calls": 0,
+    "genos_access_attempted": false,
+    "genos_deployed": false,
+    "main_activated": false
+  },
+  "limitations": [
+    "Historical field run has no complete code/input identity for direct paired comparison.",
+    "Title scan replacement and new audit storage contract are proposals, not implemented.",
+    "New audit storage must support both read and write consumers before selection.",
+    "GENOS runtime and resource forecasts remain unmeasured."
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:legal-agent-control-final-design-v1",
+  "description": "Internal server-generated control proposal. Shape validation alone does not validate binding, revisions, permissions, semantic truth, or budget.",
+  "$ref": "#/$defs/StageControl",
+  "$defs": {
+    "StageControl": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "RESEARCH",
+            "RECOMPOSE",
+            "FINAL"
+          ]
+        },
+        "event_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "query_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "binding_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "expected_state_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "answer_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "issue_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "challenge_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "reason_code": {
+          "enum": [
+            "MISSED_QUALIFIER",
+            "UNSUPPORTED_CLAIM",
+            "CONFLICTING_SOURCE",
+            "MISSING_FACT",
+            "WRONG_SCOPE_OR_VERSION",
+            "CITATION_FORMAT_ERROR",
+            "DATA_GAP",
+            "FORMAT_REPAIR",
+            "GATE_ASSESSED",
+            "BUDGET_EXHAUSTED",
+            "NO_PROGRESS"
+          ]
+        },
+        "gate": {
+          "enum": [
+            "READY",
+            "BOUNDED",
+            "CLARIFY"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "event_id",
+        "run_id",
+        "query_id",
+        "binding_hash",
+        "expected_state_revision",
+        "evidence_revision",
+        "answer_revision",
+        "issue_ids",
+        "challenge_ids",
+        "reason_code"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "FINAL"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "gate"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "gate"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "RESEARCH"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "issue_ids": {
+                "minItems": 1
+              },
+              "challenge_ids": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

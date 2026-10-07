@@ -1,0 +1,189 @@
+{
+  "schema": "rag-structural-read-design-evidence-v1",
+  "date": "2026-10-06",
+  "status": "design_only",
+  "review": "author_self_review_not_independent",
+  "question": "내부 회계 관리자는 누가 지정하나요?",
+  "environments": {
+    "local_active_release": "sql-ad-mode-v6-20261006-r1",
+    "local_active_pointer_generation": 41,
+    "public_generation": "term-source-1acfbe06921527e74a0b",
+    "genos_current_revision": "unconfirmed",
+    "genos_current_generation": "unconfirmed"
+  },
+  "scope_notes": [
+    "No runtime implementation, model execution, data rebuild, deployment or new mail in this design task.",
+    "Prior runs are diagnostic observations, not a controlled comparison of granularity.",
+    "ADR-0659 uses shipped search/read/stop code and a local compatible glossary compiler.",
+    "No detailed performance forecast or independent legal accuracy certification."
+  ],
+  "metrics": {
+    "M1": {
+      "kind": "observed_prior_run",
+      "source_adr": "ADR-0658",
+      "requests": 1,
+      "http_status": 200,
+      "request_seconds": 165.28,
+      "original_sources": 198,
+      "native_read_pages": 446
+    },
+    "M2": {
+      "kind": "observed_prior_run",
+      "source_adr": "ADR-0658",
+      "source": "금융투자업규정시행세칙 별지1 별책서식1",
+      "characters": 216354,
+      "read_pages": 142,
+      "read_handler_seconds_sum": 54.323,
+      "total_read_stage_seconds": 70.9
+    },
+    "M3": {
+      "kind": "observed_prior_run",
+      "source_adr": "ADR-0659",
+      "requests": 1,
+      "http_status": 422,
+      "request_seconds": 131.157,
+      "candidate_roots": 96,
+      "acquired_groups": 12,
+      "unique_read_roots": 11,
+      "native_read_pages": 17
+    },
+    "M4": {
+      "kind": "observed_prior_run",
+      "source_adr": "ADR-0659",
+      "initial_form_annex_groups": 8,
+      "initial_groups_denominator": 12,
+      "relation_groups": 20,
+      "presented_first_menu_groups": 10
+    },
+    "T1": {
+      "kind": "target",
+      "request_seconds_max": 120,
+      "basis": "User reported historical approximately two minute completion; no candidate or GENOS measurement"
+    },
+    "T2": {
+      "kind": "proposed_invariant",
+      "unrelated_candidate_reads_after_ready": 0
+    },
+    "T3": {
+      "kind": "hypothesis",
+      "direction": "Reduce repeated planning, block acquisition and relation-triggered recall; magnitude unmeasured"
+    },
+    "U1": {
+      "kind": "unknown",
+      "latency_savings_seconds": null,
+      "token_savings": null,
+      "cost_savings_usd": null,
+      "implementation_person_days": null
+    }
+  },
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "c5d7a102d06c85f2f3d69b6c86296261dadc8d2a6debb2b44e954bebf5a9879b"
+    },
+    {
+      "path": "GENOS.md",
+      "sha256": "f22616c4f006595b6388527e66b567a430e96a946006709f8cfd8382453b028a"
+    },
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "afbe742fd8e7800d0878ce4229e849def7198c2e7e6d209c0edbcbe2208c4831"
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "sha256": "e574b62e2a7e7c6a84f2b548741a383103a4a9c7ad4560ee78dd222f9ec00ff8"
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6"
+    },
+    {
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "sha256": "912d65161ba5d4230afefec26b9729401d3b70d561b1150f2302deb2d298ed24"
+    },
+    {
+      "path": "service.py",
+      "sha256": "c6a601da9d6cf037375ae548b5d6b38ee37ecd294c32fb7479879c68276ac3a7"
+    },
+    {
+      "path": "service/service.py",
+      "sha256": "c13c68119144a0991754ae5542996c8d0ed3affc1638248a18984b82723436b5"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/unit_fulltext.py",
+      "sha256": "c1d608dd48927c30b9d7946866c73bbacb0213d457bbb97dde266bfd6d00f473"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall.py",
+      "sha256": "4c1504b05f54543889ecb76d51b931f45840f3255f7790c9b1bc83811cfc9370"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_selection.py",
+      "sha256": "67a79d933ccd0e4c1a5ea7429590a6351e9a1d10c5b0dd1efd4942c155df311a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "sha256": "0953d2a60c70634616d9093e92eb0fa62965c8db7dbc329e5c3dfad0403ebac2"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_selection.py",
+      "sha256": "d8fbd21020c695c146c502e73469a63cf5621fa5eb2d9c2a5d2ea1b16636407e"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+      "sha256": "6ad2cb1db113c327bb1c03a6c7c487aadf36a9397139341b56ee7da62d5a7f9d"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relation_read_policy.py",
+      "sha256": "f6e95a0f5a6e26f8b904306178904dcc8a66fc2c31848a1e0a86a4c514c212d8"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+      "sha256": "4e8b1e0a50fc8af664972e1867d262d9d3b9dc961208f9b91badaecbad0c5270"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "sha256": "2bfaf7aaf146d876905fa52f5020bbb10c18ba49ddb785394a5f1a16f2946778"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "sha256": "f8051c010588c9792c53ae9812b9699c71641aa1e3d378356f6204be7ec0f912"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/procedure_memory.py",
+      "sha256": "43a2cb11796a3d4c8511084e7257c9ee48070115ea293310b9e202827aeaaaa5"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/MINIMUM_UNIT_FULLTEXT_20261002.md",
+      "sha256": "9fd4c45ad752a2c7a8fe957f363749d322ef8d2fabf169cef8a7580b9537926a"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0658-internal-accounting-manager-local-probe/README.md",
+      "sha256": "3a5c76cdf841c6024d75c78d8e6c9954b7da2ad4c69a84d8d78e2fa2f9651f68"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0658-internal-accounting-manager-local-probe/artifacts/run-001/data-history-check.json",
+      "sha256": "aa13e6180e54197f30c6983f812624255445b913beb3490fa5df5c1be77eb379"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0658-internal-accounting-manager-local-probe/artifacts/run-001/read-breakdown.json",
+      "sha256": "676d87eeb8b196fd8b0f2ccf83bdb84d4c7922e42a90d03a66991ba971a187a1"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0658-internal-accounting-manager-local-probe/artifacts/run-001/timing-and-source-history.json",
+      "sha256": "1c64a6d3846a59f121b4b65491de4d53577a083c4dae1996b3b15edc9d85dbf5"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0659-internal-accounting-manager-stop-probe/README.md",
+      "sha256": "56e65f01c83074412ecbe8c7e5a04794bb01e7aa9dc469a96c43bc446b29a11f"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0659-internal-accounting-manager-stop-probe/artifacts/diagnostic.json",
+      "sha256": "a48609cdc6f0065de412b8ace0d6b7146131c34cf45dccc2c17c31c1d6913bfd"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0659-internal-accounting-manager-stop-probe/artifacts/stage-ledger.json",
+      "sha256": "bfad543e6980f3172a43e3c67d45c030c0b8658d11eb9b72817ea5b75da4c16a"
+    }
+  ]
+}

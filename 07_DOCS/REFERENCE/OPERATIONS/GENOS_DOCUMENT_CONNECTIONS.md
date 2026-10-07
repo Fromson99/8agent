@@ -10,14 +10,16 @@ A 내부·외부 RAW 전체 → 파싱·PDF 구조 복원 → STRUCTURE/source.s
   → B 전체 완료 확인 → 명시한 기존 세대 + 이번 구조화 원문 통합
   → C 기존 사전의 미검토 후보 유지 + 문서의 새로운 명시 정의 후보 추가
   → D 동일 근거의 완료 검토 재사용 → 나머지 후보를 하나의 GENOS 계획으로 검토
-  → E 검토된 사전으로 통합 원문 전체의 표기·별칭·번역·정의·참조 연결
-  → F navigation-v3·사전·지식 묶음·캐시를 하나의 서빙 후보로 검증
+  → E 검토된 사전으로 통합 원문 전체의 표기·별칭·번역·정의·결정론 참조 연결
+  → 선택: 같은 baseline에 결속된 명시 참조 observation을 검토·승인
+  → F 승인 overlay를 적용한 navigation-v4·사전·지식 묶음·캐시를 하나의 서빙 후보로 검증
   → 별도 명시 활성화 → GENOS 프로세스 재시작·현장 확인
 ```
 
 시스템은 표기 매칭·좌표·원문 해시·공식 관계·명시 참조·충돌·버전·재개·인용 검증을 처리한다.
 LLM/VLM은 PDF 구조 검수, 정의 쌍의 의미·관계 판단, 질의 시 탐색 방향·근거 채택·답변을 담당한다.
 문서별 연결·색인에는 모델 호출이 없다. LLM이 정의의 법적 적용 범위를 자동 승인하지 않는다.
+명시 참조 모델 observation도 자동 연결하지 않으며, 완료된 운영자 검토 state를 명시한 구축에서만 반영한다.
 
 ## 반입과 입력
 
@@ -30,6 +32,11 @@ LLM/VLM은 PDF 구조 검수, 정의 쌍의 의미·관계 판단, 질의 시 �
 
 ## 구축과 재개
 
+각 단계를 따로 실행하거나 일부 구조화 실패를 보류한 채 성공분부터 처리하려면
+[단계별 실행](GENOS_RELEASE_STAGES.md)을 따른다. `document-release select`로 새 실행 범위와
+제외 감사 기록을 고정한 뒤 `merge` → `prepare` → `review` → `index` → `verify`로 이어간다.
+원래 전체 구조화 실행을 성공으로 바꾸지 않으며, `build-all`의 전체 완료 검사는 유지한다.
+
 GENOS 코드스페이스에서 실행한다. 다음 경로는 현장에 반입한 실제 절대 경로로 바꾼다.
 
 ```bash
@@ -38,6 +45,20 @@ GENOS 코드스페이스에서 실행한다. 다음 경로는 현장에 반입�
   --base-generation /현장/data/기존세대 \
   --max-review-jobs 100 --execute
 ```
+
+명시 참조 검토를 반영할 때만 같은 결정론 baseline에 결속된 완료 state를 추가한다. 미완료 state는
+`REFERENCE_REVIEW_PENDING`으로 중단되고, 옵션을 생략하면 모델 호출 없이 결정론 참조만 포함한다.
+
+```bash
+.venv/bin/python -B 06_TOOLS/pipeline.py build-all \
+  --run-id additions-001-reviewed \
+  --base-generation /현장/data/기존세대 \
+  --reference-review-state /현장/data/REFERENCE_REVIEWS/review-001 \
+  --max-review-jobs 100 --execute
+```
+
+state 준비·모델 관측·운영자 검토 절차는 [명시 참조 해소 운영 계약](REFERENCE_RESOLUTION.md)을 따른다.
+state의 parent generation과 이 release가 재현한 baseline의 manifest/navigation 해시가 다르면 적용은 실패한다.
 
 다음 추가 구축에서 이전 검토를 재사용하려면 `--glossary-dir /현장/논리data/TERM_RELEASES/<이전run>/glossary-reviewed`를 함께 지정한다. 완료 영수증·검토 DB 해시를 확인한 뒤 완료 관측을 보존하며, 근거·후보·검토 계약이 같은 작업만 재사용한다. 미검토·근거 변경·새 정의 후보는 통합 검토한다. 이전 release의 검토 디렉터리도 보존한다.
 
@@ -75,7 +96,7 @@ GENOS 코드스페이스에서 실행한다. 다음 경로는 현장에 반입�
 | `glossary-draft` | 기존 미검토 후보·완료 관측 + 새 정의 후보를 보존한 통합 초안 |
 | `review` | 기존 GENOS 검토 계약의 작업·입력·호출·실패·완료 영수증 |
 | `glossary-reviewed` | 검토 결과를 관측으로 보존한 새 사전 |
-| `serving/generation` | 원문, navigation-v3, `glossary/bundle`, 사전, 캐시; RAG 소비 |
+| `serving/generation` | 원문, navigation-v4, `glossary/bundle`, 사전, 캐시; 승인 reference state가 있으면 overlay 포함; RAG 소비 |
 | `release.json` | 검토 상태·산출물 해시·DRAFT 완료. 품질 인증/활성화와 구분 |
 
 기존 미검토 후보를 유지하고 새로운 정의 위치를 후보로 추가한다. 완료 검토는 사전 전체 해시를 제외한 입력 근거가 같을 때만 재사용하며 `reused_job` 원장에 부모 작업 ID를 기록한다. 같은 표기끼리 비교하며, 정의 없는 후보는 deferred,
@@ -90,9 +111,10 @@ GENOS 코드스페이스에서 실행한다. 다음 경로는 현장에 반입�
 ## 명시 문서 참조
 
 선택 원문들의 문서명과 조문 좌표를 대조한다. `「문서명」 제N조`와 명확한 등록 문서명 뒤의
-조문은 유일한 문서 버전·대상이 있을 때만 연결한다. 같은 이름의 복수 버전, 없는 문서/조문,
-범위·항/호 세부 참조, 모호한 이어쓰기는 원문 span과 미해결 이유를 남긴다. 날짜로 최신 버전을
-추정하지 않는다. 문서 간 이동도 질의에서 허용한 문서 범위 안에서만 가능하다.
+조문은 유일한 문서 버전·대상이 있을 때만 연결한다. 같은 문서·부모·역할 축에 양 끝과 중간 좌표가
+실제로 존재하는 단순 조·항·호 범위는 규칙으로 확장한다. 같은 이름의 복수 버전, 없는 문서/조문,
+약칭·직전 문맥·복수 후보는 폐쇄 후보 observation으로만 남기고 운영자 승인 전에는 연결하지 않는다.
+날짜로 최신 버전을 추정하지 않는다. 문서 간 이동도 질의에서 허용한 문서 범위 안에서만 가능하다.
 
 ## 활성화·롤백
 
@@ -125,11 +147,11 @@ release 후보는 active data root 아래 있어야 한다. 영수증은 이전 
 ## 로컬 검증
 
 `05_TESTS/CONTRACTS/test_document_release.py`는 합성 원문과 고정 내부-provider 응답으로
-전체 연결 v3·번역 표기·새 정의 검토/재개·UNKNOWN 보존·문서 범위·모호 참조·버전 충돌·해시 변조·
+전체 연결 v4·번역 표기·새 정의 검토/재개·UNKNOWN 보존·문서 범위·모호 참조·버전 충돌·해시 변조·
 기존 미검토 후보 보존·완료 근거 재사용/변경 재검토·실제 XML 구조화부터 통합 서빙까지·HTTP 답변/피드백·활성화 CAS/롤백을 검증한다.
 법률 답변 품질 비교 실험이나 실제 GENOS 모델 호출은 아니다.
 
-기존 `PIPELINE_PUBLISH` API는 별도 common 구조화 저장 경로의 source-only 게시다. 같은 v3 생성기·서빙 자원 포장을 사용하지만 `build-all`의 완료 결과를 선택하는 명령이나 새 정의 검토의 대체 경로는 아니다. 신규 추가 구축은 위 통합 명령을 사용한다.
+기존 `PIPELINE_PUBLISH` API는 별도 common 구조화 저장 경로의 source-only 게시다. 같은 생성기·서빙 자원 포장을 사용하지만 `build-all`의 완료 결과를 선택하는 명령이나 새 정의·명시 참조 검토의 대체 경로는 아니다. 신규 추가 구축은 위 통합 명령을 사용한다.
 
 ## 이전 실행에서 이행
 

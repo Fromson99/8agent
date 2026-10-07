@@ -70,7 +70,7 @@ LLM 선택은 실행 위치 라우터와 별개로 `SEMANTIC_LLM_BACKEND=anthrop
 
 현재 SQLite에는 159문서, 구조 unit 230,417개, 의미 entity 7,631개, relation 375개가 있다. 로컬 MAIN은 `vectors.npz`, 새 GENOS 생성기는 기존 `genos-sqlite-v1` vectors를 사용한다. 외부 vector DB로 전환하지 않았다.
 
-공식 용어 연결은 label 12개, edge 7개, hit 112개, unresolved 기록 72개다. 일상용어 출발점은 **계약취소·환불·반품 3개**다. 수집 용어집 437,778개와 이 연결 수를 혼동하면 안 된다. 112개 hit도 112개의 법령 간 의미 관계라는 뜻이 아니다.
+공식 용어 연결은 label 12개, edge 7개, hit 112개, unresolved 기록 72개다. 법제처 일상용어 출발점은 **계약취소·환불·반품 3개**다. 수집 용어집 437,778개와 이 연결 수를 혼동하면 안 된다. 112개 hit도 112개의 법령 간 의미 관계라는 뜻이 아니다.
 
 조문 확장은 실제 저장된 Rule·정의·Proviso·LegalRelation과 template의 허용 순회에 따른다. 명시 법령명 위치 매칭만으로 위임·예외·준용 의미를 만들어 전체 조문을 따라가는 것은 아니다. XML에 등장한 참조가 모두 현재 MAIN의 의미 relation으로 적재됐다는 근거는 없다.
 

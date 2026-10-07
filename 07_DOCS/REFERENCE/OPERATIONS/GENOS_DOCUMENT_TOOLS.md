@@ -24,6 +24,35 @@ HTTP 매핑 요청의 응답은 "이번 요청 안에서만 확인했습니다. 
 사용자별 영구 별칭 승인·대화 간 선택 문서 자동 유지 기능은 이번 HTTP 반입에 포함하지 않는다.
 다음 요청의 문서 선택은 기존 `document_ids`로 전달한다.
 
+## 법령 약칭과 법령명 안의 용어 (2026-09-18)
+
+질문 "자본시장법 제71조 불건전 영업행위 내용"은 이전에 문서로 걸리지 않았다. 저장 문서명은
+"자본시장과 금융투자업에 관한 법률"뿐이고, 법제처 XML의 `<법령명약칭>자본시장법`은 구조화에서 버려졌다.
+그 결과 '제71조'가 30개 문서의 제71조(소득세법 시행규칙 1세대1주택의 범위, 개인정보 보호법 벌칙 등)에 걸리고,
+'자본시장법'이 형태소 '자본시장'+'법'으로 쪼개져 '법'이 법제처 일상용어 관계로 법률(조문 3,823개)·법학·문화재보호법에 연결됐다.
+
+- 약칭 projection: `01_DATA/PROJECTIONS/document-aliases/<generation_id>.json`. 출처 projection이 해시로 검증한
+  원본 XML의 `법령명약칭`을 읽고, XML `법령명_한글`이 저장 문서명과 같을 때만 담는다(가운뎃점 ㆍ/· 차이는 같게 본다).
+  `PIPELINE.json` retrieve `term_agent.alias_projections`에 generation_id·경로·sha256으로 고정한다. 다른 세대에는 적용되지 않는다.
+- 생성: `.venv/bin/python 06_TOOLS/semantic_runtime.py --root . build-alias-projection --generation <세대> --origin-projection <출처 projection> --output <경로>`.
+  기존 파일은 덮어쓰지 않는다. 로컬 세대 term-source-adca5fbe3650f90fb372: 26개 문서(법률·시행령·시행규칙), 제외 0.
+- 매칭: 약칭은 문서명 색인에 들어가 문서 지정으로 잡힌다. 문서명·약칭으로 걸린 구간 **안쪽**의 용어와 조문 제목은
+  질문 개념으로 쓰지 않는다(이름 전체와 같은 용어는 유지). 질문 해석과 내용 탐색 후보가 같은 규칙을 쓴다.
+- 결과(같은 질문): 문서 지정 "자본시장과 금융투자업에 관한 법률", 조문 1개(제71조 불건전 영업행위의 금지), 용어 불건전·영업행위·내용.
+
+정본과 projection의 역할:
+
+- 정본은 저장소다. `genos_build` 목록 단계가 XML의 `법령명_한글`을 읽는 자리에서 `법령명약칭`도 읽어
+  `document_metadata.official_abbreviation`에 저장한다. 매처는 이 값을 먼저 쓴다.
+- projection은 이 필드가 없던 과거 세대의 보정용이다. 저장소에 약칭이 없는 문서만 채운다. 다음 세대를 새로 구축하면 폐기한다.
+  이미 구조화가 끝난 문서는 완료 결과를 재사용하므로, 약칭이 들어가려면 해당 문서를 새 build로 구축해야 한다.
+- 적용 상태는 조용히 빠지지 않는다. `/health`의 `document_aliases.status`가 `STORE`·`PROJECTION`·`STORE+PROJECTION`·`NONE`과
+  문서 수를 보고하고, 질문 실행 기록의 `term_agent.document_alias_sources`에 `{store, projection}` 문서 수가 남는다.
+  로컬 term-source-adca5fbe3650f90fb372는 `PROJECTION` 26건이다. projection이 없는 기존 GENOS 세대는 `NONE`으로 보인다.
+
+한계: 공식 약칭은 법제처 법령에만 있다. 거래소 규정·내규에는 이 경로가 없다.
+같은 문서의 본문 제N조와 부칙 제N조는 여전히 둘 다 걸린다.
+
 ## 코드 설치
 
 `genos-document-tools-20260917-v1.zip`을 기존 물리 DEV 루트의 `TRANSFER`에 업로드한다.

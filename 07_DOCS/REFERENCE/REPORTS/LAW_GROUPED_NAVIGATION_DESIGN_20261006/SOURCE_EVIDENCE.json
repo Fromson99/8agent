@@ -1,0 +1,306 @@
+{
+  "status": "DESIGN_SOURCE_OBSERVATION_ONLY",
+  "observed_at": "2026-10-06T17:20:17.820511+09:00",
+  "environment": "WSL /home/jin/8-AGENT; no GENOS access or model calls",
+  "local_selection": {
+    "pointer": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+    "pointer_sha256": "912d65161ba5d4230afefec26b9729401d3b70d561b1150f2302deb2d298ed24",
+    "release_id": "sql-ad-mode-v6-20261006-r1",
+    "pointer_generation": 41,
+    "release_manifest": "08_DEPLOYMENT/RELEASES/sql-ad-mode-v6-20261006-r1/release.json",
+    "release_manifest_sha256": "b03c32172e1d184f434ab33d3330636ea603092b958e18ab1a1e9c8af17916f9",
+    "code_root": "08_DEPLOYMENT/RELEASES/sql-ad-mode-v6-20261006-r1/code",
+    "data_path": "01_DATA/TERM_RELEASES/pecab-only-public-main-20260929-v1/generation",
+    "data_manifest_sha256": "7bce6155aa762f2e9cc1453e7622b3186f47ad772cc7cd5251ad7fbc1235dabf",
+    "field_validation": "not performed"
+  },
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "c5d7a102d06c85f2f3d69b6c86296261dadc8d2a6debb2b44e954bebf5a9879b",
+      "bytes": 13028
+    },
+    {
+      "path": "GENOS.md",
+      "sha256": "f8ac1a92123e7b61a64b9eaf2a30239fd0cac7c6e1741e7a68e63bcea5fef0d8",
+      "bytes": 113557
+    },
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "afbe742fd8e7800d0878ce4229e849def7198c2e7e6d209c0edbcbe2208c4831",
+      "bytes": 29718
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "sha256": "b01a6a4e1412d00d6dd8aa2055f9017a3a289961eb8243292e7cfcd99c299a6f",
+      "bytes": 59213
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6",
+      "bytes": 2553
+    },
+    {
+      "path": "00_SYSTEM/DATA_MODEL.md",
+      "sha256": "155fa0ba99472072eb1fc3c28b9590bf09043b03c09d77629ac5520c5234b270",
+      "bytes": 9350
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76",
+      "bytes": 14004
+    },
+    {
+      "path": "service.py",
+      "sha256": "c6a601da9d6cf037375ae548b5d6b38ee37ecd294c32fb7479879c68276ac3a7",
+      "bytes": 45955
+    },
+    {
+      "path": "service/service.py",
+      "sha256": "c13c68119144a0991754ae5542996c8d0ed3affc1638248a18984b82723436b5",
+      "bytes": 1498
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/unit_fulltext.py",
+      "sha256": "c1d608dd48927c30b9d7946866c73bbacb0213d457bbb97dde266bfd6d00f473",
+      "bytes": 12115,
+      "selected_release_sha256": "c1d608dd48927c30b9d7946866c73bbacb0213d457bbb97dde266bfd6d00f473",
+      "working_equals_selected_release": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/fulltext.py",
+      "sha256": "661960e3e5f5d93f537bd01599687d99b007e9f2a0e64e838bfdd3a35b2d6539",
+      "bytes": 24348,
+      "selected_release_sha256": "661960e3e5f5d93f537bd01599687d99b007e9f2a0e64e838bfdd3a35b2d6539",
+      "working_equals_selected_release": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py",
+      "sha256": "be458bf8754ad7d7118cf8e1466c457055f9b481afd8f34d36ef7b7ab5dc0a54",
+      "bytes": 12766,
+      "selected_release_sha256": "8286643a5836e6261a2d0b05c7d073ad6e84e1c33faa55b02c533b45fbb05e94",
+      "working_equals_selected_release": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall.py",
+      "sha256": "208fb1762a4015820ce8f7eb06fb2f547322f21e6bb2f2a7c9fe456037de88c5",
+      "bytes": 23436,
+      "selected_release_sha256": "90aa66f626456eb3697a8281380dc55e46d2e96b1453be3d50dec7c404f9ba5a",
+      "working_equals_selected_release": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "sha256": "4ee3a69b0e386325ad4f5fcd6388bcde5883039aefddfc8006dd18bd0e5b8c78",
+      "bytes": 23537,
+      "selected_release_sha256": "886ce967405428c76401fca2f476f98c588fe60ee3b103039a8eef95021a9c36",
+      "working_equals_selected_release": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_selection.py",
+      "sha256": "249912d6a3572da0b50ee8e3144b2696e73b07febedb2a0c99c780cd7a0747c0",
+      "bytes": 22264,
+      "selected_release_sha256": "2477a5cccb1a382f23602bc535d51701c79045aade8021ad8b5c1ac61350cc8f",
+      "working_equals_selected_release": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_selection.py",
+      "sha256": "80f1d14d5c6b01c5365e20a4c165ded2b7b2eace0952e9c8daa1dc34f98ecedc",
+      "bytes": 19324,
+      "selected_release_sha256": "67a79d933ccd0e4c1a5ea7429590a6351e9a1d10c5b0dd1efd4942c155df311a",
+      "working_equals_selected_release": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+      "sha256": "20e33b9e0b81a4e50a4030cbeef974e933541115ee3de9afeb8dcd5b1bfb8561",
+      "bytes": 30997,
+      "selected_release_sha256": "e717ac2d74b4c74de974390425c5bc3b3f3da8e4e91e64a164a6bcbb05c546e9",
+      "working_equals_selected_release": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relation_read_policy.py",
+      "sha256": "4d99c58a3b8fa8bd9a9f61cc12e39a2879fc1bc3a80005e80e9de72ba7c33941",
+      "bytes": 6634
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+      "sha256": "791ead2c41700f1c6b7c5a4694b2a57b7e3787d89efec3d7b9fabce7a4be19e6",
+      "bytes": 17985,
+      "selected_release_sha256": "a69ece8382708b54cbfa1a2d3b992ae1b576a810d3e08d11981507cf67159fda",
+      "working_equals_selected_release": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "sha256": "24d9d6ead0967de4aad3a22dbe9b603edbfc8a196393996dd567edd8108e315f",
+      "bytes": 43769,
+      "selected_release_sha256": "2b8cf11ea6e906e768352510c5dad88f0d1584ee7d8c8a77d7c844190f78659a",
+      "working_equals_selected_release": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+      "sha256": "47b4dc854da71261be13c33cb4628c0fdb59172f647f81acf3a41431990857a7",
+      "bytes": 5616,
+      "selected_release_sha256": "402cb79eb616f36a4232686f64643bbe0c2bb7bb0bf11c9dd6d20ff0ab8bb73b",
+      "working_equals_selected_release": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "sha256": "913490e83acc2cc1261c2ac30efe1fdc4cd20a120ea11b6232aa36767ff3052d",
+      "bytes": 10941,
+      "selected_release_sha256": "118f0f1477b19619c6639d99cc4dcf006d4e32140e49cc3c661d76b1a05d9817",
+      "working_equals_selected_release": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py",
+      "sha256": "f9ec457d35c1d3dc4a6db378c0e5f4d525d76a0bd58c2793958dd5e0fba5f632",
+      "bytes": 13718,
+      "selected_release_sha256": "6e5bc65bdd79650811fbed9b98af73f7bcc7f8fbf9b7496d3d872bf0e132e760",
+      "working_equals_selected_release": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py",
+      "sha256": "229440058092d1eeaefa93ef45815a0d8dec5916339e84953cf00c4065b736ad",
+      "bytes": 7625,
+      "selected_release_sha256": "a0ab9cd58b0733075a6c90cfc3f10cf57ea08284fe9d7120e410cae0326cb0f2",
+      "working_equals_selected_release": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/procedure_memory.py",
+      "sha256": "43a2cb11796a3d4c8511084e7257c9ee48070115ea293310b9e202827aeaaaa5",
+      "bytes": 5479,
+      "selected_release_sha256": "43a2cb11796a3d4c8511084e7257c9ee48070115ea293310b9e202827aeaaaa5",
+      "working_equals_selected_release": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py",
+      "sha256": "1b6cba4c059e4a4048c92aa219ebe4e2c97f8a709781d3506ac7b8260ea0d74a",
+      "bytes": 5570,
+      "selected_release_sha256": "1b6cba4c059e4a4048c92aa219ebe4e2c97f8a709781d3506ac7b8260ea0d74a",
+      "working_equals_selected_release": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/judgment_view.py",
+      "sha256": "0925befb5c33bceb9612e55a2e95eba6acfe27d1ff93e07ff45d5644cfcf91fd",
+      "bytes": 6282
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/readable_log.py",
+      "sha256": "df3e47e455b86aa30c68eec259107935ef05e25f72cb7a2992a26a8615826528",
+      "bytes": 24561,
+      "selected_release_sha256": "0c034b446913a9bc07af2969111cc776de91b573bd103c0a9fdd8e2b9ac5b931",
+      "working_equals_selected_release": false
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_tools.py",
+      "sha256": "70a8cd6c092abb236797aabb836ad022f4ce035703db8988c4c1a504a4e75c70",
+      "bytes": 20156,
+      "selected_release_sha256": "4cadee6392e4f21c1d49a31d24065c7e3732c0a21b86d00b5326c2a3990b28d6",
+      "working_equals_selected_release": false
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/MINIMUM_UNIT_FULLTEXT_20261002.md",
+      "sha256": "9fd4c45ad752a2c7a8fe957f363749d322ef8d2fabf169cef8a7580b9537926a",
+      "bytes": 5490
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/rag_control_flow_20261006_r3/README.md",
+      "sha256": "4bde787f2895cff5a4b4e85350c8b838cf39a51699a646e338ac331ee6cd49fe",
+      "bytes": 4324
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/SOURCE_RETRIEVAL_AND_PROVENANCE.md",
+      "sha256": "88be6b76eddbd9ec5c4753d1b022f4a49c824e6f19baa5ecc14cc0db95edf97d",
+      "bytes": 30991
+    }
+  ],
+  "code_anchors": [
+    {
+      "id": "global_recall_order",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py",
+      "line": 140,
+      "anchor": "ordered = sorted(self.scores"
+    },
+    {
+      "id": "unit_rank",
+      "path": "02_BACKEND/semantic_runtime/unit_fulltext.py",
+      "line": 147,
+      "anchor": "    def rank_units"
+    },
+    {
+      "id": "group_parent_context",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "line": 85,
+      "anchor": "# Add introductions on the matched paths"
+    },
+    {
+      "id": "group_by_source",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "line": 283,
+      "anchor": "def group_hits"
+    },
+    {
+      "id": "model_law_mapping",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_selection.py",
+      "line": 60,
+      "anchor": "laws={name:"
+    },
+    {
+      "id": "pending_search_priority",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_selection.py",
+      "line": 221,
+      "anchor": "needs_fulltext=needs_search and not pending_connections"
+    },
+    {
+      "id": "select_incomplete_gate",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+      "line": 177,
+      "anchor": "if result.get('status')=='pending' and not result.get('needs_fulltext')"
+    },
+    {
+      "id": "search_reentry",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+      "line": 191,
+      "anchor": "raise Reenter('RECALL'"
+    },
+    {
+      "id": "hard_reentry_limit",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "line": 470,
+      "anchor": "if reentries>1"
+    },
+    {
+      "id": "progress_hash",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "line": 426,
+      "anchor": "progress_hash=digest"
+    },
+    {
+      "id": "relation_validation",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relation_read_policy.py",
+      "line": 86,
+      "anchor": "def validate_decision"
+    },
+    {
+      "id": "profile_allowlist",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py",
+      "line": 14,
+      "anchor": "if set(value)-set(DEFAULT_PROFILE)"
+    },
+    {
+      "id": "same_menu_replay",
+      "path": "02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py",
+      "line": 18,
+      "anchor": "contract={'system':system"
+    },
+    {
+      "id": "active_pointer_selection",
+      "path": "service.py",
+      "line": 236,
+      "anchor": "def _local_release"
+    }
+  ],
+  "limitations": [
+    "Current working source is the design basis. Frozen equality observations cover only listed files.",
+    "No runtime gate, source-store scan, quality experiment, promotion, GENOS deploy or independent review.",
+    "Synthetic decisions are design examples, not produced model responses."
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "created_at": "2026-09-21T14:38:08.784431+00:00",
+  "scope": "User-directed editorial revision focused on LLM agent judgment; operational incident analysis excluded",
+  "review_type": "self review",
+  "new_model_calls": 0,
+  "new_experiments": false,
+  "product_code_changed": false,
+  "model_policy_changed": false,
+  "completed_adrs_edited": false,
+  "checks": {
+    "local_links_exist": true,
+    "markdown_table_columns_consistent": true,
+    "operational_incident_content_removed": true
+  },
+  "local_links_checked": 16,
+  "markdown_tables_checked": 5,
+  "report_files": [
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/GEMMA_RAG_MODIFICATION_PLAN_20260921/README.md",
+      "sha256": "72d19d8983af35a1d20240927fb31bcd36cb767cfe4945af34752939c42e62db",
+      "bytes": 21055
+    }
+  ],
+  "linked_source_files": [
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "ff1356787cf738a5952b3ee3d2c4f8263b2fe25852bc14b14b34ea67245fcc25",
+      "bytes": 10536
+    },
+    {
+      "path": "00_SYSTEM/DATA_MODEL.md",
+      "sha256": "3700fcadbfe748566ed5c7f85fd5aeee9d434c741531843ac275f63f2183e67a",
+      "bytes": 5932
+    },
+    {
+      "path": "02_BACKEND/lawrag/research/experiment_client.py",
+      "sha256": "a1cca80528d210f7861f782532240bf198be6e4330fb5bd98e228a40bdcd26ff",
+      "bytes": 23796
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tiers_policy.py",
+      "sha256": "1dbb7bfab268cb104fa2ef264f6e86e7798732c3bbb873235d0d9c2698e5bb18",
+      "bytes": 3030
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tools_protocol.py",
+      "sha256": "49baa5718a940648b8df12329567ca55a897d3760885d061e13991ea21522c3d",
+      "bytes": 3779
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/tools_session.py",
+      "sha256": "b4f76d188aeda13095f0c15ecde559c861821cb9b97724daa2886998f2d6cca0",
+      "bytes": 24280
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0498-gemma4-fp8-compatible-schema-cm51-fsc10/README.md",
+      "sha256": "be1578e9471191bf38394b1acfb13010d835b434c23cfe30059a3eb88215d46c",
+      "bytes": 20880
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0500-gemma-qwen-behavior-audit/PAIRED_CASES.md",
+      "sha256": "a7d98ce3d73bb572d7fd3c08178c980469419f86df0ff5ef2696e045c7add4e1",
+      "bytes": 103842
+    },
+    {
+      "path": "06_TOOLS/EXPERIMENTS/adr_0498/run_probe.py",
+      "sha256": "5c37a1a14e6df529f17d8e136970ec5e3d49e396e6e1fe77bc72fbb9accc2900",
+      "bytes": 12136
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/LLM_CAPABILITY_SYNTHESIS_20260921/README.md",
+      "sha256": "53e5fc5eda016a844db2f1df1e48e2ea823278f9fbe88c24019aa773ba950538",
+      "bytes": 23450
+    },
+    {
+      "path": "GENOS.md",
+      "sha256": "24adc6a832d53f6118231d6d3166b3af34b649b1aba4bb2f33e7fa36be95d4ba",
+      "bytes": 27613
+    }
+  ],
+  "limitations": [
+    "No independent legal verification",
+    "No new quality evaluation or regrade",
+    "Proposed improvements remain unmeasured"
+  ]
+}

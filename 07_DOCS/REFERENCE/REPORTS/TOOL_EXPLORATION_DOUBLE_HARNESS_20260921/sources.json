@@ -1,0 +1,203 @@
+{
+  "schema_version": "design-source-snapshot-v1",
+  "captured_on": "2026-09-21",
+  "environment": "WSL local repository",
+  "scope": "Read-only inspection of relevant code and historical records; hashes bind full files, not a claim of exhaustive audit of every line.",
+  "active_release": "document-navigation-rag-20260921-v1",
+  "pointer_generation": 17,
+  "quality_certified": false,
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "94909588c168d330dace88f7ff1c4549a23539137a55b17b534fb0d21a4a5848"
+    },
+    {
+      "path": "GENOS.md",
+      "sha256": "aca896f10aa2770af2aa1463e728dcefce701f04e168909df2c8205e3e33b30e"
+    },
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "c58bd29e771036eff762062f229e4af8f4d18e6d42fac263584442a636d8db68"
+    },
+    {
+      "path": "00_SYSTEM/DATA_MODEL.md",
+      "sha256": "7b8e37c0cea66a5e2d570409146113c6a9e4bd1e8eb10accbc2eb1c4b43c010d"
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6"
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "sha256": "32a16c74c6bd0e3e342bc3220521e20424c50a6b6634fdd033ce1005964dfade"
+    },
+    {
+      "path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76"
+    },
+    {
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "sha256": "98b4951d54c6b8ca4fa383ce6d96840b988ca31d2fabf934069106376e61564a"
+    },
+    {
+      "path": "08_DEPLOYMENT/RELEASES/document-navigation-rag-20260921-v1/release.json",
+      "sha256": "3437f605668a3599a400d9077e2b023a3f90e3825a934bcaf9665cdf262e437e"
+    },
+    {
+      "path": "service.py",
+      "sha256": "97909d0d45499fe7b281806544e3a85963973641b25cfe0901d62a95198f015a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/app.py",
+      "sha256": "71d3d774edfe70257962bf3cc2893e0892f39d198bb77fe832ca3e132f62a294"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/pipeline.py",
+      "sha256": "a9257a9fc35737f8fca2c4c951527b7a1e6a8ccec30729ac368eea186699ccbd"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/contracts.py",
+      "sha256": "23a4d54bd3dfffa8d2a0227e25a2fcd7f049fbbd461a18b618552e8111e26e20"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/folder_navigation.py",
+      "sha256": "9621d134e3c8f06c2837e579bbfc74e9569c177bb96a560021b5aba7a11068eb"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/document_browser.py",
+      "sha256": "fd86061b632918828efce15bc563d77bf347f1eccb87142314bf782dae2ab0ed"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/structure_navigation.py",
+      "sha256": "d0c7b4e4a172c9a34a8955e054c4dec96a7229345dccc4ff22d00bce6ee16957"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/navigation_match.py",
+      "sha256": "b4333ec7ee6d9c8b4fbb8d011b39ff71c92e8256e521f9f58842f28450a285c2"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/work_navigation.py",
+      "sha256": "58c60bd80b44d0bf5a9d98d60f485d386527ad921dcc1ba2d01c52afb98397f5"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/fulltext.py",
+      "sha256": "7df4d52c4e9cc47d136a3106ce8ae9e715456012d1c328c998f59283657a8f29"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent_adapter.py",
+      "sha256": "b7f9212bd8431bdd61fbaea8fa48dadb93aaa8c3c830329a3e4da77f38975c59"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_tools.py",
+      "sha256": "1bddb6ee8b0cd77e413c149dcf536c2cbccab4ad8434558904b8fb0886d254f9"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/protocol.py",
+      "sha256": "455f7c65af9deaf82484dc55c189188f08d2a172b30801915000c55355d5883d"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/session.py",
+      "sha256": "ba6bcc84aa6ba2f53b9f6cefede3f23f16548c2e3869cbfc517dc2f216a24db6"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/coordinator.py",
+      "sha256": "c066af0ff2fbeaa2f912242409819bfcdf014e376743fab99a2768247460c167"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/domain.py",
+      "sha256": "e482d227a603cdcea578e76eb357e95347c98449159378f6984768f2c6f8d3ab"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/gate.py",
+      "sha256": "7dcaea45b18e0d0aa185b9d29aaf3518a3053c4ca89a72e673c82adcc0bad8ff"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/journal.sql",
+      "sha256": "898c9e6d5cfe1f21198f7502c371a820b49375976ae9ce7ccbbadee6812cdace"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/publication.py",
+      "sha256": "29ed56c7dfca22e736482c8612a4b08db5df447abc304ca90dbf0f1a4b211940"
+    },
+    {
+      "path": "02_BACKEND/lawrag/research/candidates/adr_0482/source-first-fsc-hard10-run002/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/source_first_adapter.py",
+      "sha256": "830e87c6d16507402150fab30283ea8fb69d22b01cbe1cb19e30b7d24a92b3a0"
+    },
+    {
+      "path": "02_BACKEND/lawrag/research/candidates/adr_0482/source-first-fsc-hard10-run002/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/source_first_protocol.py",
+      "sha256": "0ca2a0c376224aba46eaa3e3ee45721426b2a9be0550e1aa754c5fad9ae16db0"
+    },
+    {
+      "path": "02_BACKEND/lawrag/research/candidates/adr_0482/source-first-fsc-hard10-run002/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/source_first_navigation.py",
+      "sha256": "de03d52602891bce861ca4831f4bb20b314108b3bef1abd771a02ca7fcf5a598"
+    },
+    {
+      "path": "02_BACKEND/lawrag/research/candidates/adr_0482/source-first-fsc-hard10-run002/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/source_first_session.py",
+      "sha256": "bfd62792c3c95333bbfae573dc62269a5e0d8e4b57008257ba9a7c87d04b8104"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0438-task-harness-live-validation/README.md",
+      "sha256": "a1869a04cc807ce37b86358c69a332ad67f20e7d45ad07d733544bd7021f8794"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0438-task-harness-live-validation/artifacts/diagnosis.md",
+      "sha256": "037bff0eb3a565e2b141897a0ddfd0567cb63e7ded348ed20fd6f24d7b742da8"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0466-legal-agent-composer-audit/README.md",
+      "sha256": "82ec21a7e37066232cec072093ae525b0b4cf52a43ede03bc1b6981c13aa5c66"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0473-legal-agent-loop-rev4/README.md",
+      "sha256": "e9459cf815c1dfc881c7a689e5d995da4e9e89a85d0f7276e9190523bc5585a5"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0478-action-feedback-qwen-retest/README.md",
+      "sha256": "0e38645ee3efd56afc90da2519c62ceea6895451f56b368807f8ff450829702e"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0479-bounded-linked-evidence/README.md",
+      "sha256": "f578d7d34840cea9b12abd334f60e37de2a5b2fbc6b50880ea270264a40c48a5"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0480-cm003-reviewed-source-relations/README.md",
+      "sha256": "4cf01e4cd5c8cae84d27f054c1876993199b1ac1419e06501d9d539b0f8450af"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0481-reviewed-links-hard10/README.md",
+      "sha256": "ce3e3b85d3df704696f79424e770d57ee1d25d49faf3748b6e65d201d76b6f4a"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0482-source-first-fsc-hard10-holdout/README.md",
+      "sha256": "7ad7bc95a33c07d8b95200580302dff086efc2d37926c1970079b617d343c16b"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0482-source-first-fsc-hard10-holdout/실험/질문-001-fsc-hard-001.md",
+      "sha256": "047de2723c7b61c6c409ebbcb69c57932e9a5a31b0249b643bce1339ad675c01"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/LEGAL_AGENT_DOUBLE_HARNESS.md",
+      "sha256": "76fb4067fd0707fa340856108ed1c0f87095c3e7e020085cb6a99f0ec2769825"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/LEGAL_AGENT_SYSTEM.md",
+      "sha256": "25976c2d8070514d051a4c38a6acc6cad2a55c69785966c4f2d33bdc2c41d18f"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ADR-0474_PHASE0_TRAJECTORY_AUDIT_20260920.md",
+      "sha256": "d995d3118d49c236bee1ce84c9dde6cfd99a98f6de8b2d39943d4f55117f9817"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_SOURCE_FIRST_DOUBLE_HARNESS_20260920/DESIGN.md",
+      "sha256": "7fb527f9c13ce17de7d511301feb9291251fa96d800a91cdfbf37586c9bacd34"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/SOURCE_FIRST_ACTION_FEEDBACK_PLAN_20260920/PLAN.md",
+      "sha256": "0e1e5e4f2675dab23985f658e754bb11f461b80bcecfeab1c3965f6c53b79777"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/document_roles.py",
+      "sha256": "239ed2b7913d2696604fc501e9a58c3753f29a3deade8cdb3d12a39b986a8f4a"
+    }
+  ]
+}

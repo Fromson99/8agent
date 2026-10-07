@@ -1,0 +1,41 @@
+{
+  "status": "PASS",
+  "checked_at": "2026-10-06T13:31:12.891262+00:00",
+  "checks": {
+    "report_sections_0_to_21": true,
+    "all_core_controls_present": true,
+    "no_mixed_unintended_cjk": true,
+    "proposed_not_implemented": true,
+    "unresolved_nonblocking_example": true,
+    "scope_and_issue_coverage_distinct": true,
+    "active_pointer_unchanged": true,
+    "all_evidence_paths_exist": true,
+    "all_observed_source_hashes_still_match": true,
+    "persistent_guidance_present": true,
+    "real_workflow_source_exists": true
+  },
+  "notes": [
+    "Document consistency and evidence checks only; not product contracts or legal correctness tests.",
+    "Same author self-review; no independent review.",
+    "No model reruns, product implementation, MAIN activation, or GENOS deployment in this task.",
+    "Existing CM probe and active release remain unchanged."
+  ],
+  "documents": [
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/RAG_INVESTIGATION_CONTROL_DESIGN_20261006/설계서.txt",
+      "sha256": "14556dace2e0d98e25a01575d70f13b501cb8390406f6ed73d68c79a9ec74716"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/RAG_INVESTIGATION_CONTROL_DESIGN_20261006/근거와버전.json",
+      "sha256": "5318a910a89473c5257c63d7cce8fb0d35f33127544d8d2018fac17ee947712c"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/RAG_INVESTIGATION_CONTROL_DESIGN_20261006/계약예시.json",
+      "sha256": "07c9cc819880fb624d160302bb4b3a69bad398270734f2bf88a4e895e45bdfe0"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "74d383b8d54172677e5e9b127f40def1e2c36fd34129d6f0f0382beb55da4531"
+    }
+  ]
+}

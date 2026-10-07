@@ -1,0 +1,27 @@
+{
+  "schema_version": "genos-reference-build-plan-revision-v1",
+  "created_at": "2026-10-03T07:40:05.352112+00:00",
+  "reason": "User cannot measure now; defer timing and field resource measurements without deferring correctness checks.",
+  "plan": {
+    "path": "07_DOCS/REFERENCE/REPORTS/GENOS_REFERENCE_BUILD_PLAN_20261003/PLAN_R2.md",
+    "sha256": "69ca15ec51688506d68cbd05e3b136379ad3428e78a8945b36dea5479c6a487c"
+  },
+  "supersedes_plan": {
+    "path": "07_DOCS/REFERENCE/REPORTS/GENOS_REFERENCE_BUILD_PLAN_20261003/PLAN.md",
+    "sha256": "6770d1395a4a5313e038c928ad141293ad80897eeefda4320a45d78397fa5ec9"
+  },
+  "prior_evidence": {
+    "path": "07_DOCS/REFERENCE/REPORTS/GENOS_REFERENCE_BUILD_PLAN_20261003/EVIDENCE.json",
+    "sha256": "8721546829aeaafd43e3d5759343b4a61fe9eaf742b5057f476734dc2864d243"
+  },
+  "source_pin_drift": [],
+  "checks": {
+    "broken_links": 0,
+    "runtime_changed": false,
+    "new_experiment_started": false,
+    "performance_measurement_required_before_implementation": false,
+    "correctness_validation_required": true,
+    "field_speed_claimed": false
+  },
+  "review_mode": "author self-review"
+}

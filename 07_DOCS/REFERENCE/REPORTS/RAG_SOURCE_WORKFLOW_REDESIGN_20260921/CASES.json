@@ -1,0 +1,887 @@
+{
+  "schema_version": "design-acceptance-catalog-v1",
+  "status": "SPECIFICATION_ONLY",
+  "date": "2026-09-21",
+  "requirement_ids": [
+    "R01",
+    "R02",
+    "R03",
+    "R04",
+    "R05",
+    "R06",
+    "R07",
+    "R08",
+    "R09",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14"
+  ],
+  "design_issue_map": {
+    "D01": [
+      "R02",
+      "R05",
+      "R07"
+    ],
+    "D02": [
+      "R02",
+      "R06"
+    ],
+    "D03": [
+      "R03",
+      "R09"
+    ],
+    "D04": [
+      "R04",
+      "R08"
+    ],
+    "D05": [
+      "R03",
+      "R05",
+      "R08"
+    ],
+    "D06": [
+      "R06",
+      "R07",
+      "R10"
+    ],
+    "D07": [
+      "R05",
+      "R14"
+    ],
+    "D08": [
+      "R11",
+      "R12"
+    ]
+  },
+  "cases": [
+    {
+      "id": "T01",
+      "edge_case": "E01",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R03",
+        "R04",
+        "R08"
+      ],
+      "condition": "EMPTY 뒤 canonical 후보40개, READ0, 예산 남음",
+      "expected_processing": "새 결과 전달 작업 생성; 다음 view에서 OPEN 선택 기회 제공; 동일 no_progress로 종료하지 않음",
+      "acceptance": "후보→전달→READ→원문 전달 순서와 canonical progress receipt 확인",
+      "user_outcome": "미열람 수와 실제 중단 이유; 부재로 표시하지 않음",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T02",
+      "edge_case": "E02",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R03",
+        "R04",
+        "R12"
+      ],
+      "condition": "제목 검색0건, 다른 검색 가능",
+      "expected_processing": "검색 범위/방법 receipt와 locate 또는 다른 검색 action 제공",
+      "acceptance": "모델 다음 입력에 EMPTY 범위와 대안이 존재; 검색0건을 전체 부재로 승격하지 않음",
+      "user_outcome": "이 검색 방식으로 찾지 못함",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T03",
+      "edge_case": "E03",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R02",
+        "R04",
+        "R12"
+      ],
+      "condition": "같은 조번호가 여러 문서에 존재",
+      "expected_processing": "문서·판본 후보와 AMBIGUOUS 사유를 주고 scope를 좁힌 다음 READ",
+      "acceptance": "모든 선택은 실제 document/branch/unit에 결속; 첫 후보 자동 확정 없음",
+      "user_outcome": "대상 문서 확인 필요",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T04",
+      "edge_case": "E04",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R04",
+        "R07",
+        "R12"
+      ],
+      "condition": "선택 glossary/index에 요청한 조회 기능 없음",
+      "expected_processing": "UNAVAILABLE과 실제 가능한 대안만 제공",
+      "acceptance": "불가 도구를 성공처럼 실행하거나 가짜 action을 제시하지 않음",
+      "user_outcome": "현재 기능 없음; 대안도 없으면 없음",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T05",
+      "edge_case": "E05",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R02",
+        "R07",
+        "R11"
+      ],
+      "condition": "다른 요청/권한 범위의 대상 참조",
+      "expected_processing": "현재 scope에서 target 재조회 또는 ACCESS_RESTRICTED",
+      "acceptance": "새 OPEN/선택/게시가 현재 principal scope를 넘지 않음",
+      "user_outcome": "접근 제한 또는 현재 범위에서 확인 불가",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T06",
+      "edge_case": "E06",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R03",
+        "R04",
+        "R12"
+      ],
+      "condition": "빈 용어/정의 결과: 미구축과 실제 선택 범위0건 두 변형",
+      "expected_processing": "기능 availability와 조회 coverage를 별도로 반환",
+      "acceptance": "동일 빈 배열이어도 reason과 가능한 대안이 다름",
+      "user_outcome": "기능 미구축/현재 검색 미발견 구분",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T07",
+      "edge_case": "E07",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R04",
+        "R07",
+        "R10"
+      ],
+      "condition": "다른 operation에 cursor를 옮기는 레거시 요청",
+      "expected_processing": "v5는 서버 action으로 원래 args/cursor 결속; 잘못된 action은 현재 대안으로 수정",
+      "acceptance": "REPAIR 입력과 수정 후 정상 다음 페이지 receipt를 확인",
+      "user_outcome": "계속 읽기 또는 새 작업 안내",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T08",
+      "edge_case": "E08",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R03",
+        "R08",
+        "R10"
+      ],
+      "condition": "같은 READ와 이유 문구만 반복; 비교군은 새 source page",
+      "expected_processing": "중복은 REUSED; 새 page는 canonical coverage 진전; 미처리 대안 안내 후 제한",
+      "acceptance": "동일 범위는 새 읽기/진전으로 세지 않으며 새 page는 처리",
+      "user_outcome": "반복 중단 이유와 남은 범위",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T09",
+      "edge_case": "E09",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R04",
+        "R07"
+      ],
+      "condition": "R/F를 READ하려는 선택",
+      "expected_processing": "읽기 가능한 action만 제시; 잘못된 종류에는 locate/search 대안 후 재시도",
+      "acceptance": "오류 전달→유효 위치 탐색→READ 성공 경로까지 확인",
+      "user_outcome": "대상 종류와 가능한 다음 동작",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T10",
+      "edge_case": "E10",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R02",
+        "R05",
+        "R07"
+      ],
+      "condition": "형식상 정상이나 현재 view에 없는 source/action 별칭",
+      "expected_processing": "현재 제시 ID로 REPAIR; 다른 요청 ID는 거부",
+      "acceptance": "실제 DELIVERED view와 선택 receipt 연결, 오래된 ID 채택0",
+      "user_outcome": "다시 확인할 대상 안내",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T11",
+      "edge_case": "E11",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R02",
+        "R04",
+        "R05"
+      ],
+      "condition": "긴 조의 READ 첫 page만 존재",
+      "expected_processing": "PARTIAL coverage와 정확 다음 페이지 action 제공",
+      "acceptance": "union 범위가 실제 source와 일치; 전체 열람으로 오표기하지 않음",
+      "user_outcome": "일부 읽음·조 전체 열기",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T12",
+      "edge_case": "E12",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R04",
+        "R08"
+      ],
+      "condition": "관계가 많은 원문과 작은 공유 도구/시간 예산",
+      "expected_processing": "선택적 관계 확장; 필수 원문 전달·수정 예산 우선",
+      "acceptance": "자동 관계6종 일괄 호출이 v5 기본에서 발생하지 않음; 역할별 예산 기록",
+      "user_outcome": "관계 확인 미완료와 원문 확보를 구분",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T13",
+      "edge_case": "E13",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R04",
+        "R07",
+        "R08"
+      ],
+      "condition": "관계 스캔이 시간 초과하고 cursor 없음",
+      "expected_processing": "스캔 PARTIAL과 더 좁힌 범위/재시작 또는 재개 불가 표시",
+      "acceptance": "COMPLETE나 관계 없음으로 변환하지 않음; 재시도 횟수/대상 고정",
+      "user_outcome": "관계 스캔 미완료",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T14",
+      "edge_case": "E14",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R05",
+        "R07"
+      ],
+      "condition": "도구가 throw 대신 ERROR observation 반환",
+      "expected_processing": "직전 모델 요청 결과 우선 제시; ErrorRecord OPEN과 수정 action 생성",
+      "acceptance": "자동 작업 결과가 오류를 밀어내지 않으며 복구/종료 receipt 존재",
+      "user_outcome": "실패한 도구와 다음 가능한 행동",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T15",
+      "edge_case": "E15",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R05",
+        "R07"
+      ],
+      "condition": "원문은 fit하지만 최종 메타데이터/schema/provider 옵션 추가 후 초과",
+      "expected_processing": "최종 payload를 줄여 재분할 후 재검사",
+      "acceptance": "실제 send payload bytes/문자 한도와 저장 request 동일; 초과 send0",
+      "user_outcome": "복구되면 정상 진행; 불가하면 전달 실패",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T16",
+      "edge_case": "E16",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R03",
+        "R05",
+        "R08"
+      ],
+      "condition": "서버 READ3, DELIVERED0",
+      "expected_processing": "미제시 원문 전달 작업을 작게 재구성하고 선택으로 재진입",
+      "acceptance": "READ와 DELIVERED 카운터 분리; 제시 없는 선택0; 예산 있으면 복구 진행",
+      "user_outcome": "읽었지만 미전달 상태 구분",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T17",
+      "edge_case": "E17",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R02",
+        "R05",
+        "R07"
+      ],
+      "condition": "단일 block/E가 최소 입력보다 큼",
+      "expected_processing": "block 내부 exact slices로 분할; 프로토콜 자체가 크면 메뉴/schema 축소",
+      "acceptance": "slice 누적 범위/원문hash 일치; 같은 oversized item 무한 page 금지",
+      "user_outcome": "부분 원문 또는 최소 입력 구성 불가",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T18",
+      "edge_case": "E18",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R03",
+        "R05",
+        "R08"
+      ],
+      "condition": "이미 읽고 제시한 선택 대기 원문5개 이상",
+      "expected_processing": "선택 대기 page 처리; 제한 시 기존 선택 보존과 정확 잔여 표시",
+      "acceptance": "마지막4개만 제시하고 나머지를 처리 완료로 기록하지 않음",
+      "user_outcome": "선택 완료/미처리 수 구분",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T19",
+      "edge_case": "E19",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R04",
+        "R05"
+      ],
+      "condition": "모델 READ 뒤 자동 관계 결과가 다수 발생",
+      "expected_processing": "모델 action 결과를 고정하고 자동 결과를 별도 요약",
+      "acceptance": "READ status/coverage/cursor와 오류가 다음 view에 존재",
+      "user_outcome": "READ 완료/부분 읽기 상태 정확",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T20",
+      "edge_case": "E20",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R04",
+        "R05",
+        "R12"
+      ],
+      "condition": "검색 total과 반환 page 수가 다르고 scan 일부 미완료",
+      "expected_processing": "search_receipt/coverage/scan status를 축약 view에도 보존",
+      "acceptance": "item_total과 전체 적중 total을 구분; 생략시 알려진 범위로만 표시",
+      "user_outcome": "선택 범위·남은 결과·미완료 안내",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T21",
+      "edge_case": "E21",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R05",
+        "R07"
+      ],
+      "condition": "해결된 오류2개 뒤 새 미해결 오류 발생",
+      "expected_processing": "OPEN 오류 우선; RESOLVED receipt 후 과거 오류 제거",
+      "acceptance": "현재 오류가 오래된 최근2개 제한에 밀리지 않음",
+      "user_outcome": "현재 수정해야 할 항목만 안내",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T22",
+      "edge_case": "E22",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R05",
+        "R07"
+      ],
+      "condition": "큰 invalid output을 추가한 repair payload가 한도 초과",
+      "expected_processing": "실패 항목과 필요한 view만 남겨 최종 payload 재검사",
+      "acceptance": "원래 요청 fit뿐 아니라 실제 repair wire fit 확인",
+      "user_outcome": "수정 진행 또는 입력 구성 불가",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T23",
+      "edge_case": "E23",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R02",
+        "R05",
+        "R06",
+        "R14"
+      ],
+      "condition": "3호 설명에 실제 유효2호 강조 ID; 구조 라벨은 검증됨",
+      "expected_processing": "조 선택 보존; 명시 라벨 충돌은 강조 수정 또는 미확정",
+      "acceptance": "조 선택/항호 강조 정확성을 따로 검사; free-text 의미 탐지 한계 표시",
+      "user_outcome": "관련 조 유지·강조 미확정 또는 교정",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T24",
+      "edge_case": "E24",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R02",
+        "R06",
+        "R07",
+        "R09"
+      ],
+      "condition": "모델이 독립 검토 없는 REVIEWED를 포함",
+      "expected_processing": "v5 최소 선택에 해당 상태 없음; 불필요 속성 오류와 유효 source 선택 분리 가능한 계약 검사",
+      "acceptance": "검토 기록 없는 REVIEWED 생성0; 정상 source 보존/형식 복구 경계 확인",
+      "user_outcome": "관련 원문 선택·해석 미확정",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T25",
+      "edge_case": "E25",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R02",
+        "R06"
+      ],
+      "condition": "2,241자 조 선택, 카드 표시1,600자 정책",
+      "expected_processing": "조 선택은 정상 저장; 표시 범위만 줄이고 전체 열기 제공",
+      "acceptance": "선택 거부0; 카드 발췌는 실제 전달 범위와 일치",
+      "user_outcome": "관련 조 전체 접근·발췌 일부",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T26",
+      "edge_case": "E26",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R06",
+        "R07",
+        "R10"
+      ],
+      "condition": "한 응답에 정상 source 선택과 잘못된 강조/행동",
+      "expected_processing": "동일 snapshot 검증 후 독립 source 커밋, 실패 항목별 오류",
+      "acceptance": "정상 선택 rollback0; 재시도는 실패 항목만; 충돌 교체는 원자적",
+      "user_outcome": "보존된 선택과 수정 미완료 항목",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T27",
+      "edge_case": "E27",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R02",
+        "R06"
+      ],
+      "condition": "관련 조 선택 이후 강조를 끝내 고치지 못함",
+      "expected_processing": "source 선택과 OPEN 유지; highlight UNRESOLVED",
+      "acceptance": "selection_id/version과 highlight 상태 분리; 주장 근거에는 잘못된 강조 미사용",
+      "user_outcome": "조는 유지·강조 없음",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T28",
+      "edge_case": "E28",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R06",
+        "R07",
+        "R10"
+      ],
+      "condition": "중복 tier/상한초과/선택-제외 충돌",
+      "expected_processing": "정확 상한·충돌과 교체 action 제시; 기존 선택 유지; 초과 CAP_PENDING",
+      "acceptance": "동일 source 이중 표시0; 기존 선택 생략으로 삭제0; 유효 교체 원자성",
+      "user_outcome": "남은 채택 한도와 보류 수",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T29",
+      "edge_case": "E29",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R06",
+        "R09"
+      ],
+      "condition": "유효 source 선택과 잘못된 법적 관계평가 동시 제출",
+      "expected_processing": "source와 claim/relation 검증 의존성 분리",
+      "acceptance": "정상 source 유지; 미확인 관계로 확정 claim 생성0",
+      "user_outcome": "출처 확보·해석 검토 미완료",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T30",
+      "edge_case": "E30",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R02",
+        "R05",
+        "R07"
+      ],
+      "condition": "READ만 존재하거나 미리보기만 보고 선택",
+      "expected_processing": "정확 source slice 전달 작업→유효 새 선택",
+      "acceptance": "제시 없는 KEEP와 인용 차단; 재전달 뒤 정상 선택",
+      "user_outcome": "읽기/제시 대기",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T31",
+      "edge_case": "E31",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R05",
+        "R07"
+      ],
+      "condition": "최상위 JSON/envelope 파싱 오류",
+      "expected_processing": "전체 syntax repair; 파싱된 operation 의미 오류는 개별 repair",
+      "acceptance": "raw substring 추측 저장0; 실제 오류→수정 호출→유효 커밋",
+      "user_outcome": "형식 수정 또는 수정 한도 종료",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T32",
+      "edge_case": "E32",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R07",
+        "R08"
+      ],
+      "condition": "같은 상태/같은 잘못된 선택 재제출",
+      "expected_processing": "오류 signature·구체 대안·보존 상태 제공; 한도 후 fallback/EXHAUSTED",
+      "acceptance": "무한 반복0; 실제 RESOLVED 또는 EXHAUSTED와 공유예산 확인",
+      "user_outcome": "고치지 못한 항목과 보존 결과",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T33",
+      "edge_case": "E33",
+      "design_issues": [],
+      "priority": "P1",
+      "requirements": [
+        "R07",
+        "R08"
+      ],
+      "condition": "탐색에서 복구 단계로 이동하며 오류가 바뀜",
+      "expected_processing": "요청 전체 물리예산·오류signature 카운터 유지",
+      "acceptance": "단계 전환으로 budget/repair 한도 초기화0",
+      "user_outcome": "사용한 한도와 남은 작업",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T34",
+      "edge_case": "E34",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R03",
+        "R07",
+        "R08",
+        "R12"
+      ],
+      "condition": "무진전/입력/전송/시간/호출 한도 각 변형",
+      "expected_processing": "typed stop reason과 수행 가능한 최종화",
+      "acceptance": "FINISHED와 GOAL_MET 구분; 게시 가능한 부분 결과 보존",
+      "user_outcome": "정확한 종료 사유",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T35",
+      "edge_case": "E35",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R03",
+        "R12"
+      ],
+      "condition": "미발견/미열람/미전달/거부/검토후제외가 모두 빈 source로 귀결",
+      "expected_processing": "workflow 상태·reason·coverage로 분리",
+      "acceptance": "동일 NO_SELECTION에 원인별 사용자 문구가 다름",
+      "user_outcome": "자료 없음과 처리 실패 구분",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T36",
+      "edge_case": "E36",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R11",
+        "R13"
+      ],
+      "condition": "원본 export false와 명시 공개 범위 요청 승인 true",
+      "expected_processing": "원본 정책과 SEND_MODEL decision 분리; PUBLISH 목적 검사",
+      "acceptance": "원본 플래그 불변; 승인 밖 전송0; 허용 범위 실제 게시/OPEN 확인",
+      "user_outcome": "설정 연결 오류 또는 정상 게시",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T37",
+      "edge_case": "E37",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R06",
+        "R10",
+        "R11"
+      ],
+      "condition": "선택 revision 바뀐 뒤 옛 bundle 게시",
+      "expected_processing": "옛 bundle 거부; 새 snapshot 생성·검증 후 게시",
+      "acceptance": "이미 게시한 파일 덮어쓰기0; 새 선택과 bundle hash 동일",
+      "user_outcome": "최신 유효 선택 결과",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T38",
+      "edge_case": "E38",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R10",
+        "R11"
+      ],
+      "condition": "source hash/판본/권한 변경",
+      "expected_processing": "stale/범위 차단; 축소 권한은 전체 outbox 검증",
+      "acceptance": "카드 밖 질문·후보·답변까지 권한 누출0; 단순 retry 통과0",
+      "user_outcome": "자료 변경/접근 제한",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T39",
+      "edge_case": "E39",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R08",
+        "R10",
+        "R11"
+      ],
+      "condition": "COMMIT_READY 또는 RUNNING 중 프로세스 종료",
+      "expected_processing": "전자는 현재guard로 멱등게시; 후자는 INTERRUPTED·조건부 명시재개",
+      "acceptance": "선택 보존, UNKNOWN 성공처리0, 만료budget 무단재설정0",
+      "user_outcome": "게시 복구 또는 재개 필요",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T40",
+      "edge_case": "E40",
+      "design_issues": [],
+      "priority": "P0",
+      "requirements": [
+        "R11",
+        "R12",
+        "R14"
+      ],
+      "condition": "내부 bundle 존재, 게시 실패 또는 source URL 미설정",
+      "expected_processing": "실제 publication receipt와 인증된 OPEN 결과 검사",
+      "acceptance": "offline render를 사용자 게시 성공으로 집계0",
+      "user_outcome": "저장됨/게시차단/열기불가 구분",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T41",
+      "edge_case": null,
+      "design_issues": [
+        "D03"
+      ],
+      "priority": "P0",
+      "requirements": [
+        "R03",
+        "R09"
+      ],
+      "condition": "정상 source 선택만 있고 기존 packed.support 없음; 사용자는 답변 요청",
+      "expected_processing": "v5 AnswerEvidencePack→draft→review에 진입",
+      "acceptance": "v3 사전ADOPT gate 때문에 compose 생략0; source와 answer 상태 독립",
+      "user_outcome": "검토된 답변 또는 명시 부분 답변",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T42",
+      "edge_case": null,
+      "design_issues": [
+        "D01",
+        "D03"
+      ],
+      "priority": "P1",
+      "requirements": [
+        "R02",
+        "R03",
+        "R12"
+      ],
+      "condition": "원문만 요청과 법적 답변 요청, 괄호 업무문맥 포함",
+      "expected_processing": "명시 SOURCES 이외 기본 ANSWER; 원질문/문맥 보존",
+      "acceptance": "모델이 어렵다는 이유로 목표 downgrade0; 새 외부Request 필드 없음",
+      "user_outcome": "요청 목적에 맞는 결과",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T43",
+      "edge_case": null,
+      "design_issues": [
+        "D02"
+      ],
+      "priority": "P0",
+      "requirements": [
+        "R01",
+        "R02",
+        "R13"
+      ],
+      "condition": "내규/별표/표/구조 미확정 block 및 다른 판본의 동명 조",
+      "expected_processing": "검증 단위 또는 SOURCE_REGION으로 결속",
+      "acceptance": "가짜 조항 생성0; 판본/branch 잘못 합침0; 원문 재작성0",
+      "user_outcome": "실제 구조 라벨·미확정 표시",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T44",
+      "edge_case": null,
+      "design_issues": [
+        "D01",
+        "D06"
+      ],
+      "priority": "P0",
+      "requirements": [
+        "R02",
+        "R05",
+        "R06",
+        "R07"
+      ],
+      "condition": "strict model schema에 맞지 않는 한 operation과 유효 selection 포함",
+      "expected_processing": "envelope와 operation 검증 분리 후 독립 항목 처리",
+      "acceptance": "full-protocol.validate가 정상 sibling을 버리지 않음; 임의raw 권한검증 우회0",
+      "user_outcome": "유효 선택과 실패 항목별 결과",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T45",
+      "edge_case": null,
+      "design_issues": [
+        "D03",
+        "D04"
+      ],
+      "priority": "P0",
+      "requirements": [
+        "R04",
+        "R09",
+        "R10"
+      ],
+      "condition": "주장 하나는 검토완료, 다른 주장은 예외/사실부족; 새 반론 도착",
+      "expected_processing": "영향받은 claim만 재검토, 실제 basis/공통문맥 확인",
+      "acceptance": "조 전체 REVIEWED 오표기0; 표시 발췌를 legal pack으로 사용0",
+      "user_outcome": "완료 부분·필요 사실·원문 함께 제공",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T46",
+      "edge_case": null,
+      "design_issues": [
+        "D07",
+        "D08"
+      ],
+      "priority": "P0",
+      "requirements": [
+        "R01",
+        "R11",
+        "R12",
+        "R13"
+      ],
+      "condition": "v1/v4 과거결과와 v5 HTTP→StageRunner→outbox→renderer→OPEN",
+      "expected_processing": "버전별 reader/validator와 원문 source_id 매핑",
+      "acceptance": "닫힌 Result 최상위 추가필드0; legacy OPEN 유지; v5 실제 전체 원문 열기",
+      "user_outcome": "하위호환된 실제 사용자 결과",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T47",
+      "edge_case": null,
+      "design_issues": [
+        "D07",
+        "D08"
+      ],
+      "priority": "P0",
+      "requirements": [
+        "R10",
+        "R11",
+        "R12"
+      ],
+      "condition": "결과 저장 뒤 게시완료 및 해당 source선택에 feedback",
+      "expected_processing": "불변Result hash+별도publication receipt; source-feedback-v2 검증",
+      "acceptance": "result 재해시/덮어쓰기0; 닫힌v1 target에 새필드 무검증 삽입0",
+      "user_outcome": "게시상태·대상에 연결된 피드백",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "T48",
+      "edge_case": null,
+      "design_issues": [
+        "D05",
+        "D06"
+      ],
+      "priority": "P0",
+      "requirements": [
+        "R07",
+        "R08",
+        "R10",
+        "R11"
+      ],
+      "condition": "동시동일run·중복resume·UNKNOWN 응답·늦은응답·만료deadline",
+      "expected_processing": "owner/revision/idempotency 확인; 모델resume 조건 점검",
+      "acceptance": "중복commit0; 다른요청상태공유0; 새run 계보/새budget 명시",
+      "user_outcome": "중복 없이 현재 상태 또는 새 실행 안내",
+      "implementation_status": "NOT_IMPLEMENTED_BY_THIS_TASK",
+      "execution_status": "NOT_RUN"
+    }
+  ]
+}

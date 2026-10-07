@@ -1,0 +1,49 @@
+{
+  "source": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/summary.json",
+  "source_sha256": "47f714155f5523d4d189ddbdae82b79f97336570171204c3725077b541998e30",
+  "analysis": "descriptive_only_no_new_model_call_or_top5_replay",
+  "attempted_cases": 61,
+  "completed_selection_cases": 60,
+  "error_cases": [
+    "fsc-hard-010"
+  ],
+  "success_mean": 6.216666666666667,
+  "success_median": 5.5,
+  "success_min": 1,
+  "success_max": 18,
+  "success_at_most_5": 30,
+  "success_between_4_and_6": 35,
+  "all_gold_retained_success_cases": 51,
+  "missing_gold_success_cases": 9,
+  "annotated_gold_count_distribution": {
+    "1": 36,
+    "2": 21,
+    "3": 4
+  },
+  "original_metrics_all_61": {
+    "cases": 61,
+    "gold_total": 90,
+    "gold_first": 77,
+    "gold_final": 80,
+    "gold_recovered": 3,
+    "baseline_count_mean": 229.55737704918033,
+    "final_count_mean": 6.114754098360656,
+    "final_count_p50": 5,
+    "final_count_p95": 12,
+    "final_count_max": 18,
+    "all_gold_retained_cases": 51,
+    "error_cases": 1,
+    "selection_p50": 23.75593020999804,
+    "selection_p95": 46.09629870300705,
+    "composed_p50": 87.10784205900563,
+    "composed_p95": 166.89435731599224,
+    "physical_calls": 121,
+    "input_tokens": 2371766,
+    "output_tokens": 13210,
+    "cost_usd": 0.31334938
+  },
+  "top5_replacement_effectiveness_measured": false,
+  "in_sample": true,
+  "decision_eligible": false,
+  "main_changed": false
+}

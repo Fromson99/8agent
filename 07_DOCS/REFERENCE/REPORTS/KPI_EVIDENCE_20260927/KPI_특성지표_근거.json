@@ -1,0 +1,519 @@
+{
+  "checked_at": "2026-09-27",
+  "kind": "existing_artifact_read_only_inventory",
+  "trace_counts": {
+    "runs": 61,
+    "parent_hash_verified": 61,
+    "runs_with_error": 1,
+    "prepared_evidence": 437,
+    "evidence_with_provenance_fields": 437,
+    "runs_with_packets": 60,
+    "selected_sources": 373,
+    "selected_sources_linked_to_packet": 373
+  },
+  "limitations": [
+    "trace counts concern prepared experiment packets, not actual model delivery or final answers",
+    "evidence counted once per evidence_id within each run, not globally unique sources",
+    "provenance field presence is not source semantic correctness or per-evidence text hash verification"
+  ],
+  "reference_change": {
+    "source": "04_EXPERIMENTS/ADR/ADR-0545-suffix-resolution-baseline-same-law/artifacts/run-001/diff-summary.json",
+    "source_sha256": "646b8fdf0b25b0098aa15008037544e48606e068f744168cd5a623427a1f7d65",
+    "common_keys": 145866,
+    "classes": {
+      "same": 144640,
+      "target_or_resolution": 675,
+      "basis_label_only": 171,
+      "hint": 380
+    },
+    "target_or_resolution_change_percent": 0.46275348607626177,
+    "only_baseline_keys": 3,
+    "only_candidate_keys": 39,
+    "existing_exact_losses": 0
+  },
+  "hypothetical_scenarios": {
+    "extension": {
+      "assumptions": "each standalone workflow costs 100 work units; shared integration totals 20; no empirical calibration",
+      "formula": "saving = (B-I)/(2*B+W1+W2)",
+      "rows": [
+        {
+          "common_base": 40,
+          "workflow_specific_each": 60,
+          "integration": 20,
+          "standalone_total": 200,
+          "shared_total": 180,
+          "saving_percent": 10.0
+        },
+        {
+          "common_base": 60,
+          "workflow_specific_each": 40,
+          "integration": 20,
+          "standalone_total": 200,
+          "shared_total": 160,
+          "saving_percent": 20.0
+        },
+        {
+          "common_base": 80,
+          "workflow_specific_each": 20,
+          "integration": 20,
+          "standalone_total": 200,
+          "shared_total": 140,
+          "saving_percent": 30.0
+        }
+      ]
+    },
+    "maintenance": {
+      "assumptions": "diagnosis step reduced 60%; added administration 5% of old total; no empirical calibration",
+      "formula": "saving = diagnosis_share * diagnosis_reduction - added_overhead",
+      "rows": [
+        {
+          "diagnosis_share": 0.25,
+          "diagnosis_reduction": 0.6,
+          "added_overhead": 0.05,
+          "saving_percent": 10.0
+        },
+        {
+          "diagnosis_share": 0.5,
+          "diagnosis_reduction": 0.6,
+          "added_overhead": 0.05,
+          "saving_percent": 25.0
+        },
+        {
+          "diagnosis_share": 0.75,
+          "diagnosis_reduction": 0.6,
+          "added_overhead": 0.05,
+          "saving_percent": 40.0
+        }
+      ]
+    }
+  },
+  "source_records": [
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-001/result.json",
+      "sha256": "0042438231fde4bc88b03eb3cdd6ba8361c04f06e9bd7eb83433f7e4b44710bf",
+      "parent_sha_verified": true,
+      "evidence_count": 6,
+      "provenance_fields_complete": 6
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-002/result.json",
+      "sha256": "78baf8302b70b5d5178c572fa0de6adfee7a949baeea71778d0d1dfc0108901d",
+      "parent_sha_verified": true,
+      "evidence_count": 1,
+      "provenance_fields_complete": 1
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-003/result.json",
+      "sha256": "783bba38995955c229975d6d85d2a248bef3e9984ec6602d552100bdbabee182",
+      "parent_sha_verified": true,
+      "evidence_count": 4,
+      "provenance_fields_complete": 4
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-004/result.json",
+      "sha256": "93a3d4f1f5a2fda6f40b0fb0956e3a04620f280b54ef3f80bf642ab3653312dd",
+      "parent_sha_verified": true,
+      "evidence_count": 4,
+      "provenance_fields_complete": 4
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-005/result.json",
+      "sha256": "3da82b6c91015dd6523de17e56c073f23a17d451d3737637bfecd1ae0ab6beb9",
+      "parent_sha_verified": true,
+      "evidence_count": 8,
+      "provenance_fields_complete": 8
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-006/result.json",
+      "sha256": "a3d5c6f2b19ff585d29447c05af04352936c79aaaf11d435750b9a65005d1363",
+      "parent_sha_verified": true,
+      "evidence_count": 14,
+      "provenance_fields_complete": 14
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-007/result.json",
+      "sha256": "6e365784e0d2dbc4adcea5ed5aba6d3bc015936a3dee30455a7bb67aa6693b04",
+      "parent_sha_verified": true,
+      "evidence_count": 9,
+      "provenance_fields_complete": 9
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-008/result.json",
+      "sha256": "6e119f889a0a2a7d4f3e1a8c08e6b56c9dfbed367dda7b71184050a05f540106",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-009/result.json",
+      "sha256": "7b42eecc76fb05181b56cdad7b38510b1977defbd20b5f51f4b213498325b598",
+      "parent_sha_verified": true,
+      "evidence_count": 10,
+      "provenance_fields_complete": 10
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-010/result.json",
+      "sha256": "018be6abfe0e63a59b636760fa93b71313706c8020a334dae314eb27115ca42a",
+      "parent_sha_verified": true,
+      "evidence_count": 6,
+      "provenance_fields_complete": 6
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-011/result.json",
+      "sha256": "b13a96f734cf8ae87df3bd6091b6676de0006fdd1a204dae731fb5f288d4a309",
+      "parent_sha_verified": true,
+      "evidence_count": 7,
+      "provenance_fields_complete": 7
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-012/result.json",
+      "sha256": "c37c4da7c593e8cc4dce876277096f7d8b42f6e492c90925117776a14df3a941",
+      "parent_sha_verified": true,
+      "evidence_count": 10,
+      "provenance_fields_complete": 10
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-013/result.json",
+      "sha256": "0c4c5f1aa1a0a799c7ad14f11603762206a5c3fb8b69efd97e378cdf912c143f",
+      "parent_sha_verified": true,
+      "evidence_count": 7,
+      "provenance_fields_complete": 7
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-014/result.json",
+      "sha256": "6762c07d906f5bacd996acce16d13b6f465cada525475471f2645fe200725487",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-015/result.json",
+      "sha256": "dd8bed3c6db7c0eed6b1aaf58759a2a88bc69c939226140484e8d11e636a4ddc",
+      "parent_sha_verified": true,
+      "evidence_count": 6,
+      "provenance_fields_complete": 6
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-016/result.json",
+      "sha256": "5d91f29adecca381b59d2fd671d2177b3449c800fb856bc76ae2440adc38021d",
+      "parent_sha_verified": true,
+      "evidence_count": 2,
+      "provenance_fields_complete": 2
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-017/result.json",
+      "sha256": "5e4641166990f9dc70288933fd6a85af0b067b03e9091001e4a6cdf72d6327bd",
+      "parent_sha_verified": true,
+      "evidence_count": 12,
+      "provenance_fields_complete": 12
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-018/result.json",
+      "sha256": "2d60e718d737d3ba4f49550359ad7877aa874e4fa5e2a875032de41ebf24de45",
+      "parent_sha_verified": true,
+      "evidence_count": 2,
+      "provenance_fields_complete": 2
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-019/result.json",
+      "sha256": "b948a4148590f403c1bb3dc30024efcbaf0335c1b481e64380c877aa3fe07e70",
+      "parent_sha_verified": true,
+      "evidence_count": 6,
+      "provenance_fields_complete": 6
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-020/result.json",
+      "sha256": "68e8484ff0d5796aa924c785f4d9c8857d3477b6d23bb7d78e33a5a3b0d58a8a",
+      "parent_sha_verified": true,
+      "evidence_count": 2,
+      "provenance_fields_complete": 2
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-021/result.json",
+      "sha256": "63410c67976a29cde11d99d086fb18105becd22c8791bdaa276c89676297532b",
+      "parent_sha_verified": true,
+      "evidence_count": 7,
+      "provenance_fields_complete": 7
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-022/result.json",
+      "sha256": "79e13831beb3dab4b585c4be149261c4e0cd7bbed69769743b7e0c21ae654edb",
+      "parent_sha_verified": true,
+      "evidence_count": 8,
+      "provenance_fields_complete": 8
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-023/result.json",
+      "sha256": "7ed69d7dd50842308616c070141d62caec781ed1c088d13ad37971ebebbf1856",
+      "parent_sha_verified": true,
+      "evidence_count": 4,
+      "provenance_fields_complete": 4
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-024/result.json",
+      "sha256": "6fc800081dc8a662ad89ed6e3c6f881ba533c7474cd50ec6e8664bf568a1eb89",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-025/result.json",
+      "sha256": "68815a1d0fefcb4b711b66caea2402ad1c52b062dae83deff89199c5a8ab942a",
+      "parent_sha_verified": true,
+      "evidence_count": 20,
+      "provenance_fields_complete": 20
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-026/result.json",
+      "sha256": "6b47a1f4c01303173d7ddfa871d0fcba0ffadddcec7750d265cb089fa890fc91",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-027/result.json",
+      "sha256": "ab634a5bdb3386725ad69852b54e4624dfa1d7aaba7e7d1673cf06f3448a14a6",
+      "parent_sha_verified": true,
+      "evidence_count": 6,
+      "provenance_fields_complete": 6
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-028/result.json",
+      "sha256": "5a6176c2da7f0d12fc266e3d05fac3b34d41ef10f6a4327b00c072928c213c5a",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-029/result.json",
+      "sha256": "d37ba8b1a185d8147f01d8b92be9e42a1e085fdcd9e5c4cbd09929154df82752",
+      "parent_sha_verified": true,
+      "evidence_count": 9,
+      "provenance_fields_complete": 9
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-030/result.json",
+      "sha256": "34cf554fcb45ba6e86f7c18469cbea13723a5988b8a337ce308c022b6932602a",
+      "parent_sha_verified": true,
+      "evidence_count": 11,
+      "provenance_fields_complete": 11
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-031/result.json",
+      "sha256": "e4476189f21f3e288fa76cf268bf62cc2dd7f35f8c4a2d1cb40d1d6f42caf52f",
+      "parent_sha_verified": true,
+      "evidence_count": 11,
+      "provenance_fields_complete": 11
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-032/result.json",
+      "sha256": "1a63a82546190f4015de4fb075baa5d3283fb84d1721d67e8b76ab6f82b5daa0",
+      "parent_sha_verified": true,
+      "evidence_count": 3,
+      "provenance_fields_complete": 3
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-033/result.json",
+      "sha256": "dbacb945b9f95fa4dcddab39e00ca54e3594e1656fdcabd3404e8a70364b9bd5",
+      "parent_sha_verified": true,
+      "evidence_count": 4,
+      "provenance_fields_complete": 4
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-034/result.json",
+      "sha256": "d95137883bdc062472fe0d89c73fee1dafb4a4ed37a5683940cf5b8887e4a0d0",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-035/result.json",
+      "sha256": "d94607fd1964b9b62f75bfcc269e8afe09f0e4864efb039d6e5239edd2ae1c33",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-036/result.json",
+      "sha256": "3ceb1142762d0879fff1d0ce56d8ee1b58e741332196a5db63466ee0be89b137",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-037/result.json",
+      "sha256": "f26e662dbb5665b2e9edcd2d83c8d134ff339016dbabd7b378d9e9c0fb2324cd",
+      "parent_sha_verified": true,
+      "evidence_count": 14,
+      "provenance_fields_complete": 14
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-038/result.json",
+      "sha256": "cdf57e65117d42d27758ea8866ba8b3aa781b0f3bcd51ea72b45066fd9fda30e",
+      "parent_sha_verified": true,
+      "evidence_count": 13,
+      "provenance_fields_complete": 13
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-039/result.json",
+      "sha256": "aa7ccc3429fa68f83253e2e2c9935dba8e2ac7b6c34c5bd690a7ba5356e725a5",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-040/result.json",
+      "sha256": "eba64c6d4925d0125b6cb5cc4b142d3fd5029cdc424e415276aecb713c79c683",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-041/result.json",
+      "sha256": "67b18ed431f170de8d3455b17f27bc165a3328529e5886c0a7d4f770da2dcf5b",
+      "parent_sha_verified": true,
+      "evidence_count": 6,
+      "provenance_fields_complete": 6
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-042/result.json",
+      "sha256": "d5d5f95fa858910d364789687905ab4240d479faf625ae2fecee0e26ef425b20",
+      "parent_sha_verified": true,
+      "evidence_count": 15,
+      "provenance_fields_complete": 15
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-043/result.json",
+      "sha256": "581987e0aadc08b4af6963045ddadb9420d20937a385c993c4848154b5c67f3b",
+      "parent_sha_verified": true,
+      "evidence_count": 12,
+      "provenance_fields_complete": 12
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-044/result.json",
+      "sha256": "293b5cc0a3628638a992b4daabe7a813827657fd03877e5e7c0febda332c63ab",
+      "parent_sha_verified": true,
+      "evidence_count": 4,
+      "provenance_fields_complete": 4
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-045/result.json",
+      "sha256": "efaa1d38a8a5878610e75cf04d9859fd1009c678395adbc842de01071a9b5ac7",
+      "parent_sha_verified": true,
+      "evidence_count": 4,
+      "provenance_fields_complete": 4
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-046/result.json",
+      "sha256": "5858f3f03bc627fa7d5242fc3062bb9cdee012774277ad59d59cdb0760f362b4",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-047/result.json",
+      "sha256": "cca8ff181af64a0be8ac14377766c30c45e341cfcabef936c687aed0ea14b71a",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-048/result.json",
+      "sha256": "c018985a3c18a9890e754d45b4eeee886d6e004ba6b0a328f6ff5503406eca5b",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-049/result.json",
+      "sha256": "02888b79e5aa4c76ec1cded0c554261e654eaaaebfca09a3ca49bffbeb71c79e",
+      "parent_sha_verified": true,
+      "evidence_count": 6,
+      "provenance_fields_complete": 6
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-050/result.json",
+      "sha256": "3cbb7bbf78b5c5b1b5827ff00a610a7fcb6ffe0be6970f5eec4834d4a9c73a28",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/cm-051/result.json",
+      "sha256": "2784991799a166461e14ee70354ea1af8290b5d855a7502b55038c6bc4cc9846",
+      "parent_sha_verified": true,
+      "evidence_count": 6,
+      "provenance_fields_complete": 6
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/fsc-hard-001/result.json",
+      "sha256": "c9c34bc14576667b9f78b9521e2608bc14eae6a2feb0ea05dfb374da3767568a",
+      "parent_sha_verified": true,
+      "evidence_count": 6,
+      "provenance_fields_complete": 6
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/fsc-hard-002/result.json",
+      "sha256": "5c9d131fb06c2a7986f173da1208cdd0837c52220c3c9ea48cfd9b38af376f13",
+      "parent_sha_verified": true,
+      "evidence_count": 8,
+      "provenance_fields_complete": 8
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/fsc-hard-003/result.json",
+      "sha256": "b775f9cb5f9243555056477007889450713ac85332d158afa1b3340b12cbd574",
+      "parent_sha_verified": true,
+      "evidence_count": 9,
+      "provenance_fields_complete": 9
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/fsc-hard-004/result.json",
+      "sha256": "f2d288780e693a1d21dfe2ec9486972879920bfb2d650e0e6015115e12e1e07e",
+      "parent_sha_verified": true,
+      "evidence_count": 17,
+      "provenance_fields_complete": 17
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/fsc-hard-005/result.json",
+      "sha256": "48c14322010359d063017275522463cfee3ea47689300c7173505cf664dac8ad",
+      "parent_sha_verified": true,
+      "evidence_count": 10,
+      "provenance_fields_complete": 10
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/fsc-hard-006/result.json",
+      "sha256": "764ff059d847e8dbd5e9665cecaa8fafc5a343fad5050498a2d01181c0a81486",
+      "parent_sha_verified": true,
+      "evidence_count": 8,
+      "provenance_fields_complete": 8
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/fsc-hard-007/result.json",
+      "sha256": "c5d04a801ce5eb167cc2cd8e313c09a3c55a8271695827b12637a2c26af075c8",
+      "parent_sha_verified": true,
+      "evidence_count": 7,
+      "provenance_fields_complete": 7
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/fsc-hard-008/result.json",
+      "sha256": "9bbd40f759716587f6ef4c3c863953e2690caeaf3d39abf56cfa6e6aaebbee59",
+      "parent_sha_verified": true,
+      "evidence_count": 5,
+      "provenance_fields_complete": 5
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/fsc-hard-009/result.json",
+      "sha256": "e3081958e24b7cc06521f31b92e3fc01e5c2c14da2919fb2a98385323d987f4c",
+      "parent_sha_verified": true,
+      "evidence_count": 18,
+      "provenance_fields_complete": 18
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/run-001/fsc-hard-010/result.json",
+      "sha256": "f41d04c433eb9439a5a81f316fb2aaaa1a229792375e8f98ad01bb8877415cfe",
+      "parent_sha_verified": true,
+      "evidence_count": 0,
+      "provenance_fields_complete": 0
+    }
+  ]
+}

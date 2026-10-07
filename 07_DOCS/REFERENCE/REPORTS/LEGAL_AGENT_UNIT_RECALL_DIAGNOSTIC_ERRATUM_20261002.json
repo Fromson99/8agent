@@ -1,0 +1,172 @@
+{
+  "schema_version": "legal-agent-diagnostic-erratum-v1",
+  "created_at": "2026-10-02",
+  "environment": "WSL local; frozen ADR0621 candidate and pinned public generation",
+  "experiment_reexecuted": false,
+  "historical_artifacts_modified": false,
+  "parent_adr_manifest_sha256": "c957729ae994a8e8caf5d2bc4f3c4c99c452b3a8eaefbb5eac72c9e938aa06ed",
+  "source_binding": {
+    "generation_id": "term-source-1acfbe06921527e74a0b",
+    "store_sha256": "422cfa15b9dba609f3c6105e3d5d3c7dbdb27e90a09469d57ca6bc602b4d9c72"
+  },
+  "cm003": {
+    "corrected_source_number": 23,
+    "previous_incorrect_claim": "시행세칙 제27조",
+    "actual_sources": {
+      "article:3e4ab92e38b531a09f6419a9": {
+        "document_id": "3521c3aaa5a735fd",
+        "document_name": "코스닥시장 상장규정",
+        "heading": "제26조 신규상장 의무보유",
+        "unit_id": "282",
+        "source_artifact_sha256": "ce1030b85f4d2601d2fe1d5e4157ba8dedbc103c1d6c2bc8e062e0e883bc3b59"
+      },
+      "article:1fa6eb7a10072f0d8f71bfc1": {
+        "document_id": "eae25aa6e8a83c58",
+        "document_name": "코스닥시장 상장규정 시행세칙",
+        "heading": "제23조 신규상장 의무보유의 예외",
+        "unit_id": "202",
+        "source_artifact_sha256": "5317efe50650870b746b4d36e23f63ddfa2ea75feab3cbeeba7b3104bcb80400"
+      }
+    },
+    "verified_indexed_edges": [
+      {
+        "id": "ref:aa291f429fca7022f7aa6444",
+        "source_id": "article:1fa6eb7a10072f0d8f71bfc1",
+        "target_source_ids": [
+          "article:3e4ab92e38b531a09f6419a9"
+        ],
+        "source_text": "⑥ 규정 제26조제1항제5호 단서에 따른 취득가격과 공모가격의 괴리율은 다음 각 호에 따라 산정한다.",
+        "source_text_sha256": "88e756a6155ec89bbe4682b6cd9a0616ddc50f1479e7aa21356dfd6defaa8b24",
+        "locator": "제26조제1항제5호",
+        "resolution": "EXACT_NAMED_DOCUMENT_ARTICLE"
+      },
+      {
+        "id": "ref:b7f139dc03f0a73a54d25fb7",
+        "source_id": "article:1fa6eb7a10072f0d8f71bfc1",
+        "target_source_ids": [
+          "article:3e4ab92e38b531a09f6419a9"
+        ],
+        "source_text": "④ 규정 제26조제1항제3호 단서에서 \"세칙으로 정하는 경우\"란 다음 각 호의 어느 하나에 해당하는 경우를 말한다.",
+        "source_text_sha256": "a95f5d91cf8911c523d3960a6b74ce2d8a120654d26a2e12dbbe75b0052dd6b7",
+        "locator": "제26조제1항제3호",
+        "resolution": "EXACT_NAMED_DOCUMENT_ARTICLE"
+      },
+      {
+        "id": "ref:e48b25215c254c52e14f4637",
+        "source_id": "article:1fa6eb7a10072f0d8f71bfc1",
+        "target_source_ids": [
+          "article:3e4ab92e38b531a09f6419a9"
+        ],
+        "source_text": "⑤ 규정 제26조제1항제4호 단서에서 \"세칙으로 정하는 경우\"란 해당 법인이 다음 각 호의 어느 하나에 해당하는 경우를 말한다. <개정 2022. 4. 29.>",
+        "source_text_sha256": "24c28bd2087db28f6c745297c97dbc076065c4e937a20a67b9194b2a8e92f80f",
+        "locator": "제26조제1항제4호",
+        "resolution": "EXACT_NAMED_DOCUMENT_ARTICLE"
+      },
+      {
+        "id": "ref:fa59f53013a7e88940eb3176",
+        "source_id": "article:1fa6eb7a10072f0d8f71bfc1",
+        "target_source_ids": [
+          "article:3e4ab92e38b531a09f6419a9"
+        ],
+        "source_text": "① 규정 제26조제1항제1호 단서에서 \"세칙으로 정하는 경우\"란 다음 각 호의 어느 하나에 해당하는 경우를 말한다.",
+        "source_text_sha256": "d0295aaec781bf006c62239bfa112b978c3d752562f78da1f516fe28bb3366a1",
+        "locator": "제26조제1항제1호",
+        "resolution": "EXACT_NAMED_DOCUMENT_ARTICLE"
+      },
+      {
+        "id": "ref:fbba255f771d07e9b0942a61",
+        "source_id": "article:1fa6eb7a10072f0d8f71bfc1",
+        "target_source_ids": [
+          "article:3e4ab92e38b531a09f6419a9"
+        ],
+        "source_text": "③ 규정 제26조제1항제2호 단서에서 \"세칙으로 정하는 경우\"란 다음 각 호의 어느 하나에 해당하는 경우를 말한다. <개정 2022. 12. 9.>",
+        "source_text_sha256": "a22537a8a89e6d33bc062ebc4677901c1dd7672577fb5eb4b10ff72d5875a93f",
+        "locator": "제26조제1항제2호",
+        "resolution": "EXACT_NAMED_DOCUMENT_ARTICLE"
+      }
+    ],
+    "cause": "SourceRecall._discover_articles returns immediately on structure MATCH before scoped incoming/outgoing reference traversal; source26 is read but source23 is not discovered.",
+    "code": "02_BACKEND/lawrag/research/candidates/adr_0621/bounded-unit/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/source_recall.py"
+  },
+  "cm051": {
+    "actually_selected_sources": [
+      {
+        "source_id": "article:04f60d6adfd44d5ddf143981",
+        "document_name": "금융투자회사의 컴플라이언스 매뉴얼 공통·증권·선물편",
+        "heading": "➤ 공동주관회사"
+      },
+      {
+        "source_id": "article:5162263c3f19307707c8e70d",
+        "document_name": "금융투자회사의 컴플라이언스 매뉴얼 공통·증권·선물편",
+        "heading": "② 금융위원회에 보고된 일반 사모집합투자기구 또는 기관전용 사모집합투자기구 중 환매가 금지된 집합투자기구"
+      },
+      {
+        "source_id": "article:0b82911772a4984e49054b08",
+        "document_name": "금융투자회사의 컴플라이언스 매뉴얼 공통·증권·선물편",
+        "heading": "➤ 보호예수"
+      }
+    ],
+    "actual_model_decisions": [
+      {
+        "phase": "source-unit-triage",
+        "decision": {
+          "issues": [
+            "공동주관회사 선임의무 발생 시점의 보유비율 산정 기준",
+            "금융투자회사와 이해관계인의 직접·간접 보유지분 합산 방법",
+            "조합등(투자조합·사모투자전문회사)을 통한 간접보유지분의 지분율 산정 방식",
+            "의무보유등록(보호예수)으로 인한 지분율 산정 대상 제외 여부"
+          ],
+          "needs_search": false,
+          "choices": [
+            {
+              "id": "U001",
+              "scope": "subtree:2480",
+              "reason": "공동주관회사 선임의무의 발생 요건(5% 이상 10% 미만 등)과 이해관계인 보유지분 합산 원칙을 규정하고 있어, 보유비율 산정의 기본 틀을 확인하기 위해 해당 조항 전체가 필요하다."
+            },
+            {
+              "id": "U142",
+              "scope": "exact:2483",
+              "reason": "조합등(투자조합 등)을 통한 간접보유지분의 지분율 산정 방식을 구체적으로 예시하고 있어, 질문의 핵심인 '보유비율 산정 방법' 중 간접보유 부분을 확인하기 위해 선택."
+            },
+            {
+              "id": "U006",
+              "scope": "subtree:2484",
+              "reason": "주관업무 영위 가능 여부 판단 시 지분율 산정 대상에서 제외되는 경우(의무보유등록 등)를 규정하고 있어, 실제 산정 시 제외 요건을 확인하기 위해 선택."
+            }
+          ]
+        }
+      },
+      {
+        "phase": "source-unit-review",
+        "decision": {
+          "issues": [
+            "공동주관회사 선임의무 발생 시점의 보유비율 산정 기준",
+            "금융투자회사와 이해관계인의 직접·간접 보유지분 합산 방법",
+            "조합등(투자조합·사모투자전문회사)을 통한 간접보유지분의 지분율 산정 방식",
+            "의무보유등록(보호예수)으로 인한 지분율 산정 대상 제외 여부"
+          ],
+          "needs_search": false,
+          "choices": [
+            {
+              "id": "U001",
+              "scope": "subtree:2480",
+              "reason": "공동주관회사 선임의무의 발생 요건(5% 이상 10% 미만 등)과 이해관계인 보유지분 합산 원칙을 규정하고 있어, 보유비율 산정의 기본 틀을 확인하기 위해 해당 조항 전체가 필요하다."
+            },
+            {
+              "id": "U142",
+              "scope": "exact:2483",
+              "reason": "조합등(투자조합 등)을 통한 간접보유지분의 지분율 산정 방식을 구체적으로 예시하고 있어, 질문의 핵심인 '보유비율 산정 방법' 중 간접보유 부분을 확인하기 위해 선택."
+            },
+            {
+              "id": "U006",
+              "scope": "subtree:2484",
+              "reason": "주관업무 영위 가능 여부 판단 시 지분율 산정 대상에서 제외되는 경우(의무보유등록 등)를 규정하고 있어, 실제 산정 시 제외 요건을 확인하기 위해 선택."
+            }
+          ]
+        }
+      }
+    ],
+    "metric_clarification": "0/2 counts exact required normative source IDs, not zero relevant content. The model selected three substantive CM manual sources as necessary evidence. The direct rule6 body was withheld from model input and rule14 was not presented, so this is not evidence that the model read their substantive bodies and rejected them.",
+    "final_legal_answer_generated": false
+  }
+}

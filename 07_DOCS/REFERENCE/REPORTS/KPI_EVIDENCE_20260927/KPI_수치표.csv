@@ -1,0 +1,14 @@
+﻿id,name,value,unit,basis,status,source,limitation
+K01,필수 원문 전문 확보율,100.0,%,85/90 -> 90/90; +5.5556%p,과거 인샘플 회수 실험,04_EXPERIMENTS/ADR/ADR-0513-preserved-source-union/artifacts/summary.json,61문항·공개145문서. 최종 답변 정확도 아님
+K02,질문별 필수 원문 전부 확보율,100.0,%,56/61 -> 61/61; +8.1967%p,K01과 같은 실험의 다른 집계,04_EXPERIMENTS/ADR/ADR-0513-preserved-source-union/artifacts/summary.json,독립 성과로 중복 합산하지 않음
+K03,최종 원문 후보 수 감소율,97.3362850817682,%,229.55737704918033 -> 6.114754098360656,과거 인샘플 선별 실험,04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/summary.json,필수 원문 80/90; 실험 Rejected. 시간·토큰·비용 감소율 아님
+K04,선별 후 필수 원문 보존율,88.88888888888889,%,"77/90 -> 80/90; 3개 복구, 10개 잔여 누락",과거 인샘플 선별 실험,04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/summary.json,답변 정확도 아님. 사전 기준 미달
+K05,최초 선별 누락의 복구율,23.076923076923077,%,3/(90-77) = 3/13,K04와 같은 실험의 다른 집계,04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/summary.json,누락 13개 중 3개 복구. 별도 무복구 대조 실험 아님
+K06,선별 단계 평균 기록 API 비용,0.005136875081967213,USD/시도 질문,0.31334938 USD / 61,과거 DeepInfra FP8 선별 사용량,04_EXPERIMENTS/ADR/ADR-0517-bounded-provenance-protocol/artifacts/summary.json,검색계획·답변·운영비 제외. 현행 Parasail/GENOS 가격 아님
+K07,참조 해소 개선,675,건,기존 EXACT 손실 0건,"과거 후보, Proposed, MAIN 미반영",04_EXPERIMENTS/ADR/ADR-0545-suffix-resolution-baseline-same-law/artifacts/run-001/diff-summary.json,자동 해소 상태. 검색·답변 성능 개선량 아님; 알려진 기존 결함 잔존
+D_document,문서,159,건,선택된 로컬 세대 SQLite 직접 COUNT(*),2026-09-27 저장 규모,01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation,정확도·고유 개념 수·전수 검토 완료 수 아님. GENOS 데이터 규모 아님
+D_source,원문 검색 단위,33443,건,선택된 로컬 세대 SQLite 직접 COUNT(*),2026-09-27 저장 규모,01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation,정확도·고유 개념 수·전수 검토 완료 수 아님. GENOS 데이터 규모 아님
+D_occurrence,용어 출현 연결,5539572,건,선택된 로컬 세대 SQLite 직접 COUNT(*),2026-09-27 저장 규모,01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation,정확도·고유 개념 수·전수 검토 완료 수 아님. GENOS 데이터 규모 아님
+D_definition,정의 기록,8533,건,선택된 로컬 세대 SQLite 직접 COUNT(*),2026-09-27 저장 규모,01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation,정확도·고유 개념 수·전수 검토 완료 수 아님. GENOS 데이터 규모 아님
+D_reference,명시 참조 기록,146994,건,선택된 로컬 세대 SQLite 직접 COUNT(*),2026-09-27 저장 규모,01_DATA/TERM/relation-subtree-main-serving-20260920-v1/generation,정확도·고유 개념 수·전수 검토 완료 수 아님. GENOS 데이터 규모 아님
+D_dictionary,공개 사전 설명 원천 항목,4747,건,3029 + 1718,수집 스냅샷,01_DATA/LOGS/glossaries/public-20260912/verification.json,의미 검토 완료·현재 RAG 반영·고유 개념 수 아님

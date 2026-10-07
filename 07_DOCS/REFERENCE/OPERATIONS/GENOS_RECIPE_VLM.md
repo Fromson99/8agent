@@ -66,7 +66,7 @@ revise_pdf → recipe_basic.seed` 연결에서 복합 조문 표제와 독립 `�
 - 기본 한 페이지의 원본+박스 이미지 2장씩 검수한다. `MAX_PAGES`로 묶음을 늘려도 창을 겹치지 않는다.
   페이지 경계 관계는 단일 이미지에서 불확실할 수 있으므로 미확인 사항으로 남긴다.
 - 모델 요청 출력은 `min(STRUCTURE_RECIPE_MAX_TOKENS, STRUCTURE_RECIPE_REVIEW_MAX_TOKENS)`.
-  후자 기본값은 1024이며 basic 시각/본문 확인/수정 호출에 적용한다. 한도 설정이 실제 출력 잘림을
+  후자 기본값은 80000이며 basic 시각/본문 확인/수정 호출에 적용한다. 한도 설정이 실제 출력 잘림을
   없애는 것은 아니다. 잘림·응답 형식 실패·VLM hold/missing_rules/source_error·호출 예산 소진 시
   마지막 구조를 보존하고 `coverage.review_warnings`에 원인과 페이지를 기록한다.
 - 상태는 `accepted_with_warnings`; 시각 승인 상태와 구분한다. 경고 창을 승인으로 재사용하지 않는다.
@@ -292,7 +292,8 @@ v30 코드/프로토콜은 캐시 결속에 포함되므로 이전 승인/태그
 
 `genos-recipe-v28-bounded-output-recovery`는 모든 구조화 호출에 간결한 JSON 출력을
 요구하고, `max_tokens`로 잘리면 같은 큰 응답을 다시 요구하지 않고 출력 작업을 분할한다.
-기존 `LLM.structured`·GENOS 프로필·호출별 출력 한도(기본 4096, 상한 16384)는 유지한다.
+당시 `LLM.structured`·GENOS 프로필·호출별 출력 한도(기본 4096, 상한 16384)는 유지했다.
+현행 작업 코드의 GENOS 제품 호출 출력 예산은 80000이다.
 
 - 구간 목록: 전체 원문을 매번 유지하면서 다음 구간을 4개씩 요청한다. 다시 잘리면
   2개→1개로 줄인다. 이전 확정 항목과 `has_more`를 사용하며, 완전한 JSON 페이지를
@@ -335,8 +336,8 @@ checkpoint v3에는 검수 분할 범위도 저장한다. 같은 조건의 재�
 응답 파일에 유지하고 요약에는 복사하지 않는다. `STRUCTURE_RECIPE_MAX_TOKENS`는
 공개 숫자 설정이므로 인증 토큰처럼 마스킹하지 않는다. 실제 인증키 마스킹은 유지한다.
 
-16384 미만이면 모델 지원 범위에서 출력 예산 조정을 검토한다. 이미 16384이면 현행 코드의
-허용 상한이다. v28은 위 분할 복구를 시도하고, 최소 단위에서도 실패하면 보류한다.
+80000 미만이면 모델 지원 범위에서 출력 예산 조정을 검토한다. 현행 코드의 허용 상한은
+80000이다. v28은 위 분할 복구를 시도하고, 최소 단위에서도 실패하면 보류한다.
 현장 반입·실제 출력 성공 여부는 별도 확인 대상이다.
 
 ### v27에서 도입한 역할: VLM 의견 → LLM 검증·수정안
@@ -347,7 +348,7 @@ VLM은 원본/구조 오버레이와 현재 구조를 보고 의견 문자열 �
 블록 ID·실행 규칙·최종 판정을 VLM에 요구하지 않는다. 의견 ID는 코드가 부여한다.
 이후 LLM이 원문·현재 틀·VLM 의견·동일 근거 이미지를 대조하여 각 의견을 accept/reject/hold로
 분류하고 근거 블록/이유 및 수정안을 반환한다. 실행 규칙의 적용과 최종 승인 검증은 코드가 한다.
-같은 GENOS_LLM_PROFILE의 기존 LLM.structured 호출을 역할별로 사용하며 독립 모델 교차검증이 아니다.
+같은 GENOS_LLM_* 설정의 기존 LLM.structured 호출을 역할별로 사용하며 독립 모델 교차검증이 아니다.
 
 모든 의견은 정확히 한 번 판정돼야 한다. 근거 없는 채택/기각, 보류 의견의 승인, 범위 밖 블록,
 변경 없는 수정안은 통과시키지 않는다. VLM 요청은 최초 포함 2회, LLM 판정은 3회 한도다.
@@ -396,7 +397,7 @@ v25는 아래 기존 호출부를 통해 이 계약을 사용한다. 프록시 �
 | 항목 | 현행 연결 |
 |---|---|
 | 실행 | GENOS 코드스페이스 Python 3.11, pipeline.py build-data-stages |
-| 모델 | 기존 GENOS_LLM_PROFILE의 서빙·키·모델, 명시 GENOS_LLM_URL 우선 |
+| 모델 | GENOS_LLM_*의 서빙·키·모델, 명시 GENOS_LLM_URL 우선 |
 | 이미지 | 기존 LLM.structured(images=...) → image_url base64 |
 | 응답 | 기존 SSE 조립 → JSON 해석 → 구조화 schema/검수 |
 | 데이터 | RAW/internal PDF → 전처리기 전체 청크 → 틀 → VLM 검수 → 재구조화 |
@@ -406,7 +407,7 @@ v25는 아래 기존 호출부를 통해 이 계약을 사용한다. 프록시 �
 
 모델 연결 보완(v25): 구조화도 기존 `lawrag.core.llm.LLM.structured(..., images=...)`를
 직접 호출한다. 별도 HTTP transport나 VLM 프로파일을 만들지 않는다. 기존
-`GENOS_LLM_PROFILE`의 URL·키·모델 선택, `/v1/models`, `/v1/chat/completions`,
+`GENOS_LLM_*`의 URL·키·모델 선택, `/v1/models`, `/v1/chat/completions`,
 프록시 미사용, 스트리밍, JSON 모드를 그대로 사용한다. 기존 호출부는 모델 미설정 시
 `/v1/models`의 첫 모델을 선택한다. JSON schema가 거부되면 기존 호출부의 prompt 모드로
 재요청하며 이미지는 유지한다. 구조화 어댑터는 추가 재시도를 하지 않는다.
@@ -513,7 +514,7 @@ engine-host `legal-authoring`의 extract/admit/index는 아직 MIGRATION_REQUIRE
 
 MAIN/GENOS는 기존 내부 VLM 설정을 사용한다. Gemini 실험용 API 키나 research candidate를
 제품 경로에서 읽지 않는다. 더 나은 내부 VLM을 사용할 때는 기존 `GENOS_LLM_MODEL` 또는
-선택한 `GENOS_LLM_PROFILE`의 모델/서빙 ID/키를 일치시킨다. 다른 모델로 자동 fallback하지 않는다.
+`GENOS_LLM_MODEL`/`GENOS_LLM_SERVING_ID`/`GENOS_LLM_KEY`를 대상 서빙에 맞게 설정한다. 다른 모델로 자동 fallback하지 않는다.
 현재 Codex 환경에서는 GENOS 접속·배포·내부 모델 품질 확인을 할 수 없다.
 
 ```bash
@@ -521,7 +522,8 @@ export LLM_BACKEND=genos
 export STRUCTURE_RECIPE_VLM=on
 export STRUCTURE_RECIPE_REVIEW_MODE=adaptive
 # 내부 모델이 지원하는 경우 출력 예산을 늘릴 수 있다.
-export STRUCTURE_RECIPE_MAX_TOKENS=16384
+export STRUCTURE_RECIPE_MAX_TOKENS=80000
+export STRUCTURE_RECIPE_REVIEW_MAX_TOKENS=80000
 
 # 데이터 입력 목록 확인 (모델 호출 없음)
 .venv/bin/python 06_TOOLS/pipeline.py build-data-stages --run-id region-main-001 --check-only
@@ -541,7 +543,8 @@ export STRUCTURE_RECIPE_MAX_TOKENS=16384
 | STRUCTURE_RECIPE_MAX_PAGES | 기본 basic+warnings는 1, 그 외 6; 창의 원본 페이지 수. 원본+오버레이 이미지 두 장씩 제공 |
 | STRUCTURE_RECIPE_MAX_DOCUMENT_PAGES | 2000 |
 | STRUCTURE_RECIPE_MAX_CHARS | 160000; 요청 문맥 상한 |
-| STRUCTURE_RECIPE_MAX_TOKENS | 4096; 최대16384 |
+| STRUCTURE_RECIPE_MAX_TOKENS | 80000; 최대 80000. GENOS 요청의 출력 예산이며 입력 문맥 길이와 별개 |
+| STRUCTURE_RECIPE_REVIEW_MAX_TOKENS | 80000; basic 검수 요청의 출력 예산 |
 | STRUCTURE_RECIPE_MAX_CALLS | 64; 문서별 논리 호출 상한, 전송 재시도는 별도 기록 |
 | STRUCTURE_RECIPE_MAX_CORRECTIONS | 기본 basic+warnings는 2, 그 외 6; 형식 경계 재탐지는 최대2회 |
 | STRUCTURE_RECIPE_TAGS | 기본 structure store의 상위 디렉터리/structure-recipes.json |

@@ -1,0 +1,61 @@
+{
+  "schema_version": "memory-ontology-review-verification-v1",
+  "individual_final_validation": [
+    {
+      "adr": 602,
+      "exit_code": 1,
+      "output": "ERROR: final v2/v3/v4 ADR requires at least one complete run\n"
+    },
+    {
+      "adr": 603,
+      "exit_code": 0,
+      "output": "OK: 04_EXPERIMENTS/ADR/ADR-0603-corrected-route-integration-audit-receipts\n"
+    },
+    {
+      "adr": 604,
+      "exit_code": 1,
+      "output": "ERROR: final measured retrieval requires a complete run\nERROR: final v2/v3/v4 ADR requires at least one complete run\n"
+    },
+    {
+      "adr": 605,
+      "exit_code": 0,
+      "output": "OK: 04_EXPERIMENTS/ADR/ADR-0605-corrected-chain-full-model-regression\n"
+    },
+    {
+      "adr": 606,
+      "exit_code": 1,
+      "output": "ERROR: final measured retrieval requires a complete run\nERROR: final v2/v3/v4 ADR requires at least one complete run\n"
+    },
+    {
+      "adr": 607,
+      "exit_code": 0,
+      "output": "OK: 04_EXPERIMENTS/ADR/ADR-0607-native-memory-repaired-model-run\n"
+    },
+    {
+      "adr": 608,
+      "exit_code": 0,
+      "output": "OK: 04_EXPERIMENTS/ADR/ADR-0608-native-memory-new-session-reuse\n"
+    },
+    {
+      "adr": 609,
+      "exit_code": 0,
+      "output": "OK: 04_EXPERIMENTS/ADR/ADR-0609-native-memory-reuse-purpose-separation\n"
+    }
+  ],
+  "graph": {
+    "exit_code": 1,
+    "historic_errors": [
+      "ERROR: ADR-0305: invalid run purpose: ordinary local contract checks",
+      "ERROR: ADR-0444: external derived_from lacks parent record: ADR-0432-experiment-v1/navigation",
+      "ERROR: ADR-0541: declared parent not used by any arm: ADR-0539-experiment-v1/hint-plan",
+      "ERROR: duplicate experiment arm ref: ADR-0542-experiment-v1/baseline",
+      "ERROR: duplicate experiment arm ref: ADR-0542-experiment-v1/hint-plan",
+      "ERROR: graph edge source missing: ADR-0158-experiment-v1/v2-candidate"
+    ],
+    "new_scope_errors": []
+  },
+  "main_pointer_sha256": "c860cfdb1a57968df4740c1bf2bf08947dfa15c1edbcb7c14d31f85773af3b32",
+  "main_unchanged": true,
+  "production_memory_module_absent": true,
+  "domain_ontology_control_implemented": false
+}

@@ -1,0 +1,296 @@
+{
+  "reviewed_at_utc": "2026-09-19T08:45:40.826095+00:00",
+  "git_head": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "method": "self-review; stored request inspection; synthetic pure-function checks; design schema validation",
+  "new_model_calls": 0,
+  "sources": [
+    {
+      "path": "/home/jin/8-AGENT/00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "c58bd29e771036eff762062f229e4af8f4d18e6d42fac263584442a636d8db68"
+    },
+    {
+      "path": "/home/jin/8-AGENT/00_SYSTEM/DATA_MODEL.md",
+      "sha256": "7b8e37c0cea66a5e2d570409146113c6a9e4bd1e8eb10accbc2eb1c4b43c010d"
+    },
+    {
+      "path": "/home/jin/8-AGENT/00_SYSTEM/EXPERIMENT_MODEL_POLICY.json",
+      "sha256": "2e495c0818c0bb63361607358afb41c3124778ea6d48677a520ec11602bb8a07"
+    },
+    {
+      "path": "/home/jin/8-AGENT/00_SYSTEM/PIPELINE.json",
+      "sha256": "b2d5d698d4f5cdb97ba99a593778f87e6726ba69ffcb413e90baff04c0a80795"
+    },
+    {
+      "path": "/home/jin/8-AGENT/00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json",
+      "sha256": "455b033df35637a8e89bb01c65b905b38300f2795e8a4961499d66b094aa0e76"
+    },
+    {
+      "path": "/home/jin/8-AGENT/01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "sha256": "f8e98000dc8b49264ed6d94d1e67abd030806337e27bbe13ab13bec01e04d1cb"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/candidate.json",
+      "sha256": "fa6630c4fb53e4e70565f65d375544854e12f85b5b6a7aea49486df3391dd31f"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/__init__.py",
+      "sha256": "71058ebece0c1bc3980d07026ac08f9d6d5ad4599f07daa86d6ae7f4470c872a"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/bridges.py",
+      "sha256": "43bce19379d4d08e23f52ea4cc8ededb3d50983e69771dccd89c2054cae5c94a"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/checker.py",
+      "sha256": "2a0d9bf7432849970c858285837ce5519b2fede6ba31022ebf1b7cbe75766e7c"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/citations.py",
+      "sha256": "b1c1681598a952c830fc8c69b6ea00c20be0e018f6a2d3abc9de48c9d0a894af"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/composer.py",
+      "sha256": "7095efbd1a9f9db6c4a50e7cf81409a8176ea6cdecba534eca506e09c7daa757"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/contracts.py",
+      "sha256": "30c5a56cdc5f7996d726063220ee04551cd1a523c9ebc55a0a0f94dee856874e"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/harness.py",
+      "sha256": "267adda153d60197ddee869bf62c9b44c80af52b4e1ef70705df434ac3d531cc"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/index.py",
+      "sha256": "192cb7ef72e27c8897c4e3c6a544670053db1dbe93886d6b0dde4c8b58441dfb"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/locator.py",
+      "sha256": "54f815b51b1fa18bdbe75da2b64d592de0a2ca2861827f3604831cac882d8ff7"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/loop.py",
+      "sha256": "93f018b17a89cfe8c6583d7401946613b338e5d4fa3b3c1d44619647cc0ade69"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/models.py",
+      "sha256": "feb3d232ceabdfad1a9e84476023483e136ebcb0513d91da810b75ce72f13c0e"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/pipeline.py",
+      "sha256": "b56b738a767f61000e7f826fa42f99bebeb37b68494aba1f403efa6360fafefc"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/profiles.py",
+      "sha256": "4f5300f21af159405b947b50e9592fa7c64f5976346d524f8ca0ad9b77fbddf5"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/references.py",
+      "sha256": "8615fa94a9448a5f4c8121f6bdcaa95cb217fe4bf50d33da5957f5134184de32"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/replay.py",
+      "sha256": "530c6c3465b19da7d8e75bf38a74f6ae2c3bf162fd03d75b7be9dd8312baa9fd"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0472/legal-loop-v3/revisions/rev-001/snapshot/02_BACKEND/legal_agent/search.py",
+      "sha256": "67e5cd13d698598733877378ef3a82db63edc770c23c83f0878a050303f483f2"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/candidate.json",
+      "sha256": "acbec9e4519e5681ee709dc205b6b6b9d496e2e003d8045971d9217ca1f4ec65"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/__init__.py",
+      "sha256": "71058ebece0c1bc3980d07026ac08f9d6d5ad4599f07daa86d6ae7f4470c872a"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/bridges.py",
+      "sha256": "43bce19379d4d08e23f52ea4cc8ededb3d50983e69771dccd89c2054cae5c94a"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/checker.py",
+      "sha256": "2a0d9bf7432849970c858285837ce5519b2fede6ba31022ebf1b7cbe75766e7c"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/citations.py",
+      "sha256": "b1c1681598a952c830fc8c69b6ea00c20be0e018f6a2d3abc9de48c9d0a894af"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/composer.py",
+      "sha256": "7095efbd1a9f9db6c4a50e7cf81409a8176ea6cdecba534eca506e09c7daa757"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/contracts.py",
+      "sha256": "30c5a56cdc5f7996d726063220ee04551cd1a523c9ebc55a0a0f94dee856874e"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/delegation.py",
+      "sha256": "fcfd4928baf6248d6b9fd7cb9d3151918012342c27ffe5799c27f46012290fa5"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/harness.py",
+      "sha256": "267adda153d60197ddee869bf62c9b44c80af52b4e1ef70705df434ac3d531cc"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/index.py",
+      "sha256": "192cb7ef72e27c8897c4e3c6a544670053db1dbe93886d6b0dde4c8b58441dfb"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/locator.py",
+      "sha256": "54f815b51b1fa18bdbe75da2b64d592de0a2ca2861827f3604831cac882d8ff7"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/loop.py",
+      "sha256": "9fc97e786a0c4203314f7351d6e22a500d0f150839d4a7cc54e99d2062f3c1a1"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/models.py",
+      "sha256": "feb3d232ceabdfad1a9e84476023483e136ebcb0513d91da810b75ce72f13c0e"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/pipeline.py",
+      "sha256": "b56b738a767f61000e7f826fa42f99bebeb37b68494aba1f403efa6360fafefc"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/profiles.py",
+      "sha256": "af5406a9397f2d4588fd7df2a5d47361e3a62502249947486d27d8ba2e757af3"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/references.py",
+      "sha256": "8615fa94a9448a5f4c8121f6bdcaa95cb217fe4bf50d33da5957f5134184de32"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/replay.py",
+      "sha256": "530c6c3465b19da7d8e75bf38a74f6ae2c3bf162fd03d75b7be9dd8312baa9fd"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/search.py",
+      "sha256": "67e5cd13d698598733877378ef3a82db63edc770c23c83f0878a050303f483f2"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/app.py",
+      "sha256": "aa4a4566f7cf8cc27a80af33ae1741a1c8e97d43f991c6c8b35eede3e3e19e69"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/contracts.py",
+      "sha256": "14a4fa8952aa40d043a719da24caa602b70a39bc7445a38ee85a4bb2bafd52ec"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/document_agent.py",
+      "sha256": "0c3f0eea0d71da619f4ec36a0d1a908fd9e81d54ed2ebadd0d33c4ae4da8db2a"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/feedback.py",
+      "sha256": "18ba56fc30f5c1879fe8f069e0751a7aa05d19e8b2d5c9a88efc9c62365ffe92"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/fulltext.py",
+      "sha256": "7df4d52c4e9cc47d136a3106ce8ae9e715456012d1c328c998f59283657a8f29"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/genos.py",
+      "sha256": "5931b7d6dd71921f25b22ccb20d5e2a9f23622ba76f1827470cc5b46c76a043b"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/navigation_work_state.py",
+      "sha256": "042726aebdfc1e1b0aeca5c9288d2658f04d6e98d0a3f0a6b2387445ff1756ce"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/pipeline.py",
+      "sha256": "09ea902e17c90dc931cf1d66ef1cd0154779bb8d0adbed706debe5094be5a6de"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/provider.py",
+      "sha256": "ad754b2b5b8f8b610b40ab75c70f97eb60c3fcfa00eefb4c6adef4dab88640b2"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/stages.py",
+      "sha256": "ace52cf958806049b90f7f73a887e522c3b711096cd2c54234acbb231d9a6b4d"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/storage.py",
+      "sha256": "e1f864b7c4e33acb09eb296c82ee3a707d0e9aa95009bd0bf52e13a8bc685804"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/task_harness.py",
+      "sha256": "71eb89e9a5af2344d0ea79b4beec7e429cdad131a51bff3c6cef87df64426217"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/task_harness_agent.py",
+      "sha256": "c6d8e225c0dd145368faa852d68080bc813ff75b0f03c890e61442fe76d889d5"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/task_policy.py",
+      "sha256": "4672b5cc2455dade7f26a11b4faed70769aac6b92e2d2d91c57b176b1f44135c"
+    },
+    {
+      "path": "/home/jin/8-AGENT/02_BACKEND/semantic_runtime/term_agent.py",
+      "sha256": "c2e829c852e169705613a3204715cccea2ee19e8e5165eaf4cfd0c18e383e562"
+    },
+    {
+      "path": "/home/jin/8-AGENT/04_EXPERIMENTS/ADR/ADR-0472-legal-agent-loop-rev3/README.md",
+      "sha256": "ace3e438c02783d5606671f6778f8fa536bedcbae7c2112ee37cc42724d96951"
+    },
+    {
+      "path": "/home/jin/8-AGENT/04_EXPERIMENTS/ADR/ADR-0472-legal-agent-loop-rev3/artifacts/frozen-inputs.json",
+      "sha256": "79fd53d7064f555d24bdd4291186c88edd1cbad0cb746e0ff49c76db25c46c6f"
+    },
+    {
+      "path": "/home/jin/8-AGENT/04_EXPERIMENTS/ADR/ADR-0472-legal-agent-loop-rev3/artifacts/judged-results.json",
+      "sha256": "2c1dac1e37849db5b06904e4be60c1cb5dfbdba9015bc8eb5ded9803634958a7"
+    },
+    {
+      "path": "/home/jin/8-AGENT/04_EXPERIMENTS/ADR/ADR-0472-legal-agent-loop-rev3/artifacts/loop-results.json",
+      "sha256": "3bbe7fd5948fe57e9959fcd983691e680a3154558307331174073a35cfb2983f"
+    },
+    {
+      "path": "/home/jin/8-AGENT/04_EXPERIMENTS/ADR/ADR-0472-legal-agent-loop-rev3/artifacts/metrics.json",
+      "sha256": "5a29c4a51d771c43cbb791e9e292fe111ef059f51c527740bf50e88fc26ec4ad"
+    },
+    {
+      "path": "/home/jin/8-AGENT/04_EXPERIMENTS/ADR/ADR-0473-legal-agent-loop-rev4/README.md",
+      "sha256": "8d9cc380f5ecaca31741d7cf5ef4ffc7830a052f55b4d67ac730ea005f9f173d"
+    },
+    {
+      "path": "/home/jin/8-AGENT/04_EXPERIMENTS/ADR/ADR-0473-legal-agent-loop-rev4/artifacts/frozen-design.json",
+      "sha256": "68253a514fe2a83cdc36084e771311457cb6ba0b47bdd09412c7222234ba419f"
+    },
+    {
+      "path": "/home/jin/8-AGENT/04_EXPERIMENTS/ADR/ADR-0473-legal-agent-loop-rev4/artifacts/s1-gate.json",
+      "sha256": "931164b5dccf67acd10f501d78528461f4565ae8f43c08b18d8181ccf495bb05"
+    },
+    {
+      "path": "/home/jin/8-AGENT/05_TESTS/REGRESSION/core/test_genos_rag_chat.py",
+      "sha256": "a5b350b802c7a29068a8549b90dd2b3915e9b30d866752dc0c2c1189202eec0c"
+    },
+    {
+      "path": "/home/jin/8-AGENT/07_DOCS/REFERENCE/ARCHITECTURE/LEGAL_AGENT_SYSTEM.md",
+      "sha256": "25976c2d8070514d051a4c38a6acc6cad2a55c69785966c4f2d33bdc2c41d18f"
+    },
+    {
+      "path": "/home/jin/8-AGENT/07_DOCS/REFERENCE/OPERATIONS/TASK_HARNESS.md",
+      "sha256": "2469759c40c9f96cf09cb4687841177d3950feea336fcac8bc776be24d2d3fbc"
+    },
+    {
+      "path": "/home/jin/8-AGENT/07_DOCS/REFERENCE/RAG/LEGAL_AGENT_HARNESS.md",
+      "sha256": "5223806ec33da467ac3586d3a87d43c109927dcb39bdb7788c2f247d81b72361"
+    },
+    {
+      "path": "/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+      "sha256": "0d2b1b4fae14f2004c3219d0e35be7f8376c3c8625bcdfe56b0a9a5aec661a21"
+    },
+    {
+      "path": "/home/jin/8-AGENT/AGENTS.md",
+      "sha256": "94909588c168d330dace88f7ff1c4549a23539137a55b17b534fb0d21a4a5848"
+    },
+    {
+      "path": "/home/jin/8-AGENT/GENOS.md",
+      "sha256": "aca896f10aa2770af2aa1463e728dcefce701f04e168909df2c8205e3e33b30e"
+    },
+    {
+      "path": "/home/jin/8-AGENT/service.py",
+      "sha256": "42fb64405e33f1ca977ef724ab69706fcf7eef2ce5a1554a64b5cb1ffcaf3c0d"
+    }
+  ]
+}

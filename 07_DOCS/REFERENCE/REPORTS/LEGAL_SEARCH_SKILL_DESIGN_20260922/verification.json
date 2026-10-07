@@ -1,0 +1,112 @@
+{
+  "schema_version": "design-document-verification-v1",
+  "checked_at": "2026-09-22T01:08:57.951951+00:00",
+  "report_sha256": "be7a234c834770b2efa9dd0be8d07148e5ec451f2ce429602fe1798a8befc7f1",
+  "local_link_count": 16,
+  "missing_local_links": [],
+  "links": [
+    {
+      "label": "ARCHITECTURE",
+      "target": "00_SYSTEM/ARCHITECTURE.md",
+      "exists": true
+    },
+    {
+      "label": "최초 근거 목록",
+      "target": "07_DOCS/REFERENCE/REPORTS/LEGAL_SEARCH_SKILL_DESIGN_20260922/source-inventory.json",
+      "exists": true
+    },
+    {
+      "label": "후속 기록",
+      "target": "07_DOCS/REFERENCE/REPORTS/LEGAL_SEARCH_SKILL_DESIGN_20260922/final-source-observations.json",
+      "exists": true
+    },
+    {
+      "label": "service.py",
+      "target": "service.py",
+      "exists": true
+    },
+    {
+      "label": "app.py",
+      "target": "02_BACKEND/semantic_runtime/app.py",
+      "exists": true
+    },
+    {
+      "label": "pipeline.py",
+      "target": "02_BACKEND/semantic_runtime/pipeline.py",
+      "exists": true
+    },
+    {
+      "label": "adapter",
+      "target": "02_BACKEND/semantic_runtime/legal_agent_adapter.py",
+      "exists": true
+    },
+    {
+      "label": "coordinator",
+      "target": "02_BACKEND/semantic_runtime/legal_agent/coordinator.py",
+      "exists": true
+    },
+    {
+      "label": "ADR-0474 trajectory audit",
+      "target": "07_DOCS/REFERENCE/REPORTS/ADR-0474_PHASE0_TRAJECTORY_AUDIT_20260920.md",
+      "exists": true
+    },
+    {
+      "label": "CM003 도구 루프 진단",
+      "target": "07_DOCS/REFERENCE/REPORTS/CM003_TOOL_LOOP_DIAGNOSIS_20260921.md",
+      "exists": true
+    },
+    {
+      "label": "v5 완료 기록",
+      "target": "07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_V5_COMPLETION_20260922/README.md",
+      "exists": true
+    },
+    {
+      "label": "EXPERIMENT_AGENT_PROMPT",
+      "target": "04_EXPERIMENTS/LEGACY_ADR/EXPERIMENT_AGENT_PROMPT.md",
+      "exists": true
+    },
+    {
+      "label": "STANDARD",
+      "target": "04_EXPERIMENTS/LEGACY_ADR/STANDARD.md",
+      "exists": true
+    },
+    {
+      "label": "설계 기준 파일 목록",
+      "target": "07_DOCS/REFERENCE/REPORTS/LEGAL_SEARCH_SKILL_DESIGN_20260922/source-inventory.json",
+      "exists": true
+    },
+    {
+      "label": "후속 변경 관찰",
+      "target": "07_DOCS/REFERENCE/REPORTS/LEGAL_SEARCH_SKILL_DESIGN_20260922/final-source-observations.json",
+      "exists": true
+    },
+    {
+      "label": "문서 검사 결과",
+      "target": "07_DOCS/REFERENCE/REPORTS/LEGAL_SEARCH_SKILL_DESIGN_20260922/verification.json",
+      "exists": true
+    }
+  ],
+  "external_reference_links": [
+    "https://github.com/anthropics/knowledge-work-plugins/blob/main/enterprise-search/skills/search-strategy/SKILL.md",
+    "https://github.com/tobi/qmd/blob/main/skills/qmd/SKILL.md",
+    "https://github.com/daymade/claude-code-skills/blob/main/deep-research/SKILL.md"
+  ],
+  "active_pointer_unchanged": true,
+  "concurrent_changed_paths": [
+    "00_SYSTEM/PIPELINE.json",
+    "00_SYSTEM/LEGAL_AGENT/profile-tools-v5.json"
+  ],
+  "checks": {
+    "markdown_fences_balanced": true,
+    "no_trailing_whitespace": true,
+    "documentation_index_link_present": true
+  },
+  "not_run": [
+    "runtime tests",
+    "retrieval evaluation",
+    "model calls",
+    "GENOS execution",
+    "MAIN activation"
+  ],
+  "scope": "documentation link/format and source drift checks; not product behavior validation"
+}

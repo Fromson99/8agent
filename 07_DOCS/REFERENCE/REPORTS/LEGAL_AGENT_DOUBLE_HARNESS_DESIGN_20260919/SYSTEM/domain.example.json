@@ -1,0 +1,49 @@
+{
+  "schema_version": "legal-domain-design-v1",
+  "domain_id": "legal-grounding-initial",
+  "question_coverage": "every_question_piece_resolved_or_unresolved",
+  "evidence_policy": {
+    "require_exact_spans": true,
+    "require_presented_before_adoption": true,
+    "scope_expansion": "forbidden",
+    "unknown_effective_date": "no_current_applicability_assertion"
+  },
+  "checks": [
+    {
+      "check_id": "CITATION_MEMBERSHIP",
+      "trigger": "every_claim",
+      "reason_code": "CITATION_FORMAT_ERROR",
+      "evaluator": "deterministic"
+    },
+    {
+      "check_id": "QUALIFIER_PRESERVATION",
+      "trigger": "condition_text",
+      "reason_code": "MISSED_QUALIFIER",
+      "evaluator": "model_review"
+    },
+    {
+      "check_id": "REFERENCE_COMPLETION",
+      "trigger": "reference_text",
+      "reason_code": "DATA_GAP",
+      "evaluator": "model_review"
+    },
+    {
+      "check_id": "CONFLICT_RESOLUTION",
+      "trigger": "contradiction",
+      "reason_code": "CONFLICTING_SOURCE",
+      "evaluator": "model_review"
+    },
+    {
+      "check_id": "FACT_DEPENDENCY",
+      "trigger": "missing_fact",
+      "reason_code": "MISSING_FACT",
+      "evaluator": "model_review"
+    }
+  ],
+  "closure_policy": {
+    "require_current_dependencies": true,
+    "require_review_of_each_claim": true,
+    "no_progress": "bound_or_clarify",
+    "empty_evidence": "no_legal_conclusion"
+  }
+}

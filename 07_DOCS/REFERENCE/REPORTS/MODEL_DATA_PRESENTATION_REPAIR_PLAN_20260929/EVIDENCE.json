@@ -1,0 +1,239 @@
+{
+  "schema_version": "implementation-plan-evidence-v1",
+  "observed_at": "2026-09-29T07:11:40.012107+00:00",
+  "task_scope": "Read-only code and saved-input investigation; repair plan document only",
+  "plan": {
+    "path": "07_DOCS/REFERENCE/REPORTS/MODEL_DATA_PRESENTATION_REPAIR_PLAN_20260929/PLAN.ko.md",
+    "sha256": "33e8215790a1087c3733bef197b06a5a99c139e567e41b6ee49d9aca0694af63"
+  },
+  "active_local_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "legal-agent-structure-catalogue-pecab-repair-20260929-r1",
+    "generation": 31,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/legal-agent-structure-catalogue-pecab-repair-20260929-r1/release.json",
+    "release_manifest_sha256": "e1efaec06421922b8458d5dca22011ea3a4a8f1659658a75a002aee2c446dc03",
+    "activated_at": "2026-09-29T06:27:34.974166+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "4363def1fa2a5c6054a973d8c7085782eac3483b4eeaf3a0bf350ae91df4f960"
+  },
+  "release_manifest_hash_verified": true,
+  "data_manifest_hash_verified": true,
+  "core_working_and_frozen_comparison": [
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/gateway.py",
+      "working_sha256": "3e4ef425e1abaadd22dd8180a21f3b2c556864e20ead32d744819a0a8e307d51",
+      "frozen_sha256": "3e4ef425e1abaadd22dd8180a21f3b2c556864e20ead32d744819a0a8e307d51",
+      "equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relation_views.py",
+      "working_sha256": "9e3d361aaf7becdbb95229e4128d3eabaf4a824a7876df72be17f8ced03adbaf",
+      "frozen_sha256": "9e3d361aaf7becdbb95229e4128d3eabaf4a824a7876df72be17f8ced03adbaf",
+      "equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_selection.py",
+      "working_sha256": "b5e159d1920d92d9915ddcab47be323472be73b620478c69ff501a4cc871be1a",
+      "frozen_sha256": "b5e159d1920d92d9915ddcab47be323472be73b620478c69ff501a4cc871be1a",
+      "equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/numbered_references.py",
+      "working_sha256": "ce16f1ab356c0db081bc024a3f65df6efb4d1f9cf5c82f5b4dfd36df8f47f2a6",
+      "frozen_sha256": "ce16f1ab356c0db081bc024a3f65df6efb4d1f9cf5c82f5b4dfd36df8f47f2a6",
+      "equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relations_repository.py",
+      "working_sha256": "97d9ed838aed157cf7f05793b6f88af17776b564454fa0c5176fa1156eee7ca8",
+      "frozen_sha256": "97d9ed838aed157cf7f05793b6f88af17776b564454fa0c5176fa1156eee7ca8",
+      "equal": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py",
+      "working_sha256": "c808d4c19fd2a2876cd0c28dc6ffd1872f55c0dc9266270cd7b553010fb3e5d8",
+      "frozen_sha256": "c808d4c19fd2a2876cd0c28dc6ffd1872f55c0dc9266270cd7b553010fb3e5d8",
+      "equal": true
+    }
+  ],
+  "input_pins": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 11973,
+      "sha256": "efca227202ff159da96704cbb25c7b0063bc5d10ea82c5f0f27604bff1d5d236"
+    },
+    {
+      "path": "GENOS.md",
+      "bytes": 59235,
+      "sha256": "3f69cc3623c7ba1097ca8f80b260bb1bfe932c9cc6b8b0862a719eafd84e826d"
+    },
+    {
+      "path": "service.py",
+      "bytes": 41689,
+      "sha256": "5f1d0780e3d2e8dec7b9e89d131236fd6cae2b64117797735b1aee3520e062e8"
+    },
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "bytes": 18568,
+      "sha256": "5d96864e3f5cbfc5b00d1f0ec71b08401c7c681394c8e441f68357c040b75c7d"
+    },
+    {
+      "path": "00_SYSTEM/DATA_MODEL.md",
+      "bytes": 8789,
+      "sha256": "80029c785422c9d1d5c51c6843ab89abefddb76bf3987fa199e91f03ee21b2ee"
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "bytes": 48971,
+      "sha256": "35ead65547210a0012bec320db915134f6d9396320c9cf1321db9a4f3df8609a"
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "bytes": 2553,
+      "sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6"
+    },
+    {
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "bytes": 616,
+      "sha256": "32f82b2154d193e6e0a2c18e1b0c24170623727764dcacaff4ebac86575c6bd3"
+    },
+    {
+      "path": "04_EXPERIMENTS/LEGACY_ADR/EXPERIMENT_AGENT_PROMPT.md",
+      "bytes": 11833,
+      "sha256": "f63ca7d55d2e56518f64f383344b345c66e0ab98ac9d8d7f3b44888cd1df3c70"
+    },
+    {
+      "path": "04_EXPERIMENTS/LEGACY_ADR/STANDARD.md",
+      "bytes": 25103,
+      "sha256": "5fb7cae7426cd7b97a4e4f76e469fae60701bff74a61f20088d4e84a07f11de4"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0557-structure-main-qwen14/실험/manifest.json",
+      "bytes": 14960,
+      "sha256": "dcc1f2c4032fb98598b479585f2a305955700088becd7065eda40f67b4258b75"
+    },
+    {
+      "path": "09_ARTIFACTS/AUDITS/20260929-model-data-presentation-audit/REPORT.ko.md",
+      "bytes": 27760,
+      "sha256": "c7812ca6fbee801d3ea5f6212db436a6e73fba12db249631a6d671586111d0e5"
+    },
+    {
+      "path": "09_ARTIFACTS/AUDITS/20260929-model-data-presentation-audit/payload-accounting.json",
+      "bytes": 35207,
+      "sha256": "d5177abad2d23d793838ed8b92d8c37bfbfffc81a2c8e3af07bc841776e1be7a"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/LEGAL_AGENT_PROMPT_COMPACTION_20260928.md",
+      "bytes": 7498,
+      "sha256": "d24075669abb3b76e5b5f1e2f60947210e75984daf820f384d2d9b4207b3fe81"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/gateway.py",
+      "bytes": 20355,
+      "sha256": "3e4ef425e1abaadd22dd8180a21f3b2c556864e20ead32d744819a0a8e307d51"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relation_views.py",
+      "bytes": 8537,
+      "sha256": "9e3d361aaf7becdbb95229e4128d3eabaf4a824a7876df72be17f8ced03adbaf"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_selection.py",
+      "bytes": 16777,
+      "sha256": "b5e159d1920d92d9915ddcab47be323472be73b620478c69ff501a4cc871be1a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/numbered_references.py",
+      "bytes": 11593,
+      "sha256": "ce16f1ab356c0db081bc024a3f65df6efb4d1f9cf5c82f5b4dfd36df8f47f2a6"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relations_repository.py",
+      "bytes": 8986,
+      "sha256": "97d9ed838aed157cf7f05793b6f88af17776b564454fa0c5176fa1156eee7ca8"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py",
+      "bytes": 23783,
+      "sha256": "c808d4c19fd2a2876cd0c28dc6ffd1872f55c0dc9266270cd7b553010fb3e5d8"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py",
+      "bytes": 25657,
+      "sha256": "29fd4b74e56128b3b691e964b772dc166daa3f46716dfa12ad183c51ab3afe92"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py",
+      "bytes": 13449,
+      "sha256": "308d71342f7c6625a2f766d4cfa6584aebda688f30e889c0001d59786e32d143"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_relation_cards.py",
+      "bytes": 18691,
+      "sha256": "ca9f78976336614d5de5cf2a451c0ac076c4df451bbd97a7cc8bb4b097cff36c"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py",
+      "bytes": 33890,
+      "sha256": "715633d3f1b85da303782ab9da39941f71798b5b52f87d3b154b97bb2d0a837c"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py",
+      "bytes": 9992,
+      "sha256": "c29bac2b08d9791e0c68c72d0f64fe8d07222bf0a6bb291c135c5814dcc7b4ed"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/question_obligations.py",
+      "bytes": 20430,
+      "sha256": "bb7cbb5624f416f5c62d3d23b0a89fe7b9cf71ffddbb0c0060ab1096415a8c6e"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_senses.py",
+      "bytes": 14662,
+      "sha256": "0c35ea8c5e1707f9fe4856e2c65c5cd08e9095a6406d6f1a442ada87a6669faa"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/glossary_review.py",
+      "bytes": 32722,
+      "sha256": "9220693b34b9922c50ddc28d3b888223a040b686f4e0b2da06f945e5db6e7b96"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/genos_backend.py",
+      "bytes": 9498,
+      "sha256": "6b8cb7c89ce0d69a34e4f987ce95eb5f5701e3b082b7414c5249460c187c8f9f"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/reference_resolution_repository.py",
+      "bytes": 18226,
+      "sha256": "dac43c4bfe88ea929f361725cfbcb67d154fc371ccc4addeb473d1a8bc5af0bc"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_runtime.py",
+      "bytes": 26064,
+      "sha256": "064dbe6751da8000242256762f02c0a281797d8617fec9f350f64b123b2ad556"
+    },
+    {
+      "path": "02_BACKEND/lawrag/platform/main_promotion.py",
+      "bytes": 61574,
+      "sha256": "d9c9c753aab1844e6abb1e62d9b094aacf8f7f6e226cb027a0b32e8eae049e21"
+    },
+    {
+      "path": "08_DEPLOYMENT/RELEASES/legal-agent-structure-catalogue-pecab-repair-20260929-r1/release.json",
+      "bytes": 25010,
+      "sha256": "e1efaec06421922b8458d5dca22011ea3a4a8f1659658a75a002aee2c446dc03"
+    }
+  ],
+  "validation": {
+    "local_links_exist": true,
+    "wsl_environment_check": "passed",
+    "review": "self-review; not independent review",
+    "new_model_calls": 0,
+    "new_experiments": 0,
+    "product_code_modified": false,
+    "main_changed": false,
+    "genos_access_attempted": false,
+    "genos_deployed": false
+  }
+}

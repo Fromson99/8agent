@@ -1,0 +1,291 @@
+{
+  "method": "Existing recorded inputs matched by case/call/phase; no replay of model decisions or regrading. Synthetic tests invoke actual pure functions.",
+  "results": {
+    "loop3-flash": {
+      "matched_request_files": 176,
+      "duplicate_matches": [],
+      "created_card_case_pairs": 963,
+      "payload_card_case_pairs": 906,
+      "created_never_in_payload": [
+        {
+          "case_id": "cm-008",
+          "source_ids": [
+            "article:2f5969078a9fdea1b8bbd537",
+            "article:4a1de91cbfefdebb125c16c3",
+            "article:7699eaead49c70f62f3d467f",
+            "article:a522707066d393edaa18bc5a",
+            "article:de43b70d9676799f8e9752b5"
+          ]
+        },
+        {
+          "case_id": "cm-015",
+          "source_ids": [
+            "article:099e3850c79fb0ed771144bb",
+            "article:2250836f283a4a965fc10065",
+            "article:416adfaf29e01b440e698021",
+            "article:6aa1dcaa39e324f67fc59a41",
+            "article:d68173cfff1da24e6714877b",
+            "article:fc1be184cf0999fd476f3045"
+          ]
+        },
+        {
+          "case_id": "cm-014",
+          "source_ids": [
+            "article:09ff5539bb9d9b620c2aa70f",
+            "article:0a493e6fae605d7a0383c847",
+            "article:523808eb861317b2e523d109",
+            "article:ad58101ab1ecb72b61833b4a"
+          ]
+        },
+        {
+          "case_id": "cm-023",
+          "source_ids": [
+            "article:04d6c0e320b1382d6811d416",
+            "article:0c32345188739105d4282013",
+            "article:3ac34c026d1203b7b934c1a7",
+            "article:563553a87a2735cf235ad3c2"
+          ]
+        },
+        {
+          "case_id": "cm-027",
+          "source_ids": [
+            "article:0139b7c86ab7956775c675ab",
+            "article:25cb12b00af7315b7d8aee6d",
+            "article:34d0bb8a14491ba9d8133c17",
+            "article:6c992fdf65751f2b4ba91047",
+            "article:9a1076c804d52776d161ceeb",
+            "article:a14b125ab74b5385d612c804",
+            "article:a70081cd25846ab71bf2f05d",
+            "article:c406aa540a02d44e614c7565",
+            "article:c4241f2c50127c325604b242",
+            "article:e279c695358cee5906a49c12",
+            "article:e8c48d6a82d40c651b6b6f81",
+            "article:fcc44b7e280c634cf7f37267"
+          ]
+        },
+        {
+          "case_id": "cm-031",
+          "source_ids": [
+            "article:4a1de91cbfefdebb125c16c3",
+            "article:4d76b421a8dcec0ae964862f",
+            "article:9962efdc3356427b218f32ec",
+            "article:9b9ab30cc21743c5c1b610b4",
+            "article:b6f30a65ee3f239472228bd5",
+            "article:d6e9b907dc319b2085472bf6",
+            "article:de43b70d9676799f8e9752b5",
+            "article:fe1174be36c8d07852e74e92"
+          ]
+        },
+        {
+          "case_id": "cm-036",
+          "source_ids": [
+            "article:8b32f8e438e6cd4a025be3e8",
+            "article:962d7c08557af4f3005a71a6",
+            "article:c171306dc369ec2a000fdae7",
+            "article:dc1d6031135019ce7e0b4c4a"
+          ]
+        },
+        {
+          "case_id": "cm-045",
+          "source_ids": [
+            "article:156659ad50c11f9d4d562f52",
+            "article:3cd539d3f7730d111ca0ae74",
+            "article:4822e00b69decc419eb1994a",
+            "article:87605db3304100da73b29f42",
+            "article:92637b020d4ee74fd25fe1e5",
+            "article:f979e6e9a5bd46f33df9d74c"
+          ]
+        },
+        {
+          "case_id": "cm-043",
+          "source_ids": [
+            "article:3e0c303642e0c4dcbc26f6bd",
+            "article:4c1becaf12f244e78478eee0",
+            "article:8330d300a2e22d8a4137a2b5",
+            "article:a13cac4c27af12fb75d324a6"
+          ]
+        },
+        {
+          "case_id": "cm-051",
+          "source_ids": [
+            "article:0368ff23dc9c167d183590b4",
+            "article:72f69d94351335ea26e2bf8f",
+            "article:8ff9c1ae5e5e13fc57e3299d",
+            "article:af29f21a7b227a1219750c99"
+          ]
+        }
+      ],
+      "gold_created": 68,
+      "gold_in_payload": 68,
+      "max_cards_in_payload": 20,
+      "max_navigation_json_chars": 60572,
+      "composition_clipped": [
+        {
+          "case_id": "cm-047",
+          "source_id": "article:ad78c214613a879610b8362c",
+          "label": "증권 인수업무 등에 관한 규정 제9조",
+          "full_chars": 8086,
+          "sent_chars": 6000
+        }
+      ],
+      "prior_card_fragments_lost": [],
+      "model_call_seconds_sum_per_case_median": 4.7,
+      "calls": 176,
+      "calls_mean": 3.450980392156863,
+      "cost_usd": 0.31463525,
+      "cost_basis": "frozen policy arithmetic, not current price verification",
+      "request_paths_sha256": "d1f0bdf2b0fefd161792f496a3ad524528e3e664b125e31f85ba516ccac5bab0"
+    },
+    "loop3-qwen": {
+      "matched_request_files": 180,
+      "duplicate_matches": [],
+      "created_card_case_pairs": 903,
+      "payload_card_case_pairs": 849,
+      "created_never_in_payload": [
+        {
+          "case_id": "cm-015",
+          "source_ids": [
+            "article:099e3850c79fb0ed771144bb",
+            "article:2250836f283a4a965fc10065",
+            "article:416adfaf29e01b440e698021",
+            "article:6aa1dcaa39e324f67fc59a41",
+            "article:d68173cfff1da24e6714877b",
+            "article:fc1be184cf0999fd476f3045"
+          ]
+        },
+        {
+          "case_id": "cm-012",
+          "source_ids": [
+            "article:1b5aa0b8597ce04ece620097",
+            "article:49ef9c10c75d5f5520177c57",
+            "article:8f51a64fdff4baecc17f2e5a",
+            "article:9dced1e4460be7de9b967d79",
+            "article:bc39ae954755b6fb0078f01c",
+            "article:d4b70f2131d7e9859aa233d8",
+            "article:dae40a422e53faef7fae63d1",
+            "article:db3e5f8234eedb528aad6e92",
+            "article:fbadcd4ee42cf70bf308b087",
+            "article:fbe8f0008b8209b80beb52c0"
+          ]
+        },
+        {
+          "case_id": "cm-019",
+          "source_ids": [
+            "article:2aeb5a4045a55e58c1cf7e9d",
+            "article:6a02ee0246cb0794e5f1a6f8",
+            "article:a62d61651f5dca345024ef97",
+            "article:c8eaa9f4523dfb8af312c2fa"
+          ]
+        },
+        {
+          "case_id": "cm-017",
+          "source_ids": [
+            "article:8f93f2a1bfc043dd9a90e23f",
+            "article:9dd397640016897b57953e7d",
+            "article:d604e4eaed4932ee46b0b28c"
+          ]
+        },
+        {
+          "case_id": "cm-016",
+          "source_ids": [
+            "article:bcbf87f72526a7fc99ab321f"
+          ]
+        },
+        {
+          "case_id": "cm-020",
+          "source_ids": [
+            "article:02e426906c5c500206ecffc7",
+            "article:4696165d58c546e856fc3a76",
+            "article:d22d25365efb04b92e821490",
+            "article:d7fbbbf492f3a0fb35db897d"
+          ]
+        },
+        {
+          "case_id": "cm-031",
+          "source_ids": [
+            "article:036903bec6d82386502addee",
+            "article:397f50e03baa368eb742cb1c",
+            "article:803d504cb0e61dab93797d90",
+            "article:8c383d8d6de43b7b78da25ac",
+            "article:9d06eb82b9c800e9a697ea2f",
+            "article:a948f96922b2473a66b52fe4",
+            "article:adf70dae685b12e991254d84",
+            "article:dcf6a547b4accc9ed266e613",
+            "article:f213ac3542faffa7b2f7afac"
+          ]
+        },
+        {
+          "case_id": "cm-035",
+          "source_ids": [
+            "article:1e0cb91d76a98b649c0a66a6",
+            "article:2b741cbc4ad43e207eb1090e",
+            "article:2d4726436dc560f004cfb7da",
+            "article:5b0e9b8f7d01e423ffc04ec1",
+            "article:80074e5b846fc0ec464ccdf8",
+            "article:a9a6d0991ef344a6cf65b36b"
+          ]
+        },
+        {
+          "case_id": "cm-041",
+          "source_ids": [
+            "article:02e8544c8e7bcae6f6058604",
+            "article:25cd7d3b481330f06c08e8c3",
+            "article:4f6ad0130bb23d69ac5afa41",
+            "article:d0113264bb78c3f67143d297",
+            "article:d353d09f28c530c6ab7a42ac"
+          ]
+        },
+        {
+          "case_id": "cm-046",
+          "source_ids": [
+            "article:489a50c4009acc4b249d6677",
+            "article:b09982ef3275b3a5cf766411",
+            "article:bf0294c6a51417b4f5f783a4",
+            "article:cd9575321e77428cadca51b5",
+            "article:d5c84bbbb760c74f4a3ecda8",
+            "article:fb34dd345b424e3079ef58c2"
+          ]
+        }
+      ],
+      "gold_created": 65,
+      "gold_in_payload": 64,
+      "max_cards_in_payload": 19,
+      "max_navigation_json_chars": 59580,
+      "composition_clipped": [
+        {
+          "case_id": "cm-047",
+          "source_id": "article:ad78c214613a879610b8362c",
+          "label": "증권 인수업무 등에 관한 규정 제9조",
+          "full_chars": 8086,
+          "sent_chars": 6000
+        }
+      ],
+      "prior_card_fragments_lost": [],
+      "model_call_seconds_sum_per_case_median": 9.643,
+      "calls": 180,
+      "calls_mean": 3.5294117647058822,
+      "cost_usd": 0.3685713,
+      "cost_basis": "stored provider receipts",
+      "request_paths_sha256": "c2e8e0363846ac88302d45347c24b64931ebb88a3a6489136bd264e1b3a7005d"
+    }
+  },
+  "compatibility": {
+    "normalized_request_extra_keys": [
+      "channel",
+      "request_id",
+      "session_id",
+      "user_id"
+    ],
+    "request_schema_errors": [
+      "Additional properties are not allowed ('channel', 'request_id', 'session_id', 'user_id' were unexpected)"
+    ],
+    "bridge_used_source_ids": [],
+    "bridge_renders_unused_context": true,
+    "candidate_answer_rejected_by_current_schema": true,
+    "explicit_other_document_missing_article": {
+      "via": "already_resolved",
+      "returned_target": "article:wrong-old-target",
+      "wrong_old_target_preserved": true
+    }
+  }
+}

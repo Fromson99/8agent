@@ -1,0 +1,77 @@
+{
+  "created_at": "2026-09-21T14:38:08.779459+00:00",
+  "scope": "User-directed editorial revision focused on LLM agent judgment; operational incident analysis excluded",
+  "review_type": "self review",
+  "new_model_calls": 0,
+  "new_experiments": false,
+  "product_code_changed": false,
+  "model_policy_changed": false,
+  "completed_adrs_edited": false,
+  "checks": {
+    "local_links_exist": true,
+    "markdown_table_columns_consistent": true,
+    "operational_incident_content_removed": true,
+    "twelve_capability_rows": true
+  },
+  "local_links_checked": 19,
+  "markdown_tables_checked": 7,
+  "report_files": [
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/LLM_CAPABILITY_SYNTHESIS_20260921/README.md",
+      "sha256": "53e5fc5eda016a844db2f1df1e48e2ea823278f9fbe88c24019aa773ba950538",
+      "bytes": 23450
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/LLM_CAPABILITY_SYNTHESIS_20260921/REVIEW.md",
+      "sha256": "6dcb3ecdc0d4a6ba54f77147da82d921dfb7e2514e8e5a1b2c1675a3f8971071",
+      "bytes": 1715
+    }
+  ],
+  "linked_source_files": [
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0496-qwen-source-workflow-cm51-fsc10/ANALYSIS.md",
+      "sha256": "05863bc8331449e70271e8bd56236488efe9eb9230bf0715aa3df49dbbfd495f",
+      "bytes": 11140
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0496-qwen-source-workflow-cm51-fsc10/README.md",
+      "sha256": "46f08b3faf995977acddecb4b6d82f1c7ff5a05fb1c3ca400cfcff395984405b",
+      "bytes": 34877
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0498-gemma4-fp8-compatible-schema-cm51-fsc10/README.md",
+      "sha256": "be1578e9471191bf38394b1acfb13010d835b434c23cfe30059a3eb88215d46c",
+      "bytes": 20880
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0499-qwen-interrupted-five-retry/CASE_REVIEW.md",
+      "sha256": "fd5eff8732a9e43b0eaa09dccf66ea119a48bbe850abc174abc4bcabb7df6f6e",
+      "bytes": 13319
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0499-qwen-interrupted-five-retry/README.md",
+      "sha256": "e690953451e596419c77c45cd875d78e597d5919da4a7a39270e7b938418c983",
+      "bytes": 15741
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0500-gemma-qwen-behavior-audit/PAIRED_CASES.md",
+      "sha256": "a7d98ce3d73bb572d7fd3c08178c980469419f86df0ff5ef2696e045c7add4e1",
+      "bytes": 103842
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0500-gemma-qwen-behavior-audit/README.md",
+      "sha256": "8ee07b3290c0745d97f5cba37e7d07673a7bced250662cd9930ed9b7c287449c",
+      "bytes": 20002
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/GEMMA_RAG_MODIFICATION_PLAN_20260921/README.md",
+      "sha256": "72d19d8983af35a1d20240927fb31bcd36cb767cfe4945af34752939c42e62db",
+      "bytes": 21055
+    }
+  ],
+  "limitations": [
+    "No independent legal verification",
+    "No new quality evaluation or regrade",
+    "Proposed improvements remain unmeasured"
+  ]
+}

@@ -66,7 +66,7 @@ OQL/질문답변/운영 전환은 포함하지 않는다. 자세한 명령은 [G
 | 외부 Git ID·크레덴셜(PAT) | 외부 Git 저장소 접근 | 생성/수정 화면에서 저장소 URL·ID·PAT 검증 |
 | 인증 키 탭 | 배포된 코드 서빙 API 호출 | GENOS_CODE_KEY, Authorization: Bearer |
 | 코드 서빙 ID | 호출할 앱 식별 | GENOS_CODE_URL의 code_serving/<ID>/json |
-| Qwen/Gemma 모델 인증키 | 앱→LLM 요청 | GENOS_QWEN_KEY / GENOS_GEMMA_KEY |
+| Qwen/Gemma 모델 인증키 | 앱→LLM 요청 | GENOS_LLM_KEY |
 | KURE 모델 인증키 | 앱→임베딩 요청 | GENOS_EMBED_KEY |
 
 '인증키'라는 글자만으로 Git 비밀번호라고 판단하지 않는다. **인증 키 탭의 키는 코드 API 호출용**이다.
@@ -189,14 +189,13 @@ Git checkout의 빌드는 아래 pip 명령을 사용한다. 전체 인계본용
 
 ```text
 GENOS_BASE_URL=https://ai-platform-dev.ss.local:32154
-GENOS_LLM_PROFILE=qwen
-GENOS_QWEN_SERVING_ID=226
-GENOS_QWEN_KEY=<Qwen 모델 인증키>
+GENOS_LLM_SERVING_ID=226
+GENOS_LLM_KEY=<Qwen 모델 인증키>
 GENOS_EMBED_SERVING_ID=19
 GENOS_EMBED_KEY=<KURE 인증키>
 ```
 
-Gemma를 선택하면 PROFILE=gemma, GENOS_GEMMA_SERVING_ID=325, GENOS_GEMMA_KEY를 설정한다.
+Gemma든 Qwen이든 GENOS_LLM_SERVING_ID와 GENOS_LLM_KEY에 대상 서빙 값을 설정한다. 모델별 변수와 GENOS_LLM_PROFILE은 더 이상 사용하지 않는다.
 MODEL이 비어 있으면 /v1/models의 모델이 하나인 경우만 자동 선택한다.
 공식 경로는 `/v1`을 기본으로 한다. 현장 게이트웨이가 `/models`, `/chat/completions`,
 `/embeddings`를 직접 노출한다고 확인된 경우에만 `GENOS_LLM_API_PREFIX=none`과

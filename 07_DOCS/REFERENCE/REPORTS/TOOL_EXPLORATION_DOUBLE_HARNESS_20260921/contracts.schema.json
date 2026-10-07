@@ -1,0 +1,916 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:8-agent:design:tool-exploration-v2",
+  "$comment": "Design artifact only, not registered in product. Structural validation requires additional runtime binding and semantic validation.",
+  "$defs": {
+    "ToolAction": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "browse"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "target": {
+                  "type": "string",
+                  "pattern": "^[RFDUPE][1-9][0-9]*$"
+                },
+                "relation": {
+                  "type": "string",
+                  "enum": [
+                    "self",
+                    "parent",
+                    "document",
+                    "root"
+                  ]
+                },
+                "view": {
+                  "type": "string",
+                  "enum": [
+                    "children",
+                    "outline",
+                    "tree",
+                    "neighbors"
+                  ]
+                },
+                "depth": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "target",
+                "relation",
+                "view",
+                "depth",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "search"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                },
+                "target": {
+                  "type": "string",
+                  "pattern": "^[RFDU][1-9][0-9]*$"
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "fulltext",
+                    "literal",
+                    "title"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "query",
+                "target",
+                "mode",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "match_terms"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                },
+                "target": {
+                  "type": "string",
+                  "pattern": "^[RFDU][1-9][0-9]*$"
+                },
+                "strategy": {
+                  "type": "string",
+                  "enum": [
+                    "auto",
+                    "direct",
+                    "bridge"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "text",
+                "target",
+                "strategy",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "term_occurrences"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "terms": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[T][1-9][0-9]*$"
+                  },
+                  "minItems": 1,
+                  "maxItems": 16,
+                  "uniqueItems": true
+                },
+                "target": {
+                  "type": "string",
+                  "pattern": "^[RFDU][1-9][0-9]*$"
+                },
+                "match": {
+                  "type": "string",
+                  "enum": [
+                    "any",
+                    "all"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "terms",
+                "target",
+                "match",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "locate"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "locator": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                },
+                "target": {
+                  "type": "string",
+                  "pattern": "^[RFDU][1-9][0-9]*$"
+                },
+                "branch": {
+                  "type": "string",
+                  "enum": [
+                    "body",
+                    "addendum",
+                    "annex",
+                    "any"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "locator",
+                "target",
+                "branch",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "lookup_definition"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                },
+                "target": {
+                  "type": "string",
+                  "pattern": "^[RFDU][1-9][0-9]*$"
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "query",
+                "target",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "follow_reference"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "evidence": {
+                  "type": "string",
+                  "pattern": "^[E][1-9][0-9]*$"
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "outgoing",
+                    "incoming",
+                    "both"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "evidence",
+                "direction",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "read"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "target": {
+                  "type": "string",
+                  "pattern": "^[DUPE][1-9][0-9]*$"
+                },
+                "extent": {
+                  "type": "string",
+                  "enum": [
+                    "exact",
+                    "subtree",
+                    "article"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "target",
+                "extent",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "inspect"
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "section": {
+                  "type": "string",
+                  "enum": [
+                    "history",
+                    "evidence",
+                    "candidates",
+                    "questions",
+                    "challenges",
+                    "budget"
+                  ]
+                },
+                "cursor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "section",
+                "cursor"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "tool",
+            "args",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "TurnDecision": {
+      "type": "object",
+      "properties": {
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ToolAction"
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "assessments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "evidence": {
+                "type": "string",
+                "pattern": "^[E][1-9][0-9]*$"
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "disposition": {
+                "type": "string",
+                "enum": [
+                  "ADOPT",
+                  "REJECT",
+                  "DEFER"
+                ]
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "SUPPORT",
+                  "CHALLENGE",
+                  "CONTEXT"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "question_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[Q][1-9][0-9]*$"
+                },
+                "minItems": 0,
+                "maxItems": 16
+              }
+            },
+            "required": [
+              "evidence",
+              "summary",
+              "disposition",
+              "role",
+              "reason",
+              "question_refs"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 32
+        },
+        "candidate_decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "candidate": {
+                "type": "string",
+                "pattern": "^[P][1-9][0-9]*$"
+              },
+              "decision": {
+                "type": "string",
+                "enum": [
+                  "PARK",
+                  "REOPEN"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            },
+            "required": [
+              "candidate",
+              "decision",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 32
+        },
+        "route_decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "route": {
+                "type": "string",
+                "pattern": "^[L][1-9][0-9]*$"
+              },
+              "decision": {
+                "type": "string",
+                "enum": [
+                  "REJECT",
+                  "RESTORE",
+                  "DEFER"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            },
+            "required": [
+              "route",
+              "decision",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 32
+        },
+        "question_updates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[Q][1-9][0-9]*$"
+                },
+                "minItems": 0,
+                "maxItems": 16
+              },
+              "interpretation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "missing_fact": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 4000
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            },
+            "required": [
+              "question_refs",
+              "interpretation",
+              "missing_fact",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 16
+        },
+        "intent": {
+          "type": "string",
+          "enum": [
+            "CONTINUE",
+            "DRAFT",
+            "CLARIFY",
+            "STOP_PARTIAL"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      },
+      "required": [
+        "actions",
+        "assessments",
+        "candidate_decisions",
+        "route_decisions",
+        "question_updates",
+        "intent",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "Draft": {
+      "type": "object",
+      "properties": {
+        "paragraphs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[E][1-9][0-9]*$"
+                },
+                "minItems": 1,
+                "maxItems": 16
+              },
+              "question_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[Q][1-9][0-9]*$"
+                },
+                "minItems": 0,
+                "maxItems": 16
+              },
+              "fact_dependencies": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                },
+                "minItems": 0,
+                "maxItems": 16
+              }
+            },
+            "required": [
+              "text",
+              "evidence",
+              "question_refs",
+              "fact_dependencies"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 32
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "minItems": 0,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "paragraphs",
+        "limitations"
+      ],
+      "additionalProperties": false
+    },
+    "ReviewDecision": {
+      "type": "object",
+      "properties": {
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "claim": {
+                "type": "string",
+                "pattern": "^[C][1-9][0-9]*$"
+              },
+              "verdict": {
+                "type": "string",
+                "enum": [
+                  "SUPPORTED",
+                  "NEEDS_RESEARCH",
+                  "NEEDS_REWRITE",
+                  "UNCERTAIN"
+                ]
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[E][1-9][0-9]*$"
+                },
+                "minItems": 0,
+                "maxItems": 16
+              },
+              "issue": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "actions": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/ToolAction"
+                },
+                "minItems": 0,
+                "maxItems": 8
+              }
+            },
+            "required": [
+              "claim",
+              "verdict",
+              "evidence",
+              "issue",
+              "reason",
+              "actions"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 32
+        },
+        "question": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "RESOLVED",
+                "PARTIAL",
+                "MISSING_FACT",
+                "UNRESOLVED"
+              ]
+            },
+            "question_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[Q][1-9][0-9]*$"
+              },
+              "minItems": 0,
+              "maxItems": 16
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "status",
+            "question_refs",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "checks",
+        "question"
+      ],
+      "additionalProperties": false
+    },
+    "Rebuttal": {
+      "type": "object",
+      "properties": {
+        "claim": {
+          "type": "string",
+          "pattern": "^[C][1-9][0-9]*$"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[E][1-9][0-9]*$"
+          },
+          "minItems": 1,
+          "maxItems": 16
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "requested_resolution": {
+          "type": "string",
+          "enum": [
+            "REVIEW_AGAIN",
+            "WITHDRAW_CLAIM"
+          ]
+        }
+      },
+      "required": [
+        "claim",
+        "evidence",
+        "reason",
+        "requested_resolution"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$ref": "#/$defs/TurnDecision"
+}

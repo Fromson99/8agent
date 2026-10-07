@@ -1,0 +1,285 @@
+{
+  "schema": "design-evidence-v1",
+  "observed_at": "2026-10-05T16:04:42.238638+00:00",
+  "scope": "read-only code inspection; documentation authoring only; no runtime/model/GENOS test",
+  "active_local": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "shortcut-integrated-v6-20261005-r2",
+    "generation": 40,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/shortcut-integrated-v6-20261005-r2/release.json",
+    "release_manifest_sha256": "24601a1787c6f3cc27877f618a4e4ad98f02882c02fde65a96190ea5447f84d8",
+    "activated_at": "2026-10-05T13:04:03.387628+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "5d78051568a7fac590b02571ebc74726dc6c2bae145d483163a69a056023d8ae",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0656-shortcut-packaged-main-validation/실험/manifest.json",
+        "sha256": "43a125859ec8f9e3231d9cc3ab8da549367dd52c4f6cd3c588a2ad02f6425293"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0656-shortcut-packaged-main-validation/README.md",
+        "sha256": "d71bf1bdc23d6173222e97cad38cb3bf9a9a688d7ec3fac827c3e16679067c4d"
+      },
+      "arm": "integrated",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0656-shortcut-packaged-main-validation/artifacts/run-001/result.json",
+        "sha256": "48bbbedb974b392e02075dd99f91aacc7b3920c6d9ccd006f4ba32fda79a2a63"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0656-shortcut-packaged-main-validation/artifacts/design/release-rebase.json",
+        "sha256": "27e583abeb87e9a2ea4cda882d8b23adc57f0d7691bc28f78f66aa6aa4f7ddcf"
+      }
+    }
+  },
+  "upstream": {
+    "ref_label": "infocz/fde/seungho/cicd",
+    "source": "local Git objects; not verified deployed latest",
+    "files": [
+      {
+        "commit": "5fca5fa353f2f6b1463e38a020bddd64b1f3018e",
+        "path": "02-els-qa/workflow/chat.py",
+        "sha256": "dc71925fed4f27cb18f73c142cd248d1256a2bb1d53e3c639fedb661cc12118f",
+        "anchors": {
+          "def _session_id": 140,
+          "def _studio_user": 159,
+          "def channel_of": 171,
+          "async def call_els_query": 192
+        }
+      },
+      {
+        "commit": "5fca5fa353f2f6b1463e38a020bddd64b1f3018e",
+        "path": "02-els-qa/core/query/session.py",
+        "sha256": "0b3ae458741c067e0aff04f25c97cdd7172248dbbd14183de9be96863de93b31",
+        "anchors": {
+          "class RedisSession": 166,
+          "def build_session": 238
+        }
+      },
+      {
+        "commit": "5fca5fa353f2f6b1463e38a020bddd64b1f3018e",
+        "path": "02-els-qa/core/query/carryover.py",
+        "sha256": "e235cd8d4140da31b5ecadfed22397a204e57e44d42a78fd72a9b42b2786515a",
+        "anchors": {
+          "def decide": 136,
+          "def merge": 166
+        }
+      }
+    ]
+  },
+  "working_files": [
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "7008b06c0bff72b55fa185c1498cd6d4fe4f6c2eeff2184c0320e0018282ed02",
+      "anchors": {
+        "# MAIN": 1
+      }
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "sha256": "46ad8fa93d59d45a167417b04a872aba5d7552b3e09b56a8f31a659ae1d7bcca",
+      "anchors": {
+        "\"shortcut_v4\"": 1543
+      },
+      "active_release_comparison": {
+        "path": "08_DEPLOYMENT/RELEASES/shortcut-integrated-v6-20261005-r2/code/00_SYSTEM/PIPELINE.json",
+        "sha256": "46ad8fa93d59d45a167417b04a872aba5d7552b3e09b56a8f31a659ae1d7bcca",
+        "same_as_working_file": true
+      }
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6",
+      "anchors": {},
+      "active_release_comparison": {
+        "path": "08_DEPLOYMENT/RELEASES/shortcut-integrated-v6-20261005-r2/code/00_SYSTEM/WORKSPACE.json",
+        "sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6",
+        "same_as_working_file": true
+      }
+    },
+    {
+      "path": "GENOS.md",
+      "sha256": "b9ba84a62f0c1909e3de076308caa7e8df72eb31c96b41c6c3895f1ce884212f",
+      "anchors": {}
+    },
+    {
+      "path": "main.py",
+      "sha256": "54125097d4e046eaabbc020e47888bfa9debc01f6d43dedaf4d0097c26a1bc9c",
+      "anchors": {
+        "def trusted_platform": 16,
+        "async def chat_endpoint": 23
+      }
+    },
+    {
+      "path": "service.py",
+      "sha256": "0a9e41d7cb0d90dc551afdf5460157a07ae273d222ab15076fd1acb40ebaf1cd",
+      "anchors": {
+        "_POST_ALLOWLIST =": 62,
+        "def _normalize": 511
+      },
+      "active_release_comparison": {
+        "path": "08_DEPLOYMENT/RELEASES/shortcut-integrated-v6-20261005-r2/code/service.py",
+        "sha256": "0a9e41d7cb0d90dc551afdf5460157a07ae273d222ab15076fd1acb40ebaf1cd",
+        "same_as_working_file": true
+      }
+    },
+    {
+      "path": "service/service.py",
+      "sha256": "c13c68119144a0991754ae5542996c8d0ed3affc1638248a18984b82723436b5",
+      "anchors": {}
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/chat_adapter.py",
+      "sha256": "761a7bbbeb11b8320e91a199485f564dabbb11cad9b7c8049e168f2ee511b910",
+      "anchors": {
+        "def request_body": 25,
+        "async def chat": 51
+      },
+      "active_release_comparison": {
+        "path": "08_DEPLOYMENT/RELEASES/shortcut-integrated-v6-20261005-r2/code/02_BACKEND/semantic_runtime/chat_adapter.py",
+        "sha256": "761a7bbbeb11b8320e91a199485f564dabbb11cad9b7c8049e168f2ee511b910",
+        "same_as_working_file": true
+      }
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+      "sha256": "8e2f3e0b6738534be0e6f74bcd56475b968efcda7450d2b716e2845583b71c11",
+      "anchors": {
+        "def _session_id": 121,
+        "def _user_id": 128,
+        "def _request_body": 279,
+        "def _for_markdown": 886
+      }
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/app.py",
+      "sha256": "be344aa1a9a26524d0db39189c7bc719a7c18cc556177544a833155b2c099b79",
+      "anchors": {
+        "def shortcut_command": 363,
+        "def memory_query": 384
+      },
+      "active_release_comparison": {
+        "path": "08_DEPLOYMENT/RELEASES/shortcut-integrated-v6-20261005-r2/code/02_BACKEND/semantic_runtime/app.py",
+        "sha256": "be344aa1a9a26524d0db39189c7bc719a7c18cc556177544a833155b2c099b79",
+        "same_as_working_file": true
+      }
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_identity.py",
+      "sha256": "f2e316914163d8e43a2883d80e431272e539b360190a968e0247e9c97b6558fa",
+      "anchors": {
+        "def verify_assertion": 25,
+        "def resolve": 47
+      },
+      "active_release_comparison": {
+        "path": "08_DEPLOYMENT/RELEASES/shortcut-integrated-v6-20261005-r2/code/02_BACKEND/semantic_runtime/legal_agent/memory_identity.py",
+        "sha256": "f2e316914163d8e43a2883d80e431272e539b360190a968e0247e9c97b6558fa",
+        "same_as_working_file": true
+      }
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "sha256": "fbaa39995a931f09e30015db19af24003538f62209c19e5768e17481948b114e",
+      "anchors": {
+        "SCHEMA =": 22,
+        "def __init__": 66,
+        "def scope": 107,
+        "def current": 446,
+        "def search": 479,
+        "def retire": 535
+      },
+      "active_release_comparison": {
+        "path": "08_DEPLOYMENT/RELEASES/shortcut-integrated-v6-20261005-r2/code/02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+        "sha256": "fbaa39995a931f09e30015db19af24003538f62209c19e5768e17481948b114e",
+        "same_as_working_file": true
+      }
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_commands.py",
+      "sha256": "ae5d96ff04f5ffad0c1237f314d5acf26541fe988d5c0d0be338fe3f27f86ccc",
+      "anchors": {
+        "FIELDS=": 6,
+        "def execute": 17
+      },
+      "active_release_comparison": {
+        "path": "08_DEPLOYMENT/RELEASES/shortcut-integrated-v6-20261005-r2/code/02_BACKEND/semantic_runtime/legal_agent/shortcut_commands.py",
+        "sha256": "ae5d96ff04f5ffad0c1237f314d5acf26541fe988d5c0d0be338fe3f27f86ccc",
+        "same_as_working_file": true
+      }
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_ingress.py",
+      "sha256": "4650c6f35e426dfe4ffe18ed6b7f167d332ec5d3bfff8cad61b05fef05643bae",
+      "anchors": {
+        "def capture": 10
+      },
+      "active_release_comparison": {
+        "path": "08_DEPLOYMENT/RELEASES/shortcut-integrated-v6-20261005-r2/code/02_BACKEND/semantic_runtime/legal_agent/shortcut_ingress.py",
+        "sha256": "4650c6f35e426dfe4ffe18ed6b7f167d332ec5d3bfff8cad61b05fef05643bae",
+        "same_as_working_file": true
+      }
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_store.py",
+      "sha256": "5115bd61e1610dabcb122f75075bff29807f6c42df5411c3345dc03c5db4a4fc",
+      "anchors": {
+        "def selected_store": 7,
+        "def store_owner": 20
+      },
+      "active_release_comparison": {
+        "path": "08_DEPLOYMENT/RELEASES/shortcut-integrated-v6-20261005-r2/code/02_BACKEND/semantic_runtime/legal_agent/shortcut_store.py",
+        "sha256": "5115bd61e1610dabcb122f75075bff29807f6c42df5411c3345dc03c5db4a4fc",
+        "same_as_working_file": true
+      }
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "sha256": "dd00ac8597706d1bcf3a95e92bce0d5eefe7d82f9ea1e7007f880b06be338011",
+      "anchors": {
+        "def open_cases": 12
+      },
+      "active_release_comparison": {
+        "path": "08_DEPLOYMENT/RELEASES/shortcut-integrated-v6-20261005-r2/code/02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+        "sha256": "dd00ac8597706d1bcf3a95e92bce0d5eefe7d82f9ea1e7007f880b06be338011",
+        "same_as_working_file": true
+      }
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/action_memory.py",
+      "sha256": "8ae5137549e920e009e3667c9ec91dc5ca9579c25bb680a4eea01cfb692c8030",
+      "anchors": {
+        "def main": 201
+      },
+      "active_release_comparison": {
+        "path": "08_DEPLOYMENT/RELEASES/shortcut-integrated-v6-20261005-r2/code/02_BACKEND/lawrag/pipeline/action_memory.py",
+        "sha256": "8ae5137549e920e009e3667c9ec91dc5ca9579c25bb680a4eea01cfb692c8030",
+        "same_as_working_file": true
+      }
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py",
+      "sha256": "cd407f7d592f993728aac3e8d228794768286bbbeb708910348c8ff4ac3b2ffb",
+      "anchors": {
+        "def compile_snapshots": 130,
+        "def build_with_pipeline": 285,
+        "def rebuild": 237
+      },
+      "active_release_comparison": {
+        "path": "08_DEPLOYMENT/RELEASES/shortcut-integrated-v6-20261005-r2/code/02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py",
+        "sha256": "cd407f7d592f993728aac3e8d228794768286bbbeb708910348c8ff4ac3b2ffb",
+        "same_as_working_file": true
+      }
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/unified_v6_nfs_main_20261002_r2/DELIVERY.json",
+      "sha256": "7ade2c1a00b072292e0d3cdd02e76ca03c9d35049ef4cc9140b07c5f1d542939",
+      "anchors": {}
+    },
+    {
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "sha256": "0bb3011ecc70fca5e40cbd54fe9cbd52495fa0341554761dcefe68bb08c4e67b",
+      "anchors": {}
+    }
+  ]
+}

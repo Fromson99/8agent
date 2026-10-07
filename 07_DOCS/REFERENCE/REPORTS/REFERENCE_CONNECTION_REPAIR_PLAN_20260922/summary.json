@@ -1,0 +1,90 @@
+{
+  "audit_kind": "read_only_coordinate_screen_and_source_inspection",
+  "generation": "01_DATA/TERM_RELEASES/adr0523-gemma-bound-fulltext-v1/generation",
+  "navigation_sha256_from_manifest": "c2a765f62f8a82638d75e009726b3b42dbf11abf85cddef5c6283ee8713f726e",
+  "navigation_hash_recomputed_this_audit": false,
+  "compiler_sha256": "3258bd58c43c010c182904841ea715ca3068a54c07e47549f6902bb90afab0ab",
+  "compiler_matches_generation_rebuild_receipt": true,
+  "navigation_manifest_sha256": "b7a260b4638c2fcb18f51cb44b9e70ece420bd55b8ed536ed55c5f5903443018",
+  "scope_sha256": "92fd67f057db847592c577c3624b179565daed6767d25df5e63cc44aab3c71ef",
+  "scope_document_count": 145,
+  "counts": {
+    "all_reference_rows": 133727,
+    "public_reference_rows": 133116
+  },
+  "screens": {
+    "following_qualifier_screen": {
+      "rows": 4521,
+      "exact_with_targets": 3870,
+      "source_count": 2175,
+      "document_count": 92,
+      "resolution_counts": {
+        "UNRESOLVED": 651,
+        "EXACT_NAMED_DOCUMENT_ARTICLE": 1716,
+        "EXACT_SAME_DOCUMENT_ARTICLE": 1376,
+        "EXACT_CONTINUED_PROVISION": 345,
+        "EXACT_SAME_ARTICLE_PROVISION": 432,
+        "EXACT_SAME_SUPPLEMENT_PROVISION": 1
+      }
+    },
+    "range_omits_explicit_parent": {
+      "rows": 202,
+      "exact_with_targets": 31,
+      "source_count": 153,
+      "document_count": 48,
+      "resolution_counts": {
+        "EXACT_DETERMINISTIC_RANGE": 31,
+        "UNRESOLVED": 171
+      }
+    },
+    "range_target_parent_mismatch_screen": {
+      "rows": 31,
+      "exact_with_targets": 31,
+      "source_count": 26,
+      "document_count": 15,
+      "resolution_counts": {
+        "EXACT_DETERMINISTIC_RANGE": 31
+      }
+    },
+    "same_paragraph_item_screen": {
+      "rows": 576,
+      "exact_with_targets": 182,
+      "source_count": 365,
+      "document_count": 53,
+      "resolution_counts": {
+        "UNRESOLVED": 394,
+        "EXACT_SAME_ARTICLE_PROVISION": 181,
+        "EXACT_DETERMINISTIC_RANGE": 1
+      }
+    },
+    "unconsumed_mok_suffix": {
+      "rows": 883,
+      "exact_with_targets": 706,
+      "source_count": 425,
+      "document_count": 57,
+      "resolution_counts": {
+        "EXACT_SAME_ARTICLE_PROVISION": 557,
+        "UNRESOLVED": 177,
+        "EXACT_CONTINUED_PROVISION": 144,
+        "EXACT_SAME_DOCUMENT_ANNEX": 5
+      }
+    },
+    "unconsumed_branch_suffix": {
+      "rows": 1632,
+      "exact_with_targets": 57,
+      "source_count": 718,
+      "document_count": 20,
+      "resolution_counts": {
+        "UNRESOLVED": 1575,
+        "EXACT_SAME_DOCUMENT_ANNEX": 57
+      }
+    }
+  },
+  "uncovered_bare_mok_in_reference_bearing_blocks": 1379,
+  "limitations": [
+    "Screen classes overlap; do not add counts.",
+    "No blanket legal correctness judgment from UNKNOWN roles or qualifiers.",
+    "Bare mok screen covers blocks already containing at least one reference only.",
+    "No model call, compiler execution, DB mutation, or new retrieval run."
+  ]
+}

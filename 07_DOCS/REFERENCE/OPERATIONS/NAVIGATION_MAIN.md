@@ -1,5 +1,10 @@
 # 로컬 MAIN 탐색 연결
 
+2026-09-29 현행 로컬 선택은 `legal-agent-navigation-storage-20260929-r3`(포인터 generation 29)이다.
+검색 navigation과 구축 감사 원장을 분리한 새 데이터 세대를 사용하며 답변 코드는 직전 r3와
+동일한 frozen 파일이다. 아래 날짜별 절은 과거 상태다.
+[선택·검증·복구](NAVIGATION_STORAGE.md), 정본 포인터 `01_DATA/ACTIVE/local/ACTIVE_RELEASE.json`.
+
 ## 현재: 문서 탐색 모드 (2026-09-17)
 
 사용자 지시 `main배선 진행해줘 끝까지`로 로컬 MAIN을 `document-navigation-rag-20260917-v1`(generation 15)로 전환했고, 같은 날 전수 조사·수정 뒤 `document-navigation-rag-20260917-v2`(generation 16)로 다시 전환했다.

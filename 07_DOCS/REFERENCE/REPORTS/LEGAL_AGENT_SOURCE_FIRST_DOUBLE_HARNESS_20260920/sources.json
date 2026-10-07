@@ -1,0 +1,156 @@
+{
+  "schema_version": "design-source-manifest-v1",
+  "observed_date": "2026-09-20",
+  "workspace": "/home/jin/8-AGENT",
+  "scope": "local working files; not deployment certification",
+  "report": {
+    "path": "07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_SOURCE_FIRST_DOUBLE_HARNESS_20260920/DESIGN.md",
+    "sha256": "7fb527f9c13ce17de7d511301feb9291251fa96d800a91cdfbf37586c9bacd34"
+  },
+  "sources": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "94909588c168d330dace88f7ff1c4549a23539137a55b17b534fb0d21a4a5848"
+    },
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "c58bd29e771036eff762062f229e4af8f4d18e6d42fac263584442a636d8db68"
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "sha256": "e18088fe42dc9b2daac585366f5433f8d61894ca91794947f0e00041e8971294"
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6"
+    },
+    {
+      "path": "00_SYSTEM/EXPERIMENT_MODEL_POLICY.json",
+      "sha256": "2e495c0818c0bb63361607358afb41c3124778ea6d48677a520ec11602bb8a07"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/domain-v1.json",
+      "sha256": "b6ed749d6eb8e58c67b48057ae1f5aacb0b123286a82050ab1943eb98abf45fd"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-source-only.json",
+      "sha256": "d711fa5626a8f201b884c0d700c89372223a5204c04141f239a5b25f20a2b1d9"
+    },
+    {
+      "path": "service.py",
+      "sha256": "97909d0d45499fe7b281806544e3a85963973641b25cfe0901d62a95198f015a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/pipeline.py",
+      "sha256": "a9257a9fc35737f8fca2c4c951527b7a1e6a8ccec30729ac368eea186699ccbd"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/work_navigation.py",
+      "sha256": "e625e5c9521ce449f5cc7bf79c9e4078ce81129149c9150bae929a3eea12d04b"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/multi_entry_navigation.py",
+      "sha256": "0ff28428d62d480ffe4cb6a915002afa9fe72f6d7aba09c2e47a90b68a952e1c"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_navigation.py",
+      "sha256": "f4f9549fc50a62e2fad3c9f942100a694b7b82b777198139c59da919f777d30b"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent_adapter.py",
+      "sha256": "b7f9212bd8431bdd61fbaea8fa48dadb93aaa8c3c830329a3e4da77f38975c59"
+    },
+    {
+      "path": "02_BACKEND/lawrag/research/experiment_client.py",
+      "sha256": "2c05a0f5e2f69297bc3234bedbdaae7a0821d5a80a4e5b9cb7f7b8fb11b94e34"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/domain.py",
+      "sha256": "e482d227a603cdcea578e76eb357e95347c98449159378f6984768f2c6f8d3ab"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_tools.py",
+      "sha256": "510d4885c1dffe171f2cf30f9390fa29476d63aaeda155efd1bc9c0dd8b909cc"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/views.py",
+      "sha256": "32122598e6646472bdb870a3fefe2dad8662fa7b138d7a58e3244f342b5e79bf"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/protocol.py",
+      "sha256": "455f7c65af9deaf82484dc55c189188f08d2a172b30801915000c55355d5883d"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/repository.py",
+      "sha256": "b70f782caaa1e56d3811700b88a4d8e1d6cae5f508b6b688dea23501da4a241f"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/session.py",
+      "sha256": "ba6bcc84aa6ba2f53b9f6cefede3f23f16548c2e3869cbfc517dc2f216a24db6"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/coordinator.py",
+      "sha256": "c066af0ff2fbeaa2f912242409819bfcdf014e376743fab99a2768247460c167"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/packer.py",
+      "sha256": "e96cdd61522a81e9d5ca1271b3cbe7787c82d79d3e7e42a25f571b87e7f3f89a"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/composer.py",
+      "sha256": "76fdb1f7f1f0ecec63a42b07f615284d6041f0b2f69cab0745185ae4fe3e67b2"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/reviewer.py",
+      "sha256": "ead7405793a7acc3394d7b418e7c9b946833d5f491beda0f761a77507def4608"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/gate.py",
+      "sha256": "7dcaea45b18e0d0aa185b9d29aaf3518a3053c4ca89a72e673c82adcc0bad8ff"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/gateway.py",
+      "sha256": "878c22965998b693e486cb4f262685b1d72e82b410a63cc3d11a52823b2a407a"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/TASKS/Task_exploration_tools_with_source_text.md",
+      "sha256": "3f8e85c3e5a10b8ddb6f52c321cc344f0ef0f12791986cbf3d8ca19d657c7844"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ADR-0474_PHASE0_TRAJECTORY_AUDIT_20260920.md",
+      "sha256": "d995d3118d49c236bee1ce84c9dde6cfd99a98f6de8b2d39943d4f55117f9817"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/ARCHITECTURE/LEGAL_AGENT_SYSTEM.md",
+      "sha256": "25976c2d8070514d051a4c38a6acc6cad2a55c69785966c4f2d33bdc2c41d18f"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/LEGAL_AGENT_DOUBLE_HARNESS.md",
+      "sha256": "76fb4067fd0707fa340856108ed1c0f87095c3e7e020085cb6a99f0ec2769825"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_DOUBLE_HARNESS_DESIGN_20260919/FINAL/FINAL_DESIGN.md",
+      "sha256": "e8c08f5664c72874d4d9034e83dd2ca6deb1ae1ce90e4a204948a62f3c87465d"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0473-legal-agent-loop-rev4/README.md",
+      "sha256": "e9459cf815c1dfc881c7a689e5d995da4e9e89a85d0f7276e9190523bc5585a5"
+    },
+    {
+      "path": "02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/search.py",
+      "sha256": "67e5cd13d698598733877378ef3a82db63edc770c23c83f0878a050303f483f2"
+    },
+    {
+      "path": "02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/locator.py",
+      "sha256": "54f815b51b1fa18bdbe75da2b64d592de0a2ca2861827f3604831cac882d8ff7"
+    },
+    {
+      "path": "02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/references.py",
+      "sha256": "8615fa94a9448a5f4c8121f6bdcaa95cb217fe4bf50d33da5957f5134184de32"
+    },
+    {
+      "path": "02_BACKEND/lawrag/research/candidates/adr_0473/legal-loop-v4/revisions/rev-001/snapshot/02_BACKEND/legal_agent/loop.py",
+      "sha256": "9fc97e786a0c4203314f7351d6e22a500d0f150839d4a7cc54e99d2062f3c1a1"
+    }
+  ]
+}

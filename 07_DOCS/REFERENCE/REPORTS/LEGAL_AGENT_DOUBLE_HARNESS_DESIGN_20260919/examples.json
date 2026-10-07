@@ -1,0 +1,501 @@
+{
+  "notice": "All identities, texts, hashes and budgets are synthetic shape examples, not source or policy attestations.",
+  "state": {
+    "schema_version": "legal-agent-state-proposal-v1",
+    "run_id": "run:synthetic",
+    "binding": {
+      "controller_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "domain_id": "synthetic-domain_id",
+      "domain_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "profile_id": "synthetic-profile_id",
+      "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "generation_id": "g:synthetic",
+      "source_store_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "navigation_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "fulltext_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "reference_overlay_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "auth_scope_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "provider": "synthetic-provider",
+      "model": "synthetic-model"
+    },
+    "status": "BOUNDED",
+    "response_class": "partial",
+    "issues": [
+      {
+        "issue_id": "I1",
+        "kind": "requirement",
+        "question_segment_ids": [
+          "Q1"
+        ],
+        "required": true,
+        "origin": "question",
+        "evidence_state": "EVIDENCE_LINKED",
+        "fact_state": "unknown",
+        "evidence_refs": [
+          "E1"
+        ],
+        "search_attempt_ids": [],
+        "reason": "합성 규범을 확인했지만 사용자 사실은 미상이다."
+      }
+    ],
+    "spans": [
+      {
+        "span_id": "span:1",
+        "source_id": "article:synthetic",
+        "generation_id": "g:synthetic",
+        "source_store_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "document_id": "doc:synthetic",
+        "source_artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "unit_id": "unit:2",
+        "block_id": "2",
+        "start": 0,
+        "end": 12,
+        "text_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "role": "normative",
+        "temporal_status": "unknown",
+        "valid_from": null,
+        "valid_to": null
+      }
+    ],
+    "evidence": [
+      {
+        "handle": "E1",
+        "span_ids": [
+          "span:1"
+        ],
+        "presented_call_ids": [
+          "call:1"
+        ]
+      }
+    ],
+    "searches": [],
+    "selected_source_ids": [
+      "article:synthetic"
+    ],
+    "budget": {
+      "max_attempts": 8,
+      "used_attempts": 2,
+      "reserved_composition_attempts": 2,
+      "max_nav_rounds": 4,
+      "max_input_tokens": 16000,
+      "max_output_tokens": 4096,
+      "deadline_utc": "2026-09-19T12:00:00Z"
+    }
+  },
+  "runtime_result": {
+    "request": {
+      "question": "합성 질문",
+      "document_ids": [
+        "doc:synthetic"
+      ],
+      "use_llm": true
+    },
+    "query": {
+      "id": "query:synthetic",
+      "question": "합성 질문",
+      "generation_id": "g:synthetic",
+      "scope": {
+        "document_version_ids": [
+          "doc:synthetic"
+        ]
+      }
+    },
+    "retrieval": {
+      "candidates": [
+        {
+          "id": "article:synthetic",
+          "document_id": "doc:synthetic",
+          "document_name": "합성 모의규정",
+          "block_id": "2",
+          "unit_id": "unit:2",
+          "text": "합성 규범의 예시입니다.",
+          "source_artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "blocks": [
+            {
+              "block_id": "2",
+              "unit_id": "unit:2",
+              "text": "합성 규범의 예시입니다."
+            }
+          ],
+          "ancestors": [
+            {
+              "id": "unit:2",
+              "title": "제2조(합성)",
+              "family": "kr_article"
+            }
+          ],
+          "span_ids": [
+            "span:1"
+          ]
+        }
+      ],
+      "routes": {
+        "legal_agent": 1
+      },
+      "vector_status": "NOT_USED",
+      "generation_id": "g:synthetic",
+      "term_agent": {
+        "implementation": "legal-agent-v1",
+        "selected_ids": [
+          "article:synthetic"
+        ],
+        "legal_agent": {
+          "schema_version": "legal-agent-state-proposal-v1",
+          "run_id": "run:synthetic",
+          "binding": {
+            "controller_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "domain_id": "synthetic-domain_id",
+            "domain_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "profile_id": "synthetic-profile_id",
+            "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "generation_id": "g:synthetic",
+            "source_store_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "navigation_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "fulltext_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "reference_overlay_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "auth_scope_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "provider": "synthetic-provider",
+            "model": "synthetic-model"
+          },
+          "status": "BOUNDED",
+          "response_class": "partial",
+          "issues": [
+            {
+              "issue_id": "I1",
+              "kind": "requirement",
+              "question_segment_ids": [
+                "Q1"
+              ],
+              "required": true,
+              "origin": "question",
+              "evidence_state": "EVIDENCE_LINKED",
+              "fact_state": "unknown",
+              "evidence_refs": [
+                "E1"
+              ],
+              "search_attempt_ids": [],
+              "reason": "합성 규범을 확인했지만 사용자 사실은 미상이다."
+            }
+          ],
+          "spans": [
+            {
+              "span_id": "span:1",
+              "source_id": "article:synthetic",
+              "generation_id": "g:synthetic",
+              "source_store_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "document_id": "doc:synthetic",
+              "source_artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "unit_id": "unit:2",
+              "block_id": "2",
+              "start": 0,
+              "end": 12,
+              "text_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "role": "normative",
+              "temporal_status": "unknown",
+              "valid_from": null,
+              "valid_to": null
+            }
+          ],
+          "evidence": [
+            {
+              "handle": "E1",
+              "span_ids": [
+                "span:1"
+              ],
+              "presented_call_ids": [
+                "call:1"
+              ]
+            }
+          ],
+          "searches": [],
+          "selected_source_ids": [
+            "article:synthetic"
+          ],
+          "budget": {
+            "max_attempts": 8,
+            "used_attempts": 2,
+            "reserved_composition_attempts": 2,
+            "max_nav_rounds": 4,
+            "max_input_tokens": 16000,
+            "max_output_tokens": 4096,
+            "deadline_utc": "2026-09-19T12:00:00Z"
+          }
+        }
+      }
+    },
+    "selection": {
+      "selected": [
+        {
+          "id": "article:synthetic",
+          "document_id": "doc:synthetic",
+          "document_name": "합성 모의규정",
+          "block_id": "2",
+          "unit_id": "unit:2",
+          "text": "합성 규범의 예시입니다.",
+          "source_artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "blocks": [
+            {
+              "block_id": "2",
+              "unit_id": "unit:2",
+              "text": "합성 규범의 예시입니다."
+            }
+          ],
+          "ancestors": [
+            {
+              "id": "unit:2",
+              "title": "제2조(합성)",
+              "family": "kr_article"
+            }
+          ],
+          "span_ids": [
+            "span:1"
+          ]
+        }
+      ],
+      "discarded_ids": [],
+      "method": "term-agent",
+      "term_agent": {
+        "implementation": "legal-agent-v1",
+        "selected_ids": [
+          "article:synthetic"
+        ],
+        "legal_agent": {
+          "schema_version": "legal-agent-state-proposal-v1",
+          "run_id": "run:synthetic",
+          "binding": {
+            "controller_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "domain_id": "synthetic-domain_id",
+            "domain_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "profile_id": "synthetic-profile_id",
+            "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "generation_id": "g:synthetic",
+            "source_store_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "navigation_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "fulltext_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "reference_overlay_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "auth_scope_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "provider": "synthetic-provider",
+            "model": "synthetic-model"
+          },
+          "status": "BOUNDED",
+          "response_class": "partial",
+          "issues": [
+            {
+              "issue_id": "I1",
+              "kind": "requirement",
+              "question_segment_ids": [
+                "Q1"
+              ],
+              "required": true,
+              "origin": "question",
+              "evidence_state": "EVIDENCE_LINKED",
+              "fact_state": "unknown",
+              "evidence_refs": [
+                "E1"
+              ],
+              "search_attempt_ids": [],
+              "reason": "합성 규범을 확인했지만 사용자 사실은 미상이다."
+            }
+          ],
+          "spans": [
+            {
+              "span_id": "span:1",
+              "source_id": "article:synthetic",
+              "generation_id": "g:synthetic",
+              "source_store_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "document_id": "doc:synthetic",
+              "source_artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "unit_id": "unit:2",
+              "block_id": "2",
+              "start": 0,
+              "end": 12,
+              "text_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "role": "normative",
+              "temporal_status": "unknown",
+              "valid_from": null,
+              "valid_to": null
+            }
+          ],
+          "evidence": [
+            {
+              "handle": "E1",
+              "span_ids": [
+                "span:1"
+              ],
+              "presented_call_ids": [
+                "call:1"
+              ]
+            }
+          ],
+          "searches": [],
+          "selected_source_ids": [
+            "article:synthetic"
+          ],
+          "budget": {
+            "max_attempts": 8,
+            "used_attempts": 2,
+            "reserved_composition_attempts": 2,
+            "max_nav_rounds": 4,
+            "max_input_tokens": 16000,
+            "max_output_tokens": 4096,
+            "deadline_utc": "2026-09-19T12:00:00Z"
+          }
+        }
+      }
+    },
+    "assembly": {
+      "context": [
+        {
+          "id": "article:synthetic",
+          "document_id": "doc:synthetic",
+          "document_name": "합성 모의규정",
+          "block_id": "2",
+          "unit_id": "unit:2",
+          "text": "합성 규범의 예시입니다.",
+          "source_artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "blocks": [
+            {
+              "block_id": "2",
+              "unit_id": "unit:2",
+              "text": "합성 규범의 예시입니다."
+            }
+          ],
+          "ancestors": [
+            {
+              "id": "unit:2",
+              "title": "제2조(합성)",
+              "family": "kr_article"
+            }
+          ],
+          "span_ids": [
+            "span:1"
+          ]
+        }
+      ],
+      "unresolved": [
+        "사실 미상"
+      ],
+      "data_status": "DRAFT",
+      "term_agent": {
+        "implementation": "legal-agent-v1",
+        "selected_ids": [
+          "article:synthetic"
+        ],
+        "legal_agent": {
+          "schema_version": "legal-agent-state-proposal-v1",
+          "run_id": "run:synthetic",
+          "binding": {
+            "controller_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "domain_id": "synthetic-domain_id",
+            "domain_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "profile_id": "synthetic-profile_id",
+            "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "generation_id": "g:synthetic",
+            "source_store_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "navigation_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "fulltext_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "reference_overlay_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "auth_scope_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "provider": "synthetic-provider",
+            "model": "synthetic-model"
+          },
+          "status": "BOUNDED",
+          "response_class": "partial",
+          "issues": [
+            {
+              "issue_id": "I1",
+              "kind": "requirement",
+              "question_segment_ids": [
+                "Q1"
+              ],
+              "required": true,
+              "origin": "question",
+              "evidence_state": "EVIDENCE_LINKED",
+              "fact_state": "unknown",
+              "evidence_refs": [
+                "E1"
+              ],
+              "search_attempt_ids": [],
+              "reason": "합성 규범을 확인했지만 사용자 사실은 미상이다."
+            }
+          ],
+          "spans": [
+            {
+              "span_id": "span:1",
+              "source_id": "article:synthetic",
+              "generation_id": "g:synthetic",
+              "source_store_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "document_id": "doc:synthetic",
+              "source_artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "unit_id": "unit:2",
+              "block_id": "2",
+              "start": 0,
+              "end": 12,
+              "text_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "role": "normative",
+              "temporal_status": "unknown",
+              "valid_from": null,
+              "valid_to": null
+            }
+          ],
+          "evidence": [
+            {
+              "handle": "E1",
+              "span_ids": [
+                "span:1"
+              ],
+              "presented_call_ids": [
+                "call:1"
+              ]
+            }
+          ],
+          "searches": [],
+          "selected_source_ids": [
+            "article:synthetic"
+          ],
+          "budget": {
+            "max_attempts": 8,
+            "used_attempts": 2,
+            "reserved_composition_attempts": 2,
+            "max_nav_rounds": 4,
+            "max_input_tokens": 16000,
+            "max_output_tokens": 4096,
+            "deadline_utc": "2026-09-19T12:00:00Z"
+          }
+        }
+      }
+    },
+    "answer": {
+      "schema_version": "term-runtime-v1",
+      "id": "answer:synthetic",
+      "scope": {
+        "document_version_ids": [
+          "doc:synthetic"
+        ]
+      },
+      "query_id": "query:synthetic",
+      "generation_id": "g:synthetic",
+      "source_store_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "text": "저장된 모의규정의 요건을 확인했습니다. 사용자 사실이 없어 적용 여부는 미확인입니다.",
+      "claims": [
+        {
+          "id": "claim:1",
+          "text": "저장된 모의규정의 요건을 확인했습니다.",
+          "source_ids": [
+            "article:synthetic"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "reason": "사용자 사실과 해당 판본의 효력 시점을 확인해야 합니다."
+        }
+      ],
+      "provider_receipt": {
+        "id": "receipt:synthetic",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "entailment_status": "not_certified"
+      }
+    }
+  }
+}

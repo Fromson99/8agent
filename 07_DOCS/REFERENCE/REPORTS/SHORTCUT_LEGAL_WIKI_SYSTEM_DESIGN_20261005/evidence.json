@@ -1,0 +1,300 @@
+{
+  "schema_version": "design-evidence-v1",
+  "design_status": "PROPOSED_NOT_IMPLEMENTED",
+  "recorded_at": "2026-10-05T07:45:18.416938+00:00",
+  "repository": "/home/jin/8-AGENT",
+  "git_head": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "working_tree_dirty": true,
+  "code_basis": "working tree files; hashes identify inspected versions, not deployed versions",
+  "active_local": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "legal-agent-source-prefix-20260930-r3",
+    "generation": 37,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/legal-agent-source-prefix-20260930-r3/release.json",
+    "release_manifest_sha256": "06e47cc365538a94332d08290c26faa4f610ac72a9a91a5a782d528c469de8b6",
+    "activated_at": "2026-09-30T07:59:35.901795+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "c5edaad71a5105c00b8ea8f515b3f9b11360aa095ba72c28b2f9f045237c9823"
+  },
+  "source_snapshot": {
+    "path": "01_DATA/TERM_RELEASES/pecab-only-public-main-20260929-v1/generation/store.sqlite",
+    "generation_id": "term-source-1acfbe06921527e74a0b",
+    "store_sha256_from_manifest": "422cfa15b9dba609f3c6105e3d5d3c7dbdb27e90a09469d57ca6bc602b4d9c72",
+    "full_store_rehash_performed": false,
+    "selected_blocks_read_only": [
+      {
+        "document_id": "3521c3aaa5a735fd",
+        "block_id": "301",
+        "text_sha256": "63f01e475763243ea996054335d804eac7f6c74f72727798e4b32bf3b457553d"
+      },
+      {
+        "document_id": "3521c3aaa5a735fd",
+        "block_id": "302",
+        "text_sha256": "4bb33833715d5b8aecb66f077ed52ce9a2f628c20e6ab35196b11f1bf5ef6e0c"
+      },
+      {
+        "document_id": "3521c3aaa5a735fd",
+        "block_id": "49",
+        "text_sha256": "4772e07f744fb84672e324a846cea11b569b3689fe18e607b90ca12a74a3b4aa"
+      },
+      {
+        "document_id": "eae25aa6e8a83c58",
+        "block_id": "236",
+        "text_sha256": "a95f5d91cf8911c523d3960a6b74ce2d8a120654d26a2e12dbbe75b0052dd6b7"
+      },
+      {
+        "document_id": "eae25aa6e8a83c58",
+        "block_id": "238",
+        "text_sha256": "3558f54dc8311dd92a777e0fa11febbba8adef0dacb3a86fe84b8390574d00c0"
+      },
+      {
+        "document_id": "eae25aa6e8a83c58",
+        "block_id": "245",
+        "text_sha256": "24c28bd2087db28f6c745297c97dbc076065c4e937a20a67b9194b2a8e92f80f"
+      },
+      {
+        "document_id": "eae25aa6e8a83c58",
+        "block_id": "246",
+        "text_sha256": "cf65ea988afdf5d0f77fbb99f1865530c7ee6d755a38f5fb6524bbbdf5783ee0"
+      },
+      {
+        "document_id": "eae25aa6e8a83c58",
+        "block_id": "247",
+        "text_sha256": "374ad86f0194bd7e1343d8dc65239cbbda3d1f42c9d30b3e415f5245ab652c78"
+      },
+      {
+        "document_id": "eae25aa6e8a83c58",
+        "block_id": "248",
+        "text_sha256": "cf15020b851983455d36e51de2c74cdfb187b8f751145dacb656421b02f0a13b"
+      }
+    ]
+  },
+  "genos_accessed": false,
+  "runtime_modified": false,
+  "experiments_run": false,
+  "review_type": "author_self_review",
+  "sources": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "c5d7a102d06c85f2f3d69b6c86296261dadc8d2a6debb2b44e954bebf5a9879b",
+      "bytes": 13028
+    },
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "a6fb7e50507749c0021f6f6cb5263d38bc0a15cf71e4be18730f7a08b656e7d1",
+      "bytes": 26551
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "sha256": "976edff02883791a94362b7e0a17a5c7bc2c470d6be48ccbb4fff2d03a960332",
+      "bytes": 56689
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6",
+      "bytes": 2553
+    },
+    {
+      "path": "00_SYSTEM/DATA_MODEL.md",
+      "sha256": "155fa0ba99472072eb1fc3c28b9590bf09043b03c09d77629ac5520c5234b270",
+      "bytes": 9350
+    },
+    {
+      "path": "00_SYSTEM/EXPERIMENT_MODEL_POLICY.json",
+      "sha256": "8ef308aa9bbe3685409ac0b8b908028691e0af4f330f34022695ea9859d68bab",
+      "bytes": 3350
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json",
+      "sha256": "6ab245ff884ea0fcdb6ddffcdd4b7a3984efb0212bfb2c4c4a9739569d02af0a",
+      "bytes": 1247
+    },
+    {
+      "path": "GENOS.md",
+      "sha256": "b9ba84a62f0c1909e3de076308caa7e8df72eb31c96b41c6c3895f1ce884212f",
+      "bytes": 93445
+    },
+    {
+      "path": "service.py",
+      "sha256": "0a9e41d7cb0d90dc551afdf5460157a07ae273d222ab15076fd1acb40ebaf1cd",
+      "bytes": 43483
+    },
+    {
+      "path": "service/service.py",
+      "sha256": "c13c68119144a0991754ae5542996c8d0ed3affc1638248a18984b82723436b5",
+      "bytes": 1498
+    },
+    {
+      "path": "06_TOOLS/pipeline.py",
+      "sha256": "0a2ee7371d9e3cf55c78d58caa8ea123cb05bc6ab254ff7d6aff74057e5f8461",
+      "bytes": 4661
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/app.py",
+      "sha256": "3a6ae4c8514500443a9a04d2e7a4d75c7afe8cdd8f3d92c18339971976e72bff",
+      "bytes": 28040
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/pipeline.py",
+      "sha256": "342ad8fbe637a236655c60154e8a042e89472cec093ba12a279f5721f06ca157",
+      "bytes": 14825
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent_adapter.py",
+      "sha256": "23661c4c54650ecfbf3e9db9326eb3b450c05982547958b838b57cc7832f6df1",
+      "bytes": 16471
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/coordinator.py",
+      "sha256": "c4e5199e590d66b312dd1c08bad2f26adf7d8ad9680c072c18c84bc447bb6522",
+      "bytes": 1703
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py",
+      "sha256": "01f45df99b48b2131de24b465e65a784bb8674d46ef1171a0b738ae682ba0e25",
+      "bytes": 12973
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py",
+      "sha256": "b9c8a4ab8ef5470c6128ca8f7794a8880d7848fb786550bae2afc4572d39507e",
+      "bytes": 6297
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "sha256": "2f5dceb9d45fc1f74a21b2c61a34d49b82696c3ceb28748c61cbb2bd5b596f35",
+      "bytes": 8955
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+      "sha256": "998feb32c6a175a619df12b49ea221aa2b9e5e6cc7a8c5564e5b9925777f7b01",
+      "bytes": 5465
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "sha256": "2b8cf11ea6e906e768352510c5dad88f0d1584ee7d8c8a77d7c844190f78659a",
+      "bytes": 39282
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_methods.py",
+      "sha256": "c8c82f538459f3c194bdb6a46f47c2c91f5e0fcfd9fb3b4d82919c0d1b1d5ea4",
+      "bytes": 6700
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+      "sha256": "7d16983c034d5f2635837891ed3cadd54bec25f5c4a3a8f8ced5c9c367c677bd",
+      "bytes": 13025
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/domain_control.py",
+      "sha256": "d4a8ef4b289161e947ca35c46229b1c54e163da83fc3b29cdb35674139f80c3f",
+      "bytes": 6665
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/repository.py",
+      "sha256": "92f1a3ece0242e5766208fd65a901f0d92c452dce43929bc7431672e0bca9e80",
+      "bytes": 25261
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/journal-v6.sql",
+      "sha256": "e5c977812e79665a2ecb2e64df0ea40380391590d62890b911ae547d313b26a9",
+      "bytes": 16301
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_selection.py",
+      "sha256": "0e397b1e13ea6cfe1a8c6e593c5858deaf159a7bd56cc26d3b36a449c3a44090",
+      "bytes": 17277
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py",
+      "sha256": "8286643a5836e6261a2d0b05c7d073ad6e84e1c33faa55b02c533b45fbb05e94",
+      "bytes": 12598
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/action_memory.py",
+      "sha256": "a690dc5133e2a04e31b10d99d059d2b9981a740829b2e2a1469af46b22564758",
+      "bytes": 14848
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/action_memory.py",
+      "sha256": "015c565c6c1f9647c8594a29297362ea9661ea0b51487d32d4b84e15f4faf5ec",
+      "bytes": 268
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/legal_llm_wiki.py",
+      "sha256": "2824135ebc0867e533f7b44f492cdb2c7246d00e3c7f5c5686fb04a705a90339",
+      "bytes": 12482
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/unified_memory.py",
+      "sha256": "19cd0e608643a68300398095621504ed5df152ec707e95846c2a81e40406cf8d",
+      "bytes": 8214
+    },
+    {
+      "path": "02_BACKEND/lawrag/feedback/shortcuts.py",
+      "sha256": "828553f1d523b785cf8d835e6d6867116e2e0c76d81cec5e142776eca23971b7",
+      "bytes": 16513
+    },
+    {
+      "path": "02_BACKEND/lawrag/platform/workspace.py",
+      "sha256": "fd2c528d8a9f4175eeb49719cd460df58d950821b9f64b11d22e0ac17776b814",
+      "bytes": 123571
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/SHORTCUT_EXPERIENCE_SCHEMA_DESIGN_20261001.md",
+      "sha256": "cdf558f47bdb0804f2adbc2877064b6ffb3d786dba836267aeb64638ec563060",
+      "bytes": 17599
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_MEMORY_MULTITURN_DESIGN_20261001.md",
+      "sha256": "b243849c54cb736b497d29ea3888fcccc778f32912c3a2fbfc3cc8fa35aac180",
+      "bytes": 40398
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/LEGAL_AGENT_UNIFIED_SYSTEM_IMPLEMENTATION_PLAN_20261002.md",
+      "sha256": "4fa711a319714900571778faa02f9b5b637ef316e7c86a9685e0a9a1cdb94b14",
+      "bytes": 34076
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/SQLITE_STORAGE_IMPLEMENTATION_PLAN_20261002.md",
+      "sha256": "0ff480aa4b59b15732d60f443c61f17de03f53a4daa9c77faba9e52b4089b887",
+      "bytes": 41760
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0619-unified-cm-guidance-interrupted-continuation/RESULT.md",
+      "sha256": "dc4842d588ed473719ed09bd9cd9cb6f053f12d8a774adeb3b930c7fbc6a5852",
+      "bytes": 2807
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0575-native-schema-nightly-integration/README.md",
+      "sha256": "5a508dc1e026b15ce78498282ae4f2104c4892e49b27bdd5f5ce8c16d827ef0c",
+      "bytes": 13645
+    },
+    {
+      "path": "01_DATA/wiki/wiki/index.md",
+      "sha256": "40c51707145c053a17c9937b58cd57fb5f0809dd87819a3905be5e9c0c8ee992",
+      "bytes": 9898
+    },
+    {
+      "path": "01_DATA/wiki/wiki/방법/단서-읽기.md",
+      "sha256": "e3aaa90f0bf216ecb5e9bc412439cd72d5dd1e269620f6c11b4b105737ed2945",
+      "bytes": 3712
+    },
+    {
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "sha256": "c860cfdb1a57968df4740c1bf2bf08947dfa15c1edbcb7c14d31f85773af3b32",
+      "bytes": 578
+    },
+    {
+      "path": "08_DEPLOYMENT/RELEASES/legal-agent-source-prefix-20260930-r3/release.json",
+      "sha256": "06e47cc365538a94332d08290c26faa4f610ac72a9a91a5a782d528c469de8b6",
+      "bytes": 25243
+    },
+    {
+      "path": "01_DATA/TERM_RELEASES/pecab-only-public-main-20260929-v1/generation/manifest.json",
+      "sha256": "7bce6155aa762f2e9cc1453e7622b3186f47ad772cc7cd5251ad7fbc1235dabf",
+      "bytes": 5749
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "artifact_status": "blueprint_not_loadable_release",
+  "implementation": "legal-agent-v1",
+  "candidate_profile": "legal-agent-rag-v1",
+  "controller_settings_location": "profiles.legal-agent-rag-v1.nodes[retrieve].parameters.term_agent.legal_agent",
+  "stages": [
+    {
+      "node_id": "retrieve",
+      "proposed_slot": "legal-retrieve",
+      "proposed_engine_id": "legal-retrieve@candidate",
+      "entrypoint": {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/stages.py",
+        "function": "retrieve"
+      },
+      "bindings": {
+        "request": "$input.request"
+      },
+      "outputs": {
+        "retrieved": "runtime.retrieved"
+      },
+      "hashes": "compute_only_after_actual_candidate_files_exist"
+    },
+    {
+      "node_id": "select",
+      "proposed_slot": "legal-select",
+      "proposed_engine_id": "legal-select@candidate",
+      "entrypoint": {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/stages.py",
+        "function": "select"
+      },
+      "bindings": {
+        "retrieved": "retrieve.retrieved"
+      },
+      "outputs": {
+        "selected": "runtime.selected"
+      },
+      "hashes": "compute_only_after_actual_candidate_files_exist"
+    },
+    {
+      "node_id": "assemble",
+      "proposed_slot": "legal-assemble",
+      "proposed_engine_id": "legal-assemble@candidate",
+      "entrypoint": {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/stages.py",
+        "function": "assemble"
+      },
+      "bindings": {
+        "selected": "select.selected"
+      },
+      "outputs": {
+        "assembled": "runtime.assembled"
+      },
+      "hashes": "compute_only_after_actual_candidate_files_exist"
+    },
+    {
+      "node_id": "answer",
+      "proposed_slot": "legal-answer",
+      "proposed_engine_id": "legal-answer@candidate",
+      "entrypoint": {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/stages.py",
+        "function": "answer"
+      },
+      "bindings": {
+        "assembled": "assemble.assembled"
+      },
+      "outputs": {
+        "result": "runtime.result",
+        "control": "legal.control"
+      },
+      "hashes": "compute_only_after_actual_candidate_files_exist"
+    }
+  ],
+  "contracts": {
+    "legal.control": {
+      "schema_path": "00_SYSTEM/SCHEMAS/legal-agent-v1.schema.json",
+      "schema_definition": "Control",
+      "sha256_resolution": "compute_after_freezing_real_candidate_schema"
+    }
+  },
+  "schema_uri_resolution": "load validated schema_path file; use its $id; do not add schema_id to pipeline contract entries",
+  "candidate_activation": "explicit implementation selection only; no active pointer change",
+  "additional_consumers": [
+    "GET /v1/rag/search",
+    "GET /v1/rag/links",
+    "GET /v1/rag/links/summary",
+    "GET /health",
+    "POST /v1/rag/feedback"
+  ]
+}

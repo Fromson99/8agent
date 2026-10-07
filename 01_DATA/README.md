@@ -6,8 +6,10 @@
 2026-09-17 팀별 작업 입력을 `RAW/internal/<team>`, `RAW/external/<team>`으로 배치했다.
 `CATALOG/TEAM_LAYOUT.json`이 있으면 신규 기본 구축은 이 작업 트리를 선택한다.
 기존 `BUILD_SCOPE.json`과 원래 파일은 과거 실행 재현용으로 보존하며 `--document-scope`를
-명시하면 이전 범위가 우선한다. 사진 외규 28종과 기존 내규는 risk_team, 지정 80종의
-나머지 외규는 financial_team이다. [전처리 순서·분류·복구 안내](../07_DOCS/REFERENCE/OPERATIONS/GENOS_TEAM_RAW.md).
+명시하면 이전 범위가 우선한다. 사진의 financial 문서 61종은 financial_team에
+등록했고 이 중 risk_team과 겹치는 19종은 양쪽에 보존한다. 공유 RAW 150쌍은
+`RAW/union_file/manifest.json`에 해시로 고정한다. GENOS 현장 적용은 별도다.
+[전처리 순서·분류·복구 안내](../07_DOCS/REFERENCE/OPERATIONS/GENOS_TEAM_RAW.md).
 
 ## 현재 생성 경로
 
@@ -19,6 +21,7 @@ RAW 입력 (내규·외규, 형식별) → STRUCTURE → 용어·정의·참조 
 - `STRUCTURE/<fingerprint>`: 원문 구조와 `source.sqlite`. 의미 추출 작업은 만들지 않는다. PDF 구조 복원·검수는 유지한다.
 - `LEXICON`: 선택 용어집과 문서 출현·정의 연결. 용어 목록 수집과 정의·관계 수집 완료는 별개다.
 - `TERM/<run>/<document>/generation`: 원문 전용 저장소와 `navigation` 색인. `result.json`은 입력·코드·결과를 결속한다.
+- `TERM/<run>/<document>/audit/navigation`: 신규 생성의 분리 전 완성 navigation 감사 snapshot과 해시 영수증. 검색용 generation에는 구축 표 4개를 제외하고 작성 측에서 원장을 보존·검증한다. 통합 릴리스는 `serving/audit/navigation`에 보관한다. [분리·기존 세대 이행](../07_DOCS/REFERENCE/OPERATIONS/NAVIGATION_STORAGE.md).
 - `LOGS/<run>`: 실행·입력·오류·진행 기록. 현재 단계 상태는 `term-document-status.sqlite`에 저장한다.
 - `SEMANTIC/GENERATIONS`, `SEMANTIC/TERM_INDEX`: 이미 사용하던 세대 저장 위치. 이름과 무관하게 신규 선택 데이터의 manifest 계약이 기준이다. 과거 의미 세대는 복구용으로 보존한다.
 

@@ -1,0 +1,130 @@
+{
+  "schema_version": "rag-redesign-examples-v1",
+  "status": "PROPOSED_ILLUSTRATIONS_NOT_RUNTIME_RESULTS",
+  "examples": [
+    {
+      "id": "E01",
+      "case": "Read a deferred material",
+      "before": {
+        "acquisition": "COMPLETE",
+        "current_delivery": false,
+        "issue_decision": "DEFER"
+      },
+      "action": {
+        "kind": "VIEW_SAVED_SOURCE",
+        "issue_refs": [
+          "Q1"
+        ]
+      },
+      "expected": {
+        "next_view_contains_original": true,
+        "issue_decision": "DEFER",
+        "automatic_adoption": false
+      }
+    },
+    {
+      "id": "E02",
+      "case": "IC22-like old heading ID",
+      "current_basis": [
+        "body-page"
+      ],
+      "historical_basis": [
+        "heading-page"
+      ],
+      "proposal": {
+        "kind": "ADOPT",
+        "basis_refs": [
+          "heading-page"
+        ]
+      },
+      "expected": {
+        "offered_schema_accepts": false,
+        "runtime_accepts": false,
+        "repair": "Choose current body page or request explicit redisplay."
+      }
+    },
+    {
+      "id": "E03",
+      "case": "Material gap cannot coexist with COVERED",
+      "assessment": {
+        "issue_id": "Q2",
+        "status": "COVERED",
+        "disposition": "LIMITED_ANSWER",
+        "gap": {
+          "kind": "MISSING_SCOPE",
+          "material": true
+        }
+      },
+      "expected": {
+        "accepted_as_full_coverage": false,
+        "next_step_if_feasible": "SELECT",
+        "next_step_if_exhausted": "PARTIAL supported answer or pending"
+      }
+    },
+    {
+      "id": "E04",
+      "case": "Native finalization reserve",
+      "model_limit": 40,
+      "reserve": 3,
+      "attempts_used": 37,
+      "expected": {
+        "next_investigate_allowed": false,
+        "assess_finalize_slot_allowed": true,
+        "finalize_reentry_search_allowed": false,
+        "total_physical_attempts_must_not_exceed": 40
+      }
+    },
+    {
+      "id": "E05",
+      "case": "Closed composition plan",
+      "assessment_claims": [
+        {
+          "id": "C1",
+          "text": "예시: 원문에 근거해 승인한 판단 문장."
+        }
+      ],
+      "compose": {
+        "layout": "paragraphs",
+        "blocks": [
+          {
+            "claim_refs": [
+              "C1"
+            ],
+            "limitation_refs": []
+          }
+        ]
+      },
+      "expected": {
+        "new_legal_text_field_allowed": false,
+        "publication_text_equals_renderer": true
+      },
+      "note": "Synthetic illustration, no legal correctness claim."
+    },
+    {
+      "id": "E06",
+      "case": "Upstream failure",
+      "error": {
+        "http_status": 429,
+        "acceptance": "KNOWN_REJECTED",
+        "retryable": true
+      },
+      "expected": {
+        "retry_if_effective_policy_and_budget_permit": true,
+        "unknown_timeout_auto_retry": false,
+        "provider_fallback": false
+      }
+    },
+    {
+      "id": "E07",
+      "case": "Pending is not a complete route",
+      "last_completed_stage": "READ",
+      "pending_stage": "SELECT",
+      "expected": {
+        "create_ready_route": false,
+        "fabricate_assess_compose_refs": false,
+        "activate_knowledge": false,
+        "preserve_checkpoint": true
+      }
+    }
+  ]
+}

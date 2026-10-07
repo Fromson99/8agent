@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="49" time="9.120" timestamp="2026-10-06T15:45:09.396047+09:00" hostname="hjson"><testcase classname="07_DOCS.REFERENCE.REPORTS.RAG_CONTROL_FLOW_AUDIT_20261006.probes" name="test_grouping_undoes_source_interleaving" time="0.376" /><testcase classname="07_DOCS.REFERENCE.REPORTS.RAG_CONTROL_FLOW_AUDIT_20261006.probes" name="test_partial_expansion_rereads_leaf" time="0.181" /><testcase classname="07_DOCS.REFERENCE.REPORTS.RAG_CONTROL_FLOW_AUDIT_20261006.probes" name="test_reset_action_counter_collides_in_same_session" time="0.172" /><testcase classname="07_DOCS.REFERENCE.REPORTS.RAG_CONTROL_FLOW_AUDIT_20261006.probes" name="test_pending_sticks_after_successful_second_navigation" time="0.206" /><testcase classname="07_DOCS.REFERENCE.REPORTS.RAG_CONTROL_FLOW_AUDIT_20261006.probes" name="test_review_expansion_not_shown_to_another_sufficiency_check" time="0.170" /><testcase classname="07_DOCS.REFERENCE.REPORTS.RAG_CONTROL_FLOW_AUDIT_20261006.probes" name="test_previously_scanned_source_can_gain_an_unexamined_required_link[\u2460 \u300c\ubaa8\uc758\uc2b9\uc778\uaddc\uc815\u300d \uc81c1\uc870\uc81c1\ud56d\uc744 \uc900\uc6a9\ud558\uba70 \uc608\uc678\ub294 \ub2e4\uc74c \uac01 \ud638\uc640 \uac19\ub2e4.]" time="0.244" /><testcase classname="07_DOCS.REFERENCE.REPORTS.RAG_CONTROL_FLOW_AUDIT_20261006.probes" name="test_next_navigation_reasks_the_same_skipped_link" time="0.213" /><testcase classname="07_DOCS.REFERENCE.REPORTS.RAG_CONTROL_FLOW_AUDIT_20261006.probes" name="test_old_previews_displace_a_newly_acquired_candidate" time="0.156" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_fts_returns_real_leaf_and_does_not_absorb_sibling_body" time="0.110" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_fts_scope_and_stale_file_fail_closed" time="0.136" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_leaf_and_all_ancestor_subtrees_paginate_without_escape[exact:3-expected0]" time="0.173" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_leaf_and_all_ancestor_subtrees_paginate_without_escape[subtree:3-expected1]" time="0.193" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_leaf_and_all_ancestor_subtrees_paginate_without_escape[subtree:2-expected2]" time="0.145" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_leaf_and_all_ancestor_subtrees_paginate_without_escape[subtree:1-expected3]" time="0.176" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_leaf_and_all_ancestor_subtrees_paginate_without_escape[subtree:0-expected4]" time="0.196" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_foreign_and_unoffered_read_are_denied" time="0.201" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_leaf_complete_does_not_mean_article_complete" time="0.151" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_original_body_and_expansion_are_chosen_together" time="0.190" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_empty_initial_selection_stays_pending" time="0.164" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_empty_schema_has_no_invalid_enum" time="0.000" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_cross_unit_scope_is_rejected" time="0.216" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_read_budget_cannot_be_bypassed_by_expansion" time="0.152" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_conflicting_original_span_is_rejected" time="0.000" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_partial_unit_is_not_selection_eligible" time="0.149" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_multiple_matching_units_survive_article_projection" time="0.213" /><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_selected_scopes_drive_durable_assessment_after_confirmation[False]" time="0.195"><failure message="AssertionError: {&quot;detail&quot;:&quot;engine code hash mismatch: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py&quot;}&#10;assert 422 == 200&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">tmp_path = PosixPath('/tmp/pytest-of-jin/pytest-230/test_selected_scopes_drive_dur0')
+tree = (PosixPath('/tmp/pytest-of-jin/pytest-230/test_selected_scopes_drive_dur0/built/generation'), &lt;semantic_runtime.unit_fulltext.UnitFulltextIndex object at 0x73529617b3d0&gt;)
+manifest_binding = False
+
+    @pytest.mark.parametrize('manifest_binding',[False,True,None])
+    def test_selected_scopes_drive_durable_assessment_after_confirmation(tmp_path,tree,manifest_binding):
+        from fastapi.testclient import TestClient
+        gen,idx=tree
+        if manifest_binding:
+            from lawrag.pipeline.fulltext_stage import derive
+            derived=tmp_path/'unit-serving-generation'
+            derive(gen,derived,workers=1)
+            gen=derived
+        class Transport(ScriptedTransport):
+            def send_once(self,*,body,ticket):
+                v=json.loads(body['messages'][1]['content'])['view'];phase=v.get('source_stage',v['phase'])
+                if phase in ('source-unit-triage','source-unit-review'):
+                    self.phases.append(phase)
+                    choices=[]
+                    if phase=='source-unit-triage':
+                        row=next(r for r in v['units'] if any(o[0]=='subtree:1' for o in r['read_options']))
+                        choices=[{'id':row['id'],'scope':'subtree:1','reason':'승인 예외를 동일 항 전체와 비교'}]
+                    return wire({'issues':['승인'],'choices':choices,'needs_search':False})
+                if phase in ('memory-assess','memory-compose'):
+                    assert '일반 승인' in v['sources'][0]['text'] and '보고' not in v['sources'][0]['text']
+                return super().send_once(body=body,ticket=ticket)
+        t=Transport();t.command=command('CASE_START',document_scope_mode='AUTHORIZED',task='긴급 승인 예외',queries=['긴급 승인'],facts=[])
+        import importlib.util
+        spec=importlib.util.spec_from_file_location('unit_test_package',ROOT/'06_TOOLS/EXPERIMENTS/adr_0620/package.py')
+        packager=importlib.util.module_from_spec(spec);spec.loader.exec_module(packager)
+        source_code=Path(unit_fts.__file__).resolve().parents[2]
+        code=ROOT if source_code==ROOT.resolve() else packager.materialize(source_code,tmp_path/'research-code')
+        app=create_app(tmp_path,gen,contracts_root=code,provider=object(),implementation='legal-agent-unified-v6',
+            legal_agent_profile={**settings(),'max_model_attempts':40},legal_agent_transport=t,
+            memory_identity=lambda r:{'user_id':'u','team_id':'risk_team','document_ids':['d']})
+        if manifest_binding:
+            assert app.state.pipeline.term_agent.unit_fulltext is app.state.pipeline.term_agent.get_fulltext()
+        elif manifest_binding is False:
+            app.state.pipeline.term_agent.unit_fulltext=idx
+        try:
+            with TestClient(app) as client:
+                body={'question':'긴급 승인 예외','session_id':'s','request_id':'r1'}
+&gt;               first=ok(client.post('/v1/rag/ask',json=body));gid=first['question_id']
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+05_TESTS/CONTRACTS/test_unit_fulltext_adaptive_read.py:218: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = &lt;Response [422 Unprocessable Entity]&gt;
+
+    def ok(response):
+&gt;       assert response.status_code==200,response.text
+E       AssertionError: {"detail":"engine code hash mismatch: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py"}
+E       assert 422 == 200
+E        +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code
+
+05_TESTS/CONTRACTS/test_unified_legal_agent.py:76: AssertionError</failure></testcase><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_selected_scopes_drive_durable_assessment_after_confirmation[True]" time="0.233"><failure message="AssertionError: {&quot;detail&quot;:&quot;engine code hash mismatch: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py&quot;}&#10;assert 422 == 200&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">tmp_path = PosixPath('/tmp/pytest-of-jin/pytest-230/test_selected_scopes_drive_dur1')
+tree = (PosixPath('/tmp/pytest-of-jin/pytest-230/test_selected_scopes_drive_dur1/built/generation'), &lt;semantic_runtime.unit_fulltext.UnitFulltextIndex object at 0x73528cfdea50&gt;)
+manifest_binding = True
+
+    @pytest.mark.parametrize('manifest_binding',[False,True,None])
+    def test_selected_scopes_drive_durable_assessment_after_confirmation(tmp_path,tree,manifest_binding):
+        from fastapi.testclient import TestClient
+        gen,idx=tree
+        if manifest_binding:
+            from lawrag.pipeline.fulltext_stage import derive
+            derived=tmp_path/'unit-serving-generation'
+            derive(gen,derived,workers=1)
+            gen=derived
+        class Transport(ScriptedTransport):
+            def send_once(self,*,body,ticket):
+                v=json.loads(body['messages'][1]['content'])['view'];phase=v.get('source_stage',v['phase'])
+                if phase in ('source-unit-triage','source-unit-review'):
+                    self.phases.append(phase)
+                    choices=[]
+                    if phase=='source-unit-triage':
+                        row=next(r for r in v['units'] if any(o[0]=='subtree:1' for o in r['read_options']))
+                        choices=[{'id':row['id'],'scope':'subtree:1','reason':'승인 예외를 동일 항 전체와 비교'}]
+                    return wire({'issues':['승인'],'choices':choices,'needs_search':False})
+                if phase in ('memory-assess','memory-compose'):
+                    assert '일반 승인' in v['sources'][0]['text'] and '보고' not in v['sources'][0]['text']
+                return super().send_once(body=body,ticket=ticket)
+        t=Transport();t.command=command('CASE_START',document_scope_mode='AUTHORIZED',task='긴급 승인 예외',queries=['긴급 승인'],facts=[])
+        import importlib.util
+        spec=importlib.util.spec_from_file_location('unit_test_package',ROOT/'06_TOOLS/EXPERIMENTS/adr_0620/package.py')
+        packager=importlib.util.module_from_spec(spec);spec.loader.exec_module(packager)
+        source_code=Path(unit_fts.__file__).resolve().parents[2]
+        code=ROOT if source_code==ROOT.resolve() else packager.materialize(source_code,tmp_path/'research-code')
+        app=create_app(tmp_path,gen,contracts_root=code,provider=object(),implementation='legal-agent-unified-v6',
+            legal_agent_profile={**settings(),'max_model_attempts':40},legal_agent_transport=t,
+            memory_identity=lambda r:{'user_id':'u','team_id':'risk_team','document_ids':['d']})
+        if manifest_binding:
+            assert app.state.pipeline.term_agent.unit_fulltext is app.state.pipeline.term_agent.get_fulltext()
+        elif manifest_binding is False:
+            app.state.pipeline.term_agent.unit_fulltext=idx
+        try:
+            with TestClient(app) as client:
+                body={'question':'긴급 승인 예외','session_id':'s','request_id':'r1'}
+&gt;               first=ok(client.post('/v1/rag/ask',json=body));gid=first['question_id']
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+05_TESTS/CONTRACTS/test_unit_fulltext_adaptive_read.py:218: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = &lt;Response [422 Unprocessable Entity]&gt;
+
+    def ok(response):
+&gt;       assert response.status_code==200,response.text
+E       AssertionError: {"detail":"engine code hash mismatch: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py"}
+E       assert 422 == 200
+E        +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code
+
+05_TESTS/CONTRACTS/test_unified_legal_agent.py:76: AssertionError</failure></testcase><testcase classname="05_TESTS.CONTRACTS.test_unit_fulltext_adaptive_read" name="test_selected_scopes_drive_durable_assessment_after_confirmation[None]" time="0.161"><failure message="AssertionError: {&quot;detail&quot;:&quot;engine code hash mismatch: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py&quot;}&#10;assert 422 == 200&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">tmp_path = PosixPath('/tmp/pytest-of-jin/pytest-230/test_selected_scopes_drive_dur2')
+tree = (PosixPath('/tmp/pytest-of-jin/pytest-230/test_selected_scopes_drive_dur2/built/generation'), &lt;semantic_runtime.unit_fulltext.UnitFulltextIndex object at 0x73528c6587c0&gt;)
+manifest_binding = None
+
+    @pytest.mark.parametrize('manifest_binding',[False,True,None])
+    def test_selected_scopes_drive_durable_assessment_after_confirmation(tmp_path,tree,manifest_binding):
+        from fastapi.testclient import TestClient
+        gen,idx=tree
+        if manifest_binding:
+            from lawrag.pipeline.fulltext_stage import derive
+            derived=tmp_path/'unit-serving-generation'
+            derive(gen,derived,workers=1)
+            gen=derived
+        class Transport(ScriptedTransport):
+            def send_once(self,*,body,ticket):
+                v=json.loads(body['messages'][1]['content'])['view'];phase=v.get('source_stage',v['phase'])
+                if phase in ('source-unit-triage','source-unit-review'):
+                    self.phases.append(phase)
+                    choices=[]
+                    if phase=='source-unit-triage':
+                        row=next(r for r in v['units'] if any(o[0]=='subtree:1' for o in r['read_options']))
+                        choices=[{'id':row['id'],'scope':'subtree:1','reason':'승인 예외를 동일 항 전체와 비교'}]
+                    return wire({'issues':['승인'],'choices':choices,'needs_search':False})
+                if phase in ('memory-assess','memory-compose'):
+                    assert '일반 승인' in v['sources'][0]['text'] and '보고' not in v['sources'][0]['text']
+                return super().send_once(body=body,ticket=ticket)
+        t=Transport();t.command=command('CASE_START',document_scope_mode='AUTHORIZED',task='긴급 승인 예외',queries=['긴급 승인'],facts=[])
+        import importlib.util
+        spec=importlib.util.spec_from_file_location('unit_test_package',ROOT/'06_TOOLS/EXPERIMENTS/adr_0620/package.py')
+        packager=importlib.util.module_from_spec(spec);spec.loader.exec_module(packager)
+        source_code=Path(unit_fts.__file__).resolve().parents[2]
+        code=ROOT if source_code==ROOT.resolve() else packager.materialize(source_code,tmp_path/'research-code')
+        app=create_app(tmp_path,gen,contracts_root=code,provider=object(),implementation='legal-agent-unified-v6',
+            legal_agent_profile={**settings(),'max_model_attempts':40},legal_agent_transport=t,
+            memory_identity=lambda r:{'user_id':'u','team_id':'risk_team','document_ids':['d']})
+        if manifest_binding:
+            assert app.state.pipeline.term_agent.unit_fulltext is app.state.pipeline.term_agent.get_fulltext()
+        elif manifest_binding is False:
+            app.state.pipeline.term_agent.unit_fulltext=idx
+        try:
+            with TestClient(app) as client:
+                body={'question':'긴급 승인 예외','session_id':'s','request_id':'r1'}
+&gt;               first=ok(client.post('/v1/rag/ask',json=body));gid=first['question_id']
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+05_TESTS/CONTRACTS/test_unit_fulltext_adaptive_read.py:218: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = &lt;Response [422 Unprocessable Entity]&gt;
+
+    def ok(response):
+&gt;       assert response.status_code==200,response.text
+E       AssertionError: {"detail":"engine code hash mismatch: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py"}
+E       assert 422 == 200
+E        +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code
+
+05_TESTS/CONTRACTS/test_unified_legal_agent.py:76: AssertionError</failure></testcase><testcase classname="05_TESTS.CONTRACTS.test_progressive_grouped_reading" name="test_initial_acquisition_defers_other_candidates_and_explicit_sufficiency_stops" time="0.208" /><testcase classname="05_TESTS.CONTRACTS.test_progressive_grouped_reading" name="test_insufficient_batch_reads_next_batch_and_uses_unique_receipts" time="0.177" /><testcase classname="05_TESTS.CONTRACTS.test_progressive_grouped_reading" name="test_same_article_matches_group_with_ancestors_but_without_other_sibling" time="0.223" /><testcase classname="05_TESTS.CONTRACTS.test_progressive_grouped_reading" name="test_next_batch_preserves_adopted_scope_and_action_identity" time="0.159" /><testcase classname="05_TESTS.CONTRACTS.test_progressive_grouped_reading" name="test_sufficient_flag_does_not_skip_unresolved_required_connection" time="0.162" /><testcase classname="05_TESTS.CONTRACTS.test_progressive_grouped_reading" name="test_two_batches_bind_actual_model_views_and_persist_selected_evidence" time="0.229" /><testcase classname="05_TESTS.CONTRACTS.test_progressive_grouped_reading" name="test_conditional_schema_requires_reason_and_repeated_bad_model_is_not_internal_error" time="0.175" /><testcase classname="05_TESTS.CONTRACTS.test_batch_reference_navigation" name="test_reverse_links_are_grouped_with_verified_witnesses_and_closed_scopes" time="0.243" /><testcase classname="05_TESTS.CONTRACTS.test_batch_reference_navigation" name="test_follow_reads_only_chosen_paragraph_and_review_receives_it" time="0.156" /><testcase classname="05_TESTS.CONTRACTS.test_batch_reference_navigation" name="test_skip_keeps_related_sources_unread_and_reason_is_recorded" time="0.144" /><testcase classname="05_TESTS.CONTRACTS.test_batch_reference_navigation" name="test_defer_remains_pending" time="0.162" /><testcase classname="05_TESTS.CONTRACTS.test_batch_reference_navigation" name="test_no_verified_links_does_not_create_a_model_turn" time="0.227" /><testcase classname="05_TESTS.CONTRACTS.test_batch_reference_navigation" name="test_forged_reference_witness_is_rejected" time="0.184" /><testcase classname="05_TESTS.CONTRACTS.test_batch_reference_navigation" name="test_reference_choices_cannot_escape_closed_group_contract[unoffered]" time="0.245" /><testcase classname="05_TESTS.CONTRACTS.test_batch_reference_navigation" name="test_reference_choices_cannot_escape_closed_group_contract[skip_read]" time="0.151" /><testcase classname="05_TESTS.CONTRACTS.test_batch_reference_navigation" name="test_reference_choices_cannot_escape_closed_group_contract[missing_decision]" time="0.148" /><testcase classname="05_TESTS.CONTRACTS.test_batch_reference_navigation" name="test_reference_choices_cannot_escape_closed_group_contract[duplicate]" time="0.155" /><testcase classname="05_TESTS.CONTRACTS.test_batch_reference_navigation" name="test_empty_menu_schema_has_no_empty_enum" time="0.000" /><testcase classname="05_TESTS.CONTRACTS.test_batch_reference_navigation" name="test_grouping_collapses_duplicate_edges_without_per_edge_model_calls" time="0.214" /><testcase classname="05_TESTS.CONTRACTS.test_batch_reference_navigation" name="test_related_originals_reach_shared_assessment_after_confirmation" time="0.301"><failure message="AssertionError: {&quot;detail&quot;:&quot;engine code hash mismatch: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py&quot;}&#10;assert 422 == 200&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">connected = (&lt;semantic_runtime.legal_agent.workflow_tiers_tools.TiersTools object at 0x7352e4c58b50&gt;, &lt;semantic_runtime.unit_fulltext.UnitFulltextIndex object at 0x73528eaa2a50&gt;)
+tmp_path = PosixPath('/tmp/pytest-of-jin/pytest-230/test_related_originals_reach_s0')
+
+    def test_related_originals_reach_shared_assessment_after_confirmation(connected, tmp_path):
+        from fastapi.testclient import TestClient
+        from semantic_runtime.app import create_app
+        from test_memory_runtime_v2 import command
+        from test_legal_agent_double_harness import ROOT, wire
+        from test_unified_legal_agent import ok
+        import importlib.util
+        s, idx = connected
+        # The fixture layout is pinned here; no inference from a selected release.
+        gen = tmp_path/'built/generation'
+        class Transport(ScriptedTransport):
+            def send_once(self, *, body, ticket):
+                v=json.loads(body['messages'][1]['content'])['view'];phase=v.get('source_stage',v['phase'])
+                if phase in ('source-unit-triage','source-unit-review'):
+                    self.phases.append(phase)
+                    choices=[]
+                    if phase=='source-unit-triage':
+                        row=next(r for r in v['units'] if v['laws'][r['law']]=='모의승인규정' and any(o[0]=='exact:2' for o in r['read_options']))
+                        choices=[{'id':row['id'],'scope':'exact:2','reason':'긴급 승인 원칙 확인'}]
+                    else:assert any('책임자 확인' in x['text'] for x in v['sources'])
+                    return wire({'issues':['긴급 승인 예외'],'choices':choices,'needs_search':False})
+                if phase.startswith('source-reference-batch'):
+                    self.phases.append(phase)
+                    value=decision(v)
+                    if v['round']==1:
+                        for group in v['groups']:
+                            if group['target']['document_id']=='detail':
+                                next(d for d in value['decisions'] if d['id']==group['id']).update(action='FOLLOW',scopes=['subtree:1'])
+                    return wire(value)
+                if phase in ('memory-assess','memory-compose'):
+                    assert any('책임자 확인' in x['text'] and x['document_id']=='detail' for x in v['sources'])
+                return super().send_once(body=body,ticket=ticket)
+        spec=importlib.util.spec_from_file_location('relation_package',ROOT/'06_TOOLS/EXPERIMENTS/adr_0622/package.py')
+        package=importlib.util.module_from_spec(spec);spec.loader.exec_module(package)
+        source_code=__import__('pathlib').Path(rel.__file__).resolve().parents[3]
+        code=ROOT if source_code==ROOT.resolve() else package.materialize(source_code,tmp_path/'consumer-code')
+        t=Transport();t.command=command('CASE_START',document_scope_mode='AUTHORIZED',task='긴급 승인 예외',queries=['긴급 승인'],facts=[])
+        app=create_app(tmp_path/'app',gen,contracts_root=code,provider=object(),implementation='legal-agent-unified-v6',
+            legal_agent_profile={**settings(),'max_model_attempts':40},legal_agent_transport=t,
+            memory_identity=lambda r:{'user_id':'u','team_id':'risk_team','document_ids':['d','detail']})
+        app.state.pipeline.term_agent.unit_fulltext=idx
+        try:
+            with TestClient(app) as client:
+                body={'question':'긴급 승인 예외','session_id':'s','request_id':'r1'}
+&gt;               first=ok(client.post('/v1/rag/ask',json=body));gid=first['question_id']
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+05_TESTS/CONTRACTS/test_batch_reference_navigation.py:232: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = &lt;Response [422 Unprocessable Entity]&gt;
+
+    def ok(response):
+&gt;       assert response.status_code==200,response.text
+E       AssertionError: {"detail":"engine code hash mismatch: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py"}
+E       assert 422 == 200
+E        +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code
+
+05_TESTS/CONTRACTS/test_unified_legal_agent.py:76: AssertionError</failure></testcase><testcase classname="05_TESTS.CONTRACTS.test_batch_reference_navigation" name="test_bounded_path_adopts_new_reference_source_with_exact_evidence" time="0.234" /></testsuite></testsuites>

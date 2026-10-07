@@ -1,0 +1,167 @@
+{
+  "schema_version": "git-work-status-v1",
+  "observed_at": "2026-10-07",
+  "branch": "feature/legal_RAG",
+  "remote": "infocz",
+  "remote_url": "https://github.com/infoczAI/agent8.git",
+  "base_commit": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "selected_release": {
+    "release_id": "investigation-control-v6-20261007-r1",
+    "generation": 43,
+    "release_manifest_sha256": "8cd47ee0524677ae3a7ff1b101b8635102d2139747038695a3d510eaaa968b80",
+    "quality_certified": false,
+    "code_files": 265,
+    "data_path": "01_DATA/TERM_RELEASES/local-genos-parity-20261006-r1/generation",
+    "data_manifest_sha256": "b07c178dbb6dc26d0ea5bd16a789fd19dfd2752948117a78a559eb3c2247fd35"
+  },
+  "selected_vs_working_differences": [
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "selected_sha256": "71d78b3df4dc04711fb31dc75293cfceff694e72c012dfe15186ea2977a54923",
+      "working_sha256": "389e8c4b26241fdfcef83478e671ddb4b8eaadfdde270d87d5588c1a2d98aab3",
+      "latest_handoff_matches_working": true
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/6.0.0/answer.json",
+      "selected_sha256": "943923d380f815c37d9f31015ef613b93146aff9259f707c6fea9dffed25b319",
+      "working_sha256": "6d003b081dfd72f7e23c1bf977d5c49359f16346c94c0000ad6bacd51a8d87fa",
+      "latest_handoff_matches_working": true
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/6.0.0/assemble.json",
+      "selected_sha256": "e25880043ed87c67c683a3dc2ca4291950e6973143fd54c1e762d88627ef7b79",
+      "working_sha256": "aba02b5ed9816668837948d419329f0f2f68c377f7ac7873bf8bdaa22a81b6c4",
+      "latest_handoff_matches_working": true
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/6.0.0/retrieve.json",
+      "selected_sha256": "ccefe92f819c6a27f398340047d9981995aad4120f50387a125257f7a08d50af",
+      "working_sha256": "837ab9807c03c8783340ba25a73dfc7ed510ec0d80c990696054a05a6182071d",
+      "latest_handoff_matches_working": true
+    },
+    {
+      "path": "02_BACKEND/ENGINES/legal_agent/6.0.0/select.json",
+      "selected_sha256": "82c7c137a74bc8ddc77f975644b855e5da0ffa9776bf18c368cefb292f6185ef",
+      "working_sha256": "1d6ae28f2c6e7b57662efb2ea264d3473e46d0e1b281caa4c333553abf73c7bc",
+      "latest_handoff_matches_working": true
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/answer.json",
+      "selected_sha256": "4e103a27b2626776bd7095da1f03668f96e71059944f46c1adad5cc12dce58cc",
+      "working_sha256": "2012264717be349999c49f2d7af251534d8a77d116af27f1c8819a98a4c479e0",
+      "latest_handoff_matches_working": true
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/assemble.json",
+      "selected_sha256": "e8cb345f0f78a526a06ff361f5328500a540c135e3d8f18b209106e482f50f75",
+      "working_sha256": "2c538391e4fe70abdad6a0b26dd5b7aa2d43c9888c9396434d27c3cfd6563b17",
+      "latest_handoff_matches_working": true
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/feedback.json",
+      "selected_sha256": "2a07a44805732debb4afa2191354bd534d5a51db31b6ef4497b63eb9eaf1bdf6",
+      "working_sha256": "5223b20818048670ff760ae46ab5bacb00d9ee8458c04d7efab91f17dfffbb84",
+      "latest_handoff_matches_working": true
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/load.json",
+      "selected_sha256": "63ad2be47b150c09fc1911d4e46ad038c9221065c18fc55b31f63f0d46ba2959",
+      "working_sha256": "2b466e3ab7105c80b06ff2ee8371f35799347f603b58629244ed36c9084ba00a",
+      "latest_handoff_matches_working": true
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/retrieve.json",
+      "selected_sha256": "4ea664cae9ea10c4a09fd15dce2dd1da697ed6e05022f61914101d7d2fc93966",
+      "working_sha256": "04ba772cb3264f5b2291cd78328b2b312a67f37f502d08928d5c7f62a446a4cd",
+      "latest_handoff_matches_working": true
+    },
+    {
+      "path": "02_BACKEND/ENGINES/term_runtime/1.0.0/select.json",
+      "selected_sha256": "1e6f12bf4ee76f5424562e08c67241ae92f24016c43dfebf009110ad21525027",
+      "working_sha256": "7a23619ffaaf058a64abda88cb659bc779d9cc27758af637d64f751c221fe677",
+      "latest_handoff_matches_working": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/chat_adapter.py",
+      "selected_sha256": "c47fb3c9d40daf939d23c2e718082d11d84f8537865c2fb2df40e0cb01c341c2",
+      "working_sha256": "0337fcc2441a97cfb6bc8234b0a8b142971b84f21e707f5e7439adf4c2f955d4",
+      "latest_handoff_matches_working": true
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/stream_app.py",
+      "selected_sha256": "31a32d06cd04fe51bb5a0bd6dc2f976a7680ae9aa1234b09558665c4d0f12db8",
+      "working_sha256": "4ea831c020c81bd4a0dd230ba27192846fd142881c964dbb33df02323008fc8c",
+      "latest_handoff_matches_working": true
+    },
+    {
+      "path": "main.py",
+      "selected_sha256": "ca0f29ceafec7c5cf03946345d45752170216bae6c95504112ed75d142392066",
+      "working_sha256": "e8d99e4528b2108a59b4bcc0dd37448bf27a18f12ab790723c00466cf2b9e534",
+      "latest_handoff_matches_working": true
+    }
+  ],
+  "working_transport_basis": {
+    "manifest_path": "08_DEPLOYMENT/GENOS/handoffs/native_chat_sse_20261007_r1/CODE_MANIFEST.json",
+    "manifest_sha256": "f23cf387c2d16a6621d046fbc16b61d2f249c9b97e0fe11ef11b8b97393f857b",
+    "code_files": 287
+  },
+  "checks": {
+    "wsl_dev_environment": "PASS",
+    "pipeline_check": "PASS: actual local service.service /health, generation 43",
+    "current_contract_tests": {
+      "passed": 138,
+      "failed": 1,
+      "failure_test": "05_TESTS/CONTRACTS/test_law_grouped_navigation.py::test_v6_default_profile_and_derived_unit_index_boot_without_manual_injection",
+      "failure": "legal-agent configuration hash mismatch",
+      "declared_profile_sha256": "fe69c8569adfec997731d2e532d5a01c906f97317f4c35ebc5941740aaf8cf4a",
+      "actual_profile_sha256": "041db0b0d67da8fbc516392f86d5a7c064b8d22b326dfbc2180e891bc2535431"
+    },
+    "native_chat_nfs_sqlite_tests": {
+      "passed": 48,
+      "failed": 0
+    },
+    "python_syntax": "2426 working and historical Python files parsed; no errors",
+    "json_parse": {
+      "files": 545,
+      "errors": []
+    },
+    "credential_pattern_scan": {
+      "files": 3701,
+      "potential_matches": []
+    },
+    "existing_whitespace_diagnostics": {
+      "by_scope": {
+        "implementation": 11,
+        "experiments": 29,
+        "handoffs": 51,
+        "docs": 6096
+      },
+      "policy": "Preserve pre-existing historical/fingerprinted source bytes; no whitespace-only rewrite."
+    }
+  },
+  "scope": {
+    "git_main_merged": false,
+    "local_main_changed_by_this_push": false,
+    "genos_deployed": false,
+    "external_model_calls_by_this_push": 0,
+    "raw_data_runtime_release_payloads_committed": false
+  },
+  "commit_groups": [
+    {
+      "scope": "implementation",
+      "commit": "fd09e050a6ebf364383c1a3a7fa469ecceb5aab0"
+    },
+    {
+      "scope": "experiments",
+      "commit": "daa973789533847415b124a16f51552ca392944b"
+    },
+    {
+      "scope": "handoffs",
+      "commit": "58cc395028caa8989145a6b9af6e762271674166"
+    }
+  ],
+  "excluded_concurrent_changes": [
+    "06_TOOLS/EXPERIMENTS/adr_0678/test_wire_boundary.py"
+  ],
+  "excluded_concurrent_reason": "Appeared during commit grouping; active work is preserved locally and is outside this captured snapshot."
+}

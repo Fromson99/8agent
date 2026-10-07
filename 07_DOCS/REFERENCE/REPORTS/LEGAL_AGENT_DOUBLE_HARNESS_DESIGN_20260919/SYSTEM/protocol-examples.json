@@ -1,0 +1,168 @@
+{
+  "status": "synthetic design messages; not actual model output",
+  "examples": {
+    "InvestigateDecision": {
+      "view_id": "V1",
+      "base_state_revision": 1,
+      "updates": [
+        {
+          "op": "create_issue",
+          "client_key": "tmp:i1",
+          "label": "승인 권한",
+          "question_piece_ids": [
+            "Q1"
+          ],
+          "required": true,
+          "origin": "question",
+          "trigger_evidence_ids": []
+        }
+      ],
+      "reads": [
+        {
+          "tool": "list_documents",
+          "args": {
+            "scope_handle": "S1",
+            "category": "internal",
+            "folder": "",
+            "title_query": "모의 업무규정",
+            "cursor": null
+          }
+        }
+      ],
+      "intent": "CONTINUE",
+      "clarification_issue_ids": []
+    },
+    "ComposeDraft": {
+      "view_id": "V4",
+      "base_state_revision": 5,
+      "paragraphs": [
+        {
+          "text": "모의 규정에서는 원칙상 위원회의 승인이 필요합니다.",
+          "finding_ids": [
+            "F1"
+          ],
+          "evidence_ids": [
+            "E1"
+          ]
+        }
+      ]
+    },
+    "ReviewDecision": {
+      "view_id": "V5",
+      "base_state_revision": 6,
+      "reviews": [
+        {
+          "claim_id": "C1",
+          "claim_version": 1,
+          "verdict": "NEEDS_RESEARCH",
+          "reason_code": "MISSED_QUALIFIER",
+          "anchor_evidence_ids": [
+            "E1"
+          ],
+          "reason": "원문에서 가리킨 특례 항을 아직 확인하지 않았습니다.",
+          "follow_up_reads": [
+            {
+              "tool": "read_node",
+              "args": {
+                "document_handle": "D1",
+                "unit_handle": "U3",
+                "cursor": null
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "Profile": {
+      "schema_version": "legal-agent-profile-design-v1",
+      "profile_id": "initial-wiring-example",
+      "implementation": "legal-agent-v1",
+      "model_binding": "REQUIRED_FROM_DEPLOYMENT",
+      "max_model_attempts": 14,
+      "finalization_reserve": 3,
+      "max_tool_actions": 56,
+      "wall_seconds": 300,
+      "max_cycles": 3,
+      "max_no_progress": 2,
+      "max_schema_repairs": 1,
+      "max_transport_retries": 1,
+      "max_context_chars": 60000,
+      "max_output_tokens": 2800,
+      "max_parallel_reads": 1,
+      "schema_in_prompt": true,
+      "max_concurrent_requests_per_process": 4,
+      "prototype_only": true
+    },
+    "EntityPayload": {
+      "kind": "assessment",
+      "issue_id": "I1",
+      "evidence_id": "E1",
+      "relation": "supports",
+      "reason": "모의 원칙 조항"
+    },
+    "DomainSpec": {
+      "schema_version": "legal-domain-design-v1",
+      "domain_id": "legal-grounding-initial",
+      "question_coverage": "every_question_piece_resolved_or_unresolved",
+      "evidence_policy": {
+        "require_exact_spans": true,
+        "require_presented_before_adoption": true,
+        "scope_expansion": "forbidden",
+        "unknown_effective_date": "no_current_applicability_assertion"
+      },
+      "checks": [
+        {
+          "check_id": "CITATION_MEMBERSHIP",
+          "trigger": "every_claim",
+          "reason_code": "CITATION_FORMAT_ERROR",
+          "evaluator": "deterministic"
+        },
+        {
+          "check_id": "QUALIFIER_PRESERVATION",
+          "trigger": "condition_text",
+          "reason_code": "MISSED_QUALIFIER",
+          "evaluator": "model_review"
+        },
+        {
+          "check_id": "REFERENCE_COMPLETION",
+          "trigger": "reference_text",
+          "reason_code": "DATA_GAP",
+          "evaluator": "model_review"
+        },
+        {
+          "check_id": "CONFLICT_RESOLUTION",
+          "trigger": "contradiction",
+          "reason_code": "CONFLICTING_SOURCE",
+          "evaluator": "model_review"
+        },
+        {
+          "check_id": "FACT_DEPENDENCY",
+          "trigger": "missing_fact",
+          "reason_code": "MISSING_FACT",
+          "evaluator": "model_review"
+        }
+      ],
+      "closure_policy": {
+        "require_current_dependencies": true,
+        "require_review_of_each_claim": true,
+        "no_progress": "bound_or_clarify",
+        "empty_evidence": "no_legal_conclusion"
+      }
+    },
+    "Control": {
+      "decision": "RESEARCH",
+      "gate": null,
+      "state_revision": 7,
+      "evidence_revision": 4,
+      "reason_codes": [
+        "MISSED_QUALIFIER"
+      ],
+      "target_issue_ids": [
+        "I1"
+      ],
+      "target_claim_ids": [
+        "C1"
+      ]
+    }
+  }
+}

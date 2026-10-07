@@ -1,0 +1,20 @@
+{
+  "schema_version": "legal-agent-profile-design-v1",
+  "profile_id": "initial-wiring-example",
+  "implementation": "legal-agent-v1",
+  "model_binding": "REQUIRED_FROM_DEPLOYMENT",
+  "max_model_attempts": 14,
+  "finalization_reserve": 3,
+  "max_tool_actions": 56,
+  "wall_seconds": 300,
+  "max_cycles": 3,
+  "max_no_progress": 2,
+  "max_schema_repairs": 1,
+  "max_transport_retries": 1,
+  "max_context_chars": 60000,
+  "max_output_tokens": 2800,
+  "max_parallel_reads": 1,
+  "schema_in_prompt": true,
+  "max_concurrent_requests_per_process": 4,
+  "prototype_only": true
+}

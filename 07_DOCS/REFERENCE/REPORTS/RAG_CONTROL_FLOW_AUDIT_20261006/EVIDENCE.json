@@ -1,0 +1,460 @@
+{
+  "schema_version": "rag-control-flow-audit-v1",
+  "reviewed_at_utc": "2026-10-06T06:44:30.210477+00:00",
+  "review_mode": "self_review_static_code_and_scripted_synthetic_diagnostics",
+  "production_code_modified": false,
+  "external_model_calls": 0,
+  "field_execution": false,
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "sql-ad-mode-v6-20261006-r1",
+    "generation": 41,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/sql-ad-mode-v6-20261006-r1/release.json",
+    "release_manifest_sha256": "b03c32172e1d184f434ab33d3330636ea603092b958e18ab1a1e9c8af17916f9",
+    "activated_at": "2026-10-05T17:19:43.593698+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "0bb3011ecc70fca5e40cbd54fe9cbd52495fa0341554761dcefe68bb08c4e67b",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0657-sql-ad-mode-control/실험/manifest.json",
+        "sha256": "0ff75b507c86085fa579b09415ae3f69f47210c461875704c849859b2e3787f9"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0657-sql-ad-mode-control/README.md",
+        "sha256": "a58c41fe2c4cf2903d9ad7d0e812304e9e2d567cb1efc50f3e2749e2a0889a66"
+      },
+      "arm": "integrated",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0657-sql-ad-mode-control/artifacts/run-001/result.json",
+        "sha256": "ed7cc27b28961af29f53bbffad8ef7fb388cb270993abb93789643dab9a9608d"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0657-sql-ad-mode-control/artifacts/design/release-rebase.json",
+        "sha256": "0e29d32efaba078ada0c2bd0b41eb971700ef724fcf58c6ba5ba72fb57789d3d"
+      }
+    }
+  },
+  "release_data_path": "01_DATA/TERM_RELEASES/pecab-only-public-main-20260929-v1/generation",
+  "release_data_manifest_sha256": "7bce6155aa762f2e9cc1453e7622b3186f47ad772cc7cd5251ad7fbc1235dabf",
+  "files": [
+    {
+      "path": "service.py",
+      "sha256": "c6a601da9d6cf037375ae548b5d6b38ee37ecd294c32fb7479879c68276ac3a7",
+      "bytes": 45955,
+      "frozen_sha256": "c0759e0b9b027412799df92a02b3582f8e28263cb8234a0828711ca15eb52ba3",
+      "same_as_frozen": false,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "afbe742fd8e7800d0878ce4229e849def7198c2e7e6d209c0edbcbe2208c4831",
+      "bytes": 29718
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "sha256": "e574b62e2a7e7c6a84f2b548741a383103a4a9c7ad4560ee78dd222f9ec00ff8",
+      "bytes": 59213,
+      "frozen_sha256": "9029666df97decf434d5962d6114e386857639199c048809e7373019bc1bf505",
+      "same_as_frozen": false,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6",
+      "bytes": 2553,
+      "frozen_sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6",
+      "same_as_frozen": true,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "GENOS.md",
+      "sha256": "f22616c4f006595b6388527e66b567a430e96a946006709f8cfd8382453b028a",
+      "bytes": 110202
+    },
+    {
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "sha256": "912d65161ba5d4230afefec26b9729401d3b70d561b1150f2302deb2d298ed24",
+      "bytes": 1390
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "sha256": "0953d2a60c70634616d9093e92eb0fa62965c8db7dbc329e5c3dfad0403ebac2",
+      "bytes": 19656,
+      "frozen_sha256": "886ce967405428c76401fca2f476f98c588fe60ee3b103039a8eef95021a9c36",
+      "same_as_frozen": false,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_selection.py",
+      "sha256": "d8fbd21020c695c146c502e73469a63cf5621fa5eb2d9c2a5d2ea1b16636407e",
+      "bytes": 18579,
+      "frozen_sha256": "2477a5cccb1a382f23602bc535d51701c79045aade8021ad8b5c1ac61350cc8f",
+      "same_as_frozen": false,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+      "sha256": "6ad2cb1db113c327bb1c03a6c7c487aadf36a9397139341b56ee7da62d5a7f9d",
+      "bytes": 21592,
+      "frozen_sha256": "e717ac2d74b4c74de974390425c5bc3b3f3da8e4e91e64a164a6bcbb05c546e9",
+      "same_as_frozen": false,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relation_read_policy.py",
+      "sha256": "f6e95a0f5a6e26f8b904306178904dcc8a66fc2c31848a1e0a86a4c514c212d8",
+      "bytes": 6632
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall.py",
+      "sha256": "4c1504b05f54543889ecb76d51b931f45840f3255f7790c9b1bc83811cfc9370",
+      "bytes": 22457,
+      "frozen_sha256": "90aa66f626456eb3697a8281380dc55e46d2e96b1453be3d50dec7c404f9ba5a",
+      "same_as_frozen": false,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py",
+      "sha256": "be458bf8754ad7d7118cf8e1466c457055f9b481afd8f34d36ef7b7ab5dc0a54",
+      "bytes": 12766,
+      "frozen_sha256": "8286643a5836e6261a2d0b05c7d073ad6e84e1c33faa55b02c533b45fbb05e94",
+      "same_as_frozen": false,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_selection.py",
+      "sha256": "67a79d933ccd0e4c1a5ea7429590a6351e9a1d10c5b0dd1efd4942c155df311a",
+      "bytes": 19195,
+      "frozen_sha256": "67a79d933ccd0e4c1a5ea7429590a6351e9a1d10c5b0dd1efd4942c155df311a",
+      "same_as_frozen": true,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_tools.py",
+      "sha256": "bd68ce892f3d3590c00e29c8b0950bb48570b574b10da4e1e03db0629f2df7ee",
+      "bytes": 19577,
+      "frozen_sha256": "4cadee6392e4f21c1d49a31d24065c7e3732c0a21b86d00b5326c2a3990b28d6",
+      "same_as_frozen": false,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py",
+      "sha256": "655fe7624ef67d7ce1954a122439d7b2b6159e10d44515c980d5a2ebcb588799",
+      "bytes": 35035,
+      "frozen_sha256": "655fe7624ef67d7ce1954a122439d7b2b6159e10d44515c980d5a2ebcb588799",
+      "same_as_frozen": true,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py",
+      "sha256": "4758a3e495310f38abd47b5a53c8e261b568749f5037677a3f24dd20394086a6",
+      "bytes": 40132,
+      "frozen_sha256": "5c844c8f876a135b949210298a93df2a7f9db56be5ac0d1f0c401755031bcda6",
+      "same_as_frozen": false,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+      "sha256": "4e8b1e0a50fc8af664972e1867d262d9d3b9dc961208f9b91badaecbad0c5270",
+      "bytes": 14949,
+      "frozen_sha256": "a69ece8382708b54cbfa1a2d3b992ae1b576a810d3e08d11981507cf67159fda",
+      "same_as_frozen": false,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_binding.py",
+      "sha256": "a2b365cee24bbcda628123cfbed06109d92d12e0c2a352a0ea1a09b284ffdf93",
+      "bytes": 4471,
+      "frozen_sha256": "a2b365cee24bbcda628123cfbed06109d92d12e0c2a352a0ea1a09b284ffdf93",
+      "same_as_frozen": true,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "sha256": "2bfaf7aaf146d876905fa52f5020bbb10c18ba49ddb785394a5f1a16f2946778",
+      "bytes": 39861,
+      "frozen_sha256": "2b8cf11ea6e906e768352510c5dad88f0d1584ee7d8c8a77d7c844190f78659a",
+      "same_as_frozen": false,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+      "sha256": "cc0214030c6119dd7a65c239f69e05c2efe14e88a35860469d6d611c60aa2c8b",
+      "bytes": 5585,
+      "frozen_sha256": "402cb79eb616f36a4232686f64643bbe0c2bb7bb0bf11c9dd6d20ff0ab8bb73b",
+      "same_as_frozen": false,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "sha256": "f8051c010588c9792c53ae9812b9699c71641aa1e3d378356f6204be7ec0f912",
+      "bytes": 10799,
+      "frozen_sha256": "118f0f1477b19619c6639d99cc4dcf006d4e32140e49cc3c661d76b1a05d9817",
+      "same_as_frozen": false,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py",
+      "sha256": "a0ab9cd58b0733075a6c90cfc3f10cf57ea08284fe9d7120e410cae0326cb0f2",
+      "bytes": 7578,
+      "frozen_sha256": "a0ab9cd58b0733075a6c90cfc3f10cf57ea08284fe9d7120e410cae0326cb0f2",
+      "same_as_frozen": true,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py",
+      "sha256": "f9ec457d35c1d3dc4a6db378c0e5f4d525d76a0bd58c2793958dd5e0fba5f632",
+      "bytes": 13718,
+      "frozen_sha256": "6e5bc65bdd79650811fbed9b98af73f7bcc7f8fbf9b7496d3d872bf0e132e760",
+      "same_as_frozen": false,
+      "frozen_matches_manifest": true
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0659-internal-accounting-manager-stop-probe/artifacts/diagnostic.json",
+      "sha256": "a48609cdc6f0065de412b8ace0d6b7146131c34cf45dccc2c17c31c1d6913bfd",
+      "bytes": 41723
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0659-internal-accounting-manager-stop-probe/artifacts/stage-ledger.json",
+      "sha256": "bfad543e6980f3172a43e3c67d45c030c0b8658d11eb9b72817ea5b75da4c16a",
+      "bytes": 26496737
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/RAG_STRUCTURAL_READ_DESIGN_20261006/README.md",
+      "sha256": "13e111b56f1733e377abe3fad32186dec223572d24d0b1e619c716adf152be62",
+      "bytes": 26128
+    },
+    {
+      "path": "08_DEPLOYMENT/RELEASES/sql-ad-mode-v6-20261006-r1/release.json",
+      "sha256": "b03c32172e1d184f434ab33d3330636ea603092b958e18ab1a1e9c8af17916f9",
+      "bytes": 36503
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/RAG_CONTROL_FLOW_AUDIT_20261006/README.md",
+      "sha256": "62900c62fff7b11d7bbab9e6c4aedd01dd8551fdc4d6678eff11e3f0d5374ebc"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/RAG_CONTROL_FLOW_AUDIT_20261006/final-junit.xml",
+      "sha256": "9f7c826f35dbfafe142aa1b2cb59121082b27ba9ac71ebcc4a253ff54c683e5d"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/RAG_CONTROL_FLOW_AUDIT_20261006/probe-junit.xml",
+      "sha256": "50f80ee4b42005f7a2cf4c33ed02037d6992dc635b1cfc5fb56530dbc9b6cf4d"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/RAG_CONTROL_FLOW_AUDIT_20261006/probe-results.json",
+      "sha256": "e708bbce6d02b0c5ff22531f035d444cc36c381d0c12d9a4136b174a06506feb"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/RAG_CONTROL_FLOW_AUDIT_20261006/probes.py",
+      "sha256": "5bc22a2415c7ef696e8fd12746f1ec851896ab3f03c9663c2c4ae0281f7d3302"
+    }
+  ],
+  "checks": [
+    {
+      "command": ".venv/bin/python -m pytest 07_DOCS/REFERENCE/REPORTS/RAG_CONTROL_FLOW_AUDIT_20261006/probes.py -q --junitxml=07_DOCS/REFERENCE/REPORTS/RAG_CONTROL_FLOW_AUDIT_20261006/probe-junit.xml",
+      "result": "8 passed, 1 dependency warning",
+      "seconds": 2.09,
+      "meaning": "current defects reproduced, not product acceptance"
+    },
+    {
+      "command": ".venv/bin/python -m pytest 05_TESTS/CONTRACTS/test_unit_fulltext_adaptive_read.py 05_TESTS/CONTRACTS/test_progressive_grouped_reading.py 05_TESTS/CONTRACTS/test_batch_reference_navigation.py -q",
+      "result": "41 passed, 1 dependency warning",
+      "seconds": 9.39
+    },
+    {
+      "command": ".venv/bin/python -m pytest <audit probes> <three contract modules> -q --junitxml=07_DOCS/REFERENCE/REPORTS/RAG_CONTROL_FLOW_AUDIT_20261006/final-junit.xml",
+      "result": "45 passed, 4 failed, 1 dependency warning",
+      "seconds": 9.13,
+      "audit_probes_passed": 8,
+      "failures": [
+        {
+          "test": "test_selected_scopes_drive_durable_assessment_after_confirmation[False]",
+          "reason": "engine code hash mismatch: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py"
+        },
+        {
+          "test": "test_selected_scopes_drive_durable_assessment_after_confirmation[True]",
+          "reason": "engine code hash mismatch: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py"
+        },
+        {
+          "test": "test_selected_scopes_drive_durable_assessment_after_confirmation[None]",
+          "reason": "engine code hash mismatch: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py"
+        },
+        {
+          "test": "test_related_originals_reach_shared_assessment_after_confirmation",
+          "reason": "engine code hash mismatch: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py"
+        }
+      ],
+      "meaning": "newly observed engine binding hash mismatch blocks 4 integration checks; not repaired by this audit"
+    }
+  ],
+  "calculations": {
+    "adr0659_model_time_share_percent": 60.06232984320427,
+    "adr0658_annex_handler_share_of_read_percent": 76.61918194640339
+  },
+  "document_status": "findings recorded separately; original design preserved",
+  "implementation_status": "unresolved; no deployment",
+  "artifact_git_status": "?? 07_DOCS/REFERENCE/REPORTS/RAG_CONTROL_FLOW_AUDIT_20261006/",
+  "workspace_concurrent_changes_detected": [
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "initial_sha256": "0953d2a60c70634616d9093e92eb0fa62965c8db7dbc329e5c3dfad0403ebac2",
+      "final_sha256": "7cdb794e6af095a134cfbc39b4331e6ef411f4f5d73946399a318ce31e0bf45b"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_selection.py",
+      "initial_sha256": "d8fbd21020c695c146c502e73469a63cf5621fa5eb2d9c2a5d2ea1b16636407e",
+      "final_sha256": "d07bcc82e82946b60c3fab5de8597b6c6dd52b56414d583d85f4e795e2cf0d32"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall.py",
+      "initial_sha256": "4c1504b05f54543889ecb76d51b931f45840f3255f7790c9b1bc83811cfc9370",
+      "final_sha256": "849a99733f3232b7c074513c24cacdbf75e99e25e7f63697447b1ddfdae18332"
+    }
+  ],
+  "initial_files_snapshot_note": "files records the earlier audit snapshot; see final_verification_snapshot for the subsequent code revision",
+  "final_verification_snapshot": {
+    "at_utc": "2026-10-06T06:46:18.608470+00:00",
+    "files": [
+      {
+        "path": "service.py",
+        "sha256": "c6a601da9d6cf037375ae548b5d6b38ee37ecd294c32fb7479879c68276ac3a7",
+        "bytes": 45955
+      },
+      {
+        "path": "00_SYSTEM/ARCHITECTURE.md",
+        "sha256": "afbe742fd8e7800d0878ce4229e849def7198c2e7e6d209c0edbcbe2208c4831",
+        "bytes": 29718
+      },
+      {
+        "path": "00_SYSTEM/PIPELINE.json",
+        "sha256": "e574b62e2a7e7c6a84f2b548741a383103a4a9c7ad4560ee78dd222f9ec00ff8",
+        "bytes": 59213
+      },
+      {
+        "path": "00_SYSTEM/WORKSPACE.json",
+        "sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6",
+        "bytes": 2553
+      },
+      {
+        "path": "GENOS.md",
+        "sha256": "f22616c4f006595b6388527e66b567a430e96a946006709f8cfd8382453b028a",
+        "bytes": 110202
+      },
+      {
+        "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+        "sha256": "912d65161ba5d4230afefec26b9729401d3b70d561b1150f2302deb2d298ed24",
+        "bytes": 1390
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+        "sha256": "7cdb794e6af095a134cfbc39b4331e6ef411f4f5d73946399a318ce31e0bf45b",
+        "bytes": 20199
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/unit_selection.py",
+        "sha256": "d07bcc82e82946b60c3fab5de8597b6c6dd52b56414d583d85f4e795e2cf0d32",
+        "bytes": 18934
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+        "sha256": "6ad2cb1db113c327bb1c03a6c7c487aadf36a9397139341b56ee7da62d5a7f9d",
+        "bytes": 21592
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/relation_read_policy.py",
+        "sha256": "f6e95a0f5a6e26f8b904306178904dcc8a66fc2c31848a1e0a86a4c514c212d8",
+        "bytes": 6632
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall.py",
+        "sha256": "849a99733f3232b7c074513c24cacdbf75e99e25e7f63697447b1ddfdae18332",
+        "bytes": 23602
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py",
+        "sha256": "be458bf8754ad7d7118cf8e1466c457055f9b481afd8f34d36ef7b7ab5dc0a54",
+        "bytes": 12766
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/source_selection.py",
+        "sha256": "67a79d933ccd0e4c1a5ea7429590a6351e9a1d10c5b0dd1efd4942c155df311a",
+        "bytes": 19195
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/source_tools.py",
+        "sha256": "bd68ce892f3d3590c00e29c8b0950bb48570b574b10da4e1e03db0629f2df7ee",
+        "bytes": 19577
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py",
+        "sha256": "655fe7624ef67d7ce1954a122439d7b2b6159e10d44515c980d5a2ebcb588799",
+        "bytes": 35035
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py",
+        "sha256": "4758a3e495310f38abd47b5a53c8e261b568749f5037677a3f24dd20394086a6",
+        "bytes": 40132
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+        "sha256": "4e8b1e0a50fc8af664972e1867d262d9d3b9dc961208f9b91badaecbad0c5270",
+        "bytes": 14949
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/memory_binding.py",
+        "sha256": "a2b365cee24bbcda628123cfbed06109d92d12e0c2a352a0ea1a09b284ffdf93",
+        "bytes": 4471
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+        "sha256": "2bfaf7aaf146d876905fa52f5020bbb10c18ba49ddb785394a5f1a16f2946778",
+        "bytes": 39861
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "sha256": "cc0214030c6119dd7a65c239f69e05c2efe14e88a35860469d6d611c60aa2c8b",
+        "bytes": 5585
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+        "sha256": "f8051c010588c9792c53ae9812b9699c71641aa1e3d378356f6204be7ec0f912",
+        "bytes": 10799
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py",
+        "sha256": "a0ab9cd58b0733075a6c90cfc3f10cf57ea08284fe9d7120e410cae0326cb0f2",
+        "bytes": 7578
+      },
+      {
+        "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py",
+        "sha256": "f9ec457d35c1d3dc4a6db378c0e5f4d525d76a0bd58c2793958dd5e0fba5f632",
+        "bytes": 13718
+      },
+      {
+        "path": "04_EXPERIMENTS/ADR/ADR-0659-internal-accounting-manager-stop-probe/artifacts/diagnostic.json",
+        "sha256": "a48609cdc6f0065de412b8ace0d6b7146131c34cf45dccc2c17c31c1d6913bfd",
+        "bytes": 41723
+      },
+      {
+        "path": "04_EXPERIMENTS/ADR/ADR-0659-internal-accounting-manager-stop-probe/artifacts/stage-ledger.json",
+        "sha256": "bfad543e6980f3172a43e3c67d45c030c0b8658d11eb9b72817ea5b75da4c16a",
+        "bytes": 26496737
+      },
+      {
+        "path": "07_DOCS/REFERENCE/REPORTS/RAG_STRUCTURAL_READ_DESIGN_20261006/README.md",
+        "sha256": "13e111b56f1733e377abe3fad32186dec223572d24d0b1e619c716adf152be62",
+        "bytes": 26128
+      },
+      {
+        "path": "08_DEPLOYMENT/RELEASES/sql-ad-mode-v6-20261006-r1/release.json",
+        "sha256": "b03c32172e1d184f434ab33d3330636ea603092b958e18ab1a1e9c8af17916f9",
+        "bytes": 36503
+      }
+    ]
+  }
+}

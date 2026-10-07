@@ -1,0 +1,891 @@
+RAG 조사·선택 체인 및 MAIN 통합 구현 설계
+작성일: 2026-10-06 / 대상: /home/jin/8-AGENT의 기존 v6 RAG
+상태: 구현 제안. 이번 작업은 지침 저장·실제 연결 확인·설계서 작성이다.
+제품 코드 수정, 외부 모델 재실험, 로컬 MAIN 활성화, GENOS 배포는 아직 수행하지 않았다.
+
+0. 이번 설계의 결정
+
+최소 항·호·목 소유 본문 색인은 유지한다. 검색에서 걸린 단위와 모델이 판단을 위해 읽는 범위를 분리한다. 기존 v6의 RECALL/READ/SELECT/ASSESS/COMPOSE 및 native journal을 확장하고, 실험 후보에서 개발한 기능을 기존 개발 경로에 통합한다. 별도 제품 RAG를 만들지 않는다.
+
+사용자가 원하는 핵심은 다음과 같다.
+  - 검색 후보는 법령 판본 → 조 → 적중 항·호·목으로 묶는다.
+  - 모델이 조사할 법, 읽을 범위, 근거 채택, 연결 이동, 복귀를 선택하고 각각의 간단한 이유를 남긴다.
+  - 어느 과거 시점으로 돌아가도 그 시점의 선택지를 다시 제시한다.
+  - 돌아간다고 이후에 읽은 원문이나 판단 이력을 지우지 않는다.
+  - 근거로 채택한 원문은 이후 판단의 중심이 된다. 읽었지만 보류한 원문도 재채택할 수 있다.
+  - 필수 연결 미해결은 완료를 차단하지 않는다. 실제 답변 가능 범위와 미확인 사항은 별도로 표시한다.
+  - 전체 구현 완료에는 기존 작업 코드 통합, 동일 코드 검증, 로컬 MAIN 배선·활성화 및 실제 서비스 선택 확인이 포함된다.
+
+가장 먼저 고칠 대상은 원문 크기가 아니라 상태와 제어 계약이다. 한 단계 상위를 무조건 읽는 규칙만으로는 호와 항을 혼동하고, 잘못 고른 법을 벗어나지 못하며, 읽은 원문이 최종 판단에서 사라지는 문제를 해결하지 못한다.
+
+1. 현재 상태와 사실의 경계
+
+1.1 확인한 실행 경로
+  service.py의 release binding 선택
+    → 선택 코드의 semantic_runtime.app.create_app
+    → POST /v1/rag/ask
+    → Pipeline.run/_run
+    → legal_agent.coordinator.run_case
+    → unified_runtime 및 기존 native checkpoint
+    → RECALL → READ → SELECT → ASSESS → COMPOSE
+    → unified_runtime.result_port/publication
+    → API 응답·판단 화면·워크플로우 출력·경험/위키 소비자
+
+MAIN 전체는 용어집 기반 ingestion → 구조화 → 문서–용어 연결 → 용어/정의/명시 참조 색인 → RAG → 피드백이다. 이 설계가 직접 바꾸는 단계는 검색 표현·RAG 실행·기록·서빙 배선이다. 전체 ingestion과 용어집 구축 완료를 뜻하지 않는다.
+
+1.2 서로 다른 세 코드 상태
+  A. 로컬 활성 릴리스
+     local-genos-unit-v6-20261006-r1, ACTIVE_RELEASE generation 42.
+     code_root: 08_DEPLOYMENT/RELEASES/local-genos-unit-v6-20261006-r1/code.
+     investigation_chain.py, law_navigation.py, law_candidates.py가 이 릴리스에는 없다.
+  B. 기존 작업 코드
+     02_BACKEND/semantic_runtime.
+     법령별 탐색 모듈은 있지만 investigation_chain.py는 없다.
+     법령/조 디렉터리는 문서/원문 ID 순 정렬을 사용한다.
+  C. 최근 CM 시험 코드
+     ADR0673 chain-cm-six/rev-001의 동결 snapshot.
+     행동 체인·과거 시점 복귀·묶음 읽기·보정이 들어 있다.
+     법령/조 목록은 각 그룹의 최소 본문 적중 점수와 ID로 정렬한다.
+     0672 완료 후보와 제품 코드 272개 파일이 같다. 0673은 다른 CM 사례 관찰용이다.
+
+따라서 C의 시험 결과를 A/B의 구현 또는 배포 결과로 사용할 수 없다. 문서의 오래된 generation 41/40 표기도 선택 정본인 ACTIVE_RELEASE generation 42를 덮어쓰지 않는다. GENOS 현장 코드·내부 모델·워크플로우 배포는 접근 불가·미확인이다.
+
+1.3 데이터 기반
+  선택 원문 generation: term-source-3b667f54bb11d9477888.
+  fulltext schema: semantic-unit-fulltext-v1.
+  소유 본문 색인 단위 230,299개, source 조/원문 루트 33,443개, 블록 308,795개.
+  body_only=true, heading_indexed=false, descendant_text_included=false.
+  위 수는 전체 선택 세대의 manifest 관측값이며 외부 전송 허용 문서 수나 요청 후보 수와 다르다.
+  공개 사례 시험은 승인된 공개 문서 범위에서만 했다. 저장된 전체 문서 범위를 외부 모델에 전송하지 않는다.
+
+1.4 지금까지 확인한 결과
+  초기 로컬 인계 검증: 내부회계관리자 지정 질문에서 정답 제8조제3항을 찾았지만, 모델이 무관한 후보를 choices에 넣고 이유에는 선택하지 않는다고 적음. 서버가 이를 채택으로 실행했고 필수 참조 때문에 HTTP422. 당시 146.406초, 모델11회. 과거 버전의 관측이며 현행 후보에서 같은 오류가 재현됐다는 뜻은 아니다.
+  ADR0672: 부모/root 조회 충돌 수정 후 기존 두 질문 각각 HTTP200, 약65초/94초, 각각8회 호출. 후보 시험이며 활성 MAIN 결과가 아니다.
+  ADR0673: CM6문항 모두 HTTP200, 모델 총73회. 모든 후속 입력에 행동·대상·이유 체인이 보존됨. 자연 RETURN_TO는 0회. 두 사례에서 재검색, 두 사례에서 복수 조문 읽기를 사용함.
+  독립 법률 정답 채점은 하지 않았다. HTTP200, exact citation 통과, 전체 조문 확보, 근거 채택, 법적 결론 충족은 각각 다른 지표다.
+  73개 기존 계약 통과는 ADR0672에서 관측한 값이고, ADR0673의 모델73회와 관계없다. 같은 제품 코드라 계약 결과를 계승했으며 이를 재실행한 검사로 기록하지 않는다.
+
+2. 관측된 문제 → 일반 원인 → 해결
+
+F01 [최우선] 개발 결과와 서비스 코드가 분리됨
+  증거: A/B/C의 파일 존재·해시·정렬 정책이 다름.
+  일반 원인: 후보 시험을 제품 완료로 취급하거나 통합·release 선택·상주 프로세스 확인을 생략함.
+  해결: 현재 활성 릴리스, 기존 작업 코드, 완료 후보의 3자 변경 원장을 만들고 기능 단위로 통합한다. 새 통합 후보 하나를 동결하고 그 후보와 준비 릴리스의 제품 파일을 대조한다. 활성화 후 실제 service binding과 질문 실행에서 동일 지문을 확인한다.
+  완료 증거: integration receipt + qualified validation + apply receipt + 선택 포인터 + 실제 서비스 run binding. 이 중 하나라도 없으면 해당 단계 미완료다.
+
+F02 [최우선] 완료와 근거 충분성의 강제 결합
+  증거: 후보 law_navigation.decision_schema에서 FINISH이면 evidence_sufficient=true로 고정됨. 실제 답변에는 핵심 원문 미확인이 남음.
+  일반 원인: 조사를 끝내는 행동을 질문 전체에 충분한 근거를 확보했다는 판단으로 표현함.
+  해결: FINISH는 조사 종료 제안으로 바꾸고 충분성은 issue별 coverage로 표현한다. SELECT 종료 후 기존 ASSESS가 covered/partial/insufficient와 핵심 gap을 판단한다. 미해결 REQUIRED 자체는 차단 조건으로 사용하지 않는다.
+
+F03 [최우선] 적중 단위의 한 단계 부모가 질문 범위와 다름
+  증거: CM018은 제49조① 구조 질문인데 제49조①1나에서 READ_PARENT가 제1호 subtree309자·3블록을 확보함. 제2호 이하를 읽지 않았지만 충분성을 제안함.
+  일반 원인: 부모 scope의 label이 '1.'이며 질문이 요구한 항 범위와 실제 scope를 비교하지 않음. 상위 도입문이 함께 들어오면 전체 항을 읽었다고 오인하기 쉬움.
+  해결: 문서판본+조항호목의 완전한 경로, structural role, exact/subtree/ancestor_context 구분, expected/delivered span coverage를 제공한다. 질문 범위와 연결한 READ_SCOPE를 우선 제안하고 완전성은 코드가 span 합집합으로 계산한다.
+
+F04 [최우선] 읽은 원문이 보류되면 판단에서 사라짐
+  증거: CM039에서 상법361조를 읽었지만 보류하고362조를 채택함. ASSESS는 채택 원문만 받아 최종 답변이361조도 제공되지 않았다고 표현함.
+  일반 원인: 후보·읽음·현재 입력에 전달됨·채택·법적으로 충분함을 동일 상태로 취급함.
+  해결: 전역 조사 원장을 유지하되 모델 입력은 역할별로 투영한다. ASSESS에 보류 원문의 이름·범위·현재 상태·재열람 handle을 제공하고, 실제 본문을 다시 전달한 뒤 재채택할 수 있게 한다. 메타데이터만으로 인용하지 않는다.
+
+F05 [최우선] 핵심 연결의 존재를 알지만 대상을 못 보고 종료함
+  증거: 현재 selector reference_overview는 pending/개수 중심이다. CM003 세칙 제외 예외, CM043 준용 근거, CM051 산식 연결을 확보하지 못함.
+  일반 원인: 연결 메뉴를 열기 전에는 질문의 답이 그쪽에 있는지 판단할 재료가 부족함. 연결 전부를 열면 입력이 커지고 무관한 규정이 늘어남.
+  해결: 현재 보고 있는 실제 원문 span에 붙은 compact dependency cards를 제공한다. anchor 인용, 대상 문서/좌표, 방향, 관계 유형의 출처, 해소 상태, 읽기/채택 상태, question issue, 다음 action을 담는다. 본문은 선택한 연결만 전달한다.
+
+F06 [높음] ASSESS가 부족하다고 적어도 탐색으로 돌아가지 않음
+  증거: memory_rag.ASSESS는 claims/limitations 생성 및 exact quote 보정만 하며 핵심 gap→SELECT 재진입 경로가 없음.
+  일반 원인: 최종 판단이 탐색의 정보를 바꾸지 않는 일방향 실행.
+  해결: 기존 ASSESS에 gap directives를 추가한다. 부족한 이유·issue·우선 조치·복귀 후보를 SELECT에 전달하고 전역 조사 상태를 보존한 채 제한된 횟수로 재진입한다. 독립 최종 검토 모델을 기본으로 다시 켜지 않는다.
+
+F07 [높음] 잘못 예상한 조문을 고집하며 목록을 순회함
+  증거: CM039에서 이사회 권한을362조로 예상하고 목록·재검색을 반복함. CM018도 여러 NEXT_ARTICLES와 부칙 후보를 거침.
+  일반 원인: 기억에서 만든 좌표가 확정 locator처럼 작동하고 목록을 넘기는 것이 유일한 복구 수단이 됨.
+  해결: 사용자가 명시한 좌표/본문 참조 좌표/모델 추정 좌표를 분리한다. 기존 structure_query를 모델 선택 locator에도 재사용한다. 제목 대조 실패를 hypothesis_rejected 이벤트로 남기고 제목/주제 검색·원래 검색 복귀·다른 법을 계속 선택할 수 있게 한다.
+
+F08 [높음] 복귀 시점 순서와 최초 검색이 저장 직렬화에 의존함
+  증거: investigation_chain.points가 frames.values() 순서이고 context의 entry_search는 첫 dict 원소를 사용함. 실제 반환 메뉴에 시점5,2,7처럼 섞인 순서가 보임.
+  해결: entry_frame_id를 명시 저장하고 frame.number/sequence로 정렬한다. hash는 내용 ID, sequence는 시간 순서다. 같은 메뉴 재방문은 새 도착 이벤트를 남기고 원래 immutable menu를 가리킨다.
+
+F09 [높음] 행동·이유 이력을 보존하지만 중복이 원문보다 커짐
+  증거: CM018 후반 history JSON 약29,952자. 특정 SELECT 입력54,132자, ASSESS35,811자, COMPOSE37,768자이며 assessment source JSON은 약2,195자. 이는 문자 수이며 토큰 수가 아니다.
+  일반 원인: 매 행동마다 전체 법/경로 판단 상태를 반복 복사함. 과거 메뉴 전체도 스냅샷에 중첩될 수 있음.
+  해결: immutable judgment 객체와 action delta를 분리한다. 실제 모든 행동, 선택 대상, 새로 작성한 모든 이유를 계속 전달하되 동일 judgment는 1회 정의하고 이후 ID로 참조한다. 원문과 현재 선택 메뉴는 별도 입력 블록으로 둔다. 손실 요약·앞부분 삭제를 기본으로 사용하지 않는다.
+
+F10 [높음] choices의 형식과 의미가 충돌함
+  증거: 초기 사례에서 reason='선택하지 않음'인데 choices에 포함됨.
+  해결: 상태판단과 실행할 행동을 명시적 enum으로 분리하고 reason은 실행 명령으로 해석하지 않는다. ADOPT에는 전달된 원문 evidence handle과 issue를 요구한다. DEFER/SKIP에는 READ/ADOPT 실행 target을 허용하지 않는다. 교차검증 실패는 도구 실행 전 1회 bounded repair 후 실패 checkpoint를 남긴다.
+  한계: enum=ADOPT인데 자연어 이유만 부정하는 의미 모순을 코드로 완전히 판정할 수 없다. 메뉴 문구·계약을 줄이고 ASSESS가 관련성/coverage를 다시 확인한다. 한국어 부정어 regex로 채택을 뒤집지 않는다.
+
+3. 전체 MAIN에서 유지할 불변 조건
+
+I01 저장 단위, 검색 단위, 메뉴 그룹, 읽기 범위, 인용 span은 다르다. 소유 본문을 합쳐 원문 정본으로 다시 쓰지 않는다.
+I02 본문 검색 score는 후보 정렬 수단이다. 법 적용·채택·정답 점수가 아니다.
+I03 법령명·목차·preview·이전 판단 이유는 원문 인용 근거가 아니다.
+I04 읽기는 확보와 전달 영수증으로 증명한다. 모델이 이해했다는 사실까지 증명하지 않는다.
+I05 ADOPT/EXCLUDE는 issue와 실제 전달 span에 결속한다. 같은 조의 다른 span/다른 issue까지 자동으로 전파하지 않는다.
+I06 과거로 복귀해도 이후 read receipt·채택/보류/배제·정정 기록은 보존한다. 위치만 바꾸고 현재 권한·세대·질문은 되돌리지 않는다.
+I07 추정 좌표와 관계 의미는 observation이다. 원문과 승인된 구조 연결이 정본이다.
+I08 미해결 REQUIRED는 비차단 상태다. 코드 오류·권한 위반·해시 불일치·유효하지 않은 도구 선택·transport 장애는 조사 완료로 바꾸지 않는다.
+I09 동일 요청/accepted action 재개는 실행을 중복 적용하지 않는다. 유효한 새 탐색 이유가 있으면 같은 위치를 재방문할 수 있다.
+I10 답변은 최신 question_revision과 SELECT/evidence 버전에만 결속한다. 낡은 ASSESS/COMPOSE를 섞지 않는다.
+I11 원문·색인·용어집·프로필·스키마·검색 정책·실행 코드를 모두 묶어 선택한다. 서비스는 research snapshot을 직접 import하지 않는다.
+I12 candidate 시험, 작업 코드 통합, MAIN 활성화, 실제 서비스 확인, GENOS 적용을 각각 기록한다.
+
+4. 목표 구성과 책임
+
+4.1 기존 호출 순서 안의 변경
+  요청/INTENT: 현재 질문과 사실·적용 시점·대상 범위를 보존하고 issue 요구를 만든다.
+  RECALL: 기존 구조/용어/본문 탐색을 사용해 cursor 기반 후보 목록을 만든다.
+  READ: 초기 제한된 원문 preview 또는 명시 scope를 확보하고 exact span 영수증을 남긴다.
+  SELECT: 현재 메뉴 + 모든 선택 행동 이력 + 채택 근거 + 보류 원장 + 필요한 연결 카드를 보고 다음 행동을 결정한다.
+  ASSESS: 채택 원문으로 issue별 결론·한계를 작성하고 부족하면 SELECT 복귀 directive를 만든다.
+  COMPOSE: 최신 ASSESS의 범위를 보존해 답변을 작성한다. 새 법률 판단/탐색은 하지 않는다.
+  publication/UI/experience: 동일한 최신 답변과 근거 상태를 소비한다. 완료와 품질 인증을 혼동하지 않는다.
+
+4.2 새로 필요한 내부 책임 [제안 이름]
+  investigation_contracts: issue/locator/scope/status/action/gap의 schema와 교차검증.
+  evidence_inventory: 원문 확보·전달·채택의 상태 투영과 정확 범위 계산.
+  investigation_projection: 현재 메뉴·근거·보류·연결·전체 action/judgment를 중복 없이 모델 입력으로 조립.
+  기존 investigation_chain: immutable frame/action/judgment와 return/resume 결속.
+  기존 law_navigation: 단일 탐색 제어 책임. ASSESS gap을 받아 saved-source/구조 조회/복귀/재검색을 제공.
+
+위 모듈 이름은 제안이며 현재 호출 가능한 별도 실행기가 아니다. 파일 수를 늘리기보다 책임 경계가 검증 가능하도록 기존 모듈 내부에서 나눌 수 있다. authoritative state는 하나이며 UI·모델 입력용 cache는 projection일 뿐이다.
+
+5. 데이터 계약 — 상태가 섞이지 않게 하기
+
+5.1 질문 요구 IssueRequirement [새 계약]
+  issue_id: 서버가 발급한 Q1, Q2 등.
+  question_revision: 현재 질문/사실 버전.
+  question_span: 이번 사용자 원문의 정확한 요구 위치.
+  kind: ACTOR / TIMING / CLASSIFICATION / STRUCTURE / FORMULA / AUTHORITY / DEFINITION / OTHER.
+  subject: 대표자/내부회계관리자/상법상 감사/외부감사인 등 현재 대상.
+  requested_scope: 명시된 문서/판본/좌표 또는 미확인.
+  requirements: 확인해야 할 원칙/조건/예외/준용/구조/산식 등.
+  origin: USER_EXPLICIT / MODEL_PROPOSED / SOURCE_DEPENDENCY.
+  status: OPEN / COVERED / PARTIAL / INSUFFICIENT / OUT_OF_SCOPE.
+
+쟁점 분해는 기존 INTENT/계획 또는 첫 SELECT 응답에 결합한다. 별도 모델 호출을 기본 추가하지 않는다. 명시 질문을 삭제하는 분해는 거부한다. 모든 항목은 원래 요청을 가리키며 긴급히 Q1만 있어도 단계적으로 확장 가능하다. 모델 분해 누락은 남는 위험이므로 ASSESS에 원래 질문을 함께 제공한다.
+
+5.2 원문 위치 Locator [새 내부 계약, 기존 원문 schema 유지]
+  generation_id + store_sha256 + document_version_id + source_id + unit_id.
+  ancestry: [{unit_id, role, canonical_coordinate, display_label}, ...].
+  article_unit_id, coordinate_scope(body/supplement/appendix 등), coordinate_binding.
+  display_path: 사람이 읽는 '법령명 제49조 제1항 제1호 나목'.
+  locator_origin: USER_EXPLICIT / SOURCE_REFERENCE / MODEL_HYPOTHESIS / SEARCH_HIT.
+  resolution: EXACT / AMBIGUOUS / NOT_FOUND / STRUCTURE_UNKNOWN.
+
+표시 경로나 heading 문자열은 ID가 아니다. 현재 source.article_coordinate가 객체인 점을 보존한다. 동일 조문이라도 다른 판본·부칙·문서가 섞이지 않게 한다. MODEL_HYPOTHESIS는 원문 조회 전에 확정 좌표로 취급하지 않는다.
+
+5.3 ReadScope/ReadReceipt
+  scope_id, locator, extent(EXACT/SUBTREE/ARTICLE/SIBLING_SET), issue_refs.
+  target_units와 expected_spans: 블록 ID·원문 해시·codepoint start/end.
+  ancestor_context_spans: 별도 목록. expected_spans의 완전성을 대신하지 않는다.
+  acquired_spans: 서버가 확보한 범위.
+  delivered_spans: 유효한 모델 판단으로 수락된 presentation에 전달한 범위.
+  next_page, pages_total, delivered_pages_count: 서로 다른 필드.
+  acquired_complete/delivered_complete: expected_spans를 각각 덮는지 코드로 계산.
+  source_integrity_verified, presentation_id, accepted_action_id.
+
+완전성은 각 블록의 [start,end) 구간 합집합으로 계산한다. codepoint 단위를 유지하고 bytes/token/page index와 섞지 않는다. 전체 항의 요구 범위가 unknown이면 completeness도 unknown이다. 마지막 페이지만 봤다고 전체 읽기를 true로 만들지 않는다. 예전 delivery=0,total=1처럼 모호한 index 표현을 바꾼다.
+
+5.4 EvidenceInventory
+  material_id: generation + document + scope + span hash 기반 immutable ID.
+  availability: CANDIDATE_ONLY / ACQUIRED / PARTIALLY_DELIVERED / DELIVERED / STALE / ACCESS_BLOCKED.
+  decisions: issue별 KEEP / ADOPT / DEFER / EXCLUDE, judgment_id, evidence_refs, reason.
+  available_actions: VIEW_SAVED_SOURCE / READ_REMAINDER / ADOPT_SAVED / RETURN_TO 등 현재 가능한 handle.
+  read_by_frame, last_delivered_presentation, current_input_available.
+
+한 전역 status만 두지 않는다. 예를 들어 같은 감사 보수 조문이 상장회사 issue에는 ADOPT, 비상장회사 issue에는 DEFER일 수 있다. 읽기 당시 정당한 원문을 나중에 EXCLUDE해도 읽은 사실은 없어지지 않는다.
+
+표시 문구도 구분한다.
+  '후보만 확인함' / '서버에 확보됨' / '원문 일부 전달됨' / '원문 전달 완료·보류' / '현재 근거로 채택' / '접근 변경으로 재사용 불가'.
+  ASSESS에서 미제공은 '이번 판단 입력에 본문이 없음'이라는 뜻이다. 읽기 이력이 있으면 '아직 한 번도 읽지 않았다'고 쓰지 않는다.
+
+5.5 Frame/Action/Judgment
+  Frame: id(content hash), number(sequence), kind, question_revision, entry binding, immutable menu blob ref, original action offers, source scope location, created_after_step.
+  Action: id, receipt_id, sequence, from_frame_id, previous_step_id, next_action, targets, reason, issue_refs, basis_refs, status(ACCEPTED/APPLIED/INTERRUPTED/REJECTED).
+  Judgment: id, entity(kind+id), issue_refs, status, reason, evidence_refs, origin, supersedes.
+  Investigation: id, question_revision, binding, entry_frame_id, current_frame_id, state_version, action/judgment refs, evidence inventory refs, budget, reentry directives.
+
+동일한 메뉴 내용은 frame을 공유할 수 있지만 도착 이벤트는 각각 남긴다. 시간 순서는 dict 순서에 의존하지 않는다. 기존 판단을 수정할 때 원래 judgment를 덮어쓰지 않고 supersedes를 연결한다. 모든 action의 사용자 설명용 이유를 보존하며 숨은 사고 과정 출력은 요구하지 않는다.
+
+5.6 GapDirective/Completion
+  Gap: id, issue_id, kind(MISSING_SOURCE/MISSING_SCOPE/UNREAD_SAVED/WRONG_SUBJECT/MISSING_FACT/UNRESOLVED_REFERENCE/VERSION_AMBIGUOUS), criticality, basis_refs, reason, suggested_actions/return_frame_ids, resolvable_in_scope.
+  Completion: investigation_status(COMPLETED/INTERRUPTED/FAILED), stop_reason, answer_coverage(COVERED/PARTIAL/INSUFFICIENT), issue_statuses, unresolved_connections, blocking_execution_errors, remaining_candidates, budgets_consumed.
+
+예시 [설명용 ID이며 실제 저장 결과가 아님]
+  CM018: investigation_status=COMPLETED, answer_coverage=PARTIAL.
+    Q1:'제49조① 전체 구조'; required_scope='제49조① subtree'.
+    현재 확보='제49조①1 subtree'; delivered_complete_for_Q1=false.
+    gap:'제2호 이하 원문 범위 누락'; next='READ_SCOPE 제49조①'.
+  CM051: Q1='산정 방법'; gap='준용 대상 시행규칙14조① 미열람'.
+    미해결이어도 완료 가능. 산식을 확정하는 claim은 만들지 않는다.
+
+6. Fulltext와 후보 목록 설계
+
+6.1 점수와 LLM의 책임
+  서버: 권한/세대에 맞는 후보 생성, 중복 제거, 문서판본/조 묶기, 안정적인 순서, cursor/총수 제공.
+  모델: 법령 조사, 원문 범위, 채택/보류/배제, 연결 이동, 복귀, 조사 종료와 그 이유.
+  점수는 서버 정렬에만 사용한다. 후보의 적용성 또는 법률 결론을 자동 채택하지 않는다. 모델에 score 숫자를 기본 제공하지 않는다.
+
+후보를 어떤 순서로 주든 첫 화면 편향은 생긴다. 점수를 없애고 문서 ID만 정렬하는 것도 첫12개를 임의 순서로 제한하는 효과를 만든다. 이번 통합의 기준은 이미 시험한 CM 후보의 본문 기반 그룹 정렬이다. 별도 다중 신호 ranking 도입은 후속 변경으로 분리하고 효과를 측정한다.
+
+6.2 정확 위치 조회와 일반 탐색의 병행
+  기존 structure_query는 질문에 명시된 법령+좌표/제목 등을 먼저 해소하는 기능을 이미 가진다. 이 기능을 유지하고 SELECT에서 모델이 선택한 locator 조회까지 연결한다.
+  정확한 위치 후보는 FT 검색12개 밖이어도 별도 direct-entry 카드로 제시한다. preview-only이며 자동 ADOPT하지 않는다.
+  모델이 기억으로 제시한 '상법362조=이사회 권한'은 HYPOTHESIS로 조회하고 실제 제목과 범위를 대조한다. 잘못된 제목이 확인되면 가설을 기각하고 주제 검색 또는 원래 검색 복귀를 제공한다.
+  판본이 여러 개면 날짜/판본 선택 메뉴를 만든다. unique하지 않으면 임의로 한 법령의 조문과 다른 법령명을 결합하지 않는다.
+
+6.3 검색 실행 기록
+  search_id, reason, question_revision, issue_refs.
+  raw_queries, query-origin, 실제 PeCab compiled terms/expression.
+  effective document/ACL/export scope fingerprint.
+  source/index/navigation/tokenizer/code/profile/search_policy fingerprints.
+  sort_policy/version, page_kind, page_size, candidate total, next_cursor.
+  request filters vs display grouping vs temporary selected law scope를 각각 기록.
+
+현재 여러 검색어를 OR terms로 합칠 때 각 hit에 전체 terms가 붙어 있는 것을 '그 단위가 전부 맞았다'고 표시하지 않는다. 실제 토큰 적중이나 exact excerpt witness를 계산할 수 있는 범위만 matched_terms로 표시한다. 확인 못한 경우 '사용한 검색어'라고 표기한다. query provenance와 match witness는 별도다.
+
+6.4 모델 첫 입력
+  원래 질문/현재 사실, issue 요구, 실행 검색어와 검색 범위.
+  12개 법령 카드 [초기 설정 유지, 최적값 아님]: 이름·판본·적중 조/단위 수·상위 적중 조 몇 개의 제목/좌표/짧은 exact preview·more flag.
+  direct-entry 카드, source 종류/시점, 실제 다음 action handles.
+  전체 결과 총수와 다음 법령 페이지 존재 여부.
+  보이지 않는 나머지 후보의 본문을 전부 넣지 않는다. NEXT_LAWS/RESEARCH/정확 위치 조회로 접근 가능하다고 명시한다.
+
+중요: 기존 활성 경로의 '12 read groups'와 후보 law-first의 '12 laws'는 같은 단위가 아니다. 실행 receipt에 page_kind와 group_kind를 명시한다. 초기 한 법당 첫 조·첫 hit만 제공하는 표현을 그 법의 전체 적중 목록처럼 표시하지 않는다.
+
+6.5 법령 내부 메뉴와 조 묶음
+  법령 하나를 OPEN하면 검색된 조 목록을 제시한다. 같은 법령의 제16조의4/제16조의5가 동시에 걸리면 개별 READ와 READ_ARTICLES 묶음을 모두 제안한다.
+  서로 다른 법의 조도 비교 요청이면 복수 READ 가능하다. 읽기는 각각의 원문 ID/권한/판본을 유지한 채 묶어 전달한다.
+  hit가 많은 법 하나가 초기 화면을 독점하지 않게 법령 단위로 pagination한다. 판본은 합쳐서 한 근거로 만들지 않고 family 안의 별도 version 카드로 표시한다.
+  본문/부칙/별표/서식/안내서 종류는 구분하되, 부칙을 무조건 제외하지 않는다. 적용 시점/경과규정 질문에서는 필요한 후보일 수 있다.
+
+6.6 첫12개에 정답이 없을 때
+  NEXT_LAWS는 미제시 결과를 제공한다. 검색 total=0과 첫 page에서 관련 선택 없음은 다르다.
+  원래 검색에 돌아갈 때 저장된 search frame, 당시 검색식·범위·정렬·cursor를 불러오고 최신 판단 이력을 덧붙인다.
+  '이미 조사한 법만'으로 scope를 영구 축소하지 않는다. 다음 법령·새 검색은 항상 요청 전체 허용 범위를 기준으로 한다.
+  전역 top-k를 미공개로 앞단에 끼워 나머지 후보를 지우지 않는다. 예산으로 중단하면 미탐색 잔여 범위를 기록한다. 후보 전체를 읽었다고 표시하지 않는다.
+
+6.7 검색과 인덱스 비용
+  그룹 SQL은 현재처럼 rank를 먼저 materialize하고 group을 계산하는 실행 비용이 있다. title-only 질문은 기존 구조/제목 인덱스에서 처리한다.
+  첫 도입에는 원문/용어/nav/FTS 전체 재구축을 요구하지 않는다. 기존 unit/source columns와 구조 ancestor map으로 구현한다.
+  SQL profile에서 grouping 반복이 실제 병목이면 query+scope+index+policy에 결속한 목록 cache 또는 파생 directory sidecar를 후속 도입한다. 이 경우에만 새 파생 generation과 manifest 계약을 만들고 기존 세대를 덮어쓰지 않는다.
+
+7. 읽기 범위 설계 — 너무 작거나 너무 큰 원문 모두 처리
+
+7.1 기본 메뉴
+  목 적중: 해당 목 exact, 부모 호 전체, 해당 항 전체, 해당 조 전체.
+  호 적중: 해당 호 exact/subtree, 부모 항 전체, 해당 조 전체.
+  항 적중: 해당 항 전체, 해당 조 전체.
+  조 적중: 해당 조 전체; 길면 원문 순서의 페이지/하위 scope 메뉴.
+  같은 부모 아래 복수 hit: 검색된 hit 묶음 + 상위 도입문, 부모 전체를 각각 선택 가능.
+  같은 법의 복수 조 hit: READ_ARTICLES로 묶어 읽기 가능.
+
+기본 추천은 한 단계 부모를 출발점으로 쓰되 명시 질문 scope가 우선이다. '제49조① 구조'이면 제1항 전체를 추천한다. '나목의 예외'면 부모 호 조건과 해당 목을 우선 추천한다. broad 질문일 때 자동으로 모든 법 전체를 읽지 않는다.
+
+7.2 실제 scope card
+  [검색 적중] 상증세법 시행령 제49조 제1항 제1호 나목.
+  [이번 선택] 제49조 제1항 제1호 전체.
+  [함께 준 배경] 제49조 및 제1항 도입문.
+  [확보/전달] 요구 scope 3블록 확보, 1/1페이지 전달.
+  [질문과 차이] 질문은 제1항 전체를 요구함. 제2호 이하 미확보.
+  [다음 선택] 제1항 전체 / 제49조 전체 / 연결 메뉴 / 과거 검색 / 다른 법.
+
+숫자·블록 수는 실제 원문 span으로 계산한다. '전체'는 선택 scope의 전체이지 조 전체라는 뜻이 아니다.
+
+7.3 긴 조문·표·매뉴얼
+  페이지마다 row/heading/선행 조건 span이 빠지지 않도록 기존 블록/표 메타데이터를 보존한다.
+  모든 페이지 전달을 완료 조건으로 강제하지 않는다. 일부만 보고 종료하면 해당 부분만 ADOPT하고 delivered_complete=false 및 skipped 범위를 남긴다. 선택한 scope 전체를 채택하려면 실제 전범위 전달이 필요하다.
+  매뉴얼/내규에 조항 계층이 불명확하면 저장된 section/block/표 범위를 사용한다. 목→호→항 규칙을 임의로 만들어 적용하지 않는다.
+  원문 조직이 불명확하면 STRUCTURE_UNKNOWN을 남기고 명시 block 범위 읽기를 제공한다. OCR/누락 데이터는 넓게 읽는 것으로 해결됐다고 표시하지 않는다.
+
+7.4 중복 읽기
+  저장된 span 합집합과 requested 범위의 차집합만 추가 확보한다. 실제 읽기 영수증은 재사용한다.
+  서버 확보를 재사용해도 모델에 아직 전달 안 된 원문은 presentation이 필요하다.
+  재채택/정정/복귀 목적의 재열람은 허용한다. 같은 상태·같은 scope·같은 action을 이유 없이 반복할 때만 NO_PROGRESS로 분류한다.
+
+8. 연결 메뉴 설계
+
+8.1 연결 후보를 발견하는 기준과 입력하는 기준
+  발견/캐시: 실제 전달 원문의 outgoing/incoming witness를 기존 unit_relations.catalog로 찾는다. 이 기능은 이미 있으므로 별도 역참조 index를 중복 구축하지 않는다.
+  현재 SELECT 입력: 현재 창의 원문 span에 붙은 상세 카드 + 현재 채택 근거에 붙은 핵심 미확인 의존성 카드.
+  ASSESS 입력: 채택 근거의 issue 관련 의존성/현재 gap. 보류 원문의 모든 연결 본문을 넣지 않는다.
+  보류/미선택 자료: 전역 원장에 메타데이터를 유지하고 그 원문 창으로 이동할 때 해당 연결 메뉴를 연다.
+
+이 규칙은 '제16조의4를 보고 있는데 선택하지도 않은 다른 법의 연결 목록 전부를 입력'하는 문제를 방지한다. 동시에 현재 답의 근거로 이미 채택한 제16조의5의 중요한 gap은 이름과 상태를 잊지 않는다.
+
+8.2 CompactDependencyCard
+  reference_id와 witness source/hash/span.
+  anchor_excerpt: '산정은 ... 제14조제1항을 준용한다'처럼 실제 단서.
+  target: 문서명+판본+좌표; 미해소면 원문 locator 그대로.
+  direction: OUTGOING / INCOMING.
+  relation_kind: 명시 참조의 구조 유형과 origin(CANONICAL/MODEL_HINT).
+  resolution: EXACT/AMBIGUOUS/MISSING/ACCESS_BLOCKED.
+  availability/adoption, relevant_issue_refs, applicability(UNKNOWN/APPLIES/NOT_APPLICABLE).
+  action_handles: FOLLOW/VIEW_SAVED/RESOLVE_LOCATOR/DEFER/SKIP.
+
+관계 의미 hint는 모델 observation이고 데이터 정본을 바꾸지 않는다. incoming을 준용 의무처럼 취급하지 않는다. 연결의 중요도는 질문/actor/조건과 함께 판단한다. 참조 없음은 법률상 예외 없음이 아니다.
+
+8.3 범위·조건·오류 처리
+  카드 anchor는 현재 실제 read span에 있어야 한다. 같은 조의 안 읽은 호의 참조를 읽은 근거에 붙이지 않는다.
+  FOLLOW는 제공된 target/read handle만 사용한다. 하나의 참조가 '제1호부터제3호까지'면 target별 정확 범위와 부분 해소를 보존한다.
+  조건부 연결 적용 여부는 적용/비적용/미확인+이유를 요구한다. 애매한 것을 조건 충족으로 만들지 않는다.
+  대상 미해소·외부 승인 범위 밖·ACL 변경은 각각 구분한다. 이름/내용도 권한 없는 경우 모델 입력에 노출하지 않는다.
+  필요한 target이 없으면 exact locator 검색을 제안하되 정본 reference_end를 즉석 승인하지 않는다. 후보 발견과 canonically resolved 관계는 다르다.
+  연결은 새 witness/span/조건 변화가 있을 때 다시 판단한다. state-change 없는 반복 제안과 실제 재검토를 분리한다.
+  A→B→A 순환은 target/version/span/issue graph로 탐지하며 이미 확보한 span을 재사용한다. depth 상한만으로 정상 인접 연결까지 차단하지 않는다.
+
+8.4 완료 정책
+  연결 하나를 선택하면 전체 목록을 매 호출 반복 전송하지 않는다. 현재 frame 메뉴 + 판단 변화 + 남은 핵심 카드만 조립한다.
+  REQUIRED 미해결은 완료 가능. '해결됨'으로 상태 변경하지 않는다. 미해결 target 때문에 못 확인한 issue를 구체적으로 적는다.
+  모든 미해결 참조를 최종 본문 경고로 나열하지 않는다. 원장에는 보존하고 질문 결론에 영향을 주는 미확인만 본문 한계에 표시한다.
+
+9. 행동 체인과 어느 시점으로든 복귀
+
+9.1 사용자 요구의 정확한 의미
+  t1: fulltext 검색 결과 A/B/C → A 조사, 이유 저장.
+  t2: A법의 조 목록 → 제16조의4/5 묶음 읽기, 이유 저장.
+  t3: 원문 → 참조 연결 보기, 이유 저장.
+  t4: 연결 중 하나 읽기 → 판단/보류, 이유 저장.
+  t5: t1로 복귀 → 당시 A/B/C 메뉴, t5의 복귀 이유, t1~t5까지의 선택·후속 판단 모두 제공.
+  t6: B 선택 → 새 이유. A에서 확보/채택한 근거와 보류 원문 이력은 유지.
+
+참조 선택 frame, 원문 범위 frame, 조 목록 frame 등도 같은 방식으로 복귀한다. search에만 적용하는 기능이 아니다.
+
+9.2 복귀 계약
+  RETURN_TO에는 destination frame handle과 nonempty reason을 요구한다.
+  서버는 원래 immutable choices/검색식/cursor/scope/presentation metadata를 복원한다.
+  최신 inventory/adoption/judgment/budget/issue gap overlay와 돌아온 이유를 별도 전달한다.
+  옛 선택은 과거 시점의 상태로 보존하고 현재 가능한 action은 재검증 후 새 presentation handle로 제시한다.
+  예전 도구 handle을 무조건 다시 실행하지 않는다. 현재 question/version/ACL에 맞지 않는 action은 unavailable과 이유를 표시한다.
+  검색 세대 변경이면 옛 선택지의 역사 요약과 '현재 세대로 같은 검색을 다시 실행' action을 구분한다. 오래된 cursor를 새 index에 쓰지 않는다.
+
+9.3 복귀 메뉴 표현
+  번호/종류/당시 검색어 또는 문서 좌표/그때 선택/현재 판단 상태/관련 gap을 표시한다.
+  정렬은 sequence 오름차순. 최근/관련 시점 추천을 위에 별도 표시할 수 있으나 전체 시점 접근을 없애지 않는다.
+  ASSESS는 gap과 관련된 frame을 추천할 수 있다. 임의의 unseen frame ID를 만들어 실행하지 않는다.
+
+9.4 전체 이력 입력의 중복 제거
+  actions: 모든 행동의 시간 순 목록, from/to/target/action/reason/judgment_refs.
+  judgments: 등장한 모든 독립 판단을 원문 그대로 1회 정의.
+  current_projection: 각 entity+issue의 최신 판단, superseded 원문 판단과 별도.
+  현재 원문 evidence: 채택/검토 대상 exact spans.
+  미선택 후보/보류 원문: lightweight inventory.
+  과거 메뉴 본문 전체: 저장하되 복귀 선택 시 해당 메뉴만 전달.
+
+동일 판단 반복을 ID 참조로 줄이는 것은 기억 삭제가 아니다. 매 행동에 새로 쓴 이유가 다르면 모두 남긴다. 사용자 요청대로 과거 판단을 계속 보이게 하고 아직 제공하지 않은 저장 문서를 읽었다고 표시하지 않는다.
+
+9.5 입력 길이의 절대 한계
+  무한한 행동 이력을 유한한 모델 context에 모두 넣는 것은 불가능하다. 이번 설계는 중복 제거와 예산으로 처리한다.
+  provider별 실제 tokenizer/usage로 입력 상한을 확인하고, metadata/history/menu/evidence/schema를 분리 계측한다. 문자 수를 토큰 수로 바꾸어 추정 통과하지 않는다.
+  한계를 넘으면 후보 본문을 조용히 자르거나 앞 이유를 삭제하지 않는다. INCOMPLETE_CONTEXT/BUDGET 상태와 재개 지점을 기록하고, 이미 검증한 범위로 한정한 답변 또는 중단을 명시한다.
+  향후 사용자가 별도 요약 허용 정책을 요청하기 전까지 손실 요약을 전체 기억 보존으로 설명하지 않는다.
+
+10. SELECT 도구·보정·재시도
+
+10.1 도구 분류 [일부는 기존, 일부는 새 제안]
+  후보 탐색: OPEN_LAW/NEXT_LAWS/NEXT_ARTICLES/NEXT_HITS/RESEARCH.
+  위치 탐색: RESOLVE_LOCATOR/SHOW_STRUCTURE [기존 structure_query의 새 SELECT 접속].
+  읽기: READ_SCOPE/READ_PARENT/READ_ARTICLES/READ_REMAINDER.
+  재사용: VIEW_SAVED_SOURCE/ADOPT_SAVED [새 제안].
+  연결: FOLLOW_CONNECTION/REFERENCE_CHOICES.
+  복귀: RETURN_TO [후보에 존재].
+  조사 종료: FINISH. 실행 중단: PENDING/INTERRUPTED.
+
+ADOPT_SAVED도 현재 전달된 exact basis가 있어야 실행 가능하다. 과거 읽음+메타데이터만으로 채택을 부활시키지 않는다. READ와 ADOPT를 한 호출에 결합할 때도 확보·전달·현재 판단의 영수증 순서가 지켜져야 한다.
+
+10.2 결정 schema
+  presentation_id + expected_state_version.
+  judgments [{entity_handle, issue_refs, status, basis_refs, reason}].
+  next_action + offered targets + action reason.
+  gap updates/stop_reason.
+  서버가 schema enum으로 현존 handle을 제한하고 entity-target-issue-span의 교차검증을 한다.
+  비선택 판단은 execution targets가 아니다. 목록에 넣는 것 자체를 읽기·채택으로 해석하지 않는다.
+  관련이 없다는 이유가 후보 preview뿐이면 DEFER/NOT_SELECTED로 기록한다. EXCLUDE는 실제 원문 basis가 필요하고 다른 issue까지 영구 제외하지 않는다.
+
+10.3 오류 종류별 처리
+  형식/계약 오류: 거부 응답+정확한 오류+현재 선택지를 전달해 1회 보정 [초기 목표 설정]. 수락 전 도구 실행은 0회. 실패가 계속되면 ContractError와 checkpoint.
+  transport 오류: 현행 provider 정책에 맞는 제한된 retry만 허용하고 매 physical call을 계측한다. 같은 모델/provider binding을 유지한다. 자동 fallback 없음.
+  accepted action 이후 도구 중단: 저장된 accepted intent/receipt로 재개한다. 모델 선택을 다시 요구하지 않는다.
+  stale presentation/concurrent correction: 409 성격의 상태 충돌로 분리하고 현재 메뉴를 새로 조립한다. 같은 낡은 선택을 반복 보정하지 않는다.
+  hash/ACL/원문 불일치: fail closed. 다른 데이터로 같은 action을 실행하지 않는다.
+  의미상 잘못된 선택: schema repair로 해결됐다고 처리하지 않는다. issue gap/가설 기각/복귀/재검색으로 재계획한다.
+
+10.4 provider schema 호환성
+  wire schema와 서버 정본 validation schema를 분리한다. provider가 uniqueItems 등 일부 키워드를 지원하지 않아도 서버 중복/범위 검사를 유지한다.
+  schema_version/fingerprint를 journal에 저장한다. 보정 여부·오류 코드·physical call·제품 action 적용 횟수를 구분한다.
+  다른 단계의 허용 schema를 잘못 적용하거나 union branch가 바깥 필드를 놓치는 문제가 재발하지 않게 각 alternative를 독립 유효 schema로 검사한다.
+
+11. ASSESS 재진입과 종료
+
+11.1 ASSESS 계약 확장
+  현재 claims/limitations에 issue_assessments, gaps, disposition을 추가한다.
+  NEEDS_INVESTIGATION 중간 분기는 claims가 아직 없을 수 있다. 기존 evidence_schema의 minItems=1을 그대로 적용하지 않고 이 분기의 별도 schema/validation을 둔다. 최종 답변의 no-evidence 허용 변경과는 구분한다.
+  disposition = ANSWER / NEEDS_INVESTIGATION / LIMITED_ANSWER.
+  claim evidence = source_id + 정확 span 인용. 복수 근거 필요 시 evidence[]를 허용한다.
+  coverage 판단의 origin=MODEL_ASSESSMENT, semantic_quality_certified=false.
+
+단일 source_id quote만으로 '준용 대상+원칙' 같은 다중 근거 판단을 표현하기 어려우므로 내부 claim-v2에 복수 evidence를 둔다. 외부 term-runtime-v1 answer.claims.source_ids는 이 합집합으로 내보낸다. 기존 외부 claim 필드 의미를 바꾸지 않으며 내부 v1 소비자의 이행은 명시한다.
+
+11.2 재진입 선택
+  MISSING_SCOPE → 해당 질문 scope READ.
+  UNREAD_SAVED → 저장된 원문 다시 전달·채택 검토.
+  MISSING_SOURCE/UNRESOLVED_REFERENCE → compact dependency/locator/fallback search.
+  WRONG_SUBJECT → 해당 issue의 오채택 정정, 원래 검색 또는 다른 법령.
+  MISSING_FACT → 원문을 더 읽어 사실을 만들지 않는다. 조건부 답변 또는 필요한 사실 요청.
+  VERSION_AMBIGUOUS → 판본 선택. 서로 다른 버전의 유리한 문구를 조합하지 않는다.
+
+ASSESS의 suggested action은 SELECT에 주는 지시 후보다. 코드가 바로 임의 법을 채택하지 않는다. SELECT가 실제 제공된 action을 선택하고 이유를 남긴다.
+
+11.3 횟수와 진전
+  초기 제안 설정: assessment_reentry_limit=2, schema_repair_limit=1, no_progress_page_warning=3.
+  이는 목표/가정이며 측정 최적값이 아니다. 기존 law search_rounds=8, 요청 model/tool/wall/context 예산과 함께 적용한다.
+  현재 corrected_memory는 Reenter 종류를 공통 reentries로 세어 search_rounds에 연결한다. SEARCH_REENTRY, ASSESS_GAP_REENTRY, CONTRACT_REPAIR, TOOL_RESUME 카운터를 분리해야 한다.
+  진전: new distinct candidate frame / new delivered spans / new issue judgment / resolved/corrected dependency.
+  단순한 옛 메뉴 RETURN_TO도 다음 선택에 의미가 있으면 허용한다. 같은 상태 cycle 반복은 경고하고 현재 alternatives를 보여준다. 무조건 새로운 내용이 없다는 이유로 모든 복귀를 금지하지 않는다.
+  예산 소진/명백한 scope 밖 gap이면 같은 재진입을 반복하지 않고 제한 답변으로 종료한다.
+
+11.4 completion truth table
+  유효한 일부 채택 원문 + 핵심 issue covered → COMPLETED/COVERED.
+  유효한 일부 채택 원문 + 예외/산식/일부 구조 부족 → COMPLETED/PARTIAL 또는 INSUFFICIENT, 해당 결론 제한.
+  필수 연결 미해결 → 위 상태를 그대로 허용, unresolved 보존.
+  현재 실행 중 unresolved와 source 데이터 gap은 원인을 구분.
+  accepted 도구 실행 미완료 / invalid citation / hash/권한 오류 / provider 장애 → INTERRUPTED 또는 FAILED, 성공 조사로 위장하지 않음.
+
+no-evidence 요청은 기존 evidence_schema가 claims 최소1개를 요구하므로 별도 계약 없이 complete로 바꿀 수 없다. 첫 적용은 기존 오류/미확인 응답을 유지한다. 추후 '유효한 검색은 끝났지만 근거 없음' 답변을 허용하려면 claims=[]인 LIMITED_ANSWER 분기, publication/UI/experience 소비자 계약을 함께 변경하고 별도 검사한다. 이를 필수연결 완료 정책과 묶어 암묵적으로 바꾸지 않는다.
+
+11.5 최종 답변
+  질문의 직접 답 또는 답변 불가 범위를 먼저 작성한다.
+  현재 채택 원문에서 확인한 내용, 현재 사실의 조건, 핵심 미확인만 유지한다.
+  읽지 않은 산식/예외가 있으면 주변의 긴 threshold 설명으로 직접 답을 대체하지 않는다.
+  entity 혼동: 상법상 감사 보수 issue와 외부감사인 보수 issue를 분리한다. 외부감사 규정을 선택했다는 이유로 내부 감사 보수 결론에 끌어오지 않는다.
+  인용 존재/일치 검사는 유지한다. 인용이 정확해도 claim 의미가 틀릴 수 있으므로 이를 정답 인증으로 표시하지 않는다.
+
+한계 문구는 code 기반 structured limitation key(issue+gap+target)로 중복 제거한다. unified_runtime이 다른 표현을 문자열 비교로 다시 append하는 방식을 줄인다. 표시 생략과 원장 삭제는 다르며 unresolved 상세는 보존한다.
+
+12. 저장·재개·동시성·권한·버전
+
+12.1 저장 책임
+  기존 native journal이 model/action/evidence 영수증의 정본이다.
+  기존 corrected_memory node/head/stage_progress는 case 질문 버전과 checkpoint를 묶는다.
+  조사 state/checkpoint에 immutable frame blob refs, action/judgment refs, inventory refs, entry_frame_id, reentry budget을 저장한다.
+  새 authoritative SQL DB를 별도 폴더에 만들지 않는다. 필요한 schema 확장은 기존 저장소의 additive migration으로 한다.
+  SELECT 종료의 stage_progress cleanup은 임시 cache만 지운다. 장기 조사 state는 SELECT node와 journal을 통해 복구 가능해야 한다.
+
+12.2 ASSESS→SELECT 복귀 시 기존 코드 보완
+  기존 corrected_memory는 SELECT 완료 시 stage_progress/evidence를 정리한다. 따라서 새 재진입은 완료된 SELECT.payload의 durable investigation_state와 native evidence를 다시 연결해야 한다.
+  SELECT/evidence version을 증가시키고 ASSESS/COMPOSE head를 invalid/superseded 처리한다. 과거 node는 감사용으로 보존한다.
+  모델이 지난 ASSESS 결과를 새 근거 상태의 최종 결론으로 재사용하지 않는다.
+  reentry directive, counters, last_progress_fingerprint를 checkpoint에 남긴다. 재시작마다 예산을 0으로 리셋하지 않는다.
+
+12.3 idempotence와 동시 정정
+  request_id, question_revision, investigation_id, state_version, action_receipt로 CAS를 검증한다.
+  ACCEPTED intent를 도구 호출 전에 commit한다. read 결과/evidence 저장 후 APPLIED receipt를 commit한다.
+  네트워크 대기 동안 SQL write transaction을 길게 유지하지 않는다. 응답 후 expected revision을 다시 검사한다.
+  중복 request는 저장된 결과를 반환하되 현재 권한/세대 검증을 수행한다. 늦은 응답은 과거 기록으로 보존하고 현재 head를 덮어쓰지 않는다.
+  provider timeout으로 실제 생성 완료 여부를 모르더라도 로컬에 수락하지 않은 제안은 제품 상태에 적용하지 않는다. 재호출 비용 중복 가능성은 계측한다.
+
+12.4 권한과 데이터 변경
+  effective_scope = 요청 범위 ∩ 팀 문서 범위 ∩ principal ACL ∩ provider/export 허용 범위.
+  검색·복귀·재열람·연결·경험 재사용·최종 publication에서 현재 scope를 재검증한다.
+  질문 조건/시점 정정은 새 question_revision이다. 과거 읽기 영수증은 출처를 보존하며 새 issue 적용 여부를 재판단한다.
+  generation/index/code/policy 바뀐 checkpoint를 곧바로 실행하지 않는다. 이전 pinned run 재개 또는 명시적 새 investigation으로 이행한다.
+  ACL 제거된 원문/판단 이유의 민감 내용도 모델 입력과 UI에 다시 내보내지 않는다. 감사 정본 보존과 현재 접근 허용을 분리한다.
+
+12.5 SQL/NFS 운영
+  현행 SQL store lifecycle, single owner 정책, DELETE/WAL 등 선택 환경 설정을 통합 과정에서 보존한다. candidate 파일 전체 복사로 최근 NFS 대응을 되돌리지 않는다.
+  concurrency/admission 제한과 request wall timeout은 실제 배포 프로필에 결속한다. GENOS 현장 처리량/잠금 안전성은 로컬 측정으로 인증하지 않는다.
+
+13. 경험·위키·feedback 경로까지 같은 상태를 소비
+
+  ProcedureMemory/WikiExecution은 탐색 절차를 재사용하되 당시 정답을 새 사건 정답으로 자동 복사하지 않는다.
+  replay binding에 새 schema/검색 정책/issue scope/문서 판본/ACL을 포함한다. 메뉴 handle이 바뀌면 과거 action을 새 메뉴에 재해소한다.
+  LIMITED/PARTIAL 결과는 확정 답 경험과 구분해 저장하고 제한사항과 unresolved를 함께 보존한다.
+  예전 evidence_sufficient=true 하나로 경험의 조건 충족을 인증하지 않는다.
+  피드백은 문제 위치(search/scope/adoption/dependency/assessment/publication/binding)와 정확 generation/run/claim/span을 가리킨 수정 후보로 남긴다.
+  확인된 탐색 경로를 재사용해도 reference_candidate를 승인 정본으로 승격하거나 glossary 의미를 즉석 확정하지 않는다.
+  자동 feedback→MAIN 채택은 별도 미완성 단계이며 이 설계로 완료됐다고 보고하지 않는다.
+
+14. 추가로 예상되는 구조적 실패
+
+R01 같은 용어의 역할 충돌
+  조건: 감사/감사인, 지정/선임, 행사 가능/부여 가능 등이 같은 query에 섞임.
+  전파: lexical 적중은 높지만 다른 issue 원문을 채택함.
+  대응: actor/purpose별 issue와 ADOPT refs. ASSESS에서 subject mismatch를 gap으로 복귀.
+  남는 위험: actor 분해 자체가 틀릴 수 있음. 원래 요청과 원문에 대한 별도 평가 필요.
+
+R02 개정 법령·부칙·매뉴얼 판본 충돌
+  조건: 과거 gold 문서ID와 현재 공개판본이 다르거나 질의 적용 시점이 불명확.
+  대응: doc family와 version을 분리, effective date unknown 표기, gold exact/compatible/current 세 지표 분리.
+  금지: 다른 판본에서 같은 조를 찾았다고 정확 같은 gold 근거라고 보고하지 않음.
+
+R03 원문 종류와 법적 권위 혼동
+  조건: 공개 매뉴얼의 예시가 규정의 준용 산식보다 쉽게 적중함.
+  대응: 원문규정/해설/사례의 provenance 제공, 결론의 규범 근거와 설명 근거를 분리.
+  한계: 이름만 보고 법적 권위의 우선순위를 자동 확정하지 않음.
+
+R04 명시 참조가 없는 관련 규정 누락
+  조건: 별도 법의 예외/정의가 source_reference에 안 잡힘.
+  대응: issue 기반 본법/시행령/세칙/정의 검색. 연결0개를 충분성 증명으로 삼지 않음.
+
+R05 항 구조·범위 좌표의 중복/누락
+  조건: OCR/부칙 중복번호/empty parent/표/비법령 구조.
+  대응: exact stored ancestry와 coordinate scope 검증, ambiguity 메뉴, missing structure/data gap.
+  범위 확대 후 원문 누락이 사라진 것으로 처리하지 않음.
+
+R06 관계 과잉·역참조 순환
+  조건: incoming 많은 조문, 별표/서식 반복, 동일 witness의 다른 표현.
+  대응: span별 catalog, incoming optional 구분, graph cycle와 cached applied choices, 질문별 applicability.
+
+R07 원문 전달 영수증과 실제 이해 차이
+  조건: 긴 원문이 모델 입력에 있었지만 모델이 일부를 놓침.
+  대응: delivered와 semantic coverage 분리, issue 단위 ASSESS, 원문 재열람 가능.
+  전달 통과를 이해 성공률로 사용하지 않음.
+
+R08 조건 누락과 부정 결론의 과잉
+  조건: 필요한 사실이 없는데 일반 원문만으로 적법/위임가능 확정.
+  대응: MISSING_FACT와 MISSING_SOURCE 구분, 조건부 결론. 필요조건을 충분조건으로 바꾸지 않음.
+
+R09 과거 잘못된 판단의 기억 고착
+  조건: 전체 행동 체인에 틀린 좌표/결론 이유가 계속 존재.
+  대응: hypothesis/supersedes/rejected 표기, current facts와 canonical sources를 authority로 고정.
+  과거 이유는 행동 이력이며 현재 법률 근거가 아님.
+
+R10 candidate/page/cursor scope 누수
+  조건: 다른 법/검색식/권한/세대 cursor 재사용.
+  대응: query+sort+page-kind+scope+version binding, action handle validation, 현재 rights gate.
+
+R11 질문 중 정정/다중 요청·늦은 결과
+  대응: CAS question/investigation version, superseded heads, timeout/accepted tool 구분.
+
+R12 token/출력 길이·schema 폭발
+  조건: 많은 laws×scopes×actions enum과 긴 모든 이유.
+  대응: 현재 메뉴만 enum, 전역 inventory 참조, normalized full history, 실제 token budget 측정.
+  전체 의미 보존이 불가능한 상한을 조용한 truncate로 숨기지 않음.
+
+R13 prompt injection과 원문/이력 명령 혼동
+  조건: 문서나 이전 이유에 '다른 규칙 무시' 등 문자열이 존재.
+  대응: 원문/행동이력은 데이터, schema-bound tools 및 ACL 검증. 데이터의 지시로 system policy 변경 금지.
+
+R14 운영 코드·캐시만 오래됨
+  조건: 포인터는 새 릴리스인데 _APP/proc/package/cache가 구 릴리스를 유지함.
+  대응: startup binding fingerprint, live response run fingerprint, 프로세스 reload와 cache key 검증.
+  포인터 변경만으로 서비스 전환 완료 처리하지 않음.
+
+R15 결과 계측이 품질을 과장함
+  조건: 동일 source ID 일부 읽기를 전체 읽기로 세거나 heading 문자열을 coordinate object와 비교.
+  대응: partial acquired/full acquired/delivered/adopted/issue covered/legal judged 지표 분리.
+  ADR0673 offline helper의 object/string 비교 오류는 보존·정정된 계측 문제다. 제품 재실행/정답채점으로 바꿔 기록하지 않음.
+
+15. 파일·함수 변경 지도
+
+아래 경로는 기본 02_BACKEND/semantic_runtime 상대 경로다. '추가' 이름은 제안이며 아직 파일이 없다.
+
+unit_fulltext.py / law_groups_page, article_groups_page, hit_page
+  변경: CM 후보의 안정적인 본문 정렬을 통합, sort binding/검색 provenance/total·cursor 계약 강화.
+  입력: 같은 own-block FTS와 effective scope. 소비자: law_candidates/law_navigation.
+  재구축: 첫 도입 없음. 실제 병목 시 파생 directory cache만 별도 검증.
+
+legal_agent/source_query_planning.py, structure_query.py
+  변경: 기존 구조/title/definition 해소 재사용, 사용자 좌표와 모델 가설 분리, issue scope/actor 보존.
+  소비자: RECALL 및 SELECT의 locator 조회. 별도 검색 파이프라인 생성 없음.
+
+legal_agent/source_recall.py, law_candidates.py
+  변경: direct-entry와 FT candidate lane 병행, 조회 사유와 페이지 종류/정책 결속, 정확한 preview provenance.
+  소비자: READ·law_navigation. legacy 경로는 기존 계약으로 유지.
+
+legal_agent/unit_reading.py
+  변경: scope full path·expected/ancestor/delivered spans·receipt, 차집합 확보, saved read 재사용·표/부분 읽기 구분.
+  소비자: SELECT, ASSESS evidence projection, reference catalog, 화면.
+
+legal_agent/investigation_chain.py [후보 구현을 기존 개발 경로로 통합]
+  변경: explicit entry frame, sequence sort, judgment normalization, immutable menu+latest overlay, arrival/event와 action receipt.
+  소비자: law_navigation/unit_relations/memory_rag/unified_runtime.
+
+legal_agent/law_navigation.py / Investigation.view, build_view, restore, validate, result, run
+  변경: 전역 saved inventory·scope별 ADOPT·compact references·RETURN_TO overlay·도구 target validation·FINISH 의미 분리.
+  소비자: SELECT의 durable state와 ASSESS. 기존 profile law-first 사용.
+
+legal_agent/unit_relations.py / catalog, schema, validate, navigate
+  변경: 읽은 span 중심 compact cards·applicability·frame/action 결속·수락 후 재개·미해결 비차단 상태.
+  정본 navigation reference 저장 계약은 유지. 미승인 reference_candidate를 정본으로 섞지 않음.
+
+legal_agent/memory_rag.py / INTENT/schema/stage(SELECT/ASSESS/COMPOSE), evidence_schema, verify_claims
+  변경: issue 요구·proof pack·gap directives·bounded SELECT 재진입·복수 evidence·구체 한계.
+  quote 검증 유지, final_review disabled 유지. 무조건 추가 judge 호출 없음.
+
+legal_agent/corrected_memory.py / _execute, stage_progress 저장/정리, Reenter 분기
+  변경: durable investigation restore·분리 counters·head invalidation·예산 재개·expected version.
+  소비자: 기존 native case lifecycle. 기존 SQL/owner/NFS 운영 규칙 보존.
+
+legal_agent/investigation_contracts.py / evidence_inventory.py / investigation_projection.py [추가 제안]
+  변경: 상기 schema/coverage/state/projection 분리. 최종 파일 배치는 책임에 맞춰 선택.
+  consumer hashes, tests, release copy inventory에 포함해야 함.
+
+legal_agent/wiki_execution.py, memory_methods.py, procedure_memory.py 등 실제 재사용 소비자
+  변경: 새 issue/completion/evidence binding, 제한 답변 provenance, stale replay rejection.
+  구 method/knowledge 계약을 읽는 adapter는 no inferred coverage 원칙.
+
+legal_agent/unified_runtime.py / result_port, publication 관련 validate_current
+  변경: coverage/stop/gap metadata와 복수 source_ids 전달, 동일 한계 중복 append 방지, 최신 binding 확인.
+  term-runtime-v1 기존 외부 필드는 유지. 새 structured metadata는 허용된 extension에 추가하고 모든 소비자를 검사.
+
+legal_agent/judgment_view.py, readable_log.py, progress.py, 08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py 및 GENOS 워크플로우 편집기 코드
+  변경: 전체 시간순 행동·이유·scope·보류/채택·복귀·답변 범위 토글, 선택 코드/정책 표시.
+  화면용 별도 LLM 없음. UI 요약과 exact 원장 링크의 권한 동일 적용.
+
+legal_agent/unified_rag.py component hashes, workflow_tiers_policy.py, 00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json
+  변경: 새 모듈/schema/projection/search policy와 제안 budget 설정 결속.
+  consumer: profile validation·경험 replay·release binding.
+
+02_BACKEND/ENGINES/* manifests, 00_SYSTEM/PIPELINE.json, SCHEMAS의 관련 내부 port
+  변경: 실제 import 의존 전체 hash pin·profile descriptor·version compatibility.
+  파일만 추가하고 engine pin에 빠뜨리는 변경 금지. 모든 프로필을 새 모드로 강제하지 않음.
+
+service.py, app.py, pipeline.py, 기존 control/release_integration/release_qualification
+  변경: 기존 entry 그대로 새 통합 코드 선택; execution binding을 health/meta에서 확인 가능하게 확장하는 안.
+  ACTIVE pointer를 읽는 API도 실제 로드한 process/package의 fingerprint를 반환해야 함.
+  기존 main promotion 실행기 사용. 별도 activate 스크립트 생성 없음.
+
+16. 이행·재구축 범위
+
+  원문 store/source_unit/source_block: 변경 없음. 판본·span·hash 정본 유지.
+  용어집/문서–용어/link/nav: 기본 재구축 없음. 새로운 의미 추출/정본 승인 단계 추가 없음.
+  unit FTS: 기본 재구축 없음. 정렬/그룹/query routing 변경은 runtime 변경이다.
+  RAG 내부 schema: 새 조사/claim/assessment version. 코드/profile/component manifest 재생성과 test 필요.
+  checkpoint/경험: version adapter 또는 기존 pinned reader 필요. 과거 완료 기록을 덮어쓰지 않는다.
+  구 chain-v1→제안 v2: 저장되어 있는 seq/원문 범위/판단만 읽는다. 없는 전체 전달 coverage를 true로 생성하지 않음.
+  질문 도중 run은 기존 pinned code로 재개하거나 새 investigation으로 전환한다. 호환성 확인 없이 code swap하여 이어가지 않음.
+  protocol extension이 term-runtime-v1의 허용 범위를 벗어나면 외부 schema version/서비스 소비자를 함께 변경한다. 현재 설계의 우선안은 허용 extension과 기존 claim source_ids mapping이다.
+
+17. 실제 실행 시나리오
+
+S01 내부회계관리자는 누가 지정하나요?
+  계획에서 '지정 주체' issue와 actor를 유지 → 공개 승인 범위에서 fulltext/용어/구조 탐색.
+  법령명+적중 제8조③ 카드 선택 이유 → 제8조③ 및 필요한 상위 조건을 READ.
+  실제 원문의 지정 주체 근거 ADOPT → 현재 조문 관련 compact reference 확인.
+  ASSESS actor/issue covered이면 COMPOSE. 무관한 세법 후보는 DEFER/NOT_SELECTED이며 choices에 있다고 자동 읽기하지 않음.
+  미해결 무관 참조는 완료 차단하지 않음. 정확 원문 인용과 실행 binding 확인.
+
+S02 벤처기업의 주식매수선택권은 언제부터 행사할 수 있나요?
+  '행사 개시 시점'과 '조건/예외' issue. 부여/취소/행사 주체 규정과 구분.
+  같은 법 제16조의4/5가 검색되면 묶음 읽기 선택지를 제공하되 실제 행사 시점 근거가 어느 조인지 ADOPT에서 구분.
+  원칙과 선택한 원문이 가리키는 예외/준용을 확인. 모르는 조문번호를 기억으로 확정하지 않음.
+  답변에 필요한 조건이 부족하면 saved scope/연결/다른 법으로 이동하고 이유를 보존.
+  이 설계서는 해당 법의 현행 정답/기간을 새로 검증한 법률 답변이 아니다. 실제 원문 판본으로 후속 시험한다.
+
+S03 CM018 구조 질문
+  explicit 제49조① scope가 제안됨. 나목 적중을 진입점으로 삼아도 기본 추천 READ_SCOPE=제1항 전체.
+  제1호만 읽었으면 code coverage가 false이고 ASSESS gap은 나머지 호 누락.
+  saved/read scope 메뉴로 복귀해 나머지 전달 → 완전 구조 확인. 예산 끝이면 partial structure와 누락을 정확하게 반환.
+
+S04 CM039 잘못 고른 법/조문
+  361조 읽기·보류는 전역 원장에 남음.362조의 실제 제목이 가설과 다르면 hypothesis_rejected.
+  '이사회 권한' 주제 구조/본문 검색 또는 첫 search frame RETURN_TO.
+  ASSESS는 읽은361조가 보류 상태임을 보고 VIEW_SAVED로 다시 검토 가능.
+  새 근거 채택 후에도 과거 잘못된 선택 이유는 정정 표기와 함께 이력에 남음.
+
+S05 CM003/043/051 핵심 연결 누락
+  세칙 제외/감사 보수 준용/산정 준용 카드에 실제 target 이름/좌표·anchor 단서가 보임.
+  해당 issue의 핵심 연결인지 판단해 선택. 조사 불가면 그 결론만 조건부/미확인.
+  내부 감사와 외부감사인, 공식 규정과 매뉴얼 설명을 섞어 결론 확대하지 않음.
+
+S06 검색 첫12개가 무관함
+  DEFER 이유 + 전체 후보/다음 cursor 존재를 보고 NEXT_LAWS 또는 다른 query 선택.
+  명시 locator가 있으면 별도 direct-entry로 접근 가능.
+  FT검색 복귀 시 당시 검색 기록/선택지와 이후 판단을 모두 받음.
+
+S07 연결 메뉴/원문 메뉴 과거 복귀
+  과거 frame 메뉴 복원 + 이후 actor/issue/gap/채택 overlay + 돌아간 이유.
+  옛 target 이미 읽음이면 saved action, 최신 ACL blocked면 unavailable. 시간 되감기로 상태를 지우지 않음.
+
+S08 malformed choices와 timeout
+  contradictory target/status는 수락 전 보정. 보정 실패면 현재 선택지와 오류를 보존.
+  accepted 후 READ 중 timeout이면 receipt와 read cursor로 재개. 같은 모델 선택을 다시 반복하지 않음.
+  모델 transport timeout은 원문 부족/필수 참조 미해결로 분류하지 않음.
+
+S09 권한/판본/질문 변경
+  기존 메뉴·원문·경험은 현재 right/version gate 통과분만 투영.
+  같은 doc title의 새 판본으로 과거 인용을 몰래 교체하지 않음. question revision과 새 judgment를 기록.
+
+18. 검증 설계 — 무엇을 성공으로 볼 것인가
+
+18.1 일반 계약/회귀 검사 [외부 모델 없음]
+  - 첫12개 밖 직접 조문 접근과 cursor의 query/policy/ACL/version 오용 거부.
+  - own-body 저장/검색 유지, parent/ancestor 분리, empty container와 unknown structure 처리.
+  - 호 전체 읽기를 항 전체 coverage로 계산하지 않음. 여러 페이지의 gap/spans union 검사.
+  - READ와 ADOPT 분리, 보류 원문 saved→전달→재채택, issue별 EXCLUDE 전파 제한.
+  - 참조 카드는 실제 anchor span만, incoming 방향과 unresolved/conditional 구분.
+  - required unresolved 완료 가능과 actual execution failure 비완료를 함께 검사.
+  - 모든 frame kind로 복귀, 당시 선택지 복원, 이후 history 유지, explicit entry와 serialization roundtrip 정렬.
+  - history normalization 뒤 모든 action/target/새 reason의 동등성 검사. 삭제/요약으로 passing하지 않음.
+  - ASSESS gap→SELECT 복구, 종료된 SELECT durable state 복원, 별도 예산과 head supersedes.
+  - 채택되지 않은 saved 원문을 '없음'으로 표현하지 않도록 presentation contract 검사.
+  - contradictory choices·교차그룹 handles·유일성·provider union schema·보정 실패 시 action 0회.
+  - accepted 전/후 중단, 요청 중복, late reply/정정 충돌, ACL revoked, version drift.
+  - legacy schema/프로필/source-only 검색·AD·shortcut·wiki·publication/UI consumer 회귀.
+  - release inventory/import closure/component hashes/PIPELINE pins/선택 코드 경로 일치.
+
+정상과 실패의 경계 조건을 검증한다. 구현 내용을 그대로 베낀 작은 assertion을 검사 건수로 늘리지 않는다. 기존 실패는 변경 전 동일 조건 재현 후 baseline failure로 분리하며 새 실패를 과거 문제로 덮지 않는다.
+
+18.2 실제 모델 검증 계획 [아직 실행하지 않음]
+  기존 두 질문과 CM6문항은 개발 중 이미 본 사례다. 회귀 재실행용이며 신규 out-of-sample 품질 인증 근거가 아니다.
+  새 독립 사례군은 retrieval omission, 구조 요구, exception/준용, actor 충돌, wrong-law recovery, 읽음-보류 재채택, 판본 모호성, 사실 부족을 포함한다. 의역만 여러 개 만들어 독립 문항 수를 부풀리지 않는다.
+  초기 평가 규모 제안은 위8유형에서 각각4개의 독립 사실관계/근거 묶음을 선택한32사례다. 이는 작업 범위 가정이며 통계적 인증 표본 수가 아니다. 이력을 본 기존 CM 의역을 신규 독립 사례로 채우지 않는다.
+  첫 호출 전에 baseline을 당시 활성 MAIN의 frozen code/data/profile로 고정하고, candidate는 최신 개발 보존·통합 rebase까지 반영한 동결 코드로 고정한다. 모델/provider/승인 공개 문서 범위/요청 예산은 동일하게 둔다.
+  구현 계보의 정확한 completed parent는 ADR-0672-experiment-v1/chain-parent-fix를 먼저 검증하고 사용한다. ADR0673은 같은 코드의 CM 관찰 근거로 연결한다. root의 추가 개발분은 통합 원장에 출처를 남기고 평가가 끝난 후보에 사후 덧붙이지 않는다.
+  원문/판본 기반 기준답과 필요 issue/scope를 제품 입력과 분리해 사전에 동결한다. evaluator가 제품의 선택이나 context를 바꾸지 않는다.
+  Qwen3.8/Parasail FP8/none/no fallback, ExperimentClient 및 source-export 정본을 따른다. 내부 실제 데이터는 외부 전송 없이 GENOS에서 평가한다.
+  실험 시작 전 관련 표준 두 문서를 끝까지 읽고 동일 scope reservation 확인/ADR 선점/정확 completed parent/통합 rebase/snapshot/register/freeze를 수행한다.
+  CM0673과 부모0672는 decision_eligible=false라 자체 MAIN promotion 자격이 없다. 새 통합 후보의 검증·qualification을 완료해야 한다. 과거 quality override를 재사용하지 않는다.
+
+18.3 지표와 초기 승인 기준 [목표, 결과가 아님]
+  K01 구조/권한/해시/정확 인용/동시성 신규 계약 모두 통과; 신규 실행 회귀0건.
+  K02 모든 실제 action의 target/path/reason이 이후 input에서 재구성 가능. 모든 유효 frame 복귀 계약 통과.
+  K03 scope coverage 거짓 true, wrong-subject 자동 채택, stale head publication, 권한 누수0건을 목표로 함.
+  K04 required 미해결만으로422/미완료로 되돌아가지 않음. transport/schema/data-integrity 실패는 별도.
+  K05 이미 읽은 저장 원문 재채택이 파일 재수집/불필요 search 없이 가능하고 본문 전달 증거 존재.
+  K06 답변 핵심 issue/예외/산식/대상 충족은 독립 원문 대조로 평가. HTTP200과 동일시하지 않음.
+  K07 초기 의미 품질 기준 제안: 동일32사례의 핵심 요구 충족 건수는 baseline 이상, actor/판본/근거 scope 오확정 신규 회귀0건, 필수연결 미해결 종료 정책 위반0건. baseline에서 정답인 사례를 candidate가 새로 오답 처리한 경우 개별 회귀를 해소하기 전 Accepted로 처리하지 않는다.
+  지연/비용 기준 제안: 매칭32사례의 전체 physical call 총수와 실제 토큰 과금 합계는 baseline 이하를 우선 목표로 둔다. 품질 복구 때문에 비용이 늘면 증가 요청/원인/상한을 별도 결정하고 이를 '절감'으로 보고하지 않는다. 지연은 동일 요청의 stage별 실제값과 empirical 분포를 비교하고32사례만으로 운영 p95를 인증하지 않는다. 이 제안 기준은 데이터/업무 예산과 함께 첫 호출 전 확정·동결하며 결과를 본 뒤 조정해 같은 arm을 통과시키지 않는다.
+  K08 natural RETURN_TO가 실제 사용하는지 관찰. scripted return 성공만으로 자연 모델 복귀 성능을 주장하지 않음.
+  K09 MAIN release→live service→질문 run의 코드/프로필/데이터/schema/search policy 지문 일치.
+  ADR final validator와 graph 검사를 수행하고 새 ADR 관련 오류는0건을 요구한다. 과거 전체 graph의 별도 오류도 보고한다. ADR0673 당시 기존 다른 ADR 오류8건이 남아 있었으므로 '전체 graph 통과' 기록을 새로 만들지 않는다.
+
+18.4 품질 통과와 MAIN 실행 검증의 관계
+  독립 품질 결과는 frozen source를 인증한다. MAIN 배선 검증은 실제 소비되는 code/package/config를 인증한다.
+  통합 후 제품 코드가 바뀌면 old frozen 평가를 그대로 승격 근거로 쓰지 않는다. 변경 후 후보로 필요한 검사/평가를 수행한다.
+  준비 릴리스의 packaging 검증과 활성 서비스 smoke에 동일 입력을 사용해도 환경 목적을 구분한다. 외부 모델을 다시 호출한다면 해당 재실행도 ADR 기록과 모델 정책을 따른다.
+
+19. MAIN 통합·배선·활성화 — 구현 작업의 필수 완료 범위
+
+19.1 단계0: 기준선과 보존 목록
+  실제 ACTIVE pointer, release files, 기존 root 변경 파일, completed candidate snapshot를 읽고 모두 hash inventory를 저장.
+  3자 비교 분류: candidate-only 기능 / root-only 최신 수정 / 서로 다른 수정 / 생성 manifest / 공유 의존 파일.
+  특히 AD/자연입력 분류/shortcut-wiki/SQL-NFS lifecycle/source recall/외부 승인/compact glossary/judgment UI의 최근 수정을 보존 목록으로 둠. 파일명만으로 필요 여부를 정하지 않고 실제 import/consumer를 확인.
+  candidate snapshot 전체를 root로 복사하는 통합 금지. 후보에서 빠진 최신 기능을 통째로 되돌리는 일이 없게 함.
+
+19.2 단계1: 기능 단위 통합
+  기존 작업 코드에 action-chain/부모 조회 수정/보정/묶음 읽기/정렬/후속 consumer 변경을 함께 반영.
+  새 상태·scope·gap 제어 변경을 그 통합 경로 위에서 구현.
+  실험 후보가 필요하면 이 통합 코드에서 분기·동결한다. 제품 코드와 실험 코드의 변경 이유/원류/최종 hash를 integration ledger에 남김.
+  engine/profile/PIPELINE/generated contracts를 같은 revision으로 결속하고 import closure 검증.
+
+19.3 단계2: 정확한 통합 후보 검증
+  일반 계약 → 기존 두 질문/CM 회귀 → 사전 동결 신규 평가 → package integration 검사 순서.
+  변경하지 않은 ingestion/store/nav/glossary 단계도 기존 generation에 결속.
+  결과와 코드/프로필/schema/model/데이터/정렬 fingerprint를 남김.
+  Accepted인 out-of-sample complete/decision_eligible source만 기존 promotion 절차로 진행. ADR0673 probe를 그 자체로 activate하지 않음.
+
+19.4 단계3: 기존 release 도구로 불변 묶음 준비
+  현행 06_TOOLS/run_tool.py의 rag_main_promotion.py dispatch는 semantic_runtime.control로 이어진다.
+  prepare는 새 release ID에 코드/엔진/프로필/입출력 계약/선택 데이터/qualification/integration/rollback basis를 결속한다.
+  release_integration은 활성 릴리스 기준 전체 변경 파일 목록, before/after hash, 이유, 동결 candidate/rebase를 검증한다.
+  release_qualification은 Accepted, promotion-candidate, out-of-sample, eligible, completed run, frozen rebase와 검증 결과를 prepare/apply 때 다시 확인한다.
+  새 별도 승격 스크립트를 만들지 않는다. 기존 하위 implementation의 quality override 분기는 신규 평가 통과를 대신하는 경로로 쓰지 않음.
+
+명령 형태 [설명용 placeholder이며 실행하지 않았음]
+  .venv/bin/python 06_TOOLS/run_tool.py rag_main_promotion.py prepare
+    --code-root <검증한 통합 코드 경로>
+    --generation <검증한 선택 데이터 세대>
+    --release-id <새 고유 릴리스 ID>
+    --authorization <qualified source 및 승인 근거 JSON>
+    --validation <구조·회귀·통합/rebase 검증 JSON>
+  .venv/bin/python 06_TOOLS/run_tool.py rag_main_promotion.py apply
+    --manifest <새 release.json> --confirm-main
+
+위 명령은 실제 CLI의 인자명에 근거한 설계다. 줄바꿈은 문서 표기이며 copy-paste runnable script가 아니다. 향후 구현 시 정확한 경로/값을 채운 실행 TXT와 로그를 만든다.
+
+19.5 단계4: 포인터와 실제 서비스 전환
+  apply 직전에 기존 pointer hash/부모 manifest가 그대로인지 검증. 변경되었으면 stale plan 거부 후 새 active 기준 rebase.
+  apply receipt 저장·lock·atomic pointer replacement. generation은 실제 적용 당시 정본에서 단조 증가시키고42→43을 미리 확정하지 않음.
+  현재 service.py는 lazy _APP와 선택 release package를 로드하므로 서비스 프로세스를 정상 reload하고 실제 _BINDING을 확인.
+  health/diagnostics/답변 meta에는 로드한 release ID/manifest SHA/code component SHA/profile/data/index/search policy fingerprint를 보여줌. 모델 endpoint/키는 노출하지 않음.
+  실제 로컬 사용자가 호출하는 service gateway/RAG_ASK 및 그 내부 /v1/rag/ask에서 동일 binding으로 실행되는지 확인. 후보 앱을 직접 띄운 호출만으로 완료하지 않음.
+  search→read→SELECT→ASSESS→COMPOSE→UI/경험 소비자까지 해당 binding과 새 계약을 확인.
+  같은 질문을 실행했을 때 response journal이 준비 릴리스 제품 fingerprint와 일치해야 함. 포인터만 맞고 _APP가 구 코드인 경우 전환 실패다.
+
+19.6 완료 판정과 증거 묶음
+  D1 기존 작업 코드에 통합됨: changed-source inventory/의존성 manifest.
+  D2 검증 후보에 고정됨: candidate/revision seal와 run result.
+  D3 MAIN 승격 자격 충족: qualification과 frozen rebase.
+  D4 새 릴리스 준비됨: release.json 및 모든 pins/integration.
+  D5 포인터 적용됨: apply receipt + AFTER pointer.
+  D6 실제 로컬 서비스에서 실행됨: reload/process binding + 실제 질의 run fingerprint + 응답/화면.
+  D7 GENOS 인계/현장 적용: 별도 handoff와 현장 log. 로컬 D6로 D7 완료 주장하지 않음.
+  사용자가 요청한 로컬 전체 구현은 D1~D6 완료를 요구한다. 설계 문서의 이번 상태는 어느 것도 새로 수행한 완료 상태가 아니다.
+
+19.7 롤백
+  기존 .venv/bin/python 06_TOOLS/run_tool.py rag_main_promotion.py rollback --confirm-main 사용.
+  이전 코드/프로필/schema/data 묶음으로 되돌린 뒤 서비스 reload와 live binding 확인.
+  새 journal/완료 경험은 삭제하지 않음. 이전 코드가 새 checkpoint/schema를 못 읽으면 그 run을 구 코드에서 재개하지 않고 호환 reader 또는 새 investigation을 사용.
+  새 schema 데이터의 역이행을 즉흥적으로 수행하지 않음. 포인터/receipt는 rollback의 실제 generation을 기록.
+
+19.8 GENOS 후속 연결
+  로컬에서 검증한 코드 revision/핵심 schema/dependency/profile/data binding을 인계한다.
+  기존 ~/DEV에 검증 파일 백업 적용, NFS generation/CURRENT 필요 여부, Git push, 코드서빙 리비전 배포, 워크플로우 편집기 코드 변경을 각각 기록한다.
+  현장 python3, 실제 executable/version 기록. 직접 코드서빙 테스트를 요구하지 않고 워크플로우 테스트 화면에서만 질의/warmup 확인.
+  내부 모델·실제 내부 데이터로 같은 계약과 자연 복귀·scope 품질·지연을 확인하기 전 현장 성능은 미확인.
+
+20. 자원·기대효과·측정 계획
+
+수치 원장
+  N01 관측 / 6공개 CM문항 / 73 model physical calls, HTTP200 6건, natural RETURN_TO 0회 / ADR0673 verification.
+  N02 관측 / CM018 1요청 / 429.1595초·23회 호출 / 동일 후보·공개 외부 모델.
+  N03 관측 / CM039 1요청 / 330.8406초·18회 호출 / 동일 후보·공개 외부 모델.
+  N04 관측 / CM018 1입력 projection / history29,952자 / verification JSON. 토큰·비용과 다름.
+  N05 관측 / 선택 fulltext 전체 / unit230,299·source33,443·block308,795 / manifest.
+  N06 목표/가정 / 초기 제어 설정 / schema repair1·assessment reentry2·no-progress page warning3. 운영 최적값 미확인.
+  N07 기존 설정 / law menu12, search rounds8 / candidate profile. 전체 결과 제한 또는 실측 처리량이 아님.
+  N08 미확인 / 독립 법률 정확도·p95·GENOS 처리량·새 비용·구현 인일 / 새 통합 코드와 평가/현장 로그 필요.
+  N09 가정 / 신규 평가 규모 / 8유형×4독립사례=32사례 / 설계의 작업 범위 가정. 통계적 인증 분모가 아님.
+
+목표 효과
+  - 질문 scope와 실제 읽은 범위 혼동 감소.
+  - 핵심 연결/보류 근거를 SELECT가 알아볼 수 있어 재검색 대신 직접 필요한 범위를 읽을 기회 증가.
+  - 어떤 법을 왜 골랐고 왜 돌아왔는지 사용자에게 재현 가능한 기록 제공.
+  - 후보에서만 동작하고 실제 서비스에 빠지는 배선 실패를 완료 기준에서 차단.
+
+효과를 정량 확정하지 않는다. ASSESS 재진입은 실패 복구 기회를 늘리지만 더 느려질 수도 있고 모델의 잘못된 gap 판단이 불필요한 읽기를 늘릴 수 있다.
+  순 호출 절감 = 기존 반복 호출 감소 - 추가 SELECT/ASSESS 재진입 호출 - 추가 repair 호출.
+  위 식은 구조식이며 수치 예측이 아니다. 순 호출 절감이0이면 호출 수 기준 이득은 없음.
+  비용 = Σ(각 physical call 입력 토큰×실제 입력 단가 + 출력 토큰×출력 단가) + SQL/저장/재색인 운영 비용.
+  지연 = 모델 대기 + 도구/SQL/원문/검증 시간 + queue/lock 대기. 호출 수만으로 지연 감소율을 계산하지 않음.
+  reentry_limit을 늘리면 대응 gap은 늘 수 있지만 비용/loop 위험도 증가한다.2에서 다른 값으로 바꾸는 후보는 새 실험으로 다룸.
+
+측정 로그는 stage/call별 input token(전체/메뉴/원문/이력/schema), output token, unique spans/pages, SQL query time, frame count, reason chars, retry type, resolved gaps, final issue coverage, actual live binding을 남긴다.
+  개발 일정은 계약/통합 → SELECT 상태/읽기/복귀 → ASSESS/consumer → 평가/packaging → MAIN live 확인의 의존 순서다. 인일·정답개선율·달력 완료 날짜는 현재 근거로 산정하지 않는다. 평가/GENOS 현장 검증 대기를 구현 시간과 혼합하지 않는다.
+
+21. 이번 작업의 완료·미완료와 재발 방지
+
+완료:
+  - 사용자 개발 연속성/실제 MAIN 배선 원칙을 AGENTS.md에 영속 기록.
+  - WSL 환경 검사와 A/B/C의 실제 파일/정렬 차이 확인.
+  - 기존 실행·저장·데이터·승격 계약에 근거한 본 설계 작성.
+  - 관측 문제와 추가 구조 위험, 입력·출력 계약, 파일 변경 지도, 검증·MAIN·롤백 경로 명시.
+
+미실행:
+  - 본 제안의 제품 코드 통합/수정 및 새 계약 검사.
+  - 신규 외부 모델 실험/품질 인증.
+  - MAIN prepare/apply/프로세스 reload/live smoke 및 GENOS 인계/배포.
+
+다음 구현 작업의 시작 조건은 이 설계에 따라 실제 active 기준선을 다시 확인하고 기존 개발분을 통합하는 것이다. 종료 조건은 '후보 모델 응답 성공'이 아니라 D1~D6의 실제 완료 증거다.
+
+근거 목록 [프로젝트 루트 상대 경로]
+  AGENTS.md; 00_SYSTEM/ARCHITECTURE.md; DATA_MODEL.md; PIPELINE.json; WORKSPACE.json.
+  service.py; 02_BACKEND/semantic_runtime/app.py; pipeline.py; control.py; release_integration.py; release_qualification.py.
+  01_DATA/ACTIVE/local/ACTIVE_RELEASE.json; 08_DEPLOYMENT/RELEASES/local-genos-unit-v6-20261006-r1/release.json.
+  01_DATA/TERM_RELEASES/local-genos-parity-20261006-r1/generation/fulltext/manifest.json.
+  02_BACKEND/lawrag/research/candidates/adr_0673/chain-cm-six/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/ 아래 확인한 각 모듈.
+  04_EXPERIMENTS/ADR/ADR-0672-investigation-chain-parent-collision/실험/manifest.json.
+  04_EXPERIMENTS/ADR/ADR-0673-investigation-chain-cm-six/실험/manifest.json 및 artifacts/run-001/ 아래 각 CM의 provider request/response/native journal.
+  09_ARTIFACTS/AUDITS/20261006-local-genos-parity-r1/검증결과.txt.
+  09_ARTIFACTS/AUDITS/20261006-investigation-chain-cm-six/관찰결과.txt; verification.json; 사례별답변과근거대조.txt.
+  07_DOCS/REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/IMPLEMENTATION.md.
+  07_DOCS/REFERENCE/REPORTS/RAG_CONTROL_FLOW_AUDIT_20261006/README.md.
+  07_DOCS/REFERENCE/OPERATIONS/GENOS_FINAL_REVIEW_DISABLED_20260928.md.
+  GENOS.md.
+
+보고서 자체 검토는 동일 작성자의 코드/계약/근거 대조다. 독립 에이전트 또는 법률 전문가 검토를 수행했다고 표시하지 않는다. 신규 성능/정답 인증은 하지 않았다.

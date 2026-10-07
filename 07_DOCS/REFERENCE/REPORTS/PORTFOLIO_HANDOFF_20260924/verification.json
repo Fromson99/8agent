@@ -1,0 +1,193 @@
+{
+  "generated_at_utc": "2026-09-24T13:08:49.367013+00:00",
+  "work_type": "read-only repository synthesis plus new documentation artifacts",
+  "adr_catalog": {
+    "records": 544,
+    "directories": 504,
+    "standalone_markdown_files": 40,
+    "unique_adr_ids": 539,
+    "readmes": 543,
+    "duplicate_ids": {
+      "ADR-0023": 2,
+      "ADR-0024": 2,
+      "ADR-0052": 2,
+      "ADR-0064": 2,
+      "ADR-0542": 2
+    },
+    "missing_readmes": [
+      "04_EXPERIMENTS/LEGACY_ADR/ADR-0064-uncertainty-aware-semantic-bindings"
+    ],
+    "status_counts_by_directory_not_unique_experiment": {
+      "Accepted": 117,
+      "Rejected": 173,
+      "Superseded": 2,
+      "Proposed": 249,
+      "미확인": 2,
+      "Deferred": 1
+    }
+  },
+  "existing_document_count": 296,
+  "file_counts": {
+    "test_python_files": 2075,
+    "semantic_runtime_python_files": 115,
+    "note": "File counts only; not executed test count, passing tests, coverage, or engineering productivity."
+  },
+  "active_pointer_snapshot": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "legal-agent-local-gemma-20260923-r3",
+    "generation": 24,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/legal-agent-local-gemma-20260923-r3/release.json",
+    "release_manifest_sha256": "4262d8260dbd222a6895f3ef7ff7f0d6ab155f9bb4ee7acf4fc2d808f35cb591",
+    "activated_at": "2026-09-23T12:15:29.915577+00:00",
+    "deployment_basis": "USER_DIRECTED_CUTOVER",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "ea4fc83fe37d2500fc2d92d93a0ee28ae1fd3d66acf99207fececd32d4c27a7e"
+  },
+  "sources": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "ceecd6306b1f7e05a3dfb84811db022d47bd3a893f6fc491f904e928d322a7b2",
+      "bytes": 11692
+    },
+    {
+      "path": "README.md",
+      "sha256": "73b4fe8bb2c74061ab8108170bc5e3fbf11c9cf6c3095b655ca33ef6d10c4154",
+      "bytes": 2352
+    },
+    {
+      "path": "GENOS.md",
+      "sha256": "0f592e9591c1841ca50870aa94d49c81a75dbd3fc2d1df06a0f9ee2988265ce9",
+      "bytes": 34211
+    },
+    {
+      "path": "service.py",
+      "sha256": "16cf5f7a8624ff31fd589c2d9ac57c06a293461cc3b77de34df8e224dd612b3c",
+      "bytes": 32812
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "058720eb9b2fccc4cc24fdef4be90c63a856423dd38ba27ff131c65e29026b0c",
+      "bytes": 762
+    },
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "e5f82fdfd55747e1576bb7df72e776eb9465f0ed0363855a77c29d62d3e3038d",
+      "bytes": 12875
+    },
+    {
+      "path": "00_SYSTEM/DATA_MODEL.md",
+      "sha256": "870871a765a4eb2b9c2cc2fe9411b38768abf99190aec6fd376ff433c8af9a25",
+      "bytes": 6986
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "sha256": "8c5050405f1fc1f64e68e7cf3f37be9ecc36b1fe61efc41a4ac9f00d329159fe",
+      "bytes": 48777
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "sha256": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6",
+      "bytes": 2553
+    },
+    {
+      "path": "00_SYSTEM/EXPERIMENT_MODEL_POLICY.json",
+      "sha256": "d1b2e14c6394423dae71aa2d130f45fc2a1b3edb2a4001a46b1a2a83d997a059",
+      "bytes": 3366
+    },
+    {
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "sha256": "6e602f4f4337f87850704982d2cc7336d91ddc2f682ce9d320429770e95011e9",
+      "bytes": 574
+    },
+    {
+      "path": "04_EXPERIMENTS/LEGACY_ADR/STANDARD.md",
+      "sha256": "5fb7cae7426cd7b97a4e4f76e469fae60701bff74a61f20088d4e84a07f11de4",
+      "bytes": 25103
+    },
+    {
+      "path": "04_EXPERIMENTS/LEGACY_ADR/EXPERIMENT_AGENT_PROMPT.md",
+      "sha256": "f63ca7d55d2e56518f64f383344b345c66e0ab98ac9d8d7f3b44888cd1df3c70",
+      "bytes": 11833
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/app.py",
+      "sha256": "12293a003bd402ad4d102446d679372374f0f82f8bb6c6a65766df49ea3417f5",
+      "bytes": 20620
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/pipeline.py",
+      "sha256": "ed658ff03a92a773974c02d9bb59b87962a42b957a68b35b436bf2f87d2f950f",
+      "bytes": 8849
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent_adapter.py",
+      "sha256": "ada8eb2a58766ff87a76cc66d5cbe9b7ea8f37252c24efdde0a9c9779df731cf",
+      "bytes": 10733
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/coordinator.py",
+      "sha256": "d8832b0b0d4b952605345cc86cbab178553bafa4da88dbecd6ce67a93dc2aa54",
+      "bytes": 1145
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/numbered_references.py",
+      "sha256": "ce16f1ab356c0db081bc024a3f65df6efb4d1f9cf5c82f5b4dfd36df8f47f2a6",
+      "bytes": 11593
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/question_obligations.py",
+      "sha256": "f233c10404528b6a723ffdb9a702de1d9267446e3fc318e991b143ca2b74ae2c",
+      "bytes": 16481
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/publication.py",
+      "sha256": "703b2d84a5327b91e22d1f0e5d8db8faf1a699766195ca147d6d9435ea41be89",
+      "bytes": 6685
+    },
+    {
+      "path": "02_BACKEND/lawrag/agents/agent6/README.md",
+      "sha256": "bfc75e648d059a17975a0a14bd96063e8956acb4c999b12bc399d64920e1ec8a",
+      "bytes": 10363
+    },
+    {
+      "path": "03_FRONTEND/APPS/experiment-studio/README.md",
+      "sha256": "9123f1e870cadb5adc517a6f2d1203bdb7f1d00d0405ff7c404623f0a7b601c6",
+      "bytes": 1503
+    },
+    {
+      "path": "03_FRONTEND/APPS/experiment-studio/package.json",
+      "sha256": "45fedc7ab557504b9e5afd0dbd8d27f42200a2a2b7deb24870a759542d29473b",
+      "bytes": 1020
+    },
+    {
+      "path": "08_DEPLOYMENT/RELEASES/legal-agent-local-gemma-20260923-r3/release.json",
+      "sha256": "4262d8260dbd222a6895f3ef7ff7f0d6ab155f9bb4ee7acf4fc2d808f35cb591",
+      "bytes": 23680
+    }
+  ],
+  "git_head_for_context_not_clean_release": "a3ac254cc8fba708e39cf37482707a5570fd388d",
+  "workspace_has_preexisting_uncommitted_changes": true,
+  "core_docx_checks": {
+    "text_units_checked": 690,
+    "tables": 10,
+    "hyperlink_instances": 0,
+    "external_link_targets": 0,
+    "zip_xml_text_links": "PASS",
+    "visual_render_checked": false
+  },
+  "full_docx_checks": {
+    "text_units_checked": 3181,
+    "tables": 10,
+    "hyperlink_instances": 0,
+    "external_link_targets": 0,
+    "zip_xml_text_links": "PASS",
+    "visual_render_checked": false
+  },
+  "renderer_sha256": "e5712657a8a444333b794f5356d51184ee512334fc09b6adc3421980e316aefa",
+  "product_tests_run": false,
+  "new_model_experiment_run": false,
+  "genos_connected": false,
+  "visual_page_render_checked": false,
+  "combined_markdown_characters": 300386
+}

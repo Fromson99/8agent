@@ -1,0 +1,24 @@
+{
+  "time_utc": "2026-10-02T05:20:41.991430+00:00",
+  "environment": "WSL local, mocked structured input",
+  "tests": {
+    "passed": 57,
+    "failed": 0,
+    "command": ".venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_pipeline_unit_fulltext.py 05_TESTS/CONTRACTS/test_genos_reindex_progress_r9.py 05_TESTS/CONTRACTS/test_fulltext_ranking.py 05_TESTS/CONTRACTS/test_fulltext_diagnostics.py 05_TESTS/CONTRACTS/test_fulltext_location_metadata.py 05_TESTS/CONTRACTS/test_tool_exploration_v3_paging.py 05_TESTS/CONTRACTS/test_genos_reindex_only_r8.py --tb=short"
+  },
+  "genos_applied": false,
+  "main_data_activated": false,
+  "files": {
+    "02_BACKEND/semantic_runtime/unit_fulltext.py": "51cb01927cd1d72c3ea700f66a8110a0e68eff20b580aae6aa15b85fcb83570c",
+    "02_BACKEND/semantic_runtime/fulltext.py": "60ec426d439855eb005dca64df93cbc2b4937ab56b5c010dfbd817076651cd0c",
+    "02_BACKEND/semantic_runtime/control.py": "fd439ea5ff31d77240dcea86aea3b9db9b0cd31ba6015e5e55d10d89f4b84a4e",
+    "02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py": "4982cb5fb6789f878d7814a1ab8fd0293174f704fe1987ee929ca0eee21df86b",
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py": "69365ded267118d0dd212b82b531d3983977d9c047edf2e51b2ba9df5cb54a6a",
+    "02_BACKEND/semantic_runtime/legal_agent/relations_tools.py": "f9adfd69925573f2b439f5663410d069fa81e5bf83d5a666a3e20b5463e64a1a",
+    "02_BACKEND/lawrag/pipeline/fulltext_stage.py": "ceb67c28be79931a6be4ec0a9dcdbe7f0efd54597239076128da9af737211a8c",
+    "02_BACKEND/lawrag/pipeline/term_generation.py": "1457e0ff71449b9c7e0146181a1e2c501adc860ba4114cf4af26a0b03eda31ec",
+    "02_BACKEND/lawrag/pipeline/term_serving_bundle.py": "69bc30cfa6408bc4204656cca13e9b7b9defca049749a55d7a4aeb7dcc5228a5",
+    "06_TOOLS/pipeline.py": "0a2ee7371d9e3cf55c78d58caa8ea123cb05bc6ab254ff7d6aff74057e5f8461",
+    "05_TESTS/CONTRACTS/test_pipeline_unit_fulltext.py": "b2d4820fa347cc22c9ab6b788c1203e18704a0e67c72fc2d324c267607a01b76"
+  }
+}

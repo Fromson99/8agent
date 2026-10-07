@@ -1,0 +1,145 @@
+{
+  "status": "synthetic design examples; schema validity is not state-machine or legal-quality validation",
+  "valid": [
+    {
+      "kind": "RESEARCH",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "expected_state_revision": 7,
+      "answer_revision": 2,
+      "evidence_revision": 5,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER"
+    },
+    {
+      "kind": "RECOMPOSE",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "expected_state_revision": 7,
+      "answer_revision": 2,
+      "evidence_revision": 5,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "FORMAT_REPAIR"
+    },
+    {
+      "kind": "FINAL",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "expected_state_revision": 7,
+      "answer_revision": 2,
+      "evidence_revision": 5,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "GATE_ASSESSED",
+      "gate": "BOUNDED"
+    }
+  ],
+  "invalid": [
+    {
+      "kind": "RESEARCH",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "expected_state_revision": -1,
+      "answer_revision": 2,
+      "evidence_revision": 5,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER"
+    },
+    {
+      "kind": "RESTART_ANYWHERE",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "expected_state_revision": 7,
+      "answer_revision": 2,
+      "evidence_revision": 5,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER"
+    },
+    {
+      "kind": "FINAL",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "expected_state_revision": 7,
+      "answer_revision": 2,
+      "evidence_revision": 5,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER"
+    },
+    {
+      "kind": "RESEARCH",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "expected_state_revision": 7,
+      "answer_revision": 2,
+      "evidence_revision": 5,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER",
+      "gate": "READY"
+    },
+    {
+      "kind": "RESEARCH",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "expected_state_revision": 7,
+      "answer_revision": 2,
+      "evidence_revision": 5,
+      "issue_ids": [],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER"
+    },
+    {
+      "kind": "RESEARCH",
+      "run_id": "run-demo",
+      "query_id": "query-demo",
+      "expected_state_revision": 7,
+      "answer_revision": 2,
+      "evidence_revision": 5,
+      "issue_ids": [
+        "I2"
+      ],
+      "challenge_ids": [
+        "K1"
+      ],
+      "reason_code": "MISSED_QUALIFIER",
+      "hidden_source_ids": [
+        "E999"
+      ]
+    }
+  ]
+}
