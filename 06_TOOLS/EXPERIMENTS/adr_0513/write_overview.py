@@ -1,0 +1,68 @@
+"""Summarize completed, independently audited source-acquisition runs."""
+import json
+from pathlib import Path
+R=Path(__file__).resolve().parents[3]
+ROOT=R/'04_EXPERIMENTS/ADR'
+slugs={'0511':'gemma-query-source-recall','0512':'scoped-source-preservation','0513':'preserved-source-union'}
+def read(p):return json.loads(p.read_text())
+summaries={n:read(ROOT/f'ADR-{n}-{slug}/artifacts/summary.json') for n,slug in slugs.items()}
+base=summaries['0511']['by_group']['baseline_all61'];latest=summaries['0513'];v=latest['by_group']['retrieval_all61'];complete=read(ROOT/'ADR-0513-preserved-source-union/artifacts/completion.json')
+rows=[('ADR0510',base,'모델 호출 없음')]+[(f'ADR{n}',s['by_group']['retrieval_all61'],'Gemma 실제11호출' if n=='0511' else '같은 Gemma 계획 재사용') for n,s in summaries.items()]
+table='|실험|필수 원문 발견|필수 조문 전문 확보|모든 근거 확보 문항|모델 실행|\n|---|---:|---:|---:|---|\n'
+for label,a,note in rows:table+=f"|{label}|{a['gold_found']}/{a['gold_total']}|{a['gold_fully_read']}/{a['gold_total']} ({a['full_recall']:.1%})|{a['all_gold_complete_cases']}/{a['cases']}|{note}|\n"
+report=R/'07_DOCS/REFERENCE/REPORTS/LEGAL_SEARCH_SOURCE_RECALL_20260922.md'
+text=f'''# 원문 확보 우선 보강·Gemma 검증 결과
+
+2026-09-22. 공개145문서의 고정61문항, 필수 원문90개에 대한 실험이다. **최종 전문 확보 {v['gold_fully_read']}/90 ({v['full_recall']:.1%})**. 사전 기준 통과: **{latest['criteria_met']}**. MAIN·GENOS에는 반영하지 않았다.
+
+{table}
+
+문서 ID나 첫 페이지만 얻은 경우는 전문 확보로 세지 않았다. 필수 canonical article-root의 모든 block/span을 원문과 대조하고, 해시·허용 문서 범위·패킷 대응을 확인했다. 정답 좌표는 실행 후 검사기에만 들어갔다.
+
+## 바꾼 것
+
+|문제|보강|
+|---|---|
+|약칭과 긴 배경 질문 때문에 핵심 표현이 묻힘|Gemma의 정식 문서명·짧은 검색어 계획, 문서명을 제거한 주제 질의, 수치·단위와 핵심 명사 질의|
+|관련 법령의 후보가 전역 순위에 밀림|문서별 검색 후보 보존|
+|문서별 후보를 강화하면 다른 규정의 필수 원문이 탈락|전역 경로와 문서별 경로의 선택 목록을 합집합으로 보존. 중복 조문은 한 번 읽음|
+|약식 참조의 문서명이 잘못 연결되어 미해결로 남음|원문 witness를 확인한 뒤 같은 종류 문서의 명시 좌표를 후보로 탐색. 확정 참조·법적 채택으로 승격하지 않음|
+|첫 페이지를 읽고 전체 조문을 확보했다고 취급|모든 continuation page와 span의 전체 포함 검사|
+|전달용 데이터에서 원문이 반복됨|원문 text를 한 번 담고 evidence/source/generation/hash 및 서버 span 대응 보존|
+
+벡터 DB·외부 검색 서버는 추가하지 않았다. 정·역방향의 명시 참조 탐색을 유지했다. 최종 후보에는 특정 문항이나 정답 source ID를 넣지 않았다. 두 부모 discovery를 실제로 다시 실행한 후 합쳤다.
+
+## 확인 결과와 비용
+
+- 합성 계약 검사13개 통과. 부모 선택 목록 재현·보존 불일치: {len(latest['parent_selection_replay_mismatches'])}건.
+- 최종 ADR 정합성 검사 통과: {complete['validation_passed']}.
+- Gemma 실제 실행은 ADR0511의11호출, 입력28,084·출력5,388 tokens, 기록된 API 비용0.00569836 USD. 후속 두 후보는 동일 계획을 재사용했고 신규 모델 호출0회.
+- 최종 후보는 문항당 평균 {v['source_count_mean']:.1f}개 조문, 원문 {v['source_chars_mean']:,.0f}자를 읽었다. 회수량 증가가 포함된 결과다.
+- 회수 요청 p50/p95: {v['request_p50']:.1f}/{v['request_p95']:.1f}초. 독립 worker3개 동시 부하에서 측정했으며, 직렬 부모나 단일 사용자 서비스 지연과 직접 비교하지 않는다. 자원 로딩·Gemma 계획·최종 답변 단계는 제외했다.
+- 한 요청 최대288조문·1,024도구·160만 원문자·180초를 사전 제한으로 사용했다. 제한 위반: {latest['bounds_violations']}.
+
+## 실제 연결 범위와 남은 검증
+
+실험 후보의 기존 `ObligationSession.investigate → prepare_source_recall` 진입점에 원문 확보 하네스가 연결돼 있다. 실험은 같은 preparation 메서드를 직접 실행했다. Gemma 검색 계획을 넘기는 생산자는 격리 runner에서 연결했고, 운영 API의 새 계획 생산자 배선은 완료된 상태가 아니다.
+
+**원문 패킷은 준비됐지만 실제 답변 모델에 전부 전달한 실험은 아니다.** 모든 패킷은 `PREPARED_NOT_SENT`이며, 법적 적용 판단·후단 선별·최종 답변 정확도는 별도다. 반복 노출된61문항을 실패 분석에 사용했으므로 독립 holdout의99%나 실제 내부 데이터·GENOS 성능을 주장할 수 없다.
+
+운영 반영 전에는 새 질문으로 회수율을 검증하고, 늘어난 원문량을 후단에서 선별·전달하는 경로와 시간 예산을 확인해야 한다. 실험 설정을 바꿨다는 사실만으로 활성 MAIN 릴리스가 바뀌지는 않는다.
+
+## 실행 기록
+
+- [최종 ADR0513](../../../04_EXPERIMENTS/ADR/ADR-0513-preserved-source-union/README.md)
+- [61문항별 결과](../../../04_EXPERIMENTS/ADR/ADR-0513-preserved-source-union/실험/README.md)
+- [후보 코드·리비전](../../../02_BACKEND/lawrag/research/candidates/adr_0513/retrieval/candidate.json)
+- [원문 보존 구현](../../../02_BACKEND/lawrag/research/candidates/adr_0513/retrieval/revisions/rev-001/snapshot/02_BACKEND/semantic_runtime/legal_agent/source_recall.py)
+- [전체 검사 기록](../../../04_EXPERIMENTS/ADR/ADR-0513-preserved-source-union/artifacts/completion.json)
+
+ADR0510은 완료 처리 전에 검사 결과를 확인하지 못해 분할 run 집계 오류7개가 남았다. 원기록은 보존했고, 위73/90 기준값은 ADR0511에서 원자료61개를 다시 집계한 값이다. 이후 각 ADR의 검사를 통과했는지 별도로 기록한다. 전체 계보 검사의 기존 오류는 최종 completion 기록에 남기며, 해당 이력을 덮어쓰지 않는다.
+'''
+report.write_text(text)
+index=ROOT/'README.md';line=f"\n- [ADR-0513 원문 합집합 보존](ADR-0513-preserved-source-union/README.md) —61문항 전문 확보{v['gold_fully_read']}/90, 부모 선택 목록 보존 불일치{len(latest['parent_selection_replay_mismatches'])}건; in-sample·MAIN 미반영.\n"
+if 'ADR-0513 원문 합집합 보존' not in index.read_text():index.write_text(index.read_text()+line)
+design=R/'07_DOCS/REFERENCE/REPORTS/LEGAL_SEARCH_SKILL_DESIGN_20260922/README.md'
+note='\n\n## 후속 원문 회수 검증\n\n최초 설계 이후 구현·실험은 [원문 확보 우선 검증 보고서](../LEGAL_SEARCH_SOURCE_RECALL_20260922.md)와 ADR0510~0513에 기록했다. 최초 설계의 미실행 상태와 후속 실험 결과를 구분하며, 활성 MAIN·GENOS 배포는 수행하지 않았다.\n'
+if '## 후속 원문 회수 검증' not in design.read_text():design.write_text(design.read_text()+note)
+print(report)

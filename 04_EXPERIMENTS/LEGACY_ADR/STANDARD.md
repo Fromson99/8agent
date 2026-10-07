@@ -1,20 +1,27 @@
 # ADR·LLM 실험 기록 표준 v4
 
-## 신규 실험 모델 정책 — 2026-09-14 사용자 변경
+## 신규 실험 모델 정책 — 2026-09-30 사용자 변경
 
-ADR-0383 이후 신규 외부 실험의 모델 정본은 `00_SYSTEM/EXPERIMENT_MODEL_POLICY.json`이다.
-현재 provider는 **Gemini**, 모델은 **gemini-3.1-flash-lite**, 키는 `.env`의 `GEMINI_API_KEY`다.
-제품·중간 처리·VLM·오프라인 평가 모두 이 기본값을 사용한다. 다른 provider/고가 모델로 자동
-전환하지 않는다. 모델 변경은 새 설계에 명시한다. `.env`나 키 값을 로그·프롬프트에 넣지 않는다.
+ADR-0583 이후 신규 외부 실험 기본값은 **Qwen3.8 / qwen/qwen3.8-27b**다.
+정본은 `00_SYSTEM/EXPERIMENT_MODEL_POLICY.json`, 공통 호출은
+`lawrag.research.experiment_client.ExperimentClient`다. OpenRouter Parasail
+FP8 단독, reasoning effort none, provider/model fallback 없음으로 고정한다.
+`.env`의 `OPEN_ROUTER`를 메모리에서만 읽고 키를 출력·기록하지 않는다.
+생성·중간처리·평가에 적용한다. ADR-0538~0581 Gemma 완료 기록은 보존한다.
+ADR-0582는 예약 후 사용자 변경으로 실제 공개 사례에 Qwen3.8을 사용한 전환 기록이다.
+GENOS 내부 모델·활성 MAIN 릴리스는 별도다.
 
-공통 호출은 `lawrag.research.experiment_client.GeminiExperimentClient`를 사용한다.
-2.5 Flash-Lite는 모델 목록에 있지만 신규 키에서404로 거절되어3.1을 선택했다.
-Qwen3.5와 성능 동등성을 확인한 선택은 아니다. 공개·합성 실험용이며 내부 GENOS 모델 정책은 별도다.
+### 이전 정책 기록 — 2026-09-23 사용자 변경
 
-아래 Haiku 고정·기존 evaluator allowlist 지침은 **ADR-0382까지의 동결 기록을 검증하는 역사적 정책**이다.
-신규 실험에는 이 절의 Gemini 정책이 우선한다. 완료된 이전 ADR의 모델명·출력·해시는 바꾸지 않고,
-예전 실험을 Gemini로 재실행할 때는 새 ADR을 만든다. 생성·검증 CLI는 새 정책과 과거 정책을 구분한다.
-
+ADR-0538 이후 신규 외부 실험의 기본값은 **Gemma / google/gemma-4-31b-it**다.
+정본은 `00_SYSTEM/EXPERIMENT_MODEL_POLICY.json`, 공통 호출은
+`lawrag.research.experiment_client.ExperimentClient`다. `.env`의 `OPEN_ROUTER`를 읽으며
+Parasail FP8·thinking off·허용 provider를 고정한다. 생성·중간처리·VLM·오프라인 평가에
+적용하고 다른 모델/provider로 자동 전환하지 않는다. 키나 `.env` 원문을 기록하지 않는다.
+사용자 지시: “Qwen이아니라 Gemma써 왜 계속 qwen쓰냐 이제부터 llm은 Gemma임” (ADR-0538).
+기존 Qwen·Gemini·Haiku 완료 기록 및 명시적 scoped override는 역사적 정본으로 보존한다.
+새 재실행은 새 ADR에서 현재 정책을 동결한다. 본문에 남은 이전 모델 규칙은 과거 기록용이며
+신규 외부 실험에는 이 절이 우선한다. GENOS 내부 모델과 실제 현장 검증은 별도다.
 
 - v1 적용 시작: ADR-0043
 - v2 적용 시작: ADR-0044

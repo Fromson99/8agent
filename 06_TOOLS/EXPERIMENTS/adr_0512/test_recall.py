@@ -1,0 +1,90 @@
+"""Synthetic boundary checks; no public evaluation inputs or gold."""
+import pytest
+from conftest import term_glossary
+from test_legal_agent_double_harness import generation
+from test_legal_agent_v5 import session
+from semantic_runtime.legal_agent.source_recall import spans_complete, evidence_packets, query_variants
+from semantic_runtime.legal_agent.errors import ContractError
+from semantic_runtime.legal_agent.repository import text_hash
+
+def source():
+    return {'id': 'a', 'blocks': [{'block_id': '1', 'text': 'abcdef'}, {'block_id': '2', 'text': 'exception'}]}
+
+def evidence(spans, ident='e'):
+    return {'evidence_id': ident, 'source_id': 'a', 'document_id': 'd', 'unit_id': '1',
+            'generation_id': 'g', 'source_artifact_hash': 'h', 'text_hash': text_hash('\n'.join(t for b,a,z,t in spans)), 'metadata': {},
+            'spans': [{'block_id': b, 'start_cp': a, 'end_cp': z, 'text': t} for b,a,z,t in spans]}
+
+def test_partial_article_is_not_complete():
+    assert not spans_complete(source(), [evidence([('1',0,6,'abcdef')])])
+
+def test_gap_cannot_be_hidden_by_duplicate_spans():
+    spans=[('1',0,2,'ab'),('1',3,6,'def'),('2',0,9,'exception')]
+    assert not spans_complete(source(), [evidence(spans), evidence(spans)])
+
+def test_multiple_pages_cover_the_complete_article():
+    assert spans_complete(source(), [evidence([('1',0,3,'abc')]), evidence([('1',3,6,'def'),('2',0,9,'exception')])])
+
+def test_packets_keep_exact_evidence_across_page_boundary():
+    es=[evidence([('1',0,6,'abcdef')],str(i)) for i in range(5)]
+    packets=evidence_packets('q',es,limit=700)
+    assert len(packets)>1
+    flat=[e for p in packets for e in p['evidence']]
+    assert [e['evidence_id'] for e in flat]==[e['evidence_id'] for e in es]
+    assert all(e['text']=='abcdef' and e['text_hash']==text_hash(e['text']) and 'spans' not in e for e in flat)
+    assert all(p['delivery_status']=='PREPARED_NOT_SENT' for p in packets)
+
+def test_single_oversize_evidence_fails_without_truncation():
+    with pytest.raises(ContractError):
+        evidence_packets('q',[evidence([('1',0,1000,'x'*1000)])],limit=700)
+
+def test_queries_use_only_original_question_strings():
+    q='질문은?\n(업무 문맥: 맥락)'
+    assert query_variants(q)==[q,'맥락','질문은?']
+
+def test_existing_session_acquires_sources_without_model_or_adoption(tmp_path,generation):
+    with session(tmp_path,generation,question='모의승인규정 제1조의 승인 대상은?') as s:
+        result=s.prepare_source_recall()
+        assert result['read_complete']
+        assert result['read_complete']==result['prepared_complete']
+        assert all(e['document_id']=='d' for p in result['packets'] for e in p['evidence'])
+        assert not s.gateway.transport.calls
+        assert not s.work.heads('source_selection',current=True)
+        assert s.work.db.execute('SELECT count(*) FROM presentation').fetchone()[0]==0
+        before=s.work.budget()
+        assert s.prepare_source_recall() is result
+        assert s.work.budget()==before
+
+
+def test_query_plan_rejects_catalogue_escape_and_duplicate_case():
+    from semantic_runtime.legal_agent.source_query_planning import validate
+    cases=[{'case_id':'a'},{'case_id':'b'}]
+    good={'plans':[{'case_id':c['case_id'],'law_names':['모의법'],'queries':['승인 대상']} for c in cases]}
+    assert set(validate(good,cases,['모의법']))=={'a','b'}
+    good['plans'][1]['case_id']='a'
+    with pytest.raises(Exception): validate(good,cases,['모의법'])
+    good['plans'][1]['case_id']='b';good['plans'][1]['law_names']=['없는법']
+    with pytest.raises(Exception): validate(good,cases,['모의법'])
+
+def test_packets_reject_corrupt_text_hash():
+    e=evidence([('1',0,6,'abcdef')]);e['text_hash']='corrupt'
+    with pytest.raises(ContractError): evidence_packets('q',[e])
+
+
+def test_focused_queries_keep_quantified_subject_and_remove_catalogue_name():
+    from semantic_runtime.legal_agent.source_recall import focused_queries
+    plan={'law_names':['모의회사법'],'queries':['모의회사법 이사의 수']}
+    queries=focused_queries('상장회사는 이사를 3명 이상 두어야 하는가?',plan)
+    assert '이사 3명 이상' in queries
+    assert '이사의 수' in queries
+    assert len(queries)<=13
+
+def test_unresolved_coordinate_candidates_stay_within_kind_and_scope():
+    from types import SimpleNamespace
+    from lawrag.core.legal_coordinate import LegalCoordinate
+    from semantic_runtime.legal_agent.source_recall import unresolved_coordinate_candidates
+    matcher=SimpleNamespace(documents={'a':'모의법 시행규칙','b':'다른법 시행규칙','c':'모의법 시행령'},
+        stored_coordinates={(d,'u'):LegalCoordinate('조',14) for d in ['a','b','c']},
+        _unit_sources=lambda d,u:[d+':14'])
+    assert unresolved_coordinate_candidates('법 시행규칙 제14조제1항을 준용한다','제14조제1항',matcher,{'a','c'})==['a:14']
+    assert unresolved_coordinate_candidates('제14조를 준용한다','제14조',matcher,{'a','c'})==[]
