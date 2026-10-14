@@ -2,7 +2,7 @@
 from ..contracts import digest
 from .errors import ContractError
 
-REVISION = 'judgment-view-20261006-r1'
+REVISION = 'judgment-view-20261007-completion-r1'
 STAGES = ('INTENT', 'PLAN', 'RECALL', 'READ', 'SELECT', 'ASSESS', 'COMPOSE')
 LABELS = ('질문 이해', '검색 계획', '자료 검색', '원문 확인', '근거 선택', '적용 판단', '답변 작성')
 
@@ -96,11 +96,15 @@ def build(parts, case, *, state, run_id, allowed_documents, executed=()):
                 row['decisions'] += [laws[key]['name']+' · '+str(choice['reason']) for key,choice in law_reasons.items()]
                 row['limitations']=payload.get('completion_limitations',[])
                 row['completion_policy']=payload.get('completion_policy')
+                if payload.get('completion_contract'):
+                    row['completion_contract']=payload['completion_contract']
+                    row['stop_reason']=payload.get('stop_reason')
                 if payload.get('control_contract'):
                     row['investigation_chain']=payload['investigation_chain']
                     row['return_points']=payload['return_points']
                     row['inventory']=payload['saved_inventory']
                     row['source_inventory']=payload['evidence_inventory']
+                    # Rejected actions and recovery causes stay in the request journal.
                 row['actions'] += [str(d['decision']['next_action'])+' · '+str(d['decision']['reason'])
                                    for d in payload.get('decisions',[]) if 'next_action' in d.get('decision',{})]
         elif stage in ('ASSESS', 'COMPOSE'):
@@ -111,8 +115,15 @@ def build(parts, case, *, state, run_id, allowed_documents, executed=()):
                 if sid not in sources:
                     continue
                 row['data'].append({**sources[sid], 'action': '판단 근거 인용',
-                                    'judgment': claim['text'], 'quote': claim['quote']})
+                                    'judgment': claim['text'], 'quote': claim['quote'],
+                                    **({'claim_id':claim['claim_id'],'rule':claim.get('rule')} if 'claim_id' in claim else {})})
             row['limitations'] = payload.get('limitations', [])
+            if payload.get('completion_contract'):
+                row['completion_contract']=payload['completion_contract']
+                row['limitation_items']=payload['limitation_items']
+                if stage=='COMPOSE':
+                    row['processing']='고정 처리'
+                    row['actions']=['확인된 판단 문장·제한 사항을 선택한 형식으로 배치']
             if stage=='ASSESS' and 'issue_assessments' in payload:
                 row.update(issue_assessments=payload['issue_assessments'],gaps=payload['gaps'],answer_coverage=payload['answer_coverage'])
         rationale = reason_text(payload.get('reason'))

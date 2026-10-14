@@ -1,0 +1,41 @@
+CM R12 — 본문 이름 연결 추가, 이전 CM R11 대신 실행
+
+정식명 뒤의 본문 접미어를 추가로 인식합니다. 예: 중소기업기본법 본문.xml.
+공백/폴더/별칭/전문/조문 처리는 유지하고 시행령/시행규칙/개정문을 합치지 않습니다.
+없는 문서, 중복 판본/조문, 권한과 source/nav/fulltext 해시 차이는 계속 중단합니다.
+사진의 오류가 실제 문서 누락인 경우 이 이름 수정만으로 해결되지는 않습니다.
+
+ZIP을 기존 ~/DEV/TRANSFER에 올린 다음 아래 세 줄을 실행합니다.
+python3 -m zipfile -e ~/DEV/TRANSFER/GENOS_CM_ONECLICK_20261007_R12.zip ~/DEV/TRANSFER
+(cd ~/DEV/TRANSFER && sha256sum -c GENOS_CM_ONECLICK_20261007_R12_SHA256SUMS.txt)
+bash ~/DEV/TRANSFER/GENOS_CM_ONECLICK_20261007_R12_RUN.txt
+
+별도 첨부 RUN TXT를 TRANSFER에 올렸다면 마지막 bash 한 줄로 실행할 수도 있습니다.
+R11이 코드 적용 후 package-check에서 실패한 상태에 이어 적용합니다.
+검증된 R8/R10/선행 코드 상태도 지원합니다. 조사 한도 코드/설정은 보존하고
+R11에 남긴 백업과 원래 조사 한도 부모 inventory까지 대조합니다.
+알 수 없는 코드 수정이나 선택 generation 변경은 덮어쓰지 않습니다.
+원문 재구축, RAW 이름 변경, 조사 한도 재적용, 새 환경변수/사용자/팀 입력은 없습니다.
+
+원문 51건/98근거 연결 확인 → commit → 같은 checkout/generation gate →
+공통 등록/검증 → 기존 origin push를 수행합니다. EXIT=0과
+READY_FOR_REVISION_DEPLOYMENT이면 출력한 COMMIT으로 새 코드서빙 리비전을
+배포하고 워크플로우 테스트 화면에서 실제 질문을 확인합니다.
+코드 적용/등록/Git push/리비전/워크플로우 성공은 각각 별도 상태입니다.
+
+실행 상태/문서 연결/등록 영수증:
+~/DEV/TRANSFER/cm-oneclick-r12/STATUS.json
+~/DEV/TRANSFER/cm-oneclick-r12/DATA_CHECKED.json
+~/DEV/TRANSFER/cm-oneclick-r12/CM51_REGISTERED.json
+전체 실행 로그/종료 상태: 같은 폴더 logs/<실행>.log 및 .EXIT_STATUS.json
+단계 실패 상세: 같은 폴더 package-check.log / package-import.log / package-verify.log
+코드 백업: 같은 폴더 code-backup/receipt.json
+등록 전 DB 백업: 같은 폴더 CASE_STATE_BEFORE.sqlite.gz
+R8/R10/R11 실패 기록과 기존 조사 한도 백업, 원문 generation, 기존 DB를 보존합니다.
+
+코드 원복: code-backup/receipt.json의 before/after SHA를 대조해 저장된 파일을
+같은 DEV의 원래 위치에 복구하고 별도 commit/gate/push 후 이전 검증 리비전으로
+복귀합니다. 현재 파일이 after SHA와 다르면 후속 변경을 보존하고 중단합니다.
+등록 원복: 같은 runtime에서 package-retire --common --store-version 4 --source
+CM51_REGISTERED.json으로 해당 import만 retire합니다. 원문 generation은 바꾸지 않습니다.
+로컬 계약/모의 인계 검증과 실제 GENOS 적용/배포/질문 성공은 구분합니다.

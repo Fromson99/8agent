@@ -227,6 +227,9 @@ def prepare(a, run):
     print('NFS_MOUNT_ENTRY=' + json.dumps(mount_entry), flush=True)
     a.phase = 'select_data_paths'
     generation, runtime, state = choose_paths(a, probe)
+    list_team = getattr(a, 'list_team_id', None)
+    if list_team and not re.fullmatch(r'[A-Za-z0-9_-]+_team', list_team):
+        raise ValueError('list-team-id must be an exact team folder name, for example risk_team')
     print('SELECTED_DATA_PATHS=' + json.dumps({'generation': str(generation), 'runtime': str(runtime),
           'state': str(state) if state else None}), flush=True)
     identifier = uuid.uuid4().hex
@@ -281,7 +284,10 @@ def prepare(a, run):
            'generation_manifest_sha256': probe.sha(generation / 'manifest.json'),
            'runtime': str(runtime), 'state': str(state) if state else None,
            'memory_database_required': db.exists(), 'receipt_path': str(shared / 'DEPLOYMENT.json'),
-           'code_paths': sorted(code_paths), 'nfs_base': str(a.nfs_base)}
+           'code_paths': sorted(code_paths), 'nfs_base': str(a.nfs_base), 'list_team_id': list_team}
+    if list_team:
+        # Validate this selection before committing or publishing a workflow.
+        probe.data_listing(generation, runtime, cfg, limit=1)
     staged = set(filter(None, git(root, 'diff', '--cached', '--name-only', '-z', raw=True).decode().split('\0')))
     if staged - set(code_paths):
         raise ValueError('unrelated staged files present; not committed by this script')
@@ -330,7 +336,7 @@ def prepare(a, run):
     elif git(root, 'diff', 'HEAD', '--name-only', '--', *code_paths):
         raise ValueError('committed code check failed')
     # Final diagnostic must execute the committed checkout module, as deployment does.
-    report = load_probe(root).probe(code_root=root, stage='code-space', nfs_base=a.nfs_base)
+    report = load_probe(root).probe(code_root=root, stage='code-space', nfs_base=a.nfs_base, include_listing=True)
     atomic(run / 'CODESPACE_READ_REPORT.json', encoded(report))
     if not report['ok']:
         raise ValueError('codespace NFS probe failed; inspect CODESPACE_READ_REPORT.json')
@@ -338,7 +344,8 @@ def prepare(a, run):
     ast.parse(workflow, feature_version=(3, 10))
     atomic(run / 'WORKFLOW_PASTE_ALL.txt', workflow.encode())
     atomic(run / 'SERVING_ENV_PATHS.txt', ('GENOS_GENERATION=' + str(generation) + '\nGENOS_RUNTIME_DIR=' + str(runtime)
-           + '\nGENOS_STATE_DIR=' + (str(state) if state else '') + '\nGENOS_AUTO_WARMUP=0\nAD_WORKER_ENABLED=0\n').encode())
+           + '\nGENOS_STATE_DIR=' + (str(state) if state else '') + '\nGENOS_AUTO_WARMUP=0\nAD_WORKER_ENABLED=0\n'
+           + 'GENOS_NFS_LIST_TEAM_ID=' + (list_team or '') + '\n').encode())
     return {'status': 'PREPARED_AND_COMMITTED', 'probe_id': identifier, 'commit': commit,
             'code_zip_sha256': load_sha(archive), 'code_manifest_sha256': digest(encoded(effective_manifest)),
             'effective_code_zip': str(archive), 'receipt_path': str(shared / 'DEPLOYMENT.json'),
@@ -381,6 +388,7 @@ def main(argv=None):
     prepare_parser = commands.add_parser('prepare')
     prepare_parser.add_argument('--generation', type=Path)
     prepare_parser.add_argument('--runtime', type=Path)
+    prepare_parser.add_argument('--list-team-id', help='optional exact team folder name for document metadata listing')
     state_options = prepare_parser.add_mutually_exclusive_group()
     state_options.add_argument('--state', type=Path)
     state_options.add_argument('--state-unset', action='store_true', help='confirmed field has no separate GENOS_STATE_DIR')

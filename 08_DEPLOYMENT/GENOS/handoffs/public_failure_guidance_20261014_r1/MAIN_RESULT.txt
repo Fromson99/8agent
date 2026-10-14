@@ -1,0 +1,38 @@
+2026-10-14 예외 안내 통합 — 로컬 MAIN61
+
+사용자 요청: 다른 예외에도 일관된 법률 검토 안내, 전체 MAIN 반영, 삼성메일 GENOS 인계.
+선택 릴리스: public-failure-guidance-20261014-r1 / pointer generation61
+부모: assessment-gap-action-20261013-r1 / generation60
+승격: 표준 prepare 및 apply --confirm-main. MAIN_ACTIVATION과 ACTIVE_RELEASE의 영수증 보존.
+코드 변경: app.py, chat_adapter.py, GENOS stream_app.py, workflow/genos_rag_chat.py.
+301개 서빙 파일을 검증 후보/작업 코드/선택 릴리스에 결속; 기존 모델·프로필·검색·원문 세대 유지.
+
+사용자 표시
+공통: 현재 충분한 법률 검토를 하지 못했습니다.
+검토 미완료: 검토할 법률 쟁점이나 상황을 조금 더 구체적으로 질문해 주세요.
+서비스/통신: 잠시 후 다시 요청해 주세요. (503), (timeout), (502), (429) 등.
+401/403 권한, 409 처리 중/상태 충돌, 413 입력 분량, limit 처리 한도는 해당 안내.
+그 외 예외는 (처리 오류). 원문 오류·추적 정보는 내부 진단에 보존.
+실패 HTTP 상태/answer_status/요청 ID와 스트림 종료를 유지; 실패를 성공으로 저장하지 않음.
+사전 점검 실패 시 추가 RAG 호출 없음; 중복 활성 요청409는 실행하지 않음.
+
+확인
+ADR0775 사전 고정 합성 프로토콜 2400/2400, 관련 계약298/298.
+실제 새 WSL service.service HEALTH200, RAG_SEARCH200, 503/timeout/limit 주입 검사 통과.
+선택 모듈 public-display-v4 및301파일 hash, 모델·프로필·데이터·검색 지문은 artifacts/main-service-smoke.json.
+신규 모델 호출0. 법률 답변 품질 또는 실제 장애 복구 성능을 측정한 실험이 아님.
+ADR validate --final 통과. 전역 graph는 기존8오류 지속, 이번 신규노드/간선으로 추가된 오류0.
+
+남은 범위
+이 변경은 실패 경로의 최종 안내/상태 보존이다. 503/timeout의 기저 원인 자체를 해결한 것으로 보고하지 않는다.
+프로세스 종료·플랫폼 프록시의 응답 차단·단절로 코드가 실행될 수 없는 경우에는 해당 플랫폼 처리가 필요하다.
+기존5계약 실패와 구 semantic 엔진6종의 stale pin은 선행 상태에서 재현했고 이번에 수정하지 않았다.
+전역 에이전트 복구 정책의 모든 항목이 구현된 것은 아니다.
+GENOS 반입/내부 모델/새 리비전/워크플로우 화면 검증은 현장 실행 전 미확인이다.
+Git main 병합과 제품 MAIN 활성화는 별도이며 이번은 제품 로컬 MAIN 활성화다.
+
+원복
+활성 MAIN이 이 generation61인지 확인한 뒤 WSL에서 다음으로 직전 generation60을 선택한다.
+.venv/bin/python 06_TOOLS/run_tool.py rag_main_promotion.py rollback --confirm-main
+현재 상태를 확인한 뒤 이전 manifest와 qualification을 사용하며 포인터 파일을 수동 덮어쓰지 않는다.
+GENOS는 별도 인계 RUN.txt undo와 이전 검증 commit/revision으로 복원한다.

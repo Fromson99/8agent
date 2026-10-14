@@ -12,8 +12,20 @@ import sqlite3
 import time
 from itertools import islice
 from .fulltext import _search_forms, expression, sha, tokenizer_version, TAGS
+from . import query_latency as latency
+from .runtime_cache import CACHE
 
 SCHEMA = 'semantic-unit-fulltext-v1'
+MATCH_CACHE_ROWS = 50000
+
+
+class _SearchConnection(sqlite3.Connection):
+    """Request-owned SQLite handle and fast references to the process cache."""
+    def close(self):
+        self._match_projection = None
+        self._match_binding = None
+        self._cache_remaining = None
+        super().close()
 
 
 def build(store, navigation, output, *, document_ids=None, workers=None):
@@ -142,7 +154,78 @@ class UnitFulltextIndex:
 
     def connect(self):
         self.check_unchanged()
-        return sqlite3.connect('file:'+str(self.path/'units.sqlite')+'?mode=ro',uri=True,check_same_thread=False)
+        with latency.span('unit_fts.connect'):
+            from .resident_data import POOL
+            db = POOL.connect(self.path/'units.sqlite', expected=self.manifest['index_sha256'],
+                              factory=_SearchConnection)
+        return db
+
+    def cache_namespace(self):
+        self.check_unchanged()
+        return (str(self.path.resolve()), self._signature, self.manifest['generation_id'],
+                self.manifest['source_store_sha256'], self.manifest['navigation_index_sha256'],
+                self.manifest['index_sha256'], SCHEMA)
+
+    def _projection(self, db, terms, allowed):
+        """Reuse exact rank metadata, or fall back to complete SQL on overflow.
+
+        No truncation is exposed to callers. Main DB bytes and schema stay immutable.
+        Query order/duplicates are part of the cache key even though cursor identity
+        preserves the older normalized-term contract.
+        """
+        if not isinstance(db, _SearchConnection):
+            return None
+        scope = self.source_ids if allowed is None else frozenset(allowed)
+        binding = ('matches', self.cache_namespace(), tuple(terms), scope, MATCH_CACHE_ROWS)
+        hit = getattr(db, '_match_binding', None) == binding
+        with latency.span('unit_fts.projection', cache_hit=hit, allowed_count=len(scope),
+                          term_count=len(terms), cache_scope='process') as metrics:
+            if hit:
+                metrics['cache_overflow'] = db._match_projection is None
+                return db._match_projection
+            db._match_binding = None; db._match_projection = None
+            def build():
+                matches = latency.rows(db,
+                    'SELECT u.key,u.document_id,u.source_id,unit_fts.rank FROM unit_fts '
+                    'JOIN unit u ON u.key=unit_fts.key WHERE unit_fts MATCH ? '
+                    'AND u.source_id IN (SELECT value FROM json_each(?)) LIMIT ?',
+                    [expression(terms), json.dumps(sorted(scope)), MATCH_CACHE_ROWS+1], 'project_matches')
+                if len(matches) > MATCH_CACHE_ROWS:
+                    self.check_unchanged()
+                    return None  # Share the overflow marker; fallback SQL remains complete.
+                sources, documents = {}, {}
+                for key, did, sid, score in matches:
+                    sources.setdefault(sid, []).append((score, key))
+                    groups = documents.setdefault(did, {})
+                    best, count = groups.get(sid, (score, 0))
+                    groups[sid] = (min(best, score), count+1)
+                for hits in sources.values(): hits.sort()
+                laws = []; articles = {}
+                for did, groups in documents.items():
+                    ranked = sorted((best, sid, count) for sid, (best, count) in groups.items())
+                    articles[did] = [{'source_id': sid, 'unit_count': count} for _, sid, count in ranked]
+                    laws.append((ranked[0][0], did, len(groups), sum(v[1] for v in groups.values())))
+                projection = {'laws': [{'document_id': did, 'article_count': count, 'unit_count': units}
+                                       for _, did, count, units in sorted(laws)],
+                              'articles': articles, 'hits': sources}
+                self.check_unchanged()
+                return projection
+            projection, stats = CACHE.get_or_build(binding, build, kind='matches',
+                                                    remaining=getattr(db, '_cache_remaining', None))
+            self.check_unchanged()
+            metrics.update(stats, cache_overflow=projection is None,
+                           match_count=MATCH_CACHE_ROWS+1 if projection is None else
+                           sum(len(hits) for hits in projection['hits'].values()))
+            db._match_projection = projection; db._match_binding = binding
+            return projection
+
+    @staticmethod
+    def _cached_page(items, binding, offset, limit):
+        from copy import deepcopy
+        selected = deepcopy(items[offset:offset+limit])
+        total = len(items)
+        return {'items': selected, 'total': total, 'next_cursor':
+                {'binding': binding, 'offset': offset+len(selected)} if offset+len(selected)<total else None}
 
     def rank_units(self, db, terms, allowed=None, limit=None):
         self.check_unchanged()
@@ -173,7 +256,8 @@ class UnitFulltextIndex:
         roots=list(dict.fromkeys(h['source_id'] for h in self.rank_units(db,terms,allowed)))
         return roots if limit is None else roots[:limit]
 
-    def _page_query(self, terms, allowed, cursor, limit, kind, identity=None):
+    @latency.timed('unit_fts.bind')
+    def _page_query(self, terms, allowed, cursor, limit, kind, identity=None, unit_keys=None):
         """Bind pagination to the immutable index, query, ACL and group identity."""
         from .contracts import digest
         self.check_unchanged()
@@ -183,7 +267,8 @@ class UnitFulltextIndex:
         if scope-self.source_ids:
             raise ValueError('unit FTS does not cover requested article scope')
         binding = digest({'index': self.manifest['index_sha256'], 'order': 'best-own-block-match-v1', 'terms': sorted(set(terms)),
-                          'scope': sorted(scope), 'kind': kind, 'identity': identity})
+                          'scope': sorted(scope), 'kind': kind, 'identity': identity,
+                          **({'unit_keys':sorted(set(unit_keys))} if unit_keys is not None else {})})
         offset = 0
         if cursor is not None:
             if (set(cursor) != {'binding', 'offset'} or cursor['binding'] != binding
@@ -196,48 +281,79 @@ class UnitFulltextIndex:
             where += ' AND u.document_id=?'; params.append(identity)
         elif kind == 'hits':
             where += ' AND u.source_id=?'; params.append(identity)
-        return where, params, binding, offset, bool(terms and scope)
+        if unit_keys is not None:
+            where += ' AND u.key IN (SELECT value FROM json_each(?))'; params.append(json.dumps(sorted(set(unit_keys))))
+        return where, params, binding, offset, bool(terms and scope and (unit_keys is None or unit_keys))
 
-    def law_groups_page(self, db, terms, allowed=None, *, cursor=None, limit=12):
+    def law_groups_page(self, db, terms, allowed=None, *, cursor=None, limit=12, unit_keys=None):
         """All matching laws remain addressable before any top-k source selection."""
-        where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'laws')
+        where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'laws', unit_keys=unit_keys)
         if not nonempty:
             return {'items': [], 'total': 0, 'next_cursor': None}
+        projection = self._projection(db, terms, allowed) if unit_keys is None else None
+        if projection is not None:
+            return self._cached_page(projection['laws'], binding, offset, limit)
         join = ' FROM unit_fts JOIN unit u ON u.key=unit_fts.key WHERE '+where
-        total = db.execute('SELECT COUNT(DISTINCT u.document_id)'+join, params).fetchone()[0]
+        total = latency.rows(db, 'SELECT COUNT(DISTINCT u.document_id)'+join, params, 'count_laws')[0][0]
         # Materialize FTS rank before aggregation; bm25 cannot run in a GROUP BY
         # context. Keep every candidate and use the score only for menu ordering.
         matches = 'WITH matches AS MATERIALIZED (SELECT u.document_id,u.source_id,unit_fts.rank AS match_score'+join+') '
-        rows = db.execute(matches+'SELECT document_id,COUNT(DISTINCT source_id),COUNT(*) FROM matches'+
-            ' GROUP BY document_id ORDER BY MIN(match_score),document_id LIMIT ? OFFSET ?', [*params, limit, offset])
+        rows = latency.rows(db, matches+'SELECT document_id,COUNT(DISTINCT source_id),COUNT(*) FROM matches'+
+            ' GROUP BY document_id ORDER BY MIN(match_score),document_id LIMIT ? OFFSET ?', [*params, limit, offset], 'rank_laws')
         items = [{'document_id': did, 'article_count': articles, 'unit_count': units}
                  for did, articles, units in rows]
         return {'items': items, 'total': total, 'next_cursor':
                 {'binding': binding, 'offset': offset+len(items)} if offset+len(items)<total else None}
 
-    def article_groups_page(self, db, terms, document_id, allowed=None, *, cursor=None, limit=8):
-        where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'articles', document_id)
+    def article_groups_page(self, db, terms, document_id, allowed=None, *, cursor=None, limit=8, unit_keys=None):
+        where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'articles', document_id, unit_keys=unit_keys)
         if not nonempty:
             return {'items': [], 'total': 0, 'next_cursor': None}
+        projection = self._projection(db, terms, allowed) if unit_keys is None else None
+        if projection is not None:
+            return self._cached_page(projection['articles'].get(document_id, []), binding, offset, limit)
         join = ' FROM unit_fts JOIN unit u ON u.key=unit_fts.key WHERE '+where
-        total = db.execute('SELECT COUNT(DISTINCT u.source_id)'+join, params).fetchone()[0]
+        total = latency.rows(db, 'SELECT COUNT(DISTINCT u.source_id)'+join, params, 'count_articles')[0][0]
         matches = 'WITH matches AS MATERIALIZED (SELECT u.source_id,unit_fts.rank AS match_score'+join+') '
-        rows = db.execute(matches+'SELECT source_id,COUNT(*) FROM matches'+
-            ' GROUP BY source_id ORDER BY MIN(match_score),source_id LIMIT ? OFFSET ?', [*params, limit, offset])
+        rows = latency.rows(db, matches+'SELECT source_id,COUNT(*) FROM matches'+
+            ' GROUP BY source_id ORDER BY MIN(match_score),source_id LIMIT ? OFFSET ?', [*params, limit, offset], 'rank_articles')
         items = [{'source_id': sid, 'unit_count': units} for sid, units in rows]
         return {'items': items, 'total': total, 'next_cursor':
                 {'binding': binding, 'offset': offset+len(items)} if offset+len(items)<total else None}
 
-    def hit_page(self, db, terms, source_id, allowed=None, *, cursor=None, limit=16):
+    def hit_page(self, db, terms, source_id, allowed=None, *, cursor=None, limit=16, unit_keys=None):
         """Retrieve one source's own-block hits; lexical score stays server-side."""
-        where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'hits', source_id)
+        where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'hits', source_id, unit_keys=unit_keys)
         if not nonempty:
             return {'items': [], 'total': 0, 'next_cursor': None}
+        projection = self._projection(db, terms, allowed) if unit_keys is None else None
+        if projection is not None:
+            hits = projection['hits'].get(source_id, [])
+            keys = [key for _, key in hits[offset:offset+limit]]
+            def load_bodies():
+                rows = latency.rows(db, 'SELECT key,json FROM unit WHERE key IN (SELECT value FROM json_each(?))',
+                                    [json.dumps(keys)], 'read_hit_bodies')
+                if {key for key, _ in rows} != set(keys):
+                    raise ValueError('unit FTS projection body missing')
+                self.check_unchanged()
+                return tuple((key, raw) for key, raw in rows)
+            rows, _ = CACHE.get_or_build(('preview', self.cache_namespace(), tuple(sorted(keys))),
+                                        load_bodies, kind='preview',
+                                        remaining=getattr(db, '_cache_remaining', None)) if keys else ((), {})
+            self.check_unchanged()
+            with latency.span('unit_fts.decode', fetched_count=len(rows)):
+                bodies = {key: json.loads(raw) for key, raw in rows}
+                if set(bodies) != set(keys): raise ValueError('unit FTS projection body missing')
+                items = [{**bodies[key], 'query_terms': list(terms)} for key in keys]
+            total = len(hits)
+            return {'items': items, 'total': total, 'next_cursor':
+                    {'binding': binding, 'offset': offset+len(items)} if offset+len(items)<total else None}
         join = ' FROM unit_fts JOIN unit u ON u.key=unit_fts.key WHERE '+where
-        total = db.execute('SELECT COUNT(*)'+join, params).fetchone()[0]
-        rows = db.execute('SELECT u.json'+join+' ORDER BY unit_fts.rank,u.key LIMIT ? OFFSET ?',
-                          [*params, limit, offset])
-        items = [{**json.loads(raw), 'query_terms': list(terms)} for (raw,) in rows]
+        total = latency.rows(db, 'SELECT COUNT(*)'+join, params, 'count_hits')[0][0]
+        rows = latency.rows(db, 'SELECT u.json'+join+' ORDER BY unit_fts.rank,u.key LIMIT ? OFFSET ?',
+                          [*params, limit, offset], 'rank_hits')
+        with latency.span('unit_fts.decode', fetched_count=len(rows)):
+            items = [{**json.loads(raw), 'query_terms': list(terms)} for (raw,) in rows]
         return {'items': items, 'total': total, 'next_cursor':
                 {'binding': binding, 'offset': offset+len(items)} if offset+len(items)<total else None}
 

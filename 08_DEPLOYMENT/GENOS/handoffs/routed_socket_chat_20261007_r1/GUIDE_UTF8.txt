@@ -1,0 +1,87 @@
+GENOS 직접 통합 채팅 + Socket.IO 코드서빙 R1
+
+이 ZIP은 선택된 로컬 MAIN generation 44 코드에서 분기한 작업 후보다.
+기존 서비스와 이전 반입본을 보존한다. 새 코드서빙을 별도 ID/리비전으로 생성한다.
+현장 적용·배포·채팅 화면 결과는 아직 확인되지 않았다.
+
+ZIP과 APPLY TXT를 같은 ~/DEV/TRANSFER 폴더에 놓는다.
+기존 Git checkout ~/DEV에 적용할 때 정확한 데이터 generation 경로를 확인한다.
+기록상 기본 경로:
+ /nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+다른 generation을 실제로 선택했다면 각 명령 끝에 그 절대경로를 지정한다.
+
+ bash ~/DEV/TRANSFER/GENOS_ROUTED_SOCKET_CHAT_20261007_R1_APPLY.txt check
+ bash ~/DEV/TRANSFER/GENOS_ROUTED_SOCKET_CHAT_20261007_R1_APPLY.txt apply
+
+check는 기존 코드/데이터를 바꾸지 않는다. apply는 백업 후 코드만 교체한다.
+TXT는 첫 단계부터 stdout/stderr/run.log/events.jsonl과 ROUTED_CHAT_EXIT 상태를 남긴다.
+원문·DB·runtime·CURRENT·.env·.git은 보존한다. 미확인 현장 수정은 차단한다.
+apply 뒤 새로운 Socket.IO 의존성을 설치한다. 현장 Python은 python3이다.
+
+ cd ~/DEV
+ python3 -m pip install -r 08_DEPLOYMENT/GENOS/requirements-socketio.txt
+ bash ~/DEV/TRANSFER/GENOS_ROUTED_SOCKET_CHAT_20261007_R1_APPLY.txt verify
+
+verify는 정확한 선택 generation으로 loader, E2E, assets를 확인한다.
+새 Git 저장소의 main을 통합 코드용으로 따로 관리하려면, 우선 Git 서버에
+비어 있는 새 저장소를 생성하고 그 SSH/HTTPS URL을 확인한다. URL은 임의로
+추측하지 않는다. 기존 origin과 infocz 원격은 변경하지 않는다.
+새 저장소의 원격 별칭은 genos-integrated, 대상 브랜치는 기본 main이다.
+
+ export GENOS_NEW_REMOTE_URL='git@<Git서버>:<조직>/<새-저장소>.git'
+ export GENOS_GENERATION='/실제로/선택한/절대/generation/경로'
+ bash ~/DEV/TRANSFER/GENOS_ROUTED_SOCKET_CHAT_20261007_R1_PUSH_NEW_REMOTE.txt
+
+두 export 값은 실제 URL과 선택 세대로 바꿔야 한다. 위 TXT는 먼저 verify하고
+별칭의 fetch/push URL이 같은 저장소인지 확인한 뒤, 반입 파일만 커밋하고
+ZIP·generation gate를 통과한 HEAD를 새 원격의 main에 force 없이 push한다.
+이미 생성된 저장소의 main과 이력이 충돌하면 push가 실패하며 덮어쓰지 않는다.
+출력의 GIT_PUSHED commit·remote·branch와 저장소의 실제 HEAD를 대조한다.
+직접 실행하려면 `GENOS_PUSH_REMOTE=genos-integrated GENOS_PUSH_BRANCH=main`
+환경변수를 준 상태에서 APPLY TXT의 push 모드를 호출할 수 있다.
+
+push와 코드서빙 리비전 배포·채팅앱 바인딩은 별개다.
+기존 코드서빙의 리비전/연결은 유지하고, 새 코드서빙의 Build/Run을 설정한다.
+
+ Build: python3 -m pip install -r 08_DEPLOYMENT/GENOS/requirements-socketio.txt
+ Run:   python3 main_router.py
+
+리비전에서 PORT 환경변수가 없으면 기존 수신 포트를 --port에 명시한다.
+새 코드서빙 환경변수 이름:
+ GENOS_MAIN_MODE=integrated
+ GENOS_SOCKETIO_PATH=socket.io
+ GENOS_CHAT_TRUST_PLATFORM_IDENTITY=1
+ GENOS_CHAT_GATEWAY_TOKEN=(플랫폼에서 /chat으로 전달하는 Bearer 토큰과 일치하는 비밀값)
+ GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6
+
+토큰 원문을 기록하거나 전달하지 않는다. 동일한 데이터 세대·내부 모델·TEAM_ID·
+NFS runtime·AD/기억 설정은 기존 검증된 값을 유지한다. 인증 헤더가 코드서빙에
+전달되지 않으면 Socket.IO 토큰 전송은 비활성이고 JSON 응답만 완료한다.
+socketio_transport.reason=platform_identity_unverified로 진단한다.
+
+새 코드서빙의 컨테이너 서비스에서 워크플로우로 사용, 채팅 경로 /chat,
+socket.io 실시간 스트리밍 사용을 켠다. 기존 코드서빙 설정은 변경하지 않는다.
+main_router의 GENOS_MAIN_MODE=existing은 기존 main.py의 HTTP JSON/SSE를 선택한다.
+이 모드에서 HTTP SSE를 사용할 때는 socket.io 체크를 끈다.
+
+현장 확인은 기존 워크플로우 테스트 화면에서만 수행한다.
+1. {"question":"__verify__"} -> {"code":0,"data":{"text":"verified"}}
+2. GENOS가 제공한 실제 socketIOClientId를 포함한
+   {"API_TYPE":"SOCKET_CHECK"} -> socketio_transport.connected=true
+   path=/socket.io, reason=connected를 확인한다. SID를 임의로 만들지 않는다.
+3. 짧은 일반 질문에서 첫 token이 JSON 완료 전 보이는지, end 뒤 답변이
+   중복·누락되지 않는지 확인한다.
+4. 기존 코드서빙으로 같은 유형의 일반 질문을 보내 기존 경로를 확인한다.
+
+화면 사진에는 Socket.IO 경로와 namespace의 상세 계약이 없다. 기본 /socket.io,
+기본 namespace /를 사용한다. 플랫폼 샘플 코드에 다른 경로가 있으면 그 경로로
+GENOS_SOCKETIO_PATH를 맞춰 새 리비전에서 다시 검증한다. namespace가 다르면
+코드와 테스트를 그 계약에 맞춰 수정해야 한다. SOCKET_CHECK 연결 성공만으로
+화면 렌더링 성공을 보고하지 않는다.
+
+코드 원복은 apply가 출력한 정확한 backup 폴더를 사용한다.
+ bash ~/DEV/TRANSFER/GENOS_ROUTED_SOCKET_CHAT_20261007_R1_APPLY.txt rollback /정확한/backup
+기존 코드서빙의 리비전·채팅앱 연결은 계속 선택 가능하다.
+
+이번 로컬 모의 gate/push는 GENOS 실제 적용·push·배포 증거가 아니다.
+로컬 활성 릴리스 포인터 generation 44는 변경하지 않았다.

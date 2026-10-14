@@ -33,6 +33,7 @@ def transport(monkeypatch, verdict='approve', finish='stop', malformed=False):
     ('hold','stop',False),('missing_rules','stop',False),('source_error','stop',False),
     ('approve','length',False),('approve','stop',True)])
 def test_inconclusive_review_saves_warning_without_approval_or_splits(tmp_path,monkeypatch,verdict,finish,malformed):
+    monkeypatch.setenv('STRUCTURE_RECIPE_REVIEW_MAX_TOKENS','1024')
     seen=transport(monkeypatch,verdict,finish,malformed)
     pdf,blocks=regional_document(tmp_path,3);before=copy.deepcopy(blocks)
     result,review=runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='warning')

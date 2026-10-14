@@ -29,7 +29,8 @@ def assess_schema(base, issues, sources, *, final=False):
         gaps=array(object_schema({'issue_id':{'type':'string','enum':ids},
             'kind':{'type':'string','enum':GAP_KINDS}, 'reason':{'type':'string','minLength':1},
             'material_id':{'anyOf':[{'type':'string','enum':list(sources)},{'type':'null'}]} if sources else {'type':'null'},
-            'suggested_action':{'type':'string','enum':['VIEW_SAVED_SOURCE','READ_SCOPE','FOLLOW_CONNECTION','RETURN_TO','RESEARCH','REQUEST_FACT','CHOOSE_VERSION']}})))
+            'suggested_action':{'type':'string','enum':['VIEW_SAVED_SOURCE','READ_SCOPE','FOLLOW_CONNECTION','RETURN_TO',
+                'RESEARCH','SEARCH_STRUCTURE','OPEN_STRUCTURE','BROWSE_STRUCTURE','REQUEST_FACT','CHOOSE_VERSION']}})))
     out['required'] += ['disposition','issue_assessments','gaps']
     if not final:
         out['properties']['claims']['minItems'] = 0

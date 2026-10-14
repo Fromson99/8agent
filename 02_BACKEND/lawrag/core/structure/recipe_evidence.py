@@ -84,7 +84,7 @@ def compose(data, catalog, call, check, save):
     schema = {'type':'object','additionalProperties':False,'properties':{
         'placements':{'type':'object','additionalProperties':False,'properties':properties,'required':list(catalog)}},'required':['placements']}
     request = copy.deepcopy(data)
-    for attempt in range(3):
+    for attempt in range(2):
         proposed = call('chunk-template' if not attempt else f'chunk-template-repair-{attempt}', COMPOSE, request, schema, True)
         save(f'chunk-template-{attempt}.json', proposed)
         try:
@@ -103,7 +103,7 @@ def compose(data, catalog, call, check, save):
             check(recipe)
             save('compiled-chunk-template.json', recipe)
             return recipe
-        except (ValueError,TypeError,KeyError) as exc:
+        except (ValueError,) as exc:
             request['invalid_template'] = proposed
             request['validation_feedback'] = str(exc)
     raise ValueError('chunk_template_validation_exhausted: '+request['validation_feedback'])

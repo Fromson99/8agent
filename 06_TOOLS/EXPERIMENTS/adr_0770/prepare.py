@@ -1,0 +1,22 @@
+from pathlib import Path
+import json,hashlib,subprocess
+R=Path(__file__).resolve().parents[3];A=R/'04_EXPERIMENTS/ADR/ADR-0770-token-answer-stream';D=A/'artifacts/design';D.mkdir(parents=True,exist_ok=True)
+read=lambda p:json.loads(p.read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+def put(p,v):p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+criteria={'scope':'Transport projection only: emit every received final-answer text delta without waiting for a completed paragraph. Preserve MAIN55 prompts, JSON schema, final answer/claims/sources/limits, retrieval, shortcut and budgets. No real model calls or legal quality regrading.',
+'required':['Each nonempty decoded text delta is sent before the next provider fragment and before paragraph closure','Claim metadata precedes partial text and is validated before its first emission; missing/invalid metadata fails without its text leaking','All Unicode/escape and Markdown fragment boundaries reconstruct the identical accepted final text','Only paragraphs text leaves model JSON; IDs, reasoning, source metadata never become tokens','Native API and existing GENOS R4 workflow forward partial sentence tokens before generator completion','Partial-stream transport/format failure never retries or publishes a successful answer','Same code/JSON schema/prompts outside projection and stream metadata, unchanged MAIN55 data, bounded recall and AD','Qualified code installed and selected using standard MAIN promotion; GENOS exact installer variants tested'],
+'matrix':{'widths':[1,2,7,43],'unicode_modes':[False,True],'texts':['신고할 수 있습니다. 다음 문장을 계속 작성합니다.','**핵심 답변**\n\n조건과 의무를 구분합니다.','**확인 항목**\n\n- 첫째 항목\n- 둘째 항목','| 구분 | 내용 |\n|---|---|\n| 허용 | 선택 가능 😀 |','```txt\n한글 ~ \\" 이스케이프\n```']},
+'failure':'Any required integrity/timing boundary fails: no MAIN promotion or mail. Keep failures and previous MAIN55.',
+'evaluation':'Prospectively fixed complete synthetic transport boundary matrix; deterministic timing/order assertions, not a real LLM latency or legal-quality benchmark','model_calls':0,'rollback':'Previous MAIN55 frozen release and file-scoped working backups; GENOS previous DEV backup'}
+assert not (D/'criteria.json').exists();put(D/'criteria.json',criteria)
+p=R/'01_DATA/ACTIVE/local/ACTIVE_RELEASE.json';a=read(p);assert a['generation']==55;release=read(R/a['manifest_path']);put(D/'baseline.json',{'pointer':a,'pointer_sha256':sha(p),'manifest':release})
+m=read(A/'실험/manifest.json');m.update(in_sample=False,decision_eligible=True);m['lineage']['hypothesis_delta']=criteria['scope'];m['design'].update(hypothesis=criteria['scope'],primary_metric='Immediate token forwarding with byte-identical completed answer and preserved integrity',success_criteria=criteria['required'],failure_criteria=criteria['failure'],criteria_frozen_before_run=True)
+m['dataset'].update(name='Prospective exhaustive synthetic token and metadata boundaries',version='token-stream-boundaries-v1',frozen_source=str((D/'criteria.json').relative_to(R)),sha256=sha(D/'criteria.json'),legal_version_checked=True,reference_version_checked=True)
+m['llm_policy']['llm_calls']=[];m['runs'][0].update(selection_rule='All frozen fragment widths, Unicode modes, Markdown shapes and source/transport failure boundaries, exactly once after freeze',artifact_path=str((A/'artifacts/run-001/result.json').relative_to(R)))
+m['retrieval_accounting'].update(changed=False,not_applicable_reason='Stream projection only; retrieval and accepted original-source answer unchanged');m['retrieval_accounting']['stage_ledger'].update(mode='not_applicable',not_applicable_reason='No retrieval execution, selection or legal evaluation; transport boundary audit')
+for arm in m['design']['arms']:arm.update(changes='MAIN55 paragraph projection' if arm['id']=='baseline' else criteria['scope'],controls='Same model input/schema/prompts and canonical completed text; no external model calls')
+m['design']['code_isolation'].update(mode='candidate_snapshot',reason=None,candidates=[]);put(A/'실험/manifest.json',m)
+cmd=[str(R/'.venv/bin/python'),'06_TOOLS/run_tool.py','adr_candidate.py','snapshot','--adr',str(A),'--candidate-id','token','--experiment-id',m['experiment_id'],'--arm-id','token','--run-id','run-001']
+for n in sorted(release['files']):cmd+=['--source',n]
+subprocess.run(cmd,check=True,stdout=subprocess.DEVNULL)
+print('Criteria frozen; MAIN55 isolated into token candidate')

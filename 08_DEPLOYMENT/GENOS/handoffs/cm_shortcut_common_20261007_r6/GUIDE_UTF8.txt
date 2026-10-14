@@ -1,0 +1,177 @@
+CM51 공통 shortcut·legal_wiki — 최종 R6
+2026-10-07 / GENOS 내부 Python 3.11 / 실제 현장 실행 python3
+
+앞선 R4와 환경변수 안내 R1의 사용자·팀별 등록 설명을 정정합니다.
+CM51은 모든 사용자가 함께 쓰는 공통 카탈로그입니다.
+사용자별 반복 등록, CM_PRINCIPAL_FILE, 등록용 user_id/team_id JSON은 필요 없습니다.
+공통 데이터는 같은 선택 SQLite에 한 번만 등록합니다.
+질문 요청의 실제 사용자·팀 ID는 기존 문서 권한, 대화 이력, 감사 기록에 계속 사용됩니다.
+공통 숏컷은 그 요청에서 볼 수 있는 현재 원문으로만 연결됩니다.
+
+이 안내와 GENOS_CM_SHORTCUT_COMMON_20261007_R6_RUN.txt를 사용합니다.
+이미 사진처럼 R4 check/apply/verify를 마쳤다면 R4를 먼저 원복하지 않습니다.
+최종 R6가 그 설치 상태 위에 필요한 변경을 적용하고 해당 파일을 백업합니다.
+R5는 미발송 인계 검증 실패 이력입니다. 사용하지 않습니다.
+로컬 작업 코드·등록 검증과 GENOS 현장 배포는 별도입니다.
+로컬 MAIN45 활성 포인터는 바꾸지 않았습니다. 현장 새 리비전 배포가 필요합니다.
+
+1. 첨부와 경로 확인
+
+RUN.txt는 압축 해제 없이 bash로 실행하는 전체 실행 파일입니다.
+코드·패치 명세·CM51 데이터가 포함돼 있고 매 실행의 로그와 종료 상태를 남깁니다.
+ZIP은 같은 적용 도구, 해시 명세, 출처 결속, 별도 CM51_SOURCE_PACKAGE.json을 보존합니다.
+본문 원문 SQLite나 개인 대화 DB 전체를 복사하는 ZIP이 아닙니다.
+등록 51건 / 주근거75개 + 연결근거23개 = 98개 / 공개 법령21개입니다.
+기준답변은 검토용 observation이며 승인된 법률 결론으로 사용하지 않습니다.
+
+다운로드한 다섯 첨부를 같은 TRANSFER 폴더에 두고 실행합니다.
+SHA256SUMS.txt 자체를 제외한 ZIP, RUN, 안내, 검증 요약 해시를 확인합니다.
+
+```bash
+cd "$HOME/DEV/TRANSFER"
+sha256sum -c SHA256SUMS.txt
+```
+
+GENOS_DEV_ROOT는 코드 적용·commit·push할 기존 checkout입니다.
+사진의 ~/DEV는 /workspace로 해결됐습니다. 이를 도구가 로그에 기록합니다.
+GENOS_GENERATION은 현재 코드서빙이 선택한 실제 generation입니다.
+사진에서 확인한 경로는 아래와 같습니다. 현장에서 선택을 바꿨으면 실제 선택 경로를 씁니다.
+CM_RUNTIME_DIR는 실제 서비스의 GENOS_RUNTIME_DIR 값입니다.
+GENOS_STATE_DIR가 이미 설정돼 있으면 터미널에도 같은 값으로 설정합니다.
+이 값이 없으면 사례 DB는 runtime 아래 case-memory에 저장됩니다.
+환경변수는 모두 채우는 양식이 아닙니다. 현재 서비스가 선택한 경로를 일치시키는 설정입니다.
+
+```bash
+export GENOS_DEV_ROOT="$HOME/DEV"
+export GENOS_GENERATION="/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation"
+export CM_RUNTIME_DIR="/nfs-root/diamo/8-agent/runtime"
+export CM_RECEIPT_FILE="$GENOS_DEV_ROOT/TRANSFER/cm51-common-r3-import-receipt.json"
+export CM_RUN_FILE="$GENOS_DEV_ROOT/TRANSFER/GENOS_CM_SHORTCUT_COMMON_20261007_R6_RUN.txt"
+```
+
+CM_RUNTIME_DIR의 예시는 기존 NFS runtime 경로입니다. 코드서빙의 실제 GENOS_RUNTIME_DIR와 비교합니다.
+별도 GENOS_STATE_DIR를 사용 중이라면 그 값도 복사합니다. 새 값을 임의로 만들지 않습니다.
+GENOS_PYTHON_DIR는 터미널에 python3가 없거나 잘못 선택될 때만 필요한 보조 설정입니다.
+RUN은 /venv/bin/python3가 있으면 자동으로 그 Python을 선택하고 실제 버전을 기록합니다.
+CM_RUN_FILE, CM_RUNTIME_DIR, CM_RECEIPT_FILE은 터미널 명령용 변수입니다.
+사용자·팀 등록을 위한 환경변수를 코드스페이스나 리비전에 추가하지 않습니다.
+
+2. 코드 check/apply/verify
+
+```bash
+bash "$CM_RUN_FILE" check
+bash "$CM_RUN_FILE" apply
+bash "$CM_RUN_FILE" verify
+```
+
+check는 알려진 설치 manifest와 실제 코드 전체, PIPELINE→엔진→코드 pin을 확인합니다.
+apply는 기존 코드에 공통 등록·조회 변경과 pin을 적용하며 정확한 BACKUP 경로를 출력합니다.
+verify는 실제 서빙 profile의 StageRunner 배선까지 모델 호출 없이 확인합니다.
+재실행하면 ALREADY_APPLIED로 확인하며 백업이나 데이터 중복을 만들지 않습니다.
+기존 R4의27종과 그 선행 core/display27종, 총54종의 해시 고정 상태를 지원합니다.
+새 NFS 진단 패치 등 이후 다른 변경으로 manifest와 파일이 어긋나면 보존하고 중단합니다.
+이 경우 파일을 억지로 덮거나 CODE_MANIFEST를 손으로 고치지 말고 실패 로그를 전달합니다.
+
+3. 현장 원문과 데이터 등록 조건 확인
+
+등록 전에 실제 선택 원문의 문서/조문/본문 해시가 모두 일치하는지 확인합니다.
+질문 사용자·팀 JSON은 받지 않습니다. --common은 실행 파일에 이미 들어 있습니다.
+원문이 없거나 버전이 다르면 중단하고 해당 문서를 준비해야 합니다.
+
+```bash
+bash "$CM_RUN_FILE" data-check --generation "$GENOS_GENERATION" --runtime "$CM_RUNTIME_DIR" --receipt "$CM_RECEIPT_FILE"
+```
+
+checked=true, cases=51, source_entries=98을 확인합니다.
+원문 generation, 기존 store.sqlite와 nav/fulltext를 재구축하거나 바꾸지 않습니다.
+원문이 같은 세대여도 실제 코드서빙의 선택 경로와 등록 경로가 같아야 소비됩니다.
+
+4. 같은 checkout의 commit/gate/push
+
+apply가 출력한 BACKUP의 정확한 값을 아래 CM_R6_BACKUP에 넣습니다.
+예시의 실제_UUID를 그대로 쓰지 않습니다.
+
+```bash
+export CM_R6_BACKUP="$GENOS_DEV_ROOT/TRANSFER/cm-shortcut-common-r6/backup-실제_UUID"
+python3 - "$GENOS_DEV_ROOT" "$CM_R6_BACKUP" <<'CM_COMMON_STAGE'
+import json,subprocess,sys
+from pathlib import Path
+root=Path(sys.argv[1]).resolve(strict=True)
+backup=Path(sys.argv[2]).resolve(strict=True)
+r=json.loads((backup/'receipt.json').read_text())
+if r['root']!=str(root) or r['revision']!='GENOS_CM_SHORTCUT_COMMON_20261007_R6' or r['state']!='VERIFIED':
+    raise SystemExit('Verified R6 backup for this checkout required')
+subprocess.run(['git','-C',str(root),'add','--',*[v['path'] for v in r['files']]],check=True)
+CM_COMMON_STAGE
+git -C "$GENOS_DEV_ROOT" diff --cached --stat
+git -C "$GENOS_DEV_ROOT" diff --cached --check
+```
+
+stage 목록을 확인합니다. 다른 작업이 이미 stage돼 있으면 그 작업과 섞지 않습니다.
+코드 변경이 stage돼 있을 때 commit합니다. 이미 같은 R6 코드를 commit했다면 다시 commit하지 않습니다.
+
+```bash
+git -C "$GENOS_DEV_ROOT" commit -m "Register CM51 as shared shortcut catalogue"
+bash "$CM_RUN_FILE" gate "$CM_R6_BACKUP" --generation "$GENOS_GENERATION"
+git -C "$GENOS_DEV_ROOT" push
+git -C "$GENOS_DEV_ROOT" rev-parse HEAD
+```
+
+gate는 실제 적용 파일로 만든 APPLIED_CODE.zip, 같은 committed checkout, 실제 generation을 결속합니다.
+RELEASE_GATE PASS와 commit SHA를 기록합니다. git push만으로 리비전이 바뀌지 않습니다.
+코드서빙 화면에서 이 commit으로 새 리비전을 만들고 배포·트래픽 연결을 합니다.
+
+5. 리비전 설정과 공통 등록
+
+코드스페이스 환경변수는 그 터미널의 명령에 적용됩니다.
+실제 서빙 리비전에는 서빙 설정의 GENOS_GENERATION / GENOS_RUNTIME_DIR를 동일하게 설정합니다.
+GENOS_STATE_DIR가 기존에 있으면 같은 영속 경로를 유지합니다.
+기존 내부 모델/인증/모델 URL/워크플로우 연결 설정은 해당 실제 리비전 설정을 유지합니다.
+이번 공통 숏컷 때문에 새 사용자 ID·팀 ID를 설정할 필요는 없습니다.
+
+```bash
+bash "$CM_RUN_FILE" data-import --generation "$GENOS_GENERATION" --runtime "$CM_RUNTIME_DIR" --receipt "$CM_RECEIPT_FILE"
+bash "$CM_RUN_FILE" data-verify --generation "$GENOS_GENERATION" --runtime "$CM_RUNTIME_DIR" --receipt "$CM_RECEIPT_FILE"
+```
+
+COMMON_CATALOG, consumer_user_team_registration=false, cases=51, model_calls=0을 확인합니다.
+기존 cases-v4.sqlite의 공통 scope와 sw_* 테이블에 추가합니다. 기존 SQL 스키마는 유지합니다.
+동일 패키지+원문 세대의 재실행은 이미 등록된51건을 확인하며 중복을 만들지 않습니다.
+legal_wiki는 같은 SQL 정본에서 공통51페이지를 한 번 생성합니다.
+기존 개인 대화/조사/사실/native shortcut은 개인·팀 scope를 유지합니다.
+이전에 R4로 현장 개인51건을 등록했다면 그 이력은 보존합니다. R6는 별도 공통51건을 등록합니다.
+이전 개인자료 전체를 공통으로 공개하지 않습니다. 공통 재등록 대상은 첨부 CM51뿐입니다.
+
+6. 워크플로우 테스트 화면에서 확인
+
+실제 새 리비전에 연결한 기존 워크플로우 테스트 화면에서 질문합니다.
+예시: 벤처기업의 주식매수선택권은 언제부터 행사할 수 있나요?
+해당 원문에 접근권한이 있는 서로 다른 두 사용자·팀에서 같은 CM-016 원문 경로를 회수하는지 확인합니다.
+현재 질문의 사실/조건은 SELECT/ASSESS에서 새로 판단하며 과거 기준답변의 결론을 복사하지 않습니다.
+권한이 없는 원문은 공통 숏컷을 통해서도 읽지 못합니다.
+단계 로그/선택 원문/최종 답변을 확인합니다. 등록 성공만으로 법률 답변 품질 성공을 확정하지 않습니다.
+
+7. 별도 이관·나중 합치기
+
+CM51_SOURCE_PACKAGE.json만 따로 보관했다가 새 환경에 이관할 수 있습니다.
+새 환경도 R6 공통 소비 코드를 배포하고 실제 원문 generation/runtime에 같은 data-check/import/verify를 실행합니다.
+새 환경의 기존 cases-v4.sqlite에 등록하며 원문 DB나 기존 개인 DB를 통째로 덮지 않습니다.
+조문 좌표와 원문 해시를 새 환경의 현재 원문으로 다시 확인합니다.
+이 패키지는 지정 CM51 데이터입니다. 임의의 누적 개인/native 숏컷 전체를 선택적으로 export/merge하는 기능과는 별도입니다.
+
+8. 데이터·코드 원복
+
+데이터 원복은 해당 공통 import만 retire하며 원문과 다른 개인 이력은 보존합니다.
+이미 retire한 같은 import를 단순 재실행으로 되살리지 않습니다.
+별도 재등록이 필요하면 새 데이터 revision과 검토 기록으로 진행합니다.
+
+```bash
+bash "$CM_RUN_FILE" data-retire --runtime "$CM_RUNTIME_DIR" --receipt "$CM_RECEIPT_FILE"
+bash "$CM_RUN_FILE" undo "$CM_R6_BACKUP"
+```
+
+코드를 바꾼 뒤 별도 추가 수정이 있으면 undo가 보존하고 중단합니다.
+필요한 이전 코드서빙 리비전 재배포/트래픽 전환은 별도로 합니다.
+모든 단계 로그: ~/DEV/TRANSFER/cm-shortcut-common-r6/logs/
+백업·적용 영수증·gate·원문 결속: 해당 BACKUP와 TRANSFER/cm-shortcut-common-r6/
+로컬 검증 결과는 첨부 VALIDATION_SUMMARY.txt에 기록합니다. GENOS 현장 성공은 현장 로그로 확인합니다.

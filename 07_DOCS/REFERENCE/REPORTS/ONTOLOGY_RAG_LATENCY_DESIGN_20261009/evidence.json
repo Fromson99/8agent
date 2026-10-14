@@ -1,0 +1,350 @@
+{
+  "kind": "ontology-rag-latency-design-evidence-v1",
+  "checked_at": "2026-10-09T14:51:21.983058+09:00",
+  "scope": "read-only source and saved-metrics inspection; design artifact only",
+  "new_model_calls": 0,
+  "product_code_changes": false,
+  "active_pointer_changes": false,
+  "new_experiment": false,
+  "review": "author self-review",
+  "binding": {
+    "pointer": {
+      "schema_version": "semantic-runtime-active-v2",
+      "release_id": "grounded-entry-20261009-r1",
+      "generation": 49,
+      "manifest_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/release.json",
+      "release_manifest_sha256": "3e171a8a4500dcb9b4ac2cac2fd8d869c6b0491e71f7dd98877b0605f6fc7b14",
+      "activated_at": "2026-10-09T05:12:24.948180+00:00",
+      "deployment_basis": "VALIDATED_ADR_PROMOTION",
+      "quality_certified": false,
+      "legacy_fallback": false,
+      "previous_active_sha256": "1fcbb8e8bf4d7a8995fd5190b867d91145a2f5f40d905707b1ba3f55dd03b966",
+      "qualification": {
+        "source": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0710-grounded-entry-profile-bound-main/실험/manifest.json",
+          "sha256": "dfff947bd4bf58434d11679fac3a57f791ba7a1fc9c4fb583c81e360c0f2ffb8"
+        },
+        "readme": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0710-grounded-entry-profile-bound-main/README.md",
+          "sha256": "99f5a0994f0829ca15e74965a8a1ea1a06e3c941f4db3515ea884af94f307b4c"
+        },
+        "arm": "integrated",
+        "result": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0710-grounded-entry-profile-bound-main/artifacts/run-001/result.json",
+          "sha256": "0b3ee8079086e9cfd635220f3df656fd8ab095c11c47e8b2ea15144eb2d3d2e1"
+        },
+        "rebase": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0710-grounded-entry-profile-bound-main/artifacts/design/release-rebase.json",
+          "sha256": "25f6a6bd34ab3c6d39c345cdaa9a93d44762628e10c239214ebd252dc1f7557f"
+        }
+      }
+    },
+    "pointer_sha256": "d69c40d81238642b03883f4131d619cfb646428505408d655be6fb3177ac0a40",
+    "manifest_sha256": "3e171a8a4500dcb9b4ac2cac2fd8d869c6b0491e71f7dd98877b0605f6fc7b14",
+    "data_path": "01_DATA/TERM_RELEASES/native-cm-serving-20261008-r2-index/serving/baseline/generation",
+    "data_manifest_sha256": "d45898e5e82503d255c1d0626f60091ea1f31993d1b3f2ffb1ae968293953379",
+    "selected_files_checked": 287,
+    "selected_mismatches": [],
+    "working_mismatches": []
+  },
+  "sources": [
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "working_sha256": "897c3df26df9c7c72a096d28f6aa4205f7b90194b7b460bf40d8ae70f07555be"
+    },
+    {
+      "path": "00_SYSTEM/DATA_MODEL.md",
+      "working_sha256": "26b90682daafa2ae1a9c7117310542765afe355354cad700a493fb01169ff4e0"
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "working_sha256": "fc9f5e7216f97c2172d627136f53e9f3dd19aac92d278f93858ab702785ddd1d",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/00_SYSTEM/PIPELINE.json",
+      "selected_sha256": "fc9f5e7216f97c2172d627136f53e9f3dd19aac92d278f93858ab702785ddd1d",
+      "working_matches_selected": true
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "working_sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/00_SYSTEM/WORKSPACE.json",
+      "selected_sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219",
+      "working_matches_selected": true
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+      "working_sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+      "selected_sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473",
+      "working_matches_selected": true
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json",
+      "working_sha256": "19a9647e98e8f26f6c4ef1391a31e221f2512917e496e38ab93a47bf5a9af3f9",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json",
+      "selected_sha256": "19a9647e98e8f26f6c4ef1391a31e221f2512917e496e38ab93a47bf5a9af3f9",
+      "working_matches_selected": true
+    },
+    {
+      "path": "service.py",
+      "working_sha256": "fd82e3c8d8a2b859f6662b2edbcbf18857b77047218817deff918e7986ef86ae",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/service.py",
+      "selected_sha256": "fd82e3c8d8a2b859f6662b2edbcbf18857b77047218817deff918e7986ef86ae",
+      "working_matches_selected": true
+    },
+    {
+      "path": "GENOS.md",
+      "working_sha256": "152c492b182e6e8257cbf066e2ad51c8ad04e5cecaf02495766d5024828c1453"
+    },
+    {
+      "path": "06_TOOLS/pipeline.py",
+      "working_sha256": "0a2ee7371d9e3cf55c78d58caa8ea123cb05bc6ab254ff7d6aff74057e5f8461"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/core_evidence_route.py",
+      "working_sha256": "4c568283620b9d0dac9b07c1df9e99c730897fc082db4366e7655e3e48810403",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/core_evidence_route.py",
+      "selected_sha256": "4c568283620b9d0dac9b07c1df9e99c730897fc082db4366e7655e3e48810403",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py",
+      "working_sha256": "826f80c7bc98c776fb313c2574118459f2348b15103c5bd921373817fffbd2eb",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py",
+      "selected_sha256": "826f80c7bc98c776fb313c2574118459f2348b15103c5bd921373817fffbd2eb",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/domain_control.py",
+      "working_sha256": "59a522ec5b70c6a4cdbdb2cf7d9d3afe98970c685e57a33cbb9ed0693bb2d5ef",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/domain_control.py",
+      "selected_sha256": "59a522ec5b70c6a4cdbdb2cf7d9d3afe98970c685e57a33cbb9ed0693bb2d5ef",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "working_sha256": "000cb16a8e5fc8312cf999b09699c4338a7daddd3e63bf63da31f35c6ad28a7e",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "selected_sha256": "000cb16a8e5fc8312cf999b09699c4338a7daddd3e63bf63da31f35c6ad28a7e",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+      "working_sha256": "01b673bd890590dbfec478d156b34b0efd8a61d5cf485bb686f330df53920575",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+      "selected_sha256": "01b673bd890590dbfec478d156b34b0efd8a61d5cf485bb686f330df53920575",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "working_sha256": "ec13c012622295a8058ddd7b19f4a6550fb3bf1482e67dbcabbfe57b235ace2e",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "selected_sha256": "ec13c012622295a8058ddd7b19f4a6550fb3bf1482e67dbcabbfe57b235ace2e",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+      "working_sha256": "e65cfa93b0673d6509b19358cc98f0854c17fe770259af86d4145d8d995adedd",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+      "selected_sha256": "e65cfa93b0673d6509b19358cc98f0854c17fe770259af86d4145d8d995adedd",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py",
+      "working_sha256": "2b18ea4ed8259fbb50f110cee1b65da811ca6c45028df27661d38e1d2bd8390d",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/law_candidates.py",
+      "selected_sha256": "2b18ea4ed8259fbb50f110cee1b65da811ca6c45028df27661d38e1d2bd8390d",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "working_sha256": "d6e8e056918750539003a26ab1d4c2b8d6de31bea0722da0432408406b718ef2",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "selected_sha256": "d6e8e056918750539003a26ab1d4c2b8d6de31bea0722da0432408406b718ef2",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py",
+      "working_sha256": "cc6ba1c60cf1639e54d61052eb31135bcaf06ccdeaa81bfdd67202c2d748eb47",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/completion_execution.py",
+      "selected_sha256": "cc6ba1c60cf1639e54d61052eb31135bcaf06ccdeaa81bfdd67202c2d748eb47",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/reuse_policy.py",
+      "working_sha256": "23d5a31d77820742204bf756f201186d42e6e49c5ac750cd29889dd440dee993",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/reuse_policy.py",
+      "selected_sha256": "23d5a31d77820742204bf756f201186d42e6e49c5ac750cd29889dd440dee993",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "working_sha256": "fc472b4059756a272ac4004b7f15958b589a2b4c64c9ffd62a0c6916b70a18ff",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "selected_sha256": "fc472b4059756a272ac4004b7f15958b589a2b4c64c9ffd62a0c6916b70a18ff",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py",
+      "working_sha256": "2b202e665c7401704de10c859e5a6f6c2f919090576e0e47c8c8e2401b72b513",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py",
+      "selected_sha256": "2b202e665c7401704de10c859e5a6f6c2f919090576e0e47c8c8e2401b72b513",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/unified_memory.py",
+      "working_sha256": "d8509f19d5d7fd9b5c329565850dbc56319d5ec192fdcc8d29a6445baade327b",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/lawrag/pipeline/unified_memory.py",
+      "selected_sha256": "d8509f19d5d7fd9b5c329565850dbc56319d5ec192fdcc8d29a6445baade327b",
+      "working_matches_selected": true
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/GLOSSARY_LEARNING.md",
+      "working_sha256": "628784affe6182725cf6f727e3c8c6fbb171bf9a31f0d5cb1d7b59265eba1d63"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/CORE_EVIDENCE_SHORTCUT_20261007.md",
+      "working_sha256": "2017fc3afe46542f46d3bc99750af0e4e2475a56ce0a42cf8b6071bf50242a4d"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/SHORTCUT_LEGAL_WIKI_SYSTEM_DESIGN_20261005/README.md",
+      "working_sha256": "814b1da86d517b790575ef97bad92c913b3554e10aa751679b52db0968e74ac7"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/RAG_TOKEN_INPUT_OPTIMIZATION_DESIGN_20261009.md",
+      "working_sha256": "4b79c762925d9ccd825c38d85536a6b40607ab878fa0485fc0df695288d8fc69"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0710-grounded-entry-profile-bound-main/MAIN_RESULT.md",
+      "working_sha256": "65c699303cf7e7f83b16cea5c687c156c4514584d402dfad5934271d35aea63e"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0710-grounded-entry-profile-bound-main/artifacts/run-001/result.json",
+      "working_sha256": "0b3ee8079086e9cfd635220f3df656fd8ab095c11c47e8b2ea15144eb2d3d2e1"
+    },
+    {
+      "path": "09_ARTIFACTS/AUDITS/20261009-main49-token-input/input-sizes.json",
+      "working_sha256": "06f5d3123a357c8321bebc9a1e8c4d44ce887c3fd674ad0e2c60b03ec9d570f5"
+    }
+  ],
+  "metrics": {
+    "O1": {
+      "kind": "observed_historical",
+      "environment": "WSL local / ADR0710 public qualification",
+      "independent_question_count": 3,
+      "executions_per_question_per_arm": 1,
+      "source": "04_EXPERIMENTS/ADR/ADR-0710-grounded-entry-profile-bound-main/artifacts/run-001/result.json",
+      "values": {
+        "baseline": {
+          "supported": 3,
+          "calls": 22,
+          "input_tokens": 108339,
+          "output_tokens": 5929,
+          "request_seconds": 169.54409971700807,
+          "presented_roots": 3,
+          "gold_presented": 3
+        },
+        "integrated": {
+          "supported": 3,
+          "calls": 12,
+          "input_tokens": 144356,
+          "output_tokens": 5237,
+          "request_seconds": 185.97589433201938,
+          "presented_roots": 14,
+          "gold_presented": 3
+        }
+      }
+    },
+    "O2": {
+      "kind": "observed_historical",
+      "source": "09_ARTIFACTS/AUDITS/20261009-main49-token-input/input-sizes.json",
+      "source_member": "integrated/H03/provider/call-002-product-2-source-law-navigation-1/request.json",
+      "request_sha256": "72d0063429435252f06ba4c41ca3a8c83194d3b633c1f8d89a282ada5a6505af",
+      "response_sha256": "ec902a174df0dea8698e6c10e10367065fad8aa97aab0f8587919da56e78f5b1",
+      "prompt_tokens": 66883,
+      "laws": 12,
+      "actions": 270,
+      "presented_source_pages": 0
+    },
+    "O3": {
+      "kind": "observed_historical",
+      "source": "04_EXPERIMENTS/ADR/ADR-0710-grounded-entry-profile-bound-main/artifacts/run-001/result.json",
+      "case": "integrated/H03",
+      "request_seconds": 81.6591038450133,
+      "physical_attempt_seconds": 30.101736636992428,
+      "attempts": [
+        {
+          "call": 1,
+          "phase": "request-entry",
+          "status": "completed",
+          "seconds": 6.979493343998911
+        },
+        {
+          "call": 2,
+          "phase": "source-law-navigation-1",
+          "status": "completed",
+          "seconds": 7.459291236998979
+        },
+        {
+          "call": 3,
+          "phase": "source-law-navigation-2",
+          "status": "completed",
+          "seconds": 6.934236203000182
+        },
+        {
+          "call": 4,
+          "phase": "memory-assess",
+          "status": "completed",
+          "seconds": 8.728715852994355
+        }
+      ]
+    },
+    "C1": {
+      "kind": "calculated",
+      "unit": "seconds per H03 request",
+      "formula": "O3.request_seconds - O3.physical_attempt_seconds",
+      "value": 51.55736720802088,
+      "attribution": "timer residual; not attributed to one subsystem"
+    },
+    "D1": {
+      "kind": "conditional_design_target",
+      "unit": "model attempts per eligible successful request without repairs/research",
+      "formula": "1 entry + 1 selection + 1 assessment",
+      "value": 3,
+      "baseline_limit": "4 calls observed for only H01 H02 H03, not universal"
+    },
+    "D2": {
+      "kind": "design_constraint",
+      "additional_dedicated_ontology_model_calls": 0,
+      "entry_input_overhead": "must be measured"
+    },
+    "D3": {
+      "kind": "proposed_gate_not_measured",
+      "metric": "eligible cohort E2E median relative improvement",
+      "value": 0.2,
+      "freeze_before_execution": true
+    },
+    "D4": {
+      "kind": "proposed_gate_not_measured",
+      "metric": "overall cohort E2E p95 relative regression cap",
+      "value": 0.05,
+      "freeze_before_execution": true
+    },
+    "U1": {
+      "kind": "unmeasured",
+      "metrics": [
+        "coverage",
+        "latency_gain",
+        "cost_gain",
+        "GENOS performance",
+        "review effort",
+        "calendar schedule"
+      ]
+    }
+  },
+  "document": {
+    "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_RAG_LATENCY_DESIGN_20261009/README.md",
+    "sha256": "606161921d916116b2cfc98e2522d366aa24b24117ffcc99859938e272e9c07d",
+    "local_links_checked": true,
+    "missing_links": []
+  }
+}

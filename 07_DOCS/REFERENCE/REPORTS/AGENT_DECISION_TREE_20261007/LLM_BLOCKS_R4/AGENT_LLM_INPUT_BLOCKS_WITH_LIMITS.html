@@ -1,0 +1,1343 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>우리 agent: LLM 입력·판단·슬라이스·상한</title><style>
+:root{--ink:#16243a;--muted:#526077;--line:#d6e0ec;--blue:#1d4ed8;--paper:#fff;--wash:#f3f6fb}
+*{box-sizing:border-box}body{margin:0;background:var(--wash);color:var(--ink);font:16px/1.7 system-ui,'Malgun Gothic',sans-serif}
+main{max-width:1120px;margin:auto;padding:30px 22px 70px}h1{font-size:30px;line-height:1.4;margin:8px 0}p{margin:12px 0}a{color:var(--blue)}
+.meta,.source{color:var(--muted);font-size:13px;overflow-wrap:anywhere}.intro,.flow,.stage,.profile{background:var(--paper);border:1px solid var(--line);border-radius:12px;margin:16px 0;padding:18px}
+.highlights{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.highlight{background:#eef4ff;border-radius:8px;padding:12px}.highlight b{display:block;font-size:18px}
+.legend{display:flex;gap:8px;flex-wrap:wrap}.legend span,.tag{background:#edf2f7;border-radius:5px;padding:3px 8px;font-size:12px}.flow pre,pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.8 ui-monospace,'Malgun Gothic',monospace}
+.toolbar{position:sticky;top:0;z-index:2;background:#f3f6fbf5;padding:12px 0;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+input,select,button{font:inherit;border:1px solid #b8c7dc;border-radius:7px;padding:8px 10px;background:#fff;color:var(--ink)}input{flex:1;min-width:230px}button{cursor:pointer;font-size:14px}
+.stage>summary,.profile>summary{font-weight:700;cursor:pointer;font-size:19px}.count{font-size:12px;color:var(--muted);margin-left:10px}.explanation{margin:16px 0;padding:14px 18px;border-left:4px solid #7ea4ea;background:#f4f7fd}
+.limit{border-top:1px solid var(--line);padding:10px 0}.limit>summary{cursor:pointer;display:flex;align-items:center;gap:9px;flex-wrap:wrap;list-style:none}.limit>summary:before{content:'＋';color:var(--blue)}.limit[open]>summary:before{content:'−'}
+.identifier{font-size:12px;color:var(--muted)}.limit-name{font-weight:600}.value{color:#1748a0;font-weight:650}.limit-body{padding:8px 16px;margin:8px 0 0;background:#f8fafd;border-radius:8px}.limit-body b{display:block;color:#304561;font-size:13px}.limit-body code{font-size:12px;display:block;white-space:pre-wrap;overflow-wrap:anywhere}.status{font-size:13px;color:#5a4b34}
+.jump{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}.jump a{font-size:14px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid var(--line);text-align:left;padding:8px;vertical-align:top}td:first-child{overflow-wrap:anywhere;width:36%}footer{margin-top:26px;font-size:14px;color:var(--muted)}[hidden]{display:none!important}
+@media(max-width:750px){main{padding:18px 12px}h1{font-size:25px}.highlights{grid-template-columns:1fr}.stage>summary{font-size:17px}.tag{display:block}td:first-child{width:42%}}
+@media print{body{background:white}.toolbar,.jump,button{display:none}.stage,.profile{break-inside:auto}main{max-width:none;padding:0}.stage>summary{font-size:15px}}
+</style></head><body><main>
+<p class="meta">로컬 선택 MAIN generation 44 · investigation-completion-v6-20261007-r1 · 2026-10-07</p>
+<h1>우리 agent를 LLM 입력·판단 단위로 보기</h1>
+<p>각 판단에서 모델에게 무엇이 들어가는지, 어디서 목록·본문을 줄이는지, 한도를 넘으면 어떻게 되는지를 함께 보여줍니다.</p>
+<div class="intro"><div class="highlights">
+<div class="highlight"><b>5개 제한은 현재 근거 상한이 아님</b>구형 max_core_sources 기본5와 현행 법령 탐색의 실제 배선을 구분했습니다.</div>
+<div class="highlight"><b>100000자 설정은 공통 자동 컷이 아님</b>참조 입력 검사와 모든 탐색·판단 입력의 전체 크기는 별개입니다.</div>
+<div class="highlight"><b>저장 원문과 모델이 본 범위는 다름</b>240/360/600자 미리보기, 원문 페이지, 마지막 판단의 전체 근거 입력을 따로 봅니다.</div>
+</div><p>분류 기준을 확인하면 숫자가 무엇을 뜻하는지 구분할 수 있습니다.</p><div class="legend">
+<span>페이지: total·cursor로 이어보기</span><span>슬라이스: 앞/최근 일부만 모델에 전달</span><span>출력 계약: 초과 출력 거절</span>
+<span>무손실 분할: 전체를 나누어 처리</span><span>실행 중단: 못 한 상태 유지 필요</span><span>조건부·비활성: 현재 적용 여부 별도</span></div></div>
+<div class="flow"><b>호출 순서와 되돌아가는 위치</b><pre>사용자 입력 → 코드: 권한·요청·기존 사건 확인
+ ├─ LLM 1: 조사 요청인가? → DIRECT이면 안내 답변
+ └─ CASE
+     ├─ LLM 2: 새 질문/정정/재개 명령 선택
+     ├─ LLM 3: 명령 확인 → 틀리면 LLM 2 수정 한 번
+     ├─ LLM 4: 원래 요구를 쟁점으로 정리
+     ├─ 코드: 검색 표현 생성 → 검색 → 후보·원문 준비
+     ├─ LLM 5: 이번 화면에서 다음 행동 선택 ↔ 코드: 검색·읽기·복귀
+     │    └─ 참조를 따라갈 때 LLM 6 ↔ 코드: 참조 대상 읽기
+     └─ LLM 7: 쟁점별 답변 가능 범위 판단
+          ├─ 추가 원문 필요 → LLM 5로 복귀 최대2회
+          ├─ 출력 계약 오류 → 판단 수정 한 번
+          └─ 답변/부분 답변 → 코드: 구성·검증 → 사용자 응답
+
+7개는 호출 종류입니다. 실제 호출 횟수는 반복·수정·재시도에 따라 달라집니다.
+어느 제한에 걸렸든 ‘못 찾음/못 읽음/못 판단함’을 ‘규정이 없음’으로 바꾸면 안 됩니다.
+상태 보존·풍부한 실패 전달에는 아직 수정이 필요한 경로가 있으며 본문에서 구분합니다.</pre>
+<nav class="jump"><a href="#b1">LLM 1</a><a href="#b2">LLM 2</a><a href="#b3">LLM 3</a><a href="#b4">LLM 4</a><a href="#b5">LLM 5</a><a href="#b6">LLM 6</a><a href="#b7">LLM 7</a></nav></div>
+<div class="toolbar"><input id="query" type="search" aria-label="설정과 처리 설명 검색" placeholder="예: 5개, 48, max_context, 12000, 판단 수정">
+<select id="status" aria-label="적용 상태 필터"><option value="all">전체 적용 상태</option><option value="current">현행</option><option value="conditional">조건부·구형·비활성</option></select>
+<button id="expand">전부 펼치기</button><button id="collapse">전부 접기</button><span id="result" aria-live="polite"></span></div>
+<details class="stage" id="common" open>
+<summary>공통 — 모든 호출을 감싸는 예산·입력·출력<span class="count">12항목</span></summary>
+<div class="limits"><details class="limit" data-status="current">
+<summary><span class="identifier">L001</span><span class="limit-name">원문 질문 길이</span>
+<span class="value">10000자</span><span class="tag">계약 상한</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> runtime.request의 질문 길이 계약. 초과 입력을 자동으로 앞부분만 잘라 통과시키지 않는다.</p>
+<p><b>한도 초과·이후 확인</b> 요청 계약 위반 처리. 모델이 출력하는 task 600자 제한과 별개다.</p>
+<p class="source">00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json:28</p><code>&quot;maxLength&quot;: 10000</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L002</span><span class="limit-name">물리 모델 시도</span>
+<span class="value">40회</span><span class="tag">실행 중단</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 분류·명령·확인·탐색·판단·수정·전송 재시도 모두 같은 원장에 소비한다.</p>
+<p><b>한도 초과·이후 확인</b> 동일 request 재개는 기존 사용량을 이어받는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/repository.py:298</p><code>if self.run()[&#x27;status&#x27;] != &#x27;RUNNING&#x27; or budget[&#x27;model_reserved&#x27;] &gt;= cap:</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L003</span><span class="limit-name">마지막 판단용 예약</span>
+<span class="value">3회; 조사 한계 37회</span><span class="tag">실행 중단</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> INVESTIGATE는 40-3=37 시도 상한, FINALIZE는 전체 40 시도 상한.</p>
+<p><b>한도 초과·이후 확인</b> 추가 조사 전 남은 조사 시도가 2회 미만이면 탐색을 정리한다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/repository.py:297</p><code>cap = budget[&#x27;model_limit&#x27;]-(budget[&#x27;finalization_reserve&#x27;] if phase == &#x27;investigate&#x27; else 0)</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L004</span><span class="limit-name">도구 행동</span>
+<span class="value">1024회</span><span class="tag">실행 중단</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 공통 원장의 reserve_tool에서 실제 도구 시도를 제한한다. 화면 이동과 모든 SQL 조회를 각각 1회로 세는 것은 아니다.</p>
+<p><b>한도 초과·이후 확인</b> 초과는 BudgetExhausted. 성공한 기록은 남는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/repository.py:330</p><code>if self.db.execute(&#x27;UPDATE budget SET tool_used=tool_used+1 WHERE singleton=1 AND tool_used&lt;tool_limit&#x27;).rowcount != 1:</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L005</span><span class="limit-name">요청 시간</span>
+<span class="value">1800초</span><span class="tag">실행 중단</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 전체 요청 deadline. 동일 요청 재개 시 최초 deadline 유지.</p>
+<p><b>한도 초과·이후 확인</b> 재개한다고 새 1800초를 주지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/completion_budget.py:33</p><code>deadline=min(session.context.deadline,time.monotonic()+</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L006</span><span class="limit-name">한 모델 호출 timeout</span>
+<span class="value">min(180초, 남은 시간, 단계 timeout)</span><span class="tag">실행 중단</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 모델 호출 단위 timeout을 제한한다. 탐색/참조도 남은 실행 시간과 함께 적용한다.</p>
+<p><b>한도 초과·이후 확인</b> 네트워크 timeout 등은 완료로 취급하지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/memory_binding.py:19</p><code>limit=min(180,session.context.remaining(),timeout if timeout is not None else 180)</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L007</span><span class="limit-name">모델 출력</span>
+<span class="value">6400토큰</span><span class="tag">생성 상한</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 로컬 모델 정책의 max_output_tokens로 팩토리가 프로필 값을 결속한다. 입력 6400토큰 제한이 아니다.</p>
+<p><b>한도 초과·이후 확인</b> finish_reason이 stop이 아니면 로컬 어댑터가 불완전 응답으로 거절한다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py:55</p><code>&#x27;max_tokens&#x27;: self.profile[&#x27;max_output_tokens&#x27;], &#x27;stream&#x27;: False,</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L008</span><span class="limit-name">동시 요청</span>
+<span class="value">프로세스당 4개</span><span class="tag">접수 제한</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 선택 로컬 프로필 기본값의 semaphore. 초과는 즉시 접수 거절한다.</p>
+<p><b>한도 초과·이후 확인</b> 대기열로 무한 대기시키는 설정이 아니다. GENOS의 0 오버라이드는 별도.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent_adapter.py:64</p><code>request_limit = self.profile[&#x27;max_concurrent_requests_per_process&#x27;]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L009</span><span class="limit-name">입력 길이 설정</span>
+<span class="value">100000자</span><span class="tag">부분 경로 검사</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 참조 JSON 입력 길이를 검사한다. 모든 memory/법령 탐색/판단 입력을 자동 슬라이스하는 공통 검사는 확인되지 않았다.</p>
+<p><b>한도 초과·이후 확인</b> 현재 법령 SELECT/ASSESS의 전체 입력은 이 값만으로 상한 보장되지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:479</p><code>if len(json.dumps(data,ensure_ascii=False))&gt;max_context_chars:</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L010</span><span class="limit-name">입력 byte 메타데이터</span>
+<span class="value">2000000바이트</span><span class="tag">강제 안 됨</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 비활성 메타데이터</p>
+<p><b>실제로 하는 일</b> 모델 binding에 남아 있으나 프로필 코드가 inert metadata라고 명시한다. 실제 요청 크기 강제 검사로 간주할 수 없다.</p>
+<p><b>한도 초과·이후 확인</b> 크기 초과 시 2MB로 자동 자르는 동작이 없다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/domain.py:55</p><code># Old pinned byte fields remain inert metadata; new bindings omit them.</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L011</span><span class="limit-name">공개 자료 범위</span>
+<span class="value">승인 목록 145문서와 요청 권한의 교집합</span><span class="tag">권한 필터</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 개수 때문에 top145를 자르는 것이 아니라 승인된 문서 ID만 허용한다.</p>
+<p><b>한도 초과·이후 확인</b> 다음 페이지로 권한 밖 자료를 열 수 없다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/local_gemma.py:94</p><code>if (not public_question or not request[&#x27;use_llm&#x27;] or not scope or scope-allowed</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L012</span><span class="limit-name">모델/provider fallback</span>
+<span class="value">0; fallback_allowed=false</span><span class="tag">전송 제한</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 고정된 Qwen3.8/Parasail 경로 외 자동 대체 없음.</p>
+<p><b>한도 초과·이후 확인</b> 장애를 다른 모델의 성공 응답으로 덮지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/local_gemma.py:54</p><code>&#x27;quantizations&#x27;: [&#x27;fp8&#x27;], &#x27;allow_fallbacks&#x27;: False,</code></div></details></div>
+<script type="application/json" class="card-data">{"title": "공통 — 모든 호출을 감싸는 예산·입력·출력", "info": "", "entries": [{"id": "L001", "block": "공통", "name": "원문 질문 길이", "value": "10000자", "kind": "계약 상한", "status": "현행", "behavior": "runtime.request의 질문 길이 계약. 초과 입력을 자동으로 앞부분만 잘라 통과시키지 않는다.", "continuation": "요청 계약 위반 처리. 모델이 출력하는 task 600자 제한과 별개다.", "path": "00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json", "line": 28, "expression": "\"maxLength\": 10000"}, {"id": "L002", "block": "공통", "name": "물리 모델 시도", "value": "40회", "kind": "실행 중단", "status": "현행", "behavior": "분류·명령·확인·탐색·판단·수정·전송 재시도 모두 같은 원장에 소비한다.", "continuation": "동일 request 재개는 기존 사용량을 이어받는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/repository.py", "line": 298, "expression": "if self.run()['status'] != 'RUNNING' or budget['model_reserved'] >= cap:"}, {"id": "L003", "block": "공통", "name": "마지막 판단용 예약", "value": "3회; 조사 한계 37회", "kind": "실행 중단", "status": "현행", "behavior": "INVESTIGATE는 40-3=37 시도 상한, FINALIZE는 전체 40 시도 상한.", "continuation": "추가 조사 전 남은 조사 시도가 2회 미만이면 탐색을 정리한다.", "path": "02_BACKEND/semantic_runtime/legal_agent/repository.py", "line": 297, "expression": "cap = budget['model_limit']-(budget['finalization_reserve'] if phase == 'investigate' else 0)"}, {"id": "L004", "block": "공통", "name": "도구 행동", "value": "1024회", "kind": "실행 중단", "status": "현행", "behavior": "공통 원장의 reserve_tool에서 실제 도구 시도를 제한한다. 화면 이동과 모든 SQL 조회를 각각 1회로 세는 것은 아니다.", "continuation": "초과는 BudgetExhausted. 성공한 기록은 남는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/repository.py", "line": 330, "expression": "if self.db.execute('UPDATE budget SET tool_used=tool_used+1 WHERE singleton=1 AND tool_used\u003ctool_limit').rowcount != 1:"}, {"id": "L005", "block": "공통", "name": "요청 시간", "value": "1800초", "kind": "실행 중단", "status": "현행", "behavior": "전체 요청 deadline. 동일 요청 재개 시 최초 deadline 유지.", "continuation": "재개한다고 새 1800초를 주지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py", "line": 33, "expression": "deadline=min(session.context.deadline,time.monotonic()+"}, {"id": "L006", "block": "공통", "name": "한 모델 호출 timeout", "value": "min(180초, 남은 시간, 단계 timeout)", "kind": "실행 중단", "status": "현행", "behavior": "모델 호출 단위 timeout을 제한한다. 탐색/참조도 남은 실행 시간과 함께 적용한다.", "continuation": "네트워크 timeout 등은 완료로 취급하지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/memory_binding.py", "line": 19, "expression": "limit=min(180,session.context.remaining(),timeout if timeout is not None else 180)"}, {"id": "L007", "block": "공통", "name": "모델 출력", "value": "6400토큰", "kind": "생성 상한", "status": "현행", "behavior": "로컬 모델 정책의 max_output_tokens로 팩토리가 프로필 값을 결속한다. 입력 6400토큰 제한이 아니다.", "continuation": "finish_reason이 stop이 아니면 로컬 어댑터가 불완전 응답으로 거절한다.", "path": "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py", "line": 55, "expression": "'max_tokens': self.profile['max_output_tokens'], 'stream': False,"}, {"id": "L008", "block": "공통", "name": "동시 요청", "value": "프로세스당 4개", "kind": "접수 제한", "status": "현행", "behavior": "선택 로컬 프로필 기본값의 semaphore. 초과는 즉시 접수 거절한다.", "continuation": "대기열로 무한 대기시키는 설정이 아니다. GENOS의 0 오버라이드는 별도.", "path": "02_BACKEND/semantic_runtime/legal_agent_adapter.py", "line": 64, "expression": "request_limit = self.profile['max_concurrent_requests_per_process']"}, {"id": "L009", "block": "공통", "name": "입력 길이 설정", "value": "100000자", "kind": "부분 경로 검사", "status": "현행", "behavior": "참조 JSON 입력 길이를 검사한다. 모든 memory/법령 탐색/판단 입력을 자동 슬라이스하는 공통 검사는 확인되지 않았다.", "continuation": "현재 법령 SELECT/ASSESS의 전체 입력은 이 값만으로 상한 보장되지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 479, "expression": "if len(json.dumps(data,ensure_ascii=False))>max_context_chars:"}, {"id": "L010", "block": "공통", "name": "입력 byte 메타데이터", "value": "2000000바이트", "kind": "강제 안 됨", "status": "비활성 메타데이터", "behavior": "모델 binding에 남아 있으나 프로필 코드가 inert metadata라고 명시한다. 실제 요청 크기 강제 검사로 간주할 수 없다.", "continuation": "크기 초과 시 2MB로 자동 자르는 동작이 없다.", "path": "02_BACKEND/semantic_runtime/legal_agent/domain.py", "line": 55, "expression": "# Old pinned byte fields remain inert metadata; new bindings omit them."}, {"id": "L011", "block": "공통", "name": "공개 자료 범위", "value": "승인 목록 145문서와 요청 권한의 교집합", "kind": "권한 필터", "status": "현행", "behavior": "개수 때문에 top145를 자르는 것이 아니라 승인된 문서 ID만 허용한다.", "continuation": "다음 페이지로 권한 밖 자료를 열 수 없다.", "path": "02_BACKEND/semantic_runtime/legal_agent/local_gemma.py", "line": 94, "expression": "if (not public_question or not request['use_llm'] or not scope or scope-allowed"}, {"id": "L012", "block": "공통", "name": "모델/provider fallback", "value": "0; fallback_allowed=false", "kind": "전송 제한", "status": "현행", "behavior": "고정된 Qwen3.8/Parasail 경로 외 자동 대체 없음.", "continuation": "장애를 다른 모델의 성공 응답으로 덮지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/local_gemma.py", "line": 54, "expression": "'quantizations': ['fp8'], 'allow_fallbacks': False,"}]}</script></details><details class="stage" id="b1" >
+<summary>LLM 1 — 조사 에이전트를 실행할 요청인가?<span class="count">3항목</span></summary>
+<div class="explanation"><b>LLM 입력 블록 · 판단 · 성공/실패 분기</b><pre>실제 phase: source-request-route
+
+입력 블록:
+ A. 이번 사용자 문장: question
+ B. 진행 중인 사건의 목적·사용자 사실·상태: current_goals
+ C. 시스템이 제공하는 기능과 조회 제한: capabilities
+
+판단 단위:
+ &#x27;인사·사용법 같은 짧은 안내인가, 원문 조사나 기존 사건 처리가 필요한가?&#x27;
+
+출력:
+ DIRECT: 짧은 안내 문장과 이유
+ CASE: 사건 처리로 넘어갈 이유. 법률 답변을 이 단계에서 대신 작성하지 않는다.
+
+코드 처리:
+ DIRECT는 일반 안내 응답으로 반환한다.
+ CASE는 다음 명령 결정 입력을 만든다.
+ 법률 근거가 당장 보이지 않는다는 이유로 짧은 안내 경로에 숨기지 않는다.
+
+실패:
+ 형식이나 모델 호출이 실패하면 정상적인 CASE/DIRECT 판단을 받은 것으로
+ 처리할 수 없다. 성공한 기존 사건을 지우지 않고 실패 원인과 연결하는 것이
+ 목표다. 모든 예외가 풍부한 사용자 응답으로 연결되는 것은 현재 미완성이다.</pre></div><div class="limits"><details class="limit" data-status="current">
+<summary><span class="identifier">L013</span><span class="limit-name">짧은 안내 출력 길이</span>
+<span class="value">2000자</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> DIRECT answer의 maxLength. 질문이나 법령 본문을 2000자로 자르는 것이 아니다.</p>
+<p><b>한도 초과·이후 확인</b> 초과 출력은 계약 거절/수정 대상.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py:63</p><code>&#x27;answer&#x27;: {&#x27;type&#x27;: &#x27;string&#x27;, &#x27;maxLength&#x27;: 2000},</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L014</span><span class="limit-name">분류 이유 길이</span>
+<span class="value">1000자</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> CASE/DIRECT reason의 최대 길이.</p>
+<p><b>한도 초과·이후 확인</b> 초과 출력은 계약 거절/수정 대상.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py:64</p><code>&#x27;reason&#x27;: {&#x27;type&#x27;: &#x27;string&#x27;, &#x27;minLength&#x27;: 1, &#x27;maxLength&#x27;: 1000}}</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L015</span><span class="limit-name">진행 중인 사건 목록</span>
+<span class="value">별도 개수 슬라이스 없음</span><span class="tag">상한 없음</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 현재 goals의 목적·사실·상태를 모두 투영한다.</p>
+<p><b>한도 초과·이후 확인</b> 40회 호출/6400 출력 상한이 사건 입력 개수 상한은 아니다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/case_repository.py:92</p><code>&#x27;current_goals&#x27;:[{&#x27;task&#x27;:g[&#x27;state&#x27;][&#x27;task&#x27;],&#x27;facts&#x27;:g[&#x27;state&#x27;][&#x27;facts&#x27;],</code></div></details></div>
+<script type="application/json" class="card-data">{"title": "LLM 1 — 조사 에이전트를 실행할 요청인가?", "info": "실제 phase: source-request-route\n\n입력 블록:\n A. 이번 사용자 문장: question\n B. 진행 중인 사건의 목적·사용자 사실·상태: current_goals\n C. 시스템이 제공하는 기능과 조회 제한: capabilities\n\n판단 단위:\n '인사·사용법 같은 짧은 안내인가, 원문 조사나 기존 사건 처리가 필요한가?'\n\n출력:\n DIRECT: 짧은 안내 문장과 이유\n CASE: 사건 처리로 넘어갈 이유. 법률 답변을 이 단계에서 대신 작성하지 않는다.\n\n코드 처리:\n DIRECT는 일반 안내 응답으로 반환한다.\n CASE는 다음 명령 결정 입력을 만든다.\n 법률 근거가 당장 보이지 않는다는 이유로 짧은 안내 경로에 숨기지 않는다.\n\n실패:\n 형식이나 모델 호출이 실패하면 정상적인 CASE/DIRECT 판단을 받은 것으로\n 처리할 수 없다. 성공한 기존 사건을 지우지 않고 실패 원인과 연결하는 것이\n 목표다. 모든 예외가 풍부한 사용자 응답으로 연결되는 것은 현재 미완성이다.", "entries": [{"id": "L013", "block": "LLM 1 분류", "name": "짧은 안내 출력 길이", "value": "2000자", "kind": "출력 계약", "status": "현행", "behavior": "DIRECT answer의 maxLength. 질문이나 법령 본문을 2000자로 자르는 것이 아니다.", "continuation": "초과 출력은 계약 거절/수정 대상.", "path": "02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py", "line": 63, "expression": "'answer': {'type': 'string', 'maxLength': 2000},"}, {"id": "L014", "block": "LLM 1 분류", "name": "분류 이유 길이", "value": "1000자", "kind": "출력 계약", "status": "현행", "behavior": "CASE/DIRECT reason의 최대 길이.", "continuation": "초과 출력은 계약 거절/수정 대상.", "path": "02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py", "line": 64, "expression": "'reason': {'type': 'string', 'minLength': 1, 'maxLength': 1000}}"}, {"id": "L015", "block": "LLM 1 분류", "name": "진행 중인 사건 목록", "value": "별도 개수 슬라이스 없음", "kind": "상한 없음", "status": "현행", "behavior": "현재 goals의 목적·사실·상태를 모두 투영한다.", "continuation": "40회 호출/6400 출력 상한이 사건 입력 개수 상한은 아니다.", "path": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py", "line": 92, "expression": "'current_goals':[{'task':g['state']['task'],'facts':g['state']['facts'],"}]}</script></details><details class="stage" id="b2" >
+<summary>LLM 2 — 새 질문·정정·재개 중 어떤 명령인가?<span class="count">15항목</span></summary>
+<div class="explanation"><b>LLM 입력 블록 · 판단 · 성공/실패 분기</b><pre>실제 phase: memory-resolve, 필요 시 memory-resolve-repair
+
+입력 블록:
+ A. 이번 원문 문장: utterance
+ B. 현재 사건: 기존 목적, 사용자 사실, 단계, 저장 상태
+ C. 변경 이력: 최초 기록·최근 기록·사용자가 지목한 정정 기록
+ D. 조회할 수 있는 과거 질문·경험·위키 연결
+ E. 이번에 허용된 처리 명령 목록: offered_methods
+
+판단 단위:
+ &#x27;새 사건을 만들 것인가, 기존 사건의 어느 부분만 바꿀 것인가?&#x27;
+
+대표 출력:
+ CASE_START: 새 질문 조사
+ FACT_UPDATE: 사실만 수정
+ PURPOSE_REVISE: 질문 목적 수정
+ RESEARCH_REPLAN: 검색 계획 수정
+ RESEARCH_REENTER: 특정 조사 지점 재개
+ ANSWER_PRESENT: 현재 판단의 표현 변경
+ HISTORY_EXPLAIN: 조사·정정 이력 설명
+ STATE_RESTORE: 지정 기록의 지정 필드 복원
+
+코드 처리:
+ method를 내부 명령과 재개 단계로 정규화한다.
+ 이미 제공된 사건·경험 ID인지, 지정 기록이 존재하는지 등을 검사한다.
+ 사용자에게 &#x27;접수일만 바꾸라&#x27;는 요청을 받았으면 다른 목적이나 검색어까지
+ 임의로 바꾸는 명령을 허용하지 않는다.
+ 문서 접근권한은 코드가 관리한다. 모델에 허용 문서 ID 전체를 주고 모델이
+ 권한을 확대하게 하지 않는다.
+
+실패:
+ 첫 명령이 거절되면 원래 문맥 + 거절된 명령 + 오류 이유를 수정 입력으로 준다.
+ 수정 후에도 실패하면 CLARIFY로 이어질 수 있다.
+ 재개·정정의 &#x27;시작 단계&#x27;는 그 단계에서 멈추라는 뜻이 아니다. 의존 자료를
+ 복구하고 답변 구성까지 이어가는 시작점이다.</pre></div><div class="limits"><details class="limit" data-status="current">
+<summary><span class="identifier">L016</span><span class="limit-name">사건별 모델용 이력</span>
+<span class="value">최초 1개 + 최근 48개 + 지목한 정정</span><span class="tag">입력 생략</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 중간 이벤트를 모델 문맥에서 생략. 중복을 제거하므로 항상 49개는 아니며 지목 정정 추가 시 49개를 넘을 수 있다.</p>
+<p><b>한도 초과·이후 확인</b> 원본 DB 이력 보존. event_count/history_partial 표시. 이력 API after/limit로 조회 가능하지만 자동 추가 호출은 아니다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/case_repository.py:124</p><code>events=g[&#x27;events&#x27;];keep={e[&#x27;id&#x27;] for e in events[:1]+events[-48:]}</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L017</span><span class="limit-name">개인 과거 질문 목록</span>
+<span class="value">24개</span><span class="tag">첫 페이지</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> personal_history에 질문 페이지 24개를 공급한다.</p>
+<p><b>한도 초과·이후 확인</b> next cursor와 별도 조회 API가 있다. 명령 LLM이 이 페이지 뒤를 자동 조회하지는 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/case_repository.py:128</p><code>context[&#x27;personal_history&#x27;]=knowledge.questions(principal,limit=24,</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L018</span><span class="limit-name">legal_wiki 힌트 목록</span>
+<span class="value">8개</span><span class="tag">첫 페이지</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> shortcut 켜짐+인증 사용자일 때 topic/question만 공급. 저장 결론은 힌트 입력에서 제외한다.</p>
+<p><b>한도 초과·이후 확인</b> 전체 위키 조회 API는 별도. 다음 힌트 페이지 자동 모델 조회 없음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:128</p><code>pages=self.shortcut.search(principal,limit=8)[&#x27;pages&#x27;]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L019</span><span class="limit-name">과거 확정 경험 후보</span>
+<span class="value">현재 shortcut 경로는 []</span><span class="tag">기능 필터</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> ShortcutCases.candidates가 과거 경험으로 검증을 우회하지 못하게 빈 목록을 반환한다.</p>
+<p><b>한도 초과·이후 확인</b> CaseRepository 경로의 32 후보 제한은 별도 조건부 경로.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:122</p><code># Old USER_CONFIRMED experience cannot bypass the new verification gates.</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L020</span><span class="limit-name">문서 목록 입력 제거</span>
+<span class="value">allowed_documents/document_ids 제거</span><span class="tag">필드 투영</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> resolver/command-check/repair 입력에서 재귀 제거. ACL용 원본은 호스트가 유지한다.</p>
+<p><b>한도 초과·이후 확인</b> 모델이 전체 문서 ID를 골라 권한을 확대하지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:30</p><code>if k not in (&#x27;allowed_documents&#x27;,&#x27;document_ids&#x27;)}</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L021</span><span class="limit-name">검색어 개수</span>
+<span class="value">최대 4개</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 명령 queries 배열의 maxItems.</p>
+<p><b>한도 초과·이후 확인</b> 초과는 거절. 자동으로 앞 4개를 잘라 실행하지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:50</p><code>COMMAND[&#x27;properties&#x27;][&#x27;queries&#x27;].update(maxItems=4)</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L022</span><span class="limit-name">검색어 길이</span>
+<span class="value">각 180자</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 명령 queries 원소 길이.</p>
+<p><b>한도 초과·이후 확인</b> 초과는 거절/수정. 이후 SELECT RESEARCH 출력의 queries에는 같은 개수/길이 상한이 없다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:51</p><code>COMMAND[&#x27;properties&#x27;][&#x27;queries&#x27;][&#x27;items&#x27;][&#x27;maxLength&#x27;]=180</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L023</span><span class="limit-name">사실 개수</span>
+<span class="value">최대 16개</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 명령 facts 배열의 maxItems. 기존 입력 사실 목록을 매번 [:16]으로 자르는 동작은 아니다.</p>
+<p><b>한도 초과·이후 확인</b> 변경 출력 계약 거절/수정.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:54</p><code>COMMAND[&#x27;properties&#x27;][&#x27;facts&#x27;].update(maxItems=16)</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L024</span><span class="limit-name">사실 이름 길이</span>
+<span class="value">100자</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> FACT.name 길이 제한.</p>
+<p><b>한도 초과·이후 확인</b> 초과 출력 거절/수정.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:55</p><code>FACT[&#x27;properties&#x27;][&#x27;name&#x27;][&#x27;maxLength&#x27;]=100</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L025</span><span class="limit-name">사실 값 길이</span>
+<span class="value">600자</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> FACT.value 문자열 길이 제한.</p>
+<p><b>한도 초과·이후 확인</b> 초과 출력 거절/수정.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:56</p><code>FACT[&#x27;properties&#x27;][&#x27;value&#x27;][&#x27;maxLength&#x27;]=600</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L026</span><span class="limit-name">목적 task 길이</span>
+<span class="value">600자</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 원문 입력을 600자에서 자르는 것은 아니지만 모델이 정리하는 task 출력은 600자 이하.</p>
+<p><b>한도 초과·이후 확인</b> 원문 요구사항을 축소할 위험은 의미 검토 대상. 원문은 별도 보존.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:58</p><code>COMMAND[&#x27;properties&#x27;][&#x27;task&#x27;][&#x27;maxLength&#x27;]=600</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L027</span><span class="limit-name">명령 이유 길이</span>
+<span class="value">600자</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> command.reason의 maxLength.</p>
+<p><b>한도 초과·이후 확인</b> 초과 출력 거절/수정.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:59</p><code>COMMAND[&#x27;properties&#x27;][&#x27;reason&#x27;][&#x27;maxLength&#x27;]=600</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L028</span><span class="limit-name">복원 필드 개수</span>
+<span class="value">최대 5개; 중복 불가</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> task/source_category/document_ids/facts/queries 다섯 상태 필드의 지정 복원.</p>
+<p><b>한도 초과·이후 확인</b> 없는 필드나 중복은 허용하지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:57</p><code>COMMAND[&#x27;properties&#x27;][&#x27;restore_fields&#x27;].update(maxItems=5,uniqueItems=True)</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L029</span><span class="limit-name">저장 명령 문서 ID 제한</span>
+<span class="value">160개, ID 각 64자</span><span class="tag">조건부 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 호스트/기존 계약</p>
+<p><b>실제로 하는 일</b> 기본 COMMAND 계약에 존재. 현재 모델용 resolve 스키마는 document_ids를 null로 고정한다.</p>
+<p><b>한도 초과·이후 확인</b> 현행 모델이 최대160 문서를 고르는 입력/행동으로 설명하면 안 된다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:52</p><code>COMMAND[&#x27;properties&#x27;][&#x27;document_ids&#x27;].update(maxItems=160,uniqueItems=True)</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L030</span><span class="limit-name">명령 의미 수정</span>
+<span class="value">최초 1회 + 수정 1회</span><span class="tag">재시도 제한</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> resolve의 range(2). 두 번째 의미/명령 검사 실패는 CLARIFY.</p>
+<p><b>한도 초과·이후 확인</b> 출력 JSON gateway 수정 1회는 별도 층이며 같은 전체 예산 소비.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:236</p><code>for attempt in range(2):</code></div></details></div>
+<script type="application/json" class="card-data">{"title": "LLM 2 — 새 질문·정정·재개 중 어떤 명령인가?", "info": "실제 phase: memory-resolve, 필요 시 memory-resolve-repair\n\n입력 블록:\n A. 이번 원문 문장: utterance\n B. 현재 사건: 기존 목적, 사용자 사실, 단계, 저장 상태\n C. 변경 이력: 최초 기록·최근 기록·사용자가 지목한 정정 기록\n D. 조회할 수 있는 과거 질문·경험·위키 연결\n E. 이번에 허용된 처리 명령 목록: offered_methods\n\n판단 단위:\n '새 사건을 만들 것인가, 기존 사건의 어느 부분만 바꿀 것인가?'\n\n대표 출력:\n CASE_START: 새 질문 조사\n FACT_UPDATE: 사실만 수정\n PURPOSE_REVISE: 질문 목적 수정\n RESEARCH_REPLAN: 검색 계획 수정\n RESEARCH_REENTER: 특정 조사 지점 재개\n ANSWER_PRESENT: 현재 판단의 표현 변경\n HISTORY_EXPLAIN: 조사·정정 이력 설명\n STATE_RESTORE: 지정 기록의 지정 필드 복원\n\n코드 처리:\n method를 내부 명령과 재개 단계로 정규화한다.\n 이미 제공된 사건·경험 ID인지, 지정 기록이 존재하는지 등을 검사한다.\n 사용자에게 '접수일만 바꾸라'는 요청을 받았으면 다른 목적이나 검색어까지\n 임의로 바꾸는 명령을 허용하지 않는다.\n 문서 접근권한은 코드가 관리한다. 모델에 허용 문서 ID 전체를 주고 모델이\n 권한을 확대하게 하지 않는다.\n\n실패:\n 첫 명령이 거절되면 원래 문맥 + 거절된 명령 + 오류 이유를 수정 입력으로 준다.\n 수정 후에도 실패하면 CLARIFY로 이어질 수 있다.\n 재개·정정의 '시작 단계'는 그 단계에서 멈추라는 뜻이 아니다. 의존 자료를\n 복구하고 답변 구성까지 이어가는 시작점이다.", "entries": [{"id": "L016", "block": "LLM 2 명령", "name": "사건별 모델용 이력", "value": "최초 1개 + 최근 48개 + 지목한 정정", "kind": "입력 생략", "status": "현행", "behavior": "중간 이벤트를 모델 문맥에서 생략. 중복을 제거하므로 항상 49개는 아니며 지목 정정 추가 시 49개를 넘을 수 있다.", "continuation": "원본 DB 이력 보존. event_count/history_partial 표시. 이력 API after/limit로 조회 가능하지만 자동 추가 호출은 아니다.", "path": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py", "line": 124, "expression": "events=g['events'];keep={e['id'] for e in events[:1]+events[-48:]}"}, {"id": "L017", "block": "LLM 2 명령", "name": "개인 과거 질문 목록", "value": "24개", "kind": "첫 페이지", "status": "현행", "behavior": "personal_history에 질문 페이지 24개를 공급한다.", "continuation": "next cursor와 별도 조회 API가 있다. 명령 LLM이 이 페이지 뒤를 자동 조회하지는 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py", "line": 128, "expression": "context['personal_history']=knowledge.questions(principal,limit=24,"}, {"id": "L018", "block": "LLM 2 명령", "name": "legal_wiki 힌트 목록", "value": "8개", "kind": "첫 페이지", "status": "현행", "behavior": "shortcut 켜짐+인증 사용자일 때 topic/question만 공급. 저장 결론은 힌트 입력에서 제외한다.", "continuation": "전체 위키 조회 API는 별도. 다음 힌트 페이지 자동 모델 조회 없음.", "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py", "line": 128, "expression": "pages=self.shortcut.search(principal,limit=8)['pages']"}, {"id": "L019", "block": "LLM 2 명령", "name": "과거 확정 경험 후보", "value": "현재 shortcut 경로는 []", "kind": "기능 필터", "status": "현행", "behavior": "ShortcutCases.candidates가 과거 경험으로 검증을 우회하지 못하게 빈 목록을 반환한다.", "continuation": "CaseRepository 경로의 32 후보 제한은 별도 조건부 경로.", "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py", "line": 122, "expression": "# Old USER_CONFIRMED experience cannot bypass the new verification gates."}, {"id": "L020", "block": "LLM 2 명령", "name": "문서 목록 입력 제거", "value": "allowed_documents/document_ids 제거", "kind": "필드 투영", "status": "현행", "behavior": "resolver/command-check/repair 입력에서 재귀 제거. ACL용 원본은 호스트가 유지한다.", "continuation": "모델이 전체 문서 ID를 골라 권한을 확대하지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py", "line": 30, "expression": "if k not in ('allowed_documents','document_ids')}"}, {"id": "L021", "block": "LLM 2 명령", "name": "검색어 개수", "value": "최대 4개", "kind": "출력 계약", "status": "현행", "behavior": "명령 queries 배열의 maxItems.", "continuation": "초과는 거절. 자동으로 앞 4개를 잘라 실행하지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py", "line": 50, "expression": "COMMAND['properties']['queries'].update(maxItems=4)"}, {"id": "L022", "block": "LLM 2 명령", "name": "검색어 길이", "value": "각 180자", "kind": "출력 계약", "status": "현행", "behavior": "명령 queries 원소 길이.", "continuation": "초과는 거절/수정. 이후 SELECT RESEARCH 출력의 queries에는 같은 개수/길이 상한이 없다.", "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py", "line": 51, "expression": "COMMAND['properties']['queries']['items']['maxLength']=180"}, {"id": "L023", "block": "LLM 2 명령", "name": "사실 개수", "value": "최대 16개", "kind": "출력 계약", "status": "현행", "behavior": "명령 facts 배열의 maxItems. 기존 입력 사실 목록을 매번 [:16]으로 자르는 동작은 아니다.", "continuation": "변경 출력 계약 거절/수정.", "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py", "line": 54, "expression": "COMMAND['properties']['facts'].update(maxItems=16)"}, {"id": "L024", "block": "LLM 2 명령", "name": "사실 이름 길이", "value": "100자", "kind": "출력 계약", "status": "현행", "behavior": "FACT.name 길이 제한.", "continuation": "초과 출력 거절/수정.", "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py", "line": 55, "expression": "FACT['properties']['name']['maxLength']=100"}, {"id": "L025", "block": "LLM 2 명령", "name": "사실 값 길이", "value": "600자", "kind": "출력 계약", "status": "현행", "behavior": "FACT.value 문자열 길이 제한.", "continuation": "초과 출력 거절/수정.", "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py", "line": 56, "expression": "FACT['properties']['value']['maxLength']=600"}, {"id": "L026", "block": "LLM 2 명령", "name": "목적 task 길이", "value": "600자", "kind": "출력 계약", "status": "현행", "behavior": "원문 입력을 600자에서 자르는 것은 아니지만 모델이 정리하는 task 출력은 600자 이하.", "continuation": "원문 요구사항을 축소할 위험은 의미 검토 대상. 원문은 별도 보존.", "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py", "line": 58, "expression": "COMMAND['properties']['task']['maxLength']=600"}, {"id": "L027", "block": "LLM 2 명령", "name": "명령 이유 길이", "value": "600자", "kind": "출력 계약", "status": "현행", "behavior": "command.reason의 maxLength.", "continuation": "초과 출력 거절/수정.", "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py", "line": 59, "expression": "COMMAND['properties']['reason']['maxLength']=600"}, {"id": "L028", "block": "LLM 2 명령", "name": "복원 필드 개수", "value": "최대 5개; 중복 불가", "kind": "출력 계약", "status": "현행", "behavior": "task/source_category/document_ids/facts/queries 다섯 상태 필드의 지정 복원.", "continuation": "없는 필드나 중복은 허용하지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py", "line": 57, "expression": "COMMAND['properties']['restore_fields'].update(maxItems=5,uniqueItems=True)"}, {"id": "L029", "block": "LLM 2 명령", "name": "저장 명령 문서 ID 제한", "value": "160개, ID 각 64자", "kind": "조건부 계약", "status": "호스트/기존 계약", "behavior": "기본 COMMAND 계약에 존재. 현재 모델용 resolve 스키마는 document_ids를 null로 고정한다.", "continuation": "현행 모델이 최대160 문서를 고르는 입력/행동으로 설명하면 안 된다.", "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py", "line": 52, "expression": "COMMAND['properties']['document_ids'].update(maxItems=160,uniqueItems=True)"}, {"id": "L030", "block": "LLM 2 명령", "name": "명령 의미 수정", "value": "최초 1회 + 수정 1회", "kind": "재시도 제한", "status": "현행", "behavior": "resolve의 range(2). 두 번째 의미/명령 검사 실패는 CLARIFY.", "continuation": "출력 JSON gateway 수정 1회는 별도 층이며 같은 전체 예산 소비.", "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py", "line": 236, "expression": "for attempt in range(2):"}]}</script></details><details class="stage" id="b3" >
+<summary>LLM 3 — 정한 명령이 사용자 요청과 맞는가?<span class="count">1항목</span></summary>
+<div class="explanation"><b>LLM 입력 블록 · 판단 · 성공/실패 분기</b><pre>실제 phase: memory-command-check
+
+입력 블록:
+ A. LLM 2가 받은 사용자 문맥: context
+ B. 코드가 정규화한 명령: command
+ C. 실행 계약: 어느 단계부터 시작하며 어떤 순서로 완료해야 하는지
+
+판단 단위:
+ &#x27;사용자가 요청한 변경 범위와 실제 실행할 명령이 일치하는가?&#x27;
+
+출력: valid + reason
+
+코드 처리:
+ valid=true이면 명령을 적용한다.
+ valid=false이면 LLM 2의 제한된 수정으로 돌아간다.
+ 이 검사는 변경 명령의 적합성이다. 법률 답변이 정답인지 평가하는 단계가 아니다.
+ 형식·권한 등 코드 검사를 통과해도 모델의 의미 판단이 항상 옳다는 뜻은 아니다.</pre></div><div class="limits"><details class="limit" data-status="current">
+<summary><span class="identifier">L031</span><span class="limit-name">check 출력/입력 개수</span>
+<span class="value">별도 maxLength/maxItems 없음</span><span class="tag">상한 없음</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> context+command+execution_contract; valid와 reason 반환. 같은 model_context 필드 제거 적용.</p>
+<p><b>한도 초과·이후 확인</b> false이면 LLM 2의 한 번 수정에 연결. 전체 출력 토큰/예산 적용.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:74</p><code>CHECK = object_schema({&#x27;valid&#x27;:{&#x27;type&#x27;:&#x27;boolean&#x27;}, &#x27;reason&#x27;:{&#x27;type&#x27;:&#x27;string&#x27;}})</code></div></details></div>
+<script type="application/json" class="card-data">{"title": "LLM 3 — 정한 명령이 사용자 요청과 맞는가?", "info": "실제 phase: memory-command-check\n\n입력 블록:\n A. LLM 2가 받은 사용자 문맥: context\n B. 코드가 정규화한 명령: command\n C. 실행 계약: 어느 단계부터 시작하며 어떤 순서로 완료해야 하는지\n\n판단 단위:\n '사용자가 요청한 변경 범위와 실제 실행할 명령이 일치하는가?'\n\n출력: valid + reason\n\n코드 처리:\n valid=true이면 명령을 적용한다.\n valid=false이면 LLM 2의 제한된 수정으로 돌아간다.\n 이 검사는 변경 명령의 적합성이다. 법률 답변이 정답인지 평가하는 단계가 아니다.\n 형식·권한 등 코드 검사를 통과해도 모델의 의미 판단이 항상 옳다는 뜻은 아니다.", "entries": [{"id": "L031", "block": "LLM 3 명령 확인", "name": "check 출력/입력 개수", "value": "별도 maxLength/maxItems 없음", "kind": "상한 없음", "status": "현행", "behavior": "context+command+execution_contract; valid와 reason 반환. 같은 model_context 필드 제거 적용.", "continuation": "false이면 LLM 2의 한 번 수정에 연결. 전체 출력 토큰/예산 적용.", "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py", "line": 74, "expression": "CHECK = object_schema({'valid':{'type':'boolean'}, 'reason':{'type':'string'}})"}]}</script></details><details class="stage" id="b4" >
+<summary>LLM 4 — 답해야 할 쟁점은 무엇인가?<span class="count">3항목</span></summary>
+<div class="explanation"><b>LLM 입력 블록 · 판단 · 성공/실패 분기</b><pre>실제 phase: memory-intent
+
+입력 블록:
+ A. 이번 원문 질문: current_request
+ B. 기존 상태에 반영된 현재 목적·질문: question
+ C. 사용자 제공 사실: current_facts
+ D. 해당 실행 단계의 등록 도메인·방법 정보
+
+판단 단위:
+ &#x27;사용자가 요구한 답변 항목, 대상, 조건과 예외를 무엇으로 나눌까?&#x27;
+
+모의 질문: &#x27;A규정의 신청 기한과 제출서류를 알려줘.&#x27;
+ 기대하는 요구 분리:
+ Q1: 신청 기한
+ Q2: 제출서류
+
+일반 규정 설명 요청을 특정 신청 건의 적법성 판단으로 바꾸지 않는다.
+검색에서 기한 조항만 나왔다고 Q2를 요구사항에서 없애지 않는다.
+출력에는 목적·검색용 개념·쟁점이 들어간다. 이 단계에서 근거 없는 답을 쓰지 않는다.
+
+코드 처리:
+ 쟁점 ID 중복 등을 검사하고 INTENT를 저장한다.
+ PLAN: 상태의 검색어·질문·등록 문서명 등을 이용해 검색 계획을 구성한다.
+ RECALL: 현재 색인에서 후보를 찾는다.
+ READ: 후보·원문 읽기 계약과 근거 검증을 준비한다.
+ 현재 법령 탐색 경로에서는 초기 READ가 전체 원문을 모두 읽었다는 뜻이 아니다.
+ SELECT의 행동에 따라 실제 원문 읽기와 전달이 더 발생한다.</pre></div><div class="limits"><details class="limit" data-status="current">
+<summary><span class="identifier">L032</span><span class="limit-name">쟁점 개수</span>
+<span class="value">최소1, 최대8개</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> INTENT issues 배열 제한. 원문을 앞8문장으로 자르는 코드는 아니다.</p>
+<p><b>한도 초과·이후 확인</b> 9개 이상의 요구를 그룹으로 묶을 수 있지만 요구 누락 여부는 의미적으로 확인해야 한다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/investigation_contracts.py:16</p><code>out[&#x27;properties&#x27;][&#x27;issues&#x27;] = {**array(ISSUE), &#x27;minItems&#x27;: 1, &#x27;maxItems&#x27;: 8}</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L033</span><span class="limit-name">목적·개념·쟁점 문장</span>
+<span class="value">별도 개수/길이 상한 없음(issues 개수 제외)</span><span class="tag">상한 없음</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> purpose/concepts와 ISSUE.question/subject에 별도의 숫자 길이 상한은 없다.</p>
+<p><b>한도 초과·이후 확인</b> 전체 모델 출력 6400토큰 상한은 함께 적용.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/memory_rag.py:25</p><code>INTENT=object_schema({&#x27;purpose&#x27;:{&#x27;type&#x27;:&#x27;string&#x27;},&#x27;concepts&#x27;:array({&#x27;type&#x27;:&#x27;string&#x27;})})</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L034</span><span class="limit-name">기반 원문 조각 번호</span>
+<span class="value">최대64조각; 나머지는 마지막에 합침</span><span class="tag">무손실 분할</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> RequestContext.pieces의 기계적 문장 분할. 의미 쟁점 8개와 다른 번호 체계다.</p>
+<p><b>한도 초과·이후 확인</b> 63조각 이후 원문 나머지 전체를 Q64에 보존. 버리지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/context.py:19</p><code>if len(pieces) == 63:</code></div></details></div>
+<script type="application/json" class="card-data">{"title": "LLM 4 — 답해야 할 쟁점은 무엇인가?", "info": "실제 phase: memory-intent\n\n입력 블록:\n A. 이번 원문 질문: current_request\n B. 기존 상태에 반영된 현재 목적·질문: question\n C. 사용자 제공 사실: current_facts\n D. 해당 실행 단계의 등록 도메인·방법 정보\n\n판단 단위:\n '사용자가 요구한 답변 항목, 대상, 조건과 예외를 무엇으로 나눌까?'\n\n모의 질문: 'A규정의 신청 기한과 제출서류를 알려줘.'\n 기대하는 요구 분리:\n Q1: 신청 기한\n Q2: 제출서류\n\n일반 규정 설명 요청을 특정 신청 건의 적법성 판단으로 바꾸지 않는다.\n검색에서 기한 조항만 나왔다고 Q2를 요구사항에서 없애지 않는다.\n출력에는 목적·검색용 개념·쟁점이 들어간다. 이 단계에서 근거 없는 답을 쓰지 않는다.\n\n코드 처리:\n 쟁점 ID 중복 등을 검사하고 INTENT를 저장한다.\n PLAN: 상태의 검색어·질문·등록 문서명 등을 이용해 검색 계획을 구성한다.\n RECALL: 현재 색인에서 후보를 찾는다.\n READ: 후보·원문 읽기 계약과 근거 검증을 준비한다.\n 현재 법령 탐색 경로에서는 초기 READ가 전체 원문을 모두 읽었다는 뜻이 아니다.\n SELECT의 행동에 따라 실제 원문 읽기와 전달이 더 발생한다.", "entries": [{"id": "L032", "block": "LLM 4 쟁점 분리", "name": "쟁점 개수", "value": "최소1, 최대8개", "kind": "출력 계약", "status": "현행", "behavior": "INTENT issues 배열 제한. 원문을 앞8문장으로 자르는 코드는 아니다.", "continuation": "9개 이상의 요구를 그룹으로 묶을 수 있지만 요구 누락 여부는 의미적으로 확인해야 한다.", "path": "02_BACKEND/semantic_runtime/legal_agent/investigation_contracts.py", "line": 16, "expression": "out['properties']['issues'] = {**array(ISSUE), 'minItems': 1, 'maxItems': 8}"}, {"id": "L033", "block": "LLM 4 쟁점 분리", "name": "목적·개념·쟁점 문장", "value": "별도 개수/길이 상한 없음(issues 개수 제외)", "kind": "상한 없음", "status": "현행", "behavior": "purpose/concepts와 ISSUE.question/subject에 별도의 숫자 길이 상한은 없다.", "continuation": "전체 모델 출력 6400토큰 상한은 함께 적용.", "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py", "line": 25, "expression": "INTENT=object_schema({'purpose':{'type':'string'},'concepts':array({'type':'string'})})"}, {"id": "L034", "block": "LLM 4 쟁점 분리", "name": "기반 원문 조각 번호", "value": "최대64조각; 나머지는 마지막에 합침", "kind": "무손실 분할", "status": "현행", "behavior": "RequestContext.pieces의 기계적 문장 분할. 의미 쟁점 8개와 다른 번호 체계다.", "continuation": "63조각 이후 원문 나머지 전체를 Q64에 보존. 버리지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/context.py", "line": 19, "expression": "if len(pieces) == 63:"}]}</script></details><details class="stage" id="search" >
+<summary>검색 준비 코드 — 검색 표현과 검색에 쓸 단어<span class="count">9항목</span></summary>
+<div class="limits"><details class="limit" data-status="current">
+<summary><span class="identifier">L035</span><span class="limit-name">검색 변형</span>
+<span class="value">최대3개</span><span class="tag">검색 표현 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 원문/업무 문맥/첫 줄 변형을 중복 제거 후 [:3].</p>
+<p><b>한도 초과·이후 확인</b> 생략한 변형 전용 다음 페이지 없음. 원문은 보존.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/source_recall.py:24</p><code>return list(dict.fromkeys(v.strip() for v in variants if v.strip()))[:3]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L036</span><span class="limit-name">문서명 제거 보조 검색</span>
+<span class="value">최대4개</span><span class="tag">검색 표현 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> focused_queries에서 extra[:4].</p>
+<p><b>한도 초과·이후 확인</b> 다른 표현은 SELECT 새 검색으로 제안 가능.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/source_recall.py:44</p><code>return list(dict.fromkeys(query_variants(question)+plan[&#x27;queries&#x27;]+extra[:4]+numeric[:2]))[:13]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L037</span><span class="limit-name">수치 보조 검색</span>
+<span class="value">최대2개</span><span class="tag">검색 표현 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 숫자·단위 주변에서 만든 numeric[:2].</p>
+<p><b>한도 초과·이후 확인</b> 모든 숫자 표현이 보조검색으로 생성되는 것은 아니다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/source_recall.py:44</p><code>return list(dict.fromkeys(query_variants(question)+plan[&#x27;queries&#x27;]+extra[:4]+numeric[:2]))[:13]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L038</span><span class="limit-name">수치 앞 단어 탐색 범위</span>
+<span class="value">앞40자</span><span class="tag">문맥 창</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 수치 앞 40자를 단어 후보로 삼는다. 모델 질문 입력을 40자로 자르는 것은 아니다.</p>
+<p><b>한도 초과·이후 확인</b> 원문 질문은 별도 유지.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/source_recall.py:41</p><code>terms = [t for t in question_terms(line[max(0, match.start()-40):match.start()]) if len(t)&gt;1 and not t.isdigit()]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L039</span><span class="limit-name">초기 검색 표현 묶음</span>
+<span class="value">최대13개</span><span class="tag">검색 표현 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> focused_queries가 중복 제거 후 [:13]. 실제 초기 상한이며 개별 표현 처리와 다르다.</p>
+<p><b>한도 초과·이후 확인</b> SELECT law_search_queries가 있으면 이 묶음을 대신 쓰므로 이후 검색까지 모두13개 제한은 아니다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/source_recall.py:44</p><code>return list(dict.fromkeys(query_variants(question)+plan[&#x27;queries&#x27;]+extra[:4]+numeric[:2]))[:13]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L040</span><span class="limit-name">한 검색 표현의 형태소</span>
+<span class="value">최대32개</span><span class="tag">검색 토큰 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 질문/검색어 각각에서 고유한 내용 형태소를 등장순 [:32]로 사용한다.</p>
+<p><b>한도 초과·이후 확인</b> 법령 본문/LLM 질문은 잘리지 않지만 뒤쪽 검색 개념이 빠질 수 있다. 여러 표현의 합집합은32개를 넘을 수 있다.</p>
+<p class="source">02_BACKEND/semantic_runtime/fulltext.py:149</p><code>return list(dict.fromkeys(forms(tokens)))[:MAX_TERMS]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L041</span><span class="limit-name">일상어→법률 용어 연결</span>
+<span class="value">최대4개</span><span class="tag">검색 단서 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> NavigationMatcher._bridge가 용어 연결 후보 [:4] 반환.</p>
+<p><b>한도 초과·이후 확인</b> 동일 표면어의 모든 연결이 시작 힌트로 들어가는 것은 아니다.</p>
+<p class="source">02_BACKEND/semantic_runtime/navigation_match.py:317</p><code>return rows[:self.BRIDGE_LIMIT]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L042</span><span class="limit-name">명시 구조 원문 선택</span>
+<span class="value">최대16 source ID</span><span class="tag">분기 경계</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 명시 제목/조문 경로 결과가16개를 넘으면 구조 MATCH를 하지 않고 STRUCTURE_SELECTION_LIMIT으로 MISS.</p>
+<p><b>한도 초과·이후 확인</b> 앞16개만 정답처럼 확정하지 않고 전문 검색 경로로 이어진다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/structure_query.py:62</p><code>if len(sources) &gt; 16:</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L043</span><span class="limit-name">명시 정의 경로</span>
+<span class="value">인용 용어 길이2~40자; 정의 후보최대16개</span><span class="tag">분기 경계</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 한 개의 인용 용어+한 문서의 정의에서만 직접 경로. 후보 초과면 직접 경로를 쓰지 않는다.</p>
+<p><b>한도 초과·이후 확인</b> 일반 탐색은 별도 가능. 이 값으로 전체 질문을 자르지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/structure_query.py:81</p><code>if not rows or len(rows) &gt; 16:</code></div></details></div>
+<script type="application/json" class="card-data">{"title": "검색 준비 코드 — 검색 표현과 검색에 쓸 단어", "info": "", "entries": [{"id": "L035", "block": "검색 준비", "name": "검색 변형", "value": "최대3개", "kind": "검색 표현 슬라이스", "status": "현행", "behavior": "원문/업무 문맥/첫 줄 변형을 중복 제거 후 [:3].", "continuation": "생략한 변형 전용 다음 페이지 없음. 원문은 보존.", "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall.py", "line": 24, "expression": "return list(dict.fromkeys(v.strip() for v in variants if v.strip()))[:3]"}, {"id": "L036", "block": "검색 준비", "name": "문서명 제거 보조 검색", "value": "최대4개", "kind": "검색 표현 슬라이스", "status": "현행", "behavior": "focused_queries에서 extra[:4].", "continuation": "다른 표현은 SELECT 새 검색으로 제안 가능.", "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall.py", "line": 44, "expression": "return list(dict.fromkeys(query_variants(question)+plan['queries']+extra[:4]+numeric[:2]))[:13]"}, {"id": "L037", "block": "검색 준비", "name": "수치 보조 검색", "value": "최대2개", "kind": "검색 표현 슬라이스", "status": "현행", "behavior": "숫자·단위 주변에서 만든 numeric[:2].", "continuation": "모든 숫자 표현이 보조검색으로 생성되는 것은 아니다.", "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall.py", "line": 44, "expression": "return list(dict.fromkeys(query_variants(question)+plan['queries']+extra[:4]+numeric[:2]))[:13]"}, {"id": "L038", "block": "검색 준비", "name": "수치 앞 단어 탐색 범위", "value": "앞40자", "kind": "문맥 창", "status": "현행", "behavior": "수치 앞 40자를 단어 후보로 삼는다. 모델 질문 입력을 40자로 자르는 것은 아니다.", "continuation": "원문 질문은 별도 유지.", "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall.py", "line": 41, "expression": "terms = [t for t in question_terms(line[max(0, match.start()-40):match.start()]) if len(t)>1 and not t.isdigit()]"}, {"id": "L039", "block": "검색 준비", "name": "초기 검색 표현 묶음", "value": "최대13개", "kind": "검색 표현 슬라이스", "status": "현행", "behavior": "focused_queries가 중복 제거 후 [:13]. 실제 초기 상한이며 개별 표현 처리와 다르다.", "continuation": "SELECT law_search_queries가 있으면 이 묶음을 대신 쓰므로 이후 검색까지 모두13개 제한은 아니다.", "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall.py", "line": 44, "expression": "return list(dict.fromkeys(query_variants(question)+plan['queries']+extra[:4]+numeric[:2]))[:13]"}, {"id": "L040", "block": "검색 준비", "name": "한 검색 표현의 형태소", "value": "최대32개", "kind": "검색 토큰 슬라이스", "status": "현행", "behavior": "질문/검색어 각각에서 고유한 내용 형태소를 등장순 [:32]로 사용한다.", "continuation": "법령 본문/LLM 질문은 잘리지 않지만 뒤쪽 검색 개념이 빠질 수 있다. 여러 표현의 합집합은32개를 넘을 수 있다.", "path": "02_BACKEND/semantic_runtime/fulltext.py", "line": 149, "expression": "return list(dict.fromkeys(forms(tokens)))[:MAX_TERMS]"}, {"id": "L041", "block": "검색 준비", "name": "일상어→법률 용어 연결", "value": "최대4개", "kind": "검색 단서 슬라이스", "status": "현행", "behavior": "NavigationMatcher._bridge가 용어 연결 후보 [:4] 반환.", "continuation": "동일 표면어의 모든 연결이 시작 힌트로 들어가는 것은 아니다.", "path": "02_BACKEND/semantic_runtime/navigation_match.py", "line": 317, "expression": "return rows[:self.BRIDGE_LIMIT]"}, {"id": "L042", "block": "검색 준비", "name": "명시 구조 원문 선택", "value": "최대16 source ID", "kind": "분기 경계", "status": "현행", "behavior": "명시 제목/조문 경로 결과가16개를 넘으면 구조 MATCH를 하지 않고 STRUCTURE_SELECTION_LIMIT으로 MISS.", "continuation": "앞16개만 정답처럼 확정하지 않고 전문 검색 경로로 이어진다.", "path": "02_BACKEND/semantic_runtime/legal_agent/structure_query.py", "line": 62, "expression": "if len(sources) > 16:"}, {"id": "L043", "block": "검색 준비", "name": "명시 정의 경로", "value": "인용 용어 길이2~40자; 정의 후보최대16개", "kind": "분기 경계", "status": "현행", "behavior": "한 개의 인용 용어+한 문서의 정의에서만 직접 경로. 후보 초과면 직접 경로를 쓰지 않는다.", "continuation": "일반 탐색은 별도 가능. 이 값으로 전체 질문을 자르지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/structure_query.py", "line": 81, "expression": "if not rows or len(rows) > 16:"}]}</script></details><details class="stage" id="b5" >
+<summary>LLM 5 — 현재 법령·조항·원문 화면에서 다음 행동<span class="count">28항목</span></summary>
+<div class="explanation"><b>LLM 입력 블록 · 판단 · 성공/실패 분기</b><pre>실제 phase: source-law-navigation-{turn}, 필요 시 ...-repair
+
+이 부분이 탐색의 중심이다. 아래 5-A~5-E는 다른 에이전트가 아니라 같은 탐색
+호출의 화면·판단 목적을 구분한 설명이다. 매번 현재 입력과 유효 선택지가 바뀐다.
+
+공통 입력을 여덟 블록으로 읽으면 이해하기 쉽다.
+
+ A. 질문과 쟁점
+    question, issues, assessment_gaps
+    무엇을 알아봐야 하는지, 판단 단계에서 무엇이 부족하다고 했는지.
+    SELECT에는 현재 task·facts로 만든 질문과 쟁점이 들어간다.
+    이번 원문 current_request가 별도 필드로 모든 탐색 호출에 반복되는 것은 아니다.
+
+ B. 현재 검색 후보
+    search_queries, laws[].articles, article_matches, previews, more_laws
+    어느 검색으로 어떤 문서·조항이 나왔는지, 다음 후보 페이지가 있는지.
+    검색 미리보기는 실제 원문 읽기·전달 완료와 다르다.
+
+ C. 이번에 실제로 보여주는 원문
+    sources, basis
+    읽기 요청 이후 모델에게 제시한 원문 페이지와 연결 ID.
+    법률 근거로 판단할 때는 실제 전달된 범위를 사용한다.
+
+ D. 자료 상태와 읽기 상태
+    saved_inventory, read_receipt, branches, adopted_evidence
+    저장했는지, 어디까지 확보·전달했는지, 어느 쟁점에 채택·보류·제외했는지.
+    저장 원문 목록은 내용 자체가 아니다. 저장되었다고 이번 모델이 본 것도 아니다.
+
+ E. 이전 행동과 이유
+    investigation_chain, notes, search_expression_history
+    왜 이 후보를 읽었는지, 무엇을 보류했는지, 이미 시도한 검색은 무엇인지.
+    전체 과거 원문을 매 호출마다 반복 복사하는 대신 필요한 기록을 전달한다.
+
+ F. 돌아갈 수 있는 이전 화면
+    return_points, chain_frame_id
+    보류했던 당시 후보·읽기·참조 메뉴를 다시 선택할 수 있는 출발 지점.
+    이후의 확보 자료나 판단을 통째로 되돌리는 롤백과 다르다.
+
+ G. 지금 허용된 행동 메뉴
+    actions, branches[].allowed_decisions
+    실제로 선택 가능한 행동 ID, 대상, 표시 문구와 효과.
+    모델이 없는 행동·없는 자료 ID를 만들면 코드가 거절한다.
+
+ H. 현재 상태와 한도
+    presentation_id, state_version, progress, reading_rule, completion_contract
+    어느 화면에 대한 결정인지, 진전 없는 반복인지, 읽기와 채택을 분리해야 하는지.
+    출력 스키마도 현재 메뉴의 유효 ID와 형태를 제한한다.
+
+5-A. 후보를 보고 무엇을 읽을지 결정
+
+입력 예:
+    요구: Q1 기한 / Q2 서류
+    후보: A규정 제5조, C규정 제8조
+    A규정 미리보기: &#x27;신청은 ... / 제출서류는 ...&#x27;
+    C규정 미리보기: 다른 업무의 신청
+    이번에 실제 받은 원문: 없음
+    가능한 행동: A 읽기 / C 읽기 / 다음 후보 / 새 검색 / 제시된 복귀
+
+판단:
+    어느 후보가 질문의 대상·업무 맥락에 맞는가?
+    어느 원문 범위를 먼저 읽을까?
+
+출력:
+    READ_ARTICLES / READ_PARENT / READ_SCOPE / OPEN_LAW 등 + 대상 ID + 이유
+
+코드:
+    유효한 대상과 권한을 검사 → 읽기 또는 후보 화면 변경
+    → 실제 결과를 넣어 다음 탐색 입력 생성
+
+분기:
+    관련 후보 있음 → 원문 읽기
+    후보 있지만 질문과 무관함 → 다른 후보 / 새 검색 / 제시된 복귀
+    검색 0건 → 다른 검색 / 구조 탐색으로 이어지는 메뉴 / 제시된 복귀
+    가능한 경로 소진 → PENDING 또는 한도에 따른 중단
+    검색 도구 오류 → 검색 결과 0건과 구분하여 실패 처리
+
+&#x27;0건&#x27;은 이번 검색과 자료 범위에서 찾지 못했다는 뜻이다.
+&#x27;해당 규정이 존재하지 않는다&#x27;는 법률 판단으로 바꾸면 안 된다.
+도구 예외 뒤 항상 같은 화면으로 복구하는 공통 흐름은 현재 완성되지 않았다.
+수정 목표는 성공한 결과를 유지하고 실패한 검색·이유·가능한 다음 행동을 제공하는 것이다.
+
+5-B. 읽은 원문을 어디까지 더 볼지 결정
+
+입력 예:
+    A규정 제5조 본문 일부가 이번 sources에 들어옴
+    앞 문장에서 신청 기한을 찾음
+    뒤 문장·다른 항·참조 문서는 아직 전달되지 않음
+    읽기 상태: 확보 범위와 실제 전달 범위
+    가능한 행동: 이어보기 / 상위 전체 읽기 / 다른 항 읽기 / 이후 결정
+
+판단:
+    현재 본 범위로 이 조항의 조건·예외를 파악할 수 있는가?
+    어떤 범위를 더 읽어야 하는가?
+
+코드:
+    선택한 원문 범위를 확보·검증하고 다음 입력으로 전달한다.
+    현재 계약에서 READ/VIEW 호출의 채택·보류 결정 배열은 비워야 한다.
+    원문을 가져온 동작을 채택으로 처리하지 않는다.
+
+분기:
+    원문 전달 성공 → 다음 입력에서 내용을 보고 결정
+    일부만 전달 → 이어보기나 범위 확대
+    읽기 실패 → 성공한 다른 자료는 유지; 실패한 자료를 읽었다고 표시하면 안 됨
+    시간·분량 한도 → 실제 확인한 범위와 미확인 범위 구분
+
+5-C. 읽은 자료를 채택·보류·제외할지 결정
+
+입력 예:
+    요구: Q1 기한 / Q2 서류
+    읽은 A규정 제5조: &#x27;신청 기한은 10일 ... 서류는 B규정 제2조 ...&#x27;
+    B규정 제2조: 아직 읽지 않음
+    가능한 결정: A의 해당 전달 범위를 Q1에 채택 / 보류 / 제외
+
+판단:
+    A의 읽은 범위가 어떤 쟁점의 근거인가?
+    왜 채택하거나 아직 보류할까?
+
+출력:
+    DECIDE와 branch_decisions의 ADOPT / KEEP / DEFER / EXCLUDE,
+    쟁점 ID, 실제 원문 연결 ID, 이유
+
+코드:
+    실제 전달한 원문으로 가능한 결정인지 검사 → 자료별·쟁점별 상태 기록
+    Q1의 근거 채택이 Q2까지 해결했다는 뜻은 아니다.
+    모델은 맥락에 맞는 후보를 고를 책임이 있다. 코드가 인용 ID를 검증했다고
+    선택한 조항의 의미가 질문에 맞는다는 것이 자동 보증되지는 않는다.
+
+5-D. 보류했던 자료를 다시 선택
+
+입력:
+    보류 당시 화면을 가리키는 return_points
+    현재까지 읽고 채택한 자료의 상태
+    저장 원문 목록과 별도 재열람 선택지
+
+판단과 코드:
+    RETURN_TO → 보류 당시의 후보·읽기·참조 메뉴로 돌아가 재선택
+    VIEW_SAVED_SOURCE → 저장된 특정 원문을 다시 전달
+
+두 행동은 목적이 다르다. 화면 복귀가 이후 조사 결과를 지우지는 않는다.
+재열람만으로 보류·제외 상태를 채택으로 바꾸지도 않는다.
+다시 보고 모델이 채택·보류·제외 판단을 따로 제출한다.
+
+5-E. 계속 조사할지, 판단 단계로 넘길지 결정
+
+입력:
+    요구 Q1·Q2, 채택 근거, 보류 자료, 참조 상태,
+    이전 조사 기록, 판단 단계에서 돌려보낸 assessment_gaps,
+    반복·검색 한도와 현재 가능한 행동
+
+출력:
+    RESEARCH: 검색어를 바꿔 후보 검색으로 돌아가기
+    READ...: 필요한 원문 범위를 더 읽기
+    FOLLOW_CONNECTION: 참조 메뉴 조사
+    RETURN_TO: 이전 화면 복귀
+    FINISH: 탐색을 마치고 판단으로 넘기기
+    PENDING: 이 탐색 실행에서 진행을 완료하지 못함
+
+현재 출력에는 evidence_sufficient와 sufficiency_reason도 있다.
+선택과 판단이 각각 충분성을 결정하면 &#x27;충분 → 부족 → 충분&#x27;이 반복될 수 있다.
+수정 목표: 여기서는 확보 자료·조사를 멈춘 이유를 보고하고,
+실제 답변 가능 범위는 LLM 7에서 쟁점별로 결정한다.
+
+현재 결함: FINISH를 적용할 때 현재 assessment_gaps를 제거하는 코드가 있다.
+따라서 &#x27;Q2의 B원문 부족&#x27;을 추가 조사 입력으로 받았더라도 FINISH만으로 현재
+부족 목록이 사라질 수 있다. 과거 로그 전체 삭제와는 다르지만 현재 상태 연결은 끊긴다.
+수정 목표: 조사 종료 뒤에도 부족 항목을 보존하고 해결·보류·불필요 판단의
+이유를 기록한다. 영속적인 gap ID와 처리 상태는 아직 새로 구현하지 않았다.
+
+탐색 판단 출력이 거절될 때:
+    원래 화면 + 원래 행동 메뉴 + rejected_decision + contract_error + repair_contract
+      → 한 번의 수정 제안 → 코드가 전체 결정을 다시 검증
+    잘못된 최초 제안은 실행하지 않는다.
+    수정 실패는 MODEL_DECISION_UNRESOLVED로 정리한다.
+    채택 근거가 있으면 FINISH, 없으면 PENDING 결과로 이어진다.
+    도구·참조 예외처럼 다른 종료 경로는 구분해야 한다.
+    원래 화면·유효 선택지·성공한 작업을 일관되게 돌려주는 것은 수정 목표다.</pre></div><div class="limits"><details class="limit" data-status="current">
+<summary><span class="identifier">L044</span><span class="limit-name">법령 후보 페이지</span>
+<span class="value">12개</span><span class="tag">페이지</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 검색 결과 법령 목록은 페이지당12개. 현재 채택/직접 지정 법령을 덧붙여 최종 laws 입력이12개를 넘을 수 있다.</p>
+<p><b>한도 초과·이후 확인</b> NEXT_LAWS. 전체 total/next_cursor 보존.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_candidates.py:65</p><code>page = idx.law_groups_page(db, terms, allowed(s), limit=policy(s)[&#x27;law_page_size&#x27;])</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L045</span><span class="limit-name">첫 자동 진입 조항</span>
+<span class="value">법령당1개</span><span class="tag">초기 선택</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 첫 법령 페이지의 각 법령에서 조항1개를 가져온다.</p>
+<p><b>한도 초과·이후 확인</b> 법령별 OPEN_LAW로 다른 조항 선택 가능.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_candidates.py:73</p><code>articles = idx.article_groups_page(db, terms, law[&#x27;document_id&#x27;], allowed(s), limit=1)</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L046</span><span class="limit-name">첫 자동 진입 적중</span>
+<span class="value">조항당1개</span><span class="tag">초기 선택</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 첫 진입 조항에서 hit1개를 확보한다.</p>
+<p><b>한도 초과·이후 확인</b> NEXT_HITS로 다음 적중 위치.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_candidates.py:76</p><code>for h in idx.hit_page(db, terms, sid, allowed(s), limit=1)[&#x27;items&#x27;]:</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L047</span><span class="limit-name">법령 열기/다음 조항 페이지</span>
+<span class="value">4개</span><span class="tag">페이지</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> OPEN_LAW/NEXT_ARTICLES는 설정 article_page_size=4.</p>
+<p><b>한도 초과·이후 확인</b> NEXT_ARTICLES. 현재 ACTIVE 경로 추가 때문에 전체 branch 입력4개 제한은 아니다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:847</p><code>cursor=identity.get(&#x27;cursor&#x27;), limit=self.policy[&#x27;article_page_size&#x27;])</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L048</span><span class="limit-name">후보 조항 목록의 초기 크기</span>
+<span class="value">8개</span><span class="tag">첫 페이지</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> article_menu에서 아직 저장 조항 페이지가 없으면 하드코딩 limit=8. 설정4개와 별도.</p>
+<p><b>한도 초과·이후 확인</b> 법령을 열면4개씩 제공하는 경로 이용. 이 요약 메뉴 자체가 항상8개 이하인 것도 아니며 저장 페이지를 재사용한다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:357</p><code>page=self.p.get(&#x27;article_pages&#x27;,{}).get(did) or self.idx.article_groups_page(self.db,self.p[&#x27;catalogue&#x27;][&#x27;terms&#x27;],did,lc.allowed(self.s),limit=8)</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L049</span><span class="limit-name">조항 요약용 적중</span>
+<span class="value">각3개</span><span class="tag">요약 선택</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> article_menu가 처음3개의 hit 중 표시할 본문 위치를 선택.</p>
+<p><b>한도 초과·이후 확인</b> 다른 위치는 해당 조항 적중 탐색으로 확인.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:361</p><code>hits=self.idx.hit_page(self.db,self.p[&#x27;catalogue&#x27;][&#x27;terms&#x27;],sid,lc.allowed(self.s),limit=3)[&#x27;items&#x27;]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L050</span><span class="limit-name">조항 요약 미리보기</span>
+<span class="value">앞240자</span><span class="tag">본문 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> article_menu preview=body.text[:240].</p>
+<p><b>한도 초과·이후 확인</b> READ_ARTICLES로 원문 읽기. 전문을 읽었다는 의미 없음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:364</p><code>&#x27;preview&#x27;:body[&#x27;text&#x27;][:240] if body else &#x27;&#x27;})</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L051</span><span class="limit-name">읽은 적중 미리보기</span>
+<span class="value">앞360자</span><span class="tag">본문 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> add_reads가 profile.preview_chars=360으로 미리보기 생성. 코드 fallback400은 현행 설정으로 덮인다.</p>
+<p><b>한도 초과·이후 확인</b> READ_PARENT/READ_SCOPE 또는 저장 원문 재열람.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:283</p><code>text = r[&#x27;text&#x27;][:self.s.profile.get(&#x27;preview_chars&#x27;, 400)]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L052</span><span class="limit-name">다음 적중 위치 페이지</span>
+<span class="value">8개</span><span class="tag">페이지</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> NEXT_HITS의 hit_page_size=8.</p>
+<p><b>한도 초과·이후 확인</b> NEXT_HITS. SQL의 total/cursor 유지.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:854</p><code>self.open_hits(identity[&#x27;source_id&#x27;], identity[&#x27;cursor&#x27;], self.policy[&#x27;hit_page_size&#x27;])</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L053</span><span class="limit-name">미리보기 이력 표시</span>
+<span class="value">최근8개</span><span class="tag">입력 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 그룹별 previews[-8:]만 현재 카드에 표시.</p>
+<p><b>한도 초과·이후 확인</b> preview_total/omitted_previews. 전체 이력은 저장되나 앞 미리보기 전용 페이지는 없다. 과거 화면/원문 확인 경로.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:572</p><code>previews=group[&#x27;previews&#x27;][-self.policy[&#x27;hit_page_size&#x27;]:]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L054</span><span class="limit-name">형제 구조 목록</span>
+<span class="value">앞8개</span><span class="tag">입력 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 부모 범위 sibling_rows[:8]. 제목 목록이며 원문 읽기 아님.</p>
+<p><b>한도 초과·이후 확인</b> sibling_total/sibling_list_complete 표시. READ_PARENT로 부모 전체 원문.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:577</p><code>&#x27;siblings&#x27;: sibling_rows[:self.policy[&#x27;hit_page_size&#x27;]], &#x27;sibling_total&#x27;:len(sibling_rows),</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L055</span><span class="limit-name">이번 원문을 제시할 그룹</span>
+<span class="value">최대8그룹</span><span class="tag">입력 페이지</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> focus 우선+읽기 대기 그룹을 중복 제거 후 [:8]. 그룹당 현재 페이지를 보여준다.</p>
+<p><b>한도 초과·이후 확인</b> 나머지 그룹의 읽기/이어보기 선택지와 상태 유지.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:537</p><code>page_groups=list(dict.fromkeys([g for g in focus_ids if g in waiting]+waiting))[:8]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L056</span><span class="limit-name">그룹별 원문 전달 페이지</span>
+<span class="value">12000자</span><span class="tag">무손실 페이지</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 좌표 구간을 max_read_chars 크기로 나눠 전달한다. 줄바꿈·메타데이터는 추가되므로 전체 JSON길이는 더 크다.</p>
+<p><b>한도 초과·이후 확인</b> READ_PARENT 이어보기. 후속 페이지 존재·실제 전달 범위 기록.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:327</p><code>limit = self.s.profile[&#x27;max_read_chars&#x27;]; pages = []; page = []; size = 0</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L057</span><span class="limit-name">동시 여러 조항 읽기 선택</span>
+<span class="value">최대8대상</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> READ_ARTICLES targets maxItems8.</p>
+<p><b>한도 초과·이후 확인</b> 다음 호출에서 추가 조항 읽기 선택 가능.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:123</p><code>&#x27;minItems&#x27;: 0 if terminal else 1, &#x27;maxItems&#x27;: 0 if terminal else (8 if kind == &#x27;READ_ARTICLES&#x27; else 1)},</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L058</span><span class="limit-name">다른 행동 대상 수</span>
+<span class="value">1개; FINISH/PENDING/DECIDE는0개</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 여러 행동을 임의 묶어 한 번에 실행하지 못하게 제한.</p>
+<p><b>한도 초과·이후 확인</b> 다음 탐색 호출에서 다음 행동 선택.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:123</p><code>&#x27;minItems&#x27;: 0 if terminal else 1, &#x27;maxItems&#x27;: 0 if terminal else (8 if kind == &#x27;READ_ARTICLES&#x27; else 1)},</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L059</span><span class="limit-name">선택 이유 길이</span>
+<span class="value">512자</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 행동 이유와 법령/자료 이유 maxLength512.</p>
+<p><b>한도 초과·이후 확인</b> 초과 출력은 수정/거절.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:77</p><code>nonempty = {&#x27;type&#x27;: &#x27;string&#x27;, &#x27;minLength&#x27;: 1, &#x27;maxLength&#x27;: 512}</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L060</span><span class="limit-name">탐색 메모 길이</span>
+<span class="value">1024자</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> notes maxLength1024. 현재 메모를 새 메모로 갱신하며 명시 행동·이유는 별도 이력에 보존.</p>
+<p><b>한도 초과·이후 확인</b> 메모에 모든 이력을 다시 넣는 구조가 아니다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:109</p><code>&#x27;basis_refs&#x27;: _strings(basis), &#x27;reason&#x27;: nonempty, &#x27;notes&#x27;: {&#x27;type&#x27;: &#x27;string&#x27;, &#x27;maxLength&#x27;: 1024},</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L061</span><span class="limit-name">충분성 이유 길이</span>
+<span class="value">512자</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> sufficiency_reason maxLength512.</p>
+<p><b>한도 초과·이후 확인</b> 초과는 수정/거절. 탐색 종료가 모든 쟁점 해결을 뜻하지 않음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:110</p><code>&#x27;evidence_sufficient&#x27;: {&#x27;type&#x27;: &#x27;boolean&#x27;}, &#x27;sufficiency_reason&#x27;: {&#x27;type&#x27;: &#x27;string&#x27;, &#x27;maxLength&#x27;: 512}})</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L062</span><span class="limit-name">요약 참조 의존 카드</span>
+<span class="value">앞16개</span><span class="tag">입력 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> reference_overview dependency_cards[:16].</p>
+<p><b>한도 초과·이후 확인</b> omitted_dependency_cards; FOLLOW_CONNECTION 상세 메뉴.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:412</p><code>result.update(dependency_cards=cards[:16],omitted_dependency_cards=max(0,len(cards)-16),</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L063</span><span class="limit-name">요약 미해결 참조</span>
+<span class="value">앞8개</span><span class="tag">입력 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> reference_overview unresolved[:8].</p>
+<p><b>한도 초과·이후 확인</b> unresolved_count는 별도. 상세 참조 메뉴/내부 상태는 별도 유지.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:413</p><code>unresolved=unresolved[:8],limits=limits)</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L064</span><span class="limit-name">새 검색 라운드</span>
+<span class="value">전체8라운드; 초기 이후 재진입최대7회</span><span class="tag">실행 중단</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> query_history가8이면 RESEARCH 메뉴를 추가하지 않음. 동일 정규화 검색은 별도 거절.</p>
+<p><b>한도 초과·이후 확인</b> 미해결을 남기고 확보 근거 판단/중단. 평가상의 전체 호출40회와 별도.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:543</p><code>if action == &#x27;RESEARCH&#x27; and len(self.p[&#x27;query_history&#x27;]) &gt;= self.policy[&#x27;search_rounds&#x27;]: return None</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L065</span><span class="limit-name">진전 없는 반복</span>
+<span class="value">2회</span><span class="tag">실행 중단</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> no_progress&gt;=2면 NO_PROGRESS 정리. 성공한 새로운 원문/선택이 있어야 진전으로 계산.</p>
+<p><b>한도 초과·이후 확인</b> 새 assessment gap 서명이 바뀌면 이 카운터는 리셋되지만 공유 모델/도구 예산은 리셋되지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1060</p><code>if self.p[&#x27;no_progress&#x27;]&gt;=self.s.profile[&#x27;max_no_progress&#x27;]:</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L066</span><span class="limit-name">판단 단계 시간 예약</span>
+<span class="value">30초</span><span class="tag">실행 중단</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> SELECT의 remaining-30초, 탐색 내 FINALIZATION_TIME_RESERVE 검사.</p>
+<p><b>한도 초과·이후 확인</b> 채택 근거가 있으면 판단으로 넘기고 없으면 미완료. 최종 응답30초 성공 보장 아님.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/memory_rag.py:233</p><code>seconds=max(1,self.s.context.remaining()-30) if record.get(&#x27;law_navigation&#x27;) else 240</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L067</span><span class="limit-name">행동 형식·계약 수정</span>
+<span class="value">한 번</span><span class="tag">재시도 제한</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> law navigation이 한 번 교정하고 gateway schema repair는0으로 꺼 중첩을 막음.</p>
+<p><b>한도 초과·이후 확인</b> 재수정 실패는 MODEL_DECISION_UNRESOLVED bounded_result. 채택 근거가 있으면 FINISH, 없으면 PENDING.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1030</p><code># Preserve the second failure; never execute or retry a third time.</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L068</span><span class="limit-name">중복 입력 필드 제거</span>
+<span class="value">flat articles, basis 본문, receipt span 목록</span><span class="tag">필드 투영</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> articles는 laws[].articles에 한 번만 전송. basis text/spans·read_receipt의 *_spans는 제거하고 unverified_blocks 추가.</p>
+<p><b>한도 초과·이후 확인</b> 법률 본문은 sources에서 전달. 저장된 원래 view/좌표는 보존.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:967</p><code>value=deepcopy({k:v for k,v in data.items() if k!=&#x27;articles&#x27;})</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L069</span><span class="limit-name">행동·이유 체인</span>
+<span class="value">개수 슬라이스 없음</span><span class="tag">상한 없음</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 모든 steps를 전달하며 반복 결정 내용을 judgments 참조로 중복 제거.</p>
+<p><b>한도 초과·이후 확인</b> 저장 이력과 현재 입력 증가 가능. 전역10만자 자동 컷으로 보호된다고 볼 수 없음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/investigation_chain.py:70</p><code># Every explicit action and reason remains visible. No history truncation.</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L070</span><span class="limit-name">복귀 지점·저장 목록·채택 목록·부족 목록</span>
+<span class="value">별도 개수 슬라이스 없음</span><span class="tag">상한 없음</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 현재 생성되는 return_points/saved_inventory/adopted_evidence/assessment_gaps에 숫자 top-k 없음.</p>
+<p><b>한도 초과·이후 확인</b> 단 FINISH에서 assessment_gaps를 제거하는 현재 결함은 별도 존재.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:471</p><code>data[&#x27;return_points&#x27;]=trail.points(self.p)</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L071</span><span class="limit-name">RESEARCH 검색어 출력</span>
+<span class="value">별도 개수·길이 max 없음</span><span class="tag">상한 없음</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> RESEARCH는 queries 최소1개. resolver의4개/180자 제한과 다른 스키마.</p>
+<p><b>한도 초과·이후 확인</b> 중복 검색·검색 라운드·전체 출력/호출 한도는 적용.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:124</p><code>queries={**_strings(), **({&#x27;minItems&#x27;: 1} if kind == &#x27;RESEARCH&#x27; else {&#x27;maxItems&#x27;: 0})},</code></div></details></div>
+<script type="application/json" class="card-data">{"title": "LLM 5 — 현재 법령·조항·원문 화면에서 다음 행동", "info": "실제 phase: source-law-navigation-{turn}, 필요 시 ...-repair\n\n이 부분이 탐색의 중심이다. 아래 5-A~5-E는 다른 에이전트가 아니라 같은 탐색\n호출의 화면·판단 목적을 구분한 설명이다. 매번 현재 입력과 유효 선택지가 바뀐다.\n\n공통 입력을 여덟 블록으로 읽으면 이해하기 쉽다.\n\n A. 질문과 쟁점\n    question, issues, assessment_gaps\n    무엇을 알아봐야 하는지, 판단 단계에서 무엇이 부족하다고 했는지.\n    SELECT에는 현재 task·facts로 만든 질문과 쟁점이 들어간다.\n    이번 원문 current_request가 별도 필드로 모든 탐색 호출에 반복되는 것은 아니다.\n\n B. 현재 검색 후보\n    search_queries, laws[].articles, article_matches, previews, more_laws\n    어느 검색으로 어떤 문서·조항이 나왔는지, 다음 후보 페이지가 있는지.\n    검색 미리보기는 실제 원문 읽기·전달 완료와 다르다.\n\n C. 이번에 실제로 보여주는 원문\n    sources, basis\n    읽기 요청 이후 모델에게 제시한 원문 페이지와 연결 ID.\n    법률 근거로 판단할 때는 실제 전달된 범위를 사용한다.\n\n D. 자료 상태와 읽기 상태\n    saved_inventory, read_receipt, branches, adopted_evidence\n    저장했는지, 어디까지 확보·전달했는지, 어느 쟁점에 채택·보류·제외했는지.\n    저장 원문 목록은 내용 자체가 아니다. 저장되었다고 이번 모델이 본 것도 아니다.\n\n E. 이전 행동과 이유\n    investigation_chain, notes, search_expression_history\n    왜 이 후보를 읽었는지, 무엇을 보류했는지, 이미 시도한 검색은 무엇인지.\n    전체 과거 원문을 매 호출마다 반복 복사하는 대신 필요한 기록을 전달한다.\n\n F. 돌아갈 수 있는 이전 화면\n    return_points, chain_frame_id\n    보류했던 당시 후보·읽기·참조 메뉴를 다시 선택할 수 있는 출발 지점.\n    이후의 확보 자료나 판단을 통째로 되돌리는 롤백과 다르다.\n\n G. 지금 허용된 행동 메뉴\n    actions, branches[].allowed_decisions\n    실제로 선택 가능한 행동 ID, 대상, 표시 문구와 효과.\n    모델이 없는 행동·없는 자료 ID를 만들면 코드가 거절한다.\n\n H. 현재 상태와 한도\n    presentation_id, state_version, progress, reading_rule, completion_contract\n    어느 화면에 대한 결정인지, 진전 없는 반복인지, 읽기와 채택을 분리해야 하는지.\n    출력 스키마도 현재 메뉴의 유효 ID와 형태를 제한한다.\n\n5-A. 후보를 보고 무엇을 읽을지 결정\n\n입력 예:\n    요구: Q1 기한 / Q2 서류\n    후보: A규정 제5조, C규정 제8조\n    A규정 미리보기: '신청은 ... / 제출서류는 ...'\n    C규정 미리보기: 다른 업무의 신청\n    이번에 실제 받은 원문: 없음\n    가능한 행동: A 읽기 / C 읽기 / 다음 후보 / 새 검색 / 제시된 복귀\n\n판단:\n    어느 후보가 질문의 대상·업무 맥락에 맞는가?\n    어느 원문 범위를 먼저 읽을까?\n\n출력:\n    READ_ARTICLES / READ_PARENT / READ_SCOPE / OPEN_LAW 등 + 대상 ID + 이유\n\n코드:\n    유효한 대상과 권한을 검사 → 읽기 또는 후보 화면 변경\n    → 실제 결과를 넣어 다음 탐색 입력 생성\n\n분기:\n    관련 후보 있음 → 원문 읽기\n    후보 있지만 질문과 무관함 → 다른 후보 / 새 검색 / 제시된 복귀\n    검색 0건 → 다른 검색 / 구조 탐색으로 이어지는 메뉴 / 제시된 복귀\n    가능한 경로 소진 → PENDING 또는 한도에 따른 중단\n    검색 도구 오류 → 검색 결과 0건과 구분하여 실패 처리\n\n'0건'은 이번 검색과 자료 범위에서 찾지 못했다는 뜻이다.\n'해당 규정이 존재하지 않는다'는 법률 판단으로 바꾸면 안 된다.\n도구 예외 뒤 항상 같은 화면으로 복구하는 공통 흐름은 현재 완성되지 않았다.\n수정 목표는 성공한 결과를 유지하고 실패한 검색·이유·가능한 다음 행동을 제공하는 것이다.\n\n5-B. 읽은 원문을 어디까지 더 볼지 결정\n\n입력 예:\n    A규정 제5조 본문 일부가 이번 sources에 들어옴\n    앞 문장에서 신청 기한을 찾음\n    뒤 문장·다른 항·참조 문서는 아직 전달되지 않음\n    읽기 상태: 확보 범위와 실제 전달 범위\n    가능한 행동: 이어보기 / 상위 전체 읽기 / 다른 항 읽기 / 이후 결정\n\n판단:\n    현재 본 범위로 이 조항의 조건·예외를 파악할 수 있는가?\n    어떤 범위를 더 읽어야 하는가?\n\n코드:\n    선택한 원문 범위를 확보·검증하고 다음 입력으로 전달한다.\n    현재 계약에서 READ/VIEW 호출의 채택·보류 결정 배열은 비워야 한다.\n    원문을 가져온 동작을 채택으로 처리하지 않는다.\n\n분기:\n    원문 전달 성공 → 다음 입력에서 내용을 보고 결정\n    일부만 전달 → 이어보기나 범위 확대\n    읽기 실패 → 성공한 다른 자료는 유지; 실패한 자료를 읽었다고 표시하면 안 됨\n    시간·분량 한도 → 실제 확인한 범위와 미확인 범위 구분\n\n5-C. 읽은 자료를 채택·보류·제외할지 결정\n\n입력 예:\n    요구: Q1 기한 / Q2 서류\n    읽은 A규정 제5조: '신청 기한은 10일 ... 서류는 B규정 제2조 ...'\n    B규정 제2조: 아직 읽지 않음\n    가능한 결정: A의 해당 전달 범위를 Q1에 채택 / 보류 / 제외\n\n판단:\n    A의 읽은 범위가 어떤 쟁점의 근거인가?\n    왜 채택하거나 아직 보류할까?\n\n출력:\n    DECIDE와 branch_decisions의 ADOPT / KEEP / DEFER / EXCLUDE,\n    쟁점 ID, 실제 원문 연결 ID, 이유\n\n코드:\n    실제 전달한 원문으로 가능한 결정인지 검사 → 자료별·쟁점별 상태 기록\n    Q1의 근거 채택이 Q2까지 해결했다는 뜻은 아니다.\n    모델은 맥락에 맞는 후보를 고를 책임이 있다. 코드가 인용 ID를 검증했다고\n    선택한 조항의 의미가 질문에 맞는다는 것이 자동 보증되지는 않는다.\n\n5-D. 보류했던 자료를 다시 선택\n\n입력:\n    보류 당시 화면을 가리키는 return_points\n    현재까지 읽고 채택한 자료의 상태\n    저장 원문 목록과 별도 재열람 선택지\n\n판단과 코드:\n    RETURN_TO → 보류 당시의 후보·읽기·참조 메뉴로 돌아가 재선택\n    VIEW_SAVED_SOURCE → 저장된 특정 원문을 다시 전달\n\n두 행동은 목적이 다르다. 화면 복귀가 이후 조사 결과를 지우지는 않는다.\n재열람만으로 보류·제외 상태를 채택으로 바꾸지도 않는다.\n다시 보고 모델이 채택·보류·제외 판단을 따로 제출한다.\n\n5-E. 계속 조사할지, 판단 단계로 넘길지 결정\n\n입력:\n    요구 Q1·Q2, 채택 근거, 보류 자료, 참조 상태,\n    이전 조사 기록, 판단 단계에서 돌려보낸 assessment_gaps,\n    반복·검색 한도와 현재 가능한 행동\n\n출력:\n    RESEARCH: 검색어를 바꿔 후보 검색으로 돌아가기\n    READ...: 필요한 원문 범위를 더 읽기\n    FOLLOW_CONNECTION: 참조 메뉴 조사\n    RETURN_TO: 이전 화면 복귀\n    FINISH: 탐색을 마치고 판단으로 넘기기\n    PENDING: 이 탐색 실행에서 진행을 완료하지 못함\n\n현재 출력에는 evidence_sufficient와 sufficiency_reason도 있다.\n선택과 판단이 각각 충분성을 결정하면 '충분 → 부족 → 충분'이 반복될 수 있다.\n수정 목표: 여기서는 확보 자료·조사를 멈춘 이유를 보고하고,\n실제 답변 가능 범위는 LLM 7에서 쟁점별로 결정한다.\n\n현재 결함: FINISH를 적용할 때 현재 assessment_gaps를 제거하는 코드가 있다.\n따라서 'Q2의 B원문 부족'을 추가 조사 입력으로 받았더라도 FINISH만으로 현재\n부족 목록이 사라질 수 있다. 과거 로그 전체 삭제와는 다르지만 현재 상태 연결은 끊긴다.\n수정 목표: 조사 종료 뒤에도 부족 항목을 보존하고 해결·보류·불필요 판단의\n이유를 기록한다. 영속적인 gap ID와 처리 상태는 아직 새로 구현하지 않았다.\n\n탐색 판단 출력이 거절될 때:\n    원래 화면 + 원래 행동 메뉴 + rejected_decision + contract_error + repair_contract\n      → 한 번의 수정 제안 → 코드가 전체 결정을 다시 검증\n    잘못된 최초 제안은 실행하지 않는다.\n    수정 실패는 MODEL_DECISION_UNRESOLVED로 정리한다.\n    채택 근거가 있으면 FINISH, 없으면 PENDING 결과로 이어진다.\n    도구·참조 예외처럼 다른 종료 경로는 구분해야 한다.\n    원래 화면·유효 선택지·성공한 작업을 일관되게 돌려주는 것은 수정 목표다.", "entries": [{"id": "L044", "block": "LLM 5 탐색", "name": "법령 후보 페이지", "value": "12개", "kind": "페이지", "status": "현행", "behavior": "검색 결과 법령 목록은 페이지당12개. 현재 채택/직접 지정 법령을 덧붙여 최종 laws 입력이12개를 넘을 수 있다.", "continuation": "NEXT_LAWS. 전체 total/next_cursor 보존.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py", "line": 65, "expression": "page = idx.law_groups_page(db, terms, allowed(s), limit=policy(s)['law_page_size'])"}, {"id": "L045", "block": "LLM 5 탐색", "name": "첫 자동 진입 조항", "value": "법령당1개", "kind": "초기 선택", "status": "현행", "behavior": "첫 법령 페이지의 각 법령에서 조항1개를 가져온다.", "continuation": "법령별 OPEN_LAW로 다른 조항 선택 가능.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py", "line": 73, "expression": "articles = idx.article_groups_page(db, terms, law['document_id'], allowed(s), limit=1)"}, {"id": "L046", "block": "LLM 5 탐색", "name": "첫 자동 진입 적중", "value": "조항당1개", "kind": "초기 선택", "status": "현행", "behavior": "첫 진입 조항에서 hit1개를 확보한다.", "continuation": "NEXT_HITS로 다음 적중 위치.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py", "line": 76, "expression": "for h in idx.hit_page(db, terms, sid, allowed(s), limit=1)['items']:"}, {"id": "L047", "block": "LLM 5 탐색", "name": "법령 열기/다음 조항 페이지", "value": "4개", "kind": "페이지", "status": "현행", "behavior": "OPEN_LAW/NEXT_ARTICLES는 설정 article_page_size=4.", "continuation": "NEXT_ARTICLES. 현재 ACTIVE 경로 추가 때문에 전체 branch 입력4개 제한은 아니다.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 847, "expression": "cursor=identity.get('cursor'), limit=self.policy['article_page_size'])"}, {"id": "L048", "block": "LLM 5 탐색", "name": "후보 조항 목록의 초기 크기", "value": "8개", "kind": "첫 페이지", "status": "현행", "behavior": "article_menu에서 아직 저장 조항 페이지가 없으면 하드코딩 limit=8. 설정4개와 별도.", "continuation": "법령을 열면4개씩 제공하는 경로 이용. 이 요약 메뉴 자체가 항상8개 이하인 것도 아니며 저장 페이지를 재사용한다.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 357, "expression": "page=self.p.get('article_pages',{}).get(did) or self.idx.article_groups_page(self.db,self.p['catalogue']['terms'],did,lc.allowed(self.s),limit=8)"}, {"id": "L049", "block": "LLM 5 탐색", "name": "조항 요약용 적중", "value": "각3개", "kind": "요약 선택", "status": "현행", "behavior": "article_menu가 처음3개의 hit 중 표시할 본문 위치를 선택.", "continuation": "다른 위치는 해당 조항 적중 탐색으로 확인.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 361, "expression": "hits=self.idx.hit_page(self.db,self.p['catalogue']['terms'],sid,lc.allowed(self.s),limit=3)['items']"}, {"id": "L050", "block": "LLM 5 탐색", "name": "조항 요약 미리보기", "value": "앞240자", "kind": "본문 슬라이스", "status": "현행", "behavior": "article_menu preview=body.text[:240].", "continuation": "READ_ARTICLES로 원문 읽기. 전문을 읽었다는 의미 없음.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 364, "expression": "'preview':body['text'][:240] if body else ''})"}, {"id": "L051", "block": "LLM 5 탐색", "name": "읽은 적중 미리보기", "value": "앞360자", "kind": "본문 슬라이스", "status": "현행", "behavior": "add_reads가 profile.preview_chars=360으로 미리보기 생성. 코드 fallback400은 현행 설정으로 덮인다.", "continuation": "READ_PARENT/READ_SCOPE 또는 저장 원문 재열람.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 283, "expression": "text = r['text'][:self.s.profile.get('preview_chars', 400)]"}, {"id": "L052", "block": "LLM 5 탐색", "name": "다음 적중 위치 페이지", "value": "8개", "kind": "페이지", "status": "현행", "behavior": "NEXT_HITS의 hit_page_size=8.", "continuation": "NEXT_HITS. SQL의 total/cursor 유지.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 854, "expression": "self.open_hits(identity['source_id'], identity['cursor'], self.policy['hit_page_size'])"}, {"id": "L053", "block": "LLM 5 탐색", "name": "미리보기 이력 표시", "value": "최근8개", "kind": "입력 슬라이스", "status": "현행", "behavior": "그룹별 previews[-8:]만 현재 카드에 표시.", "continuation": "preview_total/omitted_previews. 전체 이력은 저장되나 앞 미리보기 전용 페이지는 없다. 과거 화면/원문 확인 경로.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 572, "expression": "previews=group['previews'][-self.policy['hit_page_size']:]"}, {"id": "L054", "block": "LLM 5 탐색", "name": "형제 구조 목록", "value": "앞8개", "kind": "입력 슬라이스", "status": "현행", "behavior": "부모 범위 sibling_rows[:8]. 제목 목록이며 원문 읽기 아님.", "continuation": "sibling_total/sibling_list_complete 표시. READ_PARENT로 부모 전체 원문.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 577, "expression": "'siblings': sibling_rows[:self.policy['hit_page_size']], 'sibling_total':len(sibling_rows),"}, {"id": "L055", "block": "LLM 5 탐색", "name": "이번 원문을 제시할 그룹", "value": "최대8그룹", "kind": "입력 페이지", "status": "현행", "behavior": "focus 우선+읽기 대기 그룹을 중복 제거 후 [:8]. 그룹당 현재 페이지를 보여준다.", "continuation": "나머지 그룹의 읽기/이어보기 선택지와 상태 유지.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 537, "expression": "page_groups=list(dict.fromkeys([g for g in focus_ids if g in waiting]+waiting))[:8]"}, {"id": "L056", "block": "LLM 5 탐색", "name": "그룹별 원문 전달 페이지", "value": "12000자", "kind": "무손실 페이지", "status": "현행", "behavior": "좌표 구간을 max_read_chars 크기로 나눠 전달한다. 줄바꿈·메타데이터는 추가되므로 전체 JSON길이는 더 크다.", "continuation": "READ_PARENT 이어보기. 후속 페이지 존재·실제 전달 범위 기록.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 327, "expression": "limit = self.s.profile['max_read_chars']; pages = []; page = []; size = 0"}, {"id": "L057", "block": "LLM 5 탐색", "name": "동시 여러 조항 읽기 선택", "value": "최대8대상", "kind": "출력 계약", "status": "현행", "behavior": "READ_ARTICLES targets maxItems8.", "continuation": "다음 호출에서 추가 조항 읽기 선택 가능.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 123, "expression": "'minItems': 0 if terminal else 1, 'maxItems': 0 if terminal else (8 if kind == 'READ_ARTICLES' else 1)},"}, {"id": "L058", "block": "LLM 5 탐색", "name": "다른 행동 대상 수", "value": "1개; FINISH/PENDING/DECIDE는0개", "kind": "출력 계약", "status": "현행", "behavior": "여러 행동을 임의 묶어 한 번에 실행하지 못하게 제한.", "continuation": "다음 탐색 호출에서 다음 행동 선택.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 123, "expression": "'minItems': 0 if terminal else 1, 'maxItems': 0 if terminal else (8 if kind == 'READ_ARTICLES' else 1)},"}, {"id": "L059", "block": "LLM 5 탐색", "name": "선택 이유 길이", "value": "512자", "kind": "출력 계약", "status": "현행", "behavior": "행동 이유와 법령/자료 이유 maxLength512.", "continuation": "초과 출력은 수정/거절.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 77, "expression": "nonempty = {'type': 'string', 'minLength': 1, 'maxLength': 512}"}, {"id": "L060", "block": "LLM 5 탐색", "name": "탐색 메모 길이", "value": "1024자", "kind": "출력 계약", "status": "현행", "behavior": "notes maxLength1024. 현재 메모를 새 메모로 갱신하며 명시 행동·이유는 별도 이력에 보존.", "continuation": "메모에 모든 이력을 다시 넣는 구조가 아니다.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 109, "expression": "'basis_refs': _strings(basis), 'reason': nonempty, 'notes': {'type': 'string', 'maxLength': 1024},"}, {"id": "L061", "block": "LLM 5 탐색", "name": "충분성 이유 길이", "value": "512자", "kind": "출력 계약", "status": "현행", "behavior": "sufficiency_reason maxLength512.", "continuation": "초과는 수정/거절. 탐색 종료가 모든 쟁점 해결을 뜻하지 않음.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 110, "expression": "'evidence_sufficient': {'type': 'boolean'}, 'sufficiency_reason': {'type': 'string', 'maxLength': 512}})"}, {"id": "L062", "block": "LLM 5 탐색", "name": "요약 참조 의존 카드", "value": "앞16개", "kind": "입력 슬라이스", "status": "현행", "behavior": "reference_overview dependency_cards[:16].", "continuation": "omitted_dependency_cards; FOLLOW_CONNECTION 상세 메뉴.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 412, "expression": "result.update(dependency_cards=cards[:16],omitted_dependency_cards=max(0,len(cards)-16),"}, {"id": "L063", "block": "LLM 5 탐색", "name": "요약 미해결 참조", "value": "앞8개", "kind": "입력 슬라이스", "status": "현행", "behavior": "reference_overview unresolved[:8].", "continuation": "unresolved_count는 별도. 상세 참조 메뉴/내부 상태는 별도 유지.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 413, "expression": "unresolved=unresolved[:8],limits=limits)"}, {"id": "L064", "block": "LLM 5 탐색", "name": "새 검색 라운드", "value": "전체8라운드; 초기 이후 재진입최대7회", "kind": "실행 중단", "status": "현행", "behavior": "query_history가8이면 RESEARCH 메뉴를 추가하지 않음. 동일 정규화 검색은 별도 거절.", "continuation": "미해결을 남기고 확보 근거 판단/중단. 평가상의 전체 호출40회와 별도.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 543, "expression": "if action == 'RESEARCH' and len(self.p['query_history']) >= self.policy['search_rounds']: return None"}, {"id": "L065", "block": "LLM 5 탐색", "name": "진전 없는 반복", "value": "2회", "kind": "실행 중단", "status": "현행", "behavior": "no_progress>=2면 NO_PROGRESS 정리. 성공한 새로운 원문/선택이 있어야 진전으로 계산.", "continuation": "새 assessment gap 서명이 바뀌면 이 카운터는 리셋되지만 공유 모델/도구 예산은 리셋되지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 1060, "expression": "if self.p['no_progress']>=self.s.profile['max_no_progress']:"}, {"id": "L066", "block": "LLM 5 탐색", "name": "판단 단계 시간 예약", "value": "30초", "kind": "실행 중단", "status": "현행", "behavior": "SELECT의 remaining-30초, 탐색 내 FINALIZATION_TIME_RESERVE 검사.", "continuation": "채택 근거가 있으면 판단으로 넘기고 없으면 미완료. 최종 응답30초 성공 보장 아님.", "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py", "line": 233, "expression": "seconds=max(1,self.s.context.remaining()-30) if record.get('law_navigation') else 240"}, {"id": "L067", "block": "LLM 5 탐색", "name": "행동 형식·계약 수정", "value": "한 번", "kind": "재시도 제한", "status": "현행", "behavior": "law navigation이 한 번 교정하고 gateway schema repair는0으로 꺼 중첩을 막음.", "continuation": "재수정 실패는 MODEL_DECISION_UNRESOLVED bounded_result. 채택 근거가 있으면 FINISH, 없으면 PENDING.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 1030, "expression": "# Preserve the second failure; never execute or retry a third time."}, {"id": "L068", "block": "LLM 5 탐색", "name": "중복 입력 필드 제거", "value": "flat articles, basis 본문, receipt span 목록", "kind": "필드 투영", "status": "현행", "behavior": "articles는 laws[].articles에 한 번만 전송. basis text/spans·read_receipt의 *_spans는 제거하고 unverified_blocks 추가.", "continuation": "법률 본문은 sources에서 전달. 저장된 원래 view/좌표는 보존.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 967, "expression": "value=deepcopy({k:v for k,v in data.items() if k!='articles'})"}, {"id": "L069", "block": "LLM 5 탐색", "name": "행동·이유 체인", "value": "개수 슬라이스 없음", "kind": "상한 없음", "status": "현행", "behavior": "모든 steps를 전달하며 반복 결정 내용을 judgments 참조로 중복 제거.", "continuation": "저장 이력과 현재 입력 증가 가능. 전역10만자 자동 컷으로 보호된다고 볼 수 없음.", "path": "02_BACKEND/semantic_runtime/legal_agent/investigation_chain.py", "line": 70, "expression": "# Every explicit action and reason remains visible. No history truncation."}, {"id": "L070", "block": "LLM 5 탐색", "name": "복귀 지점·저장 목록·채택 목록·부족 목록", "value": "별도 개수 슬라이스 없음", "kind": "상한 없음", "status": "현행", "behavior": "현재 생성되는 return_points/saved_inventory/adopted_evidence/assessment_gaps에 숫자 top-k 없음.", "continuation": "단 FINISH에서 assessment_gaps를 제거하는 현재 결함은 별도 존재.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 471, "expression": "data['return_points']=trail.points(self.p)"}, {"id": "L071", "block": "LLM 5 탐색", "name": "RESEARCH 검색어 출력", "value": "별도 개수·길이 max 없음", "kind": "상한 없음", "status": "현행", "behavior": "RESEARCH는 queries 최소1개. resolver의4개/180자 제한과 다른 스키마.", "continuation": "중복 검색·검색 라운드·전체 출력/호출 한도는 적용.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 124, "expression": "queries={**_strings(), **({'minItems': 1} if kind == 'RESEARCH' else {'maxItems': 0})},"}]}</script></details><details class="stage" id="read" >
+<summary>원문 읽기 코드 — 확보량과 모델 전달량<span class="count">5항목</span></summary>
+<div class="limits"><details class="limit" data-status="current">
+<summary><span class="identifier">L072</span><span class="limit-name">읽기 응답의 블록/구간</span>
+<span class="value">페이지당40개</span><span class="tag">페이지</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> page_size=40. 내부41개 조회는 다음 항목 존재를 확인하기 위한 것.</p>
+<p><b>한도 초과·이후 확인</b> block/char cursor로 같은 요청 범위의 다음 페이지.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/source_tools.py:159</p><code>for n, row in enumerate(rows[:page_size]):</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L073</span><span class="limit-name">읽기 응답의 본문</span>
+<span class="value">페이지당12000자</span><span class="tag">페이지</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> max_read_chars. 블록 중간에서 끝나면 char cursor 보존.</p>
+<p><b>한도 초과·이후 확인</b> unit_reading.read가 cursor를 따라 요청 범위를 끝까지 읽음. 실패 시 완료 표시하지 않음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/source_tools.py:157</p><code>remaining = self.profile[&#x27;max_read_chars&#x27;]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L074</span><span class="limit-name">누적 새 원문 확보량</span>
+<span class="value">1600000자</span><span class="tag">실행 중단</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> unit_reading initial_chars. 이미 확보한 검증 원문 재사용은 새 확보량과 분리.</p>
+<p><b>한도 초과·이후 확인</b> 초과 BudgetExhausted. 일회 모델 입력1.6M자 제한이 아님.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_reading.py:232</p><code>if action_state[&#x27;chars&#x27;]+new_chars&gt;POLICY[&#x27;initial_chars&#x27;]:</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L075</span><span class="limit-name">누적 원문 읽기 도구</span>
+<span class="value">1024회</span><span class="tag">실행 중단</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> unit_reading read_actions. 공통 tool1024와 함께 적용.</p>
+<p><b>한도 초과·이후 확인</b> 한도가 더 먼저 걸리는 층에서 중단. 재진입 read_state 이어받음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_reading.py:242</p><code>if action_state[&#x27;count&#x27;]&gt;=POLICY[&#x27;read_actions&#x27;]:raise BudgetExhausted(&#x27;unit read action budget&#x27;)</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L076</span><span class="limit-name">블록 길이 SQL 처리 묶음</span>
+<span class="value">400개씩</span><span class="tag">무손실 처리 묶음</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> block_chars의 SQL IN 조회를400개씩 나눔. 전체 ID를 처리함.</p>
+<p><b>한도 초과·이후 확인</b> 401번째부터 버리지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_reading.py:55</p><code>for start in range(0, len(missing), 400):</code></div></details></div>
+<script type="application/json" class="card-data">{"title": "원문 읽기 코드 — 확보량과 모델 전달량", "info": "", "entries": [{"id": "L072", "block": "원문 읽기", "name": "읽기 응답의 블록/구간", "value": "페이지당40개", "kind": "페이지", "status": "현행", "behavior": "page_size=40. 내부41개 조회는 다음 항목 존재를 확인하기 위한 것.", "continuation": "block/char cursor로 같은 요청 범위의 다음 페이지.", "path": "02_BACKEND/semantic_runtime/legal_agent/source_tools.py", "line": 159, "expression": "for n, row in enumerate(rows[:page_size]):"}, {"id": "L073", "block": "원문 읽기", "name": "읽기 응답의 본문", "value": "페이지당12000자", "kind": "페이지", "status": "현행", "behavior": "max_read_chars. 블록 중간에서 끝나면 char cursor 보존.", "continuation": "unit_reading.read가 cursor를 따라 요청 범위를 끝까지 읽음. 실패 시 완료 표시하지 않음.", "path": "02_BACKEND/semantic_runtime/legal_agent/source_tools.py", "line": 157, "expression": "remaining = self.profile['max_read_chars']"}, {"id": "L074", "block": "원문 읽기", "name": "누적 새 원문 확보량", "value": "1600000자", "kind": "실행 중단", "status": "현행", "behavior": "unit_reading initial_chars. 이미 확보한 검증 원문 재사용은 새 확보량과 분리.", "continuation": "초과 BudgetExhausted. 일회 모델 입력1.6M자 제한이 아님.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py", "line": 232, "expression": "if action_state['chars']+new_chars>POLICY['initial_chars']:"}, {"id": "L075", "block": "원문 읽기", "name": "누적 원문 읽기 도구", "value": "1024회", "kind": "실행 중단", "status": "현행", "behavior": "unit_reading read_actions. 공통 tool1024와 함께 적용.", "continuation": "한도가 더 먼저 걸리는 층에서 중단. 재진입 read_state 이어받음.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py", "line": 242, "expression": "if action_state['count']>=POLICY['read_actions']:raise BudgetExhausted('unit read action budget')"}, {"id": "L076", "block": "원문 읽기", "name": "블록 길이 SQL 처리 묶음", "value": "400개씩", "kind": "무손실 처리 묶음", "status": "현행", "behavior": "block_chars의 SQL IN 조회를400개씩 나눔. 전체 ID를 처리함.", "continuation": "401번째부터 버리지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py", "line": 55, "expression": "for start in range(0, len(missing), 400):"}]}</script></details><details class="stage" id="b6" >
+<summary>LLM 6 — 참조한 다른 자료를 따라갈 것인가?<span class="count">16항목</span></summary>
+<div class="explanation"><b>LLM 입력 블록 · 판단 · 성공/실패 분기</b><pre>실제 phase: source-reference-* 계열
+
+입력 블록:
+ A. 현재 질문: question
+ B. 이번 연결이 나온 출발 원문: sources
+ C. 출발점과 참조 대상: groups[].anchor, target
+ D. 원문에 실제 연결이 있다는 확인 자료: connections
+ E. 필요한 읽기 의무와 제공 가능한 범위: reading_obligations, read_options
+ F. 보류·미해결 참조와 아직 제시하지 않은 연결 수
+ G. 현재까지의 행동 이력과 복귀 문맥, 한도
+
+판단 단위:
+ &#x27;이 참조가 현재 질문에 필요한가? 필요하면 제시된 어느 범위를 읽을까?&#x27;
+
+모의 입력:
+    A규정 제5조에 &#x27;서류는 B규정 제2조에 따른다&#x27;라는 문장이 있음
+    참조 대상: B규정 제2조
+    B 본문: 아직 없음
+    읽기 선택지: 제시된 조·항 또는 부모 범위
+
+출력:
+ FOLLOW: 참조 대상의 선택 범위를 읽는다
+ SKIP: 관련 없다는 이유와 함께 건너뛴다
+ DEFER: 판단을 보류하고 출발 화면을 남긴다
+ 적용 판단: APPLIES / DOES_NOT_APPLY / UNDETERMINED 및 이유
+
+코드:
+    메뉴에 제시된 연결과 범위인지, 읽기 의무와 한도에 맞는지 검사
+    → 원문 읽기·검증·기록 → 탐색에 반영
+    연결을 따라 읽는 것과 최종 답변 근거로 채택하는 것은 구분한다.
+
+분기:
+    FOLLOW 성공 → B 원문 확보; 탐색에서 실제 전달 범위 확인 후 채택 판단
+    질문과 무관한 참조 → 근거 있는 SKIP; 모든 참조를 필수로 만들지 않음
+    아직 판단 못함 → DEFER와 출발 지점 유지
+    대상 못 찾음 → 미해결 참조로 구분; B 내용을 추측하지 않음
+    읽기·모델·시간 실패 → 성공한 A 자료와 미해결 B 상태를 남기는 것이 목표
+    참조가 메뉴에 없음 → 이 색인의 확인 범위에서 검증된 연결이 없다는 뜻
+
+&#x27;A가 B를 참조한다는 사실을 확인&#x27;과 &#x27;B 원문을 읽어 내용을 확인&#x27;은 다르다.
+참조 성공이 질문의 모든 요구사항 해결을 의미하지도 않는다.</pre></div><div class="limits"><details class="limit" data-status="current">
+<summary><span class="identifier">L077</span><span class="limit-name">한 번에 조사할 출발 원문</span>
+<span class="value">16개</span><span class="tag">페이지/작업 묶음</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> anchors_per_round=16. 초과 미조사 출발점 표시.</p>
+<p><b>한도 초과·이후 확인</b> 남은 작업과 스캔 상태를 보존. 작업/시간/호출 상한 안에서 계속.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:79</p><code>for anchor in anchors[:LIMITS[&#x27;anchors_per_round&#x27;]]:</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L078</span><span class="limit-name">출발 원문별 연결 스캔</span>
+<span class="value">256개</span><span class="tag">페이지</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> SQL257개 조회 후256개 처리. more_available와 after_reference_id 기록.</p>
+<p><b>한도 초과·이후 확인</b> cursor로 이어 스캔.256개를 전체 연결 수로 단정하지 않음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:91</p><code>for raw_row in rows[:LIMITS[&#x27;edges_per_anchor&#x27;]]:</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L079</span><span class="limit-name">한 모델 메뉴의 연결 그룹</span>
+<span class="value">최대16개</span><span class="tag">메뉴 묶음</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> groups_per_batch16; 그룹 JSON24k자 조건이 먼저 걸리면 더 적음.</p>
+<p><b>한도 초과·이후 확인</b> omitted_groups/queue 유지, 후속 참조 메뉴. 실제 law 호출은 배치1개로 돌아감.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:452</p><code>if len(rows)&gt;=LIMITS[&#x27;groups_per_batch&#x27;] or len(json.dumps(rows+[row],ensure_ascii=False))&gt;LIMITS[&#x27;relation_context_chars&#x27;]:break</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L080</span><span class="limit-name">연결 그룹별 제시 문구</span>
+<span class="value">앞8개</span><span class="tag">입력 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> connections[:8]. reading_obligations는 모든 연결에서 작성.</p>
+<p><b>한도 초과·이후 확인</b> omitted_connections. 전체 내부 연결 보존; 9번째 witness 자동 이어보기 전용 메뉴는 없다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:203</p><code>connections = group[&#x27;connections&#x27;][:LIMITS[&#x27;witnesses_per_group&#x27;]]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L081</span><span class="limit-name">참조 문구 본문</span>
+<span class="value">각 앞600자</span><span class="tag">본문 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> witness[:600]; 전체 원문/해시로 사전 검증한 뒤 짧게 표시.</p>
+<p><b>한도 초과·이후 확인</b> witness_chars/witness_truncated 표시. 출발 원문 읽기 경로로 전체 문맥 확인 가능.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:178</p><code>&#x27;witness&#x27;: witness[:LIMITS[&#x27;witness_chars&#x27;]], &#x27;witness_sha256&#x27;: expected,</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L082</span><span class="limit-name">그룹 목록 JSON 크기</span>
+<span class="value">24000자</span><span class="tag">메뉴 묶음</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 다음 그룹을 추가했을 때24k를 넘으면 목록 구성을 멈춤.</p>
+<p><b>한도 초과·이후 확인</b> 첫 그룹부터 초과하면 reference_item_context_limit. 해당 그룹을 자동 분할하지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:452</p><code>if len(rows)&gt;=LIMITS[&#x27;groups_per_batch&#x27;] or len(json.dumps(rows+[row],ensure_ascii=False))&gt;LIMITS[&#x27;relation_context_chars&#x27;]:break</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L083</span><span class="limit-name">최종 참조 입력 JSON 크기</span>
+<span class="value">100000자</span><span class="tag">실행 중단</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 질문·출발 원문·이력 등 합친 data를 검사. gateway exact_evidence 추가 전의 검사다.</p>
+<p><b>한도 초과·이후 확인</b> 초과 reference_context_limit; 이후 wire 중복/메타데이터를 포함한 전체 HTTP100k보장 아님.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:479</p><code>if len(json.dumps(data,ensure_ascii=False))&gt;max_context_chars:</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L084</span><span class="limit-name">한 메뉴에서 FOLLOW 그룹</span>
+<span class="value">최대8개</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 전체 표시16그룹은 각각 결정하지만 FOLLOW는8그룹 이하.</p>
+<p><b>한도 초과·이후 확인</b> 나머지 SKIP/DEFER 등 이유 기록. 초과는 거절/수정.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:277</p><code>if seen != set(offered) or followed &gt; LIMITS[&#x27;follow_groups&#x27;]:</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L085</span><span class="limit-name">FOLLOW 그룹별 읽기 범위</span>
+<span class="value">최대4개</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> scopes_per_group4; SKIP/DEFER는0개.</p>
+<p><b>한도 초과·이후 확인</b> 각 그룹에 제공한 scope만 선택. 다른 그룹 범위는 거절.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:226</p><code>&#x27;scopes&#x27;: {&#x27;type&#x27;: &#x27;array&#x27;, &#x27;maxItems&#x27;: LIMITS[&#x27;scopes_per_group&#x27;],</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L086</span><span class="limit-name">참조 이유·적용 이유</span>
+<span class="value">각512자</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> reason/applicability_reason 최대512자.</p>
+<p><b>한도 초과·이후 확인</b> 초과 거절/수정.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:228</p><code>&#x27;reason&#x27;: {&#x27;type&#x27;: &#x27;string&#x27;, &#x27;minLength&#x27;: 1, &#x27;maxLength&#x27;: 512},</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L087</span><span class="limit-name">한 탐색 행동의 참조 판단 배치</span>
+<span class="value">1개</span><span class="tag">실행 묶음</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> law_navigation이 max_model_batches=1로 호출. 기본 batches64가 실제1로 좁혀짐.</p>
+<p><b>한도 초과·이후 확인</b> 한 메뉴 판단 후 탐색으로 돌아옴.64번 연속 모델 호출이 아님.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:875</p><code>phase_prefix=&#x27;source-reference-law-&#x27;+str(self.p[&#x27;turn&#x27;])+&#x27;-&#x27;, max_model_batches=1,</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L088</span><span class="limit-name">참조 엔진 기본 배치 상한</span>
+<span class="value">64개; 현행 law 호출은1개</span><span class="tag">조건부 기본값</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 기본값; 현행은1</p>
+<p><b>실제로 하는 일</b> max_model_batches 미지정일 때만64. 현재 law 호출에서는min(64,1).</p>
+<p><b>한도 초과·이후 확인</b> 수정 호출 등 물리 시도40회는 별도 함께 적용.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:378</p><code>batch_limit=LIMITS[&#x27;batches&#x27;] if max_model_batches is None else min(LIMITS[&#x27;batches&#x27;],max_model_batches)</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L089</span><span class="limit-name">참조 작업 반복</span>
+<span class="value">호출당128단계</span><span class="tag">실행 중단</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> work_steps128은 스캔·큐 처리 등 내부 반복.128 LLM 호출을 뜻하지 않음.</p>
+<p><b>한도 초과·이후 확인</b> reference_work_limit에 미조사 그룹/출발점 저장.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:380</p><code>while round_number&lt;batch_limit and work_steps&lt;LIMITS[&#x27;work_steps&#x27;]:</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L090</span><span class="limit-name">참조 깊이</span>
+<span class="value">8</span><span class="tag">실행 중단</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 깊이8 출발 원문에서 더 재귀 스캔하지 않음. 깊이7에서 따라 읽어 깊이8 자료를 확보할 수 있음.</p>
+<p><b>한도 초과·이후 확인</b> REFERENCE_DEPTH_LIMIT로 남은 조사 표시.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:389</p><code>changed=[sid for sid in changed if state[&#x27;depths&#x27;].get(sid,0)&lt;LIMITS[&#x27;max_depth&#x27;]]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L091</span><span class="limit-name">참조 의미/선택 수정</span>
+<span class="value">한 번</span><span class="tag">재시도 제한</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 유효 JSON이지만 연결 coverage/scope/applicability 검사에서 거절되면 수정 입력1회.</p>
+<p><b>한도 초과·이후 확인</b> gateway JSON수정1회와 별도 층. 모든 시도는 전체40회에 소비.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:494</p><code>decision=invoke(SYSTEM,{**data,&#x27;rejected_decision&#x27;:decision,&#x27;contract_error&#x27;:str(exc)},schema(offered),phase,min(180,left))</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L092</span><span class="limit-name">참조 전체 의무·미해결 목록</span>
+<span class="value">별도 개수 상한 없음</span><span class="tag">상한 없음</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> reading_obligations/전체 unresolved/관계 이력 등은 witness8개 표시와 별개.</p>
+<p><b>한도 초과·이후 확인</b> 24k/100k 입력 검사 때문에 큰 한 그룹에서도 멈출 수 있음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:210</p><code>for c in group[&#x27;connections&#x27;]],</code></div></details></div>
+<script type="application/json" class="card-data">{"title": "LLM 6 — 참조한 다른 자료를 따라갈 것인가?", "info": "실제 phase: source-reference-* 계열\n\n입력 블록:\n A. 현재 질문: question\n B. 이번 연결이 나온 출발 원문: sources\n C. 출발점과 참조 대상: groups[].anchor, target\n D. 원문에 실제 연결이 있다는 확인 자료: connections\n E. 필요한 읽기 의무와 제공 가능한 범위: reading_obligations, read_options\n F. 보류·미해결 참조와 아직 제시하지 않은 연결 수\n G. 현재까지의 행동 이력과 복귀 문맥, 한도\n\n판단 단위:\n '이 참조가 현재 질문에 필요한가? 필요하면 제시된 어느 범위를 읽을까?'\n\n모의 입력:\n    A규정 제5조에 '서류는 B규정 제2조에 따른다'라는 문장이 있음\n    참조 대상: B규정 제2조\n    B 본문: 아직 없음\n    읽기 선택지: 제시된 조·항 또는 부모 범위\n\n출력:\n FOLLOW: 참조 대상의 선택 범위를 읽는다\n SKIP: 관련 없다는 이유와 함께 건너뛴다\n DEFER: 판단을 보류하고 출발 화면을 남긴다\n 적용 판단: APPLIES / DOES_NOT_APPLY / UNDETERMINED 및 이유\n\n코드:\n    메뉴에 제시된 연결과 범위인지, 읽기 의무와 한도에 맞는지 검사\n    → 원문 읽기·검증·기록 → 탐색에 반영\n    연결을 따라 읽는 것과 최종 답변 근거로 채택하는 것은 구분한다.\n\n분기:\n    FOLLOW 성공 → B 원문 확보; 탐색에서 실제 전달 범위 확인 후 채택 판단\n    질문과 무관한 참조 → 근거 있는 SKIP; 모든 참조를 필수로 만들지 않음\n    아직 판단 못함 → DEFER와 출발 지점 유지\n    대상 못 찾음 → 미해결 참조로 구분; B 내용을 추측하지 않음\n    읽기·모델·시간 실패 → 성공한 A 자료와 미해결 B 상태를 남기는 것이 목표\n    참조가 메뉴에 없음 → 이 색인의 확인 범위에서 검증된 연결이 없다는 뜻\n\n'A가 B를 참조한다는 사실을 확인'과 'B 원문을 읽어 내용을 확인'은 다르다.\n참조 성공이 질문의 모든 요구사항 해결을 의미하지도 않는다.", "entries": [{"id": "L077", "block": "LLM 6 참조", "name": "한 번에 조사할 출발 원문", "value": "16개", "kind": "페이지/작업 묶음", "status": "현행", "behavior": "anchors_per_round=16. 초과 미조사 출발점 표시.", "continuation": "남은 작업과 스캔 상태를 보존. 작업/시간/호출 상한 안에서 계속.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 79, "expression": "for anchor in anchors[:LIMITS['anchors_per_round']]:"}, {"id": "L078", "block": "LLM 6 참조", "name": "출발 원문별 연결 스캔", "value": "256개", "kind": "페이지", "status": "현행", "behavior": "SQL257개 조회 후256개 처리. more_available와 after_reference_id 기록.", "continuation": "cursor로 이어 스캔.256개를 전체 연결 수로 단정하지 않음.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 91, "expression": "for raw_row in rows[:LIMITS['edges_per_anchor']]:"}, {"id": "L079", "block": "LLM 6 참조", "name": "한 모델 메뉴의 연결 그룹", "value": "최대16개", "kind": "메뉴 묶음", "status": "현행", "behavior": "groups_per_batch16; 그룹 JSON24k자 조건이 먼저 걸리면 더 적음.", "continuation": "omitted_groups/queue 유지, 후속 참조 메뉴. 실제 law 호출은 배치1개로 돌아감.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 452, "expression": "if len(rows)>=LIMITS['groups_per_batch'] or len(json.dumps(rows+[row],ensure_ascii=False))>LIMITS['relation_context_chars']:break"}, {"id": "L080", "block": "LLM 6 참조", "name": "연결 그룹별 제시 문구", "value": "앞8개", "kind": "입력 슬라이스", "status": "현행", "behavior": "connections[:8]. reading_obligations는 모든 연결에서 작성.", "continuation": "omitted_connections. 전체 내부 연결 보존; 9번째 witness 자동 이어보기 전용 메뉴는 없다.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 203, "expression": "connections = group['connections'][:LIMITS['witnesses_per_group']]"}, {"id": "L081", "block": "LLM 6 참조", "name": "참조 문구 본문", "value": "각 앞600자", "kind": "본문 슬라이스", "status": "현행", "behavior": "witness[:600]; 전체 원문/해시로 사전 검증한 뒤 짧게 표시.", "continuation": "witness_chars/witness_truncated 표시. 출발 원문 읽기 경로로 전체 문맥 확인 가능.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 178, "expression": "'witness': witness[:LIMITS['witness_chars']], 'witness_sha256': expected,"}, {"id": "L082", "block": "LLM 6 참조", "name": "그룹 목록 JSON 크기", "value": "24000자", "kind": "메뉴 묶음", "status": "현행", "behavior": "다음 그룹을 추가했을 때24k를 넘으면 목록 구성을 멈춤.", "continuation": "첫 그룹부터 초과하면 reference_item_context_limit. 해당 그룹을 자동 분할하지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 452, "expression": "if len(rows)>=LIMITS['groups_per_batch'] or len(json.dumps(rows+[row],ensure_ascii=False))>LIMITS['relation_context_chars']:break"}, {"id": "L083", "block": "LLM 6 참조", "name": "최종 참조 입력 JSON 크기", "value": "100000자", "kind": "실행 중단", "status": "현행", "behavior": "질문·출발 원문·이력 등 합친 data를 검사. gateway exact_evidence 추가 전의 검사다.", "continuation": "초과 reference_context_limit; 이후 wire 중복/메타데이터를 포함한 전체 HTTP100k보장 아님.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 479, "expression": "if len(json.dumps(data,ensure_ascii=False))>max_context_chars:"}, {"id": "L084", "block": "LLM 6 참조", "name": "한 메뉴에서 FOLLOW 그룹", "value": "최대8개", "kind": "출력 계약", "status": "현행", "behavior": "전체 표시16그룹은 각각 결정하지만 FOLLOW는8그룹 이하.", "continuation": "나머지 SKIP/DEFER 등 이유 기록. 초과는 거절/수정.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 277, "expression": "if seen != set(offered) or followed > LIMITS['follow_groups']:"}, {"id": "L085", "block": "LLM 6 참조", "name": "FOLLOW 그룹별 읽기 범위", "value": "최대4개", "kind": "출력 계약", "status": "현행", "behavior": "scopes_per_group4; SKIP/DEFER는0개.", "continuation": "각 그룹에 제공한 scope만 선택. 다른 그룹 범위는 거절.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 226, "expression": "'scopes': {'type': 'array', 'maxItems': LIMITS['scopes_per_group'],"}, {"id": "L086", "block": "LLM 6 참조", "name": "참조 이유·적용 이유", "value": "각512자", "kind": "출력 계약", "status": "현행", "behavior": "reason/applicability_reason 최대512자.", "continuation": "초과 거절/수정.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 228, "expression": "'reason': {'type': 'string', 'minLength': 1, 'maxLength': 512},"}, {"id": "L087", "block": "LLM 6 참조", "name": "한 탐색 행동의 참조 판단 배치", "value": "1개", "kind": "실행 묶음", "status": "현행", "behavior": "law_navigation이 max_model_batches=1로 호출. 기본 batches64가 실제1로 좁혀짐.", "continuation": "한 메뉴 판단 후 탐색으로 돌아옴.64번 연속 모델 호출이 아님.", "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py", "line": 875, "expression": "phase_prefix='source-reference-law-'+str(self.p['turn'])+'-', max_model_batches=1,"}, {"id": "L088", "block": "LLM 6 참조", "name": "참조 엔진 기본 배치 상한", "value": "64개; 현행 law 호출은1개", "kind": "조건부 기본값", "status": "기본값; 현행은1", "behavior": "max_model_batches 미지정일 때만64. 현재 law 호출에서는min(64,1).", "continuation": "수정 호출 등 물리 시도40회는 별도 함께 적용.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 378, "expression": "batch_limit=LIMITS['batches'] if max_model_batches is None else min(LIMITS['batches'],max_model_batches)"}, {"id": "L089", "block": "LLM 6 참조", "name": "참조 작업 반복", "value": "호출당128단계", "kind": "실행 중단", "status": "현행", "behavior": "work_steps128은 스캔·큐 처리 등 내부 반복.128 LLM 호출을 뜻하지 않음.", "continuation": "reference_work_limit에 미조사 그룹/출발점 저장.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 380, "expression": "while round_number\u003cbatch_limit and work_steps\u003cLIMITS['work_steps']:"}, {"id": "L090", "block": "LLM 6 참조", "name": "참조 깊이", "value": "8", "kind": "실행 중단", "status": "현행", "behavior": "깊이8 출발 원문에서 더 재귀 스캔하지 않음. 깊이7에서 따라 읽어 깊이8 자료를 확보할 수 있음.", "continuation": "REFERENCE_DEPTH_LIMIT로 남은 조사 표시.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 389, "expression": "changed=[sid for sid in changed if state['depths'].get(sid,0)\u003cLIMITS['max_depth']]"}, {"id": "L091", "block": "LLM 6 참조", "name": "참조 의미/선택 수정", "value": "한 번", "kind": "재시도 제한", "status": "현행", "behavior": "유효 JSON이지만 연결 coverage/scope/applicability 검사에서 거절되면 수정 입력1회.", "continuation": "gateway JSON수정1회와 별도 층. 모든 시도는 전체40회에 소비.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 494, "expression": "decision=invoke(SYSTEM,{**data,'rejected_decision':decision,'contract_error':str(exc)},schema(offered),phase,min(180,left))"}, {"id": "L092", "block": "LLM 6 참조", "name": "참조 전체 의무·미해결 목록", "value": "별도 개수 상한 없음", "kind": "상한 없음", "status": "현행", "behavior": "reading_obligations/전체 unresolved/관계 이력 등은 witness8개 표시와 별개.", "continuation": "24k/100k 입력 검사 때문에 큰 한 그룹에서도 멈출 수 있음.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py", "line": 210, "expression": "for c in group['connections']],"}]}</script></details><details class="stage" id="b7" >
+<summary>LLM 7 — 쟁점별로 답변·부분 답변·추가 조사<span class="count">9항목</span></summary>
+<div class="explanation"><b>LLM 입력 블록 · 판단 · 성공/실패 분기</b><pre>실제 phase: memory-assess, 필요 시 memory-assess-repair
+
+입력 블록:
+ A. 이번 사용자 원문: current_request
+ B. 처음 정리한 원래 요구사항: original_requirements
+ C. 현재 쟁점과 사용자 사실: issues, current_facts
+ D. 채택된 자료의 원문: sources
+ E. 실제 인용 가능한 원문 조각의 선택 ID: evidence_options
+ F. 저장되었지만 채택하지 않은 자료의 목록: saved_inventory
+ G. 보류·미해결 참조와 조사 이력: reference_navigation, investigation_chain
+ H. 추가 조사 가능 횟수 상태: reentry_budget
+ I. 수정 호출일 때만 거절된 판단과 오류: repair_feedback
+
+판단 단위:
+ &#x27;Q1과 Q2를 각각 어느 근거로, 어느 조건에서, 어디까지 답할 수 있는가?&#x27;
+
+출력:
+ claims: 답변할 판단 문장 + 쟁점 ID + 근거 S ID
+ issue_assessments:
+    COVERED: 해당 요구를 설명할 근거를 갖춤
+    PARTIAL: 일부만 설명할 수 있음
+    INSUFFICIENT: 해당 요구에 필요한 근거가 부족함
+ gaps: 무엇이 왜 부족하고 어떤 다음 행동이 필요한지
+ disposition: ANSWER / LIMITED_ANSWER / NEEDS_INVESTIGATION
+
+모의 정상 입력:
+    Q1: 신청 기한
+    Q2: 제출서류
+    S1: 채택된 A규정 제5조의 기한 원문
+    S2: 채택된 B규정 제2조의 서류 원문
+    출력: Q1 COVERED + Q2 COVERED + 근거에 연결한 판단 문장
+
+모의 부분 입력:
+    Q1: 신청 기한
+    Q2: 제출서류
+    S1: A규정 제5조의 기한 원문
+    B규정 원문: 미확보
+    출력: Q1 COVERED, Q2 INSUFFICIENT,
+          Q2 MISSING_SOURCE 또는 UNRESOLVED_REFERENCE,
+          추가 원문 조사 행동
+
+코드 분기:
+    필요한 원문 부족 + 조사 예산·시간·횟수 남음
+      → 판단과 gaps·기존 investigation_state를 묶어 SELECT로 복귀
+      → 다음 탐색 입력 A블록의 assessment_gaps에 부족 사항 추가
+    필요한 원문 부족 + 더 조사할 수 없음 + 유효한 claims 있음
+      → LIMITED_ANSWER와 확인된 설명·남은 요구사항
+    특정 사건 적용에 필요한 사용자 사실 부족
+      → MISSING_FACT와 조건부 설명/확인할 사실
+      → 법령 내용 부족을 사용자 사실 부족으로 바꾸지 않음
+    근거 있는 claims가 하나도 없음
+      → 미완료 처리; 답을 꾸며내지 않음
+    모두 답할 수 있고 계약 검사를 통과
+      → 코드 답변 구성으로 이동
+
+모델 판단 오류와 출력 계약 오류는 구분해야 한다.
+출력 계약 검사는 쟁점 누락·중복, 근거 ID, 근거 범위와 상태 충돌을 검사한다.
+여기서 통과했어도 다른 업무 맥락의 조항을 의미적으로 골랐을 가능성은 남는다.
+
+현재 형식 오류 경로:
+    첫 판단이 계약과 충돌 → 원 입력 + 거절된 판단 + 모든 오류 이유로 수정
+    수정도 실패 → InvestigationPending으로 종료
+    이 분기는 추가 조사·부분 답변 분기보다 앞에 있다.
+    따라서 이미 확보한 조사 성과가 있어도 사용자에게 일반 미완료만 보일 수 있다.
+
+수정 목표:
+    이전에 검증된 자료와 판단은 보존
+    확정하지 못한 새 판단은 답변에 섞지 않음
+    해결되지 않은 쟁점과 형식 실패를 구분
+    사용자에게 확인한 범위·미확인 범위·중단 이유·다음 행동 제공</pre></div><div class="limits"><details class="limit" data-status="current">
+<summary><span class="identifier">L093</span><span class="limit-name">인용 선택 조각</span>
+<span class="value">한 조각1200자</span><span class="tag">무손실 분할</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 채택 원문을 줄 단위로 나눈 뒤 긴 줄은1200자씩 계속 분할. 이후 조각을 버리지 않음.</p>
+<p><b>한도 초과·이후 확인</b> 모든 비공백 조각에 S ID. 조각 전체 개수 top-k 없음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py:42</p><code>for start in range(0, len(line), 1200):</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L094</span><span class="limit-name">판단 항목(claim) 수</span>
+<span class="value">최대12개</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> claims 배열의 maxItems=12. 한국어 문장 부호로 센 문장 수 제한은 아니다.</p>
+<p><b>한도 초과·이후 확인</b> 초과 출력 거절/수정. 한 claim이 여러 쟁점/원문에 연결 가능.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py:60</p><code>&#x27;claims&#x27;: {&#x27;type&#x27;: &#x27;array&#x27;, &#x27;maxItems&#x27;: 12, &#x27;items&#x27;: obj({</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L095</span><span class="limit-name">판단 항목 본문 길이</span>
+<span class="value">각3000자</span><span class="tag">출력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> claim.text 최대3000자. 원문 입력3000자 제한과 다름.</p>
+<p><b>한도 초과·이후 확인</b> 전체 출력6400토큰이 별도 적용.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py:62</p><code>&#x27;issue_refs&#x27;: refs(ids, 1), &#x27;text&#x27;: {&#x27;type&#x27;: &#x27;string&#x27;, &#x27;minLength&#x27;: 1, &#x27;maxLength&#x27;: 3000},</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L096</span><span class="limit-name">형식 오류 수정 메시지</span>
+<span class="value">최초16개 오류</span><span class="tag">피드백 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> JSON Schema 오류가 있으면 errors[:16]만 모델 수정 피드백에 연결.</p>
+<p><b>한도 초과·이후 확인</b> 나머지 오류가 이미 고쳐졌다는 뜻 아님. 다음 검사에서 다시 발견될 수 있고 수정은1회뿐.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py:83</p><code>return errors[:16]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L097</span><span class="limit-name">판단 수정 횟수</span>
+<span class="value">최초1회 + 수정1회</span><span class="tag">재시도 제한</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> completion_execution range(2). gateway schema repair0으로 중첩 방지.</p>
+<p><b>한도 초과·이후 확인</b> 수정 실패 InvestigationPending. 이 분기는 부분 답변 분기보다 앞.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:67</p><code>for attempt in range(2):</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L098</span><span class="limit-name">판단 부족으로 추가 탐색 복귀</span>
+<span class="value">최대2회</span><span class="tag">실행 중단</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> ASSESS_GAP_REENTRY와 assessment_reentry_limit2.</p>
+<p><b>한도 초과·이후 확인</b> 한도/예산/시간 부족이면 근거 있는 claim은 부분 답변으로 이어갈 수 있음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:98</p><code>limit = self.s.sources.profile[&#x27;candidate_navigation&#x27;][&#x27;assessment_reentry_limit&#x27;]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L099</span><span class="limit-name">부분 답변 설명 개수</span>
+<span class="value">내부 저장 계약 최대64개</span><span class="tag">저장 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 현재 completion 내부 ASSESS/COMPOSE limitations maxItems64. 구형8개 제한을 확장.</p>
+<p><b>한도 초과·이후 확인</b> 앞64개로 슬라이스하는 코드가 아님.64 초과 생성이면 저장 단계 계약 실패 가능.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py:176</p><code>schema[&#x27;properties&#x27;][&#x27;limitations&#x27;][&#x27;maxItems&#x27;] = 64</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L100</span><span class="limit-name">판단 입력 원문·근거 조각·gaps</span>
+<span class="value">별도 개수/본문 길이 슬라이스 없음</span><span class="tag">상한 없음</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 현재 채택 originals와 모든 evidence_options 공급; issue_assessments와 gaps 배열에 개별 maxItems 없음.</p>
+<p><b>한도 초과·이후 확인</b> 쟁점은 제시된 것 전부 평가하도록 코드 검사. 전체 입력10만자 공통검사 없음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:72</p><code>&#x27;issues&#x27;: self.issues, &#x27;sources&#x27;: sources, &#x27;evidence_options&#x27;: options,</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L101</span><span class="limit-name">참조 입력 필드</span>
+<span class="value">pending/groups/unresolved/limits만</span><span class="tag">필드 투영</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> reference_navigation에서 선택한4필드만 판단에 전달. 전체 nav 본문·actions·batches를 복사하지 않음.</p>
+<p><b>한도 초과·이후 확인</b> SELECT 저장 상태/행동 이력은 별도 유지. projection 목적과 누락 영향 구분.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:75</p><code>if k in (&#x27;pending&#x27;, &#x27;groups&#x27;, &#x27;unresolved&#x27;, &#x27;limits&#x27;)},</code></div></details></div>
+<script type="application/json" class="card-data">{"title": "LLM 7 — 쟁점별로 답변·부분 답변·추가 조사", "info": "실제 phase: memory-assess, 필요 시 memory-assess-repair\n\n입력 블록:\n A. 이번 사용자 원문: current_request\n B. 처음 정리한 원래 요구사항: original_requirements\n C. 현재 쟁점과 사용자 사실: issues, current_facts\n D. 채택된 자료의 원문: sources\n E. 실제 인용 가능한 원문 조각의 선택 ID: evidence_options\n F. 저장되었지만 채택하지 않은 자료의 목록: saved_inventory\n G. 보류·미해결 참조와 조사 이력: reference_navigation, investigation_chain\n H. 추가 조사 가능 횟수 상태: reentry_budget\n I. 수정 호출일 때만 거절된 판단과 오류: repair_feedback\n\n판단 단위:\n 'Q1과 Q2를 각각 어느 근거로, 어느 조건에서, 어디까지 답할 수 있는가?'\n\n출력:\n claims: 답변할 판단 문장 + 쟁점 ID + 근거 S ID\n issue_assessments:\n    COVERED: 해당 요구를 설명할 근거를 갖춤\n    PARTIAL: 일부만 설명할 수 있음\n    INSUFFICIENT: 해당 요구에 필요한 근거가 부족함\n gaps: 무엇이 왜 부족하고 어떤 다음 행동이 필요한지\n disposition: ANSWER / LIMITED_ANSWER / NEEDS_INVESTIGATION\n\n모의 정상 입력:\n    Q1: 신청 기한\n    Q2: 제출서류\n    S1: 채택된 A규정 제5조의 기한 원문\n    S2: 채택된 B규정 제2조의 서류 원문\n    출력: Q1 COVERED + Q2 COVERED + 근거에 연결한 판단 문장\n\n모의 부분 입력:\n    Q1: 신청 기한\n    Q2: 제출서류\n    S1: A규정 제5조의 기한 원문\n    B규정 원문: 미확보\n    출력: Q1 COVERED, Q2 INSUFFICIENT,\n          Q2 MISSING_SOURCE 또는 UNRESOLVED_REFERENCE,\n          추가 원문 조사 행동\n\n코드 분기:\n    필요한 원문 부족 + 조사 예산·시간·횟수 남음\n      → 판단과 gaps·기존 investigation_state를 묶어 SELECT로 복귀\n      → 다음 탐색 입력 A블록의 assessment_gaps에 부족 사항 추가\n    필요한 원문 부족 + 더 조사할 수 없음 + 유효한 claims 있음\n      → LIMITED_ANSWER와 확인된 설명·남은 요구사항\n    특정 사건 적용에 필요한 사용자 사실 부족\n      → MISSING_FACT와 조건부 설명/확인할 사실\n      → 법령 내용 부족을 사용자 사실 부족으로 바꾸지 않음\n    근거 있는 claims가 하나도 없음\n      → 미완료 처리; 답을 꾸며내지 않음\n    모두 답할 수 있고 계약 검사를 통과\n      → 코드 답변 구성으로 이동\n\n모델 판단 오류와 출력 계약 오류는 구분해야 한다.\n출력 계약 검사는 쟁점 누락·중복, 근거 ID, 근거 범위와 상태 충돌을 검사한다.\n여기서 통과했어도 다른 업무 맥락의 조항을 의미적으로 골랐을 가능성은 남는다.\n\n현재 형식 오류 경로:\n    첫 판단이 계약과 충돌 → 원 입력 + 거절된 판단 + 모든 오류 이유로 수정\n    수정도 실패 → InvestigationPending으로 종료\n    이 분기는 추가 조사·부분 답변 분기보다 앞에 있다.\n    따라서 이미 확보한 조사 성과가 있어도 사용자에게 일반 미완료만 보일 수 있다.\n\n수정 목표:\n    이전에 검증된 자료와 판단은 보존\n    확정하지 못한 새 판단은 답변에 섞지 않음\n    해결되지 않은 쟁점과 형식 실패를 구분\n    사용자에게 확인한 범위·미확인 범위·중단 이유·다음 행동 제공", "entries": [{"id": "L093", "block": "LLM 7 판단", "name": "인용 선택 조각", "value": "한 조각1200자", "kind": "무손실 분할", "status": "현행", "behavior": "채택 원문을 줄 단위로 나눈 뒤 긴 줄은1200자씩 계속 분할. 이후 조각을 버리지 않음.", "continuation": "모든 비공백 조각에 S ID. 조각 전체 개수 top-k 없음.", "path": "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py", "line": 42, "expression": "for start in range(0, len(line), 1200):"}, {"id": "L094", "block": "LLM 7 판단", "name": "판단 항목(claim) 수", "value": "최대12개", "kind": "출력 계약", "status": "현행", "behavior": "claims 배열의 maxItems=12. 한국어 문장 부호로 센 문장 수 제한은 아니다.", "continuation": "초과 출력 거절/수정. 한 claim이 여러 쟁점/원문에 연결 가능.", "path": "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py", "line": 60, "expression": "'claims': {'type': 'array', 'maxItems': 12, 'items': obj({"}, {"id": "L095", "block": "LLM 7 판단", "name": "판단 항목 본문 길이", "value": "각3000자", "kind": "출력 계약", "status": "현행", "behavior": "claim.text 최대3000자. 원문 입력3000자 제한과 다름.", "continuation": "전체 출력6400토큰이 별도 적용.", "path": "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py", "line": 62, "expression": "'issue_refs': refs(ids, 1), 'text': {'type': 'string', 'minLength': 1, 'maxLength': 3000},"}, {"id": "L096", "block": "LLM 7 판단", "name": "형식 오류 수정 메시지", "value": "최초16개 오류", "kind": "피드백 슬라이스", "status": "현행", "behavior": "JSON Schema 오류가 있으면 errors[:16]만 모델 수정 피드백에 연결.", "continuation": "나머지 오류가 이미 고쳐졌다는 뜻 아님. 다음 검사에서 다시 발견될 수 있고 수정은1회뿐.", "path": "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py", "line": 83, "expression": "return errors[:16]"}, {"id": "L097", "block": "LLM 7 판단", "name": "판단 수정 횟수", "value": "최초1회 + 수정1회", "kind": "재시도 제한", "status": "현행", "behavior": "completion_execution range(2). gateway schema repair0으로 중첩 방지.", "continuation": "수정 실패 InvestigationPending. 이 분기는 부분 답변 분기보다 앞.", "path": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py", "line": 67, "expression": "for attempt in range(2):"}, {"id": "L098", "block": "LLM 7 판단", "name": "판단 부족으로 추가 탐색 복귀", "value": "최대2회", "kind": "실행 중단", "status": "현행", "behavior": "ASSESS_GAP_REENTRY와 assessment_reentry_limit2.", "continuation": "한도/예산/시간 부족이면 근거 있는 claim은 부분 답변으로 이어갈 수 있음.", "path": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py", "line": 98, "expression": "limit = self.s.sources.profile['candidate_navigation']['assessment_reentry_limit']"}, {"id": "L099", "block": "LLM 7 판단", "name": "부분 답변 설명 개수", "value": "내부 저장 계약 최대64개", "kind": "저장 계약", "status": "현행", "behavior": "현재 completion 내부 ASSESS/COMPOSE limitations maxItems64. 구형8개 제한을 확장.", "continuation": "앞64개로 슬라이스하는 코드가 아님.64 초과 생성이면 저장 단계 계약 실패 가능.", "path": "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py", "line": 176, "expression": "schema['properties']['limitations']['maxItems'] = 64"}, {"id": "L100", "block": "LLM 7 판단", "name": "판단 입력 원문·근거 조각·gaps", "value": "별도 개수/본문 길이 슬라이스 없음", "kind": "상한 없음", "status": "현행", "behavior": "현재 채택 originals와 모든 evidence_options 공급; issue_assessments와 gaps 배열에 개별 maxItems 없음.", "continuation": "쟁점은 제시된 것 전부 평가하도록 코드 검사. 전체 입력10만자 공통검사 없음.", "path": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py", "line": 72, "expression": "'issues': self.issues, 'sources': sources, 'evidence_options': options,"}, {"id": "L101", "block": "LLM 7 판단", "name": "참조 입력 필드", "value": "pending/groups/unresolved/limits만", "kind": "필드 투영", "status": "현행", "behavior": "reference_navigation에서 선택한4필드만 판단에 전달. 전체 nav 본문·actions·batches를 복사하지 않음.", "continuation": "SELECT 저장 상태/행동 이력은 별도 유지. projection 목적과 누락 영향 구분.", "path": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py", "line": 75, "expression": "if k in ('pending', 'groups', 'unresolved', 'limits')},"}]}</script></details><details class="stage" id="repair" >
+<summary>수정·전송 공통 — 실패 시 다음 호출에 전달되는 것<span class="count">9항목</span></summary>
+<div class="limits"><details class="limit" data-status="current">
+<summary><span class="identifier">L102</span><span class="limit-name">gateway JSON 수정</span>
+<span class="value">최대1회; 법령 탐색/판단에서는0회</span><span class="tag">재시도 제한</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> resolve/check/intent/reference는 gateway max_schema_repairs1. source-law-navigation과 memory-assess는 단계 자체 수정만 사용.</p>
+<p><b>한도 초과·이후 확인</b> 서로 다른 수정 층을 모두 합쳐1회라고 설명하면 안 됨.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py:126</p><code>profile[&#x27;max_schema_repairs&#x27;] = 0</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L103</span><span class="limit-name">gateway 오류 로그</span>
+<span class="value">앞2000자</span><span class="tag">로그 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> OUTPUT_SCHEMA_INVALID 이벤트의 오류 문구.</p>
+<p><b>한도 초과·이후 확인</b> 전체 model response는 원장에 별도 보존.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/gateway.py:364</p><code>&#x27;attempt_id&#x27;: ident, &#x27;error&#x27;: str(exc)[:2000],</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L104</span><span class="limit-name">gateway 수정용 오류 설명</span>
+<span class="value">앞1000자</span><span class="tag">피드백 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> schema repair의 error 문자열.</p>
+<p><b>한도 초과·이후 확인</b> 전체 오류 목록을 보장하는 피드백은 아님.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/gateway.py:384</p><code>repair_error = str(exc)[:1000]</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L105</span><span class="limit-name">gateway 수정용 잘못된 출력</span>
+<span class="value">앞4000자</span><span class="tag">피드백 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> invalid_response_excerpt. 원래 출력 뒤쪽은 수정 모델 입력에 없음.</p>
+<p><b>한도 초과·이후 확인</b> 원시 출력은 원장에 보존. law/assess 자체 수정 입력은 이4000자 규칙과 별개.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/gateway.py:394</p><code>&#x27;invalid_response_excerpt&#x27;: content[:4000] if isinstance(content, str) else encoded(content)[:4000], &#x27;error&#x27;: repair_error,</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L106</span><span class="limit-name">gateway 수정 대화</span>
+<span class="value">최초2메시지 + 최신 수정1메시지</span><span class="tag">대화 투영</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> messages[:2]에 최신 수정 지시를 붙인다. 원래 system과 user view 유지.</p>
+<p><b>한도 초과·이후 확인</b> 수정 대화를 무한 누적하지 않음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/gateway.py:391</p><code>request = {**request, &#x27;messages&#x27;: request[&#x27;messages&#x27;][:2]+[{</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L107</span><span class="limit-name">전송 재시도</span>
+<span class="value">최대1회</span><span class="tag">재시도 제한</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> completion_contract 경로에서 확실히 거절된429만 재시도. timeout/수신 불명/5xx는 자동 재전송 안 함.</p>
+<p><b>한도 초과·이후 확인</b> 다른 모델로 fallback 안 함. 재시도도 물리40회에 포함.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/gateway.py:277</p><code>retry_scheduled=retry_scheduled and not exc.unknown and response.get(&#x27;status_code&#x27;)==429</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L108</span><span class="limit-name">429 대기</span>
+<span class="value">최소1초; 최대30초 조건</span><span class="tag">재시도 제한</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> Retry-After 대기가30초 이내이고 남은 시간이 대기+1초보다 커야 재시도.</p>
+<p><b>한도 초과·이후 확인</b> 대기가 길거나 시간 부족하면 재시도하지 않고 장애 반환.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/gateway.py:285</p><code>retry_scheduled=retry_delay&lt;=30 and self.context.remaining()&gt;retry_delay+1</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L109</span><span class="limit-name">동일 원문 중복 제거</span>
+<span class="value">중복 span.text 제거</span><span class="tag">필드 투영</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> exact_evidence.text에 포함된 span.text를 wire에서 제거. 좌표/본문은 유지.</p>
+<p><b>한도 초과·이후 확인</b> 원문 요약이나 첫N자 잘라내기가 아니다. 저장 view/wire projection 검증.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/gateway.py:32</p><code>span.pop(&#x27;text&#x27;)</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L110</span><span class="limit-name">출력 스키마 중복 제거</span>
+<span class="value">compact user.output_schema 생략</span><span class="tag">필드 투영</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 응답 형식의 JSON schema는 유지하고 user 본문에 중복 삽입하지 않음.</p>
+<p><b>한도 초과·이후 확인</b> 스키마를 제거해서 아무 형식이나 허용하는 동작이 아니다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py:52</p><code>if not self.compact:</code></div></details></div>
+<script type="application/json" class="card-data">{"title": "수정·전송 공통 — 실패 시 다음 호출에 전달되는 것", "info": "", "entries": [{"id": "L102", "block": "수정 공통", "name": "gateway JSON 수정", "value": "최대1회; 법령 탐색/판단에서는0회", "kind": "재시도 제한", "status": "현행", "behavior": "resolve/check/intent/reference는 gateway max_schema_repairs1. source-law-navigation과 memory-assess는 단계 자체 수정만 사용.", "continuation": "서로 다른 수정 층을 모두 합쳐1회라고 설명하면 안 됨.", "path": "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py", "line": 126, "expression": "profile['max_schema_repairs'] = 0"}, {"id": "L103", "block": "수정 공통", "name": "gateway 오류 로그", "value": "앞2000자", "kind": "로그 슬라이스", "status": "현행", "behavior": "OUTPUT_SCHEMA_INVALID 이벤트의 오류 문구.", "continuation": "전체 model response는 원장에 별도 보존.", "path": "02_BACKEND/semantic_runtime/legal_agent/gateway.py", "line": 364, "expression": "'attempt_id': ident, 'error': str(exc)[:2000],"}, {"id": "L104", "block": "수정 공통", "name": "gateway 수정용 오류 설명", "value": "앞1000자", "kind": "피드백 슬라이스", "status": "현행", "behavior": "schema repair의 error 문자열.", "continuation": "전체 오류 목록을 보장하는 피드백은 아님.", "path": "02_BACKEND/semantic_runtime/legal_agent/gateway.py", "line": 384, "expression": "repair_error = str(exc)[:1000]"}, {"id": "L105", "block": "수정 공통", "name": "gateway 수정용 잘못된 출력", "value": "앞4000자", "kind": "피드백 슬라이스", "status": "현행", "behavior": "invalid_response_excerpt. 원래 출력 뒤쪽은 수정 모델 입력에 없음.", "continuation": "원시 출력은 원장에 보존. law/assess 자체 수정 입력은 이4000자 규칙과 별개.", "path": "02_BACKEND/semantic_runtime/legal_agent/gateway.py", "line": 394, "expression": "'invalid_response_excerpt': content[:4000] if isinstance(content, str) else encoded(content)[:4000], 'error': repair_error,"}, {"id": "L106", "block": "수정 공통", "name": "gateway 수정 대화", "value": "최초2메시지 + 최신 수정1메시지", "kind": "대화 투영", "status": "현행", "behavior": "messages[:2]에 최신 수정 지시를 붙인다. 원래 system과 user view 유지.", "continuation": "수정 대화를 무한 누적하지 않음.", "path": "02_BACKEND/semantic_runtime/legal_agent/gateway.py", "line": 391, "expression": "request = {**request, 'messages': request['messages'][:2]+[{"}, {"id": "L107", "block": "전송 공통", "name": "전송 재시도", "value": "최대1회", "kind": "재시도 제한", "status": "현행", "behavior": "completion_contract 경로에서 확실히 거절된429만 재시도. timeout/수신 불명/5xx는 자동 재전송 안 함.", "continuation": "다른 모델로 fallback 안 함. 재시도도 물리40회에 포함.", "path": "02_BACKEND/semantic_runtime/legal_agent/gateway.py", "line": 277, "expression": "retry_scheduled=retry_scheduled and not exc.unknown and response.get('status_code')==429"}, {"id": "L108", "block": "전송 공통", "name": "429 대기", "value": "최소1초; 최대30초 조건", "kind": "재시도 제한", "status": "현행", "behavior": "Retry-After 대기가30초 이내이고 남은 시간이 대기+1초보다 커야 재시도.", "continuation": "대기가 길거나 시간 부족하면 재시도하지 않고 장애 반환.", "path": "02_BACKEND/semantic_runtime/legal_agent/gateway.py", "line": 285, "expression": "retry_scheduled=retry_delay\u003c=30 and self.context.remaining()>retry_delay+1"}, {"id": "L109", "block": "전송 공통", "name": "동일 원문 중복 제거", "value": "중복 span.text 제거", "kind": "필드 투영", "status": "현행", "behavior": "exact_evidence.text에 포함된 span.text를 wire에서 제거. 좌표/본문은 유지.", "continuation": "원문 요약이나 첫N자 잘라내기가 아니다. 저장 view/wire projection 검증.", "path": "02_BACKEND/semantic_runtime/legal_agent/gateway.py", "line": 32, "expression": "span.pop('text')"}, {"id": "L110", "block": "전송 공통", "name": "출력 스키마 중복 제거", "value": "compact user.output_schema 생략", "kind": "필드 투영", "status": "현행", "behavior": "응답 형식의 JSON schema는 유지하고 user 본문에 중복 삽입하지 않음.", "continuation": "스키마를 제거해서 아무 형식이나 허용하는 동작이 아니다.", "path": "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py", "line": 52, "expression": "if not self.compact:"}]}</script></details><details class="stage" id="result" >
+<summary>답변 구성·사용자 응답·저장 조회<span class="count">6항목</span></summary>
+<div class="explanation"><b>LLM 입력 블록 · 판단 · 성공/실패 분기</b><pre>입력:
+    저장된 ASSESS 판단 문장, 근거 연결, 쟁점별 상태, 미확인 사항, 표현 형식
+
+코드:
+    COMPOSE에서 선택된 판단 문장을 정해진 방식으로 구성
+    → 판단 문장·인용 원문·권한·코드/데이터 결속·현재성·답변 일치 검사
+    → 공통 결과를 API와 별도 워크플로우 소비자에 전달
+
+실패:
+    게시 검사 실패 → 해당 결과를 정상 게시하지 않음
+    성공한 조사·현재 미해결·검사 실패 이유·복구 정보는 보존되어야 함
+    현재 API 예외 응답은 진단을 일부 필드로 축소한다.
+    두 경로에서 풍부한 실패 성과를 같은 방식으로 표시하는 것은 수정 목표다.</pre></div><div class="limits"><details class="limit" data-status="current">
+<summary><span class="identifier">L111</span><span class="limit-name">API 오류 detail</span>
+<span class="value">앞1000자</span><span class="tag">응답 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 사용자 오류 메시지 detail을1000자로 줄인다.</p>
+<p><b>한도 초과·이후 확인</b> 내부 원장/예외 진단과 구분.</p>
+<p class="source">02_BACKEND/semantic_runtime/app.py:86</p><code>&#x27;detail&#x27;:obs._redact_secrets(str(exc))[:1000],</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L112</span><span class="limit-name">API 진단 필드</span>
+<span class="value">지정5필드만</span><span class="tag">필드 투영</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> schema_version/stage/cause_codes/resume_available/stop_reason. 목록앞5개가 아니라 필드 whitelist.</p>
+<p><b>한도 초과·이후 확인</b> 자료 목록·blockers·issues 등 다른 상세 정보가 이 예외 응답에서 빠질 수 있음.</p>
+<p class="source">02_BACKEND/semantic_runtime/app.py:87</p><code>**({&#x27;diagnostics&#x27;: {k:exc.diagnostics[k] for k in (&#x27;schema_version&#x27;,&#x27;stage&#x27;,&#x27;cause_codes&#x27;,&#x27;resume_available&#x27;,&#x27;stop_reason&#x27;) if k in exc.diagnostics}}</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L113</span><span class="limit-name">API 질문/경험/위키 페이지</span>
+<span class="value">기본32; 최대100</span><span class="tag">페이지</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> knowledge questions/search와 shortcut search의 페이지 개수.</p>
+<p><b>한도 초과·이후 확인</b> after/next. LLM2에 실제 넣는24/8과 구분.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py:20</p><code>rows=[];limit=max(1,min(limit,100))</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L114</span><span class="limit-name">사건 이력 페이지</span>
+<span class="value">메서드기본50; API기본32; 최대100</span><span class="tag">페이지</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> CaseRepository.events_page와 ShortcutRepository.history는 기본50, memory/query는 공통limit32 전달.</p>
+<p><b>한도 초과·이후 확인</b> after/next로 다음 이력. 이력 DB 삭제 없음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/case_repository.py:222</p><code>def events_page(self,gid,principal,*,after=0,limit=50):</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L115</span><span class="limit-name">사건/제목 표시</span>
+<span class="value">제목 앞200자</span><span class="tag">메타데이터 슬라이스</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> shortcut 사건 제목 생성에 intake text[:200]. 원래 intake 질문 본문과 다르다.</p>
+<p><b>한도 초과·이후 확인</b> 원문 intake/history에서 확인.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py:171</p><code>(investigation_id,row[&#x27;scope&#x27;],title or event[&#x27;payload&#x27;][&#x27;text&#x27;][:200],0,encoded(docs),int(event[&#x27;payload&#x27;][&#x27;public_question&#x27;]),&#x27;OPEN&#x27;))</code></div></details><details class="limit" data-status="current">
+<summary><span class="identifier">L116</span><span class="limit-name">session/request ID</span>
+<span class="value">각256자</span><span class="tag">입력 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행</p>
+<p><b>실제로 하는 일</b> 사건 API에서 비어 있지 않은 문자열과256자 제한.</p>
+<p><b>한도 초과·이후 확인</b> 초과 거절. 질문 본문 길이 제한이 아님.</p>
+<p class="source">02_BACKEND/semantic_runtime/app.py:296</p><code>if not isinstance(body.get(field),str) or not body[field].strip() or len(body[field])&gt;256:raise ValueError(&#x27;valid &#x27;+field+&#x27; required&#x27;)</code></div></details></div>
+<script type="application/json" class="card-data">{"title": "답변 구성·사용자 응답·저장 조회", "info": "입력:\n    저장된 ASSESS 판단 문장, 근거 연결, 쟁점별 상태, 미확인 사항, 표현 형식\n\n코드:\n    COMPOSE에서 선택된 판단 문장을 정해진 방식으로 구성\n    → 판단 문장·인용 원문·권한·코드/데이터 결속·현재성·답변 일치 검사\n    → 공통 결과를 API와 별도 워크플로우 소비자에 전달\n\n실패:\n    게시 검사 실패 → 해당 결과를 정상 게시하지 않음\n    성공한 조사·현재 미해결·검사 실패 이유·복구 정보는 보존되어야 함\n    현재 API 예외 응답은 진단을 일부 필드로 축소한다.\n    두 경로에서 풍부한 실패 성과를 같은 방식으로 표시하는 것은 수정 목표다.", "entries": [{"id": "L111", "block": "결과·조회", "name": "API 오류 detail", "value": "앞1000자", "kind": "응답 슬라이스", "status": "현행", "behavior": "사용자 오류 메시지 detail을1000자로 줄인다.", "continuation": "내부 원장/예외 진단과 구분.", "path": "02_BACKEND/semantic_runtime/app.py", "line": 86, "expression": "'detail':obs._redact_secrets(str(exc))[:1000],"}, {"id": "L112", "block": "결과·조회", "name": "API 진단 필드", "value": "지정5필드만", "kind": "필드 투영", "status": "현행", "behavior": "schema_version/stage/cause_codes/resume_available/stop_reason. 목록앞5개가 아니라 필드 whitelist.", "continuation": "자료 목록·blockers·issues 등 다른 상세 정보가 이 예외 응답에서 빠질 수 있음.", "path": "02_BACKEND/semantic_runtime/app.py", "line": 87, "expression": "**({'diagnostics': {k:exc.diagnostics[k] for k in ('schema_version','stage','cause_codes','resume_available','stop_reason') if k in exc.diagnostics}}"}, {"id": "L113", "block": "결과·조회", "name": "API 질문/경험/위키 페이지", "value": "기본32; 최대100", "kind": "페이지", "status": "현행", "behavior": "knowledge questions/search와 shortcut search의 페이지 개수.", "continuation": "after/next. LLM2에 실제 넣는24/8과 구분.", "path": "02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py", "line": 20, "expression": "rows=[];limit=max(1,min(limit,100))"}, {"id": "L114", "block": "결과·조회", "name": "사건 이력 페이지", "value": "메서드기본50; API기본32; 최대100", "kind": "페이지", "status": "현행", "behavior": "CaseRepository.events_page와 ShortcutRepository.history는 기본50, memory/query는 공통limit32 전달.", "continuation": "after/next로 다음 이력. 이력 DB 삭제 없음.", "path": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py", "line": 222, "expression": "def events_page(self,gid,principal,*,after=0,limit=50):"}, {"id": "L115", "block": "결과·조회", "name": "사건/제목 표시", "value": "제목 앞200자", "kind": "메타데이터 슬라이스", "status": "현행", "behavior": "shortcut 사건 제목 생성에 intake text[:200]. 원래 intake 질문 본문과 다르다.", "continuation": "원문 intake/history에서 확인.", "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py", "line": 171, "expression": "(investigation_id,row['scope'],title or event['payload']['text'][:200],0,encoded(docs),int(event['payload']['public_question']),'OPEN'))"}, {"id": "L116", "block": "결과·조회", "name": "session/request ID", "value": "각256자", "kind": "입력 계약", "status": "현행", "behavior": "사건 API에서 비어 있지 않은 문자열과256자 제한.", "continuation": "초과 거절. 질문 본문 길이 제한이 아님.", "path": "02_BACKEND/semantic_runtime/app.py", "line": 296, "expression": "if not isinstance(body.get(field),str) or not body[field].strip() or len(body[field])>256:raise ValueError('valid '+field+' required')"}]}</script></details><details class="stage" id="conditional" >
+<summary>조건부·구형 경로 — 설정 존재와 실제 적용 구분<span class="count">25항목</span></summary>
+<div class="limits"><details class="limit" data-status="conditional">
+<summary><span class="identifier">L117</span><span class="limit-name">CORE/SUPPLEMENTAL 5 기본값</span>
+<span class="value">기본5+5; 선택 프로필24+24</span><span class="tag">비활성 경로</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 law 경로 미사용</p>
+<p><b>실제로 하는 일</b> workflow_tiers_policy의 기본값은5지만 현재 설정24로 덮임. 현행 law SELECT는 tier 선택 함수를 실행하지 않음.</p>
+<p><b>한도 초과·이후 확인</b> 법령 근거가5개나24개에서 자동 잘린다고 설명하지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py:7</p><code>&#x27;profile_id&#x27;:&#x27;hardened-obligations-v5&#x27;, &#x27;max_output_tokens&#x27;:6400, &#x27;question_obligations_enabled&#x27;:True, &#x27;numbered_references_enabled&#x27;:True, &#x27;max_core_sources&#x27;:5, &#x27;max_supplemental_sources&#x27;:5,</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L118</span><span class="limit-name">선택 원문 excerpt</span>
+<span class="value">1600자</span><span class="tag">비활성 경로</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 law 경로 미사용</p>
+<p><b>실제로 하는 일</b> 구형 tier 선택 span 상한. 현재 ASSESS evidence_options는1200자 조각화이며 전체를 제공.</p>
+<p><b>한도 초과·이후 확인</b> 두 설정을 같은 본문1600자 컷으로 설명하지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py:8</p><code>&#x27;max_source_excerpt_chars&#x27;:1600, &#x27;source_page_size&#x27;:4, &#x27;source_selection_attempts&#x27;:2,</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L119</span><span class="limit-name">원문 카드 페이지</span>
+<span class="value">4개</span><span class="tag">비활성 경로</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 law 경로 미사용</p>
+<p><b>실제로 하는 일</b> source_page_size4는 구형 tier wire view. 현행 law 페이지4개와 값만 같고 별도.</p>
+<p><b>한도 초과·이후 확인</b> 현재 법령 탐색에는 law/article/hit 상한이 적용.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py:8</p><code>&#x27;max_source_excerpt_chars&#x27;:1600, &#x27;source_page_size&#x27;:4, &#x27;source_selection_attempts&#x27;:2,</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L120</span><span class="limit-name">구형 단위 초기 후보</span>
+<span class="value">512개; 첫12그룹 읽기</span><span class="tag">비활성 경로</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 law 경로 미사용</p>
+<p><b>실제로 하는 일</b> unit_reading.prepare의 queue[:512], acquire_batch[:12]. law_candidates.prepare가 대신 호출됨.</p>
+<p><b>한도 초과·이후 확인</b> 현재 법령 경로를 첫12그룹 읽기라고 설명하면 정확하지 않음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_reading.py:362</p><code>queue=queue[:POLICY[&#x27;initial_units&#x27;]]</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L121</span><span class="limit-name">구형 단위 묶음</span>
+<span class="value">그룹12000자/32단위</span><span class="tag">비활성 경로</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 law 경로 미사용</p>
+<p><b>실제로 하는 일</b> group_hits 묶음 경계. law_candidates의 초기 acquire_batch는group_hits를 호출하지 않음.</p>
+<p><b>한도 초과·이후 확인</b> 그룹 분할은 내용 삭제와 별개.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_reading.py:298</p><code>if chunk and (chars+own[&#x27;chars&#x27;]&gt;POLICY[&#x27;group_chars&#x27;] or len(chunk)&gt;=POLICY[&#x27;group_units&#x27;]):</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L122</span><span class="limit-name">구형 단위 선별</span>
+<span class="value">선택16/재검토8; 후보8배치/검토8라운드</span><span class="tag">비활성 경로</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 law 경로 미사용</p>
+<p><b>실제로 하는 일</b> unit_selection 경로. 현행 law_navigation으로 먼저 dispatch.</p>
+<p><b>한도 초과·이후 확인</b> 현행 전체 모델 시도40과 별도 과거 선택 정책.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_reading.py:16</p><code>&#x27;batch_groups&#x27;:12,&#x27;group_chars&#x27;:12000,&#x27;group_units&#x27;:32,&#x27;candidate_batches&#x27;:8,</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L123</span><span class="limit-name">구형 단위 미리보기/입력</span>
+<span class="value">400자/80000자</span><span class="tag">비활성 경로</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 law 경로 미사용</p>
+<p><b>실제로 하는 일</b> unit_reading POLICY preview_chars/context_chars. law preview는현재360 및 article240.</p>
+<p><b>한도 초과·이후 확인</b> 현재 모든 입력8만자 제한으로 설명하지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/unit_reading.py:15</p><code>&#x27;preview_chars&#x27;:400,&#x27;context_chars&#x27;:80000,&#x27;choices&#x27;:16,&#x27;review_choices&#x27;:8,</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L124</span><span class="limit-name">구형 전역 top-k 회수</span>
+<span class="value">질의64/seed64/참조seed16/선택128; 행동384/원문480000자/묶음50000자</span><span class="tag">비활성 경로</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 law 경로 미사용</p>
+<p><b>실제로 하는 일</b> source_recall_global의 숫자 정책은 law_candidates.discover 이전 dispatch 때문에 사용하지 않음.</p>
+<p><b>한도 초과·이후 확인</b> 현재 법령 디렉터리12개 페이지는 전체top64삭제와 다름.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py:14</p><code>POLICY = {&#x27;query_top_k&#x27;: 64, &#x27;seed_limit&#x27;: 64, &#x27;reference_seeds&#x27;: 16,</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L125</span><span class="limit-name">구형 범위 top-k 회수</span>
+<span class="value">질의64/seed96/참조seed32/범위선택160/합집합288; 범위행동512·640000자/합집합행동1024·1600000자/묶음50000자</span><span class="tag">비활성 경로</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 law 경로 미사용</p>
+<p><b>실제로 하는 일</b> source_recall._scoped_discover의 정책. 현재 법령 디렉터리 경로에서는 실행하지 않음.</p>
+<p><b>한도 초과·이후 확인</b> 구형의 within[:8]/[:32], scoped[:72], ambiguous[:32]도 같은 조건부 경로.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/source_recall.py:13</p><code>SCOPED_POLICY = {&#x27;query_top_k&#x27;: 64, &#x27;seed_limit&#x27;: 96, &#x27;reference_seeds&#x27;: 32,</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L126</span><span class="limit-name">구형 평면 선별</span>
+<span class="value">첫16/복구8/최종24/모델2회/240초</span><span class="tag">비활성 경로</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 law 경로 미사용</p>
+<p><b>실제로 하는 일</b> source_selection의 평면 selector. 현재 law_navigation에서 먼저 반환.</p>
+<p><b>한도 초과·이후 확인</b> current SELECT는remaining-30초와 공유예산을 사용.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/source_selection.py:14</p><code>POLICY = {&#x27;first_limit&#x27;: 16, &#x27;recovery_limit&#x27;: 8, &#x27;final_limit&#x27;: 24,</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L127</span><span class="limit-name">source-query-plan 안내</span>
+<span class="value">법령명3/검색어4개·각250자; 목차최대32페이지·outline6페이지</span><span class="tag">비활성 경로</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 사건 경로 미사용</p>
+<p><b>실제로 하는 일</b> BoundedSourceSession.investigate의 별도 planner/목차 경로. 현재 사건의 native7단계에서 호출하지 않음.</p>
+<p><b>한도 초과·이후 확인</b> 현재 명령 검색어4개·180자와 혼동하지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py:326</p><code>def catalogue_pages(self, tool, args, label, max_pages=32):</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L128</span><span class="limit-name">옛 term-agent 선언</span>
+<span class="value">max_calls14/active_segments6/active_chars18000</span><span class="tag">다른 엔진 설정</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 LLM 판단 경로 미사용</p>
+<p><b>실제로 하는 일</b> PIPELINE에 남아 있는 document navigation limits. 현재legal_agent 물리호출은40 프로필 적용.</p>
+<p><b>한도 초과·이후 확인</b> 선언14를 현재40 상한 대신 보고하지 않는다.</p>
+<p class="source">00_SYSTEM/PIPELINE.json:541</p><code>&quot;active_segments&quot;: 6,</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L129</span><span class="limit-name">관계 스캔 시간</span>
+<span class="value">5초</span><span class="tag">강제 안 됨</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 호환용 미사용</p>
+<p><b>실제로 하는 일</b> relation_scan_seconds는 호환용. 관계 스캔은요청deadline 사용.</p>
+<p><b>한도 초과·이후 확인</b> 현재 참조 작업에5초 watchdog이 있다고 설명하지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/relations_policy.py:7</p><code># relation_scan_seconds is retained for serialized profile compatibility only.</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L130</span><span class="limit-name">구형 자동 참조 읽기</span>
+<span class="value">깊이1/12대상/12000자/도구예약4</span><span class="tag">조건부 기능</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 SYSTEM_POLICY READ 미사용</p>
+<p><b>실제로 하는 일</b> workflow_relations_tools의 MODEL/REVIEWER READ 후 자동 prefetch. 현재unit_reading은SYSTEM_POLICY 읽기라 이 자동 큐를 생성하지 않음.</p>
+<p><b>한도 초과·이후 확인</b> 현재참조는LLM6의FOLLOW(최대8그룹·4scope·깊이8). 다른 상한이다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py:521</p><code>if actor in (&#x27;MODEL&#x27;, &#x27;REVIEWER&#x27;):</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L131</span><span class="limit-name">구형 관계 표시</span>
+<span class="value">페이지12/14000자/preview총3600/요약60</span><span class="tag">조건부 기능</span></summary>
+<div class="limit-body"><p class="status">적용 상태: generic 도구·표시 경로</p>
+<p><b>실제로 하는 일</b> generic relation tool/view/coverage 표시 상한. 현재law 참조는unit_relations의16/24k/600 등 적용.</p>
+<p><b>한도 초과·이후 확인</b> 관련 함수가 파일에 있어도 현행law 입력의 직접상한으로 보고하지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/relations_policy.py:14</p><code>&#x27;max_summary_items&#x27;: 60}</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L132</span><span class="limit-name">구형 반복·오류·검토</span>
+<span class="value">cycle3/browse깊이4/동일오류수정1/검토이의1</span><span class="tag">조건부 기능</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 사건 판단 루프 미사용</p>
+<p><b>실제로 하는 일</b> 일반ToolsSession/Coordinator.run의 상한. 현재run_case→unified_runtime 사건 실행과 구분.</p>
+<p><b>한도 초과·이후 확인</b> 현재law max_no_progress2/판단재진입2/수정1과 별도.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/tools_policy.py:8</p><code>&#x27;browse_depth_limit&#x27;: 4, &#x27;max_same_error_repairs&#x27;: 1, &#x27;max_review_disputes&#x27;: 1}</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L133</span><span class="limit-name">위키 procedure 후보 조회</span>
+<span class="value">8페이지 항목</span><span class="tag">조건부 조회</span></summary>
+<div class="limit-body"><p class="status">적용 상태: shortcut/인증/기능 설정 조건부</p>
+<p><b>실제로 하는 일</b> WikiExecution.plans가 PLAN/ASSESS 앞에8개 조회. 현재control=true이므로 과거판단을그대로복사하는분기는미사용.</p>
+<p><b>한도 초과·이후 확인</b> 허용된 procedure의 현재원문읽기는가능. 모델힌트8개와 별도 호출.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py:57</p><code>for unit in repo.search(self.principal,limit=8)[&#x27;pages&#x27;]:</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L134</span><span class="limit-name">옛 경험 검색 후보</span>
+<span class="value">32개</span><span class="tag">조건부 조회</span></summary>
+<div class="limit-body"><p class="status">적용 상태: capture 꺼진 경로</p>
+<p><b>실제로 하는 일</b> Memory.candidates 점수순[:32]. 현행ShortcutCases override는[]이며capture가 꺼진CaseRepository에서 가능.</p>
+<p><b>한도 초과·이후 확인</b> 질문/경험 목록API pagination과 별개.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:203</p><code>return sorted(rows,key=lambda r:(-r[&#x27;score&#x27;],r[&#x27;id&#x27;]))[:32]</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L135</span><span class="limit-name">위키 구축 snapshot</span>
+<span class="value">기본64기록/최대128/120000bytes</span><span class="tag">비실시간 처리</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 위키 컴파일 별도</p>
+<p><b>실제로 하는 일</b> shortcut.snapshot_page: 단일기록부터byte상한초과면거절; 페이지는다음offset으로계속.</p>
+<p><b>한도 초과·이후 확인</b> 실시간LLM입력블록제한이아님. 별도컴파일작업.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py:368</p><code>def snapshot_page(self, ident, principal, *, offset=0, limit=64, max_bytes=120000):</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L136</span><span class="limit-name">위키 이전지식·관련입력·큐</span>
+<span class="value">이전지식16/관련입력3/lease60초/재시도3</span><span class="tag">비실시간 처리</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 위키 컴파일 별도</p>
+<p><b>실제로 하는 일</b> shortcut compiler/queue의 함수 기본값. 현행질문판단의자료3개제한이아님.</p>
+<p><b>한도 초과·이후 확인</b> nightly batch 최대8은 별도운영작업; 이 보고서에서는실행하지않음.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py:423</p><code>def related_inputs(self, snapshot, principal, *, limit=3):</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L137</span><span class="limit-name">도메인 선택 후보</span>
+<span class="value">concept/relation 각16; reason600</span><span class="tag">코드 결정 계약</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 코드 결정; 모델 선택 미사용</p>
+<p><b>실제로 하는 일</b> domain_control 스키마숫자는존재하지만 선택은코드가DISCOVERY+빈배열로고정. LLM별도호출없음.</p>
+<p><b>한도 초과·이후 확인</b> 이를법률개념16개모델선별단계로표현하면안됨.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/domain_control.py:70</p><code>for key in (&#x27;concept_ids&#x27;,&#x27;relation_ids&#x27;):schema[&#x27;properties&#x27;][key].update(uniqueItems=True,maxItems=16)</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L138</span><span class="limit-name">구형 구조·용어 입력 힌트</span>
+<span class="value">문서3/구조8/제목100자/용어6/정의8; 정의 문서3 초과 시 모호 표시</span><span class="tag">비활성 경로</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 현행 사건 planner 미사용</p>
+<p><b>실제로 하는 일</b> structure_query.navigation_context의 첫 planner 입력 요약. 현재 사건의 명령·법령 탐색 입력을 이렇게 줄이지 않는다.</p>
+<p><b>한도 초과·이후 확인</b> 정의 후보가 많거나 여러 문서에 걸치면 앞쪽을 정답처럼 채택하지 않고 모호 상태를 표시한다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/structure_query.py:137</p><code>for d in matches[&#x27;documents&#x27;][:3] if d[&#x27;id&#x27;] in scope],</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L139</span><span class="limit-name">구형 TermAgent 실행 기본값</span>
+<span class="value">모델9회/라운드3/검색3/수정1/시간1800초; seed 앞4개</span><span class="tag">다른 엔진 설정</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 다른 term-agent 엔진</p>
+<p><b>실제로 하는 일</b> TermAgent.retrieve 기본값이며 현재 통합 v6 사건 실행에 적용되는 40회와 다르다.</p>
+<p><b>한도 초과·이후 확인</b> 이 함수의 literal[:4]도 현재 법령 후보 4개 제한으로 해석하면 안 된다.</p>
+<p class="source">02_BACKEND/semantic_runtime/term_agent.py:15</p><code>DEFAULTS={&#x27;max_rounds&#x27;:3,&#x27;max_calls&#x27;:9,&#x27;wall_seconds&#x27;:1800,&#x27;search_limit&#x27;:3,&#x27;max_repairs&#x27;:1}</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L140</span><span class="limit-name">절차 재사용 불일치 설명 입력</span>
+<span class="value">별도 개수·길이 슬라이스 없음</span><span class="tag">상한 없음</span></summary>
+<div class="limit-body"><p class="status">적용 상태: shortcut 절차 재사용 조건부</p>
+<p><b>실제로 하는 일</b> procedure_deviation이 있으면 기대 입력·실제 입력의 비교 자료를 현재 모델 입력에 추가한다.</p>
+<p><b>한도 초과·이후 확인</b> 현재 메뉴·시스템 지시·스키마 전체가 같을 때만 저장 결정을 재사용한다. 변경 시 모델 재판단에 연결되며 큰 비교 자료에 별도 길이 제한은 없다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py:28</p><code>data={**data,&#x27;procedure_deviation&#x27;:unexpected or deviation,</code></div></details><details class="limit" data-status="conditional">
+<summary><span class="identifier">L141</span><span class="limit-name">구형 완료 설명 목록 압축</span>
+<span class="value">최대8항목; 앞7개 + 나머지 전체를 마지막 문자열로 합침</span><span class="tag">무손실 목록 압축</span></summary>
+<div class="limit-body"><p class="status">적용 상태: 구형 완료 계약</p>
+<p><b>실제로 하는 일</b> NativeExecution.completion_limits는 원문 뒤쪽을 삭제하지 않고 마지막 항목에 합친다.</p>
+<p><b>한도 초과·이후 확인</b> 현재 completion 계약은 limitations 최대64개이며 이 8항목 압축 경로를 쓰지 않는다.</p>
+<p class="source">02_BACKEND/semantic_runtime/legal_agent/memory_rag.py:106</p><code>return values if len(values)&lt;=8 else values[:7]+[&#x27;\n&#x27;.join(values[7:])]</code></div></details></div>
+<script type="application/json" class="card-data">{"title": "조건부·구형 경로 — 설정 존재와 실제 적용 구분", "info": "", "entries": [{"id": "L117", "block": "조건부·비활성", "name": "CORE/SUPPLEMENTAL 5 기본값", "value": "기본5+5; 선택 프로필24+24", "kind": "비활성 경로", "status": "현행 law 경로 미사용", "behavior": "workflow_tiers_policy의 기본값은5지만 현재 설정24로 덮임. 현행 law SELECT는 tier 선택 함수를 실행하지 않음.", "continuation": "법령 근거가5개나24개에서 자동 잘린다고 설명하지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py", "line": 7, "expression": "'profile_id':'hardened-obligations-v5', 'max_output_tokens':6400, 'question_obligations_enabled':True, 'numbered_references_enabled':True, 'max_core_sources':5, 'max_supplemental_sources':5,"}, {"id": "L118", "block": "조건부·비활성", "name": "선택 원문 excerpt", "value": "1600자", "kind": "비활성 경로", "status": "현행 law 경로 미사용", "behavior": "구형 tier 선택 span 상한. 현재 ASSESS evidence_options는1200자 조각화이며 전체를 제공.", "continuation": "두 설정을 같은 본문1600자 컷으로 설명하지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py", "line": 8, "expression": "'max_source_excerpt_chars':1600, 'source_page_size':4, 'source_selection_attempts':2,"}, {"id": "L119", "block": "조건부·비활성", "name": "원문 카드 페이지", "value": "4개", "kind": "비활성 경로", "status": "현행 law 경로 미사용", "behavior": "source_page_size4는 구형 tier wire view. 현행 law 페이지4개와 값만 같고 별도.", "continuation": "현재 법령 탐색에는 law/article/hit 상한이 적용.", "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py", "line": 8, "expression": "'max_source_excerpt_chars':1600, 'source_page_size':4, 'source_selection_attempts':2,"}, {"id": "L120", "block": "조건부·비활성", "name": "구형 단위 초기 후보", "value": "512개; 첫12그룹 읽기", "kind": "비활성 경로", "status": "현행 law 경로 미사용", "behavior": "unit_reading.prepare의 queue[:512], acquire_batch[:12]. law_candidates.prepare가 대신 호출됨.", "continuation": "현재 법령 경로를 첫12그룹 읽기라고 설명하면 정확하지 않음.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py", "line": 362, "expression": "queue=queue[:POLICY['initial_units']]"}, {"id": "L121", "block": "조건부·비활성", "name": "구형 단위 묶음", "value": "그룹12000자/32단위", "kind": "비활성 경로", "status": "현행 law 경로 미사용", "behavior": "group_hits 묶음 경계. law_candidates의 초기 acquire_batch는group_hits를 호출하지 않음.", "continuation": "그룹 분할은 내용 삭제와 별개.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py", "line": 298, "expression": "if chunk and (chars+own['chars']>POLICY['group_chars'] or len(chunk)>=POLICY['group_units']):"}, {"id": "L122", "block": "조건부·비활성", "name": "구형 단위 선별", "value": "선택16/재검토8; 후보8배치/검토8라운드", "kind": "비활성 경로", "status": "현행 law 경로 미사용", "behavior": "unit_selection 경로. 현행 law_navigation으로 먼저 dispatch.", "continuation": "현행 전체 모델 시도40과 별도 과거 선택 정책.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py", "line": 16, "expression": "'batch_groups':12,'group_chars':12000,'group_units':32,'candidate_batches':8,"}, {"id": "L123", "block": "조건부·비활성", "name": "구형 단위 미리보기/입력", "value": "400자/80000자", "kind": "비활성 경로", "status": "현행 law 경로 미사용", "behavior": "unit_reading POLICY preview_chars/context_chars. law preview는현재360 및 article240.", "continuation": "현재 모든 입력8만자 제한으로 설명하지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py", "line": 15, "expression": "'preview_chars':400,'context_chars':80000,'choices':16,'review_choices':8,"}, {"id": "L124", "block": "조건부·비활성", "name": "구형 전역 top-k 회수", "value": "질의64/seed64/참조seed16/선택128; 행동384/원문480000자/묶음50000자", "kind": "비활성 경로", "status": "현행 law 경로 미사용", "behavior": "source_recall_global의 숫자 정책은 law_candidates.discover 이전 dispatch 때문에 사용하지 않음.", "continuation": "현재 법령 디렉터리12개 페이지는 전체top64삭제와 다름.", "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py", "line": 14, "expression": "POLICY = {'query_top_k': 64, 'seed_limit': 64, 'reference_seeds': 16,"}, {"id": "L125", "block": "조건부·비활성", "name": "구형 범위 top-k 회수", "value": "질의64/seed96/참조seed32/범위선택160/합집합288; 범위행동512·640000자/합집합행동1024·1600000자/묶음50000자", "kind": "비활성 경로", "status": "현행 law 경로 미사용", "behavior": "source_recall._scoped_discover의 정책. 현재 법령 디렉터리 경로에서는 실행하지 않음.", "continuation": "구형의 within[:8]/[:32], scoped[:72], ambiguous[:32]도 같은 조건부 경로.", "path": "02_BACKEND/semantic_runtime/legal_agent/source_recall.py", "line": 13, "expression": "SCOPED_POLICY = {'query_top_k': 64, 'seed_limit': 96, 'reference_seeds': 32,"}, {"id": "L126", "block": "조건부·비활성", "name": "구형 평면 선별", "value": "첫16/복구8/최종24/모델2회/240초", "kind": "비활성 경로", "status": "현행 law 경로 미사용", "behavior": "source_selection의 평면 selector. 현재 law_navigation에서 먼저 반환.", "continuation": "current SELECT는remaining-30초와 공유예산을 사용.", "path": "02_BACKEND/semantic_runtime/legal_agent/source_selection.py", "line": 14, "expression": "POLICY = {'first_limit': 16, 'recovery_limit': 8, 'final_limit': 24,"}, {"id": "L127", "block": "조건부·비활성", "name": "source-query-plan 안내", "value": "법령명3/검색어4개·각250자; 목차최대32페이지·outline6페이지", "kind": "비활성 경로", "status": "현행 사건 경로 미사용", "behavior": "BoundedSourceSession.investigate의 별도 planner/목차 경로. 현재 사건의 native7단계에서 호출하지 않음.", "continuation": "현재 명령 검색어4개·180자와 혼동하지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py", "line": 326, "expression": "def catalogue_pages(self, tool, args, label, max_pages=32):"}, {"id": "L128", "block": "조건부·비활성", "name": "옛 term-agent 선언", "value": "max_calls14/active_segments6/active_chars18000", "kind": "다른 엔진 설정", "status": "현행 LLM 판단 경로 미사용", "behavior": "PIPELINE에 남아 있는 document navigation limits. 현재legal_agent 물리호출은40 프로필 적용.", "continuation": "선언14를 현재40 상한 대신 보고하지 않는다.", "path": "00_SYSTEM/PIPELINE.json", "line": 541, "expression": "\"active_segments\": 6,"}, {"id": "L129", "block": "조건부·비활성", "name": "관계 스캔 시간", "value": "5초", "kind": "강제 안 됨", "status": "호환용 미사용", "behavior": "relation_scan_seconds는 호환용. 관계 스캔은요청deadline 사용.", "continuation": "현재 참조 작업에5초 watchdog이 있다고 설명하지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/relations_policy.py", "line": 7, "expression": "# relation_scan_seconds is retained for serialized profile compatibility only."}, {"id": "L130", "block": "조건부·비활성", "name": "구형 자동 참조 읽기", "value": "깊이1/12대상/12000자/도구예약4", "kind": "조건부 기능", "status": "현행 SYSTEM_POLICY READ 미사용", "behavior": "workflow_relations_tools의 MODEL/REVIEWER READ 후 자동 prefetch. 현재unit_reading은SYSTEM_POLICY 읽기라 이 자동 큐를 생성하지 않음.", "continuation": "현재참조는LLM6의FOLLOW(최대8그룹·4scope·깊이8). 다른 상한이다.", "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py", "line": 521, "expression": "if actor in ('MODEL', 'REVIEWER'):"}, {"id": "L131", "block": "조건부·비활성", "name": "구형 관계 표시", "value": "페이지12/14000자/preview총3600/요약60", "kind": "조건부 기능", "status": "generic 도구·표시 경로", "behavior": "generic relation tool/view/coverage 표시 상한. 현재law 참조는unit_relations의16/24k/600 등 적용.", "continuation": "관련 함수가 파일에 있어도 현행law 입력의 직접상한으로 보고하지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/relations_policy.py", "line": 14, "expression": "'max_summary_items': 60}"}, {"id": "L132", "block": "조건부·비활성", "name": "구형 반복·오류·검토", "value": "cycle3/browse깊이4/동일오류수정1/검토이의1", "kind": "조건부 기능", "status": "현행 사건 판단 루프 미사용", "behavior": "일반ToolsSession/Coordinator.run의 상한. 현재run_case→unified_runtime 사건 실행과 구분.", "continuation": "현재law max_no_progress2/판단재진입2/수정1과 별도.", "path": "02_BACKEND/semantic_runtime/legal_agent/tools_policy.py", "line": 8, "expression": "'browse_depth_limit': 4, 'max_same_error_repairs': 1, 'max_review_disputes': 1}"}, {"id": "L133", "block": "조건부·비활성", "name": "위키 procedure 후보 조회", "value": "8페이지 항목", "kind": "조건부 조회", "status": "shortcut/인증/기능 설정 조건부", "behavior": "WikiExecution.plans가 PLAN/ASSESS 앞에8개 조회. 현재control=true이므로 과거판단을그대로복사하는분기는미사용.", "continuation": "허용된 procedure의 현재원문읽기는가능. 모델힌트8개와 별도 호출.", "path": "02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py", "line": 57, "expression": "for unit in repo.search(self.principal,limit=8)['pages']:"}, {"id": "L134", "block": "조건부·비활성", "name": "옛 경험 검색 후보", "value": "32개", "kind": "조건부 조회", "status": "capture 꺼진 경로", "behavior": "Memory.candidates 점수순[:32]. 현행ShortcutCases override는[]이며capture가 꺼진CaseRepository에서 가능.", "continuation": "질문/경험 목록API pagination과 별개.", "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py", "line": 203, "expression": "return sorted(rows,key=lambda r:(-r['score'],r['id']))[:32]"}, {"id": "L135", "block": "조건부·비활성", "name": "위키 구축 snapshot", "value": "기본64기록/최대128/120000bytes", "kind": "비실시간 처리", "status": "위키 컴파일 별도", "behavior": "shortcut.snapshot_page: 단일기록부터byte상한초과면거절; 페이지는다음offset으로계속.", "continuation": "실시간LLM입력블록제한이아님. 별도컴파일작업.", "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py", "line": 368, "expression": "def snapshot_page(self, ident, principal, *, offset=0, limit=64, max_bytes=120000):"}, {"id": "L136", "block": "조건부·비활성", "name": "위키 이전지식·관련입력·큐", "value": "이전지식16/관련입력3/lease60초/재시도3", "kind": "비실시간 처리", "status": "위키 컴파일 별도", "behavior": "shortcut compiler/queue의 함수 기본값. 현행질문판단의자료3개제한이아님.", "continuation": "nightly batch 최대8은 별도운영작업; 이 보고서에서는실행하지않음.", "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py", "line": 423, "expression": "def related_inputs(self, snapshot, principal, *, limit=3):"}, {"id": "L137", "block": "조건부·비활성", "name": "도메인 선택 후보", "value": "concept/relation 각16; reason600", "kind": "코드 결정 계약", "status": "코드 결정; 모델 선택 미사용", "behavior": "domain_control 스키마숫자는존재하지만 선택은코드가DISCOVERY+빈배열로고정. LLM별도호출없음.", "continuation": "이를법률개념16개모델선별단계로표현하면안됨.", "path": "02_BACKEND/semantic_runtime/legal_agent/domain_control.py", "line": 70, "expression": "for key in ('concept_ids','relation_ids'):schema['properties'][key].update(uniqueItems=True,maxItems=16)"}, {"id": "L138", "block": "조건부·비활성", "name": "구형 구조·용어 입력 힌트", "value": "문서3/구조8/제목100자/용어6/정의8; 정의 문서3 초과 시 모호 표시", "kind": "비활성 경로", "status": "현행 사건 planner 미사용", "behavior": "structure_query.navigation_context의 첫 planner 입력 요약. 현재 사건의 명령·법령 탐색 입력을 이렇게 줄이지 않는다.", "continuation": "정의 후보가 많거나 여러 문서에 걸치면 앞쪽을 정답처럼 채택하지 않고 모호 상태를 표시한다.", "path": "02_BACKEND/semantic_runtime/legal_agent/structure_query.py", "line": 137, "expression": "for d in matches['documents'][:3] if d['id'] in scope],"}, {"id": "L139", "block": "조건부·비활성", "name": "구형 TermAgent 실행 기본값", "value": "모델9회/라운드3/검색3/수정1/시간1800초; seed 앞4개", "kind": "다른 엔진 설정", "status": "다른 term-agent 엔진", "behavior": "TermAgent.retrieve 기본값이며 현재 통합 v6 사건 실행에 적용되는 40회와 다르다.", "continuation": "이 함수의 literal[:4]도 현재 법령 후보 4개 제한으로 해석하면 안 된다.", "path": "02_BACKEND/semantic_runtime/term_agent.py", "line": 15, "expression": "DEFAULTS={'max_rounds':3,'max_calls':9,'wall_seconds':1800,'search_limit':3,'max_repairs':1}"}, {"id": "L140", "block": "조건부·비활성", "name": "절차 재사용 불일치 설명 입력", "value": "별도 개수·길이 슬라이스 없음", "kind": "상한 없음", "status": "shortcut 절차 재사용 조건부", "behavior": "procedure_deviation이 있으면 기대 입력·실제 입력의 비교 자료를 현재 모델 입력에 추가한다.", "continuation": "현재 메뉴·시스템 지시·스키마 전체가 같을 때만 저장 결정을 재사용한다. 변경 시 모델 재판단에 연결되며 큰 비교 자료에 별도 길이 제한은 없다.", "path": "02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py", "line": 28, "expression": "data={**data,'procedure_deviation':unexpected or deviation,"}, {"id": "L141", "block": "조건부·비활성", "name": "구형 완료 설명 목록 압축", "value": "최대8항목; 앞7개 + 나머지 전체를 마지막 문자열로 합침", "kind": "무손실 목록 압축", "status": "구형 완료 계약", "behavior": "NativeExecution.completion_limits는 원문 뒤쪽을 삭제하지 않고 마지막 항목에 합친다.", "continuation": "현재 completion 계약은 limitations 최대64개이며 이 8항목 압축 경로를 쓰지 않는다.", "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py", "line": 106, "expression": "return values if len(values)\u003c=8 else values[:7]+['\\n'.join(values[7:])]"}]}</script></details>
+<details class="profile"><summary>선택 프로필 전체 48필드</summary><p>파일 값과 서비스 팩토리의 적용 지점을 구분했습니다. 위 표의 현행 여부를 함께 확인하세요.</p>
+<table><thead><tr><th>설정</th><th>선택 값</th><th>적용 설명</th></tr></thead><tbody><tr><td><code>schema_version</code></td><td>&quot;system-harness-profile-v5&quot;</td><td>프로필 설정 계약의 버전 식별자. 길이·개수 제한이 아니다.</td></tr><tr><td><code>profile_id</code></td><td>&quot;unified-legal-agent-v6&quot;</td><td>선택된 통합 v6 설정 묶음의 식별자.</td></tr><tr><td><code>model_binding</code></td><td>null</td><td>파일null; service팩토리가고정로컬Qwen3.8 binding 주입</td></tr><tr><td><code>max_model_attempts</code></td><td>40</td><td>모든 단계·수정·재시도가 함께 쓰는 물리 모델 시도 40회.</td></tr><tr><td><code>finalization_reserve</code></td><td>3</td><td>전체 40회 중 마지막 판단을 위해 3회를 남김. 조사 시도 상한은 37회.</td></tr><tr><td><code>max_tool_actions</code></td><td>1024</td><td>공통 원장의 도구 시도 1024회. 모든 내부 SQL 조회를 각각 한 번으로 세지는 않음.</td></tr><tr><td><code>wall_seconds</code></td><td>1800</td><td>동일 요청 전체 1800초. 재개 시 최초 마감 시각을 보존.</td></tr><tr><td><code>max_cycles</code></td><td>3</td><td>일반 coordinator.run 전용; 현재 run_case의 판정2회 재진입과 다름</td></tr><tr><td><code>max_no_progress</code></td><td>2</td><td>같은 조사에서 진전 없는 반복 2회이면 탐색 정리.</td></tr><tr><td><code>max_schema_repairs</code></td><td>1</td><td>gateway의 JSON 수정 1회. 법령 탐색과 최종 판단은 0으로 바꾸고 단계 자체 수정 사용.</td></tr><tr><td><code>max_transport_retries</code></td><td>1</td><td>현재local completion팩토리1 유지; 알려진429만재시도</td></tr><tr><td><code>max_context_chars</code></td><td>100000</td><td>참조 data JSON 검사 등에 적용; 모든LLM view 자동컷 아님</td></tr><tr><td><code>max_output_tokens</code></td><td>6400</td><td>local모델정책6400으로factory 결속; RuntimeModel 모든호출에 적용</td></tr><tr><td><code>max_read_chars</code></td><td>12000</td><td>도구 읽기 및 원문 전달 페이지의 12000자. 전체 원문 삭제 상한이 아님.</td></tr><tr><td><code>page_size</code></td><td>40</td><td>원문 읽기 페이지의 블록·구간 40개.</td></tr><tr><td><code>max_concurrent_requests_per_process</code></td><td>4</td><td>선택 로컬 설정은 프로세스당 동시 요청 4개. 초과 접수는 즉시 거절.</td></tr><tr><td><code>browse_depth_limit</code></td><td>4</td><td>generic browse 도구; 현재 law 행동메뉴에는 browse 없음</td></tr><tr><td><code>max_same_error_repairs</code></td><td>1</td><td>ToolsSession 전용; 현재법령/판단 자체수정1회와 구분</td></tr><tr><td><code>max_review_disputes</code></td><td>1</td><td>일반 검토분기; 현재 최종 의미검토 없음</td></tr><tr><td><code>preview_chars</code></td><td>360</td><td>법령 탐색의 읽은 위치 미리보기 앞 360자. 조항 후보 요약은 별도 240자.</td></tr><tr><td><code>max_preview_chars</code></td><td>3600</td><td>generic view preview 총량; law360/240에는 전체3600자 컷 미적용</td></tr><tr><td><code>relation_page_size</code></td><td>12</td><td>generic relation도구/자동prefetch; unit_relations groups16과 별개</td></tr><tr><td><code>max_relation_chars</code></td><td>14000</td><td>generic relation도구; 현행 참조 메뉴24k와 별개</td></tr><tr><td><code>relation_scan_seconds</code></td><td>5</td><td>호환용; 강제5초 제한 아님</td></tr><tr><td><code>auto_reference_read_depth</code></td><td>1</td><td>구형자동prefetch 깊이1; 현행참조FOLLOW 깊이8</td></tr><tr><td><code>max_auto_reference_reads_per_request</code></td><td>12</td><td>구형자동prefetch; 현행SYSTEM_POLICY read는자동prefetch 큐 미생성</td></tr><tr><td><code>max_auto_reference_chars_per_request</code></td><td>12000</td><td>구형자동prefetch; 현행unit cumulative1.6M와 다름</td></tr><tr><td><code>tool_finalization_reserve</code></td><td>4</td><td>generic system_task예약; 현재 unit_read에 별도4 예약을 강제하지 않음</td></tr><tr><td><code>max_summary_items</code></td><td>60</td><td>generic coverage메타데이터 요약; 현재행동체인에60개 컷 없음</td></tr><tr><td><code>question_obligations_enabled</code></td><td>true</td><td>profile검증에서true 요구; 현재사용자쟁점은INTENT 최대8</td></tr><tr><td><code>numbered_references_enabled</code></td><td>true</td><td>profiletrue이지만 bounded structured 호출에서false로 오버라이드</td></tr><tr><td><code>max_core_sources</code></td><td>24</td><td>선택설정24, tier선택 경로 전용; 현행law selector 미사용</td></tr><tr><td><code>max_supplemental_sources</code></td><td>24</td><td>선택설정24, tier선택 경로 전용; 현행law selector 미사용</td></tr><tr><td><code>max_source_excerpt_chars</code></td><td>1600</td><td>tier1600; 현행판단은모든채택원문을1200자조각화</td></tr><tr><td><code>source_page_size</code></td><td>4</td><td>tier카드4; article_page_size4와 별개</td></tr><tr><td><code>source_selection_attempts</code></td><td>2</td><td>tier 선택횟수. 현재law/assess 수정은 각 코드에서1회</td></tr><tr><td><code>selection_time_reserve_seconds</code></td><td>30</td><td>탐색 정리에 마지막 판단용 30초를 남기는 기준. 판단 성공을 보장하지 않음.</td></tr><tr><td><code>bounded_source_selection_enabled</code></td><td>true</td><td>true이며 통합v6의필수조건</td></tr><tr><td><code>final_review_enabled</code></td><td>false</td><td>false; completion COMPOSE도추가생성/의미검토 없음</td></tr><tr><td><code>candidate_navigation.mode</code></td><td>&quot;law-first-v1&quot;</td><td>현행 법령 → 조항 → 적중 위치의 law-first-v1 탐색 경로.</td></tr><tr><td><code>candidate_navigation.law_page_size</code></td><td>12</td><td>검색 법령 목록 한 페이지 12개. 이미 연 법령을 추가하면 전체 입력은 12개를 넘을 수 있음.</td></tr><tr><td><code>candidate_navigation.article_page_size</code></td><td>4</td><td>법령 열기·다음 조항은 페이지당 4개. 처음 요약 메뉴의 limit=8과 별도.</td></tr><tr><td><code>candidate_navigation.hit_page_size</code></td><td>8</td><td>적중 위치 페이지 8개. 최근 미리보기·형제 목록 표시에도 이 값을 사용.</td></tr><tr><td><code>candidate_navigation.search_rounds</code></td><td>8</td><td>검색 표현 라운드 전체 8개. 동일 정규화 검색식을 반복하는 것은 허용하지 않음.</td></tr><tr><td><code>candidate_navigation.allow_unresolved_completion</code></td><td>true</td><td>참조 미해결이 있다는 사실만으로 조사 종료를 금지하지 않음. 답변 범위는 최종 쟁점 판단에서 검사.</td></tr><tr><td><code>candidate_navigation.investigation_control</code></td><td>true</td><td>원래 요구·쟁점·행동 이유·추가 조사 복귀를 추적하는 통합 조사 계약 활성.</td></tr><tr><td><code>candidate_navigation.assessment_reentry_limit</code></td><td>2</td><td>최종 판단에서 추가 탐색으로 복귀 최대 2회. 기존 호출·시간 사용량은 이어받음.</td></tr><tr><td><code>candidate_navigation.completion_contract</code></td><td>true</td><td>원문을 받은 뒤 채택하고, 채택된 원문 좌표에 연결된 판단으로 답변을 구성하는 현재 계약 활성.</td></tr></tbody></table></details>
+<footer><p>141개 수동 설명 항목과 관련 109개 파일의 작업 코드·선택 코드·manifest 해시 일치를 확인했습니다. 실행 중 프로세스의 설정 재조회, 모델 호출, 72시나리오 실행, GENOS 현장 검증은 이번 작업에 포함하지 않았습니다.</p>
+<p><a href="AGENT_LLM_INPUT_BLOCKS_WITH_LIMITS_UTF8.txt">전체 입력·판단 설명 TXT</a> · <a href="LIMITS_BY_LLM_BLOCK.csv">모든 항목·코드 위치 CSV</a> · <a href="SELECTED_PROFILE_ALL_FIELDS.csv">전체 선택 설정 CSV</a> · <a href="SOURCE_BOUND_CANDIDATES.csv">미분류 기계 검색 후보 CSV</a> · <a href="EVIDENCE.json">확인 근거 JSON</a></p>
+<p>보고서와 설정 설명만 추가했습니다. 런타임 코드·제한값·MAIN 포인터는 변경하지 않았습니다. 기존 보고서는 보존했습니다.</p></footer>
+</main><script>
+const cards = [...document.querySelectorAll('.stage')];
+for (const card of cards) {card.info = JSON.parse(card.querySelector('.card-data').textContent); const els=[...card.querySelectorAll('.limit')];els.forEach((el,i)=>el.search=JSON.stringify(card.info.entries[i]).toLocaleLowerCase());}
+const query=document.querySelector('#query'), status=document.querySelector('#status'), result=document.querySelector('#result');
+function filter(){let visible=0;const q=query.value.trim().toLocaleLowerCase();for(const card of cards){let n=0;for(const el of card.querySelectorAll('.limit')){const yes=(!q||el.search.includes(q))&&(status.value==='all'||el.dataset.status===status.value);el.hidden=!yes;if(yes){n++;visible++;if(q)el.open=true;}}const infoHit=q&&status.value==='all'&&(card.info.title+' '+card.info.info).toLocaleLowerCase().includes(q);card.hidden=!(n||infoHit);if(q&&!card.hidden)card.open=true;card.querySelector('.count').textContent=n+'항목';}const profile=document.querySelector('.profile');let pn=0;for(const tr of profile.querySelectorAll('tbody tr')){const yes=!q||tr.textContent.toLocaleLowerCase().includes(q);tr.hidden=!yes;if(yes)pn++;}profile.hidden=!!q&&!pn;if(q&&pn)profile.open=true;result.textContent=visible+' / 141 항목'+(q?' · 프로필 '+pn+'필드':'');}
+query.addEventListener('input',filter);status.addEventListener('change',filter);
+document.querySelector('#expand').addEventListener('click',()=>{document.querySelectorAll('details').forEach(el=>{if(!el.hidden)el.open=true;});});
+document.querySelector('#collapse').addEventListener('click',()=>{document.querySelectorAll('details').forEach(el=>el.open=false);});
+for(const link of document.querySelectorAll('.jump a'))link.addEventListener('click',()=>{const card=document.querySelector(link.getAttribute('href'));card.hidden=false;card.open=true;});filter();
+</script></body></html>

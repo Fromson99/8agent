@@ -1,0 +1,158 @@
+<div id="agent-tree-detail-r2" lang="ko">
+  <h2>에이전트 상세 의사결정 트리</h2>
+  <div class="text-small">수정 목표 · 후속 구현 전 · 전체 상태 전이 검증 전</div>
+  <div class="tree-entry" aria-label="두 실행 방식의 공통 진입">
+    <div>통합 /chat ─┐</div>
+    <div>별도 워크플로우 ─┴→ 공통 에이전트 엔진</div>
+    <div>↓ 입력 확인 → 질문 연결 → 검색 → 읽기 → 선택·복귀 → 참조 → 판단 → 게시</div>
+    <div>공통: 성공분 유지 → 미해결 유지 → 중단 이유 → 다음 행동</div>
+  </div>
+  <div id="agent-tree-detail-content"></div>
+  <div class="sr-only" id="agent-tree-detail-announcement" aria-live="polite"></div>
+</div>
+<style>
+  #agent-tree-detail-r2 { color: var(--foreground); overflow-wrap: anywhere; }
+  #agent-tree-detail-r2 .tree-entry { margin-block: 16px; padding-inline-end: 96px; }
+  #agent-tree-detail-r2 .tree-entry > div { margin-block: 6px; }
+  #agent-tree-detail-r2 .tree-stage { margin-block: 16px; }
+  #agent-tree-detail-r2 summary { padding-block: 8px; }
+  #agent-tree-detail-r2 .tree-stage > summary { font-weight: 500; }
+  #agent-tree-detail-r2 .tree-children { list-style: none; padding-inline-start: 16px; margin-block: 8px; border-inline-start: 1px solid var(--border); }
+  #agent-tree-detail-r2 .tree-children > li { margin-block: 10px; }
+  #agent-tree-detail-r2 .tree-goal { margin-block: 8px; }
+  #agent-tree-detail-r2 .tree-fields { display: grid; grid-template-columns: 1fr; gap: 8px; margin-block: 8px; padding-inline-start: 8px; }
+  #agent-tree-detail-r2 .tree-fields dt { font-weight: 500; }
+  #agent-tree-detail-r2 .tree-fields dd { margin: 4px 0 0; }
+  #agent-tree-detail-r2 .tree-note { margin-block: 8px; }
+  #agent-tree-detail-r2 .tree-route { display: inline; }
+  @media (max-width: 480px) {
+    #agent-tree-detail-r2 .tree-children { padding-inline-start: 10px; }
+    #agent-tree-detail-r2 .tree-entry { padding-inline-end: 0; }
+  }
+  @media (pointer: coarse) {
+    #agent-tree-detail-r2 summary { padding-block: 14px; }
+  }
+</style>
+<script type="application/json" id="agent-tree-detail-data">__TREE_DATA__</script>
+<script>
+(() => {
+  const root = document.getElementById('agent-tree-detail-r2');
+  const destination = document.getElementById('agent-tree-detail-content');
+  const announcement = document.getElementById('agent-tree-detail-announcement');
+  const data = JSON.parse(document.getElementById('agent-tree-detail-data').textContent);
+  const element = (tag, value, cls) => {
+    const item = document.createElement(tag);
+    if (value !== undefined) item.textContent = value;
+    if (cls) item.className = cls;
+    return item;
+  };
+  const detail = (id, label, open = false) => {
+    const box = element('details'); box.id = id; box.open = open;
+    box.append(element('summary', label, 'cursor-interaction'));
+    return box;
+  };
+  const fields = (entries) => {
+    const dl = element('dl', undefined, 'tree-fields');
+    for (const [name, value] of entries) {
+      const wrap = element('div'); wrap.append(element('dt', name));
+      const dd = element('dd');
+      if (value instanceof Node) dd.append(value); else dd.textContent = value;
+      wrap.append(dd); dl.append(wrap);
+    }
+    return dl;
+  };
+  const route = (target) => {
+    const label = data.routes[target];
+    if (!label) throw new Error('Unknown destination: ' + target);
+    if (!data.phases.some(x => x.id === target)) return element('span', label);
+    const a = element('a', '→ ' + label, 'tree-route');
+    a.href = '#tree-phase-' + target;
+    a.addEventListener('click', () => {
+      const box = document.getElementById('tree-phase-' + target);
+      if (!box.open) pendingToggles.add(box.id);
+      box.open = true;
+    });
+    return a;
+  };
+  for (const phase of data.phases) {
+    const box = detail('tree-phase-' + phase.id,
+      phase.id + '. ' + phase.title + ' · ' + phase.cases.length + '개 상황', phase.id === 'C');
+    box.className = 'tree-stage';
+    box.append(element('div', '원하는 단계 결과: ' + phase.goal, 'tree-goal'));
+    box.append(element('div', '다음 단계 조건: ' + phase.exit, 'tree-note text-small'));
+    const children = element('ul', undefined, 'tree-children');
+    for (const scenario of phase.cases) {
+      const li = element('li');
+      const caseBox = detail('tree-case-' + scenario.id,
+        scenario.id + ' · ' + scenario.condition, scenario.id === 'C03' || scenario.id === 'C06');
+      caseBox.append(element('div', '공통 목표: ' + scenario.expected, 'tree-goal text-small'));
+      const branches = element('ul', undefined, 'tree-children');
+      for (const branch of scenario.branches) {
+        const branchLi = element('li');
+        const branchBox = detail('tree-branch-' + branch.id,
+          branch.when, branch.id === 'C03-01');
+        branchBox.append(fields([
+          ['처리 후 원하는 결과', branch.action],
+          ['보존할 상태', branch.preserve],
+          ['다음 경로', route(branch.next)],
+          ['사용자에게 보여줄 정보', branch.visible],
+          ['확인할 조건', branch.check]
+        ]));
+        branchLi.append(branchBox); branches.append(branchLi);
+      }
+      caseBox.append(branches);
+      const basis = detail('tree-basis-' + scenario.id, '현재 근거와 수정 목표의 차이');
+      basis.append(fields([
+        ['기존 검토 기록의 근거', scenario.evidence + ' · 이번에 해당 분기를 실행한 결과 아님'],
+        ['현재 코드에서 확인한 주의점', scenario.current_note || phase.current_note],
+        ['기존 근거 위치', scenario.source],
+        ['책임', scenario.responsibility],
+        ['이 상세 분기의 상태', '수정 목표 / 미구현·미검증 항목을 포함 / 통과 판정 아님']
+      ]));
+      caseBox.append(basis); li.append(caseBox); children.append(li);
+    }
+    box.append(children); destination.append(box);
+  }
+  const common = detail('tree-common', '전 단계 공통 · 복구·미해결·결과 표시 규칙');
+  const commonList = element('ul', undefined, 'tree-children');
+  for (const rule of data.common) {
+    const li = element('li'); const box = detail('tree-rule-' + rule.id, rule.title);
+    box.append(fields(rule.fields)); li.append(box); commonList.append(li);
+  }
+  common.append(commonList); destination.append(common);
+  let applying = false;
+  const pendingToggles = new Set();
+  const allDetails = () => Array.from(root.querySelectorAll('details'));
+  const applySaved = (state) => {
+    const value = state?.privateContent;
+    if (!value || value.treeRevision !== data.revision || !Array.isArray(value.open)) return;
+    applying = true;
+    const selected = new Set(value.open);
+    allDetails().forEach(item => { item.open = selected.has(item.id); });
+    queueMicrotask(() => { applying = false; });
+  };
+  let savedTimer;
+  root.addEventListener('click', event => {
+    const summary = event.target.closest('summary');
+    if (summary) pendingToggles.add(summary.parentElement.id);
+  });
+  root.addEventListener('toggle', event => {
+    if (applying || !event.target.matches('details') || !pendingToggles.has(event.target.id)) return;
+    pendingToggles.delete(event.target.id);
+    announcement.textContent = event.target.querySelector('summary').textContent + (event.target.open ? ' 펼침' : ' 접음');
+    clearTimeout(savedTimer);
+    savedTimer = setTimeout(() => {
+      const selected = allDetails().filter(item => item.open).map(item => item.id);
+      const phaseIds = data.phases.filter(phase => document.getElementById('tree-phase-' + phase.id).open).map(phase => phase.id);
+      if (typeof window.openai?.setWidgetState === 'function') {
+        Promise.resolve(window.openai.setWidgetState({
+          modelContent: { treeRevision: data.revision, expandedPhases: phaseIds },
+          privateContent: { treeRevision: data.revision, open: selected }
+        })).catch(() => {});
+      }
+    }, 200);
+  }, true);
+  window.addEventListener('openai:set_globals', event => applySaved(event.detail?.globals?.widgetState));
+  applySaved(window.openai?.widgetState);
+})();
+</script>

@@ -1,0 +1,12 @@
+<p>원문 부족과 사실 질문 행동의 충돌 수정을 로컬 MAIN에 반영했습니다.</p>
+<p><b>로컬 MAIN60: assessment-gap-action-20261013-r1</b><br>기존 MAIN59의 정상 완료 shortcut 정책과 원문 세대를 유지합니다. 실제 선택 코드 301개 파일의 해시와 WSL service.service의 HEALTH·원문 검색 정상 응답을 확인했습니다.</p>
+<p>원문 gap의 잘못된 REQUEST_FACT를 기존 원문 조사 RESEARCH로 연결합니다. 부족 종류·대상·사유·근거를 보존하며 실제 사용자 사실 부족은 유지합니다. 스키마·근거·인용·권한 검증을 완화하지 않습니다. 사진에서 확인한 충돌의 수정이며 모든 422 오류가 해결됐다는 의미는 아닙니다.</p>
+<p><b>검증:</b> 고정 합성 충돌 952조합, 관련 회귀 353개, GENOS 설치 코드 342개 통과. 설치·재실행·변조 거부·원복 6상태, 서비스 초기화 12회, 같은 committed checkout의 모의 generation 배포 게이트 6회를 확인했습니다. 실제 모델 호출은 0회이며 GENOS 현장 반입·배포·내부 모델·워크플로우 성공은 미확인입니다.</p>
+<p><b>사용 파일은 이 메일의 ASSESSMENT_GAP_ACTION R2입니다.</b> 보관용 R1보다 우선합니다. 최근 SUCCESSFUL_SHORTCUT R1까지 적용된 상태도 지원합니다. 두 패치를 함께 설치할 때는 <b>AD_REQUEST_LOGS R2 → SUCCESSFUL_SHORTCUT R1 → 이 GAP_ACTION R2</b> 순서로 적용합니다.</p>
+<p>첨부 ZIP 안에는 완전한 실행 TXT, 수정 코드, 안내·검증·해시표, <b>AGENT_FAILURE_RECOVERY_POLICY.txt</b>와 <b>MAIN_RESULT.txt</b>가 들어 있습니다. 실행 TXT도 별도로 첨부했습니다. 지침은 AGENTS.md의 필수 코딩 기준으로 연결했습니다. 오류 분류, 자동 보정 허용 범위, 재시도 담당·예산, 상태 보존, 중단·재개, 필수 실패 검사를 명시합니다. 전역 복구 과제와 기존 별도 복구 오류 4건은 미해결로 남겨 두었습니다.</p>
+<p>ZIP을 ~/TRANSFER에 업로드한 경우:</p>
+<pre>python3 -m zipfile -e ~/TRANSFER/GENOS_ASSESSMENT_GAP_ACTION_20261013_R2.zip ~/DEV/TRANSFER/assessment-gap-action-r2-package
+bash ~/DEV/TRANSFER/assessment-gap-action-r2-package/GENOS_ASSESSMENT_GAP_ACTION_20261013_R2_RUN.txt check
+bash ~/DEV/TRANSFER/assessment-gap-action-r2-package/GENOS_ASSESSMENT_GAP_ACTION_20261013_R2_RUN.txt apply</pre>
+<p>기존 ~/DEV에 백업 후 적용합니다. 실제 BACKUP·generation 경로를 넣는 gate 명령과 commit/push·새 코드서빙 리비전·별도 SSE 재시작·원복 절차는 GUIDE_UTF8.txt에 있습니다. 원문 재구축과 워크플로우 편집기 교체는 없습니다. 현장 질의 확인은 <b>워크플로우 테스트 화면</b>에서 수행합니다.</p>
+

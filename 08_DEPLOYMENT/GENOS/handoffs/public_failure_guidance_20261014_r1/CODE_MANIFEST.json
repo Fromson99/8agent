@@ -1,0 +1,88 @@
+{
+  "schema_version": "genos-transfer-overlay-v1",
+  "id": "GENOS_PUBLIC_FAILURE_GUIDANCE_20261014_R1",
+  "transfer_only": true,
+  "deployment_zip": "RUN apply constructs APPLIED_CODE.zip from exact installed checkout; payload is qualified source reference only",
+  "files": [
+    {
+      "path": "apply_patch.py",
+      "sha256": "0259bb98555f3d6163acd2d31665e9da9876f50ce33d3b20ecb7647844a9504d",
+      "bytes": 25892
+    },
+    {
+      "path": "PATCH_SPEC.json.gz",
+      "sha256": "d841456e642ecc0ff1d44ec3094ce5246a355ef2188c48ef2e61d90f68477045",
+      "bytes": 226815
+    },
+    {
+      "path": "GENOS_PUBLIC_FAILURE_GUIDANCE_20261014_R1_RUN.txt",
+      "sha256": "081a02a9f6d8996985079b94ab9e569b0c878f6b4eb17a25c007a37d1317b7f0",
+      "bytes": 321205
+    },
+    {
+      "path": "GENOS_PUBLIC_FAILURE_GUIDANCE_20261014_R1_PASTE_ALL.txt",
+      "sha256": "f505a5a4e0a43e691d1f741238397bad059246d29dbb29a78c516dcb0852ad62",
+      "bytes": 118408
+    },
+    {
+      "path": "GUIDE_UTF8.txt",
+      "sha256": "0bd570920e808052369f7b636c7b8eb5f0b394ebbaebe7ee0e9ee2f5f9396a5f",
+      "bytes": 6616
+    },
+    {
+      "path": "VALIDATION.json",
+      "sha256": "ec74a45b4bc623fd0bba01ca02c222ff0f6c375a0f9f9689ef1c4a4dc77dc371",
+      "bytes": 9397
+    },
+    {
+      "path": "VALIDATION_SUMMARY.txt",
+      "sha256": "6b4f34e21604d662c957215abb18254456e388633c75b4632aef28e3c07829e9",
+      "bytes": 1002
+    },
+    {
+      "path": "HANDOFF.json",
+      "sha256": "5955b5318c147e78e0784aecaaf60496a461e2aeb81ccce38aad6a1d5d045fa8",
+      "bytes": 1747
+    },
+    {
+      "path": "SOURCE_BINDING.json",
+      "sha256": "ccea4eac876f5644a08b2b4baa587e1a16422f1ad6b4ef6d054a388b1fbc7ecc",
+      "bytes": 4304
+    },
+    {
+      "path": "AGENT_FAILURE_RECOVERY_POLICY.txt",
+      "sha256": "6b80893f7fdfe9a487945f17c7a0256be9d144d69b007f74887f73a53039d099",
+      "bytes": 19479
+    },
+    {
+      "path": "MAIN_RESULT.txt",
+      "sha256": "d32402e3d00c258a369e1081957133a3c8a8ce0b12c22c52ff8d5f1e83950b42",
+      "bytes": 3032
+    },
+    {
+      "path": "payload/main_workflow.py",
+      "sha256": "a01e9a23d9a1b9fb28ac19901f5881b73ac9f7855b1063612134abf358e7a69a",
+      "bytes": 5382
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/app.py",
+      "sha256": "5a5e0bf35fd4a5d55742c4262887ccd3b089f01901e00e4ea6f772cdb227e23f",
+      "bytes": 35762
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/chat_adapter.py",
+      "sha256": "c6e162f68fb560a74d7920d53956133884c8619687340f34b801b5038676aef7",
+      "bytes": 8643
+    },
+    {
+      "path": "payload/08_DEPLOYMENT/GENOS/stream_app.py",
+      "sha256": "f94e49f8a859e31f6eae0006d501fa4cde36e871dfdda4c0e46e6a5b4ae3e414",
+      "bytes": 18028
+    },
+    {
+      "path": "payload/08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+      "sha256": "d2972f39bfb5013bd1349bf48c227177e6f3a3bcc91d65c85c8ab0d849443b58",
+      "bytes": 112312
+    }
+  ]
+}

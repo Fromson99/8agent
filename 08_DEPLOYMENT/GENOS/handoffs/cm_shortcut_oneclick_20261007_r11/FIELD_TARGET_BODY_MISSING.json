@@ -1,0 +1,49 @@
+{
+  "observed_date": "2026-10-07",
+  "environment": "GENOS codespace; user-provided package-check.log photo",
+  "evidence_image": "08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r11/FIELD_TARGET_BODY_MISSING.jpg",
+  "evidence_sha256": "b87c292c429838690ad0161033ef0d7ec83093bd045284be05d33cc864ef1e6c",
+  "related_observation": "FIELD_PACKAGE_CHECK_FAILED.json",
+  "handoff_revision": "GENOS_CM_ONECLICK_20261007_R11",
+  "code_root_visible": "/workspace",
+  "python_executable": null,
+  "python_version": null,
+  "failed_operation": "package-check",
+  "error": "semantic_runtime.legal_agent.corrected_memory.MemoryError: target body document missing: 중소기업기본법",
+  "traceback": [
+    {
+      "file": "02_BACKEND/lawrag/pipeline/unified_memory.py",
+      "function": "main",
+      "line": 131
+    },
+    {
+      "file": "02_BACKEND/lawrag/pipeline/shortcut_package.py",
+      "function": "resolve",
+      "line": 150
+    },
+    {
+      "file": "02_BACKEND/lawrag/pipeline/shortcut_package.py",
+      "function": "target_documents",
+      "line": 77
+    }
+  ],
+  "confirmed_failed_condition": "No document passes body_name_match for the portable package logical title",
+  "selected_document_missing_confirmed": false,
+  "field_document_name_or_role_visible": false,
+  "possible_conditions": [
+    "Selected generation lacks the source document",
+    "Present source labels fail the exact title/alias/body suffix matcher",
+    "Present source role or physical filename is excluded as non-body"
+  ],
+  "required_evidence": "Selected generation document names/file_name/document_role or raw_role for 중소기업",
+  "source_rebuild_or_hash_override_authorized_by_observation": false,
+  "reference_package_aliases": [],
+  "reference_package_coordinates": [
+    "body:제2조"
+  ],
+  "code_serving_revision": null,
+  "workflow_verified": false,
+  "actual_genos_access": false,
+  "working_runtime_code_modified": false,
+  "local_main_pointer_changed": false
+}

@@ -1,0 +1,17 @@
+{
+  "observed_date": "2026-10-07",
+  "environment": "GENOS codespace",
+  "photo_sha256": "0026b1319e377d078af6ecc48b65471c72b4c4ea5880048f11e76d3e9c23686e",
+  "command": "tail -n 600 ~/DEV/TRANSFER/cm-oneclick-r8/package-check.log",
+  "code_root": "/workspace",
+  "traceback": "lawrag.pipeline.unified_memory.main line 131 -> lawrag.pipeline.shortcut_package.resolve line 76",
+  "error": "source document version missing or ambiguous: 코스닥시장 상장규정",
+  "confirmed": "No unique exact document-name plus source_artifact_sha256 match in selected generation",
+  "not_yet_known": [
+    "document name missing",
+    "source artifact hash differs",
+    "multiple exact originals"
+  ],
+  "previous_photo": "core code verification completed, package-check failed, EXIT=1",
+  "registration_commit_push_revision_workflow_success": false
+}

@@ -1,0 +1,147 @@
+{
+  "variants": [
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/core-evidence-shortcut-r1",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/rollback-r1/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/rollback-r1/db-log-rollback-r3/core-evidence-shortcut-r1",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/rollback-r2/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/rollback-r2/db-log-rollback-r3/core-evidence-shortcut-r1",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-evidence-shortcut-r1",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/rollback-r1/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/rollback-r1/db-log-rollback-r3/core-evidence-shortcut-r1",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/rollback-r2/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/rollback-r2/db-log-rollback-r3/core-evidence-shortcut-r1",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/core-evidence-shortcut-r1",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/rollback-r1/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/rollback-r1/db-log-rollback-r3/core-evidence-shortcut-r1",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/rollback-r2/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/rollback-r2/db-log-rollback-r3/core-evidence-shortcut-r1",
+      "passed": true,
+      "txt_commands": 10,
+      "runtime_and_current_preserved": true,
+      "raw_failures_recorded": true
+    }
+  ],
+  "txt_commands": 180,
+  "contracts": [
+    {
+      "family": "GENOS_QUERY_LATENCY_20261007_R3",
+      "output": "63 passed, 4 warnings in 1.15s"
+    },
+    {
+      "family": "GENOS_QUERY_LATENCY_20261007_R4",
+      "output": "63 passed, 4 warnings in 1.18s"
+    },
+    {
+      "family": "GENOS_SYSTEM_LOGGING_20261007_R1",
+      "output": "63 passed, 4 warnings in 1.15s"
+    }
+  ],
+  "model_calls": 0,
+  "GENOS_deployed": false
+}

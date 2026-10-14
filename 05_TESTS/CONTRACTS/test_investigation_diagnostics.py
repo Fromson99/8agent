@@ -26,7 +26,11 @@ def navigate(s, rec, **kwargs):
 
 def test_model_defer_is_not_reported_as_a_data_resolution_failure(connected):
     s,_=connected;rec,_=initial(s)
-    out=navigate(s,rec,invoke=lambda *a:decision(a[1],'DEFER'))
+    def defer(*args):
+        value=decision(args[1],'DEFER')
+        for row in value['decisions']:row['applicability']='UNDETERMINED'
+        return value
+    out=navigate(s,rec,invoke=defer)
     diagnostic=out['diagnostics']
     assert out['pending'] and diagnostic['counts']=={'MODEL_DECISION':1}
     item=diagnostic['blockers'][0]
@@ -122,7 +126,7 @@ def test_failure_details_survive_journal_live_text_and_service_log(native_journa
     finally:handler.close()
 
 
-def test_progress_filters_foreign_documents_and_marks_omitted_rows(native_journal):
+def test_progress_filters_foreign_documents_and_keeps_all_admitted_rows(native_journal):
     repo,projection,events=native_journal
     rows=[{'category':'DATA_REFERENCE','code':'REFERENCE_TARGET_UNRESOLVED','reference_id':f'allowed-ref-{n}',
            'document_id':'allowed','resolution':'UNRESOLVED_COORDINATE'} for n in range(15)]
@@ -132,7 +136,8 @@ def test_progress_filters_foreign_documents_and_marks_omitted_rows(native_journa
     projection.poll_journal()
     rendered=json.dumps(events,ensure_ascii=False)
     assert 'PRIVATE_CAUSE' not in rendered and 'PRIVATE_REF' not in rendered
-    assert '전체 상세' in rendered and '데이터 참조 해석: 15' in rendered
+    assert '데이터 참조 해석: 15' in rendered
+    assert all(f'allowed-ref-{n}' in rendered for n in range(15))
 
 
 def test_unknown_stop_code_is_visible_instead_of_generic_state():

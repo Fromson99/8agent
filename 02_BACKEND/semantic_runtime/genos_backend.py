@@ -124,23 +124,24 @@ class Genos(Haiku):
         raw, receipt = self.request('llm', '/chat/completions', payload, role)
         try:
             choice = raw['choices'][0]
-            if choice.get('finish_reason') == 'length':
-                raise ValueError('output truncated; increase --max-tokens (no success recorded)')
+            from .legal_agent.model_contract import structured_content
+            structured_content(raw)
             content = choice['message']['content']
             if not isinstance(content, str) or not content.strip():
                 raise ValueError('empty assistant content')
             content = content.strip()
             if content.startswith('```') and content.endswith('```'):
                 content = content.split('\n', 1)[1].rsplit('```', 1)[0].strip()
-            value = json.loads(content)
-            from jsonschema import Draft202012Validator
-            Draft202012Validator(schema).validate(value)
+            from .legal_agent.output_contract import strict_json,validate_shape
+            value = strict_json(content)
+            validate_shape(value,schema)
             write(Path(receipt['path']).parent / 'validated.json', safe(value))
             return value, receipt
         except Exception as exc:
+            from .legal_agent.output_contract import diagnostics
             write(Path(receipt['path']).parent / 'validation-error.json',
-                  {'error': error_detail(exc)})
-            raise ValueError(f'{role} response validation failed: {error_detail(exc)}; see {Path(receipt["path"]).parent}') from None
+                  {'error':error_detail(exc),'output_contract':diagnostics(exc),'correction_owner':'build-stage'})
+            raise ValueError(f'{role} response validation failed: {error_detail(exc)}; see {Path(receipt["path"]).parent}') from exc
 
     def embed(self, texts, role):
         raw, receipt = self.request('embed', '/embeddings',

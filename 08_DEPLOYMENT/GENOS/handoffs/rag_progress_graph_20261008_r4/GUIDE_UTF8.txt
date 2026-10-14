@@ -1,0 +1,147 @@
+GENOS main_workflow.py 반영 적용 R4 — 2026-10-08
+이번 사용본: GENOS_RAG_PROGRESS_GRAPH_20261008_R4
+이전 발송 R3 대신 R4를 사용합니다. 이미 R3를 적용했어도 R4를 이어 실행합니다.
+SVG: judgment-knowledge-svg-20261008-r9
+핵심 진행: rag-key-progress-20261007-r1
+서버 main_workflow: genos-external-workflow-svg-20261008-r3
+표시 계약: genos-workflow-display-v1
+패키지 R4와 내부 main_workflow revision의 r3는 서로 다른 버전 이름입니다.
+
+1. 이번에 반영되는 코드
+main_workflow.py의 LEGAL_AGENT/ELS_QUERY /json·/stream이 기존 service를 한 번
+실행하고, 원래 status/body·답변·원문·상태를 유지하면서 body.workflow_display에
+SVG R9와 짧은 진행 카드를 넣습니다. 분리 Python 단계는 같은 요청 ID·응답 SHA·
+표시 SHA·revision의 서버 결과를 재사용합니다. 이전 서버이면 기존 렌더링 경로를
+사용합니다. 대기/경과 초/모델 시작·종료는 줄이고 검색값·법령 열람·복귀 이유는
+남깁니다. 오류·traceback·원문은 자르지 않습니다.
+main_workflow.py, 분리 Python 표시 소스와 표시 의존성, 기본 코드 반입 목록을
+함께 반영합니다. 기존 main.py 직접 채팅과 workflow /chat의 등록 계약은 유지합니다.
+새 pip 의존성은 추가하지 않습니다. 기존 backend/FastAPI 및
+08_DEPLOYMENT/GENOS/requirements-sse.txt의 설치 상태를 그대로 사용합니다.
+GENOS_MAIN_MODE와 기존 endpoint/토큰·GENOS_DEV_ROOT/GENOS_DEV·로그 경로 설정을
+계속 사용하며 Python3.10 문법으로 검사했습니다. 실제 Python 버전은 RUN에 남습니다.
+CM R14/R15·조사 예산·service.py·검색 캐시·세션·원문 generation/CURRENT·DB와
+R15가 보존한 오류 로그 R10의 원본 파일/백업은 보존합니다.
+
+2. 기존 DEV에 코드 적용
+ZIP을 ~/DEV/TRANSFER에 올리고 아래 네 줄을 실행합니다.
+ZIP은 TRANSFER용 패치/실행 묶음입니다. 기존 DEV 루트에는 RUN이 백업 후 적용합니다.
+
+python3 -m zipfile -e ~/DEV/TRANSFER/GENOS_RAG_PROGRESS_GRAPH_20261008_R4.zip ~/DEV/TRANSFER/rag-progress-graph-r4-delivery
+cd ~/DEV/TRANSFER/rag-progress-graph-r4-delivery
+sha256sum -c PACKAGE_SHA256SUMS.txt
+bash GENOS_RAG_PROGRESS_GRAPH_20261008_R4_RUN.txt
+
+별도 RUN TXT만 TRANSFER에 올렸으면 아래 한 줄로 실행할 수 있습니다.
+bash ~/DEV/TRANSFER/GENOS_RAG_PROGRESS_GRAPH_20261008_R4_RUN.txt
+
+인자 없는 RUN은 apply와 적용 코드 검증을 수행합니다.
+DEV 선택은 GENOS_DEV_ROOT → GENOS_DEV → ~/DEV입니다. 기존 루트 링크를 해결하며
+Python은 현장 python3를 사용합니다. 실행 파일·Python 버전·코드 root를 기록합니다.
+현재 코드 전체 inventory와 엔진/스키마 pin이 검증한 코드 지문과 일치할 때만
+변경합니다. 미확인 수정·해시·원문 연결 오류는 현재 파일/로그를 보존하고 중단합니다.
+
+bash GENOS_RAG_PROGRESS_GRAPH_20261008_R4_RUN.txt check
+bash GENOS_RAG_PROGRESS_GRAPH_20261008_R4_RUN.txt verify
+
+확인할 출력:
+RAG_DISPLAY_ALL_PROFILES PASS
+DISPLAY_REVISIONS: 핵심 진행 R1 / SVG R9
+MAIN_WORKFLOW_DISPLAY PASS: producer=main_workflow, schema=genos-workflow-display-v1
+MAIN_WORKFLOW_DISPLAY의 revision·display_renderer_path
+CODE_APPLIED, BACKUP, APPLIED_CODE_ZIP, CODE_ZIP_SHA256
+같은 apply 재실행은 전체 code/profile 검증 후 ALREADY_APPLIED입니다.
+적용 전 백업은 ~/DEV/TRANSFER/rag-progress-graph-r4/backup-*에 남습니다.
+이전 R3·CM·조사 예산·오류 로그 백업/실패 기록을 지우지 않습니다.
+
+CM R15 코드 적용을 마친 상태도 지원합니다. CM의 원문 연결·공통 등록 완료와
+표시 적용은 별도입니다. R10만 적용되고 R15 코드가 아직 반영되지 않은 미확인
+조합이면 기존 R15 안내로 코드 적용 상태를 먼저 확인합니다.
+아주 초기 캐시/시스템 로그 설치 상태에 선행 DB 로그 롤백 R3가 없을 때만 함께
+넣은 이전 검증 TXT를 check/apply/verify한 뒤 R4를 실행합니다. 현재 R4 check가
+통과하면 선행 TXT를 다시 실행하지 않습니다.
+
+bash GENOS_DB_LOG_ROLLBACK_20261007_R3_RUN.txt check
+bash GENOS_DB_LOG_ROLLBACK_20261007_R3_RUN.txt apply
+bash GENOS_DB_LOG_ROLLBACK_20261007_R3_RUN.txt verify
+
+3. Git commit → 동일 checkout/generation gate → push → 새 리비전
+RUN 적용만으로 실행 중인 코드서빙 리비전이 바뀌지는 않습니다.
+적용 후 실제 DEV에서 변경을 검토하고, BACKUP/receipt.json의 files만 commit합니다.
+적용된 main_workflow.py·분리 workflow 파일·code_ship.py·표시 의존성과 변경된
+engine/PIPELINE/CODE_MANIFEST를 포함합니다. 다른 staged 변경을 섞지 않습니다.
+
+아래 두 값은 현장 실제 출력/선택 경로로 채웁니다.
+export TASK_BACKUP='/이번_R4_apply가_출력한_BACKUP_절대경로'
+export GENOS_GENERATION='/코드서빙이_현재_선택한_generation_절대경로'
+
+CM이 있으면 00_SYSTEM/GENOS_SERVING_PATHS.json의 generation·manifest SHA와 실제
+코드서빙 선택을 대조합니다. 기존 선택 경로와 manifest를 임의 수정하지 않습니다.
+
+cd ~/DEV
+python3 - "$TASK_BACKUP/receipt.json" <<'COMMIT_PY'
+import json,subprocess,sys
+receipt=json.load(open(sys.argv[1],encoding='utf-8'))
+paths=[row['path'] for row in receipt['files']]
+subprocess.run(['git','diff','--check','--',*paths],check=True)
+subprocess.run(['git','add','-f','--',*paths],check=True)
+subprocess.run(['git','commit','--only','-m','Apply GENOS main_workflow SVG display R4','--',*paths],check=True)
+COMMIT_PY
+
+bash ~/DEV/TRANSFER/rag-progress-graph-r4-delivery/GENOS_RAG_PROGRESS_GRAPH_20261008_R4_RUN.txt gate "$TASK_BACKUP" --generation "$GENOS_GENERATION"
+git rev-parse HEAD
+git push
+
+RUN TXT만 TRANSFER에 올린 경우 gate 명령의 RUN 경로는 그 실제 TXT 위치를 씁니다.
+gate는 실제 설치 DEV의 APPLIED_CODE.zip과 Git 추적 committed checkout의 모든 파일을
+대조하고, 같은 Python/02_BACKEND에서 generation E2E·verify_assets를 실행합니다.
+게이트 후 파일을 바꾸면 다시 commit/gate합니다. 기존 origin에 통과한 commit을
+push한 뒤 새 코드서빙 리비전을 그 commit과 같은 generation으로 배포합니다.
+Run은 기존 GENOS_MAIN_MODE와 main_router.py 설정을 유지합니다. workflow 모드에서는
+main_workflow:app이 새 표시 생산자입니다. main_workflow.py만 필요하면 기존 ASGI
+설정의 main_workflow:app으로 실행합니다. Socket.IO를 새로 켜지 않습니다.
+코드 적용·commit·gate·push·새 리비전·실제 질문 성공은 각각 별도 상태입니다.
+
+4. 분리 워크플로우 Python 편집기
+첨부 GENOS_RAG_PROGRESS_GRAPH_20261008_R4_WORKFLOW_PASTE_ALL.txt를 열고 Ctrl+A로
+전체 복사해 기존 GENOS Python 단계의 코드를 전체 교체하고 저장합니다.
+위쪽의 긴 문자열은 압축한 로그 모듈이며 그 아래 실제 workflow run(data) 코드가
+이어집니다. 코드 ZIP 적용/Git push로 편집기가 자동 갱신되지는 않습니다.
+기존 코드서빙 ID·endpoint·토큰·모드·포트 설정은 유지합니다.
+직접 main.py /chat을 쓰는 경로도 공통 SVG R9·핵심 진행을 유지합니다.
+
+5. 최종 확인 — 워크플로우 테스트 화면
+질의·warmup은 워크플로우 테스트 화면에서만 수행합니다.
+기존 공개 예시: 상법 제4조의 상인 정의를 설명해 주세요.
+대기 로그가 줄었는지, 실제 검색값/법령 열람/조사 복귀가 남는지, 답변 아래
+접힌 그래프가 새 색과 곡선으로 표시되는지 확인합니다.
+judgment_display_revision=judgment-knowledge-svg-20261008-r9
+progress_display_revision=rag-key-progress-20261007-r1
+workflow_display_binding.producer=main_workflow
+workflow_display_binding.schema_version=genos-workflow-display-v1
+요청 ID·commit·선택 generation/manifest SHA·코드서빙 리비전을 함께 기록합니다.
+R4 서버와 새 분리 편집기가 연결되면 workflow_display_binding이 최종 결과에 남습니다.
+프론트의 SVG data URI/details 표시 성공은 실제 화면에서 확인합니다.
+
+6. 로그와 코드 원복
+Bash 첫 단계부터 TRANSFER/rag-progress-graph-r4/bootstrap-logs에 지속 로그와
+DISPLAY_R4_EXIT를 남깁니다. 자식 명령의 stdout/stderr·종료 상태는 기존
+/nfs-root/diamo/8-agent/logs/system/<run_id>에 따로 보존합니다.
+GENOS_SYSTEM_LOG_DIR로 기존 위치를 지정할 수 있습니다. NFS_COMPLETE False이면
+출력한 SPOOL을 보존하고 NFS 복구 뒤 기존 로그 재전송 경로로 회수합니다.
+
+bash GENOS_RAG_PROGRESS_GRAPH_20261008_R4_RUN.txt undo "$TASK_BACKUP"
+
+이번 RUN이 변경한 파일과 그 백업의 해시가 정확히 일치할 때만 적용 전 코드와
+inventory를 복원합니다. 해당 파일에 후속 변경이 있으면 보존하고 중단합니다.
+원래 commit/리비전·분리 편집기도 각각 되돌립니다.
+R3 적용 후 R4를 설치했으면 이 R4 백업으로 R3 상태를 복원합니다.
+원문 generation, DB, 완료된 결과·이전 실패·백업은 바꾸지 않습니다.
+
+7. 확인 범위
+검증 요약은 전체 허용 지문의 정적 hash/engine/schema 결속과, 실제 첨부 RUN의
+설치 계열별 적용·재실행·verify·원복·변조 거부를 구분합니다. 설치한 코드에서
+JSON/SSE·Python 표시 재사용·현재 요청 결속·4만5천자 오류 보존을 확인합니다.
+같은 committed checkout의 모의 generation gate와 CM/예산/오류 보존 검사를 포함합니다.
+신규 모델 호출은 없습니다. 로컬 MAIN45·실제 NFS generation/CURRENT는 유지합니다.
+GENOS 실제 적용·push·리비전·워크플로우 화면 성공은 현장 결과로 확인해야 합니다.

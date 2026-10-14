@@ -1,0 +1,30 @@
+{
+  "version": "GENOS_RAG_FOCUSED_RULES_20261013_R3",
+  "source_release": "focused-rules-20261013-r1",
+  "source_release_manifest_sha256": "8fa2ca7b123b1c79a043d1e7ad69bb45df169dc75661efa37e9e35cdb5346823",
+  "source_code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/focused-rules-20261013-r1/code",
+  "required_predecessor": "GENOS_RAG_FOCUSED_RULES_20261013_R2",
+  "prior_code_zip_sha256": "9ca76ba8996adede43f4b31438b2c9a63b27f646a078d64933f5e725deb0a394",
+  "source_unit_fulltext_sha256": "166127bb50cb416ebff202e01f30cb53d82ddd42ecdaf003ae51416b21e0bf43",
+  "unit_variants": {
+    "67a6a7ab63d3e35854cde964f51b419bccc1bb3ffafe1add3f4f2b777a7d05c6": "166127bb50cb416ebff202e01f30cb53d82ddd42ecdaf003ae51416b21e0bf43",
+    "7d6a5bb2a38ebf2562e44a4a89bf5923ffc61491ee342bce4bb0a7f874665d27": "3e1b875119617bfb5fcdf802f9cb294dda52d769484906dcc37115a4a8dc8d3c"
+  },
+  "local_active_pointer_sha256": "6029d5aa443aa5450baa4b7850a60ffe44f5d32fa90f49e03667da44d109987b",
+  "target": "02_BACKEND/semantic_runtime/unit_fulltext.py",
+  "selection_generation": 53,
+  "requires_rebuilt_generation": false,
+  "cache_implementation_changed": false,
+  "changed_methods": [
+    "_page_query",
+    "law_groups_page",
+    "article_groups_page",
+    "hit_page"
+  ],
+  "field_code_root": "~/DEV",
+  "field_git_commit": null,
+  "field_generation": null,
+  "field_generation_manifest_sha256": null,
+  "field_code_serving_revision": null,
+  "workflow_test": "NOT_RUN"
+}

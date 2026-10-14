@@ -1,0 +1,13 @@
+GENOS 채팅 접이식 행위 카드 복구 R2 — 로컬 검증
+
+작업 코드 관련 계약 93개 PASS
+실제 편집기 전체 TXT의 실시간 카드 계약 11개 PASS
+이전 workflow_live_progress_20261007_r1의 실시간 카드 계약 4개 PASS (93개에 포함)
+수정 전 R5 회귀: 8개 FAIL / 2개 PASS; 실패 기록 보존
+준비 카드가 지연된 AD_PROBE보다 먼저 송신됨
+SSE 원문/전체 판단 카드가 최종 result 전에 송신됨
+실제 WSL 로컬 HTTP SSE flush와 접이식 카드 송신 순서 PASS
+SVG R10 / 현재 판단 상세 R2 / 단일 backend 실행 / 오류 상세 보존 PASS
+새 외부 모델 호출 0회; GENOS 내부 접근 없음
+로컬 MAIN45 선택 포인터 유지
+GENOS 편집기 저장·실제 채팅 카드 렌더링 성공은 미확인

@@ -9,6 +9,16 @@ import json
 import jsonschema
 
 
+class StructureDecisionError(ValueError):
+    """Explicit pure grammar/evidence validator failure, never an arbitrary bug."""
+    repairable=True
+    def __init__(self,message):
+        super().__init__(message)
+        from semantic_runtime.legal_agent.output_contract import VERSION,issue
+        self.diagnostic={'contract_version':VERSION,'category':'DECISION_CONFLICT',
+            'repairable':True,'issues':[issue('STRUCTURE_DECISION_CONFLICT',expected=message)]}
+
+
 class ResponseError(ValueError):
     """A completed model answer that its owning bounded loop may repair."""
     repairable = True
@@ -33,6 +43,21 @@ schema error and rejected answer, not a Python traceback or provider error body.
     detail = error.message if isinstance(error, jsonschema.ValidationError) else str(error)
     code = getattr(exc, 'code', None) or (getattr(exc, 'diagnostic', None) or {}).get('code')
     item = {'code': code or 'INVALID_STRUCTURE_RESPONSE', 'message': detail}
+    from semantic_runtime.legal_agent.output_contract import diagnostics
+    contract=diagnostics(exc)
+    if contract['issues']:
+        item['output_contract']=contract
+        if contract['category']=='OUTPUT_SHAPE_INVALID':
+            primary=contract['issues'][0];path=[];actual=response
+            for part in primary['path'].split('/')[1:]:
+                if not part:continue
+                part=part.replace('~1','/').replace('~0','~')
+                key=int(part) if isinstance(actual,list) and part.isdigit() else part
+                path.append(key)
+                try:actual=actual[key]
+                except (KeyError,IndexError,TypeError):actual=None
+            item.update(code='INVALID_RESPONSE_SCHEMA',path=path,actual=actual,
+                constraint=primary['rule_id'].rsplit('/',1)[-1],expected=primary['expected_constraint'])
     if isinstance(error, jsonschema.ValidationError):
         item.update(code='INVALID_RESPONSE_SCHEMA', path=list(error.absolute_path),
                     actual=error.instance, constraint=error.validator,

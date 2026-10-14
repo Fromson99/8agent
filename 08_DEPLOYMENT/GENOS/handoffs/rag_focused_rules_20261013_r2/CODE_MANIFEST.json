@@ -1,0 +1,59 @@
+{
+  "schema_version": "genos-transfer-overlay-v1",
+  "id": "GENOS_RAG_FOCUSED_RULES_20261013_R2",
+  "transfer_only": true,
+  "deployment_zip": "apply creates APPLIED_CODE.zip from actual DEV; use that archive for the gate",
+  "validation": {
+    "installation_states": 3,
+    "r1_actual_service_boot_contract_error_reproductions": 3,
+    "r2_actual_service_boot_200": 3,
+    "same_committed_checkout_mock_generation_gates": 3,
+    "commands": 46,
+    "expected_tamper_rejections": 6,
+    "known_r1_output_signatures": 330,
+    "real_network_calls": 0,
+    "real_model_inferences": 0
+  },
+  "files": [
+    {
+      "path": "apply_patch.py",
+      "sha256": "61948467a8c66d11c9fb464c711b2f22ba6f19feb1e82e0951cd243dc38deb09",
+      "bytes": 22160
+    },
+    {
+      "path": "PATCH_SPEC.json.gz",
+      "sha256": "673c50c4a5bcdc575cd40e129256edcb85b8bc46eea8ed6c5261780044636e0c",
+      "bytes": 34356
+    },
+    {
+      "path": "GENOS_RAG_FOCUSED_RULES_20261013_R2_RUN.txt",
+      "sha256": "056fd2e0b098b6f95eda180b473f1cc383af3c01d6cbf45d01f6ed179d7b3582",
+      "bytes": 62297
+    },
+    {
+      "path": "GUIDE_UTF8.txt",
+      "sha256": "ce1de1e4ac41ff492fbbb9aff02caf6bc25cbbd1cfceb13d41e6cd6655b39c66",
+      "bytes": 7224
+    },
+    {
+      "path": "VALIDATION_SUMMARY.txt",
+      "sha256": "90a0f95a0750f0bf63a80b3577d997e5a6be44bc7db8d289f8995d99733c03dd",
+      "bytes": 1701
+    },
+    {
+      "path": "VALIDATION.json",
+      "sha256": "2cdcd028ef515f2f8960308bc44016384e6274bd1d98b4dd75cce7da7280402f",
+      "bytes": 1728
+    },
+    {
+      "path": "SOURCE_BINDING.json",
+      "sha256": "9e94eb8f1edbaf7b7bfdb4369fcc2b7f797c9048c783aa301ff9c5770fe36f42",
+      "bytes": 1070
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py",
+      "sha256": "bdfd665d61a1ebe325fd4d2383bf9cb05847f9c0c71e1bf768214f6cb6a9199e",
+      "bytes": 5951
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 No initial model induction. Source, trees and audit metadata stay with the engine.
 The VLM gets image pairs and patterns; a text LLM verifies disputed source passages.
 """
+from .recipe_output import ResponseError, StructureDecisionError
 import copy
 import json
 from collections import Counter
@@ -199,14 +200,14 @@ def review(phase, data, catalog, call, journal, *, opinions=None, on_opinions=No
 
     def check(answer):
         if answer['verdict'] == 'approve' and answer['corrections']:
-            raise ValueError('approve이면 corrections=[]입니다. 실제 수정이 있으면 revise 또는 hold입니다.')
+            raise StructureDecisionError('approve이면 corrections=[]입니다. 실제 수정이 있으면 revise 또는 hold입니다.')
         if answer['verdict'] == 'revise' and not answer['corrections']:
-            raise ValueError('revise에는 구체적인 수정과 이미지의 b번호가 필요합니다. 불확실하면 hold입니다.')
+            raise StructureDecisionError('revise에는 구체적인 수정과 이미지의 b번호가 필요합니다. 불확실하면 hold입니다.')
         for c in answer['corrections']:
             if c['block'] is not None and visible.get(c['block']) != c['page']:
-                raise ValueError('이미지에서 보이는 b번호와 페이지가 일치하지 않습니다. 읽을 수 없으면 block=null, verdict=hold입니다.')
+                raise StructureDecisionError('이미지에서 보이는 b번호와 페이지가 일치하지 않습니다. 읽을 수 없으면 block=null, verdict=hold입니다.')
             if answer['verdict'] == 'revise' and c['block'] is None:
-                raise ValueError('수정 위치의 b번호를 읽을 수 없으면 revise하지 말고 hold입니다.')
+                raise StructureDecisionError('수정 위치의 b번호를 읽을 수 없으면 revise하지 말고 hold입니다.')
 
     # Persist the reinspection round with the answer so resume cannot reset the budget.
     state = copy.deepcopy(opinions) if opinions is not None else {}
@@ -290,9 +291,9 @@ def correct(engine, blocks, data, issues, phase, call, journal, seen_levels):
     def check_scope(answer):
         lo, hi = answer['start_block'], answer['end_block']
         if not any(r['start_block'] <= lo < hi <= r['end_block'] for r in choices):
-            raise ValueError('수정 범위는 기존 구간 하나 안의 연속 범위여야 합니다.')
+            raise StructureDecisionError('수정 범위는 기존 구간 하나 안의 연속 범위여야 합니다.')
         if not any(lo <= b < hi for b in evidence):
-            raise ValueError('수정 범위가 지적된 근거 블록을 포함해야 합니다.')
+            raise StructureDecisionError('수정 범위가 지적된 근거 블록을 포함해야 합니다.')
     scope = compact.ask(call, journal, phase+'-scope',
         '\n지적된 규칙을 적용할 연속 구간을 선택하세요. start_block 포함, end_block 미포함입니다. '
         '같은 틀이 이어지면 기존 구간 전체를 선택하세요. 원본에서 양식이 바뀌는 것이 확인되면 그 경계로 좁히세요. '
@@ -329,15 +330,15 @@ def correct(engine, blocks, data, issues, phase, call, journal, seen_levels):
         proposed = compile_answer(answer)
         updated = install(original, target, scope, proposed)
         if regions.signature(updated) in seen_levels:
-            raise ValueError('같은 실행 구조를 반복했습니다. 근거 있는 다른 관계가 필요합니다.')
+            raise StructureDecisionError('같은 실행 구조를 반복했습니다. 근거 있는 다른 관계가 필요합니다.')
         candidate = regions.build(engine, blocks, updated, draft=True)
         before = regions.build(engine, blocks, original, draft=True)
         outside = lambda result: {(n.block_idx, n.family, n.surface) for n in result.nodes()
                                   if not lo <= n.block_idx < hi}
         if outside(before) - outside(candidate):
-            raise ValueError('수정 범위 밖의 기존 표제가 사라졌습니다. 해당 수정을 적용할 수 없습니다.')
+            raise StructureDecisionError('수정 범위 밖의 기존 표제가 사라졌습니다. 해당 수정을 적용할 수 없습니다.')
         if structure_signature(candidate) == structure_signature(before):
-            raise ValueError('부모 관계 적용 후 구조가 전혀 바뀌지 않았습니다. 같은 수정을 반복하지 마세요.')
+            raise StructureDecisionError('부모 관계 적용 후 구조가 전혀 바뀌지 않았습니다. 같은 수정을 반복하지 마세요.')
     answer = compact.ask(call, journal, phase+'-parents',
         '\n지적된 구조를 고칠 부모 관계만 선택하세요. F ID는 이미 코드가 인식한 번호 체계입니다. '
         'ROOT는 선택 구간의 최상위입니다. 모든 F에 직접 부모 하나를 지정하고 순환을 만들지 마세요. '

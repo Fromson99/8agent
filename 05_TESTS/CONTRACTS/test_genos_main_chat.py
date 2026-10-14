@@ -50,38 +50,32 @@ def test_chat_preserves_payload_and_uses_local_service_once(monkeypatch):
     assert len(calls)==1 and calls[0]['API_TYPE']=='LEGAL_AGENT'
 
 
-def test_untrusted_identity_cannot_be_self_signed(monkeypatch):
-    monkeypatch.setenv('GENOS_MEMORY_ENABLED','1')
-    async def forbidden(body):raise AssertionError('untrusted memory reached RAG')
+def test_session_memory_needs_stable_platform_ids(monkeypatch):
+    monkeypatch.setenv('GENOS_MEMORY_ENABLED','1');monkeypatch.setenv('TEAM_ID','risk_team')
+    async def forbidden(body):raise AssertionError('missing session reached RAG')
     monkeypatch.setattr(adapter,'call_service',forbidden)
-    out=TestClient(main.app).post('/chat',json={'question':'모의 정정','userId':'u','chatId':'s'}).json()
+    out=TestClient(main.app).post('/chat',json={'question':'모의 정정','userId':'u'}).json()
     assert out['data']['answer_status']=='failed'
 
 
-def test_trusted_platform_signs_same_runtime_contract(monkeypatch):
-    from semantic_runtime.legal_agent.memory_identity import verify_assertion
+def test_platform_session_works_without_signing_or_extra_gateway_secret(monkeypatch):
+    from semantic_runtime.legal_agent.memory_identity import validate_session
     monkeypatch.setenv('GENOS_MEMORY_ENABLED','1');monkeypatch.setenv('TEAM_ID','risk_team')
-    monkeypatch.setenv('GENOS_MEMORY_SIGNING_KEY','k'*40)
-    monkeypatch.setenv('GENOS_CHAT_GATEWAY_TOKEN','g'*40)
-    monkeypatch.setenv('GENOS_CHAT_TRUST_PLATFORM_IDENTITY','1')
+    monkeypatch.delenv('GENOS_MEMORY_SIGNING_KEY',raising=False)
     async def local(body):
-        if body['API_TYPE']=='AD_PROBE':
-            return {'status':200,'body':{'response_schema':'not-ad'}}
-        principal=verify_assertion({k:v for k,v in body.items() if k not in {'API_TYPE','channel'}},key='k'*40)
-        assert principal['team_id']=='risk_team'
+        principal=validate_session({k:v for k,v in body.items() if k not in {'API_TYPE','channel'}})
+        assert principal['team_id']=='risk_team' and 'memory_authorization' not in body
         return {'status':200,'body':{'answer':{'text':'확정 경험'},'assembly':{}}}
     monkeypatch.setattr(adapter,'call_service',local)
-    c=TestClient(main.app);data={'question':'모의 확인','userId':'u','chatId':'s'}
-    assert c.post('/chat',json=data,headers={'Authorization':'Bearer wrong'}).json()['data']['answer_status']=='failed'
-    out=c.post('/chat',json=data,headers={'Authorization':'Bearer '+'g'*40}).json()
+    out=TestClient(main.app).post('/chat',json={'question':'모의 확인','userId':'u','chatId':'s'}).json()
     assert out['data']['answer_status']=='answered' and 'memory_authorization' not in out['data']
 
 
-def test_signed_input_remains_bound_to_original_request(monkeypatch):
-    data={'question':'모의','memory':True,'session_id':'s','request_id':'r','user_id':'u','team_id':'t',
+def test_old_signature_is_ignored_and_never_returned(monkeypatch):
+    data={'question':'모의','memory':True,'session_id':'s','request_id':'r','user_id':'u','team_id':'risk_team',
           'memory_authorization':{'issued_at':1,'signature':'s'}}
     request=adapter.request_body(data,'모의')
-    assert all(request[k]==v for k,v in data.items())
+    assert request['memory'] is True and 'memory_authorization' not in request
 
 
 def test_main_does_not_block_liveness_during_chat(monkeypatch):
@@ -105,13 +99,15 @@ def test_migrated_chat_reaches_real_v6_and_preserves_ad_read_gate(unified,monkey
     import service
     monkeypatch.setattr(service,'_bootstrap_application',lambda:client.app)
     monkeypatch.setenv('GENOS_RUNTIME_DIR',str(runtime))
+    import hashlib
+    principal['user_id']='u-'+hashlib.sha256(b'u').hexdigest()
     n=0
     def request(c=None):
         nonlocal n
         n+=1
         if c is not None:transport.command=c
         data={'question':'모의승인규정 제1조의 승인 대상은?','session_id':'s',
-              'request_id':'local'+str(n),'memory_authorization':{'issued_at':1,'signature':'fixture'}}
+              'request_id':'local'+str(n),'memory':True,'user_id':'u','team_id':'risk_team'}
         response=TestClient(main.app).post('/chat',json={**data,'stream':streaming})
         if streaming:
             result=next(json.loads(line[6:])['data'] for line in response.text.splitlines()
@@ -127,7 +123,7 @@ def test_migrated_chat_reaches_real_v6_and_preserves_ad_read_gate(unified,monkey
     monkeypatch.setenv('TEAM_ID','risk_team')
     query={'question':'','session_id':'s','request_id':'wiki','query_kind':'user_wiki'}
     # These management APIs now require AD mode; migrating /chat must not bypass
-    # that current gate merely because its ordinary RAG turn has a signed identity.
+    # that current gate merely because its ordinary RAG turn has session selectors.
     for kind in ('user_wiki','legal_wiki'):
         response=client.post('/v1/rag/memory/query',json={**query,'query_kind':kind})
         assert response.status_code==403 and 'AD_REQUIRED' in response.text,response.text

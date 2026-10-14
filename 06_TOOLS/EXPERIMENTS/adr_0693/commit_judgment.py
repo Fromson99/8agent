@@ -1,0 +1,21 @@
+from pathlib import Path
+R=Path(__file__).resolve().parents[3];S=R/'02_BACKEND/lawrag/research/candidates/adr_0693/consistent-judgment/snapshot'
+def edit(p,a,b):
+ f=S/p;t=f.read_text();assert a in t,(p,a[:70]);f.write_text(t.replace(a,b))
+p='02_BACKEND/semantic_runtime/legal_agent/unified_rag.py'
+edit(p,"seq=self.s.work.event('CASE_JUDGMENT_ACCEPTED',", "seq=self.s.work.event('CASE_JUDGMENT_VALIDATED',")
+edit(p,"'choice_id':self.domain_choice['choice_id']}","'choice_id':self.domain_choice['choice_id']}\n        self.pending_judgment = {'stage':stage,'payload_hash':digest(payload),\n            'validated_seq':seq,'origin':origin,'domain_choice':self.domain_choice}")
+p='02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py'
+edit(p,"    def stage_recorded(self,node,stage,payload,execution):\n        pass", "    def stage_recorded(self,node,stage,payload,execution):\n        pass\n    def stage_committed(self,node,stage,payload,execution):\n        pass")
+edit(p,"                                self.db.execute('UPDATE goal SET pending=? WHERE id=?',(STAGES[STAGES.index(stage)+1],gid))\n                if reuse_candidate", "                                self.db.execute('UPDATE goal SET pending=? WHERE id=?',(STAGES[STAGES.index(stage)+1],gid))\n                        self.stage_committed(cur.lastrowid,stage,payload,execution)\n                if reuse_candidate")
+edit(p,"                        self.db.execute('UPDATE goal SET pending=? WHERE id=?',(pending,gid))\n                    parts[stage]", "                        self.db.execute('UPDATE goal SET pending=? WHERE id=?',(pending,gid))\n                        self.stage_recorded(cur.lastrowid,stage,payload,execution)\n                    parts[stage]")
+edit(p,"                    self.stage_recorded(cur.lastrowid,stage,payload,execution)\n                    if stage=='SELECT':", "                    self.stage_committed(cur.lastrowid,stage,payload,execution)\n                    if stage=='SELECT':")
+p='02_BACKEND/semantic_runtime/legal_agent/case_repository.py'
+edit(p,"    def route_fields(self,gid):", "    def stage_committed(self,node,stage,payload,execution):\n        # The native journal records validation first; public acceptance follows\n        # the durable case revision/head transaction. A late result stays private.\n        pending=getattr(execution,'pending_judgment',None)\n        if not pending:return\n        with self.transaction():\n            row=self.db.execute('SELECT n.hash,n.revision,g.revision FROM node n JOIN goal g ON g.id=n.goal JOIN head h ON h.node=n.id WHERE n.id=? AND h.stage=?',(node,stage)).fetchone()\n            if row is None or row[0]!=digest(payload) or row[1]!=row[2]:\n                raise Conflict('late committed judgment')\n            with execution.s.work.transaction():\n                execution.s.work.event('CASE_JUDGMENT_ACCEPTED', {**pending,\n                    'case_node':node,'request_revision':row[1]})\n        execution.pending_judgment=None\n\n    def route_fields(self,gid):")
+p='02_BACKEND/semantic_runtime/progress.py'
+edit(p,'("case:" + stage, seq)).fetchone()', '("case:" + stage, event.get("validated_seq", seq))).fetchone()')
+edit(p,'        if seq != newest or seq <= self.judgment_sequences.get(stage, -1):', '        if event.get("validated_seq", seq) != newest or seq <= self.judgment_sequences.get(stage, -1):')
+# A new adopted source can reopen a closed gap; unchanged originals cannot.
+p='02_BACKEND/semantic_runtime/legal_agent/completion_execution.py'
+edit(p,"        raised = {g['gap_key'] for r in history for g in r['gaps']}", "        current_basis = {ref for group in (selection.get('investigation_state') or {}).get('groups',{}).values()\n            for decision in group.get('issue_decisions',{}).values() if decision.get('status') in ('ADOPT','KEEP')\n            for ref in decision.get('basis_refs',[])}\n        rounds = (selection.get('investigation_state') or {}).get('gap_rounds',[])\n        raised = {g['gap_key'] for r in rounds for g in r['gaps']\n            if not (current_basis - set(r.get('adopted_at_close') or r.get('adopted_at_open') or []))}")
+print('Durable case-head approval precedes public judgment; stale output stays private')

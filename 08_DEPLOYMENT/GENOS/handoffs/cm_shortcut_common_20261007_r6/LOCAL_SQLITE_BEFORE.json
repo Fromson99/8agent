@@ -1,0 +1,6 @@
+{
+  "store": "/home/jin/8-AGENT/90_RUNTIME/semantic/case-memory/cases-v4.sqlite",
+  "sqlite_sha256": "ba587e7e1345d7e7716af1d839ae50bdd2290d26d7a0b32162cb4b0eac81692d",
+  "gzip_sha256": "c98eb51d20ad2f71d3d6119d708210da3e7c4690e29497e7f2eb33c39afb88ca",
+  "restore": "gzip -dc LOCAL_SQLITE_BEFORE.sqlite.gz > NEW.sqlite; explicit store rollback only; do not replace a running DB"
+}

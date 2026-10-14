@@ -1,0 +1,78 @@
+GENOS SUCCESSFUL_SHORTCUT R1 — 정상 완료 shortcut/위키 및 AD 페이지 이동
+
+변경 내용
+- 최종 답변 게시 성공 + 현재 route/revision + 비어 있지 않은 근거 답변만 shortcut 목록에 표시합니다.
+- 중간 오류 후 최종 복구 성공한 실행은 포함합니다. 실패·진행 중 원장은 삭제하지 않으며 AD 전체 테이블에서 조회합니다.
+- 위키 원문 경로 등록은 성공 영수증과 함께 확정하고 컴파일러에도 성공한 실행의 판단만 전달합니다.
+- 정상 종료는 법률 의미 정답 인증이 아닙니다. 원문 경로는 탐색 자료이며 모델 판단/근거 검증은 유지합니다.
+- AD shortcut과 legal_wiki 공통 목록의 마지막 페이지/이전 이동을 수정했습니다. 페이지 이동은 채팅에 '다음', '이전'으로 입력합니다.
+- 기존 운영자가 구성한 curated 원문 카탈로그는 별도 승인·ACL 계약을 유지합니다.
+
+로컬 MAIN
+successful-shortcut-20261013-r1 / 포인터 generation59에 반영했습니다.
+동결 전수 상태36조합, 후보169계약, 통합 작업169계약 및 실제 service.service HEALTH/RAG_SEARCH200을 확인했습니다.
+GENOS 망분리 현장 반입·내부 모델·워크플로우 화면·배포는 미확인입니다.
+
+선행 상태
+기존 ~/DEV에 MODEL_STREAM_FIX R1 및 AD_REQUEST_LOGS R2가 성공적으로 적용된 상태에 추가 적용합니다.
+AD_REQUEST_LOGS R2를 아직 적용하지 않았다면 앞서 보낸 R2 ZIP/RUN을 먼저 적용합니다.
+기존 R1 설치 실패 상태에서 이 패치만 바로 적용하지 않습니다. 알 수 없는 현장 코드 변경은 보존하고 설치를 중단합니다.
+공통 위키 이전의 개인 범위 전용 저장소에는 현재 권한 범위를 반환하는 호환 함수를 넣어 기존 private 범위를 유지합니다.
+조사 예산 패치, 기존 generation/원문, 워크플로우 편집기와 DB 원장을 유지합니다. 원문 재구축은 없습니다.
+
+1. ZIP 압축 해제 및 기존 checkout 적용
+ZIP을 ~/TRANSFER에 업로드한 예입니다. 업로드 위치가 다르면 첫 경로만 바꿉니다.
+
+python3 -m zipfile -e ~/TRANSFER/GENOS_SUCCESSFUL_SHORTCUT_20261013_R1.zip ~/DEV/TRANSFER/successful-shortcut-r1-package
+bash ~/DEV/TRANSFER/successful-shortcut-r1-package/GENOS_SUCCESSFUL_SHORTCUT_20261013_R1_RUN.txt check
+bash ~/DEV/TRANSFER/successful-shortcut-r1-package/GENOS_SUCCESSFUL_SHORTCUT_20261013_R1_RUN.txt apply
+
+별도 첨부 RUN.txt는 ZIP 안과 같은 완전한 실행 코드입니다. 기본 대상은 기존 ~/DEV이며 링크 root도 해석합니다.
+첫 단계부터 지속 로그/EXIT 상태를 남깁니다. CHECK PASS, CODE_APPLIED, EXIT=0을 확인하고 BACKUP과 APPLIED_CODE_ZIP 경로를 보관합니다.
+동일 코드 재실행은 ALREADY_APPLIED로 끝납니다. 불명확한 코드 바이트를 강제 덮어쓰지 않습니다.
+
+2. 검토·commit 및 동일 checkout/generation 배포 게이트
+cd ~/DEV
+git diff --check
+git status --short
+
+BACKUP/receipt.json에 나온 변경 파일만 검토하고 소스·엔진 pin·PIPELINE·CODE_MANIFEST를 함께 commit합니다.
+아래 두 값은 실제 출력/실제 현재 선택 세대로 바꿉니다.
+
+TASK_BACKUP='/실제/apply/출력의/backup-경로'
+TASK_GENERATION='/현재/선택된/generation/절대경로'
+bash ~/DEV/TRANSFER/successful-shortcut-r1-package/GENOS_SUCCESSFUL_SHORTCUT_20261013_R1_RUN.txt gate "$TASK_BACKUP" --generation "$TASK_GENERATION"
+
+게이트는 실제 적용 checkout의 APPLIED_CODE.zip/추적 commit/선택 generation과 원문 자산을 함께 검사합니다.
+통과한 같은 commit을 기존 팀 remote로 push하고 그 commit/generation을 선택한 새 코드서빙 리비전을 배포합니다.
+별도로 실행 중인 SSE 서버도 같은 코드/설정으로 재시작합니다. 이번 패치 때문에 워크플로우 Python 편집기를 바꿀 필요는 없습니다.
+
+3. 기존 정상 완료 기록의 선택적 복원
+새 성공 영수증이 없는 과거 기록은 자동 성공 처리하지 않습니다. 원장/실패 이력은 보존됩니다.
+과거 정상 완료 항목도 목록에 다시 보이게 하려면 실제 선택된 cases-v4.sqlite와 그 실행의 runtime root를 확인하여 다음을 실행합니다.
+데이터베이스 경로는 SHORTCUT_CURRENT.json이 가리키는 세대를 따릅니다. runtime은 legal-agent/runs와 runs가 들어 있는 실제 루트입니다.
+경로를 추정하거나 다른 팀 DB를 합치지 않습니다. 실행 중의 같은 DB를 쓰는 요청과 충돌하지 않는 시간에 실행합니다.
+
+TASK_CASE_DB='/실제/선택된/cases-v4.sqlite'
+TASK_RUNTIME='/해당/실행로그와/최종응답의/runtime'
+bash ~/DEV/TRANSFER/successful-shortcut-r1-package/GENOS_SUCCESSFUL_SHORTCUT_20261013_R1_RUN.txt backfill --database "$TASK_CASE_DB" --runtime "$TASK_RUNTIME"
+
+복원은 PUBLISHED/COMPLETED journal, 게시된 최종 JSON 해시, case commit, 현재 route/revision/COMPOSE 일치를 검사합니다.
+검증한 기록만 additive 성공 이벤트로 복원하고 verified/skipped와 사유를 출력합니다. 누락·불일치 자료는 미확인으로 남기고 삭제하지 않습니다.
+이미 성공 영수증이 있으면 중복 생성하지 않습니다. 모델 호출이나 전체 데이터 재생성은 없습니다.
+
+4. 워크플로우 테스트 화면 확인
+코드서빙 직접 테스트 UI/API 대신 워크플로우 테스트 화면에서만 확인합니다.
+- AD모드 → shortcut 보여줘 → 20개 초과일 때 다음/이전. 마지막 일부 페이지에서 이전이 정확히 이전 페이지여야 합니다.
+- 실패/진행 중 질의는 shortcut 목록에 없어야 합니다. 원장은 전체 테이블에 남아야 합니다.
+- 새 정상 답변은 shortcut에 나타나고 legal_wiki 탐색 경로도 현재 원문/권한 검사를 유지해야 합니다.
+- legal_wiki 목록에도 같은 페이지 이동이 적용됩니다. 관리 목록의 위키 DRAFT 표시는 자동 정답 승인과 다릅니다.
+질문/요청ID, 실제 코드서빙 리비전/commit, generation 절대경로·manifest 해시와 결과를 함께 보관합니다.
+
+5. 롤백
+현재 파일이 적용 당시와 같을 때만 아래 명령이 백업으로 복원합니다. 후속 변경이 있으면 원복을 거부하여 보호합니다.
+
+bash ~/DEV/TRANSFER/successful-shortcut-r1-package/GENOS_SUCCESSFUL_SHORTCUT_20261013_R1_RUN.txt undo "$TASK_BACKUP"
+
+이후 이전 검증 commit/revision으로 별도 재배포하고 SSE도 맞춥니다. 기존 generation은 유지합니다.
+추가된 성공 이벤트는 원장에 보존되며 구 코드가 무시합니다. 원장이나 실패 데이터를 지우지 않습니다.

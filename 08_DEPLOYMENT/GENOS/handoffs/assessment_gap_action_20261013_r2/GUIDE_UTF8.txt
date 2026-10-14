@@ -1,0 +1,66 @@
+GENOS ASSESSMENT_GAP_ACTION R2 — 원문 부족과 사실 질문의 충돌 수정
+
+사용할 버전: 이 메일의 R2 ZIP/RUN. 보관용 R1보다 우선합니다.
+R2는 같은 제품 수정3파일에 정상 완료 shortcut R1 적용 상태의 설치 호환성을 추가했습니다.
+원문 gap의 REQUEST_FACT를 RESEARCH로 연결하고 부족 종류·사유·대상·근거를 보존합니다.
+실제 MISSING_FACT는 유지하며 잘못된 근거·스키마·인용·사실은 계속 거절합니다.
+확인한 좁은 충돌 수정입니다. 모든422 또는 전역 복구 문제를 해결했다는 뜻은 아닙니다.
+ZIP 안의 AGENT_FAILURE_RECOVERY_POLICY.txt가 향후 코드 작성·검토·검사의 필수 기준입니다.
+
+로컬 MAIN
+assessment-gap-action-20261013-r1 / generation60. MAIN59의 성공 숏컷 정책과 원문 세대를 유지합니다.
+합성 충돌952조합 및 관련353계약을 확인했습니다. 실제 선택301파일과 로컬 service.service 바인딩을 별도 기록합니다.
+GENOS 현장 반입·내부 모델·리비전 배포·워크플로우 화면 성공은 미확인입니다.
+
+적용 가능한 선행 상태와 순서
+기존 ~/DEV에 MODEL_STREAM_FIX R1 또는 AD_REQUEST_LOGS R2가 적용된 상태에 추가 적용합니다.
+SUCCESSFUL_SHORTCUT R1까지 적용된 상태도 R2가 지원합니다.
+정상 완료 shortcut 패치와 이 패치를 함께 적용한다면 AD_REQUEST_LOGS R2 → SUCCESSFUL_SHORTCUT R1 → 이 GAP_ACTION R2 순서입니다.
+이 GAP_ACTION R2를 먼저 적용한 뒤 과거 shortcut R1 설치기를 다시 실행하지 마세요. 과거 설치기는 새 파일을 모릅니다.
+검증되지 않은 현장 코드 변경은 덮어쓰지 않고 중단합니다. CHECK 결과가 다르면 실패 로그를 보존하세요.
+조사 예산 패치·원문 세대·기존 캐시·DB 원장을 유지합니다. 원문 재구축이나 워크플로우 편집기 교체는 없습니다.
+
+1. ZIP 해제 및 기존 checkout 적용
+아래는 ZIP을 ~/TRANSFER에 업로드한 예입니다. 업로드 위치가 다르면 ZIP 경로만 바꿉니다.
+
+python3 -m zipfile -e ~/TRANSFER/GENOS_ASSESSMENT_GAP_ACTION_20261013_R2.zip ~/DEV/TRANSFER/assessment-gap-action-r2-package
+bash ~/DEV/TRANSFER/assessment-gap-action-r2-package/GENOS_ASSESSMENT_GAP_ACTION_20261013_R2_RUN.txt check
+bash ~/DEV/TRANSFER/assessment-gap-action-r2-package/GENOS_ASSESSMENT_GAP_ACTION_20261013_R2_RUN.txt apply
+
+별도 첨부 RUN.txt는 ZIP 안과 같은 완전한 실행 코드이며 bash로 실행합니다.
+기본 대상은 기존 ~/DEV입니다. 초기 단계부터 실제 Python·지속 로그·실패 상태를 남깁니다.
+CHECK PASS / CODE_APPLIED / EXIT=0을 확인하고 BACKUP과 APPLIED_CODE_ZIP 경로를 보관합니다.
+같은 코드를 다시 적용하면 ALREADY_APPLIED로 끝납니다. 미확인 변경을 강제 덮어쓰지 않습니다.
+
+2. 변경 검토·commit 및 동일 checkout/generation 배포 게이트
+cd ~/DEV
+git diff --check
+git status --short
+
+BACKUP/receipt.json에 나온 변경 파일을 검토하고 소스·엔진 pin·PIPELINE·CODE_MANIFEST를 함께 commit합니다.
+다음 두 값은 실제 apply 출력과 현재 선택된 generation 절대경로로 바꿉니다.
+
+TASK_GAP_BACKUP='/실제/apply/출력의/backup-경로'
+TASK_GAP_GENERATION='/현재/선택된/generation/절대경로'
+bash ~/DEV/TRANSFER/assessment-gap-action-r2-package/GENOS_ASSESSMENT_GAP_ACTION_20261013_R2_RUN.txt gate "$TASK_GAP_BACKUP" --generation "$TASK_GAP_GENERATION"
+
+게이트는 적용한 checkout의 APPLIED_CODE.zip·추적 commit·선택 generation·원문 자산을 함께 검사합니다.
+통과한 같은 commit을 기존 팀 remote로 push하고 같은 commit/generation을 선택한 새 코드서빙 리비전을 배포합니다.
+별도로 실행 중인 SSE 서버도 같은 코드/설정으로 재시작합니다. push만으로 실행 리비전이 바뀌지는 않습니다.
+
+3. 워크플로우 테스트 화면 확인
+코드서빙 직접 테스트 UI/API 대신 워크플로우 테스트 화면에서 실행합니다.
+- 사진에서 실패한 질의를 새 요청으로 실행합니다.
+- 원문 부족을 사용자 사실 질문으로 돌리지 않고 허용된 원문 조사로 복귀하는지 확인합니다.
+- 같은 부족 반복/예산 소진은 확인한 근거만의 제한 답변으로 끝나고, 근거가 없으면 실패 사유를 남겨야 합니다.
+- 실제 사건 사실이 없는 경우의 사실 확인 질문은 유지되어야 합니다.
+- 실패한 요청이 성공 shortcut으로 표시되지 않아야 합니다.
+- 로그의 model_proposal.gap_action_corrections와 request/run ID, 원래 오류 상세를 보관합니다.
+실제 commit·코드서빙 리비전·generation 절대경로/manifest 해시·요청ID/결과를 함께 기록합니다.
+
+4. 롤백
+현재 파일이 적용 당시와 같을 때만 아래 명령이 백업으로 복원합니다. 후속 수정이 있으면 보호를 위해 거부합니다.
+
+bash ~/DEV/TRANSFER/assessment-gap-action-r2-package/GENOS_ASSESSMENT_GAP_ACTION_20261013_R2_RUN.txt undo "$TASK_GAP_BACKUP"
+
+이후 이전 검증 commit/revision으로 별도 재배포하고 SSE를 맞춥니다. 기존 generation/DB/실패 원장은 보존합니다.

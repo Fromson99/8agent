@@ -84,7 +84,7 @@ class ObligationSession(TiersSession):
                                            'read_partial': record['read_partial']}
         return super().investigate()
 
-    def generate_checked(self, phase, name, commit, *, extra=None):
+    def generate_checked(self, phase, name, commit, *, extra=None, initial_view=None, required=None):
         if phase == 'compose' and not self.profile.get('final_review_enabled', True):
             view = self.view(phase, required=self.packed['evidence_ids'], extra=extra)
             value = self.gateway.generate(phase, view, name)
@@ -115,7 +115,7 @@ class ObligationSession(TiersSession):
                 self.final_draft_limitations = list(value['limitations'])
             return value
         if phase != 'review':
-            return super().generate_checked(phase, name, commit, extra=extra)
+            return super().generate_checked(phase, name, commit, extra=extra, initial_view=initial_view, required=required)
         view = self.view(phase, required=self.packed['evidence_ids'], extra=extra)
         value = self.gateway.generate(phase, view, name)
         # Keep the original strict validator and its audit results. Publication

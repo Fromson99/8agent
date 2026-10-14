@@ -16,14 +16,18 @@ from semantic_runtime import navigation_storage
 from . import glossary_linking,glossary_knowledge
 
 
-def build_generation(source,glossary,output, *, serving=False, scope=None, fulltext_granularity='article', storage_profile='legacy'):
+def build_generation(source,glossary,output, *, serving=False, scope=None, fulltext_granularity='article', storage_profile='legacy', audit_profile='materialized', fulltext_workers=None):
     source,glossary,output=map(lambda p:Path(p).resolve(),(source,glossary,output))
     reference_scope_mode=os.environ.get('GENOS_REFERENCE_SCOPE_V2','0')
     if reference_scope_mode not in {'0','1'}:
         raise ValueError('GENOS_REFERENCE_SCOPE_V2 must be 0 or 1')
     reference_scope_v2=reference_scope_mode=='1'
     if fulltext_granularity not in {'article','unit'}: raise ValueError('invalid fulltext granularity')
+    if fulltext_workers is not None and (type(fulltext_workers) is not int or fulltext_workers < 1):
+        raise ValueError('fulltext_workers must be positive')
     if storage_profile not in {'legacy','compact-v1','compact-v2'}: raise ValueError('invalid storage profile')
+    if audit_profile not in {'materialized', 'factorized-v1'} or (audit_profile != 'materialized' and storage_profile != 'compact-v2'):
+        raise ValueError('factorized audit requires compact-v2')
     started=time.monotonic()
     phase_started=started
     def progress(phase):
@@ -38,15 +42,17 @@ def build_generation(source,glossary,output, *, serving=False, scope=None, fullt
               'serving_builder_sha256':sha(Path(__file__).with_name('term_serving_bundle.py')),
               'glossary_compiler_sha256':sha(Path(compile_index.__code__.co_filename).with_name('full_glossary.py')),
               'dependencies':{name:sha(Path(compile_index.__code__.co_filename).with_name(name))
-                              for name in ('term_links.py','term_references.py','term_references_legacy.py','term_tools.py','reference_build.py','navigation_build.py')},
+                              for name in ('term_links.py','term_references.py','term_references_legacy.py','term_tools.py','reference_build.py','navigation_build.py','factorized_audit.py')},
               'structure_scope_sha256':sha(Path(__file__).resolve().parents[1]/'core/structure/anchors.py'),
               'navigation_storage_sha256':sha(Path(navigation_storage.__file__)),
               'reference_grammar_sha256':sha(Path(__file__).resolve().parents[1]/'core/reference_coordinate.py'),
               'legal_coordinate_sha256':sha(Path(__file__).resolve().parents[1]/'core/legal_coordinate.py'),
               'fulltext_builder_sha256':sha(Path(fulltext.__file__)) if serving else None,
               'fulltext_tokenizer':{'name':'pecab','version':fulltext.tokenizer_version()} if serving else None}
+    if fulltext_workers is not None:
+        identity['fulltext_workers'] = fulltext_workers
     if storage_profile in {'compact-v1','compact-v2'}:
-        identity.update(storage_profile=storage_profile, compact_storage_sha256=sha(Path(publish.__code__.co_filename).with_name('compact_storage.py')),
+        identity.update(storage_profile=storage_profile, audit_profile=audit_profile, compact_storage_sha256=sha(Path(publish.__code__.co_filename).with_name('compact_storage.py')),
             glossary_serving_sha256=sha(Path(__file__).with_name('glossary_serving.py')),
             checkpoint_builder_sha256=sha(Path(__file__).with_name('generation_build_steps.py')))
     if serving and fulltext_granularity == 'unit':
@@ -147,8 +153,9 @@ def build_generation(source,glossary,output, *, serving=False, scope=None, fullt
         manifest['navigation']={'path':'navigation','manifest_sha256':sha(generation/'navigation/manifest.json')}
         if serving:
             progress('compile-fulltext.start')
-            fulltext_manifest=(fulltext.build(generation/'navigation',generation/'fulltext',granularity='unit',generation=generation)
-                               if fulltext_granularity=='unit' else fulltext.build(generation/'navigation',generation/'fulltext'))
+            worker_options = {'workers': fulltext_workers} if fulltext_workers is not None else {}
+            fulltext_manifest=(fulltext.build(generation/'navigation',generation/'fulltext',granularity='unit',generation=generation,**worker_options)
+                               if fulltext_granularity=='unit' else fulltext.build(generation/'navigation',generation/'fulltext',**worker_options))
             manifest['fulltext']={'path':'fulltext',
                                   'manifest_sha256':sha(generation/'fulltext/manifest.json'),
                                   'navigation_index_sha256':fulltext_manifest['navigation_index_sha256']}

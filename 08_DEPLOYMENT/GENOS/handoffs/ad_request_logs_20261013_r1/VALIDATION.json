@@ -1,0 +1,55 @@
+{
+  "status": "PASS_SCOPED_CHECKS",
+  "environment": "WSL; synthetic data and HTTP responses",
+  "counts": {
+    "working_contracts": 116,
+    "installed_contracts": 416,
+    "installation_states": 3,
+    "service_boots": 6,
+    "same_committed_checkout_mock_generation_gates": 3,
+    "installer_commands": 58,
+    "expected_tamper_rejections": 6,
+    "known_field_inventories": 330,
+    "implementation_files": 9,
+    "real_model_inferences": 0
+  },
+  "contracts": {
+    "CONTRACTS_query_latency_20261007_r3.xml": 204,
+    "CONTRACTS_query_latency_20261007_r4.xml": 212
+  },
+  "evidence": [
+    {
+      "path": "TEST_query_latency_20261007_r4.json.gz",
+      "sha256": "b86abef77b06f2e650a5e7430cb3d11a085fa2afaa7889ac9bb7f18c3ea86d4f",
+      "commands": 19
+    },
+    {
+      "path": "TEST_query_latency_20261007_r3.json.gz",
+      "sha256": "52ab620faa22b31854e2310ceefc8a379a05d731d141334a46f7de5c60ebaff6",
+      "commands": 19
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_display.json.gz",
+      "sha256": "baab0f047edf4d85e9f4f5a11c2ce90552d8c237de626a7eb582d7efab12ebf8",
+      "commands": 20
+    }
+  ],
+  "run_txt_sha256": "e8ced07b4c1aeeb1cb75b0cda98e59ebdb31cbf2d6da747d58eb5f36167574f5",
+  "source_binding_sha256": "5bced919ea68b7848c4d5642dacbdae519359030776b36cb1d0e59bbb35d4661",
+  "test_sources": {
+    "test_delivery.py": "7ab510d276ed0ff54e17e9d35b197e7053064db85086c1b81bfa3194c27ef41d",
+    "test_installed_contracts.py": "1cc44bb00c4d2501abc43288a5e90a781ffaf62f5775768da7be74efcdf9368e",
+    "run_installed_tests.py": "02860a5c744f923c477ea8447ed3323a089b49a93e3869cbdca9b3d325587578"
+  },
+  "local_selected_release_at_seal": {
+    "release_id": "source-provider-20261013-r2",
+    "generation": 58,
+    "changed_by_this_task": false,
+    "this_patch_promoted": false
+  },
+  "limitations": [
+    "GENOS field HTTP cause and successful deployment/screen remain unverified.",
+    "Existing numbered-reference schema-repair test fails before and after; see BASELINE_NOTES.json.",
+    "Shared report finalization is best effort after AD completion; SQL audit remains authoritative."
+  ]
+}

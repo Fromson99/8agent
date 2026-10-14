@@ -100,6 +100,7 @@ def test_end_to_end_bound_images_full_execution_and_zero_call_cache(tmp_path,mon
     monkeypatch.setenv('STRUCTURE_RECIPE_TAGS',str(tmp_path/'tags.json'))
     seen=[]
     class FakeCalls:
+        def bind_recovery(self,*args):pass  # non-network compiler fixture
         def __init__(self,journal,images,**kwargs):self.images=images;self.calls=0;self.model='synthetic-no-provider'
         def __call__(self,phase,system,data,schema,vision):
             self.calls+=1;seen.append(data)

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+task_dev="${GENOS_DEV_ROOT:-${GENOS_DEV:-$HOME/DEV}}"
+task_logs="$task_dev/TRANSFER/rag-progress-graph-r5/server-start-logs"
+mkdir -p -- "$task_logs"
+task_log="$task_logs/$(date -u +%Y%m%dT%H%M%SZ)-$$.log"
+exec > >(tee -a "$task_log") 2>&1
+trap 'task_exit=$?; printf "STANDALONE_SSE_EXIT=%s LOG=%s\n" "$task_exit" "$task_log"' EXIT
+cd -- "$task_dev"
+if [[ -n "${GENOS_PYTHON_DIR:-}" ]]; then export PATH="$GENOS_PYTHON_DIR:$PATH"; elif [[ -x /venv/bin/python3 ]]; then export PATH="/venv/bin:$PATH"; fi
+python3 08_DEPLOYMENT/GENOS/start_sse.py --app stream_app:app --check
+python3 genos_log_runner.py --phase standalone-sse -- python3 -u 08_DEPLOYMENT/GENOS/start_sse.py --app stream_app:app "$@"

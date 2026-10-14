@@ -1,0 +1,105 @@
+GENOS 전체 검색 데이터 상주 캐시 + 세부 계측 — 2026-10-07 R4
+
+사용 파일: GENOS_QUERY_LATENCY_20261007_R4.zip / _APPLY.txt
+서버 메모리 16GB라는 사용자 확인을 반영한 누적 반입본입니다.
+같은 질문의 결과만 재사용하는 방식이 아닙니다. 선택된 원문·문서 탐색·FTS·서빙 용어집의
+SQLite 데이터 전체를 최초 사용 때 한 번 적재하고, 어떤 질문과 세션에서도 사용합니다.
+기존 query-latency R3 최적화·세부 계측과 전체 시스템 로그 기능을 포함합니다.
+
+1. 캐시 동작과 한도
+- 전체 SQLite snapshot은 서버 Python 프로세스 종료까지 유지하고 TTL/LRU로 지우지 않습니다.
+- RAM keeper를 유지하며 질문마다 별도 읽기 전용 연결에서 동일한 SQL 검색을 수행합니다.
+- 16GB 서버 기준 RAM 캐시 예산은 8GB입니다. 파일 크기 + 1/3 여유 추정치로 관리하고
+  현재 가용 RAM/cgroup을 확인해 최소 2GiB 여유를 남깁니다. 전체 프로세스 RSS 상한은 아닙니다.
+- RAM 예산이 부족한 데이터도 전체 로컬 snapshot으로 준비합니다. NFS 직접 검색으로
+  조용히 돌아가거나 검색 데이터 일부를 잘라내지 않습니다.
+- 질문별 결과/권한 ID/미리보기 캐시의 128MiB·256항목·50,000적중 메타데이터 한도는
+  별도 보조 캐시의 한도입니다. 전체 검색 데이터 snapshot을 128MiB로 제한하지 않습니다.
+- 첫 요청이나 기존 warmup에서 한 번 적재합니다. 다른 질문은 결과를 새로 계산하지만
+  이미 적재한 전체 데이터는 그대로 사용합니다. 모델 호출은 질문마다 필요합니다.
+- 원문/색인 SHA·generation·파일 상태를 확인하며 현재 문서 권한 범위로 결과를 제한합니다.
+  질문·답변·근거 ledger·SQLite 연결과 세션 상태를 사용자 사이에 공유하지 않습니다.
+- 서버/컨테이너 재시작·새 리비전 배포 후에는 다시 적재합니다. 워커/replica가 여러 개면
+  각각 별도 캐시입니다. 현재 start_sse.py 기본은 단일 워커입니다.
+
+2. 코드서빙 환경변수
+기존 코드서빙 환경 설정에 다음 값을 등록합니다. 코드 기본값도 동일합니다.
+GENOS_RESIDENT_DATA=auto
+GENOS_RESIDENT_CACHE_MIB=8192
+GENOS_RESIDENT_CACHE_DIR=/var/tmp
+GENOS_RUNTIME_CACHE_MIB=128
+GENOS_RUNTIME_CACHE_ENTRIES=256
+GENOS_QUERY_LATENCY=1
+GENOS_LOG_LEVEL=INFO
+
+GENOS_RESIDENT_DATA=memory는 전체 RAM만 허용하며 부족하면 실패합니다.
+local은 전체 로컬 복사본, off는 원본 읽기 경로입니다. 기본 auto를 사용합니다.
+GENOS_RESIDENT_CACHE_DIR은 해당 서버의 쓰기 가능한 로컬 저장소여야 합니다.
+NFS를 지정하면 거부합니다. RAM-backed tmpfs도 가용 메모리가 부족하면 거부합니다.
+로컬 설정은 /var/tmp이며 정상 종료 시 임시 snapshot을 정리합니다.
+DEV 셸에 export한 값과 실제 코드서빙 컨테이너 설정은 별개입니다.
+기존 플랫폼/API 인증, 포트, 모델, GENOS_MAIN_MODE, 선택 generation은 유지합니다.
+
+3. 기존 ~/DEV에 적용
+ZIP과 별도 TXT를 ~/DEV/TRANSFER에 함께 놓고 아래 순서로 실행합니다.
+현장 python3(서빙 3.11 이상)를 사용합니다. 새 패키지와 NFS generation 재구축은 필요 없습니다.
+
+cd ~/DEV/TRANSFER
+export GENOS_DEV="$HOME/DEV"
+export GENOS_GENERATION="${GENOS_GENERATION:-/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation}"
+
+# 실제 선택 generation이 다르면 위 경로를 실제 절대경로로 바꿉니다.
+bash GENOS_QUERY_LATENCY_20261007_R4_APPLY.txt check "$GENOS_GENERATION"
+bash GENOS_QUERY_LATENCY_20261007_R4_APPLY.txt apply "$GENOS_GENERATION"
+bash GENOS_QUERY_LATENCY_20261007_R4_APPLY.txt verify "$GENOS_GENERATION"
+
+check가 실패하면 apply하지 않습니다. 알려진 선행 코드만 백업 후 적용하고,
+이미 R4를 적용한 상태는 안전하게 확인합니다. 코드 ZIP·manifest SHA가 일치해야 합니다.
+SERVICE_LOADER / QUERY_LATENCY_CONTRACT / RESIDENT_DATA_CONTRACT / GENERATION_E2E /
+ASSETS에서 같은 checkout과 선택 generation을 확인합니다. 큰 NFS 최초 확인은 시간이 걸립니다.
+배포 첫 단계부터 stdout/stderr·전체 traceback·실패 상태를 NFS system 로그에 기록하며
+NFS가 불통이면 표시된 SPOOL을 보존합니다. GENOS_SYSTEM_LOG_DIR 기본은
+/nfs-root/diamo/8-agent/logs/system입니다. 현장 새 리비전 로그에서도 실제 PID·binding을 확인합니다.
+
+4. Git push와 새 리비전
+기존 origin에 push할 때:
+bash GENOS_QUERY_LATENCY_20261007_R4_APPLY.txt push "$GENOS_GENERATION"
+
+별도 원격을 사용한다면 실제 URL을 GENOS_NEW_REMOTE_URL로 지정하고:
+bash GENOS_QUERY_LATENCY_20261007_R4_PUSH_NEW_REMOTE.txt
+
+TXT는 실제 R4 APPLY 파일명으로 연결되고 기존 origin을 보존합니다. 같은 checkout의
+정확한 코드·generation gate를 통과한 commit만 push하며 force push는 하지 않습니다.
+GENOS 코드서빙에서 그 commit으로 새 리비전을 배포합니다. apply/push만으로 실행 중인
+서버 코드가 바뀌지는 않습니다. 기존 main_router:app / python3 main_router.py 경로와
+GENOS_MAIN_MODE=workflow 또는 integrated를 유지합니다.
+
+이번 캐시 변경은 서버 내부 읽기 경로에 적용되므로 워크플로우 편집기 변경은 필요 없습니다.
+기존 별도 진행 UI 수정이 있다면 그대로 유지합니다. ZIP 속 workflow 파일과 동봉하지 않은
+_WORKFLOW_PASTE_ALL.txt는 누적 시스템 로그 기준 참고본이며 편집기에 덮어쓰지 않습니다.
+
+5. 현장 확인과 세부 계측
+질의·warmup 검증은 기존 workflow 테스트 화면에서만 합니다.
+첫 질문, 다른 질문, 새 세션의 다른 질문을 차례로 실행합니다.
+최초에 resident_data.load가 발생하고 다음 요청에서 resident_data.open cache_hit=true가
+나오는지 확인합니다. cache_storage=memory/local, dataset_bytes,
+resident_memory_reserved_bytes, resident_local_bytes로 실제 저장 방식을 구분합니다.
+FTS SQL 자체는 새 검색어의 결과를 계산하므로 새 질문에서도 발생하는 것이 정상입니다.
+SQL execute/fetch·토큰화·후보 구성·원문 검증/읽기·checkpoint·모델 transport는 계속 계측합니다.
+
+요청 로그를 다음처럼 요약합니다.
+python3 GENOS_QUERY_LATENCY_20261007_R4_SUMMARIZE.txt '/실제/요청.log' --output '/실제/요약.json'
+
+resident_data_hits/loads/storage는 질문과 무관한 전체 적재 재사용,
+process_cache_hits/builds는 보조 결과 캐시 재사용입니다. 중첩 구간 합계를 더하지 않습니다.
+non-CPU 시간이 크다는 사실만으로 NFS나 모델 대기라고 확정하지 않습니다.
+
+6. 원복과 확인 상태
+적용 시 출력된 정확한 backup 디렉터리로:
+bash GENOS_QUERY_LATENCY_20261007_R4_APPLY.txt rollback '/출력된/backup/절대경로'
+
+데이터 generation과 세션 상태는 원복에서 변경하지 않습니다.
+WORKSPACE의 기존 로컬 activation receipt 불일치와 구 fixture 실패는 별도 검증 기록에
+남겼으며 생산 receipt를 고치거나 데이터 hash를 새로 승인하는 방식으로 우회하지 않았습니다.
+로컬 MAIN45 포인터는 이 작업에서 바꾸지 않았습니다. 작업 코드·인계 후보·선택 MAIN은 별도입니다.
+GENOS 실제 반입/push/새 리비전/메모리 사용량/속도 개선은 현장 확인 전까지 미확인입니다.

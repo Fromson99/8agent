@@ -1,0 +1,33 @@
+{
+  "shell_syntax": true,
+  "exact_wrapper_missing_checkout_failure": true,
+  "durable_result_error_log_exit_status": true,
+  "wrapper_result_path": "/tmp/cm-register-wrapper-z09yzr6z/DEV/TRANSFER/cm-register-check-20261012-r1/run-20261012T114618Z-wKlQwQ",
+  "model_calls": 0,
+  "registration_performed": false,
+  "script_sha256": "120634a185c74a853259f415bcc62b6090bb611d62e25ea8c559830eb519313e",
+  "run_txt_sha256": "cc78996957add524aaac4c5ee0b371b734fbaf0fb2b255123ef226618ddfb293",
+  "package_file_sha256": "a167b8892698c314168c0c436418e42549626c12f15eff494a6903b8f1d11f5f",
+  "local_source_connection_check": {
+    "status": "SOURCE_CONNECTION_CHECK_PASSED",
+    "offline_validation": true,
+    "code_root": "/home/jin/8-AGENT",
+    "package_check": {
+      "checked": true,
+      "cases": 51,
+      "source_entries": 98,
+      "documents": 21,
+      "binding": {
+        "generation": "term-source-8729f978a28924cb8c5b",
+        "store_sha256": "34ac9d5ce4cfe1e7bd35a15145683acd8f507f90c44bf26d71f16018badb362b",
+        "unit_index_sha256": "0a6e86021192d1d9ed24496626f8c2010ebfef11ec90f2ff55423ff4b1a34d4f"
+      }
+    },
+    "field_result": false
+  },
+  "retained_setup_failure": {
+    "reason": "Canonical package identity was initially used in place of raw file SHA; corrected before delivery.",
+    "stage": "before package resolver/model/registration",
+    "failed_output": "validation-setup-failure.json.gz"
+  }
+}

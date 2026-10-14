@@ -85,7 +85,7 @@ def occurrence_schema(db):
     ''')
 
 
-def finish_audit(index,audit):
+def finish_audit(index,audit, *, audit_profile='materialized'):
     index,audit=Path(index),Path(audit)
     with closing(sqlite3.connect(index)) as db:
         if db.execute('PRAGMA integrity_check').fetchone()[0]!='ok':raise ValueError('runtime integrity')
@@ -93,7 +93,10 @@ def finish_audit(index,audit):
         views=[r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='view' ORDER BY name")]
     with closing(sqlite3.connect(audit/'navigation.sqlite')) as db:
         if db.execute('PRAGMA integrity_check').fetchone()[0]!='ok':raise ValueError('audit integrity')
-        if _tables(db)!=set(AUDIT_TABLES):raise ValueError('construction coverage')
+        if audit_profile == 'factorized-v1':
+            from .factorized_audit import verify_relations
+            verify_relations(db, {'audit_profile': audit_profile})
+        elif _tables(db)!=set(AUDIT_TABLES):raise ValueError('construction coverage')
         counts={t:db.execute('SELECT count(*) FROM '+t).fetchone()[0] for t in AUDIT_TABLES}
     manifest={'schema_version':'term-navigation-storage-v3','audit_policy':'logical-construction-evidence',
               'audit_file':'navigation.sqlite','audit_sha256':sha(audit/'navigation.sqlite'),
@@ -101,6 +104,9 @@ def finish_audit(index,audit):
               'serving_index_bytes':index.stat().st_size,'construction_tables':counts,
               'runtime_tables':tables,'runtime_views':views,'compiler_sha256':sha(__file__),
               'llm_calls':0,'separation_strategy':'direct-attached-audit'}
+    if audit_profile == 'factorized-v1':
+        from .factorized_audit import SCHEMA, policy
+        manifest.update(schema_version=SCHEMA, audit_policy='replayable-factorized-evidence', **policy())
     path=audit/'manifest.json'
     if path.exists():
         if json.loads(path.read_text())!=manifest:raise ValueError('completed audit manifest drift')

@@ -4,6 +4,7 @@ import time
 from .unit_reading import POLICY, read, original_map, ensure_context, acquire_batch, unit_label
 from .relation_read_policy import GUIDANCE
 from .errors import BudgetExhausted, ContractError
+from . import output_contract as contracts
 
 SYSTEM = '''법률 질문에 필요한 원문을 선택하는 legal_agent다. 검색된 항·호·목의 실제 원문 구간을 읽고
 그 단위를 사용할지, 어디까지 펼쳐 읽을지 함께 결정한다. 제목·검색 순위는 적용 근거가 아니다.
@@ -93,22 +94,30 @@ def _select_batch(question,record,invoke,*,session,remaining_seconds,max_fulltex
             search_queries={'type':'array','maxItems':4,'items':{'type':'string','minLength':1}})
         if phase.startswith('source-unit-review') and record.get('pending_unit_hits'):
             definition['required']+=['evidence_sufficient','sufficiency_reason']
-        left=remaining_seconds-(time.monotonic()-started)
-        if left<=1:raise TimeoutError('unit selection budget exhausted')
-        v=invoke(SYSTEM,data,definition,phase,min(180,left))
-        try:validate(v,visible,limit)
-        except ValueError as exc:
-            if progress.get('repairs',0)>=1:raise
-            progress['repairs']=progress.get('repairs',0)+1
-            output['rejected_decisions'].append({'phase':phase,'decision':v,'error':str(exc)})
+        def checked(value):
+            contracts.validate_shape(value,definition)
+            try:validate(value,visible,limit)
+            except ValueError as exc:
+                raise contracts.OutputContractError(str(exc),[contracts.issue('UNIT_SCOPE_OR_STATUS_CONFLICT','/choices')],category='DECISION_CONFLICT') from exc
+        used_phase=phase
+        def propose(payload,attempt):
+            nonlocal used_phase
             left=remaining_seconds-(time.monotonic()-started)
-            if left<=1:raise TimeoutError('choice redecision time budget exhausted')
-            repair='source-unit-choice-repair'+('-'+str(batch_number) if batch_number>1 else '')
-            v=invoke(SYSTEM,{**data,'rejected_decision':v,'contract_error':str(exc),
-                'task':'원문 행에 제공된 id와 scope만 다시 선택한다.'},definition,repair,min(180,left))
-            validate(v,visible,limit)
-            output['choice_repairs'].append({'rejected_phase':phase,'phase':repair,'decision':v});phase=repair
-        output['decisions'].append({'phase':phase,'decision':v});return v
+            if left<=1:raise TimeoutError('unit selection budget exhausted')
+            if attempt:
+                if progress.get('repairs',0)>=1:
+                    raise contracts.OutputContractError('unit correction budget exhausted',
+                        [contracts.issue('CORRECTION_BUDGET_EXHAUSTED',repairable=False)],repairable=False)
+                progress['repairs']=progress.get('repairs',0)+1
+                output['rejected_decisions'].append({'phase':phase,'decision':payload.get('rejected_decision'),
+                    'error':payload.get('contract_error'),'validation':payload['repair_contract']['validation']})
+                save()
+                used_phase='source-unit-choice-repair'+('-'+str(batch_number) if batch_number>1 else '')
+            return invoke(SYSTEM,payload,definition,used_phase,min(180,left))
+        value=contracts.bounded_decision(session.repo,'unit-selection',data,definition,propose,checked,
+            identity={'phase':phase,'data':data},can_repair=lambda:progress.get('repairs',0)<1)
+        if used_phase!=phase:output['choice_repairs'].append({'rejected_phase':phase,'phase':used_phase,'decision':value})
+        output['decisions'].append({'phase':used_phase,'decision':value});return value
     def execute(value):
         for c in value['choices']:
             r=offered[c['id']];o=next(o for o in r['offers'] if o['id']==c['scope'])

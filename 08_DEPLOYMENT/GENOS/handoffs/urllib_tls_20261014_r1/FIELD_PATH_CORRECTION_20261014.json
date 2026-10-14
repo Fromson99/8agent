@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-14",
+  "source": "Direct user correction in this conversation after the uploaded FileNotFoundError photo",
+  "handoff": "GENOS_URLLIB_TLS_20261014_R1",
+  "previous_instruction_problem": "The supplied command assumed ~/TRANSFER for the uploaded ZIP. The user runs from their actual TRANSFER upload directory using ./filename paths.",
+  "user_report": "사용자가 실제 TRANSFER 폴더에서 상대경로로 직접 수정해 실행했다고 보고함.",
+  "user_reported_execution_after_path_correction": true,
+  "future_instruction": {
+    "starting_directory": "The actual TRANSFER upload folder already selected by the user",
+    "upload_directory_absolute_path": null,
+    "zip_input": "./GENOS_URLLIB_TLS_20261014_R1.zip",
+    "extract_example": "python3 -m zipfile -e ./GENOS_URLLIB_TLS_20261014_R1.zip ./urllib-tls-r1-package",
+    "check_example": "bash ./urllib-tls-r1-package/GENOS_URLLIB_TLS_20261014_R1_RUN.txt check",
+    "apply_example": "bash ./urllib-tls-r1-package/GENOS_URLLIB_TLS_20261014_R1_RUN.txt apply",
+    "must_not_assume": ["~/TRANSFER", "~/DEV/TRANSFER"],
+    "distinction": "Running the handoff from TRANSFER is separate from the installer's target checkout and later Git/generation checks."
+  },
+  "preserved": ["Sealed ZIP", "Original mailed guide and RUN TXT", "Previous validation and email records"],
+  "field_apply_receipt": null,
+  "field_commit": null,
+  "field_serving_revision": null,
+  "field_model_success": "NOT_REPORTED",
+  "rerun_requested": false,
+  "new_email_sent": false
+}

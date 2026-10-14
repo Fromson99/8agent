@@ -1,5 +1,736 @@
 # GENOS — 질문과 작업의 진입점
 
+2026-10-14 사용자 경로 정정: 현장 업로드 폴더는 사용자가 열어 둔 **`TRANSFER`**이며,
+그 폴더에서 `./GENOS_URLLIB_TLS_20261014_R1.zip`처럼 **현재 위치 기준 상대경로**로 실행해야 한다.
+이 폴더의 절대 위치를 `~/TRANSFER`로 가정한 기존 안내 때문에 사진의 FileNotFoundError가 발생했다.
+사용자는 경로를 직접 수정해 실행했다고 보고했다. 앞으로 압축 해제·설치기 실행을 위해 `DEV`로
+이동시키지 않으며, 설치기의 실제 코드 적용 대상인 기존 Git checkout과 실행 위치를 구분한다.
+예시는 `python3 -m zipfile -e ./GENOS_URLLIB_TLS_20261014_R1.zip ./urllib-tls-r1-package`와
+`bash ./urllib-tls-r1-package/GENOS_URLLIB_TLS_20261014_R1_RUN.txt check`/`apply`다.
+재실행 요청은 없으며 기존 봉인 ZIP·메일 첨부·가이드는 발송 당시 이력으로 보존한다.
+실행 로그/적용 receipt·commit·코드서빙 리비전·내부 모델 성공은 이 보고에 포함되지 않았다.
+[현장 보고 기록](08_DEPLOYMENT/GENOS/handoffs/urllib_tls_20261014_r1/FIELD_PATH_CORRECTION_20261014.json).
+
+2026-10-14 사용자 요청으로 승호 최신 `integration` `6b3ec4789`와 10월8일 `2e33171ac`의
+모델 전송을 대조하고 [urllib 전환 R1](08_DEPLOYMENT/GENOS/handoffs/urllib_tls_20261014_r1/GUIDE_UTF8.txt)을 완성했다.
+작업 코드에는 있던 urllib 전환이 기존 GENOS 인계본에 빠져 있었으며, 이번에는 공통 모델 목록/JSON/임베딩과
+에이전트/AD/답변 SSE의 전송 3파일을 동일 검증 바이트로 결합했다. Python 기본 CA 및 `SSL_CERT_FILE`/`SSL_CERT_DIR`,
+인증서·호스트명 검증을 사용하고 기존 deadline·단일 전송·스트림 종료·오류 원장·입력 계측·예산·캐시를 보존한다.
+AD_REQUEST_LOGS R2+GAP_ACTION R2 이후2640종(성공 shortcut/공개 안내/입력 계측 유무)의 inventory와 helper pin30개를 결속했다.
+설치본224계약·실제 RUN100명령/4조합·원복4회/변조거부8회·동일 committed checkout 모의 generation gate4회 통과.
+기존 모의 부팅4회와 실제 localhost TLS `service.service` 부팅 성공4회/미신뢰 인증서 거부4회를 확인했다.
+작업 확대70개 중66통과/4실패는 변경하지 않은 워크플로우의 공개 오류 표시 기대 불일치이며 기록을 보존한다.
+검사 fixture의 생성용 스키마/모듈 누락도 보완하고 초기 실패를 보존했다. 실제 GENOS/외부망/모델 추론0회다.
+3파일은 작업/선택 MAIN61/인계 설치본 해시가 같고 로컬 MAIN61 포인터 및 외부 Qwen adapter는 유지했다.
+**이전 패치들과 함께 적용할 때 이번 URLLIB_TLS R1을 마지막에 기존 ~/DEV에 적용하고 새 리비전 배포·SSE 재시작이 필요하다.**
+원문 재구축·워크플로우 편집기 교체는 없다. 현장 CA 설치/실행 환경·반입·배포·내부 모델 성공은 미확인이다.
+[검증](08_DEPLOYMENT/GENOS/handoffs/urllib_tls_20261014_r1/VALIDATION.json) · [승호/MAIN 비교](08_DEPLOYMENT/GENOS/handoffs/urllib_tls_20261014_r1/COMPARISON.json).
+삼성메일 SENT `1a138af52daf4d34`로 ZIP/독립 RUN/적용 안내/검증 요약/상세 검증/해시6첨부를 발송하고 수신자·제목·파일명·정확한 크기를 재확인했다. [발송 기록](08_DEPLOYMENT/GENOS/handoffs/urllib_tls_20261014_r1/EMAIL_SENT.json).
+
+2026-10-14 사용자 사진의 `source-law-navigation-2 / finish_reason=length`와 최종 실패 로그 누락을 조사하고 [입력 계측·실패 로그 R1](08_DEPLOYMENT/GENOS/handoffs/model_input_metrics_20261014_r1/GUIDE_UTF8.txt)을 준비했다. 사진은 조사 제안의 길이 종료이며 실제 입력 컨텍스트 초과와 수정 요청 이후 최종 중단 위치는 미확정이다. 호출별 메시지 문자/UTF-8·스키마 크기·실제 usage·출력 상한 대조를 연결했다. `FINAL RESPONSE / ANSWER`가 공개 실패의 `message/answer_status/failure_reason`을 누락하던 문제와 공개 응답에서 사라진 `run_id` 때문에 상세 보고서가 원장을 찾지 못하던 연결을 수정했다. 같은 요청 이벤트로만 원장을 찾고 비동기 `SERVICE OUTCOME`을 기록한다. 출력 한도·모델·재시도·근거 검증·답변 정책은 유지한다. 작업 확대157통과/9실패이며 수정 전 격리 코드에서도 같은9실패를 재현했다. 설치본80계약·실제 RUN94명령/설치·재실행·변조거부·원복4조합·서비스부팅8회·같은 committed checkout 모의 generation gate4회를 통과했다. AD_REQUEST_LOGS R2와 GAP_ACTION R2 이후1320종 선행 inventory(성공 shortcut/공개오류안내 유무 포함)를 지원한다. **기존 ~/DEV 적용, 새 코드서빙 리비전 및 SSE 재시작이 필요하며 원문 재구축·편집기 교체는 없다.** [원인과 한계](08_DEPLOYMENT/GENOS/handoffs/model_input_metrics_20261014_r1/FINDINGS_UTF8.txt) · [검증](08_DEPLOYMENT/GENOS/handoffs/model_input_metrics_20261014_r1/VALIDATION.json). 작업 코드/인계본 상태이며 로컬 선택 MAIN61은 유지했다. 삼성메일 SENT `1a1388513820ee7a`에서 ZIP/독립 실행TXT/패치노트/적용 안내/검증/해시6첨부의 수신자·제목·파일명·크기를 확인했다. [발송 기록](08_DEPLOYMENT/GENOS/handoffs/model_input_metrics_20261014_r1/EMAIL_SENT.json). GENOS 반입·배포·내부모델 재질의 성공은 미확인이다.
+
+2026-10-14 사용자 현장 확인으로 **Jupyter ORDS 연결 오류를 해결**했다. 사용자는 인증값 철자 오류를 수정했다고 보고했고, R6 노트북의 04 연결 확인(화면 시각 10:54:27)에서 `PASS`, `OK=1`, `LOGIN_USER=CURRENT_SCHEMA=BAIP04APP`, `address_mode=SDK_DEFAULT`를 확인했다. ORDS 별칭은 `b04`이며, 세션 환경변수와 SDK 실제 주소는 모두 `http://172.27.43.141:8080/ords/`다. 제공된 담당자 안내의 토큰 URL과 SQL URL도 이 서버의 `b04` 경로다. 이전 `HTTP 401 / invalid_client`는 사용자 보고상 인증값 오타로 해결됐으며, 주소 변경은 해결 근거가 아니다. 정확히 수정한 문자와 인증키 원문은 기록하지 않았다. `.http` 속성 오류는 별도로 잘못 안내한 진단 경로이며 실제 경로는 `dw_client.sql._http._client.base_url`이다. **현재 확인 범위는 R6 연결 및 SELECT 성공**이고 테이블 생성·쓰기·VDB·배치 성공은 아직 미확인이다. 기존 인증값을 다시 로드하지 않고 연결에 성공한 `desk`를 사용해 R6의 09 생성·검증 셀을 실행하는 [현장 절차](09_ARTIFACTS/AUDITS/20261014-dongwoo-ords-latest/TABLE_CREATE_STEPS_20261014.txt)를 정리했다. [해결 기록](09_ARTIFACTS/AUDITS/20261014-dongwoo-ords-latest/AUTH_RESOLUTION_20261014.json). 이 기록은 사용자 제공 화면 근거이며 Codex가 내부망에 접속한 결과가 아니다.
+
+2026-10-14 예외 안내 통합을 **로컬 MAIN61 `public-failure-guidance-20261014-r1`**에 반영했다. 권한·상태 충돌·입력 분량·요청 제한·서버/전송·시간 초과·처리 한도·사전 점검/표시 예외를 공통 법률 검토 안내와 짧은 오류 코드로 표시하고 실패 상태와 내부 진단을 보존한다. 합성2400조합·관련298계약, 작업/검증/선택301파일 및 실제 WSL `service.service` 정상조회와503/timeout/limit를 확인했다. [GENOS 인계 R1](08_DEPLOYMENT/GENOS/handoffs/public_failure_guidance_20261014_r1/GUIDE_UTF8.txt)은 GAP_ACTION R2 이후990종 선행 inventory를 지원하며, 설치본337계약·독립 편집기15검사·설치/원복6상태·서비스 부팅12회·동일 committed checkout 모의 generation gate6회를 통과했다. 기존 캐시/예산/로그 설정을 보존한다. **새 코드서빙 리비전·SSE 재시작과 워크플로우 PASTE_ALL 편집기 저장이 모두 필요하다.** 원문 재구축은 없다. 삼성메일 SENT `1a137d9a5f150ea7`에서 ZIP/실행TXT/편집기TXT/안내/검증요약/해시6첨부를 재확인했다. [발송 기록](08_DEPLOYMENT/GENOS/handoffs/public_failure_guidance_20261014_r1/EMAIL_SENT.json), [MAIN 반영 기록](04_EXPERIMENTS/ADR/ADR-0775-public-failure-main/MAIN_RESULT.txt). 오류 발생 원인 해결·GENOS 현장 배포/내부모델 검증은 별도이며 기존5회귀·전역graph8오류(추가0)·구엔진6종 stale pin은 남아 있다.
+
+2026-10-13 후속 사용자 승인으로 원문 gap 행동 충돌 수정을 **로컬 MAIN60 `assessment-gap-action-20261013-r1`**에 반영했다. 고정952조합·관련353계약과 실제 선택301파일/로컬 service.service HEALTH·검색200을 확인했다. [GENOS R2](08_DEPLOYMENT/GENOS/handoffs/assessment_gap_action_20261013_r2/GUIDE_UTF8.txt)는 R1과 같은3파일 수정에 최근 SUCCESSFUL_SHORTCUT R1 선행 상태를 추가 지원한다. 두 패치를 함께 설치할 때는 shortcut R1 다음에 gap R2를 적용한다. 기존660종과 추가330종의 정확한 선행 inventory를 연결하며 원문 재구축·편집기 교체는 없다. [MAIN 반영 기록](04_EXPERIMENTS/ADR/ADR-0774-assessment-gap-action-main/MAIN_RESULT.txt). 전역 복구 구현·기존4실패·GENOS 현장 적용은 미완료/미확인이다. 삼성메일 SENT `1a1347c3bd4716f6`에서 R2 ZIP/독립 실행TXT/안내/검증요약/해시5첨부를 재확인했다. ZIP에 실패 코딩 지침과 MAIN 결과도 포함했다. [발송 기록](08_DEPLOYMENT/GENOS/handoffs/assessment_gap_action_20261013_r2/EMAIL_SENT.json).
+
+2026-10-13 사용자 사진에서 ASSESS의 `A legal source gap requires source research, not REQUEST_FACT.`를 확인했다. 원문 gap의 종류/대상/사유를 보존하며 잘못된 행동만 기존 원문 조사로 연결하는 [수정 R1](08_DEPLOYMENT/GENOS/handoffs/assessment_gap_action_20261013_r1/GUIDE_UTF8.txt)을 준비했다. 모델의 두 번째 거절 상세는 사진에 없으므로 모든 422의 해결로 보지 않는다. 작업 신규63계약·API, 설치본342계약, 설치4상태/부팅8회/같은 committed checkout 모의 generation gate4회와 알려진 선행660 inventory를 확인했다. 확대276통과/복구4실패는 수정 전 3파일 복원 코드에서도 동일하며 별도 후속으로 남겼다. [검증](08_DEPLOYMENT/GENOS/handoffs/assessment_gap_action_20261013_r1/VALIDATION.json). 기존 MODEL_STREAM_FIX R1 또는 AD_REQUEST_LOGS R2가 적용된 `~/DEV`에 적용하며, 새 코드서빙 리비전과 별도 SSE 재시작이 필요하다. 원문 재구축·편집기 교체는 없다. **사용자 요청의 [에이전트 실패·충돌·스키마 코딩 지침](07_DOCS/REFERENCE/OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md)을 AGENTS.md에 필수 기준으로 연결**했다. 전역 복구 체계 전체의 구현 완료는 아니며 남은 항목은 BL-010이다. 선택된 로컬 MAIN59의 3파일에는 이 수정이 없음을 해시로 확인했고 본 작업에서 승격하지 않았다. 메일 발송·GENOS 반입·배포·워크플로우 성공은 미실행/미확인이다.
+
+2026-10-13 정상 완료 shortcut 정책과 공통 AD 페이지 이동을 **로컬 MAIN59 `successful-shortcut-20261013-r1`**에 반영했다. 최종 답변 게시 성공·현재 route/revision·비어 있지 않은 근거 답변을 확인하고, 실패 원장은 보존한다. 위키 컴파일/재사용도 성공 기록에 결속하며 의미적 정답 자동 승격은 없다. 36상태 조합, 후보/작업 각각169계약, 선택301파일과 실제 service.service HEALTH/RAG_SEARCH200을 확인했다. GENOS 현장 배포는 별도이며 [전체 실행 안내](08_DEPLOYMENT/GENOS/handoffs/successful_shortcut_20261013_r1/GUIDE_UTF8.txt)를 따른다. [MAIN 결과](04_EXPERIMENTS/ADR/ADR-0773-successful-shortcut-publication/MAIN_RESULT.txt).
+
+삼성메일 SENT `1a13476887c28e71`로 SUCCESSFUL_SHORTCUT R1 ZIP·독립 RUN·가이드·검증요약·해시5첨부를 발송하고 수신자/제목/첨부 이름·크기를 확인했다. 실제 인계 RUN으로 설치6상태/서비스12회/동일 committed checkout 모의 generation gate6회, 설치 코드278계약을 통과했다. **AD_REQUEST_LOGS R2가 성공한 기존 ~/DEV에 추가 적용**하고 새 commit/push·코드서빙 리비전·SSE 재시작이 필요하다. 원문 재구축·워크플로우 편집기 교체는 없다. 과거 성공 기록은 안내의 명시적 backfill 검증 후에만 복원한다. [검증](08_DEPLOYMENT/GENOS/handoffs/successful_shortcut_20261013_r1/VALIDATION.json) · [발송](08_DEPLOYMENT/GENOS/handoffs/successful_shortcut_20261013_r1/EMAIL_SENT.json).
+
+2026-10-13 사진의 `AD_REQUEST_LOGS R1 / Unknown code bytes; preserved: service.py`를 기존 조사 예산 R1이 적용된 코드에서 재현했다. 전체 inventory는 승인된 예산 코드를 정규화하지만 개별 service.py 비교는 원본 바이트를 사용한 **R1 설치기 결함**이다. 사진은 코드 교체 전 실패이며 두 팀으로 재시도한 push 성공과 구분한다. [설치기 수정 R2](08_DEPLOYMENT/GENOS/handoffs/ad_request_logs_20261013_r2/GUIDE_UTF8.txt)는 정확히 검증한 예산 코드만 비교 시 정규화하고 결과에는 보존하며, 실제 출력 해시를 기록한다. 제품 코드 payload는 R1과 동일하고 미확인 수정 거부는 유지한다. 경계 검사8개, 예산 유무를 포함한 설치6상태/119명령·서비스 초기화12회·동일 committed checkout 모의 generation gate6회, 예산 코드가 있는 설치본 계약416개 통과. R1 실패3회와 변조 거부12회를 포함하며 실제 모델 추론0회다. 삼성메일 SENT `1a13416c503e1958`의 ZIP/독립 RUN/안내/검증요약/해시5첨부를 확인했다. **사진처럼 R1이 실패한 기존 ~/DEV에는 AD_REQUEST_LOGS R1 대신 R2 설치 파일을 사용**한다. 별도 R1 undo는 불필요하며 적용 후 새 commit/push·코드서빙 리비전·SSE 재시작이 필요하다. 원문 재구축·편집기 교체는 없다. 로컬 MAIN/제품 작업 코드 변경은 없고 GENOS R2 반입·배포·화면 및 원래 AD 모델 HTTP 오류 해결은 미확인이다. [재현](08_DEPLOYMENT/GENOS/handoffs/ad_request_logs_20261013_r2/REPRODUCTION.json) · [검증](08_DEPLOYMENT/GENOS/handoffs/ad_request_logs_20261013_r2/VALIDATION.json) · [발송](08_DEPLOYMENT/GENOS/handoffs/ad_request_logs_20261013_r2/EMAIL_SENT.json).
+
+2026-10-13 후속 요청으로 [팀별 실행 로그·AD 모델 계약 R1](08_DEPLOYMENT/GENOS/handoffs/ad_request_logs_20261013_r1/GUIDE_UTF8.txt)을 작성·검증하고 삼성메일 SENT `1a133ea1f1b744cc`로 수정 ZIP/독립 RUN/안내/검증요약/해시 첨부5개를 발송했다. 공유 로그는 기존 날짜/팀 아래 `legal_agent/`와 `ad_mode/`로 나누며 AD의 실제 전송 요청·HTTP 오류 원문·해석/변경 기록을 같은 요청 보고서로 내보낸다. AD SQL은 실행 중 원장으로 유지하고 공유 파일은 완료 후 비동기로 생성한다. legal_agent에만 있던 전송 스키마 `uniqueItems` 제거를 공통 모듈로 옮겨 AD에도 적용했고, 원래 스키마 검증은 유지한다. 사진의 HTTP 오류 원인 자체는 아직 미확정이다. 작업 계약116개·설치 코드 계약416개, 대표3상태/58명령·초기화6회·동일 committed checkout 모의 generation gate3회 통과, 실제 모델 추론0회다. 별도 숫자 인용 schema-repair 검사1개는 수정 전후 동일 실패로 기록했다. **MODEL_STREAM_FIX R1이 적용된 기존 ~/DEV에 추가 적용**하고 새 코드서빙 리비전과 별도 SSE 재시작이 필요하다. 원문 재구축·편집기 교체는 없다. 작업 코드·인계본 반영이며 로컬 MAIN58 선택 릴리스에 이 패치를 승격하지 않았고, GENOS 실제 반입·배포·화면 성공은 미확인이다. [검증](08_DEPLOYMENT/GENOS/handoffs/ad_request_logs_20261013_r1/VALIDATION.json) · [발송](08_DEPLOYMENT/GENOS/handoffs/ad_request_logs_20261013_r1/EMAIL_SENT.json).
+
+2026-10-13 사진 후속 수정으로 [기관별 표시 R2](08_DEPLOYMENT/GENOS/handoffs/workflow_source_provider_20261013_r2/GUIDE_UTF8.txt)를 완성했다. 용어집에서 확인한 한국어 기관명 아래 번호 목록으로 모으고 `internal`은 **내부 규정**으로 표시한다. R1에 남아 있던 전체 오류 표시를 공개 이벤트 필터로 차단하며 진단 원장은 유지한다. 로컬 MAIN58 `source-provider-20261013-r2` 선택과 실제 service.service HEALTH/RAG_SEARCH200·원문12개/카드1개를 확인했다. 후보/작업 각각97계약·24조합 통과, 검증후보/선택297파일 동일. 삼성메일 SENT `1a133d8e5a42035e`의 ZIP/전체 교체TXT/안내/검증요약/해시5첨부를 재확인했다. **현장은 기존 워크플로우 편집기를 R2 TXT 전체로 교체**하며 저장/실제 화면은 미확인이다. 아래 MODEL_STREAM_FIX R1은 backend 전송 수정으로 별도 유지한다. [로컬 반영·롤백](04_EXPERIMENTS/ADR/ADR-0772-source-provider-display/MAIN_RESULT.md) · [발송](08_DEPLOYMENT/GENOS/handoffs/workflow_source_provider_20261013_r2/EMAIL_SENT.json).
+
+2026-10-13 사용자 정정에 따라 설계 자료 대신 실제
+[모델 스트림 종료 수정 R1](08_DEPLOYMENT/GENOS/handoffs/model_stream_fix_20261013_r1/GUIDE_UTF8.txt)을
+작성·검증하고 삼성메일 SENT `1a133bf3bce67c71`로 ZIP/독립 RUN/안내/검증요약/해시 첨부5개를 발송했다.
+작업 urllib와 현장 httpx에 같은 SSE 파서를 연결해 DONE 수신 시 finish_reason 누락을 허용하고,
+정상 EOF의 완전한 마지막 프레임을 처리한다. DONE 없는 EOF·실제 중단·length/content_filter·
+원격 오류는 실패로 유지하며 종료 진단을 원장에 저장한다. 기존 JSON/근거/본문 일치 검증은 유지한다.
+로컬 계약115개, 현장 설치 코드 계약284개, 대표3상태/55명령·부팅6회·동일 committed checkout의
+모의 generation gate3회와 알려진 narrative R2 inventory330종을 확인했다. 실제 모델 호출0회다.
+기존 R2가 적용된 ~/DEV에 백업 후 적용하며 원문 재구축·편집기 교체는 없고 새 코드서빙 리비전과
+별도 SSE 서버 재시작이 필요하다. 작업 코드와 인계본은 수정됐지만 현장 반입·배포·화면은 미확인이다.
+이 작업은 로컬 선택 포인터를 바꾸지 않았다. 발송 전 확인한 별도 작업의 MAIN57
+`source-cards-20261013-r1`에는 이번 전송 수정이 포함되지 않았다.
+[검증](08_DEPLOYMENT/GENOS/handoffs/model_stream_fix_20261013_r1/VALIDATION.json) ·
+[발송 확인](08_DEPLOYMENT/GENOS/handoffs/model_stream_fix_20261013_r1/EMAIL_SENT.json).
+
+2026-10-13 후속 요청으로 법령 경로·원문 로그 묶음의 **로컬 MAIN57** 연결까지 완료했다.
+MAIN56의 일반5단계 요약에서 사라지던 source activity를 표시 소비자에 전달한다.
+합성24조합·후보/작업 각각48계약, 검증/작업/선택297파일과 실제 service.service
+HEALTH/RAG_SEARCH200·선택 모듈의 원문12개/카드1개를 확인했다.
+[전체 반영·한계·원복](04_EXPERIMENTS/ADR/ADR-0771-source-cards-main-wiring/MAIN_RESULT.md).
+기존 [편집기 표시 R1](08_DEPLOYMENT/GENOS/handoffs/workflow_source_cards_20261013_r1/GUIDE_UTF8.txt)의
+ZIP·전체 교체 TXT·안내·검증요약·해시 첨부5개를 삼성메일 SENT `1a133ae1626ae56b`로 발송하고
+수신자·제목·첨부 이름/크기를 확인했다. [발송 기록](08_DEPLOYMENT/GENOS/handoffs/workflow_source_cards_20261013_r1/EMAIL_SENT.json).
+메일 발송 당시 MAIN56 미반영 설명과 아래 미발송 기록은 당시 상태다. 봉인 R1 파일은 유지한다.
+GENOS는 기존 R4 편집기를 R1 TXT 전체로 교체해야 하며 현장 저장/화면은 아직 미확인이다.
+
+2026-10-13 사진의 검색 path 줄바꿈과 원문 확인 카드 과다를 수정한
+[편집기 표시 R1](08_DEPLOYMENT/GENOS/handoffs/workflow_source_cards_20261013_r1/GUIDE_UTF8.txt)을 준비했다.
+발송된 R4 편집기를 기반으로 경로를 Markdown 목록으로 분리하고 중복 제목을 없앴다.
+연속된 `UNIT_READ_STARTED` 알림은 하나의 카드로 모아 다음 진행 단계 또는 답변/종료 전에
+한 번 송신한다. 수신 이벤트에는 모델 호출 ID가 없어 이는 화면 알림의 묶음이며
+동일 LLM 호출이나 모델 입력 완료를 증명하지 않는다. 작업 워크플로우와 인계 TXT는
+같은 표시 메서드를 사용한다. 신규/연결/답변 계약60개와 정확한 편집기 계약12개 통과.
+별도로 실행한 구 진행 표시 검사7개는 기존 MAIN56 파일에서도 동일하게 실패함을 확인했다.
+적용은 기존 워크플로우 Python 편집기에 전체 PASTE_ALL TXT를 저장하는 단계다.
+코드서빙 재배포·SSE 재시작·데이터 재구축은 필요하지 않다. 현장 편집기 저장/화면은 미확인이며
+MAIN56 포인터·봉인 R4·모델 전송은 유지했다. 메일은 보내지 않았다.
+
+2026-10-13 사용자 요청으로 승호 `integration`을 fetch하여 `4b524bdf5`, `cicd`는
+`388cd3920`에서 모델/화면 스트리밍을 대조했다. 확인한 승호 경로는 모델을 일반 JSON으로
+받고 진행 token과 최종 result를 화면에 보낸다. 모델 본문 추출은 finish_reason 누락만으로
+실패하지 않는다. 우리 최종 작성만 `stream=true`를 켜고 `DONE AND finish_reason`을
+강제하여, 사진처럼 종료 사유가 없는 이벤트는 최종 JSON/근거 검증 전에 전송 오류가 된다.
+승호 화면 SSE를 모델 토큰 SSE 성공 근거로 혼동하지 않는다. 생성 중 토큰 송신 요구는
+유지하며 이번 작업은 [코드 비교](09_ARTIFACTS/AUDITS/20261013-seungho-stream-comparison/COMPARISON.json)까지다.
+서빙 코드·모델 설정·MAIN·현장 배포는 변경하지 않았다.
+비교 요약 TXT와 commit/해시/코드 발췌 JSON을 사용자 요청으로 삼성메일
+SENT `1a133aa2b150481b`에 발송하고 수신자·제목·첨부2개 이름/크기를 확인했다.
+승호 경로의 token은 진행 안내이며 최종 답변은 완성 후 result/text로 전달되고,
+완성 답변을 다시 토큰으로 쪼개는 구현도 확인한 경로에는 없다고 명시했다.
+[발송 기록](09_ARTIFACTS/AUDITS/20261013-seungho-stream-comparison/EMAIL_SENT.json).
+
+2026-10-13 진단 R2의 현장 실행 사진에서 `memory-compose`의 저장 SSE22개,
+`content_chars=360 / content_json=parsed`, `finish_reason_counts=none_recorded`,
+마지막 usage 이벤트와 model mismatch0을 확인했다. 현재 전송의 완료 조건은 DONE과
+finish_reason 모두이므로 **인식된 종료 사유 부재가 직접 실패 조건**이다. 실제 서버의 종료
+정보 누락과 미파싱 마지막 프레임은 아직 구분할 수 없다. DONE 수신 여부·답변 검증 성공도
+미확인이다. 파일명만 넣어 발생한 FileNotFoundError 뒤 절대경로로 진단이 정상 실행됐다.
+[사진 판독 기록](09_ARTIFACTS/AUDITS/20261013-model-stream-photo/FINDINGS.json).
+진단 실행 확인이며 전송 수정·현장 오류 해결은 아직 수행하지 않았다.
+
+2026-10-13 후속 사진의 `COMPOSE / MODEL_TRANSPORT_ERROR / model stream ended before completion`은
+설명형 최종 작성의 내부 모델 스트림 종료 확인에서 발생했다. 사진의 `response_bytes=6069`와
+`body/model/http_status=null`을 확인했으며, null은 부분 실패 전송의 저장 방식이므로 무응답의
+증거가 아니다. 기존 RAW 로그 화면은 원장에 저장되는 `stream_events`를 표시하지 않는다.
+[스트림 진단 R2](08_DEPLOYMENT/GENOS/handoffs/model_call_diagnose_20261013_r2/GUIDE_UTF8.txt)는
+기존 요청 JSON에서 이벤트 수·종료 사유·수신 길이·JSON 파싱 여부만 요약하는 독립 RUN TXT다.
+관련 단위 계약12개·단독 실행/원본 보존/덮어쓰기 거부 등12검사를 확인했다. 모델 호출·설치·
+재배포는 없다. 기존 전송은 DONE/미완성 마지막 프레임을 별도 저장하지 않아 이 부분은 unknown을
+유지한다. 실제 중단과 종료 형식 차이의 현장 원인은 아직 미확인이고 서빙 코드/MAIN/봉인 R2는 변경하지 않았다.
+사용자 요청으로 진단 R2 ZIP·독립 RUN·안내·검증요약·해시 첨부5개를 삼성메일
+SENT `1a1339b10f361e1b`로 발송하고 수신자·제목·첨부 이름/크기를 확인했다.
+[발송 기록](08_DEPLOYMENT/GENOS/handoffs/model_call_diagnose_20261013_r2/EMAIL_SENT.json).
+현장 진단 실행과 오류 해결은 아직 미확인이다.
+
+2026-10-13 사용자 정정에 따라 [최종 답변 토큰 스트리밍 R2](08_DEPLOYMENT/GENOS/handoffs/rag_narrative_stream_20261013_r2/GUIDE_UTF8.txt)를 삼성메일로 발송했다. 내부 모델의 decoded text delta가 도착할 때마다 기존 SSE/워크플로우 R4로 전달하며 문장·문단 완료를 기다리지 않는다. 기존 focused RAG R3의 `~/DEV`에 이어 적용하며 미발송 narrative R1은 선행 적용하지 않는다. 원문 재구축·기존 R4 편집기 교체는 없고 commit/gate/push·새 코드서빙 리비전·별도 SSE 서버 재시작은 필요하다.
+
+로컬 MAIN56 `token-stream-20261013-r1`의 작업/후보/선택297파일과 실제 service.service 연결을 확인했다. 전송 경계40조합·직접142계약·선택 스트리밍64계약, GENOS 설치 계약248개와 대표3상태·서비스 초기화6회·동일 committed checkout 모의 generation gate3회 통과. Shortcut AD 목록/상세/편집/중복 처리/불변 필드 보호는 로컬 실제 서비스 경로+모의 해석으로 확인했다. 실제 GENOS 내부 모델/화면 성공은 미확인이다. 외부 공개 모델 transport는 기존 buffered다. [전체 상태와 한계](04_EXPERIMENTS/ADR/ADR-0770-token-answer-stream/MAIN_RESULT.md).
+
+SENT `1a1336fb17fd991e`에서 삼성 수신자와 ZIP/독립 RUN/안내/검증요약/해시 첨부5개의 이름·크기를 확인했다. [발송 기록](08_DEPLOYMENT/GENOS/handoffs/rag_narrative_stream_20261013_r2/EMAIL_SENT.json). 봉인 HANDOFF의 미발송 표시는 봉인 시점 이력이다. 실제 GENOS 반입·commit/push·선택 generation·코드서빙 리비전·워크플로우 화면은 별도 확인 대상이다.
+
+아래 narrative R1과 MAIN54 유지 설명은 최초 준비 당시의 기록이다. 문단 스트리밍은 중간 MAIN55를 거쳐 위 토큰 스트리밍 MAIN56/R2로 갱신했다.
+
+2026-10-13 답변이 짧고 불명확하다는 사진 피드백에 따라
+[설명형 최종 답변·문단 스트리밍 R1](08_DEPLOYMENT/GENOS/handoffs/rag_narrative_stream_20261013_r1/GUIDE_UTF8.txt)을 준비했다.
+기존 v8의 고정 표제 나열을 핵심 결론·짧은 소제목·구체 설명으로 작성하고, 승인된 판단과
+정확한 원문을 별도 최종 작성 호출에 전달한다. 내부 모델의 SSE에서 완성된 문단의 근거 ID와
+구조를 확인한 뒤 다음 문단 생성 중 송신한다. 최종 claim/인용/부족 근거와 원문은 유지한다.
+최종 작성 중 부분 송신 후 실패하면 다른 응답을 재시도해 이어 붙이지 않는다.
+ADR0766의 추가 단정 실패와 환경 중단된0767을 보존하고, [ADR0769](04_EXPERIMENTS/ADR/ADR-0769-narrative-main54-recovery/README.md)에서
+현재 MAIN54의 위키 변경을 보존한 통합 코드의 계약63개 및 신규 공개1문항 비교·기존1문항 회귀
+총3요청의 사전 기준을 확인했다. 최종 작성은 약7초가 추가됐다. 일부 반복과 범위/예외의
+부정확한 표현은 별도 기록했으며 전체 의미 정확도 인증이 아니다. 외부 모델은 Qwen3.8이고
+GENOS 내부 모델은 미확인이다. 작업 코드41파일(구현/설정9개·해시 연결·테스트)을 선별 통합했고
+서빙297파일은 검증 후보와 동일하다. 실제 로컬 service 선택은 MAIN54 그대로이며 본 수정은 아직 활성화하지 않았다.
+GENOS 인계는 기존 R3의 알려진 inventory330종에 구현/설정9개와 연결 해시를 결합한다.
+대표 설치3종의52명령·서비스 부팅6회·동일 committed checkout의 모의 generation gate3회,
+두 캐시 계열의 설치 계약146개를 확인했다. 스트리밍 소비자는 기존 별도 SSE 서버와 편집기R4를
+대조했다. 코드 적용 후 새 코드서빙 리비전 배포와 SSE 서버 재시작이 각각 필요하다.
+원문 재구축·편집기 교체는 필요하지 않다. [검증 기록](08_DEPLOYMENT/GENOS/handoffs/rag_narrative_stream_20261013_r1/VALIDATION.json).
+GENOS 반입·commit/push·리비전·실제 generation hash·워크플로우 화면 성공은 미확인이고 메일은 보내지 않았다.
+
+2026-10-13 모델 HTTP 500 원인 확인 중 전체 요청 JSON의 article/원문이 많아 읽기 어렵다는
+사용자 요청으로 [모델 호출 요약 R1](08_DEPLOYMENT/GENOS/handoffs/model_call_diagnose_20261013_r1/GUIDE_UTF8.txt)을 준비했다.
+기존 `genos_request_timing.py --models-only`가 저장된 요청 JSON에서 호출 단계/HTTP/입력 문자 수/
+설정/스키마 지문과 직전 성공 대비 변화만 추출한다. 원문·프롬프트·답변은 출력하지 않는다.
+독립 RUN TXT/ZIP의 모의 3호출 실행, 원본 보존·출력 덮어쓰기 거부, 계약7개를 확인했다.
+코드서빙 재배포·모델 호출은 없으며, 실제 현장 실행과 500의 내부 원인은 미확인이다.
+
+2026-10-13 후속 사진6장의 `SELECT / TypeError / HTTP 500`은
+`UnitFulltextIndex.article_groups_page()`가 `unit_keys`를 받지 못해 중단된 기록이다.
+R1이 범위 제한 검색 호출을 옮기면서 대응 `unit_fulltext.py`를 누락했고 R2에도 남은
+인계 결함을 확인했다. [수정 R3](08_DEPLOYMENT/GENOS/handoffs/rag_focused_rules_20261013_r3/GUIDE_UTF8.txt)는
+R1·R2가 적용된 기존 `~/DEV`의 알려진 inventory330종을 확인한 뒤, 캐시2계열을 보존하며
+MAIN53의 범위 필터·권한 교집합·페이지 커서 결속과 엔진/PIPELINE 해시를 연결한다.
+대표 설치3종에서 실제 `article_menu`의 동일 오류 재현/R3 통과, 적용 전후 서비스 초기화200,
+55명령·재실행·변조 거부·원복·동일 committed checkout의 모의 generation gate3개를 확인했다.
+설치 코드의 구조 탐색/SEARCH_BODY/캐시 회귀70개도 통과했다. 실제 통신/모델 추론0회다.
+R2 검증은 초기화까지 확인해 이 SELECT 연결 누락을 발견하지 못했다. 원문 재구축·워크플로우
+편집기 교체는 필요하지 않고 로컬 MAIN53 포인터는 유지했다. 이전 봉인 R1·R2는 보존한다.
+[검증 기록](08_DEPLOYMENT/GENOS/handoffs/rag_focused_rules_20261013_r3/VALIDATION.json).
+사용자 요청으로 R3 ZIP·독립 RUN TXT·안내·검증 요약·해시 첨부5개를 삼성메일
+SENT `1a132d6eb196f40a`로 발송하고 수신자·제목·첨부 이름/크기를 확인했다.
+[발송 기록](08_DEPLOYMENT/GENOS/handoffs/rag_focused_rules_20261013_r3/EMAIL_SENT.json).
+봉인 HANDOFF의 미발송 표시는 봉인 시점 이력이다. GENOS 실제 commit/리비전/generation 해시는
+사진에서 확인되지 않으며 현장 적용·push·새 리비전·워크플로우 성공도 미확인이다.
+
+2026-10-13 R1 적용 후 사용자 사진의 `RUNTIME_BOOTSTRAP_ERROR / ContractError / 503`을 조사해
+R1 인계에서 `request_entry_policy=fused-title-v1`을 추가하고 이를 받는
+`workflow_tiers_policy.py`를 누락한 결함을 확인했다. 사진에는 내부 예외 메시지가 없지만,
+실제 인계 코드의 `service.service` 초기화에서 `unknown v4 profile field`를 재현했다.
+[수정 패치 R2](08_DEPLOYMENT/GENOS/handoffs/rag_focused_rules_20261013_r2/GUIDE_UTF8.txt)는
+R1이 적용된 기존 `~/DEV`에 MAIN53의 동일 검증 파일과 연결 해시만 보완한다.
+캐시·CM·모델/전송·서비스 예산·원문 generation·워크플로우 편집기는 유지한다.
+대표 설치3종에서 R1 초기화 실패/R2 초기화200, 동일 committed checkout의 모의 generation
+gate3개, 재실행·변조 거부·원복·데이터 불변을 확인했다. 실제 모델 통신/추론은0회이며
+모델 목록 GET만 모의 HTTP로 응답했다. R1의 앞선 검사는 실제 설정 검증 경로를 놓쳤다.
+R2 ZIP/독립 RUN/안내/검증요약/해시 첨부5개를 삼성메일 SENT `1a132b15ca149f1e`로 발송하고
+수신자·제목·첨부 이름/크기를 확인했다. [발송 기록](08_DEPLOYMENT/GENOS/handoffs/rag_focused_rules_20261013_r2/EMAIL_SENT.json).
+R1 단독 사용은 이번 R2 적용으로 보완해야 한다. R2 undo만 하면 결함이 있던 R1로 복귀한다.
+GENOS 실제 적용·push·새 리비전·워크플로우 성공은 아직 미확인이며 MAIN53 포인터는 유지했다.
+아래 R1의 봉인 ZIP과 당시 검증/발송 기록은 이력으로 보존한다.
+
+2026-10-13 사용자 요청으로 [RAG 최적화 패치 R1](08_DEPLOYMENT/GENOS/handoffs/rag_focused_rules_20261013_r1/GUIDE_UTF8.txt)을 삼성파트너 메일에 발송했다.
+로컬 MAIN53 `focused-rules-20261013-r1`의 입력 압축·질문 범위/복구·제목 탐색·원문 의무/허용·단일 규칙 구성(v8)을 기존 GENOS 코드에 결합한다.
+기존 캐시 함수/모듈, 서비스 예산, 내부 모델 전송, CM, 데이터 세대, 워크플로우 편집기는 보존한다.
+알려진 330개 inventory에 대한 hash 결속과 대표 8상태/72명령, 설치 조합 RAG 계약204개,
+같은 committed checkout의 모의 generation gate2개를 확인했다. 신규 모델 호출은 없다.
+SENT `1a132972d56cc753`에서 수신자와 ZIP/독립 실행TXT/안내/검증요약/해시 첨부5개의 이름·크기를 확인했다.
+[발송 기록](08_DEPLOYMENT/GENOS/handoffs/rag_focused_rules_20261013_r1/EMAIL_SENT.json).
+GENOS 실제 반입·commit/push·새 리비전·워크플로우 성공은 미확인이다. 로컬 MAIN53 포인터는 유지했다.
+조건 AND/OR 의미 판단·의미상 중복·형식 복구 지연은 후속 개선 사항으로 남긴다.
+
+2026-10-08 HTTPS 후속 작업은 모델 전송을 Python 표준 `urllib`로 교체했다.
+공통 [GENOS 전송](02_BACKEND/semantic_runtime/genos.py)의 모델 목록·JSON·임베딩과
+[에이전트 전송](02_BACKEND/semantic_runtime/legal_agent/transport.py)의 단일 JSON·답변
+스트리밍이 [공통 helper](02_BACKEND/semantic_runtime/stdlib_http.py)를 사용한다.
+`ssl.create_default_context()`로 OS/Python 기본 CA와 `SSL_CERT_FILE`/`SSL_CERT_DIR`를
+읽으며 인증서·호스트명 검증은 유지한다. 사내 CA가 기본 저장소에 없으면 컨테이너에서
+읽을 수 있는 올바른 CA 번들을 설치하거나 `SSL_CERT_FILE`로 지정해야 한다.
+`REQUESTS_CA_BUNDLE`은 이 전송의 설정이 아니다. 로그의 `transport_backend=urllib`,
+`transport_revision=genos-urllib-tls-20261008-r1`로 실제 호출 경로를 확인한다.
+URL·키·모델 선택과 워크플로우 SSE 계약은 기존 설정을 따른다. 이번 상태는 작업 코드
+반영이며 로컬 선택 릴리스·봉인 ZIP·GENOS 리비전 배포와 현장 HTTPS 성공은 별도다.
+로컬 전송·스트리밍·오류 계약91개가 통과했고 실제 TLS 검증14개를 포함한다.
+변경한 전송 파일과 새 helper의 엔진 pin·PIPELINE 등록 해시30개를 확인했다.
+넓은 회귀 검사에서는 기존 WORKSPACE/다른 코드 pin 불일치 관련6개와 워크플로우
+AD_PROBE 입력을 제공하지 않는 fixture 관련5개가 실패했다. 이 별도 항목을 제외한
+해당 검사80개와 오류 상세 회귀11개가 통과한 상태이며 전체 파이프라인 통과로 보지 않는다.
+
+2026-10-08 사용자 후속 요청에 따라 [편집기 정정 R4](08_DEPLOYMENT/GENOS/handoffs/workflow_live_progress_20261008_r4/GUIDE_UTF8.txt)는
+GENOS 기본 접이식 추론·행위 패널을 유지하고 답변 본문에 나온
+“준비 중 · 자료와 요청 설정을 확인하고 있습니다”를 제거한다. R3의 첫 카드 전
+준비 token 송신을 없애고 준비·원문 확인·근거 선택·현재 판단은 카드에만 보낸다.
+답변 token에는 검증한 최종 답변만 보내며 end와 동일한 최종 카드 배열은 유지한다.
+기존 socketio-inline도 socketio로 연결하므로 같은 설정에서 본문 진행 문구가 없다.
+아래 R3 기록의 “첫 token이 카드보다 먼저 필요하다”는 당시 해석이었다. 보존된
+GENOS 514 진행 브릿지는 카드→실제 답변 token→end 순서이며 준비 문구를 요구하지 않는다.
+관련 계약102개·정확한 전체 편집기 TXT12개·준비/재실행/보존4개가 통과했다.
+현장 화면은 미확인이다.
+이번 적용은 R3 대신 R4 전체 PASTE_ALL TXT를 기존 워크플로우 Python 편집기에
+저장하는 단계다. 별도 SSE 서버·R5 backend·주소/ID/token/port·NFS/DB·MAIN45는 유지한다.
+R3/R5 봉인 ZIP·TXT와 실패/발송 이력은 보존한다.
+삼성메일 SENT `1a1192fc24ced6e4`에 R4 편집기 ZIP·독립 PREPARE TXT·전체 PASTE TXT·
+안내·검증 요약·해시 총6개를 발송하고 수신자·이름·정확한 크기를 확인했다.
+[R4 발송 기록](08_DEPLOYMENT/GENOS/handoffs/workflow_live_progress_20261008_r4/EMAIL_SENT.json).
+
+2026-10-08 사용자 후속 보고로 **채팅 최종 답변 전에 나오던 접이식 에이전트 행위
+카드가 SVG 인계 후 사라진 회귀**를 확인했다. 구
+`workflow_live_progress_20261007_r1/WORKFLOW_PASTE_ALL.txt`는 워크플로우의
+`main_socketio.sio_server.emit`으로 카드를 보내지만, 발송 R5의 Python은
+`sid=''`/`enabled=False`와 미연결 emit 상태여서 SSE를 읽어도 처리 중 화면 송신을
+하지 않는다. 구 카드 복구 코드를 SVG 버전에 연결하지 못한 코드 회귀다.
+[GENOS 기본 카드 복구 R3](08_DEPLOYMENT/GENOS/handoffs/workflow_live_progress_20261008_r3/GUIDE_UTF8.txt)는
+기존 별도 SSE 서버와 R5 코드 ZIP을 유지하고 편집기 전체 Python만 갱신한다.
+`GENOS_RAG_PROGRESS_UI=socketio`로 접이식 카드를 보내고 AD_PROBE 전부터
+“준비 중 · 자료와 요청 설정을 확인하고 있습니다”를 송신한다. `on`도 이 모드다.
+사용자가 말하는 SSE는 승호님 코드에서 쓰던 GENOS 기본 화면 기능이다.
+승호 `fde/seungho/integration` commit `3809dfa0`의 분리 `report_chat.Progress.say`는
+워크플로우 런타임 `main_socketio`로 token을 송신한다. GENOS 514/기존 진행 브릿지의
+Visible Reasoner 카드·누적 배열·token·end·최종 dict 계약을 대조했다. R3는 첫 준비
+token으로 패널 렌더를 시작하고 실제 송신 카드 배열을 최종 dict에도 유지한다.
+미발송 R2 후보의 token 시작 전 카드 송신 문제도 별도 회귀로 보존했다.
+관련 계약106개, 정확한 편집기 TXT12개, 준비/재실행/파일 보존4개를 확인했다.
+삼성메일 SENT `1a119237ca5f9c18`에 편집기 R3 ZIP·독립 준비 TXT·전체 PASTE TXT·
+안내·검증 요약·해시 총6개 첨부를 보내고 수신자·이름·크기를 확인했다.
+[발송 기록](08_DEPLOYMENT/GENOS/handoffs/workflow_live_progress_20261008_r3/EMAIL_SENT.json).
+SVG R10·현재 판단 상세 R2·원문/권한/hash·최종 dict·단일 backend 실행을 유지한다.
+현장 질문/warmup은 워크플로우 테스트 화면에서만 한다. 실제 편집기 저장·화면
+렌더링 성공은 미확인이고 로컬 MAIN45/NFS/DB/CM/예산/기존 백업은 유지한다.
+[원인·실행 경로·검증](07_DOCS/REFERENCE/OPERATIONS/GENOS_WORKFLOW_LIVE_CARDS_RESTORE_20261008.md).
+아래 R5 발송 기록은 그 당시 상태이며 R5 워크플로우 TXT는 이번 편집기 복구본으로
+대체한다. 봉인 R5 ZIP·TXT 바이트는 이력으로 보존한다.
+
+2026-10-08 후속 사진의 검색 후보 노드 밀집과 SSE 판단 누락을 보완한 인계는
+[별도 SSE·판단·SVG R5](08_DEPLOYMENT/GENOS/handoffs/rag_progress_graph_20261008_r5/GUIDE_UTF8.txt)다.
+사용자 선택은 `stream_app:app` 별도 SSE 서버와 기존 분리 Python 표시 단계다.
+SVG R10은 법령→원문→현재 판단 관계를 먼저 배치하고 연결 없는 후보를 접힌 목록에
+보존한다. SELECT에서 추가 확보한 원문도 같은 현재 판단에 연결한다. 전체 경로는
+title/상세에 남긴다. 현재 판단 진행 R2는 승인된 판단 문장·선택 이유·근거·미확인을
+생략 없이 전달하고, 서버 stdout/stderr에도 `agent.current_judgment`를 출력한다.
+최신 모델 `claims`를 모델 제안으로 읽으며 저장 근거 재결속 수는 실제 journal 행 수로
+표시한다. SSE 판단/오류 이벤트는 일반 진행 큐 정리에서 보존한다.
+현재 표시·로그·전송 계약77개와 실제 WSL 로컬 START_SSE의 health/SSE_CHECK를 확인했다.
+검증한 기존 코드 지문165종과 설치/원복/모의 generation gate 결과는 인계
+`HANDOFF.json`·`VALIDATION.json`에 결속한다. 기존 CM/예산/오류 로그 변환·원문 generation·
+DB/이전 백업은 보존한다. 신규 모델 호출은 없고 로컬 MAIN45 선택 포인터는 유지한다.
+GENOS 반입/push/리비전/실제 워크플로우 화면은 미확인이다.
+사용자 요청으로 삼성메일 SENT `1a1190d54cc467bf`에 R5 ZIP·독립 RUN TXT·워크플로우
+전체 TXT·START_SSE·안내·검증 요약·해시 총7개 첨부를 발송하고 수신자·이름·크기를
+확인했다. 이전 표시 R3/R4 대신 R5를 사용한다. 봉인 인계 파일의 미발송 표시는
+봉인 시점 상태이며 [발송 기록](08_DEPLOYMENT/GENOS/handoffs/rag_progress_graph_20261008_r5/EMAIL_SENT.json)에
+후속 발송을 별도로 남겼다. 메일 발송은 현장 수신·실행·배포 성공을 뜻하지 않는다.
+[변경·실행 경로](07_DOCS/REFERENCE/OPERATIONS/GENOS_STANDALONE_JUDGMENT_SVG_20261008.md).
+아래 R4/main_workflow 연결과 R3 발송 기록은 이전 표시 코드의 이력이다.
+
+2026-10-08 메일 적용본 요청으로 [main_workflow 반영 R4](08_DEPLOYMENT/GENOS/handoffs/rag_progress_graph_20261008_r4/GUIDE_UTF8.txt)를
+삼성메일로 발송했다. 이전 표시 R3 대신 R4를 사용하며 이미 R3를 적용한 상태에서도
+이어 적용한다. `main_workflow.py`의 `/json`·`/stream` 표시 생산과 분리 Python 단계의
+요청/응답 SHA 결속·표시 재사용을 포함한다. 패키지 R4와 서버 내부 revision
+`genos-external-workflow-svg-20261008-r3`는 다른 버전 이름이다. 전체123개 허용 지문의
+정적 설치 hash/pin, 실제 최종 RUN의 대표18개 상태/180명령, 설치9개 계열의 계약
+각69개, 같은 committed checkout 모의 gate 및 CM/예산/전체 오류 보존6개가 통과했다.
+SENT `1a118fae16e64868`에서 수신자와 첨부7개 이름·정확한 크기를 확인했다.
+[발송 기록](08_DEPLOYMENT/GENOS/handoffs/rag_progress_graph_20261008_r4/EMAIL_SENT.json).
+실행 ZIP·독립 RUN·편집기 전체 TXT·선행 롤백 TXT·안내·검증·해시를 첨부했다.
+실제 DEV에 적용/commit/gate/push/새 리비전 배포 후 편집기에 전체 TXT를 별도로
+반영하고 워크플로우 테스트 화면에서 확인한다. MAIN45·이전 R3 ZIP은 유지했다.
+GENOS 실제 반입·push·리비전 배포·화면 성공은 미확인이다.
+
+2026-10-08 후속 요청으로 [main_workflow.py](main_workflow.py)에 SVG R9·짧은 진행
+표시를 직접 연결했다. LEGAL_AGENT/ELS_QUERY의 `/json`·`/stream` 최종 원시 응답에
+요청 ID·응답/표시 SHA로 결속한 `body.workflow_display`를 추가하며 기존 service는
+한 번 실행한다. 분리 Python 단계는 같은 요청·응답·revision의 표시를 재사용한다.
+이전 서버·변경된 응답은 기존 표시 경로로 처리하고 전체 오류 상세를 유지한다.
+`/chat-mode`/health에서 실제 렌더러 경로와 SVG/진행 revision을 확인할 수 있다.
+현재 작업 code_ship의 기본 파일 목록에도 main/router/workflow와 SSE 의존성을 넣었다.
+관련 검사69개가 통과했다. [작업·검증·상태](07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md).
+MAIN45·기존 발송 R3 ZIP/TXT는 유지했다. 이번 후속 코드는 위 R4로 인계/메일 발송했고,
+Git push/GENOS 리비전 배포/워크플로우 편집기 적용은 아직 확인하지 않았다.
+
+2026-10-08 SVG 개선과 짧은 진행 로그를 함께 다시 보내 달라는 사용자 요청으로
+[표시 재반영 R3](08_DEPLOYMENT/GENOS/handoffs/rag_progress_graph_20261008_r3/GUIDE_UTF8.txt)를
+삼성메일로 발송했다. 이전 표시 R2 대신 SVG R9·핵심 진행 R1을 적용한다.
+후속 CM 계열의 이전 표시를 최신 코드에 연결하며 CM R14/R15·조사 예산·선택 generation
+binding·캐시·service.py와 R15가 보존한 오류 로그 R10의 상세 원문을 유지한다.
+기존 69종 설치 상태에서 690명령, 최종 확장 TXT의 R15 12종에서 120명령을 확인했다.
+설치기·기존69종의 모든 변환/결과/소스 불변을 대조했고 9개 코드 계열의 표시/진행/
+JSON/SSE/분리 소비자 계약 각63개와 같은 committed checkout의 모의 gate 및
+CM/예산/오류 보존 검사5개가 통과했다.
+[검증 기록](08_DEPLOYMENT/GENOS/handoffs/rag_progress_graph_20261008_r3/VALIDATION.json).
+SENT `1a118e1acfd55379`의 수신자와 첨부8개 이름·정확한 크기를 확인했다.
+[발송 기록](08_DEPLOYMENT/GENOS/handoffs/rag_progress_graph_20261008_r3/EMAIL_SENT.json).
+ZIP은 TRANSFER용 실행 묶음이며 RUN으로 기존 DEV에 적용한다. 실제 적용된 DEV에서
+생성한 APPLIED_CODE.zip으로 같은 checkout/generation gate를 수행한 뒤 commit/push/
+새 코드서빙 리비전을 확인한다. 분리 워크플로우는 전체 TXT를 편집기에 별도로 반영한다.
+실제 로딩 경로·진행 R1·SVG R9를 출력하며 현장 질문 검증은 워크플로우 화면에서 한다.
+MAIN45는 유지했고 GENOS 실제 적용·push·배포·워크플로우 화면 성공은 미확인이다.
+
+2026-10-08 후속 사진의 R14 사전 검사 실패를 보완한 현행 CM 인계는
+[R15](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261008_r15/GUIDE_UTF8.txt)다.
+사진에서 오류 전체 표시 R10의 apply/verify는 EXIT=0이었지만, CM R14는
+`budget service inventory differs; preserved`로 공통 코드 적용 전에 중단했다.
+R14의 예산 검증은 이후 R10이 변경한 service와 engine inventory를 조합하지 못했다.
+[현장 관찰](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261008_r15/FIELD_OBSERVATION.json).
+R15는 R10 VERIFIED receipt·원본 파일 백업·적용 CODE ZIP·부모 inventory 전체를 고정 변환과
+대조해 원래 코드를 식별하고 CM 패치를 구성한 뒤 오류 로그 변환을 보존한다. 해시/권한/
+선택 generation 검사 우회는 없다. R14의 이름·역할 연결과 등록 재사용 보호는 그대로다.
+기존 조사 한도·오류 출력의 source 바이트·DB·원문·실패 로그·백업을 보존하며 현재
+`~/DEV/TRANSFER`에서 R15를 실행한다. 상태·단계 로그·등록 영수증은 `cm-oneclick-r15/`다.
+R10을 다시 apply/undo하거나 RAW/선택 원문 세대를 바꾸지 않는다.
+이름/등록 계약79개와 최종 R15 첨부 TXT 검사9개가 통과했다. 7개 모의 설치 상태별2회 실행과
+R15 부분 쓰기 실패 복구 후 실제 TXT 재개를 확인했다. 51건/98근거 등록·중복 방지·기존 코드/
+DB/세대/로그/백업 보존·같은 checkout/generation gate/모의 push·코드 원복이 통과했다.
+[검증 기록](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261008_r15/VALIDATION.json).
+삼성메일 SENT `1a118d77f4cbb635`의 수신자와 ZIP/독립 RUN TXT/안내 TXT 세 첨부 이름·
+정확한 크기를 확인했다. [발송 기록](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261008_r15/EMAIL_SENT.json).
+메일 발송과 현장 수신·실행·배포 성공은 별도다.
+기존 발송 R14와 아래 R14/R12 기록은 당시 이력이다.
+로컬 MAIN45는 그대로다. 이번 사진은 R14 실패를 확인한 것이며 R15 현장 반입·등록·push·
+새 코드서빙 리비전·워크플로우 질문 성공은 미확인이다. R10 자체의 부분 apply 후 undo
+진입 차단은 별도 결함이며 R15가 그 구 R10 명령을 고쳤다고 설명하지 않는다.
+
+2026-10-08 이름 연결 보완의 당시 CM 인계는
+[R14](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261008_r14/GUIDE_UTF8.txt)다.
+이전 R11/R12 대신 기존 `~/DEV/TRANSFER`에서 실행한다. 정상 규정명에 포함된 서식/별첨은
+보존하고 개별 정식명·파일명·원래 이름/별칭으로 연결한다. 부모 폴더명만으로 다른 법령을
+선택하지 않으며 개정·제정안·신·구조문대비·요약·참고·별표/서식 폴더와 NFD 한글을 구분한다.
+사본 번호·날짜·판본은 임의로 지우지 않는다. 기존 등록 재사용 전에 새로 해결한 문서·조문·
+근거가 이전 기록과 같은지 확인하며 다르면 보존 후 중단한다. 같은 등록은 중복 없이 재사용한다.
+R11 실패 상태와 이미 R12를 적용한 상태를 지원하고 기존 조사 한도 코드/설정·백업 계보를
+대조한다. 원문 generation·RAW 이름·기존 DB·실패 이력은 보존한다.
+이름/등록 계약79개와 최종 인계5개가 통과했다. 등록 외규 본문114경로·CM33경로의 이름
+대조와 교차 오연결 배제, 선택 로컬159문서의 CM21개 유일 연결을 확인했다.
+216개 recipe 및 R8/R10/R11/R12/미발송 R13의 업그레이드 pin과 정확한 첨부 TXT의 모의
+4설치 상태·각2회 실행에서51건/98근거 등록·재사용·예산/원문/DB/백업 보존·변조 거부·
+같은 checkout/generation gate/모의 push·코드 원복이 통과했다.
+[검증 기록](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261008_r14/VALIDATION.json).
+삼성메일 SENT `1a1170217b6b0164`의 수신자와 ZIP/독립 RUN TXT/안내 TXT 세 첨부 이름·
+정확한 크기를 확인했다. [발송 기록](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261008_r14/EMAIL_SENT.json).
+로컬 MAIN45는 그대로이고 실제 GENOS 적용·등록·push·리비전·워크플로우 성공은 미확인이다.
+R13은 미발송 검증 후보로 보존했고 기존 등록 재사용 보호는 최종 R14에 추가했다.
+아래 R12 이름 진단·인계는 당시 이력이며 확인한 추가 결함은 R14에서 보완했다.
+
+2026-10-08 사용자 요청으로 이름 끝 `본문`을 처리하는
+[당시 CM 인계 R12](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r12/GUIDE_UTF8.txt)를
+삼성메일로 발송했다. 이전 R11 대신 R12를 기존 `~/DEV/TRANSFER`에서 실행한다.
+`중소기업기본법 본문.xml` 같은 독립 이름을 정식명에 연결하고 기존 전문/조문 처리와
+시행령·시행규칙·개정문 구분을 유지한다. 조사 한도 R1이 있는 R11 실패 상태에서는
+R11 백업의 원래 부모 inventory까지 검증해 기존 예산 코드·백업·실패 기록을 보존한다.
+원문 세대와 RAW 이름은 변경하지 않는다. 관련 계약70개,216개 recipe/엔진 pin,
+실제 첨부 TXT의 모의3설치 상태·각2회 실행과 코드 원복이 통과했다.
+R11의 `본문` 이름 실패 재현→R12 공통51건/98근거 등록, 중복 방지, 같은 checkout의
+commit/generation gate/모의 push와 기존 DB·원문·예산·백업 보존을 확인했다.
+[검증 기록](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r12/VALIDATION.json).
+SENT `1a116e71fe37d263`의 수신자와 ZIP/독립 RUN TXT/안내 TXT 세 첨부 이름·정확한 크기를
+확인했다. 발송 응답 오류는 보낸메일함 조회로 성공을 확인했고 재발송하지 않았다.
+[발송 기록](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r12/EMAIL_SENT.json).
+로컬 MAIN45는 그대로이며 실제 GENOS 적용·등록·push·새 리비전·워크플로우 성공은
+미확인이다. 실제 원문 누락이면 이름 접미어 수정만으로 해결되지 않는다.
+아래 R10/R11은 이전 현장 관찰과 인계 이력이다.
+
+2026-10-08 후속 [R12 이름 변환 전수 대조](09_ARTIFACTS/AUDITS/20261008-cm-name-patterns-r12/README.md)에서
+수집/RAW 등록/표시 이름/구축 메타데이터·별칭·사본 번호 처리와 현재 CM 연결식을 대조했다.
+등록 외규 body114경로 중 기업공시서식 작성기준과 별지서식2경로는 파일명의 `서식` 등
+부분 문자열 때문에 정식명·명시적 body 역할이 있어도 제외된다. 두 제목은 CM21 대상이 아니다.
+정식명과 다른 시행령/시행세칙도 정확한 부모 폴더명으로 통과하며, 신·구조문대비표·제정안·
+요약·참고·개정(202609)·NFD 개정문 등도 역할이 없거나 body인 조건에서 통과하는15개
+모의 조건을 재현했다. 현재 로컬 CM body33경로의 자기 이름 연결/교차 오연결 검사와
+선택 source159문서의 CM21 각1개 후보는 통과했다. 실제 GENOS 배치·문서 선택은 미확인이다.
+당시 읽기 전용 진단에서는 발송된 R12·제품 코드·MAIN을 변경하지 않았다. 추가 문제는 이후 R14에서 보완했다.
+
+2026-10-07 사용자 현장 구축 확인에 따라 CM 등록의 문서명·근거 결속을 수정하고
+[현장 이름 연결 R10](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r10/GUIDE_UTF8.txt)을
+삼성메일로 발송했다. SENT `1a1167e769559d89`의 수신자와 ZIP/독립 RUN TXT/안내 TXT
+세 첨부 이름·정확한 크기를 확인했다. 후속 사진에서는 조사 한도 R1의 check/apply/verify와
+EXIT=0이 확인됐으나 이어 실행한 CM R10은 `R8 code differs from the verified upgrade inventory`
+사전 검사에서 EXIT=1로 중단했다. `unzip`도 없어 해제 명령은 실패했지만 별도 RUN TXT는
+실행됐다. 사진의 변경 후 service 해시와 검증된 R1 변환 해시가 일치한다.
+당시 복구는 [조사 한도 보존 R11](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r11/GUIDE_UTF8.txt)이었다.
+R8/R10의 정확한 코드에 조사 한도 R1의 세 변경과 부모 inventory가 함께 일치할 때만
+이어 적용한다. 원복·재구축 없이 조사 한도 코드와 원래 백업/실패 기록을 보존하며,
+압축 해제는 `python3 -m zipfile`을 사용한다. 사용자 요청으로 R11 ZIP/독립 RUN TXT/안내 TXT를 삼성메일에 발송했다.
+SENT `1a11697955af743f`에서 수신자와 세 첨부 이름·정확한 크기를 확인했다.
+[발송 기록](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r11/EMAIL_SENT.json).
+사진과 확인 범위는 [현장 기록](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r11/FIELD_OBSERVATION.json)에 보존했다.
+후속 [R11 실행 사진](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r11/FIELD_PACKAGE_CHECK_FAILED.json)에서
+RUN/안내 TXT 해시 OK, CORE_SHORTCUT_ALL_PROFILES PASS, BUDGET_SETTINGS PASS
+(총40회/조사37회, 모델 호출0회), 공통 코드 적용 완료를 확인했다.
+이어서 `package-check`가 실패해 EXIT=1로 중단했다. 상세 오류는 사진에 없으며
+기존 `~/DEV/TRANSFER/cm-oneclick-r11/package-check.log`에서 확인한다.
+이번 실행은 원문51건/98근거 연결 완료·commit·generation gate·등록/검증·push에
+도달하지 않았다. 후속 [단계 로그 사진](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r11/FIELD_TARGET_BODY_MISSING.json)에서
+`target_documents`의 `target body document missing: 중소기업기본법`을 확인했다.
+현장 선택 원문의 문서명·역할이 사진에 없어 실제 문서 누락과 이름/역할 제외는
+아직 구분하지 않는다. 새 리비전·워크플로우 성공도 미확인이다.
+사용자의 [다른 대화 RAW 이름 사진 검토](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r11/FIELD_RAW_NAMES_REVIEW.json)에서는
+`본문.xml`·`조문.html`·`_전문.hwpx`와 기존 제목/경로/별칭 처리를 대조했다.
+R11은 독립 이름의 `본문` 접미어를 처리하지 않는 누락이 있다. 정식 제목/폴더 별칭이
+남은 사진 모양은 통과하므로 이 누락을 현장 `중소기업기본법` 실패 원인으로 확정하지 않는다.
+RAW 존재와 선택 source DB 존재도 구분한다. 이 검토는 이름/본문/세대/코드를 변경하지 않았다.
+
+`genos_build`가 정식명을 전체 경로 display_name으로 게시하는 실제 연결을 확인했다.
+새 패키지는 정식 규정명·본문 파일 별칭·조문을 현장 source에서 해결하며 로컬 입력/본문
+해시 일치를 요구하지 않는다. 현장 문서 ID·현재 조문·source/nav/fulltext 해시에 새로
+결속하고 기준답변은 미승인 observation으로 보존한다. 기존 엄격한 패키지 계약은 유지한다.
+본문 표현본은 기존 XML→HTML→HWPX→DOCX→PDF→HWP 순서로 선택하고 개정문/비교표,
+같은 우선순위의 중복 판본·중복/누락 조문·권한 부족은 자동 승인하지 않는다.
+관련 계약34개와216개 recipe의 엔진 pin을 검사했다. 실제 첨부 TXT로 현장 모양의
+모의21문서에서 R8 실패→R10 이어 적용→공통51건/98근거 등록→중복 없는 재실행2회,
+같은 checkout commit/generation gate/모의 local remote push와 기존 원문·DB·실패 기록
+보존을 확인했다. 작업 코드의 관련30개 엔진 선언은 변경한2개 모듈만 재결속했다.
+미발송 R9의 offline 모듈 의존 누락 실패는 보존했으며 R10은 그 의존이 없다.
+로컬 MAIN45/원문 세대/기존 공통 DB는 변경하지 않았다. 실제 GENOS 등록·Git push·
+코드서빙 리비전 배포·워크플로우 성공 및 수신자의 실제 수신은 미확인이다.
+R11은216개 recipe/엔진 pin과 실제 첨부 TXT의 모의3설치 상태·각2회 실행을 확인했다.
+사진 순서의 R8 실패→조사 한도 적용→R10 사전 중단→R11의51건/98근거 등록·commit·
+같은 checkout/generation gate·모의 local remote push를 재현했다. R10 적용 후 조사 한도
+상태와 기존 무패치 입력도 검사했다. 예산 코드의 동일 바이트·중복 없는 재실행·원문/DB/
+과거 로그/백업 보존·자체 inventory에 반영한 미승인 코드 변경 거부를 확인했다.
+로컬 MAIN45·운영 데이터·현장 배포는 변경하지 않았다. [검증 기록](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r11/VALIDATION.json).
+
+2026-10-07 현장 사진에서 NFS 목록 R3 ZIP 내부 RUN은 EMBEDDED_CODE_VERIFIED까지
+실행했으나 inspect 병합 중 part000030 크기49,000,001바이트/해시 불일치로 중단했다.
+조각000000~000033 중30만 FAILED이고 나머지는 OK였다. NFS 복원·push 단계에는 도달하지 않았다.
+Windows의47,852KB 반올림 사진으로 변형 위치나 DRM 원인을 확정하지 않는다.
+사용자 요청에 따라 [전체 SHA 병합·끝 추가1바이트 복구 보조도구](08_DEPLOYMENT/GENOS/handoffs/zip_parts_recovery_20261007_r1/JOIN_VERIFY_RECOVER_20261007_R1_GUIDE.txt)를 준비해
+ZIP/별도 RUN TXT/안내 TXT로 삼성메일 발송했다. SENT `1a1166b855bc587b`의 수신자·세 첨부 크기를 확인했다.
+크기 상한 없이 전체 원본 SHA를 확인하고, 끝1바이트 제외는 해당 조각 및 전체 원본 SHA가
+둘 다 일치할 때만 새 _verified.zip으로 출력한다. 기존 조각과 메타데이터는 보존하며
+이 ZIP을 기존 R3에 직접 지정한다. 모의 계약12개와 해제/해시/구문을 확인했다.
+수신자 수신과 현장 복구/복원/배포 성공은 당시 미확인이며 로컬 MAIN45와 운영 NFS는 변경하지 않았다.
+후속 [현장 사진 확인 기록](08_DEPLOYMENT/GENOS/handoffs/zip_parts_recovery_20261007_r1/FIELD_RECOVERY_VERIFIED.json)에서
+APPENDED_ONE_BYTE_RECOVERY_VERIFIED와 EXIT=0을 확인했다. part000030 끝1바이트 제외가
+해당 원본 조각 및 전체 원본 ZIP SHA와 일치했으며 `/workspace/TRANSFER/genos-rag-data-20261007T002029Z-7c0b050f_verified.zip`을 생성했다.
+업로드 조각은 보존됐다. 변형 원인은 미확인이며 NFS 복원·push·리비전 배포·워크플로우 성공은 아직 미확인이다.
+후속 [R3 현장 inspect 사진](08_DEPLOYMENT/GENOS/handoffs/data_transfer_list_20261007_r3_zip/FIELD_INSPECT_VERIFIED.json)에서는
+직접 지정한 _verified.zip의 해제와 선택 경로 검사를 통과하고 ARCHIVE_RESTORE_ELIGIBLE=True,
+CODE_SPACE_STAGES_PASS, EXIT=0을 확인했다. SOURCE_CHANGES에는 cases-v4.sqlite의 metadata_changed/
+changed_during_copy 기록이 있었다. inspect는 NFS 복사·Git commit/push를 수행하지 않으며
+현장 Git checkout·NFS 복원·리비전·워크플로우 성공은 이 사진으로 확인되지 않는다.
+그 뒤 [all 현장 사진](08_DEPLOYMENT/GENOS/handoffs/data_transfer_list_20261007_r3_zip/FIELD_NFS_RESTORE_VERIFIED.json)에서는
+실제 NFS 입력 해시/목적지 충돌 검사를 통과하고 RESTORED/copied_files2748을 확인했다.
+이후 install_existing_probe_hook의 Git rev-parse가 exit128로 실패해 전체 상태는 FAILED였다.
+이 Git 확인은 코드 쓰기 전이므로 코드 적용/commit/push·서빙·워크플로우는 미완료다.
+NFS 복원은 완료된 별도 상태로 보존하며, 실제 배포 Git checkout에서 R3 deploy로 코드 단계만 이어간다.
+현재 대상 Git 실패의 구체적 원인은 사진에 없으며 archive의 code_evidence를 대상 checkout의 증명으로 쓰지 않는다.
+
+2026-10-07 사용자 요청으로 [조사 한도 설정 R1](08_DEPLOYMENT/GENOS/handoffs/investigation_budget_20261007_r1/GENOS_INVESTIGATION_BUDGET_20261007_R1_GUIDE.txt)을 삼성파트너 메일에 발송했다. SENT `1a116666973d9a02`에서 수신자와 ZIP/별도 전체 실행 TXT/안내 TXT 세 첨부 이름·정확한 크기를 확인했다. 변경 직전 로컬 MAIN45의 모델 총40회(최종 판단3회 예약, 조사 최대37회)를 유지하고 모델·도구·시간·추가 검색·판단 후 재조사 한도를 환경 설정으로 선택하도록 연결한다. 기존 DEV의 service.py 세 변경 부분과 CODE_MANIFEST만 반영하며 엔진/원문/generation/CURRENT·세션·기존 캐시/로그/데이터 경로를 보존한다. ZIP 내부와 별도 실행 TXT의 동일 바이트, JavaScript 제외, Python3.11/Bash 구문, 선행 latency R4·CM R8+NFS 목록·MAIN45 세 inventory의 최종 TXT30명령 및 같은 committed checkout의 기존 generation gate·모의 local remote push를 확인했다. 신규 설정 계약27개와 실제 로컬 MAIN 서비스 HEALTH도 확인했다. 최초 로그·실패 상태·백업·재실행·원복 방법은 안내에 포함한다. 후속 [현장 사진](08_DEPLOYMENT/GENOS/handoffs/investigation_budget_20261007_r1/FIELD_APPLY_VERIFIED.json)에서 GENOS check/apply/verify와 EXIT=0을 확인했다. commit/gate/push/새 리비전/환경 저장/워크플로우와 수신자 수신 확인은 미확인이다. [발송 기록](08_DEPLOYMENT/GENOS/handoffs/investigation_budget_20261007_r1/EMAIL_SENT.json).
+
+2026-10-07 사용자가 기존 ZIP 인계 방식을 요청하여 데이터 이관/목록 R1을
+[ZIP 인계 R3](08_DEPLOYMENT/GENOS/handoffs/data_transfer_list_20261007_r3_zip/GENOS_TRANSFER_NFS_LIST_20261007_R3_GUIDE.txt)로 재포장해 삼성메일에 발송했다.
+SENT `1a1165280958c314`에서 ZIP/독립 RUN TXT/안내 TXT 세 첨부의 수신자·이름·크기를 확인했다.
+ZIP 내부에도 같은 실행 TXT와 분할/병합 TXT를 넣었으며 코드는 검증한 R1과 바이트가 같다.
+코드스페이스에서 ZIP을 해제하고 내부 RUN TXT를 실행한다. 해제·SHA·Bash 구문과
+해제한 실행본의 모의 병합/복원/commit/로컬 remote push/HTTP 워크플로우 연결을 확인했다.
+삼성메일 스킬에는 코드 ZIP+별도 실행 TXT를 기본으로 반영했다. 운영 데이터/MAIN45는
+변경하지 않았으며, 현장 DRM·복원·배포·워크플로우 성공과 수신자 실제 수신은 미확인이다.
+
+2026-10-07 사용자 요청으로 전체 원문을 문서명과 이름을 무시한 원본 SHA로 각각 대조하는
+[전수 진단 R2](08_DEPLOYMENT/GENOS/handoffs/cm_source_diagnose_20261007_r2/GENOS_CM_SOURCE_DIAG_20261007_R2_GUIDE.txt)를
+[삼성파트너 메일로 발송](08_DEPLOYMENT/GENOS/handoffs/cm_source_diagnose_20261007_r2/EMAIL_SENT.json)했다.
+SENT `1a1163917bae06bf`의 수신자와 RUN/안내 TXT 두 첨부 이름·정확한 크기를 확인했다.
+현장 목록 출력 과다에 대한 사용자 정정으로 [R3 요약 TXT](08_DEPLOYMENT/GENOS/handoffs/cm_source_diagnose_20261007_r3/GUIDE_UTF8.txt)를
+같은 삼성메일 스레드로 보냈다. SENT `1a11644df4309e93`의 요약 TXT 한 첨부2196바이트를 확인했다.
+이미 저장된 R2 JSON을 재검사 없이7줄로 읽으며, 향후 R3 RUN도 상세 목록은 JSON에만 보존한다.
+기존 계약11개, 실제 R3 RUN과7줄 요약 TXT를 검사했고 원문/기존 기록을 보존했다.
+로컬 RAW/external/financial_team/krx/코스닥시장 상장규정의 전문.hwpx·전문.pdf·조문.html 존재/해시를 확인했다.
+RAW 존재와 선택 서빙 세대의 문서명/입력 표현본 SHA는 별도이며, 현장 사진은 상세 추가 목록만 있어 집계/정확한 결속은 미확인이다.
+현재 로컬 MAIN45가 선택한 전체159문서의 ID/문서명/원본 SHA와 부모 포인터·release·source 해시를
+TXT 안에 고정했다. 현장에서는 기존 R8의 설정과 같은 manifest를 선택해 원문 DB 해시를 먼저
+검사하고 선택 문서 전체를 양방향 대조한다. 문서명+SHA, 이름 무시 SHA, 이름만 다른 동일 원본,
+누락/해시 차이/현장 추가/중복과 CM21문서 대조를 함께 기록한다. 진단에는 R1 대신 R2를 쓴다.
+계약11개와 최종 TXT 전체3회, 변경된 generation 결속 거부1회를 확인했고 원문/기존 기록을 보존했다.
+진단은 모델 호출·등록·코드/MAIN 수정·push·배포를 하지 않으며 현장 데이터 일치 결과는 미확인이다.
+문서명에 상관없이 동일 원본 SHA를 찾는 진단 결과가 원문 조문 본문·구조·판단 품질 인증을 뜻하지 않는다.
+기존 workspace 활성 receipt의 manifest hash 차이는 보존했다. 반입 inventory 작성은
+논리 root의 read-only `inspection_path`와 실제 선택 포인터/릴리스 해시를 사용했고 runtime 활성 검증을 우회하지 않았다.
+
+2026-10-07 사용자 현장 사진에서 공통 CM R8은 코드 검사 후 `package-check`의
+`source document version missing or ambiguous: 코스닥시장 상장규정`으로 중단했다.
+등록기는 문서명과 `source_artifact_sha256`가 동시에 일치하는 문서 한 건을 요구한다.
+사진으로는 문서명 누락·원본 해시 차이·동일 원본 중복 중 어느 경우인지 확정하지 않는다.
+이번 실행은 공통51건 등록·commit·push에 도달하지 않았다. 이를 R8 현장 성공으로 보고하지 않는다.
+[읽기 전용 진단 TXT 안내](08_DEPLOYMENT/GENOS/handoffs/cm_source_diagnose_20261007_r1/GENOS_CM_SOURCE_DIAG_20261007_R1_GUIDE.txt)는
+R8이 생성한 설정/실행 기록의 같은 generation manifest 해시와 원본 패키지를 확인하고
+대상21문서의 문서명·원본 SHA 대조 결과를 실행마다 새 폴더에 저장한다.
+코드·원문·등록 DB를 변경하거나 원본 해시를 덮어쓰지 않으며 모델 호출은 없다.
+로컬 계약7개와 최종 TXT 실행2회에서 원문/기존 기록 불변과 재실행 기록 분리를 확인했다.
+진단 결과의 현장 확인, 복구 대상 결정과 등록·리비전 배포·워크플로우 성공은 아직 미확인이다.
+
+2026-10-07 사용자 요청으로 **TRANSFER TXT 한 번 실행하는 공통 CM 자동 인계 R8**를 준비했다. [실행 안내](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r8/GUIDE_UTF8.txt)의 한 줄은 사용자/팀 JSON·CM_PRINCIPAL_FILE·generation/runtime/receipt 환경변수 입력 없이 기존 DEV의 코드 적용·원문 검사·commit·같은 checkout/generation gate·공통51건 등록/검증·push를 처리한다. 영수증·코드/SQLite 백업·로그는 자동 생성한다. 현재 모델·인증 설정은 유지한다. 마지막 새 코드서빙 리비전 배포와 워크플로우 화면 확인은 현장 UI 단계다.
+
+이전 삼성메일 발송 요청에 따라 [최종 R8 RUN과 짧은 안내 TXT 두 개를 발송](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r8/EMAIL_SENT.json)했다. SENT `1a1161a33176a64a`에서 수신자·제목과 두 첨부의 이름·정확한 크기를 확인했다. 이전 R4/R6 변수 입력 안내를 대체하며, 메일 제출과 현장 수신·실행·배포 성공은 구분한다.
+
+경로는 다른 [NFS 이관 메일](08_DEPLOYMENT/GENOS/handoffs/data_transfer_list_20261007_r1/EMAIL_SUBMITTED.json)의 실제 본문을 다시 읽어 generation financial-risk-success-20261005-schema-r2, `/nfs-root/diamo/8-agent/runtime`, 별도 state 미설정을 확인했다. `service.py`는 인계 도구가 생성하는 `00_SYSTEM/GENOS_SERVING_PATHS.json`으로 같은 경로를 선택하고 generation manifest SHA를 검사한다. 설정 파일이 없는 로컬 실행의 선택은 유지한다. 로컬 MAIN45와 실제 로컬 공통 DB는 이번 작업에서 바꾸지 않았다.
+
+R4/R6 입력 inventory108종과 알려진 NFS 목록 패치 병행의216개 해시 고정 recipe/엔진 pin을 확인했고, 대표6상태의 준비·변조 보존 검사를 통과했다. 환경변수를 비운 정확한 최종 TXT의 전체 실행3회에서 실제 CM51/98의 원문 결속·SQLite 보존·공통 등록/재실행·같은 checkout의 commit/전체 generation gate·로컬 모의 remote push와 환경변수 없는 실제 service 경로 선택을 확인했다. 경로 설정 계약9개도 통과했다. 데이터 원문은 읽기 전용 hardlink로 공유했고 모델 호출0회, 실제 GENOS·실제 remote push·리비전·워크플로우는 미확인이다. [검증 기록](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r8/VALIDATION.json)을 보존한다. R7은 R6 후속 설치 상태 누락과 큰 중복 명세의 미발송 빌드 실패 이력이다.
+
+아래 R6와 이전 변수 입력 안내는 당시 이력이며 현재 사용자 실행은 자동 R8를 사용한다.
+
+2026-10-07 사용자 정정에 따라 CM51은 사용자·팀별 등록을 폐기하고 **공통 카탈로그 한 번 등록**으로 고쳤다. 현행 [공통 인계 R6](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_common_20261007_r6/GUIDE_UTF8.txt)는 R4 적용 상태와 그 선행 core/display 상태에 이어서 적용한다. 앞선 환경변수 안내 R1의 CM_PRINCIPAL_FILE과 개인 user/team JSON 등록 설명은 현행 CM 등록에 사용하지 않는다. 요청 ID는 기존 문서 권한·대화 이력·감사에 사용하며 공통 등록자의 ID를 소비자로 제한하지 않는다.
+
+이전 삼성메일 인계 요청에 따라 [정정 R6를 같은 메일 스레드로 발송](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_common_20261007_r6/EMAIL_SENT.json)했다. SENT `1a115fd2f87b2ff3`에서 수신자·제목·ZIP/독립 RUN TXT/안내/검증/해시 첨부5개 이름·정확한 크기를 확인했다. 최종 첨부 TXT의 알려진54설치 상태/331명령, 대표9계열의 계약227개, 같은 committed checkout·compact 모의 generation의 gate6개를 통과했다. 발송은 현장 수신·배포 성공과 별도다. R5는 미발송 verifier assertion 오류의 실패 이력으로 보존했다.
+
+작업 코드에 공통 등록·조회와 CLI `--common`을 연결했다. [기존 로컬 SQLite](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_common_20261007_r6/LOCAL_REGISTRATION_VERIFIED.json)에 공통51건/근거98개를 등록하고 다른 사용자·팀 세 곳의 동일 unit 조회를 확인했다. 이전 개인 R1/R2 102건은 RETIRED 이력으로 보존했다. 개인 대화/native shortcut을 공통으로 공개하지 않는다. source/ACL·공통 쓰기 제한·등록·기존 개인 메뉴 검사20개가 통과했다. 원문 generation과 로컬 MAIN45 포인터는 변경하지 않았다. 실제 GENOS apply/commit/gate/push/새 리비전/워크플로우 성공은 아직 미확인이다.
+
+아래 개인 CM scope 설명과 R4/환경 안내 발송은 당시 이력이며, 공통 등록에는 R6를 사용한다.
+
+2026-10-07 현장 사진에서 CM R4의 코드 check/apply/verify 성공
+(CODE_APPLIED, ENGINE_BINDINGS PASS, CORE_SHORTCUT_ALL_PROFILES PASS,
+EXIT=0)을 확인했다. ~/DEV는 /workspace로 해결됐고 실행 Python은
+/venv/bin/python3, 3.11.15였다. CM51 등록·검증, commit/gate/push,
+새 코드서빙 리비전 배포와 workflow 질문 성공은 이 사진에서 미확인이다.
+ZIP/RUN 해시는 OK였고 GUIDE_UTF8/VALIDATION_SUMMARY는 FAILED였다.
+문서 불일치 원인은 사진만으로 확정하지 않는다.
+사용자 요청으로 [환경변수·배포·등록 순서 보충 안내 R1](08_DEPLOYMENT/GENOS/handoffs/cm51_env_deploy_20261007_r1/GENOS_CM51_ENV_DEPLOY_20261007_R1_GUIDE.txt)을
+[삼성메일로 발송](08_DEPLOYMENT/GENOS/handoffs/cm51_env_deploy_20261007_r1/EMAIL_SENT.json)했다.
+SENT 1a115e01d4b41cde에서 수신자·제목·첨부5개의 이름/정확한 크기를 확인했다.
+터미널/코드스페이스와 코드서빙 리비전의 환경변수 위치, 실제 요청 principal,
+data-check, receipt의36파일 stage/commit/gate/push, 새 리비전/트래픽,
+data-import/data-verify, workflow 확인·원복을 안내한다.
+기존 최종 R4 독립 RUN TXT와 원본 안내·검증 문서, 새 첨부용 SHA를 보냈다.
+안내 shell10블록/Python heredoc2개의 문법과 원본 R4 발송 해시 일치를 검사했다.
+새 코드 패치·MAIN 활성화·GENOS 배포 실행·모델 호출은 없다.
+
+2026-10-07 사용자 요청으로 DEV의 분할 데이터 ZIP을 합쳐 기존 NFS 경로에 복원하고,
+코드서빙을 통해 워크플로우에서 실제 데이터 목록을 읽는
+[분할 ZIP → NFS → 목록 확인 R1](08_DEPLOYMENT/GENOS/handoffs/data_transfer_list_20261007_r1/GENOS_TRANSFER_NFS_LIST_20261007_R1_GUIDE.txt)을 준비했다.
+사용자 지시에 따라 삼성파트너 메일에 RUN/안내 TXT 두 개를 발송했고 SENT
+`1a115df82c32b2f5`에서 수신자와 두 첨부 이름/정확한 크기를 확인했다.
+[발송 기록](08_DEPLOYMENT/GENOS/handoffs/data_transfer_list_20261007_r1/EMAIL_SUBMITTED.json)은
+제출 상태이며 수신자의 수신 확인과 구분한다.
+독립 RUN TXT에 기존 R4 병합·데이터 복원·NFS 진단 설치/commit/push 도구를 포함했다.
+확인된 `/nfs-root/diamo/8-agent`와 financial-risk-success-20261005-schema-r2 generation,
+runtime/state 미설정을 명시하며 이전 코드스페이스 `.env/CURRENT`를 재선택하지 않는다.
+기존 `NFS_DATA_PROBE` 배선에 실제 generation/runtime 항목 목록과 준비한 팀의
+문서 ID/이름 페이징을 연결했다. 팀 생략 시 문서명은 반환하지 않으며 팀은 새 접근권한이 아니다.
+실제 최종 TXT의 모의 ZIP/NFS 복원·재실행·동일 checkout commit/로컬 remote push·
+설치된 service 훅을 통한 실제 로컬 HTTP/워크플로우 연결 등 관련 검사60개가 통과했다.
+검증은 모의 데이터만 사용했고 모델 호출0회, 로컬 MAIN45·운영 NFS/CURRENT·실제 Git push는
+변경하지 않았다. GENOS 현장 복원·리비전 배포·워크플로우 화면 성공은 미확인이다.
+
+2026-10-07 CM 오답·미답변 등록 요청으로 **CM51 shortcut·legal_wiki 데이터 인계 R4**를
+[삼성파트너 메일로 발송](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_data_20261007_r4/EMAIL_SENT.json)했다.
+SENT `1a1159b1e5f0e7b8`에서 수신자와 ZIP/독립 RUN TXT/안내/검증/해시 첨부5개의
+이름·정확한 크기를 확인했다. [실행 안내](08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_data_20261007_r4/GUIDE_UTF8.txt)의
+최종 R4를 사용한다. 선행 core shortcut R1의9종과 최신 화면표시 R2의18종, 총27종을
+해시 고정36파일 패치로 지원하고 기존 화면·검색·로그·원문·사례 이력을 보존한다.
+로컬 owner `jin`/team `CM`에 활성51건과 근거98개를 등록해 legal_wiki를 만들었다.
+기준답변은 검토 observation, 법률 claims/procedures는 비어 있고 현재 원문에서 다시 판단한다.
+사진의 행사 시점 입력을 CM-016에 연결했다. 등록 데이터 revision은 R2이며 R4는 반입기와
+최신 표시 설치 상태 호환 인계본이다. 모델 호출0회, 첨부 TXT169명령/27설치 상태와
+native 계약207개, 동일 committed checkout의 compact 모의 generation 게이트6개가 통과했다.
+**로컬 MAIN45 포인터·불변 코드268파일은 변경하지 않았다.** 새 curated 소비 코드는
+작업 코드/인계본에 있으며 MAIN45에는 없다. GENOS 적용·push·리비전·workflow 답변 성공은
+현장 확인 전까지 미확인이다. 자료는 망분리 현장에서 실제 사용자·팀/원문/runtime/state로
+반입·등록해야 하며, CM은 이후 해당 등록 arm에서 training/in-sample로 표시한다.
+
+2026-10-08 작업 SVG를 [R9 표시](07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md)로
+다듬었다. 그래파이트 배경·유형별 청록/블루/앰버 원형 아이콘·색을 잇는 곡선과
+조문별 분기 배치를 사용한다. 직접 JSON/SSE·분리 워크플로우의 같은 SVG/답변,
+표시·진행·판단 검사44개와 작업 v6 pin을 확인했다. 경험 재사용 검사1건의 기존
+모의 모델 오류는 수정 전 표시 코드에서도 재현했다. 아래 발송된 R8 반입본은 보존한다.
+R9 새 ZIP/메일/push/GENOS 배포·워크플로우 편집기 반영은 이번 작업에서 실행하지 않았다.
+로컬 MAIN45와 NFS generation/CURRENT는 유지하며 현장 실제 화면은 미확인이다.
+
+2026-10-07 사용자 요청으로 화면용 핵심 진행 로그와 SVG R8 그래프를
+[표시 전체 반입 R2](08_DEPLOYMENT/GENOS/handoffs/rag_progress_graph_20261007_r2/GUIDE_UTF8.txt)로
+삼성파트너 메일에 발송했다. SENT `1a11580903a8c6a3`에서 수신자와 코드 ZIP,
+독립 RUN TXT, 워크플로우 전체 TXT, 선행 로그 롤백 R3 TXT, 안내·검증·모의 이미지·해시
+첨부8개의 이름/정확한 크기를 확인했다. 발송 해시는 해당 `EMAIL_SENT.json`에 보존한다.
+306파일 대표 전체 ZIP과 별도로 RUN은 최근 알려진 설치 inventory18종에 맞춰
+검색 캐시·순위·권한·세션·기존 로그와 shortcut을 보존하며 표시/의존성과 엔진 pin을 갱신한다.
+대기/경과 초/모델 START·종료를 화면에서 빼고, 7단계 핵심 판단·한 줄 한 법령·실제
+fulltext 값·법령 열람/조사 복귀 이유와 답변 바로 아래 접힌 근거 관계 SVG를 연결했다.
+R1은 미발송 검증 실패 이력이며 누락 로그 모듈 의존성을 R2에서 해결했다.
+실제 TXT180명령, 코드 계열별 표시/JSON/SSE 계약63개씩, 동일 commit된 checkout의
+모의 generation 배포 gate3개와 전체 워크플로우 TXT의 동일 SVG가 통과했다.
+새 모델 호출·로컬 MAIN45·NFS generation/CURRENT 변경은 없으며 GENOS 현장
+apply/push/리비전 배포/워크플로우 화면/NFS 동작은 미확인이다.
+
+2026-10-07 최종 채택 핵심 근거에서 재사용 원문 경로를 역으로 만들고 멀티턴의
+현재 head를 갱신하는 [shortcut R1 인계](08_DEPLOYMENT/GENOS/handoffs/core_evidence_shortcut_20261007_r1/GUIDE_UTF8.txt)를
+삼성파트너 메일로 발송했다. SENT `1a115740809cc5bb`에서 수신자와 코드 패치 ZIP,
+독립 shortcut RUN TXT, 독립 선행 로그 롤백 R3 TXT, 안내, 검증 요약, 해시 등
+첨부6개의 이름/크기를 확인했다. 발송 당시 해시는 해당 `EMAIL_SENT.json`에 보존한다.
+계측 R3/R4 또는 시스템 로그 R1에 DB 로그 롤백 R3를 적용한 9개 알려진 inventory만
+허용하며 ADR0683의 검증한 변경분을 선행 코드에 병합해 기존 캐시/전송/로그 상태를
+보존했다. 8개 runtime·30개 엔진 pin·PIPELINE·CODE_MANIFEST 총40파일 패치다.
+실제 첨부 TXT 적용/재실행/원복/변조 보존90명령, 선행 코드3종의 핵심 계약23개씩,
+모의 generation의 동일 commit된 checkout 배포 gate3개가 통과했다.
+로컬 MAIN45와 NFS 데이터/CURRENT는 변경하지 않았다. 실제 GENOS apply/push/
+리비전 배포/내부 질의 및 모델 정확도·속도는 미확인이다.
+
+2026-10-07 사용자 코드서빙 사진의 `StageRunner.verify_profile` / HTTP422 /
+`engine manifest hash mismatch`와 같은 오류를 로그 롤백 R1/R2에서 재현했다.
+R1/R2가 엔진 JSON의 코드 pin은 바꿨지만 `PIPELINE.json`의 엔진 manifest 등록
+해시를 갱신하지 않은 반입본 작성 누락이다. 현재 로그 롤백에는
+[등록 해시 수정 R3](08_DEPLOYMENT/GENOS/handoffs/db_log_rollback_20261007_r3/GUIDE_UTF8.txt)를 사용한다.
+이미 R1/R2를 적용했으면 먼저 원복하지 않고 R3 check/apply/verify로 이어간다.
+이 상태의 Python 코드/검색 캐시/순위/권한/원문/세션은 같은 바이트로 유지한다.
+system_logging R1 계열의 알려진 WORKSPACE 의존 pin 불일치24개도 파일 변경 없이
+등록을 결속한다. 원본5종과 각각의 R1/R2 적용 결과 총15개 inventory만 허용하며
+30개 엔진의 PIPELINE→manifest→코드와 slot/port·schema를 쓰기 전에 확인한다.
+실제 TXT150명령, 모든 profile의 실제 StageRunner 검사15회, 사진 오류 재현10회,
+모의 compact generation의 동일 checkout gate5개가 통과했다. 과거 데이터 gate는
+엔진 등록 검사를 포함하지 않아 R1/R2의 오류를 놓쳤으며 해당 실패 이력은 보존한다.
+MAIN45·NFS 데이터/CURRENT는 변경하지 않았다. 사용자 요청으로 R3를 삼성파트너
+메일에 발송했고 SENT `1a1155a0b057f9b2`에서 수신자와 ZIP·독립 RUN TXT·안내·
+해시4개 첨부의 이름/크기를 확인했다. 발송 근거는 R3 `EMAIL_SENT.json`에 별도로
+기록해 발송한 checksum과 준비 시점 HANDOFF를 보존한다. 사진의 실제 배포
+commit/리비전/코드 hash와 R3 현장 apply/push/배포/질의는 미확인이다.
+
+아래 R1/R2 발송과 검증은 당시 이력이다.
+
+2026-10-07 사용자 현장 사진의 로그 롤백 R1 `Existing DEV checkout required`
+오류에 대해 [DEV 경로 수정 R2](08_DEPLOYMENT/GENOS/handoffs/db_log_rollback_20261007_r2/GUIDE_UTF8.txt)를
+삼성파트너 메일로 보냈다. SENT `1a1152e9627ac5ff`에서 R2 도구 ZIP·독립 RUN TXT·
+안내·해시 4개 첨부를 확인했다. R1의 DEV 루트 심볼릭 링크 거부를 모의 환경에서
+사진과 같은 오류로 재현했다. 실제 현장 링크 대상은 사진에 없어 미확인이다.
+R2는 지정 DEV의 실제 checkout을 먼저 해결하고 내부 코드 링크/알 수 없는 해시는
+계속 차단한다. `GENOS_DEV_ROOT → GENOS_DEV → ~/DEV` 선택과 실제 경로를 기록한다.
+사진의 R1 check/apply/verify는 코드 변경 전 중단했으므로 R1 원복 없이 R2 check부터
+진행한다. 상세 로그 롤백 코드와 검색 기능은 R1과 동일한 바이트이며 이전 자료는 보존한다.
+실제 TXT 반입/원복50건·경로 선택/링크24건과 실제 checkout의 모의 generation gate4건을
+통과했다. 로컬 활성 포인터는 그대로이며 GENOS R2 apply·push·리비전 배포·질의 결과는 미확인이다.
+
+2026-10-07 사용자 요청으로 DB 지연 확인용 세부 계측만 제거한
+[로그 롤백 R1 실행 안내](08_DEPLOYMENT/GENOS/handoffs/db_log_rollback_20261007_r1/GUIDE_UTF8.txt)를
+삼성파트너 메일로 보냈다. SENT `1a1152164c6f02ca`에서 수신자와 코드 도구 ZIP·
+독립 실행 RUN TXT·안내·해시 4개 첨부를 확인했다. `query_latency`의 INFO span,
+CPU 압력/SQL 타이머와 `unit_fts.connection`/PRAGMA 진단을 제거하며 기존 검색 캐시·
+순위·권한·원문·세션과 일반 진행/오류/감사 로그를 유지한다. 과거 전체 코드로 원복하지 않는다.
+RUN TXT는 알려진 계측 R1~R4/시스템 로그 R1의 설치 inventory를 확인하고 기존
+`~/DEV`에 두 코드와 기존 엔진 pin 30개만 백업/적용한다. 같은 checkout의
+`APPLIED_CODE.zip`과 원복 receipt를 생성하며 기존 NFS 데이터/CURRENT는 보존한다.
+작업 코드의 관련 계약38개, 실제 TXT 적용/재실행/원복/변조 보존 등50건 및
+모의 generation의 동일 checkout 배포 gate2건을 통과했다. 로컬 활성 포인터
+generation45는 변경하지 않았다. GENOS 실제 apply·push·리비전 배포·워크플로우
+질의 결과는 미확인이다. 아래 계측 인계·완료 기록은 역사적 근거로 보존한다.
+
+2026-10-07 현장 사진의 RECALL 약 141초 / SELECT 준비 약 190초 공백을 대상으로
+[검색 준비 계측·중복 조회 감소 R3](08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r3/README.md)를
+삼성파트너 메일로 발송했다. SENT `1a115033dc621c25`에서 코드 ZIP·적용/워크플로우/
+원격 push/로그 요약 TXT·안내·검증 기록·해시 8개 첨부와 수신자를 확인했다.
+권한 범위는 원문 JSON 전수 읽기 대신 source ID 단일 SQL로 구하고, 요청의 SQLite
+연결 안에서 FTS 적중 메타데이터를 재사용한다. 50,000개 초과 시 기존 전체 SQL로
+돌아가며 순위·전체 건수·페이지·ACL·근거 계약을 유지한다. INFO 계측은 토큰화,
+SQL execute/fetch, 원문 검증/읽기, 후보 구성, checkpoint, 모델 구성/예약/transport를 나눈다.
+마지막 무소켓 R3와 선택된 `session-runtime-v6-20261007-r1`(MAIN45)의 세션 런타임을
+함께 결속한 300파일 ZIP이다. 통합 검사93개와 실제 TXT 반입/원복/gate 검사9개가
+통과했고, 이전 발송본에서도 재현되는 구 계약 테스트7개 실패는 별도 보존했다.
+현장에는 계측 R3를 사용하고 분리 workflow 편집기도 첨부 전체 TXT로 갱신한다.
+이번 작업은 로컬 활성 포인터를 변경하지 않았다. GENOS 반입·push·새 리비전 배포·
+workflow 질의와 내부 속도 개선 정도는 미확인이다. 앞선 인계/실패 기록은 보존한다.
+
+2026-10-07 사용자가 R2를 현장 `~/DEV`에 **apply까지만** 했다고 보고하고
+Socket.IO 없이 `통합 직접 JSON / 분리 Python 워크플로우 SSE` 두 방식으로 복귀를 요청했다.
+[무소켓 R3 인계](08_DEPLOYMENT/GENOS/handoffs/no_socket_chat_20261007_r3/README.md)는
+R2 적용 바이트를 허용 선행 상태로 포함한 297파일 누적 ZIP이다.
+통합은 기존 `main.py /chat` JSON, 분리는 `main_workflow.py /stream` HTTP SSE와
+별도 Python 단계의 최종 JSON을 사용한다. 워크플로우 단계의 플랫폼 `main_socketio`
+송신도 비활성화하고 두 코드서빙 연결의 Socket.IO 옵션을 끄도록 안내했다.
+R2 백업을 먼저 원복하지 않고 R3 `check`가 통과할 때만 R3를 적용한다.
+로컬 경로·회귀 39개와 반입/원복/gate 7개를 통과했고, 삼성메일 SENT
+`1a11485b79056248`에서 R3 ZIP·실행/워크플로우/원격 TXT·안내·해시 6개 첨부를 확인했다.
+R2 apply 상태는 사용자 보고이며 현장 R3 check/apply, Git push, 새 리비전 배포,
+채팅앱 전환, 화면 결과는 아직 확인되지 않았다. 아래 R1/R2 이력은 보존한다.
+
+2026-10-07 사용자 정정에 따라 HTTP/Socket.IO 전송 선택 R1을
+[통합 Socket.IO / 별도 Python 워크플로우 SSE 선택 R2](07_DOCS/REFERENCE/OPERATIONS/GENOS_ROUTED_CHAT_MODES_20261007_R2.md)로 수정했다.
+`python3 main_router.py`에서 `GENOS_MAIN_MODE=workflow`는 기존 Python 단계의 `/stream` SSE 백엔드,
+`integrated`는 같은 프로세스 RAG와 Socket.IO token/end를 선택한다. 기본값은 workflow이며
+existing은 workflow의 호환 별칭이다. 직접 `python3 main.py`는 이 선택을 적용하지 않는다.
+워크플로우 모드의 일반 `/chat`은 409로 잘못된 연결을 알리며 별도 워크플로우 실행으로 가장하지 않는다.
+GENOS의 채팅앱 대상·워크플로우 정의·소켓 옵션은 플랫폼에 저장되어 서버 변수로 자동 전환되지 않는다.
+R2는 MAIN 44 코드를 보존한 296파일 ZIP·실행/워크플로우 TXT로 준비했고,
+R1 대신 R2를 사용하라는 정정 메일 SENT `1a11475e83c04de8`에서 첨부 5개를 확인했다.
+기존 코드 ZIP들을 순서대로 모두 적용하지 않는다. R2의 `check`가 현재 `~/DEV` 파일 해시와
+선택 NFS generation 결속을 통과할 때만 R2 단독 적용하며 실패하면 현장 파일을 보존한다.
+코드 적용·같은 checkout generation gate·push·리비전 배포·플랫폼 연결·현장 테스트는 별도 상태다.
+실제 GENOS 배포·전환·화면 렌더링과 로컬 활성 포인터 변경은 수행하지 않았다. 아래 R1 기록은 보존한다.
+
+2026-10-07 사용자 요청으로 기존 코드서빙을 유지하면서 새 코드서빙의 `/chat`을
+환경변수로 기존 HTTP 방식 또는 직접 실행+Socket.IO 방식으로 선택하는
+[작업 코드와 로컬 검증 안내](07_DOCS/REFERENCE/OPERATIONS/GENOS_ROUTED_SOCKET_CHAT_20261007.md)를 추가했다.
+사진의 `socket.io 실시간 스트리밍 사용`은 사용자 코드에서 소켓 서버를 띄우는
+모드다. 새 `main_integrated.py`가 그 서버를 제공하고 `main_router.py`가 앱을 선택한다.
+실제 GENOS 연결 경로·인증 헤더·화면 렌더링과 새 코드서빙 배포는 미확인이다.
+
+2026-10-07 로컬 MAIN generation **44**의 서빙 268파일을 동일 바이트로 담은
+[조사 완료 계약 반입 R1](08_DEPLOYMENT/GENOS/handoffs/investigation_completion_20261007_r1/README.md)을
+삼성파트너 메일로 발송했다. 코드 ZIP·실행 TXT·워크플로우 TXT·28질문 실제 결과·안내서
+5개를 SENT `1a1145c6ab72f3cd`에서 확인했다. 설치/gate/NFS 지원 포함 코드 290파일이며
+모의 적용·재실행·원복·변조 보존·동일 checkout gate/로컬 push 검사 14개가 통과했다.
+**직접 `/chat` 통합과 별도 Python 워크플로우 방식 모두 지원한다.** 직접 방식은
+`python3 main.py`의 `/chat`, 별도 방식은 첨부 Python TXT를 워크플로우 편집기에 반영한다.
+첫 안내에서 편집기 교체를 공통 필수처럼 적은 부분은 같은 메일 스레드의
+`GUIDE_CURRENT_ENTRY_R2.txt`(SENT `1a1145d470f3f508`)로 정정했다.
+앞단 Socket.IO는 별도 진행 작업이며 이번 발송본에 그 후속 변경이 들어갔다고 보지 않는다.
+후속 전체 에이전트 루프 검토는 설계이며 이번 코드에 추가 구현하지 않았다.
+GENOS 현장 적용·push·리비전 배포·내부 질의 검증은 미확인이다.
+
 2026-10-07 사용자가 워크플로우 없는 직접 통합 `/chat`으로 복귀를 지시했다.
 승호 cicd를 fetch해 `388cd392`와 10월 6일 `36b9cc38`의 현장 SSE 오류 후
 `REPORT_PROGRESS=off` 복귀 기록을 확인했다. 우리 직접 JSON 경로에 요청 단위
@@ -1036,6 +1767,7 @@ TXT는 코드서빙 진단/표시 소스와 엔진 pin에 적용한다.
 - GENOS RAG는 `SEMANTIC_LLM_BACKEND=genos`를 명시한다. 현재 코드 기본값이 `anthropic`이므로 자동 선택으로 두지 않는다.
 - RAG와 구축 provider의 설정 해석이 다르다. `GENOS_GATEWAY_API_PREFIX`, `GENOS_LLM_API_PREFIX`, `SEMANTIC_LLM_API_PREFIX`를 서로 바꾸어 안내하지 않는다. `/v1` 추가/제거는 실제 호출하는 함수와 게이트웨이 규약을 확인한다.
 - RAG provider는 `GENOS_BASE_URL`, `GENOS_LLM_SERVING_ID`, `GENOS_LLM_KEY`를 사용한다. 직접 URL은 `GENOS_LLM_URL`로 지정하며 MODEL은 자동 조회 시 생략한다. 모델별 변수·프로필 선택은 사용하지 않는다.
+- 운영 RAG 설정은 [.env.genos.example](.env.genos.example), 분리 Python 워크플로우는 [workflow.env.example](08_DEPLOYMENT/GENOS/workflow/workflow.env.example)을 따른다. 구현은 GENOS_RAG_IMPLEMENTATION을 생략하면 배포 코드 PIPELINE.json의 기본 legal-agent-unified-v6을 사용한다. 멀티턴은 GENOS_MEMORY_ENABLED=1과 실제 사용자·대화 식별자로 이어지며 user_wiki 생성·조회·개인 질문 이력의 자동 모델 입력 및 별도 HMAC signing을 제거했다. GENOS_MEMORY_SIGNING_KEY를 등록할 필요가 없다. TEAM_ID는 문서 선택 범위이며 분리 방식은 워크플로우 요청으로 전달하고, 통합은 서빙 환경 또는 입력 team_id를 사용한다. AD 관리 모드의 workspace는 서빙 TEAM_ID 또는 AD_WORKSPACE로 별도 고정하며 기존 진입 검사를 유지한다. 플랫폼·코드서빙·LLM API 인증키는 기존대로 사용한다. shortcut DB와 legal_wiki 컴파일·조회·재구축 및 기존 저장 기록은 보존한다. 구축 설정은 [pipeline.env.example](08_DEPLOYMENT/GENOS/pipeline.env.example)에 있다.
 - Git 인증, 코드서빙 API 인증, LLM 인증, 임베딩 인증, 벡터DB 인증을 구분한다. 과거 문서의 모델명/서빙 ID는 현장 당시 기록이며 현재 배정값을 대신하지 않는다.
 - 적재와 질의의 임베딩 모델·버전·전처리는 일치해야 한다. 차원이 같아도 모델이 다르면 검색 품질이 무너질 수 있다. 설정 누락 시 다른 모델로 자동 대체하지 않는다.
 - 내부 원문·질문·계약서·모델 출력·실제 키를 외부 실험 입력이나 지식 문서에 넣지 않는다. 공개 산출물은 출처/버전/해시를 보존하고, 모의 내부 데이터는 실제 데이터와 구분한다.
@@ -1047,6 +1779,52 @@ TXT는 코드서빙 진단/표시 소스와 엔진 pin에 적용한다.
 LLM 검토 배선을 따른다. 현재 배선은 모의 응답으로 검증했으며 현장 모델 검증은 미실행이다.
 
 ## 6. 장애 질문에 답하는 순서
+
+2026-10-07 사진의 SELECT 실패와 사용자 요청에 따라
+[오류 전체 표시 인계](08_DEPLOYMENT/GENOS/handoffs/full_error_logging_20261007_r10/GUIDE_UTF8.txt)를 준비했다.
+`LAW_DECISION_REJECTED`를 일반 결정으로 출력해 검증 오류를 버리는 분기,
+API/워크플로우의 오류 길이 제한, 큰 ERROR의 큐 탈락을 수정했다.
+거절된 결정·재시도·조사 사유 전체·traceback을 서버 로그와 채팅까지 전달한다.
+원문 시스템 로그는 `GENOS_SYSTEM_LOG_DIR` 또는 `/nfs-root/diamo/8-agent/logs/system/`,
+요청 공유 로그는 설정된 `GENOS_SHARED_LOG_DIR`다. 공유 경로 미설정 시 해당 요청 파일은 생성하지 않는다.
+[읽기 전용 로그 TXT](08_DEPLOYMENT/GENOS/handoffs/full_error_logging_20261007_r10/READ_ERROR_LOGS.txt)는
+파일 목록 또는 request/run ID가 포함된 파일 전체를 길이 제한 없이 출력한다.
+인계본은 기존 DEV의 inventory/엔진 결속 확인 후 오류 부분만 적용하고 백업·실패 상태·원복 경로를 남긴다.
+워크플로우 전체 TXT에는 동일 해시의 시스템 로그 수집기를 내장했다.
+로컬 MAIN45 포인터·선택 데이터는 변경하지 않았고, 실제 GENOS 반입·push·리비전·워크플로우 확인은 미실행이다.
+현재 다른 작업의 코드 변경과 검증 인계본은 구분하며, 검증 대상은
+[고정 SHA 기록](08_DEPLOYMENT/GENOS/handoffs/full_error_logging_20261007_r10/DELIVERY.json)으로 확인한다.
+2026-10-08 사용자 위험 검토에서 발송된 오류 출력 R10의 추가 실패 조건을 확인했다.
+[후속 진단](09_ARTIFACTS/AUDITS/20261008-full-error-r10-review/FINDINGS.json)의 모의 부분 쓰기 실패에서는
+원본 백업이 남아 있지만 `undo` 진입 전 전체 inventory 검사가 `CHECKOUT_DRIFT`로 막혔다.
+또한 모의 CM R12 상태에 오류 출력 R10을 정상 적용한 뒤 CM R12의 재검증이
+`installed code differs from sealed recipe`로 중단했다. 두 검사는 GENOS/모델 호출 없이 수행했다.
+기존 87개 PASS는 정상 적용/원복과 오류 전파 검증 기록이며 이 두 조건을 포함하지 않는다.
+발송 ZIP/TXT는 변경하지 않았다. 부분 실패 복구와 CM 패치 공존을 고치기 전에는 오류 출력 R10의 apply를 보류한다.
+이 검토는 실제 현장 손상이나 이미 적용된 상태를 뜻하지 않는다.
+후속 사진에서는 기존 오류 출력 R10의 apply/verify EXIT=0과 CM R14 사전 검사 실패를 확인했다.
+공존 문제는 위 R15 인계에서 검증한 VERIFIED 백업 계보로 처리한다. R10 자체의 부분 적용 후
+undo 진입 차단 결함을 수정한 것은 아니다. R10 추가 apply 보류와 이미 VERIFIED된 코드 보존은 구분한다.
+사용자 요청으로 오류 출력 R10 ZIP·독립 실행 TXT·안내 TXT를 삼성파트너 메일로 발송했다.
+SENT `1a116de146a7f4d6`에서 수신자와 첨부 3개의 이름·정확한 크기를 확인했다.
+[발송 기록](08_DEPLOYMENT/GENOS/handoffs/full_error_logging_20261007_r10/EMAIL_SENT.json)을 보존한다.
+메일 발송과 현장 수신·실행·새 리비전 배포 성공은 별도다.
+
+배포 준비·코드 적용·빌드·환경 오류·서버 일반 로그는
+[전체 로그 저장 계약](07_DOCS/REFERENCE/OPERATIONS/GENOS_SYSTEM_LOGGING_20261007.md)과
+[NFS 로그 반입 R1](08_DEPLOYMENT/GENOS/handoffs/system_logging_20261007_r1/README.md)을 따른다.
+기존 query-latency R3/MAIN45 코드를 보존한 304파일 인계본이며, 첫 배포 명령의
+stdout/stderr·종료 코드와 전체 traceback을 `/nfs-root/diamo/8-agent/logs/system/<run_id>/`에 기록한다.
+NFS 실패분은 로컬 pending으로 보존·재전송하고, 원문은 길이 제한하지 않는다.
+플랫폼 프로세스 실행 이전 로그는 별도 내보내기가 필요하다. 작업 코드·로컬 합성 검증 상태이며
+GENOS 실제 NFS·리비전·워크플로우 화면 확인과 로컬 MAIN 전환은 별도다.
+
+2026-10-07 로그 반입 R1의 ZIP·실행 TXT·워크플로우 전체 TXT·안내 TXT·SHA256SUMS를
+삼성파트너 메일 `hyungjininfocz.son@partner.samsung.com`로 발송했다.
+보낸메일함에서 수신 주소와 첨부 5개의 파일명·크기를 확인했으며 메시지 ID는
+`1a1151adea1a521d`다. 동결 파일의 발송 전 상태는 보존하고,
+후속 [발송 영수증](08_DEPLOYMENT/GENOS/handoffs/system_logging_20261007_r1/EMAIL_SENT.json)에
+실제 발송 결과를 기록했다. 메일 발송은 현장 적용·push·리비전 배포 완료를 뜻하지 않는다.
 
 2026-09-29 수신 LLM 출력 원문 확인을 위해 기존 R2/R3 수정을 포함한 단독 R4를 준비한다.
 요청 `.log`의 `MODEL RAW RESPONSE`와 같은 위치 `.llm_raw.jsonl`에 최초·수정 호출의
@@ -1250,3 +2028,39 @@ GENOS 배포·Git push는 미확인이다. 활성 frozen MAIN·데이터 CURRENT
 ## 2026-10-06 법령별 후보 탐색 작업 코드
 
 [구현과 완료 정책](07_DOCS/REFERENCE/REPORTS/LAW_GROUPED_NAVIGATION_DESIGN_20261006/IMPLEMENTATION.md). 선택 generation의 소유 본문 fulltext를 법령·조별 페이지로 조회하고 모델의 법령 선택 이유, 부모·형제 READ, 다른 법령 이동·재검색·SQL 재개를 v6에 연결했다. 미해결 REQUIRED 연결도 완료를 허용하되 상태·경고를 보존한다. 코드와 profile/PIPELINE/engine 해시를 함께 반영해야 하며 기존 최소 단위 색인을 다시 만들 필요는 없다. 워크플로우 Python의 법령별 표시 수정도 편집기에 별도 적용해야 한다. 현장 명령은 `python3`를 사용한다. 작업 코드와 합성 계약 검증 상태이며 GENOS 리비전 배포·현장 내부 모델 검증은 수행하지 않았다.
+
+2026-10-07 후속 조사에도 [구조 조회·조문 목차·전체 범위 읽기](07_DOCS/REFERENCE/OPERATIONS/FOLLOWUP_STRUCTURE_LOOKUP_20261007.md)를 연결했다.
+`SEARCH_STRUCTURE`/`OPEN_STRUCTURE`/`NEXT_STRUCTURE`는 fulltext 적중 여부와 관계없이 저장된
+본문 좌표·제목을 조회하고 기존 원문 READ/인용/SQL 재개로 넘긴다. 본문 법령과 별표 문서의 역할을
+구분하며 현재 로컬 세대의 기존 약칭 projection도 작업 설정에 결속했다.
+작업 reader에서 원문/navigation SHA와 `자본시장법 제6조`의 유일한 본문 위치(2,387자)를
+모델/fulltext 호출 없이 확인했다. 새 도구 계약15개와 모의 API 게시, 관련 기존 계약61개를 확인했으며 전체 과거
+계약·환경 검사 통과는 아니다. 작업 코드 변경이고 MAIN45·frozen release·데이터·GENOS 배포는 유지했다.
+
+2026-10-08 사용자 정정에 따라 같은 [후속 구조 탐색 경로](07_DOCS/REFERENCE/OPERATIONS/FOLLOWUP_STRUCTURE_LOOKUP_20261007.md)에
+현재 문서의 실제 계층/번호 예시/상위 경로/직계 하위 항목, `BROWSE_STRUCTURE`와
+`SEARCH_STRUCTURE.structure_filter`(좌표·제목·저장 분기)를 추가했다. 조회 실패 후에도
+현재 문서 구조와 재조회 도구를 유지하며 fulltext로 자동 전환하지 않는다. 작업 구조
+reader에서 `제1편 총칙 → 제6조 금융투자업`을 모델/fulltext 호출 없이 확인했고 후속 계약27개·
+관련 기존61개가 통과했다. 작업 코드·엔진/PIPELINE 결속 상태이며 MAIN45 frozen release와
+GENOS 배포/내부 모델의 선택 품질은 이번 작업에서 변경·검증하지 않았다.
+
+2026-10-07 사용자 캐시 정정과 16GB 서버 확인에 따라
+[전체 데이터 상주 캐시 R4](08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r4/README.md)를
+삼성파트너 메일로 발송했다. SENT 1a1151de7ae334ad의 수신자와 ZIP·적용/원격 push/요약 TXT·안내·검증·해시 7개 첨부를 확인했다.
+원문/navigation/FTS/실제 서빙 Glossary SQLite 전체를 최초 사용 때 적재해 어떤 질문과 세션에서도 재사용한다.
+RAM 예산8GiB auto이며 부족한 데이터도 전체 로컬 snapshot을 유지한다. snapshot에 TTL/LRU는 없고
+서버 프로세스 재시작 때 다시 준비한다. 검색 결과 LRU128MiB는 별도 보조 기능이다.
+이전 query-latency R3 최적화와 누적 system logging을 보존한 307파일 인계본이다.
+통합 계약118개 및 실제 TXT 반입/원복/gate/mock push9개가 통과했다. 기존 stale adoption fixture2개와
+WORKSPACE activation receipt의 이전 hash 결속 문제는 별도 기록하고 생산 receipt를 수정하지 않았다.
+현재 진행 UI 작업은 working tree에서 보존하며 인계 snapshot에는 검증된 system logging 기준을 사용했다.
+캐시 변경에는 workflow 편집기 변경이 필수하지 않으므로 별도 진행 UI 수정은 유지한다.
+이 작업은 MAIN45 포인터와 NFS generation을 바꾸지 않았다. GENOS 실제 반입/push/리비전/내부 속도는 미확인이다.
+
+2026-10-08 [ADR-0688](04_EXPERIMENTS/ADR/ADR-0688-followup-structure-observability-recovery/README.md)에서
+후속 구조 조회 조건·현재 위치·실패 원인의 행동/진행/workflow 표시, 같은 문서·검색식의
+새 원문 없는3회 Fulltext 페이지 반복 후 구조 전환, 실패 종류 구분을 기존 작업 코드에
+통합했다. 동결 후보106개와 통합 소비자/native API45개 검사 통과. 합성 Qwen 보조
+실험은8호출 중6개 원문 전달, 조문 부재2개 upstream 빈 오류 응답으로 확인 불가다.
+선택된 로컬 MAIN45 포인터와 GENOS 코드/워크플로우/리비전은 변경하지 않았고 현장 검증은 미수행이다.

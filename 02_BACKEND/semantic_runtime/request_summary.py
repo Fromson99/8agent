@@ -36,13 +36,17 @@ def team_name(request):
     return team if isinstance(team, str) and re.fullmatch(r'[A-Za-z0-9_-]{1,64}_team', team) else 'unassigned'
 
 
-def report_directory(root, team='unassigned', started_at=None):
+def report_directory(root, team='unassigned', started_at=None, *, component='legal_agent'):
     root = Path(root)
     if not root.is_absolute(): raise ValueError('GENOS_SHARED_LOG_DIR must be an absolute path')
     if team != 'unassigned' and not re.fullmatch(r'[A-Za-z0-9_-]{1,64}_team', team):
         raise ValueError('invalid report team')
     started_at = started_at or datetime.now(timezone.utc)
     directory = root / started_at.astimezone(KST).date().isoformat() / team
+    if component not in (None, 'legal_agent', 'ad_mode'):
+        raise ValueError('invalid report component')
+    if component is not None:
+        directory /= component
     directory.mkdir(parents=True, exist_ok=True, mode=0o750)
     return directory
 
@@ -65,7 +69,7 @@ def make_row(request, result, events, *, request_id, started_at, directory, log_
     return {'requested_at': started_at.astimezone(KST).isoformat(timespec='seconds'),
             'team': team_name(request), 'user': str(fields.get('user_id') or ''),
             'question': question, 'answer': str(text),
-            'status': '실패' if http >= 400 else '답변 완료' if text else '답변 없음',
+            'status': '실패' if http >= 400 or body.get('answer_status') in ('error', 'failed') else '처리 중' if body.get('answer_status') == 'pending' else '답변 완료' if text else '답변 없음',
             'http_status': http, 'seconds': round(duration/1000, 3) if isinstance(duration, (int, float)) else '',
             'request_id': request_id, 'run_id': str(body.get('run_id') or ''),
             'log': relative(log_path), 'report': relative(report_path), 'error': str(error)}
@@ -212,7 +216,7 @@ def rebuild(root, day=None, team=None):
                             if event.get('event') == 'request.started'), None)
         started = datetime.fromisoformat(report.get('requested_at') or first_event or report['created_at'])
         if started.tzinfo is None: started = started.replace(tzinfo=timezone.utc)
-        directory = report_directory(root, selected_team, started)
+        directory = report_directory(root, selected_team, started, component=report.get('component'))
         log = report.get('live_log_path')
         row = make_row(request, report.get('result'), report.get('service_events') or [],
                        request_id=report.get('request_id', ''), started_at=started,
@@ -222,7 +226,9 @@ def rebuild(root, day=None, team=None):
             directories.add(directory)
     # Also recover snapshots after a previous refresh failed, even before a full report was written.
     for path in scan.rglob('_qa'):
-        if path.is_dir() and (not team or path.parent.name == team): directories.add(path.parent)
+        if path.is_dir() and (not team or path.parent.name == team or
+                             (path.parent.name in ('legal_agent', 'ad_mode') and path.parent.parent.name == team)):
+            directories.add(path.parent)
     for directory in sorted(directories): refresh(directory)
     return sorted(directories)
 

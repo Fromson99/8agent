@@ -1,0 +1,32 @@
+{
+  "schema_version": "zip-parts-bash-validation-v1",
+  "validated_at_utc": "2026-10-07T08:46:39.875979+00:00",
+  "test_command": ".venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_zip_parts_bash.py",
+  "test_result": "14 passed in 2.73s",
+  "bash_syntax": "Both complete standalone TXT scripts passed bash -n",
+  "scripts": {
+    "SPLIT_TRANSFER_ZIP.txt": "93b491efcaa68912eed83ca9a35efe28315d5d37c7131faaaf2eaaf4b42432bc",
+    "JOIN_TRANSFER_ZIP.txt": "0aea79bdbc39db888acf222e56916f4b0838124934f297de7c3e337d972b94ba"
+  },
+  "test_sha256": "c345985e3613ca0c7cf162431f02ab3904d5a6140372633199fff769e22c4bcf",
+  "default_input_root": "~/DEV/TRANSFER",
+  "part_max_bytes": 49000000,
+  "outputs": [
+    "ZIP name + .parts directory",
+    "ZIP name + .part + six-digit sequence starting at 000000",
+    "PARTS.sha256",
+    "ORIGINAL.sha256"
+  ],
+  "checks": [
+    "17/49,000,000/49,000,019/98,000,004-byte round trips",
+    "Korean, spaces, brackets and parentheses in filenames",
+    "Exact original SHA-256 preserved",
+    "Missing/corrupt/extra pieces and changed original hash rejected",
+    "Existing parts and restored output preserved",
+    "Filename prompt with optional .zip",
+    "Invalid paths and missing source rejected"
+  ],
+  "field_status": "Only synthetic local TRANSFER directories tested; actual GENOS files and Windows DRM not accessed",
+  "runtime_status": "No MAIN, NFS generation, source ZIP, Git push, or serving revision changed",
+  "transport_contract": "R4 uses standard GNU SHA256SUMS files, consumed by JOIN_TRANSFER_ZIP.txt; this is independent of earlier PowerShell JSON manifests"
+}

@@ -55,6 +55,8 @@ PIPELINE_FILES = (
 )
 REQUIRED_FILES = (
     "service.py",
+    "genos_diagnostics.py",
+    "genos_log_runner.py",
     "service/service.py",
     "service/__init__.py",
     "requirements.txt",
@@ -69,6 +71,10 @@ REQUIRED_FILES = (
 )
 
 ROOT_FILES = (
+    "main.py", "main_router.py", "main_workflow.py", "main_integrated.py",
+    "08_DEPLOYMENT/GENOS/stream_app.py", "08_DEPLOYMENT/GENOS/start_sse.py",
+    "08_DEPLOYMENT/GENOS/requirements-sse.txt", "08_DEPLOYMENT/GENOS/requirements-socketio.txt",
+    "genos_diagnostics.py", "genos_log_runner.py",
     ".gitignore", ".env.example", ".env.genos.example", ".env.onsite.example",
     "README.md", "service.py", "service/service.py", "service/__init__.py", "genos_install.sh", "genos_git_publish.sh",
     "genos_unpack_all.sh", "pyproject.toml",
@@ -86,6 +92,8 @@ TREE_ROOTS = (
     "08_DEPLOYMENT/CONFIG/dataset_sync",
 )
 DOC_FILES = (
+    "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+    "07_DOCS/REFERENCE/OPERATIONS/GENOS_SYSTEM_LOGGING_20261007.md",
     "07_DOCS/REFERENCE/OPERATIONS/STRUCTURE_FIRST_SEARCH.md",
     "07_DOCS/REFERENCE/OPERATIONS/GENOS_ANSWER_STREAMING_20260929.md",
     "07_DOCS/REFERENCE/OPERATIONS/RAG_USER_DIRECTED_MAIN_20260929.md",

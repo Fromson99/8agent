@@ -1,0 +1,41 @@
+{
+  "version": "GENOS_RAG_FOCUSED_RULES_20261013_R2",
+  "source_release": "focused-rules-20261013-r1",
+  "source_release_manifest_sha256": "8fa2ca7b123b1c79a043d1e7ad69bb45df169dc75661efa37e9e35cdb5346823",
+  "source_code_root": "/home/jin/8-AGENT/08_DEPLOYMENT/RELEASES/focused-rules-20261013-r1/code",
+  "required_predecessor": "GENOS_RAG_FOCUSED_RULES_20261013_R1",
+  "prior_code_zip_sha256": "a10fac40ed7c8f84ab76aaf32a4fea4c61be3087949e931a21217bdb97b14142",
+  "changed_implementation": [
+    "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py"
+  ],
+  "before_sha256": "b5520a0293c4a8612f16437b69544f0ebcd76dddaec34c003e69be446718625a",
+  "after_sha256": "bdfd665d61a1ebe325fd4d2383bf9cb05847f9c0c71e1bf768214f6cb6a9199e",
+  "known_r1_output_signatures": 330,
+  "original_input_signatures": 330,
+  "run_txt_sha256": "056fd2e0b098b6f95eda180b473f1cc383af3c01d6cbf45d01f6ed179d7b3582",
+  "local_active_pointer_sha256": "6029d5aa443aa5450baa4b7850a60ffe44f5d32fa90f49e03667da44d109987b",
+  "field_code_root": "~/DEV",
+  "field_git_commit": null,
+  "field_generation": null,
+  "field_generation_manifest_sha256": null,
+  "field_code_serving_revision": null,
+  "genos_applied": false,
+  "genos_deployed": false,
+  "workflow_test": "NOT_RUN",
+  "email_status": "NOT_SENT",
+  "sealed_at_utc": "2026-10-13T00:36:30.859783+00:00",
+  "code_zip_sha256": "9ca76ba8996adede43f4b31438b2c9a63b27f646a078d64933f5e725deb0a394",
+  "code_zip_bytes": 98699,
+  "code_manifest_sha256": "7e02d11f0af5b7ccda9928164bda5564f70c7b879209a07336f52851044b3188",
+  "validation": {
+    "installation_states": 3,
+    "r1_actual_service_boot_contract_error_reproductions": 3,
+    "r2_actual_service_boot_200": 3,
+    "same_committed_checkout_mock_generation_gates": 3,
+    "commands": 46,
+    "expected_tamper_rejections": 6,
+    "known_r1_output_signatures": 330,
+    "real_network_calls": 0,
+    "real_model_inferences": 0
+  }
+}

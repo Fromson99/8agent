@@ -213,7 +213,8 @@ class ReverseMatcher:
         self.document_context = {};stored = {}
         for row in store_db.execute('SELECT document_id,json FROM document'):
             context = json.loads(row['json']).get('document_metadata', {})
-            fields = ('document_title','file_name','folder_names','folder_path','display_name','relative_path','source_category','team','official_abbreviation')
+            fields = ('document_title','file_name','folder_names','folder_path','display_name','relative_path',
+                      'source_category','team','official_abbreviation','document_role','raw_role')
             self.document_context[row['document_id']] = {k:context[k] for k in fields if k in context}
             self.document_context[row['document_id']]['aliases'] = [
                 {k:a[k] for k in fields if k in a} for a in context.get('aliases', [])]

@@ -1,0 +1,12 @@
+<p>사진의 <code>budget service inventory differs; preserved</code> 실패를 보완한 <b>CM R15</b>를 보냅니다. 이전 CM R11/R12/R14 대신 이번 R15를 실행해 주세요.</p>
+<p>오류 로그 전체 표시 R10이 service.py와 엔진 해시를 정상 변경한 상태를, CM R14가 조사 한도 설정 당시의 해시와 비교하면서 사전 검사에서 중단했습니다. 두 패치가 함께 있는 경우를 제가 충분히 검사하지 못했습니다. 사진의 R14는 공통 코드 적용·원문 연결·등록 단계 전에 중단했습니다.</p>
+<p>R15는 오류 로그 R10의 VERIFIED 영수증·원본 백업·APPLIED_CODE.zip과 고정된 변환 코드를 모두 대조합니다. 검증한 기존 조사 한도 설정과 오류 로그 전체 출력 코드를 보존하면서 본문/전문/조문 이름 연결 수정과 기존 등록 재사용 검사를 함께 적용합니다. 원문 generation·RAW 파일명·DB·이전 실패 로그와 백업은 보존합니다.</p>
+<p>기존 <code>~/DEV/TRANSFER</code>에 R15 ZIP을 올린 뒤 아래 세 줄을 실행하세요.</p>
+<pre>python3 -m zipfile -e ~/DEV/TRANSFER/GENOS_CM_ONECLICK_20261008_R15.zip ~/DEV/TRANSFER
+(cd ~/DEV/TRANSFER &amp;&amp; sha256sum -c GENOS_CM_ONECLICK_20261008_R15_SHA256SUMS.txt)
+bash ~/DEV/TRANSFER/GENOS_CM_ONECLICK_20261008_R15_RUN.txt</pre>
+<p>독립 실행 TXT와 안내 TXT도 별도로 첨부했습니다. 이미 적용된 오류 로그 R10이나 조사 한도 설정을 다시 apply/undo하지 않고 현재 상태에서 이어 실행합니다. 확인되지 않은 변경이나 R10 부분 적용 상태는 덮어쓰지 않고 중단합니다.</p>
+<p>사진과 같은 순서를 모의 환경에서 재현하고, 신규·기존 CM 등록 상태별로 51건/98근거 연결·등록·재실행 중복 방지·같은 checkout/generation 배포 게이트·모의 origin push·코드 원복을 검증했습니다. 큰 오류 로그 45,000자 이상 전체 보존도 확인했습니다. 로컬 계약 검사 결과는 첨부의 검증한 코드 바이트에 연결해 기록했습니다. 모델 호출은 없고 로컬 MAIN45는 그대로입니다.</p>
+<p><code>EXIT=0</code> 및 <code>READY_FOR_REVISION_DEPLOYMENT</code>이면 출력된 COMMIT으로 새 코드서빙 리비전을 배포하고 워크플로우 테스트 화면에서 확인합니다. 실제 GENOS 적용·등록·push·새 리비전·질문 성공은 현장 출력으로 각각 확인해야 합니다.</p>
+<p>상태: <code>~/DEV/TRANSFER/cm-oneclick-r15/STATUS.json</code><br>단계 상세 로그: 같은 폴더의 <code>package-check.log</code>, <code>package-import.log</code>, <code>package-verify.log</code><br>전체 로그: 같은 폴더 <code>logs/</code></p>
+<p>ZIP SHA-256: <code>49d6f64b5086c5398d441dca8a84621561451ac2da7806e49da35e2566ad1209</code></p>

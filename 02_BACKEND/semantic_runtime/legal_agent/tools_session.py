@@ -166,9 +166,7 @@ class ToolsSession(LegalSession):
         while True:
             before = self.progress_key()
             try:
-                view = self.view('investigate')
-                decision = self.gateway.generate('investigate', view, 'TurnDecision')
-                self.apply_turn(view, decision)
+                decision = self.generate_checked('investigate','TurnDecision',self.apply_turn,required=())
                 # New tool results must be observed by a subsequent decision.
                 if not decision['actions'] and decision['intent'] != 'CONTINUE':
                     break
@@ -182,8 +180,7 @@ class ToolsSession(LegalSession):
                 errors[fingerprint] = errors.get(fingerprint, 0)+1
                 self.errors.append({'code': exc.code, 'message': fingerprint})
                 with self.work.transaction(): self.work.event('SEMANTIC_REPAIR', self.errors[-1])
-                if errors[fingerprint] > self.profile['max_same_error_repairs']:
-                    self.limitations.append('도구·근거 선택 오류의 정정을 완료하지 못했습니다.'); break
+                self.limitations.append('도구·근거 선택 오류의 정정을 완료하지 못했습니다.'); break
             except (BudgetExhausted, DeadlineExceeded, TransportError) as exc:
                 self.limitations.append('탐색을 완료하지 못했습니다: '+str(exc)); break
         return self.retrieval()
@@ -262,17 +259,46 @@ class ToolsSession(LegalSession):
                     dependencies=[('claim', check['claim'])]+[('assessment', e) for e in self.packed['evidence_ids']], evidence_ids=check['evidence'])
         self.question_review = review['question']
 
-    def generate_checked(self, phase, name, commit, *, extra=None):
-        for attempt in range(self.profile['max_same_error_repairs']+1):
-            view = self.view(phase, required=self.packed['evidence_ids'], extra=extra)
-            value = self.gateway.generate(phase, view, name)
+    def generate_checked(self, phase, name, commit, *, extra=None, initial_view=None, required=None):
+        from . import output_contract as output
+        from .answer_stream import current_sink
+        required=self.packed['evidence_ids'] if required is None else required
+        view = initial_view or self.view(phase, required=required, extra=extra)
+        identity={k:v for k,v in view.items() if k not in ('view_id','budgets','errors')}
+        journal=output.DecisionJournal(self.work,'tool-'+phase,identity,self.gateway.protocol.schema(name))
+        previous=journal.state()
+        def reuse(saved):
+            self.work.check_view(view['view_id'],phase)
+            self.gateway.protocol.validate(name,saved['value'])
+            return saved['value']
+        if previous and previous['status']=='ACCEPTED':return reuse(previous)
+        start=previous['attempt']+1 if previous and previous['status']=='REJECTED' else 0
+        limit=min(1,self.profile['max_same_error_repairs'])
+        for attempt in range(start,limit+1):
+            cached=journal.reserve(attempt,max_repairs=limit)
+            if cached:return reuse(cached)
+            value=None
             try:
-                commit(view, value)
-                return value
+                value=self.gateway.generate(phase,view,name,repair_owner='tool-'+phase)
+                # Existing commit methods validate all dependencies before their
+                # transaction. A crash during commit remains unknown, never replayed.
+                commit(view,value)
             except ProposalError as exc:
-                self.errors.append({'code': exc.code, 'message': str(exc)})
-                with self.work.transaction(): self.work.event('SEMANTIC_REPAIR', self.errors[-1])
-                if attempt == self.profile['max_same_error_repairs']: raise
+                retry=(attempt<limit and output.repairable(exc)
+                    and self.work.run()['state_revision']==(exc.committed_revision if isinstance(exc,output.PartialOperationError) else view['base_state_revision'])
+                    and not (current_sink() and getattr(current_sink(),'started',False)))
+                journal.reject(attempt,exc,value,can_retry=retry)
+                detail={'code':exc.code,'message':str(exc),'validation':output.diagnostics(exc)}
+                self.errors.append(detail)
+                with self.work.transaction():self.work.event('SEMANTIC_REPAIR',detail)
+                if not retry:raise
+                view=self.view(phase,required=required,extra={**(extra or {}),
+                    'rejected_decision':value,'repair_contract':detail})
+                continue
+            journal.accept(attempt,value)
+            return value
+        raise output.OutputContractError('tool correction budget exhausted',
+            [output.issue('CORRECTION_BUDGET_EXHAUSTED',repairable=False)],repairable=False)
 
     def answer_and_review(self, assembled):
         self.cycles += 1

@@ -1,0 +1,49 @@
+{
+  "status": "PASS",
+  "environment": "WSL local with synthetic generation and HTTP /models response only",
+  "python": "3.14.4",
+  "run_txt_sha256": "056fd2e0b098b6f95eda180b473f1cc383af3c01d6cbf45d01f6ed179d7b3582",
+  "test_source_sha256": "bef780a222b839da6d0a7edca4e2eee1b8809ba5d73d9410dc94e70052db7248",
+  "junit_sha256": "0d80f38a5789a8747a52f5133d053dbac9cdd72cbbcb6adf9de9b8f4ed4ba0fd",
+  "variants": [
+    {
+      "evidence": "TEST_query_latency_20261007_r3.json.gz",
+      "sha256": "b81b350e0f8a28f7dd9dfd7c5672d2818b9a77e402258159788d95e55d124afd",
+      "commands": 15,
+      "expected_rejections": 2,
+      "passed": true
+    },
+    {
+      "evidence": "TEST_query_latency_20261007_r4.json.gz",
+      "sha256": "8b2c7faff9843f7ae657e769ccc00bf8613b279147e83210ece9e2ef1f912dd0",
+      "commands": 15,
+      "expected_rejections": 2,
+      "passed": true
+    },
+    {
+      "evidence": "TEST_query_latency_20261007_r4_display.json.gz",
+      "sha256": "b148fa16f58aa1aa31f330e0cff9b0450ccf05e65547c628497cf7041102ebf9",
+      "commands": 16,
+      "expected_rejections": 2,
+      "passed": true
+    }
+  ],
+  "counts": {
+    "installation_states": 3,
+    "r1_actual_service_boot_contract_error_reproductions": 3,
+    "r2_actual_service_boot_200": 3,
+    "same_committed_checkout_mock_generation_gates": 3,
+    "commands": 46,
+    "expected_tamper_rejections": 6,
+    "known_r1_output_signatures": 330,
+    "real_network_calls": 0,
+    "real_model_inferences": 0
+  },
+  "preserved": [
+    "all code except validator and binding manifests",
+    "generation bytes",
+    "MAIN53 active pointer"
+  ],
+  "failed_setup_evidence": "failed_test_runs/01_missing_model_discovery_mock",
+  "field_deployment_verified": false
+}

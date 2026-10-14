@@ -1,0 +1,86 @@
+GENOS 팀별 로그·AD 모델 계약 R2 — R1 설치기 service.py 오류 수정
+
+이번 사진의 의미
+financial_team과 risk_team으로 재시도한 push는 성공했습니다.
+그 뒤 AD_REQUEST_LOGS R1의 check/apply가 아래 오류로 중단됐습니다.
+ValueError: Unknown code bytes; preserved: service.py
+이 오류는 prepared()의 사전 검사에서 발생하며, 해당 실행은 코드 백업/교체 전에 중단됩니다.
+R1을 되돌리는 undo나 Git reset을 먼저 할 필요가 없습니다.
+
+원인과 수정
+기존 조사 예산 설정 GENOS_INVESTIGATION_BUDGET_20261007_R1이 적용된 코드에서 같은 오류를
+재현했습니다. R1은 전체 inventory 검사에서 알려진 예산 코드를 정상적으로 인식했지만,
+service.py 개별 비교에서는 예산 코드가 없는 원본 해시와 비교했습니다. 설치기 결함입니다.
+과거 현장 기록에도 해당 예산 패치의 적용/검증 성공이 남아 있습니다.
+
+R2는 검증된 예산 receipt 및 세 개의 정확한 코드 조각을 확인하고, 비교할 때만 정규화합니다.
+기존 예산 코드를 유지한 결과 바이트와 실제 해시를 CODE_MANIFEST/백업 receipt에 기록합니다.
+알 수 없는 코드 변경·변조된 예산 코드·불일치하는 receipt는 파일 변경 전에 거부합니다.
+해시 재계산으로 알 수 없는 현장 수정을 통과시키는 방식이 아닙니다.
+
+이번 R2 ZIP과 R2 RUN.txt로 앞서 보낸 AD_REQUEST_LOGS R1 설치 파일을 교체해 사용합니다.
+대상은 MODEL_STREAM_FIX R1이 적용된 기존 ~/DEV이며, AD_REQUEST_LOGS R1 적용이 사진처럼
+실패한 상태입니다. AD_REQUEST_LOGS R1이 이미 성공한 다른 checkout에 중복 설치하지 않습니다.
+제품 변경 내용은 이전 R1과 같고 이번에는 설치기만 수정했습니다.
+- 기존 로그 root/한국 날짜/팀/legal_agent 및 ad_mode 폴더로 분리
+- 요청별 JSON/LOG/TXT와 질문답변 CSV/XLSX
+- AD 실제 모델 요청·응답·HTTP 오류·해석 결과·변경 이력 저장
+- legal_agent/AD 요청 생성 및 스키마 호환/응답 해석 공통화
+기존 모델 스트림 수정, 조사 예산 환경변수, 캐시, 데이터 generation, DB 스키마를 유지합니다.
+
+1. 설치
+R2 ZIP을 ~/TRANSFER에 업로드한 경우 아래 명령을 그대로 사용합니다.
+다른 곳에 업로드했다면 ZIP 경로만 실제 위치로 바꿉니다.
+
+python3 -m zipfile -e ~/TRANSFER/GENOS_AD_REQUEST_LOGS_20261013_R2.zip ~/DEV/TRANSFER/ad-request-logs-r2-package
+bash ~/DEV/TRANSFER/ad-request-logs-r2-package/GENOS_AD_REQUEST_LOGS_20261013_R2_RUN.txt check
+bash ~/DEV/TRANSFER/ad-request-logs-r2-package/GENOS_AD_REQUEST_LOGS_20261013_R2_RUN.txt apply
+
+별도 첨부 RUN.txt는 ZIP 안의 실행 파일과 같으며 전체 코드를 내장합니다.
+기본 대상은 기존 ~/DEV입니다. 현장처럼 ~/DEV가 /workspace를 가리키는 링크여도 지원합니다.
+시작부터 AD_REQUEST_LOGS_LOG, 실제 Python/checkout 경로, 실패 종료 코드를 남깁니다.
+반드시 CHECK PASS와 apply의 CODE_APPLIED 및 EXIT=0을 확인합니다.
+BACKUP 및 APPLIED_CODE_ZIP의 실제 출력 경로를 보관합니다.
+반복 실행하면 검증 후 ALREADY_APPLIED로 끝납니다.
+
+2. 검토·commit·배포 게이트
+cd ~/DEV
+git diff --check
+git status --short
+
+BACKUP/receipt.json의 파일 목록에 따라 수정 소스·엔진 pin·PIPELINE·CODE_MANIFEST를
+같은 checkout에 commit합니다. 다른 작업 파일까지 통째로 포함하지 않습니다.
+아래 값 두 개는 실제 apply 출력과 현재 선택한 generation 경로로 바꿉니다.
+
+TASK_BACKUP='/실제/apply/출력의/backup-경로'
+TASK_GENERATION='/현재/선택된/generation/절대경로'
+bash ~/DEV/TRANSFER/ad-request-logs-r2-package/GENOS_AD_REQUEST_LOGS_20261013_R2_RUN.txt gate "$TASK_BACKUP" --generation "$TASK_GENERATION"
+
+게이트는 실제 적용 checkout의 APPLIED_CODE.zip/commit/선택 generation을 함께 확인합니다.
+통과한 commit을 기존 financial_team/risk_team 배포 remote로 push합니다.
+사진의 push는 이번 R2 적용 전 코드이므로 R2 적용 후에는 새 commit을 push해야 합니다.
+각 팀의 새 코드서빙 리비전을 같은 commit으로 배포하고, 별도 SSE 서버도 같은 코드로 재시작합니다.
+원문 generation 재구축·DB 이행·워크플로우 Python 편집기 교체는 필요하지 않습니다.
+
+3. 현장 확인
+기존 워크플로우 테스트 화면에서만 확인합니다.
+- 법률 질문: 기존 최종 답변과 legal_agent 폴더의 요청 로그
+- [AD모드 시작] 후 숏컷 보여줘: 결과 및 ad_mode 폴더의 동일 요청 로그
+- AD가 다시 실패하면 JSON의 journal.calls[].model_output.status_code 및
+  body_json/body_text에서 모델 서버 오류를 확인
+- [AD모드 종료] 후 일반 질문이 legal_agent 경로로 복귀하는지 확인
+이번 설치기 오류와 앞서 사진의 AD upstream HTTP error는 별개입니다.
+설치 성공만으로 모델 서버 오류 해결을 확정하지 않습니다.
+
+4. 적용 후 원복
+bash ~/DEV/TRANSFER/ad-request-logs-r2-package/GENOS_AD_REQUEST_LOGS_20261013_R2_RUN.txt undo "$TASK_BACKUP"
+
+기존 예산 설정과 MODEL_STREAM_FIX R1까지 포함한 적용 직전 바이트로 돌아갑니다.
+이후 수정이 있으면 덮어쓰지 않고 거부합니다. 이미 배포했다면 이전 리비전 복귀 및
+별도 SSE 서버 재시작도 필요합니다. DB/로그/원문/백업은 보존합니다.
+
+검증 범위
+VALIDATION_SUMMARY.txt 및 VALIDATION.json을 확인합니다.
+모의 데이터/HTTP 응답으로 설치·실제 service.service 초기화·설치 코드 계약을 검증했습니다.
+실제 GENOS 내부 모델 호출은 없으며 현장 R2 적용·배포·화면 성공은 아직 미확인입니다.
+제품 작업 코드와 로컬 MAIN 선택 포인터는 이번 설치기 수정에서 변경하지 않았습니다.

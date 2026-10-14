@@ -1,0 +1,46 @@
+"""Record completed probe and source-bound manual review without changing product."""
+from pathlib import Path
+import hashlib,json
+R=Path(__file__).resolve().parents[3];A=R/'04_EXPERIMENTS/ADR/ADR-0714-main50-cm018-call-retest';D=A/'artifacts/design';O=A/'artifacts/run-001';ARM='measured-main50'
+read=lambda p:json.loads(p.read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+def put(p,v):p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+m=read(A/'실험/manifest.json');r=read(O/'result.json');d=read(O/'diagnostic.json');gold=read(D/'gold.json');question=read(D/'dataset.json')['cases'][0]['question']
+review={'basis':'Manual post-output comparison to frozen MAIN50 local original; no expert certification, evaluator LLM or current-law claim','scope':'Question about complete paragraph1 structure; original includes main sentence, proviso and items1-3 and subitems','root_source_id':gold['source']['id'],'source_text_sha256':gold['source']['text_sha256'],'source_blocks_delivered':d['all_required_blocks_presented'],'core_structure_correct':True,'complete_answer':False,
+ 'satisfied':['Main sentence plus outside-period proviso and alternative items1/2/3 recognized','Inheritance/gift appraisal period distinction included','Main proviso application and review requirement included','Item1 objective-unfair transaction exclusion and small unlisted-share exception included','Item2 property exclusions, average appraisals and two invalid-appraisal exclusions included','Item3 four listed exclusions included'],
+ 'findings':[{'type':'required_issue_omission','source_blocks':['1042'],'detail':'Item2 permits reassessment even at or above the threshold when evaluation committee finds the amount inappropriate considering appraisal purpose. Final answer only describes below-threshold reassessment. This is absent from both claim.text and rule, so it is a model summary omission rather than assembly-only loss.'},
+ {'type':'numeric_temporal','source_blocks':['1041','1047'],'detail':'The share thresholds are explicitly based on total face value and issued share total or contribution total. Final answer omits face-value basis and contribution-total alternative, so the percentage must not be read as market/trade-value comparison.'},
+ {'type':'scope_actor_mismatch','source_blocks':['1045'],'detail':'Item3 source limits the exclusions to auction/public-sale amounts. Final conclusion groups compensation, auction and public sale then says exceptions exclude them; individual exception texts mention auction/public sale, but the top conclusion is too broad.'}],
+ 'model_issue_assessment':'Model marked Q1 COVERED with no gaps; offline final-output completeness is partial','citation_validation':'19 quote references match delivered adopted original; this is not semantic correctness','H01_H02_H03_prior_review':{'source':'04_EXPERIMENTS/ADR/ADR-0712-compact-direct-read-context/SEMANTIC_REVIEW.md','H01':'Core requested contents satisfied against pinned original','H02':'Incomplete company lists in final answer; already documented assembly loss','H03':'Core requested prohibition, report and retention content satisfied against pinned original'},'product_changed':False}
+put(O/'semantic-review.json',review)
+labels=['질문 해석·검색 방법 선택','읽을 조문 선택','근거 채택·조사 종료 판단','누락된 근거 채택 표시 수정','최종 답변 판단 작성']
+table='| 호출 | 작업 | LLM 시간 | 입력/출력 토큰 |\n|---:|---|---:|---:|\n'
+for a,u,label in zip(r['attempts'],r['usage'],labels):table+=f"| {a['call']} | {label} | {a['seconds']:.3f}초 | {u['input_tokens']:,} / {u['output_tokens']:,} |\n"
+table+=f"| **합계** | **5회** | **{d['llm_seconds']:.3f}초** | **{d['usage']['input_tokens']:,} / {d['usage']['output_tokens']:,}** |\n"
+findings='''- 구조 검색1회 → 제49조 원문 읽기 → 종료 판단 → 근거 채택 표시 수정 → 답변 작성이다. 전체/범위 fulltext0회, 재검색0회, 복귀0회다. 법령 약칭을 실제 제목 힌트와 연결했다.
+- 첫 종료 응답은 충분한 근거를 읽었다고 설명했으나 `branch_decisions`에 ADOPT를 쓰지 않았다. `no adopted originals for completion` 검사가 거절했고 수정 호출에서 이를 추가했다. 새 원문 검색을 반복한 것이 아니다. 수정에12.944초가 들었다.
+- 필요한 제1항 원문12블록(1038~1049)은 모두 실제 모델 입력에 있었다. 원문1개를 확보·전달·채택했고 인용19개를 검증했다.
+- 큰 구조는 맞지만 완전한 답은 아니다. 제2호의 **기준금액 이상이어도 위원회가 부적정하다고 인정하면 재감정할 수 있는 경우**가 빠졌다. 비상장주식 기준의 **액면가액 기준·출자총액 대안**도 생략했다. 제3호 제외가 경매·공매가액에 적용된다는 범위를 결론에서 선명하게 구분하지 않았다.
+- 제2호 누락은 모델 자유문장과 구조화 결론 양쪽에 이미 없다. H02의 최종 조립 손실과 달리 이번에는 모델의 요약 누락이다. 모델은 Q1 COVERED로 표시했지만 사후 원문 대조는 부분 답변으로 판정했다.'''
+texts=[('결정 요약',f'현재 MAIN50과 byte-identical한 코드로 CM018을 정확히1회 실행했다. **LLM5회·{d["llm_seconds"]:.1f}초**, HTTP200으로 답변했다. 제1항 전체 원문은 전달됐으며 큰 구조는 맞지만 세부 예외가 누락된 부분 답변이다. 진단 완료, MAIN·GENOS 변경 없음.\n\n질문: {question}\n\n'+table),
+('문제와 변경 전 구조','이전에 확인한 CM 단일 요청 최다 호출 사례는 ADR0677 CM018:29회, LLM436.304초, 전체667.166초였다. 당시 반환 HTTP200이 세부 정확도 인증은 아니다. ADR0705 MAIN48 재실행은14회, LLM103.566초로 원문 확보 전 실패했다. 기존 최대 탐색은2740개 metric 파일 중20MB 초과118개 미확인이라는 범위 제한이 있어 전체 역사 절대 최대라고 주장하지 않는다. 이후0706~0712의 확인된 관련 사례에서 이를 넘는 단일 CM018 호출 기록은 찾지 못했다.'),
+('가설과 사전 판정 기준','[criteria.json](artifacts/design/criteria.json)을 호출 전에 고정했다. 주 지표는 물리 호출 횟수와 API 구간 합계다. 진단 기준은 단일 요청, 모든 물리 호출 원문·시간, 코드/프로필/데이터/권한/MAIN 동일성 및 별도 최종 답변 대조다. 행동 기대는 HTTP200·8회 이하·제1항 전체 전달·완전한 구조 답변이었다. 앞 세 가지는 충족했고 답변 완전성은 미충족했다. 기준이나 표본을 변경하지 않았다.'),
+('실험 설계','ADR0714를 첫 쓰기로 선점하고 완료 부모 ADR0712/compact를 고정했다. 측정 arm 하나이며 snapshot/freeze한287개 서빙 파일은 선택 MAIN50과 동일하다. 공개65문서·새 독립 세션·실제 /v1/rag/ask를 한 번 실행했다. 추가 모델/평가 호출, 재실행, cProfile, 제품 변경은 없다. 초기화 시간은 별도 보존하고 사용자 요청에 따라 주 성능표에서 제외한다.'),
+('데이터·모델·재현성','선택 compact-input-20261009-r1, pointer50, source term-source-8729f978a28924cb8c5b. 실제 effective profile과 실행 binding은 기록된 MAIN50 서비스와 같다. Qwen3.8 / OpenRouter Parasail FP8 / reasoning none / fallback 없음. .env 키는 기록하지 않는다. 질문은 회사 식별·거래 사실이 없는 일반 공개 법령 구조 질문이며 risk_cm 내부 질문 묶음 반출 승인을 확대하지 않았다. 고정 원문·정답 관찰은 제품 입력과 분리했다.'),
+('결과',table+'\n실행 성공과 의미 완전성은 구분한다. 인용·권한·실행 지문·승인 판단 해시 검사는 통과했고, 큰 구조는 맞지만 완전한 답변0/1이다. 분리 holdout·일반 정답률을 추정하지 않는다. [실제 답변 전체](artifacts/run-001/answer.txt), [원문 대조](artifacts/run-001/semantic-review.json).'),
+('사례별 오류 분석',findings),
+('비용·지연·회수 규모',f"입력{d['usage']['input_tokens']:,}·출력{d['usage']['output_tokens']:,}토큰, 비용${d['usage']['cost_usd']:.8f}. 답변 작성 한 번이69.555초(모델 시간의60.9%), 출력3,767토큰이었다. 네트워크/제공사 대기와 생성 시간이 분리되지 않아 원인을 토큰량 하나로 단정하지 않는다. API 물리 시간과 UI 표시5회·114170ms가 일치한다. 전체 요청140.356초는 보조 기록이며 앱 준비는 별도다. 후보 카탈로그{d['corpus_roots']:,}개는 메타데이터 수이며 그 본문을 전부 읽은 것이 아니다. 실제 원문은 확보1·제시1·채택1, 필수 조문 recall1/1, 제1항12블록 전송 모두 확인. [회수 원장](artifacts/run-001/retrieval-ledger.json.gz)."),
+('해석','이번 병목은 반복 검색보다 마지막 답변 작성 호출과 근거 채택 표기 복구다. 예전29회보다 호출이 줄었으나 단일 비동시 측정·이전 다른 코드/데이터라 일반 속도 개선률로 사용하지 않는다. MAIN48 실패14회보다 이번5회가 LLM 시간은 더 길다. 이전 실패에는 최종 답변 작성이 없었기 때문이다. 이 실험만으로 추가 자동 채택, 판단단계 통합 또는 프롬프트 수정을 도입하지 않는다.'),
+('한계와 일반화 가능 범위','공개 질문1개·이미 알려진 in-sample probe다. 원문에 대한 자체 대조이며 독립 법률 전문가 인증이나 최신법령 전수 검증이 아니다. 실제 GENOS 모델/프로세스/현장 응답시간은 확인하지 않았다. 캐시 시간은 사용자가 요청한 주 지표에서 제외했다. p50/p95·동시 부하·반복 호출 편차는 측정하지 않았다. H01/H03은 이전 고정 원문 검토에서 핵심 내용을 충족했고 H02는 회사목록 누락이 남는다. 이 기록을 바꾸거나 재채점하지 않았다.'),
+('운영 결정·롤백 조건','Proposed / probe / in_sample=true / decision_eligible=false / MAIN unchanged. 진단 완료이며 품질 기대 일부는 미충족이다. 작업 제품 코드·MAIN 포인터·원문 세대는 변경하지 않았고 운영 롤백은 필요 없다. 수정과 다시 실행은 새로운 ADR에서 호출 전 동결해야 한다.'),
+('재현 명령','실행: 06_TOOLS/EXPERIMENTS/adr_0714/run.py. 기존 결과 폴더 재사용을 거부한다. 원시 provider/runtime/binding-runtime은 raw.tar.gz에 무손실 압축하고 각 구성 파일 SHA/bytes 검증 뒤 생성된 중복 폴더만 정리한다. raw-archive.json에 복원 절차가 있다. 분석/보고서는 새 원시 호출을 하지 않는다.')]
+old=(A/'README.md').read_text();head=old.split('---',2)[1]
+(A/'README.md').write_text('---'+head+'---\n\n'+'\n\n'.join(f'## {i}. {title}\n\n{body}' for i,(title,body) in enumerate(texts,1))+'\n')
+qp=A/'실험'/m['questions'][0]['file'];content=qp.read_text();content=content.replace('Single measured result will be preserved whether successful or failed; no MAIN changes.',f'HTTP200,5 calls,{d["llm_seconds"]:.3f} model seconds. Core structure correct, complete answer false.\n\n'+table+'\n'+findings+'\n\n[최종 답변](../artifacts/run-001/answer.txt) · [검증](../artifacts/run-001/diagnostic.json) · [원문 대조](../artifacts/run-001/semantic-review.json) · [전송·응답 원바이트 압축](../artifacts/run-001/raw.tar.gz) · [구성 파일 hash/복원](../artifacts/run-001/raw-archive.json).')
+qp.write_text(content);m['questions'][0]['sha256']=sha(qp)
+m['results']['by_arm'][ARM].update(core_structure_correct=1,complete_answer=0,accuracy=0,accuracy_denominator=1,semantic_review='Manual pinned-original review; partial answer, not independent certification')
+m['results']['error_taxonomy']=review['findings'];m['results']['diagnostic_success']=all(d['checks'].values());m['results']['behavioral_expectation_met']=False
+put(A/'실험/manifest.json',m)
+(A/'실험/README.md').write_text('# MAIN50 CM018 재실행\n\n| 질문 | LLM 호출 | LLM 시간 | 응답 | 원문 대비 판정 |\n|---|---:|---:|---|---|\n| [cm-018](질문-001-cm-018.md) | 5 | 114.170초 | HTTP200 | 큰 구조 맞음, 세부 예외 누락 |\n\n[실제 답변](../artifacts/run-001/answer.txt) · [원문 대조](../artifacts/run-001/semantic-review.json). 알려진 질문1회 진단, MAIN 변경 없음.\n')
+idx=R/'04_EXPERIMENTS/ADR/README.md';s=idx.read_text();link='- [ADR-0714 MAIN50 CM018 최다 호출 사례 재실행](ADR-0714-main50-cm018-call-retest/README.md) — LLM5회·114.170초, 구조검색으로 전체 제1항 전달; 답변 일부 예외 누락, MAIN 불변.'
+if 'ADR-0714-main50-cm018-call-retest/README.md' not in s:idx.write_text(s.rstrip()+'\n'+link+'\n')
+print('Recorded 5 physical calls, source-complete delivery and partial final answer; no product changes')

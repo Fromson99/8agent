@@ -1,0 +1,98 @@
+{
+  "schema_version": "schema-recovery-design-validation-v1",
+  "recorded_at": "2026-10-14T05:50:40.422241+00:00",
+  "result": "PASS",
+  "scope": "Documentation links, source-file hashes, evidence bookkeeping and arithmetic only; not product/runtime/model validation. VALIDATION.json self-link checked after writing.",
+  "review_method": "author self-review",
+  "artifacts": [
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/SCHEMA_FAILURE_RECOVERY_DESIGN_20261014/PLAN.md",
+      "sha256": "db949877d13ba8f4b17731de777e812c9cb35939af4d855bc54d7067e97a75c7"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/SCHEMA_FAILURE_RECOVERY_DESIGN_20261014/HISTORY.md",
+      "sha256": "211bd03fc54cc005494f3eb85e5790abf2293523ee60f6c76b1bbd1493b9f0cb"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/SCHEMA_FAILURE_RECOVERY_DESIGN_20261014/REVIEW.md",
+      "sha256": "aa2a01833cf65e7110763ee0b3de391d02dc172b1e45b64265539fd35d08f106"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/SCHEMA_FAILURE_RECOVERY_DESIGN_20261014/EVIDENCE.json",
+      "sha256": "95fbfc1172f30c42357cdf32490d82c2eb1757ecb1620f3696fbd1026791ffa3"
+    }
+  ],
+  "checks": [
+    {
+      "check": "PLAN.md:fenced_blocks_balanced",
+      "passed": true
+    },
+    {
+      "check": "PLAN.md:json_example_1",
+      "passed": true
+    },
+    {
+      "check": "HISTORY.md:fenced_blocks_balanced",
+      "passed": true
+    },
+    {
+      "check": "REVIEW.md:fenced_blocks_balanced",
+      "passed": true
+    },
+    {
+      "check": "all_local_markdown_links_exist",
+      "passed": true,
+      "details": {
+        "count": 69,
+        "missing": []
+      }
+    },
+    {
+      "check": "history_groups_H01_to_H17_in_plan_and_history",
+      "passed": true
+    },
+    {
+      "check": "invariants_I01_to_I15",
+      "passed": true
+    },
+    {
+      "check": "implementation_phases_P0_to_P7",
+      "passed": true
+    },
+    {
+      "check": "all_evidence_source_hashes_still_match",
+      "passed": true
+    },
+    {
+      "check": "all_listed_working_paths_exist",
+      "passed": true
+    },
+    {
+      "check": "selected_files_match_manifest",
+      "passed": true
+    },
+    {
+      "check": "pointer_and_data_manifest_chain",
+      "passed": true
+    },
+    {
+      "check": "reference_conditional_call_count",
+      "passed": true,
+      "details": {
+        "basis": "two stage invokes, each with at most one schema correction; excludes transport retries; not observed execution"
+      }
+    },
+    {
+      "check": "backlog_links_design",
+      "passed": true
+    }
+  ],
+  "failures": [],
+  "not_run_this_design_turn": [
+    "pytest product tests",
+    "model calls or experiment runs",
+    "service API",
+    "MAIN promotion",
+    "GENOS deployment"
+  ]
+}

@@ -1,0 +1,20 @@
+from pathlib import Path
+import json,hashlib
+R=Path(__file__).resolve().parents[3];A=R/'04_EXPERIMENTS/ADR/ADR-0695-structure-display-public-holdout';O=A/'artifacts/run-001'
+read=lambda p:json.loads(p.read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+def put(p,v):p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+m=read(A/'실험/manifest.json');r=read(O/'result.json');ok=r['strict_success'];table='| 비교군 | 근거 포함 응답 | 호출 시도 | 관측 입력 토큰 | 관측 출력 토큰 | 요청 시간 합계 |\n|---|---:|---:|---:|---:|---:|\n'
+for arm,x in r['by_arm'].items():table+=f"| {arm} | {x['supported']}/{len(x['cases'])} | {x['calls']} | {x['input_tokens']} | {x['output_tokens']} | {x['request_seconds']:.1f}초 |\n"
+for q in m['questions']:
+ p=A/'실험'/q['file'];s=p.read_text();s+='\n\n| 비교군 | HTTP | 호출 | 근거 포함 응답 |\n|---|---:|---:|---|\n'
+ for arm,x in r['by_arm'].items():
+  for c in x['cases']:
+   if c['case_id']==q['case_id']:s+=f"| {arm} | {c['http_status']} | {c['physical_model_attempts']} | {c['supported_response']} |\n"
+ p.write_text(s);q['sha256']=sha(p)
+put(A/'실험/manifest.json',m)
+parts=[('결정 요약','미통과. 원래9회 비교를 모두 수행했으며 MAIN46은 변경하지 않는다. 구조 최초 메뉴의 실제 서버 거절은 독립0696에서 보완하고 별도0697로 검증한다.'),('문제와 변경 전 구조','전체 원문 검색이 초기 후보 구성에서 무관한 법령까지 전달했다. 후보는 구조·문서 범위를 선택한 뒤만 본문 검색을 허용하고, 오류 표시와 승인 판단을 분리했다.'),('가설과 사전 판정 기준','[동결 기준](artifacts/design/criteria.json). 최소2/3 응답 및 MAIN46 비열등, 인용·권한·상태·해시·실제 binding 보존, 공개 오류0, 구조 후보 전역 본문 검색0. 세부 의미는 별도 진단이다.'),('실험 설계','완료0694의 동일 코드 구조 후보, 완료0693 기반 v4-control, 선택 MAIN46의 세 비교군. 공개3문항 각1회, 기준과 사례는 결과 전에 동결했다.'),('데이터·모델·재현성','MAIN46의 새 원문 세대를 읽기 전용 공유했다. 공개65문서 허용 범위, Qwen3.8/Parasail FP8/reasoning none/fallback 없음. [노출 제외 감사](artifacts/design/exposure-scan.json). 신규3조문은 알려진 과거 실험 기록과 분리했으며 사전학습 미노출은 주장하지 않는다.'),('결과',table),('사례별 오류 분석','구조 후보3건 모두 최초 구조 메뉴에서 provider finish_reason:error로 종료했다. 빈 분기 목록의 DECIDE union에서 minItems1/maxItems0의 모순을 발견했다. control H01은 이미 명시한 조건 근거가 claim에 중복 기입되지 않아 거절됐다. 원래 실패를 성공으로 대체하지 않았다. [의미 검토](SEMANTIC_REVIEW.md).'),('비용·지연·회수 규모','실제 호출·입출력·사용량·지연 원문을 보존한다. 구조 후보6회 서버 실패는 사용량이 null이다. 표의 토큰은 확인된 사용량의 부분합이며 총량·성능 개선으로 해석하지 않는다. 확보/실제 모델 전달/채택은 별도 원장이다.'),('해석','오류 노출 차단·코드/데이터 binding·구조 먼저 검색하는 제약은 확인됐지만, 최초 구조 요청 형식의 실제 provider 호환성이 합성 검사만으로 보장되지 않았다.'),('한계와 일반화 가능 범위','공개3문항의 제한된 관측이다. v4-control H02의 조건식 의미 오류는 후속 개선 항목이며 구조적 논리 검증만으로 법률 의미 정확성을 증명하지 않는다. GENOS 현장 미검증.'),('운영 결정·롤백 조건','Rejected, MAIN46 유지.0696 합성 보완과0697 새 검증을 분리한다. 이전 raw실패·수정 전 형식은 보존한다.'),('재현 명령','06_TOOLS/EXPERIMENTS/adr_0695/run_all.py 및 run_case.py. 기존 시도는 재실행하지 않는다. 동결 파일 해시와 실제 provider 원문, 무손실 보관 영수증으로 복원한다.')]
+fm=f"---\nadr_id: ADR-0695\ntitle: 구조 우선·표시 분리 동일 코드 공개 비교\nstatus: Rejected\ndecision_date: 2026-10-08\nphase: holdout\nin_sample: false\ndecision_eligible: true\nmain_wiring: unchanged\ncreated_at: {m['reservation']['created_at']}\nupdated_at: {m['reservation']['updated_at']}\nowner: Codex\nwork_status: in_progress\n---\n\n"
+(A/'README.md').write_text(fm+'\n\n'.join(f'## {i}. {h}\n\n{b}' for i,(h,b) in enumerate(parts,1))+'\n');(A/'실험/README.md').write_text('# 공개 비교 결과\n\n'+table)
+(A/'SEMANTIC_REVIEW.md').write_text('# 원문 대비 답변 검토\n\n제품 출력 후 관찰이며 별도 모델 채점은 없다. 고정된 로컬 원문을 기준으로 한다.\n\n- H01: MAIN46은 전문평가 두 대상의 어느 하나 관계를 맞게 구분했다. control과 구조 후보는 실패했고 답변 정확도를 통과로 세지 않았다.\n- H02: MAIN46은 법인설립등기일/개업일/승인 개인의 사업자등록일을 구분했다. control은 개별 세 문장은 맞았지만 상위 조건식에서 법인 또는 개인과 공장 승인 개인을 ALL로 묶어, 예외를 모든 경우에 필요한 요건처럼 표시했다. 명확한 의미 오류이며 해결된 것으로 보고하지 않는다.\n- H03: MAIN46과 control 모두 정책의5항목·정기 평가·기준/절차의 구분을 포함했다. 작은 표본이며 일반 정확도 인증은 아니다.\n- 구조 후보3건은 근거 전달 전 provider 형식 오류로 실패했다. 실패의 짧은 안내와 조회번호만 공개됐고 상세와 재시도는 로그에 남았다.\n')
+put(A/'artifacts/manifest.json',{'schema_version':'adr-artifacts-v1','adr_id':'ADR-0695','created_at':m['reservation']['created_at'],'files':[{'path':str(p.relative_to(R)),'sha256':sha(p),'bytes':p.stat().st_size,'description':'Fixed design and complete observed outcomes','contains_raw_prompts_and_outputs':p.name in ('result.json','raw.tar.gz')} for p in (A/'artifacts').rglob('*') if p.is_file() and p.name!='manifest.json' and not any(x in p.parts for x in ('provider','runtime','binding-runtime'))]})
+print('Rejected;9 attempts preserved')

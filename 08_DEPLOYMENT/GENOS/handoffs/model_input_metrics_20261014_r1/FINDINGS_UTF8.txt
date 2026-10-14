@@ -1,0 +1,44 @@
+확인 결과 — 2026-10-14 사용자 사진 / 입력 길이 및 최종 실패 로그
+
+사진에서 확인한 것
+- 요청 ID 4c8b38dbac8e4ba19410ae8db0ee6b38의 source-law-navigation-2 단계입니다.
+- HTTP 200, transport_status=SUCCEEDED와 finish_reason=length가 함께 있습니다.
+- ADOPT/FINISH 및 설명은 조사 단계의 모델 제안입니다. 최종 법률 답변의 게시 성공 기록이 아닙니다.
+- 앞 사진에는 해당 응답 거부와 FULL_DECISION 수정 요청 시작이 있습니다.
+- 화면에는 검토 미완료 공통 안내가 있습니다. 이것만으로 문서가 존재하지 않는다거나 질문이 잘못됐다고 판정할 수 없습니다.
+- 수정 요청의 최종 종료와 그 뒤 ASSESS/COMPOSE/게시 상태는 제공된 화면만으로 확인하지 못했습니다.
+
+길이 진단의 경계
+모델 응답의 length 종료는 확인됩니다. 입력 컨텍스트 초과인지 요청 출력 상한 도달인지는 실제 usage와 내부 모델 서빙 설정을 대조해야 합니다.
+기존 코드도 prompt_tokens/completion_tokens/max_tokens를 별도 이벤트에 기록하지만 입력 내용의 문자 수·UTF-8 바이트·스키마 크기와 출력 한도 대조가 빠져 있었습니다.
+이번에는 각 물리 시도의 크기와 응답 usage, max_tokens, prompt_plus_max_tokens, length_diagnosis를 로그/receipt/원시 응답 sidecar에 연결했습니다.
+provider가 토큰 사용량을 주지 않은 경우 null을 유지하고, 내부 모델의 실제 컨텍스트 상한은 확인되지 않았으므로 context_limit_known=false입니다.
+새 계측으로 현재 사진 속 요청의 미제공 원본 입력을 소급 복원하거나 실제 컨텍스트 초과를 확정한 것은 아닙니다.
+
+코드에서 확인한 최종 로그 누락
+1. request_report.DeferredReport.finalize()는 answer.text/body.text 및 status/error/detail만 기록했습니다.
+   현재 public_failure 응답의 message/answer_status/failure_reason/error_code를 읽지 않아 실패 안내가 최종 로그에서 빠졌습니다.
+2. write_report()는 결과 body의 run_id로만 원장을 찾았습니다.
+   공개 실패 응답에서 run_id를 제거한 뒤에는 같은 요청 이벤트에 run_id가 남아 있어도 상세 JSON이 NO_RUN_ID가 될 수 있었습니다.
+3. 서비스는 반환 전 handler를 분리하고 상세 보고서를 비동기로 씁니다.
+   최종 결과를 명시적으로 큐에 넣지 않아 공유 로그 후처리가 늦을 때 종료 상태도 늦게 보일 수 있었습니다.
+
+수정
+- SERVICE OUTCOME을 비동기 큐에 명시적으로 전달하며 컨테이너에도 request.outcome을 기록합니다.
+- FINAL RESPONSE / ANSWER와 TXT에 실패 안내·상태·사유·오류 코드를 기록합니다.
+- answer_present, final_text_kind, delivery_confirmed=false를 기록합니다. 불완전 답변을 정상 완료로 표시하지 않습니다.
+- 응답에 run_id가 없으면 같은 request_id의 수집 이벤트로 원장을 찾습니다. 다른 요청이나 최신 파일을 추측해 쓰지 않습니다.
+- 입력 계측은 원래 전송 객체를 바꾸지 않으며 출력 한도·프롬프트·스키마·검증·재시도 한도·모델은 유지합니다.
+
+검증과 한계
+정상/길이 종료/usage 누락/필터/수정 성공·실패/전송 실패/한국어·이모지/로그 지연/실패 원장/비밀값 비출력 및 실제 native API를 합성 응답으로 확인했습니다.
+확대 166검사 중 157통과, 9실패입니다. 수정 전 4파일과 원래 engine pin을 별도 경로에 복원한 36검사에서도 같은 9개가 실패했습니다.
+기존 실패는 구 선별 fixture의 status 누락 6개, 이미 숨긴 공개 repair 이벤트 기대 2개, 구 bounded 답변 fixture 기대 1개입니다.
+이는 이번 계측/로그 수정의 해결 범위에 포함하지 않았습니다. 상세 결과는 VALIDATION.json과 압축 검사 기록을 따릅니다.
+현장 설치 검사에서는 작업 구축기로 만든 합성 자료를 설치본 reader/API로 읽었습니다. 검사 준비 중 구축 전용 모듈 부재와 fixture 경로 충돌은 검사 fixture를 분리해 해결했고 제품 검증기를 우회하지 않았습니다.
+
+반영 상태
+작업 코드 4파일과 그 파일을 사용하는 30개 엔진 pin/PIPELINE을 연결했습니다.
+선택된 로컬 MAIN61 public-failure-guidance-20261014-r1은 변경하지 않았습니다.
+GENOS는 인계 RUN으로 ~/DEV에 적용 후 같은 commit의 generation gate, push, 새 코드서빙 리비전 및 SSE 재시작이 필요합니다.
+실제 GENOS 반입·배포·내부 모델 재질의는 미확인입니다. 워크플로우 편집기 교체와 원문 재구축은 없습니다.

@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# Run this in GENOS only after the R1 ZIP was applied and Socket.IO dependencies
+# were installed. Supply the URL of a separate, existing Git repository.
+task_root="${GENOS_DEV:-$HOME/DEV}"
+task_alias="genos-integrated"
+task_branch="${GENOS_NEW_REMOTE_BRANCH:-main}"
+task_url="${GENOS_NEW_REMOTE_URL:?Set GENOS_NEW_REMOTE_URL to the new repository SSH/HTTPS URL}"
+task_generation="${GENOS_GENERATION:?Set GENOS_GENERATION to the exact selected NFS generation path}"
+task_script="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)/GENOS_ROUTED_SOCKET_CHAT_20261007_R1_APPLY.txt"
+
+[[ -f "$task_script" && "$(git -C "$task_root" rev-parse --is-inside-work-tree 2>/dev/null || true)" == true ]] || {
+  echo 'The R1 APPLY TXT and existing Git checkout ~/DEV are required.' >&2
+  exit 2
+}
+[[ "$(git -C "$task_root" rev-parse --show-toplevel)" == "$(cd -- "$task_root" && pwd -P)" ]] || {
+  echo 'GENOS_DEV must be the root of the existing Git checkout.' >&2
+  exit 2
+}
+git check-ref-format --branch "$task_branch" >/dev/null
+
+# The verify step binds exactly this installed code to the selected generation.
+bash "$task_script" verify "$task_generation"
+
+if task_existing_url="$(git -C "$task_root" remote get-url "$task_alias" 2>/dev/null)"; then
+  [[ "$task_existing_url" == "$task_url" ]] || {
+    echo 'The genos-integrated alias already points to another repository; preserved.' >&2
+    exit 2
+  }
+  [[ "$(git -C "$task_root" remote get-url --push "$task_alias")" == "$task_url" ]] || {
+    echo 'The genos-integrated push URL differs; preserved.' >&2
+    exit 2
+  }
+else
+  git -C "$task_root" remote add "$task_alias" "$task_url"
+fi
+
+# APPLY TXT stages only the frozen payload, commits if needed, gates the exact
+# ZIP + generation, then pushes HEAD to main on this separate remote. No force.
+GENOS_PUSH_REMOTE="$task_alias" GENOS_PUSH_BRANCH="$task_branch" \
+  bash "$task_script" push "$task_generation"
+
+echo "Push complete: remote=$task_alias branch=$task_branch"
+echo 'Code-serving revision deployment and chat binding are separate steps.'

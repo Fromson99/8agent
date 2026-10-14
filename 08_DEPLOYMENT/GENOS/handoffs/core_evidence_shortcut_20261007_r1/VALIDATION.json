@@ -1,0 +1,145 @@
+{
+  "status": "PASS",
+  "inventories": 9,
+  "txt_commands": 90,
+  "primary_contracts_by_field_variant": [
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3",
+      "tests": 23,
+      "passed": 23
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3",
+      "tests": 23,
+      "passed": 23
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3",
+      "tests": 23,
+      "passed": 23
+    }
+  ],
+  "basis_results": [
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "modified_files": 40,
+      "same_checkout_code_comparison": {
+        "code_files": 301,
+        "commit": "3529299cd7aed0163384441990931b7c9ec7b939",
+        "code_zip_sha256": "3fd03e8330eeb8066874f318dc80245072bf3aec1ed9312f02693b9aefda797a",
+        "code_manifest_sha256": "0e0a65c679b1cec9bcb85d4dfcd65e8c88f2fcad430e52e921d9774867bcdc41"
+      },
+      "runtime_and_current_preserved": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/rollback-r1/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "modified_files": 40,
+      "same_checkout_code_comparison": {
+        "code_files": 301,
+        "commit": "172cbe8e9c13bd02d2d101ec7e02a2445fac6374",
+        "code_zip_sha256": "1e9dec449cba9f7443f8023c2a147900584781873a1163a4dab32b44bc43b7a2",
+        "code_manifest_sha256": "ed448a70201f3ffa43a561392acf2c51dd0989e35248fc5260321f98850e7831"
+      },
+      "runtime_and_current_preserved": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/rollback-r2/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "modified_files": 40,
+      "same_checkout_code_comparison": {
+        "code_files": 301,
+        "commit": "90cc8a831c37e57453fc485bb0f436dc14829b41",
+        "code_zip_sha256": "29e18f1f7974eee75b6b390b4ab71d0f01682e8b04167f2d413a9fd47c7eb1f2",
+        "code_manifest_sha256": "dcc45a3cf0e028fefc0231a1928574ae0e0e55c14e38ffacb1142d463b600385"
+      },
+      "runtime_and_current_preserved": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "modified_files": 40,
+      "same_checkout_code_comparison": {
+        "code_files": 308,
+        "commit": "1ae91b9f2983795a03d41c4a795962476951ebb5",
+        "code_zip_sha256": "6c983a867d9f5791f83e3e42ab77320503cbd0b83ea13aa8b6e22e881518827b",
+        "code_manifest_sha256": "378827c83b4d385718b4c44daace7a76063d955b108e4adc2cbb01ee25181d6f"
+      },
+      "runtime_and_current_preserved": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/rollback-r1/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "modified_files": 40,
+      "same_checkout_code_comparison": {
+        "code_files": 308,
+        "commit": "2541b5a9cc3ad20e485ef1483e8ac330d1dfa526",
+        "code_zip_sha256": "dc0571415029c532555dc4a8409540fe3e8033806e78fa466950f4253b917a6c",
+        "code_manifest_sha256": "a9c740d190962036fb1c65f077c6fc82a749461c48adda1527f8d4094187b985"
+      },
+      "runtime_and_current_preserved": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/rollback-r2/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "modified_files": 40,
+      "same_checkout_code_comparison": {
+        "code_files": 308,
+        "commit": "0108a6686ab274cd90bc1fdda7c70212acaf7eb2",
+        "code_zip_sha256": "33e8cfe220fea43deea66f452fae0934043c9e3d98c1ee9516e90254768ca84e",
+        "code_manifest_sha256": "45c48afb66c7a6fa77d4a5a057f3c4999d8846d0ac8aefee31f46036e8e9a6e7"
+      },
+      "runtime_and_current_preserved": true
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "modified_files": 40,
+      "same_checkout_code_comparison": {
+        "code_files": 305,
+        "commit": "b42418a433be3264653655f13aebaff0a1e05770",
+        "code_zip_sha256": "95517288ae1b0fd739e2c4ed4a5cc7f6fbe7f7c34c08297e2566c035797eb296",
+        "code_manifest_sha256": "dbb0459df870530937940fd151b8f915f82951305fd91f93496ab2b6f67c147f"
+      },
+      "runtime_and_current_preserved": true
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/rollback-r1/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "modified_files": 40,
+      "same_checkout_code_comparison": {
+        "code_files": 305,
+        "commit": "9d9d07547b07d86ae4c900e3575a39254f6d725c",
+        "code_zip_sha256": "415ae225094302c1f64ebd7b65cc31e0c6603b0354ad4d284fae99e3662dfb14",
+        "code_manifest_sha256": "7ff001743ac62ff06d5a9a2d47d7c1c5c135d2d41135bea38f95f26e1755cf8a"
+      },
+      "runtime_and_current_preserved": true
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/rollback-r2/db-log-rollback-r3",
+      "passed": true,
+      "txt_commands": 10,
+      "modified_files": 40,
+      "same_checkout_code_comparison": {
+        "code_files": 305,
+        "commit": "897b6796ca6d93a1f29ef98afeaa9ef376f3b499",
+        "code_zip_sha256": "14880cbe872646f8d763f44ac4e098df73bc9aa57764ed306a85e3f1387450dc",
+        "code_manifest_sha256": "b8da4e6857df1a94bb84e9e25857cc6223cb4e05c1b18cb7cad0a055ba95019e"
+      },
+      "runtime_and_current_preserved": true
+    }
+  ],
+  "external_model_calls": 0,
+  "transcript_sha256": "8dcbc2ed476aa962f1acf249f2607f3243982d1979c707a5963bcc3ce01f0ed2",
+  "field_applied": false,
+  "field_deployed": false
+}

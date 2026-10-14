@@ -1,4 +1,4 @@
-"""Shortcut and both wikis read the same current experience authority."""
+"""Shortcut and legal_wiki read the same current experience authority."""
 import json
 from .corrected_memory import MemoryError, digest
 
@@ -54,24 +54,23 @@ class KnowledgeRepository:
             'cited_source_ids':sorted({c['source_id'] for c in p['parts']['ASSESS']['payload']['claims']})}
 
     def wiki(self,kind,principal,**options):
-        if kind not in ('user_wiki','legal_wiki'):raise MemoryError('unknown wiki')
+        if kind!='legal_wiki':raise MemoryError('unknown wiki')
         data=self.search(principal,**options)
         pages=data.pop('experiences')
-        if kind=='user_wiki':
-            for page in pages:
-                g=self.cases.db.execute('SELECT session,ordinal FROM goal WHERE id=?',(page['question_id'],)).fetchone()
-                page.update(session_id=g['session'],question_ordinal=g['ordinal'])
-            data['question_history']=self.questions(principal,query=options.get('query',''),limit=options.get('limit',32))
         return {'schema_version':'unified-experience-wiki-v1','kind':kind,'owner':principal['user_id'],
                 'team':principal['team_id'],'pages':pages,**data}
 
     def rebuild(self,principal,directory):
         """Derived files can be deleted. Readers still check the live authority."""
         from pathlib import Path
+        from .core_evidence_route import enabled
+        if enabled(self.cases):
+            from lawrag.pipeline.legal_wiki_compiler import rebuild
+            return {'legal_wiki':rebuild(self.cases.shortcut,principal,Path(directory)/'legal_wiki')}
         from lawrag.pipeline.legal_llm_wiki import write
         directory=Path(directory)/digest([principal['user_id'],principal['team_id']])
         snapshots={}
-        for kind in ('user_wiki','legal_wiki'):
+        for kind in ('legal_wiki',):
             pages=[];after=''
             while True:
                 projection=self.wiki(kind,principal,after=after,limit=100)
@@ -80,7 +79,7 @@ class KnowledgeRepository:
                 after=projection['next']
             snapshot={**projection,'pages':pages,'next':None}
             write(directory/kind/'index.json',json.dumps(snapshot,ensure_ascii=False,indent=2)+'\n')
-            lines=['# '+kind,'','확정된 개인 해결 경험. 현재 권한·상태·근거는 조회 시 정본에서 확인합니다.','']
+            lines=['# '+kind,'','확정된 해결 경험. 현재 범위·상태·근거는 조회 시 정본에서 확인합니다.','']
             for p in pages:
                 lines.extend(['## '+p['experience_id'],p['conditions']['task'],
                     'Experience revision: '+str(p['experience_revision']),

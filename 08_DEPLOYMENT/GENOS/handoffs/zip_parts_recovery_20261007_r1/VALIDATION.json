@@ -1,0 +1,21 @@
+{
+  "passed": 12,
+  "checks": [
+    "unchanged original joined and direct R3 ZIP input accepted",
+    "part000030 appended byte recovered only through part+whole SHA; original part unchanged",
+    "same verified output reused without overwrite",
+    "inserted middle byte rejected",
+    "same size content corruption rejected",
+    "multiple corrupt parts rejected",
+    "part recovery cannot bypass original whole ZIP SHA",
+    "missing inventory part rejected",
+    "extra part rejected",
+    "part symlink rejected",
+    "conflicting output preserved",
+    "valid >49,000,000 byte part allowed when original whole SHA matches"
+  ],
+  "runner_sha256": "cf7f70b069bf22327dfba77daf1e8291180db2b26285192481c5e1fa4a3c4ea4",
+  "synthetic_only": true,
+  "operating_data_changed": false,
+  "field_execution": false
+}

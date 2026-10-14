@@ -1,0 +1,171 @@
+"""Read-only transport probe for the *integrated* code serving /chat route.
+
+Paste this whole file into a separate GENOS test workflow Python step.  Its
+run(data) returns one dict; it does not replace the production chat workflow.
+
+Workflow environment: GENOS_BASE_URL, GENOS_CODESERVING_TOKEN (or
+GENOS_CODE_KEY), and GENOS_INTEGRATED_CODESERVING_ID.  Use the ID of the new
+integrated code serving, never the existing /stream workflow backend.
+
+Workflow test inputs:
+  {"probe_mode":"contract"}  # two model-free requests: JSON then /chat SSE
+  {"probe_mode":"live","question":"<one short test question>"}  # one RAG call
+
+No authorization value, question text, response body, or answer text is logged
+or returned by this diagnostic step.
+"""
+from __future__ import annotations
+
+import asyncio
+import hashlib
+import json
+import os
+import re
+import time
+import urllib.error
+import urllib.request
+
+
+def _setting():
+    base = os.environ.get("GENOS_BASE_URL", "").strip().rstrip("/")
+    serving_id = os.environ.get("GENOS_INTEGRATED_CODESERVING_ID", "").strip()
+    token = (os.environ.get("GENOS_CODESERVING_TOKEN") or
+             os.environ.get("GENOS_CODE_KEY") or "").strip()
+    if not base.startswith(("https://", "http://")):
+        raise ValueError("GENOS_BASE_URL is required")
+    if not re.fullmatch(r"[A-Za-z0-9_.-]{1,100}", serving_id):
+        raise ValueError("GENOS_INTEGRATED_CODESERVING_ID is required")
+    if not token:
+        raise ValueError("GENOS_CODESERVING_TOKEN or GENOS_CODE_KEY is required")
+    return base + "/api/gateway/code_serving/" + serving_id + "/chat", token, serving_id
+
+
+def _post(url, token, body, *, accept, timeout, sse):
+    request = urllib.request.Request(
+        url, data=json.dumps(body, ensure_ascii=False).encode("utf-8"), method="POST")
+    request.add_header("Authorization", "Bearer " + token)
+    request.add_header("Content-Type", "application/json")
+    request.add_header("Accept", accept)
+    started = time.monotonic()
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            status = getattr(response, "status", response.getcode())
+            content_type = response.headers.get("Content-Type", "")
+            result = {"http_status": status, "content_type": content_type,
+                      "route": "/chat", "stream_requested": sse}
+            if not sse or "text/event-stream" not in content_type.lower():
+                raw = response.read(65537)
+                result.update(body_probe_bytes=len(raw),
+                              body_probe_sha256=hashlib.sha256(raw).hexdigest(),
+                              body_probe_truncated=len(raw) > 65536)
+                if not sse and len(raw) <= 65536:
+                    try:
+                        value = json.loads(raw)
+                    except (UnicodeError, ValueError):
+                        value = None
+                    data = value.get("data") if isinstance(value, dict) else None
+                    result["json_contract_ok"] = bool(
+                        isinstance(value, dict) and value.get("code") == 0 and
+                        isinstance(data, dict) and isinstance(data.get("text"), str))
+                return result
+            result.update(events={}, connected_comment=False, first_token_ms=None,
+                          first_progress_token_ms=None, result_ms=None,
+                          sse_ready=None, final_answer_status=None,
+                          progress_events=None, answer_events=None)
+            for index, raw in enumerate(response):
+                if index >= 10000 or len(raw) > 1048576:
+                    result["parse_error"] = "frame limit exceeded"
+                    break
+                if raw.startswith(b": connected"):
+                    result["connected_comment"] = True
+                if not raw.startswith(b"data:"):
+                    continue
+                try:
+                    frame = json.loads(raw[5:].decode("utf-8"))
+                except (UnicodeError, ValueError):
+                    result["parse_error"] = "invalid SSE frame JSON"
+                    break
+                if not isinstance(frame, dict):
+                    result["parse_error"] = "invalid SSE frame object"
+                    break
+                event = frame.get("event")
+                if event not in {"token", "result"}:
+                    result["events"]["other"] = result["events"].get("other", 0) + 1
+                    continue
+                result["events"][event] = result["events"].get(event, 0) + 1
+                elapsed_ms = int((time.monotonic() - started) * 1000)
+                if event == "token":
+                    if result["first_token_ms"] is None:
+                        result["first_token_ms"] = elapsed_ms
+                    chunk = frame.get("data")
+                    if (isinstance(chunk, str) and result["first_progress_token_ms"] is None
+                            and ("에이전트 진행 상황" in chunk or
+                                 re.search(r"\*\*\d+\. (?:검색|열람|근거 선택|판단|검토|현재 단계)", chunk))):
+                        result["first_progress_token_ms"] = elapsed_ms
+                else:
+                    result["result_ms"] = elapsed_ms
+                    data = frame.get("data")
+                    if isinstance(data, dict):
+                        check = data.get("sse_check")
+                        transport = data.get("chat_stream_transport")
+                        result["sse_ready"] = check.get("sse_ready") if isinstance(check, dict) else None
+                        result["final_answer_status"] = data.get("answer_status")
+                        if isinstance(transport, dict):
+                            result["progress_events"] = transport.get("progress_events")
+                            result["answer_events"] = transport.get("answer_events")
+                            result["transport_route"] = transport.get("route")
+                    break
+            result["sse_contract_ok"] = bool(
+                result["connected_comment"] and result["events"].get("result") == 1 and
+                result.get("transport_route") == "/chat" and not result.get("parse_error"))
+            return result
+    except urllib.error.HTTPError as error:
+        raw = error.read(65537)
+        return {"http_status": error.code,
+                "content_type": error.headers.get("Content-Type", ""),
+                "route": "/chat", "stream_requested": sse,
+                "body_probe_bytes": len(raw),
+                "body_probe_sha256": hashlib.sha256(raw).hexdigest(),
+                "body_probe_truncated": len(raw) > 65536}
+    except Exception as error:
+        return {"route": "/chat", "stream_requested": sse,
+                "error_type": type(error).__name__}
+
+
+def _execute(data):
+    url, token, serving_id = _setting()
+    mode = str(data.get("probe_mode") or "contract").strip().lower()
+    if mode == "contract":
+        control = _post(url, token, {"API_TYPE": "SSE_CHECK", "stream": False},
+                        accept="application/json", timeout=45, sse=False)
+        stream = _post(url, token, {"API_TYPE": "SSE_CHECK", "stream": True},
+                       accept="text/event-stream", timeout=45, sse=True)
+        outcome = {"code_serving_id": serving_id, "mode": mode,
+                   "json_control": control, "integrated_sse": stream,
+                   "json_ok": control.get("json_contract_ok") is True,
+                   "sse_ok": (stream.get("sse_contract_ok") is True and
+                              stream.get("sse_ready") is True)}
+    elif mode == "live":
+        question = data.get("question")
+        if not isinstance(question, str) or not question.strip():
+            raise ValueError("live probe requires one non-empty question")
+        stream = _post(url, token, {"question": question, "stream": True},
+                       accept="text/event-stream", timeout=2100, sse=True)
+        outcome = {"code_serving_id": serving_id, "mode": mode,
+                   "integrated_sse": stream,
+                   "progress_before_result": bool(
+                       stream.get("first_progress_token_ms") is not None and
+                       stream.get("result_ms") is not None and
+                       stream["first_progress_token_ms"] < stream["result_ms"])}
+    else:
+        raise ValueError("probe_mode must be contract or live")
+    outcome["text"] = json.dumps(outcome, ensure_ascii=False, sort_keys=True)
+    return outcome
+
+
+async def run(data):
+    try:
+        return await asyncio.to_thread(_execute, data if isinstance(data, dict) else {})
+    except Exception as error:
+        return {"text": "integrated SSE probe setup failed: " + type(error).__name__,
+                "error_type": type(error).__name__}

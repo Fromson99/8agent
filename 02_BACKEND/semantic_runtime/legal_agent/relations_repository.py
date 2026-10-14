@@ -99,7 +99,10 @@ class RelationsRepository(ToolsRepository):
         expected = stored
         if numbered_references is not None:
             from .numbered_references import NumberedReferences
-            verified = NumberedReferences(stored)
+            if stored.get('input_projection')=='compact-selection-source-v3':
+                from .navigation_input import NavigationReferences
+                verified=NavigationReferences(stored)
+            else:verified = NumberedReferences(stored)
             if numbered_references.receipt(view) != verified.receipt(stored):
                 raise ContractError('numbered references differ from stored presentation')
             expected = verified.view(stored)

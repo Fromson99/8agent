@@ -1,0 +1,42 @@
+{
+  "source": "user-provided six GENOS screen photos, 2026-10-13",
+  "photos": [
+    {
+      "name": "1-사진-1.jpg",
+      "sha256": "8a25e7a97ebc96adc9a9793772443059cfd569704b0e29dd2d4db58b0acbf567"
+    },
+    {
+      "name": "2-사진-2.jpg",
+      "sha256": "1ca9a466024390f4d1fe78cc1149594f84e3d7ba2780e30eead850bce8210a4f"
+    },
+    {
+      "name": "3-사진-3.jpg",
+      "sha256": "e8091d503580710c7f590a44b4c6bde7cdf4df41d43ee10e5f12bc7620942d2b"
+    },
+    {
+      "name": "4-사진-4.jpg",
+      "sha256": "2c3b3dfcd084964b13923ede88858e3bb35b01e936171216f97a4518da526782"
+    },
+    {
+      "name": "5-사진-5.jpg",
+      "sha256": "afa0ef8a342e1261e62884ab8a3846db126a9f3b762ad4b4d8cad93a170a996d"
+    },
+    {
+      "name": "6-사진-6.jpg",
+      "sha256": "275bfc1798371df07f2ab19673148b572671ef83088ad3411bc93295a1964d70"
+    }
+  ],
+  "observed": {
+    "error_type": "TypeError",
+    "error_message": "UnitFulltextIndex.article_groups_page() got an unexpected keyword argument 'unit_keys'",
+    "stage": "SELECT",
+    "location": "/app/src/service/02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:749 article_menu",
+    "gateway_status": 500
+  },
+  "inference": "R1 transferred structure-scoped callers but omitted scoped fulltext support; R2 only fixed the profile validator. Actual field commit and hashes are unknown.",
+  "field_git_commit": null,
+  "field_generation": null,
+  "field_code_serving_revision": null,
+  "private_question_transcribed": false,
+  "model_calls": 0
+}

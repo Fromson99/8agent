@@ -150,7 +150,7 @@ ledger={'schema_version':'retrieval-stage-ledger-v1','adr_id':m['adr_id'],'exper
  'audit':{'acquired':'Includes inspection-only reads, never equated with adoption','presented':'Text-bearing actual provider/native model inputs, including ancestor context; coverage measured separately',
  'scope':'Catalogue includes generation article roots; every actual read and model call remains under public145 authorization'}}
 ledger['artifact_sha256']=hashlib.sha256(canon(ledger).encode()).hexdigest();put(RUN/'retrieval-ledger.json.gz',ledger)
-outcomes={k:[] for k in ('correct','judgment_mistake','no_answer')}
+outcomes={k:[] for k in ('correct','judgment_mistake','no_answer','not_run')}
 policy={'semantic_correctness_absolute_gate':False,'bounded_model_outcomes':['SOURCE_INVESTIGATION_INCOMPLETE','MODEL_UPSTREAM_UNAVAILABLE','MODEL_PROPOSAL_INVALID','STALE_PROPOSAL','BUDGET_EXHAUSTED','DEADLINE_EXCEEDED','MODEL_TRANSPORT_ERROR','ADMISSION_REJECTED'],'user_instruction':'2026-10-07: semantic mistakes are diagnostic; source, access, hash, state and publication integrity remain gates.'};regressions=[]
 for case in dataset['regression_cases']:
  p=A/'artifacts/regression/integrated'/case['case_id']/'result.json'
@@ -206,13 +206,14 @@ def bounded_failure(r):
 successful=[x for x in diagnostics['integrated'] if x['http_status']==200]
 types={c['case_id']:c['kind'] for c in dataset['cases']}
 for x in diagnostics['integrated']:
- outcomes['no_answer' if x['http_status']!=200 else 'correct' if x['correct'] else 'judgment_mistake'].append(x['case_id'])
+ outcomes['not_run' if not x['executed'] else 'no_answer' if x['http_status']!=200 else 'correct' if x['correct'] else 'judgment_mistake'].append(x['case_id'])
 critical=[]
 for x in diagnostics['integrated']:
- if x['http_status']!=200 and not bounded_failure(raws['integrated',x['case_id']]):critical.append({'case_id':x['case_id'],'error':x['error'],'http_status':x['http_status']})
+ if x['executed'] and x['http_status']!=200 and not bounded_failure(raws['integrated',x['case_id']]):critical.append({'case_id':x['case_id'],'error':x['error'],'http_status':x['http_status']})
 for x in regressions:
- if x['http_status']!=200 and (not x['result_path'] or not bounded_failure(read(R/x['result_path']))):critical.append(x)
+ if x['result_path'] and x['http_status']!=200 and not bounded_failure(read(R/x['result_path'])):critical.append(x)
 checks={
+ 'required_T10_format_transport_classification_passed':False,
  'new_native_contracts_passed':read(A/'artifacts/contracts/result.json')['candidate_native_contracts']=={'passed':20,'failed':0,'log':'contracts-5.log'},
  'no_new_broad_regression':read(A/'artifacts/contracts/result.json')['broad_legacy']['new_failures']==[],
  'all_32_observed_attempted':len(diagnostics['integrated'])==32 and all(x['executed'] and x['http_status'] is not None for x in diagnostics['integrated']),
@@ -224,7 +225,7 @@ checks={
  'observed_chain_issue_contracts_valid':all(x['chain_integrity'] and x['issue_integrity'] and x['control_contract']=='investigation-control-v2' and x['assessment_reentries']<=2 for x in successful) and all(x['chain_integrity'] and x['issue_integrity'] for x in regressions if x['http_status']==200),
  'native_binding_matches_frozen_runtime':all(x['binding']==expected_native for x in successful),
  'regression_quote_scope_binding_valid':all(x['all_quotes_supported'] and x['allowed_originals'] and x['binding']==expected_native for x in regressions if x['http_status']==200),
- 'main_unchanged_during_evaluation':all(x['active_pointer_unchanged'] for x in diagnostics['integrated']+regressions),
+ 'main_unchanged_during_evaluation':all(x['active_pointer_unchanged'] for x in diagnostics['integrated'] if x['executed']) and all(x['active_pointer_unchanged'] for x in regressions if x['result_path']),
  'package_gateway_passed':read(A/'artifacts/package-001/result.json')['strict_success'],
  'all_frozen_files_match':all(sha(R/p)==h for seal in ('freeze.json','release-freeze.json') for p,h in read(D/seal)['files'].items()),
  'observed_probe_not_eligible_for_promotion':m['in_sample'] is True and m['decision_eligible'] is False}
@@ -232,9 +233,9 @@ checks={
 by_arm={arm:{'status':'complete','total':len(rows),'executed_count':sum(x['executed'] for x in rows),'not_executed_count':sum(not x['executed'] for x in rows),'correct_count':sum(x['correct'] is True for x in rows),'request_success_count':sum(x['http_status']==200 for x in rows),
  'cases':rows,'usage':usage_sum([u for c in dataset['cases'] for u in raws[arm,c['case_id']]['usage']]),
  'latency':{'request_p50':statistics.median(x['request_seconds'] for x in rows if x['executed']),'request_p95':percentile([x['request_seconds'] for x in rows if x['executed']],.95)}} for arm,rows in diagnostics.items()}
-errors=[{'case_id':x['case_id'],'type':types[x['case_id']],'severity':'semantic-diagnostic' if x['http_status']==200 else 'bounded-or-critical-execution','question':next(c['question'] for c in dataset['cases'] if c['case_id']==x['case_id']),'reason':x['grading_reason'],'error':x['error'],'gaps':x['gaps'],'gold_source_id':gold[x['case_id']]['source_id'],'immutable_result_path':str((RUN/'integrated'/x['case_id']/'result.json').relative_to(R)),'follow_up':'Classify missing scope/actor/condition from this record; any product modification or regrade requires a new ADR.'} for x in diagnostics['integrated'] if x['correct'] is not True]
+errors=[{'case_id':x['case_id'],'type':types[x['case_id']],'severity':'semantic-diagnostic' if x['http_status']==200 else 'bounded-or-critical-execution','question':next(c['question'] for c in dataset['cases'] if c['case_id']==x['case_id']),'reason':x['grading_reason'],'error':x['error'],'gaps':x['gaps'],'gold_source_id':gold[x['case_id']]['source_id'],'immutable_result_path':str((RUN/'integrated'/x['case_id']/'result.json').relative_to(R)),'follow_up':'Classify missing scope/actor/condition from this record; any product modification or regrade requires a new ADR.'} for x in diagnostics['integrated'] if x['executed'] and x['correct'] is not True]
 put(RUN/'GENERALIZATION_ERRORS.json',{'user_instruction':policy['user_instruction'],'semantic_absolute_gate':False,'errors':errors,'critical_failures':critical})
-result={'strict_success':all(checks.values()),'checks':checks,'by_arm':by_arm,'semantic_outcomes':outcomes,'regressions':regressions,'critical_failures':critical,'main_wiring':'unchanged','genos_deployed':False,'comparison_claim':None,'baseline_reference_only':b['baseline_release']}
+result={'strict_success':all(checks.values()),'checks':checks,'by_arm':by_arm,'semantic_outcomes':outcomes,'regressions':regressions,'critical_failures':critical,'early_stop':read(A/'artifacts/early-stop.json'),'main_wiring':'unchanged','genos_deployed':False,'comparison_claim':None,'baseline_reference_only':b['baseline_release']}
 put(RUN/'result.json',result)
 m['questions']=questions;m['results']={'status':'complete','by_arm':by_arm,'comparisons':[],
  'judge_disagreements':None,'usage':{arm:row['usage'] for arm,row in by_arm.items()},'latency':{arm:row['latency'] for arm,row in by_arm.items()},

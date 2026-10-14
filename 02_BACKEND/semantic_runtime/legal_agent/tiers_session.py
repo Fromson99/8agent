@@ -136,13 +136,12 @@ class TiersSession(RelationsSession):
                 try:
                     view=self.view('select_sources')
                     if not view['exact_evidence']: break
-                    d=self.gateway.generate('select_sources',view,'SourceSelectionDecision')
-                    self.commit_selection(view,d)
+                    d=self.generate_checked('select_sources','SourceSelectionDecision',self.commit_selection,initial_view=view,required=())
                     if d['selections'] or d['pending'] or d['rejected']: break
                 except (ProposalError,BudgetExhausted,DeadlineExceeded,TransportError) as exc:
                     self.errors.append({'code':exc.code,'message':str(exc)})
                     with self.work.transaction(): self.work.event('SOURCE_SELECTION_RECOVERY',self.errors[-1])
-                    if not isinstance(exc,ProposalError): break
+                    break  # The owning checked decision already exhausted its correction.
             result=self.retrieval()
         return result
 

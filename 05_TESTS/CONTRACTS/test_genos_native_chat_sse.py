@@ -9,6 +9,7 @@ import pytest
 from fastapi.testclient import TestClient
 from semantic_runtime import chat_adapter as adapter
 from semantic_runtime.legal_agent.answer_stream import current_sink
+from semantic_runtime.observability import event, get_logger
 
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT))
@@ -84,6 +85,37 @@ def test_worker_emits_answer_and_heartbeat_before_completion(monkeypatch):
         assert result['chat_stream_transport']['heartbeat_events']>=1
         assert ''.join(e['data'] for e in [first,*rest] if e['event']=='token')==result['text']
         assert completed.is_set() and 'early' not in stream_app._ACTIVE_REQUESTS
+    try:asyncio.run(check())
+    finally:release.set()
+
+
+def test_integrated_chat_emits_progress_token_before_result(monkeypatch):
+    release=threading.Event();completed=threading.Event()
+    monkeypatch.setenv('GENOS_RAG_PROGRESS_UI','sse-inline')
+    async def local(body):
+        event(get_logger('service'),'request.started',request_id=body['request_id'])
+        assert release.wait(3)
+        completed.set()
+        return {'status':200,'body':{'answer':{'text':'완료'},'assembly':{}}}
+    monkeypatch.setattr(adapter,'call_service',local)
+    async def execute(data,on_progress,on_answer):
+        return await adapter.chat(data,on_progress=on_progress,on_answer=on_answer)
+    async def check():
+        response=await stream_app.stream_response({'question':'모의','request_id':'progress-native'},execute,
+                                                 display=adapter.stream_display())
+        iterator=response.body_iterator
+        assert await anext(iterator)==': connected\n\n'
+        first=json.loads((await asyncio.wait_for(anext(iterator),3))[6:])
+        assert first['event']=='token'
+        assert '에이전트 진행 상황' in first['data']
+        assert '요청을 접수함' in first['data']
+        assert not completed.is_set()
+        release.set()
+        rest=[json.loads(raw[6:]) async for raw in iterator if raw.startswith('data: ')]
+        result=next(e['data'] for e in rest if e['event']=='result')
+        assert result['chat_stream_transport']['progress_events']>=1
+        assert result['agentFlowExecutedData']
+        assert completed.is_set() and 'progress-native' not in stream_app._ACTIVE_REQUESTS
     try:asyncio.run(check())
     finally:release.set()
 

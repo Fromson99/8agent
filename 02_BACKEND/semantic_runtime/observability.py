@@ -25,7 +25,7 @@ _CONTENT_KEYS = frozenset(
 )
 _TOKEN_COUNT_FIELDS = frozenset(
     {"prompt_tokens", "completion_tokens", "total_tokens", "reasoning_tokens",
-     "cached_tokens", "max_tokens"}
+     "cached_tokens", "max_tokens", "prompt_plus_max_tokens"}
 )
 _CONFIGURED = False
 _LAST_LOG: ContextVar[Any] = ContextVar("genos_last_log_timing", default=None)
@@ -99,7 +99,7 @@ def prepared_record(record):
     if record.exc_info and record.exc_info[0]:
         prepared.async_exc_type = record.exc_info[0].__name__
         prepared.async_exception = _redact_secrets(
-            logging.Formatter().formatException(record.exc_info), secrets=secrets)[:32768]
+            logging.Formatter().formatException(record.exc_info), secrets=secrets)
     prepared.exc_info = None; prepared.exc_text = None
     prepared.queue_bytes = (len(json.dumps(prepared.fields, ensure_ascii=False, default=str).encode())
                             + len(str(prepared.msg).encode())
@@ -149,14 +149,27 @@ class AsyncHandler(logging.Handler):
         queued=prepared_record(record)
         size=queued.queue_bytes
         critical=record.levelno>=logging.ERROR or queued.msg in {'request.returning','ask.finished','rag.answer_returning'}
+        fallback=False
         with self.condition:
             record_limit=self.max_records if critical else max(1,self.max_records-64)
             byte_limit=self.max_bytes if critical else self.max_bytes*3//4
             if self.stopping or size>byte_limit or len(self.queue)>=record_limit or self.bytes+size>byte_limit:
-                self.dropped+=1
-                return
-            self.queue.append((queued,size));self.bytes+=size
-            self.condition.notify()
+                if record.levelno>=logging.ERROR:
+                    fallback=True
+                else:
+                    self.dropped+=1
+                    return
+            else:
+                self.queue.append((queued,size));self.bytes+=size
+                self.condition.notify()
+        if fallback:
+            # An oversized error or a saturated queue must remain visible in
+            # full. The normal asynchronous path stays bounded.
+            self.target.acquire()
+            try:
+                self.target.emit(queued)
+                if hasattr(self.target,'flush_batch'):self.target.flush_batch()
+            finally:self.target.release()
 
     def _write(self):
         while True:
@@ -241,6 +254,8 @@ def configure() -> None:
         return
     root = logging.getLogger(ROOT)
     for handler in list(root.handlers):
+        if getattr(handler, "_genos_system_capture", False):
+            continue  # Early process diagnostics must survive lazy RAG setup.
         root.removeHandler(handler)
         handler.close()
     stream = _BatchStream(sys.stderr)

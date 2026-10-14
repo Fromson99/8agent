@@ -3,6 +3,7 @@
 Source, images, call budgets and final validation stay owned by the existing
 pipeline. This adapter binds IDs locally; models never echo opaque state hashes.
 """
+from .recipe_output import ResponseError, StructureDecisionError
 import copy
 
 import jsonschema
@@ -40,8 +41,8 @@ def context(data):
     return out
 
 
-def ask(call, journal, phase, system, data, schema, vision, *, check=None, attempts=3):
-    """At most three small answers; transport/length/budget failures propagate."""
+def ask(call, journal, phase, system, data, schema, vision, *, check=None, attempts=2):
+    """At most two small answers; transport/length/budget failures propagate."""
     request = copy.deepcopy(data)
     for attempt in range(attempts):
         label = phase + (f'-repair-{attempt}' if attempt else '')
@@ -52,7 +53,7 @@ def ask(call, journal, phase, system, data, schema, vision, *, check=None, attem
             if check:
                 check(answer)
             return answer
-        except (ValueError, TypeError, KeyError, jsonschema.ValidationError) as exc:
+        except (ResponseError,StructureDecisionError,jsonschema.ValidationError) as exc:
             details = {}
             output.feedback(details, exc, answer, phase=label, attempt=attempt,
                             attempts=attempts, invalid_key='previous_answer')
@@ -140,7 +141,7 @@ def adjudicate(call, journal, phase, data, vision, *, correct=None):
                       'blocks': blocks_schema, 'reason': {'type': 'string', 'minLength': 1}})
         def check(value):
             if value['decision'] != 'hold' and not value['blocks']:
-                raise ValueError('accept/reject에는 제공된 원문의 근거 blocks가 필요합니다. 불확실하면 hold입니다.')
+                raise StructureDecisionError('accept/reject에는 제공된 원문의 근거 blocks가 필요합니다. 불확실하면 hold입니다.')
         value = ask(call, journal, f'{phase}-opinion-{number}',
                     '\n의견 하나를 원문·현재 구조·이미지와 대조하세요. 맞으면 accept, '
                     '근거로 틀렸음을 확인하면 reject, 불확실하면 hold입니다. '
@@ -167,11 +168,11 @@ def adjudicate(call, journal, phase, data, vision, *, correct=None):
                   'blocks': blocks_schema, 'reason': {'type': 'string', 'minLength': 1}})
     def check_action(value):
         if value['verdict'] == 'approve' and (accepted or data.get('hard_code_issues')):
-            raise ValueError('채택된 의견 또는 코드 문제가 남아 있어 approve할 수 없습니다. 수정 또는 보류하세요.')
+            raise StructureDecisionError('채택된 의견 또는 코드 문제가 남아 있어 approve할 수 없습니다. 수정 또는 보류하세요.')
         if value['verdict'] == 'approve' and value['blocks']:
-            raise ValueError('approve의 blocks는 빈 목록이어야 합니다. 문제 근거가 있으면 수정 또는 보류하세요.')
+            raise StructureDecisionError('approve의 blocks는 빈 목록이어야 합니다. 문제 근거가 있으면 수정 또는 보류하세요.')
         if value['verdict'] in {'revise', 'resegment', 'missing_rules', 'source_error'} and not value['blocks']:
-            raise ValueError('해당 조치에는 원문 근거 blocks가 필요합니다. 불확실하면 hold입니다.')
+            raise StructureDecisionError('해당 조치에는 원문 근거 blocks가 필요합니다. 불확실하면 hold입니다.')
     action = ask(call, journal, phase+'-action',
                  '\n현재 구간의 원문·구조·이미지와 모든 의견 판정을 검토해 조치 하나를 선택하세요. '
                  '문제가 없으면 approve, 실행 규칙 수정이면 revise, 경계 재분할이면 resegment, '

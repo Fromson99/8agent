@@ -1,0 +1,40 @@
+GENOS CM shortcut 등록 전 확인 R1 — 2026-10-12
+
+대상: 과거 CM 등록 실패 당시 원문 데이터를 그대로 유지 중인 GENOS.
+기존 DEV checkout의 코드와 명시된 현장 원문 세대에 대해 51문항/98근거 연결을 검사합니다.
+현재 등록 기능의 지원 여부·문서 연결 실패 원인·기존 등록 상태를 확인하기 위한 파일입니다.
+
+1. GENOS_CM_REGISTER_CHECK_20261012_R1_RUN.txt 한 파일을 기존 ~/DEV/TRANSFER에 올립니다.
+2. 코드스페이스 터미널에서 다음 한 줄을 실행합니다.
+
+bash ~/DEV/TRANSFER/GENOS_CM_REGISTER_CHECK_20261012_R1_RUN.txt
+
+추가 패키지 설치나 unzip은 필요 없습니다. 현장 Python은 python3를 사용합니다.
+각 실행의 처음부터 RUN.log와 EXIT_STATUS.json을 남기고 재실행 때 새 폴더를 만듭니다.
+코드·원문·기존 shortcut DB·이전 실패 로그는 변경하지 않습니다.
+생성물은 TRANSFER/cm-register-check-20261012-r1/run-... 안에만 저장됩니다.
+모델 호출·등록·commit·push·리비전 배포·워크플로우 호출은 하지 않습니다.
+
+예상 원문 경로:
+/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+예상 기존 상태 경로:
+/nfs-root/diamo/8-agent/runtime
+실제 GENOS_SERVING_PATHS.json이 있으면 위 경로와 manifest 해시가 일치해야 합니다.
+설정이 없으면 마지막 현장 인계의 경로를 검사하되 실제 서빙 선택 확인으로 표시하지 않습니다.
+
+공유할 결과:
+- RESULT.json
+- RUN.log
+- EXIT_STATUS.json
+- 실패했으면 ERROR.txt
+로그 폴더의 CM51_PACKAGE.json에는 내부 질문이 있으므로 외부 모델에 전송하지 않습니다.
+결과 보고서는 질문·답변·원문 본문·인증키를 수집하지 않습니다.
+
+SOURCE_CONNECTION_CHECK_PASSED도 원문 연결 검사 통과만 뜻합니다.
+현장 데이터가 로컬 신규 데이터와 같은 파일이라는 뜻이 아닙니다.
+portable 패키지의 논리 규정명·조문을 현재 현장 원문으로 다시 연결해 확인합니다.
+
+결과 대조 뒤 필요한 코드 변경만 기존 ~/DEV에 백업 후 적용하는 등록본을 정합니다.
+등록 전 DB 백업, 중복/이전 세대 확인, 등록·검증 영수증, 코드가 바뀐 경우 동일 checkout
+배포 게이트·push·새 리비전 확인을 거친 뒤 워크플로우 테스트 화면에서 사용을 확인합니다.
+현장 실행 결과가 없는 현재는 등록 또는 배포 완료가 아닙니다.

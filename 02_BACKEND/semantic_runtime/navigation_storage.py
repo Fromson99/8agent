@@ -4,18 +4,134 @@ The audit SQLite is an exact immutable copy of the completed pre-split index.
 It retains the construction context as well as every accepted/held evidence row.
 Serving never needs to open this artifact. Existing monolithic indexes stay valid.
 """
-from contextlib import closing
+from contextlib import closing, contextmanager
+import gzip
+import hashlib
 import json
 import os
 from pathlib import Path
 import shutil
 import sqlite3
+import stat
 import tempfile
 
 from .contracts import sha, write
 
 VERSION = 'term-navigation-storage-v1'
 AUDIT_TABLES = ('link_catalogue', 'link_occurrence', 'occurrence_evidence', 'occurrence_origin')
+
+
+def _inflate(archive, destination, expected):
+    digest = hashlib.sha256(); size = 0
+    with gzip.open(archive, 'rb') as stream:
+        while block := stream.read(4 * 1024 * 1024):
+            size += len(block)
+            if size > expected['audit_bytes']:
+                raise ValueError('Navigation audit archive exceeds pinned size')
+            digest.update(block)
+            if destination is not None:
+                destination.write(block)
+    if size != expected['audit_bytes'] or digest.hexdigest() != expected['audit_sha256']:
+        raise ValueError('Navigation audit archive snapshot changed')
+
+
+@contextmanager
+def audit_database(directory, expected):
+    """Open unchanged audit bytes; cold archives expand only for this operation."""
+    directory = Path(directory).resolve()
+    original = directory / 'navigation.sqlite'
+    if original.exists():
+        yield original
+        return
+    archive = directory / 'navigation.sqlite.gz'
+    if archive.is_symlink() or not archive.is_file():
+        raise FileNotFoundError('Missing navigation audit snapshot/archive: ' + str(directory))
+    with tempfile.TemporaryDirectory(prefix='.audit-restore-', dir=directory.parent) as temporary:
+        restored = Path(temporary) / 'navigation.sqlite'
+        with restored.open('xb') as stream:
+            _inflate(archive, stream, expected)
+        metadata = json.loads((directory / 'archive.json').read_text())
+        if (metadata.get('schema_version') != 'navigation-audit-archive-v1'
+                or metadata['source_sha256'] != expected['audit_sha256']):
+            raise ValueError('Navigation audit archive metadata mismatch')
+        os.chmod(restored, metadata['mode'])
+        if (restored.stat().st_uid, restored.stat().st_gid) != (metadata['uid'], metadata['gid']):
+            os.chown(restored, metadata['uid'], metadata['gid'])
+        os.utime(restored, ns=(metadata['mtime_ns'], metadata['mtime_ns']))
+        yield restored
+
+
+def archive_audit(directory):
+    """Losslessly store a completed snapshot, keeping canonical manifest bytes."""
+    directory = Path(directory).resolve()
+    value = json.loads((directory / 'manifest.json').read_text())
+    original = directory / 'navigation.sqlite'
+    archive = directory / 'navigation.sqlite.gz'
+    if directory.is_symlink() or original.is_symlink() or archive.is_symlink():
+        raise ValueError('Refusing symlinked audit archive')
+    if value.get('audit_file') != 'navigation.sqlite':
+        raise ValueError('Unknown navigation audit payload')
+    if original.exists():
+        verify_audit(directory, expected_manifest_sha256=sha(directory / 'manifest.json'),
+                     expected_index_sha256=value['serving_index_sha256'])
+        before = original.stat()
+        if not archive.exists():
+            fd, pending_name = tempfile.mkstemp(prefix='.archive-', dir=directory)
+            pending = Path(pending_name)
+            try:
+                with os.fdopen(fd, 'wb') as target:
+                    with gzip.GzipFile(filename='', mode='wb', fileobj=target, mtime=0, compresslevel=6) as zipped:
+                        with original.open('rb') as source:
+                            shutil.copyfileobj(source, zipped, 4 * 1024 * 1024)
+                    target.flush(); os.fsync(target.fileno())
+                _inflate(pending, None, value)
+                os.replace(pending, archive)
+            finally:
+                pending.unlink(missing_ok=True)
+        else:
+            _inflate(archive, None, value)
+        after = original.stat()
+        if (before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (
+                after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns):
+            raise ValueError('Audit changed while archiving; original preserved')
+        if archive.stat().st_size >= value['audit_bytes']:
+            raise ValueError('Archive would not save space; original preserved')
+        metadata = {'schema_version': 'navigation-audit-archive-v1',
+                    'source_sha256': value['audit_sha256'], 'source_bytes': value['audit_bytes'],
+                    'mode': stat.S_IMODE(before.st_mode), 'uid': before.st_uid, 'gid': before.st_gid,
+                    'mtime_ns': before.st_mtime_ns}
+        record = directory / 'archive.json'
+        if record.exists():
+            if json.loads(record.read_text()) != metadata:
+                raise ValueError('Archive ownership metadata changed; original preserved')
+        else:
+            write(record, metadata)
+        os.chmod(archive, metadata['mode'])
+        if (archive.stat().st_uid, archive.stat().st_gid) != (metadata['uid'], metadata['gid']):
+            os.chown(archive, metadata['uid'], metadata['gid'])
+        original.unlink()
+    else:
+        _inflate(archive, None, value)
+    return {'format': 'gzip', 'path': str(archive), 'source_sha256': value['audit_sha256'],
+            'source_bytes': value['audit_bytes'], 'archive_bytes': archive.stat().st_size,
+            'saved_bytes': value['audit_bytes'] - archive.stat().st_size}
+
+
+def restore_audit(directory):
+    """Restore exactly the pinned SQLite for older tooling; retain its archive."""
+    directory = Path(directory).resolve()
+    value = json.loads((directory / 'manifest.json').read_text())
+    original = directory / 'navigation.sqlite'
+    if original.exists():
+        verify_audit(directory, expected_manifest_sha256=sha(directory / 'manifest.json'),
+                     expected_index_sha256=value['serving_index_sha256'])
+        return original
+    with audit_database(directory, value) as snapshot:
+        # The temporary and destination share a filesystem; publish exact bytes atomically.
+        if original.exists():
+            raise ValueError('Audit restore destination appeared; preserved')
+        os.link(snapshot, original)
+    return original
 
 
 def _ro(path):
@@ -153,16 +269,19 @@ def verify_audit(directory, *, expected_manifest_sha256, expected_index_sha256):
     if sha(manifest) != expected_manifest_sha256:
         raise ValueError('Navigation audit manifest changed')
     value = json.loads(manifest.read_text())
-    if (value.get('schema_version') not in {VERSION, 'term-navigation-storage-v2', 'term-navigation-storage-v3'}
+    if (value.get('schema_version') not in {VERSION, 'term-navigation-storage-v2', 'term-navigation-storage-v3', 'term-navigation-storage-v4'}
             or value.get('audit_file') != 'navigation.sqlite'
             or value.get('serving_index_sha256') != expected_index_sha256):
         raise ValueError('Navigation audit/index binding mismatch')
-    audit = directory / 'navigation.sqlite'
-    if audit.stat().st_size != value['audit_bytes'] or sha(audit) != value['audit_sha256']:
-        raise ValueError('Navigation audit snapshot changed')
-    with closing(_ro(audit)) as db:
-        if not set(AUDIT_TABLES) <= _tables(db):
-            raise ValueError('Navigation audit evidence missing')
+    with audit_database(directory, value) as audit:
+        if audit.stat().st_size != value['audit_bytes'] or sha(audit) != value['audit_sha256']:
+            raise ValueError('Navigation audit snapshot changed')
+        with closing(_ro(audit)) as db:
+            if value['schema_version'] == 'term-navigation-storage-v4':
+                from .factorized_audit import verify_relations
+                verify_relations(db, value)
+            elif not set(AUDIT_TABLES) <= _tables(db):
+                raise ValueError('Navigation audit evidence missing')
     return value
 
 
@@ -185,7 +304,7 @@ def verify_build(output):
     if not binding or binding.get('path') != 'audit/navigation':
         raise ValueError('Missing compact navigation audit receipt')
     storage = index.get('storage', {})
-    if (storage.get('schema_version') not in {VERSION, 'term-navigation-storage-v2', 'term-navigation-storage-v3'}
+    if (storage.get('schema_version') not in {VERSION, 'term-navigation-storage-v2', 'term-navigation-storage-v3', 'term-navigation-storage-v4'}
             or storage.get('audit_manifest_sha256') != binding['manifest_sha256']):
         raise ValueError('Compact navigation/audit manifest binding mismatch')
     audit = verify_audit(output / binding['path'],

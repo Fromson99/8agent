@@ -8,7 +8,7 @@ DEFAULT_PROFILE = {**v3.DEFAULT_PROFILE, 'schema_version':'system-harness-profil
     'max_source_excerpt_chars':1600, 'source_page_size':4, 'source_selection_attempts':2,
     'selection_time_reserve_seconds':30, 'max_auto_reference_reads_per_request':12,
     'bounded_source_selection_enabled':False, 'final_review_enabled':False,
-    'candidate_navigation': {'mode': 'legacy'}}
+    'candidate_navigation': {'mode': 'legacy'}, 'request_entry_policy':'legacy', 'answer_presentation':'structured'}
 DOMAIN = {**v3.DOMAIN, 'schema_version':'legal-domain-v5', 'domain_id':'model-selected-source-tiers',
     'completion':'source_selection_independent_of_legal_claim_review'}
 def profile(value, *, require_model=False):
@@ -22,9 +22,11 @@ def profile(value, *, require_model=False):
     if type(p['numbered_references_enabled']) is not bool: raise ContractError('numbered_references_enabled must be bool')
     if type(p['bounded_source_selection_enabled']) is not bool: raise ContractError('bounded_source_selection_enabled must be bool')
     if type(p['final_review_enabled']) is not bool: raise ContractError('final_review_enabled must be bool')
+    if p['request_entry_policy'] not in ('legacy','fused-v1','fused-title-v1'):raise ContractError('unknown request entry policy')
+    if p['answer_presentation'] not in ('structured','grounded-narrative-v1'):raise ContractError('unknown answer presentation')
     from .law_candidates import validate_policy
     p['candidate_navigation']=validate_policy(p['candidate_navigation'])
-    for k in set(DEFAULT_PROFILE)-set(v3.DEFAULT_PROFILE)-{'question_obligations_enabled', 'numbered_references_enabled', 'bounded_source_selection_enabled', 'final_review_enabled', 'candidate_navigation'}:
+    for k in set(DEFAULT_PROFILE)-set(v3.DEFAULT_PROFILE)-{'question_obligations_enabled', 'numbered_references_enabled', 'bounded_source_selection_enabled', 'final_review_enabled', 'candidate_navigation', 'request_entry_policy', 'answer_presentation'}:
         if type(p[k]) is not int or p[k]<1: raise ContractError('invalid v4 bound: '+k)
     if p['source_selection_attempts']>=p['finalization_reserve']: raise ContractError('reserve must cover source selection and composition')
     if not p['bounded_source_selection_enabled'] and p['max_core_sources']+p['max_supplemental_sources']>20:

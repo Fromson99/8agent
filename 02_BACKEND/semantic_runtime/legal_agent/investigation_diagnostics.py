@@ -74,11 +74,19 @@ def selection_report(result):
     native = nav.get('diagnostics') or {}
     if result.get('status') == 'complete' and result.get('completion_policy') == 'ALLOW_UNRESOLVED_CONNECTIONS':
         return report('SELECT', False, [],
-            [{'category':'DATA_REFERENCE','code':'UNRESOLVED_CONNECTIONS_ALLOWED','basis':'explicit_completion_policy',
-              'reference_navigation':deepcopy(nav)}] if nav.get('pending') else [],
+            [{'category':'MODEL_DECISION','code':'MODEL_DECISION_REJECTED','basis':'recovered_model_decision',**deepcopy(r)}
+             for r in result.get('rejected_decisions',[])] +
+            ([{'category':'DATA_REFERENCE','code':'UNRESOLVED_CONNECTIONS_ALLOWED','basis':'explicit_completion_policy',
+              'reference_navigation':deepcopy(nav)}] if nav.get('pending') else []),
             next_action=result.get('next_action'), selected_source_ids=result.get('final_ids', []),
             sufficiency_reason=result.get('sufficiency_reason'))
     blockers = deepcopy(native.get('blockers', []))
+    for rejection in result.get('rejected_decisions', []):
+        blockers.append({'category':'MODEL_DECISION','code':'MODEL_DECISION_REJECTED',
+            'basis':'rejected_model_decision',**deepcopy(rejection)})
+    if result.get('stop_reason'):
+        blockers.append({'category':'EXECUTION_LIMIT' if result['stop_reason'] != 'MODEL_DECISION_UNRESOLVED' else 'MODEL_DECISION',
+            'code':result['stop_reason'],'basis':'investigation_stop_reason'})
     if nav.get('pending') and not blockers:
         # Historical checkpoints and adapters may lack the detailed contract.
         blockers.append({'category': 'DIAGNOSTIC_GAP', 'code': 'REFERENCE_PENDING_CAUSE_NOT_RECORDED',
@@ -99,7 +107,10 @@ def exception_diagnostics(exc, *, stage=None):
     out = {'error_code': getattr(exc, 'code', type(exc).__name__),
         'error_type': type(exc).__module__ + '.' + type(exc).__name__,
         'error_message': str(exc), 'stage': stage or getattr(exc, 'failure_stage', None),
-        'location': {'file': location.filename, 'line': location.lineno, 'function': location.name} if location else None}
+        'location': {'file': location.filename, 'line': location.lineno, 'function': location.name} if location else None,
+        'traceback': ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__))}
+    from .output_contract import diagnostics
+    out['output_contract'] = diagnostics(exc)
     if getattr(exc, 'diagnostics', None) is not None:
         out['investigation'] = deepcopy(exc.diagnostics)
     return out

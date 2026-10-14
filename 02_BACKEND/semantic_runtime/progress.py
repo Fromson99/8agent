@@ -17,15 +17,18 @@ import time
 
 
 _RUN_ID = re.compile(r"[a-f0-9]{32}\Z")
-REVISION = "agent-causal-diagnostics-20261006-r1"
+REVISION = "rag-source-cards-20261013-r1"
+_STAGE_LABELS = dict(zip(
+    ("INTENT", "PLAN", "RECALL", "READ", "SELECT", "ASSESS", "COMPOSE"),
+    ("질문 이해", "검색 계획", "자료 검색", "원문 확인", "근거 선택", "적용 판단", "답변 작성")))
 _CASE_STAGES = {
-    "INTENT": ("조사 목적과 적용 개념을 확인 중", "조사 목적과 적용 개념을 확인함"),
-    "PLAN": ("조사할 문서 범위와 검색 경로를 정리 중", "문서 범위와 검색 계획을 정리함"),
-    "RECALL": ("관련 원문 후보를 검색 중", "원문 검색 후보를 확인함"),
-    "READ": ("원문과 명시 참조를 열람 중", "원문과 명시 참조의 열람을 확인함"),
-    "SELECT": ("읽은 원문에서 답변 근거를 선별 중", "답변에 사용할 원문 근거를 선택함"),
-    "ASSESS": ("현재 사실과 원문의 조건·단서를 검토 중", "현재 사실과 원문에 대한 판단을 기록함"),
-    "COMPOSE": ("확인한 판단과 근거로 답변을 작성 중", "판단과 근거를 보존한 답변을 작성함"),
+    "INTENT": ("조사 목적과 적용 개념을 확인 중", "질문의 목적과 확인할 사항을 정리했습니다"),
+    "PLAN": ("조사할 문서 범위와 검색 경로를 정리 중", "검색에 사용할 표현을 정했습니다"),
+    "RECALL": ("관련 원문 후보를 검색 중", "검색 결과를 확인했습니다"),
+    "READ": ("원문과 명시 참조를 열람 중", "확인할 원문을 확보했습니다"),
+    "SELECT": ("읽은 원문에서 답변 근거를 선별 중", "답변에 쓸 근거를 선택했습니다"),
+    "ASSESS": ("현재 사실과 원문의 조건·단서를 검토 중", "원문을 바탕으로 질문을 판단했습니다"),
+    "COMPOSE": ("확인한 판단과 근거로 답변을 작성 중", "확인한 판단과 근거로 답변을 작성했습니다"),
 }
 _CASE_MODEL_STAGES = {
     "memory-resolve": "질문·정정·최종 확인 요청을 구분 중",
@@ -83,7 +86,7 @@ def _compact(value, limit=180):
     if not isinstance(value, str):
         return ""
     value = " ".join("".join(c if c.isprintable() else " " for c in value).split())
-    return value if len(value) <= limit else value[:limit-1] + "…"
+    return value if limit is None or len(value) <= limit else value[:limit-1] + "…"
 
 
 def _objects(value):
@@ -91,13 +94,15 @@ def _objects(value):
 
 
 class ProgressCapture(logging.Handler):
-    def __init__(self, request_id, runtime, sink):
+    def __init__(self, request_id, runtime, sink, *, compact_public=True):
         super().__init__()
         self.request_id = request_id
         self.runtime = Path(runtime)
         self.sink = sink
+        self.compact_public = compact_public
         self.started = time.monotonic()
         self.seq = 0
+        self.summary_stages = set()
         self.run_id = None
         self.journal_path = None
         self.last_journal_seq = 0
@@ -106,7 +111,10 @@ class ProgressCapture(logging.Handler):
         self.admitted = None
         self.binding_hash = None
         self.pending_reads = {}
+        self.current_read_document = None
+        self.law_decision_states = {}
         self.seen_reads = set()
+        self.judgment_sequences = {}
         self.last_read_publish = -5.0
         self.sequence_lock = threading.Lock()
         self.poll_lock = threading.RLock()
@@ -137,7 +145,29 @@ class ProgressCapture(logging.Handler):
             if basis is not None:
                 event["basis"] = basis
             if details:
-                event["details"] = [_compact(d, 300) for d in details[:8]]
+                if isinstance(basis,dict) and basis.get('detail_mode') in {'full_error', 'judgment'}:
+                    from . import observability as obs
+                    event['details'] = [obs._redact_secrets(d) for d in details if isinstance(d,str)]
+                else:
+                    event["details"] = [_compact(d, 300) for d in details[:8]]
+        from .chat_adapter import views
+        # Retain scoped source labels for the source-list renderer. Other
+        # progress still follows the compact public policy; model I/O remains
+        # private. _activity has already checked admitted document identities.
+        source_activity = (isinstance(basis, dict) and basis.get('detail_mode') == 'activity'
+            and basis.get('kind') in {'LAW_FULLTEXT_DIRECTORY', 'SOURCE_FULLTEXT_RESULTS', 'UNIT_READ_STARTED'})
+        event = (views().compact_event(event) if self.compact_public and not source_activity
+                 else views().public_event(event))
+        if event is None:
+            return
+        if self.compact_public and not source_activity:
+            stage = event['basis']['stage']
+            with self.sequence_lock:
+                order = views()._SUMMARY_ORDER
+                if stage in self.summary_stages or (self.summary_stages and
+                        order.index(stage) < max(order.index(s) for s in self.summary_stages)):
+                    return
+                self.summary_stages.add(stage)
         try:
             self.sink(event)
         except (RuntimeError, OSError):
@@ -154,22 +184,23 @@ class ProgressCapture(logging.Handler):
                 return
             self.run_id = run_id
         name = record.getMessage()
+        if record.levelno >= logging.ERROR or name in {'model.output.invalid', 'model.attempt.failed'}:
+            return  # Original record remains in the diagnostic handlers.
+        if record.levelno >= logging.ERROR:
+            from .request_report import _scrub
+            value=fields.get('error_diagnostics') or fields.get('failure_diagnostics')
+            if value is not None:
+                self.publish('decision','실행 오류 · '+str(fields.get('error_event') or name),
+                    details=[json.dumps(_scrub(value),ensure_ascii=False,indent=2,default=str)],
+                    basis={'kind':'OBS_EVENT','name':name,'detail_mode':'full_error'})
+                return
         # Received/accepted are transport/schema diagnostics, not agent steps.
-        if name in ("model.attempt.received", "model.attempt.accepted"):
-            return
-        if name in ("source_recall.read.started", "source_recall.read.progress") and self.admitted is not None:
-            # The scoped reader provides document-level activity. Numeric page
-            # counters stay in logs rather than interrupting those paragraphs.
-            return
-        if name == "source.read.started":
-            if self.admitted is None:
-                self.poll_journal()
-            if self.admitted is not None and fields.get("document_id") in self.admitted:
-                title = _compact(fields.get("document_name"), 100)
-                section = _compact(fields.get("heading"), 80)
-                if title:
-                    self._queue_read("reading", " · ".join(filter(None, (title, section))),
-                                     {"kind": "OBS_EVENT", "name": name})
+        if name in ("model.attempt.started", "model.attempt.received", "model.attempt.accepted",
+                    "binding.resolved", "session.open.ready", "bounded_source.started",
+                    "source_recall.discover.started", "source_recall.global.finished",
+                    "source_recall.scoped.finished", "source_recall.query.finished",
+                    "source_recall.read.started", "source_recall.read.progress",
+                    "source_recall.finished", "source.read.started"):
             return
         mapped = _EVENTS.get(name)
         if mapped is None:
@@ -182,38 +213,8 @@ class ProgressCapture(logging.Handler):
         if name == "request.finished":
             self.poll_journal()
             self._flush_reads(force=True)
-        if name == "model.attempt.started":
-            self.poll_journal()
-            self._flush_reads(force=True)
-            phase = fields.get("phase")
-            self.last_model_phase = phase if phase in _PHASES else None
-            stage = self._model_stage() if self.admitted is not None else None
-            key = stage or self.last_model_phase
-            if key is not None and key == self.last_wait_key:
-                return
-            self.last_wait_key = key
-            if self.last_model_phase:
-                label = _PHASES[self.last_model_phase] + " · 내부 모델 대기"
-                if self.admitted is not None:
-                    label = {"source-query-plan": "요청의 종류와 필요한 행동을 판단 중",
-                             "catalogue-document-choice": "목차를 볼 문서를 고르는 중",
-                             "catalogue-next-step": "조회한 목차에서 읽을 곳을 정리 중",
-                             "source-triage": "읽은 원문에서 질문에 맞는 근거를 선별 중",
-                             "source-omission-review": "빠진 근거가 있는지 확인 중",
-                             "bounded-question-plan": "질문에서 답해야 할 사항을 정리 중"}.get(stage, label)
-                    case_label = _CASE_MODEL_STAGES.get(stage) if isinstance(stage, str) else None
-                    if isinstance(stage, str) and stage.startswith("domain-choice-"):
-                        checkpoint = stage.removeprefix("domain-choice-")
-                        if checkpoint in _CASE_STAGES:
-                            case_label = _CASE_STAGES[checkpoint][0] + " · 조사 방법 확인"
-                    if case_label:
-                        label = case_label + " · 내부 모델 대기"
-        count_key = "read_actions" if name == "source_recall.read.progress" else (
-            "read_complete_count" if name == "source_recall.finished" else "selected_count")
-        count = fields.get(count_key)
-        self.publish(kind, label, count=count if type(count) is int else None,
-                     details=['검색어: '+_compact(fields.get('query'),120)] if name=='source_recall.query.finished' else None,
-                     basis={"kind": "OBS_EVENT", "name": name})
+            if fields.get('ok') is False:return
+        self.publish(kind, label, basis={"kind": "OBS_EVENT", "name": name})
 
     def _journal_path(self):
         if not self.run_id:
@@ -333,14 +334,17 @@ class ProgressCapture(logging.Handler):
                     elif self.admitted is not None and event_kind in {
                             'SOURCE_FULLTEXT_RESULTS', 'UNIT_READ_CHOICE',
                             'UNIT_READ_STARTED', 'UNIT_READ_FINISHED', 'LAW_FULLTEXT_DIRECTORY',
-                            'LAW_SELECTION_DECISION','LAW_BRANCH_DECISION','LAW_INVESTIGATION_STATUS'}:
+                            'LAW_SELECTION_DECISION','LAW_BRANCH_DECISION','LAW_INVESTIGATION_STATUS',
+                            'LAW_STRUCTURE_DIRECTORY','LAW_DOCUMENT_STRUCTURE','LAW_STRUCTURE_RECOVERY'}:
                         self._activity(db, seq, event_kind)
-                    elif self.admitted is not None and event_kind in {'ATTEMPT_SENT', 'ATTEMPT_FINISHED'}:
-                        self._model_io(db, seq, event_kind)
+                    elif event_kind in {'ATTEMPT_SENT', 'ATTEMPT_FINISHED'}:
+                        pass  # Full model I/O remains in the journal and request report.
                     elif event_kind == "MEMORY_FULLTEXT_REENTRY":
                         payload = self._payload(db, seq)
                         queries = payload.get('selection', {}).get('search_queries') or []
-                        self.publish("revised", "추가 원문이 필요해 검색·열람을 다시 진행함",
+                        self.current_read_document = None
+                        self.law_decision_states.clear()
+                        self.publish("revised", "자료 검색 단계로 돌아갑니다 · 추가 원문이 필요합니다",
                                      details=['새 검색어: '+_compact(q, 120) for q in queries[:4] if isinstance(q, str)],
                                      basis={"kind": event_kind, "journal_seq": seq, "stage": "RECALL"})
                     elif event_kind == "UNIT_CANDIDATE_ACQUISITION_STOPPED":
@@ -360,16 +364,29 @@ class ProgressCapture(logging.Handler):
                         from .legal_agent.investigation_diagnostics import scoped_report
                         from .legal_agent.readable_log import diagnostic_rows
                         diagnostic=scoped_report(self._payload(db,seq),self.admitted)
-                        details=diagnostic_rows(diagnostic,full=False)
-                        if len(details)>8:
-                            details=details[:7]+[f'외 {len(details)-7}개 표시 행 · 전체 상세: journal 이벤트 {seq} / 요청 로그']
+                        details=diagnostic_rows(diagnostic,full=True)
                         self.publish('decision','연결 조사 중단 사유' if diagnostic['pending'] else '연결 조사 상태 확인',
-                            details=details,basis={'kind':event_kind,'journal_seq':seq,'detail_mode':'activity'})
+                            details=details,basis={'kind':event_kind,'journal_seq':seq,'detail_mode':'full_error'})
                     elif event_kind == 'UNIT_FIRST_DECISION_SUFFICIENT':
                         reason = _reason(self._payload(db, seq).get('reason'), 180)
                         self.publish('decision', '현재 원문으로 충분성을 확인해 추가 연결 읽기를 생략함',
                             details=['이유: '+reason] if reason else [],
                             basis={'kind':event_kind,'journal_seq':seq,'detail_mode':'activity'})
+                    elif event_kind == 'CASE_STAGE_REENTRY' and self.admitted is not None:
+                        payload = self._payload(db, seq)
+                        stage = payload.get('stage') or 'SELECT'
+                        self.current_read_document = None
+                        self.law_decision_states.clear()
+                        self.publish('revised', _STAGE_LABELS.get(stage, '근거 선택') + ' 단계로 돌아갑니다',
+                            details=[_reason(g.get('reason'), 240) for g in _objects(payload.get('gaps')) if _reason(g.get('reason'), 240)],
+                            basis={'kind':event_kind,'journal_seq':seq,'stage':stage})
+                    elif event_kind == 'INVESTIGATION_POINT_RETURNED' and self.admitted is not None:
+                        payload = self._payload(db, seq)
+                        self.current_read_document = None
+                        self.law_decision_states.clear()
+                        self.publish('revised', '앞서 확인한 자료 검색·열람 단계로 돌아갑니다',
+                            details=['이유: '+_reason(payload.get('reason'), 240)],
+                            basis={'kind':event_kind,'journal_seq':seq})
                     elif event_kind == 'REFERENCE_GROUP_DECISION' and self.admitted is not None:
                         self._reference_activity(db, seq)
                     elif event_kind == "CASE_RESPONSE_METADATA":
@@ -379,7 +396,7 @@ class ProgressCapture(logging.Handler):
                                  "STORED": "사용자가 최종 확인한 경험을 저장함",
                                  "CLARIFY": "다음 조사에 필요한 사실 확인을 요청함",
                                  "REMAPPED": "이 질문의 과거 경험 연결을 수정함"}.get(status)
-                        if label:
+                        if label and status not in {'READY', 'REUSED'}:
                             self.publish("decision", label,
                                          basis={"kind": event_kind, "journal_seq": seq})
                     elif event_kind == "OBSERVATION":
@@ -388,7 +405,6 @@ class ProgressCapture(logging.Handler):
                         for tool, status in values:
                             if tool == "read":
                                 if self.admitted is not None:
-                                    self._read_result(db, seq, status)
                                     continue
                                 count = db.execute("SELECT COUNT(*) FROM observation_evidence oe "
                                     "JOIN observation o USING(observation_id) WHERE o.created_seq=?", (seq,)).fetchone()[0]
@@ -446,7 +462,7 @@ class ProgressCapture(logging.Handler):
                     elif event_kind == "REQUEST_ROUTED":
                         payload = self._payload(db, seq)
                         mode = payload.get("mode") or ("SEARCH" if payload.get("agent_required") else "DIRECT")
-                        labels = {"SEARCH": "법률 검색", "BROWSE": "자료 현황 조회",
+                        labels = {"SEARCH": "법률 검색", "CASE": "관련 법령을 찾아 질문을 검토합니다", "BROWSE": "자료 현황 조회",
                                   "DIRECT": "인사·역할 안내", "OUT_OF_DOMAIN": "서비스 범위 밖"}
                         label = labels.get(mode)
                         if label:
@@ -454,7 +470,7 @@ class ProgressCapture(logging.Handler):
                             self.publish("decision", "요청 판단: " + label,
                                          details=["이유: " + reason] if reason else [],
                                          basis={"kind": event_kind, "journal_seq": seq})
-                    elif event_kind in ("FINAL_REVIEW_SKIPPED", "FINAL_REVIEW_ADVISORY"):
+                    elif event_kind == "FINAL_REVIEW_ADVISORY":
                         label = ("설정에 따라 추가 최종 검토를 생략함" if event_kind == "FINAL_REVIEW_SKIPPED"
                                  else "최종 검토 결과를 참고 사항으로 기록함")
                         self.publish("review", label, basis={"kind": event_kind, "journal_seq": seq})
@@ -471,71 +487,87 @@ class ProgressCapture(logging.Handler):
     def _activity(self, db, seq, event_kind):
         payload = self._payload(db, seq)
         basis = {'kind': event_kind, 'journal_seq': seq, 'detail_mode': 'activity'}
-        if event_kind=='LAW_FULLTEXT_DIRECTORY':
-            rows=[r for r in _objects(payload.get('laws')) if r.get('document_id') in self.admitted]
-            details=['검색어: '+' / '.join(_compact(q,100) for q in payload.get('queries',[])),
-                '법령별 묶음: '+str(payload.get('total_laws',0))+'개 · 다른 법령 페이지 이동 가능']
-            for row in rows[:6]:details.append(_compact(row.get('name') or row['document_id'])+' · 조 '+str(row['article_count'])+'개 · 적중 단위 '+str(row['unit_count'])+'개')
-            self.publish('candidate','법령별 Fulltext 검색 결과',count=payload.get('total_laws'),details=details,basis=basis)
+        if event_kind == 'LAW_FULLTEXT_DIRECTORY':
+            rows = [r for r in _objects(payload.get('laws')) if r.get('document_id') in self.admitted]
+            names = list(dict.fromkeys(_compact(r.get('name') or r['document_id']) for r in rows))
+            # Keep every law on its own line, including pages larger than eight.
+            # Actual SQL search words are displayed at the accepted RECALL
+            # checkpoint. Its full query expansions remain in the journal.
+            for offset in range(0, max(1, len(names)), 8):
+                details = names[offset:offset+8]
+                self.publish('candidate', '자료 검색 · 관련 법령을 찾았습니다' if names else '자료 검색 · 일치하는 법령이 없습니다',
+                    details=details, basis=basis)
+            if payload.get('has_more_laws'):
+                self.publish('candidate', '자료 검색 · 다음 페이지에도 법령 후보가 있습니다', basis=basis)
             return
-        if event_kind=='LAW_SELECTION_DECISION':
-            law=payload.get('law') or {}
-            if law.get('document_id') not in self.admitted:return
-            self.publish('decision','법령 조사 선택' if payload.get('status')=='INVESTIGATE' else '법령 조사 보류',
-                details=[_compact(law.get('name')),'선택 이유: '+_reason(payload.get('reason'),180)],basis=basis)
+        if event_kind in {'LAW_STRUCTURE_DIRECTORY', 'LAW_DOCUMENT_STRUCTURE', 'LAW_STRUCTURE_RECOVERY'}:
+            did = payload.get('document_id')
+            if did is not None and did not in self.admitted:
+                return
+            if event_kind == 'LAW_STRUCTURE_DIRECTORY':
+                rows = [r for r in _objects(payload.get('items')) if r.get('document_id') in self.admitted]
+                if did is None and not rows:
+                    # Global misses have no verified document identity to display.
+                    return
+                fields = payload.get('structure_filter') or {}
+                details = [('구조 조건 ' + key + ': ' + _compact(fields[key], 150))
+                           for key in ('coordinate', 'title', 'coordinate_scope') if fields.get(key)]
+                details += ['구조 검색: ' + _compact(q, 180) for q in payload.get('queries', [])]
+                details += ['조회 결과: ' + _compact(payload.get('lookup_status') or '목록')]
+                failure = payload.get('failure') or {}
+                if failure:
+                    details += [_compact(failure.get('code')) + ' · ' + _compact(failure.get('message'), 180),
+                                '다음 탐색: ' + _compact(failure.get('suggested_action'), 180)]
+                for offset in range(0, max(1, len(rows)), max(1, 8-len(details))):
+                    entries = rows[offset:offset+max(1, 8-len(details))]
+                    self.publish('candidate', '자료 검색 · 문서 구조 조회', details=details + [
+                        _compact(r.get('document_name'), 100) + ' · ' + _compact(r.get('coordinate') or r.get('surface'), 100)
+                        + ' · ' + _compact(r.get('title'), 100) for r in entries], basis=basis)
+                return
+            if event_kind == 'LAW_DOCUMENT_STRUCTURE':
+                path = ' → '.join(_compact(r.get('coordinate') or r.get('surface') or r.get('title'), 80)
+                                  for r in _objects(payload.get('path')))
+                details = [_compact(payload.get('document_name'), 100), '현재 위치: ' + (path or '문서 목차'),
+                           '하위 목차: ' + str(payload.get('total', 0)) + '개']
+                self.publish('candidate', '자료 검색 · 현재 문서 목차 확인', details=details, basis=basis)
+                return
+            self.publish('decision', '자료 검색 · 구조 탐색으로 전환', details=[
+                _compact(payload.get('document_name'), 100), _compact(payload.get('reason'), 180),
+                '원문 추가 확인 없이 후보 페이지 ' + str(payload.get('pages_without_new_original', 0)) + '회',
+                _compact(payload.get('next_step'), 180)], basis=basis)
             return
-        if event_kind=='LAW_BRANCH_DECISION':
-            # The branch event contains bound source metadata, never a raw model name.
-            if payload.get('document_id') not in self.admitted:return
-            self.publish('decision','원문 묶음 '+_compact(payload.get('status')),
-                details=[_compact(payload.get('document_name')),'이유: '+_reason(payload.get('reason'),180)],basis=basis)
+        if event_kind == 'LAW_SELECTION_DECISION':
+            law = payload.get('law') or {}
+            if law.get('document_id') not in self.admitted:
+                return
+            selecting = payload.get('status') == 'INVESTIGATE'
+            # Repeated navigation turns often reaffirm the same law choice.
+            key = law['document_id']
+            if self.law_decision_states.get(key) == selecting:
+                return
+            self.law_decision_states[key] = selecting
+            self.publish('decision', '근거 선택 · 이 법령을 검토 대상으로 선택합니다' if selecting else '근거 선택 · 이 법령은 보류합니다',
+                details=[_compact(law.get('name')), '이유: ' + _reason(payload.get('reason'), 240)], basis=basis)
             return
-        if event_kind=='LAW_INVESTIGATION_STATUS':
-            self.publish('decision','원문 조사 완료' if payload.get('status')=='complete' else '원문 조사 계속 필요',
-                details=[_compact(value,240) for value in payload.get('completion_limitations',[])],basis=basis)
+        if event_kind == 'LAW_INVESTIGATION_STATUS':
+            limitations = [_compact(v, 240) for v in payload.get('completion_limitations', [])]
+            if limitations:
+                self.publish('decision', '근거 선택 · 추가 확인이 필요한 내용입니다', details=limitations[:3], basis=basis)
             return
         if event_kind == 'SOURCE_FULLTEXT_RESULTS':
             rows = [r for r in _objects(payload.get('locations')) if r.get('document_id') in self.admitted]
-            query = '입력 검색어: ' + _compact(payload.get('query'), 120)
-            if not rows:
-                self.publish('candidate', 'Fulltext 검색 결과', count=0,
-                             details=[query, '출력: 검색 결과 없음'], basis=basis)
-            for start in range(0, len(rows), 7):
-                details = [query] + [self._activity_name(r) + ' · 검색됨' for r in rows[start:start+7]]
-                self.publish('candidate', f'Fulltext 검색 결과 · {start+1}–{min(start+7,len(rows))}/{len(rows)}',
-                             count=len(rows), details=details, basis=basis)
+            names = list(dict.fromkeys(_compact(r.get('document_name')) for r in rows if r.get('document_name')))
+            for offset in range(0, max(1, len(names)), 7):
+                self.publish('candidate', '자료 검색 · 본문 검색 결과',
+                    details=(['본문 검색어: ' + _compact(payload.get('query'), 280)] if offset == 0 else []) + names[offset:offset+7], basis=basis)
             return
-        if payload.get('document_id') not in self.admitted:
+        if event_kind != 'UNIT_READ_STARTED' or payload.get('document_id') not in self.admitted:
             return
-        name = self._activity_name(payload)
-        if event_kind == 'UNIT_READ_CHOICE':
-            expanded = payload.get('expanded') is True
-            details = ['입력: ' + self._activity_name({**payload,
-                'location':payload.get('input_location') or payload.get('location')}),
-                '행동: ' + _compact(payload.get('read_location'), 160)
-                + (' · 하위 항·호·목 포함 확장 읽기 선택' if expanded else ' · 선택 범위 확인')]
-            if payload.get('read_required') is False:
-                details.append('확보한 원문 확인 · 새 읽기 불필요')
-            reason = _reason(payload.get('reason'), 160)
-            if reason:
-                details.append('선택 이유: ' + reason)
-            self.publish('decision', '확장 읽기 선택' if expanded else '읽을 범위 선택', details=details, basis=basis)
-        else:
-            starting = event_kind == 'UNIT_READ_STARTED'
-            complete = payload.get('complete') is True
-            locations = payload.get('locations')
-            locations = [loc for loc in locations if isinstance(loc, str)] if isinstance(locations, list) else []
-            locations = locations or [payload.get('location') or '문서 본문']
-            status = (' · 하위 항·호·목 포함' if payload.get('extent') == 'subtree' else ' · 해당 범위 본문') if starting else (
-                ' · 열람 완료' if complete else ' · 일부 열람, 나머지 확인 필요')
-            summary = (f'입력: {payload.get("block_count", 0)}개 블록 · {payload.get("chars", 0)}자' if starting else
-                '출력: 기존 검증 원문 재사용' if payload.get('reused') else
-                f'출력: 미확보 구간 {payload.get("new_chars", payload.get("chars", 0))}자 확보 · 채택은 선별 후 결정' if complete else '출력: 미완료')
-            for start in range(0, len(locations), 7):
-                details = [self._activity_name({**payload,'location':loc}) + status for loc in locations[start:start+7]]
-                self.publish('reading' if starting else 'read_complete',
-                    '선택 범위 원문 읽기 진행' if starting else '선택 범위 원문 읽기 결과',
-                    details=details+[summary], basis=basis)
+        if self.current_read_document == payload['document_id']:
+            return
+        self.current_read_document = payload['document_id']
+        self.publish('reading', '원문 확인 · 법령 본문을 읽기 시작합니다',
+            details=[self._activity_name({**payload, 'location': payload.get('read_location') or payload.get('location')})], basis=basis)
 
     def _reference_activity(self, db, seq):
         payload = self._payload(db, seq)
@@ -548,12 +580,6 @@ class ProgressCapture(logging.Handler):
             return
         details = ['입력: '+self._activity_name({**anchor,'location':anchor.get('heading')}),
                    '연결 대상: '+self._activity_name({**target,'location':target.get('heading')})]
-        refs=payload.get('references') or []
-        details.append('결정 출처: '+str(payload.get('decision_origin') or '미기록'))
-        for row in refs[:2]:
-            details.append('참조 ID: '+str(row.get('reference_id') or '미기록')+
-                           ' · 저장된 해석 상태: '+str(row.get('resolution') or '미기록'))
-        if len(refs)>2:details.append(f'외 {len(refs)-2}개 참조 · 전체 상세: journal 이벤트 {seq}')
         reason = _reason(decision.get('reason'), 160)
         if reason:
             details.append('이유: '+reason)
@@ -600,16 +626,20 @@ class ProgressCapture(logging.Handler):
             return
         row = db.execute("SELECT payload_json,payload_hash FROM entity_version "
                          "WHERE kind='case_stage' AND entity_id=? AND created_seq=?",
-                         ("case:" + stage, seq)).fetchone()
+                         ("case:" + stage, event.get("validated_seq", seq))).fetchone()
         if not row:
+            return
+        newest = db.execute("SELECT MAX(created_seq) FROM entity_version WHERE kind='case_stage' AND entity_id=?", ("case:" + stage,)).fetchone()[0]
+        if event.get("validated_seq", seq) != newest or seq <= self.judgment_sequences.get(stage, -1):
             return
         payload = json.loads(row[0])
         actual = hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True,
                                            separators=(",", ":")).encode()).hexdigest()
         if actual != row[1] or actual != event.get("payload_hash"):
             return
+        self.judgment_sequences[stage] = seq
         rebound = isinstance(event.get("origin"), dict)
-        label = _CASE_STAGES[stage][1]
+        label = _STAGE_LABELS[stage] + " · " + _CASE_STAGES[stage][1]
         if rebound:
             label = {"INTENT": "확정 경험의 조사 목적을 현재 질문에 재결속함",
                      "PLAN": "확정 경험의 조사 계획을 현재 범위에 재결속함",
@@ -618,20 +648,45 @@ class ProgressCapture(logging.Handler):
                      "SELECT": "확정 경험의 선택 근거를 현재 원문에 재결속함",
                      "ASSESS": "확정 경험의 판단을 현재 조건에 재결속함"}.get(stage, label)
         basis = {"kind": "CASE_JUDGMENT_ACCEPTED", "journal_seq": seq,
-                 "stage": stage, "state": "REBOUND" if rebound else "COMPLETED"}
+                 "stage": stage, "state": "REBOUND" if rebound else "COMPLETED",
+                 "detail_mode": "judgment", "judgment_revision": seq, "payload_hash": actual}
         details, count = [], None
         kind = "phase"
-        if stage == "RECALL":
+        if stage == "INTENT":
+            details = [_compact(i.get('question'), 280) for i in _objects(payload.get('issues')) if i.get('question')][:3]
+            purpose = _compact(payload.get('purpose'), 280)
+            if purpose and not details:
+                details.append({'GENERAL_RULE_EXPLANATION':'법령의 일반 규칙과 정의를 확인합니다',
+                                'CASE_APPLICATION':'제시된 상황에 법령을 적용해 판단합니다'}.get(purpose, purpose))
+            concepts = [_compact(c, 80) for c in payload.get('concepts', [])
+                        if isinstance(c, str) and not c.startswith('system:')]
+            if concepts:
+                details.append('확인할 개념: ' + ' / '.join(concepts))
+        elif stage == "PLAN":
+            details = ['본문 검색어: ' + _compact(q, 280) for q in payload.get('queries', []) if isinstance(q, str)]
+        elif stage == "RECALL":
             count = len(payload.get("selected_for_read", []))
+            catalogue = payload.get('discovery', {}).get('law_navigation', {})
+            terms = catalogue.get('terms', [])
+            if terms:
+                details.append('본문 검색에 사용한 단어: ' + ' / '.join(_compact(t, 60) for t in terms))
+        elif stage == "READ":
+            count = len(payload.get('originals', []))
         elif stage == "SELECT":
             kind = "selected"
             reasons = {}
+            navigation = payload.get('law_navigation') or {}
+            law_reasons = {r.get('law_id'): _reason(r.get('reason'), None)
+                           for r in _objects(navigation.get('law_decisions'))}
+            for branch in _objects(navigation.get('branches')):
+                reasons[branch.get('source_id')] = (_reason(branch.get('reason'), None)
+                                                   or law_reasons.get(branch.get('law_id')))
             labels = payload.get("label_to_source", {})
             for decision in _objects(payload.get("decisions")):
                 for choice in _objects(decision.get("decision", {}).get("choices")):
                     source = labels.get(choice.get("id"))
                     if source:
-                        reasons[source] = _reason(choice.get("reason"), 120)
+                        reasons[source] = _reason(choice.get("reason"), None)
             for source_id in payload.get("final_ids", []):
                 originals = _objects(payload.get('selected_originals'))
                 if 'selected_originals' in payload:
@@ -642,14 +697,23 @@ class ProgressCapture(logging.Handler):
                 else:
                     names = self._case_source_names(db, source_id)
                 reason = reasons.get(source_id)
-                details.extend(name + " · 답변 근거로 선택 · 근거 채택" + (" · 이유: " + reason if reason else "")
-                               for name in names)
+                if names:
+                    details.append(names[0] + " · 근거 채택" + (" · 이유: " + reason if reason else ""))
             count = len(details)
         elif stage == "ASSESS":
-            count = len(payload.get("claims", []))
+            kind = "decision"
+            claims = _objects(payload.get('claims'))
+            for claim in claims:
+                names = self._case_source_names(db, claim.get('source_id'))
+                if names and isinstance(claim.get('text'), str):
+                    details.append('현재 판단: ' + _reason(claim['text'], None) + ' · 근거: ' + names[0])
+            count = len(details)
+            details += ['미확인 사항: ' + _reason(v, None) for v in payload.get('limitations', []) if isinstance(v, str)]
+        elif stage == "COMPOSE":
+            details = ['현재 확정된 판단과 근거를 답변에 배치했습니다']
         if details:
             for start in range(0, len(details), 8):
-                self.publish(kind, label, count=min(8, len(details)-start),
+                self.publish(kind, label, count=count,
                              details=details[start:start+8], basis=basis)
         else:
             self.publish(kind, label, count=count, basis=basis)
@@ -746,4 +810,8 @@ def capture(request_id, runtime, sink):
 
 def _reason(value, limit):
     from .legal_agent.judgment_view import reason_text
-    return _compact(reason_text(value), limit)
+    text = reason_text(value)
+    for code, label in {'CASE':'법령 조사','START':'새 질문 조사','SUCCEEDED':'처리 완료',
+                        'DIRECT':'바로 안내','RESEARCH':'추가 검색','FINISH':'조사 마무리'}.items():
+        text = re.sub(r'(?<![A-Za-z0-9_])'+code+r'(?![A-Za-z0-9_])', label, text)
+    return _compact(text, limit)

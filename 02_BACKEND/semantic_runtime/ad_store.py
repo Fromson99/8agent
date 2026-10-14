@@ -7,6 +7,22 @@ import sqlite3
 import time
 import uuid
 
+PAGE_SIZE = 20
+
+
+def page_start(position, size=PAGE_SIZE):
+    """Position is the last emitted ordinal, including a short final page."""
+    return max(0, position - 1) // size * size
+
+
+def page_metadata(position, total, size=PAGE_SIZE):
+    start = page_start(position, size)
+    return {'start_ordinal': start + 1 if position else 0,
+            'page_number': start // size + 1 if position else 0,
+            'page_count': (total + size - 1) // size,
+            'has_previous': start > 0, 'has_more': position < total}
+
+
 SCHEMA = '''
 CREATE TABLE IF NOT EXISTS ad_schema(version INTEGER PRIMARY KEY CHECK(version=1));
 INSERT OR IGNORE INTO ad_schema VALUES(1);
@@ -163,15 +179,20 @@ class Store:
         self.db.execute('DELETE FROM ad_selection WHERE session=?',(session,))
         return key
 
-    def page(self, session, view=None, *, previous=False, size=20):
+    def page(self, session, view=None, *, previous=False, size=PAGE_SIZE):
+        if type(size) is not int or size < 1:raise ValueError('AD_PAGE: size must be a positive integer')
         view=view or self.db.execute('SELECT active_view FROM ad_session WHERE id=?',(session,)).fetchone()[0]
         v=self.db.execute('SELECT * FROM ad_view WHERE id=? AND session=?',(view,session)).fetchone()
         if not v:raise ValueError('AD_VIEW: 이전 표가 없습니다. 목록을 먼저 조회하세요.')
-        start=max(0,v['position']-2*size) if previous else v['position']
+        current=page_start(v['position'],size)
+        if previous:start=max(0,current-size)
+        elif v['position']:start=min(current+size,page_start(v['total'],size))
+        else:start=0
         rows=[dict(r) for r in self.db.execute('SELECT * FROM ad_view_row WHERE view=? AND ordinal>? ORDER BY ordinal LIMIT ?',(view,start,size))]
         position=rows[-1]['ordinal'] if rows else start
         self.db.execute('UPDATE ad_view SET position=? WHERE id=?',(position,view))
-        return {'view_id':view,'rows':rows,'total':v['total'],'position':position,'has_more':position<v['total']}
+        return {'view_id':view,'rows':rows,'total':v['total'],'position':position,
+                **page_metadata(position,v['total'],size)}
 
 
 def table_exists(db, name):

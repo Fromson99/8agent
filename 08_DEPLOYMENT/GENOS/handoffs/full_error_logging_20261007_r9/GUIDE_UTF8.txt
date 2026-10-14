@@ -1,0 +1,80 @@
+GENOS 오류 전체 표시 R9 — 2026-10-07
+
+왜 오류가 안 보였나
+LAW_DECISION_REJECTED가 일반 결정 출력 분기로 먼저 들어가 실제 validator 오류를 버렸다.
+API는 조사 실패 진단 일부만 전달했고 워크플로우는 오류 본문/메시지/traceback을 길이 제한했다.
+큰 ERROR가 비동기 로그 큐에서 탈락하는 경로도 있었다.
+
+수정 결과
+서버 콘솔·요청 로그·API·채팅 오류에 검증 실패 이유, 거절된 모델 결정,
+재시도 단계, 조사 blocker 전체와 traceback을 전달한다. 오류 상세의 줄바꿈과 모든 항목을 보존한다.
+4만5천 자 이상과 80개 진행 카드 이후 오류 보존을 모의 검사했다.
+인증키·비밀번호 마스킹은 유지한다. 모델/검색/repair 프롬프트 및 선택 데이터는 바꾸지 않는다.
+
+오류 로그 위치
+1. 코드서빙 서버/워크플로우의 플랫폼 로그 화면: agent.error, ask.failed, runtime.request.failed.
+2. 시스템 원문: GENOS_SYSTEM_LOG_DIR 또는 기본 /nfs-root/diamo/8-agent/logs/system/<run_id>/
+   파일: *python.raw.log, *exceptions.raw.log, workflow.errors.raw.log, stdout.log, stderr.log.
+3. 요청별 로그: GENOS_SHARED_LOG_DIR/<한국날짜>/<team>/<request_id>-<고유값>.log
+   같은 이름 .json은 전체 보고서, .llm_raw.jsonl은 실제 수신한 모델 응답.
+   GENOS_SHARED_LOG_DIR가 미설정이면 이 요청별 공유 로그는 생성하지 않는다.
+   실제 현장 설정/파일 존재는 이 외부 세션에서 확인하지 않았다.
+
+현재 로그 찾기 — READ_ERROR_LOGS.txt를 같은 TRANSFER에 놓는다.
+cd ~/DEV
+bash TRANSFER/READ_ERROR_LOGS.txt
+선택 요청/오류가 포함된 파일을 생략 없이 출력:
+bash TRANSFER/READ_ERROR_LOGS.txt --contains '사진/화면의 request_id 또는 run_id'
+지정 파일 전체 출력:
+bash TRANSFER/READ_ERROR_LOGS.txt --file '/실제/로그/파일.log'
+공유 로그 경로가 환경에 없으면 --root '/실제/공유로그경로'로 지정한다.
+gzip 로그도 전체 복원해서 읽는다. 읽기 도구는 원본을 수정하지 않는다.
+이전에 이미 버려졌고 원장/원문에도 없는 오류는 복원할 수 없다.
+
+코드 적용 — 독립 RUN TXT만으로 실행 가능. 현장 명령은 python3다.
+기존 Git checkout ~/DEV에서 실행한다. 다른 checkout이면 GENOS_DEV_ROOT를 실제 경로로 지정한다.
+cd ~/DEV
+bash TRANSFER/GENOS_FULL_ERROR_LOGGING_20261007_R9_RUN.txt check
+bash TRANSFER/GENOS_FULL_ERROR_LOGGING_20261007_R9_RUN.txt apply
+bash TRANSFER/GENOS_FULL_ERROR_LOGGING_20261007_R9_RUN.txt verify
+
+매 실행은 TRANSFER/full-error-logging-r9/run-*/RUN.log와 EXIT_STATUS.json을 남긴다.
+apply가 출력한 BACKUP 절대경로를 보관한다. 실제 수정 경로는 BACKUP/CHANGED_FILES.txt,
+원본/변경후 해시는 receipt.json, 검증한 코드 전체는 BACKUP/APPLIED_CODE.zip에 보존한다.
+재실행은 ALREADY_APPLIED로 확인한다. 현재 inventory와 파일/엔진 해시가 다르면
+전체 오류를 남기고 중단한다. 검증을 건너뛰거나 기존 CODE_MANIFEST를 임의 재작성하지 않는다.
+이전 system_logging R1 ZIP은 WORKSPACE 엔진 pin 불일치로 사전 중단하는 상태도 확인했다.
+
+Git commit과 같은 checkout/generation gate
+BACKUP='/apply가 출력한 실제 BACKUP 절대경로'
+python3 - "$BACKUP/CHANGED_FILES.txt" <<'COMMIT_EXACT_FILES'
+import pathlib,subprocess,sys
+names=pathlib.Path(sys.argv[1]).read_text().splitlines()
+subprocess.run(['git','diff','--stat','--',*names],check=True)
+subprocess.run(['git','add','--',*names],check=True)
+subprocess.run(['git','commit','-m','Preserve full GENOS error diagnostics'],check=True)
+COMMIT_EXACT_FILES
+bash TRANSFER/GENOS_FULL_ERROR_LOGGING_20261007_R9_RUN.txt gate "$BACKUP"
+gate는 기존 GENOS_SERVING_PATHS/활성 선택으로 generation을 찾는다.
+명시적으로 선택한 generation이 있다면 --generation '/실제/선택/generation'을 붙인다.
+PASS 후 기존 Git remote/branch로 push하고, 그 commit의 새 코드서빙 리비전을 배포한다.
+선행 다른 수정이 남았으면 gate가 중단한다. 이 인계본은 push/배포를 자동 수행하지 않는다.
+
+워크플로우 편집기는 별도 적용
+ZIP이 필요하면 python3 -m zipfile -e TRANSFER/GENOS_FULL_ERROR_LOGGING_20261007_R9.zip TRANSFER/full-error-r9
+ZIP의 WORKFLOW_PASTE_ALL.txt 전체를 기존 Python 단계 편집기에 반영하고 진입점 run을 유지한다.
+표준 라이브러리 시스템 로그 수집기를 동일 해시로 내장한다.
+분리 컨테이너에서도 코드서빙 모듈 공유를 가정하지 않는다.
+워크플로우에도 NFS mount/로그경로/권한이 필요하다.
+적용/새 리비전 배포 후 워크플로우 테스트 화면에서 warmup과 같은 질문을 확인한다.
+코드 ZIP 적용만으로 편집기와 실행 중인 리비전이 바뀌지는 않는다.
+
+원복
+bash TRANSFER/GENOS_FULL_ERROR_LOGGING_20261007_R9_RUN.txt undo "$BACKUP"
+원복 후 해당 기존 코드 commit/리비전을 별도로 재배포한다.
+나중에 수정한 파일이 있으면 덮어쓰지 않고 중단한다. 원문·DB·기존 로그·백업은 보존한다.
+
+확인 범위
+로컬 작업 코드/모의 HTTP/native/SSE/긴 오류·적용/재실행/원복/같은 commit과 모의 generation gate 검증.
+실제 GENOS 적용·push·리비전·워크플로우 성공은 미확인. 로컬 MAIN45 포인터와 데이터 세대는 변경하지 않았다.
+별도 DELIVERY.json/VALIDATION.json에 코드/인계본 SHA와 검증 상태를 기록한다.

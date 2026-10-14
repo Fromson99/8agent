@@ -10,7 +10,6 @@ from pathlib import Path
 import sqlite3
 import time
 
-import httpx
 import pytest
 from fastapi.testclient import TestClient
 from semantic_runtime.contracts import Contracts, digest
@@ -229,19 +228,18 @@ def test_genos_single_send_has_total_deadline_and_no_hidden_retry(monkeypatch):
                'endpoint_identity': text_hash(target.root)}
     transport = GenosTransport(target, binding)
     calls = []
-    class SlowClient:
-        def __init__(self, **kwargs):
-            pass
-        async def __aenter__(self):
-            return self
-        async def __aexit__(self, *args):
-            pass
-        async def request(self, *args, **kwargs):
-            calls.append(args)
-            await asyncio.sleep(.1)
-    monkeypatch.setattr(httpx, 'AsyncClient', SlowClient)
+    import time
+    from contextlib import contextmanager
+    import semantic_runtime.legal_agent.transport as module
+    @contextmanager
+    def opened(*args, **kwargs):
+        calls.append(args)
+        time.sleep(.1)
+        kwargs['deadline'].check()
+        yield None
+    monkeypatch.setattr(module, 'open_response', opened)
     with pytest.raises(TransportError) as caught:
-        transport.send_once(body={}, ticket={'remaining_seconds': .002})
+        transport.send_once(body={}, ticket={'remaining_seconds': .02})
     assert caught.value.unknown and len(calls) == 1
 
 
@@ -250,17 +248,22 @@ def test_genos_http_failure_is_diagnosable_in_container_log_without_response_bod
     binding = {**BINDING, 'provider': 'genos', 'adapter_version': 'genos-single-send-v1',
                'endpoint_identity': text_hash(target.root)}
     transport = GenosTransport(target, binding)
-    class FailedClient:
-        def __init__(self, **kwargs): pass
-        async def __aenter__(self): return self
-        async def __aexit__(self, *args): pass
-        async def request(self, *args, **kwargs):
-            return httpx.Response(400, json={'error': {
-                'type': 'invalid_request_error', 'code': 'unsupported_parameter',
-                'param': 'response_format',
-                'message': 'response_format json_schema is unsupported; PRIVATE SOURCE TEXT',
-            }})
-    monkeypatch.setattr(httpx, 'AsyncClient', FailedClient)
+    from contextlib import contextmanager
+    import semantic_runtime.legal_agent.transport as module
+    from semantic_runtime.stdlib_http import Response
+    class Raw(io.BytesIO):
+        code = 400
+        headers = {'content-type': 'application/json'}
+    @contextmanager
+    def opened(*args, **kwargs):
+        raw = Raw(json.dumps({'error': {
+            'type': 'invalid_request_error', 'code': 'unsupported_parameter',
+            'param': 'response_format',
+            'message': 'response_format json_schema is unsupported; PRIVATE SOURCE TEXT',
+        }}).encode())
+        with raw:
+            yield Response(raw, kwargs['timeout'], kwargs['deadline'])
+    monkeypatch.setattr(module, 'open_response', opened)
     stream = io.StringIO()
     handler = logging.StreamHandler(stream)
     handler.setFormatter(obs.JsonFormatter())

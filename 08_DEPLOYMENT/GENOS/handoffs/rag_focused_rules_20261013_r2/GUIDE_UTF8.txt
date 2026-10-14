@@ -1,0 +1,99 @@
+GENOS RAG 패치 R2 — R1 초기화 ContractError 정정 / 2026-10-13
+
+1. 이번 R2는 R1이 적용된 기존 ~/DEV에 이어 적용합니다
+GENOS_RAG_FOCUSED_RULES_20261013_R2.zip
+GENOS_RAG_FOCUSED_RULES_20261013_R2_RUN.txt (ZIP 없이도 독립 실행 가능)
+앞서 보낸 R1에서 새 request_entry_policy 설정을 읽는 검증 파일을 빠뜨렸습니다.
+설정 검증기가 unknown v4 profile field로 초기화를 중단하는 결함을 재현했습니다.
+사진의 RUNTIME_BOOTSTRAP_ERROR / ContractError / 503과 같은 오류 종류입니다.
+사진에는 내부 예외 메시지가 없어 현장 장애의 모든 원인까지 확인한 것은 아닙니다.
+R1만 적용한 상태로 사용하지 말고 이번 R2를 이어 적용한 뒤 새 리비전을 배포합니다.
+R2는 설치 코드 전체가 알려진 R1 결과 330종 중 하나인지 확인한 후 적용합니다.
+다른 코드 조합이면 파일을 보존하고 멈춥니다. 이전 캐시/CM/표시 ZIP을 덮어쓰지 않습니다.
+
+2. 변경 범위
+workflow_tiers_policy.py를 검증한 MAIN53의 동일 파일로 보완합니다.
+request_entry_policy의 legacy/fused-v1/fused-title-v1을 검증하고 잘못된 값은 계속 거부합니다.
+그 파일의 엔진 연결 해시, PIPELINE, CODE_MANIFEST를 함께 갱신합니다.
+기존 R1의 RAG 최적화, GENOS 캐시, 모델/인증/전송, 서비스 예산, CM, 데이터 generation,
+CURRENT, DB, 워크플로우 편집기 설정을 유지합니다. 원문 재구축은 필요하지 않습니다.
+
+3. 적용 — 기존 ~/DEV에서 실행
+첨부 RUN.txt를 ~/DEV/TRANSFER에 올린 후 아래 명령 전체를 실행합니다.
+
+bash ~/DEV/TRANSFER/GENOS_RAG_FOCUSED_RULES_20261013_R2_RUN.txt
+
+기본 동작은 백업 → 코드 적용 → 실제 설정 검증입니다. python3 경로/버전을 로그에 남깁니다.
+별도 checkout은 GENOS_DEV_ROOT=/실제/DEV로 지정합니다. 새 후보 폴더에만 적용하지 않습니다.
+별도 Python 위치는 GENOS_PYTHON_DIR에 현장 python3가 있는 폴더를 지정합니다.
+ZIP으로 실행할 경우:
+
+python3 -m zipfile -e ~/DEV/TRANSFER/GENOS_RAG_FOCUSED_RULES_20261013_R2.zip ~/DEV/TRANSFER/rag-focused-rules-r2-delivery
+cd ~/DEV/TRANSFER/rag-focused-rules-r2-delivery
+sha256sum -c PACKAGE_SHA256SUMS.txt
+bash GENOS_RAG_FOCUSED_RULES_20261013_R2_RUN.txt
+
+이하 예시는 독립 RUN.txt가 ~/DEV/TRANSFER에 있는 경우입니다.
+ZIP으로만 반입했다면 위에서 추출한 RUN.txt의 절대경로로 바꿔 실행합니다.
+읽기 전용 사전 검사 / 적용 후 검사:
+bash ~/DEV/TRANSFER/GENOS_RAG_FOCUSED_RULES_20261013_R2_RUN.txt check
+bash ~/DEV/TRANSFER/GENOS_RAG_FOCUSED_RULES_20261013_R2_RUN.txt verify
+
+확인할 출력: R2_PROFILE_BOOTSTRAP_POLICY PASS / FOCUSED_RAG_ALL_PROFILES PASS
+BACKUP=... / APPLIED_CODE_ZIP=... / CODE_ZIP_SHA256=... / CODE_APPLIED
+재실행은 ALREADY_APPLIED로 검증합니다. 최초 실행부터 FOCUSED_RAG_LOG 경로에 로그와 .exit를 남깁니다.
+BACKUP 절대경로와 출력 로그를 보존합니다. apply PASS는 현장 서비스 부팅 성공과 별도입니다.
+
+4. 같은 checkout에서 commit → gate → push → 새 리비전
+다음 두 값은 현장에서 실제 값으로 바꿉니다.
+TASK_BACKUP: R2 apply가 출력한 BACKUP 절대경로 (R1 백업과 구분).
+GENOS_GENERATION: 현재 서비스가 선택한 기존 generation 절대경로.
+GENOS_SERVING_PATHS.json의 선택 경로/manifest SHA가 있으면 함께 대조합니다.
+
+export TASK_BACKUP='/이번_R2_apply가_출력한_BACKUP_절대경로'
+export GENOS_GENERATION='/현재_서비스가_선택한_generation_절대경로'
+cd ~/DEV
+python3 - "$TASK_BACKUP/receipt.json" <<'COMMIT_PY'
+import json,subprocess,sys
+receipt=json.load(open(sys.argv[1],encoding='utf-8'))
+paths=[row['path'] for row in receipt['files']]
+subprocess.run(['git','diff','--check','--',*paths],check=True)
+subprocess.run(['git','diff','--stat','--',*paths],check=True)
+subprocess.run(['git','add','-f','--',*paths],check=True)
+subprocess.run(['git','commit','--only','-m','Fix R1 GENOS request-entry profile bootstrap with R2','--',*paths],check=True)
+COMMIT_PY
+bash ~/DEV/TRANSFER/GENOS_RAG_FOCUSED_RULES_20261013_R2_RUN.txt gate "$TASK_BACKUP" --generation "$GENOS_GENERATION" && git rev-parse HEAD && git push
+
+순서대로 실행하고 실패하면 다음 단계로 진행하지 않습니다.
+R1 변경도 committed 상태여야 전체 installed-code gate가 통과합니다.
+gate는 이번 DEV에서 생성한 APPLIED_CODE.zip과 같은 committed checkout을 대조하고
+선택 generation의 E2E/verify_assets를 확인합니다. 원문/manifest hash를 임의로 갱신하지 않습니다.
+gate 후 코드가 바뀌면 다시 commit/gate합니다. PASS 후 push한 동일 commit과 기존 generation으로
+플랫폼에서 새 코드서빙 리비전을 배포합니다. 별도 SSE 서버도 기존 시작 설정으로 재시작합니다.
+Git push만으로 실행 중인 코드서빙 리비전이 갱신되었다고 보지 않습니다.
+
+5. 현장 확인 — 워크플로우 테스트 화면에서만
+기존 워크플로우 Python 편집기 R4와 연결 설정을 유지합니다.
+워크플로우 테스트 화면에서 warmup 후 사진의 질문을 다시 실행합니다.
+실제 commit / 코드서빙 revision / generation 절대경로와 manifest SHA / request_id를 기록합니다.
+여전히 실패하면 같은 요청의 코드서빙 runtime.bootstrap.failed 내부 예외와 단계 로그를 보존합니다.
+코드서빙 직접 테스트 UI/API 실행은 요구하지 않습니다.
+로컬 검증은 실제 service.service 초기화 경로를 모의 원문과 모의 모델 목록 응답으로 확인했습니다.
+실제 내부 모델 추론이나 GENOS 워크플로우 성공을 대신하지 않습니다.
+
+6. 실패·재개·원복
+apply 실패 시 로그와 BACKUP을 보존합니다. 알려진 원본/패치 바이트의 부분 적용만 원복합니다.
+bash ~/DEV/TRANSFER/GENOS_RAG_FOCUSED_RULES_20261013_R2_RUN.txt undo "$TASK_BACKUP"
+R2 undo는 R1 코드로 돌아가므로 이번 초기화 결함도 다시 생깁니다.
+정상 동작하던 R1 이전으로 복구할 때에는 R2를 원복한 뒤 기존 R1 RUN의 원래 백업으로 R1도
+원복하고, R1 이전에 검증한 코드서빙 리비전과 generation으로 복귀합니다.
+Git에 반영한 뒤 원복했다면 원복 commit/gate/push와 서버 리비전 복귀도 별도 수행합니다.
+코드/백업이 알 수 없는 바이트로 바뀌었으면 덮어쓰지 않고 멈춥니다.
+데이터·DB·캐시·기존 로그·백업은 삭제하지 않습니다.
+
+7. 검증 상태
+대표 설치 조합 3종: R1 부팅 503/ContractError 재현 → 동일 코드에 R2 적용 → 실제 서비스 초기화 200.
+각 조합에서 check/apply/재실행/verify, 같은 committed checkout의 모의 generation gate,
+변조 시 verify/undo 거부, 정상 undo의 R1 전체 코드 복원, generation 불변을 확인했습니다.
+모델 목록 GET만 모의 HTTP 응답을 사용했습니다. 실제 외부 통신/모델 추론은 0회입니다.
+GENOS 실제 적용·push·새 리비전·워크플로우 성공은 아직 미확인입니다.

@@ -6,6 +6,7 @@ from pathlib import Path
 from jsonschema import Draft202012Validator, ValidationError
 
 from .legal_agent.errors import ProposalError
+from .legal_agent.output_contract import validate_shape
 
 
 SCHEMA_PATH = Path(__file__).resolve().parents[2] / '00_SYSTEM/SCHEMAS/reference-resolution-v1.schema.json'
@@ -20,10 +21,7 @@ def schema(name):
 
 
 def validate(name, value):
-    try:
-        Draft202012Validator(schema(name)).validate(value)
-    except ValidationError as exc:
-        raise ProposalError(f'{name}: {exc.message}') from exc
+    validate_shape(value,schema(name))
     return value
 
 

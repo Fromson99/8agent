@@ -1,0 +1,33 @@
+{
+  "revision": "GENOS_INVESTIGATION_BUDGET_20261007_R1",
+  "settings": [
+    "GENOS_RAG_MAX_MODEL_ATTEMPTS",
+    "GENOS_RAG_MAX_TOOL_ACTIONS",
+    "GENOS_RAG_WALL_SECONDS",
+    "GENOS_RAG_SEARCH_ROUNDS",
+    "GENOS_RAG_ASSESSMENT_REENTRY_LIMIT"
+  ],
+  "operations": [
+    {
+      "name": "operator helpers",
+      "before": "def _genos_v5_environment_binding(request_profile=None):\n",
+      "after": "def _investigation_profile(value):\n    \"\"\"Apply operator budgets to a copy; request bodies cannot override them.\"\"\"\n    result = {**value, 'candidate_navigation': dict(value.get('candidate_navigation', {}))}\n    settings = (\n        ('GENOS_RAG_MAX_MODEL_ATTEMPTS', 'max_model_attempts', False, 1),\n        ('GENOS_RAG_MAX_TOOL_ACTIONS', 'max_tool_actions', False, 1),\n        ('GENOS_RAG_WALL_SECONDS', 'wall_seconds', False, 1),\n        ('GENOS_RAG_SEARCH_ROUNDS', 'search_rounds', True, 1),\n        ('GENOS_RAG_ASSESSMENT_REENTRY_LIMIT', 'assessment_reentry_limit', True, 0),\n    )\n    for name, key, nested, minimum in settings:\n        raw = os.environ.get(name, '').strip()\n        if not raw:\n            continue\n        try:\n            limit = int(raw)\n        except ValueError as exc:\n            raise ValueError(f'{name} must be an integer >= {minimum}') from exc\n        if limit < minimum:\n            raise ValueError(f'{name} must be an integer >= {minimum}')\n        if key == 'max_model_attempts' and limit <= value['finalization_reserve']:\n            raise ValueError(f'{name} must exceed finalization_reserve ({value[\"finalization_reserve\"]})')\n        if key == 'max_tool_actions' and limit <= value['tool_finalization_reserve']:\n            raise ValueError(f'{name} must exceed tool_finalization_reserve ({value[\"tool_finalization_reserve\"]})')\n        target = result['candidate_navigation'] if nested else result\n        target[key] = limit\n    return result\n\n\ndef _investigation_budget(value):\n    navigation = value['candidate_navigation']\n    return {**{key: value[key] for key in (\n        'max_model_attempts', 'finalization_reserve', 'max_tool_actions', 'wall_seconds', 'max_no_progress')},\n        'investigation_model_attempts': value['max_model_attempts'] - value['finalization_reserve'],\n        'search_rounds': navigation['search_rounds'],\n        'assessment_reentry_limit': navigation['assessment_reentry_limit']}\n\n\ndef _genos_v5_environment_binding(request_profile=None):\n"
+    },
+    {
+      "name": "GENOS environment profile",
+      "before": "    configured_profile = profile(_genos_v5_wait_profile({**request_profile, \"model_binding\": model_binding,\n                                  \"max_output_tokens\": output_tokens}), require_model=True)\n",
+      "after": "    configured_profile = profile(_investigation_profile(_genos_v5_wait_profile(\n        {**request_profile, \"model_binding\": model_binding, \"max_output_tokens\": output_tokens})),\n        require_model=True)\n"
+    },
+    {
+      "name": "common local/GENOS application binding",
+      "before": "        _APP = create_app(\n",
+      "after": "        if selected_implementation in ('legal-agent-tools-v5', 'legal-agent-unified-v6'):\n            if binding.get('mode') == 'local-release':\n                budget_profile = importlib.import_module(package_name + '.legal_agent.workflow_tiers_policy').profile\n            else:\n                from semantic_runtime.legal_agent.workflow_tiers_policy import profile as budget_profile\n            options['legal_agent_profile'] = budget_profile(_investigation_profile(options['legal_agent_profile']))\n            binding.update(\n                investigation_budget=_investigation_budget(options['legal_agent_profile']),\n                effective_profile_sha256=hashlib.sha256(json.dumps(options['legal_agent_profile'],\n                    sort_keys=True, separators=(',', ':')).encode()).hexdigest(),\n                service_entry_sha256=_sha(Path(__file__)),\n            )\n            obs.event(log, 'runtime.investigation_budget', **binding['investigation_budget'],\n                      effective_profile_sha256=binding['effective_profile_sha256'])\n        _APP = create_app(\n"
+    }
+  ],
+  "source_service_sha256": "2cfb9c6e36c0a80ffd8ce1409060d4666c074479be699028ebe28272827d86af",
+  "requires_rebuilt_generation": false,
+  "modified_checkout_paths": [
+    "service.py",
+    "CODE_MANIFEST.json"
+  ]
+}

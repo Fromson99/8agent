@@ -1,0 +1,24 @@
+원문 gap 행동 충돌 MAIN 반영 결과 — 2026-10-13
+
+선택 릴리스: assessment-gap-action-20261013-r1 / generation60
+기준: successful-shortcut-20261013-r1 / generation59
+수정: completion_contracts.py + completion_v5.py + completion_v6.py 및 엔진/PIPELINE 해시31개
+원문 gap의 REQUEST_FACT → RESEARCH. 종류·대상·부족·사유·근거 보존, 실제 MISSING_FACT 유지.
+v7/v8은 기존 v6 준비 경로에서 같은 보정을 사용. 감사: model_proposal.gap_action_corrections.
+정상 완료 숏컷·권한·원문 세대·프로필·검색 정책 유지.
+
+검증: 고정 합성952조합 모두 통과, 관련 회귀353개 통과.
+초기 검사 지원 경로 오류는 원 로그를 보존한 뒤 동일 테스트 바이트로 지원 경로만 연결.
+실제 WSL local service.service HEALTH200 / RAG_SEARCH200, 선택301파일 해시와 선택 모듈 확인.
+신규 모델 호출0. 법률 답변 품질/GENOS 내부 모델 성능 인증이 아님.
+
+남은 사항: 이전부터 있던 복구 fixture4건과 전역 오류 구조화/재시도 담당/소비자 실패검사 과제는 BL-010.
+GENOS 반입·실제 commit/push·리비전·내부모델/워크플로우는 미확인.
+현장 인계는 ASSESSMENT_GAP_ACTION R2. 최근 SUCCESSFUL_SHORTCUT R1 적용 상태도 지원.
+
+롤백: 이후 새 승격이 없는 현재 MAIN60에서 표준 latest rollback 사용.
+.venv/bin/python 06_TOOLS/run_tool.py rag_main_promotion.py rollback --confirm-main
+이 명령은 WSL 로컬 전용이며 GENOS 명령이 아니다. 직전 MAIN59 내용을 새 generation으로 선택.
+GENOS에서는 별도 R2 실행 TXT undo 및 이전 검증 commit/revision/SSE 복귀를 사용.
+
+근거: artifacts/run-001/result.json / artifacts/design/freeze.json / artifacts/main-apply.log / artifacts/main-service-smoke.json

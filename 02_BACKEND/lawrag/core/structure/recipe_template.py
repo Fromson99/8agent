@@ -1,4 +1,5 @@
 """Document-wide numbering grammar. The model can edit families, never instances."""
+from .recipe_output import ResponseError, StructureDecisionError
 import copy
 from collections import defaultdict
 import jsonschema
@@ -22,7 +23,7 @@ def rule_schema():
 
 def compile_recipe(rules, catalog):
     if not isinstance(rules,dict) or set(rules)!=set(catalog):
-        raise ValueError('Every family needs one document-wide numbering rule')
+        raise StructureDecisionError('Every family needs one document-wide numbering rule')
     for rule in rules.values():jsonschema.validate(rule,rule_schema())
     parents={f:r['parent_family'] for f,r in rules.items()}
     return {'tag':'document-numbering-template','version':1,
@@ -32,10 +33,10 @@ def compile_recipe(rules, catalog):
 
 def validate(recipe, catalog):
     if 'heading_candidates' in recipe or 'reference_candidates' in recipe:
-        raise ValueError('Document grammar forbids instance overrides')
+        raise StructureDecisionError('Document grammar forbids instance overrides')
     compiled=compile_recipe(recipe['heading_rules'],catalog)
     if compiled['parent_map']!=recipe.get('parent_map') or [set(x) for x in compiled['levels']]!=[set(x) for x in recipe['levels']]:
-        raise ValueError('Grammar and executable hierarchy disagree')
+        raise StructureDecisionError('Grammar and executable hierarchy disagree')
 
 
 def signature(recipe):
@@ -125,7 +126,7 @@ def compose(data,catalog,call,check,save):
         'families':{'type':'object','additionalProperties':False,
                     'properties':{f:rule_schema() for f in catalog},'required':list(catalog)}},'required':['families']}
     request=copy.deepcopy(data)
-    for attempt in range(3):
+    for attempt in range(2):
         phase='chunk-template' if not attempt else f'chunk-template-repair-{attempt}'
         proposed=None
         try:
@@ -138,8 +139,8 @@ def compose(data,catalog,call,check,save):
             jsonschema.validate(proposed,schema)
             recipe=compile_recipe(proposed['families'],catalog);check(recipe)
             save('compiled-chunk-template.json',recipe);return recipe
-        except (ValueError,KeyError,TypeError,jsonschema.ValidationError) as exc:
-            recipe_output.feedback(request,exc,proposed,phase=phase,attempt=attempt,attempts=3,
+        except (ResponseError,StructureDecisionError,jsonschema.ValidationError) as exc:
+            recipe_output.feedback(request,exc,proposed,phase=phase,attempt=attempt,attempts=2,
                 invalid_key='invalid_template',constraints={
                     'required_families':list(catalog),'allowed_parent_families':[ROOT,*catalog],
                     'parent_graph':'No cycles; maximum depth 16. Each family exactly once.',
@@ -163,7 +164,7 @@ def apply(recipe,changes,catalog):
     rules=copy.deepcopy(recipe['heading_rules']);seen=set()
     for edit in changes:
         family=edit['family']
-        if family not in rules or family in seen:raise ValueError('Unknown or repeated family change')
+        if family not in rules or family in seen:raise StructureDecisionError('Unknown or repeated family change')
         seen.add(family);rules[family]=edit['rule']
     return compile_recipe(rules,catalog)
 
@@ -178,20 +179,20 @@ def request_review(phase,data,catalog,call,*,seen_levels=(),save=None):
         label=phase if not attempt else phase+'-feedback';response=None
         try:
             response=call(label,system,request,schema,True);jsonschema.validate(response,schema)
-            if response['reviewed_state_id']!=state:raise ValueError('Review state mismatch')
+            if response['reviewed_state_id']!=state:raise StructureDecisionError('Review state mismatch')
             for issue in response['issues']:
-                if not issue['blocks'] or not set(issue['blocks'])<=supplied:raise ValueError('Unseen or empty issue evidence')
+                if not issue['blocks'] or not set(issue['blocks'])<=supplied:raise StructureDecisionError('Unseen or empty issue evidence')
             verdict=response['verdict'];changes=response['template_changes']
-            if verdict!='revise' and changes:raise ValueError('Only revise may change template rules')
-            if verdict=='approve' and (response['issues'] or forbid_approval):raise ValueError('Unresolved grammar/source issues cannot be approved')
-            if verdict in {'missing_rules','source_error'} and not response['issues']:raise ValueError('Source evidence required')
+            if verdict!='revise' and changes:raise StructureDecisionError('Only revise may change template rules')
+            if verdict=='approve' and (response['issues'] or forbid_approval):raise StructureDecisionError('Unresolved grammar/source issues cannot be approved')
+            if verdict in {'missing_rules','source_error'} and not response['issues']:raise StructureDecisionError('Source evidence required')
             recipe=apply(data['recipe'],changes,catalog) if verdict=='revise' else copy.deepcopy(data['recipe'])
-            if verdict=='revise' and signature(recipe) in blocked:raise ValueError('No executable grammar progress or repeated template')
+            if verdict=='revise' and signature(recipe) in blocked:raise StructureDecisionError('No executable grammar progress or repeated template')
             out={**response,'recipe':recipe}
             if save:save(label+'-compiled-response.json',out)
             return out
-        except (ValueError,TypeError,KeyError,jsonschema.ValidationError) as exc:
-            if attempt:raise ValueError('invalid_template_review: '+str(exc)) from exc
+        except (ResponseError,StructureDecisionError,jsonschema.ValidationError) as exc:
+            if attempt:raise StructureDecisionError('invalid_template_review: '+str(exc)) from exc
             forbid_approval=forbid_approval or bool(isinstance(response,dict) and (response.get('issues') or response.get('template_changes') or response.get('verdict')=='revise'))
             request['invalid_review']=response;request['validation_feedback']=str(exc)
             if save:save(phase+'-feedback-input.json',request)

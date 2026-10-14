@@ -12,7 +12,11 @@ from .corrected_memory import MemoryError, Reenter, encoded, digest, object_sche
 from .source_recall import SourceRecall
 from .source_selection import originals, select_sources
 from . import investigation_contracts as ic
+from . import completion_contracts as cc
+from .completion_execution import CompletionExecution
 from .errors import ContractError
+from . import output_contract as output
+from .. import query_latency as latency
 
 CLAIM=object_schema({'text':{'type':'string'},'source_id':{'type':'string'},'quote':{'type':'string'}})
 CLAIM['properties']['evidence']=array(object_schema({'source_id':{'type':'string'},'quote':{'type':'string','minLength':1}}))
@@ -88,6 +92,7 @@ class NativeRag:
             execution=NativeExecution(self,session,state,principal)
             yield execution
             session.check_sources_unchanged()
+    @latency.timed('law.evidence.verify')
     def verify(self,read):
         if read['binding']!=self.binding:raise MemoryError('cached source generation changed')
         for e in read['evidence']:
@@ -97,7 +102,7 @@ class NativeRag:
                 if raw['source_artifact_sha256']!=e['source_artifact_hash'] or raw['text'][span['start_cp']:span['end_cp']]!=span['text'] or hashlib.sha256(raw['text'].encode()).hexdigest()!=span['block_hash']:
                     raise MemoryError('cached evidence changed')
 
-class NativeExecution:
+class NativeExecution(CompletionExecution):
     @staticmethod
     def completion_limits(parts, limitations):
         values=list(dict.fromkeys(list(limitations)+parts.get('SELECT',{}).get('payload',{}).get('completion_limitations',[])))
@@ -114,28 +119,45 @@ class NativeExecution:
     @property
     def control(self):
         return getattr(getattr(self.s,'sources',None),'profile',{}).get('candidate_navigation',{}).get('investigation_control',False)
+    @property
+    def completion(self):
+        return cc.enabled(self.s.sources.profile)
     def schema(self,stage):
-        if stage=='INTENT':return ic.intent_schema(INTENT) if self.control else INTENT
+        if stage=='INTENT':
+            value=ic.intent_schema(INTENT) if self.control else INTENT
+            if self.completion:
+                value=deepcopy(value)
+                if cc.version(self.s.sources.profile) in (cc.V5,cc.V6,cc.V7,cc.V8):
+                    from .completion_v5 import intent_schema
+                    value=intent_schema(value)
+                value['properties'].update(completion_contract={'const':cc.version(self.s.sources.profile)},request_text={'type':'string'},request_hash={'type':'string'})
+                value['required'] += ['completion_contract','request_text','request_hash']
+            return value
         if stage=='ASSESS':
             if not self.control:return ASSESS
             value=ic.assess_schema(ASSESS,getattr(self,'issues',[{'id':'Q1'}]),getattr(self,'saved_material_ids',[]))
             value['properties'].update(answer_coverage={'type':'string'},semantic_quality_certified={'type':'boolean'})
-            return value
-        if stage=='COMPOSE':return ANSWER
+            return cc.internal_schema(value,'ASSESS') if self.completion else value
+        if stage=='COMPOSE':return cc.internal_schema(ANSWER,'COMPOSE') if self.completion else ANSWER
         return {'type':'object'}
     def invoke(self,system,data,schema,phase,*,timeout=None):
         # Actual source/selection payloads are receipted in the native work journal.
-        self.s.work.event('MEMORY_MODEL_INPUT',{'phase':phase,'input_sha256':digest(data),'data':data})
+        with latency.span('model.input_journal',phase=phase):
+            self.s.work.event('MEMORY_MODEL_INPUT',{'phase':phase,'input_sha256':digest(data),'data':data})
         import inspect
         options={'timeout':timeout} if timeout is not None and 'timeout' in inspect.signature(self.host.invoke).parameters else {}
         out=self.host.invoke(system,data,schema,phase,**options)
-        validate(out,schema)
-        self.s.work.event('MEMORY_MODEL_OUTPUT',{'phase':phase,'output':out})
+        with latency.span('model.output_validate',phase=phase):
+            validate(out,schema)
+        with latency.span('model.output_journal',phase=phase):
+            self.s.work.event('MEMORY_MODEL_OUTPUT',{'phase':phase,'output':out})
         return out
     def verify_claims(self,claims,sources):
         by_id={s['source_id']:s for s in sources}
         if not claims:raise MemoryError('judgment contains no supported claims')
         for i,claim in enumerate(claims):
+            if claim.get('span_receipts'):
+                cc.verify_span_claim(claim, sources)
             for extra in claim.get('evidence',[]):
                 self.verify_claims([{'text':claim['text'],**extra}],sources)
             if claim['source_id'] not in by_id:
@@ -143,12 +165,25 @@ class NativeExecution:
             if not claim['quote'].strip() or claim['quote'] not in by_id[claim['source_id']]['text'] or not claim['text'].strip():
                 raise MemoryError(f'unsupported claim[{i}]: quote must be an exact nonempty substring of the offered original {claim["source_id"]}; factual context cannot be quoted as legislation')
     def stage(self,stage,state,parts,utterance,format):
+        with latency.span('law.native.'+stage, phase=stage, pressure=True):
+            return self._stage(stage,state,parts,utterance,format)
+
+    def _stage(self,stage,state,parts,utterance,format):
         data={'question':self.host.question(state),'current_facts':state['facts']}
         chain=parts.get('SELECT',{}).get('payload',{}).get('investigation_chain')
         if chain:data['investigation_chain']=chain
+        if self.completion and stage in ('INTENT','ASSESS','COMPOSE'):
+            result=self.completion_stage(stage,state,parts,utterance,format,data)
+            self.s.work.event('MEMORY_STAGE_COMPLETE',{'stage':stage,'payload':result})
+            return result
         if stage=='INTENT':
-            result=self.invoke('현재 목적의 개념명을 추출한다. 조건·과거 오답을 개념으로 승인하지 않는다. purpose는 수행 목적이며 concepts는 검색용 개념명이다. issues가 요구되면 원문 질문을 대상·요구별로 나누어 Q1부터 순서대로 기록한다. 원문 요구나 명시 범위를 삭제하지 않는다. JSON만 출력한다.',data,self.schema('INTENT'),'memory-intent')
-            if self.control and len({i['id'] for i in result['issues']})!=len(result['issues']):raise MemoryError('duplicate issue ID')
+            wire=self.schema('INTENT')
+            def check_intent(value):
+                output.validate_shape(value,wire)
+                if self.control and len({i['id'] for i in value['issues']})!=len(value['issues']):
+                    raise output.OutputContractError('duplicate issue ID',[output.issue('DUPLICATE_ISSUE_ID','/issues')],category='DECISION_CONFLICT')
+            result=output.bounded_decision(self.s.work,'request-intent',data,wire,
+                lambda payload,attempt:self.invoke('현재 목적의 개념명을 추출한다. 조건·과거 오답을 개념으로 승인하지 않는다. purpose는 수행 목적이며 concepts는 검색용 개념명이다. issues가 요구되면 원문 질문을 대상·요구별로 나누어 Q1부터 순서대로 기록한다. 원문 요구나 명시 범위를 삭제하지 않는다. JSON만 출력한다.',payload,wire,'memory-intent' if not attempt else 'memory-intent-repair'),check_intent)
         elif stage=='PLAN':
             result={'query':self.s.context.query,'queries':state['queries'] or [state['task']],
                 'law_names':[self.s.sources.matcher.documents[d['id']] for d in self.s.sources.matcher.starts(self.host.question(state),self.s.sources.scope)['documents']],'binding':self.host.binding}
@@ -173,15 +208,21 @@ class NativeExecution:
                 self.s.sources.investigation_issues=self.issues
             progress=getattr(self,'selection_progress',None)
             evidence=list(getattr(self,'selection_progress_evidence',[]))
+            prior_route=False
             if self.control and not progress:
+                # Only a user re-entry reaches SELECT without this request's own checkpoint.
                 progress=deepcopy(parts.get('SELECT',{}).get('payload',{}).get('investigation_state'))
+                prior_route=bool(progress)
                 if progress and getattr(self,'assessment_gaps',None):progress['assessment_gaps']=deepcopy(self.assessment_gaps)
+            self.s.sources.investigation_prior_route=prior_route
+            self.s.sources.investigation_hints=getattr(self,'investigation_hints',None)
             if progress:
                 records=list(progress.get('working',{}).get('unit_reads',[]))
                 records+=list(progress.get('batch',{}).get('selected',{}).values())
                 records+=list((progress.get('previous') or {}).get('_selected_units',{}).values())
                 records+=list(progress.get('selected',{}).values())+list(progress.get('contexts',{}).values())+list(progress.get('material_history',{}).values())
-                evidence.extend(e for r in records for e in r['evidence'])
+                evidence.extend(e for r in records for e in r['evidence']
+                                if not prior_route or e['document_id'] in set(self.s.sources.scope))
             if evidence:
                 evidence=list({e['evidence_id']:e for e in evidence}.values())
                 self.host.verify({'binding':read['binding'],'evidence':evidence})
@@ -207,9 +248,15 @@ class NativeExecution:
                     return raw  # Group coverage and READ scopes are validated by navigation.
                 # Schema enforces offered IDs and the original physical choice budget.
                 # Preserve MAIN's stricter selector; only this audited adapter coalesces.
-                seen=set();choices=[]
+                seen={};choices=[]
                 for item in raw['choices']:
-                    if item['id'] not in seen:choices.append(item);seen.add(item['id'])
+                    if item['id'] in seen:
+                        if seen[item['id']]!=item:
+                            from .output_contract import DecisionConflict,issue
+                            raise DecisionConflict('conflicting decisions for the same offered source',
+                                [issue('CONFLICTING_SOURCE_CHOICES','/choices')])
+                    else:
+                        choices.append(item);seen[item['id']]=item
                 if len(choices)!=len(raw['choices']):
                     self.s.work.event('MEMORY_SELECTION_COALESCED',{'phase':phase,'raw':raw,'executed_choices':choices})
                 return {**raw,'choices':choices}
@@ -220,6 +267,10 @@ class NativeExecution:
             if result.get('status')=='pending' and not result.get('needs_fulltext'):
                 failure=SourceInvestigationIncomplete(result)
                 self.s.work.event('SOURCE_INVESTIGATION_INCOMPLETE',failure.diagnostics)
+                if self.completion:
+                    from .errors import InvestigationPending
+                    raise InvestigationPending('질문에 필요한 원문 조사가 완료되지 않았습니다.',
+                        diagnostics={**failure.diagnostics,'resume_available':False,'stop_reason':result.get('stop_reason')})
                 raise failure
             if result.get('needs_fulltext') or (not result['final_ids'] and read['record'].get('discovery_mode')=='structure'):
                 if result.get('law_navigation'):
@@ -250,20 +301,22 @@ class NativeExecution:
                     reentry_budget=getattr(self,'reentry_counters',{}),
                     evidence_rule='saved_inventory is metadata, not quote evidence; reinspection must deliver original text before adoption',
                     issue_assessment_origin='MODEL_ASSESSMENT; semantic_quality_certified=false')
-            feedback=None
-            for attempt in range(2):
-                assessment_schema=evidence_schema(ASSESS,sources)
-                if self.control:assessment_schema=ic.assess_schema(assessment_schema,self.issues,self.saved_material_ids)
-                result=self.invoke(('쟁점별 status와 핵심 gaps를 기록한다. 저장되었지만 미채택한 자료를 원문 없음으로 표현하지 않는다. 보완 가능한 원문 부족은 NEEDS_INVESTIGATION, 사용자 사실 부족은 LIMITED_ANSWER와 조건부 법률 판단이다. 더 조사할 필요가 없으면 ANSWER 또는 LIMITED_ANSWER다. 무관한 미해결 연결을 일반 경고로 반복하지 않는다. 사용자가 항·호를 한정하지 않은 질문을 현재 제공된 한 항으로 임의 제한하지 않는다. 해당 규칙에 관한 다른 항의 추가 요건·예외·조건부 분기가 미열람이면 MISSING_SCOPE 또는 MISSING_SOURCE gap으로 원문 조사를 재개한다. 원문에서 확인한 조건부 추가 요건은 사건 사실이 없어도 조건과 함께 설명한다. 요구 사항을 답변 범위 밖으로 돌려 limitations에만 넣은 상태를 COVERED나 ANSWER로 표시하지 않는다. ' if self.control else '')+'현재 목적·사실과 제공된 원문으로만 판단한다. current_request는 이번 사용자의 원문 요청이다. 요약 question보다 이번 요청의 판단 범위·제외 범위·미확인 사항을 우선 보존한다. 특정 금지의 대상에서 제외됨이나 필요조건 하나의 충족을 전체 행위의 허용·적법성·충분조건으로 역추론하지 않는다. 판단 범위 밖이거나 미확인인 요건은 충족됐다고 쓰지 말고 claims의 결론 자체를 제한하고 limitations에도 명시한다. current_facts는 사용자가 제공한 판단 전제이며 법령 출처가 아니다. claims에는 원문 규칙과 그 규칙을 현재 사실에 적용한 판단을 기록한다. 사실만 진술하는 별도 claim이나 current_facts라는 출처를 만들지 않는다. source_id는 sources에 제공된 ID 중에서만 고른다. 원칙과 단서, 위임된 세칙의 예외를 함께 검토한다. claims의 text는 판단, source_id는 실제 원문 ID, quote는 해당 원문에서 한 글자도 바꾸지 않고 그대로 복사한 인용이다. 현재 사실에 없는 자격이나 기간은 확정하지 말고 조건부 결론과 limitations에 남긴다. 과거 정답은 사용하지 않는다. repair_feedback이 있으면 지적된 잘못을 원문으로 수정한다. JSON만 출력한다.',{**data,'current_request':utterance,'sources':sources,'repair_feedback':feedback},assessment_schema,'memory-assess' if not attempt else 'memory-assess-repair')
+            assessment_schema=evidence_schema(ASSESS,sources)
+            if self.control:assessment_schema=ic.assess_schema(assessment_schema,self.issues,self.saved_material_ids)
+            def check_assessment(value):
+                output.validate_shape(value,assessment_schema)
+                if self.control:
+                    try:ic.validate_assessment(value,self.issues,self.saved_material_ids)
+                    except ContractError as exc:
+                        raise output.OutputContractError(str(exc),[output.issue('ASSESSMENT_FIELDS_CONFLICT')],category='DECISION_CONFLICT') from exc
                 try:
-                    if self.control:ic.validate_assessment(result,self.issues,self.saved_material_ids)
-                    if result['claims']:self.verify_claims(result['claims'],sources)
+                    if value['claims']:self.verify_claims(value['claims'],sources)
                     elif not self.control:raise MemoryError('judgment contains no supported claims')
-                    self.s.work.event('MEMORY_SEMANTIC_REVIEW_SKIPPED',{'stage':stage,'policy':'disabled','payload_sha256':digest(result),'quality_certified':False})
-                    break
-                except (MemoryError,ContractError) as exc:
-                    if attempt:raise
-                    feedback={'error':str(exc),'rejected_assessment':result}
+                except MemoryError as exc:
+                    raise output.OutputContractError(str(exc),[output.issue('CLAIM_EVIDENCE_INVALID','/claims')],category='EVIDENCE_CONTRACT_INVALID') from exc
+            result=output.bounded_decision(self.s.work,'assessment',{**data,'current_request':utterance,'sources':sources,'repair_feedback':None},assessment_schema,
+                lambda payload,attempt:self.invoke(('쟁점별 status와 핵심 gaps를 기록한다. 저장되었지만 미채택한 자료를 원문 없음으로 표현하지 않는다. 보완 가능한 원문 부족은 NEEDS_INVESTIGATION, 사용자 사실 부족은 LIMITED_ANSWER와 조건부 법률 판단이다. 더 조사할 필요가 없으면 ANSWER 또는 LIMITED_ANSWER다. 무관한 미해결 연결을 일반 경고로 반복하지 않는다. 사용자가 항·호를 한정하지 않은 질문을 현재 제공된 한 항으로 임의 제한하지 않는다. 해당 규칙에 관한 다른 항의 추가 요건·예외·조건부 분기가 미열람이면 MISSING_SCOPE 또는 MISSING_SOURCE gap으로 원문 조사를 재개한다. 원문에서 확인한 조건부 추가 요건은 사건 사실이 없어도 조건과 함께 설명한다. 요구 사항을 답변 범위 밖으로 돌려 limitations에만 넣은 상태를 COVERED나 ANSWER로 표시하지 않는다. ' if self.control else '')+'현재 목적·사실과 제공된 원문으로만 판단한다. current_request는 이번 사용자의 원문 요청이다. 요약 question보다 이번 요청의 판단 범위·제외 범위·미확인 사항을 우선 보존한다. 특정 금지의 대상에서 제외됨이나 필요조건 하나의 충족을 전체 행위의 허용·적법성·충분조건으로 역추론하지 않는다. 판단 범위 밖이거나 미확인인 요건은 충족됐다고 쓰지 말고 claims의 결론 자체를 제한하고 limitations에도 명시한다. current_facts는 사용자가 제공한 판단 전제이며 법령 출처가 아니다. claims에는 원문 규칙과 그 규칙을 현재 사실에 적용한 판단을 기록한다. 사실만 진술하는 별도 claim이나 current_facts라는 출처를 만들지 않는다. source_id는 sources에 제공된 ID 중에서만 고른다. 원칙과 단서, 위임된 세칙의 예외를 함께 검토한다. claims의 text는 판단, source_id는 실제 원문 ID, quote는 해당 원문에서 한 글자도 바꾸지 않고 그대로 복사한 인용이다. 현재 사실에 없는 자격이나 기간은 확정하지 말고 조건부 결론과 limitations에 남긴다. 과거 정답은 사용하지 않는다. repair_feedback이 있으면 지적된 잘못을 원문으로 수정한다. JSON만 출력한다.',payload,assessment_schema,'memory-assess' if not attempt else 'memory-assess-repair'),check_assessment)
+            self.s.work.event('MEMORY_SEMANTIC_REVIEW_SKIPPED',{'stage':stage,'policy':'disabled','payload_sha256':digest(result),'quality_certified':False})
 
             if self.control:
                 actionable=[g for g in result['gaps'] if g['kind']!='MISSING_FACT']
@@ -285,17 +338,19 @@ class NativeExecution:
             assessment=parts['ASSESS']['payload'];read=parts['READ']['payload'];self.host.verify(read)
             sources=[s for s in self.selected_originals(parts) if s['source_id'] in parts['SELECT']['payload']['final_ids']]
             display_data={**data,'state_authority':'current_facts is the current case state; historical events are not alternative facts','response_purpose':'current legal answer only; history is served by HISTORY_EXPLAIN'}
-            feedback=None
-            for attempt in range(2):
-                result=self.invoke('현재 판단·조건·출처를 유지해 최종 답변을 작성한다. assessment.limitations의 판단 범위와 미확인 사항을 본문에도 빠짐없이 반영한다. 제한된 결론을 전체 행위의 허용으로 확대하지 않는다. table이면 Markdown 표로 쓴다. claims는 assessment.claims를 그대로 복사한다. 원문 인용과 판단을 바꾸지 않는다. 현재 사용자 표현 요청을 반영하되 추가 조건을 만들지 않는다. 이번 응답은 현재 판단만 설명한다. 정정 횟수·과거 조사 경위·과거 상태를 추측해 쓰지 않는다. 이력 설명은 별도 HISTORY_EXPLAIN에서 처리된다. 일반 규칙의 대상별 설명과 현재 사건의 사실 단정을 구분한다. 원문에 있는 규칙·단서·조건부 분기를 설명하는 것은 사건 사실을 추가하는 행위가 아니다. JSON만 출력한다.',{**display_data,'utterance':utterance,'format':format,'assessment':assessment,'sources':sources,'repair':feedback},evidence_schema(ANSWER,sources),'memory-compose' if not attempt else 'memory-compose-repair')
+            wire=evidence_schema(ANSWER,sources)
+            def check_composition(value):
+                output.validate_shape(value,wire)
                 try:
-                    self.verify_claims(result['claims'],sources)
-                    if result['claims']!=assessment['claims'] or result['limitations']!=assessment['limitations']:raise MemoryError('composer changed judgment')
-                    if not result['text'].strip():raise MemoryError('empty answer')
-                    self.s.work.event('FINAL_REVIEW_SKIPPED',{'stage':stage,'policy':'disabled','payload_sha256':digest(result),'claim_review_status':'UNREVIEWED','quality_certified':False})
-                    break
+                    self.verify_claims(value['claims'],sources)
+                    if value['claims']!=assessment['claims'] or value['limitations']!=assessment['limitations']:raise MemoryError('composer changed judgment')
+                    if not value['text'].strip():raise MemoryError('empty answer')
                 except MemoryError as exc:
-                    if attempt:raise
-                    feedback=str(exc)
+                    raise output.OutputContractError(str(exc),[output.issue('COMPOSITION_JUDGMENT_CONFLICT')],category='DECISION_CONFLICT') from exc
+            from .answer_stream import current_sink
+            result=output.bounded_decision(self.s.work,'composition',{**display_data,'utterance':utterance,'format':format,'assessment':assessment,'sources':sources,'repair':None},wire,
+                lambda payload,attempt:self.invoke('현재 판단·조건·출처를 유지해 최종 답변을 작성한다. assessment.limitations의 판단 범위와 미확인 사항을 본문에도 빠짐없이 반영한다. 제한된 결론을 전체 행위의 허용으로 확대하지 않는다. table이면 Markdown 표로 쓴다. claims는 assessment.claims를 그대로 복사한다. 원문 인용과 판단을 바꾸지 않는다. 현재 사용자 표현 요청을 반영하되 추가 조건을 만들지 않는다. 이번 응답은 현재 판단만 설명한다. 정정 횟수·과거 조사 경위·과거 상태를 추측해 쓰지 않는다. 이력 설명은 별도 HISTORY_EXPLAIN에서 처리된다. 일반 규칙의 대상별 설명과 현재 사건의 사실 단정을 구분한다. 원문에 있는 규칙·단서·조건부 분기를 설명하는 것은 사건 사실을 추가하는 행위가 아니다. JSON만 출력한다.',payload,wire,'memory-compose' if not attempt else 'memory-compose-repair'),check_composition,
+                can_repair=lambda:not (current_sink() and getattr(current_sink(),'started',False)))
+            self.s.work.event('FINAL_REVIEW_SKIPPED',{'stage':stage,'policy':'disabled','payload_sha256':digest(result),'claim_review_status':'UNREVIEWED','quality_certified':False})
         self.s.work.event('MEMORY_STAGE_COMPLETE',{'stage':stage,'payload_sha256':digest(result)})
         return result

@@ -1,0 +1,10 @@
+R3 로컬 반입 검증 중의 실패 이력 — 미발송 staging
+
+1. 기존 SSE 오류 안내 문자열 fixture를 현재 전체 오류 표시 계약으로 갱신했습니다. 오류 상태와 원문은 유지합니다.
+2. 가장 초기 코드 ZIP은 WORKSPACE pin 차이가 있어 직접 허용하지 않았습니다. 기존 검증한 선행 DB 로그 롤백 R3 경로를 안내합니다.
+3. Bash 초기 로그 수집이 child의 stderr를 합치던 부분을 수정해 원본 stdout/stderr를 따로 보존했습니다.
+4. CM inventory의 JSON 키 순서가 코드 지문에 영향을 주던 부분을 정렬한 내용 기반 지문으로 수정했습니다.
+5. gate fixture 최초 수집의 PYTHONPATH 오류를 로컬 검사 실행 환경에서 수정했습니다. 현장 TXT에는 WSL 전용 경로를 넣지 않습니다.
+
+감사 로그: 09_ARTIFACTS/AUDITS/20261008-rag-progress-graph-r3-delivery/
+이 파일에 적힌 실패 상태는 보내지 않았으며 최종 같은 RUN의 재검증 통과를 확인한 뒤 봉인합니다.

@@ -148,10 +148,11 @@ def _copy_reference_audit(baseline, serving):
         raise ValueError('Reference overlay audit lineage mismatch')
     target = serving / 'audit/navigation'
     target.mkdir(parents=True)
-    try:
-        os.link(original / 'navigation.sqlite', target / 'navigation.sqlite')
-    except OSError:
-        shutil.copyfile(original / 'navigation.sqlite', target / 'navigation.sqlite')
+    with navigation_storage.audit_database(original, audit) as snapshot:
+        try:
+            os.link(snapshot, target / 'navigation.sqlite')
+        except OSError:
+            shutil.copyfile(snapshot, target / 'navigation.sqlite')
     audit = {**audit, 'serving_index_sha256': index['index_sha256'],
              'serving_index_bytes': (navigation / 'navigation.sqlite').stat().st_size,
              'parent_audit_manifest_sha256': sha(original / 'manifest.json'),
@@ -827,17 +828,74 @@ def recorded_status(data, run_id):
     return result
 
 
+def reindex_prepared(data, prepared_run, output_run, *, fulltext_workers=None):
+    """Reuse prepared inputs with GENOS compact-v2/unit FTS; no model calls."""
+    import sys
+    from lawrag.platform.paths import repository_root
+    root = repository_root()
+    offline = root / '06_TOOLS/OFFLINE'
+    sys.path.insert(0, str(offline))
+    import genos_reindex_runner as runner
+    from genos_reindex_logging import BuildLog
+    from genos_reindex_only import prepared
+    from .genos_status import validate_run_id
+    validate_run_id(prepared_run); validate_run_id(output_run)
+    if prepared_run == output_run:
+        raise ValueError('Prepared run and compact output run must differ')
+    context = prepared(data, prepared_run)
+    if not context['knowledge']:
+        raise ValueError('Completed full knowledge bundle required for compact serving reuse')
+    context.update(code_root=root, reindex_policy='prepared-reuse-serving-v1')
+    settings = {**context['reindex_settings'], 'serving': True,
+                'storage_profile': 'compact-v2', 'fulltext_granularity': 'unit', 'audit_profile': 'factorized-v1'}
+    if fulltext_workers is not None:
+        if type(fulltext_workers) is not int or fulltext_workers < 1:
+            raise ValueError('fulltext_workers must be positive')
+        settings['fulltext_workers'] = fulltext_workers
+    context['reindex_settings'] = settings
+    logs = genos_stages.plain_path(Path(data) / 'LOGS' / output_run / 'reindex-main')
+    logs.mkdir(parents=True, exist_ok=True)
+    paths = [*sorted((root / '02_BACKEND/lawrag/pipeline').glob('*.py')),
+             *sorted((root / '02_BACKEND/semantic_runtime').glob('*.py')),
+             *[offline / name for name in ('genos_reindex_runner.py', 'genos_reindex_only.py',
+                                           'genos_reindex_logging.py', 'genos_meaning_variants.py')],
+             root / '06_TOOLS/COMMANDS/genos_generation_e2e.py', root / '00_SYSTEM/PIPELINE.json']
+    pins = {str(path): sha(path) for path in paths}
+    manifest = logs / 'execution-code.json'
+    identity = {'schema_version': 'main-reindex-code-v2', 'settings': settings,
+                'files': [{'path': str(path.relative_to(root)), 'sha256': pins[str(path)]} for path in paths]}
+    if manifest.exists() and json.loads(manifest.read_text()) != identity:
+        raise ValueError('Reindex execution code/settings changed; preserve output and use a new run ID')
+    if not manifest.exists():
+        write(manifest, identity)
+    log = BuildLog(logs / (str(time.time_ns()) + '-' + str(os.getpid())))
+    status = 1
+    try:
+        runner.check_idle(data, prepared_run)
+        context = {**context, 'execution_code_pins': pins}
+        context = runner.fork_prepared(context, data, output_run, manifest)
+        result = runner.rebuild(context, log=log)
+        from semantic_runtime.navigation_storage import archive_audit
+        with log.phase('archive-completed-navigation-audit'):
+            archived = archive_audit(Path(result['generation_path']).parent / 'audit/navigation')
+        status = 0
+        return {**result, 'audit_archive': archived}
+    finally:
+        log.close(status)
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action', choices=['select', 'merge', 'prepare', 'review', 'references', 'index', 'status',
+    p.add_argument('action', choices=['select', 'merge', 'prepare', 'review', 'references', 'index', 'reindex', 'status',
                                      'build', 'verify', 'verify-glossary', 'publish-shared', 'activate', 'rollback',
-                                     'compact-navigation', 'rebind-fulltext'])
+                                     'compact-navigation', 'rebind-fulltext', 'archive-audit', 'restore-audit'])
     p.add_argument('--output', type=Path, help='compact-navigation: new build directory, including separate audit')
     p.add_argument('--fulltext-binding', type=Path, help='Explicit selected profile fulltext binding JSON')
     p.add_argument('--run-id'); p.add_argument('--glossary-dir', type=Path)
     p.add_argument('--glossary-corpus-policy', choices=['append', 'replace'], default='append',
                    help='replace rebuilds document evidence in a NEW draft from the selected corpus; preserves the parent glossary')
     p.add_argument('--from-run-id', help='Finished structure run to snapshot into a NEW --run-id')
+    p.add_argument('--fulltext-workers', type=int, help='reindex: explicit positive worker count, pinned in build settings')
     p.add_argument('--allow-incomplete', action='store_true', help='Explicitly omit failed inputs/structures in select')
     p.add_argument('--reason', default='', help='Recorded reason for the success-only selection')
     p.add_argument('--base-generation', action='append', type=Path, default=[])
@@ -855,6 +913,17 @@ def main(argv=None):
     p.add_argument('--active-data-root', type=Path)
     p.add_argument('--expected-current'); p.add_argument('--confirm-main', action='store_true')
     a = p.parse_args(argv)
+    if a.fulltext_workers is not None and (a.action != 'reindex' or a.fulltext_workers < 1):
+        p.error('--fulltext-workers requires reindex and a positive integer')
+    if a.action in {'archive-audit', 'restore-audit'}:
+        if not a.release:
+            p.error('archive-audit/restore-audit require --release BUILD-DIR')
+        from semantic_runtime.navigation_storage import archive_audit, restore_audit, verify_build
+        verify_build(a.release)
+        directory = a.release / 'audit/navigation'
+        result = archive_audit(directory) if a.action == 'archive-audit' else {'restored': str(restore_audit(directory))}
+        print(json.dumps(result, ensure_ascii=False))
+        return 0
     if a.skip_meaning_review:
         if a.action != 'index' or not a.skip_review_reason.strip():
             p.error('--skip-meaning-review requires index and --skip-review-reason')
@@ -863,7 +932,7 @@ def main(argv=None):
             p.error('skip mode uses already prepared inputs; do not pass new inputs or review options')
     elif a.skip_review_reason:
         p.error('--skip-review-reason requires --skip-meaning-review')
-    if a.action != 'select' and (a.from_run_id or a.allow_incomplete or a.reason):
+    if a.action not in {'select', 'reindex'} and (a.from_run_id or a.allow_incomplete or a.reason):
         p.error('--from-run-id/--allow-incomplete/--reason are only supported by select')
     if a.action == 'compact-navigation':
         if len(a.base_generation)!=1 or not a.output:
@@ -881,14 +950,21 @@ def main(argv=None):
         if not a.release or not a.fulltext_binding or not a.output:
             p.error('rebind-fulltext requires --release build-dir, --fulltext-binding and --output')
         result = rebind_fulltext(a.release, json.loads(a.fulltext_binding.read_text()), a.output)
-    elif a.action in {'select', 'merge', 'prepare', 'review', 'references', 'index', 'status', 'build'}:
+    elif a.action in {'select', 'merge', 'prepare', 'review', 'references', 'index', 'reindex', 'status', 'build'}:
         if not a.run_id:
             p.error('--run-id is required')
         from .genos_status import validate_run_id
         validate_run_id(a.run_id)
         from lawrag.platform.paths import repository_root
         root = repository_root(); data = genos_stages.offline_data_root(root)
-        if a.action == 'select':
+        if a.action == 'reindex':
+            if not a.from_run_id:
+                p.error('reindex requires --from-run-id and a new --run-id')
+            if (a.allow_incomplete or a.reason or a.glossary_dir or a.base_generation or a.exclude_document
+                    or a.reference_model_profile or a.reference_review_state or a.retry_review_failed):
+                p.error('reindex uses the exact prepared source/glossary; new inputs and model review are separate')
+            result = reindex_prepared(data, a.from_run_id, a.run_id, fulltext_workers=a.fulltext_workers)
+        elif a.action == 'select':
             if not a.from_run_id:
                 p.error('select requires --from-run-id and a new --run-id')
             from .structure_selection import select_completed

@@ -21,6 +21,28 @@ from . import observability as obs
 log = obs.get_logger("app")
 
 
+def legal_error_payload(exc, request_id=None, *, status=None):
+    from .legal_agent.investigation_diagnostics import exception_diagnostics
+    from .chat_adapter import views
+    request_id = request_id or obs._CONTEXT.get().get('request_id')
+    public = views().public_failure(request_id, status=status, exc=exc)
+    obs.event(log, 'request.error', level=40, request_id=public['request_id'],
+              error_type=type(exc).__name__, failure_diagnostics=exception_diagnostics(exc))
+    return public
+
+
+def external_documents(documents, approved, store, team_id=None):
+    """Default public scope respects selected team; explicit inputs stay strict."""
+    if documents is None:
+        documents = list(approved)
+        if team_id is not None:
+            from .team_scope import select_documents
+            documents = sorted(set(documents) & set(select_documents(store, team_id)))
+    if not documents or set(documents) - set(approved):
+        raise ValueError('local external model document scope includes an unapproved source')
+    return documents
+
+
 def create_app(root,generation,*,contracts_root=None,release=None,provider=None,vector=None,implementation=None,
                legal_agent_profile=None,legal_agent_transport=None,workspace_root=None,runtime_root=None,
                memory_factory=None,memory_identity=None):
@@ -81,25 +103,38 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
     @app.exception_handler(LegalAgentError)
     async def legal_agent_failure(request,exc):
         from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=exc.http_status,content={
-            'code':exc.code,'run_id':getattr(exc,'run_id',None),
-            'detail':obs._redact_secrets(str(exc))[:1000]})
+        return JSONResponse(status_code=exc.http_status,content=legal_error_payload(exc))
 
     @app.exception_handler(ValueError)
     async def bad_value(request,exc):
         from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=422,content={'detail':str(exc)})
+        return JSONResponse(status_code=422,content=legal_error_payload(exc, status=422))
 
     @app.exception_handler(KeyError)
     async def missing(request,exc):
         from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=404,content={'detail':'요청한 데이터 좌표가 없습니다.'})
+        return JSONResponse(status_code=404,content=legal_error_payload(exc, status=404))
 
     @app.exception_handler(ValidationError)
     async def bad_contract(request,exc):
         # A request that fails the runtime contract is the caller's error, not a server fault.
         from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=422,content={'detail':'request violates term-runtime-v1 contract: '+exc.message})
+        return JSONResponse(status_code=422,content=legal_error_payload(exc, status=422))
+
+    from starlette.exceptions import HTTPException as StarletteHTTPException
+    from fastapi.exceptions import RequestValidationError
+    @app.exception_handler(StarletteHTTPException)
+    async def http_failure(request, exc):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=exc.status_code, content=legal_error_payload(exc))
+    @app.exception_handler(RequestValidationError)
+    async def request_failure(request, exc):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=422, content=legal_error_payload(exc, status=422))
+    @app.exception_handler(Exception)
+    async def unexpected_failure(request, exc):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=500, content=legal_error_payload(exc, status=500))
 
     @app.get('/health')
     @app.get('/v1/pipeline/status')
@@ -248,6 +283,14 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
 
     @app.post('/v1/rag/ask')
     def ask(body:dict,request:Request=None):
+        from .execution_metrics import capture
+        with capture() as metrics:
+            result = execute_ask(body, request)
+            if isinstance(result, dict) and result.get('response_schema') != 'ad-mode-v1':
+                result = {**result, 'execution_stats': metrics.snapshot()}
+            return result
+
+    def execute_ask(body:dict,request:Request=None):
         started=time.perf_counter()
         ident=uuid.uuid4().hex
         question=body.get('question',body.get('q'))
@@ -273,13 +316,11 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
                 raise ValueError('local external model requires public_question=true')
             if scope is not None:
                 raise ValueError('local external model requires explicit public document scope')
-            docs = docs if docs is not None else list(external)
-            if not docs or set(docs)-set(external):
-                raise ValueError('local external model document scope includes an unapproved source')
+            docs = external_documents(docs, external, store, body.get('team_id'))
         elif 'public_question' in body:
             raise ValueError('public_question is only used for local external model requests')
         case_options={}
-        if unified and (body.get('memory') is True or 'session_id' in body or 'memory_authorization' in body):
+        if unified and (body.get('memory') is True or 'session_id' in body):
             from .legal_agent.memory_identity import resolve
             if not use_llm:raise ValueError('case requests require a model')
             revision=body.get('expected_revision')
@@ -348,7 +389,7 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
             except Exception as exc:
                 from .legal_agent.corrected_memory import Conflict
                 if isinstance(exc,Conflict):raise HTTPException(409,str(exc)) from exc
-                if isinstance(exc,LegalAgentError):exc.run_id=ident
+                if isinstance(exc,LegalAgentError) or hasattr(exc,'diagnostics'):exc.run_id=ident
                 from .legal_agent.investigation_diagnostics import exception_diagnostics
                 obs.event(log,'ask.failed',level=40,exc_info=True,error_type=type(exc).__name__,
                     error_code=getattr(exc,'code',type(exc).__name__),failure_diagnostics=exception_diagnostics(exc),
@@ -365,7 +406,8 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
                     obs.event(log,'learning.capture_failed',level=40,error_type=type(exc).__name__)
             answer=run.get('answer',{})
             obs.event(log,'ask.finished',duration_ms=int((time.perf_counter()-started)*1000),answer_chars=len(answer.get('text','')),claim_count=len(answer.get('claims',[])),unresolved_count=len(answer.get('unresolved',[])))
-            return run
+            from .chat_adapter import views
+            return views().public_response(run)
 
     def require_ad(body):
         import os,sqlite3
@@ -438,11 +480,11 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
                 if kind in ('knowledge','knowledge_draft'):return repo.current(body['unit_id'],body['revision'],principal,allow_draft=kind=='knowledge_draft')
                 if kind=='legal_wiki':return repo.search(principal,body.get('question',''),after=body.get('after',''),limit=limit)
             if kind=='experience':return knowledge.page(knowledge.get(body['experience_id'],principal))
-            if kind in ('user_wiki','legal_wiki'):
+            if kind=='legal_wiki':
                 return knowledge.wiki(kind,principal,query=body.get('question',''),after=body.get('after',''),limit=limit)
             if kind=='history':return cases.events_page(body['question_id'],principal,after=body.get('after',0),limit=limit)
             if kind=='questions':return knowledge.questions(principal,query=body.get('question',''),after=body.get('after',''),limit=limit)
-            raise ValueError('query_kind must be experience, user_wiki, legal_wiki, questions or history')
+            raise ValueError('query_kind must be experience, legal_wiki, questions or history')
         finally:cases.close()
 
     @app.post('/v1/rag/feedback')
@@ -468,7 +510,7 @@ def create_app(root,generation,*,contracts_root=None,release=None,provider=None,
 <h1>법률 검색</h1><small id="status">데이터 확인 중</small><p><textarea id="q" placeholder="질문을 입력하세요"></textarea></p>
 <label><input id="llm" type="checkbox"> LLM 답변 사용</label><br>PUBLIC_TOGGLE<button id="ask">검색하기</button><pre id="result"></pre><section id="sources"></section><details id="audit" hidden><summary>탐색·근거 판단</summary><pre id="audit-text"></pre></details>
 <script src="/rag/source-tiers.js"></script><script>const $=id=>document.getElementById(id);fetch('/health').then(r=>r.json()).then(x=>$('status').textContent=`데이터: ${x.generation_id} · ${x.data_status}`);
-$('ask').onclick=async()=>{$('result').textContent='검색 중…';$('audit').hidden=true;$('sources').replaceChildren();try{const body={question:$('q').value,use_llm:$('llm').checked};if(body.use_llm&&$('public-question')?.checked)body.public_question=true;const r=await fetch('/v1/rag/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const x=await r.json();renderSourceTiers(x.assembly?.term_agent?.source_bundle);const a=x.assembly?.term_agent?.exploration_v3;$('audit').hidden=!a;$('audit-text').textContent=a?(a.display_lines||[]).join('\\n'):'';$('result').textContent=x.answer?x.answer.text+'\\n\\n확인 필요: '+x.answer.unresolved.map(z=>z.reason).join(' / '):JSON.stringify(x,null,2);}catch(e){$('result').textContent=String(e);}};</script></html>'''
+$('ask').onclick=async()=>{$('result').textContent='검색 중…';$('audit').hidden=true;$('sources').replaceChildren();try{const body={question:$('q').value,use_llm:$('llm').checked};if(body.use_llm&&$('public-question')?.checked)body.public_question=true;const r=await fetch('/v1/rag/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const x=await r.json();renderSourceTiers(x.assembly?.term_agent?.source_bundle);const a=x.assembly?.term_agent?.exploration_v3;$('audit').hidden=!a;$('audit-text').textContent=a?(a.display_lines||[]).join('\\n'):'';$('result').textContent=x.answer?x.answer.text+'\\n\\n확인 필요: '+x.answer.unresolved.map(z=>z.reason).join(' / '):(x.message||(r.ok?'현재 충분한 법률 검토를 하지 못했습니다. 검토할 법률 쟁점이나 상황을 조금 더 구체적으로 질문해 주세요.':'현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. ('+r.status+')'))+'\\n조회 번호: '+(x.request_id||'');}catch(e){$('result').textContent='현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (connection)';}};</script></html>'''
         return html.replace('PUBLIC_TOGGLE', public_toggle)
 
     @app.api_route('/{path:path}',methods=['GET','POST','PUT','DELETE'])

@@ -1,0 +1,63 @@
+{
+  "version": "GENOS_DB_LOG_ROLLBACK_20261007_R1",
+  "created_at": "2026-10-07T06:49:15.974056+00:00",
+  "working_root": "/home/jin/8-AGENT",
+  "working_git_head": "e2c33b2298f9da9f17e9f07dabec3fe7936604b0",
+  "code_zip_sha256": "4f37d8c4b3dd2a112c33becd7ee01bdcd23be1218983dcdc85aa13d9d1d22d11",
+  "code_manifest_sha256": "2ede94f02b8e586adc393d67d688d02c80a4e2afa4660f9cc1a2c277f483a2fb",
+  "run_txt_sha256": "d1e048da9a3a117c81464cfbb7b2c5644a5023663e53c210a97363dd016a9c07",
+  "supported_bases": [
+    {
+      "version": "GENOS_QUERY_LATENCY_20261007_R1",
+      "code_zip_sha256": "d7f091b8124c5d5bc83eac565c49d0098d878e393c5dcd856b008ee553a34cc4",
+      "code_manifest_sha256": "2380866ef12acd315e220df5f89d3a01d19f8699b9e9514eb042883e3f6feba0"
+    },
+    {
+      "version": "GENOS_QUERY_LATENCY_20261007_R2",
+      "code_zip_sha256": "7bff620da3a60a7d13852b6a90838ac2e22ec092f83354d20079872fcffe3927",
+      "code_manifest_sha256": "640ea9e0ff3ff826f85a3a846994e9b436f5bd09a8744fbdce207f6b9ae1c7b8"
+    },
+    {
+      "version": "GENOS_QUERY_LATENCY_20261007_R3",
+      "code_zip_sha256": "967e9d58e1f83d2821abe056232e43ed21311d1a9478a37dfcfea553fc73c4c1",
+      "code_manifest_sha256": "0014dec52116b58aedb295aaf4f68fb16f1d810201c1e1fe397216940c4f5125"
+    },
+    {
+      "version": "GENOS_QUERY_LATENCY_20261007_R4",
+      "code_zip_sha256": "d90023ab2b86c184ba6249b94cd6ad9f9d08c29bbde580a79ef0b72fac931312",
+      "code_manifest_sha256": "0f59896f3da02bc0cb89d8a7f2f50a6a38c74531490d64b572a4812deb213da6"
+    },
+    {
+      "version": "GENOS_SYSTEM_LOGGING_20261007_R1",
+      "code_zip_sha256": "a9cc0727dee161cef62747f13c40bb895d4b28e71803e89dac8bc775e26ed149",
+      "code_manifest_sha256": "858bd8c7ecea96ee549150579121c93969d3c5af3b3dcf6438a14ea18f4d7131"
+    }
+  ],
+  "local_active_pointer_sha256": "ed89ee45580e1e95108c9147bddc8be5e00396b741c7a51fc4c3cd3db6d9338c",
+  "local_active_pointer_changed": false,
+  "field_generation": null,
+  "field_generation_manifest_sha256": null,
+  "field_git_commit": null,
+  "field_code_serving_revision": null,
+  "genos_applied": false,
+  "genos_deployed": false,
+  "workflow_test": "NOT_RUN",
+  "email_status": "SENT_VERIFIED",
+  "validation": {
+    "contracts_passed": 38,
+    "delivery_cases_passed": 50,
+    "synthetic_generation_gate_tests_passed": 2
+  },
+  "working_module_sha256": {
+    "02_BACKEND/semantic_runtime/query_latency.py": "df12ce2206146349566c5c922e629490195e237a8f8d37f030868c34aecb8e4b",
+    "02_BACKEND/semantic_runtime/unit_fulltext.py": "67a6a7ab63d3e35854cde964f51b419bccc1bb3ffafe1add3f4f2b777a7d05c6"
+  },
+  "archive_members_inspected": [
+    "rollback_db_logs.py",
+    "PATCH_SPEC.json",
+    "CODE_MANIFEST.json"
+  ],
+  "gmail_message_id": "1a1152164c6f02ca",
+  "recipient": "hyungjininfocz.son@partner.samsung.com",
+  "email_attachments_verified": 4
+}

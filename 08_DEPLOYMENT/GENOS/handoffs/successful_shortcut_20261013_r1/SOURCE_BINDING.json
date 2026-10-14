@@ -1,0 +1,54 @@
+{
+  "source_files": {
+    "02_BACKEND/semantic_runtime/ad_backend.py": "58d578cf63c0c63e0187f6a4ad03a662d363a389147f7f5892465ef5a0afed8a",
+    "02_BACKEND/semantic_runtime/ad_mode.py": "2e9d711dee7b4c858102b36363805f1d7faf7c0ca000f8320ab8567b56871293",
+    "02_BACKEND/semantic_runtime/ad_store.py": "66ca5859d71db70f917816c344f10ad30ff96671d769d462a3f5a110c56bf897",
+    "02_BACKEND/semantic_runtime/ad_language.py": "d2476e66a91057e1d2c73bc4e145dcb9f22abcc765cd4fe5820f17e121f28c44",
+    "02_BACKEND/semantic_runtime/legal_agent/core_evidence_route.py": "69a0886d5986d1737a2491bd97f444d7863df83778c3e8a8101692d062192645",
+    "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py": "4835dbb72fdce843fadb28efaf31211754f5bd58e295c3b1f0a20d1cf8582a64",
+    "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py": "7ae1e91243f32a1fc4ad1f9483fe80058167c94bc4fa4d53bc2bd81044f418d7",
+    "02_BACKEND/semantic_runtime/legal_agent/successful_answer.py": "39b72a83560f49817e59e59fe541aa25602a676fbba43d1d1c2f985512b820a6",
+    "02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py": "7fb806862e56d6bd5480960afba63ca5842433d6b07d2a3646acf98a09430b2d"
+  },
+  "field_variants": {
+    "02_BACKEND/semantic_runtime/ad_backend.py": {
+      "2e4e54e81b8618f9a113f1ab829be91a654a60bfb07fed56792522810d43982d": "58d578cf63c0c63e0187f6a4ad03a662d363a389147f7f5892465ef5a0afed8a"
+    },
+    "02_BACKEND/semantic_runtime/ad_mode.py": {
+      "8a3f59657bd01beb6fbb4eaf75b813217bd25600df802a3ca6b45d6bffc264e9": "2e9d711dee7b4c858102b36363805f1d7faf7c0ca000f8320ab8567b56871293"
+    },
+    "02_BACKEND/semantic_runtime/ad_store.py": {
+      "7b5b817fbbd59d5687c68d58fd91d550d3a409bcd5447ad77bdf2f0e05d65fc5": "66ca5859d71db70f917816c344f10ad30ff96671d769d462a3f5a110c56bf897"
+    },
+    "02_BACKEND/semantic_runtime/ad_language.py": {
+      "d33125bf53da377bdf0b7970d8211bf15936a88712c17e51ecb268e3c5630a63": "d2476e66a91057e1d2c73bc4e145dcb9f22abcc765cd4fe5820f17e121f28c44"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/core_evidence_route.py": {
+      "4c568283620b9d0dac9b07c1df9e99c730897fc082db4366e7655e3e48810403": "84f001c5f3c1b79f0dc1d7d24e3d5a4bec25d8c1e0e034e330c08011851620a2",
+      "40ed030f5b5ecabc15a77fc2de6dcfce9ab31a301ad0d6d5210293abc6975913": "218364c03e43d30e9dfdc82222409017dd259aa1acc47b6fd56db85c4ba1392c"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py": {
+      "7cd540d2471946df3ac1b4afc2721d58ed40821ea14fd68c093f8beb622798fd": "d1d3fbc7b76857e06e75dc3848501b6d64631127ebbef41b655612fbc0b471f5",
+      "a9b1298be7dfda7513c7251eff0017a041a7b1550dd47f4d673ad9670f236861": "d1d3fbc7b76857e06e75dc3848501b6d64631127ebbef41b655612fbc0b471f5",
+      "14a4ed7c34972d75b4ffef0dd55684df6ab1c1d9917874ad976ebaa97eddffd0": "490a2601c20b85225c21e11e96875eec9eaa1ea3018098e9185192f2408c94ad"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py": {
+      "d8cf330d9fa2850bf072ed3a98e64f3c4eaebbdaf8e52e332ba9c700aefaa4b5": "7ae1e91243f32a1fc4ad1f9483fe80058167c94bc4fa4d53bc2bd81044f418d7"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/successful_answer.py": {
+      "NEW": "39b72a83560f49817e59e59fe541aa25602a676fbba43d1d1c2f985512b820a6"
+    },
+    "02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py": {
+      "374384463e55fa364b894147d2b496e9c13050b5bf7d855ee63dd83c4afb3b55": "947d91fc81178c27485d1429198673dc0c6ea8498f8d89cb60fb4b3148e7fcf9",
+      "2b202e665c7401704de10c859e5a6f6c2f919090576e0e47c8c8e2401b72b513": "7fb806862e56d6bd5480960afba63ca5842433d6b07d2a3646acf98a09430b2d"
+    }
+  },
+  "known_predecessors": 330,
+  "prior_delivery": "08_DEPLOYMENT/GENOS/handoffs/ad_request_logs_20261013_r2",
+  "field_status": "NOT_VERIFIED",
+  "model_calls": 0,
+  "local_active_release_changed": true,
+  "local_active_release": "successful-shortcut-20261013-r1",
+  "local_active_pointer_generation": 59,
+  "field_compatibility_note": "Private-only old repositories receive success/currentness guards and their missing private scope helper; common catalogue visibility is not enabled."
+}

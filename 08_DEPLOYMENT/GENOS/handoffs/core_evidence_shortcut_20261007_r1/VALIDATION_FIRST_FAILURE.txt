@@ -1,0 +1,6 @@
+First delivery validation stopped before pytest collection:
+FileNotFoundError: mock deployment checkout lacked 00_SYSTEM/GLOSSARY_SCHEMA.json.
+The core route source package is a serving-only inventory; authoring test helpers
+need the existing workspace schema. Match the evaluated runner's split binding:
+explicit installed code root for semantic_runtime; repository workspace for
+authoring fixtures. No runtime source, feature criteria, or frozen ZIP changed.

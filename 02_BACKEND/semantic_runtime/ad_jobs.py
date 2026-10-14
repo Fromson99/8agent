@@ -13,7 +13,14 @@ from .ad_store import Store, ident, features, table_exists
 def error_detail(exc):
     from .observability import _redact_secrets
     # Preserve schema paths and cause chain. Only credentials are redacted.
-    return _redact_secrets(''.join(traceback.format_exception(type(exc),exc,exc.__traceback__)))
+    detail = ''.join(traceback.format_exception(type(exc),exc,exc.__traceback__))
+    response = getattr(exc, 'response', None)
+    if isinstance(response, dict):
+        from .legal_agent.transport import _error_details
+        diagnostics = {'http_status': response.get('status_code'),
+                       **_error_details(response.get('body_json'))}
+        detail = '모델 HTTP 응답: ' + json.dumps(diagnostics, ensure_ascii=False) + '\n' + detail
+    return _redact_secrets(detail)
 
 
 def record_error(store, exc, stage, *, session=None, job=None, operation=None):

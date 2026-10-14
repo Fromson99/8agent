@@ -1,0 +1,124 @@
+{
+  "schema_version": "agent-tree-detail-evidence-v1",
+  "active_pointer": {
+    "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+    "sha256": "9a94e01a5c27bb682ee1fefcf45b47bdd63d7b8b9ff5ff2d12a0cf276fedbde7",
+    "release_id": "investigation-completion-v6-20261007-r1",
+    "generation": 44
+  },
+  "manifest": {
+    "path": "08_DEPLOYMENT/RELEASES/investigation-completion-v6-20261007-r1/release.json",
+    "sha256": "6cdc683ec72f373be0005ce5ff6ba873aba436b2d71a9211978e7aaba61bdd1b",
+    "hash_verified": true
+  },
+  "source_scenarios": {
+    "path": "07_DOCS/REFERENCE/REPORTS/AGENT_DECISION_TREE_20261007/SCENARIOS.csv",
+    "sha256": "f75f4ba41401b9e822eff47b90d4d8ba042a8a5971331ec833dd86d740f1e0cf"
+  },
+  "baseline_report": {
+    "path": "07_DOCS/REFERENCE/REPORTS/AGENT_DECISION_TREE_20261007/AGENT_DECISION_TREE_UTF8.txt",
+    "sha256": "6d9c809aa2702febdc4eda102b69a48723703dffbfe7316d4ae471fafdc89f6d"
+  },
+  "code_evidence": [
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "working_sha256": "bcec4130c7538586d1a9ad99d5184eff4f9b8667c93f5d36fc445f3614f9f346",
+      "selected_sha256": "bcec4130c7538586d1a9ad99d5184eff4f9b8667c93f5d36fc445f3614f9f346",
+      "manifest_sha256": "bcec4130c7538586d1a9ad99d5184eff4f9b8667c93f5d36fc445f3614f9f346",
+      "selected_matches_manifest": true,
+      "working_equals_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py",
+      "working_sha256": "8108944ea51ba68fb8ab4188735104898e6737eb18b8ad97dec5fb559b5f4065",
+      "selected_sha256": "8108944ea51ba68fb8ab4188735104898e6737eb18b8ad97dec5fb559b5f4065",
+      "manifest_sha256": "8108944ea51ba68fb8ab4188735104898e6737eb18b8ad97dec5fb559b5f4065",
+      "selected_matches_manifest": true,
+      "working_equals_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py",
+      "working_sha256": "814e3aa1988d17c74f3cecc858ec7313c27cd18ad94b4b0a9c7648d6189ea47a",
+      "selected_sha256": "814e3aa1988d17c74f3cecc858ec7313c27cd18ad94b4b0a9c7648d6189ea47a",
+      "manifest_sha256": "814e3aa1988d17c74f3cecc858ec7313c27cd18ad94b4b0a9c7648d6189ea47a",
+      "selected_matches_manifest": true,
+      "working_equals_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py",
+      "working_sha256": "d318d02e36c4f0b091dccd879eeca3f92b30528c2f7d6cccb0216f28fe27126a",
+      "selected_sha256": "d318d02e36c4f0b091dccd879eeca3f92b30528c2f7d6cccb0216f28fe27126a",
+      "manifest_sha256": "d318d02e36c4f0b091dccd879eeca3f92b30528c2f7d6cccb0216f28fe27126a",
+      "selected_matches_manifest": true,
+      "working_equals_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/app.py",
+      "working_sha256": "5d4e4424935ea90923636fb6a225bc383aa4c3f89fd49f58f323f03fd4cbf40a",
+      "selected_sha256": "5d4e4424935ea90923636fb6a225bc383aa4c3f89fd49f58f323f03fd4cbf40a",
+      "manifest_sha256": "5d4e4424935ea90923636fb6a225bc383aa4c3f89fd49f58f323f03fd4cbf40a",
+      "selected_matches_manifest": true,
+      "working_equals_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/chat_adapter.py",
+      "working_sha256": "e5e2e147bc0e8b2628d47f84ed51665eefdb91772a05052022d1552cdd8ff7e5",
+      "selected_sha256": "e5e2e147bc0e8b2628d47f84ed51665eefdb91772a05052022d1552cdd8ff7e5",
+      "manifest_sha256": "e5e2e147bc0e8b2628d47f84ed51665eefdb91772a05052022d1552cdd8ff7e5",
+      "selected_matches_manifest": true,
+      "working_equals_selected": true
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+      "working_sha256": "abb590cf684288f2c9fe39030ee86cc9890a09019c1451b18588264db46c890f",
+      "selected_sha256": "abb590cf684288f2c9fe39030ee86cc9890a09019c1451b18588264db46c890f",
+      "manifest_sha256": "abb590cf684288f2c9fe39030ee86cc9890a09019c1451b18588264db46c890f",
+      "selected_matches_manifest": true,
+      "working_equals_selected": true
+    },
+    {
+      "path": "service.py",
+      "working_sha256": "31dad528f605633460fd34c07773377acbf382ccf83d3814e224c1a5a0462420",
+      "selected_sha256": "31dad528f605633460fd34c07773377acbf382ccf83d3814e224c1a5a0462420",
+      "manifest_sha256": "31dad528f605633460fd34c07773377acbf382ccf83d3814e224c1a5a0462420",
+      "selected_matches_manifest": true,
+      "working_equals_selected": true
+    }
+  ],
+  "counts": {
+    "phases": 10,
+    "scenarios": 72,
+    "branches": 251
+  },
+  "verification": {
+    "document_integrity": "built_and_structurally_checked",
+    "branch_execution": "not_executed",
+    "external_model_calls": 0,
+    "genos_execution": "not_accessed",
+    "main_change": false,
+    "display_validation": {
+      "scope": "browser rendering and local presentation interactions only",
+      "rendered_phases": 10,
+      "rendered_scenarios": 72,
+      "rendered_branches": 251,
+      "expand_collapse": true,
+      "route_jump": true,
+      "widths_px": [
+        320,
+        480,
+        736
+      ],
+      "horizontal_overflow": false,
+      "javascript_errors": 0,
+      "korean_text_and_light_dark_visual_inspection": true,
+      "engine_branch_execution": "not_executed",
+      "fragment_sha256": "8915ab97b79fe30833831be89fc91e574feaf419d06ff33bd2a8629b25d3cab2"
+    }
+  },
+  "output_hashes": {
+    "decision-tree-detail.html": "8915ab97b79fe30833831be89fc91e574feaf419d06ff33bd2a8629b25d3cab2",
+    "AGENT_DECISION_TREE_DETAIL_UTF8.txt": "4c288c3fa57cf397236a713321ee1abb9e9cce37a0bf5b4134261e22e154877d",
+    "DETAIL_BRANCHES.csv": "4d2e5b82feeb1f1b73db18993def9ac18f421444595c3a0a063024a349cafa32",
+    "BRANCHES_UTF8.txt": "9cf2e7601254b2160620e8bbc5b6c23b52ef20a40426b084bfcf8700157cbaa4"
+  }
+}

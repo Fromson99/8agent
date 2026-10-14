@@ -1,0 +1,9 @@
+<p>요청하신 팀별 실행 로그 분리와 AD 모델 호출 공통화 수정 코드입니다.</p>
+<p><b>이전 모델 스트림 종료 수정 R1이 적용된 ~/DEV 위에 이번 GENOS_AD_REQUEST_LOGS_20261013_R1을 추가 적용합니다.</b> ZIP 안의 실행 TXT와 별도 첨부 TXT는 같습니다. 실행·백업·동일 checkout 배포 게이트·원복 방법은 GUIDE_UTF8.txt에 있습니다.</p>
+<ul>
+<li>기존 로그 root 아래 날짜/팀/legal_agent 및 날짜/팀/ad_mode로 나누고, 각 폴더에 요청별 JSON·LOG·TXT와 질문답변 CSV·XLSX를 저장합니다.</li>
+<li>AD의 실제 모델 요청을 보내기 전에 SQL에 보존하고, HTTP 상태·서버 오류 원문·해석 결과·관리 변경 이력을 동일 요청의 보고서로 내보냅니다. AD 실패를 HTTP200 때문에 성공으로 표시하던 요약도 수정했습니다.</li>
+<li>legal_agent에만 있던 GENOS 스키마 호환 처리를 AD에도 적용하고 요청 생성·응답 해석을 공통 모듈로 연결했습니다. 전송 스키마의 uniqueItems를 제거하되 원래 스키마의 중복 검증은 유지합니다.</li>
+</ul>
+<p>원문 generation 재구축·DB 스키마 이행·워크플로우 편집기 재붙여넣기는 필요하지 않습니다. 수정 코드를 commit/gate/push한 뒤 새 코드서빙 리비전 배포와 별도 SSE 서버 재시작이 필요합니다. 검증은 기존 워크플로우 테스트 화면에서 진행합니다.</p>
+<p>검증 수치와 기존 검사 실패 1건의 구분은 VALIDATION_SUMMARY.txt에 있습니다. 실제 모델 호출은 없으며, 사진의 HTTP 오류 원인과 현장 해결 여부는 아직 미확인입니다. 다시 실패하면 ad_mode 보고서의 journal.calls[].model_output에 있는 status_code와 body_json/body_text로 서버 사유를 확인할 수 있습니다.</p>

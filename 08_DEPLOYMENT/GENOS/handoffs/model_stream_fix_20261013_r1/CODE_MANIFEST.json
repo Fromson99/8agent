@@ -1,0 +1,63 @@
+{
+  "schema_version": "genos-transfer-overlay-v1",
+  "id": "GENOS_MODEL_STREAM_FIX_20261013_R1",
+  "transfer_only": true,
+  "deployment_zip": "apply creates APPLIED_CODE.zip from actual ~/DEV; gate that exact checkout",
+  "files": [
+    {
+      "path": "apply_patch.py",
+      "sha256": "b7cd3ccebd6d51cfbac4a6f16f91d213eb9c9caaad7c1a9708dfdb657c8e0754",
+      "bytes": 23303
+    },
+    {
+      "path": "PATCH_SPEC.json.gz",
+      "sha256": "a51e5c7b7223466bce1473523be381f694c6861c9287bcd3474f0d5ba11c91fc",
+      "bytes": 48160
+    },
+    {
+      "path": "GENOS_MODEL_STREAM_FIX_20261013_R1_RUN.txt",
+      "sha256": "63abbad85e0f7261a46eeab81f696acfd71dcd9ee0088ac460f3f89c2e81dfd9",
+      "bytes": 81446
+    },
+    {
+      "path": "GUIDE_UTF8.txt",
+      "sha256": "97152c959c2c847241d6669f5e3454960747fa319461258bbcdd85c365b33666",
+      "bytes": 7250
+    },
+    {
+      "path": "VALIDATION_SUMMARY.txt",
+      "sha256": "068821579bb65acea637f18ac535caa5ee583fea46f94466e55ba9e5d923acee",
+      "bytes": 1147
+    },
+    {
+      "path": "VALIDATION.json",
+      "sha256": "21e26a17570dbecadb5943d3d2d45f7da2e05888aa467dec2bb78414f27b60b7",
+      "bytes": 2042
+    },
+    {
+      "path": "SOURCE_BINDING.json",
+      "sha256": "6af398f4c3d6f4a24a32ce963f47da0340e196f98eca39b6b682c679bcf6d182",
+      "bytes": 671
+    },
+    {
+      "path": "INVENTORY_BINDINGS.json.gz",
+      "sha256": "261eae40d28ddcfbfe6bcf772882cfc74a323e9079f8df5c37548857182a4d76",
+      "bytes": 31236
+    },
+    {
+      "path": "WORKING_INTEGRATION.json",
+      "sha256": "ed0958907757b48c30f3d14cd88dc2f8e1207fea6b6da6d8fd0b656c5b45af7d",
+      "bytes": 8582
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/model_stream.py",
+      "sha256": "d946b7ea411139ec949626f76b160a6c375ea01a5d944b1cb63ecc11316c2df6",
+      "bytes": 4547
+    },
+    {
+      "path": "payload/02_BACKEND/semantic_runtime/legal_agent/transport.py",
+      "sha256": "7f8212546908315379fd29ae5cad4c1de420d1b484ae81777b9e7bbc10d0f907",
+      "bytes": 15532
+    }
+  ]
+}

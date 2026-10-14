@@ -100,13 +100,15 @@ def build(source, glossary, output, identity, *, serving, scope, reference_scope
             with closing(storage.Store(generation)) as store:
                 return term_index.compile_index(store,legal,temporary/'links/links.sqlite',generation/'navigation',
                     glossary=glossary/'dictionary.sqlite',linkage_report=links,knowledge=knowledge,
-                    reference_scope_v2=reference_scope_v2,audit_output=temporary/'audit/navigation',storage_profile=profile)
+                    reference_scope_v2=reference_scope_v2,audit_output=temporary/'audit/navigation',storage_profile=profile,
+                    audit_profile=identity.get('audit_profile','materialized'))
         index=stages.run('navigation',['generation/navigation','audit/navigation'],navigation,preserve_partial=profile=='compact-v2')
         manifest['navigation']={'path':'navigation','manifest_sha256':sha(generation/'navigation/manifest.json')}
         if serving:
+            worker_options = {'workers': identity['fulltext_workers']} if 'fulltext_workers' in identity else {}
             ft=stages.run('fulltext',['generation/fulltext'],lambda:
-                fulltext.build(generation/'navigation',generation/'fulltext',granularity='unit',generation=generation)
-                if fulltext_granularity=='unit' else fulltext.build(generation/'navigation',generation/'fulltext'))
+                fulltext.build(generation/'navigation',generation/'fulltext',granularity='unit',generation=generation,**worker_options)
+                if fulltext_granularity=='unit' else fulltext.build(generation/'navigation',generation/'fulltext',**worker_options))
             manifest['fulltext']={'path':'fulltext','manifest_sha256':sha(generation/'fulltext/manifest.json'),
                                   'navigation_index_sha256':ft['navigation_index_sha256']}
         (generation/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')

@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+"""Summarize content-free latency fields from a GENOS workflow request log."""
+from collections import defaultdict
+import argparse
+import json
+from pathlib import Path
+import re
+
+REVISION = 'query-latency-20261007-r1'
+FIELDS = {'cache_storage', 'dataset_bytes', 'resident_memory_reserved_bytes', 'resident_local_bytes', 'step', 'phase', 'duration_ms', 'work_ms', 'start_log_ms', 'thread_cpu_ms',
+          'thread_non_cpu_ms', 'sql_count', 'sql_execute_ms', 'sql_fetch_ms',
+          'cache_scope', 'cache_wait_ms', 'cache_entries', 'cache_bytes', 'cache_evictions', 'cache_admitted',
+          'fetched_count', 'match_count', 'cache_hit', 'cache_overflow', 'request_bytes',
+          'cpu_nr_throttled_delta', 'cpu_throttled_usec_delta', 'diagnostic_revision'}
+
+
+def parse(line):
+    if line.lstrip().startswith('{'):
+        try: value = json.loads(line)
+        except ValueError: return None
+        return {k: v for k, v in value.items() if k in FIELDS or k == 'event'}
+    event = next((v for v in ('step.finished', 'step.failed', 'step.started')
+                  if re.search(r'\b'+re.escape(v)+r'\b', line)), None)
+    if not event: return None
+    value = {'event': event}
+    for key, raw in re.findall(r'\b([a-z_]+)=([A-Za-z0-9_.:-]+)', line):
+        if key not in FIELDS: continue
+        try: value[key] = json.loads(raw.lower()) if raw.lower() in ('true', 'false') else float(raw)
+        except ValueError: value[key] = raw
+    return value
+
+
+def summarize(lines):
+    groups = defaultdict(list); failed = []; active = []; sql_count = 0
+    sql_execute = sql_fetch = 0.0; cache_hits = misses = overflow = 0
+    process_hits = process_builds = process_evictions = process_bytes = 0
+    resident_hits = resident_loads = 0; resident_storage = set()
+    for line in lines:
+        row = parse(line)
+        if not row or row.get('diagnostic_revision') != REVISION: continue
+        step = row.get('step')
+        if not step: continue
+        event = row['event']
+        if event == 'step.started': active.append(step); continue
+        if step in active: active.pop(len(active)-1-active[::-1].index(step))
+        if event == 'step.failed': failed.append(row)
+        groups[step].append(row)
+        if step.startswith('unit_fts.sql.'):
+            sql_count += int(row.get('sql_count', 0))
+            sql_execute += row.get('sql_execute_ms', 0)
+            sql_fetch += row.get('sql_fetch_ms', 0)
+        if step == 'resident_data.open':
+            resident_hits += row.get('cache_hit') is True
+            resident_loads += row.get('cache_hit') is False
+            if row.get('cache_storage'): resident_storage.add(row['cache_storage'])
+        if step in ('runtime_cache.matches', 'runtime_cache.scope', 'runtime_cache.preview'):
+            process_hits += row.get('cache_hit') is True
+            process_builds += row.get('cache_hit') is False
+            process_evictions = max(process_evictions, row.get('cache_evictions', 0))
+            process_bytes = max(process_bytes, row.get('cache_bytes', 0))
+        if step == 'unit_fts.projection':
+            cache_hits += row.get('cache_hit') is True
+            misses += row.get('cache_hit') is False
+            overflow += row.get('cache_overflow') is True and row.get('cache_hit') is False
+    spans = []
+    for step, rows in groups.items():
+        spans.append({'step': step, 'count': len(rows),
+            'total_ms': round(sum(r.get('duration_ms', 0) for r in rows), 3),
+            'max_ms': max(r.get('duration_ms', 0) for r in rows),
+            'thread_cpu_ms': round(sum(r.get('thread_cpu_ms', 0) for r in rows), 3),
+            'start_log_ms': round(sum(r.get('start_log_ms', 0) for r in rows), 3),
+            'phases': sorted({r['phase'] for r in rows if r.get('phase')})})
+    return {'diagnostic_revision': REVISION,
+        'timing_note': 'Nested span totals overlap. Do not add span totals. Non-CPU time does not identify disk/network wait by itself.',
+        'sql_count': sql_count, 'sql_execute_ms': round(sql_execute, 3),
+        'sql_fetch_ms': round(sql_fetch, 3), 'projection_cache_hits': cache_hits,
+        'projection_builds': misses, 'projection_overflow_builds': overflow,
+        'resident_data_hits': resident_hits, 'resident_data_loads': resident_loads,
+        'resident_data_storage': sorted(resident_storage),
+        'process_cache_hits': process_hits, 'process_cache_builds': process_builds,
+        'process_cache_evictions': process_evictions, 'process_cache_peak_observed_bytes': process_bytes,
+        'unfinished_steps': active, 'failed_steps': failed,
+        'spans': sorted(spans, key=lambda r: (-r['total_ms'], r['step']))}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('log', type=Path, help='One workflow request .log or JSONL file')
+    parser.add_argument('--output', type=Path)
+    args = parser.parse_args()
+    with args.log.open(encoding='utf-8', errors='replace') as stream:
+        result = summarize(stream)
+    encoded = json.dumps(result, ensure_ascii=False, indent=2)+'\n'
+    if args.output:
+        with args.output.open('x', encoding='utf-8') as stream: stream.write(encoded)
+    else: print(encoded, end='')
+
+
+if __name__ == '__main__': main()

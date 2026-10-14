@@ -1,8 +1,11 @@
 """Code-authored display, exact source coordinates, currentness and token contract."""
 import asyncio
 import copy
+import base64
 from html.parser import HTMLParser
 import json
+import re
+import xml.etree.ElementTree as ET
 
 import pytest
 from semantic_runtime.contracts import digest
@@ -80,22 +83,25 @@ def test_nested_collapsed_toggles_exact_coordinate_actions_quote_and_diagram():
     assert '제3조 제2항 제1호' in text and '원문 열람' in text and '답변 근거 채택' in text
     assert '적용 대상 확인' in text and '승인 대상은 담당자다.' in text
     assert '신분 확인 필요' in text and '사용자가 제공한 현재 조건' in text
-    diagram=w._judgment_mermaid(b['assembly']['term_agent']['judgment_view'])
-    assert '```mermaid\n'+diagram+'\n```' in text
-    assert text.index('7. 답변 작성') < text.index('```mermaid')
+    assert 'data:image/svg+xml;base64,' in text and '```mermaid' not in text
+    assert text.index('<img src=') < text.index('AI 판단 과정 보기') < text.index('7. 답변 작성')
+    assert text.count('<img src=') == 1
+    assert '<img' not in w._judgment_html(b)
     assert w._for_markdown(text)==text
 
 
-def test_injection_safe_html_and_fixed_mermaid_grammar():
+def test_injection_safe_html_and_svg_text():
     parts,case,state=sample()
     parts['READ']['payload']['originals'][0]['document_name']='<img src=x onerror=alert(1)>'
     parts['ASSESS']['payload']['claims'][0]['text']='</details><script>bad()</script>'
     for s in STAGES:case['judgment_refs'][s]['payload_hash']=digest(parts[s]['payload'])
     view=build(parts,case,state=state,run_id='r1',allowed_documents=['d'],executed=STAGES)
     b={'answer':{'text':'답변'},'assembly':{'term_agent':{'case':case,'judgment_view':view}}}
-    w=workflow();text=w._judgment_html(b)
-    assert '<img' not in text and '<script' not in text and '&lt;script&gt;' in text
-    assert 'alert' not in w._judgment_mermaid(view)
+    w=workflow();text=w.render(b)
+    assert text.count('<img')==1 and '<script' not in text and '&lt;script&gt;' in text
+    encoded=re.search(r'data:image/svg\+xml;base64,([A-Za-z0-9+/=]+)',text).group(1)
+    svg=ET.fromstring(base64.b64decode(encoded))
+    assert not any(node.tag.endswith('script') for node in svg.iter())
 
 
 def test_scope_hash_and_route_binding_fail_closed():
@@ -125,6 +131,7 @@ def test_final_token_append_contains_one_complete_judgment_and_end(monkeypatch):
     sent=[]
     async def emit(name,value,room):sent.append((name,value))
     display.emit=emit
+    display.enabled=True
     async def run():
         await display.answer_delta({'schema_version':'rag-answer-delta-v1','seq':1,'text':'최종 답변.'})
         await display.finish(w._for_markdown(w.render(body())))
@@ -155,8 +162,9 @@ def test_direct_chat_receives_the_same_server_generated_view(monkeypatch):
     monkeypatch.setenv('GENOS_MEMORY_ENABLED','0')
     monkeypatch.setattr(chat_adapter,'call_service',service)
     out=asyncio.run(chat_adapter.chat({'question':'모의 질문'}))['data']
-    assert out['judgment_display_revision']=='judgment-view-20261006-r1'
-    assert '```mermaid' in out['text'] and '<details' in out['text']
+    assert out['judgment_display_revision']=='judgment-evidence-svg-20261008-r10'
+    assert 'data:image/svg+xml;base64,' in out['text'] and '<details' in out['text']
+    assert '```mermaid' not in out['text']
 
 
 def test_confirmation_and_reuse_keep_actual_execution_labels(unified):
@@ -200,5 +208,6 @@ def test_workflow_final_result_includes_toggles_without_socket_or_model(monkeypa
     monkeypatch.setattr(w,'_stream_code_serving',serving)
     monkeypatch.setattr(w,'_post_code_serving',lambda request:{'status':200,'body':{'ad_active':False}})
     out=asyncio.run(w._run_once({'question':'모의 질문','request_id':'synthetic'}))
-    assert out['judgment_display_revision']=='judgment-view-20261006-r1'
-    assert '<details' in out['text'] and '```mermaid' in out['text']
+    assert out['judgment_display_revision']=='judgment-evidence-svg-20261008-r10'
+    assert '<details' in out['text'] and 'data:image/svg+xml;base64,' in out['text']
+    assert '```mermaid' not in out['text']

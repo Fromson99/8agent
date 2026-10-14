@@ -1,5 +1,39 @@
 # legal_agent 통합 실행·경험·위키 — 작업 코드 v6
 
+## 조사 한도 설정 (2026-10-07)
+
+루트 `service.py`와 같은 모듈을 쓰는 `service.service`의 서비스 시작 설정이다.
+v5/v6의 선택 프로필을 검증한 뒤 복사본에 적용하고, 같은 값을 실제 native journal과
+요청 deadline에 전달한다. 로컬 frozen MAIN의 파일·해시와 활성 포인터는 유지한다.
+GENOS 코드서빙에서는 이 서비스 변경이 반입·배포된 뒤 환경 설정에 등록해야 한다.
+
+| 환경 설정 | 현재 로컬 v6 기본값 | 적용 범위 |
+|---|---:|---|
+| `GENOS_RAG_MAX_MODEL_ATTEMPTS` | 40 | 수정·재시도·최종 판단을 포함하는 물리 모델 시도 총량 |
+| `GENOS_RAG_MAX_TOOL_ACTIONS` | 1024 | 공통 원장의 도구 시도 총량 |
+| `GENOS_RAG_WALL_SECONDS` | 1800 | 요청 전체 시간, 초 |
+| `GENOS_RAG_SEARCH_ROUNDS` | 8 | 법령 탐색의 추가 검색 질문 이력 한도 |
+| `GENOS_RAG_ASSESSMENT_REENTRY_LIMIT` | 2 | 최종 판단에서 부족한 근거 때문에 SELECT로 재진입하는 횟수 |
+
+모델 총량 40회 중 `finalization_reserve=3`을 남겨 조사 단계의 상한은 37회다.
+INTENT·PLAN과 조사 중 수정·재시도도 이 조사 예산을 소비하며, 37회가 전부 검색 호출은 아니다.
+모델 총량은 이 예약보다 커야 하고 도구 총량은 기존 `tool_finalization_reserve=4`보다 커야 한다.
+재진입 횟수만 0을 허용한다. 다른 값은 양의 정수이며 빈 설정은 기존 프로필 값을 유지한다.
+GENOS의 기존 기본 대기시간 1800초 보정도 유지한다. 진전 없는 반복 한도 2회는 기존 정책이다.
+
+서비스 프로세스를 재시작하면 새 요청부터 적용한다. 같은 미완료 요청의 재개는 기존
+예산·마감·실행 지문을 보존하므로 설정을 바꿔 이미 소비한 예산을 초기화할 수 없다.
+요청 JSON에서는 이 환경 설정을 변경할 수 없다. 예시는 [.env.genos.example](../../../.env.genos.example)이다.
+로컬 명령의 환경 변수로도 동일하게 적용하며, `.env.genos.example` 자체는 자동 로드하지 않는다.
+직접 `create_app`을 쓰는 호스트는 기존 `legal_agent_profile` 인자로 설정한다.
+
+`HEALTH` 응답과 `PING`의 로드된 `binding`에서 `investigation_budget`을 확인한다.
+`effective_profile_sha256`은 적용 후 전체 프로필, `service_entry_sha256`은 실제 서비스 입구의
+지문이다. 선택 릴리스의 `profile_sha256`과 구분하며 `runtime.investigation_budget`에도 기록한다.
+GENOS 현장 적용값과 모델 답변 품질·성능은 별도 현장 확인이 필요하다.
+
+아래는 2026-10-02 구현 시점의 기록이다.
+
 2026-10-02. 구현 및 WSL 모의 계약 검증. 활성 MAIN·원문 generation·GENOS 리비전 전환 전.
 
 **legal_agent는 유지한다.** `ServingLegalAgent`가 모델, admission lease, deadline,

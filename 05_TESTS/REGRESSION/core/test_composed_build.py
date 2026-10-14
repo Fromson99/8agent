@@ -8,6 +8,11 @@ sys.path.insert(0, str(COMMANDS))
 import composed_build
 
 
+@pytest.fixture(autouse=True)
+def reviewed_compatibility_policy(monkeypatch):
+    monkeypatch.setattr(composed_build, 'build_policy', lambda: 'reviewed')
+
+
 def _paths(tmp_path, monkeypatch):
     from lawrag.pipeline import glossary_review
     monkeypatch.setattr(glossary_review, 'configured_paths',
@@ -103,3 +108,44 @@ def test_reference_model_and_budgets_reach_final_release_only(tmp_path, monkeypa
     assert all('--reference-model-profile' not in call for call in calls[:-1])
     assert calls[-1][-6:] == ['--reference-model-profile', str(profile.resolve()),
                               '--max-reference-cases', '16', '--reference-batch-size', '4']
+
+
+def test_main_no_model_policy_uses_native_structure_and_existing_r8(tmp_path, monkeypatch):
+    _paths(tmp_path, monkeypatch)
+    monkeypatch.setattr(composed_build, 'build_policy', lambda: 'native-no-models')
+    calls = []
+    assert composed_build.run(['--run-id', 'team-native', '--execute'],
+                             call=lambda argv: calls.append(argv[3:]) or 0) == 0
+    assert calls == [
+        ['build-data-stages', '--run-id', 'team-native', '--stage', 'structure', '--execute',
+         '--structure-vlm', 'off', '--pdf-conversion', 'off', '--pdf-parser', 'local'],
+        ['document-release', 'prepare', '--run-id', 'team-native', '--glossary-dir', str(tmp_path / 'base'),
+         '--glossary-corpus-policy', 'replace'],
+        ['document-release', 'reindex', '--from-run-id', 'team-native', '--run-id', 'team-native-index'],
+    ]
+
+
+@pytest.mark.parametrize('option', ['--reference-model-profile', '--reference-review-state', '--retry-review-failed'])
+def test_no_model_build_rejects_review_options_before_structure(option):
+    arguments = ['--run-id', 'team-native', '--no-models', '--execute', option]
+    if option != '--retry-review-failed':
+        arguments.append('/model-or-review')
+    with pytest.raises(SystemExit):
+        composed_build.run(arguments, call=lambda _: pytest.fail('No dependent work should run'))
+
+
+def test_no_model_structure_failure_prevents_r8_index(tmp_path, monkeypatch):
+    _paths(tmp_path, monkeypatch)
+    calls = []
+    assert composed_build.run(['--run-id', 'native-failed', '--no-models', '--execute'],
+                             call=lambda argv: calls.append(argv[3:]) or 2) == 2
+    assert len(calls) == 1
+
+
+def test_reviewed_mode_can_be_selected_explicitly(tmp_path, monkeypatch):
+    _paths(tmp_path, monkeypatch)
+    monkeypatch.setattr(composed_build, 'build_policy', lambda: 'native-no-models')
+    calls = []
+    assert composed_build.run(['--run-id', 'reviewed', '--with-model-review', '--execute'],
+                             call=lambda argv: calls.append(argv[3:]) or 0) == 0
+    assert calls[-1][:2] == ['document-release', 'build']

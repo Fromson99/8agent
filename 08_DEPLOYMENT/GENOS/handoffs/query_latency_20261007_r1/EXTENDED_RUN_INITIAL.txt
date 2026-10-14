@@ -1,0 +1,302 @@
+........................................................................ [ 77%]
+.....FFF......FF..F..                                                    [100%]{"ts": "2026-10-07T06:05:12.820069+00:00", "level": "ERROR", "logger": "genos.failure-timing", "event": "step.failed", "step": "fixture.fail", "duration_ms": 0, "work_ms": 0.005, "thread_cpu_ms": 0.005, "start_log_ms": 0.001, "exc_type": "ValueError", "traceback": "Traceback (most recent call last):\n  File \"/home/jin/8-AGENT/02_BACKEND/semantic_runtime/observability.py\", line 320, in step\n    yield\n  File \"/home/jin/8-AGENT/05_TESTS/REGRESSION/core/test_semantic_observability.py\", line 68, in test_failed_step_keeps_exception_and_timing\n    raise ValueError('fixture failure')\nValueError: fixture failure"}
+
+=================================== FAILURES ===================================
+________ test_actual_previous_conflict_schema_requires_changed_decision ________
+05_TESTS/CONTRACTS/test_law_navigation_one_repair_adr0663.py:30: in test_actual_previous_conflict_schema_requires_changed_decision
+    with pytest.raises(ValidationError): validate(rejected,schema)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ValidationError
+____________ test_repair_then_execute_reads_only_corrected_decision ____________
+05_TESTS/CONTRACTS/test_law_navigation_one_repair_adr0663.py:51: in test_repair_then_execute_reads_only_corrected_decision
+    result=ln.select('승인 예외',record,invoke,session=s,remaining_seconds=30)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/query_latency.py:51: in measured
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1104: in select
+    return Investigation(session, question, record, invoke, remaining_seconds, checkpoint, on_checkpoint).run()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1088: in run
+    try:decision = self.request_decision(data, actions, phase)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1004: in request_decision
+    decision = self.invoke(system, model_data, schema, phase, min(180, self.left()))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+05_TESTS/CONTRACTS/test_law_navigation_one_repair_adr0663.py:46: in invoke
+    if len(calls)==1:return conflict(data)
+                            ^^^^^^^^^^^^^^
+05_TESTS/CONTRACTS/test_law_navigation_one_repair_adr0663.py:16: in conflict
+    candidate = data['articles'][0]
+                ^^^^^^^^^^^^^^^^
+E   KeyError: 'articles'
+---------------------------- Captured stdout setup -----------------------------
+GENERATION link-documents.start elapsed=0.0s phase=0.0s
+GENERATION link-documents.done elapsed=0.0s phase=0.0s
+GENERATION publish-source.start elapsed=0.0s phase=0.0s
+GENERATION publish-source.done elapsed=0.0s phase=0.0s
+GENERATION prepare-glossary-assets.start elapsed=0.0s phase=0.0s
+GENERATION prepare-glossary-assets.done elapsed=0.0s phase=0.0s
+GENERATION compile-navigation.start elapsed=0.0s phase=0.0s
+NAVIGATION schema.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION catalogue.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION documents.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION references.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION reference-witnesses.start elapsed=0.068s thread_cpu=0.068s
+NAVIGATION glossary-evidence.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-1 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-2 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-3 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-4 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-5 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-6 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-7 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-8 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-9 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-10 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-11 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-12 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-13 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-14 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-15 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-16 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-17 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION statistics-integrity.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION audit-separation.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION done elapsed=0.003s thread_cpu=0.003s
+GENERATION compile-navigation.done elapsed=0.1s phase=0.1s
+GENERATION compile-fulltext.start elapsed=0.1s phase=0.0s
+FULLTEXT build indexed_sources=2 elapsed=0.0s
+GENERATION compile-fulltext.done elapsed=0.1s phase=0.0s
+GENERATION verify-navigation.done elapsed=0.1s phase=0.0s
+GENERATION publish-generation.done elapsed=0.1s phase=0.0s
+UNIT_FTS indexed=7/7 seconds=0.0
+__________ test_second_invalid_is_saved_and_resume_cannot_retry_again __________
+05_TESTS/CONTRACTS/test_law_navigation_one_repair_adr0663.py:62: in test_second_invalid_is_saved_and_resume_cannot_retry_again
+    with pytest.raises(ValidationError):ln.select('승인 예외',record,invoke,session=s,remaining_seconds=30)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/query_latency.py:51: in measured
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1104: in select
+    return Investigation(session, question, record, invoke, remaining_seconds, checkpoint, on_checkpoint).run()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1088: in run
+    try:decision = self.request_decision(data, actions, phase)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1004: in request_decision
+    decision = self.invoke(system, model_data, schema, phase, min(180, self.left()))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+05_TESTS/CONTRACTS/test_law_navigation_one_repair_adr0663.py:61: in invoke
+    def invoke(system,data,schema,phase,timeout):calls.append(phase);return conflict(data)
+                                                                            ^^^^^^^^^^^^^^
+05_TESTS/CONTRACTS/test_law_navigation_one_repair_adr0663.py:16: in conflict
+    candidate = data['articles'][0]
+                ^^^^^^^^^^^^^^^^
+E   KeyError: 'articles'
+---------------------------- Captured stdout setup -----------------------------
+GENERATION link-documents.start elapsed=0.0s phase=0.0s
+GENERATION link-documents.done elapsed=0.0s phase=0.0s
+GENERATION publish-source.start elapsed=0.0s phase=0.0s
+GENERATION publish-source.done elapsed=0.0s phase=0.0s
+GENERATION prepare-glossary-assets.start elapsed=0.0s phase=0.0s
+GENERATION prepare-glossary-assets.done elapsed=0.0s phase=0.0s
+GENERATION compile-navigation.start elapsed=0.0s phase=0.0s
+NAVIGATION schema.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION catalogue.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION documents.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION references.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION reference-witnesses.start elapsed=0.069s thread_cpu=0.069s
+NAVIGATION glossary-evidence.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-1 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-2 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-3 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-4 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-5 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-6 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-7 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-8 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-9 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-10 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-11 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-12 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-13 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-14 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-15 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-16 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-17 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION statistics-integrity.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION audit-separation.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION done elapsed=0.003s thread_cpu=0.003s
+GENERATION compile-navigation.done elapsed=0.1s phase=0.1s
+GENERATION compile-fulltext.start elapsed=0.1s phase=0.0s
+FULLTEXT build indexed_sources=2 elapsed=0.0s
+GENERATION compile-fulltext.done elapsed=0.1s phase=0.0s
+GENERATION verify-navigation.done elapsed=0.1s phase=0.0s
+GENERATION publish-generation.done elapsed=0.1s phase=0.0s
+UNIT_FTS indexed=7/7 seconds=0.0
+_____________ test_partial_patch_recovers_actual_select_path_once ______________
+05_TESTS/CONTRACTS/test_law_navigation_patch_repair_adr0664.py:62: in test_partial_patch_recovers_actual_select_path_once
+    result=ln.select('승인 예외',record,invoke,session=s,remaining_seconds=30)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/query_latency.py:51: in measured
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1104: in select
+    return Investigation(session, question, record, invoke, remaining_seconds, checkpoint, on_checkpoint).run()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1088: in run
+    try:decision = self.request_decision(data, actions, phase)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1004: in request_decision
+    decision = self.invoke(system, model_data, schema, phase, min(180, self.left()))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+05_TESTS/CONTRACTS/test_law_navigation_patch_repair_adr0664.py:56: in invoke
+    if len(calls)==1:return conflict(data)
+                            ^^^^^^^^^^^^^^
+05_TESTS/CONTRACTS/test_law_navigation_one_repair_adr0663.py:16: in conflict
+    candidate = data['articles'][0]
+                ^^^^^^^^^^^^^^^^
+E   KeyError: 'articles'
+---------------------------- Captured stdout setup -----------------------------
+GENERATION link-documents.start elapsed=0.0s phase=0.0s
+GENERATION link-documents.done elapsed=0.0s phase=0.0s
+GENERATION publish-source.start elapsed=0.0s phase=0.0s
+GENERATION publish-source.done elapsed=0.0s phase=0.0s
+GENERATION prepare-glossary-assets.start elapsed=0.0s phase=0.0s
+GENERATION prepare-glossary-assets.done elapsed=0.0s phase=0.0s
+GENERATION compile-navigation.start elapsed=0.0s phase=0.0s
+NAVIGATION schema.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION catalogue.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION documents.start elapsed=0.002s thread_cpu=0.002s
+NAVIGATION references.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION reference-witnesses.start elapsed=0.098s thread_cpu=0.098s
+NAVIGATION glossary-evidence.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION glossary-evidence.sql-1 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-2 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-3 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-4 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-5 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-6 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-7 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-8 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-9 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-10 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-11 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-12 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-13 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-14 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-15 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-16 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-17 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION statistics-integrity.start elapsed=0.002s thread_cpu=0.002s
+NAVIGATION audit-separation.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION done elapsed=0.005s thread_cpu=0.005s
+GENERATION compile-navigation.done elapsed=0.1s phase=0.1s
+GENERATION compile-fulltext.start elapsed=0.1s phase=0.0s
+FULLTEXT build indexed_sources=2 elapsed=0.0s
+GENERATION compile-fulltext.done elapsed=0.1s phase=0.0s
+GENERATION verify-navigation.done elapsed=0.1s phase=0.0s
+GENERATION publish-generation.done elapsed=0.1s phase=0.0s
+UNIT_FTS indexed=7/7 seconds=0.0
+___________________ test_bad_partial_patch_is_never_executed ___________________
+05_TESTS/CONTRACTS/test_law_navigation_patch_repair_adr0664.py:73: in test_bad_partial_patch_is_never_executed
+    with pytest.raises(ValidationError):ln.select('승인 예외',record,invoke,session=s,remaining_seconds=30)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/query_latency.py:51: in measured
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1104: in select
+    return Investigation(session, question, record, invoke, remaining_seconds, checkpoint, on_checkpoint).run()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1088: in run
+    try:decision = self.request_decision(data, actions, phase)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1004: in request_decision
+    decision = self.invoke(system, model_data, schema, phase, min(180, self.left()))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+05_TESTS/CONTRACTS/test_law_navigation_patch_repair_adr0664.py:71: in invoke
+    if len(calls)==1:return conflict(data)
+                            ^^^^^^^^^^^^^^
+05_TESTS/CONTRACTS/test_law_navigation_one_repair_adr0663.py:16: in conflict
+    candidate = data['articles'][0]
+                ^^^^^^^^^^^^^^^^
+E   KeyError: 'articles'
+---------------------------- Captured stdout setup -----------------------------
+GENERATION link-documents.start elapsed=0.0s phase=0.0s
+GENERATION link-documents.done elapsed=0.0s phase=0.0s
+GENERATION publish-source.start elapsed=0.0s phase=0.0s
+GENERATION publish-source.done elapsed=0.0s phase=0.0s
+GENERATION prepare-glossary-assets.start elapsed=0.0s phase=0.0s
+GENERATION prepare-glossary-assets.done elapsed=0.0s phase=0.0s
+GENERATION compile-navigation.start elapsed=0.0s phase=0.0s
+NAVIGATION schema.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION catalogue.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION documents.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION references.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION reference-witnesses.start elapsed=0.083s thread_cpu=0.083s
+NAVIGATION glossary-evidence.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-1 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-2 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-3 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-4 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-5 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-6 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-7 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-8 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-9 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-10 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-11 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-12 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-13 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-14 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-15 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-16 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-17 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION statistics-integrity.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION audit-separation.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION done elapsed=0.003s thread_cpu=0.003s
+GENERATION compile-navigation.done elapsed=0.1s phase=0.1s
+GENERATION compile-fulltext.start elapsed=0.1s phase=0.0s
+FULLTEXT build indexed_sources=2 elapsed=0.0s
+GENERATION compile-fulltext.done elapsed=0.1s phase=0.0s
+GENERATION verify-navigation.done elapsed=0.1s phase=0.0s
+GENERATION publish-generation.done elapsed=0.1s phase=0.0s
+UNIT_FTS indexed=7/7 seconds=0.0
+_______________ test_context_adds_the_same_request_id_to_events ________________
+05_TESTS/REGRESSION/core/test_semantic_observability.py:28: in test_context_adds_the_same_request_id_to_events
+    record = next(record for record in caplog.records if record.getMessage() == "step.finished")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   StopIteration
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+05_TESTS/CONTRACTS/test_native_completion_consumer_adr0680.py::test_exact_candidate_http_consumes_completion[False-422-raw0-incomplete]
+  /home/jin/8-AGENT/main.py:22: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event('startup')
+
+05_TESTS/CONTRACTS/test_native_completion_consumer_adr0680.py::test_exact_candidate_http_consumes_completion[False-422-raw0-incomplete]
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/applications.py:4681: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)  # ty: ignore[deprecated]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED 05_TESTS/CONTRACTS/test_law_navigation_one_repair_adr0663.py::test_actual_previous_conflict_schema_requires_changed_decision
+FAILED 05_TESTS/CONTRACTS/test_law_navigation_one_repair_adr0663.py::test_repair_then_execute_reads_only_corrected_decision
+FAILED 05_TESTS/CONTRACTS/test_law_navigation_one_repair_adr0663.py::test_second_invalid_is_saved_and_resume_cannot_retry_again
+FAILED 05_TESTS/CONTRACTS/test_law_navigation_patch_repair_adr0664.py::test_partial_patch_recovers_actual_select_path_once
+FAILED 05_TESTS/CONTRACTS/test_law_navigation_patch_repair_adr0664.py::test_bad_partial_patch_is_never_executed
+FAILED 05_TESTS/REGRESSION/core/test_semantic_observability.py::test_context_adds_the_same_request_id_to_events
+6 failed, 87 passed, 3 warnings in 21.12s

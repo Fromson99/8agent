@@ -36,6 +36,8 @@ def records(tmp_path):
         body={'session_id':f'case-{i}','request_id':f'r-{i}','question':f'합성 사건 {i}','document_ids':['d']}
         ids.append(repo.connect(repo.intake(body,principal)['id'],principal)['id'])
     repo.close()
+    from test_successful_core_routes import seed_ad_case
+    for i,ident in enumerate(ids):seed_ad_case(path,ident,principal,f'case-{i}')
     count=[0]
     def ask(q,model=None,chat='chat',request=None):
         count[0]+=1

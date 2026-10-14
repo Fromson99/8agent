@@ -49,15 +49,15 @@ def test_empty_patch_rejected_and_incomplete_initial_output_needs_full_decision(
     assert not is_patch and 'reason' in schema['required']
 
 
-def test_partial_patch_recovers_actual_select_path_once(session):
+def test_shape_invalid_initial_requires_full_correction_on_actual_path(session):
     native,_=session;s=native.sources;record=prepared(s);calls=[]
     def invoke(system,data,schema,phase,timeout):
         calls.append(phase)
         if len(calls)==1:return conflict(data)
         if phase.endswith('-repair'):
-            assert data['repair_contract']['response_mode']=='FIELD_REPLACEMENTS'
+            assert data['repair_contract']['response_mode']=='FULL_DECISION'
             assert not s.law_navigation_state['selected']
-            return {'branch_decisions':[]}
+            return reader(system,data,schema,phase,timeout)
         return reader(system,data,schema,phase,timeout)
     result=ln.select('승인 예외',record,invoke,session=s,remaining_seconds=30)
     assert result['status']=='complete' and sum(p.endswith('-repair') for p in calls)==1
@@ -75,7 +75,7 @@ def test_bad_partial_patch_is_never_executed(session):
     assert len(s.law_navigation_state['rejected_decisions'])==2
 
 
-def test_nested_schema_repairs_disabled_only_for_law_navigation(session,monkeypatch):
+def test_nested_schema_repairs_disabled_for_stage_owned_navigation(session,monkeypatch):
     native,_=session;profiles=[];native.profile['max_schema_repairs']=1
     native.gateway=SimpleNamespace(domain={},transport=object())
     class Gateway:
@@ -85,4 +85,4 @@ def test_nested_schema_repairs_disabled_only_for_law_navigation(session,monkeypa
     native.structured('system',{}, {'type':'object'}, 'source-law-navigation-1-repair',30)
     native.structured('system',{}, {'type':'object'}, 'source-reference-law-1-1',30)
     assert profiles[0]['max_schema_repairs']==0 and profiles[0]['max_transport_retries']==0
-    assert profiles[1]['max_schema_repairs']==1
+    assert profiles[1]['max_schema_repairs']==0

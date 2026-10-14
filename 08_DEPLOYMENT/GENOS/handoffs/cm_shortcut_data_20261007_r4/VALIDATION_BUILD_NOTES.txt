@@ -1,0 +1,1 @@
+최종 인계 R3는 CM51 data revision R2의 바이트를 그대로 사용한다. R2 실행 TXT가 GENOS 코드 inventory에 없는 로컬 06_TOOLS/pipeline.py를 요구하여 현장 모의 반입 검사에서 중단됐다. 원 기록은 R2/DELIVERY_SECOND_FAILURE.log.gz로 보존한다. R3에서는 동일 lawrag.pipeline.unified_memory.main을 배포 checkout의 Python/PYTHONPATH에서 직접 호출한다. 원문·DB·MAIN 포인터를 바꾸는 우회는 없다. 로컬에 등록한 CM 데이터는 R2이며 새로 중복 등록하지 않는다.

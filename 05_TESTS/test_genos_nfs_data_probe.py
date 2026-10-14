@@ -323,7 +323,7 @@ class WorkflowContracts(unittest.TestCase):
 
     def test_nested_gateway_and_positive_identity(self):
         report = {'response_schema': probe.REVISION, 'probe_id': 'fixture-id', 'expected_commit': 'a' * 40,
-                  'stage': 'code-serving', 'ok': True, 'checks': []}
+                  'stage': 'code-serving', 'ok': True, 'checks': [], 'data_listing': {}}
         out = self.execute(report)
         self.assertTrue(out['nfs_probe_pass'])
         self.assertNotIn('FAKE_TEST_TOKEN', json.dumps(out))

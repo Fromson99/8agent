@@ -16,6 +16,17 @@ def load(name, path):
     spec = importlib.util.spec_from_file_location(name, ROOT / path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    if hasattr(module, '_post_code_serving'):
+        # These fixtures exercise the SSE transport after the current AD-mode
+        # check. Provide its empty result separately so the SSE response mock
+        # is not mistakenly consumed by the preflight /json request. The live
+        # routed-workflow test verifies both requests on an actual HTTP port.
+        original = module._post_code_serving
+        def preflight(body):
+            if body.get('API_TYPE') == 'AD_PROBE':
+                return {'status': 200, 'body': {}}
+            return original(body)
+        module._post_code_serving = preflight
     return module
 
 
@@ -132,7 +143,8 @@ def test_failure_inside_sse_result_is_failed_not_answered(monkeypatch):
         {'event':'result','data':{'status':500,'body':{'error':'synthetic service failure'}}}]))
     result = asyncio.run(w.run({'question':'synthetic'}))
     assert result['answer_status'] == 'failed'
-    assert result['text'].startswith('지금 답변을 만들지 못했습니다.')
+    assert result['text'].startswith('실행 오류 (HTTP 500)')
+    assert 'synthetic service failure' in result['text']
 
 
 def test_server_flushes_before_computation_and_heartbeats_until_result(monkeypatch):
@@ -155,10 +167,12 @@ def test_server_flushes_before_computation_and_heartbeats_until_result(monkeypat
         assert calls == []
         beats = 0
         async for raw in it:
-            frame = json.loads(raw[5:])
-            if frame['event'] == 'progress' and frame['data'].get('kind') == 'heartbeat':
+            if raw == ': keep-alive\n\n':
                 beats += 1
                 if beats == 3: released.set()
+                continue
+            frame = json.loads(raw[5:])
+            assert not (frame['event'] == 'progress' and frame['data'].get('kind') == 'heartbeat')
             if frame['event'] == 'result': assert frame['data'] == expected
         assert beats >= 3 and len(calls) == 1
         assert not app._ACTIVE_REQUESTS

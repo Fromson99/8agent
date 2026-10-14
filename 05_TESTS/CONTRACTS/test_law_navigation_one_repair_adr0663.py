@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import pytest
 from jsonschema import validate, ValidationError
-from test_law_grouped_navigation import prepared, reader, decide
+from test_law_grouped_navigation import prepared, reader, decide, cards
 from test_unit_fulltext_adaptive_read import tree, session
 from semantic_runtime.legal_agent import law_navigation as ln
 from semantic_runtime.legal_agent.errors import ProposalError, ContractError
@@ -13,9 +13,9 @@ ROOT = Path('/home/jin/8-AGENT')
 
 
 def conflict(data):
-    candidate = data['articles'][0]
+    candidate = cards(data)[0]
     value = decide(data, 'READ_PARENT', candidate['read_parent_action'], candidate)
-    value['branch_decisions'] = [{'branch_id':candidate['id'], 'status':'DEFER',
+    value['branch_decisions'] = [{'branch_id':candidate['id'], 'status':'EXCLUDE',
         'reason':'전체 원문을 읽고 확인 필요', 'issue_refs':['Q1'], 'basis_refs':[data['basis'][0]['id']]}]
     return value
 
@@ -23,7 +23,10 @@ def conflict(data):
 def test_actual_previous_conflict_schema_requires_changed_decision():
     audit=json.loads((ROOT/'04_EXPERIMENTS/ADR/ADR-0662-law-navigation-clean-search-probe/artifacts/search-boundary-audit.json').read_text())
     data=json.loads((ROOT/'04_EXPERIMENTS/ADR/ADR-0662-law-navigation-clean-search-probe/artifacts/first-law-navigation-input.json').read_text())
-    rejected=audit['first_model_decision'];gid=rejected['branch_decisions'][0]['branch_id']
+    rejected=copy.deepcopy(audit['first_model_decision'])
+    # Legacy READ+DEFER is now allowed; READ+EXCLUDE remains forbidden.
+    rejected['branch_decisions'][0]['status']='EXCLUDE'
+    before=copy.deepcopy(rejected);gid=rejected['branch_decisions'][0]['branch_id']
     handle=rejected['targets'][0]
     actions={r['id']:{**r,'identity':{'branch_id':gid} if r['id']==handle else {}} for r in data['actions']}
     schema,instructions=ln.repair_contract(data,actions,{r['id'] for r in data['branches']},rejected,ProposalError(audit['navigation_error']))
@@ -31,9 +34,10 @@ def test_actual_previous_conflict_schema_requires_changed_decision():
     corrected=copy.deepcopy(rejected);corrected['branch_decisions']=corrected['branch_decisions'][1:]
     validate(corrected,schema)
     deferred=copy.deepcopy(rejected);deferred.update(next_action='PENDING',targets=[])
+    deferred['branch_decisions'][0]['status']='DEFER'
     validate(deferred,schema)
     assert instructions['max_attempts']==1 and instructions['conflicts'][0]['branch_id']==gid
-    assert rejected==audit['first_model_decision']
+    assert rejected==before
 
 
 def test_repair_then_execute_reads_only_corrected_decision(session):

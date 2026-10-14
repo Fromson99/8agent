@@ -1,0 +1,46 @@
+{
+  "version": "GENOS_SUCCESSFUL_SHORTCUT_20261013_R1",
+  "predecessor": "GENOS_AD_REQUEST_LOGS_20261013_R2",
+  "field_code_root": "~/DEV",
+  "field_git_commit": null,
+  "field_generation": null,
+  "field_generation_manifest_sha256": null,
+  "field_code_serving_revision": null,
+  "genos_applied": false,
+  "genos_deployed": false,
+  "workflow_test": "NOT_RUN",
+  "rebuild_required": false,
+  "workflow_editor_change_required": false,
+  "local_main": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "successful-shortcut-20261013-r1",
+    "generation": 59,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/successful-shortcut-20261013-r1/release.json",
+    "release_manifest_sha256": "b2b7c9c2e9e07ed4a2cbf90f33b7d5e16e85dff6463b04fb3d0fd5c32368f0d2",
+    "activated_at": "2026-10-13T08:36:07.221430+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "f325c15f8ed468342e9f9f651231352399d548c80f53f87d3d476323e042e07c",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0773-successful-shortcut-publication/실험/manifest.json",
+        "sha256": "aada70a9fb3a6853a1e61ed8519e03ff18f4c667843924e45443ffb9f69a4b25"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0773-successful-shortcut-publication/README.md",
+        "sha256": "7dabcdde6434654bbcf0f9ed781516d444b538e8d2eb04ab9321abb2b10008a0"
+      },
+      "arm": "successful-publication",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0773-successful-shortcut-publication/artifacts/run-001/result.json",
+        "sha256": "852daacbf0f7698690da802e68f57422808357289a772577f540720525e21c72"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0773-successful-shortcut-publication/artifacts/design/release-rebase.json",
+        "sha256": "dcaead608f9cbfc21be71af04fb45a3dc28b7de41230f03be5dce33c16231079"
+      }
+    }
+  },
+  "rollback": "Hash guarded undo to AD_REQUEST_LOGS R2; additive ledger receipts preserved"
+}

@@ -1,0 +1,158 @@
+{
+  "status": "PASS",
+  "environment": "WSL synthetic, no GENOS connection",
+  "matrix_cases": 36,
+  "candidate_contracts": 169,
+  "working_contracts": 169,
+  "installed_contracts": 278,
+  "installation_states": 6,
+  "service_boots": 12,
+  "same_committed_checkout_generation_gates": 6,
+  "known_inventories": 330,
+  "expected_tamper_rejections": 12,
+  "real_model_calls": 0,
+  "evidence": [
+    {
+      "file": "TEST_query_latency_20261007_r3.json.gz",
+      "commands": 20,
+      "sha256": "774d3701bacbb6edc50ea9006e26b04f9785708af46fa12ed592e3f913e029e7"
+    },
+    {
+      "file": "TEST_query_latency_20261007_r3_budget.json.gz",
+      "commands": 20,
+      "sha256": "9a502f6b2ea36d3038cc006ae4f89bb15cd9938c24f99958b4d07c793e5b613f"
+    },
+    {
+      "file": "TEST_query_latency_20261007_r4.json.gz",
+      "commands": 20,
+      "sha256": "c7b5b07b0417f268801ee0636336afac61ccdbd4934565685d6de9fa126399ab"
+    },
+    {
+      "file": "TEST_query_latency_20261007_r4_budget.json.gz",
+      "commands": 20,
+      "sha256": "e0234478234da14b6c4d88e255451e1826184c3087b687a2be2434f300d70a9d"
+    },
+    {
+      "file": "TEST_query_latency_20261007_r4_display.json.gz",
+      "commands": 21,
+      "sha256": "c61a03f6e4aa00c297f1799e5b5d100316b44a298cefd61c3cbca8c552bfc12c"
+    },
+    {
+      "file": "TEST_query_latency_20261007_r4_display_budget.json.gz",
+      "commands": 21,
+      "sha256": "9c0b7c0ccd702cabf0c4ecd94a00f4d54b98b0cdb7a9828ab02400e4810cc6d4"
+    }
+  ],
+  "contracts": {
+    "CONTRACTS_query_latency_20261007_r3.xml": 139,
+    "CONTRACTS_query_latency_20261007_r4.xml": 139
+  },
+  "selected_main": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "successful-shortcut-20261013-r1",
+    "generation": 59,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/successful-shortcut-20261013-r1/release.json",
+    "release_manifest_sha256": "b2b7c9c2e9e07ed4a2cbf90f33b7d5e16e85dff6463b04fb3d0fd5c32368f0d2",
+    "activated_at": "2026-10-13T08:36:07.221430+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "f325c15f8ed468342e9f9f651231352399d548c80f53f87d3d476323e042e07c",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0773-successful-shortcut-publication/실험/manifest.json",
+        "sha256": "aada70a9fb3a6853a1e61ed8519e03ff18f4c667843924e45443ffb9f69a4b25"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0773-successful-shortcut-publication/README.md",
+        "sha256": "7dabcdde6434654bbcf0f9ed781516d444b538e8d2eb04ab9321abb2b10008a0"
+      },
+      "arm": "successful-publication",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0773-successful-shortcut-publication/artifacts/run-001/result.json",
+        "sha256": "852daacbf0f7698690da802e68f57422808357289a772577f540720525e21c72"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0773-successful-shortcut-publication/artifacts/design/release-rebase.json",
+        "sha256": "dcaead608f9cbfc21be71af04fb45a3dc28b7de41230f03be5dce33c16231079"
+      }
+    }
+  },
+  "main_smoke": {
+    "status": "PASS",
+    "environment": "fresh WSL local service.service",
+    "pointer": {
+      "schema_version": "semantic-runtime-active-v2",
+      "release_id": "successful-shortcut-20261013-r1",
+      "generation": 59,
+      "manifest_path": "08_DEPLOYMENT/RELEASES/successful-shortcut-20261013-r1/release.json",
+      "release_manifest_sha256": "b2b7c9c2e9e07ed4a2cbf90f33b7d5e16e85dff6463b04fb3d0fd5c32368f0d2",
+      "activated_at": "2026-10-13T08:36:07.221430+00:00",
+      "deployment_basis": "VALIDATED_ADR_PROMOTION",
+      "quality_certified": false,
+      "legacy_fallback": false,
+      "previous_active_sha256": "f325c15f8ed468342e9f9f651231352399d548c80f53f87d3d476323e042e07c",
+      "qualification": {
+        "source": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0773-successful-shortcut-publication/실험/manifest.json",
+          "sha256": "aada70a9fb3a6853a1e61ed8519e03ff18f4c667843924e45443ffb9f69a4b25"
+        },
+        "readme": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0773-successful-shortcut-publication/README.md",
+          "sha256": "7dabcdde6434654bbcf0f9ed781516d444b538e8d2eb04ab9321abb2b10008a0"
+        },
+        "arm": "successful-publication",
+        "result": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0773-successful-shortcut-publication/artifacts/run-001/result.json",
+          "sha256": "852daacbf0f7698690da802e68f57422808357289a772577f540720525e21c72"
+        },
+        "rebase": {
+          "path": "04_EXPERIMENTS/ADR/ADR-0773-successful-shortcut-publication/artifacts/design/release-rebase.json",
+          "sha256": "dcaead608f9cbfc21be71af04fb45a3dc28b7de41230f03be5dce33c16231079"
+        }
+      }
+    },
+    "execution_binding": {
+      "mode": "local-release",
+      "release_id": "successful-shortcut-20261013-r1",
+      "generation": 59,
+      "release_manifest_sha256": "b2b7c9c2e9e07ed4a2cbf90f33b7d5e16e85dff6463b04fb3d0fd5c32368f0d2",
+      "code_sha256": "b49cff35f0841feb17c3cbfe516dfa06b5fe29115cabb88e59773df4d0c5e94e",
+      "profile_sha256": "54150f85895492fed7dbb1d3d83c0a0643f9035b38f741731732a2366f8ac2a2",
+      "data_manifest_sha256": "d45898e5e82503d255c1d0626f60091ea1f31993d1b3f2ffb1ae968293953379",
+      "source_generation_id": "term-source-8729f978a28924cb8c5b",
+      "fulltext_manifest_sha256": "7e37bb61dceaca3a7354381d1270b0d2497613e78b783e4cb97c498edbab20ef",
+      "search_policy_sha256": "949c449188a1bb1f25c289f2be0a137137c94f04dce6851be521821c825bbe79",
+      "schema_sha256": "c80ecb2f73c797b0d42136520eb83b4beacc557251a289fb3f9b156d6fb0d34a",
+      "process_instance_id": "a5d4864694b348afab052661f0d7e111",
+      "process_id": 111703,
+      "investigation_budget": {
+        "max_model_attempts": 40,
+        "finalization_reserve": 3,
+        "max_tool_actions": 1024,
+        "wall_seconds": 1800,
+        "max_no_progress": 2,
+        "investigation_model_attempts": 37,
+        "search_rounds": 8,
+        "assessment_reentry_limit": 2
+      },
+      "effective_profile_sha256": "3d74971f2f1e0f4051439486a243e295b8cc46679c354e14e2af4ca2e98ed1f4",
+      "service_entry_sha256": "68e2b5a45eb652ad46614c67f639f14dc99c6f0d61173456f099c82065f9f82c"
+    },
+    "health_status": 200,
+    "search_status": 200,
+    "selected_success_policy": "successful-answer-publication-v1",
+    "selected_ad_module": "08_DEPLOYMENT/RELEASES/successful-shortcut-20261013-r1/code/02_BACKEND/semantic_runtime/ad_mode.py",
+    "selected_files_verified": 301,
+    "data_unchanged": true,
+    "model_calls": 0,
+    "genos_deployed": false
+  },
+  "limitations": [
+    "Final publication success is not legal semantic correctness.",
+    "Legacy records without matching journal and final answer remain unconfirmed.",
+    "GENOS field deployment and UI not verified.",
+    "Tested legacy field bases do not contain bounded wiki recall; its22 contracts run against MAIN but do not apply to these field bases. Existing optional features are preserved.",
+    "Pre-existing unrelated no-socket display expectation failure is unchanged and outside these passing suites."
+  ]
+}

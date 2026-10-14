@@ -1,0 +1,547 @@
+{
+  "schema_version": "implementation-design-evidence-v1",
+  "observed_at": "2026-10-09T18:48:02.420180+09:00",
+  "status": "design_only",
+  "method": "Read existing artifacts and code; compare file SHA256 and count returned approved coverage; no model calls, replay, regrade or product mutation.",
+  "active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "compact-input-20261009-r1",
+    "generation": 50,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/compact-input-20261009-r1/release.json",
+    "release_manifest_sha256": "0e016d9b924107132ce177443d41ec0bc594029e276b6dc3265a040aca673bb7",
+    "activated_at": "2026-10-09T06:25:31.233433+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "d69c40d81238642b03883f4131d619cfb646428505408d655be6fb3177ac0a40",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0712-compact-direct-read-context/실험/manifest.json",
+        "sha256": "9b117690d0ce6c998037cf99cede604678a83fafd6b35fd2a6b82ba52616ff2d"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0712-compact-direct-read-context/README.md",
+        "sha256": "1057b953ffb9355b7e60ea640a1829eaaf6fda2aa34b1afa9c28ebf4a28c1474"
+      },
+      "arm": "compact",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0712-compact-direct-read-context/artifacts/run-001/result.json",
+        "sha256": "790a7d64bbd69b05a5c3dc3885b9563aca6bbccdba9ed64eaef55bd972240607"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0712-compact-direct-read-context/artifacts/design/release-rebase.json",
+        "sha256": "bfd57adfc8f0099ada4afd902dd6b1c5cf87a06ddb8e76bb2bb508214edba6a3"
+      }
+    }
+  },
+  "active_pointer_sha256": "667a5f0e359b0c24123808372951a9d62dd9319f7ad32f4ffff52bfe591e6632",
+  "manifest_sha256_valid": true,
+  "source_data_manifest_sha256_valid": true,
+  "serving_files": 287,
+  "hash_mismatches": {
+    "working": [],
+    "selected_release": [],
+    "diagnostic_candidate": []
+  },
+  "code_inventory_sha256": "09cdcc1c03d5f45654840bc0447280cd5d0422ce884bd34898f8d2509919e88b",
+  "profile_sha256": "589638944bf302897dbcddc4167a9bf3aebec84d3fa4c7566be6ec80dbe8351d",
+  "data_path": "01_DATA/TERM_RELEASES/native-cm-serving-20261008-r2-index/serving/baseline/generation",
+  "data_manifest_sha256": "d45898e5e82503d255c1d0626f60091ea1f31993d1b3f2ffb1ae968293953379",
+  "approved_coverage_counts": {
+    "COVERED": 39,
+    "PARTIAL": 7,
+    "FAILED": 5
+  },
+  "http_status_counts": {
+    "200": 46,
+    "500": 1,
+    "422": 4
+  },
+  "metric_definition": "final_answer_excluded from existing ADR0717 summary; physical model time, intermediate assessments and repairs included, final drafting bundle and local processing excluded.",
+  "historical_metrics": {
+    "cases": 51,
+    "calls_total": 215,
+    "calls_mean": 4.215686274509804,
+    "calls_distribution": {
+      "3": 32,
+      "4": 2,
+      "5": 4,
+      "6": 6,
+      "7": 3,
+      "8": 2,
+      "9": 2
+    },
+    "seconds_total": 2460.396696804999,
+    "seconds_mean": 48.243072486372526,
+    "seconds_median": 33.913077062999946,
+    "seconds_p95": 145.62975556899949,
+    "seconds_max": 162.37630769700013
+  },
+  "cases": [
+    {
+      "case_id": "cm-001",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-001/result.json",
+      "result_sha256": "b214974586af30fc586660b023cc2a498ac859f35a27cfb62f32c9fa912b983d"
+    },
+    {
+      "case_id": "cm-002",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-002/result.json",
+      "result_sha256": "55edc0fbff5839fac4b7a94609e98ae83e3b2272de296743d77fdb6d26c47f6f"
+    },
+    {
+      "case_id": "cm-003",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-003/result.json",
+      "result_sha256": "2eae42aa2cd4318e9c5ec931413c85d5261b800a99a6dbce4fd0ae7e1fd2ac66"
+    },
+    {
+      "case_id": "cm-004",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-004/result.json",
+      "result_sha256": "332dd35d5a008dda35e7e0de89faac9168c67048aacd7f5029609222a898f2a0"
+    },
+    {
+      "case_id": "cm-005",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-005/result.json",
+      "result_sha256": "1ae9df1f31eb49f63762fa00aa10e31e0a1a1c5d9d2f52076027dc3938fd9234"
+    },
+    {
+      "case_id": "cm-006",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-006/result.json",
+      "result_sha256": "501766ef749b4542a5e66fdcf1aeaaf5adbfb145f3f1b2719f6e912cff099a55"
+    },
+    {
+      "case_id": "cm-007",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-007/result.json",
+      "result_sha256": "3a5c5a843c0e9d5aff4cbe30cb23b3699b45ece75594b8b6c5eea27679fa88e6"
+    },
+    {
+      "case_id": "cm-008",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-008/result.json",
+      "result_sha256": "7f753166c0f600aafe20b928295827d994748a5147beb7359c489eb99fd972dd"
+    },
+    {
+      "case_id": "cm-009",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-009/result.json",
+      "result_sha256": "11cefc4b5af7b7b826fe7ee922a383bf676c046345d262a7ad8e04e101a45d69"
+    },
+    {
+      "case_id": "cm-010",
+      "http_status": 200,
+      "approved_answer_coverage": "PARTIAL",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-010/result.json",
+      "result_sha256": "e9e12b7afdf75362bbbc8233bdf2ae8ec78b238b23fb7fb244d9bb81d5d09269"
+    },
+    {
+      "case_id": "cm-011",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-011/result.json",
+      "result_sha256": "e0094799ce488e5b2895d4f97115384ba4cd392031a6cf81119e554f4e798b04"
+    },
+    {
+      "case_id": "cm-012",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-012/result.json",
+      "result_sha256": "a50dcf29a594fa8f07cdb0e1f626b5dff171cb27eb0897773e0d0dcfb0d7595d"
+    },
+    {
+      "case_id": "cm-013",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-013/result.json",
+      "result_sha256": "76046f6425a0ce8cd98eb25d75e61a85e0d5a55c710a92e427d665de820ed7da"
+    },
+    {
+      "case_id": "cm-014",
+      "http_status": 200,
+      "approved_answer_coverage": "PARTIAL",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-014/result.json",
+      "result_sha256": "5b16b3a29e0508f547832905dad431feaf00c8bf242c423f0d09546f772d96a6"
+    },
+    {
+      "case_id": "cm-015",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-015/result.json",
+      "result_sha256": "0b654310b0852685ba4aaca0ab4e69384d5d5bc8012a5f5875c89bdffa5e30a9"
+    },
+    {
+      "case_id": "cm-016",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-016/result.json",
+      "result_sha256": "875120ba3be3f01c2fc79b1f6006d2453efc546a4f2a618bb83b25229fc9216a"
+    },
+    {
+      "case_id": "cm-017",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-017/result.json",
+      "result_sha256": "95d203e7495765441004a14758f9df44263a1e5e4ceedfb43db17d9ea4256edd"
+    },
+    {
+      "case_id": "cm-018",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-018/result.json",
+      "result_sha256": "bbfa20163aaea82aab5535a2593fbd0a8675c29e7886d65370e55b6ea5bd1a93"
+    },
+    {
+      "case_id": "cm-019",
+      "http_status": 500,
+      "approved_answer_coverage": null,
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-019/result.json",
+      "result_sha256": "af38e36ad4568f6fd73cc34abc955a173c3fa853643bc0c2000c170fa4cead89"
+    },
+    {
+      "case_id": "cm-020",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-020/result.json",
+      "result_sha256": "a6e06d9d0dcdfaf676fbc51851fd2a75a161c0cbce2326029eba12ec325458a4"
+    },
+    {
+      "case_id": "cm-021",
+      "http_status": 422,
+      "approved_answer_coverage": null,
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-021/result.json",
+      "result_sha256": "e498b8924f2d5af86f37ccde84c0f9b08454cd640600d8d4f847be59f0335bff"
+    },
+    {
+      "case_id": "cm-022",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-022/result.json",
+      "result_sha256": "6eca3f873950186f10ee0485b35e269d9d6cf2e714e0b75985b4475cbcfeafe7"
+    },
+    {
+      "case_id": "cm-023",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-023/result.json",
+      "result_sha256": "ae58ca5cffcb19e120bfb6c7441c4f16b71df8f5db66302dbca30065f9cbd7d4"
+    },
+    {
+      "case_id": "cm-024",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-024/result.json",
+      "result_sha256": "c08c649f6890937fb244a7ae58aacb9bffb6bded06381e0ebd5b8d6f282e2227"
+    },
+    {
+      "case_id": "cm-025",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-025/result.json",
+      "result_sha256": "c55b1f343cdfa3d5d2496b918f2562395246f96061314d6de90213a6ac1c833c"
+    },
+    {
+      "case_id": "cm-026",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-026/result.json",
+      "result_sha256": "36e60c1d0d0e9860637b405ac5692ebf00ca2c9a92fcda07655cfaf2c67909fa"
+    },
+    {
+      "case_id": "cm-027",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-027/result.json",
+      "result_sha256": "c1139f3cf7478493fdff25211b6783f420172456afa1e656b911cb6f01389380"
+    },
+    {
+      "case_id": "cm-028",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-028/result.json",
+      "result_sha256": "7720afd45b3fa5eeec134ce3fa24c0ed01a58a1b3ff7b041ed96d58382c59197"
+    },
+    {
+      "case_id": "cm-029",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-029/result.json",
+      "result_sha256": "9a521140d5095cb8b154fc0ec6f0d9d3e6665e15ec2c65cf83a6ecc6a74028b6"
+    },
+    {
+      "case_id": "cm-030",
+      "http_status": 422,
+      "approved_answer_coverage": null,
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-030/result.json",
+      "result_sha256": "2646c0a35a23340ce995fc4c96f5e8fb63766f59479ff74130f17673ce55e30d"
+    },
+    {
+      "case_id": "cm-031",
+      "http_status": 200,
+      "approved_answer_coverage": "PARTIAL",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-031/result.json",
+      "result_sha256": "6edffc3abfafe5431336959f9c80bee68e30c3180a206ad02ddb831489821d1e"
+    },
+    {
+      "case_id": "cm-032",
+      "http_status": 422,
+      "approved_answer_coverage": null,
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-032/result.json",
+      "result_sha256": "6e09c08bdd275991c21a961806119688c21904d2c219b759a0c56ff572e18934"
+    },
+    {
+      "case_id": "cm-033",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-033/result.json",
+      "result_sha256": "84a66285b6c675ee5a98b0ad94e3a3f2afc7ff3e01d37e25f26ff67c84a703b2"
+    },
+    {
+      "case_id": "cm-034",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-034/result.json",
+      "result_sha256": "85d52d27139a576dce31674e9829aa49137833df3ba8dcce3b22005b8a80a8b1"
+    },
+    {
+      "case_id": "cm-035",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-035/result.json",
+      "result_sha256": "559dd72a585ebe6077e2456db416fce94187048bf5ee608e5bf143c6e33cf03d"
+    },
+    {
+      "case_id": "cm-036",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-036/result.json",
+      "result_sha256": "e07f2018f79dcfecda86f2aab2d1bee65cbf6165d6cc527b5071b3ad97c26a60"
+    },
+    {
+      "case_id": "cm-037",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-037/result.json",
+      "result_sha256": "dda07805603e47f22e0fd7dbec67db23beb614be6f7d520cf47a84b7e47c87dd"
+    },
+    {
+      "case_id": "cm-038",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-038/result.json",
+      "result_sha256": "78aaa11eef7510ec6c6b955f6c3c10b90e636a659c965e038eb37951fbc832ae"
+    },
+    {
+      "case_id": "cm-039",
+      "http_status": 200,
+      "approved_answer_coverage": "PARTIAL",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-039/result.json",
+      "result_sha256": "1a7a3b920495f334d5a15813796c36b578411645f0a13ba8061f257993c69388"
+    },
+    {
+      "case_id": "cm-040",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-040/result.json",
+      "result_sha256": "3d3fffa9d063565141a5c62f4ce57d061f3a4cf6a97a2a30604e3ba105a59ab9"
+    },
+    {
+      "case_id": "cm-041",
+      "http_status": 422,
+      "approved_answer_coverage": null,
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-041/result.json",
+      "result_sha256": "ebf0c197da5c593749eb7d7c801c35d28a51d16453895d2e18bc01f054cb505a"
+    },
+    {
+      "case_id": "cm-042",
+      "http_status": 200,
+      "approved_answer_coverage": "PARTIAL",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-042/result.json",
+      "result_sha256": "5272244fedb9ab6130c39124f8523cdfa3e46c6f8c7c67f1bf109903f6400fa2"
+    },
+    {
+      "case_id": "cm-043",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-043/result.json",
+      "result_sha256": "879469f2dcffa71dd1df3814ce0c2d081f8fe9143d3fe7e504a4c012ce7b7efe"
+    },
+    {
+      "case_id": "cm-044",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-044/result.json",
+      "result_sha256": "66b822eb108f709d78c268b55ef0dd28712bc873b21834ab80b340a751f98177"
+    },
+    {
+      "case_id": "cm-045",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-045/result.json",
+      "result_sha256": "b90385dc846bf6a37fcd24a68e2622928439b45e409dcaefc69d2a66e1eb06ea"
+    },
+    {
+      "case_id": "cm-046",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-046/result.json",
+      "result_sha256": "0f8e989285750109800f39833f9b492b736cfeff6a9137cfefa2e8aa91ed904d"
+    },
+    {
+      "case_id": "cm-047",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-047/result.json",
+      "result_sha256": "40365df605df72f7b10ccb01b3ec68c4aa1e6918e100efd9df50a64add723acc"
+    },
+    {
+      "case_id": "cm-048",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-048/result.json",
+      "result_sha256": "3ef5d029ece43fec7f9ae456dc8b1bb10b9c739a26c3a2035e96b074a44ffd77"
+    },
+    {
+      "case_id": "cm-049",
+      "http_status": 200,
+      "approved_answer_coverage": "COVERED",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-049/result.json",
+      "result_sha256": "9ea73d394d9f573530ec3a834be7b0e862fac1dc6b156ea6f7875bf8d66d2979"
+    },
+    {
+      "case_id": "cm-050",
+      "http_status": 200,
+      "approved_answer_coverage": "PARTIAL",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-050/result.json",
+      "result_sha256": "b8c7a9dbc57fd85b866786bd47921042502585055ffd8a78964045e78b782c66"
+    },
+    {
+      "case_id": "cm-051",
+      "http_status": 200,
+      "approved_answer_coverage": "PARTIAL",
+      "result_path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/cm-051/result.json",
+      "result_sha256": "847bb7bf71564208a9f052d8f99ba4c4c509664d8778986fc2ca221a26aa5138"
+    }
+  ],
+  "sources": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "3260934e8d3773ba8f0d7df2d64d31f00e5131713b7c1ee7ff041911cdd829c0"
+    },
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "sha256": "0105e6db8d906475ad367b0892156054398eeec8f4619f7257c9e12578828cd6"
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "sha256": "14929a481fff0c522e87a292844c927ce89a790155fafcc43ab6071604bca9d2"
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219"
+    },
+    {
+      "path": "00_SYSTEM/DATA_MODEL.md",
+      "sha256": "26b90682daafa2ae1a9c7117310542765afe355354cad700a493fb01169ff4e0"
+    },
+    {
+      "path": "00_SYSTEM/EXPERIMENT_MODEL_POLICY.json",
+      "sha256": "8ef308aa9bbe3685409ac0b8b908028691e0af4f330f34022695ea9859d68bab"
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json",
+      "sha256": "589638944bf302897dbcddc4167a9bf3aebec84d3fa4c7566be6ec80dbe8351d"
+    },
+    {
+      "path": "service.py",
+      "sha256": "fd82e3c8d8a2b859f6662b2edbcbf18857b77047218817deff918e7986ef86ae"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "sha256": "000cb16a8e5fc8312cf999b09699c4338a7daddd3e63bf63da31f35c6ad28a7e"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "sha256": "91555206a519acd8a15b1f800ea76abb9b4dd6c6a1af705c39ffc826ac163f3e"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "sha256": "92d1a99c6660ce628009e96e7e9ed4cbfbe59fe6df5ae502861b87cbc72f52e8"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py",
+      "sha256": "2a4d0bbfe767175257944d2895d9b9bd518339b66f23184bf780d4b39a1cdca8"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py",
+      "sha256": "f7f52652138f9b3dac48850ae48bfc26024a8d4d6b9e363a913b784f4e730d13"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py",
+      "sha256": "c916e5c95345ef19b4dc6dbe568210200577b150a294b3101bdd7938cede9241"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_reading.py",
+      "sha256": "fc472b4059756a272ac4004b7f15958b589a2b4c64c9ffd62a0c6916b70a18ff"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+      "sha256": "01b673bd890590dbfec478d156b34b0efd8a61d5cf485bb686f330df53920575"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "sha256": "ec13c012622295a8058ddd7b19f4a6550fb3bf1482e67dbcabbfe57b235ace2e"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0712-compact-direct-read-context/MAIN_RESULT.md",
+      "sha256": "f77c667d74a90b213b639850eb8d7c346bcb9fec2a71935e2add90adc510029f"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0712-compact-direct-read-context/SEMANTIC_REVIEW.md",
+      "sha256": "139471a147aee288705da2fb7b5cda74f2827c0077be2199a63cafdf0da89795"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0712-compact-direct-read-context/artifacts/main-smoke.json",
+      "sha256": "68c8622e8053a87c0df8071454bb89c45a367615b5b6f253d2028cb1c8e925af"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0714-main50-cm018-call-retest/README.md",
+      "sha256": "724f76597c841d534f5101e7401c3700e74fe251e5afa9793f51fbe46024de35"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/README.md",
+      "sha256": "f1d9eefd855235561c2485738264f62500905417d59d00b1fd47e85b20993010"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/run-001/summary.json",
+      "sha256": "011ccb9e98953bd711a603de8fc7793515599500416782a51c162fd911007915"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/trace-inspection-notes.json",
+      "sha256": "76c03b030348f3a94f98bad81075d59610ad1c60a58e0602d6fcab4ab9c34df8"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0717-main50-cm51-sequential-profile/artifacts/validation-status.json",
+      "sha256": "26a594875d02371a893e71308d4d7295e5b7a26b95d57bc2f7e79408d18a8caf"
+    }
+  ],
+  "limitations": [
+    "No fresh running-service verification during design; historical main-smoke evidence only",
+    "No legal accuracy rescoring",
+    "No GENOS access or execution",
+    "ADR0717 README retains old 40/6 aggregate; approved returned coverage is 39/7"
+  ]
+}

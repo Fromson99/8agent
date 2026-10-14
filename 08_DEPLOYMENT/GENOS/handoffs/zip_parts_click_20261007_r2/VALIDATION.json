@@ -1,0 +1,30 @@
+{
+  "schema_version": "zip-parts-click-validation-v1",
+  "validated_at_utc": "2026-10-07T08:28:36.923711+00:00",
+  "result": "12 passed in 11.15s",
+  "test_command": ".venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_zip_parts_click.py",
+  "test_sha256": "1910d5c28b2c8fc4bb72b2ff03673944900d12325b69efda05f6c0c071ba2bb2",
+  "execution": "Real Windows cmd.exe -> Windows PowerShell 5.1.26100.9444, exact shipped CMD files",
+  "source_workers": {
+    "Split-ZipParts.ps1": "b091f8cb3083c554615d5216b97bfb5f9372715e5b5f8f1a4ef9bba2f201c7d7",
+    "Join-ZipParts.ps1": "5c144a3c0be6dc077ffd32f65b13fd1dcf0392e1a3716c0315755c964800cda9"
+  },
+  "archive_sha256": "56cce8beca0fa215c63e8ae41a21e5c6e08a7e8f58d968756818c2fc3c5b55a2",
+  "source_sha256": {
+    "1_SPLIT_ZIP.cmd": "c7461c40f60f37490728fe4bbc860b722ca4bbf0903fdb9fbe41f3c709d71ce7",
+    "2_JOIN_ZIP.cmd": "bd80a02f95ec6b39d7c8941345c4d3a872377d4fdfa0500f22782ba7bb49c00c"
+  },
+  "checks": [
+    "Desktop filename input with/without .zip, quotes, Korean, spaces and brackets",
+    "Self-contained files launched from a separate download folder",
+    "49,000,000-byte size boundary and original SHA-256 restoration",
+    "Missing and invalid inputs fail without data creation",
+    "Corrupted fragments do not publish a restored ZIP",
+    "Original and existing output files preserved",
+    "Existing parts folder is preserved on repeat",
+    "Completion text remains until Enter",
+    "Exact TXT execution copies and embedded PowerShell syntax PASS",
+    "ZIP contains exactly two CMD files and no JavaScript"
+  ],
+  "scope": "Desktop archive transport only; no real user ZIP, company DRM, NFS data generation, MAIN pointer, or GENOS deployment changed"
+}

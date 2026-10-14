@@ -1,0 +1,41 @@
+{
+  "version": "GENOS_INVESTIGATION_BUDGET_20261007_R1",
+  "final_txt_commands": 30,
+  "basis_results": [
+    {
+      "basis": "latency-r4",
+      "apply_repeat_verify_rollback": true,
+      "only_service_and_inventory_changed": true,
+      "unexpected_changes_preserved": true,
+      "same_committed_checkout_generation_gate": true,
+      "mock_local_remote_push": true
+    },
+    {
+      "basis": "cm-oneclick-r8-with-nfs-list",
+      "apply_repeat_verify_rollback": true,
+      "only_service_and_inventory_changed": true,
+      "unexpected_changes_preserved": true,
+      "same_committed_checkout_generation_gate": false,
+      "mock_local_remote_push": false
+    },
+    {
+      "basis": "selected-main-45",
+      "apply_repeat_verify_rollback": true,
+      "only_service_and_inventory_changed": true,
+      "unexpected_changes_preserved": true,
+      "same_committed_checkout_generation_gate": false,
+      "mock_local_remote_push": false
+    }
+  ],
+  "zip_sha256": "8b9fd99f7fb8aed39f1afb15b995dafc45417ad649bfd594ac43c33747a00701",
+  "python311_grammar": true,
+  "bash_syntax": true,
+  "zip_extract_checksum_and_no_javascript": true,
+  "early_failure_logging": true,
+  "source_generation_readonly_reused": "/home/jin/8-AGENT/01_DATA/TERM_RELEASES/local-genos-parity-20261006-r1/generation",
+  "external_model_calls": 0,
+  "actual_genos_access": false,
+  "actual_remote_push": false,
+  "genos_deployed": false,
+  "local_main_pointer_changed": false
+}

@@ -417,6 +417,46 @@ def test_registry_merges_collections_and_keeps_incomplete_cases(generation, tmp_
     with pytest.raises(ValueError, match='hash'): registry.ready_cases(stale)
 
 
+def test_named_question_collection_preserves_scope_without_approving_gold(generation, tmp_path):
+    from lawrag.pipeline import golden_registry as registry
+    cm, sheet = _registry_sources(generation, tmp_path)
+    notes = tmp_path / 'scope.json'
+    assessment = {'status': 'external_only', 'external_only_answerable': True,
+                  'reason': '모의 외규에 일반 개념 근거가 있음', 'evidence_refs': ['mock-source']}
+    write(notes, {'IR-1': {'scope_assessment': assessment}, 'IR-3': {'scope_assessment': assessment}})
+    built = registry.build(cm=cm, annotations=notes, collections=[('risk_cm', sheet)])
+    cases = {case['id']: case for case in built['cases']}
+    assert cases['IR-1']['collection'] == 'risk_cm'
+    assert cases['IR-1']['stage'] == 'question_only'
+    assert cases['IR-1']['reference_answer'] is None and cases['IR-1']['targets'] == []
+    assert cases['IR-1']['scope_assessment'] == assessment
+    ready, deferred = registry.ready_cases(built)
+    assert {case['id'] for case in deferred} == {'IR-1', 'IR-2'}
+    ir3 = next(case for case in ready if case['id'] == 'IR-3')
+    assert ir3['registry_notes']['scope_assessment'] == assessment
+    path = tmp_path / 'registry.json'; write(path, built)
+    draft = authoring.prepare(path, 'registry', generation, tmp_path / 'authoring')['draft']
+    assert next(case for case in draft['cases'] if case['id'] == 'IR-3')['collection'] == 'risk_cm'
+    assert all(set(g.product_request(case)) == {'question', 'document_ids', 'use_llm'} for case in draft['cases'])
+
+
+def test_named_question_collection_rejects_conflicting_names_and_markings(generation, tmp_path):
+    from lawrag.pipeline import golden_registry as registry
+    cm, sheet = _registry_sources(generation, tmp_path)
+    for name in ('cm', 'internal', 'annotations', '../risk_cm'):
+        with pytest.raises(ValueError, match='collection name'):
+            registry.build(collections=[(name, sheet)])
+    with pytest.raises(ValueError, match='duplicate collection'):
+        registry.build(collections=[('risk_cm', sheet), ('risk_cm', sheet)])
+    with pytest.raises(ValueError, match='collide'):
+        registry.build(internal=sheet, collections=[('risk_cm', sheet)])
+    notes = tmp_path / 'scope.json'
+    write(notes, {'IR-1': {'scope_assessment': {'status': 'internal_required',
+                'external_only_answerable': True, 'reason': '내규 필요'}}})
+    with pytest.raises(ValueError, match='inconsistent external-only'):
+        registry.build(annotations=notes, collections=[('risk_cm', sheet)])
+
+
 def test_registry_import_carries_collection_to_report_and_checks_tags(generation, tmp_path):
     from lawrag.pipeline import golden_registry as registry
     cm, internal = _registry_sources(generation, tmp_path)

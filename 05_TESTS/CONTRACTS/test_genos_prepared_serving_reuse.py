@@ -14,7 +14,52 @@ import genos_reindex_runner as runner
 from genos_reindex_logging import BuildLog
 
 
-@pytest.mark.parametrize('storage_profile', ['legacy', 'compact-v1'])
+def test_main_reindex_defaults_to_compact_v2_unit_and_no_models(prepared, monkeypatch):
+    import socket
+    from lawrag.pipeline import document_release, glossary_review, reference_resolution
+    def forbidden(*a, **k):
+        raise AssertionError('No model authoring or network calls during MAIN reindex')
+    for module, name in ((glossary_review, 'complete'), (reference_resolution, 'advance'),
+                         (reference_resolution, 'apply'), (reference_resolution, 'run'),
+                         (socket, 'getaddrinfo'), (socket.socket, 'connect')):
+        monkeypatch.setattr(module, name, forbidden)
+    data = prepared['parent'].parents[1]
+    before = {str(p): sha(p) for p in (prepared['source'], prepared['draft'] / 'dictionary.sqlite',
+                                     prepared['parent'] / 'plan.json')}
+    result = document_release.reindex_prepared(data, 'prepared', 'main-compact')
+    assert result['completed'] and result['model_calls'] == 0
+    assert result['document_count'] == 3 and result['serving_verified']
+    assert result['offline_e2e'] == 'PASS' and not result['activated']
+    assert result['settings']['storage_profile'] == 'compact-v2'
+    assert result['settings']['fulltext_granularity'] == 'unit'
+    generation = Path(result['generation_path'])
+    nav = json.loads((generation / 'navigation/manifest.json').read_text())
+    assert nav['schema_version'] == 'term-navigation-index-v7'
+    assert nav['storage']['schema_version'] == 'term-navigation-storage-v4'
+    assert result['settings']['audit_profile'] == 'factorized-v1'
+    assert (generation / 'fulltext/units.sqlite').is_file()
+    assert (generation.parent / 'audit/source/store.sqlite').is_file()
+    assert (generation.parent / 'audit/navigation/navigation.sqlite.gz').is_file()
+    assert not (generation.parent / 'audit/navigation/navigation.sqlite').exists()
+    assert all(sha(p) == expected for p, expected in before.items())
+    assert not (data / 'ACTIVE/local/ACTIVE_RELEASE.json').exists()
+    assert document_release.reindex_prepared(data, 'prepared', 'main-compact') == result
+    with pytest.raises(ValueError, match='code/settings changed'):
+        with monkeypatch.context() as patch:
+            patch.setenv('GENOS_REFERENCE_SCOPE_V2', '1')
+            document_release.reindex_prepared(data, 'prepared', 'main-compact')
+
+
+def test_main_compact_reindex_refuses_missing_knowledge_without_legacy_fallback(prepared, monkeypatch):
+    from lawrag.pipeline import document_release, glossary_knowledge
+    monkeypatch.setattr(glossary_knowledge, 'selected_for', lambda *a: None)
+    data = prepared['parent'].parents[1]
+    with pytest.raises(ValueError, match='full knowledge bundle'):
+        document_release.reindex_prepared(data, 'prepared', 'missing-knowledge')
+    assert not (data / 'TERM_RELEASES/missing-knowledge').exists()
+
+
+@pytest.mark.parametrize('storage_profile', ['legacy', 'compact-v1', 'compact-v2'])
 @pytest.mark.parametrize('granularity', ['article', 'unit'])
 def test_prepared_full_serving_reuse_preserves_inputs_and_resume(prepared, tmp_path, monkeypatch, granularity, storage_profile):
     from lawrag.pipeline import glossary_review, reference_resolution, term_generation

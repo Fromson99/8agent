@@ -15,7 +15,7 @@ HELP='''AD모드: shortcut·legal_wiki 관리 전용입니다. 법률 답변은 
 | 기능 | 입력 예시 |
 |---|---|
 | 도움말·현황 | 도움말 / 현재 상태 / 기능 상태 |
-| 목록·검색 | shortcut 전체 보여줘 / 위키 목록 / 위키 검색 상장 |
+| 정상 완료 목록·검색 | shortcut 전체 보여줘 / 위키 목록 / 위키 검색 상장 |
 | 전체 내부 SQL 자료 | 전체 테이블 / 테이블 sw_event / 테이블 sw_artifact |
 | 표 이동·상세 | 다음 / 이전 / V번호:행번호 자세히 / 2번 자세히 / 계속 |
 | 선택 | 2번과 5번 선택 / 첫 표 2번 선택 / 전부 선택 |
@@ -30,6 +30,7 @@ HELP='''AD모드: shortcut·legal_wiki 관리 전용입니다. 법률 답변은 
 | 기능 설정 | shortcut 꺼 / 위키 켜 / 둘 다 꺼 / 둘 다 켜 |
 | 종료 | [AD모드 종료] |
 
+shortcut 목록에는 최종 답변 게시까지 성공한 현재 기록만 표시합니다. 실패·진행 중 원장은 전체 테이블에서 조회할 수 있습니다.
 숏컷 보여줘 / 1번 보여줘 / 그 사건의 사실도 보여줘 같은 자연어와 후속 대화를 LLM이 해석합니다.
 대상이 모호하면 확인 질문에 답해 주세요. 번호는 표 전체에서 고정됩니다. 사용자 승인과 법률 검증은 별도입니다.
 예약·실행 중인 작업은 AD모드를 종료해도 계속됩니다. 중단하려면 작업/예약 취소를 입력하세요.
@@ -41,10 +42,14 @@ def cell(value):
 
 
 def table(page):
-    text=f"표 {page['view_id']} · {page['position']}/{page['total']}건\n\n| 번호 | 종류 | ID | 제목 | 상태 |\n|---|---|---|---|---|\n"
+    text=f"표 {page['view_id']} · {page['position']}/{page['total']}건 · {page['page_number']}/{page['page_count']}페이지\n\n| 번호 | 종류 | ID | 제목 | 상태 |\n|---|---|---|---|---|\n"
     for r in page['rows']:
         text+='| '+ ' | '.join(cell(v) for v in (page['view_id']+':'+str(r['ordinal']),r['kind'],r['entity'],r['title'][:160]+(' … [전체: 번호 자세히]' if len(r['title'])>160 else ''),r['status']))+' |\n'
-    return text+('\n다음 페이지: 다음' if page['has_more'] else '\n목록 끝. 본문·이력은 번호로 자세히 조회할 수 있습니다.')
+    directions=[]
+    if page['has_previous']:directions.append('이전 페이지: 채팅에 이전 입력')
+    if page['has_more']:directions.append('다음 페이지: 채팅에 다음 입력')
+    else:directions.append('목록 끝. 본문·이력은 번호로 자세히 조회할 수 있습니다.')
+    return text+'\n'+' / '.join(directions)
 
 
 def detail_rows(value, path=''):
@@ -90,7 +95,11 @@ class Controller:
                 except ValueError:pass
         view=self.store.view(self.sid,kind,rows)
         self.db.execute('UPDATE ad_session SET pending_action=NULL,pending_field=NULL WHERE id=?',(self.sid,))
-        return self.respond(table(self.store.page(self.sid,view)),view_id=view)
+        return self.list_page(view)
+
+    def list_page(self,view=None,*,previous=False):
+        page=self.store.page(self.sid,view,previous=previous)
+        return self.respond(table(page),**{k:v for k,v in page.items() if k!='rows'})
 
     def selected(self):
         return [dict(r) for r in self.db.execute('SELECT kind,entity,revision FROM ad_selection WHERE session=? ORDER BY ordinal',(self.sid,))]
@@ -190,7 +199,7 @@ class Controller:
             return self.respond('AD모드를 종료했습니다. 다음 입력부터 일반 법률 답변으로 돌아갑니다. 예약·실행 작업은 별도 취소 전까지 유지됩니다.',ad_mode=False)
         if q in (ENTER,'도움말','명령어','/help','help') or '어떤 명령' in q:return self.respond(HELP)
         if compact in ('다음','다음페이지','/next','이전','이전페이지','/previous'):
-            return self.respond(table(self.store.page(self.sid,previous='이전' in compact or compact=='/previous')))
+            return self.list_page(previous='이전' in compact or compact=='/previous')
         if compact in ('계속','계속보여줘','본문계속','/continue'):return self.detail_page()
         if any(x in compact for x in ('전체테이블','전체내부','스키마목록')) or lower=='/tables':return self.show('table')
         m=re.search(r'(?:테이블|/table)\s+((?:sw|ad)_[a-z_]+)',q)
@@ -208,7 +217,7 @@ class Controller:
                 entity=str(r['_rowid']) if child_kind.startswith('table:') else str(r['id'])
                 revision=0 if child_kind.startswith('table:') else self.backend.revision(child_kind,entity)
                 rows.append({'id':entity,'kind':child_kind,'revision':revision,'title':str(r['predicate'] if table_name=='sw_fact' else r['question'] if table_name in ('sw_issue','sw_branch') else r['kind']),'status':str(r['status'] if 'status' in r.keys() else '')})
-            return self.respond(table(self.store.page(self.sid,self.store.view(self.sid,child_kind,rows))))
+            return self.list_page(self.store.view(self.sid,child_kind,rows))
         if any(x in q for x in ('자세히','내용 보여','내용 알려','상세','열어')) or lower.startswith('/show '):
             targets=self.select(q)
             if len(targets)==1 and targets[0]['kind']=='table' and '열어' in q:return self.show('table:'+targets[0]['entity'])
@@ -271,7 +280,7 @@ class Controller:
             for r in rows:r['revision']=self.backend.revision(r['kind'],r['id'])
             for r in self.db.execute("SELECT kind,entity FROM ad_object WHERE workspace=? AND trashed=1 AND kind NOT IN('shortcut','wiki')",(self.workspace,)):
                 rows.append({'kind':r['kind'],'id':r['entity'],'title':r['entity'],'revision':self.backend.revision(r['kind'],r['entity']),'status':'TRASHED'})
-            return self.respond(table(self.store.page(self.sid,self.store.view(self.sid,'trash',rows))))
+            return self.list_page(self.store.view(self.sid,'trash',rows))
         # Mutation words only operate inside this controller. No legal-agent route.
         action=next((a for a,words in [('publish',('게시',)),('restore',('복구','살려','되살려')),('trash',('버려','지워','삭제')),('reject',('반려','승인취소')),('approve',('승인',)),('edit',('수정','바꿔','고쳐','/edit'))] if any(w in compact for w in words)),None)
         if action=='edit':

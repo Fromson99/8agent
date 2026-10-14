@@ -1,0 +1,101 @@
+{
+  "status": "PASS_SCOPED_REPAIR_WITH_KNOWN_UNRELATED_FAILURES",
+  "environment": "WSL; synthetic data and model doubles; no GENOS access",
+  "working_new_contracts": 63,
+  "working_regressions": {
+    "passed": 276,
+    "failed": 4,
+    "preimage_same_failures": [
+      "test_ownerless_running_request_recovers_to_same_request_checkpoint",
+      "test_accepted_publication_recovery_requires_current_case_guard",
+      "test_dependents_are_pending_when_source_experience_is_corrected",
+      "test_interrupted_experience_rebind_resumes_after_saved_checkpoint"
+    ],
+    "preimage_passed": 6,
+    "note": "Pre-fix 3 sources and matching pins in isolated current code reproduce the same 4 legacy recovery contracts. No global recovery pass claim."
+  },
+  "installed_contracts": {
+    "query_latency_20261007_r3": 171,
+    "query_latency_20261007_r4": 171
+  },
+  "installation_states": 4,
+  "service_boots": 8,
+  "same_committed_checkout_mock_generation_gates": 4,
+  "installer_evidence": [
+    {
+      "path": "TEST_query_latency_20261007_r3.json.gz",
+      "sha256": "f2706109492e58a6239c47663d0f420bb508a629a1efee3c3a5a3a954e477b50",
+      "commands": 19,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r3_budget_ad.json.gz",
+      "sha256": "84a82c6e0dcf35398c42ebf7ce446d031a73f4e5f80f538d6cdca0dd90a7f645",
+      "commands": 20,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_budget.json.gz",
+      "sha256": "157497b4e4999e96ad5ebd3a217b38a1e843f4f0f3ea6a6577fc8e3ed8034993",
+      "commands": 19,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_display_budget_ad.json.gz",
+      "sha256": "693c8befc9ab1e491c7f951698f68e81e62c4a2a17b01b0b3681176473616827",
+      "commands": 21,
+      "expected_rejections": 2
+    }
+  ],
+  "real_model_calls": 0,
+  "known_predecessor_inventories": 660,
+  "source_files": {
+    "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py": "b3fbe5f16b6322654b363e1487a38a0026bd6762aa70ca4bb89cb62d4cb2db08",
+    "02_BACKEND/semantic_runtime/legal_agent/completion_v5.py": "e52d57b3b4b2206970772233bf25a7289ee5f15a426b000df1f8ab49cf77bb7f",
+    "02_BACKEND/semantic_runtime/legal_agent/completion_v6.py": "ff3eafefaa0d40d4401bdfbea92411bc1665b54560cdd20fa6c601579e623804"
+  },
+  "selected_release_at_seal": {
+    "release_id": "successful-shortcut-20261013-r1",
+    "generation": 59,
+    "changed_by_this_task": false,
+    "patch_selected": false
+  },
+  "field": {
+    "code_root": "~/DEV",
+    "git_commit": null,
+    "generation": null,
+    "generation_manifest_sha256": null,
+    "code_serving_revision": null,
+    "applied": false,
+    "deployed": false,
+    "workflow_test": "NOT_RUN"
+  },
+  "limitations": [
+    "First ASSESS rejection visible; second rejection payload unavailable. Fix covers the confirmed source-gap/action conflict, not all 422 causes.",
+    "No legal semantic quality or GENOS internal-model claim.",
+    "Global failure-policy items documented as unimplemented remain follow-up work."
+  ],
+  "development_failures": [
+    "Initial 4 native tests stopped before API behavior on stale engine pins; selective repinning fixed them.",
+    "Installed fixtures initially omitted explicit runtime_root and used local workspace layout; corrected fixtures without changing installed runtime.",
+    "Empty-claim test assumed newer public failure envelope; assertion now checks either supported failure envelope plus HTTP 422 and original internal cause."
+  ],
+  "evidence_hashes": {
+    "DELIVERY_TESTS_initial.log": "9deb35d54cec7619e930bd62ddfb03aa63ce7df3475e4716a8ae02256d34c466",
+    "LEGACY_RESPONSE_FIXTURE_CONTRACTS_query_latency_20261007_r3.xml": "b5776b0656e771b28af15e05b38bb3f40c2a157dacf93ce875cd16c879568447",
+    "CONTRACTS_query_latency_20261007_r3.xml": "7fb70cd9a54ad464ab62e80c96e4c13d0fe5c9c6fe3127eebf2df5388e5e356f",
+    "REGRESSION.log": "be0ddfd314c175fb13c22508e2b7ee425ba540d6181ba302c57409e06e5188dd",
+    "FIXTURE_SETUP_FAILURE_CONTRACTS_query_latency_20261007_r3.xml": "a9435569398dbafd353bd69358712a9248c071b7360f6082a7b50b65ba6507be",
+    "CONTRACTS.log": "d79a57c2a6649af100a4f2ab1460023644603a3e3de91362f288a434d47ba6a4",
+    "FIXTURE_SETUP_FAILURE_CONTRACTS_query_latency_20261007_r4.xml": "61d90c4d92ff831bd05a126505e59d61c809d792bad5bf244d1d60b8aa6f4a38",
+    "CONTRACTS_query_latency_20261007_r4.xml": "3463eae85b489de1bae1582367b51b8912bfeb5e006e96d63c4312a4fa12e93a",
+    "DELIVERY_CONTRACTS.log": "fd6196ef692c8e4f939e31bb9c402ba33d784e906c076608cdd7e064f044c721",
+    "PREIMAGE_RECOVERY.xml": "3bbe4de7e8afe003727d9bbc1944226bf226209fcc68f4f7efa4644b59d264b0",
+    "DELIVERY_CONTRACTS_legacy_response.log": "f1a973b99a6c10ae5a426613519b85d048061d9e8353238426fad9d7a7656861",
+    "CONTRACTS_final.log": "0a9351e6a249dae3ad43cdb17dc3be24ba302e1d11a8603409f54f79240c2d0e",
+    "LEGACY_RESPONSE_FIXTURE_CONTRACTS_query_latency_20261007_r4.xml": "740a51681aaef5830bec4e7e4ec98d5c4c03ed1d8bf7ee66d89e825d255fb0be",
+    "PREIMAGE_RECOVERY.log.gz": "2210e893b003aa6db216ad8fc7b5881ef36bb901cf89787cf93afaffbcb1f2e5"
+  },
+  "run_txt_sha256": "778c2c28ed83de11a6d17a16920396abc60a4aaaa6820cc8141565b0382fa69b",
+  "installer_sha256": "a72e9c6c3940274d691cddeaa2870de394cfd0dadbcf93d6ac217c86b234cec5"
+}

@@ -84,16 +84,19 @@ def test_agent_transport_uses_connection_setting_inside_total_deadline(monkeypat
     binding = {'provider': 'genos', 'trust_zone': 'internal', 'adapter_version': 'genos-single-send-v1',
                'endpoint_identity': hashlib.sha256(target.root.encode()).hexdigest(), 'model': 'fixture'}
     configured = []
-    class Client:
-        def __init__(self, **kwargs):
-            configured.append(kwargs['timeout'])
-        async def __aenter__(self):
-            return self
-        async def __aexit__(self, *args):
-            pass
-        async def request(self, *args, **kwargs):
-            return httpx.Response(200, json={'data': [{'id': 'fixture'}]})
-    monkeypatch.setattr(httpx, 'AsyncClient', Client)
+    import io
+    from contextlib import contextmanager
+    import semantic_runtime.legal_agent.transport as module
+    from semantic_runtime.stdlib_http import Response
+    class Raw(io.BytesIO):
+        code = 200
+        headers = {'content-type': 'application/json'}
+    @contextmanager
+    def opened(*args, **kwargs):
+        configured.append(kwargs['timeout'])
+        with Raw(json.dumps({'data': [{'id': 'fixture'}]}).encode()) as raw:
+            yield Response(raw, kwargs['timeout'], kwargs['deadline'])
+    monkeypatch.setattr(module, 'open_response', opened)
     transport = GenosTransport(target, binding)
     asyncio.run(transport._request('POST', '/chat/completions', {}, remaining))
     assert configured[-1].connect == expected
@@ -139,7 +142,7 @@ def test_invalid_json_is_classified():
         genos.request_json(target, "/models", session=session)
 
 
-def test_owned_session_uses_branch_httpx_defaults(monkeypatch):
+def test_owned_session_uses_urllib_without_disabling_tls(monkeypatch):
     session = Session(Response(200, {"data": []}))
     session.trust_env = False
     closed = []
@@ -148,10 +151,11 @@ def test_owned_session_uses_branch_httpx_defaults(monkeypatch):
     def client(**kwargs):
         options.append(kwargs)
         return session
-    monkeypatch.setattr(httpx, "Client", client)
+    from semantic_runtime import stdlib_http
+    monkeypatch.setattr(stdlib_http, "Client", client)
     target = genos.endpoint("http://genos.example:32154", serving_id="226", token="dummy")
     assert genos.request_json(target, "/models") == {"data": []}
-    assert options == [{"trust_env": True, "follow_redirects": False}]
+    assert options == [{}]
     method, url, kwargs = session.calls[0]
     assert method == "GET"
     assert url == "http://genos.example:32154/api/gateway/rep/serving/226/models"
@@ -166,6 +170,22 @@ def test_supplied_session_keeps_caller_environment_policy():
     session.trust_env = False
     genos.request_json(genos.endpoint("http://genos.example"), "/models", session=session)
     assert session.trust_env is False
+
+
+def test_injected_httpx_session_keeps_timeout_and_headers():
+    requests = []
+    def receive(request):
+        requests.append(request)
+        return httpx.Response(200, json={"data": []})
+    target = genos.endpoint("https://fixture.invalid", token="synthetic", max_retries=1,
+                            connect_timeout=7, read_timeout=13)
+    with httpx.Client(transport=httpx.MockTransport(receive), trust_env=False) as session:
+        assert genos.request_json(target, "/models", session=session) == {"data": []}
+        assert not session.is_closed
+    assert len(requests) == 1
+    assert requests[0].extensions["timeout"]["connect"] == 7
+    assert requests[0].extensions["timeout"]["read"] == 13
+    assert requests[0].headers["Authorization"] == "Bearer synthetic"
 
 
 def test_generic_environment_builds_llm_and_embedding_ignoring_old_profile(monkeypatch):

@@ -1,0 +1,70 @@
+{
+  "schema_version": "investigation-budget-settings-verification-v1",
+  "verified_at": "2026-10-07T12:37:59.567157+00:00",
+  "scope": "service bootstrap configuration; no model calls or quality/latency experiment",
+  "settings": [
+    "GENOS_RAG_MAX_MODEL_ATTEMPTS",
+    "GENOS_RAG_MAX_TOOL_ACTIONS",
+    "GENOS_RAG_WALL_SECONDS",
+    "GENOS_RAG_SEARCH_ROUNDS",
+    "GENOS_RAG_ASSESSMENT_REENTRY_LIMIT"
+  ],
+  "default_local_health": {
+    "mode": "local-release",
+    "release_id": "session-runtime-v6-20261007-r1",
+    "generation": 45,
+    "code_sha256": "43a842b721a196c973d3b81fe1ed4bffdc8af10d4881cbb094a25bafa2fe87f0",
+    "profile_sha256": "4a9f8a9783008084177d7440cca9f8d5bae34ce4602f1ad6d2f290426470330c",
+    "effective_profile_sha256": "dbd28f27e4605d38d03e474560ff9b00e9235651fbb097da3f542a3acfd82fba",
+    "data_manifest_sha256": "b07c178dbb6dc26d0ea5bd16a789fd19dfd2752948117a78a559eb3c2247fd35",
+    "search_policy_sha256": "22b67e7a6f530aea59906ba875cd06840927a2af831ab2c833c004ce1a75b4d6",
+    "schema_sha256": "c80ecb2f73c797b0d42136520eb83b4beacc557251a289fb3f9b156d6fb0d34a",
+    "service_entry_sha256": "2cfb9c6e36c0a80ffd8ce1409060d4666c074479be699028ebe28272827d86af",
+    "investigation_budget": {
+      "max_model_attempts": 40,
+      "finalization_reserve": 3,
+      "max_tool_actions": 1024,
+      "wall_seconds": 1800,
+      "max_no_progress": 2,
+      "investigation_model_attempts": 37,
+      "search_rounds": 8,
+      "assessment_reentry_limit": 2
+    }
+  },
+  "new_contracts": {
+    "command": ".venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_investigation_budget_settings.py",
+    "passed": 27,
+    "failed": 0
+  },
+  "combined_service_regression": {
+    "passed": 58,
+    "failed": 1,
+    "failure": "test_genos_input_byte_limit_uses_operator_setting expects max_input_bytes, absent from current transport binding"
+  },
+  "initial_broader_regression": {
+    "passed": 88,
+    "failed": 9,
+    "errors": 1,
+    "notes": [
+      "Two initial new-test fixture failures repaired (exact wire view and 1-based attempt_no); both now pass.",
+      "Seven existing fixture failures/errors involve WORKSPACE activation receipt workspace_manifest_sha256 mismatch.",
+      "Existing retired-input-limit assertion also fails."
+    ]
+  },
+  "checks": [
+    "Local selected frozen profile bytes and ACTIVE_RELEASE pointer unchanged under overrides",
+    "GENOS explicit generation and CURRENT routes use operator budgets in real app/journal",
+    "Investigation cannot consume finalization reserve; total model/tool attempts stop at configured limits",
+    "Blank/default settings preserve original profile; invalid settings fail; assessment reentry permits zero",
+    "Cached applications retain their startup limits"
+  ],
+  "main_pointer_changed": false,
+  "genos_deployed": false,
+  "quality_certified": false,
+  "files": {
+    "service.py": "2cfb9c6e36c0a80ffd8ce1409060d4666c074479be699028ebe28272827d86af",
+    ".env.genos.example": "9e335e36962403125c86f92757c14fa606ac8a64e92bb7b68c84d530029867d2",
+    "05_TESTS/CONTRACTS/test_investigation_budget_settings.py": "21221f3796e602a5165d9e2c7d8686baa30667bde0061590cd53d0c837954560",
+    "07_DOCS/REFERENCE/OPERATIONS/UNIFIED_LEGAL_AGENT_20261002.md": "693190ddd5560d7a504e5cf9a9e3802e269f05a9568a13203500528d86de081e"
+  }
+}

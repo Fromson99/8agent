@@ -6,6 +6,7 @@ shared by both source sessions and the durable legal_agent selector.
 import json
 import time
 from copy import deepcopy
+from . import output_contract as output
 from collections import OrderedDict
 from ..contracts import digest
 from .repository import text_hash
@@ -256,26 +257,28 @@ def schema(offered):
 
 
 def validate(value, offered):
+    output.validate_shape(value, schema(offered))
+    output.validate_decisions(value)
     seen = set()
     followed = 0
     for d in value['decisions']:
         if d['id'] not in offered or d['id'] in seen or not d['reason'].strip():
-            raise ContractError('unoffered/duplicate reference decision')
+            raise output.DecisionConflict('unoffered/duplicate reference decision')
         seen.add(d['id'])
         if d['action'] == 'FOLLOW':
             followed += 1
             if not d['scopes'] or len(d['scopes']) > LIMITS['scopes_per_group'] or len(set(d['scopes'])) != len(d['scopes']):
-                raise ContractError('reference scope choice budget')
+                raise output.DecisionConflict('reference scope choice budget')
             if set(d['scopes']) - set(offered[d['id']]['offers']):
-                raise ContractError('cross-group or unoffered reference READ scope')
+                raise output.DecisionConflict('cross-group or unoffered reference READ scope')
         elif d['action'] not in ('SKIP', 'DEFER') or d['scopes']:
-            raise ContractError('non-follow reference cannot request READ')
+            raise output.DecisionConflict('non-follow reference cannot request READ')
         try:
             validate_decision(d, offered[d['id']])
         except ValueError as exc:
-            raise ContractError(str(exc)) from exc
+            raise output.DecisionConflict(str(exc)) from exc
     if seen != set(offered) or followed > LIMITS['follow_groups']:
-        raise ContractError('reference decision coverage or follow budget')
+        raise output.DecisionConflict('reference decision coverage or follow budget')
 
 
 def scope_fingerprints(selected):
@@ -326,7 +329,7 @@ def _navigate(question, session, selected, invoke, *, read_state, seconds_left, 
     state = state if state is not None else {}
     binding=digest({'question':question,'scope':sorted(session.scope),
                     'generation':session.context.query['generation_id']})
-    if state.get('binding') not in (None,binding):state.clear()
+    if state.get('binding') not in (None,binding):raise ContractError('reference navigation binding changed')
     state.update(binding=binding)
     for key,default in (('scanned',{}),('cursors',{}),('decisions',{}),('deferred',{}),
                         ('queue',[]),('unresolved',{}),('depths',{}),('accepted',{})):
@@ -484,17 +487,17 @@ def _navigate(question, session, selected, invoke, *, read_state, seconds_left, 
         if left<=1:raise TimeoutError('reference navigation time budget exhausted')
         phase=phase_prefix+str(round_number)
         state['diagnostic_progress'].update(model_batches=round_number,phase=phase)
-        decision=invoke(SYSTEM,data,schema(offered),phase,min(180,left))
-        try:validate(decision,offered)
-        except ContractError as exc:
-            session.repo.event('REFERENCE_DECISION_REJECTED',{'decision':decision,'reason':str(exc)})
-            left=seconds_left()
-            if left<=1:raise TimeoutError('reference repair time budget exhausted')
-            phase=('source-reference-choice-repair' if phase_prefix=='source-reference-batch-' else phase_prefix+'choice-repair')
-            decision=invoke(SYSTEM,{**data,'rejected_decision':decision,'contract_error':str(exc)},schema(offered),phase,min(180,left))
-            try:validate(decision,offered)
-            except ContractError as rejected:
-                raise ProposalError('연결 적용 판단을 수정하지 못했습니다: '+str(rejected)) from rejected
+        def invoke_decision(payload, attempt):
+            remaining = seconds_left()
+            if remaining <= 1:raise TimeoutError('reference decision time budget exhausted')
+            call_phase = phase if not attempt else (
+                'source-reference-choice-repair' if phase_prefix == 'source-reference-batch-'
+                else phase_prefix+'choice-repair')
+            return invoke(SYSTEM,payload,schema(offered),call_phase,min(180,remaining))
+        decision=output.bounded_decision(session.repo,'reference-navigation',data,schema(offered),
+            invoke_decision,lambda value:validate(value,offered),
+            identity={'binding':binding,'menu':{k:v for k,v in data.items() if k!='round'}},
+            can_repair=lambda:seconds_left()>1)
         hook=getattr(session,'investigation_decision_hook',None)
         if hook:hook(data,decision)
         batches.append({'round':round_number,'phase':phase,'data':data,'decision':decision,'model_called':True})

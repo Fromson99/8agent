@@ -10,6 +10,17 @@ CATALOGUE={'read_durable_unit':{'read_only':True,'schema':READ_SCHEMA}}
 
 class WikiExecution(UnifiedExecution):
     def invoke(self,system,data,schema,phase,*,timeout=None):
+        from . import wiki_recall
+        if phase=='memory-intent' and wiki_recall.enabled(self.host):
+            values=wiki_recall.offer(self.host,self.principal,self.host.question(self.state),self.s.sources.scope,self.s.work.event)
+            data,schema=wiki_recall.augment(data,schema,values)
+            result=super().invoke(system+(wiki_recall.PROMPT if values else ''),data,schema,phase,timeout=timeout)
+            ids=result.pop('history_ids',[])
+            if values:wiki_recall.choose(self.host,ids,self.s.work.event)
+            return result
+        if self.host.shortcut_flags.get('core_evidence_route'):
+            # Core routes replace replaying every historical exploration choice.
+            return super().invoke(system,data,schema,phase,timeout=timeout)
         memory=getattr(self.host,'procedure',None)
         reusable=(phase=='memory-intent' or phase.startswith('source-'))
         if memory is None or not reusable:return super().invoke(system,data,schema,phase,timeout=timeout)
@@ -54,7 +65,10 @@ class WikiExecution(UnifiedExecution):
             if match:value={'kind':'duration','value':int(match[1]),'unit':{'개월':'month','년':'year','일':'day'}[match[2]]}
             facts[item['name']]=value
         plans=[]
-        for unit in repo.search(self.principal,limit=8)['pages']:
+        # Common source routes are resolved directly in RECALL. They must not
+        # consume the bounded menu for private procedures and reviewed claims.
+        for unit in repo.search(self.principal,limit=8,include_common=False)['pages']:
+            if unit.get('core_evidence_route'):continue
             flags=dict(self.host.shortcut_flags)
             # A semantic topic match alone cannot license reusing a conclusion.
             if unit['question'].strip()!=self.state['task'].strip():flags['judgment']=False
@@ -64,7 +78,26 @@ class WikiExecution(UnifiedExecution):
         return plans
 
     def stage(self,stage,state,parts,utterance,format):
-        plans=self.plans() if stage in ('PLAN','ASSESS') else []
+        if stage=='SELECT' and self.host.shortcut_flags.get('core_evidence_route') and parts.get('SELECT'):
+            # A new READ after a user replan must not revive FINISH from an
+            # older selection. Actual in-request recovery still has its own
+            # selection_progress and retains the existing checkpoint protocol.
+            old=self.host.shortcut.db.execute('SELECT parent FROM node WHERE id=?',(parts['SELECT']['id'],)).fetchone()
+            if old and old['parent']!=parts['READ']['id']:
+                previous=dict(parts['SELECT']['payload'])
+                previous.pop('investigation_state',None)
+                parts={**parts,'SELECT':{**parts['SELECT'],'payload':previous}}
+                self.s.work.event('CORE_ROUTE_CURRENT_SELECTION',{'reason':'current READ replaces older completed selection',
+                    'read_node':parts['READ']['id']})
+        if stage=='RECALL' and self.host.shortcut_flags.get('core_evidence_route'):
+            from .core_evidence_route import lookup
+            path=lookup(self.host,state,self.principal,question=utterance)
+            from . import wiki_recall
+            if not path and wiki_recall.enabled(self.host) and getattr(self.host,'wiki_recall_selected',[]):
+                path=wiki_recall.selected_route(self.host,self.principal,state,self.s.work.event)
+            if path and not (getattr(self.s.sources,'law_search_queries',None) or getattr(self.s.sources,'force_fulltext_recall',False)):
+                self.s.sources.core_evidence_route=path
+        plans=self.plans() if stage in ('PLAN','ASSESS') and not self.host.shortcut_flags.get('bounded_recall') else []
         if stage=='PLAN':
             for unit,receipt,facts in plans:
                 if receipt['mode'] not in ('PROCEDURE','JUDGMENT'):continue
@@ -101,7 +134,7 @@ class WikiExecution(UnifiedExecution):
                     return payload
         result=super().stage(stage,state,parts,utterance,format)
         memory=getattr(self.host,'procedure',None)
-        if memory and stage in ('PLAN','RECALL','READ'):
+        if memory and not self.host.shortcut_flags.get('core_evidence_route') and stage in ('PLAN','RECALL','READ'):
             if stage=='PLAN':actual={k:result[k] for k in ('queries','law_names','binding')}
             elif stage=='RECALL':actual={'selected_for_read':result['selected_for_read'],
                                         'discovery':result['discovery'],'binding':result['binding']}

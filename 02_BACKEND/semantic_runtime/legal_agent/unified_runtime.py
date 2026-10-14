@@ -25,7 +25,7 @@ def open_cases(pipeline,runtime,body,principal,*,lease=None,run_id=None,release=
         finally:db.close()
         if not state['shortcut']:flags['capture']=False;shortcut_disabled=True
         if not state['wiki']:
-            for name in ('hint','procedure','judgment'):flags[name]=False
+            for name in ('hint','procedure','judgment','core_evidence_route','bounded_recall'):flags[name]=False
     if flags.get('capture'):
         from .shortcut_cases import ShortcutCases
         from .shortcut_store import selected_store
@@ -34,6 +34,7 @@ def open_cases(pipeline,runtime,body,principal,*,lease=None,run_id=None,release=
         cases=CaseRepository(Path(runtime)/'case-memory'/'cases-v3.sqlite',UnifiedRag(pipeline,runtime,model,catalogue),model.invoke)
     if shortcut_disabled:cases.candidates=lambda *_:[]
     cases.model_resource=model
+    model.cases=cases
     return cases
 
 
@@ -63,10 +64,32 @@ def result_port(pipeline,session,cases,result):
             issue_assessments=assessment['issue_assessments'],gaps=assessment['gaps'],
             evidence_inventory=investigation['saved_inventory'],control_contract=investigation['control_contract'],
             semantic_quality_certified=False)
+    if investigation.get('completion_contract'):
+        from .completion_contracts import verify_composition
+        composition=parts['COMPOSE']['payload']
+        verify_composition(parts['ASSESS']['payload'],composition)
+        if result.get('method_id')=='HISTORY_EXPLAIN':
+            from .memory_methods import history_answer
+            from .errors import ContractError
+            expected,history=history_answer(cases.events(gid),composition)
+            if raw!=expected:raise ContractError('history answer differs from recorded events')
+            meta['answer_presentation']={'method_id':'HISTORY_EXPLAIN','history_hash':digest(history)}
+        else:verify_composition(parts['ASSESS']['payload'],raw)
+        meta.update(completion_contract=investigation['completion_contract'],
+            stop_reason=parts['ASSESS']['payload'].get('stop_reason'),
+            text_integrity=('SOURCE_BOUND_NARRATIVE' if composition.get('composition_plan',{}).get('presentation') == 'grounded-narrative-v1' else 'ACCEPTED_CLAIMS_RENDERED'),citation_integrity='ORIGINAL_SPANS')
+        if composition.get('composition_plan',{}).get('presentation'):
+            meta['narrative_presentation']={'version':composition['composition_plan']['presentation'],
+                'streaming':'text-deltas-during-generation', 'semantic_quality_certified':False}
+        assessment=parts['ASSESS']['payload']
+        meta['accepted_outcome']={'schema_version':'accepted-outcome-v1',
+            'basis':'committed-ASSESS-and-verified-COMPOSE','assessment_hash':digest(assessment),
+            'answer_coverage':assessment['answer_coverage'],'disposition':assessment['disposition'],
+            'stop_reason':assessment.get('stop_reason'),'semantic_quality_certified':False}
     if investigation.get('law_navigation'):
         meta.update({key:investigation[key] for key in ('law_navigation','completion_policy','completed_with_unresolved_connections','reference_navigation')})
         limits=list(dict.fromkeys(raw.get('limitations',[])+investigation.get('completion_limitations',[])))
-        missing=[value for value in investigation.get('completion_limitations',[]) if value not in raw['text']]
+        missing=[] if investigation.get('completion_contract') else [value for value in investigation.get('completion_limitations',[]) if value not in raw['text']]
         raw={**raw,'limitations':limits,'text':raw['text']+('\n\n'+'\n'.join(missing) if missing else '')}
     view=None
     if route:
@@ -104,6 +127,9 @@ def run(pipeline,body,principal,options,lease):
     try:
         with cases.owner(body,principal):return execute(pipeline,body,principal,options,cases)
     except BaseException as exc:
+        if hasattr(cases,'shortcut'):
+            from .successful_answer import fail
+            fail(cases,principal)
         if cases.model_resource.session is not None:
             from .investigation_diagnostics import exception_diagnostics
             cases.model_resource.session.work.fail(getattr(exc,'code',type(exc).__name__),
@@ -130,6 +156,7 @@ def execute(pipeline,body,principal,options,cases):
             try:
                 repo.publication_guard=lambda value:validate_current(repo,value,pipeline.store,allowed_documents=principal['document_ids'])
                 envelope=export(repo,runtime/'runs')
+                finish_shortcut(cases,result,principal,envelope,repo)
                 project(cases,result,principal,runtime)
                 return envelope
             finally:repo.close()
@@ -165,14 +192,37 @@ def execute(pipeline,body,principal,options,cases):
     with cases.transaction():
         cases.db.execute('UPDATE request SET response=? WHERE id=?',(encoded({**result,'public_run_id':session.context.run_id}),key))
     envelope=export(session.work,runtime/'runs')
-    if hasattr(cases,'procedure') and result.get('status')=='READY':cases.procedure.activate()
+    finish_shortcut(cases,result,principal,envelope,session.work)
+    if (hasattr(cases,'procedure') and result.get('status')=='READY' and not cases.flags.get('core_evidence_route')
+            and procedure_replayable(cases,result)):cases.procedure.activate()
     project(cases,result,principal,runtime)
     return envelope
 
 
+def finish_shortcut(cases,result,principal,envelope,work):
+    if not hasattr(cases,'shortcut'):return
+    from .successful_answer import record
+    from .core_evidence_route import finalize
+    # The receipt cannot become visible if core validation/finalization fails.
+    with cases.transaction():
+        if record(cases,result,principal,envelope,work):finalize(cases,result,principal)
+
+
+def procedure_replayable(cases,result):
+    """Replay only a route that fully covered the request without a bounded stop.
+
+    A partial or limit-stopped route replayed on an identical re-ask would
+    reproduce the same partial answer instead of investigating again."""
+    gid=result.get('goal_id')
+    assessment=cases.parts(gid).get('ASSESS',{}).get('payload',{}) if gid else {}
+    if 'answer_coverage' not in assessment:return True  # pre-control routes keep their contract
+    return assessment.get('answer_coverage')=='COVERED' and not assessment.get('stop_reason')
+
+
 def project(cases,result,principal,runtime):
-    # Both views read the authority immediately even if materializing files fails.
-    if result['status']=='STORED':
+    # Legal wiki reads the authority even if materializing files fails.
+    from .core_evidence_route import enabled
+    if result['status']=='STORED' or (enabled(cases) and result.get('goal_id')):
         import sqlite3
         try:KnowledgeRepository(cases).rebuild(principal,Path(runtime)/'case-memory'/'wikis')
         except (OSError,ValueError,sqlite3.Error):

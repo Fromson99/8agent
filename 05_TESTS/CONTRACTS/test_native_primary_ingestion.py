@@ -161,7 +161,7 @@ def test_structure_preserves_context_and_pdf_receipt_and_folder_search(tmp_path,
     tdb=sqlite3.connect(':memory:');tdb.row_factory=sqlite3.Row
     tdb.execute('CREATE TABLE source(id,document_id,json)')
     lookup=sqlite3.connect(':memory:');lookup.row_factory=sqlite3.Row
-    lookup.execute('CREATE TABLE label(key,source,node_id)')
+    lookup.execute('CREATE TABLE label(key,source,node_id,label)')
     tools=SimpleNamespace(db=tdb,terms={},validate_scope=lambda x:x)
     glossary=SimpleNamespace(dbs={'lookup':lookup})
     # A metadata-only matcher still uses the actual structured store.

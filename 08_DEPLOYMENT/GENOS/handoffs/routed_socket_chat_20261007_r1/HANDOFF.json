@@ -1,0 +1,60 @@
+{
+  "version": "GENOS_ROUTED_SOCKET_CHAT_20261007_R1",
+  "created_at": "2026-10-07T03:21:28.873412+00:00",
+  "code_zip_sha256": "2f5a7ec136f3908029fb3da84d0a2acab5abad7b3158e65e7eb1f68f486eb59a",
+  "code_zip_bytes": 1426449,
+  "code_manifest_sha256": "ff1430c4cea5f42d3b9a6c757de3797fb7215c65c699387ef437c2263ba5304e",
+  "code_files": 294,
+  "apply_txt_sha256": "be685b83b0d648efcd9f45fcade598837096bf64a066009b407ae4d5a115a3c2",
+  "parent_code_zip_sha256": "f740a0ccc005cd72b3ff3992a7cbd0739963af09b4b8ab40936313a3f271ed72",
+  "selected_local_baseline": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "investigation-completion-v6-20261007-r1",
+    "generation": 44,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/investigation-completion-v6-20261007-r1/release.json",
+    "release_manifest_sha256": "6cdc683ec72f373be0005ce5ff6ba873aba436b2d71a9211978e7aaba61bdd1b",
+    "activated_at": "2026-10-07T02:50:44.577540+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "57890b7744d1397451799773cb29b087c8e45938f6b8c97d25a0acde8281d44d",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0680-investigation-main-consumer-integration/실험/manifest.json",
+        "sha256": "bb70035e64eede6ee88cbe1bd7c50990f441948a2f402829f54d72f211101ae3"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0680-investigation-main-consumer-integration/README.md",
+        "sha256": "6ab0fafb2d805f445514384e5f81719bf085cd716f70e5012a81097e717b97ee"
+      },
+      "arm": "integrated",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0680-investigation-main-consumer-integration/artifacts/run-001/result.json",
+        "sha256": "baaac2be70b57e8431b67628cac188a50225e3f80dc9adff65a53c63d0f4e26e"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0680-investigation-main-consumer-integration/artifacts/design/release-rebase.json",
+        "sha256": "a9bf5dc854a4a45fbb1ea03e1af1372b1a8cc3231f935abea5725fb9581f3b60"
+      }
+    }
+  },
+  "local_active_pointer_changed": false,
+  "source_code_root": "/home/jin/8-AGENT",
+  "source_git_head": "e2c33b2298f9da9f17e9f07dabec3fe7936604b0",
+  "source_has_uncommitted_changes": true,
+  "changed_payload_files": [
+    "08_DEPLOYMENT/GENOS/start_sse.py",
+    "main_router.py",
+    "main_integrated.py",
+    "08_DEPLOYMENT/GENOS/requirements-socketio.txt",
+    "07_DOCS/REFERENCE/OPERATIONS/GENOS_ROUTED_SOCKET_CHAT_20261007.md"
+  ],
+  "actual_selected_generation": null,
+  "actual_generation_manifest_sha256": null,
+  "push_commit": null,
+  "code_serving_revision": null,
+  "chat_binding": "NOT_SELECTED",
+  "genos_deployed": false,
+  "field_socketio": "NOT_VERIFIED",
+  "external_model_calls": 0
+}

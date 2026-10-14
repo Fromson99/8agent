@@ -1,0 +1,179 @@
+{
+  "version": "GENOS_CM_ONECLICK_20261008_R14",
+  "tests": {
+    "name_target_strict_common_contracts": 79,
+    "exact_handoff_contracts": 5,
+    "total": 84
+  },
+  "registered_body_paths_verified": 114,
+  "CM_body_paths_verified": 33,
+  "local_selected_source_documents": 159,
+  "local_CM_names_uniquely_selected": 21,
+  "recipes": 216,
+  "upgrade_mappings": {
+    "r8": 216,
+    "r10": 216,
+    "r11": 216,
+    "r12": 216,
+    "r13": 216
+  },
+  "exact_ZIP_RUN_standalone_bytes": true,
+  "JavaScript_excluded": true,
+  "Python_3_11_syntax": true,
+  "bash_syntax": true,
+  "basis_results": [
+    {
+      "basis": "direct-plain",
+      "runs": 2,
+      "r11_body_failure_reproduced": false,
+      "prior_R12_registered": false,
+      "cases": 51,
+      "entries": 98,
+      "documents": 21,
+      "budget_preserved": false,
+      "parent_backup_drift_rejected": false,
+      "unknown_self_consistent_code_rejected": false,
+      "code_rollback_verified": true,
+      "old_failure_and_budget_backups_preserved": true,
+      "replay_no_duplicates": true,
+      "same_checkout_commit_generation_gate_local_remote_push": true,
+      "generation_unchanged": true,
+      "local_main_pointer_unchanged": true,
+      "model_calls": 0,
+      "GENOS_field_verified": false,
+      "RUN_sha256": "e40213592a0a1866fba319b12197d4f07d836b09d6795485c1f48fedf1935544"
+    },
+    {
+      "basis": "r11-budget",
+      "runs": 2,
+      "r11_body_failure_reproduced": true,
+      "prior_R12_registered": false,
+      "cases": 51,
+      "entries": 98,
+      "documents": 21,
+      "budget_preserved": true,
+      "parent_backup_drift_rejected": true,
+      "unknown_self_consistent_code_rejected": true,
+      "code_rollback_verified": true,
+      "old_failure_and_budget_backups_preserved": true,
+      "replay_no_duplicates": true,
+      "same_checkout_commit_generation_gate_local_remote_push": true,
+      "generation_unchanged": true,
+      "local_main_pointer_unchanged": true,
+      "model_calls": 0,
+      "GENOS_field_verified": false,
+      "RUN_sha256": "e40213592a0a1866fba319b12197d4f07d836b09d6795485c1f48fedf1935544"
+    },
+    {
+      "basis": "r12-budget",
+      "runs": 2,
+      "r11_body_failure_reproduced": true,
+      "prior_R12_registered": true,
+      "cases": 51,
+      "entries": 98,
+      "documents": 21,
+      "budget_preserved": true,
+      "parent_backup_drift_rejected": true,
+      "unknown_self_consistent_code_rejected": true,
+      "code_rollback_verified": true,
+      "old_failure_and_budget_backups_preserved": true,
+      "replay_no_duplicates": true,
+      "same_checkout_commit_generation_gate_local_remote_push": true,
+      "generation_unchanged": true,
+      "local_main_pointer_unchanged": true,
+      "model_calls": 0,
+      "GENOS_field_verified": false,
+      "RUN_sha256": "e40213592a0a1866fba319b12197d4f07d836b09d6795485c1f48fedf1935544"
+    },
+    {
+      "basis": "r13-budget",
+      "runs": 2,
+      "r11_body_failure_reproduced": true,
+      "prior_R12_registered": true,
+      "cases": 51,
+      "entries": 98,
+      "documents": 21,
+      "budget_preserved": true,
+      "parent_backup_drift_rejected": true,
+      "unknown_self_consistent_code_rejected": true,
+      "code_rollback_verified": true,
+      "old_failure_and_budget_backups_preserved": true,
+      "replay_no_duplicates": true,
+      "same_checkout_commit_generation_gate_local_remote_push": true,
+      "generation_unchanged": true,
+      "local_main_pointer_unchanged": true,
+      "model_calls": 0,
+      "GENOS_field_verified": false,
+      "RUN_sha256": "e40213592a0a1866fba319b12197d4f07d836b09d6795485c1f48fedf1935544"
+    }
+  ],
+  "transcripts": [
+    {
+      "path": "RUN-direct-plain.log.gz",
+      "compressed_sha256": "8c31a06b39df71f746d9f9b91d456426fb2defc66988b52023e8946bb4f604dc",
+      "raw_sha256": "1c9633bee707c8ba11e9bd05ede68af3db6815abf7cd578f2a906165a058a315",
+      "restore": "python3 -m gzip -d RUN-direct-plain.log.gz"
+    },
+    {
+      "path": "RUN-r11-budget.log.gz",
+      "compressed_sha256": "822b913fee52c4410fcd8e7cd50c292de39f3d2747759d8f9fb3600e7c28f4f1",
+      "raw_sha256": "d7779f412432f4e6dbd6f5c993d82cca94a0dcb72047805dc47999cebd636099",
+      "restore": "python3 -m gzip -d RUN-r11-budget.log.gz"
+    },
+    {
+      "path": "RUN-r12-budget.log.gz",
+      "compressed_sha256": "158d6559ca98a33b592f9c54cd0577f6b179b88a40e0c46c721ccf7171ef8d74",
+      "raw_sha256": "34690948c740cf7f55b8071c1e6b3da70514343e165f7eef99ab5303e03243df",
+      "restore": "python3 -m gzip -d RUN-r12-budget.log.gz"
+    },
+    {
+      "path": "RUN-r13-budget.log.gz",
+      "compressed_sha256": "122f67cb697c9288acf3993f1876ded9050b00519bf97622b08a3d1554685b03",
+      "raw_sha256": "cf99f606cf5fabb9546f35d022a77163e2c63dfff35f1175f0a0c18b54a33897",
+      "restore": "python3 -m gzip -d RUN-r13-budget.log.gz"
+    }
+  ],
+  "parent_deliveries": {
+    "cm_shortcut_oneclick_20261007_r12": {
+      "files_unchanged": true,
+      "handoff_sha256": "1571385593c0d458d14c3fda3d08ad38ba520187a9a597dd1e2f5bb5fe336e7c"
+    },
+    "cm_shortcut_oneclick_20261008_r13": {
+      "files_unchanged": true,
+      "handoff_sha256": "02454cad0ab8de84ae6203bd8e5165a42bcdb37e0f0036ff770320b4fb7e9fe1"
+    }
+  },
+  "files": [
+    {
+      "name": "GENOS_CM_ONECLICK_20261008_R14.zip",
+      "bytes": 4046702,
+      "sha256": "cd6f1f5142355a15b5e312680621261e98e72be26afb2150d522d28c7a8719a7"
+    },
+    {
+      "name": "GENOS_CM_ONECLICK_20261008_R14_RUN.txt",
+      "bytes": 5386143,
+      "sha256": "e40213592a0a1866fba319b12197d4f07d836b09d6795485c1f48fedf1935544"
+    },
+    {
+      "name": "GENOS_CM_ONECLICK_20261008_R14_GUIDE.txt",
+      "bytes": 3581,
+      "sha256": "3981bd42c4f01da3c3c2d98c3e3ac110055625765b10acdf2ac8352b0a5f448d"
+    },
+    {
+      "name": "GENOS_CM_ONECLICK_20261008_R14_SHA256SUMS.txt",
+      "bytes": 212,
+      "sha256": "e9fc7ff56b849321f1187c33f521a41104aaae890371a91039db802cee1bc02e"
+    }
+  ],
+  "code_fingerprints": {
+    "module": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64",
+    "installer": "8df197ade3b767578ba25cfd3c8bceb02052fccef66199f0015324d8dd2a43f1",
+    "role_dependency": "239ed2b7913d2696604fc501e9a58c3753f29a3deade8cdb3d12a39b986a8f4a"
+  },
+  "local_MAIN_changed": false,
+  "model_calls": 0,
+  "GENOS_field_verified": false,
+  "code_serving_revision": null,
+  "workflow_verified": false,
+  "warning": "PeCab mock-fixture scalar overflow RuntimeWarning; all exact handoff tests passed."
+}

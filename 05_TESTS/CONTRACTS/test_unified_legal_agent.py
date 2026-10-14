@@ -41,8 +41,8 @@ class ScriptedTransport:
                 'reason':'모의 원문 선별'}] if row and phase.startswith('source-unit-triage') else [],
                 'needs_search':False,'evidence_sufficient':phase.startswith('source-unit-review'),
                 'sufficiency_reason':'모의 원문과 조건 확인'}
-            if phase.startswith('source-unit-triage') and getattr(self,'fulltext_once',False):
-                out['needs_search']=True;self.fulltext_once=False
+            if phase.startswith('source-unit-review') and getattr(self,'fulltext_once',False):
+                out.update(needs_search=True,evidence_sufficient=False,search_queries=['승인 대상 추가 원문']);self.fulltext_once=False
         elif phase.startswith('source-reference-'):
             out={'decisions':[{'id':g['id'],'action':'SKIP','scopes':[],
                 'reason':'모의 질문의 쟁점과 무관함','applicability':'DOES_NOT_APPLY',
@@ -72,8 +72,22 @@ def unified(tmp_path,structured_generation):
     principal={'user_id':'u','team_id':'risk_team','document_ids':['d']}
     app=create_app(tmp_path,structured_generation,contracts_root=ROOT,provider=object(),
         implementation='legal-agent-unified-v6',legal_agent_profile={**settings(),'max_model_attempts':40},
-        legal_agent_transport=transport,memory_identity=lambda req:principal)
+        legal_agent_transport=transport,memory_identity=lambda req:principal,runtime_root=tmp_path/'90_RUNTIME'/'semantic')
+    app.state.pipeline.contracts.pipeline['shortcut_v4']['features']['capture']=False
     with TestClient(app) as client:
+        original_post=client.post
+        admin_calls=0
+        def with_ad_query(url,*args,**kwargs):
+            nonlocal admin_calls
+            if url!='/v1/rag/memory/query':return original_post(url,*args,**kwargs)
+            admin_calls+=1
+            session_id=kwargs['json'].get('session_id') or 'fixture-read'
+            kwargs['json']={**kwargs['json'],'session_id':session_id}
+            identity={'session_id':session_id,'request_id':'fixture-ad-'+str(admin_calls)}
+            original_post('/v1/rag/ask',json={**identity,'question':'[AD모드 시작]'})
+            try:return original_post(url,*args,**kwargs)
+            finally:original_post('/v1/rag/ask',json={**identity,'request_id':identity['request_id']+'-end','question':'[AD모드 종료]'})
+        client.post=with_ad_query
         n=0
         def send(c=None,**overrides):
             nonlocal n
@@ -109,23 +123,30 @@ def test_v6_returns_answer_without_assessment_or_composition_judge(unified):
 
 def test_v6_still_rejects_fabricated_quote_without_semantic_judge(unified,monkeypatch):
     _,send,t,p,runtime=unified
-    original=t.send_once
+    original=t.send_once;fabricated_calls=[]
     def fabricated(*,body,ticket):
         view=json.loads(body['messages'][1]['content'])['view']
         phase=view.get('source_stage',view['phase'])
         if phase.startswith('memory-assess'):
+            fabricated_calls.append(phase)
             source=view['sources'][0]
             return wire({'claims':[{'text':'모의 판단','source_id':source['source_id'],
                 'quote':'원문에 없는 위조 인용문'}],'limitations':[]})
         return original(body=body,ticket=ticket)
     monkeypatch.setattr(t,'send_once',fabricated)
     response=send()
-    assert response.status_code==422 and 'fabricated source quote' in response.text
+    assert response.status_code==502 and response.json()['answer_status']=='failed'
+    assert '원문에 없는 위조 인용문' not in response.text and 'fabricated source quote' not in response.text
+    journals=list((runtime/'legal-agent'/'runs').glob('*/*/journal.sqlite'))
+    assert journals
+    with sqlite3.connect(journals[-1]) as db:
+        rejected=[json.loads(r[0]) for r in db.execute("SELECT payload_json FROM event WHERE kind='OUTPUT_DECISION_STATE'") if 'fabricated source quote' in r[0]]
+    assert len(fabricated_calls)==2
     assert list((runtime/'runs').glob('*.json'))==[]
     assert not {'memory-assess-check','memory-compose-check'} & set(t.phases)
 
 
-def test_u01_u02_full_question_correction_restore_confirmation_two_wikis_new_session(unified):
+def test_u01_u02_full_question_correction_restore_confirmation_legal_wiki_new_session(unified):
     client,send,t,p,runtime=unified
     first=ok(send());gid=first['question_id']
     assert first['response_schema']=='legal-agent-unified-response-v1' and first['run_id']
@@ -140,11 +161,11 @@ def test_u01_u02_full_question_correction_restore_confirmation_two_wikis_new_ses
     stored=ok(send(command('EXPERIENCE_CONFIRM',target=gid),question='최종 맞아. 기억해줘.'))
     kid=stored['experience_id'];assert kid and stored['status']=='STORED'
     wiki_pages=[]
-    for kind in ('user_wiki','legal_wiki'):
+    for kind in ('legal_wiki',):
         out=ok(client.post('/v1/rag/memory/query',json={**body,'query_kind':kind}))
         page=out['pages'][0];wiki_pages.append(page)
         assert page['experience_id']==kid and page['experience_revision']==4
-    assert wiki_pages[0]['judgment_refs']==wiki_pages[1]['judgment_refs']
+    assert wiki_pages[0]['judgment_refs']
     reused=ok(send(command('EXPERIENCE_REUSE',document_scope_mode='AUTHORIZED',knowledge_id=kid,
         task='모의승인규정 제1조의 승인 대상은?',queries=['승인'],facts=[]),session_id='other'))
     assert reused['status']=='REUSED' and reused['experience_id']==kid
@@ -186,7 +207,9 @@ def test_u05_presentation_keeps_confirmed_judgment(unified):
 def test_u09_owner_scope_and_u14_request_dedup(unified):
     client,send,t,p,runtime=unified
     first=ok(send(request_id='same'));calls=len(t.phases)
-    again=ok(send(request_id='same'));assert again==first and len(t.phases)==calls
+    again=ok(send(request_id='same'))
+    assert {k:v for k,v in again.items() if k!='execution_stats'}=={k:v for k,v in first.items() if k!='execution_stats'}
+    assert len(t.phases)==calls
     assert send(request_id='same',question='changed').status_code==409
     kid=ok(send(command('EXPERIENCE_CONFIRM',target=first['question_id'])))['experience_id']
     p['user_id']='other'
@@ -227,13 +250,13 @@ def test_u07_wiki_failure_retains_authority_and_rebuilds(unified,monkeypatch):
     def broken(*args):raise OSError('injected wiki disk failure')
     monkeypatch.setattr(KnowledgeRepository,'rebuild',broken)
     kid=ok(send(command('EXPERIENCE_CONFIRM',target=gid)))['experience_id']
-    for kind in ('user_wiki','legal_wiki'):
+    for kind in ('legal_wiki',):
         assert ok(client.post('/v1/rag/memory/query',json={'query_kind':kind}))['pages'][0]['experience_id']==kid
     with sqlite3.connect(runtime/'case-memory'/'cases-v3.sqlite') as db:
         assert db.execute("SELECT status FROM outbox WHERE kind='EXPERIENCE_CONFIRMED'").fetchone()[0]=='PENDING'
     monkeypatch.setattr(KnowledgeRepository,'rebuild',original)
     ok(send(command('EXPERIENCE_CONFIRM',target=gid)))
-    assert len(list((runtime/'case-memory'/'wikis').glob('*/*/index.json')))==2
+    assert len(list((runtime/'case-memory'/'wikis').glob('*/legal_wiki/index.json')))==1
     ok(send(command('FACT_UPDATE',target=gid,facts=[{'name':'대상','value':'A'}])))
     assert ok(client.post('/v1/rag/memory/query',json={'query_kind':'legal_wiki'}))['pages']==[]
 
@@ -268,10 +291,14 @@ def test_u12_additional_originals_reenter_existing_source_tools(unified):
     result=ok(send());assert result['executed'].count('RECALL')==2 and result['executed'].count('READ')==2
 
 
-def test_u13_unoffered_domain_choice_blocks_execution_and_publication(unified):
+def test_u13_fixed_domain_method_does_not_request_or_accept_model_concepts(unified):
     _,send,t,p,runtime=unified;t.bad_domain=True
-    response=send();assert response.status_code==502
-    assert list((runtime/'runs').glob('*.json'))==[]
+    result=ok(send())
+    assert not any(x.startswith('domain-choice-') for x in t.phases)
+    journal=next((runtime/'legal-agent'/'runs').glob('*/'+result['run_id']+'/journal.sqlite'))
+    with sqlite3.connect(journal) as db:
+        choices=[json.loads(r[0]) for r in db.execute('SELECT choice_json FROM domain_choice')]
+    assert choices and all(c['path']=='DISCOVERY' and c['concept_ids']==[] and c['relation_ids']==[] for c in choices)
 
 
 def test_u14_old_response_cannot_revive_corrected_experience(unified):
@@ -302,7 +329,9 @@ def test_u01_source_scope_correction_recorrection_restores_original_event(tmp_pa
         assert {x['document_id'] for x in external['assembly']['context']}=={'external'}
         t.command=command('RESEARCH_REPLAN',target=gid,source_category='ALL')
         ok(client.post('/v1/rag/ask',json={**body,'question':'정정을 다시 정정. 전체 범위','request_id':'third'}))
-        history=ok(client.post('/v1/rag/memory/query',json={'query_kind':'history','question_id':gid}))['events']
+        ok(client.post('/v1/rag/ask',json={**body,'question':'[AD모드 시작]','request_id':'admin-start'}))
+        history=ok(client.post('/v1/rag/memory/query',json={'query_kind':'history','question_id':gid,'session_id':'s'}))['events']
+        ok(client.post('/v1/rag/ask',json={**body,'question':'[AD모드 종료]','request_id':'admin-end'}))
         t.command=command('STATE_RESTORE',target=gid,restore_event=history[0]['id'],restore_fields=['source_category'])
         restored=ok(client.post('/v1/rag/ask',json={**body,'question':'최초 조건으로 복원','request_id':'restore'}))
         assert restored['question_id']==gid and {x['document_id'] for x in restored['assembly']['context']}=={'internal'}

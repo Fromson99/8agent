@@ -1,0 +1,254 @@
+...FF.F                                                                  [100%]
+=================================== FAILURES ===================================
+_________ test_same_checkout_generation_gate_and_local_push[workflow] __________
+08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r1/test_delivery.py:134: in test_same_checkout_generation_gate_and_local_push
+    done = run(root, tmp_path, "all", structured_generation, chat_mode=chat_mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r1/test_delivery.py:56: in run
+    assert (done.returncode == 0) == ok, done.stdout + done.stderr
+E   AssertionError: PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]
+E     {"at": "2026-10-07T06:08:43.463629+00:00", "stage": "START", "mode": "all", "code_root": "/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/DEV"}
+E     {"at": "2026-10-07T06:08:43.472650+00:00", "stage": "ZIP_VERIFIED", "code_zip_sha256": "d7f091b8124c5d5bc83eac565c49d0098d878e393c5dcd856b008ee553a34cc4", "code_manifest_sha256": "2380866ef12acd315e220df5f89d3a01d19f8699b9e9514eb042883e3f6feba0"}
+E     {"at": "2026-10-07T06:08:43.519574+00:00", "stage": "CHECKOUT_PREFLIGHT", "report": "/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/logs/CHECKOUT_PREFLIGHT-20261007T060843518815Z-252499.json", "mismatches": [], "unrelated_paths": [], "unknown_staged_bytes": [], "unmerged_paths": []}
+E     {"at": "2026-10-07T06:08:43.519696+00:00", "stage": "GENERATION_SELECTED", "path": "/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/built/generation", "manifest_sha256": "aba255f1ea94045116e906eaf16d811874da51ffda96fde77e003d7ffefcd89b"}
+E     {"at": "2026-10-07T06:08:43.519972+00:00", "stage": "CACHE_PREFLIGHT_PASS", "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"}
+E     FULL_CODE_SYNTAX current=230 frozen_preserved=0
+E     CHECK OK: package verified; no Git baseline required; files=301
+E     BACKUP/RECOVERY: /tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/DEV/09_ARTIFACTS/BACKUPS/code-replacement/20261007T060844Z-20963359
+E     INSTALL OK: full-code-d7f091b8124c5d5bc83e
+E     Preserved: 01_DATA, GENOS_DATA, .env, .venv, .git, TRANSFER; no deployment/activation
+E     {"at": "2026-10-07T06:08:44.277630+00:00", "stage": "CACHE_PREFLIGHT_PASS", "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"}
+E     {"at": "2026-10-07T06:08:44.277716+00:00", "stage": "CODE_APPLIED", "backup": "/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/DEV/09_ARTIFACTS/BACKUPS/code-replacement/20261007T060844Z-20963359"}
+E     {"ts": "2026-10-07T06:08:44.345943+00:00", "level": "INFO", "logger": "genos.service", "event": "boot.loaded", "python": "3.14.4", "code_root": "/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/DEV", "data_root": "", "generation_configured": true, "llm_backend": "genos"}
+E     {"ts": "2026-10-07T06:08:44.346498+00:00", "level": "INFO", "logger": "genos.service", "event": "deployment.entry.loaded", "entry_path": "/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/DEV/service/service.py", "backend_path": "/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/DEV/service.py", "backend_sha256": "31dad528f605633460fd34c07773377acbf382ccf83d3814e224c1a5a0462420", "implementation_requested": "legal-agent-unified-v6", "previous_event": "boot.loaded", "previous_step": null, "previous_log_ms": 0.174}
+E     SERVICE_LOADER_CONTRACT PASS genos-generation /tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/built/generation
+E     QUERY_LATENCY_CONTRACT PASS workflow query-latency-20261007-r1
+E     {"at": "2026-10-07T06:08:44.544233+00:00", "stage": "SERVICE_LOADER_PASS", "seconds": 0.266}
+E     SELECTED_GENERATION=/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/built/generation
+E     PASS generation: path=/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/built/generation id=term-source-740b21d981c3011048a8 profile=legal-agent-rag-v6
+E     PASS navigation manifest: selected_index_sha256=b8b32f78138cfb6e0d4c8d9fc613ed6300c52f0d48874d5e00268fdb4a96d4f3
+E     PASS navigation SQLite: exists=True
+E     PASS navigation source: navigation source store matches selected generation
+E     PASS navigation source manifest: navigation source manifest matches selected generation
+E     PASS fulltext binding source: generation manifest
+E     PASS fulltext navigation pin: configured=b8b32f78138cfb6e0d4c8d9fc613ed6300c52f0d48874d5e00268fdb4a96d4f3 selected=b8b32f78138cfb6e0d4c8d9fc613ed6300c52f0d48874d5e00268fdb4a96d4f3
+E     PASS fulltext schema: schema=semantic-unit-fulltext-v1
+E     PASS fulltext generation: unit index belongs to selected generation
+E     PASS fulltext manifest: configured=7887ac89c0df4c7cba20f85acc929809167aad6fd47af39706ce99e8fd0acda2 actual=7887ac89c0df4c7cba20f85acc929809167aad6fd47af39706ce99e8fd0acda2
+E     PASS fulltext index binding: fulltext navigation/source hashes match
+E     PASS fulltext SQLite hash: fulltext SQLite matches its manifest
+E     PASS fulltext tokenizer: installed pecab=1.0.8 indexed=pecab@1.0.8
+E     PASS fulltext SQLite open: read-only unit_fts query
+E     PASS navigation SQLite hash: navigation SQLite matches its manifest
+E     GENERATION_E2E PASS
+E     {"at": "2026-10-07T06:08:44.600543+00:00", "stage": "GENERATION_E2E_PASS", "seconds": 0.056}
+E     {"ts": "2026-10-07T06:08:44.806752+00:00", "level": "INFO", "logger": "genos.glossary", "event": "glossary.pool.ready"}
+E     VERIFY_ASSETS PASS
+E     {"at": "2026-10-07T06:08:44.832234+00:00", "stage": "ASSETS_PASS", "seconds": 0.231}
+E     {"at": "2026-10-07T06:08:44.929852+00:00", "stage": "GIT_COMMITTED", "commit": "40813afc23934ac0a93c04241b68cc009527d83f"}
+E     GENOS_RELEASE_GATE FAIL TypeError string indices must be integers, not 'str'
+E     Traceback (most recent call last):
+E       File "<stdin>", line 150, in <module>
+E       File "<stdin>", line 134, in push
+E       File "<stdin>", line 132, in gate
+E       File "<stdin>", line 55, in command
+E       File "/usr/lib/python3.14/subprocess.py", line 578, in run
+E         raise CalledProcessError(retcode, process.args,
+E                                  output=stdout, stderr=stderr)
+E     subprocess.CalledProcessError: Command '['/home/jin/8-AGENT/.venv/bin/python3', '/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/DEV/06_TOOLS/COMMANDS/genos_release_gate.py', '--code-zip', '/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r1/GENOS_QUERY_LATENCY_20261007_R1.zip', '--deploy-root', '/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/DEV', '--generation', '/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/built/generation']' returned non-zero exit status 1.
+E     QUERY_LATENCY_EXIT=1 LOG=/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/logs/20261007T060843Z-all-252493.log
+E     
+E   assert (1 == 0) == True
+E    +  where 1 = CompletedProcess(args=['bash', '/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r1/GENOS_QUERY_L...=1 LOG=/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_0/logs/20261007T060843Z-all-252493.log\n', stderr='').returncode
+---------------------------- Captured stdout setup -----------------------------
+GENERATION links seconds=0.003 reused=False
+GENERATION source seconds=0.002 reused=False
+GENERATION glossary seconds=0.004 reused=False
+NAVIGATION schema.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION catalogue.start elapsed=0.073s thread_cpu=0.073s
+NAVIGATION documents.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION references.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION reference-witnesses.start elapsed=0.066s thread_cpu=0.066s
+NAVIGATION glossary-evidence.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-1 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-2 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-3 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-4 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-5 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-6 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-7 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-8 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-9 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-10 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-11 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-12 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-13 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-14 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-15 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-16 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-17 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-18 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION statistics-integrity.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION audit-separation.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION done elapsed=0.001s thread_cpu=0.001s
+GENERATION navigation seconds=0.148 reused=False
+UNIT_FTS indexed=3/3 seconds=0.0
+GENERATION fulltext seconds=0.007 reused=False
+---------------------------- Captured stderr setup -----------------------------
+{"ts": "2026-10-07T06:08:43.297732+00:00", "level": "INFO", "logger": "genos.glossary", "event": "glossary.pool.ready", "previous_event": "glossary.pool.ready", "previous_step": null, "previous_log_ms": 0.219}
+------------------------------ Captured log setup ------------------------------
+INFO     genos.glossary:observability.py:283 glossary.pool.ready
+________ test_same_checkout_generation_gate_and_local_push[integrated] _________
+08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r1/test_delivery.py:134: in test_same_checkout_generation_gate_and_local_push
+    done = run(root, tmp_path, "all", structured_generation, chat_mode=chat_mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r1/test_delivery.py:56: in run
+    assert (done.returncode == 0) == ok, done.stdout + done.stderr
+E   AssertionError: PYTHON /home/jin/8-AGENT/.venv/bin/python3 3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]
+E     {"at": "2026-10-07T06:08:45.397781+00:00", "stage": "START", "mode": "all", "code_root": "/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/DEV"}
+E     {"at": "2026-10-07T06:08:45.405535+00:00", "stage": "ZIP_VERIFIED", "code_zip_sha256": "d7f091b8124c5d5bc83eac565c49d0098d878e393c5dcd856b008ee553a34cc4", "code_manifest_sha256": "2380866ef12acd315e220df5f89d3a01d19f8699b9e9514eb042883e3f6feba0"}
+E     {"at": "2026-10-07T06:08:45.451792+00:00", "stage": "CHECKOUT_PREFLIGHT", "report": "/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/logs/CHECKOUT_PREFLIGHT-20261007T060845450920Z-252542.json", "mismatches": [], "unrelated_paths": [], "unknown_staged_bytes": [], "unmerged_paths": []}
+E     {"at": "2026-10-07T06:08:45.451947+00:00", "stage": "GENERATION_SELECTED", "path": "/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/built/generation", "manifest_sha256": "5b45483d4e7a76434234aff53267d1a8c965c44bdb64996574400e12edc05682"}
+E     {"at": "2026-10-07T06:08:45.452178+00:00", "stage": "CACHE_PREFLIGHT_PASS", "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"}
+E     FULL_CODE_SYNTAX current=230 frozen_preserved=0
+E     CHECK OK: package verified; no Git baseline required; files=301
+E     BACKUP/RECOVERY: /tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/DEV/09_ARTIFACTS/BACKUPS/code-replacement/20261007T060846Z-a4d68f61
+E     INSTALL OK: full-code-d7f091b8124c5d5bc83e
+E     Preserved: 01_DATA, GENOS_DATA, .env, .venv, .git, TRANSFER; no deployment/activation
+E     {"at": "2026-10-07T06:08:46.228083+00:00", "stage": "CACHE_PREFLIGHT_PASS", "compiler_sha256": "e03dab542ab0e1c9d129336308ddcdd0ab7a0ee1246fc29614f4efa12a8b4406"}
+E     {"at": "2026-10-07T06:08:46.228157+00:00", "stage": "CODE_APPLIED", "backup": "/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/DEV/09_ARTIFACTS/BACKUPS/code-replacement/20261007T060846Z-a4d68f61"}
+E     {"ts": "2026-10-07T06:08:46.300519+00:00", "level": "INFO", "logger": "genos.service", "event": "boot.loaded", "python": "3.14.4", "code_root": "/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/DEV", "data_root": "", "generation_configured": true, "llm_backend": "genos"}
+E     {"ts": "2026-10-07T06:08:46.301032+00:00", "level": "INFO", "logger": "genos.service", "event": "deployment.entry.loaded", "entry_path": "/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/DEV/service/service.py", "backend_path": "/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/DEV/service.py", "backend_sha256": "31dad528f605633460fd34c07773377acbf382ccf83d3814e224c1a5a0462420", "implementation_requested": "legal-agent-unified-v6", "previous_event": "boot.loaded", "previous_step": null, "previous_log_ms": 0.182}
+E     SERVICE_LOADER_CONTRACT PASS genos-generation /tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/built/generation
+E     QUERY_LATENCY_CONTRACT PASS integrated query-latency-20261007-r1
+E     {"at": "2026-10-07T06:08:46.497947+00:00", "stage": "SERVICE_LOADER_PASS", "seconds": 0.27}
+E     SELECTED_GENERATION=/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/built/generation
+E     PASS generation: path=/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/built/generation id=term-source-634484a26e7ffca594c7 profile=legal-agent-rag-v6
+E     PASS navigation manifest: selected_index_sha256=7f1a3a9b59066db14994eb173b5be716a627023dfd24295560c6379cdf28a11c
+E     PASS navigation SQLite: exists=True
+E     PASS navigation source: navigation source store matches selected generation
+E     PASS navigation source manifest: navigation source manifest matches selected generation
+E     PASS fulltext binding source: generation manifest
+E     PASS fulltext navigation pin: configured=7f1a3a9b59066db14994eb173b5be716a627023dfd24295560c6379cdf28a11c selected=7f1a3a9b59066db14994eb173b5be716a627023dfd24295560c6379cdf28a11c
+E     PASS fulltext schema: schema=semantic-unit-fulltext-v1
+E     PASS fulltext generation: unit index belongs to selected generation
+E     PASS fulltext manifest: configured=995612b6fa5382a4d724586d50e5c865b40b51f05c6e9c235ad9f2e56a810809 actual=995612b6fa5382a4d724586d50e5c865b40b51f05c6e9c235ad9f2e56a810809
+E     PASS fulltext index binding: fulltext navigation/source hashes match
+E     PASS fulltext SQLite hash: fulltext SQLite matches its manifest
+E     PASS fulltext tokenizer: installed pecab=1.0.8 indexed=pecab@1.0.8
+E     PASS fulltext SQLite open: read-only unit_fts query
+E     PASS navigation SQLite hash: navigation SQLite matches its manifest
+E     GENERATION_E2E PASS
+E     {"at": "2026-10-07T06:08:46.555853+00:00", "stage": "GENERATION_E2E_PASS", "seconds": 0.058}
+E     {"ts": "2026-10-07T06:08:46.762956+00:00", "level": "INFO", "logger": "genos.glossary", "event": "glossary.pool.ready"}
+E     VERIFY_ASSETS PASS
+E     {"at": "2026-10-07T06:08:46.789210+00:00", "stage": "ASSETS_PASS", "seconds": 0.233}
+E     {"at": "2026-10-07T06:08:46.897514+00:00", "stage": "GIT_COMMITTED", "commit": "32e691a7a04d0c571c196cee9d3ac7060d091dbd"}
+E     GENOS_RELEASE_GATE FAIL TypeError string indices must be integers, not 'str'
+E     Traceback (most recent call last):
+E       File "<stdin>", line 150, in <module>
+E       File "<stdin>", line 134, in push
+E       File "<stdin>", line 132, in gate
+E       File "<stdin>", line 55, in command
+E       File "/usr/lib/python3.14/subprocess.py", line 578, in run
+E         raise CalledProcessError(retcode, process.args,
+E                                  output=stdout, stderr=stderr)
+E     subprocess.CalledProcessError: Command '['/home/jin/8-AGENT/.venv/bin/python3', '/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/DEV/06_TOOLS/COMMANDS/genos_release_gate.py', '--code-zip', '/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r1/GENOS_QUERY_LATENCY_20261007_R1.zip', '--deploy-root', '/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/DEV', '--generation', '/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/built/generation']' returned non-zero exit status 1.
+E     QUERY_LATENCY_EXIT=1 LOG=/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/logs/20261007T060845Z-all-252536.log
+E     
+E   assert (1 == 0) == True
+E    +  where 1 = CompletedProcess(args=['bash', '/home/jin/8-AGENT/08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r1/GENOS_QUERY_L...=1 LOG=/tmp/pytest-of-jin/pytest-68/test_same_checkout_generation_1/logs/20261007T060845Z-all-252536.log\n', stderr='').returncode
+---------------------------- Captured stdout setup -----------------------------
+GENERATION links seconds=0.004 reused=False
+GENERATION source seconds=0.002 reused=False
+GENERATION glossary seconds=0.004 reused=False
+NAVIGATION schema.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION catalogue.start elapsed=0.066s thread_cpu=0.066s
+NAVIGATION documents.start elapsed=0.002s thread_cpu=0.002s
+NAVIGATION references.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION reference-witnesses.start elapsed=0.084s thread_cpu=0.084s
+NAVIGATION glossary-evidence.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-1 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-2 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-3 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-4 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-5 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-6 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-7 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-8 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-9 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-10 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-11 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-12 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-13 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-14 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-15 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-16 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-17 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-18 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION statistics-integrity.start elapsed=0.002s thread_cpu=0.002s
+NAVIGATION audit-separation.start elapsed=0.002s thread_cpu=0.002s
+NAVIGATION done elapsed=0.002s thread_cpu=0.002s
+GENERATION navigation seconds=0.161 reused=False
+UNIT_FTS indexed=3/3 seconds=0.0
+GENERATION fulltext seconds=0.007 reused=False
+---------------------------- Captured stderr setup -----------------------------
+{"ts": "2026-10-07T06:08:45.245571+00:00", "level": "INFO", "logger": "genos.glossary", "event": "glossary.pool.ready", "previous_event": "glossary.pool.ready", "previous_step": null, "previous_log_ms": 0.195}
+------------------------------ Captured log setup ------------------------------
+INFO     genos.glossary:observability.py:283 glossary.pool.ready
+_____________ test_direct_from_selected_main_without_old_zip_chain _____________
+08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r1/test_delivery.py:166: in test_direct_from_selected_main_without_old_zip_chain
+    assert (root / name).read_bytes() == raw
+E   assert b'"""Start th...n    main()\n' == b'"""Start th...n    main()\n'
+E     
+E     At index 1636 diff: b',' != b')'
+E     Use -v to get more diff
+---------------------------- Captured stdout setup -----------------------------
+GENERATION links seconds=0.003 reused=False
+GENERATION source seconds=0.002 reused=False
+GENERATION glossary seconds=0.003 reused=False
+NAVIGATION schema.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION catalogue.start elapsed=0.076s thread_cpu=0.076s
+NAVIGATION documents.start elapsed=0.002s thread_cpu=0.002s
+NAVIGATION references.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION reference-witnesses.start elapsed=0.060s thread_cpu=0.060s
+NAVIGATION glossary-evidence.start elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-1 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-2 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-3 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-4 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-5 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-6 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-7 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-8 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-9 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-10 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-11 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-12 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-13 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-14 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-15 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-16 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-17 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION glossary-evidence.sql-18 elapsed=0.000s thread_cpu=0.000s
+NAVIGATION statistics-integrity.start elapsed=0.002s thread_cpu=0.002s
+NAVIGATION audit-separation.start elapsed=0.001s thread_cpu=0.001s
+NAVIGATION done elapsed=0.001s thread_cpu=0.001s
+GENERATION navigation seconds=0.145 reused=False
+UNIT_FTS indexed=3/3 seconds=0.0
+GENERATION fulltext seconds=0.007 reused=False
+---------------------------- Captured stderr setup -----------------------------
+{"ts": "2026-10-07T06:08:47.455659+00:00", "level": "INFO", "logger": "genos.glossary", "event": "glossary.pool.ready", "previous_event": "glossary.pool.ready", "previous_step": null, "previous_log_ms": 0.243}
+------------------------------ Captured log setup ------------------------------
+INFO     genos.glossary:observability.py:283 glossary.pool.ready
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /home/jin/8-AGENT/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED 08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r1/test_delivery.py::test_same_checkout_generation_gate_and_local_push[workflow]
+FAILED 08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r1/test_delivery.py::test_same_checkout_generation_gate_and_local_push[integrated]
+FAILED 08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r1/test_delivery.py::test_direct_from_selected_main_without_old_zip_chain
+3 failed, 4 passed, 1 warning in 14.39s

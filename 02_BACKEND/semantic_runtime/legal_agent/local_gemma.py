@@ -37,6 +37,10 @@ def provider_request(body: dict) -> dict:
         for key in ('anyOf', 'oneOf', 'allOf', 'prefixItems'):
             for child in node.get(key, []): adapt(child)
     adapt(((payload.get('response_format') or {}).get('json_schema') or {}).get('schema'))
+    from .wire_schema import factor_schema
+    envelope=(payload.get('response_format') or {}).get('json_schema')
+    if envelope and isinstance(envelope.get('schema'),dict):
+        envelope['schema']=factor_schema(envelope['schema'])
     return payload
 
 
@@ -130,9 +134,12 @@ class LocalGemmaTransport:
             raise TransportError('local Qwen3.8 returned non-JSON response', retryable=False) from exc
         envelope = {'status_code': response.status_code, 'body_json': data,
                     'body_text': None, 'body_sha256': hashlib.sha256(response.content).hexdigest(),
-                    'response_bytes': len(response.content)}
+                    'response_bytes': len(response.content),
+                    'retry_after': response.headers.get('retry-after'),
+                    'acceptance': 'KNOWN_REJECTED' if response.status_code==429 else 'UNKNOWN' if response.status_code>=500 else 'ACCEPTED'}
         if not response.is_success or data.get('error'):
-            raise TransportError('local Qwen3.8 provider error', retryable=False, response=envelope)
+            raise TransportError('local Qwen3.8 provider error', retryable=response.status_code==429,
+                                 unknown=response.status_code>=500, response=envelope)
         if data.get('provider') != 'Parasail' or data.get('model') != self.binding['model']:
             raise ContractError('local Qwen3.8 response model/provider mismatch')
         choices = data.get('choices') or []

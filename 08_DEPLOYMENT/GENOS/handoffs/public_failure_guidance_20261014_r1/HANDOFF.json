@@ -1,0 +1,45 @@
+{
+  "version": "GENOS_PUBLIC_FAILURE_GUIDANCE_20261014_R1",
+  "predecessor": "ASSESSMENT_GAP_ACTION R2",
+  "field": {
+    "code_root": "~/DEV",
+    "git_commit": null,
+    "generation": null,
+    "generation_manifest_sha256": null,
+    "code_serving_revision": null,
+    "applied": false,
+    "deployed": false,
+    "workflow_editor_saved": false,
+    "workflow_test": "NOT_RUN"
+  },
+  "email_status": "NOT_SENT_AT_SEAL; see external EMAIL_SENT.json",
+  "rebuild_required": false,
+  "workflow_editor_change_required": true,
+  "requires_new_code_serving_revision": true,
+  "requires_sse_restart": true,
+  "local_main": {
+    "release_id": "public-failure-guidance-20261014-r1",
+    "generation": 61,
+    "manifest_sha256": "4b0b1d79c966568bbe3eed3e14552256db9a059d344da34df1b859fe71034f21",
+    "selected_files_verified": 301,
+    "service_health": 200,
+    "service_search": 200,
+    "injected_failures_via_actual_service": [
+      {
+        "exception": "AdmissionRejected",
+        "http_status": 503,
+        "public_text": "현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (503)\n\n조회 번호: guidance-503"
+      },
+      {
+        "exception": "DeadlineExceeded",
+        "http_status": 504,
+        "public_text": "현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (timeout)\n\n조회 번호: guidance-timeout"
+      },
+      {
+        "exception": "BudgetExhausted",
+        "http_status": 500,
+        "public_text": "현재 충분한 법률 검토를 하지 못했습니다. 검토 가능한 처리 한도에 도달했습니다. 법률 쟁점을 나누어 질문해 주세요. (limit)\n\n조회 번호: guidance-limit"
+      }
+    ]
+  }
+}

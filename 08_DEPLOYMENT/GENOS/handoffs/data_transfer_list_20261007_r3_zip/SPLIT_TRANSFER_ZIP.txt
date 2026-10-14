@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# Run in GENOS: bash TRANSFER/SPLIT_TRANSFER_ZIP.txt
+set -Eeuo pipefail
+
+cd -- "${ZIP_TRANSFER_DIR:-${HOME}/DEV/TRANSFER}"
+zip_name="${1:-}"
+if [[ -z "$zip_name" ]]; then
+    read -r -p 'TRANSFER ZIP filename (example: data.zip): ' zip_name
+fi
+if [[ -z "$zip_name" || "$zip_name" == . || "$zip_name" == .. ||
+      "$zip_name" == */* || "$zip_name" == *\\* ||
+      "$zip_name" == *$'\n'* || "$zip_name" == *$'\r'* ]]; then
+    printf '%s\n' 'ERROR: enter only the ZIP filename, without a path.' >&2
+    exit 1
+fi
+if [[ "${zip_name,,}" != *.zip ]]; then zip_name="${zip_name}.zip"; fi
+if [[ ! -f "$zip_name" || -L "$zip_name" || ! -s "$zip_name" ]]; then
+    printf 'ERROR: nonempty regular ZIP file required: %s\n' "$zip_name" >&2
+    exit 1
+fi
+out="${zip_name}.parts"
+if [[ -e "$out" || -L "$out" ]]; then
+    printf 'ERROR: output already exists; preserved: %s\n' "$out" >&2
+    exit 1
+fi
+staging="$(mktemp -d -- "${out}.partial-XXXXXXXX")"
+trap 'printf "FAILED: incomplete parts preserved at %s\n" "$staging" >&2' ERR
+trap 'printf "INTERRUPTED: incomplete parts preserved at %s\n" "$staging" >&2; exit 130' INT TERM
+
+printf 'Input: %s/%s\n' "$PWD" "$zip_name"
+printf '%s\n' 'Calculating original SHA-256...'
+original_line="$(sha256sum < "$zip_name")"
+original_hash="${original_line%% *}"
+split -b 49000000 -d -a 6 -- "$zip_name" "${staging}/${zip_name}.part"
+
+shopt -s nullglob
+parts=("${staging}/${zip_name}.part"*)
+(( ${#parts[@]} > 0 ))
+printf '%s\n' 'Verifying all saved parts against original SHA-256...'
+joined_line="$(cat -- "${parts[@]}" | sha256sum)"
+current_line="$(sha256sum < "$zip_name")"
+if [[ "${joined_line%% *}" != "$original_hash" || "${current_line%% *}" != "$original_hash" ]]; then
+    printf '%s\n' 'ERROR: source changed or saved parts differ from original bytes.' >&2
+    false
+fi
+(
+    cd -- "$staging"
+    sha256sum -- ./"${zip_name}".part* > PARTS.sha256
+    printf '%s  %s\n' "$original_hash" "$zip_name" > ORIGINAL.sha256
+)
+# GNU mv -n -T avoids replacing a concurrently created destination.
+mv -n -T -- "$staging" "$out"
+if [[ -d "$staging" ]]; then
+    printf '%s\n' 'ERROR: another output appeared; both directories are preserved.' >&2
+    false
+fi
+trap - ERR INT TERM
+printf 'OK: %s/%s (%s parts, each <=49,000,000 bytes)\n' "$PWD" "$out" "${#parts[@]}"
+printf '%s\n' 'Download ALL part files AND PARTS.sha256 AND ORIGINAL.sha256.'
+printf 'Original ZIP preserved: %s\n' "$zip_name"

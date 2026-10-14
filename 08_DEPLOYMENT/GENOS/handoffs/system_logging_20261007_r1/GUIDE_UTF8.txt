@@ -1,0 +1,90 @@
+GENOS 배포·환경·서버 전체 로그 — 2026-10-07 R1
+
+1. 같은 폴더에 다음 파일을 둡니다.
+   GENOS_SYSTEM_LOGGING_20261007_R1.zip
+   GENOS_SYSTEM_LOGGING_20261007_R1_APPLY.txt
+   분리 방식이면 GENOS_SYSTEM_LOGGING_20261007_R1_WORKFLOW_PASTE_ALL.txt도 준비합니다.
+
+2. 실제 선택 generation을 지정합니다. 기존 데이터는 재구축하지 않습니다.
+   export GENOS_GENERATION='<실제 선택 NFS generation 절대경로>'
+   export GENOS_SYSTEM_LOG_DIR=/nfs-root/diamo/8-agent/logs/system
+
+3. 현장 기존 ~/DEV에 검사 후 적용합니다. TXT가 수집기를 내장하므로 이전 코드에
+   새 로그 모듈이 없어도 첫 ZIP 검사부터 수집합니다. 실제 명령은 python3입니다.
+
+   bash GENOS_SYSTEM_LOGGING_20261007_R1_APPLY.txt check "$GENOS_GENERATION"
+   bash GENOS_SYSTEM_LOGGING_20261007_R1_APPLY.txt apply "$GENOS_GENERATION"
+   bash GENOS_SYSTEM_LOGGING_20261007_R1_APPLY.txt verify "$GENOS_GENERATION"
+
+   check 실패 시 멈춥니다. 오류 원문은 출력에 표시된 NFS/SPOOL에 남습니다.
+   apply는 ~/DEV의 확인된 파일을 백업 후 바꿉니다. 모르는 현장 수정은 보존합니다.
+   예전 코드 ZIP을 순서대로 전부 적용하거나 R2 백업부터 원복할 필요는 없습니다.
+
+4. 확인된 같은 ~/DEV checkout에서 generation gate를 실행합니다.
+   bash GENOS_SYSTEM_LOGGING_20261007_R1_APPLY.txt gate "$GENOS_GENERATION"
+
+   검토 후 기존 Git 원격으로 commit/push할 때:
+   bash GENOS_SYSTEM_LOGGING_20261007_R1_APPLY.txt push "$GENOS_GENERATION"
+
+   이 명령은 실제로 Git commit/push합니다. gate가 PASS인 같은 checkout만 사용합니다.
+   push와 코드서빙 새 리비전 배포는 별도이며, 플랫폼 배포 화면은 자동 조작하지 않습니다.
+
+5. 코드서빙 빌드 명령을 감싸 의존성 설치 오류부터 원문으로 기록합니다.
+   기존 사용 중인 requirements 파일이 다르면 그 파일명을 유지합니다.
+
+   python3 genos_log_runner.py --phase build -- python3 -m pip install -r requirements-serving.txt -r 08_DEPLOYMENT/GENOS/requirements-sse.txt
+
+   시작 명령도 기존 main_router와 포트 설정을 그대로 감쌉니다.
+   기존 PORT/UVICORN_PORT/SERVER_PORT/GENOS_PORT가 있으면:
+   python3 genos_log_runner.py --phase serving -- python3 main_router.py
+
+   기존 시작 명령에 --port가 있었다면 동일한 값을 위 명령 뒤에 붙입니다.
+   GENOS_MAIN_MODE=integrated는 직접 JSON, workflow는 분리 Python/SSE입니다.
+   service 함수 로더 방식은 기존 로더를 유지합니다. python3 service.py로 서버를 시작하지 않습니다.
+
+6. 코드서빙 환경에도 GENOS_SYSTEM_LOG_DIR을 설정하고 새 커밋의 리비전을 배포합니다.
+   일반 로그는 INFO입니다. 상세 RAG 내부 로그까지 필요하면 GENOS_LOG_LEVEL=DEBUG,
+   라이브러리 DEBUG까지 필요하면 GENOS_SYSTEM_LOG_LEVEL=DEBUG를 지정합니다.
+
+   분리 방식은 WORKFLOW_PASTE_ALL TXT 전체를 워크플로우 Python 편집기에 반영합니다.
+   이 TXT는 표준 라이브러리 로그 모듈을 내장합니다. 워크플로우 환경에도 로그 경로를
+   설정하고 실제 NFS mount/권한을 확인합니다. 코드 ZIP 적용/Git push로 편집기는 바뀌지 않습니다.
+   통합 직접 JSON 방식은 편집기 교체가 필요 없습니다.
+
+7. 로그 확인:
+   /nfs-root/diamo/8-agent/logs/system/<실행에 표시된 run_id>/
+   *-stdout.log / *-stderr.log: 실행 원문 출력
+   *-python.raw.log / *-exceptions.raw.log: 일반 로그 및 전체 traceback
+   *-workflow.errors.raw.log: 워크플로우 예외 및 HTTP 오류 응답 원문
+   *-environment.json: 실제 Python·코드 해시·설정 경로와 변수 이름
+   *-events.jsonl / *-result.json: 단계·시그널·종료 코드·실제 runtime binding
+   deployment-artifacts/: checkout 사전 검사·단계 JSON 보고서
+
+   환경변수 전체/비밀번호/인증키 값을 덤프하지 않습니다. 실제 오류/로그 원문은 내부
+   NFS에서 길이 제한 없이 보존하므로, 원문 안의 내부 정보는 내부에서만 취급합니다.
+
+8. NFS 실패 시:
+   NFS_COMPLETE False와 출력에 표시된 SPOOL 폴더를 확인하고 보존합니다.
+   NFS가 돌아오면 같은 모듈로 로그만 재전송합니다. 배포를 다시 실행하지 않습니다.
+   python3 ~/DEV/genos_log_runner.py --recover '<표시된 실제 SPOOL 절대경로>'
+
+   apply 이전 실패하여 DEV에 모듈이 없다면 첨부 ZIP의 genos_diagnostics.py와
+   genos_log_runner.py 두 파일을 임시 도구 폴더에 풀어 위 recover 명령을 실행합니다.
+   데이터/서빙을 그 임시 폴더에서 검증하거나 push하지 않습니다.
+   임시 /tmp는 컨테이너 삭제 후 보존을 보장하지 않으므로 삭제 전에 pending을 회수합니다.
+   NFS 성공분은 로컬 원문 중복을 제거하고 작은 spool 위치 증거만 보존합니다.
+
+9. 원복:
+   apply 출력의 BACKUP/RECOVERY 폴더를 지정합니다.
+   bash GENOS_SYSTEM_LOGGING_20261007_R1_APPLY.txt rollback '<해당 백업 절대경로>'
+   기존 데이터/.env/Git 이력은 보존됩니다. 이후 수정이 있으면 원복을 차단하고 보존합니다.
+   이미 배포한 리비전은 별도로 이전 리비전으로 되돌립니다.
+
+10. 현장 확인은 워크플로우 테스트 화면에서만 실행합니다.
+    원문 조회/실제 근거 질문의 요청 ID, 새 커밋/리비전, 실제 generation과 manifest 해시,
+    NFS 로그 쓰기·다음 리비전에서 로그 유지 여부를 확인합니다.
+    플랫폼 업로드·이미지 pull·스케줄러·NFS mount 또는 Python 자체 실행 이전 오류는
+    우리 프로세스에 전달되지 않습니다. 플랫폼 로그를 원문으로 내보내 동일 NFS에 따로 보관합니다.
+
+로컬 MAIN45와 데이터 CURRENT는 이번 작업에서 변경하지 않았습니다.
+GENOS 현장 반입·push·리비전 배포·NFS 쓰기·실제 내부 모델/질의 성공은 아직 미확인입니다.

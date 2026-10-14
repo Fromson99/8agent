@@ -1,0 +1,41 @@
+공통 CM51 자동 적용 — 최종 R8
+
+1. 받은 GENOS_CM_ONECLICK_20261007_R8_RUN.txt를 ~/DEV/TRANSFER에 올립니다.
+2. 터미널에서 아래 한 줄만 실행합니다.
+
+bash ~/DEV/TRANSFER/GENOS_CM_ONECLICK_20261007_R8_RUN.txt
+
+끝입니다. 사용자·팀 JSON, CM_PRINCIPAL_FILE, CM_RUN_FILE, receipt 경로,
+generation/runtime 환경변수나 명령 인자를 직접 작성하지 않습니다.
+R4/R6를 먼저 원복하거나 이전 안내의 단계별 명령을 실행하지 않습니다.
+
+자동으로 처리하는 것:
+- 기존 DEV checkout을 찾고 확인된 코드와 엔진 pin을 검사합니다.
+- 공통 CM 코드 적용과 백업, 이미 보낸 NFS 목록 확인 코드 보존.
+- 다른 메일에서 확인한 NFS generation/runtime 선택과 원문51건·근거98개 확인.
+- 새 리비전이 환경변수 추가 입력 없이 같은 경로를 선택하도록 설정 파일 생성.
+- 같은 checkout의 commit, 실제 generation 배포 게이트, 공통51건 등록·검증, Git push.
+- 등록 영수증·백업·진행·실패 로그를 자동 저장합니다.
+
+이미 등록했다면 중복하지 않습니다. 기존 개인 사례와 원문 DB 전체를 덮지 않습니다.
+중간에 실패하면 같은 한 줄로 다시 실행합니다. 알 수 없는 코드 변경은 보존하고 중단합니다.
+NFS 데이터 복원은 다른 메일의 ZIP 이관 실행을 먼저 마친 상태여야 합니다.
+모델·인증 설정은 기존 리비전 설정을 유지하며 이번 공통 숏컷 때문에 새로 입력하지 않습니다.
+
+명령이 완료되면 COMMIT을 출력합니다.
+삼성 코드서빙 화면에서 그 commit으로 새 리비전을 배포하고 기존 워크플로우 테스트 화면에서 확인합니다.
+Git push 완료와 새 리비전 배포·질문 성공은 별도입니다.
+
+자동 선택 경로:
+/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation
+/nfs-root/diamo/8-agent/runtime
+별도 state 경로 없음. 기존 runtime의 선택된 cases-v4.sqlite를 사용합니다.
+
+실행 결과와 등록 영수증:
+~/DEV/TRANSFER/cm-oneclick-r8/STATUS.json
+~/DEV/TRANSFER/cm-oneclick-r8/CM51_REGISTERED.json
+로그: ~/DEV/TRANSFER/cm-oneclick-r8/logs/
+코드 백업: ~/DEV/TRANSFER/cm-oneclick-r8/code-backup/
+
+내부 JSON과 백업 파일은 실행 파일이 생성합니다. 직접 만들거나 수정하지 않습니다.
+최종 R8만 사용합니다. R7은 미발송 인계 빌드 실패 이력이며 R4/R6는 이전 단계별 안내입니다.

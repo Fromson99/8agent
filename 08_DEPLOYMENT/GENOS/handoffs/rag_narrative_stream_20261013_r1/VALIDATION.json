@@ -1,0 +1,53 @@
+{
+  "status": "PASS",
+  "environment": "WSL; synthetic generation and transport; no GENOS access",
+  "counts": {
+    "installation_states": 3,
+    "service_boots": 6,
+    "same_committed_checkout_mock_generation_gates": 3,
+    "commands": 52,
+    "installed_contracts": 146,
+    "known_r3_inventories": 330,
+    "implementation_files": 9,
+    "real_network_calls_in_delivery_tests": 0,
+    "real_model_inferences_in_delivery_tests": 0
+  },
+  "evidence": [
+    {
+      "path": "TEST_query_latency_20261007_r4.json.gz",
+      "sha256": "9474507a5f0ef06c0a0383bb857af7bb87d685d8fe0df7983ae9ce901255d5c9",
+      "commands": 17
+    },
+    {
+      "path": "TEST_query_latency_20261007_r3.json.gz",
+      "sha256": "c9c624873b5bd9887c3acd32efc266f8eb6558a3c4f034ea9865eb7947ef451b",
+      "commands": 17
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_display.json.gz",
+      "sha256": "a484c867e2467e477c9be9b29c5778a66448c7bd07dff7dc5e367d9fec932355",
+      "commands": 18
+    }
+  ],
+  "contracts": {
+    "CONTRACTS_query_latency_20261007_r3.xml": 69,
+    "CONTRACTS_query_latency_20261007_r4.xml": 77
+  },
+  "run_txt_sha256": "24205ca3b63c1365cd9eb07195b2d8d74978e660581de6202f7fc05c981acc47",
+  "source_binding_sha256": "f5b905d4f71cfe7b67d3d3998f3e16ae7d1ed054d54f57fe80bbf240aeb2c95d",
+  "external_workflow_editor": {
+    "path": "08_DEPLOYMENT/GENOS/handoffs/workflow_live_progress_20261008_r4/genos_rag_chat.py",
+    "sha256": "7e6996856d406f7cd8eb7e7fabb09531670ca26f38b1fdce4a1b5fa6f8275c7b"
+  },
+  "test_fixture_notes": "Field httpx transport mocked with its actual interface; workflow tests load existing R4 editor; native API fixture uses explicit runtime_root to avoid copying a host-specific workspace receipt. Production code unchanged by fixture adaptation.",
+  "test_sources": {
+    "test_installed_contracts.py": "e0eebde272b20013e3ff8e926b5f20ccb5efa0dedfac61212c5dd061d85b8290",
+    "test_delivery.py": "cf66881919ce53088c86fc61e4e7e7d2abe602382fec0509a32b73342620c63f"
+  },
+  "limitations": [
+    "External public qualification is separate from internal model performance.",
+    "Native API checks actual incremental paragraph emission using mock internal stream transport.",
+    "All330 inventory hashes checked, three installation states executed.",
+    "GENOS field revision/generation/commit and workflow rendering unverified."
+  ]
+}

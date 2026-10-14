@@ -11,6 +11,15 @@ _VERIFIED_STORE = {}
 _VERIFY_LOCK = threading.Lock()
 
 
+def verified_store_digest(path):
+    """Return the already verified pin only while the same file state holds."""
+    path=Path(path).resolve();stat=path.stat()
+    current=(stat.st_dev,stat.st_ino,stat.st_size,stat.st_mtime_ns,stat.st_ctime_ns)
+    with _VERIFY_LOCK:
+        return next((pin for (file,pin),state in _VERIFIED_STORE.items()
+                     if file==path and state==current), None)
+
+
 def verify_store_binding(path, expected):
     """Reuse a process-local hash proof while an immutable store's stat is fixed."""
     path = Path(path).resolve()
@@ -81,7 +90,11 @@ class Store:
         if self.manifest['schema_version'] not in {VERSION, 'term-source-generation-v2'}:raise ValueError('source generation migration required')
         if verify:
             verify_store_binding(self.path/'store.sqlite', self.manifest['store_sha256'])
-        self.db=sqlite3.connect((self.path/'store.sqlite').as_uri()+'?mode=ro',uri=True,check_same_thread=False)
+        if verify:
+            from .resident_data import POOL
+            self.db=POOL.connect(self.path/'store.sqlite', expected=self.manifest['store_sha256'])
+        else:
+            self.db=sqlite3.connect((self.path/'store.sqlite').as_uri()+'?mode=ro',uri=True,check_same_thread=False)
         self.db.row_factory=sqlite3.Row
         self.db.execute('PRAGMA query_only=ON')
         tables={r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type='table'")}

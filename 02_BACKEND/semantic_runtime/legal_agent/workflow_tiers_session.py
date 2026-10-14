@@ -157,7 +157,8 @@ class TiersSession(RelationsSession):
             with self.work.transaction(): self.persist_selection(view,legacy,plans)
         if errors:
             self.repair_record(view,errors)
-            raise ProposalError('source operations rejected; inspect errors and current source choices')
+            from .output_contract import PartialOperationError
+            raise PartialOperationError('source operations rejected; inspect errors and current source choices',self.work.run()['state_revision'])
 
     def corrective_actions(self,view,action):
         if (action.get('tool')=='search' and action.get('args',{}).get('mode')=='fulltext'
@@ -232,7 +233,8 @@ class TiersSession(RelationsSession):
                 errors.append({'field':'intent','message':'Candidates exist but none read. Choose a candidate read_action or explicitly CLARIFY; no-read is not no-source.'})
         if errors:
             self.repair_record(view,errors)
-            raise ProposalError('workflow operations rejected '+digest([(e.get('field'),e.get('message')) for e in errors])[:12]+'; inspect structured errors and retry; valid selections preserved')
+            from .output_contract import PartialOperationError
+            raise PartialOperationError('workflow operations rejected '+digest([(e.get('field'),e.get('message')) for e in errors])[:12]+'; inspect structured errors and retry; valid selections preserved',self.work.run()['state_revision'])
         return True
 
     def progress_key(self):
@@ -253,13 +255,12 @@ class TiersSession(RelationsSession):
                 try:
                     view=self.view('select_sources')
                     if not view['exact_evidence']: break
-                    d=self.gateway.generate('select_sources',view,'SourceSelectionDecision')
-                    self.commit_selection(view,d)
+                    d=self.generate_checked('select_sources','SourceSelectionDecision',self.commit_selection,initial_view=view,required=())
                     if d['choices']: break
                 except (ProposalError,BudgetExhausted,DeadlineExceeded,TransportError) as exc:
                     self.errors.append({'code':exc.code,'message':str(exc)})
                     with self.work.transaction(): self.work.event('SOURCE_SELECTION_RECOVERY',self.errors[-1])
-                    if not isinstance(exc,ProposalError): break
+                    break  # The owning checked decision already exhausted its correction.
             result=self.retrieval()
         return result
 

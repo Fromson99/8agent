@@ -1,5 +1,47 @@
 # MAIN — 원문과 용어 기반 탐색
 
+2026-10-14 현재 로컬 RAG MAIN은 `public-failure-guidance-20261014-r1`(포인터 generation **61**)이다. MAIN60의 모델·검색·데이터를 유지하며 검토 미완료와 기술 예외를 일관된 법률 검토 안내로 표시하고 오류 코드·실패 상태·요청 ID를 보존한다. 합성 프로토콜2400조합·관련298계약, 선택301파일과 실제 WSL `service.service` 정상조회/503/timeout/limit 경계를 확인했다. [MAIN 반영·검증·한계·원복](../04_EXPERIMENTS/ADR/ADR-0775-public-failure-main/MAIN_RESULT.txt). GENOS 현장 배포/편집기 저장/화면은 별도다.
+
+2026-10-13 MAIN60 전환 당시 로컬 RAG MAIN은 `assessment-gap-action-20261013-r1`(포인터 generation **60**)다. MAIN59의 정상 완료 shortcut 정책과 원문 세대를 보존하며 원문 gap의 잘못된 사실 질문 행동만 기존 조사로 연결한다. 고정 합성952조합·관련353계약, 작업/검증/선택301파일 및 실제 WSL `service.service` HEALTH/RAG_SEARCH200을 확인했다. [실패·충돌 필수 코딩 지침](../07_DOCS/REFERENCE/OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md)은 전역 구현 완료를 뜻하지 않는다. GENOS 현장 배포와 기존 복구4건은 별도다. [반영·근거·롤백](../04_EXPERIMENTS/ADR/ADR-0774-assessment-gap-action-main/MAIN_RESULT.txt).
+
+2026-10-13 MAIN58 전환 당시 로컬 RAG MAIN은 `source-provider-20261013-r2`(포인터 generation **58**)다. MAIN57의 원문·검색·모델·진단 저장을 유지하고 기관별 한국어 법령 번호 목록과 `internal → 내부 규정` 표시를 연결했다. 합성24조합과 후보/작업 각각97계약, 검증후보·선택297파일, 실제 `service.service` HEALTH/RAG_SEARCH200과 표시 소비자를 확인했다. 별도 작업의 모델 전송 수정은 작업 트리에 보존했으나 이번 MAIN58에는 섞지 않았다. GENOS 편집기 R2는 삼성메일로 발송했고 현장 저장/화면 검증은 별도다. [반영·근거·롤백](../04_EXPERIMENTS/ADR/ADR-0772-source-provider-display/MAIN_RESULT.md).
+
+2026-10-13 MAIN57 전환 당시 로컬 RAG MAIN은 `source-cards-20261013-r1`(포인터 generation **57**)이다. MAIN56의 모델·검색·원문·답변 토큰 스트리밍을 보존하면서 법령 경로가 실제 표시 소비자에 전달되도록 연결하고, 경로별 줄바꿈과 연속 원문 확인의 단일 카드 출력을 반영했다. 합성 경계24조합·후보/작업 각각48계약, 작업/검증/선택297파일과 실제 service.service HEALTH/RAG_SEARCH200 및 선택된 원문12개/카드1개를 확인했다. GENOS 편집기 R1을 삼성메일로 발송했으며 편집기 저장/현장 화면은 별도다. [반영·발송·한계·롤백](../04_EXPERIMENTS/ADR/ADR-0771-source-cards-main-wiring/MAIN_RESULT.md).
+
+2026-10-13 MAIN56 전환 당시 로컬 RAG MAIN은 `token-stream-20261013-r1`(포인터 generation **56**)이다. MAIN54의 bounded recall·shortcut·원문을 보존한 설명형 답변 MAIN55에 최종 텍스트 delta 도착 즉시 송신을 연결했다. 문장/문단 완료를 기다리지 않으며 누적 본문은 정본과 일치한다. 전송 경계40조합·직접142계약·선택 스트리밍64계약, 작업/검증/선택297파일과 실제 service.service 결속을 확인했다. 외부 공개 transport는 buffered이며 내부 streaming은 모의 경로로 검증했다. GENOS R2 ZIP은 삼성메일로 발송했으며 현장 배포/화면/내부 모델 검증은 별도다. [반영·AD·발송·한계·롤백](../04_EXPERIMENTS/ADR/ADR-0770-token-answer-stream/MAIN_RESULT.md).
+
+2026-10-13 MAIN54 전환 당시 로컬 RAG MAIN은 `bounded-wiki-recall-20261013-r1`(포인터 generation **54**)이다. MAIN53 위에 저장 시 검색 카드 구축 → 질문당 단회·최대3개 회수 → 기존 판단에서 관련성 선택 → 현재 원문 재확인 경로를 통합했다. 별도 위키 모델 호출0이며 불일치/오류 시 기존 조사를 계속한다. 기존 51개 기록을 원본 변경 없이 색인했다. 새22검사 통과·관련 회귀193검사 신규실패0(기존25실패), 작업/검증/선택296파일 및 실제 service.service 결속 확인. 내부CM은 외부 모델에 노출하지 않고 GENOS 현장 검증은 별도다. [반영·결과·한계·원복](../04_EXPERIMENTS/ADR/ADR-0768-bounded-wiki-public-qualification/MAIN_RESULT.md).
+
+2026-10-13 MAIN53 전환 당시 로컬 RAG MAIN은 `focused-rules-20261013-r1`(포인터 generation **53**)이다. 실제 입력의 가역 ID·카드 압축, 사용자 요구에 연결된 추가 탐색, 제목 부재 진단, 완료된 검색의 실제 진전 반영·원문 양태와 단일 규정 출력을 MAIN52 위에 통합했다. 새 공개1문항 정상 완료 쌍 입력 17.1% 감소, 핵심161검사·전체432검사 신규회귀0(기존15실패), 작업/검증/선택295파일과 실제 service.service 결속을 확인했다. 원문 세대와 캐시는 유지하며 GENOS 현장 배포는 별도다. [반영·검증·한계·원복](../04_EXPERIMENTS/ADR/ADR-0761-scoped-title-public-qualification/MAIN_RESULT.md).
+
+2026-10-12 MAIN52 전환 당시 로컬 RAG MAIN은 `compact-navigation-20261012-r1`(포인터 generation **52**)이다. 직접 원문 우선 안내·유효한 구조 필터 결속·외부 스키마 참조 공유·중복 원문 메타데이터 축소를 MAIN51 위에 통합했다. 공개3문항 근거 응답1→3, 전체 입력14.7% 감소지만 기준 실패2건을 포함하며 정상 완료 쌍의 절감은0.43%다. 핵심59검사·전체330검사 신규회귀0(기존15실패), 작업/검증/선택290파일과 실제 service.service binding을 확인했다. 별도 추가 압축729/730은 기준 미달·외부429로 미반영했다. 원문 세대는 유지하며 GENOS 현장은 별도다. [반영·한계·원복](../04_EXPERIMENTS/ADR/ADR-0728-navigation-input-public-qualification/MAIN_RESULT.md).
+
+2026-10-12 MAIN51 전환 당시 로컬 RAG MAIN은 `source-recovery-20261012-r1`(포인터 generation **51**)이다. 정확한 부족 대상·현재 원문 재사용·일시적 도구 실패 복구·부분 묶음 읽기 재개·요청 경계와 판단 내용 보존을 기존 MAIN50에 통합했다. 신규40계약과 작업/후보311검사 대비 신규 회귀0(기존15실패 유지), 공개 신규2문항 비교와 실제 service.service 선택, 서빙289파일 일치를 확인했다. 구조/fulltext는 선택형이며 원문 세대는 유지한다. 의미적 검색 판단·전체 CM51·GENOS 현장은 별도다. [반영·검증·한계·원복](../04_EXPERIMENTS/ADR/ADR-0725-source-recovery-public-qualification/MAIN_RESULT.md).
+
+2026-10-09 전환 당시 로컬 RAG MAIN은 `compact-input-20261009-r1`(포인터 generation **50**)이다. MAIN49 위에 미선택 법령 상세 지연 제공, 간결한 탐색 지침·전체 행동 이력, 탐색 원문 중복 축소를 연결했다. 신규 공개3질문 입력 38.3% 감소·모델 12→12회, 알려진2질문·후보/작업288계약과 실제 service.service 선택을 확인했다. 원문 세대는 유지하고 구조/fulltext는 계속 선택형 도구다. GENOS 배포는 별도다. [실제 반영·검증·롤백](../04_EXPERIMENTS/ADR/ADR-0712-compact-direct-read-context/MAIN_RESULT.md).
+
+2026-10-09 MAIN49 전환 당시 로컬 RAG MAIN은 `grounded-entry-20261009-r1`(포인터 generation **49**)이다. MAIN48의 표시·계측·판단·원문 세대 위에 새 질문 앞단 통합, 실제 법령 제목 힌트, 모델이 선택하는 구조/fulltext 검색을 연결했다. 후보·작업271계약과 공개3질문 paired 검증, 작업·검증·선택287파일 및 실제 service.service 선택을 확인했다. 이유/행동 불일치와 난이도별 예산은 후속이며 GENOS 배포는 별도다. [실제 반영·검증·롤백](../04_EXPERIMENTS/ADR/ADR-0710-grounded-entry-profile-bound-main/MAIN_RESULT.md).
+
+2026-10-09 MAIN48 전환 당시 로컬 RAG MAIN은 `compact-progress-20261009-r1`(포인터 generation **48**)이다. MAIN47의 구조 우선 검색·판단·원문 세대를 유지하면서 사용자 진행 표시를 최대5단계로 압축하고 최종 접힘에 실제 모델 전송 시도별 시간·횟수와 서버 요청 시간을 연결했다. 전체 내부 로그는 보존한다. 계약233개와 합성 표시20조합, 작업·검증·선택285파일 해시와 실제 서비스 선택을 확인했다. 신규 외부 모델 호출0회이며 GENOS 현장 배포는 별도다. [검증·선택·롤백](../04_EXPERIMENTS/ADR/ADR-0704-compact-progress-call-metrics/MAIN_RESULT.md).
+
+2026-10-09 MAIN47 전환 당시 로컬 RAG MAIN은 `structured-judgment-20261009-r1`(포인터 generation **47**)이다. MAIN46의 원문·색인·폴더 세대를 보존하면서 구조 우선 검색 → 선택한 문서/하위 구조 안의 본문 검색, 승인 판단·조건/예외 계약, 선택 범위 묶음 읽기·재개, 로그와 공개 표시 분리를 통합했다. 새 공개3문항과 알려진2회귀를 동일 코드로 검증했고 작업·검증 후보·선택 릴리스의 서빙284파일 해시와 실제 `service.service` HEALTH/RAG_SEARCH binding을 확인했다. 전체 MAIN의 상위 단계와 GENOS 현장 배포는 별도다. [검증·실제 선택·롤백](../04_EXPERIMENTS/ADR/ADR-0703-exception-coupled-final-holdout/MAIN_RESULT.md).
+
+2026-10-08 전환 당시 로컬 RAG MAIN은 `native-cm-serving-20261008-r1`(포인터 generation **46**)이다. 선택 원문은 `term-source-8729f978a28924cb8c5b`의 1,546문서다. 모델 없이 구조화한 팀 RAW 1,544문서에 CM 필수 공개 원문 2개를 명시적으로 보충했고, compact-v2/navigation-v7/unit 전문 색인 255,777단위를 선택했다. CM 공통 51문항의 근거 98개를 21문서의 새 조문·span에 결속하고, 원문 해시·문서 권한·개인 이력 보존을 확인했다. 실제 루트 `service.service`에서 frozen 코드와 새 데이터 선택, HEALTH, 원문 읽기를 검증했다. 검증의 모델 호출은 0회이며 답변 품질 인증과 GENOS 배포는 수행하지 않았다. 외부 모델의 공개 원문 범위는 기존 승인 원문과 같은 65문서이며 내부 CM 질문의 반출 제한은 유지한다. [활성 선택·코드·데이터·CM·롤백 기록](../09_ARTIFACTS/AUDITS/20261008-native-cm-serving/completion.json).
+
+아래 MAIN45 설명은 이전 선택 상태의 기록이다. 병행 판단 루프·통신 코드의 미통합 상태에 관한 설명은 MAIN46 전환 당시 기록이며, 현재 MAIN48의 선별 반영 범위는 위 완료 기록을 따른다.
+
+2026-10-07 현재 로컬 RAG MAIN은 `session-runtime-v6-20261007-r1`(generation **45**)다. 세션 멀티턴에서 user_wiki 생성·조회·개인 질문 이력의 자동 모델 입력과 별도 signing을 제거했다. 세션 상태·shortcut 공통 저장소·legal_wiki 컴파일과 재구축·기존 플랫폼/API 경계는 유지한다. 후보/선택268파일 및 실제 새 service.service의 binding을 확인했고 신규30개·동일 회귀88개와 유지 계약35개를 통과했다. 병행 작업의 미선택 latency/engine 변경은 보존했으며 해당 pending 작업까지 승격한 것은 아니다. 원문 세대와 이전 릴리스·개인 위키 기록은 보존한다. GENOS 현장 배포는 별도다. [변경·실제 연결·원복](../04_EXPERIMENTS/ADR/ADR-0681-session-runtime-no-user-wiki-signing/MAIN_RESULT.md).
+
+2026-10-07 루트 `service.py`/`service.service`에서 v5/v6의 요청당 모델·도구·시간·추가 검색·판단 후 재조사 한도를 환경 설정으로 선택할 수 있게 연결했다. 로컬 MAIN45의 frozen 엔진/프로필·원문 세대·포인터는 유지하며, 실제 적용한 한도와 전체 프로필 해시·서비스 입구 해시를 HEALTH의 release binding에 별도로 표시한다. 기본값은 모델40회(최종 판단3회 예약), 도구1024회,1800초, 추가 검색8회, 재조사2회다. GENOS 현장 반입·배포는 별도다. [설정·적용·조회](../07_DOCS/REFERENCE/OPERATIONS/UNIFIED_LEGAL_AGENT_20261002.md).
+
+2026-10-08 **작업 코드**에 법률 에이전트 판단 루프 회복을 반영했다(로컬 MAIN45·GENOS 미반영). 판단 완료 계약을 `investigation-completion-v2`로 올리고 과거 v1 route는 원래 렌더링으로 검증한다. ① ASSESS가 낸 원문 부족은 조사 라운드로 열리고, 탐색의 FINISH는 부족마다 RESOLVED(새 채택 원문)/NOT_AVAILABLE(조사 후 없음)/NOT_NEEDED를 기록해야 하며, 같은 부족(문서·조문 표기 기준)은 다시 조사로 되돌아가지 않는다. ② 거절된 탐색 결정·이전 검색식·행동별 실제 결과를 다음 화면에 보이고, 조문번호가 다른 검색을 같은 검색으로 막지 않는다. ③ ASSESS 2회 구조 충돌은 422 대신 부분 충족 제한 답변으로 정리하고, 채택 없이 멈춘 탐색은 실제 전달한 원문으로 판단하며(DEFER·EXCLUDE 제외), 모델 PENDING도 확인 원문이 있으면 제한 답변으로 끝낸다. ④ 답변은 쟁점별로 묶고 한계 문구에 빠진 문서·조문과 조사 결과·종료 사유를 표시한다. ⑤ 사용자 재조사·목적 정정은 이전 조사 상태를 힌트로 새로 시작하거나 다시 열며, 같은 세션의 이전 질문 조사 요약을 새 질문에 단서로 준다. 요청별 재진입 한도는 새 요청마다 초기화한다. ⑥ 부분 답변 route는 절차 재생에 활성화하지 않는다. 검증은 합성 원문·가짜 모델 계약 테스트이며 실제 모델 품질·GENOS 성능은 미확인이다. [설치 영수증·롤백](../90_RUNTIME/LEGAL_AGENT_FIX_20261008/receipt.json), [계약 테스트](../05_TESTS/CONTRACTS/test_judgment_loop_recovery.py).
+
+아래는 이전 전환 시점의 이력이다.
+
+2026-10-07 **조사 완료 계약의 로컬 MAIN**은 `investigation-completion-v6-20261007-r1`(generation **44**)다. 기존7단계와 전체 MAIN의 상위 파이프라인을 유지하면서 읽기/채택 계약, 보류·복귀, 진전·예산·재개, 부족분 재조사, 원문 span 인용, 확정 판단 표시, 오류 분류와 워크플로우 소비를 개선했다. 검증 후보·작업 코드·선택 릴리스268파일 및 실제 새 service.service의 실행 지문을 확인했다. 30개 핵심 계약 및25개 소비자 계약과 새로운 주 조문16질문, 알려진12회귀 결과·의미 오류·미답변을 분리해 기록했다. 사용자 지시에 따라 세부 정답100%를 요구하지 않았으며 심각한 무결성 기준과 quality_certified=false를 유지한다. GENOS 현장 실행은 별도다. [현재 결과와 원복](../04_EXPERIMENTS/ADR/ADR-0680-investigation-main-consumer-integration/MAIN_RESULT.md).
+
+아래는 이전 전환 시점의 이력이다.
+
 2026-10-07 **조사 제어 통합의 로컬 MAIN**을 `investigation-control-v6-20261007-r1`(활성 포인터 generation **43**)로 전환했다. 기존 v6/AD/shortcut·wiki/SQL·NFS·서비스 변경 위에 법령별 탐색·요청 단위 우선 정렬, 정확한 확보·전달·채택 범위, 저장 원문 재열람, 쟁점별 충분성·gaps, 번호가 있는 행동·이유 체인, RETURN_TO와 제한된 재진입을 연결했다. 검토 파일67개를 작업 코드에 통합했고 검증 후보·작업 코드·선택 릴리스의 서빙265파일 해시가 같다. 계약146개와 동결 독립32질문·기존8회귀 및 실제 새 `service.service`의 HEALTH/RAG_SEARCH/RAG_ASK를 확인했다. 사용자 지시에 따라 세부 판단 실수는 개선 기록으로 분리하며 게시된 원문·권한·상태·실행 지문의 무결성 기준을 유지한다. 원문 세대·공개 승인145문서·Qwen3.8 정책을 유지하고 GENOS 현장 배포·Git main 병합·전문가 품질 인증은 별도다. [실제 배선·결과·원복](../04_EXPERIMENTS/ADR/ADR-0677-investigation-main-integrity-generalization/MAIN_RESULT.md).
 
 평가 프로필과 실제 서비스 프로필은 전송 재시도 1회→0회 보정 한 항목이 다르다. 이 보정은 동결된 서비스 팩터리에도 존재하며 실제 실행 지문과 일치함을 별도 기록했다. 실제 확인 답변에서 질문 밖의 회사 유형·조문 연결 오류도 발견해 원문 근거와 함께 남겼다. 실행 배선 완료와 모든 세부 설명의 정답 보증은 구분한다.
@@ -202,8 +244,8 @@ GENOS 세대 실행은 기존 내부 모델 환경 파라미터 결속을 유지
 | 단계 | 진입점 | 출력·소비자 |
 |---|---|---|
 | 용어집 | `pipeline.py glossary …` | 출처별 사전·정의·관계. `GLOSSARY_SCHEMA.json`은 용어집 검토 계약만 소유 |
-| 통합 구축 | `pipeline.py build-all --run-id NAME --execute [--reference-model-profile PROFILE]` | 전체 문서 구조화 → 명시 원문 통합 → 기존·신규 용어 후보 검토 → 결정론 연결 → 설정한 모델의 참조 해소·자동 승인 → 색인·서빙 후보 검증. 기존 `--reference-review-state` 소비도 유지 |
-| 단계별 통합 구축 | `pipeline.py document-release select/merge/prepare/review/index/status/verify` | 종료된 구조화의 성공분을 명시 새 범위로 선택 가능. 원래 실패 기록·제외 사유와 해시를 보존하며 통합/검토/색인을 각각 실행·재개. [실행 계약](../07_DOCS/REFERENCE/OPERATIONS/GENOS_RELEASE_STAGES.md) |
+| 통합 구축 | `pipeline.py build-all --run-id NAME --execute` | MAIN 기본 `native-no-models`: 팀 RAW 원본 직접 구조화(VLM off, 로컬 PDF) → 명시 원문 통합·문서 근거 교체 → GENOS 최종 compact-v2 native 연결/navigation-v7/storage-v3/단위 전문 색인. 모델 0회, 서빙 자원 포함 후보와 감사 원장 생성·오프라인 검사. 활성 릴리스 전환은 별도. 기존 모델 검토 구축은 `--with-model-review`로 명시 |
+| 단계별 통합 구축 | `pipeline.py document-release select/merge/prepare/review/index/reindex/status/verify` | 종료된 구조화의 성공분을 명시 새 범위로 선택 가능. `reindex --from-run-id PREPARED --run-id NEW`는 GENOS compact-v2 구현으로 준비된 원문·용어집·완료 지식 묶음을 재사용하며 모델을 호출하지 않는다. 저장 방식과 단위 전문 색인을 명시 고정하고 후보의 서빙 자원·오프라인 계약을 검사한다. 원래 실패 기록·제외 사유와 해시를 보존한다. [실행 계약](../07_DOCS/REFERENCE/OPERATIONS/GENOS_RELEASE_STAGES.md) |
 | 입력·구조화 | `pipeline.py build-data-stages --stage structure --run-id NAME --execute` | `STRUCTURE/<fingerprint>/source.sqlite`; 문서·구조 마디·본문만 저장. PDF 구조 복원의 VLM은 유지 |
 | 색인·적재 | 같은 명령의 `--stage index` 또는 `all` | `TERM/<run>/<document>/generation`: 원문 세대와 용어·정의·참조 탐색 색인. `term_generation.build_generation`이 같은 계약으로 생성 |
 | RAG | `service.py` → `semantic_runtime.app` → PIPELINE의 `legal-rag` | 원문·용어 탐색 전용. QueryPlan/CardSet·규칙·조건 평가·의미 그래프 fallback 없음 |

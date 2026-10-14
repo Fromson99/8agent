@@ -30,9 +30,10 @@ def ro(path):
 
 
 class LinkProjector:
-    def __init__(self, db, store, links, glossary, report, knowledge=None, *, direct_audit=False):
+    def __init__(self, db, store, links, glossary, report, knowledge=None, *, direct_audit=False, audit_profile='materialized'):
         self.db, self.store = db, store
         self.direct_audit = direct_audit
+        self.audit_profile = audit_profile
         if direct_audit:
             from .navigation_build import AuditSQL
             self.db = AuditSQL(db)
@@ -83,7 +84,7 @@ class LinkProjector:
         if direct_audit and db.execute("SELECT 1 FROM sqlite_master WHERE name='term_surface'").fetchone():
             self.visited = {r[0] for r in db.execute("SELECT item FROM navigation_checkpoint WHERE stage='document'")}
             return
-        self.db.executescript("""
+        schema = """
           CREATE TABLE term_surface(term_id TEXT,key TEXT,text TEXT,kind TEXT,
             PRIMARY KEY(term_id,key,text,kind));
           CREATE INDEX term_surface_key ON term_surface(key);
@@ -100,7 +101,17 @@ class LinkProjector:
             PRIMARY KEY(term_id,source_id,origin));
           CREATE TABLE source_literal(id TEXT PRIMARY KEY,document_id TEXT,text TEXT);
           CREATE INDEX source_literal_scope ON source_literal(document_id);
-        """)
+        """
+        if audit_profile == 'factorized-v1':
+            schema = schema.replace("""          CREATE TABLE occurrence_evidence(occurrence_id TEXT,catalogue_id TEXT,term_id TEXT,
+            source_id TEXT,status TEXT,reason TEXT,PRIMARY KEY(occurrence_id,catalogue_id));
+          CREATE TABLE occurrence_origin(term_id TEXT,source_id TEXT,origin TEXT,
+            PRIMARY KEY(term_id,source_id,origin));
+""", '')
+        self.db.executescript(schema)
+        if audit_profile == 'factorized-v1':
+            from .factorized_audit import create
+            create(db)
         self._catalogue()
         self._review_relations()
 
@@ -239,6 +250,9 @@ class LinkProjector:
             "AND json_extract(json,'$.scope_document_id') IS NOT NULL AND NOT EXISTS(SELECT 1 FROM link_occurrence o "
             "WHERE o.key=link_catalogue.key AND o.status='ACCEPTED' AND o.document_id=json_extract(link_catalogue.json,'$.scope_document_id'))")
         execute("UPDATE link_catalogue SET status='ACCEPTED' WHERE status='VALID'")
+        if self.audit_profile == 'factorized-v1':
+            from .factorized_audit import finish
+            return finish(self, execute)
         execute("CREATE TEMP TABLE scoped_link_catalogue AS SELECT id,key,term_id,status,reason,"
                         "json_extract(json,'$.scope_document_id') AS scope_document_id FROM link_catalogue")
         execute("CREATE INDEX temp.scoped_link_catalogue_key ON scoped_link_catalogue(key)")
@@ -258,9 +272,16 @@ class LinkProjector:
         before_pairs = self.db.execute('SELECT count(*) FROM occurrence').fetchone()[0] if self.direct_audit else 0
         added = execute("INSERT OR IGNORE INTO occurrence SELECT term_id,source_id FROM occurrence_evidence WHERE status='ACCEPTED'").rowcount
         if self.direct_audit:added = self.db.execute('SELECT count(*) FROM occurrence').fetchone()[0]-before_pairs
+        return self.finish_counts(execute, added)
+
+    def finish_counts(self, execute, added, *, factorized=False):
         counts = {}
         for table in ("link_occurrence", "link_catalogue", "occurrence_evidence"):
-            counts[table] = dict(execute("SELECT status,count(*) FROM " + table + " GROUP BY status"))
+            if factorized and table == 'occurrence_evidence':
+                from .factorized_audit import evidence_counts
+                counts[table] = evidence_counts(self.db)
+            else:
+                counts[table] = dict(execute("SELECT status,count(*) FROM " + table + " GROUP BY status"))
         counts["candidate_kinds"] = {kind: n for kind, n in execute("SELECT kind,count(*) FROM link_catalogue GROUP BY kind")}
         counts["input_occurrences"] = self.links.execute("SELECT count(*) FROM occurrence").fetchone()[0]
         counts["added_term_source_pairs"] = added

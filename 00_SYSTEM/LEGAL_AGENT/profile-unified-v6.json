@@ -46,6 +46,14 @@
     "search_rounds": 8,
     "allow_unresolved_completion": true,
     "investigation_control": true,
-    "assessment_reentry_limit": 2
-  }
+    "assessment_reentry_limit": 2,
+    "completion_contract": true,
+    "structure_first": true,
+    "batch_selected_pages": true,
+    "selectable_search": true,
+    "compact_input": true,
+    "completion_policy_version": "investigation-completion-v8"
+  },
+  "request_entry_policy": "fused-title-v1",
+  "answer_presentation": "grounded-narrative-v1"
 }

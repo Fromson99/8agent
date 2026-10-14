@@ -1,0 +1,26 @@
+"""Reusable result writer; reports measured status without changing frozen gates."""
+from pathlib import Path
+import json,hashlib
+from datetime import datetime,timezone
+R=Path(__file__).resolve().parents[3];number=int(Path(__file__).parent.name[-4:]);A=next((R/'04_EXPERIMENTS/ADR').glob(f'ADR-{number:04}-*'));O=A/'artifacts/run-001'
+read=lambda p:json.loads(p.read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+def put(p,v):p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+m=read(A/'실험/manifest.json');r=read(O/'result.json');ok=r['strict_success'];failed=[k for k,v in r['checks'].items() if not v];holdout=not m['in_sample'];counts={a:len(v['cases']) for a,v in r['by_arm'].items()}
+table='| arm | 원문 근거 응답 | 물리 호출 | 입력 토큰 | 요청 시간 합계 |\n|---|---:|---:|---:|---:|\n'
+for a,v in r['by_arm'].items():table+=f"| {a} | {v['supported']}/{counts[a]} | {v['calls']} | {v['input_tokens']:,} | {v['request_seconds']:.1f}초 |\n"
+if (A/'artifacts/early-stop.json').exists():table+='\n주의: 계획6요청 중 완료4·작업자 중단1·미실행1. 합계로 속도나 정답률을 비교하지 않는다. [중단과 의미 판정](SEMANTIC_REVIEW.md).\n'
+decision=('동결 기준 통과. 동일 코드의 로컬 MAIN 승격 후보.' if holdout else '계약 검증 완료. 별도 공개 분리 검증이 필요하며 이 결과만으로 승격하지 않는다.') if ok else '동결 기준 미충족: '+', '.join(failed)+'. 실패 기록 보존, MAIN50 유지.'
+for q in m['questions']:
+ p=A/'실험'/q['file'];s=p.read_text()+'\n\n| arm | HTTP | 호출 | 입력 토큰 | 시간 | 근거 응답 |\n|---|---:|---:|---:|---:|---|\n'
+ for a,v in r['by_arm'].items():
+  c=next((x for x in v['cases'] if x['case_id']==q['case_id']),None)
+  if c:s+=f"| {a} | {c['http_status']} | {c['physical_model_attempts']} | {c['usage']['input_tokens']:,} | {c['request_seconds']:.3f} | {c['supported_response']} |\n"
+ s+='\n실제 모든 입출력·중간 호출·원문·실행 원장은 ../artifacts/run-001/raw.tar.gz에 무손실 보존한다. raw-archive.json의 파일별 경로·바이트·SHA와 복원 방법을 따른다. 전송 전 질문 및 원문 gold를 분리했고 원시 기록에는 생략이 없다. [사례 분석](../SEMANTIC_REVIEW.md), [단계별 회수 원장](../artifacts/run-001/retrieval-ledger.json.gz). 독립 법률 정답률은 인증하지 않았다.\n';p.write_text(s);q['sha256']=sha(p)
+put(A/'실험/manifest.json',m)
+contract=read(A/'artifacts/contract-result.json')
+parts=[('결정 요약',decision),('문제와 변경 전 구조','MAIN50에는 구조·본문 검색과 오류 차단이 있지만 재개 상태 충돌, 다른 조문 조회에 의한 잘못된 부재, 현재 전달 범위 재읽기와 무진행 재조사가 관찰됐다. ADR0720의 v5 후보 위에 문서 범위 도구, 현재 원문 재사용, 일시적 도구 오류 분류와 대체 경로를 통합했다.'),('가설과 사전 판정 기준','artifacts/design/criteria.json을 구현·모델 실행 전에 고정했다. 심각한 인용·권한·상태·해시·내용 손실은 통과할 수 없고, 세부 의미 오류와 표본 지연은 분리 기록한다. 모델 시간 개선을 보장하지 않는다.'),('실험 설계',('새 공개 원문2문항의 baseline/후보4요청.' if holdout else '명시 승인된 CM019·050·051을 기존 MAIN50/후보로 비교한6요청. 알려진 회귀이고 holdout이 아니다.')+' 모든 요청 순서·총 예산을 미리 고정하고 한 요청씩 실행했다. 재실행·교체하지 않았다.'),('데이터·모델·재현성','선택 원문 세대와 공개65문서를 유지했다. Qwen3.8 / Parasail FP8 / reasoning none / fallback 없음. 기준답·필수근거는 오프라인 전용이다. 동결 코드, 질문, 프로필, runner, 모델 정책 SHA를 기록했다.'),('결과',table+'\n[측정 결과](artifacts/run-001/result.json), [의미와 실패 분석](SEMANTIC_REVIEW.md). 근거 응답 수와 독립 법률 정답 수는 다르다.'),('사례별 오류 분석','신규 경계 검사 '+str(contract['new_contracts']['tests'])+'개 통과, 기존 비교 대비 신규 회귀 '+str(len(contract['new_regressions']))+'개. 기존15실패는 양쪽에서 유지되며 통과로 바꾸지 않았다. ADR0723의 네 경계 실패는 ADR0724에서 수정하고 재현 검사로 통과했다. 그 코드를 변경 없이 상속했다. 실제 사례의 판정·누락은 별도 분석에 남겼다.'),('비용·지연·회수 규모','입력·출력 토큰, 실제 물리 호출, 공급자 기록 비용, 요청시간·모델시간을 결과에 집계했다. catalogue/recall/acquired/presented의 canonical 원장과 실패를 모두 보존했다. 소표본이며 p95는 대표 서비스 성능이 아니다.'),('해석','같은 부족 대상과 원문 범위, 실제 완료된 행동 receipt를 코드로 연결했다. 조회 실패·부분 조회·권한거절·통신 미확인은 원문 부재 증명이 아니다. 모델이 의미적으로 올바른 대상을 고른다는 일반 보증은 하지 않는다.'),('한계와 일반화 가능 범위','소표본 외부 모델 검증이다. CM51 전체·GENOS 현장·동시성 성능·독립 법률 정답률은 미검증이다. 기존15 계약 실패와 전역 graph8 역사 오류는 별도로 보존한다.'),('운영 결정·롤백 조건',decision+' 사용자 지시가 로컬 MAIN 반영을 포함한다. 통과한 동일 코드만 선별 통합, hash 고정 prepare/check/apply --confirm-main, 포인터와 실제 service.service 선택을 확인한다. GENOS 배포와 Git main 병합은 별도이며 이전 MAIN50과 원복 영수증을 보존한다.'),('재현 명령',f'06_TOOLS/EXPERIMENTS/adr_{number:04}/run_all.py, audit.py, report.py, archive.py. 완료 실행은 덮어쓰지 않는다. 신규 실행·수정은 새 ADR에 기록한다.')]
+front=f"---\nadr_id: ADR-{number:04}\ntitle: 구조 대상·원문 재사용·실패 복구 {'공개 검증' if holdout else '통합 구현'}\nstatus: {'Accepted' if ok else 'Rejected'}\ndecision_date: 2026-10-12\nphase: {'holdout' if holdout else 'probe'}\nin_sample: {str(m['in_sample']).lower()}\ndecision_eligible: {str(m['decision_eligible']).lower()}\nmain_wiring: {'promotion-candidate' if ok and holdout else 'unchanged'}\ncreated_at: {m['reservation']['created_at']}\nupdated_at: {m['reservation']['updated_at']}\nowner: Codex\nwork_status: in_progress\n---\n\n"
+(A/'README.md').write_text(front+'\n\n'.join(f'## {i}. {h}\n\n{b}' for i,(h,b) in enumerate(parts,1))+'\n')
+(A/'실험/README.md').write_text('# 실행 기록\n\n'+table+'\n'+'\n'.join(f"- [{q['case_id']}]({q['file']})" for q in m['questions'])+'\n')
+put(A/'artifacts/manifest.json',{'schema_version':'adr-artifacts-v1','adr_id':f'ADR-{number:04}','created_at':m['reservation']['created_at'],'files':[{'path':str(p.relative_to(R)),'sha256':sha(p),'bytes':p.stat().st_size,'description':'Frozen source/input, exact output, validation or lossless restore receipt','contains_raw_prompts_and_outputs':p.name in ('result.json','raw.tar.gz')} for p in (A/'artifacts').rglob('*') if p.is_file() and p.name!='manifest.json' and not any(x in p.parts for x in ('provider','runtime','binding-runtime','sessions','working-backup','setup-check'))]})
+print('Recorded',ok,failed)

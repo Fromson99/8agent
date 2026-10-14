@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+task_transfer="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+task_reports="$task_transfer/cm-source-diag-r1"
+mkdir -p -- "$task_reports"
+task_output="$(mktemp -d "$task_reports/$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX")"
+task_log="$task_output/DIAGNOSIS.log"
+exec > >(tee -a "$task_log") 2>&1
+trap 'task_exit=$?; printf "EXIT=%s LOG=%s\n" "$task_exit" "$task_log"' EXIT
+printf 'CM 원문 읽기 전용 진단 시작 LOG=%s\n' "$task_log"
+python3 - "$task_transfer" "$task_output" <<'CM_SOURCE_DIAG_PY'
+"""Read-only document identity diagnosis for a failed CM R8 package check.
+
+This reports the selected binding; it never repairs a hash, selects a replacement
+document, imports a package, commits code, or invokes a model.
+"""
+from collections import Counter, defaultdict
+import hashlib
+import json
+from pathlib import Path
+import sqlite3
+import sys
+import unicodedata
+
+VERSION = 'GENOS_CM_SOURCE_DIAG_20261007_R1'
+PACKAGE_SHA256 = 'bcf9705d67270965a937d3c79c6506078d4272d94821fd838141672655f8ef9f'
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def signature(path):
+    s = path.stat()
+    return s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns
+
+
+def normalized_name(name):
+    # Suggestions only. Never used as an accepted document identity.
+    return ''.join(unicodedata.normalize('NFKC', name).split())
+
+
+def compare(package, db):
+    expected = defaultdict(set)
+    for case in package['cases']:
+        for entry in case['entries']:
+            expected[entry['document_name']].add(entry['source_artifact_sha256'])
+    documents = [dict(row) for row in db.execute(
+        'SELECT document_id,name,source_artifact_sha256 FROM document ORDER BY name,document_id')]
+    by_name = defaultdict(list)
+    for doc in documents:
+        by_name[doc['name']].append(doc)
+    results = []
+    for name, fingerprints in sorted(expected.items()):
+        candidates = by_name[name]
+        for fingerprint in sorted(fingerprints):
+            matched = [d for d in candidates if d['source_artifact_sha256'] == fingerprint]
+            state = ('EXACT' if len(matched) == 1 else
+                     'EXACT_AMBIGUOUS' if len(matched) > 1 else
+                     'ARTIFACT_HASH_DIFFERS' if candidates else 'NAME_MISSING')
+            suggestions = []
+            if not candidates:
+                key = normalized_name(name)
+                suggestions = [d for d in documents if normalized_name(d['name']) == key]
+            results.append({'document_name': name, 'expected_source_artifact_sha256': fingerprint,
+                            'classification': state, 'name_matches': candidates,
+                            'spacing_name_suggestions_only': suggestions})
+    return {'document_count': len(expected), 'selected_document_count': len(documents),
+            'counts': dict(Counter(r['classification'] for r in results)), 'documents': results}
+
+
+def inspect(transfer):
+    transfer = Path(transfer).resolve(strict=True)
+    if transfer.name != 'TRANSFER':
+        raise ValueError('기존 DEV/TRANSFER에서 실행해야 합니다.')
+    root = transfer.parent
+    config_path = root/'00_SYSTEM/GENOS_SERVING_PATHS.json'
+    status_path = transfer/'cm-oneclick-r8/STATUS.json'
+    package_path = transfer/'cm-oneclick-r8/CM51_SOURCE_PACKAGE.json'
+    watched = [config_path, status_path, package_path]
+    before = {str(p): signature(p) for p in watched}
+    config_raw = config_path.read_bytes()
+    config = json.loads(config_raw)
+    status = json.loads(status_path.read_bytes())
+    package_raw = package_path.read_bytes()
+    if sha(package_raw) != PACKAGE_SHA256:
+        raise ValueError('R8 원본 패키지 해시가 다릅니다. 기존 자료를 보존했습니다.')
+    if config.get('schema_version') != 'genos-serving-paths-v1' or config.get('selection') != 'operator-fixed':
+        raise ValueError('R8의 명시 서빙 경로 설정이 아닙니다.')
+    generation = Path(config['generation']).resolve(strict=True)
+    if generation != Path(status['generation']).resolve(strict=True):
+        raise ValueError('R8 실행 기록과 서빙 설정의 generation 경로가 다릅니다.')
+    manifest_path = generation/'manifest.json'
+    database_path = generation/'store.sqlite'
+    for path in (manifest_path, database_path):
+        before[str(path)] = signature(path)
+    manifest_raw = manifest_path.read_bytes()
+    manifest = json.loads(manifest_raw)
+    manifest_sha = sha(manifest_raw)
+    if manifest_sha != config['generation_manifest_sha256'] or manifest_sha != status['generation_manifest_sha256']:
+        raise ValueError('R8 실행 후 generation manifest가 달라졌습니다.')
+    db = sqlite3.connect(database_path.as_uri()+'?mode=ro', uri=True)
+    try:
+        db.row_factory = sqlite3.Row
+        db.execute('PRAGMA query_only=ON')
+        result = compare(json.loads(package_raw), db)
+    finally:
+        db.close()
+    if any(signature(Path(p)) != sig for p, sig in before.items()):
+        raise ValueError('진단 중 선택 자료가 변경됐습니다. 결과를 사용하지 않습니다.')
+    return {'revision': VERSION, 'operation': 'READ_ONLY_DOCUMENT_IDENTITY_DIAGNOSIS',
+            'code_root': str(root), 'generation': str(generation),
+            'generation_id': manifest['generation_id'], 'generation_manifest_sha256': manifest_sha,
+            'store_sha256_manifest_pin': manifest['store_sha256'],
+            'store_hash_reverified_by_this_diagnosis': False,
+            'serving_config_sha256': sha(config_raw), 'package_sha256': sha(package_raw),
+            'python_executable': sys.executable, 'python_version': sys.version.split()[0],
+            'package_built_against': json.loads(package_raw)['built_against'],
+            'sqlite_query_only': True, 'registration_performed': False, 'model_calls': 0,
+            **result}
+
+
+def main(argv=None):
+    args = sys.argv[1:] if argv is None else argv
+    if len(args) != 2:
+        raise ValueError('TRANSFER와 새 진단 출력 폴더가 필요합니다.')
+    transfer, output = map(Path, args)
+    report = inspect(transfer)
+    output = output.resolve(strict=True)
+    if output.parent != transfer.resolve(strict=True)/'cm-source-diag-r1':
+        raise ValueError('진단 결과는 TRANSFER/cm-source-diag-r1에 저장해야 합니다.')
+    target = output/'SOURCE_DIAGNOSIS.json'
+    with target.open('x', encoding='utf-8') as handle:
+        json.dump(report, handle, ensure_ascii=False, indent=2)
+        handle.write('\n')
+    print('선택 generation: '+report['generation'], flush=True)
+    print('문서 대조 '+str(report['document_count'])+'종: '+json.dumps(report['counts'], ensure_ascii=False), flush=True)
+    labels = {'NAME_MISSING': '문서명 없음', 'ARTIFACT_HASH_DIFFERS': '원본 해시 다름',
+              'EXACT_AMBIGUOUS': '동일 원본 중복'}
+    for row in report['documents']:
+        if row['classification'] == 'EXACT':
+            continue
+        print(labels[row['classification']]+': '+row['document_name']+
+              ' | 문서명 일치 '+str(len(row['name_matches']))+'건'+
+              ' | 기대SHA '+row['expected_source_artifact_sha256'][:12], flush=True)
+        for doc in row['name_matches']:
+            print('  현장 ID='+doc['document_id']+' SHA='+doc['source_artifact_sha256'][:12], flush=True)
+        for doc in row['spacing_name_suggestions_only']:
+            print('  띄어쓰기 후보(자동 선택 안 함): '+doc['name']+' ID='+doc['document_id'], flush=True)
+    print('진단 완료. 결과='+str(target)+'\n코드·원문·등록 DB 변경 없음. 모델 호출 0회.', flush=True)
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
+
+CM_SOURCE_DIAG_PY

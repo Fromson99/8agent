@@ -175,6 +175,11 @@ class WorkRepository:
                          encoded(payload), digest(payload), now()))
         self.db.execute('UPDATE run SET state_revision=?,evidence_revision=evidence_revision+?,next_event_seq=? WHERE singleton=1',
                         (after, int(evidence), seq+1))
+        from .readable_log import is_error_event
+        if is_error_event(kind):
+            obs.event(log,'agent.error',level=40,run_id=r['run_id'],
+                journal_seq=seq,error_event=kind,error_diagnostics=payload,
+                error_record=encoded(payload))
         return seq
 
     def head(self, kind, ident, *, current=True, expected=None):
@@ -289,6 +294,11 @@ class WorkRepository:
     def reserve_attempt(self, view, request, logical_call_id, attempt_no, phase):
         with self.transaction():
             budget = self.budget()
+            budget_class = view.get('budget_class')
+            if budget_class is not None:
+                final = view.get('source_stage') in ('memory-assess','memory-assess-repair','memory-compose','memory-compose-repair')
+                if budget_class != ('FINALIZE' if final else 'INVESTIGATE') or phase != ('compose' if final else 'investigate'):
+                    raise ContractError('invalid host budget classification')
             cap = budget['model_limit']-(budget['finalization_reserve'] if phase == 'investigate' else 0)
             if self.run()['status'] != 'RUNNING' or budget['model_reserved'] >= cap:
                 raise BudgetExhausted('model attempt limit; finalization reserve preserved')

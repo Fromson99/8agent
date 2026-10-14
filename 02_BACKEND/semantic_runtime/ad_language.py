@@ -6,9 +6,9 @@ the session-state fingerprint fence retries, concurrent turns and mode changes.
 import json
 import time
 from . import observability as obs
-from .ad_store import Store, fingerprint, ident, features
+from .ad_store import Store, fingerprint, ident, features, page_start, page_metadata
 from .ad_backend import Backend
-from .ad_mode import Controller, HELP, table, detail_rows, fields_table
+from .ad_mode import Controller, HELP, detail_rows, fields_table
 from .ad_jobs import schedule_time, record_error, error_detail
 from .ad_context import ContextReader
 
@@ -82,12 +82,10 @@ def state(store,sid):
     session=dict(db.execute('SELECT * FROM ad_session WHERE id=?',(sid,)).fetchone())
     views=[dict(r) for r in db.execute('SELECT id,kind,position,total,created_at FROM ad_view WHERE session=? ORDER BY created_at DESC,id DESC LIMIT 5',(sid,))]
     for view in views[:5]:
+        view.update(page_metadata(view['position'],view['total']))
         view['rows']=[dict(r) for r in db.execute('SELECT * FROM ad_view_row WHERE view=? AND ordinal>? AND ordinal<=? ORDER BY ordinal',
-            (view['id'],max(0,view['position']-20),view['position']))]
+            (view['id'],page_start(view['position']),view['position']))]
     active=next((v for v in views if v['id']==session['active_view']),None)
-    if active and 'rows' not in active:
-        active={**active,'rows':[dict(r) for r in db.execute('SELECT * FROM ad_view_row WHERE view=? AND ordinal>? AND ordinal<=? ORDER BY ordinal',
-            (active['id'],max(0,active['position']-20),active['position']))]}
     selected=[dict(r) for r in db.execute('SELECT * FROM ad_selection WHERE session=? ORDER BY ordinal',(sid,))]
     detail=db.execute('SELECT id,entity,position,content FROM ad_detail WHERE session=? ORDER BY created_at DESC LIMIT 1',(sid,)).fetchone()
     # The content stays in SQL. Context offers only the last emitted result and
@@ -141,8 +139,7 @@ def execute(controller,plan,operation):
     if action=='help':return controller.respond(HELP)
     if action=='list':return controller.show(args['kind'],args['query'])
     if action in ('next','previous'):
-        page=controller.store.page(sid,previous=action=='previous')
-        return controller.respond(table(page),view_id=page['view_id'],has_more=page['has_more'])
+        return controller.list_page(previous=action=='previous')
     if action=='continue':return controller.detail_page()
     if action=='status':
         value={'workspace':controller.workspace,'features':features(db,controller.workspace),
@@ -228,10 +225,12 @@ def handle_turn(path,workspace,channel,chat,question,request_id,interpret):
         with obs.context(request_id=request_id,api_type='AD_PROBE'):
             obs.event(log,'ad.language.started',operation_id=operation,language_revision=REVISION)
             # No SQL write transaction is active across this network call.
-            from .observability import _redact_secrets
-            def encoded(value):return _redact_secrets(json.dumps(value,ensure_ascii=False))
+            from .request_report import _scrub
+            def encoded(value):return json.dumps(_scrub(value),ensure_ascii=False)
             from jsonschema import Draft202012Validator
-            receipts=[];base_context=context
+            from .legal_agent import output_contract as output
+            from jsonschema import ValidationError
+            receipts=[];base_context=context;repair_used=False;decision_context=context
             for sequence in range(1,MAX_MODEL_CALLS+1):
                 context={**context,'model_call_id':request_id+':ad:'+str(sequence)}
                 with store.transaction():
@@ -241,7 +240,14 @@ def handle_turn(path,workspace,channel,chat,question,request_id,interpret):
                         raise ValueError('AD_INTERRUPTED: model turn lease expired')
                     store.db.execute('INSERT INTO ad_language_call VALUES(?,?,?,?,?,?,?)',
                         (operation,sequence,encoded(context),None,None,None,time.time()))
-                model_output=interpret(context,SCHEMA,SYSTEM)
+                from .ad_model import capture_requests
+                def record_request(payload):
+                    # Persist the exact request before sending, including on HTTP failure.
+                    with store.transaction():
+                        store.db.execute('UPDATE ad_language_call SET input=? WHERE operation=? AND sequence=?',
+                            (encoded({'context':context,'request':payload}),operation,sequence))
+                with capture_requests(record_request):
+                    model_output=interpret(context,SCHEMA,SYSTEM)
                 if not isinstance(model_output,dict) or set(model_output)!={'plan','receipt','raw'}:
                     raise ValueError('AD_MODEL: interpreter must return plan, receipt and raw response')
                 with store.transaction():
@@ -252,9 +258,27 @@ def handle_turn(path,workspace,channel,chat,question,request_id,interpret):
                 receipt=model_output['receipt']
                 if not isinstance(receipt,dict) or receipt.get('provider')!='genos' or receipt.get('trust_zone')!='internal':
                     raise ValueError('AD_MODEL: interpretation requires the GENOS internal model')
-                if receipt.get('decode_error'):raise ValueError('AD_MODEL: '+receipt['decode_error'])
-                Draft202012Validator(SCHEMA).validate(model_output['plan'])
                 receipts.append(receipt)
+                try:
+                    if receipt.get('decode_error'):
+                        detail=receipt.get('output_contract') or {}
+                        raise output.OutputContractError('AD_MODEL: '+receipt['decode_error'],
+                            detail.get('issues',[]),category=detail.get('category','MODEL_DECODE_UNKNOWN'),
+                            repairable=detail.get('repairable') is True)
+                    output.validate_shape(model_output['plan'],SCHEMA)
+                except (output.OutputContractError,ValidationError) as exc:
+                    validation_failure=output.diagnostics(exc)
+                    receipt={**receipt,'output_contract':validation_failure,'correction_owner':'ad-language',
+                        'correction_used':repair_used,'decision_hash':fingerprint(decision_context)}
+                    receipts[-1]=receipt
+                    with store.transaction():
+                        store.db.execute('UPDATE ad_language_call SET receipt=? WHERE operation=? AND sequence=?',
+                            (encoded(receipt),operation,sequence))
+                    if repair_used or not output.repairable(exc) or sequence>=MAX_MODEL_CALLS:raise
+                    repair_used=True
+                    context={**decision_context,'schema_repair':{'response_mode':'FULL_DECISION',
+                        'validation':validation_failure,'rejected_plan':model_output['plan'],'max_corrections':1}}
+                    continue
                 plan=model_output['plan'];action=plan['action'];args=plan['args']
                 if action not in ('read_context','read_table'):break
                 with store.transaction():
@@ -263,6 +287,7 @@ def handle_turn(path,workspace,channel,chat,question,request_id,interpret):
                     segment=reader.read(args['cursor']) if action=='read_context' else reader.table(args['source'],args['id'],args['offset'])
                 obs.event(log,'ad.language.context_read',operation_id=operation,sequence=sequence,source=action)
                 context={**base_context,'segment':segment,'notes':args['notes'],'call_number':sequence+1}
+                decision_context=context;repair_used=False
             else:
                 raise ValueError('AD_CONTEXT_INCOMPLETE: context read limit reached; narrow the requested table range. No final command was executed.')
             with store.transaction():
@@ -285,9 +310,9 @@ def handle_turn(path,workspace,channel,chat,question,request_id,interpret):
                 from .observability import _redact_secrets
                 with store.transaction():
                     store.db.execute('UPDATE ad_language_turn SET model_output=? WHERE operation=?',
-                        (_redact_secrets(json.dumps(exc.response,ensure_ascii=False)),operation))
+                        (encoded(exc.response),operation))
                     store.db.execute('UPDATE ad_language_call SET model_output=? WHERE operation=? AND sequence=(SELECT max(sequence) FROM ad_language_call WHERE operation=?)',
-                        (_redact_secrets(json.dumps(exc.response,ensure_ascii=False)),operation,operation))
+                        (encoded(exc.response),operation,operation))
             return failure(store,sid,operation,exc)
         return {'response_schema':'ad-mode-v1','ad_mode':True,'answer_status':'error','text':error_detail(exc),'language_revision':REVISION}
     finally:

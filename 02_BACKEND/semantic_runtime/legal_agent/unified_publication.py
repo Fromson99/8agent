@@ -79,6 +79,28 @@ def validate_saved(repo,result):
         selection=json.loads(db.execute('SELECT payload FROM node WHERE id=?',(payload['nodes']['SELECT'],)).fetchone()[0])
         originals={x['source_id']:x for x in selection.get('selected_originals',read['originals'])}
         assessment=json.loads(db.execute('SELECT payload FROM node WHERE id=?',(payload['nodes']['ASSESS'],)).fetchone()[0])
+        if assessment.get('completion_contract'):
+            from .completion_contracts import verify_composition, verify_span_claim
+            composition=json.loads(db.execute('SELECT payload FROM node WHERE id=?',(payload['nodes']['COMPOSE'],)).fetchone()[0])
+            verify_composition(assessment,composition)
+            expected_text=composition['text']
+            presentation=meta.get('answer_presentation')
+            if presentation:
+                from .memory_methods import history_answer
+                if presentation.get('method_id')!='HISTORY_EXPLAIN':raise ContractError('unsupported history presentation')
+                events=[];ordinal=0
+                for row in db.execute('SELECT * FROM event WHERE goal=? AND after_state IS NOT NULL ORDER BY id',(g['id'],)):
+                    event=dict(row);event['before']=json.loads(event.pop('before_state')) if event['before_state'] else None
+                    event['after']=json.loads(event.pop('after_state'));event['command']=json.loads(event['command'])
+                    if event['kind']=='CORRECT':ordinal+=1;event['correction_ordinal']=ordinal
+                    events.append(event)
+                expected,history=history_answer(events,composition)
+                if presentation!={'method_id':'HISTORY_EXPLAIN','history_hash':digest(history)}:
+                    raise ContractError('history events differ from accepted current case')
+                expected_text=expected['text']
+            if result['answer']['text']!=expected_text or result['answer']['unresolved']!=[{'reason':v} for v in assessment['limitations']]:
+                raise ContractError('public answer differs from verified rendering')
+            for claim in assessment['claims']:verify_span_claim(claim,list(originals.values()))
         selected=set(json.loads(db.execute('SELECT payload FROM node WHERE id=?',(payload['nodes']['SELECT'],)).fetchone()[0])['final_ids'])
         for claim in [e for c in assessment['claims'] for e in claim_evidence(c)]:
             if claim['source_id'] not in selected or claim['source_id'] not in originals or not claim['quote'].strip() or claim['quote'] not in originals[claim['source_id']]['text']:

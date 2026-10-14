@@ -7,7 +7,6 @@ from pathlib import Path
 import threading
 from copy import deepcopy
 
-import httpx
 import pytest
 
 from semantic_runtime.legal_agent.answer_stream import DraftText, capture, current_sink
@@ -50,17 +49,24 @@ def test_projection_exposes_text_before_paragraph_object_finishes():
 
 def transport(monkeypatch, frames, *, json_body=None, status=200):
     requests = []
-    class Stream(httpx.AsyncByteStream):
-        async def __aiter__(self):
-            for frame in frames:
-                yield frame.encode() if isinstance(frame, str) else frame
-                await asyncio.sleep(0)
-    def handle(request):
-        requests.append(json.loads(request.content))
-        if json_body is not None: return httpx.Response(status, json=json_body)
-        return httpx.Response(status, headers={'content-type': 'text/event-stream'}, stream=Stream())
-    original = httpx.AsyncClient
-    monkeypatch.setattr(httpx, 'AsyncClient', lambda **kw: original(transport=httpx.MockTransport(handle), **kw))
+    import io
+    from contextlib import contextmanager
+    import semantic_runtime.legal_agent.transport as module
+    from semantic_runtime.stdlib_http import Response
+    class Raw(io.BytesIO):
+        def __init__(self, payload, content_type):
+            super().__init__(payload)
+            self.code = status
+            self.headers = {'content-type': content_type}
+    @contextmanager
+    def opened(method, url, *, headers, body, timeout, deadline):
+        requests.append(body)
+        payload = (json.dumps(json_body).encode() if json_body is not None else
+                   b''.join(frame.encode() if isinstance(frame, str) else frame for frame in frames))
+        raw = Raw(payload, 'application/json' if json_body is not None else 'text/event-stream')
+        with raw:
+            yield Response(raw, timeout, deadline)
+    monkeypatch.setattr(module, 'open_response', opened)
     target = endpoint('http://fixture', token='synthetic', label='synthetic')
     binding = {'provider': 'genos', 'trust_zone': 'internal', 'adapter_version': 'genos-single-send-v1',
                'model': 'fixture-model', 'endpoint_identity': hashlib.sha256(target.root.encode()).hexdigest()}
@@ -235,6 +241,7 @@ def test_gateway_never_retries_after_visible_answer(tmp_path, generation, monkey
 def test_workflow_forwards_answer_frame_before_result_and_keeps_final_dict(monkeypatch, mode):
     w = load('answer_bridge_'+mode, '08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py')
     monkeypatch.setenv('GENOS_RAG_PROGRESS_UI', mode)
+    monkeypatch.setattr(w, '_post_code_serving', lambda body: {'status':200,'body':{'ad_handled':False}})
     monkeypatch.setattr(w, '_settings', lambda: ('http://fixture/json', 'synthetic', 2))
     emitted = []; visible = threading.Event()
     async def emit(self, event, value):
@@ -264,6 +271,7 @@ def test_workflow_forwards_answer_frame_before_result_and_keeps_final_dict(monke
 
 def test_workflow_slow_socket_does_not_drop_answer_fragments(monkeypatch):
     w = load('answer_slow_socket', '08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py')
+    monkeypatch.setattr(w, '_post_code_serving', lambda body: {'status':200,'body':{'ad_handled':False}})
     monkeypatch.setattr(w, '_settings', lambda: ('http://fixture/json', 'synthetic', 2))
     emitted = []
     async def emit(self,event,value):
@@ -304,4 +312,4 @@ def test_sse_check_exposes_server_answer_revision(monkeypatch):
     monkeypatch.setattr(w,'_stream_code_serving',call)
     result=asyncio.run(w.run({'question':'SSE_CHECK'}))
     assert result['sse_check']['stream_answer_revision'] == 'answer-stream-20260929-r1'
-    assert result['sse_check']['workflow_revision'] == 'rag-v6-progress-20261002-r1'
+    assert result['sse_check']['workflow_revision'] == w.WORKFLOW_REVISION

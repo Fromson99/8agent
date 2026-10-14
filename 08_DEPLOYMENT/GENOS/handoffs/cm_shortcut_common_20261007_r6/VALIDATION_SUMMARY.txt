@@ -1,0 +1,36 @@
+CM51 공통 shortcut·legal_wiki 최종 R6 검증 요약
+
+사용자 지시: CM51은 모든 사용자가 공유하는 공통 숏컷.
+소비자 user_id/team_id JSON 없이 --common으로 한 번 등록.
+기존 대화·사실·native 개인 숏컷과 실제 문서 ACL은 그대로 보존.
+
+검증 대상: 첨부 GENOS_CM_SHORTCUT_COMMON_20261007_R6_RUN.txt의 실제 명령.
+- 알려진 현장 코드54종: R4 적용27종 + core/display 선행27종.
+- 실제 TXT331명령: check/apply/재실행/verify/변조 차단/undo;
+  원문 결속 data-check/import/재실행/verify/retire/retire 뒤 재등록 차단.
+- 모든 설치 상태의 PIPELINE→30개 엔진 manifest→코드, StageRunner profile 검사.
+- 대표 native field 코드9종: 계약227개 통과 (core23개씩 + 첫 계열의 등록20개).
+- 작업 코드의 개인/공통 등록·ACL·원자성·공통 쓰기 제한·개인 메뉴 검사20개 통과.
+- 같은 commit된 checkout/APPLIED_CODE.zip/compact 모의 generation 배포 gate6개 통과.
+- 첨부 GUIDE shell8블록 및 Python heredoc1개의 문법 통과.
+- ZIP에 .js/.jsx/.mjs/.cjs 없음. 현장 실행 python3, 모든 호출 모델0회.
+
+실제 로컬 기존 cases-v4.sqlite:
+- 공통 활성51건 / 근거98개 / 같은 SQL의 공통 legal_wiki51페이지.
+- 이전 개인 R1/R2 102건은 RETIRED 이력 보존.
+- 다른 사용자·팀 세 곳이 같은51개 unit과 같은 원문 경로를 조회.
+- 등록 백업/영수증/현재 원문 및 MAIN 해시 확인 기록 보존.
+
+범위와 상태:
+- 기준답변은 미승인 observation; 법률 claims/procedures는 비어 있음.
+- 원문, 현재 document 권한, source/nav/fulltext binding으로 원문 경로만 재사용.
+- 외부 모델에서는 이 내부 CM 경로를 제공하지 않음.
+- 로컬 MAIN45와 원문 generation은 변경하지 않음.
+- 모델 의미 품질51건 통과나 실제 GENOS 배포 성공을 주장하지 않음.
+- GENOS apply/commit/gate/push/새 리비전/워크플로우 화면 확인은 현장 실행이 필요.
+
+이력:
+- 최초 공통 인계 R5의 verifier 메타데이터 assertion 누락은 미발송 실패로 보존.
+- 실제 최종 첨부/현장 실행은 R6를 사용.
+- gate pytest 최초 수집의 test import 경로 누락을 보존하고 올바른 경로로6개 통과.
+- 전체 로그/출처/필드 variant와 데이터 영수증은 저장소 R6 인계 폴더에 보존.

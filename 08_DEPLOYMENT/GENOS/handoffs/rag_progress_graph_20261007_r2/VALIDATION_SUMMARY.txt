@@ -1,0 +1,13 @@
+GENOS 진행 로그·SVG 그래프 전체 반영 R2 검증
+
+작업 표시 코드 관련 검사: 75개 통과(이전 통합 fixture 3개 제외)
+반입 RUN TXT: 알려진 설치 inventory 18종, 명령 180개 통과
+설치 코드 계열별 진행/SVG/JSON/SSE 계약: 63개 x 3종 통과
+동일 commit된 checkout의 모의 generation 배포 gate: 3개 통과
+분리 워크플로우 전체 TXT: Python 3.10 문법 및 동일 SVG 확인
+ZIP: 306파일, 전체 내용 해시 및 JavaScript/실제 .env 제외 확인
+원문·runtime·CURRENT 보존, 나중 변경/백업 변조 거절, 원문 실패 로그 보존 확인
+외부 모델 호출: 0
+GENOS 현장 적용/push/리비전 배포/워크플로우 화면: 미확인
+로컬 MAIN45 및 데이터 CURRENT: 변경 없음
+R1은 미발송 실패 기록이며 누락 로그 의존성을 R2에서 해결했습니다.

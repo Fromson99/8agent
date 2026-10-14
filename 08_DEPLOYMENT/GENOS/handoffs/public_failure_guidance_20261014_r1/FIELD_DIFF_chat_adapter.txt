@@ -1,0 +1,58 @@
+--- field/02_BACKEND/semantic_runtime/chat_adapter.py
++++ main60/02_BACKEND/semantic_runtime/chat_adapter.py
+@@ -12,7 +12,7 @@
+ import uuid
+ from . import progress
+ from .legal_agent.answer_stream import capture as capture_answer
+-REVISION='main-chat-completion-sse-20261007-r2'
++REVISION='main-chat-current-judgment-evidence-svg-20261008-r10'
+ _SECRETS={'authorization','api_key','apikey','token','password','memory_authorization',
+           'signature','genos_memory_signing_key','genos_chat_gateway_token'}
+ 
+@@ -93,7 +93,9 @@
+         body=({'API_TYPE':operation,'request_id':ident} if operation in {'WARMUP','WARMUP_STATUS'}
+               else request_body(data,question,trusted_platform))
+         def sink(event):
+-            if len(events)<256:events.append(event)
++            event = view.public_event(event)
++            if event is None:return
++            if len(events)<256 or (event.get('basis') or {}).get('detail_mode')=='full_error':events.append(event)
+             if on_progress is not None:on_progress(event)
+         if ad_allowed:body={**body,'ad_session_id':str(data.get('chatId') or data.get('sessionId') or data.get('session_id') or ''),'ad_channel':view._ad_channel(data)}
+         # Initialize logging before the collector: the first lazy service import
+@@ -111,12 +113,16 @@
+             result.update(text=json.dumps(raw,ensure_ascii=False),answer_status='diagnostics')
+         else:
+             failed=isinstance(raw.get('_gateway_status'),int) and raw['_gateway_status']>=400
+-            result.update(text=view._for_markdown(view.render(raw)),run_id=raw.get('run_id'),
++            display=view._ChatProgress({});display.enabled=False;display.show_progress=True
++            for event in events:await display.progress(event)
++            await display._flush_source_reads()
++            flow=view._judgment_flow(raw,display.flow_events)
++            result.update(text=view._for_markdown(view.render(raw,flow=flow)),run_id=raw.get('run_id'),
+                           judgment_display_revision=view.JUDGMENT_DISPLAY_REVISION,
++                          progress_display_revision=view.PROGRESS_DISPLAY_REVISION,
+                           answer_status=view._completion_answer_status(
+                               raw, bool(view._public_answer_text(raw)) and not failed))
+-            display=view._ChatProgress({});display.enabled=False;display.show_progress=True
+-            for event in events:await display.progress(event)
++            if flow:result['judgment_flow']=flow['metadata']
+             if display.blocks:result['agentFlowExecutedData']=display.blocks
+             case=(raw.get('assembly',{}).get('term_agent') or {}).get('case')
+             if isinstance(case,dict):result['case']=case
+@@ -124,8 +130,11 @@
+                 if name in raw:result[name]=raw[name]
+     except Exception as exc:
+         from . import observability as obs
+-        obs.event(obs.get_logger('chat'),'chat.failed',level=40,request_id=ident,error_type=type(exc).__name__)
+-        result.update(text='지금 답변을 가져오지 못했습니다. (추적 번호: '+ident+')',
+-                      answer_status='failed',error_type=type(exc).__name__)
++        from .legal_agent.investigation_diagnostics import exception_diagnostics
++        failure=exception_diagnostics(exc)
++        obs.event(obs.get_logger('chat'),'chat.failed',level=40,exc_info=True,
++            request_id=ident,error_type=type(exc).__name__,failure_diagnostics=failure)
++        result.update(text=view.render_error({'request_id':ident,**failure},question=question),
++                      answer_status='failed')
+     result['tm_total']=round(time.perf_counter()-started,3)
+-    return {'code':0,'data':{**public_fields(data),**result}}
++    return {'code':0,'data':result}

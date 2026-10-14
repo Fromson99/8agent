@@ -12,6 +12,7 @@ from ..contracts import digest
 from .. import observability as obs
 from .gateway import ModelGateway, genos_wire_schema, compact_wire_view
 from .repository import encoded
+from . import output_contract as output
 from .question_obligations import ObligationSession
 from .workflow_tiers_views import span_choices
 from .errors import BudgetExhausted, DeadlineExceeded, ProposalError, TransportError
@@ -31,11 +32,7 @@ class _Protocol:
         return deepcopy(self.definition)
 
     def validate(self, name, value):
-        try:
-            jsonschema.Draft202012Validator(self.definition).validate(value)
-        except jsonschema.ValidationError as exc:
-            path = '/'+ '/'.join(map(str, exc.absolute_path))
-            raise ProposalError('bounded source response at '+path+': '+exc.message) from exc
+        output.validate_shape(value, self.definition)
         if self.validator is not None:
             # Only explicit, read-only model-decision validation belongs here.
             # Storage, binding, deadline and transport failures retain their types.
@@ -48,13 +45,19 @@ class _Protocol:
 class _Gateway(ModelGateway):
     def request(self, phase, view, schema_name, *, references=None):
         schema = genos_wire_schema(self.protocol.schema(schema_name))
+        instructions=''
+        if view.get('input_projection')=='compact-selection-source-v3':
+            from .navigation_input import NavigationReferences, INSTRUCTIONS
+            references=references or NavigationReferences(view)
+            view,schema=references.view(view),references.schema(schema)
+            instructions='\n'+INSTRUCTIONS+' text_ref는 sources의 text_id와 start/end 유니코드 문자 위치로 지정한 정확한 원문이다.'
         user = {'view': compact_wire_view(view, phase) if self.compact else view}
         if not self.compact:
             user['output_schema'] = schema
         return {'model': self.transport.binding['model'], 'temperature': 0,
                 'max_tokens': self.profile['max_output_tokens'], 'stream': False,
                 'chat_template_kwargs': {'enable_thinking': False},
-                'messages': [{'role': 'system', 'content': self.system},
+                'messages': [{'role': 'system', 'content': self.system+instructions},
                              {'role': 'user', 'content': encoded(user)}],
                 'response_format': {'type': 'json_schema', 'json_schema': {
                     'name': schema_name, 'strict': True, 'schema': schema}}}
@@ -101,6 +104,8 @@ class BoundedSourceSession(ObligationSession):
             max_tokens=max(max_tokens,4096)
         # A title inventory or excerpt is never a receipt for a full original.
         evidence_ids=[]
+        if self.profile.get('candidate_navigation',{}).get('compact_input') and (phase.startswith('source-law-navigation-') or phase in ('memory-assess','memory-assess-repair')):
+            data={**data,'input_projection':('compact-selection-source-v3' if self.profile.get('candidate_navigation',{}).get('completion_policy_version')in ('investigation-completion-v6','investigation-completion-v7','investigation-completion-v8') else 'compact-selection-source-v2')}
         if self.work.VERSION==6:
             offered={s['source_id']:s['text'] for s in data.get('sources',[]) if 'source_id' in s and 'text' in s}
             evidence_ids=[e['evidence_id'] for e in self.work.evidence()
@@ -108,11 +113,23 @@ class BoundedSourceSession(ObligationSession):
             if evidence_ids:
                 data={**data,'exact_evidence':[{'evidence':ident,'text':self.work.evidence(ident)['text'],
                     'spans':self.work.evidence(ident)['spans']} for ident in evidence_ids]}
-        view = self.work.save_view('investigate', {**data, 'source_stage': phase}, evidence_ids)
+        from .completion_contracts import enabled
+        completion = enabled(self.profile)
+        finalizing = completion and phase in ('memory-assess','memory-assess-repair','memory-compose','memory-compose-repair')
+        self.work.event('MODEL_CORRECTION_OWNER', {'contract_version':output.VERSION,
+            'source_stage':phase,'owner':output.owner_for(phase),'max_corrections':1,
+            'shared_request_budget':True})
+        native_phase = 'compose' if finalizing else 'investigate'
+        budget_class = 'FINALIZE' if finalizing else 'INVESTIGATE'
+        view = self.work.save_view(native_phase, {**data, 'source_stage': phase, **({'budget_class':budget_class} if completion else {})}, evidence_ids)
         profile = {**self.profile, 'numbered_references_enabled': False,
                    'max_output_tokens': max_tokens,
-                   'max_transport_retries': 0}
-        if phase.startswith('source-law-navigation-'):
+                   'max_transport_retries': self.profile['max_transport_retries'] if completion else 0}
+        if completion:
+            self.work.event('EFFECTIVE_CALL_POLICY', {'source_stage':phase,'native_phase':native_phase,
+                'budget_class':budget_class,'max_transport_retries':profile['max_transport_retries'],
+                'override_reason':'release-bound completion contract; gateway owns retries'})
+        if output.owner_for(phase) != 'gateway':
             # Investigation owns the single correction; avoid a nested wire retry.
             profile['max_schema_repairs'] = 0
         if phase in ('source-triage', 'source-omission-review'):
@@ -131,7 +148,16 @@ class BoundedSourceSession(ObligationSession):
         gateway = _Gateway(self.work, context, profile, self.gateway.domain,
                            self.gateway.transport, message_protocol=_Protocol(schema, checked),
                            system=system, prompts={phase: ''})
-        value = gateway.generate('investigate', view, 'BoundedSourceDecision')
+        from . import narrative_answer as narrative
+        rich = narrative.enabled(profile) and phase == narrative.PHASE
+        if rich:
+            # Coverage and references are checked in the gateway before accepting JSON.
+            prior_checked = gateway.protocol.validator
+            def check_answer(value):
+                narrative.checked(value, data['answer_claim_ids'])
+                if prior_checked is not None:prior_checked(value)
+            gateway.protocol.validator = check_answer
+        value = gateway.generate(native_phase, view, narrative.SCHEMA if rich else 'BoundedSourceDecision')
         self.selection_views[phase] = view['view_id']
         return value
 

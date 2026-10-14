@@ -1,0 +1,66 @@
+{
+  "purpose": "existing-workflow-python-editor-only",
+  "base_path": "08_DEPLOYMENT/GENOS/handoffs/workflow_source_cards_20261013_r1/GENOS_WORKFLOW_SOURCE_CARDS_20261013_R1_PASTE_ALL.txt",
+  "base_sha256": "e6b1a351131b6956950c88c617c76b4b32865d391745c952522c779022704e8e",
+  "editor_file": "GENOS_WORKFLOW_SOURCE_PROVIDER_20261013_R2_PASTE_ALL.txt",
+  "editor_sha256": "c7dfac8fcb03a73dcc8176f99f9ba1e54cec16ffeeaabb5a9c844f5190cb128d",
+  "shared_source_path": "08_DEPLOYMENT/RELEASES/source-provider-20261013-r2/code/08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+  "shared_source_sha256": "fdfed27033365b8406acd5229da1eb6822368488428d8f8bd0e8558a828ccabf",
+  "shared_methods_sha256": {
+    "_source_label": "4bfc974400e2a3f20cdf47096d09842da76409a4461de321425de59f0ea69dc5",
+    "_card_rationale": "c29a19a6150013675bf5a73d3a0c13f90aa95cbacdc2958a2d68e889dcd736d1",
+    "_flush_source_candidates": "6f864ff77ae12b6d3fb6f27e612e1392b759fcd64420e7c4c59c1bd519a528fd",
+    "_append_source_card": "8c54c2e2c4ad7ef935007b3baa8bc4d1a8c1417838b287a4e5f0aab40e42b381",
+    "_flush_source_reads": "4d37cf14881acb365c1f1089a2646d73a86bd4f0f24ebc08bb7b04ec43f06656",
+    "_source_progress": "1652b9e526d6b3cf218d0f7a2564c536a03ef145e75d3aaa0e3793e49a1126c5"
+  },
+  "diagnostic_storage": "Existing backend journal/request logs unchanged",
+  "grouping_basis": "contiguous source notifications with request/run/result boundary; not a model call count",
+  "model_calls": 0,
+  "backend_modified_by_delivery": false,
+  "data_generation_modified_by_delivery": false,
+  "field_workflow_pasted": false,
+  "field_workflow_test": "NOT_RUN",
+  "field_code_serving_revision": null,
+  "field_generation": null,
+  "local_active_pointer": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "source-provider-20261013-r2",
+    "generation": 58,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/source-provider-20261013-r2/release.json",
+    "release_manifest_sha256": "9bfb1bf1f03bef4ae4f398872be44c9c78effbe85e9070be3468bf75241f636a",
+    "activated_at": "2026-10-13T05:58:02.747277+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "6e22522440d94de538f6899f5769e01b922b674edd00bcf800d0fbbc7fac7fc9",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0772-source-provider-display/실험/manifest.json",
+        "sha256": "bbff42bf6821a5951d162de9df7770e051676ab78295f54439c7824580148b01"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0772-source-provider-display/README.md",
+        "sha256": "4514256d6ebce2beddb1e8d89f8626264a5952d051db5146750b91adb7178a85"
+      },
+      "arm": "provider-display",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0772-source-provider-display/artifacts/run-001/result.json",
+        "sha256": "67ce6fb4b2c47d18a7a698ddcd34750c4f15f8c0900531add951213af1bf9475"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0772-source-provider-display/artifacts/design/release-rebase.json",
+        "sha256": "6fe7bf6a5ccabd294c17e87e27a9e4a4f952aa4ec51196188061883e82f0cdf0"
+      }
+    }
+  },
+  "validation_code_root": "02_BACKEND/lawrag/research/candidates/adr_0772/provider-display/revisions/rev-002/snapshot",
+  "local_qualification": "ADR-0772-experiment-v1/provider-display",
+  "source_label_evidence": "PROVIDER_LABEL_EVIDENCE.json",
+  "field_git_checkout": "Not modified by this editor-only handoff",
+  "field_git_commit": null,
+  "field_generation_absolute_path": null,
+  "field_generation_manifest_sha256": null,
+  "field_runtime": "Existing GENOS workflow Python runtime; actual interpreter version unverified",
+  "backend_patch_compatibility": "Independent of model_stream_fix_20261013_r1; replacing only the workflow editor does not undo that backend transport patch"
+}

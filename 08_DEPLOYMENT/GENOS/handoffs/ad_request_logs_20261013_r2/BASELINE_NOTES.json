@@ -1,0 +1,15 @@
+{
+  "known_preexisting_failure": {
+    "test": "test_legal_agent_compact_prompt.py::test_valid_answer_has_one_call_and_invalid_output_alone_triggers_repair[True]",
+    "before": "TypeError: replace() argument 2 must be str, not dict",
+    "after": "same TypeError",
+    "scope": "numbered reference schema repair; not modified by this change"
+  },
+  "logging_test_order": {
+    "test": "test_response_overhead.py",
+    "isolated_result": "18 passed",
+    "combined_result": "logging handler snapshot count differs with prior configured handlers"
+  },
+  "installed_harness_repair": "The historical top-level run_contracts entry reran during Python 3.14 forkserver import; guarded test wrapper added. Product code unchanged.",
+  "delivery_builder_repair": "Two new engine pins were appended through an unordered set in the inherited builder. The local installer refused the sealed signature before mutations. New builder now matches installer insertion order; failed transcripts preserved as INSTALL_TESTS.*.pre_repin_order_fix.gz."
+}

@@ -114,6 +114,9 @@ class Backend:
         rows=[]
         for r in self.db.execute(sql,(self.workspace,)).fetchall():
             value=dict(r);value['kind']=kind
+            if kind=='shortcut' and not trash:
+                from .legal_agent.successful_answer import eligible
+                if not eligible(self.repo,value['id']):continue
             state=self.db.execute('SELECT review,trashed FROM ad_object WHERE kind=? AND entity=?',(kind,value['id'])).fetchone()
             if trash and not (state and state['trashed']):continue
             if not trash and state and state['trashed']:continue

@@ -1,0 +1,62 @@
+GENOS 접이식 추론·행위 로그 유지 / 답변 본문 준비 문구 제거 R4 — 2026-10-08
+
+R3의 전체 워크플로우 TXT를 이번 R4 전체 TXT로 교체합니다.
+사용자 요청: 기존 GENOS 접이식 추론·에이전트 행위 패널은 살리고,
+답변 본문에 따로 뜬 '준비 중 · 자료와 요청 설정을 확인하고 있습니다'는 제거합니다.
+
+R3가 첫 카드 직전에 보낸 준비 token을 제거했습니다.
+준비·원문 확인·근거 선택·현재 판단은 기존 Visible Reasoner 패널에만 보냅니다.
+본문에는 검증한 최종 답변을 전달하며 진행 문구나 별도 최종 답변 제목을 붙이지 않습니다.
+답변 token / end / 실제 송신 카드와 같은 최종 dict 배열은 유지합니다.
+SVG R10과 현재 판단 상세 R2는 유지합니다.
+
+1. 인계 파일 준비
+ZIP과 별도 PREPARE TXT를 기존 ~/DEV/TRANSFER에 올립니다.
+아래 완전한 실행 TXT는 ZIP 바이트를 검증해 편집기용 파일만 준비합니다.
+
+bash ~/DEV/TRANSFER/GENOS_WORKFLOW_LIVE_CARDS_20261008_R4_PREPARE.txt
+
+출력 위치: ~/DEV/TRANSFER/workflow-live-cards-r4-editor
+PREPARE 로그: ~/DEV/TRANSFER/workflow-live-cards-r4-logs
+EDITOR_FILES_READY / EDITOR_FILES_VERIFIED / EXIT=0을 확인합니다.
+파일 준비와 실제 편집기 저장·화면 적용은 별도 단계입니다.
+다른 내용의 기존 파일이나 링크는 보존하고 중단합니다.
+
+2. 기존 워크플로우 Python 전체 교체
+현재 편집기 Python 전체를 원복용으로 저장합니다.
+GENOS_WORKFLOW_LIVE_CARDS_20261008_R4_PASTE_ALL.txt 전체를
+기존 분리 워크플로우의 같은 Python 편집기에 붙여넣고 저장합니다.
+진입점 run(data)는 유지합니다. ZIP 준비나 Git push로 편집기가 자동 갱신되지 않습니다.
+
+GENOS_RAG_PROGRESS_UI는 socketio가 기본이며 on도 같은 모드입니다.
+기존 socketio-inline 값도 이번 R4에서는 socketio로 연결하므로 설정을 바꾸지 않아도
+행위가 본문에 반복되지 않습니다. 기존 off/final-cards/socketio-final 선택은 유지합니다.
+실시간 접이식 패널을 쓰는 설정은 socketio입니다.
+
+기존 GENOS 워크플로우 런타임의 main_socketio.sio_server.emit과
+입력 socketIOClientId로 agentFlowExecutedData 누적 카드를 보냅니다.
+ID를 임의 생성하지 않습니다. 채팅 앱과 워크플로우 연결을 유지합니다.
+별도 SSE 서버와 R5 backend 코드 ZIP, endpoint/ID/token/port/시작 명령은 그대로 둡니다.
+이번 수정은 코드서빙 재배포나 SSE 서버 재시작을 요구하지 않습니다.
+
+3. 워크플로우 테스트 화면 확인
+WORKFLOW_SETTINGS:
+workflow_revision=rag-v6-live-cards-20261008-r4
+live_progress_revision=workflow-live-cards-20261008-r4
+progress_mode=socketio / socketio_enabled=true를 확인합니다.
+SSE_CHECK에서는 기존 sse_ready=true / route=/stream을 확인합니다.
+
+실제 질문에서 추론 패널의 준비·원문 확인·근거 선택·현재 판단 로그가 유지되는지,
+답변 본문에 '준비 중 · 자료와 요청 설정…'가 붙지 않는지 확인합니다.
+최종 답변은 본문에 출력합니다. 최종 dict에도 실제 송신한 카드 배열이 남습니다.
+workflow_progress_delivery.emitted_card_events는 실제 카드 송신 횟수입니다.
+socket_error_type이 있으면 workflow.progress.socket_failed 로그를 확인합니다.
+code_serving_transport.progress_events는 backend SSE 수신 횟수입니다.
+실제 입력에 socketIOClientId가 없으면 최종 카드 JSON만 반환할 수 있습니다.
+현장 질의와 warmup은 워크플로우 테스트 화면에서 수행합니다.
+
+4. 원복·검증 범위
+원복은 저장해 둔 이전 Python 전체를 같은 편집기에 다시 붙여 저장합니다.
+기존 DEV backend·NFS generation/CURRENT·DB·CM·조사 예산·오류 로그·MAIN45는 유지합니다.
+로컬 계약 결과는 VALIDATION_SUMMARY.txt / VALIDATION.json에 있습니다.
+GENOS 실제 편집기 저장과 브라우저 렌더링은 아직 확인하지 않았습니다.

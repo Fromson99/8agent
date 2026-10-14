@@ -1,0 +1,16 @@
+GENOS RAG 최적화 패치 R1 검증 결과
+
+로컬 MAIN53: focused-rules-20261013-r1 / 완료 계약 v8
+GENOS 인계 조합의 모의 RAG 계약: 204개 통과
+실제 첨부 RUN: 8개 대표 설치 상태 / 72개 명령 통과
+알려진 기존 코드 inventory 330종의 engine/schema/output hash 확인
+같은 committed checkout + 모의 generation gate: 2개 통과
+적용/재실행/검증/원복/변경된 코드 거부와 캐시·서비스·모델 전송·워크플로우 파일 보존 확인
+Python 3.10 문법 / Bash 구문 / JavaScript 제외 / ZIP 내부·별도 RUN 동일 바이트 확인
+신규 외부 모델 호출 0. 로컬 MAIN53 포인터와 원문 세대 변경 없음.
+
+시험 환경: WSL 로컬. fixture 생성용 schema와 factorized_audit 보조 파일만 시험 폴더에 추가.
+HTTP 모의 검사는 GENOS service와 같이 runtime_root를 명시. 해당 보조 파일/시험 수정은 인계 코드에 포함하지 않음.
+초기 시험 환경 경로 누락·로컬 기본 layout 불일치 기록은 보존하고 위 조건으로 다시 검증함.
+GENOS 실제 반입/commit/push/리비전/워크플로우 화면은 현장 확인 전 미확인.
+조건 AND/OR 의미 판단·의미상 반복·모델 형식 복구 지연은 남아 있음.

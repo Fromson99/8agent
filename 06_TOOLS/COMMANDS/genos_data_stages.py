@@ -34,10 +34,18 @@ def main(argv=None):
     p.add_argument('--unzip', choices=['on', 'off'], default='on')
     p.add_argument('--xml-markdown', choices=['on', 'off'], default='on')
     p.add_argument('--pdf-conversion', choices=['on', 'off'], default=os.environ.get('GENOS_PDF_CONVERSION', 'on'))
+    p.add_argument('--structure-vlm', choices=['auto', 'on', 'off'],
+                   help='Explicit structural model policy; off also binds model-free cache identity')
+    p.add_argument('--pdf-parser', choices=['local', 'preprocessor'],
+                   help='Explicit PDF parser; local makes no GENOS preprocessor request')
     mode = p.add_mutually_exclusive_group()
     mode.add_argument('--execute', action='store_true')
     mode.add_argument('--check-only', action='store_true')
     args, rest = p.parse_known_args(argv)
+    if args.structure_vlm is not None:
+        os.environ['STRUCTURE_RECIPE_VLM'] = args.structure_vlm
+    if args.pdf_parser is not None:
+        os.environ['GENOS_PDF_PARSER'] = args.pdf_parser
     if (args.only_internal_pdf or args.only_internal) and args.exclude_internal:
         p.error('--only-internal-pdf and --exclude-internal conflict')
     if args.limit is not None and (not args.only_internal_pdf or args.limit < 1):
@@ -146,7 +154,9 @@ def main(argv=None):
                     selected = json.loads(selected_path.read_text())
                     selected['input_inventory_valid'] = not input_failed and not source_errors
                     genos_build.atomic(selected_path, selected)
-                result.update(input_failed=input_failed, source_errors=source_errors, preparation=preparation)
+                from lawrag.core.structure.recipe_runtime import policy_identity
+                result.update(input_failed=input_failed, source_errors=source_errors, preparation=preparation,
+                              structural_model_policy=policy_identity())
                 receipt = logs / ('result-' + datetime.now().strftime('%Y%m%d-%H%M%S-%f') + '.json')
                 genos_build.atomic(receipt, safe(result))
                 status.finish('COMPLETED' if result.get('ok', True) and not source_errors else 'FAILED',

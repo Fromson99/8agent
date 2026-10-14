@@ -15,6 +15,9 @@ def workflow():
     spec = importlib.util.spec_from_file_location('http_origin_workflow', ROOT / '08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    # These tests isolate the legal HTTP error path. Modern workflows first
+    # check AD mode; keep that control request successful in this fixture.
+    module._post_code_serving = lambda body: {'status': 200, 'body': {'ad_handled': False}}
     return module
 
 
@@ -70,7 +73,7 @@ def test_plain_body_question_and_credentials_are_redacted(monkeypatch):
     assert evidence['body_format'] == 'text' and 'timeout' in evidence['error_hints']
 
 
-def test_response_body_capture_is_bounded(monkeypatch):
+def test_response_body_capture_preserves_the_entire_error(monkeypatch):
     module = workflow()
     monkeypatch.setattr(module, '_settings', lambda: ('http://fixture/json', 'fixture', 2100))
     def fail(*args, **kwargs):
@@ -78,8 +81,10 @@ def test_response_body_capture_is_bounded(monkeypatch):
     monkeypatch.setattr(module.urllib.request, 'urlopen', fail)
     result = asyncio.run(module.run({'question': 'synthetic'}))
     evidence = result['http_error_diagnostics']
-    assert evidence['captured_body_bytes'] == 16384 and evidence['capture_limit_reached']
-    assert len(evidence['error_body_excerpt']) <= 1500
+    assert evidence['captured_body_bytes'] == len(b'upstream timeout ' + b'x' * 20000)
+    assert not evidence['capture_limit_reached']
+    assert evidence['error_body_excerpt'] == 'upstream timeout ' + 'x' * 20000
+    assert ('x'*20000) in result['text']
 
 
 def test_existing_service_error_text_redacts_credentials(monkeypatch):

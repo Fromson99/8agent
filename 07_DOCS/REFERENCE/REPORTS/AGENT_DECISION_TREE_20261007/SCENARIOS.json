@@ -1,0 +1,823 @@
+{
+  "basis": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "investigation-completion-v6-20261007-r1",
+    "generation": 44,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/investigation-completion-v6-20261007-r1/release.json",
+    "release_manifest_sha256": "6cdc683ec72f373be0005ce5ff6ba873aba436b2d71a9211978e7aaba61bdd1b",
+    "activated_at": "2026-10-07T02:50:44.577540+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "57890b7744d1397451799773cb29b087c8e45938f6b8c97d25a0acde8281d44d",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0680-investigation-main-consumer-integration/실험/manifest.json",
+        "sha256": "bb70035e64eede6ee88cbe1bd7c50990f441948a2f402829f54d72f211101ae3"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0680-investigation-main-consumer-integration/README.md",
+        "sha256": "6ab0fafb2d805f445514384e5f81719bf085cd716f70e5012a81097e717b97ee"
+      },
+      "arm": "integrated",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0680-investigation-main-consumer-integration/artifacts/run-001/result.json",
+        "sha256": "baaac2be70b57e8431b67628cac188a50225e3f80dc9adff65a53c63d0f4e26e"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0680-investigation-main-consumer-integration/artifacts/design/release-rebase.json",
+        "sha256": "a9bf5dc854a4a45fbb1ea03e1af1372b1a8cc3231f935abea5725fb9581f3b60"
+      }
+    }
+  },
+  "scenario_count": 72,
+  "exhaustiveness": "current stage/action/error transition taxonomy; not every possible legal input",
+  "all_scenarios_executed": false,
+  "actions": {
+    "DECIDE": [
+      "E01",
+      "E02",
+      "E03"
+    ],
+    "FINISH": [
+      "G01",
+      "G07",
+      "J01",
+      "J02"
+    ],
+    "FOLLOW_CONNECTION": [
+      "F01",
+      "F02",
+      "F03",
+      "F04",
+      "F05",
+      "F06"
+    ],
+    "NEXT_ARTICLES": [
+      "C05"
+    ],
+    "NEXT_HITS": [
+      "C05"
+    ],
+    "NEXT_LAWS": [
+      "C05"
+    ],
+    "OPEN_LAW": [
+      "C01",
+      "C02"
+    ],
+    "PENDING": [
+      "G06",
+      "J03",
+      "J04"
+    ],
+    "READ_ARTICLES": [
+      "D04"
+    ],
+    "READ_PARENT": [
+      "D02",
+      "D03"
+    ],
+    "READ_SCOPE": [
+      "D02",
+      "D05"
+    ],
+    "RESEARCH": [
+      "C03",
+      "C04",
+      "C06",
+      "C07",
+      "C08"
+    ],
+    "RETURN_TO": [
+      "E04",
+      "E05"
+    ],
+    "VIEW_SAVED_SOURCE": [
+      "D06",
+      "D07"
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "A01",
+      "group": "진입·권한·실행 경로",
+      "condition": "직접 /chat JSON 요청",
+      "expected": "같은 공통 엔진을 한 번 호출하고 최종 상태·근거를 반환",
+      "responsibility": "시스템",
+      "evidence": "현재 계약 검사",
+      "source": "02_BACKEND/semantic_runtime/app.py:251",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "A02",
+      "group": "진입·권한·실행 경로",
+      "condition": "직접 /chat SSE 요청",
+      "expected": "동일 결과를 마지막 result로 전달하고 중간 조각을 완료로 오인하지 않음",
+      "responsibility": "시스템",
+      "evidence": "현재 계약 검사",
+      "source": "02_BACKEND/semantic_runtime/app.py:251",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "A03",
+      "group": "진입·권한·실행 경로",
+      "condition": "별도 Python 워크플로우 요청",
+      "expected": "기존 코드서빙 호출 후 같은 완료·부분·미완료·상류실패를 표시",
+      "responsibility": "시스템",
+      "evidence": "현재 계약 검사",
+      "source": "02_BACKEND/semantic_runtime/app.py:251",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "A04",
+      "group": "진입·권한·실행 경로",
+      "condition": "빈 입력·잘못된 필드",
+      "expected": "입력 오류를 설명하고 조사와 모델 호출을 시작하지 않음",
+      "responsibility": "시스템",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/app.py:251",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "A05",
+      "group": "진입·권한·실행 경로",
+      "condition": "인증 누락·권한 밖 문서",
+      "expected": "권한 범위 안으로 한정하거나 거부; 타 사용자 자료 존재·내용 노출 금지",
+      "responsibility": "시스템",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/app.py:251",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "A06",
+      "group": "진입·권한·실행 경로",
+      "condition": "모델·코드·데이터 binding 불일치",
+      "expected": "일반 검색 실패와 구분해 안전 중단하고 운영 복구 정보를 남김",
+      "responsibility": "시스템",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/app.py:251",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "B01",
+      "group": "질문 분해·기존 사건·사용자 정정",
+      "condition": "인사·사용법·무관한 입력",
+      "expected": "직접 안내하고 현재 사건의 조건·근거를 변경하지 않음",
+      "responsibility": "시스템+모델",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py:80",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "B02",
+      "group": "질문 분해·기존 사건·사용자 정정",
+      "condition": "새 질문·기존 질문 후속",
+      "expected": "질문과 사건 ID를 연결하고 원문 요구사항을 보존",
+      "responsibility": "시스템+모델",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py:80",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "B03",
+      "group": "질문 분해·기존 사건·사용자 정정",
+      "condition": "같은 표현에 여러 업무 맥락",
+      "expected": "모델이 맥락을 선택·비교하거나 확인 질문; 선택 이유와 범위 보존",
+      "responsibility": "모델/가이드",
+      "evidence": "REG-IC24 관측",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py:80",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "B04",
+      "group": "질문 분해·기존 사건·사용자 정정",
+      "condition": "일반 규칙 설명·특정 사건 적용",
+      "expected": "법률 규칙 부족과 사용자 사실 부족을 구분해 다음 행동 연결",
+      "responsibility": "시스템+모델",
+      "evidence": "현재 계약 검사",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py:80",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "B05",
+      "group": "질문 분해·기존 사건·사용자 정정",
+      "condition": "조건·문서 범위·판본 정정",
+      "expected": "새 revision에서 영향받는 단계 이후만 무효화하고 이전 이력 보존",
+      "responsibility": "시스템",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py:80",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "B06",
+      "group": "질문 분해·기존 사건·사용자 정정",
+      "condition": "과거 판단 설명·확정·경험 재사용",
+      "expected": "이력 설명과 재판단을 구분; 재사용 전 현재 조건·권한·세대 검증",
+      "responsibility": "시스템+모델",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/case_repository.py:80",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "C01",
+      "group": "검색·후보·못 찾음",
+      "condition": "명시한 법령·조문이 유일하게 매칭",
+      "expected": "원문 읽기 경로를 제공하고 제목 일치를 답의 정답으로 승격하지 않음",
+      "responsibility": "시스템+모델",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:532",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "C02",
+      "group": "검색·후보·못 찾음",
+      "condition": "여러 법령·동일 명칭·판본 후보",
+      "expected": "구분 메타데이터와 선택지를 제공; 임의 최신 판본 자동 선택 금지",
+      "responsibility": "시스템+모델",
+      "evidence": "추가 시나리오 검사 필요",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:532",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "C03",
+      "group": "검색·후보·못 찾음",
+      "condition": "검색 결과 0건·조사 여유 있음",
+      "expected": "0건 관측과 검색 범위를 보존; 다른 표현·구조 탐색·복귀 중 모델 선택",
+      "responsibility": "시스템+모델",
+      "evidence": "추가 시나리오 검사 필요",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:532",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "C04",
+      "group": "검색·후보·못 찾음",
+      "condition": "0건 반복·가능한 조사 종료",
+      "expected": "이 범위에서 찾지 못함을 표시; 문서가 존재하지 않는다고 단정하지 않음",
+      "responsibility": "시스템+모델",
+      "evidence": "추가 시나리오 검사 필요",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:532",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "C05",
+      "group": "검색·후보·못 찾음",
+      "condition": "법령·조문·적중 위치 다음 페이지 있음",
+      "expected": "전체 건수·현재 범위·다음 선택지를 함께 제공",
+      "responsibility": "시스템",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:532",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "C06",
+      "group": "검색·후보·못 찾음",
+      "condition": "검색 서버·색인·SQL 오류",
+      "expected": "0건과 구분해 FAILED 관측 저장; 재시도·복귀·중단 가능 여부 표시",
+      "responsibility": "시스템",
+      "evidence": "추가 시나리오 검사 필요",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:532",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "C07",
+      "group": "검색·후보·못 찾음",
+      "condition": "같은 정규화 검색식 반복",
+      "expected": "거절 이유와 기존 화면 복귀 선택지 유지; 실패한 행동을 실행 성공으로 기록하지 않음",
+      "responsibility": "시스템+모델",
+      "evidence": "REG-cm-039 관측",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:532",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "C08",
+      "group": "검색·후보·못 찾음",
+      "condition": "검색식 변경·과거 검색으로 복귀",
+      "expected": "새 검색 결과와 이전 검색 이력을 함께 유지; 기존 확보 근거를 초기화하지 않음",
+      "responsibility": "시스템",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:532",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "D01",
+      "group": "원문 읽기·정보 전달",
+      "condition": "후보 preview만 본 상태",
+      "expected": "본문 미열람으로 표시하고 읽기 도구를 제공; 인용·확정 채택 금지",
+      "responsibility": "시스템",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py:50",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "D02",
+      "group": "원문 읽기·정보 전달",
+      "condition": "적중 목·호의 부모 범위 읽음",
+      "expected": "실제 확보·전달 범위와 전체 조문 범위를 구분",
+      "responsibility": "시스템",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py:50",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "D03",
+      "group": "원문 읽기·정보 전달",
+      "condition": "원문이 길어 여러 페이지",
+      "expected": "보낸 페이지와 남은 페이지를 표시하고 이어보기 제공; 무음 절단 금지",
+      "responsibility": "시스템",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py:50",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "D04",
+      "group": "원문 읽기·정보 전달",
+      "condition": "여러 조문 일괄 읽기 중 일부 실패",
+      "expected": "성공한 원문과 실패한 대상별 영수증 보존; 재개 시 성공분 중복 실행 방지",
+      "responsibility": "시스템",
+      "evidence": "추가 시나리오 검사 필요",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py:50",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "D05",
+      "group": "원문 읽기·정보 전달",
+      "condition": "읽을 좌표·원문 없음",
+      "expected": "MISSING과 접근 거부·도구 오류를 구분하고 대체 탐색 선택지 반환",
+      "responsibility": "시스템",
+      "evidence": "추가 시나리오 검사 필요",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py:50",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "D06",
+      "group": "원문 읽기·정보 전달",
+      "condition": "이미 확보했으나 현재 본문이 안 보임",
+      "expected": "저장 목록·읽은 범위·원래 화면 복귀 또는 재열람 제공",
+      "responsibility": "시스템",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py:50",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "D07",
+      "group": "원문 읽기·정보 전달",
+      "condition": "보류·제외 자료를 다시 읽음",
+      "expected": "읽기와 채택을 분리; 기존 판단을 자동 취소하지 않음",
+      "responsibility": "시스템",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py:50",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "D08",
+      "group": "원문 읽기·정보 전달",
+      "condition": "문맥 한도·연결 카드 요약 초과",
+      "expected": "생략 건수·조회 방법·미열람 상태 보존; 전체를 전달했다고 표현하지 않음",
+      "responsibility": "시스템",
+      "evidence": "코드 확인·대형 입력 미측정",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py:50",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "E01",
+      "group": "채택·보류·제외·복귀",
+      "condition": "실제 본문을 보고 채택",
+      "expected": "전달 영수증·쟁점·근거 span을 검증하고 채택 이유 기록",
+      "responsibility": "시스템+모델",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:647",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "E02",
+      "group": "채택·보류·제외·복귀",
+      "condition": "보류",
+      "expected": "자료·이유·출발 화면을 유지; 보류 자체를 근거 없음으로 바꾸지 않음",
+      "responsibility": "시스템",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:647",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "E03",
+      "group": "채택·보류·제외·복귀",
+      "condition": "원문 검토 후 제외",
+      "expected": "현재 질문과 무관하다는 모델 이유를 저장; 나중 재검토 가능",
+      "responsibility": "시스템+모델",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:647",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "E04",
+      "group": "채택·보류·제외·복귀",
+      "condition": "과거 검색·읽기·참조 화면 RETURN_TO",
+      "expected": "당시 선택지를 복원하고 이후 확보 자료·판단·현재 권한 유지",
+      "responsibility": "시스템",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:647",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "E05",
+      "group": "채택·보류·제외·복귀",
+      "condition": "오래된 handle·없는 선택지·상태 버전 충돌",
+      "expected": "실행하지 않고 현재 메뉴로 재선택; 충돌과 판단 오류 구분",
+      "responsibility": "시스템",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:647",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "E06",
+      "group": "채택·보류·제외·복귀",
+      "condition": "정보·선택지가 유효한데 모델이 다른 법령 선택",
+      "expected": "선택과 이유를 그대로 감사 기록; 정답 법령을 코드로 강제하지 않음",
+      "responsibility": "모델/가이드",
+      "evidence": "REG-IC24·REG-cm-039 관측",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:647",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "F01",
+      "group": "참조·정의·시행령 연결",
+      "condition": "명시 참조가 유일한 원문으로 연결",
+      "expected": "FOLLOW로 필요한 범위 읽기; 원문·연결 출처 유지",
+      "responsibility": "시스템+모델",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:322",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "F02",
+      "group": "참조·정의·시행령 연결",
+      "condition": "연결 대상이 없음·모호함·접근 불가",
+      "expected": "서로 다른 원인을 보존하고 미해결로 표시; 미확인 내용을 생성하지 않음",
+      "responsibility": "시스템",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:322",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "F03",
+      "group": "참조·정의·시행령 연결",
+      "condition": "모델이 연결을 SKIP",
+      "expected": "어느 쟁점에 불필요한지 이유 기록; 전체 링크를 강제로 읽게 하지 않음",
+      "responsibility": "모델/가이드",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:322",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "F04",
+      "group": "참조·정의·시행령 연결",
+      "condition": "모델이 연결을 DEFER",
+      "expected": "참조와 원래 메뉴를 보존하고 나중 복귀 선택지 제공",
+      "responsibility": "시스템+모델",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:322",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "F05",
+      "group": "참조·정의·시행령 연결",
+      "condition": "연결 페이지·깊이·문자 한도 도달",
+      "expected": "남은 큐와 제한 원인 표시; 중요한 미해결 쟁점은 종료 시 보존",
+      "responsibility": "시스템",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:322",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "F06",
+      "group": "참조·정의·시행령 연결",
+      "condition": "순환 참조·같은 대상 재등장",
+      "expected": "동일 원문·판본·범위의 영수증 재사용; 새 범위는 새 읽기로 처리",
+      "responsibility": "시스템",
+      "evidence": "추가 시나리오 검사 필요",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:322",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "G01",
+      "group": "판단·부족분·종료 제안",
+      "condition": "요청한 모든 쟁점을 근거로 판단",
+      "expected": "쟁점별 coverage와 근거를 기록한 뒤 완료 답변 후보 생성",
+      "responsibility": "시스템+모델",
+      "evidence": "기존 실제 응답 관측",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:61",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "G02",
+      "group": "판단·부족분·종료 제안",
+      "condition": "핵심 원문·예외 부족·조사 가능",
+      "expected": "부족분 ID와 기존 근거를 보존하며 SELECT로 돌아감",
+      "responsibility": "시스템+모델",
+      "evidence": "REG-NG13 관측",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:61",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "G03",
+      "group": "판단·부족분·종료 제안",
+      "condition": "필요한 사용자 사실 부족",
+      "expected": "법률 원문 부족과 구분; 조건부 설명 또는 필요한 사실만 질문",
+      "responsibility": "시스템+모델",
+      "evidence": "현재 계약 검사",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:61",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "G04",
+      "group": "판단·부족분·종료 제안",
+      "condition": "요청 밖 선택적 상세·연결 미확인",
+      "expected": "비필수로 명시하되 미해결 기록 보존; 정당한 범위 답변 차단 방지",
+      "responsibility": "시스템+모델",
+      "evidence": "H05 관측",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:61",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "G05",
+      "group": "판단·부족분·종료 제안",
+      "condition": "COVERED와 핵심 gap이 함께 존재",
+      "expected": "모순 필드를 특정해 같은 자료로 수정 기회 제공; 답변 강제 승인 금지",
+      "responsibility": "시스템+모델",
+      "evidence": "H10·REG-NG13 관측",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:61",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "G06",
+      "group": "판단·부족분·종료 제안",
+      "condition": "수정 출력도 모순·JSON 실패",
+      "expected": "유효하게 확정된 결과만 보존하고 미완료 이유·재개 선택지 반환",
+      "responsibility": "시스템",
+      "evidence": "H05·H10 관측",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:61",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "G07",
+      "group": "판단·부족분·종료 제안",
+      "condition": "재조사 복귀 후 새 조사 없이 FINISH",
+      "expected": "부족분을 삭제하지 않고 해결·범위 재판단·미해결 유지 중 하나를 명시",
+      "responsibility": "시스템+모델",
+      "evidence": "REG-NG13 관측·삭제 코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:61",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "G08",
+      "group": "판단·부족분·종료 제안",
+      "condition": "근거를 정확히 받았으나 의미 판단 오류",
+      "expected": "모델 오류로 기록; 사용자 가이드로 맥락·조건·정정 방법 제공",
+      "responsibility": "모델/가이드",
+      "evidence": "REG-IC24 관측",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:61",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "H01",
+      "group": "모델 호출·도구 제안 실패",
+      "condition": "JSON·스키마 오류·출력 길이 중단",
+      "expected": "실패 출력·같은 입력·허용 선택지·구체적 오류로 정해진 수정 기회",
+      "responsibility": "시스템+모델",
+      "evidence": "현재 계약 검사",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/gateway.py:192",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "H02",
+      "group": "모델 호출·도구 제안 실패",
+      "condition": "수정 기회에서도 같은 불가능한 행동",
+      "expected": "미실행 상태로 보존하고 기존 화면 재선택 또는 미완료 결과",
+      "responsibility": "시스템+모델",
+      "evidence": "REG-cm-039 관측",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/gateway.py:192",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "H03",
+      "group": "모델 호출·도구 제안 실패",
+      "condition": "확인된 429 요청 거절",
+      "expected": "허용 횟수·Retry-After·남은 시간 안에서만 재시도; 같은 예산 사용",
+      "responsibility": "시스템",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/gateway.py:192",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "H04",
+      "group": "모델 호출·도구 제안 실패",
+      "condition": "시간 초과·5xx·수락 여부 불명",
+      "expected": "UNKNOWN으로 보존; 성공/미실행을 추정하지 않고 중복 호출 정책 분리",
+      "responsibility": "시스템",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/gateway.py:192",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "H05",
+      "group": "모델 호출·도구 제안 실패",
+      "condition": "응답 모델·provider·반출 정책 불일치",
+      "expected": "수정 가능한 문장 오류로 취급하지 않고 보호 경계에서 중단",
+      "responsibility": "시스템",
+      "evidence": "현재 계약 검사",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/gateway.py:192",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "H06",
+      "group": "모델 호출·도구 제안 실패",
+      "condition": "모델 없는 호스트 도구 예외",
+      "expected": "대상·단계·부분 성공·오류 분류 보존; NOT_FOUND로 뭉개지 않음",
+      "responsibility": "시스템",
+      "evidence": "추가 시나리오 검사 필요",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/gateway.py:192",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "I01",
+      "group": "진전·예산·중단·재개",
+      "condition": "새 원문·새 판단 상태로 진전",
+      "expected": "진전 근거를 기록하고 허용된 예산 안에서 계속",
+      "responsibility": "시스템",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py:12",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "I02",
+      "group": "진전·예산·중단·재개",
+      "condition": "같은 상태·같은 실패 반복",
+      "expected": "전체 초기화 대신 현재 성과 보존; 조사 중단과 답변 가능성 별도 판단",
+      "responsibility": "시스템",
+      "evidence": "REG-cm-039 관측",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py:12",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "I03",
+      "group": "진전·예산·중단·재개",
+      "condition": "모델·도구 예산 소진",
+      "expected": "새 조사를 멈추고 확보 근거·미해결·중단 원인을 사용자에게 반환",
+      "responsibility": "시스템",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py:12",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "I04",
+      "group": "진전·예산·중단·재개",
+      "condition": "요청 deadline·단계 timeout",
+      "expected": "부분 성공을 보존하고 시간 초과와 근거 없음 구분",
+      "responsibility": "시스템",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py:12",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "I05",
+      "group": "진전·예산·중단·재개",
+      "condition": "프로세스 중단 후 같은 요청 재개",
+      "expected": "저장 checkpoint와 실제 수행 영수증에서 재개; 호출 예산·deadline 유지",
+      "responsibility": "시스템",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py:12",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "I06",
+      "group": "진전·예산·중단·재개",
+      "condition": "이미 완료된 같은 request ID",
+      "expected": "저장 응답을 현재 권한·원문으로 재검증 후 반환; 모델 재호출 금지",
+      "responsibility": "시스템",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py:12",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "I07",
+      "group": "진전·예산·중단·재개",
+      "condition": "동일 ID에 다른 입력·동시 정정·늦은 응답",
+      "expected": "충돌 응답으로 분리하고 현재 revision 오염 방지",
+      "responsibility": "시스템",
+      "evidence": "코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py:12",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "I08",
+      "group": "진전·예산·중단·재개",
+      "condition": "사용자 중단·클라이언트 연결 해제",
+      "expected": "전달 중단과 계산 중단을 구분; 저장 상태·동작 중 여부·재개 가능성 표시",
+      "responsibility": "시스템",
+      "evidence": "직접 SSE 일부 계약 검사·전체 추가 필요",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py:12",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "J01",
+      "group": "게시·저장·두 소비자·운영 경계",
+      "condition": "전부 해결된 답변",
+      "expected": "확정 claims와 원문 인용만 렌더링; 완료 상태 게시",
+      "responsibility": "시스템",
+      "evidence": "현재 계약 검사",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py:41",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "J02",
+      "group": "게시·저장·두 소비자·운영 경계",
+      "condition": "일부만 해결된 답변",
+      "expected": "확정된 부분과 미해결 쟁점을 함께 표시; 전체 완료로 표시하지 않음",
+      "responsibility": "시스템",
+      "evidence": "현재 계약 검사",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py:41",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "J03",
+      "group": "게시·저장·두 소비자·운영 경계",
+      "condition": "채택 원문은 있으나 확정 판단 없음",
+      "expected": "조사 결과·미완료 사유를 보여 주되 검증 실패 초안을 법률 답변으로 게시하지 않음",
+      "responsibility": "시스템",
+      "evidence": "현행 미흡·추가 검사 필요",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py:41",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "J04",
+      "group": "게시·저장·두 소비자·운영 경계",
+      "condition": "검색 범위에서 근거 못 찾음",
+      "expected": "검색 범위·시도·종료 이유 표시; 상류 오류와 다른 결과 유형",
+      "responsibility": "시스템",
+      "evidence": "추가 시나리오 검사 필요",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py:41",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "J05",
+      "group": "게시·저장·두 소비자·운영 경계",
+      "condition": "원문·권한·사건 revision이 게시 직전 변경",
+      "expected": "현재성 검증으로 게시 차단하고 재검증/재조사 경로 명시",
+      "responsibility": "시스템",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py:41",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "J06",
+      "group": "게시·저장·두 소비자·운영 경계",
+      "condition": "판단에 없던 문장·인용을 최종 구성에서 추가",
+      "expected": "닫힌 구성 계약으로 거절; 생성한 초안이 최종 정본이 되지 않음",
+      "responsibility": "시스템",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py:41",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "J07",
+      "group": "게시·저장·두 소비자·운영 경계",
+      "condition": "DB 반영·파일 export 중 일부만 성공",
+      "expected": "outbox와 결과 해시로 중복 없이 복구; 완료 추정 금지",
+      "responsibility": "시스템",
+      "evidence": "기존 검사 연결·이번 미실행",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py:41",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "J08",
+      "group": "게시·저장·두 소비자·운영 경계",
+      "condition": "오류 응답에도 조사 기록·재개 정보 필요",
+      "expected": "권한에 맞는 공개 요약과 조회 handle을 두 경로 모두 전달",
+      "responsibility": "시스템",
+      "evidence": "진단 5필드 축약 코드 확인",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py:41",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "J09",
+      "group": "게시·저장·두 소비자·운영 경계",
+      "condition": "직접 JSON/SSE·별도 워크플로우 표시 차이",
+      "expected": "하나의 결과 의미를 모든 소비자가 동일하게 표시",
+      "responsibility": "시스템",
+      "evidence": "현재 계약 검사",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py:41",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    },
+    {
+      "id": "J10",
+      "group": "게시·저장·두 소비자·운영 경계",
+      "condition": "앞단 Socket.IO·GENOS 실제 내부 모델",
+      "expected": "다른 에이전트의 앞단 작업과 후속 계약 연동; 현장 결과를 별도 검증",
+      "responsibility": "연동/현장",
+      "evidence": "이번 범위 밖·미검증",
+      "source": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py:41",
+      "verification": "현재 상태/입력/선택지 → 결정 → 실제 실행 영수증 → 저장 상태 → 사용자 결과를 대조. 기대 행동은 목표이며 미실행 항목을 PASS로 보지 않는다."
+    }
+  ]
+}

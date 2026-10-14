@@ -84,15 +84,16 @@ class ShortcutCases(CaseRepository):
         # Never replay a new-case command over an existing goal/correction.
         data={'utterance':context['utterance'],'allowed_documents':context['allowed_documents'],
               'goals':context['goals']}
-        command=None
-        if not context['goals']:
+        entry=getattr(self.executor,'request_entry',None)
+        command=entry['command'] if entry else None
+        if command is None and not context['goals'] and not self.flags.get('core_evidence_route'):
             command,_=self.procedure.lookup('command',context['utterance'],data)
         else:
             self.procedure.event('command',{'status':'DEVIATION','reason':'CURRENT_CASE_STATE_REQUIRES_DECISION',
                                           'actual_input':data})
         if command is None:
             command=super().resolve(context)
-            if not context['goals'] and command['action']=='START':
+            if not context['goals'] and command['action']=='START' and not self.flags.get('core_evidence_route'):
                 self.procedure.save('command',context['utterance'],data,command,decision='MODEL_AND_COMMAND_VALIDATOR')
         self.admit(command,context)
         if command['action']=='START' and context['goals'] and not body.get('investigation_id'):
@@ -124,8 +125,12 @@ class ShortcutCases(CaseRepository):
 
     def context(self,session,principal,utterance):
         context=super().context(session,principal,utterance)
-        if self.flags.get('hint') and principal.get('authenticated'):
-            pages=self.shortcut.search(principal,limit=8)['pages']
+        if self.flags.get('hint') and not self.flags.get('bounded_recall') and principal.get('authenticated'):
+            # Common curated source entries are looked up by the literal
+            # current request in RECALL, without flooding the private hint menu.
+            pages=self.shortcut.search(principal,limit=8,include_common=False)['pages']
+            if self.executor.model.pipeline.term_agent.transport.binding['trust_zone']=='external':
+                pages=[p for p in pages if not p.get('core_evidence_route') or p['core_evidence_route']['public_only']]
             # Only topic/questions, never unverified stored conclusions.
             context['legal_wiki']=[{'unit_id':p['unit_id'],'revision':p['revision'],'topic':p['topic'],'question':p['question'],
                                     'use_mode':'HINT','verification':'UNVERIFIED'} for p in pages]

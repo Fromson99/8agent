@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Run in a Linux terminal: bash JOIN_TRANSFER_ZIP.txt data.zip.parts
+set -Eeuo pipefail
+
+parts_dir="${1:-}"
+if [[ -z "$parts_dir" ]]; then
+    read -r -p 'Parts directory (example: data.zip.parts): ' parts_dir
+fi
+cd -- "$parts_dir"
+read -r expected_hash zip_name < ORIGINAL.sha256
+if [[ ! "$expected_hash" =~ ^[0-9a-fA-F]{64}$ || -z "$zip_name" ||
+      "$zip_name" == . || "$zip_name" == .. || "$zip_name" == */* ||
+      "$zip_name" == *\\* || "$zip_name" == *$'\n'* || "$zip_name" == *$'\r'* ]]; then
+    printf '%s\n' 'ERROR: invalid original checksum metadata.' >&2
+    exit 1
+fi
+shopt -s nullglob
+parts=(./"${zip_name}".part*)
+if (( ${#parts[@]} == 0 )); then
+    printf '%s\n' 'ERROR: no parts found.' >&2
+    exit 1
+fi
+for part in "${parts[@]}"; do
+    if [[ ! -f "$part" || -L "$part" ]]; then
+        printf 'ERROR: regular part file required: %s\n' "$part" >&2
+        exit 1
+    fi
+    size="$(wc -c < "$part")"
+    if (( size < 1 || size > 49000000 )); then
+        printf 'ERROR: invalid part size: %s\n' "$part" >&2
+        exit 1
+    fi
+done
+sha256sum -c -- PARTS.sha256
+output="../${zip_name%.*}_restored.zip"
+if [[ -e "$output" || -L "$output" ]]; then
+    printf 'ERROR: output already exists; preserved: %s\n' "$output" >&2
+    exit 1
+fi
+temporary="$(mktemp -- "${output}.partial-XXXXXXXX")"
+trap 'printf "FAILED: incomplete restored file preserved at %s\n" "$temporary" >&2' ERR
+trap 'printf "INTERRUPTED: incomplete restored file preserved at %s\n" "$temporary" >&2; exit 130' INT TERM
+cat -- "${parts[@]}" > "$temporary"
+joined_line="$(sha256sum < "$temporary")"
+if [[ "${joined_line%% *}" != "${expected_hash,,}" ]]; then
+    printf '%s\n' 'ERROR: restored file SHA-256 differs from original.' >&2
+    false
+fi
+mv -n -T -- "$temporary" "$output"
+if [[ -f "$temporary" ]]; then
+    printf '%s\n' 'ERROR: another output appeared; existing output is preserved.' >&2
+    false
+fi
+trap - ERR INT TERM
+printf 'OK: restored %s/%s\n' "$PWD" "$output"
+printf 'Verified original SHA-256: %s\n' "$expected_hash"

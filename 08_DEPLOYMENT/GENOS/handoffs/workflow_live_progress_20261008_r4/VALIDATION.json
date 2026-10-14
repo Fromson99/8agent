@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "scope": "native foldable panel preserved; no preparation/status prose in answer body",
+  "working_contracts": 102,
+  "exact_editor_contracts": 12,
+  "source_path": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+  "source_sha256": "7e6996856d406f7cd8eb7e7fabb09531670ca26f38b1fdce4a1b5fa6f8275c7b",
+  "paste_sha256": "b3f921977535ccf88c5906b27371e7167878e7390dc6ef82c4160d37f9a01abb",
+  "logs": {
+    "contracts.txt": "6b7c6535131fe4acde66bbf6ce1fff02e909ed995a4fdbfaf79639a44799ec42",
+    "exact-editor-tests.txt": "dba9aa5bad917bf17d50688b8043eff465fe886aa2361e4416da7a4be3354efc"
+  },
+  "audit_root": "09_ARTIFACTS/AUDITS/20261008-workflow-panel-only-r4",
+  "native_feature_reference": "09_ARTIFACTS/AUDITS/20261008-workflow-live-cards-restore-r2/native-feature-reference.json",
+  "native_feature_reference_sha256": "85769eaf04e516013fce67a2b1d659139b905df8066681d02400c57b0b760c3f",
+  "panel_contract": [
+    "preparation and actual activity cards before final result",
+    "cumulative agentFlowExecutedData",
+    "nodeId/status FINISHED",
+    "Visible Reasoner / JSON visible_rationale",
+    "verified answer token only; no preparation prefix or final answer delimiter",
+    "end event",
+    "same emitted cards in final dict"
+  ],
+  "preserved_settings": [
+    "unset",
+    "on",
+    "socketio",
+    "socketio-inline maps to socketio"
+  ],
+  "local_http_transport": "PASS",
+  "backend_call_count": "one per request",
+  "model_calls": 0,
+  "genos_access": false,
+  "field_workflow_test": "NOT_RUN",
+  "local_active_pointer_sha256": "ed89ee45580e1e95108c9147bddc8be5e00396b741c7a51fc4c3cd3db6d9338c",
+  "local_active_pointer_changed": false,
+  "predecessor": "workflow_live_progress_20261008_r3",
+  "corrected_prior_inference": "R3 interpreted token-render requirement as needing a nonempty preparation token before cards; saved 514 bridge emits cards first then actual answer tokens."
+}

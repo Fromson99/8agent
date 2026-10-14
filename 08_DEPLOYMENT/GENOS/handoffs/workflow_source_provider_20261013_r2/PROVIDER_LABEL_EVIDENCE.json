@@ -1,0 +1,71 @@
+{
+  "dictionary_path": "01_DATA/LEXICON/glossary-v1/boundary-20260914-v3/dictionary.sqlite",
+  "dictionary_sha256": "dc13f302aaffbdcd6f6256a834974da162723a1847e4e63837030c986874a404",
+  "entries": [
+    {
+      "id": "moleg:everyday_terms:25845",
+      "source": "moleg",
+      "label": "한국거래소",
+      "english": ""
+    },
+    {
+      "id": "moleg:everyday_terms:73745",
+      "source": "moleg",
+      "label": "KRX",
+      "english": ""
+    },
+    {
+      "id": "econedu:public-20260912:row:2887",
+      "source": "econedu",
+      "label": "한국금융투자협회(KOFIA)",
+      "english": ""
+    },
+    {
+      "id": "moleg:everyday_terms:47385",
+      "source": "moleg",
+      "label": "한국금융투자협회",
+      "english": ""
+    },
+    {
+      "id": "moleg:everyday_terms:13159",
+      "source": "moleg",
+      "label": "금융위원회",
+      "english": ""
+    },
+    {
+      "id": "moleg:knowledge_terms:720177",
+      "source": "moleg",
+      "label": "법령해석",
+      "english": ""
+    },
+    {
+      "id": "moleg:knowledge_terms:531643",
+      "source": "moleg",
+      "label": "판례",
+      "english": ""
+    }
+  ],
+  "mapping": {
+    "krx": "한국거래소",
+    "kofia": "한국금융투자협회",
+    "law": "법제처",
+    "moleg": "법제처",
+    "fsc": "금융위원회",
+    "expc": "법제처 (법령해석례)",
+    "prec": "판례",
+    "internal": "내부 규정"
+  },
+  "law_basis": "User-specified source heading 법제처; MOLEG source registry and glossary collection source. No exact 법제처 glossary headword exists; source heading, not law enactment authority.",
+  "scope": "Presentation snapshot only; no new semantic synonym or glossary approval; no runtime SQLite dependency in GENOS editor.",
+  "selected_local_db_source_counts": {
+    "unprefixed": 2,
+    "external/risk_team/law": 330,
+    "external/financial_team/krx": 61,
+    "external/financial_team/law": 1101,
+    "external/financial_team/kofia": 13,
+    "internal/financial_team": 10,
+    "external/risk_team/kofia": 29
+  },
+  "actual_GENOS_database": "Unavailable; no field DB lookup claimed",
+  "additional_registry": "semantic_runtime.folder_navigation.PUBLIC_PROVIDERS; lawrag.pipeline collect_expc/fsc/prec module descriptions"
+}

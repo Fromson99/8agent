@@ -1,0 +1,29 @@
+<p>CM51 shortcut·legal_wiki의 <b>환경변수와 배포·등록 순서 보충 안내</b>입니다. 방금 대화에서 설명한 내용을 전체 명령과 함께 TXT로 정리했습니다.</p>
+<p><b>코드·데이터 실행 파일은 기존 최종 R4를 그대로 사용합니다.</b> 이번 안내 R1은 새 코드 릴리스가 아닙니다. 이미 R4 check/apply/verify가 성공한 현재 상태에서는 후속 검사·commit/gate/push·리비전 배포·데이터 등록을 진행하면 됩니다.</p>
+<p>사진에서는 CODE_APPLIED, ENGINE_BINDINGS PASS, CORE_SHORTCUT_ALL_PROFILES PASS와 종료코드0을 확인했습니다. CM51 데이터 등록, 새 코드서빙 리비전 배포 및 실제 질문 성공은 별도 단계입니다.</p>
+<p><b>환경변수를 등록할 위치</b></p>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>변수</th><th>의미</th><th>설정 위치</th></tr>
+<tr><td>GENOS_DEV_ROOT</td><td>기존 Git checkout. 현재 $HOME/DEV</td><td>현재 터미널. 생략하면 기존 기본값 사용</td></tr>
+<tr><td>GENOS_GENERATION</td><td>실제 법령 원문·검색 색인이 있는 generation 폴더의 절대경로</td><td>터미널 + 코드서빙 새 리비전</td></tr>
+<tr><td>GENOS_RUNTIME_DIR</td><td>사례 DB·실행 상태의 영속 runtime 폴더</td><td>코드서빙 새 리비전. 터미널도 같은 실제 값 사용</td></tr>
+<tr><td>GENOS_STATE_DIR</td><td>사례 DB를 runtime과 다른 저장소에 둘 때 사용하는 경로</td><td>기존 서비스가 사용 중일 때만 양쪽에 같은 값. 미설정이면 추가하지 않음</td></tr>
+<tr><td>CM_CODE_BACKUP</td><td>R4 apply가 출력한 BACKUP= 뒤의 전체 경로</td><td>터미널. gate/코드 원복용</td></tr>
+<tr><td>CM_RUNTIME_DIR</td><td>등록할 서비스 runtime. GENOS_RUNTIME_DIR와 같은 값</td><td>터미널. data 명령용</td></tr>
+<tr><td>CM_PRINCIPAL_FILE</td><td>실제 사용자·팀·허용 문서를 적은 JSON 파일 경로</td><td>터미널. 파일도 생성해야 함</td></tr>
+<tr><td>CM_RECEIPT_FILE</td><td>등록 결과·재실행·원복 receipt JSON 경로</td><td>터미널. 첫 등록 전에 파일이 없어도 됨. 사용자·팀별 보존</td></tr>
+</table>
+<p>코드스페이스 환경변수는 개발 컨테이너용이며 코드서빙에 자동 전달된다고 가정하지 않습니다. 지금 터미널에는 export를 사용하고, 실제 서비스용 GENOS_GENERATION/GENOS_RUNTIME_DIR는 배포할 새 리비전에도 등록해 주세요. CM_ 보조 변수는 코드서빙 환경변수에 넣을 필요가 없습니다.</p>
+<p><b>실행 순서</b></p>
+<ol>
+<li>현재 터미널의 경로를 설정하고 실제 요청의 user_id/team_id로 principal JSON을 생성합니다. 현재 팀별 문서 선택 기준으로 문서 ID를 읽는 Python 전체 명령을 안내 TXT에 넣었습니다. 별도 ACL이 있으면 그 실제 허용 범위도 유지합니다.</li>
+<li>data-check에서 cases=51, source_entries=98과 원문·권한 결속을 확인합니다. 실패하면 다음 단계로 넘어가지 않습니다.</li>
+<li>기존 ~/DEV에서 변경 목록을 확인하고 commit합니다. R4 backup receipt에 기록된 36파일만 stage하는 명령을 넣었습니다. 동일 checkout의 gate가 PASS일 때 push하고 커밋 해시를 기록합니다.</li>
+<li>기존 RAG 코드서빙의 새 리비전에서 그 커밋과 동일 generation/runtime/state를 선택하고 배포·승인·실제 트래픽을 확인합니다. 기존 내부 모델 인증·빌드·시작 명령·실행 모드와 workflow Python 단계는 유지합니다.</li>
+<li>서비스와 같은 영속 runtime/state에 data-import, 성공 후 data-verify를 실행합니다.</li>
+<li>등록한 동일 사용자·팀으로 워크플로우 테스트 화면에서 “벤처기업의 주식매수선택권은 언제부터 행사할 수 있나요?”를 실행하고 CORE_EVIDENCE_ROUTE_USED와 벤처기업법/시행령 근거, 답변·예외 판단을 확인합니다.</li>
+</ol>
+<p>실제 user_id는 로그인 이름을 추측하지 말고 workflow가 코드서빙에 전달한 값으로 맞춰 주세요. 멀티턴에서는 u-… 해시 형태일 수 있습니다. team_id도 현재 workflow의 TEAM_ID/실제 요청과 동일해야 합니다. 로컬 jin/CM을 복사하지 않습니다.</p>
+<p><b>첨부 5개:</b> 전체 환경변수·배포 안내 TXT, 기존 최종 R4 독립 RUN TXT, 같은 R4의 원본 GUIDE_UTF8.txt, 원본 VALIDATION_SUMMARY.txt, 이번 첨부용 SHA256SUMS입니다. 사진에서 해시가 달랐던 두 안내 문서는 이번 원본으로 맞춰 주세요. 실행 TXT는 기존 R4 발송본과 동일한 해시입니다.</p>
+<p>첨부 폴더에서 <code>sha256sum -c SHA256SUMS_CM51_ENV_DEPLOY_20261007_R1.txt</code>로 확인할 수 있습니다. 데이터 등록·코드 원복 명령과 각 단계의 기대 결과도 전체 안내에 포함했습니다. 현장에서는 python3를 사용합니다.</p>
+<p>이번 메일은 안내 전달입니다. 망분리 GENOS의 배포 실행이나 내부 모델 답변 성공을 완료했다고 보고하는 것은 아닙니다.</p>

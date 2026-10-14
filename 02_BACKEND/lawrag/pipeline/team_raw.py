@@ -61,6 +61,31 @@ def config(data):
     return value
 
 
+def build_exclusions(data):
+    """Optional operator selection; exact original hashes remain accountable."""
+    path = plain_path(Path(data) / 'CATALOG/BUILD_EXCLUSIONS.json')
+    if not path.exists():
+        return None, {}
+    value = json.loads(path.read_text())
+    if value.get('schema_version') != 'document-build-exclusions-v1' or not isinstance(value.get('documents'), list):
+        raise ValueError('invalid document build exclusions')
+    excluded = {}
+    for item in value['documents']:
+        relative = Path(item['path'])
+        if (relative.is_absolute() or '..' in relative.parts or len(relative.parts) < 5
+                or relative.parts[:2] not in {('RAW', 'external'), ('RAW', 'internal')}):
+            raise ValueError('invalid excluded input path')
+        if (not re.fullmatch(r'[0-9a-f]{64}', item.get('sha256', ''))
+                or item.get('document_id') != item['sha256'][:16]
+                or not isinstance(item.get('reason'), str) or not item['reason'].strip()):
+            raise ValueError('invalid excluded input identity/reason')
+        key = relative.as_posix()
+        if key in excluded:
+            raise ValueError('duplicate excluded input path')
+        excluded[key] = item
+    return {'path': str(path.relative_to(data)), 'sha256': sha(path)}, excluded
+
+
 def inputs(data, *, only_internal=False, exclude_internal=False, teams=None):
     """Read only the explicitly selected source/team branches; arbitrary teams work."""
     raw = plain_path(Path(data) / 'RAW')
@@ -261,6 +286,7 @@ def collect(data, bindings=None, *, only_internal=False, exclude_internal=False,
             only_internal_pdf=False, limit=None):
     """Pair native/PDF inputs and keep origin/team/category names in source.sqlite."""
     cfg = config(data) or {'files': {}}
+    exclusion_binding, exclusions = build_exclusions(data)
     from . import union_file
     union = union_file.load(data, cfg)
     rows, ignored, errors, assets = [], [], [], {}
@@ -337,12 +363,27 @@ def collect(data, bindings=None, *, only_internal=False, exclude_internal=False,
             merge_context(old, row)
         else:
             unique[row['document_id']] = row
-    rows = list(unique.values())[:limit]
+    rows = []
+    for row in unique.values():
+        item = exclusions.get(str(Path(row['path']).relative_to(data)))
+        if item:
+            if row['sha256'] != item['sha256'] or row['document_id'] != item['document_id']:
+                raise ValueError('excluded input changed; review operator selection: ' + row['path'])
+            ignored.append({'source': row['source'], 'path': row['path'],
+                            'document_id': row['document_id'], 'sha256': row['sha256'],
+                            'reason': 'operator_excluded_input', 'operator_reason': item['reason'],
+                            'original_preserved': True})
+        else:
+            rows.append(row)
+    rows = rows[:limit]
     plan = {'input_root': str(data / 'RAW'), 'files': rows, 'ignored': ignored, 'format_assets': assets,
             'bindings_sha256': sha(bindings) if bindings else None, 'input_contract': VERSION,
             'union_file_sha256': sha(data / union_file.RELATIVE) if union['entries'] else None,
             'representation_policy': builder.REPRESENTATION_POLICY, 'all_corpus': True}
     report = {'files': rows, 'errors': errors, 'excluded': ignored, 'sources': {}, 'warnings': [],
               'aliases': [], 'manifest_hashes': {}, 'ok': bool(rows) and not errors, 'unique_documents': len(rows)}
+    if exclusion_binding:
+        plan['input_exclusions'] = exclusion_binding
+        report['input_exclusions'] = exclusion_binding
     emit(f'[TEAM] {len(rows)} documents; {len(errors)} input errors')
     return plan, report

@@ -76,7 +76,7 @@ def prepare(root,code_root,generation,release_id,authorization,validation,integr
         (dest/'code'/path).parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(code_root/path,dest/'code'/path)
     (dest/'code/06_TOOLS').mkdir(parents=True,exist_ok=True)
     shutil.copyfile(code_root/'service.py',dest/'code/service.py')
-    for relative in ('main.py','service/service.py','08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py','08_DEPLOYMENT/GENOS/stream_app.py','08_DEPLOYMENT/GENOS/start_sse.py'):
+    for relative in ('main.py','main_workflow.py','main_router.py','main_integrated.py','genos_diagnostics.py','genos_log_runner.py','service/service.py','08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py','08_DEPLOYMENT/GENOS/stream_app.py','08_DEPLOYMENT/GENOS/start_sse.py'):
         target=dest/'code'/relative;target.parent.mkdir(parents=True,exist_ok=True)
         shutil.copyfile(code_root/relative,target)
     shutil.copyfile(code_root/'06_TOOLS/serve.sh',dest/'code/06_TOOLS/serve.sh')

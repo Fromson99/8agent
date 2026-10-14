@@ -1,0 +1,126 @@
+GENOS SVG 개선본 + 핵심 진행 로그 재반영 R3 — 2026-10-08
+사용본: GENOS_RAG_PROGRESS_GRAPH_20261008_R3
+그래프: judgment-knowledge-svg-20261008-r9
+진행: rag-key-progress-20261007-r1
+이전 발송 GENOS_RAG_PROGRESS_GRAPH_20261007_R2 대신 이번 R3를 사용합니다.
+
+1. 이번 반입 범위
+짙은 그래파이트 배경, 청록 법령·블루 원문·앰버 판단, 원형 아이콘과 유형의 색을
+잇는 곡선, 법령 중심의 조문별 분기로 SVG를 개선했습니다.
+대기/경과 초/모델 START·종료는 화면에서 제외하고 핵심 판단, 실제 검색값,
+법령 열람 시작과 조사 복귀 이유를 짧게 표시합니다. 원문 인용과 오류 원문은 보존합니다.
+현재 질문·revision·route·근거 해시를 확인한 뒤 답변 아래 접힌 그래프에 표시합니다.
+
+검증한 캐시/시스템 로그/기존 표시 설치 상태와 CM R8·R10·R11·R12·R13·R14·R15를
+포함한 완전한 코드 지문81종에서 표시 코드와 그 의존성·pin만 적용합니다.
+기존 service.py 바이트, CM 원문 연결·공통 등록 모듈, 조사 한도 설정, 데이터 경로,
+검색 캐시·검색 정책·권한·세션·일반 로그·SQL DB·원문 generation은 보존합니다.
+알 수 없는 수정은 덮어쓰지 않습니다. 완전한 설치 inventory와 engine/schema pin을
+쓰기 전에 확인하고, 생성한 결과도 동결된 출력 지문과 대조합니다.
+
+2. ZIP 해제와 코드 적용 — 기존 ~/DEV
+ZIP은 실행 TXT·표시 소스·명세·전체 워크플로우·안내·검증·모의 PNG를 포함합니다.
+ZIP을 DEV 루트에 덮어 풀지 않습니다. 아래대로 TRANSFER에 해제하고 RUN이 기존
+DEV의 파일을 백업한 뒤 해당 설치 코드에 맞는 변경만 반영하도록 합니다.
+ZIP의 CODE_MANIFEST는 반입 패키지 목록입니다. 실제 배포 코드의 manifest/전체 ZIP은
+RUN이 적용한 checkout에서 별도로 만들어 BACKUP 위치에 보존합니다.
+
+python3 -m zipfile -e ~/DEV/TRANSFER/GENOS_RAG_PROGRESS_GRAPH_20261008_R3.zip ~/DEV/TRANSFER/rag-progress-graph-r3-delivery
+cd ~/DEV/TRANSFER/rag-progress-graph-r3-delivery
+sha256sum -c PACKAGE_SHA256SUMS.txt
+bash GENOS_RAG_PROGRESS_GRAPH_20261008_R3_RUN.txt
+
+별도 첨부 RUN TXT만 TRANSFER에 올렸으면 bash로 실행해도 됩니다. 실행 TXT는
+필요한 코드·명세·로그 수집기를 같은 해시로 내장합니다. 인자 없이 실행하면 apply와
+설치 코드 검증을 수행합니다. check/apply/verify/undo/gate 모드도 사용할 수 있습니다.
+DEV 선택은 GENOS_DEV_ROOT → GENOS_DEV → ~/DEV 순서이며 루트 링크를 해결합니다.
+Python은 현장의 python3를 사용하고 실제 실행 파일과 버전을 로그에 남깁니다.
+
+bash GENOS_RAG_PROGRESS_GRAPH_20261008_R3_RUN.txt check
+bash GENOS_RAG_PROGRESS_GRAPH_20261008_R3_RUN.txt verify
+
+출력에서 다음 세 항목을 확인하십시오.
+- RAG_DISPLAY_ALL_PROFILES PASS
+- DISPLAY_WIRING: 실제 읽힌 genos_rag_chat.py의 절대경로
+- DISPLAY_REVISIONS: 진행 R1 / chat adapter R9 / judgment SVG R9
+BACKUP, APPLIED_CODE_ZIP, CODE_ZIP_SHA256과 최종 CODE_APPLIED를 보관합니다.
+같은 apply 재실행은 전체 코드/결속 확인 후 ALREADY_APPLIED입니다.
+
+가장 초기 검색 캐시/시스템 로그 설치본에 DB 상세 로그 롤백 R3가 아직 없으면
+기존 파일 결속 때문에 R3 check가 거부될 수 있습니다. 함께 넣은 이전 검증 TXT로
+check/apply/verify를 마친 뒤 위 R3를 실행합니다. 이미 CM 또는 표시 코드를
+적용한 상태에서 R3 check가 통과하면 이 선행 TXT를 다시 실행하지 않습니다.
+
+bash GENOS_DB_LOG_ROLLBACK_20261007_R3_RUN.txt check
+bash GENOS_DB_LOG_ROLLBACK_20261007_R3_RUN.txt apply
+bash GENOS_DB_LOG_ROLLBACK_20261007_R3_RUN.txt verify
+
+CHECKOUT_DRIFT, 알 수 없는 코드 지문 또는 generation 연결 오류는 임의 rehash로
+넘기지 않습니다. 현재 파일과 로그를 보존해 실제 적용 상태를 확인해야 합니다.
+
+3. Git push와 코드서빙 리비전 — 코드 적용과 별도
+작업 전에 있던 다른 변경을 섞지 말고, BACKUP/receipt.json의 files에 있는 적용
+파일을 검토해 실제 DEV checkout에 commit합니다. 새 로그 모듈, engine JSON,
+PIPELINE, CODE_MANIFEST도 포함합니다. git diff --check와 git status를 확인합니다.
+
+현장 출력으로 채울 값:
+TASK_BACKUP = 이번 apply가 출력한 BACKUP 절대경로
+GENOS_GENERATION = 코드서빙이 실제 선택한 기존 generation 절대경로
+CM을 적용한 경우 00_SYSTEM/GENOS_SERVING_PATHS.json의 generation과 manifest 해시를
+사용하되 실제 코드서빙이 같은 경로를 선택하는지 별도로 확인합니다.
+
+export TASK_BACKUP='/이번_apply가_출력한_BACKUP_절대경로'
+export GENOS_GENERATION='/현재_코드서빙의_선택_generation_절대경로'
+bash GENOS_RAG_PROGRESS_GRAPH_20261008_R3_RUN.txt gate "$TASK_BACKUP" --generation "$GENOS_GENERATION"
+
+gate는 commit된 동일 DEV와 APPLIED_CODE.zip의 파일을 대조하고 그 checkout의
+Python으로 generation E2E와 verify_assets를 실행합니다. 다른 후보 폴더의 PASS를
+push할 코드의 PASS로 옮기지 않습니다. 통과 후 수정하면 다시 commit/gate합니다.
+통과한 commit을 기존 origin에 push한 뒤 새 코드서빙 리비전을 배포합니다.
+그 리비전의 commit, 선택 generation 절대경로·manifest SHA, 표시 R9를 확인합니다.
+apply, commit, gate, push, 리비전 배포, 화면 성공은 각각 별도 상태입니다.
+
+4. 분리 워크플로우 편집기 — 반드시 별도 반영
+분리 Python 단계를 사용하는 경우 첨부된
+GENOS_RAG_PROGRESS_GRAPH_20261008_R3_WORKFLOW_PASTE_ALL.txt 전체를 기존 Python
+단계 편집기에 반영합니다. 코드 ZIP 적용과 Git push로 편집기가 바뀌지 않습니다.
+로그 수집기를 같은 해시로 내장했으며 기존 endpoint/모드/포트/인증 설정은 유지합니다.
+직접 main.py 또는 integrated /chat 경로는 배포된 R9 adapter가 같은 번들의 표시
+코드를 읽습니다. Socket.IO 송신은 새로 켜지 않습니다.
+
+5. 최종 확인 — 워크플로우 테스트 화면
+질의와 warmup은 워크플로우 테스트 화면에서만 확인합니다.
+기존 공개 예시: 상법 제4조의 상인 정의를 설명해 주세요.
+대기 로그가 사라졌는지, 한 줄 한 법령/실제 검색값/복귀 이유가 보이는지,
+답변 바로 아래 접힌 그래프에 새 색과 곡선이 표시되는지 확인합니다.
+현재 응답의 judgment_display_revision=judgment-knowledge-svg-20261008-r9와
+progress_display_revision=rag-key-progress-20261007-r1, 요청 ID를 보관합니다.
+워크플로우 편집기와 코드서빙 리비전 중 어느 쪽이 이전 코드인지 구분합니다.
+프론트가 data:image/svg+xml 이미지와 details를 실제 표시하는지는 현장에서 확인합니다.
+
+6. 실행 로그와 원복
+처음 Bash 단계부터 TRANSFER/rag-progress-graph-r3/bootstrap-logs에 지속 로그와
+DISPLAY_R3_EXIT를 남깁니다. 본 명령의 stdout/stderr/종료 상태는 로그 수집기로
+/nfs-root/diamo/8-agent/logs/system/<run_id>에 따로 보존합니다.
+GENOS_SYSTEM_LOG_DIR로 기존 현장 위치를 지정할 수 있습니다.
+NFS_COMPLETE False이면 출력 SPOOL을 보존하고 NFS 복구 후 재전송합니다.
+
+bash GENOS_RAG_PROGRESS_GRAPH_20261008_R3_RUN.txt undo "$TASK_BACKUP"
+
+현재 파일과 백업의 모든 해시를 먼저 대조한 뒤 이전 파일/pin/inventory를 복원합니다.
+후속 변경은 덮어쓰지 않습니다. 코드서빙은 이전 검증 commit/리비전으로 별도 복귀하고,
+분리 워크플로우 편집기도 이전 검증 코드를 별도로 복원합니다.
+데이터 generation, 기존 DB와 완료된 코드·실패 이력은 보존합니다.
+
+7. 검증 범위
+첨부 검증 요약의 실제 RUN 적용·재실행·원복·변조 거부, 코드 계열별 JSON/SSE/분리
+표시 계약, 같은 committed checkout의 모의 generation gate와 CM/예산 보존을 확인했습니다.
+PNG는 모의 규정의 표시 예시이며 실제 내부 모델이나 현장 실행 결과가 아닙니다.
+신규 모델 호출은 없습니다. 로컬 MAIN45 포인터와 NFS generation/CURRENT는 유지합니다.
+GENOS 실제 적용·push·리비전·워크플로우 화면/NFS 검증은 현장 결과가 필요합니다.
+
+CM R15·오류 전체 로그 R10 호환
+R15의 CM 코드 적용을 마친 상태에서 R3를 이어 실행합니다. R15의 원문 연결/등록 상태와 R3 표시 적용은 별도입니다.
+R15가 보존한 오류 로그 R10의 service.py·오류 진단/보고서/모델 오류 기록 바이트와 기존 조사 한도를 유지합니다.
+R10만 적용되고 CM R15 코드가 아직 반영되지 않은 미확인 조합에서는 R3가 중단할 수 있습니다. 기존 CM R15 안내로 코드 적용 상태를 먼저 확인합니다.
+기존 69종/690명령 검사 후 동일 설치기와 모든 기존 변환·결과·소스 불변을 대조했습니다. 최종 확장 TXT는 R15의12종 상태에서 별도 검증했습니다.

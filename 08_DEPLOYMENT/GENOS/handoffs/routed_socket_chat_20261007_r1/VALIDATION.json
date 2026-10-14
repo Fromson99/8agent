@@ -1,0 +1,71 @@
+{
+  "version": "GENOS_ROUTED_SOCKET_CHAT_20261007_R1",
+  "recorded_at": "2026-10-07T03:23:44.473108+00:00",
+  "code_zip_sha256": "2f5a7ec136f3908029fb3da84d0a2acab5abad7b3158e65e7eb1f68f486eb59a",
+  "code_manifest_sha256": "ff1430c4cea5f42d3b9a6c757de3797fb7215c65c699387ef437c2263ba5304e",
+  "apply_txt_sha256": "be685b83b0d648efcd9f45fcade598837096bf64a066009b407ae4d5a115a3c2",
+  "selected_local_baseline": {
+    "release_id": "investigation-completion-v6-20261007-r1",
+    "generation": 44,
+    "active_pointer_sha256": "9a94e01a5c27bb682ee1fefcf45b47bdd63d7b8b9ff5ff2d12a0cf276fedbde7"
+  },
+  "local_checks": [
+    {
+      "name": "new router and real Socket.IO ASGI transport",
+      "command": "PYTHONPATH=.:02_BACKEND:08_DEPLOYMENT/GENOS:05_TESTS:05_TESTS/CONTRACTS .venv/bin/python -m pytest -q --tb=short --show-capture=no 05_TESTS/CONTRACTS/test_genos_main_router_socketio.py",
+      "result": "4 passed"
+    },
+    {
+      "name": "existing HTTP chat transport",
+      "result": "7 passed",
+      "scope": "native negotiation and JSON fallback contract nodes"
+    },
+    {
+      "name": "frozen ZIP, application, repeated application, rollback, release gate and local synthetic push",
+      "command": "PYTHONPATH=.:02_BACKEND:08_DEPLOYMENT/GENOS:05_TESTS:05_TESTS/CONTRACTS .venv/bin/python -m pytest -q --tb=short --show-capture=no 08_DEPLOYMENT/GENOS/handoffs/routed_socket_chat_20261007_r1/test_delivery.py",
+      "result": "4 passed"
+    },
+    {
+      "name": "existing and integrated dependency/start checks",
+      "result": "both passed"
+    },
+    {
+      "name": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "synthetic_local_checkout": {
+    "log_archive": "LOCAL_DELIVERY_LOGS.tar.gz",
+    "log_archive_sha256": "d9ee6292589f16cf94b85ae470424ab6f200cedf392281a366d0ab1f44ec3c62",
+    "restore": "tar -xzf LOCAL_DELIVERY_LOGS.tar.gz -C <directory>",
+    "event_stages": [
+      "START",
+      "ZIP_VERIFIED",
+      "CHECKOUT_PREFLIGHT",
+      "GENERATION_SELECTED",
+      "CACHE_PREFLIGHT_PASS",
+      "CACHE_PREFLIGHT_PASS",
+      "CODE_APPLIED",
+      "SERVICE_LOADER_PASS",
+      "GENERATION_E2E_PASS",
+      "ASSETS_PASS",
+      "GIT_COMMITTED",
+      "RELEASE_GATE_PASS",
+      "GIT_PUSHED",
+      "COMPLETE"
+    ],
+    "git_commit": "cdd81b2c378cdf6406560722a228519e7c6faf43",
+    "generation_manifest_sha256": "dec8357e776af023bd4d261fc4155a63dee2c0b4e739e08824efa4c66b3da405",
+    "purpose": "Disposable local Git checkout, local bare remote, and synthetic generation only; no GENOS push or deployment."
+  },
+  "actual_genos": {
+    "code_applied": false,
+    "push_commit": null,
+    "code_serving_revision": null,
+    "chat_binding": "NOT_SELECTED",
+    "workflow_test": "NOT_RUN",
+    "socketio_rendering": "NOT_VERIFIED"
+  },
+  "local_active_pointer_changed": false,
+  "external_model_calls": 0
+}

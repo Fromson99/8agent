@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+python3 - "$@" <<'READ_FULL_LOGS'
+import argparse,gzip,os,sys,traceback
+from pathlib import Path
+p=argparse.ArgumentParser(description='List existing GENOS logs, or print selected files in full. Read only.')
+p.add_argument('--root',action='append',default=[])
+p.add_argument('--contains',help='Select files containing this literal request/run ID or error text')
+p.add_argument('--file',action='append',default=[],help='Print exactly this existing file in full')
+a=p.parse_args()
+def stream(path):
+    return gzip.open(path,'rb') if path.suffix=='.gz' else path.open('rb')
+if a.file:
+    selected=[Path(name).expanduser() for name in a.file]
+else:
+    names=a.root or [os.environ.get('GENOS_SYSTEM_LOG_DIR','/nfs-root/diamo/8-agent/logs/system')]
+    if not a.root and os.environ.get('GENOS_SHARED_LOG_DIR'):names.append(os.environ['GENOS_SHARED_LOG_DIR'])
+    roots=list(dict.fromkeys(Path(name).expanduser() for name in names));selected=[]
+    for root in roots:
+        print('LOG_ROOT='+str(root),flush=True)
+        if not root.is_dir():print('LOG_ROOT_UNAVAILABLE='+str(root),flush=True);continue
+        for path in root.rglob('*'):
+            if path.is_file() and not path.is_symlink() and path.name.endswith(('.log','.json','.jsonl','.log.gz','.json.gz','.jsonl.gz')):
+                selected.append(path)
+    selected.sort(key=lambda path:(path.stat().st_mtime_ns,str(path)))
+if a.contains:
+    needle=a.contains.encode('utf-8');matched=[]
+    for path in selected:
+        try:
+            with stream(path) as source:
+                carry=b''
+                while True:
+                    chunk=source.read(1024*1024)
+                    if not chunk:break
+                    data=carry+chunk
+                    if needle in data:matched.append(path);break
+                    carry=data[-max(len(needle)-1,0):] if len(needle)>1 else b''
+        except OSError:traceback.print_exc()
+    selected=matched
+if not a.file and not a.contains:
+    for path in selected:print(str(path),flush=True)
+    print('FILES='+str(len(selected))+'; print one with --file, or all matches with --contains',flush=True)
+else:
+    for path in selected:
+        print('\n<<< BEGIN '+str(path)+' >>>',flush=True)
+        with stream(path) as source:
+            while True:
+                chunk=source.read(1024*1024)
+                if not chunk:break
+                sys.stdout.buffer.write(chunk)
+            sys.stdout.buffer.flush()
+        print('\n<<< END '+str(path)+' >>>',flush=True)
+    print('FILES='+str(len(selected)),flush=True)
+READ_FULL_LOGS

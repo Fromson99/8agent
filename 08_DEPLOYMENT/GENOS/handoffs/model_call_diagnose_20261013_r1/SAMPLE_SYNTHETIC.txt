@@ -1,0 +1,35 @@
+합성 fixture 예시입니다. 현장 측정값이 아닙니다.
+
+GENOS 모델 호출 요약 — 원문/질문/프롬프트/답변 미출력
+request_id: req-1
+run_id: run-1
+journal: FOUND
+모델 호출 기록: 3개
+
+#01 request-entry | HTTP 200 | SUCCEEDED | unknown
+  attempt_id=M1 start=unknown
+  model=2650 max_tokens=6400 temperature=0 stream=False thinking=False
+  input_chars=102 (system=21, user=81, assistant=0, tool=0, other=0) non_text_messages=0 request_json_bytes=498
+  format=json_schema strict=True schema_bytes=81 schema_sha256=6cee2808f9af630157e8c1d888cd25733d71a68aa92ed6409fcdcc1fde70c002 enum_values=1 empty_enums=0
+  prompt_tokens=1082 completion_tokens=223 response_bytes=1500
+
+#02 source-law-navigation-1 | HTTP 200 | SUCCEEDED | unknown
+  attempt_id=M2 start=unknown
+  model=2650 max_tokens=6400 temperature=0 stream=False thinking=False
+  input_chars=132 (system=21, user=111, assistant=0, tool=0, other=0) non_text_messages=0 request_json_bytes=528
+  format=json_schema strict=True schema_bytes=81 schema_sha256=6cee2808f9af630157e8c1d888cd25733d71a68aa92ed6409fcdcc1fde70c002 enum_values=1 empty_enums=0
+  prompt_tokens=10145 completion_tokens=223 response_bytes=1500
+
+#03 source-law-navigation-2 | HTTP 500 | FAILED | 7.567s
+  attempt_id=M3 start=unknown
+  model=2650 max_tokens=6400 temperature=0 stream=False thinking=False
+  input_chars=152 (system=21, user=131, assistant=0, tool=0, other=0) non_text_messages=0 request_json_bytes=533
+  format=json_schema strict=True schema_bytes=66 schema_sha256=da02c4cc23f26640497d8048fdc6ed82ceea1d5efd5a11ff4c992e9d023a4e7b enum_values=0 empty_enums=1
+  prompt_tokens=unknown completion_tokens=unknown response_bytes=21
+  retryable=True retry_scheduled=False
+  error_body=Internal Server Error (상세 원인 없음)
+  직전 성공 #02 비교: model_same=True input_chars_delta=20 schema_same=False max_tokens_same=True
+
+input_chars는 문자열 길이이며 토큰 수가 아닙니다. request_json_bytes는 저장 요청의 재직렬화 크기입니다.
+unknown은 기록 없음입니다. 입력/스키마 변화만으로 HTTP 500의 원인을 확정할 수 없습니다.
+서버 내부 예외는 같은 시각의 LLM 서빙/게이트웨이 로그에서 확인해야 합니다.

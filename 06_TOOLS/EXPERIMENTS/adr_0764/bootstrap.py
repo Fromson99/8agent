@@ -1,0 +1,42 @@
+from pathlib import Path
+import json,hashlib,shutil,subprocess,sqlite3
+R=Path(__file__).resolve().parents[3];A=R/'04_EXPERIMENTS/ADR/ADR-0764-heading-annotation-normalization';D=A/'artifacts/design'
+read=lambda p:json.loads(p.read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+def put(p,v):p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+assert not D.exists()
+prior=R/'04_EXPERIMENTS/ADR/ADR-0762-main53-three-public-cases/artifacts/design'
+active=read(R/'01_DATA/ACTIVE/local/ACTIVE_RELEASE.json');assert active['generation']==53
+mp=R/active['manifest_path'];release=read(mp);code=R/release['code_root']
+for name,h in release['files'].items():assert sha(code/name)==h
+controls='Same MAIN53 approved65 public documents/source generation; Qwen3.8 Parasail FP8 none, no fallback, temperature0 output6400 max40calls native1800seconds; fresh process, alternating arms, one repetition, no adaptive rerun; cache unchanged.'
+criteria={'scope':'B1: remove narrowly recognized amendment/date annotations from metadata title tokens only; retain original display, original evidence, PeCab tokenizer, thresholds and all A behavior unchanged.', 'authorization':'User requested implementation and actual questions. Independent title branch; no MAIN activation.', 'hypothesis':'Amendment numbers should not dilute descriptive title matching; removal may improve some headings but does not assert P02 recovery when semantic overlap remains below unchanged threshold.', 'execution':{'cases':3,'requests':6,'order':[['P02','normalized'],['P02','baseline'],['N01','baseline'],['N01','normalized'],['N03','normalized'],['N03','baseline']],'no_adaptive_reruns':True,'model_calls_per_request_max':40}, 'quality_target':'No baseline-only source-supported or semantic regression, no changed original titles or citations. Report initial heading visibility and eventual expected source separately; no required automatic fulltext.', 'safety_gate':'Only recognized metadata annotations change matching; no global tokenizer, source content, ACL, scope, repeat guard, title threshold or cache changes.', 'performance':'All6 request costs including failures; supported pairs separately. Native40calls/1800sec budget preserved; no percent target or promotion.', 'semantic_review':'Codex offline frozen-source comparison after output; no judge or product gold.', 'sample_limit':'KnownP02 plus2 independently authored public questions. Probe in_sample=true decision_eligible=false.', 'controls':controls, 'main_wiring':'unchanged','cache_changes':False}
+put(D/'criteria.json',criteria);put(D/'baseline.json',{'manifest':release,'pointer':active,'pointer_sha256':sha(R/'01_DATA/ACTIVE/local/ACTIVE_RELEASE.json')});put(D/'releases.json',{a:{'manifest':release,'path':str(mp.relative_to(R)),'sha256':sha(mp)} for a in ['baseline','normalized']})
+old=read(prior/'dataset.json');oldgold=read(prior/'gold.json')
+cases=[next(x for x in old['cases'] if x['case_id']==cid).copy() for cid in ['P02','P01']]
+gold=[next(x for x in oldgold['cases'] if x['case_id']==cid).copy() for cid in ['P02','P01']]
+selected=[('N01','article:cdb22477af86aae19e8b6f64','저장된 코스닥시장 상장규정에서 사외이사·감사위원의 선임·해임·퇴임 신고와 주주총회 집중일 개최 신고를 정한 조항을 찾아, 각각 신고 사유와 기한을 설명해 주세요. 다른 법령이나 세칙의 세부 내용은 조사하지 말아 주세요.'),('N02','article:0b49d02a326213ae332855ea','저장된 개인정보 보호법 시행령에서 분쟁조정 전문위원회를 두는 목적, 설치가 의무인지 여부, 구성 인원과 위원·위원장을 정하는 주체를 설명해 주세요. 그 조항 안의 내용만 설명하고 다른 조문은 추가 조사하지 말아 주세요.'),('N03','article:24be0e40d7b08869070d891b','저장된 증권의 발행 및 공시 등에 관한 규정 시행세칙에서 전자문서 신고 시 전자서명의 효력과 다른 사람의 서명·날인이 있는 서면문서의 보관·제출 의무 및 예외를 정한 조항을 찾아 설명해 주세요. 참조 조문이나 서식의 세부 내용은 추가 조사하지 말아 주세요.')]
+db=sqlite3.connect((R/release['data_path']/'navigation/navigation.sqlite').resolve().as_uri()+'?mode=ro',uri=True);allowed=set(read(code/'00_SYSTEM/LEGAL_AGENT/local-gemma-public.json')['public_document_ids'])
+for cid,sid,q in selected:
+ s=json.loads(db.execute('select json from source where id=?',(sid,)).fetchone()[0]);assert s['document_id'] in allowed
+ cases.append({'case_id':cid,'question':q,'kind':'independent_public_title_content','role':'purposive_public_probe'})
+ gold.append({'case_id':cid,'source_id':sid,**{k:s[k] for k in ('document_id','unit_id','document_name','heading','text','text_sha256','source_artifact_sha256')}})
+db.close()
+cases=[c for c in cases if c['case_id'] in ('P02','N01','N03')];gold=[g for g in gold if g['case_id'] in ('P02','N01','N03')]
+for c in cases:c['arm_ids']=['baseline','normalized']
+put(D/'dataset.json',{'cases':cases,'product_gold':False,'source_generation':release['data_path']});put(D/'gold.json',{'product_visible':False,'version':'Pinned stored public source, not current-law advice','cases':gold})
+put(D/'selection-audit.json',{'known_cases':['P02'],'new_authored_cases':['N01','N03'],'selection_before_results':True,'exposure_unverified':True,'rule':'Distinct public headings selected for different reporting, committee and signature requirements; no internal question export or unseen assertion.'})
+m=read(A/'실험/manifest.json');m.update(in_sample=True,decision_eligible=False);m['lineage']['hypothesis_delta']=criteria['scope'];m['design'].update(hypothesis=criteria['hypothesis'],primary_metric='Initial heading visibility and eventual correct source, preservation and semantic quality separately',success_criteria=criteria['quality_target']+' '+criteria['safety_gate'],failure_criteria='Expected source still missed or new quality regression or safety gate failed; keep all failure costs.',criteria_frozen_before_run=True,repeats=1)
+for a in m['design']['arms']:a.update(changes='Unchanged MAIN53' if a['id']=='baseline' else criteria['scope'],controls=controls,derived_from=[] if a['id']=='baseline' else ['ADR-0761-experiment-v1/integrated'])
+m['design']['code_isolation'].update(mode='candidate_snapshot',reason=None,candidates=[]);m['dataset'].update(name='Three public title-normalization questions',version='v1',frozen_source=str((D/'dataset.json').relative_to(R)),sha256=sha(D/'dataset.json'),legal_version_checked=True,reference_version_checked=True)
+m['llm_policy']['llm_calls']=[{'role':'product','class':'product','model':'qwen/qwen3.8-27b','repeats':1}];m['runs'][0].update(selection_rule='Exact six requests in frozen criteria order; no adaptive repeats',artifact_path=str((A/'artifacts/run-001/result.json').relative_to(R)))
+stages=read(R/'04_EXPERIMENTS/ADR/ADR-0762-main53-three-public-cases/실험/manifest.json')['design']['retrieval_stage_plan']['stages_by_arm']['main53'];m['design']['retrieval_stage_plan']['stages_by_arm']={a:stages for a in ['baseline','normalized']};m['retrieval_accounting'].update(changed=True,not_applicable_reason=None);m['retrieval_accounting']['stage_ledger'].update(mode='measured',summary_run_id='run-001',artifact_path=str((A/'artifacts/run-001/retrieval-ledger.json.gz').relative_to(R)),sha256='PENDING',not_applicable_reason=None)
+m['questions']=[]
+heads=['실행 메타','사용자 질문 원문','기준답변 — 채점 전용, 제품 입력 비공개','제품 입력을 구성한 원값','제품 모델 호출 — run·arm별 실제 원문','중간 LLM 호출 — router/compiler/verifier/repair','채점 호출과 반복 판정','사례 최종 판정']
+for i,c in enumerate(cases,1):
+ p=A/'실험'/f'질문-{i:03}-{c["case_id"]}.md';vals=['ADR0764/run-001; public probe, MAIN53 vs recovery.',c['question'],'artifacts/design/gold.json; runner never loads gold.','### 회수·탈락 단계 원장 — run·arm별\n\nExact provider views and post-selection canonical ledger.','Original provider payloads/responses, not reconstruction.','All product phases audited via ExperimentClient.','Offline Codex review only.','Prospectively frozen; not executed yet.'];p.write_text('# '+c['case_id']+'\n\n'+'\n\n'.join(f'## {j}. {h}\n\n{v}' for j,(h,v) in enumerate(zip(heads,vals),1))+'\n');m['questions'].append({'number':i,'case_id':c['case_id'],'file':p.name,'sha256':sha(p)})
+put(A/'실험/manifest.json',m)
+cmd=[str(R/'.venv/bin/python'),'06_TOOLS/run_tool.py','adr_candidate.py','snapshot','--adr',str(A),'--candidate-id','normalized','--experiment-id',m['experiment_id'],'--arm-id','normalized','--run-id','run-001']
+for name in sorted(set(release['files'])|{'02_BACKEND/lawrag/research/experiment_client.py'}):cmd+=['--source',name]
+subprocess.run(cmd,cwd=R,check=True,stdout=subprocess.DEVNULL);C=R/'02_BACKEND/lawrag/research/candidates/adr_0764/normalized'
+for name in release['files']:shutil.copy2(code/name,C/'snapshot'/name)
+print('B1 design frozen; candidate snapshot created; no model calls')

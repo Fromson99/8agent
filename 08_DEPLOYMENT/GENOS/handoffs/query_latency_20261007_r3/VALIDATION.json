@@ -1,0 +1,68 @@
+{
+  "created_at": "2026-10-07T06:17:43.785416+00:00",
+  "code_zip_sha256": "967e9d58e1f83d2821abe056232e43ed21311d1a9478a37dfcfea553fc73c4c1",
+  "code_manifest_sha256": "0014dec52116b58aedb295aaf4f68fb16f1d810201c1e1fe397216940c4f5125",
+  "selected_local_baseline": {
+    "release_id": "session-runtime-v6-20261007-r1",
+    "generation": 45,
+    "release_manifest_sha256": "b126d8e8437c0524138407a39c5e74ec09a17f355bbff76b278a201f507ca70b"
+  },
+  "validation_mode": "synthetic contracts and exact handoff; no performance/model A/B",
+  "integrated_tests": {
+    "passed": 93,
+    "failed": 0,
+    "record": "INTEGRATED_TEST_OUTPUT.txt.gz",
+    "scope": [
+      "exact ranking/count/page/ACL/body SQL parity",
+      "one FTS scan reuse",
+      "overflow complete fallback",
+      "query/scope invalidation and mutation/interrupt/connection isolation",
+      "default INFO/failed spans/privacy",
+      "v6 grouped law navigation and completion consumer",
+      "latest session runtime without user_wiki or separate signing"
+    ]
+  },
+  "handoff_tests": {
+    "passed": 9,
+    "failed": 0,
+    "record": "DELIVERY_TEST_OUTPUT.txt.gz",
+    "scope": [
+      "frozen 300 files and separate TXT grammar",
+      "same-checkout apply/repeat/verify/rollback in both modes",
+      "committed same-checkout gate and mock local Git push in both modes",
+      "unknown field modification preserved",
+      "direct older MAIN baseline to cumulative handoff",
+      "timing-only log summary",
+      "INFO heartbeat active step"
+    ]
+  },
+  "total_current_tests_passed": 102,
+  "old_contract_failures": {
+    "count": 7,
+    "same_failures_reproduced_on_previous_no_socket_r3": true,
+    "record": "BASELINE_KNOWN_FAILURES.txt.gz",
+    "meaning": "pre-existing fixtures for adoption/decision repair; preserved, not introduced by timing/cache patch"
+  },
+  "data_generation_rebuild_required": false,
+  "external_model_calls": 0,
+  "new_speed_claims": null,
+  "genos_applied": false,
+  "genos_pushed": false,
+  "genos_revision": null,
+  "genos_workflow_test": "NOT_RUN",
+  "local_active_pointer_changed_by_this_task": false,
+  "raw_records": {
+    "INTEGRATED_TEST_OUTPUT.txt": {
+      "path": "INTEGRATED_TEST_OUTPUT.txt.gz",
+      "raw_sha256": "a9a8890478186f5531574d7db29ed96ad1b1ceed6920b2f1341dbd2b928102af",
+      "gzip_sha256": "7db0d2cb9e7a116e5f6708336835cde8d53a122677b2bed7bbd6850bdc6014e9",
+      "restore": "python3 -m gzip -d INTEGRATED_TEST_OUTPUT.txt.gz"
+    },
+    "DELIVERY_TEST_OUTPUT.txt": {
+      "path": "DELIVERY_TEST_OUTPUT.txt.gz",
+      "raw_sha256": "48640666e9c87b660022c4911bdf3b7e2d4c210dfaaa84645a02c3671cbe48f0",
+      "gzip_sha256": "bd76299a5df60e8ba3d237620293b24c58f81d3ef91b54174efd254ebf2852ba",
+      "restore": "python3 -m gzip -d DELIVERY_TEST_OUTPUT.txt.gz"
+    }
+  }
+}

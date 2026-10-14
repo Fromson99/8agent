@@ -101,7 +101,7 @@ def test_authored_basic_is_applied_before_first_visual_request(tmp_path,monkeypa
     pdf,blocks=regional_document(tmp_path)
     blocks[1].text='① 수정듀레이션은 1.5년 이하, CMA RP는 0.8년 이하이다.'
     tree,meta=runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='authored')
-    assert meta['runtime']=='genos-recipe-v37-disclosure-budget-diagnostics'
+    assert meta['runtime']=='genos-recipe-v38-output-contract-recovery'
     assert meta['model_calls']==1 and len(seen)==1 and seen[0]['task']=='visual_review'
     assert not any(n.family.startswith('dot_number') for n in tree.nodes())
     recipe=json.loads(next((tmp_path/'structure-recipe-runs').glob('*/basic-initial-template.json')).read_text())
@@ -241,7 +241,7 @@ def test_parent_cycle_is_feedback_and_never_executed(tmp_path,monkeypatch):
     with pytest.raises(runtime.NeedsReview):
         runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='cycle')
     attempts=[x for x in seen if x['task']=='parent_relations']
-    assert len(attempts)==3 and 'Parent cycle' in attempts[1]['correction']['message']
+    assert len(attempts)==2 and 'Parent cycle' in attempts[1]['correction']['message']
     assert blocks==original and not (tmp_path/'structure-recipes.json').exists()
 
 
@@ -357,5 +357,5 @@ def test_body_verifier_schema_exhaustion_stops_without_approval(tmp_path):
         basic.verify_findings({'corrections':[{'block':0,'change':'모의 의견'}]},
             {'placements':{}},[Block(0,'검토할 실제 문장입니다.',page=1)],'body-contract',
             call,runtime.Journal(tmp_path,'schema-exhaustion'))
-    assert len(calls)==3 and caught.value.diagnostic['code']=='COMPACT_RESPONSE_INVALID'
+    assert len(calls)==2 and caught.value.diagnostic['code']=='COMPACT_RESPONSE_INVALID'
     assert all('-body-review' in c for c in calls)

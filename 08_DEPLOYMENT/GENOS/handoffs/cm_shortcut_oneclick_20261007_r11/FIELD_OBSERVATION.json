@@ -1,0 +1,46 @@
+{
+  "evidence_image": "08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r11/FIELD_EVIDENCE.jpg",
+  "evidence_sha256": "ff457107162a1ce06b19ca99d63eafc27b52ee22cbf7f1dc195d72400382a727",
+  "observed_date": "2026-10-07",
+  "environment": "GENOS codespace, user-provided photo",
+  "code_root": "/workspace",
+  "python_executable": "/venv/bin/python3",
+  "python_version": "3.11.15",
+  "investigation_budget_r1": {
+    "check_pass": true,
+    "apply_pass": true,
+    "verify_pass": true,
+    "exit_code": 0,
+    "modified_files": 2,
+    "engine_bindings_pass": true,
+    "engines": 30,
+    "budget_contract_default_total": 40,
+    "budget_contract_default_investigation": 37,
+    "model_calls": 0,
+    "observed_service_sha256_prefix": "2cfb9c6e36c0a80",
+    "matched_sealed_budget_service_sha256": "2cfb9c6e36c0a80ffd8ce1409060d4666c074479be699028ebe28272827d86af",
+    "git_commit_after_patch_confirmed": false,
+    "generation_gate_confirmed": false,
+    "git_push_confirmed": false
+  },
+  "cm_r10": {
+    "unzip_available": false,
+    "standalone_run_started": true,
+    "exit_code": 1,
+    "phase": "pre-apply inspection",
+    "error": "R8 code differs from the verified upgrade inventory; preserved",
+    "code_apply_confirmed": false,
+    "registration_confirmed": false,
+    "git_push_confirmed": false,
+    "existing_materials_preserved_message": true
+  },
+  "cause": {
+    "confirmed_by_local_reproduction": true,
+    "description": "Verified budget R1 changed R8 service.py and CODE_MANIFEST; sealed R10 required the unmodified R8 inventory."
+  },
+  "code_serving_revision": null,
+  "workflow_verified": false,
+  "effective_field_request_budget_verified": false,
+  "new_r11_field_execution_confirmed": false,
+  "actual_genos_access": false
+}

@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "at": "2026-10-08T01:24:34.165913+00:00",
+  "scope": "external-workflow live chat cards; SVG/current-judgment/SSE/native path regressions",
+  "working_contracts": 93,
+  "exact_editor_contracts": 11,
+  "prior_live_card_reference_contracts": 4,
+  "r5_before_regression": {
+    "failed": 8,
+    "passed": 2,
+    "log": "before-tests.txt"
+  },
+  "source_path": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+  "source_sha256": "8169782d80b532ac9cf3985ba6a0f2fa2fcd02da575c652c968136c2668da00e",
+  "paste_sha256": "2f2bc35f1b7d1dbf5b8868fc751b5faae2185f84ee8fee94dee4a60ced6b2c5c",
+  "logs": {
+    "contracts-final.txt": "0fa745d8b1ef0817f0a546e0ae91fbad54b937a8029f2d31fdb9e2a8d3258988",
+    "exact-editor-tests.txt": "f012b349eb95123a52981462df0d64fdca4dfedc59050d02b7b637d01bb1b738",
+    "before-tests.txt": "68485bda072e3b12d325c0681f35acf287b89ea19ed4146c456e191c23bf5b09"
+  },
+  "live_ordering": [
+    "preparation card before delayed AD_PROBE",
+    "actual SSE read -> original and full current judgment cards before final result",
+    "WSL local HTTP /json AD_PROBE + /stream flush -> chat cards before answer"
+  ],
+  "model_calls": 0,
+  "genos_access": false,
+  "field_workflow_test": "NOT_RUN",
+  "local_active_pointer_sha256": "ed89ee45580e1e95108c9147bddc8be5e00396b741c7a51fc4c3cd3db6d9338c"
+}

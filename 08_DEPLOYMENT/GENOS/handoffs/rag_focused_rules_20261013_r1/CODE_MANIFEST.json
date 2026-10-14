@@ -1,0 +1,213 @@
+{
+  "schema_version": "genos-transfer-overlay-v1",
+  "id": "GENOS_RAG_FOCUSED_RULES_20261013_R1",
+  "transfer_only": true,
+  "deployment_zip": "apply creates APPLIED_CODE.zip from actual DEV; use that archive for the gate",
+  "source_release": "focused-rules-20261013-r1",
+  "source_release_manifest_sha256": "8fa2ca7b123b1c79a043d1e7ad69bb45df169dc75661efa37e9e35cdb5346823",
+  "validation": {
+    "patched_code_contracts": 204,
+    "same_checkout_mock_generation_gates": 2,
+    "installation_states": 8,
+    "txt_commands": 72,
+    "known_inventory_signatures": 330,
+    "model_calls": 0
+  },
+  "files": [
+    {
+      "path": "apply_patch.py",
+      "sha256": "494a3891791cfbc6b7ed45aff6c99d52e006b26d795e70ae979a1a0bfa523472",
+      "bytes": 22627
+    },
+    {
+      "path": "PATCH_SPEC.json.gz",
+      "sha256": "a816b66156613d23133ed5e2f13381165fd5864f7ea26ea9fd2e0541a2afa0f7",
+      "bytes": 334461
+    },
+    {
+      "path": "GENOS_RAG_FOCUSED_RULES_20261013_R1_RUN.txt",
+      "sha256": "4b9153fdb58f320b1b3194ffc5a1cc4454cdf6dfb4132f8127e398bfb0d55635",
+      "bytes": 464082
+    },
+    {
+      "path": "GUIDE_UTF8.txt",
+      "sha256": "f3d2fad7d0efb57a5d9b71113b63f0512de46d89ed22437f1c1c55ace97758a3",
+      "bytes": 6862
+    },
+    {
+      "path": "VALIDATION_SUMMARY.txt",
+      "sha256": "e85b182eeb166f0971fdbd3eaaf27f0ca837ef96cc380ac6951e7aa8971ca93a",
+      "bytes": 1263
+    },
+    {
+      "path": "VALIDATION.json",
+      "sha256": "5a9297c83f9580aaf80265a148c1d8108c263efe8da07b411319947cff80a88f",
+      "bytes": 2278
+    },
+    {
+      "path": "SOURCE_BINDING.json",
+      "sha256": "0bb70a3f0c33391b64a670e4852492e889a1945d87c6e2ccf64f5d60e87bacfd",
+      "bytes": 836772
+    },
+    {
+      "path": "REVIEWED_MERGES.json",
+      "sha256": "f994cdf4777698fca60ac70fc09ef54741a6b2ed6bd03b193f06a6bd06c9c017",
+      "bytes": 14640
+    },
+    {
+      "path": "payload/05b037732f33c8ead06b6043f59d49229b0b6c0328c7b16af824a7284c2910c6/request_repair.py",
+      "sha256": "05b037732f33c8ead06b6043f59d49229b0b6c0328c7b16af824a7284c2910c6",
+      "bytes": 26245
+    },
+    {
+      "path": "payload/0961e00f67a16913cc9863f137463e1c9ddba90cb38dff715bc3f893288cd89e/relations_repository.py",
+      "sha256": "0961e00f67a16913cc9863f137463e1c9ddba90cb38dff715bc3f893288cd89e",
+      "bytes": 9331
+    },
+    {
+      "path": "payload/18f8333d74c4a9987b5d6dd39023a1db639b8391fe3994d06628a60afeb373df/completion_v8.py",
+      "sha256": "18f8333d74c4a9987b5d6dd39023a1db639b8391fe3994d06628a60afeb373df",
+      "bytes": 6907
+    },
+    {
+      "path": "payload/19e703e687d6a362b8ae276ad9f204037fc58aeba2b5eafbb6156a8f05d96f90/investigation_contracts.py",
+      "sha256": "19e703e687d6a362b8ae276ad9f204037fc58aeba2b5eafbb6156a8f05d96f90",
+      "bytes": 3583
+    },
+    {
+      "path": "payload/23e24881ac9e5209b8cdb8b4946b4db99afda5b269294da6e8efdabaaa518784/execution_metrics.py",
+      "sha256": "23e24881ac9e5209b8cdb8b4946b4db99afda5b269294da6e8efdabaaa518784",
+      "bytes": 4002
+    },
+    {
+      "path": "payload/253747b10e3997b5527ec6e7b3e1c182627a286ce265f00cdf9466cba4de7ddc/case_repository.py",
+      "sha256": "253747b10e3997b5527ec6e7b3e1c182627a286ce265f00cdf9466cba4de7ddc",
+      "bytes": 15841
+    },
+    {
+      "path": "payload/37e11e069ea15ed27ef5d0449d0f2751744bf26431eb14d3b60502766b4100e8/completion_v6.py",
+      "sha256": "37e11e069ea15ed27ef5d0449d0f2751744bf26431eb14d3b60502766b4100e8",
+      "bytes": 15349
+    },
+    {
+      "path": "payload/3a340dcb528f3d7653a01aaa43c92764f72e1b634023e7bafd836e25a332e2bc/memory_rag.py",
+      "sha256": "3a340dcb528f3d7653a01aaa43c92764f72e1b634023e7bafd836e25a332e2bc",
+      "bytes": 28037
+    },
+    {
+      "path": "payload/3afa6a2a42f19a74ae3b9cbed9290219df6905f98d352ddd96aeb4589fcf95e5/structure_query.py",
+      "sha256": "3afa6a2a42f19a74ae3b9cbed9290219df6905f98d352ddd96aeb4589fcf95e5",
+      "bytes": 33966
+    },
+    {
+      "path": "payload/41bc9e490beaa86a38556e75eea33e09da10a0185ad1536e04b3de61f6cb60ea/law_candidates.py",
+      "sha256": "41bc9e490beaa86a38556e75eea33e09da10a0185ad1536e04b3de61f6cb60ea",
+      "bytes": 18701
+    },
+    {
+      "path": "payload/46929d758c191d478c548a8c324085c6b3d4a8baeab508f7935cf61dbaacfcf5/law_navigation.py",
+      "sha256": "46929d758c191d478c548a8c324085c6b3d4a8baeab508f7935cf61dbaacfcf5",
+      "bytes": 155540
+    },
+    {
+      "path": "payload/4a29db82af07ef5f5b4a24db3913bb1eaf5d3864b6aefc650ada2afd8595d20e/unified_runtime.py",
+      "sha256": "4a29db82af07ef5f5b4a24db3913bb1eaf5d3864b6aefc650ada2afd8595d20e",
+      "bytes": 14661
+    },
+    {
+      "path": "payload/4c568283620b9d0dac9b07c1df9e99c730897fc082db4366e7655e3e48810403/core_evidence_route.py",
+      "sha256": "4c568283620b9d0dac9b07c1df9e99c730897fc082db4366e7655e3e48810403",
+      "bytes": 14832
+    },
+    {
+      "path": "payload/4eb1af110f840ed5a8b8b5435f003cf39e3e7bb8302c3a8b6eda810978d6c851/navigation_input.py",
+      "sha256": "4eb1af110f840ed5a8b8b5435f003cf39e3e7bb8302c3a8b6eda810978d6c851",
+      "bytes": 6387
+    },
+    {
+      "path": "payload/564662602f95e1a7f6cccf23b8208e0c31651e210b5a9856dd91118457b53a13/completion_contracts.py",
+      "sha256": "564662602f95e1a7f6cccf23b8208e0c31651e210b5a9856dd91118457b53a13",
+      "bytes": 31945
+    },
+    {
+      "path": "payload/705ac77b7d299a6b1f6dd35b2e522ec9df441aa95e5bc9e600f834b36d285422/completion_v5.py",
+      "sha256": "705ac77b7d299a6b1f6dd35b2e522ec9df441aa95e5bc9e600f834b36d285422",
+      "bytes": 11277
+    },
+    {
+      "path": "payload/73c6e21c0c34a286691119b105ebedbf430376db9cb8c892c018b89aca7db3f1/investigation_scope.py",
+      "sha256": "73c6e21c0c34a286691119b105ebedbf430376db9cb8c892c018b89aca7db3f1",
+      "bytes": 5402
+    },
+    {
+      "path": "payload/8dea8d23ed37e3193cbb31313c89b52b289a73abddad095af156b3f9feecdf5e/wire_schema.py",
+      "sha256": "8dea8d23ed37e3193cbb31313c89b52b289a73abddad095af156b3f9feecdf5e",
+      "bytes": 2341
+    },
+    {
+      "path": "payload/a7301ffc3fcbf3ca7fccac2fbf518f2f49a440a37b4c418e95ce0ea9afacf694/bounded_source_session.py",
+      "sha256": "a7301ffc3fcbf3ca7fccac2fbf518f2f49a440a37b4c418e95ce0ea9afacf694",
+      "bytes": 29414
+    },
+    {
+      "path": "payload/aa489c3765ff3e21024d10ad36eade530090cd39b55de5abd2875825176fe18b/judgment_view.py",
+      "sha256": "aa489c3765ff3e21024d10ad36eade530090cd39b55de5abd2875825176fe18b",
+      "bytes": 8885
+    },
+    {
+      "path": "payload/aceb3ce24639efaef609e5d7b34526f23bc4c933bbb16e88cc6bab45cac525ab/investigation_chain.py",
+      "sha256": "aceb3ce24639efaef609e5d7b34526f23bc4c933bbb16e88cc6bab45cac525ab",
+      "bytes": 7557
+    },
+    {
+      "path": "payload/b2548b95303dd6eda836ab0cf92ef9dedcb47fdab144a27082edc38419262ae8/law_candidates.py",
+      "sha256": "b2548b95303dd6eda836ab0cf92ef9dedcb47fdab144a27082edc38419262ae8",
+      "bytes": 18031
+    },
+    {
+      "path": "payload/c7157be910b6fdbe8367a5b52820c712d1810793820e92a31d7f62aebd32a8dd/completion_v7.py",
+      "sha256": "c7157be910b6fdbe8367a5b52820c712d1810793820e92a31d7f62aebd32a8dd",
+      "bytes": 5861
+    },
+    {
+      "path": "payload/c916e5c95345ef19b4dc6dbe568210200577b150a294b3101bdd7938cede9241/evidence_inventory.py",
+      "sha256": "c916e5c95345ef19b4dc6dbe568210200577b150a294b3101bdd7938cede9241",
+      "bytes": 8291
+    },
+    {
+      "path": "payload/cf0c824e2b27ce57b1306aa360ac144a3db5ef20eab4a530c2cf2d339b2c9d65/request_entry.py",
+      "sha256": "cf0c824e2b27ce57b1306aa360ac144a3db5ef20eab4a530c2cf2d339b2c9d65",
+      "bytes": 12176
+    },
+    {
+      "path": "payload/d3158d1feb269ccc3fe040bd8a52e1604402f5d777c927301384e36d847e68c9/unified_rag.py",
+      "sha256": "d3158d1feb269ccc3fe040bd8a52e1604402f5d777c927301384e36d847e68c9",
+      "bytes": 6416
+    },
+    {
+      "path": "payload/d56689c3da2fabe9d7b56740ecdee09d78f3aff93d7d60994bc37ebcd2afec3c/corrected_memory.py",
+      "sha256": "d56689c3da2fabe9d7b56740ecdee09d78f3aff93d7d60994bc37ebcd2afec3c",
+      "bytes": 49487
+    },
+    {
+      "path": "payload/e309c704bbaf8a626a3add7e12c40bd38e9d2b407adef3207a213b5a199f34da/completion_execution.py",
+      "sha256": "e309c704bbaf8a626a3add7e12c40bd38e9d2b407adef3207a213b5a199f34da",
+      "bytes": 21446
+    },
+    {
+      "path": "payload/ec7048bbc3e44b375141f52d302e3d832f3ce358a22cf70fac2d81fc29e9624c/gateway.py",
+      "sha256": "ec7048bbc3e44b375141f52d302e3d832f3ce358a22cf70fac2d81fc29e9624c",
+      "bytes": 29523
+    },
+    {
+      "path": "payload/f69b1a6fe275e9cc102aa0b6a4f40730f59a0429e69fb68343c659258e957195/law_title_hints.py",
+      "sha256": "f69b1a6fe275e9cc102aa0b6a4f40730f59a0429e69fb68343c659258e957195",
+      "bytes": 6014
+    },
+    {
+      "path": "payload/fc472b4059756a272ac4004b7f15958b589a2b4c64c9ffd62a0c6916b70a18ff/unit_reading.py",
+      "sha256": "fc472b4059756a272ac4004b7f15958b589a2b4c64c9ffd62a0c6916b70a18ff",
+      "bytes": 23691
+    }
+  ]
+}

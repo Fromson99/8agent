@@ -1,0 +1,33 @@
+{
+  "version": "GENOS_ASSESSMENT_GAP_ACTION_20261013_R2",
+  "predecessors": [
+    "MODEL_STREAM_FIX R1",
+    "AD_REQUEST_LOGS R2",
+    "SUCCESSFUL_SHORTCUT R1"
+  ],
+  "use_instead_of": "ASSESSMENT_GAP_ACTION R1",
+  "field": {
+    "code_root": "~/DEV",
+    "git_commit": null,
+    "generation": null,
+    "generation_manifest_sha256": null,
+    "code_serving_revision": null,
+    "applied": false,
+    "deployed": false,
+    "workflow_test": "NOT_RUN"
+  },
+  "email_status": "NOT_SENT_AT_SEAL; see external EMAIL_SENT.json",
+  "rebuild_required": false,
+  "workflow_editor_change_required": false,
+  "requires_new_code_serving_revision": true,
+  "requires_sse_restart": true,
+  "local_main": {
+    "release_id": "assessment-gap-action-20261013-r1",
+    "generation": 60,
+    "manifest_sha256": "6ff4b8bb9bc1cc05a7246172a5761d970618c9fd8d05e3e942c98443f45c69b4",
+    "selected_files_verified": 301,
+    "service_health": 200,
+    "service_search": 200,
+    "patch_selected": true
+  }
+}

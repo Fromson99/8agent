@@ -12,7 +12,7 @@ import time
 import uuid
 from . import progress
 from .legal_agent.answer_stream import capture as capture_answer
-REVISION='main-chat-sse-20261007-r1'
+REVISION='main-chat-current-judgment-evidence-svg-20261008-r10'
 _SECRETS={'authorization','api_key','apikey','token','password','memory_authorization',
           'signature','genos_memory_signing_key','genos_chat_gateway_token'}
 
@@ -34,17 +34,10 @@ def views():
 
 def request_body(data,question,trusted_platform=False):
     view=views()
-    if 'memory_authorization' in data:
-        # Runtime verifies HMAC/time/team/document grants before reading history.
-        names={'question','memory','session_id','request_id','user_id','team_id','expected_revision',
-               'document_ids','use_llm','public_question','memory_authorization','scope'}
-        return {**{k:v for k,v in data.items() if k in names},'API_TYPE':'LEGAL_AGENT','channel':'genos-chat'}
     memory_enabled=os.environ.get('GENOS_MEMORY_ENABLED','0').lower() in {'1','true','on'}
     if data.get('memory') is True or memory_enabled:
-        if not trusted_platform:raise ValueError('trusted platform identity or signed assertion required')
-        if not memory_enabled:raise ValueError('GENOS_MEMORY_ENABLED must be enabled for platform memory')
         return view._request_body(question,data)
-    # Raw client IDs do not grant personal history access for general questions.
+    # Ordinary single turns do not select saved session state.
     body={'API_TYPE':'LEGAL_AGENT','question':question,'request_id':data['request_id'],'channel':'genos-chat'}
     for name in ('document_ids','use_llm','scope','public_question'):
         if name in data:body[name]=data[name]
@@ -86,21 +79,27 @@ async def chat(data,*,trusted_platform=False,on_progress=None,on_answer=None):
         return {'code':0,'data':{**public_fields(data),**result,'text':'질문을 입력해 주세요.','answer_status':'invalid_input'}}
     ad_allowed=trusted_platform or not (os.environ.get('GENOS_RUNTIME_DIR') or os.environ.get('GENOS_DATA_ROOT'))
     if question.strip()=='[AD모드 시작]' and not ad_allowed:
-        return {'code':0,'data':{**result,'answer_status':'error','text':'AD_GATEWAY: existing platform gateway access required.'}}
-    if ad_allowed:
-        probe=await call_service({'API_TYPE':'AD_PROBE','question':question,'request_id':ident,
-            'ad_session_id':str(data.get('chatId') or data.get('chat_id') or data.get('sessionId') or data.get('session_id') or ''),
-            'ad_channel':view._ad_channel(data)})
-        ad=view.unwrap(probe)
-        if ad.get('response_schema')=='ad-mode-v1':return {'code':0,'data':{**public_fields(data),**result,**view._ad_result(ad)}}
+        return {'code':0,'data':{**result,'answer_status':'failed','text':view.render_error({'request_id':ident,'_gateway_status':403})}}
     started=time.perf_counter();events=[]
     runtime=Path(os.environ.get('GENOS_RUNTIME_DIR') or Path(__file__).resolve().parents[2]/'90_RUNTIME/semantic')
     try:
+        if ad_allowed:
+            probe=await call_service({'API_TYPE':'AD_PROBE','question':question,'request_id':ident,
+                'ad_session_id':str(data.get('chatId') or data.get('chat_id') or data.get('sessionId') or data.get('session_id') or ''),
+                'ad_channel':view._ad_channel(data)})
+            ad=view.unwrap(probe)
+            if (ad.get('answer_status') in {'failed','error'}
+                    or isinstance(ad.get('_gateway_status'),int) and ad['_gateway_status'] >= 400):
+                return {'code':0,'data':{**result,'answer_status':'failed',
+                    'text':view.render_error({**ad,'request_id':ident})}}
+            if ad.get('response_schema')=='ad-mode-v1':return {'code':0,'data':{**public_fields(data),**result,**view._ad_result(ad)}}
         operation=str(data.get('API_TYPE') or question).upper()
         body=({'API_TYPE':operation,'request_id':ident} if operation in {'WARMUP','WARMUP_STATUS'}
               else request_body(data,question,trusted_platform))
         def sink(event):
-            if len(events)<256:events.append(event)
+            event = view.public_event(event)
+            if event is None:return
+            if len(events)<256 or (event.get('basis') or {}).get('detail_mode')=='full_error':events.append(event)
             if on_progress is not None:on_progress(event)
         if ad_allowed:body={**body,'ad_session_id':str(data.get('chatId') or data.get('sessionId') or data.get('session_id') or ''),'ad_channel':view._ad_channel(data)}
         # Initialize logging before the collector: the first lazy service import
@@ -118,12 +117,16 @@ async def chat(data,*,trusted_platform=False,on_progress=None,on_answer=None):
             result.update(text=json.dumps(raw,ensure_ascii=False),answer_status='diagnostics')
         else:
             failed=isinstance(raw.get('_gateway_status'),int) and raw['_gateway_status']>=400
-            result.update(text=view._for_markdown(view.render(raw)),run_id=raw.get('run_id'),
-                          judgment_display_revision=view.JUDGMENT_DISPLAY_REVISION,
-                          answer_status='failed' if failed else 'answered' if view._public_answer_text(raw) else
-                          'incomplete' if view._has_found_source(raw) else 'not_found')
             display=view._ChatProgress({});display.enabled=False;display.show_progress=True
             for event in events:await display.progress(event)
+            await display._flush_source_reads()
+            flow=view._judgment_flow(raw,display.flow_events)
+            result.update(text=view._for_markdown(view.render(raw,flow=flow)),run_id=raw.get('run_id'),
+                          judgment_display_revision=view.JUDGMENT_DISPLAY_REVISION,
+                          progress_display_revision=view.PROGRESS_DISPLAY_REVISION,
+                          answer_status=view._completion_answer_status(
+                              raw, bool(view._public_answer_text(raw)) and not failed))
+            if flow:result['judgment_flow']=flow['metadata']
             if display.blocks:result['agentFlowExecutedData']=display.blocks
             case=(raw.get('assembly',{}).get('term_agent') or {}).get('case')
             if isinstance(case,dict):result['case']=case
@@ -131,8 +134,11 @@ async def chat(data,*,trusted_platform=False,on_progress=None,on_answer=None):
                 if name in raw:result[name]=raw[name]
     except Exception as exc:
         from . import observability as obs
-        obs.event(obs.get_logger('chat'),'chat.failed',level=40,request_id=ident,error_type=type(exc).__name__)
-        result.update(text='지금 답변을 가져오지 못했습니다. (추적 번호: '+ident+')',
-                      answer_status='failed',error_type=type(exc).__name__)
+        from .legal_agent.investigation_diagnostics import exception_diagnostics
+        failure=exception_diagnostics(exc)
+        obs.event(obs.get_logger('chat'),'chat.failed',level=40,exc_info=True,
+            request_id=ident,error_type=type(exc).__name__,failure_diagnostics=failure)
+        result.update(text=view.render_error({'request_id':ident,**failure},question=question,exc=exc),
+                      answer_status='failed')
     result['tm_total']=round(time.perf_counter()-started,3)
-    return {'code':0,'data':{**public_fields(data),**result}}
+    return {'code':0,'data':result}

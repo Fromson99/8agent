@@ -329,19 +329,6 @@ def run(engine, blocks, pdf, baseline, catalog, anchors, call, journal, *, width
             data['hard_code_issues'].extend(data['template_diagnostics'])
             if basic_first:
                 data=recipe_basic.review_context(data,blocks,result)
-            if tolerant and call.calls >= getattr(call,'max_calls',float('inf')):
-                # No rendering/provider work after the document's call budget.
-                pending_pages = sorted({p for pending in plan[number:] for p in pending})
-                review_warnings['call-budget'] = {
-                    'pages': pending_pages, 'code':'model_call_budget_exhausted',
-                    'details':{'message':'문서별 호출 횟수 상한 도달; 남은 페이지는 시각 미검수로 보존합니다.',
-                               'calls':call.calls, 'max_calls':call.max_calls,
-                               'pending_windows':len(plan)-number}, 'approved':False}
-                journal.event('recipe.review.budget_exhausted', calls=call.calls,
-                              max_calls=call.max_calls, pending_pages=len(pending_pages),
-                              pending_windows=len(plan)-number)
-                persist('review_pending')
-                break
             evidence_count += 1
             from pathlib import Path
             # Hash the exact images into the context BEFORE request_review binds its state ID.
@@ -372,6 +359,19 @@ def run(engine, blocks, pdf, baseline, catalog, anchors, call, journal, *, width
                     raise ValueError('invalid_checkpoint_approval')
                 journal.event('recipe.review.reused',pages=window,state_id=state_id)
             else:
+                if tolerant and call.calls >= getattr(call,'max_calls',float('inf')):
+                    # No rendering/provider work after the document's call budget.
+                    pending_pages = sorted({p for pending in plan[number:] for p in pending})
+                    review_warnings['call-budget'] = {
+                        'pages': pending_pages, 'code':'model_call_budget_exhausted',
+                        'details':{'message':'문서별 호출 횟수 상한 도달; 남은 페이지는 시각 미검수로 보존합니다.',
+                                   'calls':call.calls, 'max_calls':call.max_calls,
+                                   'pending_windows':len(plan)-number}, 'approved':False}
+                    journal.event('recipe.review.budget_exhausted', calls=call.calls,
+                                  max_calls=call.max_calls, pending_pages=len(pending_pages),
+                                  pending_windows=len(plan)-number)
+                    persist('review_pending')
+                    break
                 def save_opinions(value):
                     opinion_reports[state_id]=copy.deepcopy(value)
                     persist('review_pending',pending=window)

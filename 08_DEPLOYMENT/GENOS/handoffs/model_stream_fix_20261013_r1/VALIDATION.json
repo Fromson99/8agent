@@ -1,0 +1,50 @@
+{
+  "status": "PASS",
+  "environment": "WSL; synthetic data/transport; no GENOS access",
+  "counts": {
+    "working_contracts": 115,
+    "installed_contracts": 284,
+    "installation_states": 3,
+    "service_boots": 6,
+    "same_committed_checkout_mock_generation_gates": 3,
+    "installer_commands": 55,
+    "expected_tamper_rejections": 6,
+    "known_narrative_r2_inventories": 330,
+    "implementation_files": 2,
+    "real_model_inferences": 0
+  },
+  "contracts": {
+    "CONTRACTS_query_latency_20261007_r3.xml": 138,
+    "CONTRACTS_query_latency_20261007_r4.xml": 146
+  },
+  "evidence": [
+    {
+      "path": "TEST_query_latency_20261007_r4.json.gz",
+      "sha256": "580351ebc93c46c5cdabb432599baf62be8e7f9ee8985deecd114b8d1e819a09",
+      "commands": 18
+    },
+    {
+      "path": "TEST_query_latency_20261007_r3.json.gz",
+      "sha256": "81513fbbd4046c6f9ec02998f6e2ba9230467fe0c18dadd80fba0fce6484e92e",
+      "commands": 18
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_display.json.gz",
+      "sha256": "16fa53bc39507a3bebcada3b1018247b5d19dc5b97092f9177b3af75344866a7",
+      "commands": 19
+    }
+  ],
+  "working_report_sha256": "d1ff1cb169d0db62c3d946d46eecd5c26a12b69ad01b9b54e63bc7a4af77b4ba",
+  "run_txt_sha256": "63abbad85e0f7261a46eeab81f696acfd71dcd9ee0088ac460f3f89c2e81dfd9",
+  "source_binding_sha256": "6af398f4c3d6f4a24a32ce963f47da0340e196f98eca39b6b682c679bcf6d182",
+  "test_sources": {
+    "test_installed_contracts.py": "b96fb9b02a50ac4b1ed8c00892cd8011cca739723a6987a9b3eea1b78885565d",
+    "test_delivery.py": "c69649cb3a4e4f54e3684c14da747a3258fadf7168c903f561617edcc0bae6d0"
+  },
+  "scope": "Transport completion fix. Existing field generation and workflow editor preserved; no local promotion by this task.",
+  "limitations": [
+    "Local fixtures verify protocol and wiring, not internal model quality or browser timing.",
+    "Field commit/generation/revision and workflow screen remain unverified.",
+    "No DONE remains incomplete; valid JSON or usage alone never certifies completion."
+  ]
+}

@@ -12,7 +12,7 @@ reasoning effort none, fallback 없음으로 고정한다. 정본은
 `00_SYSTEM/EXPERIMENT_MODEL_POLICY.json`, 공통 호출은
 `lawrag.research.experiment_client.ExperimentClient`다. 이전 Gemma 기본 정책과
 완료된 기록은 역사적 정본으로 보존한다. 로컬 공개 RAG 활성 릴리스는
-`investigation-control-v6-20261007-r1`(포인터 generation 43)이며 선택 정본은
+`public-failure-guidance-20261014-r1`(포인터 generation 61)이며 선택 정본은
 `01_DATA/ACTIVE/local/ACTIVE_RELEASE.json`이다. GENOS 내부 모델·배포는 별도다.
 
 ### 이전 정책 기록
@@ -36,6 +36,7 @@ GENOS 내부 모델·활성 MAIN 릴리스는 별도이며 외부 Gemma 결과�
 |---|---|
 | 전체 MAIN·단계 책임·엔진 연결 | [ARCHITECTURE.md](00_SYSTEM/ARCHITECTURE.md) → [PIPELINE.json](00_SYSTEM/PIPELINE.json), [WORKSPACE.json](00_SYSTEM/WORKSPACE.json) |
 | 실행·서빙 경로 | [service.py](service.py), [파이프라인 CLI](06_TOOLS/pipeline.py); 선택된 릴리스/세대의 manifest와 코드까지 확인 |
+| 에이전트 실패·판단 충돌·스키마 오류·재시도·복구 | [필수 코딩 지침](07_DOCS/REFERENCE/OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md); 수정 전 실패 분류·복구 담당·한도·최종 상태·필수 검사를 정하기 |
 | 데이터 추가·재구축 | [데이터 안내](01_DATA/README.md), [DATA_MODEL.md](00_SYSTEM/DATA_MODEL.md), [LEGAL_SCHEMA.json](00_SYSTEM/LEGAL_SCHEMA.json) |
 | 실험·품질 비교·MAIN 승격 | 아래 실험 절차와 연결된 두 표준 문서 |
 | 용어집 구축·정의·관계·수집 재개 | [용어집 파이프라인](07_DOCS/REFERENCE/OPERATIONS/GLOSSARY_ALIGNMENT.md) → `pipeline.py glossary`; 목록 완료와 정의·관계 수집 완료를 구분 |
@@ -54,6 +55,13 @@ GENOS 내부 모델·활성 MAIN 릴리스는 별도이며 외부 Gemma 결과�
 - 원문 근거·버전·감사·롤백·접근권한을 보존한다. 기존 작업 변경과 완료된 실험·릴리스 이력은 덮어쓰지 않는다.
 
 ## 실험 → 검증 → MAIN
+
+Risk팀 관련 실험의 사용자 등록 질문 묶음은 **`risk_cm`**이다.
+[질문·외규 마킹·전사 상태](01_DATA/GOLDEN/risk_cm/README.md)와
+[공통 등록부](01_DATA/GOLDEN/registry-v2-risk_cm.json)를 먼저 확인한다. 105문항은
+정답·필수근거 승인 전 `question_only`이며 외규 단독 후보는 027·029·078이다.
+판정·정답 후보는 제품 입력과 분리하고, 외규 표시를 내부 질문의 외부 모델 반출 승인이나
+미사용 holdout의 증명으로 취급하지 않는다. 실제 실행은 아래 ADR 절차로 별도 동결한다.
 
 실험·평가·A/B·ablation·probe·holdout·replay·regrade 또는 모델/프롬프트/검색 효과 비교를 할 때만 다음 두 문서를 **끝까지 읽고** 따른다.
 단순 문서 정리, 읽기 전용 진단, 일반 단위 테스트는 새 실험으로 취급하지 않는다.
@@ -98,7 +106,9 @@ Git main 병합, ADR merge, 데이터 CURRENT 변경, 제품 MAIN 승격, GENOS 
 
 - 현장 질의·warmup 검증은 **워크플로우 테스트 화면에서만 가능**하다. 코드서빙 직접 테스트 UI/API 실행을 요구하지 않는다. 워크플로우 Python 단계 변경은 코드 ZIP 적용·Git push와 별도로 편집기에 반영해야 한다.
 
-- GENOS 코드 ZIP을 현장에 인계할 때 기본 실행 경로는 기존 Git checkout인 `~/DEV`에 검증한 파일을 백업 후 적용하는 방식이다. 별도 후보 폴더에만 해제하는 방식은 사용자가 명시적으로 요청한 경우에 쓴다. 실행 TXT는 첫 단계부터 지속 로그와 실패 상태를 남기고, 재실행 시 이미 적용된 파일을 안전하게 확인한다. 코드 적용과 NFS generation 생성, Git push, 코드서빙 리비전 배포는 각각 별도 상태로 확인한다.
+- GENOS 코드 ZIP을 현장에 인계할 때 코드 적용 대상은 기존 Git checkout인 `~/DEV`다. 검증한 파일을 백업 후 적용하며, 별도 후보 코드 폴더에만 설치하는 방식은 사용자가 명시적으로 요청한 경우에 쓴다. 패키지를 풀고 설치기를 실행하는 위치와 코드 적용 대상을 구분한다. 실행 TXT는 첫 단계부터 지속 로그와 실패 상태를 남기고, 재실행 시 이미 적용된 파일을 안전하게 확인한다. 코드 적용과 NFS generation 생성, Git push, 코드서빙 리비전 배포는 각각 별도 상태로 확인한다.
+
+- 사용자 정정(2026-10-14): ZIP/실행 TXT는 사용자가 실제 업로드한 `TRANSFER` 폴더에서 실행한다. 그 폴더를 현재 작업 위치로 두고 `./정확한첨부파일명.zip`, `./정확한실행파일명.txt`처럼 상대경로로 안내한다. `TRANSFER`의 절대 위치를 `~/TRANSFER`나 `~/DEV/TRANSFER`로 추정하지 않고, 압축 해제·설치기 실행을 위해 먼저 `DEV`로 이동하도록 안내하지 않는다. ZIP은 `python3 -m zipfile -e ./정확한첨부파일명.zip ./패키지폴더`로 풀고 `bash ./패키지폴더/정확한실행파일명.txt check` 및 `apply`를 연결한다. 설치기의 기존 checkout 적용 대상 및 이후 Git commit·generation 검증 위치는 별도로 명시한다.
 
 - 환경별 사용법·모델 설정·배포 절차의 진입점은 [GENOS.md](GENOS.md)다. **현재 Codex 세션에서는 망분리 GENOS 세션·코드스페이스·서빙·내부 모델에 접근할 수 없다.** 현장 연결 확인을 재시도하지 않고 코드·반입 자료·사용자가 제공한 현장 기록으로 확인한다. 최종 GENOS 실행은 내부 LLM·임베딩을 사용한다.
 - `localhost`/WSL의 로컬 개발 서버와 GENOS 현장 서버를 명시적으로 구분한다. 로컬 응답·실패로 GENOS 상태를 판단하거나 환경을 밝히지 않은 “상주 서버” 표현을 쓰지 않는다.
@@ -111,3 +121,19 @@ Git main 병합, ADR merge, 데이터 CURRENT 변경, 제품 MAIN 승격, GENOS 
 - Git·Python·테스트·저장소 스크립트는 WSL의 `/home/jin/8-AGENT`에서 Linux 도구로 실행한다. Windows Git/PowerShell로 UNC 경로를 조작하거나 `safe.directory`로 우회하지 않는다.
 - 환경 관련 작업 전에 `06_TOOLS/check_wsl_dev_environment.sh`를 실행한다. Python은 저장소 `.venv/bin/python`을 사용한다.
 - 변경 범위에 맞는 계약·회귀·연결 검사를 수행한다. 완료 보고에는 무엇을 바꿨는지, 실제 확인 결과, 영향받는 실행 경로와 남은 미확인 사항을 짧게 남긴다.
+
+### 에이전트 실패와 충돌 처리 — 사용자 지시 2026-10-13
+
+에이전트·도구·모델 어댑터·스키마·검증기·상태 저장·답변 표시를 수정할 때는
+[AGENT_FAILURE_RECOVERY_POLICY.md](07_DOCS/REFERENCE/OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md)를 먼저 읽고 따른다.
+이 지침은 코드 작성·검토·테스트의 필수 기준이며, 문서 작성만으로 런타임 구현이나 현장 반영이 완료된 것은 아니다.
+
+- 정상 경로와 함께 실패 경로를 설계한다. 오류 종류, 실제 원인, 복구 담당 한 곳, 허용 보정, 재시도/시간/호출 한도, 상태 보존, 최종 응답을 먼저 정한다. `raise`만 추가하거나 포괄 `except`로 성공 처리하는 구현은 완료로 보지 않는다.
+- 모델 출력은 제안이다. JSON 구문·스키마 → 필드 간 일관성 → 제시된 근거/권한/버전 → 상태 revision/소비자 계약을 각각 검증하고, 스키마 통과를 의미·근거 검증 통과로 간주하지 않는다.
+- 자동 보정은 의미를 추정하지 않는 사전 허용 규칙만 사용한다. 원래 제안과 변경 사유를 기록하고 전체 검증을 다시 한다. `MISSING_SOURCE + REQUEST_FACT`는 부족을 보존한 채 원문 조사로 연결할 수 있지만, 근거·사용자 사실·법률 결론을 만들거나 부족을 삭제해 통과시키지 않는다.
+- 스키마/판단 수정 요청에는 같은 요청·근거 범위와 구체 오류를 전달한다. 같은 실패의 재시도를 gateway·단계·상위 실행기가 중복 수행하지 않는다. 원인/판단 단위별 담당과 총 예산을 명시하고, 재개해도 사용량·deadline·실패 이력을 초기화하지 않는다.
+- 같은 자료·같은 상태에서 같은 충돌이 반복되면 맹목 재호출하지 않는다. 허용된 별도 조사 경로, 확인된 근거만의 제한 답변, 필요한 사용자 사실 질문, 또는 사유가 기록된 중단으로 끝낸다. 미확보 원문은 사용자의 사실 부족으로 떠넘기지 않는다.
+- 법률 의미 충돌은 양쪽 근거·적용 범위·버전을 유지해 재검토한다. 권한 위반·해시 불일치·변조·stale 상태·출처 불명은 일반 모델 수정으로 우회하지 않는다. 실패한 도구 실행을 근거 확보/부재 확인으로 기록하지 않는다.
+- 실패·부분 성공·성공·중단·재개 가능을 구분한다. 검증된 주장만 제한 답변에 쓸 수 있다. 전송 중 일부가 표시된 뒤 실패하면 완성 답변으로 확정하거나 다른 생성 결과를 이어 붙이지 않는다. 실패 이력을 성공한 숏컷·위키·정답으로 승격하지 않는다.
+- 수정 후 정상/복구 성공/복구 실패/반복 충돌/예산 소진/재개/중복 요청/권한·해시·상태 회귀/표시·저장 소비자 연결을 변경 범위에 맞게 검사한다. 공통 검증기는 사용하는 현행 버전별로 확인하고, 최소 한 검사는 실제 API 또는 서비스 진입점과 같은 코드·pin으로 실행한다. 재현 가능한 결함만 일반 단위 검사로 수정하며 모델·프롬프트·검색 효과 비교는 기존 ADR 절차를 따른다.
+- 완료 기록에는 남은 미구현·미검증 복구 경로, 실제 테스트 결과, 작업 코드/선택 릴리스/GENOS 적용 상태를 남긴다. 오류 문구를 숨기거나 HTTP 상태만 바꾼 것을 오류 해결로 보고하지 않는다.

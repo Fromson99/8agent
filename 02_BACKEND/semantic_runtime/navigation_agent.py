@@ -74,8 +74,9 @@ full_glossary.sha = memoized_sha
 def _serving_glossary_ro(path):
     # Leased connections are exclusive to one request, but warmup and HTTP
     # requests may execute on different threads in the same process.
-    db = sqlite3.connect(Path(path).resolve().as_uri() + '?mode=ro', uri=True,
-                         check_same_thread=False)
+    from .resident_data import POOL
+    from .storage import verified_store_digest
+    db = POOL.connect(path, expected=verified_store_digest(path))
     db.row_factory = sqlite3.Row
     return db
 

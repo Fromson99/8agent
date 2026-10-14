@@ -1,0 +1,56 @@
+{
+  "sealed_recipes": 216,
+  "input_inventories": 108,
+  "representatives": [
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/core-shortcut-r1/cm-data-r4",
+      "prepare_and_unknown_change_rejection": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/core-shortcut-r1/cm-data-r4/cm-common-r6/nfs-list-r1",
+      "prepare_and_unknown_change_rejection": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-shortcut-r1/cm-data-r4",
+      "prepare_and_unknown_change_rejection": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-shortcut-r1/cm-data-r4/cm-common-r6/nfs-list-r1",
+      "prepare_and_unknown_change_rejection": true
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/core-shortcut-r1/cm-data-r4",
+      "prepare_and_unknown_change_rejection": true
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/core-shortcut-r1/cm-data-r4/cm-common-r6/nfs-list-r1",
+      "prepare_and_unknown_change_rejection": true
+    }
+  ],
+  "real_TXT": [
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/core-shortcut-r1/cm-data-r4",
+      "complete_TXT_runs": 2,
+      "common_units": 51,
+      "entries": 98,
+      "without_user_env": true,
+      "local_commit_gate_push": true,
+      "existing_state_preserved": true,
+      "replay_no_duplicate": true
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/core-shortcut-r1/cm-data-r4/cm-common-r6/nfs-list-r1",
+      "complete_TXT_runs": 1,
+      "common_units": 51,
+      "entries": 98,
+      "without_user_env": true,
+      "local_commit_gate_push": true,
+      "existing_state_preserved": true,
+      "replay_no_duplicate": false
+    }
+  ],
+  "model_calls": 0,
+  "real_remote_push": false,
+  "GENOS_field_verified": false,
+  "email_sent": false
+}

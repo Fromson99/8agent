@@ -1,0 +1,377 @@
+{
+  "revision": "GENOS_FULL_ERROR_LOGGING_20261007_R7",
+  "files": {
+    "02_BACKEND/semantic_runtime/observability.py": [
+      {
+        "name": "02_BACKEND/semantic_runtime/observability.py:0",
+        "before": "        prepared.async_exception = _redact_secrets(\n            logging.Formatter().formatException(record.exc_info), secrets=secrets)[:32768]\n    prepared.exc_info = None; prepared.exc_text = None\n",
+        "after": "        prepared.async_exception = _redact_secrets(\n            logging.Formatter().formatException(record.exc_info), secrets=secrets)\n    prepared.exc_info = None; prepared.exc_text = None\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/observability.py:1",
+        "before": "        critical=record.levelno>=logging.ERROR or queued.msg in {'request.returning','ask.finished','rag.answer_returning'}\n        with self.condition:\n",
+        "after": "        critical=record.levelno>=logging.ERROR or queued.msg in {'request.returning','ask.finished','rag.answer_returning'}\n        fallback=False\n        with self.condition:\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/observability.py:2",
+        "before": "            if self.stopping or size>byte_limit or len(self.queue)>=record_limit or self.bytes+size>byte_limit:\n                self.dropped+=1\n                return\n            self.queue.append((queued,size));self.bytes+=size\n            self.condition.notify()\n\n",
+        "after": "            if self.stopping or size>byte_limit or len(self.queue)>=record_limit or self.bytes+size>byte_limit:\n                if record.levelno>=logging.ERROR:\n                    fallback=True\n                else:\n                    self.dropped+=1\n                    return\n            else:\n                self.queue.append((queued,size));self.bytes+=size\n                self.condition.notify()\n        if fallback:\n            # An oversized error or a saturated queue must remain visible in\n            # full. The normal asynchronous path stays bounded.\n            self.target.acquire()\n            try:\n                self.target.emit(queued)\n                if hasattr(self.target,'flush_batch'):self.target.flush_batch()\n            finally:self.target.release()\n\n"
+      }
+    ],
+    "02_BACKEND/semantic_runtime/app.py": [
+      {
+        "name": "02_BACKEND/semantic_runtime/app.py:0",
+        "before": "\nlog = obs.get_logger(\"app\")\n\n\n",
+        "after": "\nlog = obs.get_logger(\"app\")\n\n\ndef legal_error_payload(exc):\n    from .legal_agent.investigation_diagnostics import exception_diagnostics\n    from .request_report import _scrub\n    failure=exception_diagnostics(exc)\n    failure.pop('investigation',None)\n    return _scrub({'code':getattr(exc,'code',type(exc).__name__),'run_id':getattr(exc,'run_id',None),\n        'detail':str(exc),'diagnostics':getattr(exc,'diagnostics',{}),\n        'failure_diagnostics':failure,\n        'error_log_revision':'full-error-20261007-r1'})\n\n\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/app.py:1",
+        "before": "    async def legal_agent_failure(request,exc):\n        from fastapi.responses import JSONResponse\n        return JSONResponse(status_code=exc.http_status,content={\n            'code':exc.code,'run_id':getattr(exc,'run_id',None),\n            'detail':obs._redact_secrets(str(exc))[:1000],\n            **({'diagnostics': {k:exc.diagnostics[k] for k in ('schema_version','stage','cause_codes','resume_available','stop_reason') if k in exc.diagnostics}}\n               if isinstance(getattr(exc,'diagnostics',None),dict) else {})})\n\n    @app.exception_handler(ValueError)\n    async def bad_value(request,exc):\n        from fastapi.responses import JSONResponse\n        return JSONResponse(status_code=422,content={'detail':str(exc)})\n\n    @app.exception_handler(KeyError)\n",
+        "after": "    async def legal_agent_failure(request,exc):\n        from fastapi.responses import JSONResponse\n        return JSONResponse(status_code=exc.http_status,content=legal_error_payload(exc))\n\n    @app.exception_handler(ValueError)\n    async def bad_value(request,exc):\n        from fastapi.responses import JSONResponse\n        return JSONResponse(status_code=422,content=legal_error_payload(exc))\n\n    @app.exception_handler(KeyError)\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/app.py:2",
+        "before": "        # A request that fails the runtime contract is the caller's error, not a server fault.\n        from fastapi.responses import JSONResponse\n        return JSONResponse(status_code=422,content={'detail':'request violates term-runtime-v1 contract: '+exc.message})\n\n    @app.get('/health')\n",
+        "after": "        # A request that fails the runtime contract is the caller's error, not a server fault.\n        from fastapi.responses import JSONResponse\n        return JSONResponse(status_code=422,content=legal_error_payload(exc))\n\n    @app.get('/health')\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/app.py:3",
+        "before": "                from .legal_agent.corrected_memory import Conflict\n                if isinstance(exc,Conflict):raise HTTPException(409,str(exc)) from exc\n                if isinstance(exc,LegalAgentError):exc.run_id=ident\n                from .legal_agent.investigation_diagnostics import exception_diagnostics\n                obs.event(log,'ask.failed',level=40,exc_info=True,error_type=type(exc).__name__,\n",
+        "after": "                from .legal_agent.corrected_memory import Conflict\n                if isinstance(exc,Conflict):raise HTTPException(409,str(exc)) from exc\n                if isinstance(exc,LegalAgentError) or hasattr(exc,'diagnostics'):exc.run_id=ident\n                from .legal_agent.investigation_diagnostics import exception_diagnostics\n                obs.event(log,'ask.failed',level=40,exc_info=True,error_type=type(exc).__name__,\n"
+      }
+    ],
+    "02_BACKEND/semantic_runtime/chat_adapter.py": [
+      {
+        "name": "02_BACKEND/semantic_runtime/chat_adapter.py:0",
+        "before": "        def sink(event):\n            if len(events)<256:events.append(event)\n            if on_progress is not None:on_progress(event)\n",
+        "after": "        def sink(event):\n            if len(events)<256 or (event.get('basis') or {}).get('detail_mode')=='full_error':events.append(event)\n            if on_progress is not None:on_progress(event)\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/chat_adapter.py:1",
+        "before": "        from . import observability as obs\n        obs.event(obs.get_logger('chat'),'chat.failed',level=40,request_id=ident,error_type=type(exc).__name__)\n        result.update(text='지금 답변을 가져오지 못했습니다. (추적 번호: '+ident+')',\n                      answer_status='failed',error_type=type(exc).__name__)\n",
+        "after": "        from . import observability as obs\n        from .legal_agent.investigation_diagnostics import exception_diagnostics\n        failure=exception_diagnostics(exc)\n        obs.event(obs.get_logger('chat'),'chat.failed',level=40,exc_info=True,\n            request_id=ident,error_type=type(exc).__name__,failure_diagnostics=failure)\n        result.update(text=view.render_error({'request_id':ident,**failure},question=question),\n                      answer_status='failed',error_type=type(exc).__name__)\n"
+      }
+    ],
+    "02_BACKEND/semantic_runtime/request_report.py": [
+      {
+        "name": "02_BACKEND/semantic_runtime/request_report.py:0",
+        "before": "                self.write_detail(\"TRACE READER ERROR\", {\"error_type\": error,\n                                                         \"detail\": _one_line(exc, 200)})\n\n",
+        "after": "                self.write_detail(\"TRACE READER ERROR\", {\"error_type\": error,\n                                                         \"detail\": str(exc)})\n\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/request_report.py:1",
+        "before": "                self.stream.write('\\n'.join(failure_rows(_scrub(fields['failure_diagnostics'])))+'\\n')\n            if record.exc_info and record.exc_info[0]:\n",
+        "after": "                self.stream.write('\\n'.join(failure_rows(_scrub(fields['failure_diagnostics'])))+'\\n')\n            if fields.get('error_record'):\n                self.stream.write(str(fields['error_record'])+'\\n')\n            if record.exc_info and record.exc_info[0]:\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/request_report.py:2",
+        "before": "            event[\"exc_type\"] = record.async_exc_type\n        self.events.append(event)\n",
+        "after": "            event[\"exc_type\"] = record.async_exc_type\n        if getattr(record, 'async_exception', None):\n            event['traceback'] = record.async_exception\n        self.events.append(event)\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/request_report.py:3",
+        "before": "                lines.extend(failure_rows(_scrub(event['failure_diagnostics'])))\n            continue\n",
+        "after": "                lines.extend(failure_rows(_scrub(event['failure_diagnostics'])))\n            if event.get('error_record'):lines.append(str(event['error_record']))\n            if event.get('traceback'):lines.append(str(event['traceback']))\n            continue\n"
+      }
+    ],
+    "02_BACKEND/semantic_runtime/progress.py": [
+      {
+        "name": "02_BACKEND/semantic_runtime/progress.py:0",
+        "before": "            if details:\n                event[\"details\"] = [_compact(d, 300) for d in details[:8]]\n        try:\n",
+        "after": "            if details:\n                if isinstance(basis,dict) and basis.get('detail_mode') == 'full_error':\n                    from . import observability as obs\n                    event['details'] = [obs._redact_secrets(d) for d in details if isinstance(d,str)]\n                else:\n                    event[\"details\"] = [_compact(d, 300) for d in details[:8]]\n        try:\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/progress.py:1",
+        "before": "        name = record.getMessage()\n        # Received/accepted are transport/schema diagnostics, not agent steps.\n",
+        "after": "        name = record.getMessage()\n        if record.levelno >= logging.ERROR:\n            from .request_report import _scrub\n            value=fields.get('error_diagnostics') or fields.get('failure_diagnostics')\n            if value is not None:\n                self.publish('decision','실행 오류 · '+str(fields.get('error_event') or name),\n                    details=[json.dumps(_scrub(value),ensure_ascii=False,indent=2,default=str)],\n                    basis={'kind':'OBS_EVENT','name':name,'detail_mode':'full_error'})\n                return\n        # Received/accepted are transport/schema diagnostics, not agent steps.\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/progress.py:2",
+        "before": "        if name == \"request.finished\":\n            self.poll_journal()\n            self._flush_reads(force=True)\n",
+        "after": "        if name == \"request.finished\":\n            self.poll_journal()\n            self._flush_reads(force=True)\n            if fields.get('ok') is False:label='요청 처리 실패 · 오류 로그를 확인해 주세요'\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/progress.py:3",
+        "before": "                        diagnostic=scoped_report(self._payload(db,seq),self.admitted)\n                        details=diagnostic_rows(diagnostic,full=False)\n                        if len(details)>8:\n                            details=details[:7]+[f'외 {len(details)-7}개 표시 행 · 전체 상세: journal 이벤트 {seq} / 요청 로그']\n                        self.publish('decision','연결 조사 중단 사유' if diagnostic['pending'] else '연결 조사 상태 확인',\n                            details=details,basis={'kind':event_kind,'journal_seq':seq,'detail_mode':'activity'})\n                    elif event_kind == 'UNIT_FIRST_DECISION_SUFFICIENT':\n",
+        "after": "                        diagnostic=scoped_report(self._payload(db,seq),self.admitted)\n                        details=diagnostic_rows(diagnostic,full=True)\n                        self.publish('decision','연결 조사 중단 사유' if diagnostic['pending'] else '연결 조사 상태 확인',\n                            details=details,basis={'kind':event_kind,'journal_seq':seq,'detail_mode':'full_error'})\n                    elif event_kind == 'UNIT_FIRST_DECISION_SUFFICIENT':\n"
+      }
+    ],
+    "02_BACKEND/semantic_runtime/legal_agent/readable_log.py": [
+      {
+        "name": "02_BACKEND/semantic_runtime/legal_agent/readable_log.py:0",
+        "before": "\nDIAGNOSTIC_EVENTS = frozenset({'REFERENCE_NAVIGATION_STATUS', 'REFERENCE_NAVIGATION_FAILED', 'SOURCE_INVESTIGATION_INCOMPLETE',\n    'UNIT_CANDIDATE_ACQUISITION_STOPPED', 'RUN_FAILED', 'UNASSESSED_AT_STOP', 'REFERENCE_GROUP_DECISION'})\nCATEGORIES = {'DATA_REFERENCE':'데이터 참조 해석', 'MODEL_DECISION':'모델 결정',\n",
+        "after": "\nERROR_EVENTS = frozenset({'LAW_DECISION_REJECTED', 'LAW_DECISION_RETRY',\n    'OUTPUT_SCHEMA_INVALID',\n    'LAW_DECISION_PATCH_PROPOSED', 'COMPLETION_ASSESSMENT_REJECTED',\n    'WORKFLOW_REPAIR', 'SEMANTIC_REPAIR', 'INVESTIGATION_BOUNDED_STOP'})\n\n\ndef is_error_event(kind):\n    return kind in ERROR_EVENTS or kind.endswith(('_FAILED', '_REJECTED'))\n\n\nDIAGNOSTIC_EVENTS = frozenset({'REFERENCE_NAVIGATION_STATUS', 'REFERENCE_NAVIGATION_FAILED', 'SOURCE_INVESTIGATION_INCOMPLETE',\n    'UNIT_CANDIDATE_ACQUISITION_STOPPED', 'RUN_FAILED', 'UNASSESSED_AT_STOP', 'REFERENCE_GROUP_DECISION'}) | ERROR_EVENTS\nCATEGORIES = {'DATA_REFERENCE':'데이터 참조 해석', 'MODEL_DECISION':'모델 결정',\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/legal_agent/readable_log.py:1",
+        "before": "    if isinstance(value.get('investigation'),dict):rows.extend(diagnostic_rows(value['investigation']))\n    return rows\n",
+        "after": "    if isinstance(value.get('investigation'),dict):rows.extend(diagnostic_rows(value['investigation']))\n    if value.get('traceback'):rows.append('전체 traceback:\\n'+str(value['traceback']))\n    rows.append('전체 실패 상세:\\n'+json.dumps(value,ensure_ascii=False,indent=2,default=str))\n    return rows\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/legal_agent/readable_log.py:2",
+        "before": "    data = value if isinstance(value, dict) else {}\n    if label == 'AGENT STAGE RESULT':\n",
+        "after": "    data = value if isinstance(value, dict) else {}\n    kind = label.removeprefix('AGENT ').replace(' ', '_')\n    if is_error_event(kind) or kind in {'WORKFLOW_REPAIR', 'SEMANTIC_REPAIR'}:\n        # Error context must precede the generic decision projection: otherwise\n        # a rejected decision renders as an ordinary successful decision.\n        return '전체 오류·복구 기록 (생략 없음)\\n'+json.dumps(value,ensure_ascii=False,indent=2,default=str)\n    if label == 'AGENT STAGE RESULT':\n"
+      }
+    ],
+    "02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py": [
+      {
+        "name": "02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py:0",
+        "before": "        return report('SELECT', False, [],\n            [{'category':'DATA_REFERENCE','code':'UNRESOLVED_CONNECTIONS_ALLOWED','basis':'explicit_completion_policy',\n              'reference_navigation':deepcopy(nav)}] if nav.get('pending') else [],\n            next_action=result.get('next_action'), selected_source_ids=result.get('final_ids', []),\n",
+        "after": "        return report('SELECT', False, [],\n            [{'category':'MODEL_DECISION','code':'MODEL_DECISION_REJECTED','basis':'recovered_model_decision',**deepcopy(r)}\n             for r in result.get('rejected_decisions',[])] +\n            ([{'category':'DATA_REFERENCE','code':'UNRESOLVED_CONNECTIONS_ALLOWED','basis':'explicit_completion_policy',\n              'reference_navigation':deepcopy(nav)}] if nav.get('pending') else []),\n            next_action=result.get('next_action'), selected_source_ids=result.get('final_ids', []),\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py:1",
+        "before": "    blockers = deepcopy(native.get('blockers', []))\n    if nav.get('pending') and not blockers:\n",
+        "after": "    blockers = deepcopy(native.get('blockers', []))\n    for rejection in result.get('rejected_decisions', []):\n        blockers.append({'category':'MODEL_DECISION','code':'MODEL_DECISION_REJECTED',\n            'basis':'rejected_model_decision',**deepcopy(rejection)})\n    if result.get('stop_reason'):\n        blockers.append({'category':'EXECUTION_LIMIT' if result['stop_reason'] != 'MODEL_DECISION_UNRESOLVED' else 'MODEL_DECISION',\n            'code':result['stop_reason'],'basis':'investigation_stop_reason'})\n    if nav.get('pending') and not blockers:\n"
+      },
+      {
+        "name": "02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py:2",
+        "before": "        'error_message': str(exc), 'stage': stage or getattr(exc, 'failure_stage', None),\n        'location': {'file': location.filename, 'line': location.lineno, 'function': location.name} if location else None}\n    if getattr(exc, 'diagnostics', None) is not None:\n",
+        "after": "        'error_message': str(exc), 'stage': stage or getattr(exc, 'failure_stage', None),\n        'location': {'file': location.filename, 'line': location.lineno, 'function': location.name} if location else None,\n        'traceback': ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__))}\n    if getattr(exc, 'diagnostics', None) is not None:\n"
+      }
+    ],
+    "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": [
+      {
+        "name": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:0",
+        "before": "    def reject_decision(self, phase, decision, error, attempt):\n        rejected = {'phase': phase, 'decision': decision, 'error': str(error),\n                    'error_type': type(error).__name__, 'attempt': attempt}\n        self.p['rejected_decisions'].append(rejected)\n",
+        "after": "    def reject_decision(self, phase, decision, error, attempt):\n        from .investigation_diagnostics import exception_diagnostics\n        rejected = {'phase': phase, 'decision': decision, 'error': str(error),\n                    'error_type': type(error).__name__, 'attempt': attempt,\n                    'diagnostics': exception_diagnostics(error, stage='SELECT')}\n        self.p['rejected_decisions'].append(rejected)\n"
+      }
+    ],
+    "02_BACKEND/semantic_runtime/legal_agent/repository.py": [
+      {
+        "name": "02_BACKEND/semantic_runtime/legal_agent/repository.py:0",
+        "before": "                        (after, int(evidence), seq+1))\n        return seq\n",
+        "after": "                        (after, int(evidence), seq+1))\n        from .readable_log import is_error_event\n        if is_error_event(kind):\n            obs.event(log,'agent.error',level=40,run_id=r['run_id'],\n                journal_seq=seq,error_event=kind,error_diagnostics=payload,\n                error_record=encoded(payload))\n        return seq\n"
+      }
+    ],
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": [
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:0",
+        "before": "                if not re.search(r'''[\"'](?:question|messages|prompt|answer|documents|sources)[\"']\\s*:''', item, re.I):\n                    messages.append(_redact_http_error(item, question)[:1000])\n        for key in (\"body\", \"error\", \"detail\", \"data\", \"cause\"):\n",
+        "after": "                if not re.search(r'''[\"'](?:question|messages|prompt|answer|documents|sources)[\"']\\s*:''', item, re.I):\n                    messages.append(_redact_http_error(item, question))\n        for key in (\"body\", \"error\", \"detail\", \"data\", \"cause\"):\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:1",
+        "before": "    if body_format == \"json\":\n        excerpt = \"\\n\".join(dict.fromkeys(messages))[:1500]\n    elif re.search(r'''[\"'](?:question|messages|prompt|answer|documents|sources)[\"']\\s*:''', text, re.I):\n",
+        "after": "    if body_format == \"json\":\n        excerpt = \"\\n\".join(dict.fromkeys(messages))\n    elif re.search(r'''[\"'](?:question|messages|prompt|answer|documents|sources)[\"']\\s*:''', text, re.I):\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:2",
+        "before": "    else:\n        excerpt = _redact_http_error(text, question)[:1500]\n    try:\n",
+        "after": "    else:\n        excerpt = _redact_http_error(text, question)\n    try:\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:3",
+        "before": "        \"captured_body_bytes\": len(raw),\n        \"capture_limit_reached\": len(raw) >= 16384,\n        \"captured_body_sha256\": hashlib.sha256(raw).hexdigest(),\n",
+        "after": "        \"captured_body_bytes\": len(raw),\n        \"capture_limit_reached\": False,\n        \"captured_body_sha256\": hashlib.sha256(raw).hexdigest(),\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:4",
+        "before": "        _log_event('workflow.warmup.failed', level='ERROR', request_id=request_id,\n                   operation=operation, error_type=type(exc).__name__, error_message=str(exc)[:500])\n        return {'text': '자료 준비 상태를 가져오지 못했습니다. 코드서빙 리비전과 워크플로우 로그를 확인해 주세요.',\n                'answer_status': 'failed', 'request_id': request_id}\n",
+        "after": "        _log_event('workflow.warmup.failed', level='ERROR', request_id=request_id,\n                   operation=operation, error_type=type(exc).__name__, error_message=str(exc),traceback=traceback.format_exc())\n        return {'text': render_error({'request_id':request_id,'error_type':type(exc).__name__,\n                   'detail':str(exc),'traceback':traceback.format_exc()}),\n                'answer_status': 'failed', 'request_id': request_id}\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:5",
+        "before": "        details = event.get(\"details\", [])\n        details = [\" \".join(row.split()) for row in details[:8]\n                   if isinstance(row, str) and 0 < len(row) <= 300] if isinstance(details, list) else []\n        # Location-specific activity must remain visible in chronological order.\n",
+        "after": "        details = event.get(\"details\", [])\n        full_error = (event.get('basis') or {}).get('detail_mode') == 'full_error'\n        details = ([_redact_http_error(row) for row in details if isinstance(row,str)] if full_error else\n                   [\" \".join(row.split()) for row in details[:8]\n                    if isinstance(row, str) and 0 < len(row) <= 300]) if isinstance(details, list) else []\n        # Location-specific activity must remain visible in chronological order.\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:6",
+        "before": "        if len(self.flow_events) < 256:\n",
+        "after": "        if len(self.flow_events) < 256 or full_error:\n",
+        "compatible_absent_marker": "        if kind == \"heartbeat\":\n            if elapsed - self.last_heartbeat < 30000:\n                return\n            self.last_heartbeat = elapsed\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:7",
+        "before": "            if details:\n                body += \"\\n\\n\".join(\"- \" + self._plain(row) for row in details) + \"\\n\\n\"\n",
+        "after": "            if full_error:\n                body += render_error({'stage':label,'logs':details})+'\\n\\n'\n            elif details:\n                body += \"\\n\\n\".join(\"- \" + self._plain(row) for row in details) + \"\\n\\n\"\n",
+        "alternatives": [
+          {
+            "before": "                if details:\n                    body += \"\\n\\n\".join(\"- \" + self._plain(row) for row in details) + \"\\n\\n\"\n",
+            "after": "                if full_error:\n                    body += render_error({'stage':label,'logs':details})+'\\n\\n'\n                elif details:\n                    body += \"\\n\\n\".join(\"- \" + self._plain(row) for row in details) + \"\\n\\n\"\n"
+          },
+          {
+            "before": "                if details:\n                    body += \"\\n\".join(\"- \" + self._plain(row) for row in details) + \"\\n\\n\"\n",
+            "after": "                if full_error:\n                    body += render_error({'stage':label,'logs':details})+'\\n\\n'\n                elif details:\n                    body += \"\\n\".join(\"- \" + self._plain(row) for row in details) + \"\\n\\n\"\n"
+          }
+        ]
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:8",
+        "before": "            self.blocks[existing] = block\n        elif len(self.blocks) < 80:\n            self.blocks.append(block)\n",
+        "after": "            self.blocks[existing] = block\n        elif len(self.blocks) < 80 or full_error:\n            self.blocks.append(block)\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:9",
+        "before": "            failure[\"http_error_diagnostics\"] = _http_error_diagnostics(exc, _raw_http_error(exc, data[\"request_id\"])[:16384])\n",
+        "after": "            failure[\"http_error_diagnostics\"] = _http_error_diagnostics(exc, _raw_http_error(exc, data[\"request_id\"]))\n",
+        "alternatives": [
+          {
+            "before": "            failure[\"http_error_diagnostics\"] = _http_error_diagnostics(exc, exc.read(16384))\n",
+            "after": "            failure[\"http_error_diagnostics\"] = _http_error_diagnostics(exc, exc.read())\n"
+          }
+        ]
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:render_error_helper",
+        "before": "\ndef render(",
+        "after": "\ndef render_error(body, *, question=''):\n    \"\"\"Display the complete received error, including nested causes and traceback.\"\"\"\n    def scrub(value):\n        if isinstance(value,dict):\n            return {k:('[REDACTED]' if re.search(r'authorization|api[_-]?key|(?:^|_)token$|password|secret|cookie|signature',str(k),re.I)\n                       else scrub(v)) for k,v in value.items()}\n        if isinstance(value,list):return [scrub(v) for v in value]\n        if isinstance(value,str):return _redact_http_error(value,question)\n        return value\n    safe=scrub(body)\n    detail=json.dumps(safe,ensure_ascii=False,indent=2,default=str)\n    fence='`'*max(3,1+max((len(m.group()) for m in re.finditer(r'`+',detail)),default=0))\n    return '실행 오류 ('+str(safe.get('code') or safe.get('error_type') or 'HTTP '+str(safe.get('_gateway_status')))+') · 전체 오류 로그\\n\\n'+fence+'json\\n'+detail+'\\n'+fence\n\n\ndef render("
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:render_error_body",
+        "before": "    if isinstance(status, int) and status >= 400:\n        if body.get(\"code\")==\"SOURCE_INVESTIGATION_INCOMPLETE\":\n            return \"원문 조사를 완료하지 못했습니다. \" + str(body.get(\"detail\") or \"확인할 자료가 남아 있습니다.\")[:800]\n        if body.get(\"code\")==\"MODEL_UPSTREAM_UNAVAILABLE\":\n            return \"모델 서비스가 일시적으로 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.\"\n        if body.get(\"code\") and body.get(\"detail\"):\n            return \"실행 오류 (\" + str(body[\"code\"]) + \"): \" + str(body[\"detail\"])[:1000]\n        return \"지금 답변을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.\"\n",
+        "after": "    if isinstance(status, int) and status >= 400:\n        return render_error(body)\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:11",
+        "before": "    if isinstance(status, int) and status >= 400:\n        if body.get(\"code\")==\"SOURCE_INVESTIGATION_INCOMPLETE\":\n            return \"원문 조사를 완료하지 못했습니다. \" + str(body.get(\"detail\") or \"확인할 자료가 남아 있습니다.\")[:800]\n        if body.get(\"code\")==\"MODEL_UPSTREAM_UNAVAILABLE\":\n            return \"모델 서비스가 일시적으로 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.\"\n        if body.get(\"code\") and body.get(\"detail\"):\n            return \"실행 오류 (\" + str(body[\"code\"]) + \"): \" + str(body[\"detail\"])[:1000]\n        return \"지금 답변을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.\"\n    answer = _public_answer_text(body)\n",
+        "after": "    if isinstance(status, int) and status >= 400:\n        return render_error(body)\n    answer = _public_answer_text(body)\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:http-error-0",
+        "before": "        raw_error = _raw_http_error(exc, request_id)\n",
+        "after": "        raw_error = _raw_http_error(exc, request_id)\n",
+        "alternatives": [
+          {
+            "before": "        raw_error = exc.read(16384)\n",
+            "after": "        raw_error = exc.read()\n"
+          }
+        ]
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:http-error-1",
+        "before": "        detail = raw_error.decode(\"utf-8\", \"replace\")[:2000]\n",
+        "after": "        detail = raw_error.decode(\"utf-8\", \"replace\")\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:http-error-2",
+        "before": "        error_diagnostics = _http_error_diagnostics(exc, raw_error[:16384], question)\n",
+        "after": "        error_diagnostics = _http_error_diagnostics(exc, raw_error, question)\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:http-error-3",
+        "before": "        except ValueError:\n            failure = {}\n        service_error = (isinstance(failure.get(\"code\"), str)\n                         and isinstance(failure.get(\"detail\"), str))\n",
+        "after": "        except ValueError:\n            failure = {'error_type':type(exc).__name__,'detail':detail}\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:http-error-4",
+        "before": "            \"text\": (\"실행 오류 (\" + failure[\"code\"] + \"): \" + _redact_http_error(failure[\"detail\"], question)[:1000]) if service_error else\n                    f\"지금 답변을 가져오지 못했습니다. (코드서빙 응답 {exc.code}, 추적 번호: {request_id})\",\n",
+        "after": "            \"text\": render_error({**failure,'_gateway_status':exc.code,'request_id':request_id},question=question),\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:http-error-5",
+        "before": "        if failure.get(\"code\") in (\"SOURCE_INVESTIGATION_INCOMPLETE\",\"MODEL_UPSTREAM_UNAVAILABLE\"):\n            failed[\"text\"]=render({**failure,\"_gateway_status\":exc.code})\n        await display.finish(failed[\"text\"])\n",
+        "after": "        # The complete received HTTP error has already been rendered above.\n        await display.finish(failed[\"text\"])\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:13",
+        "before": "        except ValueError:\n            failure = {}\n        service_error = (isinstance(failure.get(\"code\"), str)\n                         and isinstance(failure.get(\"detail\"), str))\n        _log_event(\n",
+        "after": "        except ValueError:\n            failure = {'error_type':type(exc).__name__,'detail':detail}\n        _log_event(\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:14",
+        "before": "        failed = {\n            \"text\": (\"실행 오류 (\" + failure[\"code\"] + \"): \" + _redact_http_error(failure[\"detail\"], question)[:1000]) if service_error else\n                    f\"지금 답변을 가져오지 못했습니다. (코드서빙 응답 {exc.code}, 추적 번호: {request_id})\",\n            \"answer_status\": \"incomplete\" if failure.get(\"code\")==\"SOURCE_INVESTIGATION_INCOMPLETE\" else \"unavailable\" if failure.get(\"code\")==\"MODEL_UPSTREAM_UNAVAILABLE\" else \"failed\",\n",
+        "after": "        failed = {\n            \"text\": render_error({**failure,'_gateway_status':exc.code,'request_id':request_id},question=question),\n            \"answer_status\": \"incomplete\" if failure.get(\"code\")==\"SOURCE_INVESTIGATION_INCOMPLETE\" else \"unavailable\" if failure.get(\"code\")==\"MODEL_UPSTREAM_UNAVAILABLE\" else \"failed\",\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:15",
+        "before": "        }\n        if failure.get(\"code\") in (\"SOURCE_INVESTIGATION_INCOMPLETE\",\"MODEL_UPSTREAM_UNAVAILABLE\"):\n            failed[\"text\"]=render({**failure,\"_gateway_status\":exc.code})\n        await display.finish(failed[\"text\"])\n",
+        "after": "        }\n        # The complete received HTTP error has already been rendered above.\n        await display.finish(failed[\"text\"])\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:client-exception-log",
+        "before": "            error_message=str(exc)[:500],\n            traceback=traceback.format_exc()[-4000:],\n",
+        "after": "            error_message=str(exc),\n            traceback=traceback.format_exc(),\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:client-exception-text",
+        "before": "            \"text\": f\"지금 답변을 가져오지 못했습니다. (추적 번호: {request_id})\",\n            \"answer_status\": \"failed\",\n            \"failure_kind\": \"client_exception\",\n",
+        "after": "            \"text\": render_error({'request_id':request_id,'error_type':type(exc).__name__,\n                'detail':str(exc),'traceback':traceback.format_exc()},question=question),\n            \"answer_status\": \"failed\",\n            \"failure_kind\": \"client_exception\",\n"
+      },
+      {
+        "name": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py:17",
+        "before": "        failed = {\n            \"text\": f\"지금 답변을 가져오지 못했습니다. (추적 번호: {request_id})\",\n            \"answer_status\": \"failed\",\n",
+        "after": "        failed = {\n            \"text\": render_error({'request_id':request_id,'error_type':type(exc).__name__,\n                'detail':str(exc),'traceback':traceback.format_exc()},question=question),\n            \"answer_status\": \"failed\",\n"
+      }
+    ],
+    "service.py": [
+      {
+        "name": "service.py:0",
+        "before": "        }\n    except Exception as exc:  # noqa: BLE001\n        obs.event(\n            log,\n",
+        "after": "        }\n    except Exception as exc:  # noqa: BLE001\n        from semantic_runtime.legal_agent.investigation_diagnostics import exception_diagnostics\n        failure=exception_diagnostics(exc)\n        obs.event(\n            log,\n"
+      },
+      {
+        "name": "service.py:1",
+        "before": "            exc_info=True,\n            error_type=type(exc).__name__,\n        )\n        return {\n            \"status\": 500,\n            \"body\": {\"error\": \"pipeline request failed\", \"error_type\": type(exc).__name__},\n        }\n\n",
+        "after": "            exc_info=True,\n            error_type=type(exc).__name__,\n            failure_diagnostics=failure,\n        )\n        return {\n            \"status\": 500,\n            \"body\": {\"error\": \"pipeline request failed\", \"error_type\": type(exc).__name__,\n                'detail':obs._redact_secrets(str(exc)),\n                'failure_diagnostics':request_report._scrub(failure)},\n        }\n\n"
+      },
+      {
+        "name": "service.py:2",
+        "before": "        return {\"status\": response.status_code, \"body\": body}\n    except Exception as exc:\n        obs.event(\n            log,\n",
+        "after": "        return {\"status\": response.status_code, \"body\": body}\n    except Exception as exc:\n        from semantic_runtime.legal_agent.investigation_diagnostics import exception_diagnostics\n        failure=exception_diagnostics(exc)\n        obs.event(\n            log,\n"
+      },
+      {
+        "name": "service.py:3",
+        "before": "            path=path,\n            error_type=type(exc).__name__,\n        )\n        return {\n",
+        "after": "            path=path,\n            error_type=type(exc).__name__,\n            failure_diagnostics=failure,\n        )\n        return {\n"
+      },
+      {
+        "name": "service.py:4",
+        "before": "            \"body\": {\"error\": \"runtime request failed\", \"code\": \"RUNTIME_REQUEST_ERROR\",\n                     \"error_type\": type(exc).__name__,\n                     \"detail\": obs._redact_secrets(str(exc))[:1000]},\n        }\n\n",
+        "after": "            \"body\": {\"error\": \"runtime request failed\", \"code\": \"RUNTIME_REQUEST_ERROR\",\n                     \"error_type\": type(exc).__name__,\n                     \"detail\": obs._redact_secrets(str(exc)),\n                     \"failure_diagnostics\": request_report._scrub(failure)},\n        }\n\n"
+      },
+      {
+        "name": "service.py:5",
+        "before": "        result = await _dispatch(config, data)\n    except Exception as exc:  # noqa: BLE001\n        obs.event(\n            log,\n",
+        "after": "        result = await _dispatch(config, data)\n    except Exception as exc:  # noqa: BLE001\n        from semantic_runtime.legal_agent.investigation_diagnostics import exception_diagnostics\n        failure=exception_diagnostics(exc)\n        obs.event(\n            log,\n"
+      },
+      {
+        "name": "service.py:6",
+        "before": "            exc_info=True,\n            error_type=type(exc).__name__,\n        )\n        result = {\n",
+        "after": "            exc_info=True,\n            error_type=type(exc).__name__,\n            failure_diagnostics=failure,\n        )\n        result = {\n"
+      },
+      {
+        "name": "service.py:7",
+        "before": "                \"code\": \"CODE_SERVING_ERROR\",\n                \"error_type\": type(exc).__name__,\n                \"detail\": obs._redact_secrets(str(exc))[:1000],\n                \"request_id\": request_id,\n            },\n",
+        "after": "                \"code\": \"CODE_SERVING_ERROR\",\n                \"error_type\": type(exc).__name__,\n                \"detail\": obs._redact_secrets(str(exc)),\n                \"failure_diagnostics\": request_report._scrub(failure),\n                \"request_id\": request_id,\n            },\n"
+      }
+    ],
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py": [
+      {
+        "name": "02_BACKEND/semantic_runtime/legal_agent/gateway.py:0",
+        "before": "                with self.repo.transaction():\n                    self.repo.event('OUTPUT_SCHEMA_INVALID', {\n                        'attempt_id': ident, 'error': str(exc)[:2000],\n                        'schema': schema_name, 'phase': phase,\n",
+        "after": "                with self.repo.transaction():\n                    from .investigation_diagnostics import exception_diagnostics\n                    self.repo.event('OUTPUT_SCHEMA_INVALID', {\n                        'attempt_id': ident, 'error': str(exc),\n                        'diagnostics':exception_diagnostics(exc,stage=phase),\n                        'schema': schema_name, 'phase': phase,\n"
+      }
+    ]
+  },
+  "source_before_sha256": {
+    "02_BACKEND/semantic_runtime/observability.py": "67cb0ee96fa4e182e9a6707ede8865905de9ef2a851007a708d25ecb05c497b5",
+    "02_BACKEND/semantic_runtime/app.py": "c761741478f04baf8032bb83e7196bc3e99a8188e799f440ef106fa36002b77d",
+    "02_BACKEND/semantic_runtime/chat_adapter.py": "a3958ea8a3be23a18a388b7a6a46395bebb58bd8c792d01dca85ed6764d60b84",
+    "02_BACKEND/semantic_runtime/request_report.py": "080d88ba995442b80b02f41634b2a93f2cde947a5b6a214e6cf9ebbc4730c633",
+    "02_BACKEND/semantic_runtime/progress.py": "e4360e49e5d5853e49496092a30770c12d669e4400b6d81642451bc65b7d6a0f",
+    "02_BACKEND/semantic_runtime/legal_agent/readable_log.py": "bfc4cdd3a8c7e7ea19c8e01f1a0d87ce688327d561e35b98da36f4ecf9643d42",
+    "02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py": "f53cc0727dbd1ac87b90bdbb5fbefb4ad3aea6502b84ff15666d4d817c75ed6b",
+    "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": "93b25e11c176463a5d2a34fd1116fa15142843595f0f8a67d2746657cc16298a",
+    "02_BACKEND/semantic_runtime/legal_agent/repository.py": "b6f7a964ef2991813a085dc50ac5b7a79b2462efc8060e99aca941ba664813c7",
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": "2d39d7489ce132bf590a6ec290ae701df0d054545575c448330bb303957ac899",
+    "service.py": "2cfb9c6e36c0a80ffd8ce1409060d4666c074479be699028ebe28272827d86af",
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py": "a2de01cfa36db5d7b10aff1a5d2bf18768932855d92291c9d2bb40eb2cbb4c7a"
+  },
+  "source_after_sha256": {
+    "02_BACKEND/semantic_runtime/observability.py": "1331f0d604639d782306c83fecd14a9abf793b6209c4ebe17c840a192f01ab71",
+    "02_BACKEND/semantic_runtime/app.py": "7997d8d75372ae2c8b74ae19fe8dcb29ce8961d68e98734965bbb59d337a932b",
+    "02_BACKEND/semantic_runtime/chat_adapter.py": "bddcf3793e57f5dbe5c2db8cf531260e1efb49c51c03f859af7779d11f33ac55",
+    "02_BACKEND/semantic_runtime/request_report.py": "e202b42ed81711faf0f46c677c8892f6bb41ae5f8404cef99a337d9cc05ac207",
+    "02_BACKEND/semantic_runtime/progress.py": "6031b818cfa64a9799c6ed7a800d906522b6fc48fb848adcf8a983a4896e1daa",
+    "02_BACKEND/semantic_runtime/legal_agent/readable_log.py": "8a75b3693d94b14b647e6f84dccfb3e60e9df64a3e6e14cc2d59178bc913ed7b",
+    "02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py": "03e85cd11f2ff327e126b53a038bb30d0e822ffc1c480f077420e7c08b4caeca",
+    "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py": "cfe609fe753c9ce3a7617197fbd6486b9c152bd5f87115543d143a54f74e7271",
+    "02_BACKEND/semantic_runtime/legal_agent/repository.py": "fd37b10336a32fa49f22d287fa5717f4171251f23579079b8827a0d3a24a107a",
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": "64d5c83a294c74c8550a44ef77d4ff3cf76e48fb9feef3b56561ff3043c0d22e",
+    "service.py": "daea3108798e70737f29288fd8e3b23eeb9f32cea7b956d583753d3e185b8276",
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py": "45bb4d08b22b0fdd9a9918c9a141ef285635903477b4d0cbfa9b76cc8ffb91b4"
+  },
+  "generation_modified": false,
+  "model_or_prompt_policy_modified": false
+}

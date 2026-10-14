@@ -2,8 +2,18 @@
 import json
 
 
+ERROR_EVENTS = frozenset({'LAW_DECISION_REJECTED', 'LAW_DECISION_RETRY',
+    'OUTPUT_SCHEMA_INVALID',
+    'LAW_DECISION_PATCH_PROPOSED', 'COMPLETION_ASSESSMENT_REJECTED',
+    'WORKFLOW_REPAIR', 'SEMANTIC_REPAIR', 'INVESTIGATION_BOUNDED_STOP'})
+
+
+def is_error_event(kind):
+    return kind in ERROR_EVENTS or kind.endswith(('_FAILED', '_REJECTED'))
+
+
 DIAGNOSTIC_EVENTS = frozenset({'REFERENCE_NAVIGATION_STATUS', 'REFERENCE_NAVIGATION_FAILED', 'SOURCE_INVESTIGATION_INCOMPLETE',
-    'UNIT_CANDIDATE_ACQUISITION_STOPPED', 'RUN_FAILED', 'UNASSESSED_AT_STOP', 'REFERENCE_GROUP_DECISION'})
+    'UNIT_CANDIDATE_ACQUISITION_STOPPED', 'RUN_FAILED', 'UNASSESSED_AT_STOP', 'REFERENCE_GROUP_DECISION'}) | ERROR_EVENTS
 CATEGORIES = {'DATA_REFERENCE':'데이터 참조 해석', 'MODEL_DECISION':'모델 결정',
     'UNPROCESSED_WORK':'미처리 작업', 'EXECUTION_LIMIT':'실행 한도',
     'SOURCE_SELECTION':'근거 선별', 'DIAGNOSTIC_GAP':'상세 사유 미기록','EXECUTION_FAILURE':'실행 예외'}
@@ -50,6 +60,8 @@ def failure_rows(value):
           '오류 메시지: '+json.dumps(value.get('error_message'),ensure_ascii=False),
           '발생 위치: '+json.dumps(value.get('location'),ensure_ascii=False)]
     if isinstance(value.get('investigation'),dict):rows.extend(diagnostic_rows(value['investigation']))
+    if value.get('traceback'):rows.append('전체 traceback:\n'+str(value['traceback']))
+    rows.append('전체 실패 상세:\n'+json.dumps(value,ensure_ascii=False,indent=2,default=str))
     return rows
 
 
@@ -75,6 +87,7 @@ DECISIONS = {
     'ADOPT': '근거 채택', 'UNCERTAIN': '판단 미확인',
 }
 TOOLS = {'search': '검색', 'read': '원문 읽기', 'browse': '목차 확인',
+         'case_evidence_rebind': '저장 근거를 현재 요청에 재결속',
          'follow_reference': '참조 확인', 'follow_relations': '연결 근거 확인',
          'inspect_relation': '연결 상세 확인', 'view_page': '다음 목록 확인'}
 
@@ -82,7 +95,7 @@ TOOLS = {'search': '검색', 'read': '원문 읽기', 'browse': '목차 확인',
 def compact(value, limit=180):
     """Flatten control characters so model text cannot forge extra log lines."""
     text = ' '.join(''.join(ch if ch.isprintable() else ' ' for ch in str(value or '')).split())
-    return text if len(text) <= limit else text[:limit-1] + '…'
+    return text if limit is None or len(text) <= limit else text[:limit-1] + '…'
 
 
 def objects(value):
@@ -246,11 +259,28 @@ def decision_rows(value, view):
         return ' / '.join(names[:3]) + (f' 외 {len(names)-3}건' if len(names) > 3 else '')
 
     rows = []
-    def add(judgment, finding='', reason=''):
-        rows.append({'judgment': compact(judgment, 60), 'finding': compact(finding),
-                     'reason': reason_text(reason)})
+    def add(judgment, finding='', reason='', *, full=False):
+        from .judgment_view import reason_text as clean
+        rows.append({'judgment': compact(judgment, 60), 'finding': compact(finding, None if full else 180),
+                     'reason': compact(clean(reason), None) if full else reason_text(reason)})
 
     if not isinstance(value, dict): return rows
+    # Native v6 replies use claims/issues rather than the legacy assessments
+    # envelope. These are explicit output fields, never hidden model reasoning.
+    if value.get('purpose'):
+        add('조사 목적', value['purpose'], value.get('reason'), full=True)
+    for issue in objects(value.get('issues')):
+        add('확인할 쟁점', issue.get('question'), issue.get('reason'), full=True)
+    for claim in objects(value.get('claims')):
+        if claim.get('text'):
+            add('현재 판단 후보', claim['text'], claim.get('reason'), full=True)
+    for issue in objects(value.get('issue_assessments')):
+        add('쟁점 판단', {'COVERED':'근거 확인 완료','PARTIAL':'일부 미확인','INSUFFICIENT':'근거 부족'}.get(issue.get('status'), issue.get('conclusion')),
+            issue.get('reason'), full=True)
+    for gap in objects(value.get('gaps')):
+        add('추가 확인 필요', gap.get('reason'), full=True)
+    for limitation in value.get('limitations', []) if isinstance(value.get('limitations'), list) else []:
+        if isinstance(limitation, str): add('미확인 사항', limitation, full=True)
     laws={law.get('id'):law for law in objects(view.get('laws'))}
     branches={branch.get('id'):branch for branch in objects(view.get('articles'))}
     for choice in objects(value.get('law_decisions')):
@@ -310,9 +340,7 @@ def decision_rows(value, view):
 def render_rows(rows):
     lines = [f'판단: {row["judgment"]} → 찾은 것: {row["finding"] or "처리 결과 기록"}'
              + (f' → 이유: {row["reason"]}' if row.get('reason') else '')
-             for row in rows[:6]]
-    if len(rows) > 6:
-        lines.append(f'외 {len(rows)-6}건 · 전체 내용은 요청 JSON 보고서와 journal에 보존')
+             for row in rows]
     return '\n'.join(lines)
 
 
@@ -323,9 +351,23 @@ def render_detail(label, value):
             'WORKFLOW REPAIR', 'SEMANTIC REPAIR', 'TOOL RESULT'}):
         return None
     data = value if isinstance(value, dict) else {}
+    kind = label.removeprefix('AGENT ').replace(' ', '_')
+    if is_error_event(kind) or kind in {'WORKFLOW_REPAIR', 'SEMANTIC_REPAIR'}:
+        # Error context must precede the generic decision projection: otherwise
+        # a rejected decision renders as an ordinary successful decision.
+        return '전체 오류·복구 기록 (생략 없음)\n'+json.dumps(value,ensure_ascii=False,indent=2,default=str)
     if label == 'AGENT STAGE RESULT':
         return compact(data.get('label'), 120)+'\n'+'\n'.join(
-            compact(row, 300) for row in data.get('details', []) if isinstance(row, str))
+            compact(row, None) for row in data.get('details', []) if isinstance(row, str))
+    if label == 'AGENT LAW SELECTION DECISION':
+        law = data.get('law') or {}
+        return render_rows([{'judgment':'법령 조사 선택' if data.get('status')=='INVESTIGATE' else '법령 조사 보류',
+            'finding': compact(law.get('name'), None), 'reason': compact(data.get('reason'), None)}])
+    if label == 'AGENT LAW BRANCH DECISION':
+        branch = data.get('branch') or {}
+        return render_rows([{'judgment': {'KEEP':'원문 묶음 채택','EXCLUDE':'원문 묶음 제외','DEFER':'원문 묶음 보류'}.get(data.get('status'), '원문 묶음 판단'),
+            'finding': compact(branch.get('article') or branch.get('name') or data.get('article') or data.get('document_name'), None),
+            'reason': compact(data.get('reason'), None)}])
     if label == 'AGENT UNIT CANDIDATE ACQUISITION STOPPED':
         heading, rows = acquisition_summary(data)
         return heading+'\n'+'\n'.join(rows)
@@ -369,7 +411,7 @@ def render_detail(label, value):
         return f'단계: {phase_label(data.get("phase"))} · LLM 호출 {data.get("attempt", "")} · 시작' + '\n' + '\n'.join(input_rows(data.get('view') or {}))
     if label == 'MODEL RESPONSE / LLM ANSWER':
         phase = data.get('source_stage') or data.get('phase')
-        heading = f'단계: {phase_label(phase)} · 응답 상태: {compact(data.get("status"))}'
+        heading = f'단계: {phase_label(phase)} · 응답 상태: {compact(data.get("status"))} · 모델 제안 (채택은 후속 검증)'
         reply = data.get('reply')
         if not isinstance(reply, dict):
             return heading + '\n모델 응답 수신' + (' · ' + compact(reply) if reply else '')

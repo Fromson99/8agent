@@ -1,0 +1,3130 @@
+{
+  "schema_version": "curated-source-package-v1",
+  "package_id": "cm51-curated-20261007-r2",
+  "registration_authority": "USER_REQUEST_2026-10-07",
+  "visibility": "PRIVATE_OWNER_TEAM",
+  "question_export": "NOT_AUTHORIZED_FOR_EXTERNAL_MODEL",
+  "legal_claim_reuse": false,
+  "training_cases": true,
+  "benchmark_warning": "Known CM seeds after registration are in-sample; do not count as unseen success.",
+  "source": {
+    "path": "01_DATA/review/cm_core_e2e_v3.json",
+    "sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+    "schema": "cm-field-core-e2e-v3"
+  },
+  "built_against": {
+    "generation": "term-source-3b667f54bb11d9477888",
+    "store_sha256": "cd64bf1301bc68d58741c332748084691b9f57136f827bb782f71b68068c66a2"
+  },
+  "counts": {
+    "cases": 51,
+    "source_entries": 98
+  },
+  "cases": [
+    {
+      "case_id": "cm-001",
+      "question": "벤처금융 및 전문투자자의 100분의 10 한도는 합산 기준인가?\n(업무 문맥: 신규상장 의무보유 - 코스닥시장 상장규정 제26조)",
+      "topic": "신규상장 의무보유 - 코스닥시장 상장규정 제26조",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "코스닥시장 상장규정",
+          "coordinate_key": "body:제26조",
+          "source_artifact_sha256": "ce1030b85f4d2601d2fe1d5e4157ba8dedbc103c1d6c2bc8e062e0e883bc3b59",
+          "section_text_sha256": "53a5e414a23259997731a721a7720410ca001828d8a0f85f8ae57fc875597196",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "88f17b33a48d95ca32ac248367bae576e13541cd6bf3e296dc2af51d1677ca3d"
+          },
+          "selected_document_id": "3521c3aaa5a735fd",
+          "selected_unit_id": "282"
+        }
+      ],
+      "reference_answer": "제26조 제1항 제4호 조문상 \"벤처금융 또는 전문투자자가 취득한 주식등 중에서 상장신청일 현재 상장신청인의 자본금을 기준으로 각각 100분의 10에 상당하는 한도까지의 주식등으로 한정한다\"로 규정",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-001",
+        "reference_sha256": "f3e302ac7f63c1479206c6d86525c8ccd4762d5961a4f85d6261929a0f84b20b",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/0",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "912f807391e45c8992d53d869f083956fb6f4cb22d5ac93f492cdb81d2a6b25b"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/1",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "8f6714839723d4e589d7cc1217b512c16138714dfa08ecf6c71952885bc2578f"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-002",
+      "question": "제4호의 기준일은 언제인가?\n(업무 문맥: 신규상장 의무보유 - 코스닥시장 상장규정 제26조)",
+      "topic": "신규상장 의무보유 - 코스닥시장 상장규정 제26조",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "코스닥시장 상장규정",
+          "coordinate_key": "body:제26조",
+          "source_artifact_sha256": "ce1030b85f4d2601d2fe1d5e4157ba8dedbc103c1d6c2bc8e062e0e883bc3b59",
+          "section_text_sha256": "53a5e414a23259997731a721a7720410ca001828d8a0f85f8ae57fc875597196",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "88f17b33a48d95ca32ac248367bae576e13541cd6bf3e296dc2af51d1677ca3d"
+          },
+          "selected_document_id": "3521c3aaa5a735fd",
+          "selected_unit_id": "282"
+        }
+      ],
+      "reference_answer": "투자기간은 조문상 상장예비심사신청일을 기준으로 하고, 100분의 10 한도의 기준이 되는 자본금은 상장신청일 현재를 기준",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-002",
+        "reference_sha256": "058849a5f56e235e9ed3e38062bdd07999b44733584b63dfd0d58d9ff0917243",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/2",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "b78afcdff0b8d5c7c0950b76e472d020cc8fb619b48d2c871a93687d47c29427"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/3",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "05c6dd5ec8383f5f1345e060bb0ebff26248bf0aa185405c2643d715d95c20cd"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-003",
+      "question": "재무적투자자가 제3자배정으로 취득한 주식은 제3호와 제4호 중 어디에 해당하는가?\n(업무 문맥: 신규상장 의무보유 - 코스닥시장 상장규정 제26조)",
+      "topic": "신규상장 의무보유 - 코스닥시장 상장규정 제26조",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "코스닥시장 상장규정",
+          "coordinate_key": "body:제26조",
+          "source_artifact_sha256": "ce1030b85f4d2601d2fe1d5e4157ba8dedbc103c1d6c2bc8e062e0e883bc3b59",
+          "section_text_sha256": "53a5e414a23259997731a721a7720410ca001828d8a0f85f8ae57fc875597196",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "88f17b33a48d95ca32ac248367bae576e13541cd6bf3e296dc2af51d1677ca3d"
+          },
+          "selected_document_id": "3521c3aaa5a735fd",
+          "selected_unit_id": "282"
+        },
+        {
+          "document_name": "코스닥시장 상장규정 시행세칙",
+          "coordinate_key": "body:제23조",
+          "source_artifact_sha256": "5317efe50650870b746b4d36e23f63ddfa2ea75feab3cbeeba7b3104bcb80400",
+          "section_text_sha256": "486fd7cf55da6828158e5b71fd7a8bde8fee3db321ee1ec616a2b1a838963b45",
+          "evidence_role": "CONDITION_EXCEPTION",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "3fece24418ee53c3b29a62242ad5ed7b5def353c96b2bbc25612491143766d9a"
+          },
+          "selected_document_id": "eae25aa6e8a83c58",
+          "selected_unit_id": "202"
+        }
+      ],
+      "reference_answer": "시행세칙 제23조 제4항 제2호는 상장규정 제26조 제1항 제3호 단서의 \"세칙으로 정하는 경우\"에 벤처금융 또는 전문투자자가 취득한 경우를 포함하고 있다. 따라서 제3호에서 제외되고 제4호가 적용된다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-003",
+        "reference_sha256": "77db7297711378974dbca974b9ae995c9730c23aa27dc46c2f04700ddca54811",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/4",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "2f5fcea05ae59faa9d221c01eeece11ce145e07aee33d71c766cbd24dba0d005"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/5",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "d013bbd6e807be4ec20545f4fbedc8e0e1f936d9cf566c028ebbfc968dc5c12a"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-004",
+      "question": "제5호의 괴리율은 어떻게 산정하는가?\n(업무 문맥: 신규상장 의무보유 - 코스닥시장 상장규정 제26조)",
+      "topic": "신규상장 의무보유 - 코스닥시장 상장규정 제26조",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "코스닥시장 상장규정 시행세칙",
+          "coordinate_key": "body:제23조",
+          "source_artifact_sha256": "5317efe50650870b746b4d36e23f63ddfa2ea75feab3cbeeba7b3104bcb80400",
+          "section_text_sha256": "486fd7cf55da6828158e5b71fd7a8bde8fee3db321ee1ec616a2b1a838963b45",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "3fece24418ee53c3b29a62242ad5ed7b5def353c96b2bbc25612491143766d9a"
+          },
+          "selected_document_id": "eae25aa6e8a83c58",
+          "selected_unit_id": "202"
+        },
+        {
+          "document_name": "증권 인수업무 등에 관한 규정",
+          "coordinate_key": "body:제5조",
+          "source_artifact_sha256": "d3d7d891b9928f6c52fd615059077b8cb873b04d39f841d1cbe262451ddc7300",
+          "section_text_sha256": "c72e4a391350e0a97c3433eea8413234b73463ff4fe9086eed03f8360400257e",
+          "evidence_role": "DEFINITION",
+          "gold_source_version": {
+            "document_revision": "2026-03-12",
+            "document_enforcement": "",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "a8118b09696972fb78f29abd03c7e1d67695e5c11508f3c3fb95f0942835d603"
+          },
+          "selected_document_id": "7687ac5d901e9a4a",
+          "selected_unit_id": "39"
+        }
+      ],
+      "reference_answer": "시행세칙 제23조 제6항에 따라, 취득가격은 상장주선인이 상장예비심사신청일 전 6개월 동안 취득한 주식등의 취득수량 가중산술평균가격, 공모가격은 증권 인수업무 등에 관한 규정 제5조 제1항에 따른 가격이며, 괴리율은 (공모가격에서 취득가격을 뺀 금액)을 취득가격으로 나누어 100을 곱한 비율이다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-004",
+        "reference_sha256": "becd61c42ba6212a24de4d1dbcdbcedfca1f43432fdcbd8b679ca3368dd99c3f",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/6",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "2c458c3b22c2465bf9b8046022ea0a87cbe54317fd18a6f5c38dc4f18c825831"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/7",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "3525f343fddb2ca85d989c04a9871db1106aeace22f42c4e06345b3f479825a7"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-005",
+      "question": "유가증권시장에도 벤처금융·전문투자자에 대한 의무보유 규정이 있는가?\n(업무 문맥: 신규상장 의무보유 - 유가증권시장 상장규정 제27조)",
+      "topic": "신규상장 의무보유 - 유가증권시장 상장규정 제27조",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "유가증권시장 상장규정",
+          "coordinate_key": "body:제27조",
+          "source_artifact_sha256": "574950ecc1446b228ee4e8c6825a560e5513359cfea2a3e21e72bcf13dc1e1e1",
+          "section_text_sha256": "c24f3f6d14c34108a3f355c647e43e473202c8e27ea08378b1d5529531371941",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "f1e6efe3ac3fa068d7154d6fa4a68a0759fc1ea2183ce12ef0c65c88837bea70"
+          },
+          "selected_document_id": "4a65961091da5fb7",
+          "selected_unit_id": "311"
+        }
+      ],
+      "reference_answer": "없다. 유가증권시장 상장규정 및 그 시행세칙 전문에서 \"벤처금융\"은 검색되지 않는다. 제27조 제1항은 제1호(최대주주등, 상장일부터 6개월. 다만 최대주주가 자본시장법 제9조 제19항에 따른 사모집합투자기구인 경우 1년), 제2호(상장 후 주식매수선택권 행사로 주식을 취득한 최대주주등, 상장일부터 6개월, 최대주주가 사모집합투자기구이면 1년), 제3호(상장예비심사신청일 전 1년 이내 제3자배정 발행주식등 취득자, 발행일부터 1년. 다만 그 날이 상장일부터 6개월 이내이면 상장일부터 6개월이 되는 날까지 연장), 제4호(같은 기간 내 최대주주등의 주식등 취득자, 상장일부터 6개월), 제5호(거래소가 인정하는 주주등, 2년 이내)로 구성된다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-005",
+        "reference_sha256": "4bd7a1a984f1ef8eaf8b04179e94a0f76803386471ef266b1e9fa59628eaa97d",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/8",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "3df1d585abd489678c858ce8d7ab1cc7e1417dd44a2cb50f49b7ffa1b18a407a"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/9",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "01863da0831e98bbc5ad7b8ad13a9d738773b27a5b7dca11ec3a761905e0ff42"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-006",
+      "question": "유가증권시장에서 전문투자자는 어떻게 취급되는가?\n(업무 문맥: 신규상장 의무보유 - 유가증권시장 상장규정 제27조)",
+      "topic": "신규상장 의무보유 - 유가증권시장 상장규정 제27조",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "유가증권시장 상장규정 시행세칙",
+          "coordinate_key": "body:제21조",
+          "source_artifact_sha256": "19c48d4ab308127139477b5d0b0d90e37e51d7c5cc31253fa86a47ae5b7f3e49",
+          "section_text_sha256": "1a405594f1417b910e571dc24693322a50a5134c4316680a7475c467ddb64381",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "3d851c9b30f78a33c9e8766633d76d2e5ad7a949e93fdb92e4fb596f8b61aca4"
+          },
+          "selected_document_id": "c66045625265ad5c",
+          "selected_unit_id": "224"
+        },
+        {
+          "document_name": "유가증권시장 상장규정",
+          "coordinate_key": "body:제27조",
+          "source_artifact_sha256": "574950ecc1446b228ee4e8c6825a560e5513359cfea2a3e21e72bcf13dc1e1e1",
+          "section_text_sha256": "c24f3f6d14c34108a3f355c647e43e473202c8e27ea08378b1d5529531371941",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "f1e6efe3ac3fa068d7154d6fa4a68a0759fc1ea2183ce12ef0c65c88837bea70"
+          },
+          "selected_document_id": "4a65961091da5fb7",
+          "selected_unit_id": "311"
+        }
+      ],
+      "reference_answer": "시행세칙 제21조 제2항 제1호는 상장규정 제27조 제1항 제1호의 경우 전문투자자인 최대주주등이 투자를 목적으로 소유한 경우 그 수량을 의무보유 대상 주식등에서 제외하도록 규정한다. 해당 전문투자자의 범위는 같은 조 제3항 각 호에서 열거하고 있다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-006",
+        "reference_sha256": "9f8c99925ca371abc7ac2ef81e39653c5331d26322c179a6b89c1569fc78f7d8",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/10",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "0c99e80b86ee5c629bde2ef612fdd740c7b882fd3871bdd460abeeef5fdd3882"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/11",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "2a72da71caf745df8b9c2d519647170dc86045df823316913977e53b0d8bb224"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-007",
+      "question": "상장주선인의 의무인수 수량과 보유기간은 어떻게 되는가?\n(업무 문맥: 상장주선인의 의무인수 및 보유)",
+      "topic": "상장주선인의 의무인수 및 보유",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "코스닥시장 상장규정",
+          "coordinate_key": "body:제13조",
+          "source_artifact_sha256": "ce1030b85f4d2601d2fe1d5e4157ba8dedbc103c1d6c2bc8e062e0e883bc3b59",
+          "section_text_sha256": "8b03fa59d54407293b17ce44a8c8151a5000ab9d1d742e1c9c80d976fc710772",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "2401642815531273f0db1b043b3c27ed6ff5c6d14a202dc9292fe9477fbfdac4"
+          },
+          "selected_document_id": "3521c3aaa5a735fd",
+          "selected_unit_id": "175"
+        },
+        {
+          "document_name": "유가증권시장 상장규정",
+          "coordinate_key": "body:제13조",
+          "source_artifact_sha256": "574950ecc1446b228ee4e8c6825a560e5513359cfea2a3e21e72bcf13dc1e1e1",
+          "section_text_sha256": "48b1d7b160d3e0151b24107343b51803265cd9347604bcdf1a232ab155ecde01",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "ab44e95384440198b7801df5a37cb8693c892f612e01a4e08a9660e5966a0b97"
+          },
+          "selected_document_id": "4a65961091da5fb7",
+          "selected_unit_id": "142"
+        }
+      ],
+      "reference_answer": "코스닥시장 상장규정 제13조 제5항에 따라 상장주선인은 상장예비심사신청 이후 신규상장신청일까지 모집·매출가격과 같은 가격으로 주식을 취득하여야 한다. 국내기업의 경우 제1호 나목에 따라 모집·매출 주식의 100분의 3(취득금액 10억원 초과 시 10억원 상당 수량)을 상장일부터 3개월 보유하고, 신속이전기업은 제1호 가목에 따라 100분의 5(25억원 한도)를 6개월 보유한다. 외국기업은 제2호에 따라 100분의 5(혁신기술기업 50억원, 그 외 25억원 한도)를 1년 보유한다. 유가증권시장 상장규정 제13조 제3항의 의무인수는 외국주권등 신규상장에 한정되며, 국내 모집·매출분의 100분의 5(50억원 한도)를 상장일부터 6개월 매각 제한한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-007",
+        "reference_sha256": "762262ca1adcb1526945b4d3b9a145a99ddf9e13c6417a82b0a8bd54388b5bb2",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/12",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "85dd03824bd169793fdb2b9d16b73e75edd34779d73635a8a156db5f8023af56"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/13",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "4f48236d6bb8f4205000fe7fd558c7369b89814c2d6fa6f3a1369d2f1b843258"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-008",
+      "question": "국내 일반기업의 3개월 보유기간이 6개월로 연장되는 경우는?\n(업무 문맥: 상장주선인의 의무인수 및 보유)",
+      "topic": "상장주선인의 의무인수 및 보유",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "코스닥시장 상장규정",
+          "coordinate_key": "body:제13조",
+          "source_artifact_sha256": "ce1030b85f4d2601d2fe1d5e4157ba8dedbc103c1d6c2bc8e062e0e883bc3b59",
+          "section_text_sha256": "8b03fa59d54407293b17ce44a8c8151a5000ab9d1d742e1c9c80d976fc710772",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "2401642815531273f0db1b043b3c27ed6ff5c6d14a202dc9292fe9477fbfdac4"
+          },
+          "selected_document_id": "3521c3aaa5a735fd",
+          "selected_unit_id": "175"
+        },
+        {
+          "document_name": "코스닥시장 상장규정 시행세칙",
+          "coordinate_key": "body:제15조",
+          "source_artifact_sha256": "5317efe50650870b746b4d36e23f63ddfa2ea75feab3cbeeba7b3104bcb80400",
+          "section_text_sha256": "20294f80c81191ebea00841678d38a2b1de4e09b0a04b8ef867adc689b0f443f",
+          "evidence_role": "CONDITION_EXCEPTION",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "ff3f46d061ea923ff77cc023a0a03393ded342ac2675ce556f7f32a38e09927c"
+          },
+          "selected_document_id": "eae25aa6e8a83c58",
+          "selected_unit_id": "82"
+        }
+      ],
+      "reference_answer": "코스닥시장 상장규정 제13조 제5항 제1호 나목 단서에 따라 상장신청인이 혁신기술기업이고 상장주선인이 시행세칙으로 정하는 사유에 해당하는 경우이다. 시행세칙 제15조 제5항(2023.12.28 신설)은 그 사유를 \"상장주선인이 상장예비심사신청일을 기준으로 최근 3년 이내에 상장을 주선한 기술성장기업이 상장 이후 2년 이내에 투자주의환기종목 또는 관리종목으로 지정되거나 형식적 상장폐지사유 또는 상장적격성 실질심사에 따른 상장폐지사유가 발생한 경우\"로 규정한다. 즉 상장신청인의 유형만으로 자동 연장되는 것이 아니라 상장주선인의 과거 주선실적이 요건이다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-008",
+        "reference_sha256": "5384396c2edbb858aadbd1b94b0b41e90ce2b3b2cc92800c786070fb3657666f",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/14",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "01bb097b1f60a0ad0db2f28937d84b259513966c7c94cf12f631790e10c6918f"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/15",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "5b6cb41d0c54978d3bf2869024ed41a8fb996228a2e5952e5956f64adc76f90b"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-009",
+      "question": "의무인수가 면제되는 경우는?\n(업무 문맥: 상장주선인의 의무인수 및 보유)",
+      "topic": "상장주선인의 의무인수 및 보유",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "코스닥시장 상장규정",
+          "coordinate_key": "body:제13조",
+          "source_artifact_sha256": "ce1030b85f4d2601d2fe1d5e4157ba8dedbc103c1d6c2bc8e062e0e883bc3b59",
+          "section_text_sha256": "8b03fa59d54407293b17ce44a8c8151a5000ab9d1d742e1c9c80d976fc710772",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "2401642815531273f0db1b043b3c27ed6ff5c6d14a202dc9292fe9477fbfdac4"
+          },
+          "selected_document_id": "3521c3aaa5a735fd",
+          "selected_unit_id": "175"
+        },
+        {
+          "document_name": "코스닥시장 상장규정",
+          "coordinate_key": "body:제31조",
+          "source_artifact_sha256": "ce1030b85f4d2601d2fe1d5e4157ba8dedbc103c1d6c2bc8e062e0e883bc3b59",
+          "section_text_sha256": "f8107acc371733e55d19cae7bd1498f5f475e16f59599f6ececeba6f8ed604fc",
+          "evidence_role": "CONDITION_EXCEPTION",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "da0d63a008234c8b08fd9295fcfc59c7d7eb533d8130993f70a017a50e805036"
+          },
+          "selected_document_id": "3521c3aaa5a735fd",
+          "selected_unit_id": "349"
+        }
+      ],
+      "reference_answer": "코스닥시장 상장규정 제13조 제6항에 따라 대형법인(다만 외국기업이나 제31조 제1항 제3호 마목·바목에 따른 신속이전기업은 제외), 적격해외증권시장에 상장하여 3년이 경과한 외국기업의 경우 거래소가 제5항을 적용하지 않을 수 있다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-009",
+        "reference_sha256": "4ab41b4eea072adad4997bc21bf94731887e2d5716e0fe8d970c6715c4363d8a",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/16",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "9d386c5f11c706c57fec48df18d42dae78f34b224fa636e5b1a6273236907190"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/17",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "99a5ce5e08e69bde6afb032cc3fc17a7e4c764cf1240ac4127dc27164ac0d420"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-010",
+      "question": "의무인수분이 공동주관회사 판단의 보유비율에 산입되는가?\n(업무 문맥: 상장주선인의 의무인수 및 보유)",
+      "topic": "상장주선인의 의무인수 및 보유",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "증권 인수업무 등에 관한 규정",
+          "coordinate_key": "body:제6조",
+          "source_artifact_sha256": "d3d7d891b9928f6c52fd615059077b8cb873b04d39f841d1cbe262451ddc7300",
+          "section_text_sha256": "49fa2396ef4a69710e2f791212f00c659a516a420d83a3d4ca77aad27af47cdb",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-03-12",
+            "document_enforcement": "",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "845511b167e7c1642228ee3906a1375c299dc7a077682e42be51624b1679090f"
+          },
+          "selected_document_id": "7687ac5d901e9a4a",
+          "selected_unit_id": "95"
+        },
+        {
+          "document_name": "코스닥시장 상장규정",
+          "coordinate_key": "body:제13조",
+          "source_artifact_sha256": "ce1030b85f4d2601d2fe1d5e4157ba8dedbc103c1d6c2bc8e062e0e883bc3b59",
+          "section_text_sha256": "8b03fa59d54407293b17ce44a8c8151a5000ab9d1d742e1c9c80d976fc710772",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "2401642815531273f0db1b043b3c27ed6ff5c6d14a202dc9292fe9477fbfdac4"
+          },
+          "selected_document_id": "3521c3aaa5a735fd",
+          "selected_unit_id": "175"
+        }
+      ],
+      "reference_answer": "증권 인수업무 등에 관한 규정 제6조 제3항에 따라 코스닥시장 상장규정 제13조 제5항 제1호에 따라 취득하는 주식은 같은 조 제1항의 보유비율 산정에서 보유한 것으로 보지 아니한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-010",
+        "reference_sha256": "04fe7bbf1c89242391995762d617db0042dda2f46733117f91b07e74deea0b92",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/18",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "266481c7e0f051466be1947f2e44875783d4139df4055ae99b27664cc85d2dfa"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/19",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "aeb20c68e715bf6c2e31f0d9a0814b836bd4671bfcb656ed71e42b453fd968b6"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-011",
+      "question": "사내규정 정비가 상장심사에서 요구되는 근거는?\n(업무 문맥: 질적심사요건과 사내규정 정비)",
+      "topic": "질적심사요건과 사내규정 정비",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "코스닥시장 상장규정",
+          "coordinate_key": "body:제29조",
+          "source_artifact_sha256": "ce1030b85f4d2601d2fe1d5e4157ba8dedbc103c1d6c2bc8e062e0e883bc3b59",
+          "section_text_sha256": "a17deaa51d2fad4b03445bed0aba98b787d47452275bbce84c1e381b9fbe73da",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "671358cc41985596018d8bf80e85b6fcd62e84ed601fe4155ce83cbb0558b744"
+          },
+          "selected_document_id": "3521c3aaa5a735fd",
+          "selected_unit_id": "328"
+        }
+      ],
+      "reference_answer": "코스닥시장 상장규정 제29조 제1항 제2호는 \"기업지배구조, 내부통제제도, 공시체제, 이해관계자와의 거래, 상장 전 주식거래 등에 비추어 경영투명성 및 경영안정성이 인정될 것\"을 질적심사요건으로 규정하고, 같은 조 제2항은 세부 심사기준을 시행세칙으로 정하도록 위임한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-011",
+        "reference_sha256": "c7b1b6f0a2f05628bb39d50d3887bc7ae3ba15d5cc3a521546eac44437ce2ca9",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/20",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "5f09a4c75108b69204e6b1ee36e0764cb14250a911b91d09bb278333a76b655b"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/21",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "4c525c874406bcaaeb17c91fc1049174bad3fa7b1ad8733bcde16925d6bf5cb8"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-012",
+      "question": "제정 시기에 관한 규정이 있는가?\n(업무 문맥: 질적심사요건과 사내규정 정비)",
+      "topic": "질적심사요건과 사내규정 정비",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "코스닥시장 상장규정",
+          "coordinate_key": "body:제29조",
+          "source_artifact_sha256": "ce1030b85f4d2601d2fe1d5e4157ba8dedbc103c1d6c2bc8e062e0e883bc3b59",
+          "section_text_sha256": "a17deaa51d2fad4b03445bed0aba98b787d47452275bbce84c1e381b9fbe73da",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "671358cc41985596018d8bf80e85b6fcd62e84ed601fe4155ce83cbb0558b744"
+          },
+          "selected_document_id": "3521c3aaa5a735fd",
+          "selected_unit_id": "328"
+        }
+      ],
+      "reference_answer": "상장규정 및 시행세칙에 제정 시기를 특정한 조문은 없다. 명시적 근거 미확인 사항이며, 운영 이력이 심사 대상이 된다는 점은 실무해설서 수준의 서술에 해당된다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-012",
+        "reference_sha256": "aede13ec58499910d2fc1d5d7aa3cf4bbef48b85c92c0869eaf400494dd34cca",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/22",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "ed7c2858f22de159015ce6c6ea415be87c51ac95eee3eda03eb000e2dd971abd"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/23",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "d3ad81392e249e321c108120143239202fd7d4311c85f37f6dbcc812ba211e5a"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-013",
+      "question": "벤처기업이 주식매수선택권을 부여할 때의 요건은?\n(업무 문맥: 벤처기업 주식매수선택권의 부여요건)",
+      "topic": "벤처기업 주식매수선택권의 부여요건",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "벤처기업육성에 관한 특별법",
+          "coordinate_key": "body:제16조의3",
+          "source_artifact_sha256": "d15ff6273793ba4072383640ed012ac50796cb9aee3b9db4c6e683692f44c923",
+          "section_text_sha256": "75254bcea149d78d23447b2ec8ae542e22133c020a3d6222475430340371934c",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260305",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "31064b16d850e07cad7d87b60710d62b21b54cef96be7c93672152aec0027235"
+          },
+          "selected_document_id": "963c5eda366b86c9",
+          "selected_unit_id": "244"
+        },
+        {
+          "document_name": "벤처기업육성에 관한 특별법",
+          "coordinate_key": "body:제16조의6",
+          "source_artifact_sha256": "d15ff6273793ba4072383640ed012ac50796cb9aee3b9db4c6e683692f44c923",
+          "section_text_sha256": "379a05188bcb81522883f38e01564c7370d5433615bab1225a7fc582a2f80e07",
+          "evidence_role": "CONDITION_EXCEPTION",
+          "gold_source_version": {
+            "document_revision": "20260305",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "c556e3b099c2d870452884c84540cdb9f200ed2cf357100b7d86b5ed3ba4ed22"
+          },
+          "selected_document_id": "963c5eda366b86c9",
+          "selected_unit_id": "274"
+        },
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제340조의2",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "859875833f396a81653034af30c3805bd2b96f2bdcd64ac927730530fb9d8cb2",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "2aa0de9aa864c668983a166c03644fda09cf1e48e567d049f92f9d3d4e8f9b2f"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1059"
+        },
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제340조의5",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "0ac677d2c5393a3e94dd5fdb4d70c762ede73dde664810f71627c765bebe053a",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "707abbc8102e87ddf999a42a5f0a884dba1dc1e92e6390b1f115c8cb087858e5"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1087"
+        },
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제434조",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "359c1818e885023708e00770be4e0f8bd38d2b303d590a9e09cf2d4adf4a8541",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "4c4555cde8acf76a2f255ce2c1e74417504f4fcae09e923dd1a8273cdb72be5f"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1772"
+        }
+      ],
+      "reference_answer": "벤처기업육성에관한특별법 제16조의3 제1항에 따라 정관으로 정하는 바에 따라 주주총회의 결의로 부여하며, 이 경우 주주총회 결의는 상법 제434조를 준용한다. 부여대상은 같은 항 제1호(임직원), 제2호(인수기업 임직원), 제3호(전문성 보유자)이다. 같은 조 제3항에 따라 부여 주식은 발행주식총수의 100분의 50을 초과할 수 없고, 제1항 제3호에 해당하는 경우에는 100분의 10을 초과할 수 없다. 같은 조 제4항에 따라 행사가격은 신주인수 방식의 경우 부여일 기준 시가와 권면액 중 높은 금액 이상이어야 한다. 상법 제340조의2부터 제340조의5까지에 우선하여 이 법이 적용된다(제16조의6 제3항).",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-013",
+        "reference_sha256": "bc7818ab6cfaef8122b4abf58eb243a002755d3bcb68be502866d57b67e26750",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/24",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "7a7b98eda66e8af7d536ce711edf2b892d1d134d4d5f9ed74571bead3691ee0d"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/25",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "8f32e3ce95afc302dd55fd3cc42537339955ce17c2f927ec305deb3d4abc1a94"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-014",
+      "question": "부여 기준시가 관련 규정은?\n(업무 문맥: 벤처기업 주식매수선택권의 부여요건)",
+      "topic": "벤처기업 주식매수선택권의 부여요건",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "벤처기업육성에 관한 특별법",
+          "coordinate_key": "body:제16조의3",
+          "source_artifact_sha256": "d15ff6273793ba4072383640ed012ac50796cb9aee3b9db4c6e683692f44c923",
+          "section_text_sha256": "75254bcea149d78d23447b2ec8ae542e22133c020a3d6222475430340371934c",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260305",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "31064b16d850e07cad7d87b60710d62b21b54cef96be7c93672152aec0027235"
+          },
+          "selected_document_id": "963c5eda366b86c9",
+          "selected_unit_id": "244"
+        },
+        {
+          "document_name": "벤처기업육성에 관한 특별법 시행령",
+          "coordinate_key": "body:제11조의3",
+          "source_artifact_sha256": "6d11017967b4c57189c48f234ad6e8575206367b8393a0671046479cb16c5be7",
+          "section_text_sha256": "ba3e7c753f8aa72ccfecda9a06180dc728215923f3ffdb66bfab9c35ffccf3d5",
+          "evidence_role": "DELEGATED_DETAIL",
+          "gold_source_version": {
+            "document_revision": "20260630",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "7dec00051a892fa383477c2932bd2b428c38ffd311a97bd3c29e00ae247ebe0c"
+          },
+          "selected_document_id": "205b2c839757a0f0",
+          "selected_unit_id": "167"
+        }
+      ],
+      "reference_answer": "벤처기업법 제16조의3 제5항에 따라 제1항 제1호·제2호의 자에게 신주인수 방식으로 부여하는 경우로서 대통령령으로 정하는 요건을 갖춘 때에는 시가보다 낮은 가격(권면액 이상)으로 정할 수 있다. 같은 법 시행령 제11조의3 제5항(2025.12.30 개정)은 그 요건을 \"부여받는 자 1인이 부여일 기준 시가보다 낮은 행사가격으로 부여받았거나 부여받을 각 주식매수선택권에 대하여 계산식에 따라 계산한 금액의 합계가 20억원 이하일 것\"으로 규정한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-014",
+        "reference_sha256": "ecf2bb3451b5c31250f258a6338d5f1334e7ad84fc9b11b7a32ec829331cbc0b",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/26",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "e6490745de38ed0c0b5d7373a9335466486e71dc42f752cf9a335a350a46b1fe"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/27",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "ad01c30b181164451ac471892cb28a5b56c992dac0ec4ec552d0059a9bc41a5c"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-015",
+      "question": "부여 후 신고의무는 어디에 이행하는가?\n(업무 문맥: 벤처기업 주식매수선택권의 부여요건)",
+      "topic": "벤처기업 주식매수선택권의 부여요건",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "벤처기업육성에 관한 특별법",
+          "coordinate_key": "body:제16조의6",
+          "source_artifact_sha256": "d15ff6273793ba4072383640ed012ac50796cb9aee3b9db4c6e683692f44c923",
+          "section_text_sha256": "379a05188bcb81522883f38e01564c7370d5433615bab1225a7fc582a2f80e07",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260305",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "c556e3b099c2d870452884c84540cdb9f200ed2cf357100b7d86b5ed3ba4ed22"
+          },
+          "selected_document_id": "963c5eda366b86c9",
+          "selected_unit_id": "274"
+        },
+        {
+          "document_name": "벤처기업육성에 관한 특별법 시행령",
+          "coordinate_key": "body:제11조의5",
+          "source_artifact_sha256": "6d11017967b4c57189c48f234ad6e8575206367b8393a0671046479cb16c5be7",
+          "section_text_sha256": "cc87dfe399f3650110a699fd9eac4ce74ee57955634723c7cbb49f20fde01f55",
+          "evidence_role": "DELEGATED_DETAIL",
+          "gold_source_version": {
+            "document_revision": "20260630",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "7bf74feca9022ce7f577f72c34a8a859cef26b174da560612307e768d5ae47e5"
+          },
+          "selected_document_id": "205b2c839757a0f0",
+          "selected_unit_id": "183"
+        },
+        {
+          "document_name": "벤처기업육성에 관한 특별법",
+          "coordinate_key": "body:제16조의4",
+          "source_artifact_sha256": "d15ff6273793ba4072383640ed012ac50796cb9aee3b9db4c6e683692f44c923",
+          "section_text_sha256": "fe2432737c0014e45cb81da7abad7082995c5c554f1cb232c7652d6e0e9dcbe6",
+          "evidence_role": "CONDITION_EXCEPTION",
+          "gold_source_version": {
+            "document_revision": "20260305",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "4f86cd675afb8dfcf1c01d1943ef45529af584b855e456a57b55325ee4fecbff"
+          },
+          "selected_document_id": "963c5eda366b86c9",
+          "selected_unit_id": "258"
+        }
+      ],
+      "reference_answer": "벤처기업법 제16조의6 제1항에 따라 중소벤처기업부장관에게 신고한다. 같은 법 시행령 제11조의5 제1항에 따라 부여 신고 시 정관, 주주총회 의사록, 이사회 의사록(제16조의4 제3항에 따라 이사회에서 정하는 경우)을 첨부하며, 신고서 서식은 중소벤처기업부령에 위임되어 있다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-015",
+        "reference_sha256": "b72b9fb63b740c210ffe5b21de2304f1ba42b1a3958fbeaaf3a7cd9455996b8f",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/28",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "d0556c9f4d5bb588df83c8363bf28a0b21de801c0ab678002ff5d9645d78e90a"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/29",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "5fa6704cd167dc13628840c9fa1f4dc6d92b42c234eae4e59e83e8d6c0c0c31d"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-016",
+      "question": "벤처기업 주식매수선택권은 언제부터 행사할 수 있는가?\n(업무 문맥: 주식매수선택권의 행사요건)",
+      "topic": "주식매수선택권의 행사요건",
+      "question_aliases": [
+        "벤처기업 주식매수선택권은 언제부터 행사할 수 있는가?",
+        "벤처기업의 주식매수선택권은 언제부터 행사할 수 있나요?"
+      ],
+      "alias_provenance": "CM-016 literal original question and ADR0684 photo-normalized reproduction; source entries only",
+      "entries": [
+        {
+          "document_name": "벤처기업육성에 관한 특별법",
+          "coordinate_key": "body:제16조의5",
+          "source_artifact_sha256": "d15ff6273793ba4072383640ed012ac50796cb9aee3b9db4c6e683692f44c923",
+          "section_text_sha256": "112a652cd6399f3a616cd035f3ae8af41ff19cba252bca0085e1512b2e14ee73",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260305",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "f0bd9ebb59cf403ab269099552dacab38b282763d915b72bff122e3b6a8fd0ef"
+          },
+          "selected_document_id": "963c5eda366b86c9",
+          "selected_unit_id": "271"
+        },
+        {
+          "document_name": "벤처기업육성에 관한 특별법 시행령",
+          "coordinate_key": "body:제11조의4",
+          "source_artifact_sha256": "6d11017967b4c57189c48f234ad6e8575206367b8393a0671046479cb16c5be7",
+          "section_text_sha256": "47c47babae6beb1dcc82d7bd6e71491f1128bd84ec928fbabfc5adeb35c41371",
+          "evidence_role": "CONDITION_EXCEPTION",
+          "gold_source_version": {
+            "document_revision": "20260630",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "5d2d10d61aa4bf337b9c29555476b9c74acd2e3691ccd12a35ee9e5e9640fdea"
+          },
+          "selected_document_id": "205b2c839757a0f0",
+          "selected_unit_id": "178"
+        },
+        {
+          "document_name": "벤처기업육성에 관한 특별법",
+          "coordinate_key": "body:제16조의3",
+          "source_artifact_sha256": "d15ff6273793ba4072383640ed012ac50796cb9aee3b9db4c6e683692f44c923",
+          "section_text_sha256": "75254bcea149d78d23447b2ec8ae542e22133c020a3d6222475430340371934c",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "20260305",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "31064b16d850e07cad7d87b60710d62b21b54cef96be7c93672152aec0027235"
+          },
+          "selected_document_id": "963c5eda366b86c9",
+          "selected_unit_id": "244"
+        },
+        {
+          "document_name": "벤처기업육성에 관한 특별법",
+          "coordinate_key": "body:제16조의4",
+          "source_artifact_sha256": "d15ff6273793ba4072383640ed012ac50796cb9aee3b9db4c6e683692f44c923",
+          "section_text_sha256": "fe2432737c0014e45cb81da7abad7082995c5c554f1cb232c7652d6e0e9dcbe6",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "20260305",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "4f86cd675afb8dfcf1c01d1943ef45529af584b855e456a57b55325ee4fecbff"
+          },
+          "selected_document_id": "963c5eda366b86c9",
+          "selected_unit_id": "258"
+        }
+      ],
+      "reference_answer": "벤처기업법 제16조의5 제1항에 따라 제16조의3 제1항에 따른 결의가 있는 날 또는 제16조의4 제3항에 따라 이사회에서 정한 날부터 2년 이상 재임하거나 재직하여야 행사할 수 있다. 기산점은 부여일이 아니라 결의일 또는 이사회에서 정한 날이다. 시행령 제11조의4 제1항에 따라 사망 또는 본인의 책임이 아닌 사유로 퇴임·퇴직한 경우는 예외이나, 정년에 따른 퇴임·퇴직은 본인의 책임이 아닌 사유에 포함되지 않는다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-016",
+        "reference_sha256": "dfc597200a97bddb5e0fc23090453cab17211eda1363e13eb8c179c98d619d7a",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/30",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "d25b71e87b84d281c48c871ad89ff6b7fa9f5d8776486e507805690c800ec9cb"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/31",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "901566fdc96b6163e4f23eff029991322d452e1e712a4f4b31344993bc839cdf"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-017",
+      "question": "행사가격 설정에 필요한 부여일 기준 시가는 어떻게 평가하는가?\n(업무 문맥: 주식매수선택권 부여시가의 평가)",
+      "topic": "주식매수선택권 부여시가의 평가",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "벤처기업육성에 관한 특별법 시행령",
+          "coordinate_key": "body:제11조의3",
+          "source_artifact_sha256": "6d11017967b4c57189c48f234ad6e8575206367b8393a0671046479cb16c5be7",
+          "section_text_sha256": "ba3e7c753f8aa72ccfecda9a06180dc728215923f3ffdb66bfab9c35ffccf3d5",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260630",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "7dec00051a892fa383477c2932bd2b428c38ffd311a97bd3c29e00ae247ebe0c"
+          },
+          "selected_document_id": "205b2c839757a0f0",
+          "selected_unit_id": "167"
+        },
+        {
+          "document_name": "상속세 및 증여세법",
+          "coordinate_key": "body:제60조",
+          "source_artifact_sha256": "1a41fc2d3d9a6926a57d1c1b9efcdfbbfd23b40ddb37d1b9be92b90fb8545004",
+          "section_text_sha256": "f5bfca569fa024d011ec162f9ea8ba55f446be327202ee3e8a6419c29b9c0d74",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "20251001",
+            "document_enforcement": "20260102",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "671226d166949e8a8bfdbd2258307d7bec4a96063f0af3dfabda32c19807e33b"
+          },
+          "selected_document_id": "27c02e2a7e1c59cb",
+          "selected_unit_id": "615"
+        },
+        {
+          "document_name": "상속세 및 증여세법 시행령",
+          "coordinate_key": "body:제49조",
+          "source_artifact_sha256": "440f2a6612675164abdd341fbc95e2305f7d9e015a4f30c34826456940cd0179",
+          "section_text_sha256": "3669d34ee46dc25c842e82d459f54ddb7230686b10df2706edde6417b83f6682",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "20260227",
+            "document_enforcement": "20260227",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "c54d0efc2ac777a184603abb1f77725cf4c8d89baaedcc63578a1efa78ac6bb1"
+          },
+          "selected_document_id": "0798989e52ca0254",
+          "selected_unit_id": "1037"
+        }
+      ],
+      "reference_answer": "벤처기업법 시행령 제11조의3 제2항(2024.7.2 개정)에 따라 상속세 및 증여세법 제60조 및 같은 법 시행령 제49조를 준용하여 평가하되, 시행령 제49조 중 \"평가기준일 전후 6개월\"은 각각 \"평가기준일 전 6개월\"로 본다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-017",
+        "reference_sha256": "73cf40df58a0875e46d314837a68bab07eb213d8de5792515cdc4d19142e63f6",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/32",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "16c6b4854677d9de72776236a91d8e26e406a65f74b31015784bf497352efff8"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/33",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "6a8cce45e8bfbaa816556f5c404702c15ce397f40d6ce57a3230322ec1438682"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-018",
+      "question": "상증세법 시행령 제49조 제1항의 구조는?\n(업무 문맥: 주식매수선택권 부여시가의 평가)",
+      "topic": "주식매수선택권 부여시가의 평가",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상속세 및 증여세법 시행령",
+          "coordinate_key": "body:제49조",
+          "source_artifact_sha256": "440f2a6612675164abdd341fbc95e2305f7d9e015a4f30c34826456940cd0179",
+          "section_text_sha256": "3669d34ee46dc25c842e82d459f54ddb7230686b10df2706edde6417b83f6682",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260227",
+            "document_enforcement": "20260227",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "c54d0efc2ac777a184603abb1f77725cf4c8d89baaedcc63578a1efa78ac6bb1"
+          },
+          "selected_document_id": "0798989e52ca0254",
+          "selected_unit_id": "1037"
+        },
+        {
+          "document_name": "상속세 및 증여세법 시행령",
+          "coordinate_key": "body:제49조의2",
+          "source_artifact_sha256": "440f2a6612675164abdd341fbc95e2305f7d9e015a4f30c34826456940cd0179",
+          "section_text_sha256": "7f7bc19dd0d8b777bd7c49e1c4713b9898754634abeb096282ae957723724a7c",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "20260227",
+            "document_enforcement": "20260227",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "8141151cbed941a93227eb73c9905fd2a64cb064ad17a129e335b632043bf95b"
+          },
+          "selected_document_id": "0798989e52ca0254",
+          "selected_unit_id": "1067"
+        },
+        {
+          "document_name": "상속세 및 증여세법 시행령",
+          "coordinate_key": "body:제78조",
+          "source_artifact_sha256": "440f2a6612675164abdd341fbc95e2305f7d9e015a4f30c34826456940cd0179",
+          "section_text_sha256": "00d6121f58323ec3e39acf60284490dcbef5cf3a98bcfe8b5f081a682452f449",
+          "evidence_role": "DELEGATED_DETAIL",
+          "gold_source_version": {
+            "document_revision": "20260227",
+            "document_enforcement": "20260227",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "0b980495345edfeb908c40bd956824b0ea6a11e6dac6c22af3e070a08a6b32d0"
+          },
+          "selected_document_id": "0798989e52ca0254",
+          "selected_unit_id": "1513"
+        }
+      ],
+      "reference_answer": "본문은 평가기준일 전후 6개월(증여재산의 경우 평가기준일 전 6개월부터 후 3개월까지) 이내의 매매·감정·수용·경매·공매가 있는 경우 각 호에 따라 확인되는 가액을 시가로 인정한다. 단서는 평가기간에 해당하지 않는 기간으로서 평가기준일 전 2년 이내의 기간 중 또는 평가기간 경과 후부터 제78조 제1항에 따른 기한까지의 기간 중에 매매등이 있는 경우에도, 가격변동의 특별한 사정이 없다고 보아 납세자·지방국세청장 또는 관할세무서장이 신청하는 때에는 제49조의2 제1항에 따른 평가심의위원회의 심의를 거쳐 포함시킬 수 있도록 한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-018",
+        "reference_sha256": "d3b9487b8bb6c2a902e87596ceaf3d46403e13a3e8ed206caabf131d835c7852",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/34",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "c244e10a226b9e37a0c153189f40b509415dcdef4b9cf69dbc826b4e2158a2b0"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/35",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "56f2018e6a6c9aa8b869c8fb41f4bb2341ff5a67026db07ed983aa98a159fadf"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-019",
+      "question": "평가심의위원회는 어느 기관인가?\n(업무 문맥: 주식매수선택권 부여시가의 평가)",
+      "topic": "주식매수선택권 부여시가의 평가",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상속세 및 증여세법 시행령",
+          "coordinate_key": "body:제49조",
+          "source_artifact_sha256": "440f2a6612675164abdd341fbc95e2305f7d9e015a4f30c34826456940cd0179",
+          "section_text_sha256": "3669d34ee46dc25c842e82d459f54ddb7230686b10df2706edde6417b83f6682",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260227",
+            "document_enforcement": "20260227",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "c54d0efc2ac777a184603abb1f77725cf4c8d89baaedcc63578a1efa78ac6bb1"
+          },
+          "selected_document_id": "0798989e52ca0254",
+          "selected_unit_id": "1037"
+        },
+        {
+          "document_name": "상속세 및 증여세법 시행령",
+          "coordinate_key": "body:제49조의2",
+          "source_artifact_sha256": "440f2a6612675164abdd341fbc95e2305f7d9e015a4f30c34826456940cd0179",
+          "section_text_sha256": "7f7bc19dd0d8b777bd7c49e1c4713b9898754634abeb096282ae957723724a7c",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260227",
+            "document_enforcement": "20260227",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "8141151cbed941a93227eb73c9905fd2a64cb064ad17a129e335b632043bf95b"
+          },
+          "selected_document_id": "0798989e52ca0254",
+          "selected_unit_id": "1067"
+        }
+      ],
+      "reference_answer": "상증세법 시행령 제49조 제1항 단서 및 제49조의2 제1항에 따른 평가심의위원회이며, 심의는 납세자, 지방국세청장 또는 관할세무서장의 신청을 전제로 한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-019",
+        "reference_sha256": "093c2af399c66c4857a556657b4910c5964ae8429915332c0254135f51c1a90e",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/36",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "35116d3bad2714f093d2909e77b9db277ec687c8bfbfc0416467c71b4dccf51c"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/37",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "662c07d2aabaf14539016696d871b9f0c2e3bdb8df181c84e8400849f6fc2901"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-020",
+      "question": "공모가격이 평가액에 반영되는 기간과 방법은?\n(업무 문맥: 기업공개 준비 중인 주식의 평가)",
+      "topic": "기업공개 준비 중인 주식의 평가",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상속세 및 증여세법",
+          "coordinate_key": "body:제63조",
+          "source_artifact_sha256": "1a41fc2d3d9a6926a57d1c1b9efcdfbbfd23b40ddb37d1b9be92b90fb8545004",
+          "section_text_sha256": "3cc7d8239dd988be64f4dc8742e16d4d390805e1eda84044b506b767e83ef3dc",
+          "evidence_role": "DELEGATION_BRIDGE",
+          "gold_source_version": {
+            "document_revision": "20251001",
+            "document_enforcement": "20260102",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "f36730decc43814719912ec9930b32746f69352c7a5939b291954774cd74281a"
+          },
+          "selected_document_id": "27c02e2a7e1c59cb",
+          "selected_unit_id": "640"
+        },
+        {
+          "document_name": "상속세 및 증여세법 시행령",
+          "coordinate_key": "body:제57조",
+          "source_artifact_sha256": "440f2a6612675164abdd341fbc95e2305f7d9e015a4f30c34826456940cd0179",
+          "section_text_sha256": "fd91c6e4c58ae6d68f6ede2b86c10bb331c9b1264e9de3f19a827eb941cf0a77",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260227",
+            "document_enforcement": "20260227",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "4fd6d873e961f309715f75cec34ca119993fb7d26c6e3ca05d40c1fdfbdc1511"
+          },
+          "selected_document_id": "0798989e52ca0254",
+          "selected_unit_id": "1226"
+        }
+      ],
+      "reference_answer": "상속세 및 증여세법 제63조 제2항 제1호·제2호에 해당하는 주식등에 대하여, 같은 법 시행령 제57조 제1항은 \"평가기준일 현재 유가증권 신고(유가증권 신고를 하지 아니하고 상장신청을 한 경우에는 상장신청) 직전 6개월(증여세가 부과되는 주식등의 경우에는 3개월)부터 거래소에 최초로 주식등을 상장하기 전까지의 기간\"으로 규정하고, 해당 주식등은 제1호의 공모가격과 제2호의 가액(법 제63조 제1항 제1호 가목에 따라 평가한 가액) 중 큰 가액으로 평가하도록 한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-020",
+        "reference_sha256": "eb80c7b0ef8afb848dd134ae6a6029361a941af122f1fdf2331adc3acd9eb1e6",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/38",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "d9f045970a2c3d0aafdaa7d94a12a257c5504d5eadbf10f41a94e6dc1a622c27"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/39",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "58e2a49711974c385b2fb99c893ee656d446db8f0608be9ea55bc8bb56562c3b"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-021",
+      "question": "6개월과 3개월 중 어느 것이 적용되는가?\n(업무 문맥: 기업공개 준비 중인 주식의 평가)",
+      "topic": "기업공개 준비 중인 주식의 평가",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상속세 및 증여세법 시행령",
+          "coordinate_key": "body:제57조",
+          "source_artifact_sha256": "440f2a6612675164abdd341fbc95e2305f7d9e015a4f30c34826456940cd0179",
+          "section_text_sha256": "fd91c6e4c58ae6d68f6ede2b86c10bb331c9b1264e9de3f19a827eb941cf0a77",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260227",
+            "document_enforcement": "20260227",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "4fd6d873e961f309715f75cec34ca119993fb7d26c6e3ca05d40c1fdfbdc1511"
+          },
+          "selected_document_id": "0798989e52ca0254",
+          "selected_unit_id": "1226"
+        }
+      ],
+      "reference_answer": "증여세가 부과되는 주식등은 3개월, 그 외(상속세)는 6개월이다. 조문상 괄호 규정으로 명시되어 있다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-021",
+        "reference_sha256": "21a00c50dd84384ecd34495210e85e3809263a4ee38dd222ab7dcb23dab46ef1",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/40",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "94d8f3eee97c12d1d7aa822f2b391fa17b98ab5ceb4d6a21161d062739e04427"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/41",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "8c9504bdb1161a443b0a71c46ea5711cc335792d7afb0f73dba3759eec95065f"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-022",
+      "question": "비상장주식의 보충적 평가방법은?\n(업무 문맥: 비상장주식의 보충적 평가)",
+      "topic": "비상장주식의 보충적 평가",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상속세 및 증여세법 시행령",
+          "coordinate_key": "body:제54조",
+          "source_artifact_sha256": "440f2a6612675164abdd341fbc95e2305f7d9e015a4f30c34826456940cd0179",
+          "section_text_sha256": "550720170aa7cc710ed8473bb7d881189d8e63d0240e11e208bebd1656230e79",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260227",
+            "document_enforcement": "20260227",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "459c277090ca7bff45e84979502ad3e5789449eef55dfcfae49ba3d03772377e"
+          },
+          "selected_document_id": "0798989e52ca0254",
+          "selected_unit_id": "1175"
+        }
+      ],
+      "reference_answer": "상속세 및 증여세법 시행령 제54조 제1항(2025.12.30 개정)에 따라 1주당 순손익가치와 1주당 순자산가치를 각각 3과 2의 비율로 가중평균한 가액으로 하고, 부동산과다보유법인은 그 비율을 각각 2와 3으로 한다. 다만 가중평균한 가액이 1주당 순자산가치에 100분의 80을 곱한 금액보다 낮은 경우에는 그 금액을 가액으로 한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-022",
+        "reference_sha256": "ab8adc7994f6210929f302f4ffa874a0df927ab7fa25693e9ced4974c39e530d",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/42",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "c2aec3aa71bd432b4b1e8fedce4fbbc48b2dab2cf14146f65e6ecaac644e505e"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/43",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "c6af1224278c29b11a8a123687cc46b18cc235450e40a49324ddf36809e29fe0"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-023",
+      "question": "상장차익 증여의제는 어떤 요건에서 성립하는가?\n(업무 문맥: 주식등의 상장 등에 따른 이익의 증여)",
+      "topic": "주식등의 상장 등에 따른 이익의 증여",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상속세 및 증여세법",
+          "coordinate_key": "body:제41조의3",
+          "source_artifact_sha256": "1a41fc2d3d9a6926a57d1c1b9efcdfbbfd23b40ddb37d1b9be92b90fb8545004",
+          "section_text_sha256": "b9db083513535aa44633f9e621d461ed15c50d878f71e30503c2f9aed9530cd9",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20251001",
+            "document_enforcement": "20260102",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "adbd4cc41846121ce25c42b2a861a6441aa64d85b1095cd5e26ebc4de9797453"
+          },
+          "selected_document_id": "27c02e2a7e1c59cb",
+          "selected_unit_id": "345"
+        },
+        {
+          "document_name": "상속세 및 증여세법 시행령",
+          "coordinate_key": "body:제31조의3",
+          "source_artifact_sha256": "440f2a6612675164abdd341fbc95e2305f7d9e015a4f30c34826456940cd0179",
+          "section_text_sha256": "b113e78529a1a6aaf9d99998d01c699e97f8033d2b23190488087650b087b9af",
+          "evidence_role": "DELEGATED_DETAIL",
+          "gold_source_version": {
+            "document_revision": "20260227",
+            "document_enforcement": "20260227",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "81724671bcd7992a843742ec217901101a734f4cdb711158fb2fb9c646e7476a"
+          },
+          "selected_document_id": "0798989e52ca0254",
+          "selected_unit_id": "497"
+        }
+      ],
+      "reference_answer": "상속세 및 증여세법 제41조의3 제1항에 따라 최대주주등의 특수관계인이 제2항에 따라 주식등을 증여받거나 취득한 경우, 그 날부터 5년 이내에 상장됨에 따라 가액이 증가하여 당초 증여세 과세가액 또는 취득가액을 초과하여 이익을 얻은 경우 그 이익을 증여재산가액으로 한다. 다만 그 이익이 대통령령으로 정하는 기준금액 미만인 경우는 제외한다. 제3항에 따라 이익은 상장일부터 3개월이 되는 날(정산기준일)을 기준으로 계산한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-023",
+        "reference_sha256": "a9738125c71184892fc887a689ecbd910bdf67636198136c5a403645b7738d01",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/44",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "db74976feed9c55e39365a04c3ddac857ad1b210e984f1c84420a33fcdc96f84"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/45",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "c0caac9f5d12769cda8450a5005bdf8434a9afd4992be79867b8d8e1c8a23898"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-024",
+      "question": "기준금액은 어떻게 산정하는가?\n(업무 문맥: 주식등의 상장 등에 따른 이익의 증여)",
+      "topic": "주식등의 상장 등에 따른 이익의 증여",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상속세 및 증여세법 시행령",
+          "coordinate_key": "body:제31조의3",
+          "source_artifact_sha256": "440f2a6612675164abdd341fbc95e2305f7d9e015a4f30c34826456940cd0179",
+          "section_text_sha256": "b113e78529a1a6aaf9d99998d01c699e97f8033d2b23190488087650b087b9af",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260227",
+            "document_enforcement": "20260227",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "81724671bcd7992a843742ec217901101a734f4cdb711158fb2fb9c646e7476a"
+          },
+          "selected_document_id": "0798989e52ca0254",
+          "selected_unit_id": "497"
+        }
+      ],
+      "reference_answer": "시행령 제31조의3 제3항 제1호에 따라 같은 조 제1항 제2호(취득일 현재 1주당 취득가액 또는 증여 당시 1주당 증여세 과세가액) 및 제3호(1주당 기업가치의 실질적인 증가로 인한 이익)의 합계액에 주식수를 곱한 금액의 100분의 30에 상당하는 가액과, 제2호의 금액 중 적은 금액이다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-024",
+        "reference_sha256": "6f42a0d0e1ff5c999ca11bfa80b24f386261baed18f9f4ab70f716453692ecd4",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/46",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "4ff98e4676150dcd185b41feb635a26e902266cd11e1cf3f1366aee16dbc8473"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/47",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "7a6cb2633da76853480d60343b69f6cdddad2af1fa47689130fe920082115631"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-025",
+      "question": "이익 계산 시 이미 과세된 저가분이 조정되는가?\n(업무 문맥: 주식등의 상장 등에 따른 이익의 증여)",
+      "topic": "주식등의 상장 등에 따른 이익의 증여",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상속세 및 증여세법 시행령",
+          "coordinate_key": "body:제31조의3",
+          "source_artifact_sha256": "440f2a6612675164abdd341fbc95e2305f7d9e015a4f30c34826456940cd0179",
+          "section_text_sha256": "b113e78529a1a6aaf9d99998d01c699e97f8033d2b23190488087650b087b9af",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260227",
+            "document_enforcement": "20260227",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "81724671bcd7992a843742ec217901101a734f4cdb711158fb2fb9c646e7476a"
+          },
+          "selected_document_id": "0798989e52ca0254",
+          "selected_unit_id": "497"
+        },
+        {
+          "document_name": "상속세 및 증여세법",
+          "coordinate_key": "body:제35조",
+          "source_artifact_sha256": "1a41fc2d3d9a6926a57d1c1b9efcdfbbfd23b40ddb37d1b9be92b90fb8545004",
+          "section_text_sha256": "a7d24372976b5f01f368708204f09a14c2890016cd0860e0b1a768b0e2f19527",
+          "evidence_role": "CONDITION_EXCEPTION",
+          "gold_source_version": {
+            "document_revision": "20251001",
+            "document_enforcement": "20260102",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "0c50f30b2e3d868b3ef303497732d0d792fd497c8611cadde5ace9abe29b01d2"
+          },
+          "selected_document_id": "27c02e2a7e1c59cb",
+          "selected_unit_id": "278"
+        },
+        {
+          "document_name": "상속세 및 증여세법",
+          "coordinate_key": "body:제39조",
+          "source_artifact_sha256": "1a41fc2d3d9a6926a57d1c1b9efcdfbbfd23b40ddb37d1b9be92b90fb8545004",
+          "section_text_sha256": "433f3e24098861f912da91c2e71c143fe6a92209238f8f8ca8ec15907dc45629",
+          "evidence_role": "CONDITION_EXCEPTION",
+          "gold_source_version": {
+            "document_revision": "20251001",
+            "document_enforcement": "20260102",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "9e69d366fd11e932d7b1b88389d90835922ad06224cdfdd718fd50d58332aa4f"
+          },
+          "selected_document_id": "27c02e2a7e1c59cb",
+          "selected_unit_id": "295"
+        }
+      ],
+      "reference_answer": "시행령 제31조의3 제1항은 정산기준일 현재 1주당 평가가액에서 취득가액(또는 증여세 과세가액)과 기업가치 실질증가분을 차감하도록 규정할 뿐, 제35조·제39조에 따라 이미 과세된 부분을 별도로 차감하는 규정은 확인되지 않는다. 명시적 조정규정 미확인 사항이다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-025",
+        "reference_sha256": "9f3414518943d1e4946adfc817d3fb28b8eb12689a53e511bf145e9316f5ec49",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/48",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "9410c01c31d976b8acb488757807fffce2c0f06d2c17b6645eac0332ab961319"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/49",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "8b44baf65a8af6aa784d271cfac967c002b8ae4ecf498bc3d1a95b6eed8d2eb9"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-026",
+      "question": "유상증자로 배정받은 신주도 포함되는가?\n(업무 문맥: 주식등의 상장 등에 따른 이익의 증여)",
+      "topic": "주식등의 상장 등에 따른 이익의 증여",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상속세 및 증여세법",
+          "coordinate_key": "body:제41조의3",
+          "source_artifact_sha256": "1a41fc2d3d9a6926a57d1c1b9efcdfbbfd23b40ddb37d1b9be92b90fb8545004",
+          "section_text_sha256": "b9db083513535aa44633f9e621d461ed15c50d878f71e30503c2f9aed9530cd9",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20251001",
+            "document_enforcement": "20260102",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "adbd4cc41846121ce25c42b2a861a6441aa64d85b1095cd5e26ebc4de9797453"
+          },
+          "selected_document_id": "27c02e2a7e1c59cb",
+          "selected_unit_id": "345"
+        }
+      ],
+      "reference_answer": "제41조의3 제7항에 따라 주식등을 증여받거나 취득한 후 그 법인이 자본금을 증가시키기 위하여 신주를 발행함에 따라 신주를 인수하거나 배정받은 경우를 포함한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-026",
+        "reference_sha256": "9a701a1b9ca57a58872925ae8b1a8d10ede17f9d7f6e8b3a9c9a2d6eeee56782",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/50",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "e52608cbf5bddc3337b3bcf69faab59e56c9937812eeb77c56076dda1bde465b"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/51",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "d85bcb28682487d08d3fdc713f63f17ce58f651b02f312a211312dd00a67cbea"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-027",
+      "question": "벤처기업 주식매수선택권 행사이익에 대한 세제 혜택은?\n(업무 문맥: 주식매수선택권 행사이익의 과세특례)",
+      "topic": "주식매수선택권 행사이익의 과세특례",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "조세특례제한법",
+          "coordinate_key": "body:제16조의2",
+          "source_artifact_sha256": "e7953ad039f4c43a9720ca0345d8150dfa7e7875523e535abe6027b49192cd2e",
+          "section_text_sha256": "f70f1c942872613e14196b17467116a5fb3b9bea09b83f7369201ab02a7a7a3a",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20251223",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "03781e944c5e7562e03d35e71b300e4f0181a017012ad8f25106a0d0d52d3372"
+          },
+          "selected_document_id": "b13caba2437b563e",
+          "selected_unit_id": "486"
+        },
+        {
+          "document_name": "벤처기업육성에 관한 특별법",
+          "coordinate_key": "body:제16조의3",
+          "source_artifact_sha256": "d15ff6273793ba4072383640ed012ac50796cb9aee3b9db4c6e683692f44c923",
+          "section_text_sha256": "75254bcea149d78d23447b2ec8ae542e22133c020a3d6222475430340371934c",
+          "evidence_role": "DEFINITION",
+          "gold_source_version": {
+            "document_revision": "20260305",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "31064b16d850e07cad7d87b60710d62b21b54cef96be7c93672152aec0027235"
+          },
+          "selected_document_id": "963c5eda366b86c9",
+          "selected_unit_id": "244"
+        },
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제340조의2",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "859875833f396a81653034af30c3805bd2b96f2bdcd64ac927730530fb9d8cb2",
+          "evidence_role": "DEFINITION",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "2aa0de9aa864c668983a166c03644fda09cf1e48e567d049f92f9d3d4e8f9b2f"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1059"
+        },
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제542조의3",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "19da5bea278cca4b4cd84fa378b86d5cf578c9078b1110849682461316796e61",
+          "evidence_role": "DEFINITION",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "c44465cde9ef137e37887470d29447b96d4e45caae899fc43803745f81829b29"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "2384"
+        }
+      ],
+      "reference_answer": "조세특례제한법 제16조의2 제1항에 따라 2027년 12월 31일 이전에 부여받은 주식매수선택권 행사이익 중 연간 2억원 이내의 금액에 대해서는 소득세를 과세하지 아니하되, 벤처기업별 총 누적 금액은 5억원을 초과하지 못한다. 같은 조 제2항에 따라 적용대상은 벤처기업법 제16조의3에 따른 주식매수선택권 및 상법 제340조의2 또는 제542조의3에 따른 주식매수선택권(코넥스상장기업으로부터 부여받은 경우로 한정)이다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-027",
+        "reference_sha256": "56c311dd1c0ba87857b2f704be0c724b8da0e30424bddbc1963b13bf3bfa0165",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/52",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "9a6364078d47dda4f89cfe51455e47651827097576eddba642fa05fcddfaed67"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/53",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "83379f7f04643651ed06347ffdbc5deaa521f74952983dced4a4d3520112e857"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-028",
+      "question": "적격주식매수선택권의 요건과 효과는?\n(업무 문맥: 주식매수선택권 행사이익의 과세특례)",
+      "topic": "주식매수선택권 행사이익의 과세특례",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "조세특례제한법",
+          "coordinate_key": "body:제16조의4",
+          "source_artifact_sha256": "e7953ad039f4c43a9720ca0345d8150dfa7e7875523e535abe6027b49192cd2e",
+          "section_text_sha256": "65bba5b25d7cd4e4adf8e68c7d72542d353fafe6832d1c89c2fe90295bfe37f6",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20251223",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "4626ccb9d226037570e845c9af5986e298a63c51db03e4700a53d56e0de237a7"
+          },
+          "selected_document_id": "b13caba2437b563e",
+          "selected_unit_id": "497"
+        },
+        {
+          "document_name": "벤처기업육성에 관한 특별법",
+          "coordinate_key": "body:제16조의3",
+          "source_artifact_sha256": "d15ff6273793ba4072383640ed012ac50796cb9aee3b9db4c6e683692f44c923",
+          "section_text_sha256": "75254bcea149d78d23447b2ec8ae542e22133c020a3d6222475430340371934c",
+          "evidence_role": "DEFINITION",
+          "gold_source_version": {
+            "document_revision": "20260305",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "31064b16d850e07cad7d87b60710d62b21b54cef96be7c93672152aec0027235"
+          },
+          "selected_document_id": "963c5eda366b86c9",
+          "selected_unit_id": "244"
+        },
+        {
+          "document_name": "소득세법",
+          "coordinate_key": "body:제94조",
+          "source_artifact_sha256": "1a9fa5b5faa80ca5449b2a66c5cd91cc42a35d973056fb4bc75c4a814981b4d4",
+          "section_text_sha256": "51988906f0502038e8d1834f3bc530a5e3756d5e4c8dcd3a4454d7b69b168ff7",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "20251223",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "3df6203f33f1bb3824ac7509eb48a1c8d0542c2d1d7a7c0faf8826b45ee6beb1"
+          },
+          "selected_document_id": "61789e1949a9e2cd",
+          "selected_unit_id": "1151"
+        }
+      ],
+      "reference_answer": "조특법 제16조의4 제1항 각 호에 따라 벤처기업법 제16조의3에 따른 주식매수선택권으로서 대통령령으로 정하는 요건을 갖추고(제1호), 행사일부터 역산하여 2년이 되는 날이 속하는 과세기간부터 행사일이 속하는 과세기간까지의 전체 행사가액 합계가 5억원 이하일 것(제2호)을 요구한다. 신청한 경우 행사 시 소득세를 과세하지 아니하고, 같은 조 제2항에 따라 취득주식 양도 시 소득세법 제94조 제1항 제3호에도 불구하고 양도소득세를 과세한다. 다만 행사 당시 실제 매수가액이 부여 당시 시가보다 낮은 경우 그 차액은 행사 시 과세한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-028",
+        "reference_sha256": "c247ba38ed1ff1efde7e1ff78666b706c4b6d7338dd3ea2d104bb4a8a7d1d788",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/54",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "8b49ac0d01f8723b5c8d24dc16a93f509fa938ac16d6d545092ada5f622ade97"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/55",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "1bbcf2d2afbd02ddde18e6225a205d44d928a954fee6081226cbc96aeac95d64"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-029",
+      "question": "주식매수선택권을 행사하여 취득한 주식을 양도할 때 취득가액은?\n(업무 문맥: 주식매수선택권 행사주식의 양도 시 취득가액)",
+      "topic": "주식매수선택권 행사주식의 양도 시 취득가액",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "소득세법 시행령",
+          "coordinate_key": "body:제163조",
+          "source_artifact_sha256": "6bb02dde10641623f5c4da4d9903026fb274fa87182a230c065a53d2fac1b5fe",
+          "section_text_sha256": "648a3a777ab49c0f627e291f3d161e26bdc12ab2f314f47a2bbb03ff02eec2cd",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260522",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "63c7e2e671c8e5aa9cd36d952021c7713f33c959b22e48742b80b90f51fe0f4c"
+          },
+          "selected_document_id": "4fd64428c4c434b1",
+          "selected_unit_id": "2370"
+        },
+        {
+          "document_name": "소득세법",
+          "coordinate_key": "body:제97조",
+          "source_artifact_sha256": "1a9fa5b5faa80ca5449b2a66c5cd91cc42a35d973056fb4bc75c4a814981b4d4",
+          "section_text_sha256": "cc2f254f6ae6b7263ae4ec62ede1500bdce6b2f6c5dc111a2a329278a6d713dd",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "20251223",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "4fb9a35e6691827df6fc0ebf9eb0b90d5f50516bf3f75a5f5e17a71d86255988"
+          },
+          "selected_document_id": "61789e1949a9e2cd",
+          "selected_unit_id": "1190"
+        }
+      ],
+      "reference_answer": "소득세법 시행령 제163조 제13항에 따라 주식매수선택권을 행사하는 당시의 시가를 법 제97조 제1항 제1호에 따른 취득가액으로 한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-029",
+        "reference_sha256": "f95d9f433790a43efaa336442f4df42fa4b01f9e42a8eed3e61f8a128af04876",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/56",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "ba208de071645a60ffef76af0b0ffea8ca6be9125f9f8ec622056e958150fbc4"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/57",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "6b815254fb231139b5ac680d98c767c61a4efc3503d70a3d05233e5f135c938c"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-030",
+      "question": "증권신고서 제출 시 1분기 검토보고서를 첨부하여야 하는가?\n(업무 문맥: IPO 단계의 재무서류 제출범위)",
+      "topic": "IPO 단계의 재무서류 제출범위",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "증권의 발행 및 공시 등에 관한 규정",
+          "coordinate_key": "body:제2-6조",
+          "source_artifact_sha256": "d6a032a4cb2d9cc1a26eab3b8ce5e71136813ad669ca7833eb78c782f578abe3",
+          "section_text_sha256": "b67cbd3d8de1784f1a81bfee3ec090b090ba80450d2d2750faa2c0f0d4ae6cca",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260728",
+            "document_enforcement": "20260728",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "a78274b0a5a44e726581230b72d0804a14b9128954f63f8b39f1ca6c154d6cf3"
+          },
+          "selected_document_id": "00f033fddcef6be2",
+          "selected_unit_id": "239"
+        },
+        {
+          "document_name": "증권의 발행 및 공시 등에 관한 규정",
+          "coordinate_key": "body:제2-4조",
+          "source_artifact_sha256": "d6a032a4cb2d9cc1a26eab3b8ce5e71136813ad669ca7833eb78c782f578abe3",
+          "section_text_sha256": "6a1a1bd8bf9bd83a4ecfa2c964026cf5a835826ffabb947e094d4099ed5d6838",
+          "evidence_role": "DEFINITION",
+          "gold_source_version": {
+            "document_revision": "20260728",
+            "document_enforcement": "20260728",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "98418ccc88e01fc9d514cdafbda96320350fbf23b8b3be621fa8086029d814bc"
+          },
+          "selected_document_id": "00f033fddcef6be2",
+          "selected_unit_id": "156"
+        },
+        {
+          "document_name": "자본시장과 금융투자업에 관한 법률 시행령",
+          "coordinate_key": "body:제170조",
+          "source_artifact_sha256": "b952ab19cf0d6518305773a4630036984f1edf5005998daaf8960cb7272fd3f4",
+          "section_text_sha256": "088fc7660edd38853b52e03f7ca013270e41638b20cc911f7b6a293c783e5a87",
+          "evidence_role": "DEFINITION",
+          "gold_source_version": {
+            "document_revision": "20260728",
+            "document_enforcement": "20260804",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "6fca4847b0e829570876badea66f0df2cf7d7cc3b23972f2365c8c2925a7d51a"
+          },
+          "selected_document_id": "2a410c9dfc65dac1",
+          "selected_unit_id": "3035"
+        }
+      ],
+      "reference_answer": "증권의 발행 및 공시 등에 관한 규정 제2-6조 제8항 제1호 라목의 분기감사보고서 또는 분기검토보고서는, 그 정의를 규정한 제2-4조 제5항 제3호 라목에서 \"자본시장법 시행령 제170조 제1항 제2호 단서에 따른 금융기관·주권상장법인이 분기재무제표가 확정된 이후에 신고서를 제출하는 경우에 첨부해야 할\" 서류로 한정하고 있다. 따라서 상장 전 발행인에게는 첨부의무가 없다. 다만 같은 항 제1호 다목은 증권시장에 주권을 상장하기 위한 모집 또는 매출의 경우 반기재무제표가 확정된 이후에는 반기감사보고서 또는 반기검토보고서를 첨부하도록 규정한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-030",
+        "reference_sha256": "6a88f38e6fddceb8bb2093c5d231bc3964a2ebca50628c9a6cae021ae74ae03b",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/58",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "b56d60ee968b531c2de21cb030365bcbf54771f027dbbff4b88533ef4324f53a"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/59",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "5f115daf773f4d9bc17e8bd4e1e57f94cff4a45c72f88807ee11780e83b4d9aa"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-031",
+      "question": "거래소 규정상 요구되는 재무서류는?\n(업무 문맥: IPO 단계의 재무서류 제출범위)",
+      "topic": "IPO 단계의 재무서류 제출범위",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "코스닥시장 상장규정",
+          "coordinate_key": "body:제5조",
+          "source_artifact_sha256": "ce1030b85f4d2601d2fe1d5e4157ba8dedbc103c1d6c2bc8e062e0e883bc3b59",
+          "section_text_sha256": "5213b2104f5c065b792c46e40eadb6dec859889e97bf2a7572d05fd61d109e6c",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-07-31",
+            "document_enforcement": "2026-08-03",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "f84a4e6cbc836b4e088541375f802d648531430f1703055e0df3b384e13c88de"
+          },
+          "selected_document_id": "3521c3aaa5a735fd",
+          "selected_unit_id": "116"
+        }
+      ],
+      "reference_answer": "코스닥시장 상장규정 제5조 제4호에 따라 국내기업인 상장신청인은 해당 사업연도의 반기 종료 후 45일이 경과한 때 반기재무제표와 감사인의 검토보고서를 제출하여야 한다. 분기 기준 제출의무는 제5호에 따라 외국기업에 대해서만 규정되어 있다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-031",
+        "reference_sha256": "f5d39135a5455d7907c0a988265112393aac068fb23797fe852eff04945b0896",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/60",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "c1c4b2005a612c3619cd1d9ee49d34ea72a3816a06f619f78decc5d0c51ffc87"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/61",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "d715855fc7e6d463934d0e7d2a8e65773e4813cc51c81330ef4dc7c6b454170a"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-032",
+      "question": "반기보고서 제출기한 45일과 60일은 어떻게 구분되는가?\n(업무 문맥: 반기·분기보고서의 제출기한)",
+      "topic": "반기·분기보고서의 제출기한",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "자본시장과 금융투자업에 관한 법률",
+          "coordinate_key": "body:제160조",
+          "source_artifact_sha256": "ad2bf6a7762d24e7522a479e32e7a6751897b3a945c969e3add7c864095070dd",
+          "section_text_sha256": "ca3a94ed6329516b56163d2c0134391937dd2d672ea83ea8803a1667de9fe329",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260203",
+            "document_enforcement": "20260804",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "bde3c586a3a85da649c91016f49de9d55f56fe31903a18f9ebf05b4e417e2fc7"
+          },
+          "selected_document_id": "5be4de51a89dc664",
+          "selected_unit_id": "1472"
+        }
+      ],
+      "reference_answer": "자본시장법 제160조 제1항(2025.1.21 개정)에 따라 원칙은 기간 경과 후 45일 이내이나, 재무에 관한 사항과 그 부속명세 등을 연결재무제표를 기준으로 기재하여 작성한 반기보고서와 분기보고서를 제출하는 경우에는 그 최초의 사업연도와 그 다음 사업연도에 한하여 60일 이내에 제출할 수 있다. 60일 특례의 기준은 최초제출대상법인 여부가 아니라 연결기준 작성의 최초 2개 사업연도이다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-032",
+        "reference_sha256": "83f797177eac3e23ba8c47bf6f6518d125fa873d85364025db19ebd5e718332e",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/62",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "86a5bfa36c7cbc7a95449748089c006cb22a1e6e519340d77096b8960e72c901"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/63",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "aa6984fa6d87844944c157801e3360ee7fd1e1b0a30dd10adfce14a264bfaa5f"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-033",
+      "question": "종전 별도기준에서 연결기준으로 처음 전환하는 법인도 60일인가?\n(업무 문맥: 반기·분기보고서의 제출기한)",
+      "topic": "반기·분기보고서의 제출기한",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "자본시장과 금융투자업에 관한 법률",
+          "coordinate_key": "body:제160조",
+          "source_artifact_sha256": "ad2bf6a7762d24e7522a479e32e7a6751897b3a945c969e3add7c864095070dd",
+          "section_text_sha256": "ca3a94ed6329516b56163d2c0134391937dd2d672ea83ea8803a1667de9fe329",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260203",
+            "document_enforcement": "20260804",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "bde3c586a3a85da649c91016f49de9d55f56fe31903a18f9ebf05b4e417e2fc7"
+          },
+          "selected_document_id": "5be4de51a89dc664",
+          "selected_unit_id": "1472"
+        }
+      ],
+      "reference_answer": "조문의 \"최초\"는 연결재무제표를 기준으로 작성하여 제출하는 것을 수식하는 구조이므로 문언상 해당하는 것으로 읽힌다. 다만 이를 확인하는 하위규정이나 감독지침은 확인되지 않으므로 유권해석을 받는 것이 안전하다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-033",
+        "reference_sha256": "93f52dd9187b35660eba04dd38146caec36fba88b3e14796a667a2b70b2a15c0",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/64",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "21130df9c111315b686374eb56f34f36e705f5865a4134b48fc3f5390f58be62"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/65",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "2a5f162f57edb0f7edcf6c26f5008ef03fc75a055cc5fafbdf2f16e921561bc4"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-034",
+      "question": "최초로 사업보고서 제출대상법인이 된 경우의 직전 보고서 제출의무는?\n(업무 문맥: 반기·분기보고서의 제출기한)",
+      "topic": "반기·분기보고서의 제출기한",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "자본시장과 금융투자업에 관한 법률",
+          "coordinate_key": "body:제160조",
+          "source_artifact_sha256": "ad2bf6a7762d24e7522a479e32e7a6751897b3a945c969e3add7c864095070dd",
+          "section_text_sha256": "ca3a94ed6329516b56163d2c0134391937dd2d672ea83ea8803a1667de9fe329",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260203",
+            "document_enforcement": "20260804",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "bde3c586a3a85da649c91016f49de9d55f56fe31903a18f9ebf05b4e417e2fc7"
+          },
+          "selected_document_id": "5be4de51a89dc664",
+          "selected_unit_id": "1472"
+        }
+      ],
+      "reference_answer": "자본시장법 제160조 제2항(2025.1.21 신설)에 따라 사업보고서 제출대상법인에 해당하게 된 날부터 5일 이내(제1항 전단에 따른 반기보고서 또는 분기보고서의 제출기간 중에 해당하게 된 경우에는 그 제출기한까지) 직전 반기보고서 또는 분기보고서를 제출하여야 한다. 다만 증권신고서 등을 통하여 이미 그에 준하는 사항을 공시한 경우에는 제출하지 아니할 수 있다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-034",
+        "reference_sha256": "4eaa86c28884f6cc75e4b6775a87f58f6bc8cc3d39a450744a085de62f15b326",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/66",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "5410fef1428a07866146d898f807192db2c3b03f8696be3c1c0aff02d2a5a7b3"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/67",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "7f610660fff2f0f23cc9ed49263b56da0998a9401d5ee530c2dcec5f5db2574b"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-035",
+      "question": "내부회계관리제도 구축의무와 그 면제 기준은?\n(업무 문맥: 내부회계관리제도)",
+      "topic": "내부회계관리제도",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "주식회사 등의 외부감사에 관한 법률",
+          "coordinate_key": "body:제8조",
+          "source_artifact_sha256": "3886abf641fc06c255ef0e3959efaae02fda2677b0e350ca2ce15bd3794fb328",
+          "section_text_sha256": "78df40d3b6abfee171ba9ae622363ea64a25e82780da25787028e5b4bedee72c",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20250401",
+            "document_enforcement": "20250401",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "eac319af2f195c43e9927b745958572f13506daae62c085450fa2b560d22bf23"
+          },
+          "selected_document_id": "92089b5873b2ccc0",
+          "selected_unit_id": "51"
+        },
+        {
+          "document_name": "주식회사 등의 외부감사에 관한 법률 시행령",
+          "coordinate_key": "body:제9조",
+          "source_artifact_sha256": "79ff1be0bf4dbe1130ffc4377298ced35c8e0f70efc3f2cfbef85f24040d7181",
+          "section_text_sha256": "77d131feeabba3d9f8fa16d5c41d05cad14db12364e08abd9aad0c8009675964",
+          "evidence_role": "CONDITION_EXCEPTION",
+          "gold_source_version": {
+            "document_revision": "20260526",
+            "document_enforcement": "20260526",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "7cf9ec9c1ce05c72cfa05c7272c3639026457318b054b1f6f2356d6d7e55b996"
+          },
+          "selected_document_id": "e23caead133b028c",
+          "selected_unit_id": "87"
+        }
+      ],
+      "reference_answer": "외부감사법 제8조 제1항 본문은 모든 회사에 내부회계관리규정과 이를 관리·운영하는 조직을 갖추도록 하고, 같은 항 단서는 주권상장법인이 아닌 회사로서 직전 사업연도 말 자산총액이 1천억원 미만인 회사와 대통령령으로 정하는 회사를 제외한다. 같은 법 시행령 제9조 제1항 제3호는 대통령령으로 정하는 회사에 직전 사업연도 말 자산총액이 5천억원 미만인 회사를 포함시키되, 가목 주권상장법인, 나목 공시대상기업집단 소속 국내 회사, 다목 사업보고서 제출대상법인, 라목 금융회사는 제외한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-035",
+        "reference_sha256": "56ac23d8a80d44ed1dc6ca9707e519056957418890b63f64443bf06e3c449e54",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/68",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "9b3c55bae3383013d6815f2b6e63234d2a22ba991a5fb4241ac18de8af95af5a"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/69",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "0b293b2a47c56b8e2712ef28da6f8b4229a81daeba8247b47244dac50a1936de"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-036",
+      "question": "내부회계관리자는 등기임원이어야 하는가?\n(업무 문맥: 내부회계관리제도)",
+      "topic": "내부회계관리제도",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "주식회사 등의 외부감사에 관한 법률",
+          "coordinate_key": "body:제8조",
+          "source_artifact_sha256": "3886abf641fc06c255ef0e3959efaae02fda2677b0e350ca2ce15bd3794fb328",
+          "section_text_sha256": "78df40d3b6abfee171ba9ae622363ea64a25e82780da25787028e5b4bedee72c",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20250401",
+            "document_enforcement": "20250401",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "eac319af2f195c43e9927b745958572f13506daae62c085450fa2b560d22bf23"
+          },
+          "selected_document_id": "92089b5873b2ccc0",
+          "selected_unit_id": "51"
+        }
+      ],
+      "reference_answer": "외부감사법 제8조 제3항은 회사의 대표자가 내부회계관리제도를 담당하는 상근이사 1명을 내부회계관리자로 지정하도록 하며, 담당하는 이사가 없는 경우에는 해당 이사의 업무를 집행하는 자를 지정하도록 규정한다. 상근이사가 상법상 등기이사를 의미한다는 점을 직접 규정한 조문은 없으므로, 등기 여부는 상법상 이사 개념에 따른 해석에 의한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-036",
+        "reference_sha256": "e962ca9d98ef0f46f6c38c9667cc3619ea5d7df45b7d2ce407a7d697676a8ee2",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/70",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "a0569a3f04b89e834cb23f9beaf27298973a7e9fcc3d02c9bc270b277714f315"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/71",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "36ea3370f60bc275da8927945537e77022fa9c49c37e58570605ca1816c3cae6"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-037",
+      "question": "감사인의 검토와 감사는 어떻게 구분되는가?\n(업무 문맥: 내부회계관리제도)",
+      "topic": "내부회계관리제도",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "주식회사 등의 외부감사에 관한 법률",
+          "coordinate_key": "body:제8조",
+          "source_artifact_sha256": "3886abf641fc06c255ef0e3959efaae02fda2677b0e350ca2ce15bd3794fb328",
+          "section_text_sha256": "78df40d3b6abfee171ba9ae622363ea64a25e82780da25787028e5b4bedee72c",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20250401",
+            "document_enforcement": "20250401",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "eac319af2f195c43e9927b745958572f13506daae62c085450fa2b560d22bf23"
+          },
+          "selected_document_id": "92089b5873b2ccc0",
+          "selected_unit_id": "51"
+        }
+      ],
+      "reference_answer": "외부감사법 제8조 제6항(2023.1.17 개정) 본문은 감사인이 검토하도록 하고, 단서는 주권상장법인(직전 사업연도 말 자산총액이 1천억원 미만인 주권상장법인은 제외)의 감사인은 감사하도록 규정한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-037",
+        "reference_sha256": "1d3ae6e535bc973826072fd26ac14ff5d3b6f78feeebfb4eeeed31318a9e0d12",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/72",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "eb165e5a05369dce78e028f61a4c017b75dbc76373ca55813af21f9078d683cf"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/73",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "1ed12dcb7cfbb5596b5e1cd1124483f127b5cd24f80d6395d5caad7a36eebe2a"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-038",
+      "question": "대표자의 보고의무는 위임할 수 있는가?\n(업무 문맥: 내부회계관리제도)",
+      "topic": "내부회계관리제도",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "주식회사 등의 외부감사에 관한 법률",
+          "coordinate_key": "body:제8조",
+          "source_artifact_sha256": "3886abf641fc06c255ef0e3959efaae02fda2677b0e350ca2ce15bd3794fb328",
+          "section_text_sha256": "78df40d3b6abfee171ba9ae622363ea64a25e82780da25787028e5b4bedee72c",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20250401",
+            "document_enforcement": "20250401",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "eac319af2f195c43e9927b745958572f13506daae62c085450fa2b560d22bf23"
+          },
+          "selected_document_id": "92089b5873b2ccc0",
+          "selected_unit_id": "51"
+        }
+      ],
+      "reference_answer": "외부감사법 제8조 제4항 본문은 대표자가 사업연도마다 주주총회, 이사회 및 감사에게 운영실태를 보고하도록 하고, 단서는 대표자가 필요하다고 판단하는 경우 이사회 및 감사에 대한 보고는 내부회계관리자가 하도록 할 수 있다고 규정한다. 주주총회 보고는 단서 대상이 아니다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-038",
+        "reference_sha256": "0520273ff7489e06fca32658a6e33c0dba033139e257148fbd4b0bc91aabde2d",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/74",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "4b4320b534f8f191e29e81d87383cd66b3910e1cff0cb9201a6e66db1f04a44f"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/75",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "b6c443f6e5b45c711a33214066793e48d0afb99f7bc6fcf3585c1827feb58f78"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-039",
+      "question": "사내규정 제정은 주주총회 결의사항인가, 이사회 결의사항인가?\n(업무 문맥: 주주총회와 이사회의 권한 배분)",
+      "topic": "주주총회와 이사회의 권한 배분",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제361조",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "8ef5457506f63a91dc5afb8e1913717063a5bd5b6a0507ea4698ed1bd52c0907",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "f829a8b66d2f22d6d1ed50526d305f1d42ba84a0f31a87b337bf6a6157a8d361"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1373"
+        },
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제393조",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "85a8192b716e62545ff422e2ad5772f4898ca971766daaf84d9ff47e5b863147",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "67eca15b8038dc89ac64124bc3b825ce65b7441e5ec9b736939fc75c043a0bf7"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1525"
+        }
+      ],
+      "reference_answer": "상법 제361조는 주주총회가 본법 또는 정관에 정하는 사항에 한하여 결의할 수 있다고 규정하고, 제393조 제1항은 중요한 자산의 처분 및 양도, 대규모 재산의 차입, 지배인의 선임 또는 해임과 지점의 설치·이전 또는 폐지 등 회사의 업무집행을 이사회의 결의로 하도록 규정한다. 사내규정 제정을 주주총회 결의사항으로 열거한 조문은 없으므로 업무집행에 관한 사항으로서 이사회 권한에 속한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-039",
+        "reference_sha256": "2a287a3e5550defca6ae978950071c2789153113449b7c2f7492196d67204d2f",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/76",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "77ce33d88e8902accfb0b98c9a1681c3a4980c2713ede3a73ecd80049450592b"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/77",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "6025eddd51e11f64f30083727aeace751a21f0c4c053711e03a4513087cd282e"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-040",
+      "question": "정관 변경의 결의요건은?\n(업무 문맥: 주주총회와 이사회의 권한 배분)",
+      "topic": "주주총회와 이사회의 권한 배분",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제434조",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "359c1818e885023708e00770be4e0f8bd38d2b303d590a9e09cf2d4adf4a8541",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "4c4555cde8acf76a2f255ce2c1e74417504f4fcae09e923dd1a8273cdb72be5f"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1772"
+        }
+      ],
+      "reference_answer": "상법 제434조에 따라 출석한 주주의 의결권의 3분의 2 이상의 수와 발행주식총수의 3분의 1 이상의 수로써 한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-040",
+        "reference_sha256": "8357ec60b01de1fcb0bfc2092f7be3f94ea7f355c7151845533af56f15c2345a",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/78",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "5f2b87e4933f7866e35f3c72014a3dabfabf1147493402dcc076abb3db0ad426"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/79",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "4ff8558010f599ef70a71aecefd4fa99ec9adac73fb6d667a4aaded5fddb86fd"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-041",
+      "question": "상장회사는 이사를 3명 이상 두어야 하는가?\n(업무 문맥: 이사 및 독립이사의 구성요건)",
+      "topic": "이사 및 독립이사의 구성요건",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제383조",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "990fae71ed7c5179da58e1516465972fa24d1150c05367aa2460fea6aa3772ff",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "581534bcc0243d69322d177dc4266bcb67938d9f5e4043ae6d8eb855400ca9d8"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1486"
+        }
+      ],
+      "reference_answer": "상법 제383조 제1항은 이사는 3명 이상이어야 한다고 규정하되, 자본금 총액이 10억원 미만인 회사는 1명 또는 2명으로 할 수 있다고 규정한다. 상장 여부를 기준으로 이사 수를 규율하는 조문은 없으며, 기준은 자본금 총액이다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-041",
+        "reference_sha256": "3d565953feef475ffc619f5d9de5b19b730f0020dbc5346fd06ddce86822f53f",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/80",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "c72472f1cdfc69ee841f08a9c6b1f9dc031be1c87b79926b29f597512e971bac"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/81",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "4f2e308229fc7f325ad1b4434b5ee2e192bd679b77ec1731820267ecc2a38ed4"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-042",
+      "question": "사외이사 관련 개정 내용은?\n(업무 문맥: 이사 및 독립이사의 구성요건)",
+      "topic": "이사 및 독립이사의 구성요건",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제542조의8",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "a9061e99575b27d3bb43ff8d8ac3ef872eed134c6e63c6141bae2c029a48146e",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "54a14e6fb090bccfc6e883dce22b9cfdee2b498c1cb46fada0ad3fc0589b7376"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "2411"
+        },
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제382조",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "9c9d9f94961508584de469e1494695511b31c3a3033ebdbd0eecf74cf418324b",
+          "evidence_role": "DEFINITION",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "4f6d8b373009fc4819c66c5b394ed42c4ba315cdddecc90fccb9b097b6be3246"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1464"
+        }
+      ],
+      "reference_answer": "상법 제542조의8(2025.7.22 개정, 시행일 2026.7.23)은 제목이 \"독립이사의 선임\"으로 변경되었고, 제1항은 상장회사가 대통령령으로 정하는 경우를 제외하고는 이사 총수의 3분의 1 이상을 독립이사로 하여야 한다고 규정한다. 독립이사는 제382조 제3항의 사외이사로서 사내이사, 집행임원 및 업무집행지시자로부터 독립적인 기능을 수행하는 이사를 말한다. 단서에 따라 대통령령으로 정하는 상장회사의 독립이사는 3명 이상이면서 이사 총수의 과반수여야 한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-042",
+        "reference_sha256": "05a40c0822ef0bb0d79822af7a2cd3eb07dd916d5e1096e52e821f914687e921",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/82",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "4019028da702119dcfdea70bbb81f8a5267bde37f1c1b4ba2f48d24cb192f8c3"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/83",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "30af67fd4040d236ff36975aff7e578d52e2cd65dfb708a7e5179487611b892c"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-043",
+      "question": "감사 보수의 결정을 이사회에 위임할 수 있는가?\n(업무 문맥: 감사의 보수와 감사위원회 구성)",
+      "topic": "감사의 보수와 감사위원회 구성",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제388조",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "f9edf7f95c8d9ef78fc28adf4ed246b294cbcdbc7b6431ca47b7b6085b4b39ad",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "a56afd810791c43c099a49dccee6e8a39c323215b75e66f68e9308fceb633c82"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1502"
+        },
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제415조",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "861c1b09fa74fe26c73bc30cd99bbba75cc06e872a56bf2c9ff10f4a268bc08f",
+          "evidence_role": "INCORPORATION_BRIDGE",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "fab29841850ec9e17ccab33ee18c13a1a32c15bf335348efdd5cf35b56c6fdfb"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1676"
+        },
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제542조의12",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "3cb4d303d2a0f7ff9826b8947bc079dd6209a7268c03feb0249d99fa9c67c7eb",
+          "evidence_role": "CONDITION_EXCEPTION",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "3dbdd53b8abe1ecd89f9bb72f29c219fdff197d19106f23cca6e2c8524792902"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "2455"
+        }
+      ],
+      "reference_answer": "상법 제388조는 이사의 보수를 정관에 그 액을 정하지 아니한 때에는 주주총회의 결의로 정하도록 하고, 제415조는 제388조를 감사에 준용한다. 결정주체를 정관 또는 주주총회로 한정하고 있으므로 이사회 위임의 근거가 되는 조문은 없다. 나아가 제542조의12 제5항은 상장회사가 감사의 선임 또는 감사의 보수결정을 위한 의안을 상정하려는 경우 이사의 선임 또는 이사의 보수결정 의안과 별도로 상정하여 의결하도록 규정한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-043",
+        "reference_sha256": "0af78af7bb6ff5078298840d2a06e6f23cb2783f044a03234130eda6082026ec",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/84",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "ebf831e063646a823d4ef5904ef64481e5a155e471ff92dccdf2785aabbbb0c6"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/85",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "749329d940587cdca7d72e0c4efd1c16299407fc689a2acdc8315879fb54649f"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-044",
+      "question": "감사위원 분리선출 인원은 몇 명인가?\n(업무 문맥: 감사의 보수와 감사위원회 구성)",
+      "topic": "감사의 보수와 감사위원회 구성",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제542조의12",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "3cb4d303d2a0f7ff9826b8947bc079dd6209a7268c03feb0249d99fa9c67c7eb",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "3dbdd53b8abe1ecd89f9bb72f29c219fdff197d19106f23cca6e2c8524792902"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "2455"
+        }
+      ],
+      "reference_answer": "상법 제542조의12 제2항 단서(2020.12.29 개정)는 감사위원회위원 중 1명(정관에서 2명 이상으로 정할 수 있으며, 정관으로 정한 경우에는 그에 따른 인원)을 다른 이사들과 분리하여 선임하도록 규정한다. 자산규모에 따라 2명을 강제하는 문언은 확인되지 않는다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-044",
+        "reference_sha256": "724ab3847c05cac4d65ecdaf67970c5a731c24c931d9c7e28a1af0ae718b1fd1",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/86",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "30427c60a9729f626cdc2088238758826eed3d5978926c4924e3a7bffaccbb00"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/87",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "37920c98e1cf0850d84be4650d9ffff0eeb2bc4b4aae8e74ba002fa4cbf0532a"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-045",
+      "question": "자기주식 소각의무에 관한 신설 규정의 내용은?\n(업무 문맥: 자기주식의 소각의무와 처분)",
+      "topic": "자기주식의 소각의무와 처분",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제341조의4",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "f0d68903dd0c1a625d0fabc5329b40e4578f5b980f1ceb64aebba001e70a780d",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "25444d8f30e2b50cba83b85d3d6590dd0d14acd531eb8af25af03f928ce0f4e9"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1108"
+        },
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제434조",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "359c1818e885023708e00770be4e0f8bd38d2b303d590a9e09cf2d4adf4a8541",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "4c4555cde8acf76a2f255ce2c1e74417504f4fcae09e923dd1a8273cdb72be5f"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1772"
+        }
+      ],
+      "reference_answer": "상법 제341조의4(2026.3.6 신설) 제1항은 회사가 자기주식을 취득한 때에는 그 취득한 날부터 1년 이내에 소각하도록 규정한다. 제2항은 각 호의 어느 하나에 해당하는 경우로서 회사가 자기주식보유처분계획을 작성하여 주주총회의 승인을 받은 때에는 그 계획에 따라 보유 또는 처분할 수 있도록 하며, 제3항에 따라 그 계획은 매년 주주총회에서 승인받아야 한다. 각 호는 균등조건 처분(제1호), 주식매수선택권 부여 등 임직원 보상 목적(제2호), 우리사주제도 실시 목적(제3호), 법령에 따른 활용(제4호), 신기술의 도입·재무구조의 개선 등 경영상 목적으로서 제434조에 따른 주주총회 결의로 정관에 사유를 규정한 경우(제5호)이다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-045",
+        "reference_sha256": "e19857929999827e576391740fb34821adda7b52bf2ddfcfd2a63e2de0a90a89",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/88",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "9a6219d2f7ba47d2c67f45f614025cbf61fb5d1fbf3acb854257a4927b96fb99"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/89",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "9e518048ce7f8021a28e4dc23885348e8d2570e6d0eea20cc63377b0fae0e602"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-046",
+      "question": "자기주식을 주주 외의 자에게 처분할 수 있는가?\n(업무 문맥: 자기주식의 소각의무와 처분)",
+      "topic": "자기주식의 소각의무와 처분",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제341조의4",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "f0d68903dd0c1a625d0fabc5329b40e4578f5b980f1ceb64aebba001e70a780d",
+          "evidence_role": "CONDITION_EXCEPTION",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "25444d8f30e2b50cba83b85d3d6590dd0d14acd531eb8af25af03f928ce0f4e9"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1108"
+        },
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제342조",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "285d8a745c2577dfa83c656ab841ddeab90490ae691c428ff30f19dd59ef3c7f",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "1bd2e55a6d5acaf489c43ee474ee3356e6188f53b65dd5adb54c2ee9042b830e"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1126"
+        }
+      ],
+      "reference_answer": "상법 제342조(2026.3.6 전문개정) 제1항은 원칙적으로 각 주주가 가진 주식 수에 따라 균등한 조건으로 취득하게 하도록 하고, 제2항은 제341조의4 제2항 제2호부터 제5호까지의 어느 하나에 해당하는 경우 주주 외의 자에게 처분할 수 있도록 한다. 제3항에 따라 처분할 주식의 종류와 수, 처분가액과 납입기일, 상대방 및 처분방법 중 정관에 규정이 없는 것은 이사회가 결정하며, 제4항에 따라 제417조부터 제432조까지의 규정이 성질에 반하지 아니하는 범위에서 준용된다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-046",
+        "reference_sha256": "9a41d359418272ca68106452d64b98a63ed5c697a3de8a8def1db4811c2042b0",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/90",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "b0ade0c9c63fc92f0fe9bac79422102fdd627004b3a1bd5514769e5a523e89c2"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/91",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "7f7e6b24c9bd22830992ed4aa442d900c721c467e61892542ff725e72e18aa10"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-047",
+      "question": "공모 시 우리사주조합원 배정은 어떤 근거로 이루어지는가?\n(업무 문맥: 우리사주조합원에 대한 주식 배정)",
+      "topic": "우리사주조합원에 대한 주식 배정",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "자본시장과 금융투자업에 관한 법률",
+          "coordinate_key": "body:제165조의7",
+          "source_artifact_sha256": "ad2bf6a7762d24e7522a479e32e7a6751897b3a945c969e3add7c864095070dd",
+          "section_text_sha256": "a35a4212294d80c95c2235edefe4688c06d6b3f05de863435fcf2a2df3c8ba84",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20260203",
+            "document_enforcement": "20260804",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "5c03421a3886626528c4af41c2d1e55dc7e9ffd38ba629a03a4f8861c73b243e"
+          },
+          "selected_document_id": "5be4de51a89dc664",
+          "selected_unit_id": "1564"
+        },
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제418조",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "05d24225a4479a5db325b986557b7db26e3c985a3cbd8fac7bacb7479731206d",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "c3213183650e97313103dc94724b97ed52ecf795ebcc0f088073cdefdab7a519"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1699"
+        }
+      ],
+      "reference_answer": "자본시장법 제165조의7 제1항에 따라 주권을 대통령령으로 정하는 증권시장에 상장하려는 법인이 주식을 모집하거나 매출하는 경우, 상법 제418조에도 불구하고 우리사주조합원에 대하여 모집·매출하는 주식총수의 100분의 20을 배정하여야 한다. 즉 정관상 제3자배정 근거나 경영상 목적 요건을 거치지 않는 법정 강제배정이다. 다만 같은 항 제1호(외국인투자기업 중 대통령령으로 정하는 법인), 제2호(대통령령으로 정하는 경우)는 예외이고, 같은 조 제2항에 따라 우리사주조합원 소유주식수가 총수의 100분의 20을 초과하는 경우에는 제1항을 적용하지 아니한다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-047",
+        "reference_sha256": "21cb5b0fe6716c80d239bce9aa873f3e4f070bab4be6c673dfe025efffce7e1a",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/92",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "590a8d5da15dcbdeb54c2fa93e2cc4f0f8a11c371e83197e8d3d2190a9430c53"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/93",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "85c9dddf8b92fd7a77e9deaa4d3abb06b59bfc3d3f53c1006397121285c5c37f"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-048",
+      "question": "발행사항은 어느 기관이 결정하는가?\n(업무 문맥: 우리사주조합원에 대한 주식 배정)",
+      "topic": "우리사주조합원에 대한 주식 배정",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "상법",
+          "coordinate_key": "body:제416조",
+          "source_artifact_sha256": "32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4",
+          "section_text_sha256": "fc6cc2c61839c52cc94b955c9cb732cb06179835acd405fc0c4208cd606aed3a",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "20250722",
+            "document_enforcement": "20260723",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "0dc09c732675a82fd7490d657b39468e8cb3067b32715a88324bfc454139b1a3"
+          },
+          "selected_document_id": "7bbe815ff43b6635",
+          "selected_unit_id": "1686"
+        }
+      ],
+      "reference_answer": "상법 제416조에 따라 신주의 종류와 수, 발행가액과 납입기일, 인수방법 등으로서 정관에 규정이 없는 것은 이사회가 결정한다. 다만 이 법에 다른 규정이 있거나 정관으로 주주총회에서 결정하기로 정한 경우는 그러하지 아니하다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-048",
+        "reference_sha256": "70c417580a5656110172163a2934ac9e494dc9e5c96a686fe88aa797b7e4754b",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/94",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "3c4ad3c3d7476f95cdbff3a00d3a49e96c47647ebff9b0ac7f683814d78a45b0"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/95",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "ee48f07d0dc2b4e2d5c091ed1922105b4f4e1f754af898113cee4f855ca2f5cc"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-049",
+      "question": "주관회사 또는 그 계열회사가 발행회사 지분을 보유하면 공동주관 의무가 발생하는가?\n(업무 문맥: 공동주관회사 선임의무)",
+      "topic": "공동주관회사 선임의무",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "증권 인수업무 등에 관한 규정",
+          "coordinate_key": "body:제6조",
+          "source_artifact_sha256": "d3d7d891b9928f6c52fd615059077b8cb873b04d39f841d1cbe262451ddc7300",
+          "section_text_sha256": "49fa2396ef4a69710e2f791212f00c659a516a420d83a3d4ca77aad27af47cdb",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-03-12",
+            "document_enforcement": "",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "845511b167e7c1642228ee3906a1375c299dc7a077682e42be51624b1679090f"
+          },
+          "selected_document_id": "7687ac5d901e9a4a",
+          "selected_unit_id": "95"
+        },
+        {
+          "document_name": "증권 인수업무 등에 관한 규정",
+          "coordinate_key": "body:제2조",
+          "source_artifact_sha256": "d3d7d891b9928f6c52fd615059077b8cb873b04d39f841d1cbe262451ddc7300",
+          "section_text_sha256": "c974385e871ba0c820190f7de28eba7fc8cab8daa0874872b170fb035ec3a10b",
+          "evidence_role": "DEFINITION",
+          "gold_source_version": {
+            "document_revision": "2026-03-12",
+            "document_enforcement": "",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "e38d5856802bab6d06763283cc95ca370c46a36b5be319a97f1cf7d5826cc53e"
+          },
+          "selected_document_id": "7687ac5d901e9a4a",
+          "selected_unit_id": "2"
+        },
+        {
+          "document_name": "증권 인수업무 등에 관한 규정",
+          "coordinate_key": "body:제15조",
+          "source_artifact_sha256": "d3d7d891b9928f6c52fd615059077b8cb873b04d39f841d1cbe262451ddc7300",
+          "section_text_sha256": "791553877fe54c21af8f0a185df0632328cf0c0592faa08e6edf677cfead6055",
+          "evidence_role": "CONDITION_EXCEPTION",
+          "gold_source_version": {
+            "document_revision": "2026-03-12",
+            "document_enforcement": "",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "54d4f5be1525a6525bc0c741af70d3b580a22d081b284e91177ee111ff572a35"
+          },
+          "selected_document_id": "7687ac5d901e9a4a",
+          "selected_unit_id": "256"
+        }
+      ],
+      "reference_answer": "증권 인수업무 등에 관한 규정 제6조 제1항에 따라 금융투자회사는 자신과 자신의 이해관계인이 합하여 100분의 5(제15조 제4항 제2호 단서의 경우에는 100분의 10) 이상의 주식등을 보유하고 있는 회사의 기업공개 또는 장외법인공모 주관회사 업무를 수행하는 경우 다른 금융투자회사와 공동으로 하여야 한다. 이해관계인은 같은 규정 제2조 제9호에 정의되어 있고, 라목에 공정거래법 제2조 제3호의 계열회사 및 그 임원이 포함된다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-049",
+        "reference_sha256": "7c25f786314ca9487c42aa89833b7f888ad0d37ae3149b81fe6b8b738c62f1e6",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/96",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "279c4e8e4ef311a9218bdff8d285b4a417d9b8f4cfbf7e0041daa3afe210fb1a"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/97",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "1cd47886f26e34545cd140d25d4173abef2413ab0ec5a2b9d555835998bf46d1"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-050",
+      "question": "100분의 10이 적용되는 경우는?\n(업무 문맥: 공동주관회사 선임의무)",
+      "topic": "공동주관회사 선임의무",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "증권 인수업무 등에 관한 규정",
+          "coordinate_key": "body:제15조",
+          "source_artifact_sha256": "d3d7d891b9928f6c52fd615059077b8cb873b04d39f841d1cbe262451ddc7300",
+          "section_text_sha256": "791553877fe54c21af8f0a185df0632328cf0c0592faa08e6edf677cfead6055",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-03-12",
+            "document_enforcement": "",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "54d4f5be1525a6525bc0c741af70d3b580a22d081b284e91177ee111ff572a35"
+          },
+          "selected_document_id": "7687ac5d901e9a4a",
+          "selected_unit_id": "256"
+        },
+        {
+          "document_name": "중소기업기본법",
+          "coordinate_key": "body:제2조",
+          "source_artifact_sha256": "103e65c4088b30d120c4350cab26b7517f3bd7b154340977e133495003b9d7f8",
+          "section_text_sha256": "6190addaa3439b69739b4985524b1ce3b41fefcc847c6b49ab32b95b69ca34eb",
+          "evidence_role": "DEFINITION",
+          "gold_source_version": {
+            "document_revision": "20251230",
+            "document_enforcement": "20260701",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "bf23b29992a97709cd42d82feef7fd1bc1c0d087f94aaded98e50b28f3e4b7e5"
+          },
+          "selected_document_id": "8f93eda174f02974",
+          "selected_unit_id": "1"
+        },
+        {
+          "document_name": "중소기업창업 지원법 시행령",
+          "coordinate_key": "body:제4조",
+          "source_artifact_sha256": "36f62fbad42669c76f5bdf9feb5a7fbc48116d22376cb64e5da02eb5d7b66dbd",
+          "section_text_sha256": "2349041fa21e89ae29e917fcf1946929be0c2b9f2d77a14a4fc2dc94c720c6ae",
+          "evidence_role": "CONDITION_EXCEPTION",
+          "gold_source_version": {
+            "document_revision": "20260324",
+            "document_enforcement": "20260324",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "a37cdeb11d12cb34eba6313859a7d0d37687e4dfffd5fd67085dd64b193c283f"
+          },
+          "selected_document_id": "527731af0a9a554c",
+          "selected_unit_id": "43"
+        }
+      ],
+      "reference_answer": "제15조 제4항 제2호 단서 각 목에 해당하는 발행회사로서, 가목 중소기업기본법 제2조에 따른 중소기업(특수목적기구 및 부동산 관련 법인 제외), 나목 벤처기업, 다목 직전 3개 회계연도 평균 매출액 3천억원 미만 중견기업, 라목 신성장·원천기술 보유기업 또는 기술등급 상위 100분의 50 기업(공시대상기업집단 소속 기업 제외)이다. 다만 중소기업창업 지원법 시행령 제4조 각 호의 업종은 제외된다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-050",
+        "reference_sha256": "af9b5066b8297043e02a6dd4891e242faf63e8f74ce730a0865007958db02afc",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/98",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "332f4aeb4ef783d0b9f6ecb3a411fec1bf4ed548cd7e67f07318cc4ae41b0b58"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/99",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "d48d17d80c159a69cc9166d4aca0d159190ccbfbc7f4cb19c0e34347a0bef5a1"
+        }
+      ]
+    },
+    {
+      "case_id": "cm-051",
+      "question": "보유비율은 어떻게 산정하는가?\n(업무 문맥: 공동주관회사 선임의무)",
+      "topic": "공동주관회사 선임의무",
+      "question_aliases": [],
+      "alias_provenance": null,
+      "entries": [
+        {
+          "document_name": "증권 인수업무 등에 관한 규정",
+          "coordinate_key": "body:제6조",
+          "source_artifact_sha256": "d3d7d891b9928f6c52fd615059077b8cb873b04d39f841d1cbe262451ddc7300",
+          "section_text_sha256": "49fa2396ef4a69710e2f791212f00c659a516a420d83a3d4ca77aad27af47cdb",
+          "evidence_role": "MAIN",
+          "gold_source_version": {
+            "document_revision": "2026-03-12",
+            "document_enforcement": "",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "845511b167e7c1642228ee3906a1375c299dc7a077682e42be51624b1679090f"
+          },
+          "selected_document_id": "7687ac5d901e9a4a",
+          "selected_unit_id": "95"
+        },
+        {
+          "document_name": "자본시장과 금융투자업에 관한 법률 시행규칙",
+          "coordinate_key": "body:제14조",
+          "source_artifact_sha256": "628dd75672412fc5e8f665ff213fa08dbc6e3f5014b9fc5252eb9cdd94168fa1",
+          "section_text_sha256": "02d4be98f241730ba11ecdc0d732c2cf2fdb3c887226f69a103334fbe2e6af91",
+          "evidence_role": "INCORPORATED_RULE",
+          "gold_source_version": {
+            "document_revision": "20250602",
+            "document_enforcement": "20250602",
+            "authority_as_of": "20260827",
+            "source_text_sha256": "667451c225d9a7b5878d9a96082646986cd6e328f45ccd15564ab5a50cd9c25b"
+          },
+          "selected_document_id": "e20b06b32087ace0",
+          "selected_unit_id": "125"
+        }
+      ],
+      "reference_answer": "제6조 제2항에 따라 자본시장법 시행규칙 제14조 제1항을 준용한다. 제4항에 따라 중소기업창업투자조합, 신기술사업투자조합, 한국벤처투자조합, 환매금지형 사모집합투자기구의 경우 출자 또는 투자한 비율만큼 보유한 것으로 본다.",
+      "reference_provenance": {
+        "corpus_sha256": "5e3227561a31123ccb77a3c55f0ca0d88b542d9b6ecac20aab26f812949eb169",
+        "case_id": "cm-051",
+        "reference_sha256": "b53172c42401b954e3c62e37c52ec3b7b942cf2e67206db5c62f1450e890824a",
+        "status": "ACTUAL_WORK_REFERENCE; CURRENT_INTERPRETATION_UNVERIFIED"
+      },
+      "historical_failures": [
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/100",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "c04ba8fed14d909c011f2519bc9c57d47d6d1cdb0e30ca6e624cee9aa8d193f4"
+        },
+        {
+          "artifact": "04_EXPERIMENTS/ADR/ADR-0426-cm-glossary-network-validation/artifacts/grading/results.json",
+          "artifact_sha256": "06824cc56ed2d4907a749fb5bf8aa25f7d309e7508b626517dc94ca2558dc64d",
+          "record": "results/101",
+          "kind": "HISTORICAL_NON_ANSWER",
+          "product_sha256": "c2bf428a230b56eb544e69cfd6bf5572a627a4f85f060239ff2fd442e7caaed0"
+        }
+      ]
+    }
+  ]
+}

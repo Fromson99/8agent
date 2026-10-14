@@ -133,7 +133,7 @@ def test_repeated_conflict_is_pending_and_cannot_turn_into_approval():
                 'issues':[{'blocks':[6],'reason':'still unresolved'}] if len(seen)==1 else [],'template_changes':[]}
     with pytest.raises(ValueError,match='review_pending'):
         r.adjudicate_review('test',data,{},call,save=lambda name,value:saved.update({name:value}))
-    assert len(seen)==3 and saved['test-pending.json']['status']=='review_pending'
+    assert len(seen)==2 and saved['test-pending.json']['status']=='review_pending'
 
 
 @pytest.mark.parametrize('repeat_previous',[False,True])
@@ -153,7 +153,7 @@ def test_stalled_review_reports_exact_controls_and_reason(repeat_previous):
     with pytest.raises(r.ReviewPending) as failure:
         r.adjudicate_review('test',data,{},call,seen_levels=seen_levels,save=lambda n,v:saved.update({n:copy.deepcopy(v)}))
     code='REPEATED_STRUCTURE' if repeat_previous else 'NO_EXECUTABLE_CHANGE'
-    assert failure.value.diagnostic['code']==code and len(requests)==3
+    assert failure.value.diagnostic['code']==code and len(requests)==2
     assert code in requests[1]['validation_feedback']
     assert 'Never invent a rule change' in requests[1]['validation_feedback']
     comparison=requests[1]['rule_comparison'][0]
@@ -188,6 +188,7 @@ def test_boundary_revision_rebuilds_and_rechecks_prior_window(tmp_path,monkeypat
     monkeypatch.setenv('STRUCTURE_RECIPE_REVIEW_MODE','adaptive');monkeypatch.setenv('STRUCTURE_RECIPE_MAX_PAGES','3');monkeypatch.setenv('STRUCTURE_RECIPE_TAGS',str(tmp_path/'tags.json'))
     calls=[];detects=0;reviews=0;first_approved=None
     class Fake:
+        def bind_recovery(self,*args):pass  # non-network compiler fixture
         def __init__(self,journal,images,**kw):self.images=images;self.calls=0;self.model='synthetic-no-provider'
         def __call__(self,phase,system,data,schema,vision):
             nonlocal detects,reviews,first_approved

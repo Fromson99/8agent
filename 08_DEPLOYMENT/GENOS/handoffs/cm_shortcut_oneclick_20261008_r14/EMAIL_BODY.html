@@ -1,0 +1,11 @@
+<p><strong>이전 CM R11/R12 대신 첨부한 최종 R14를 사용하세요.</strong> 본문 이름 처리에 더해 확인한 이름·역할 연결 문제를 보완했습니다.</p>
+<ul><li><strong>정상 규정명 보존:</strong> 기업공시서식 작성기준·별지서식처럼 정식명에 포함된 서식/별첨 표현을 이유로 정상 본문을 제외하지 않습니다.</li><li><strong>개별 문서 연결:</strong> 부모 폴더명만 같다는 이유로 시행령·시행규칙·시행세칙을 다른 법령에 연결하지 않습니다.</li><li><strong>개정·참고 구분:</strong> 신·구조문대비표·제정안·요약·참고·개정 날짜 표기와 NFD 한글을 대조하고 비본문 역할/폴더를 배제합니다.</li><li><strong>원래 이름과 등록 보존:</strong> 금지 문자 치환·해시 접두어는 보존된 정식명/원래 이름으로 연결하고 사본 번호·날짜·판본을 임의로 삭제하지 않습니다. 기존 등록의 문서·조문·근거를 새 연결 결과와 재대조합니다. 같으면 재사용하고, 다르면 기존 기록을 보존하고 중단합니다.</li></ul>
+<p>R11의 package-check 실패 상태나 이미 R12를 적용한 상태에 원복 없이 이어 적용합니다. 기존 조사 한도 설정과 service.py 바이트, 원래 부모 inventory·백업·실패 로그·원문 generation·기존 DB를 보존합니다. RAW 이름 변경·원문 재구축·조사 한도 재적용·새 환경변수/사용자 JSON 입력은 없습니다.</p>
+<p>ZIP을 기존 <code>~/DEV/TRANSFER</code>에 올린 뒤 아래 세 줄을 실행하세요.</p>
+<pre>python3 -m zipfile -e ~/DEV/TRANSFER/GENOS_CM_ONECLICK_20261008_R14.zip ~/DEV/TRANSFER
+(cd ~/DEV/TRANSFER &amp;&amp; sha256sum -c GENOS_CM_ONECLICK_20261008_R14_SHA256SUMS.txt)
+bash ~/DEV/TRANSFER/GENOS_CM_ONECLICK_20261008_R14_RUN.txt</pre>
+<p>ZIP 안에 전체 RUN TXT·안내·SHA256SUMS가 있습니다. 전체 실행 TXT와 안내 TXT도 별도로 첨부했습니다. 별도 RUN TXT를 TRANSFER에 올렸으면 마지막 bash 한 줄로도 실행할 수 있습니다.</p>
+<p>원문51건/근거98개 연결 확인 → commit → 같은 checkout/generation gate → 공통 등록/검증 → 기존 origin push를 수행합니다. <code>EXIT=0</code>과 <code>READY_FOR_REVISION_DEPLOYMENT</code>이면 출력된 COMMIT으로 새 코드서빙 리비전을 배포하고 워크플로우 테스트 화면에서 질문을 확인하세요.</p>
+<p>상태·문서 연결·영수증·백업·로그는 <code>~/DEV/TRANSFER/cm-oneclick-r14/</code>에 남깁니다. 실패하면 <code>package-check.log</code> 등 단계 로그를 확인합니다. 실제 문서 누락·중복 판본/조문·권한·세대 해시 불일치는 계속 중단합니다.</p>
+<p>검증: 관련 계약84개, 등록 외규 본문114경로와 CM 교차 이름 대조, 로컬159문서의 CM21개 유일 연결, 216개 recipe/엔진 pin, 정확한 첨부 TXT의 4설치 상태별2회 실행에서51건/98근거 등록·중복 방지·예산/원문/DB/백업/실패 이력 보존·같은 checkout gate/모의 push·코드 원복을 확인했습니다. 로컬 검증이며 실제 GENOS 적용·새 리비전·워크플로우 성공은 현장에서 별도 확인해야 합니다.</p>

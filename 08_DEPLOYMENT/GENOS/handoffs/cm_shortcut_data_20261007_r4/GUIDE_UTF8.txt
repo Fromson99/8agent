@@ -1,0 +1,116 @@
+GENOS CM shortcut 데이터 인계 R4 — 2026-10-07
+최종 사용 파일: GENOS_CM_SHORTCUT_DATA_20261007_R4.zip / 동일 이름 RUN.txt
+R1·R2·R3 데이터 인계본 대신 R4를 사용한다. 선행 핵심근거 shortcut R1 또는 이를 포함한 화면표시 R2 상태를 지원한다.
+
+1. 자료와 동작
+CM 51건은 과거 실제 전수 실행에서 미답변 기록이 있는 전체 CM 정본이다.
+검토 정본 cm_core_e2e_v3의 주 조문·정의·예외·준용·위임 근거 98개를 연결했다.
+법령 원문 전체나 기존 사례 DB를 교체하지 않는다. 첨부에는 질문·업무 기준답변,
+원문 위치·원본 파일/조문 본문 해시·실패 기록 출처가 들어 있다.
+기준답변은 검토용 observation이다. 법률 해석 승인, 과거 답변 복제, 성공한 모델
+조사 route로 취급하지 않는다. claims/procedures는 비어 있고 상태는 OPEN이다.
+현재 입력과 일치하는 등록 질문은 근거 위치를 먼저 확보한 뒤 현재 사실관계로
+SELECT/ASSESS를 수행한다. 추가 근거가 필요하면 기존 fulltext로 복귀한다.
+모델이 task를 요약해도 원래 입력 질문으로 찾으며 현재 facts는 그대로 판단한다.
+CM-016에는 원래 행사 시점 질문과 사진을 정규화한 아래 입력을 연결했다.
+  벤처기업의 주식매수선택권은 언제부터 행사할 수 있나요?
+이 입력의 직접 진입 원문은 벤처기업법 16조의5, 시행령 11조의4,
+준용 연결 16조의3·16조의4다. 세금 감면 질문 전체를 같은 경로로 묶지 않는다.
+다른 표현 전체의 의미 일반화는 검증하지 않았다.
+
+2. 적용 조건과 권한
+앞서 발송한 GENOS_CORE_EVIDENCE_SHORTCUT_20261007_R1이 적용된 9개와 화면표시 R2 적용18개, 총27개 알려진
+CODE_MANIFEST inventory만 허용한다. 선행 R1은 DB 로그 롤백 R3를 요구한다.
+이번 코드는 4개 Python 모듈, 30개 engine manifest, PIPELINE, CODE_MANIFEST
+총36파일을 변경한다. CODE_MANIFEST로 확인되지 않은 현장 수정은 중단·보존한다.
+등록은 지정한 user_id/team_id의 PRIVATE scope다. 실제 요청과 같은 사용자·팀,
+문서 권한이어야 찾는다. 이 사용자·팀 식별자는 플랫폼 인증을 대신하지 않는다.
+CM 질문과 기준답변은 외부 모델 전송 승인으로 취급하지 않으며 외부 모델 실행에는
+이 등록 route를 제공하지 않는다. GENOS 내부 모델에서 현재 원문을 다시 판단한다.
+현장 원본 파일 해시, 조문 본문 해시가 다르거나 문서가 없으면 전체 등록을 중단한다.
+코드·데이터 해시를 임의로 바꿔 통과시키지 않는다.
+
+3. 코드 반영 — 기존 ~/DEV checkout
+RUN.txt는 코드 패치와 데이터가 들어 있는 독립 실행 파일이다. ZIP 해제 없이 쓴다.
+ZIP을 ~/DEV에 그대로 덮어 풀지 않는다. 첫 명령부터 TRANSFER에 로그가 남는다.
+현장 명령은 python3이며 실제 executable/version을 로그에 남긴다.
+
+첨부 파일이 있는 폴더에서:
+  sha256sum -c SHA256SUMS.txt
+  export GENOS_DEV_ROOT="$HOME/DEV"
+  bash GENOS_CM_SHORTCUT_DATA_20261007_R4_RUN.txt check
+  bash GENOS_CM_SHORTCUT_DATA_20261007_R4_RUN.txt apply
+  bash GENOS_CM_SHORTCUT_DATA_20261007_R4_RUN.txt verify
+
+apply가 출력한 BACKUP 경로를 보존한다. 같은 apply 재실행은 현재 해시 확인 후
+ALREADY_APPLIED로 끝난다. 기존 코드와 SQLite/NFS 원문을 보존한다.
+
+사용자가 현장 실제 값으로 채울 변수:
+  GENOS_GENERATION = 현재 서빙 리비전이 선택한 generation의 절대경로
+  CM_CODE_BACKUP = 위 apply가 출력한 BACKUP 절대경로
+  CM_RUNTIME_DIR = 현재 서비스의 GENOS_RUNTIME_DIR 절대경로
+  CM_PRINCIPAL_FILE = 신뢰된 운영자가 확인한 TARGET_PRINCIPAL.json 절대경로
+  CM_RECEIPT_FILE = 사용자·팀마다 별도로 보존할 CM 등록 receipt 절대경로
+GENOS_STATE_DIR이 있다면 서비스와 동일한 값을 유지한다. 별도 state가 없다면
+runtime/case-memory의 기존 SHORTCUT_CURRENT 선택을 그대로 따른다.
+다른 runtime/state를 임의로 만들어 등록하면 서빙에서 읽지 않는다.
+
+4. 동일 checkout의 배포 게이트
+~/DEV의 변경 목록을 검토해 위36파일만 commit한다. unrelated 변경을 섞지 않는다.
+  git diff --check
+  git status --short
+  bash GENOS_CM_SHORTCUT_DATA_20261007_R4_RUN.txt gate "$CM_CODE_BACKUP" --generation "$GENOS_GENERATION"
+gate는 commit된 동일 checkout의 모든 코드와 APPLIED_CODE.zip을 대조하고,
+선택 generation의 구조/서빙 자산을 검증한다. 이후 코드·pin 변경 시 새 commit과
+gate가 필요하다. 통과 commit을 push하고 새 코드서빙 리비전이 같은 commit 및
+generation을 선택하는지 현장에서 확인한다. 리비전 ID는 이 로컬 세션에서 미확인이다.
+기존 워크플로우 Python 단계는 변경하지 않는다.
+
+5. 데이터 등록과 재실행
+TARGET_PRINCIPAL.json은 실제 workflow 요청의 확인된 user_id/team_id와 현재
+허용 document_ids를 사용한다. authenticated는 실제 인증된 운영 대상만 true다.
+로컬 LOCAL_PRINCIPAL.json의 jin/CM을 현장 값으로 복사하지 않는다.
+예시 구조(꺾쇠 값은 현장 실제 값으로 바꿔야 한다):
+  {"user_id":"<실제 요청 사용자>","team_id":"<실제 요청 팀>",
+   "authenticated":true,"document_ids":["<현재 허용 문서 ID>"]}
+모든 CM 근거21문서가 현재 권한에 포함돼 있어야 전부 등록된다.
+자료 등록 receipt는 코드 backup receipt와 별도 파일이다.
+
+  bash GENOS_CM_SHORTCUT_DATA_20261007_R4_RUN.txt data-check --generation "$GENOS_GENERATION" --runtime "$CM_RUNTIME_DIR" --principal "$CM_PRINCIPAL_FILE" --receipt "$CM_RECEIPT_FILE"
+  bash GENOS_CM_SHORTCUT_DATA_20261007_R4_RUN.txt data-import --generation "$GENOS_GENERATION" --runtime "$CM_RUNTIME_DIR" --principal "$CM_PRINCIPAL_FILE" --receipt "$CM_RECEIPT_FILE"
+  bash GENOS_CM_SHORTCUT_DATA_20261007_R4_RUN.txt data-verify --generation "$GENOS_GENERATION" --runtime "$CM_RUNTIME_DIR" --principal "$CM_PRINCIPAL_FILE" --receipt "$CM_RECEIPT_FILE"
+
+data-check는 현재 source/navigation/fulltext 해시와 모든 근거의 버전·본문·권한을
+검사한다. data-import는 기존 lawrag.pipeline.unified_memory 등록 모듈을 현장
+checkout에서 호출한다. GENOS 코드 묶음에 없는 로컬 CLI 파일을 요구하지 않는다.
+51건은 하나의 SQL transaction으로 추가하고 같은 권한의 legal_wiki projection을
+생성한다. 재실행은 같은 import receipt를 확인하며 중복 등록하지 않는다.
+정본은 기존 sw_unit/sw_knowledge/sw_member/sw_dependency와 sw_import다.
+legal_wiki CURRENT/index 파일은 이 정본의 projection이다.
+
+6. 실제 사용 확인
+현장 워크플로우 테스트 화면에서 등록한 동일 사용자·팀으로 CM-016 입력을 실행한다.
+CORE_EVIDENCE_ROUTE_USED, 현재 확보한 원문, SELECT/ASSESS, 답변과 예외 확인
+상태를 기록한다. 코드서빙 직접 테스트 UI/API는 요구하지 않는다.
+상태는 코드 적용, commit/gate, push, 리비전 배포, 데이터 등록, 실제 질문 검증을
+각각 구분한다. data-verify PASS만으로 내부 모델 답변 품질 성공을 보고하지 않는다.
+
+7. 롤백
+먼저 이 사용자·팀 데이터만 retire한다. 기존/새 원문과 등록·실패 이력은 삭제하지 않는다.
+  bash GENOS_CM_SHORTCUT_DATA_20261007_R4_RUN.txt data-retire --runtime "$CM_RUNTIME_DIR" --principal "$CM_PRINCIPAL_FILE" --receipt "$CM_RECEIPT_FILE"
+retire 후 같은 data-import로 자동 재활성화하지 않는다. 새 수정 자료가 필요하면
+새 package/receipt로 처리한다. 이후 코드 복귀가 필요할 때:
+  bash GENOS_CM_SHORTCUT_DATA_20261007_R4_RUN.txt undo "$CM_CODE_BACKUP"
+현재 파일 또는 백업 해시가 달라지면 undo도 중단한다. 원래 commit/리비전과 검증한
+generation으로 별도 재배포하고 워크플로우 화면에서 확인한다.
+
+8. 로컬과 현장 상태
+로컬 등록 데이터는 cm51-curated-20261007-r2, owner jin/team CM이다.
+위키 활성51건, 근거98개, 이전 등록51건은 RETIRED로 보존했다.
+로컬 MAIN session-runtime-v6-20261007-r1 / pointer generation45는 변경하지 않았다.
+현재 MAIN45는 새 curated 소비 코드를 포함하지 않는다. 작업 코드/GENOS 인계본의
+소비 경로 검증과 실제 MAIN 활성화를 같은 것으로 보고하지 않는다.
+이 자료의 CM 질문은 등록 후 알려진 training/in-sample 사례이며 unseen 평가로
+세지 않는다. 이전 완료 실험의 기준·결과는 바꾸지 않았다.
+망분리 GENOS에는 메일 첨부를 현장에서 반입해야 한다. 외부에서 직접 쓰거나
+배포할 수 없다. 실제 GENOS 적용·push·리비전·질문 성공은 현장 확인 전까지 미확인이다.

@@ -1,0 +1,94 @@
+GENOS 최종 답변 토큰 스트리밍 R2 / 2026-10-13
+
+1. 적용 대상과 변경
+기존 RAG 패치 R1·R2·R3까지 적용된 ~/DEV에 이어 적용합니다.
+최종 답변을 ‘핵심 답변 → 질문별 소제목 → 대상·조건·절차·예외 설명’으로 작성합니다.
+확인한 판단과 원문을 최종 작성기에 전달하며, 같은 내용을 조건/의무/마무리에 반복하지 않도록 합니다.
+최종 답변 작성 중 내부 모델의 텍스트 delta가 도착할 때마다 기존 SSE로 즉시 전달합니다.
+문장·문단 완료를 기다리지 않습니다. 한 delta에 여러 토큰이 포함될 수 있습니다.
+각 문단의 claim_ids를 먼저 확인하며 JSON 필드와 근거 ID 자체는 화면에 보내지 않습니다.
+최종 작성 호출이 1개 추가됩니다. 기존처럼 전체 본문이 완성될 때까지 기다린 뒤 나누는 방식과 다릅니다.
+문단 구조·근거 연결 검사는 의미상 정확성의 보증이 아니며 현장 모델 품질은 별도 확인합니다.
+
+GENOS_RAG_NARRATIVE_STREAM_20261013_R2.zip
+GENOS_RAG_NARRATIVE_STREAM_20261013_R2_RUN.txt (독립 실행 가능)
+알려진 R3 inventory 330종을 확인하고 9개 구현/설정 파일과 엔진 연결 해시를 적용합니다.
+내부 모델·전송·CM·캐시·서비스 예산·선택 generation은 보존합니다. 원문 재구축은 없습니다.
+기존 워크플로우 편집기 R4와 별도 SSE 서버가 사용 중이면 편집기 교체는 필요하지 않습니다.
+알 수 없는 코드 바이트는 덮어쓰지 않고 중단합니다.
+
+2. 기존 ~/DEV에 적용
+RUN.txt를 ~/DEV/TRANSFER에 올린 후 실행합니다.
+
+bash ~/DEV/TRANSFER/GENOS_RAG_NARRATIVE_STREAM_20261013_R2_RUN.txt
+
+기본 동작은 사전 해시 검사 → 백업 → 적용 → 모든 프로필 연결 검증입니다.
+첫 명령부터 NARRATIVE_RAG_LOG에 로그와 종료 상태를 남기고 python3 경로·버전을 기록합니다.
+기존 DEV가 다른 위치면 GENOS_DEV_ROOT에 지정합니다. 기존 checkout에 직접 적용합니다.
+현장 python3 폴더를 지정하려면 GENOS_PYTHON_DIR을 사용합니다.
+ZIP만 반입했다면:
+
+python3 -m zipfile -e ~/DEV/TRANSFER/GENOS_RAG_NARRATIVE_STREAM_20261013_R2.zip ~/DEV/TRANSFER/rag-narrative-stream-delivery
+cd ~/DEV/TRANSFER/rag-narrative-stream-delivery
+sha256sum -c PACKAGE_SHA256SUMS.txt
+bash GENOS_RAG_NARRATIVE_STREAM_20261013_R2_RUN.txt
+
+이후 RUN 경로는 실제 반입/추출 위치에 맞춥니다.
+사전 검사 및 재검증:
+bash ~/DEV/TRANSFER/GENOS_RAG_NARRATIVE_STREAM_20261013_R2_RUN.txt check
+bash ~/DEV/TRANSFER/GENOS_RAG_NARRATIVE_STREAM_20261013_R2_RUN.txt verify
+
+BACKUP=... / APPLIED_CODE_ZIP=... / CODE_ZIP_SHA256=... 출력을 보존합니다.
+재실행은 ALREADY_APPLIED로 검증합니다. 적용 성공은 배포 성공과 별도입니다.
+
+3. 실제 push 대상 checkout에서 commit → gate → push
+아래 두 값에 실제 BACKUP 경로와 현재 선택 generation 절대경로를 입력합니다.
+
+export TASK_BACKUP='/이번_apply가_출력한_BACKUP_절대경로'
+export GENOS_GENERATION='/현재_서비스가_선택한_generation_절대경로'
+cd ~/DEV
+python3 - "$TASK_BACKUP/receipt.json" <<'COMMIT_PY'
+import json,subprocess,sys
+receipt=json.load(open(sys.argv[1],encoding='utf-8'))
+paths=[row['path'] for row in receipt['files']]
+subprocess.run(['git','diff','--check','--',*paths],check=True)
+subprocess.run(['git','diff','--stat','--',*paths],check=True)
+subprocess.run(['git','add','-f','--',*paths],check=True)
+subprocess.run(['git','commit','--only','-m','Add grounded final explanation and token streaming','--',*paths],check=True)
+COMMIT_PY
+bash ~/DEV/TRANSFER/GENOS_RAG_NARRATIVE_STREAM_20261013_R2_RUN.txt gate "$TASK_BACKUP" --generation "$GENOS_GENERATION" && git rev-parse HEAD && git push
+
+이전 패치도 committed 상태여야 합니다. gate는 현재 DEV와 APPLIED_CODE.zip의 동일 코드,
+선택 generation의 E2E/verify_assets를 검사합니다. 실패하면 다음 단계로 진행하지 않습니다.
+통과 후 코드를 수정하면 다시 commit/gate합니다. push한 동일 commit과 기존 generation으로
+새 코드서빙 리비전을 배포하고 기존 별도 SSE 서버도 같은 코드로 재시작합니다.
+코드 ZIP 적용·push·코드서빙 배포·SSE 서버 재시작은 각각 별도입니다.
+
+4. 워크플로우 테스트 화면에서 확인
+직접 코드서빙 테스트 UI/API 대신 기존 워크플로우 테스트 화면에서 warmup과 질문을 실행합니다.
+접이식 진행 카드 이후 **핵심 답변**과 후속 설명이 문장이 끝나기 전부터 텍스트가 도착하는 대로 나타나는지 확인합니다.
+원문 근거·그래프·판단 패널도 확인합니다. 소제목/목록의 실제 화면 렌더는 현장 확인 대상입니다.
+생성 중 중단 시 같은 요청에 다른 답을 이어붙이는 재시도는 하지 않습니다. 실패 기록을 보존합니다.
+최종 본문과 누적 전송한 텍스트의 일치, 완료 end, 오류 시 실패 표시를 확인합니다.
+실제 commit / 코드서빙 revision / generation 절대경로·manifest SHA / request_id를 남깁니다.
+기존 R4 편집기가 아니면 임의로 교체하지 말고 사용 중인 편집기와 SSE 연결 설정을 확인합니다.
+
+5. 실패·재개·원복
+로그와 BACKUP을 보존합니다. 부분 적용도 알려진 이전/새 해시에 한해 복구합니다.
+
+bash ~/DEV/TRANSFER/GENOS_RAG_NARRATIVE_STREAM_20261013_R2_RUN.txt undo "$TASK_BACKUP"
+
+이번 패치 이전 R3의 짧은 구조형 답변으로 돌아갑니다. 뒤에 수정한 코드는 덮어쓰지 않습니다.
+이미 배포했다면 원복 commit/gate/push와 이전 검증 리비전 복귀도 별도로 수행합니다.
+원문 generation/DB/캐시/이전 로그·백업은 삭제하지 않습니다.
+
+6. 검증 상태
+VALIDATION_SUMMARY.txt / VALIDATION.json과 공개 답변 실험 ADR0769 및 전송 경계 검증 ADR0770의 결과를 참고합니다.
+외부 공개 모델 결과, 로컬 모의 내부 스트리밍, 실제 GENOS 화면/내부 모델 결과는 구분합니다.
+GENOS 실제 반입·push·리비전 배포·워크플로우 화면 성공은 아직 미확인입니다.
+
+7. Shortcut AD 관리자 모드
+[AD모드 시작] → 숏컷 보여줘 → 1번 보여줘 → [AD모드 종료]
+조회·수정 명령은 내부 모델 설정이 필요합니다. 로컬에서는 목록/상세/편집/중복 요청/불변 필드 보호를 확인했습니다.
+실제 GENOS 내부 모델의 명령 해석과 화면 결과는 워크플로우에서 확인합니다.
+이전 narrative R1은 미발송 버전이며 선행 적용하지 않습니다. 기존 focused R3 다음 이 R2를 바로 적용합니다.

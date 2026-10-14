@@ -1,0 +1,106 @@
+--- working-before/transport.py
++++ working-after/transport.py
+@@ -144,30 +144,35 @@
+     async def _stream_request(self, body, ticket, on_content):
+         """One HTTP send; reconstruct the canonical response and retain SSE events."""
+         seconds = ticket['remaining_seconds']
+-        events, content, reasoning, arguments = [], [], [], []
++        from .model_stream import ModelEventStream
++        stream = ModelEventStream()
++        events = stream.events
++        content, reasoning, arguments = [], [], []
+         actual_model = None
+         usage = None
+         finish = None
+         call_id = call_name = None
+-        completed = False
+         pending_deltas = []
+-        digest = hashlib.sha256()
+-        size = 0
++        http_status = None
++        content_type = None
+         fields = {'attempt_id': ticket.get('attempt_id'), 'model': self.binding['model'],
+                   'operation': '/chat/completions', 'stream_requested': True,
+                   'transport_backend': 'urllib', 'transport_revision': TRANSPORT_REVISION}
+         started = time.perf_counter()
+         obs.event(log, 'model_http.started', **fields)
+         def partial():
+-            return {'status_code': None, 'body_json': None, 'stream_events': list(events),
+-                    'body_sha256': digest.hexdigest(), 'response_bytes': size,
+-                    'stream_complete': False}
++            return {'status_code': http_status, 'body_json': None, 'stream_events': list(events),
++                    'body_sha256': stream.digest.hexdigest(), 'response_bytes': stream.size,
++                    'stream_complete': False, 'content_type': content_type,
++                    'stream_diagnostics': stream.diagnostics()}
+         def execute(deadline):
+-            nonlocal actual_model, usage, finish, call_id, call_name, completed, size
++            nonlocal actual_model, usage, finish, call_id, call_name, http_status, content_type
+             limits = Timeout(seconds, connect=min(self.target.connect_timeout, seconds))
+             with open_response('POST', self.target.url('/chat/completions'),
+                                headers=self.target.headers, body=body,
+                                timeout=limits, deadline=deadline) as response:
++                http_status = response.status_code
++                content_type = response.headers.get('content-type', '').split(';', 1)[0].strip().lower()
+                 if response.status_code >= 300:
+                     raw = response.read()
+                     try: data = json.loads(raw)
+@@ -177,30 +182,14 @@
+                     raise TransportError('upstream HTTP error', retryable=response.status_code in RETRY_STATUS, response=envelope)
+                 # A gateway may buffer even when stream=true. Consume that same
+                 # response without retransmitting or claiming incremental delivery.
+-                if 'application/json' in response.headers.get('content-type', ''):
++                if content_type == 'application/json':
+                     raw = response.read()
+                     data = json.loads(raw)
+                     return {'status_code': response.status_code, 'retry_after': response.headers.get('retry-after'), 'body_json': data,
+                             'body_sha256': hashlib.sha256(raw).hexdigest(), 'response_bytes': len(raw)}
+-                frame = []
+-                for line in response.iter_lines():
+-                    size += len(line.encode()) + 1
+-                    digest.update((line+'\n').encode())
+-                    if size > 16 * 1024 * 1024:
+-                        raise TransportError('model stream exceeds response limit', unknown=True)
+-                    if line.startswith('data:'):
+-                        frame.append(line[5:].lstrip())
+-                        continue
+-                    if line or not frame:
+-                        continue
+-                    raw_event = '\n'.join(frame); frame = []
+-                    if raw_event == '[DONE]':
+-                        completed = True
+-                        break
+-                    event = json.loads(raw_event)
+-                    if not isinstance(event, dict) or event.get('error'):
+-                        raise TransportError('model stream returned an error', unknown=True)
+-                    events.append(event)
++                if content_type != 'text/event-stream':
++                    raise TransportError('unexpected model stream content type', unknown=True)
++                for event in stream.iter_events(response.iter_lines()):
+                     if event.get('model'):
+                         actual_model = event['model']
+                         if actual_model != self.binding['model']:
+@@ -241,8 +230,7 @@
+                                 else: pending_deltas.append(text)
+                         if choice.get('finish_reason') is not None:
+                             finish = choice['finish_reason']
+-                if not completed or finish is None:
+-                    raise TransportError('model stream ended before completion', unknown=True)
++                stream.require_complete()
+                 message = {'role': 'assistant', 'content': ''.join(content)}
+                 if reasoning:
+                     message['reasoning_content'] = ''.join(reasoning)
+@@ -253,10 +241,11 @@
+                         'choices': [{'index': 0, 'message': message, 'finish_reason': finish}]}
+                 deadline.check()
+                 obs.event(log, 'model_http.finished', **fields,
+-                          duration_ms=int((time.perf_counter()-started)*1000), response_bytes=size)
++                          duration_ms=int((time.perf_counter()-started)*1000), response_bytes=stream.size, **stream.diagnostics())
+                 return {'status_code': response.status_code, 'retry_after': response.headers.get('retry-after'), 'body_json': data,
+-                        'body_sha256': digest.hexdigest(), 'response_bytes': size,
+-                        'stream_events': events}
++                        'body_sha256': stream.digest.hexdigest(), 'response_bytes': stream.size,
++                        'stream_events': events, 'stream_complete': True,
++                        'content_type': content_type, 'stream_diagnostics': stream.diagnostics()}
+ 
+         try:
+             return run_with_deadline(seconds, execute)

@@ -1,0 +1,71 @@
+{
+  "status": "PASS",
+  "environment": "WSL local, synthetic fulltext/source generation, mocked model discovery",
+  "python": "3.14.4",
+  "counts": {
+    "installation_states": 3,
+    "r2_article_menu_typeerror_reproductions": 3,
+    "r3_article_menu_pass": 3,
+    "service_boot_200_before_and_after": 6,
+    "same_committed_checkout_mock_generation_gates": 3,
+    "commands": 55,
+    "expected_tamper_rejections": 6,
+    "installed_contracts": 70,
+    "known_r2_inventories": 330,
+    "unit_fulltext_variants": 2,
+    "real_network_calls": 0,
+    "real_model_inferences": 0
+  },
+  "commands": [
+    {
+      "path": "TEST_query_latency_20261007_r3.json.gz",
+      "sha256": "249fa1906562fa1e83b5db7d712660bf51017eb738608a28128b1f7d45ff4275",
+      "commands": 18,
+      "expected_r2_typeerror": 1,
+      "expected_tamper_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4.json.gz",
+      "sha256": "92dd34b89615de80ef7972f6131c4d05780f13fe98e6ca4cb230f94baab108ec",
+      "commands": 18,
+      "expected_r2_typeerror": 1,
+      "expected_tamper_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_display.json.gz",
+      "sha256": "0299b886159a282310745d3197cdd2b962662a19f39833a4665e136faf2a31e0",
+      "commands": 19,
+      "expected_r2_typeerror": 1,
+      "expected_tamper_rejections": 2
+    }
+  ],
+  "installed_contracts": {
+    "CONTRACTS_query_latency_20261007_r3.xml": 31,
+    "CONTRACTS_query_latency_20261007_r4.xml": 39
+  },
+  "run_txt_sha256": "d0dbeb665c4bd597c92005ae34d3dcd61e3e4d4da7996ea2f8ef74c2d9fbf851",
+  "test_sources": {
+    "test_installed_contracts.py": "8f45bb91126e5732710b3c3be328ba6d1fc09a05f0a559428d0985fdd624b719",
+    "test_delivery.py": "e6606cff37eb107a8ad4fbf79ae9fff6ef64cb89cdd8a239a0735a6f1282fc21"
+  },
+  "test_results": {
+    "CONTRACTS_query_latency_20261007_r3.xml": "3c22145fa838208b2dca551899166b795be71695fc3d3595a86f9198b90dc988",
+    "INSTALLED_TESTS.xml": "dac2a43d543e4e8559ff0ed22e8e5f711dfb64a8957747068908f8f775a177b6",
+    "CONTRACTS_query_latency_20261007_r4.xml": "18a324c3ce413359c67c809f62029329381e5141afc6c8ff63962f43ac90186e",
+    "TESTS.xml": "dc03cc2ff963df74e951b1710c39306ba46b3b488a09877ba9488f38bb62bee7"
+  },
+  "inventory_bindings_sha256": "7b37402752d1cfbf17c439a101777dbb180c934635fa6aca7052d4fea2f454a0",
+  "preserved": [
+    "unmodified methods within each installed unit_fulltext variant",
+    "all other implementation files",
+    "source generation bytes",
+    "local MAIN53 pointer",
+    "R1/R2/CM/transport/budget/workflow bytes"
+  ],
+  "limitations": [
+    "Synthetic contract tests are not answer-quality or internal-model tests.",
+    "All 330 inventories checked statically; only the three listed installation states executed end to end.",
+    "Scoped queries intentionally bypass unrestricted result projections, as MAIN53 does.",
+    "GENOS field commit, revision and generation hashes unknown; workflow not executed."
+  ]
+}

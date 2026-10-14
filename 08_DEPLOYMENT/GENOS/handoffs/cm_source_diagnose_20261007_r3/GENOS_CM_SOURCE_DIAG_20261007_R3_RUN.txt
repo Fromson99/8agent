@@ -1,0 +1,229 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+task_transfer="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+task_reports="$task_transfer/cm-source-diag-r3"
+mkdir -p -- "$task_reports"
+task_output="$(mktemp -d "$task_reports/$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX")"
+task_log="$task_output/DIAGNOSIS.log"
+exec > >(tee -a "$task_log") 2>&1
+trap 'task_exit=$?; printf "EXIT=%s LOG=%s\n" "$task_exit" "$task_log"' EXIT
+python3 - "$task_transfer" "$task_output" <<'CM_SOURCE_DIAG_PY'
+import sys
+sys.argv.append('{"schema_version":"document-identity-inventory-v1","baseline":"local MAIN-selected original source; no internal field-data assumption","active_release_id":"session-runtime-v6-20261007-r1","active_pointer_generation":45,"active_pointer_sha256":"ed89ee45580e1e95108c9147bddc8be5e00396b741c7a51fc4c3cd3db6d9338c","release_manifest_sha256":"b126d8e8437c0524138407a39c5e74ec09a17f355bbff76b278a201f507ca70b","generation_path":"01_DATA/TERM_RELEASES/local-genos-parity-20261006-r1/generation","generation_id":"term-source-3b667f54bb11d9477888","generation_manifest_sha256":"b07c178dbb6dc26d0ea5bd16a789fd19dfd2752948117a78a559eb3c2247fd35","store_sha256":"cd64bf1301bc68d58741c332748084691b9f57136f827bb782f71b68068c66a2","documents":[{"document_id":"0c4a262df99259b7","name":"CMA 업무관련 모범규준","source_artifact_sha256":"f11e472da7df7019f646eccd74b77ec0acff17e86c507d878fc671d449987a0e"},{"document_id":"65731d03bd65c441","name":"ESG채권 인증평가 가이드라인","source_artifact_sha256":"3b5b16f3160c5017eaf7fac617144b40530d1daad43956b75fe57f322f5517bf"},{"document_id":"fe7f5b9d7fe85af9","name":"IR·조사분석 업무처리강령","source_artifact_sha256":"ac29cc2006c4282e029013c4f13164e065d5b8e9d58c0d97a521a10b647ac08d"},{"document_id":"c35038563600fe33","name":"개방형 집합투자기구의 유동성 위기상황분석 실시 기준","source_artifact_sha256":"44ea46804e2a7be32ad3f8fd324289658e5a93db36889ab232aae394c41dd72a"},{"document_id":"ab58f0d6419c6868","name":"개인정보 보호법","source_artifact_sha256":"50c1aec1a0b9795ff33fc7bce4218e00bfaebac23e24eb9da19981cadf154adb"},{"document_id":"491860cf4b5ef92d","name":"개인정보 보호법 시행령","source_artifact_sha256":"d1beafd6f89f9201326ece4197bda1d06bd1def3927109b501cc6d19c2fdfd66"},{"document_id":"30e6441b40928416","name":"고난도 금융투자상품 제조 및 판매에 관한 표준영업행위준칙","source_artifact_sha256":"de783179d3e6f3f261d2285b7f2d122b07f5c688e6abab332b1b439f1b68fd03"},{"document_id":"c7f964eb82ebcfac","name":"공공기관의 운영에 관한 법률","source_artifact_sha256":"3cfcaf4e5d19efa8e5b04bfd5a756e67f2452826f0f4b164f952064f72f14953"},{"document_id":"92e9eb7feb4548d1","name":"공공기관의 운영에 관한 법률 시행령","source_artifact_sha256":"ec6bb3ff3e79e09f3a0a02c9bdab68db62a6437e33ee1efd409ac98908ec6e7f"},{"document_id":"c880f601a60ef856","name":"공공기관의 정보공개에 관한 법률","source_artifact_sha256":"8e1226fb3c7262454829cf95063867ed2dcddd7be81df6e537e9f44d7d4e6593"},{"document_id":"c40d9d27f3a8ef13","name":"국가를 당사자로 하는 계약에 관한 법률","source_artifact_sha256":"5e98ade1cad75dfb3dbaa604c786fe314c05761cfb59412f7cfdcc910f71c26c"},{"document_id":"b67181bab9ed9737","name":"국세기본법","source_artifact_sha256":"e333a447c1c7d63aba79da051de00ae3e9ba763ac9c0baf41face582b1ac5ca6"},{"document_id":"861dd5901e4fc271","name":"금융거래 상대방의 대리권 등 권한 확인을 위한 지침","source_artifact_sha256":"7d825d1394735b8f2085be089d9905cacbc94e465830745e9691134292603db9"},{"document_id":"37b8384a2ae71e30","name":"금융기관의 업무위탁 등에 관한 규정","source_artifact_sha256":"00ccf6fb78a3f9ba42387a8681c931b8e5b2fbfe8046b1b6d1fa6923ebf22a17"},{"document_id":"7d04435127dcdc9d","name":"금융복합기업집단 감독규정","source_artifact_sha256":"24b94d2454ba4be08ea9ba77172be98bfeeaf366cef41c8593e74ef3f386e56b"},{"document_id":"39063945b3496156","name":"금융복합기업집단의 감독에 관한 법률","source_artifact_sha256":"6d25bad3757ef055ae9123af066218be445bddbaa40db1af0444b84d3ed1243e"},{"document_id":"9ececbd93cb135c2","name":"금융복합기업집단의 감독에 관한 법률 시행령","source_artifact_sha256":"de17f13ec9b7a9a7710747e6a826e271f5c759f480e5199d39bdc1eedc6049e0"},{"document_id":"3fa690991bbd4235","name":"금융소비자 보호에 관한 감독규정","source_artifact_sha256":"40867758ef2d8d8d8cae4b17443adf90c9c9abd60ed5992669cb48c5fa92ade8"},{"document_id":"3de4f10c4d2a08a0","name":"금융소비자 보호에 관한 법률","source_artifact_sha256":"52f70f0b49918764e5c41c671fdee3b431a52ca96a16827454a65de44946b492"},{"document_id":"c583226dc61d173a","name":"금융소비자 보호에 관한 법률 시행령","source_artifact_sha256":"a0c6f2638f2ce75f6aa05298b5fe09dcb183129cf199b013d94de5fb4b63939b"},{"document_id":"10ea3459804e700e","name":"금융지주회사법","source_artifact_sha256":"8b70be9fed1ff306638204443267c1f0a48d702bac1bab3ffe004d250309f267"},{"document_id":"3af12ca3b1d55047","name":"금융투자상품 계좌개설 및 매매를 위한 전자문서 관리 모범규준","source_artifact_sha256":"c16a0175be32459d2d8e822fa735b48a3e2fd0ebdc2aeb2822729d287e2eff75"},{"document_id":"6e247f0b1d096987","name":"금융투자상품 통일공시기준","source_artifact_sha256":"1d374c788cce7ecd523eac79a405a9a8cd61241092ead3d62d9eb7c3f132e7ba"},{"document_id":"c9b5b42627710637","name":"금융투자업규정","source_artifact_sha256":"d1722e72ab5ec1facde34323de55beac125fc9ee42bcf2bfd83b9c30525a9da8"},{"document_id":"c6d784d914932b53","name":"금융투자업규정시행세칙","source_artifact_sha256":"6127ed46c1036f852e5962e2a56eee266f3187cd57542c16a724f2ff1c46a59b"},{"document_id":"ebb11502f9a310ae","name":"금융투자회사 개인(신용)정보보호 가이드라인","source_artifact_sha256":"cfeed038bc921a085c16d32ac05674e9c2a09b9498a28800a9ccadd13ed1c118"},{"document_id":"1356beb3fa4a0002","name":"금융투자회사 채용절차 모범규준","source_artifact_sha256":"93f8a4ef13d8e33932ddb1b70251b27b88413756352433b860cf511c60c93014"},{"document_id":"fec886821bf597f9","name":"금융투자회사 표준내부통제기준","source_artifact_sha256":"9abdc89a672dc18159d686e7a755b2cc3aa8ef6021d713c7579ef413bad516a8"},{"document_id":"ec01068155ea4c46","name":"금융투자회사 해피콜 가이드라인","source_artifact_sha256":"a659db03d62243652c4bb92d910e74f1eeb4153f57c354c257909f573aceafdc"},{"document_id":"a8f1523282aac4bb","name":"금융투자회사의 금융사고 방지를 위한 모범규준","source_artifact_sha256":"b5c1ac3ef9a450e70b00c5c43386539331fbe2da222b675031a0cf1fa54b2a80"},{"document_id":"7c08e5735b630818","name":"금융투자회사의 금융소비자보호 표준내부통제기준","source_artifact_sha256":"53da4fd5bc4edb563cb5dbcd58a24d6dc7963ce404081871cb0f4e190aaf5268"},{"document_id":"b3073adcb114195c","name":"금융투자회사의 대출금리 산정 모범규준","source_artifact_sha256":"a1971154274b15ed4bba59d46b7cf179552c3478f565c11c1e6d268d8ffe29d5"},{"document_id":"5c292593a5e4e4e4","name":"금융투자회사의 리스크관리 모범규준","source_artifact_sha256":"6221e912b67ff2eb5f2d193406d4e0049941f692bec72eb4dd4894e07dafdd69"},{"document_id":"b0d8ff3732d1ab58","name":"금융투자회사의 영업 및 업무에 관한 규정","source_artifact_sha256":"2b9e37a918a8f7f0c0b8a5e0a49eaa75bc9b2cd2c32419761714b6c14a8c312c"},{"document_id":"31a877032f28d6f6","name":"금융투자회사의 영업 및 업무에 관한 규정 시행세칙","source_artifact_sha256":"6603fb36439f34c9afad67f77e04596e6bb18ace05d4ee3350adc0c74fb9d05f"},{"document_id":"62dbe44a71437e81","name":"금융투자회사의 영업행위 표준윤리준칙","source_artifact_sha256":"26032fe91cff144b47d20cc6b17df773148ceae16de5dc0f515e7d63533bf397"},{"document_id":"250b67d8ec2af11f","name":"금융투자회사의 증권 대차 및 공매도 업무처리 모범규준","source_artifact_sha256":"b4ad8e005e44c544fcaa866385feb5af742ed813e815524247cfdb71e2f8c90a"},{"document_id":"89789427b5b7899a","name":"금융투자회사의 컴플라이언스 매뉴얼 Ⅲ편(자산운용)","source_artifact_sha256":"f29bab2f3af16827e7c756ef40d03fe02f4226b8dfd29285f9a08e7b92069e2e"},{"document_id":"5a4df93bbbb084a8","name":"금융투자회사의 컴플라이언스 매뉴얼 공통·증권·선물편","source_artifact_sha256":"26ebd6a8adfdb7fcc7ae59620795cdca1c09837669b426fe6e2463976496d94d"},{"document_id":"50225cf96b1f6fab","name":"금융투자회사의 투자자예탁금 이용료율 산정 모범규준","source_artifact_sha256":"6be397137f73142f5e483410f3c25353997d388d603b3efbaab991ac97ed32bb"},{"document_id":"2422adf0612b5ab6","name":"금융투자회사의 표준윤리준칙","source_artifact_sha256":"e2345266189dd8d6679f218bd624dd3fb95dc14e63688f00451c963c365206e8"},{"document_id":"65b2766ee2fd30ce","name":"금융투자회사의 혁신금융업무 등에 대한 면책특례 모범규준","source_artifact_sha256":"99fd047149a35b4e8c7f6c8cb524fd54148485b7e70c06b751cc1f2d0a79ec08"},{"document_id":"51a1477afdec9faa","name":"금융회사 지배구조 감독규정","source_artifact_sha256":"9cb624dd6aa061d7a28478968308302b1f5b89b506f18d700ca7076bfd864a98"},{"document_id":"4e56ec1d2a0144bb","name":"금융회사 지배구조 감독규정 시행세칙","source_artifact_sha256":"80c36395fcbfce9c58683d3c08a7ebe841cb865b43f928102dc7bcca3cb0270b"},{"document_id":"9ff3d75bd44e546b","name":"금융회사의 지배구조에 관한 법률","source_artifact_sha256":"bb2960adac62275db939a212640ab6190674c164a18f553bab97ab2f3a935af4"},{"document_id":"cd9ba5440538778a","name":"금융회사의 지배구조에 관한 법률 시행령","source_artifact_sha256":"7b58274f946b9a2f9895937732aef53496cc8d42ea72aa760fb45c9d8d14ae37"},{"document_id":"85fb41de5b7df3c8","name":"대체투자펀드 리스크관리 모범규준","source_artifact_sha256":"60911f994ca0244a5c5c1b5519b6785fb512ad79086d1801714eb2eabf07a353"},{"document_id":"47a3c346fc00067f","name":"대표주관업무 등 모범기준","source_artifact_sha256":"5d300e529c34f5038d839e1586bb38c8e2c5d3fa94fc2bd637c735897fa515ce"},{"document_id":"7e22804a9e127366","name":"독점규제 및 공정거래에 관한 법률","source_artifact_sha256":"1168f792ec7fc245b49cd25b35357b1d8d531ffec39fb6654a1b8472005f081a"},{"document_id":"a91e0464b4e75a8a","name":"독점규제 및 공정거래에 관한 법률 시행령","source_artifact_sha256":"7137482ff19ebcf4d647876e53855faeed02cdf80dd0339a4c99fca54ea8cf09"},{"document_id":"71382d0dd1d76f64","name":"매매거래계좌설정약관","source_artifact_sha256":"da0f64da50eb05b6d2274cdec3bbb984127ce6f317a7736264995ad61672194a"},{"document_id":"c48ac7332f552984","name":"무보증사채 수요예측 모범규준","source_artifact_sha256":"7866f499a220d837fe2afd277c636408fddac04b25e1f2bbd3807c365a4ae17d"},{"document_id":"d7fd9574d1ba0629","name":"방문판매 모범규준","source_artifact_sha256":"153baf8c8ed185cc6a891d505dee1bed06a88c069deb7fd2ecf7466433e11a95"},{"document_id":"fdadca1eadda1af8","name":"법인세법","source_artifact_sha256":"ebda5a3a50747123bfb576d4e5bb5de529eec4a8897bdd46e1f503fbab537d50"},{"document_id":"4e90552eef495259","name":"법인세법 시행규칙","source_artifact_sha256":"7546c2b593a80cb4677a3115694797fcdfae5f38c77ea32583ce861bb9e1e494"},{"document_id":"bf160bdb06cd7327","name":"법인세법 시행령","source_artifact_sha256":"8b768b6e51c20d983214ad1e9469098e0709790607d6e83d5ce9123f82b67404"},{"document_id":"963c5eda366b86c9","name":"벤처기업육성에 관한 특별법","source_artifact_sha256":"d15ff6273793ba4072383640ed012ac50796cb9aee3b9db4c6e683692f44c923"},{"document_id":"576068c943da6b3c","name":"벤처기업육성에 관한 특별법 시행규칙","source_artifact_sha256":"f711c022ff4094cd794d56e20d6bd1b751d15d76aff643673a7b8272981a061a"},{"document_id":"205b2c839757a0f0","name":"벤처기업육성에 관한 특별법 시행령","source_artifact_sha256":"6d11017967b4c57189c48f234ad6e8575206367b8393a0671046479cb16c5be7"},{"document_id":"8eebfabbaae86e53","name":"보통주권 신규상장 예비심사신청서(2022.12.12)","source_artifact_sha256":"b59cadd1136ebe94d68999da5c21890904dc0fc6cc9a6068fefb387d1aed7995"},{"document_id":"cb1a6d50da16168e","name":"부동산pf 수수료의 공정성·합리성 제고 등을 위한 모범규준","source_artifact_sha256":"3d9e81aed945aef7040aa7cbdf02f71d3f3302c0d298aa77947b5bd75279f8e1"},{"document_id":"5be652efddc49bb9","name":"부동산신탁사 영업행위 모범규준","source_artifact_sha256":"a1b26c518896557dbb428e640368aa948df60578621d34970cb1005a849cb5f4"},{"document_id":"dcfa11493b0cd688","name":"비대면 금융투자영업에 대한 가이드라인","source_artifact_sha256":"b47a6ab2ebb7614219ec5938bb4bbff5dab704dbfedb61d21755eea4caf864e2"},{"document_id":"7bbe815ff43b6635","name":"상법","source_artifact_sha256":"32d1e570c00580bda41a6c5e94f88a06e174f4a64043264426608f0199c4f7c4"},{"document_id":"92aac373f5bd944b","name":"상법 시행령","source_artifact_sha256":"09b2ed33a4f5e3bb0eec3d0ac49d263a9d7b6abf28b75aa082954a5b1f330de9"},{"document_id":"27c02e2a7e1c59cb","name":"상속세 및 증여세법","source_artifact_sha256":"1a41fc2d3d9a6926a57d1c1b9efcdfbbfd23b40ddb37d1b9be92b90fb8545004"},{"document_id":"90ca53838b85eea0","name":"상속세 및 증여세법 시행규칙","source_artifact_sha256":"a881916d87258c0002f4474ab55c03ae76df2ed04a03f184bca17baf0db3795c"},{"document_id":"0798989e52ca0254","name":"상속세 및 증여세법 시행령","source_artifact_sha256":"440f2a6612675164abdd341fbc95e2305f7d9e015a4f30c34826456940cd0179"},{"document_id":"54298b410eb34351","name":"상장예비심사신청서 서식-1 일반기업(2024.1.1 개정)","source_artifact_sha256":"675c10835f2ebea6814942efedf215c9e2dddd9b7ba81a64c72bbd805641ee98"},{"document_id":"605a97cacd6ffc6a","name":"상장예비심사신청서 서식-3 SPAC합병(2024.1.1 개정)","source_artifact_sha256":"58948ec78d40cda99ce1f7355cf346ca43c34c3a20c6e51941074617f2498610"},{"document_id":"731c71822b20dd67","name":"상장주선인의 기업실사 체크리스트 작성 가이드(사업모델기업) [별첨8]","source_artifact_sha256":"9284d5cb1a664d64d2a5840e62f2b78ebeae3ff97645ed4ddaf6651138caa394"},{"document_id":"2a2be441f1e0ee7d","name":"상장주선인의 기업실사 체크리스트 작성 가이드(이익미실현기업) [별첨6]","source_artifact_sha256":"a494d3c2c01e80aa5887a6fe06479cf82f504d48872db1fc30670c98ca969e60"},{"document_id":"3b21c6b2b78344e1","name":"상장주선인의 기업실사 체크리스트 작성 가이드(혁신기술기업) [별첨7]","source_artifact_sha256":"0b57143fec1ccb6b9490510e2bda9b2913042bfb042b83e67223fcdea777b434"},{"document_id":"1bb566ac07b23cc5","name":"상장주선인의 기업실사점검표(2024.12.31)","source_artifact_sha256":"b5b06c8d71f825c58eeab92be03fe2803e5e6ed9a8c561798eb638c76a426eb7"},{"document_id":"7c2875fa7de1718f","name":"상장회사 표준정관(2025)","source_artifact_sha256":"26b0b909cf03a8e094a2717cb31038344669949dda40a04b9ecb0c8a49cee16d"},{"document_id":"7fbf1a5cd3a17620","name":"성과보수공모집합투자기구 운영지침","source_artifact_sha256":"4e6e1fab36592b4313bd3de1f91c9707853293a3f82977a1f3f34117b96a8acb"},{"document_id":"61789e1949a9e2cd","name":"소득세법","source_artifact_sha256":"1a9fa5b5faa80ca5449b2a66c5cd91cc42a35d973056fb4bc75c4a814981b4d4"},{"document_id":"ac519ba63efb0d7d","name":"소득세법 시행규칙","source_artifact_sha256":"e1e7f478f6cfb984708cdfe9b27f29654869d0cc8d7411577f8f0da007ae1386"},{"document_id":"4fd64428c4c434b1","name":"소득세법 시행령","source_artifact_sha256":"6bb02dde10641623f5c4da4d9903026fb274fa87182a230c065a53d2fac1b5fe"},{"document_id":"813741e1a38d9436","name":"신규(합병)상장신청서(보통주권·SPAC·SPAC합병)(2026.1.6)","source_artifact_sha256":"4ad99306884db7dc5149af17fad5cc4d2f9ba69ffc90ed8b18e3414f042137ad"},{"document_id":"ea6809e5776be26e","name":"신규딜_리스크검토요청서_예시","source_artifact_sha256":"69ef87465e3d2cb301efa6529f26941b8c675ba9516d5ad77da2cbecb9e1bb3e"},{"document_id":"8aa4cc7f45e62916","name":"신상품 배타적 사용권 심의기준","source_artifact_sha256":"816a1759035baa1f2024b4653e7d920a4dbeeab6d941b6f167d41a2c78c579f7"},{"document_id":"6600250b13b874db","name":"신용정보의 이용 및 보호에 관한 법률","source_artifact_sha256":"69f16086c14d8f33bce6ef075cb12f6a0bb0ce0ec34f9d74c489f3ad80b48055"},{"document_id":"01948547c5473144","name":"신용정보의 이용 및 보호에 관한 법률 시행령","source_artifact_sha256":"e29676d76a1c627a0eae9a872e2ca2881f4fa0db8b6fd1aff2479a6fb0633271"},{"document_id":"5e5225d30d0aa041","name":"신용평가회사 표준내부통제기준","source_artifact_sha256":"3143ab08da5f1d21e4e8a60ed0ff5e59bcb478313cdf89c593ed62c6432826f7"},{"document_id":"92305ec90027676f","name":"신탁업자의 수탁 업무처리 가이드라인","source_artifact_sha256":"2f43be042e2f00a51c54a829f71048a869a3fa306dd378e762996d0f99040e56"},{"document_id":"b99221368b880480","name":"신탁형 개인종합자산관리계좌 실무지침","source_artifact_sha256":"2ed3281a2cf06711d01185ff1945df9b3a55893851aed53bb16062c99da875fe"},{"document_id":"03de2bcd93be40e3","name":"업무위탁에 따른 제3자 리스크관리 가이드라인","source_artifact_sha256":"07f8832339af7542eb65935728fba9d8aafb366b9b356e3a660f23f9438f01d1"},{"document_id":"2f3df70b32d5e651","name":"외국주권등 신규상장 예비심사신청서(2025.9.1)","source_artifact_sha256":"2871cb9e41ab660f6f7244232680ae641202c49cf68eb688e93d092453991eed"},{"document_id":"8e7cba2a7f896e2b","name":"외국환거래규정","source_artifact_sha256":"c6ed92cafcc783ea504424405a927c9fa982d14897fe9f8c55d1ec4fc139ecc3"},{"document_id":"05e52ad19d396823","name":"외국환거래법","source_artifact_sha256":"2364d80e4cf452dd38c7949f63723e475e2452da1eea10ba93c36586efc59c49"},{"document_id":"ff0af62c59ee0e28","name":"외국환거래법 시행령","source_artifact_sha256":"279fbdc6e975ff09226d94249b9a588205c3c6f6e448be8fc46ec8de19d27a46"},{"document_id":"dbf5e3f9f538d43e","name":"외부감사 및 회계 등에 관한 규정","source_artifact_sha256":"e4cc15a6c5c4a6ffcfc38dc4b809985c51769a8ac6a9ff53aa58663dba05a6cc"},{"document_id":"8db75dedfca6eacf","name":"외부감사 및 회계 등에 관한 규정 시행세칙","source_artifact_sha256":"cccbc239cb6fe1cba5865c68690d68e03ef90246d92b45643a5a15ee9ce262bd"},{"document_id":"38803e534c832e19","name":"위험관리기준시행세칙_v1_2024","source_artifact_sha256":"9f9186b41c25b1d470fe36361264f54bab880cae9217a276dd65920abe8a6b42"},{"document_id":"3bad39ac4c01eec6","name":"위험관리기준시행세칙_v2_2026","source_artifact_sha256":"40a4580795dcb7750751c2a307773d3693ad095196fbcaea40d2c71f176f27a1"},{"document_id":"d408f0452d6e1fdb","name":"유가증권시장 공시규정","source_artifact_sha256":"89fdf1ce7a119dd90d3140b6bb977c576150b6d0e422a2a75b1bceb113ff4406"},{"document_id":"c845ed687aa5bf7b","name":"유가증권시장 공시규정 시행세칙","source_artifact_sha256":"a3bc62a0330a50c002a7afca1c7ad39702373f166a353395d1cc4143e3bf207d"},{"document_id":"4a65961091da5fb7","name":"유가증권시장 상장규정","source_artifact_sha256":"574950ecc1446b228ee4e8c6825a560e5513359cfea2a3e21e72bcf13dc1e1e1"},{"document_id":"c66045625265ad5c","name":"유가증권시장 상장규정 시행세칙","source_artifact_sha256":"19c48d4ab308127139477b5d0b0d90e37e51d7c5cc31253fa86a47ae5b7f3e49"},{"document_id":"6704e2a37623533d","name":"은행업감독업무시행세칙","source_artifact_sha256":"ec0ee2f6212c9adf29f34240dabb06dd1958625a78934c52cd594491f29082d0"},{"document_id":"b68b3c1d10a60e36","name":"일반사무관리회사 표준내부통제기준","source_artifact_sha256":"cef0c75b52f9fdc1ed08250db208d3b9c2f3c886ce18e9dd4d4cf619ab464406"},{"document_id":"71a83ee41e30eeef","name":"일임형 개인종합자산관리계좌 실무지침","source_artifact_sha256":"94786e5f78262c0e362cced08a1b9dcaacfa36f60b3d91ea36e91314200601cf"},{"document_id":"1146c85cfa5a37fa","name":"자문형 랩어카운트 운영 해설서","source_artifact_sha256":"567c9525609c3233f96929a119eb2d4423451063410221b1393a23e95e8ac0cf"},{"document_id":"5be4de51a89dc664","name":"자본시장과 금융투자업에 관한 법률","source_artifact_sha256":"ad2bf6a7762d24e7522a479e32e7a6751897b3a945c969e3add7c864095070dd"},{"document_id":"e20b06b32087ace0","name":"자본시장과 금융투자업에 관한 법률 시행규칙","source_artifact_sha256":"628dd75672412fc5e8f665ff213fa08dbc6e3f5014b9fc5252eb9cdd94168fa1"},{"document_id":"2a410c9dfc65dac1","name":"자본시장과 금융투자업에 관한 법률 시행령","source_artifact_sha256":"b952ab19cf0d6518305773a4630036984f1edf5005998daaf8960cb7272fd3f4"},{"document_id":"7e990ccf0e4eb8c1","name":"자산대사 업무 가이드라인","source_artifact_sha256":"f9bb4212043e4f5bc766c4e9224e1f818b43885586fec3b5861ff34873e323e4"},{"document_id":"e83525a51df778e0","name":"자산운용사의 의결권행사 가이드라인","source_artifact_sha256":"13434b0523b38a6ecdcc2bdf856fe9dadc9fd906ac90be31d3ee67ab0a7084b3"},{"document_id":"ee591cd96f494566","name":"장외파생상품거래 한글약정서 권고안","source_artifact_sha256":"ffc69e7c48e229239242c219c6a5e058c0d3cda9f0bddeb9b7c9f26a8a39dfc1"},{"document_id":"39de604190185a10","name":"전담중개업무계약 표준서식","source_artifact_sha256":"79c63d5e3ee85596de9b2587ea67cb0c3bc320436893c0b48f4b0e4bb22cbb73"},{"document_id":"03585a977c8651b2","name":"전문평가제도 운영지침","source_artifact_sha256":"b561c6e3f17144054ec5f13f6a3687bc5a179888b35c7da19c48b436ba689d7f"},{"document_id":"342cfff1766f3631","name":"전자금융감독규정","source_artifact_sha256":"22e5475b07a50a61635a0809c9280fc33389d15129e1862bce5bdc4aad3a4b4c"},{"document_id":"ff22367818c300e4","name":"전자금융감독규정시행세칙","source_artifact_sha256":"cd90b61700e221f7e5918d82587944d1bf06dffee8d9ee639c6c667fe8992889"},{"document_id":"ad1811de444faec1","name":"정비사업 업무처리 가이드라인","source_artifact_sha256":"62726a1feaaa6add7892899aedebe27c9f0992095553bc21d8b508d45d9d8906"},{"document_id":"e1734bc13ef83238","name":"제3자 IT리스크관리 가이드라인","source_artifact_sha256":"581e89af56216435bebf87036fde56c7a4dc25956568d09836bacbc75e882768"},{"document_id":"10a868b5cabc71e9","name":"조사분석자료 공표 전 사전 제공 관련 가이드라인","source_artifact_sha256":"4ac95adf956f91e296f0e9aba3bc7158346eb8c2fc7e6c79dba79d636f4d9b22"},{"document_id":"c52efc9a54184a5d","name":"조사분석자료 내부검수 가이드라인","source_artifact_sha256":"b4aaed10e6cece00589c101ad533169890fb259aece2e7ade9d002cbf1680819"},{"document_id":"b13caba2437b563e","name":"조세특례제한법","source_artifact_sha256":"e7953ad039f4c43a9720ca0345d8150dfa7e7875523e535abe6027b49192cd2e"},{"document_id":"51b4c50081ea6bb3","name":"조세특례제한법 시행규칙","source_artifact_sha256":"69c800cae91aff0d9f9930a2a6dee48cbe1a4d72c4e28d7d01b4df90d18e94ac"},{"document_id":"1181d85bd5cb206b","name":"조세특례제한법 시행령","source_artifact_sha256":"d6ef10eb51b3e9d33fdbe04b474463d17939f9ccc38be4da6dd8b1b4615cf604"},{"document_id":"590e7165a098da5f","name":"주식·사채 등의 전자등록에 관한 법률","source_artifact_sha256":"53cba10565d06601017da09c92c5db29e5b0d0cbe8d5a9716f9e2bea990cd8f0"},{"document_id":"62fadebbaa089316","name":"주식·사채 등의 전자등록에 관한 법률 시행령","source_artifact_sha256":"ebbf11ecd1d65b1d4ec00b67e1e83175d6c4fff689b3d5ad93b06585f1394fd7"},{"document_id":"92089b5873b2ccc0","name":"주식회사 등의 외부감사에 관한 법률","source_artifact_sha256":"3886abf641fc06c255ef0e3959efaae02fda2677b0e350ca2ce15bd3794fb328"},{"document_id":"2272b8c7fb9c49bb","name":"주식회사 등의 외부감사에 관한 법률 시행규칙","source_artifact_sha256":"7aaf8f5d247f828e649a99a729a9f4dcf3cc6019b65800ae66b608e8099f0ed7"},{"document_id":"e23caead133b028c","name":"주식회사 등의 외부감사에 관한 법률 시행령","source_artifact_sha256":"79ff1be0bf4dbe1130ffc4377298ced35c8e0f70efc3f2cfbef85f24040d7181"},{"document_id":"8f93eda174f02974","name":"중소기업기본법","source_artifact_sha256":"103e65c4088b30d120c4350cab26b7517f3bd7b154340977e133495003b9d7f8"},{"document_id":"527731af0a9a554c","name":"중소기업창업 지원법 시행령","source_artifact_sha256":"36f62fbad42669c76f5bdf9feb5a7fbc48116d22376cb64e5da02eb5d7b66dbd"},{"document_id":"7687ac5d901e9a4a","name":"증권 인수업무 등에 관한 규정","source_artifact_sha256":"d3d7d891b9928f6c52fd615059077b8cb873b04d39f841d1cbe262451ddc7300"},{"document_id":"00f033fddcef6be2","name":"증권의 발행 및 공시 등에 관한 규정","source_artifact_sha256":"d6a032a4cb2d9cc1a26eab3b8ce5e71136813ad669ca7833eb78c782f578abe3"},{"document_id":"bda6629c14183265","name":"증권의 발행 및 공시 등에 관한 규정 시행세칙","source_artifact_sha256":"6b4217c40daee8e7b72fc64370956c0b7dca0768de792beca04eb58250dcc73b"},{"document_id":"e47d174e657953f9","name":"증권형 크라우드펀딩 표준업무방법서","source_artifact_sha256":"af204b8b2efc5322e969ce99189d9cf46e903c550e7bd41f6a1e626ab5739a85"},{"document_id":"64df6ad1a2d6b259","name":"지배구조 및 보수체계 연차보고서 작성기준","source_artifact_sha256":"ae29ca16aac58682b982a1ce2ac801979169ea50e8b5a9377b6420696bd23863"},{"document_id":"5b13fad9d8b91c86","name":"집합투자기구에 편입된 비시장성 자산의 공정가액 평가에 관한 가이드라인","source_artifact_sha256":"a6677fc7122640f9f1215d66005d11772a68ba20202d4a0863bfa6ad67662da8"},{"document_id":"ef8f9b3ee9502ac4","name":"집합투자기구평가회사 표준내부통제기준","source_artifact_sha256":"4b8c16519084575cba3819d7cb4d768095adce048e4a34b98045d3ccee74a702"},{"document_id":"f387fb8aeaac93cd","name":"집합투자업자의 사전자산배분 가이드라인","source_artifact_sha256":"9b1642d1d9fd17a5dc74512d2eaef5444d015e5888d4c2095273c3b107358a91"},{"document_id":"1242b4ebb82322ec","name":"집합투자재산 회계처리 가이드라인","source_artifact_sha256":"f12e3190f3f5d0d5765f22732b7ef1bf8c2d77ec9ec4f5666ed52d97350a2467"},{"document_id":"4558d68534f24177","name":"채권평가회사 표준내부통제기준","source_artifact_sha256":"90d800204dd157622c3e99e76b1a1cac09d26a387d797100ee0a34db5b5eb242"},{"document_id":"634033e119e5b867","name":"채권형 투자일임 및 특정금전신탁 리스크 관리 지침","source_artifact_sha256":"564123106c64c1ff2ed7c1d72d351c53b8d4d623b2ce018f05bab2192d686e6c"},{"document_id":"1b6429b235dec8ce","name":"책임준공확약 PF대출 관련 업무처리 모범규준","source_artifact_sha256":"4d9481075710d61a857add7cf31f9a2def33c7755159d7b1b64a6da9b610ca22"},{"document_id":"70f5fea737f6578c","name":"책임준공확약 토지신탁 업무처리 모범규준","source_artifact_sha256":"7f53a2445d678d6db29b208e96c9158ce3b124df39498b51d0fa6ca46054c61a"},{"document_id":"4153e6431ee9909e","name":"최종호가수익률 공시를 위한 수익률 보고 관련 기준","source_artifact_sha256":"7569cba0a4385eaa6c78b46558a0066e80b40474220af9a3e1f2c5f11b092e4f"},{"document_id":"66d913843b914268","name":"코넥스시장 상장규정","source_artifact_sha256":"0123d52d2e36d8dcd1cb14cf1c46dec55309b82d41b0754eff34cb0f220393f8"},{"document_id":"7869153f82a0885e","name":"코넥스시장 상장규정 시행세칙","source_artifact_sha256":"d5885df0b31c51531ed2ead818a40ef3df9379c525a683b2c60d0c1c28526b2e"},{"document_id":"7bf675d5a6870f00","name":"코스닥시장 공시규정","source_artifact_sha256":"dbff95ed4fc22435d41711dae5cf3edd0a735d015a806e4449032594ad80fa96"},{"document_id":"ef3ee7904c8ed159","name":"코스닥시장 공시규정 시행세칙","source_artifact_sha256":"cc5268c4149cec46c53f84dc4ebcdc69e756197468a7445b1cab2d8d983da04f"},{"document_id":"3521c3aaa5a735fd","name":"코스닥시장 상장규정","source_artifact_sha256":"ce1030b85f4d2601d2fe1d5e4157ba8dedbc103c1d6c2bc8e062e0e883bc3b59"},{"document_id":"eae25aa6e8a83c58","name":"코스닥시장 상장규정 시행세칙","source_artifact_sha256":"5317efe50650870b746b4d36e23f63ddfa2ea75feab3cbeeba7b3104bcb80400"},{"document_id":"c33e4b1aa6ad4ee1","name":"투자권유대행기준 표준안","source_artifact_sha256":"fe3ae0d270b639633f7315eee1ff8b49f54dccc0cd622de44f2a6686f285cb03"},{"document_id":"a87d28a238399591","name":"투자및인수위험관리지침_2025","source_artifact_sha256":"c1660d195fa5284c03d03a8008111757fab891a4cf30390c2b467f0600418fc8"},{"document_id":"d16e9cc44054f4c6","name":"투자중개형 개인종합자산관리계좌 실무지침","source_artifact_sha256":"ca7dc3061289fc81464cc7cd55c7cf9461c84c1c599fcf559ef4ce789291e2f4"},{"document_id":"fd01a8f759066d7d","name":"특별자산펀드 업무처리 모범규준","source_artifact_sha256":"ac47c05a5cedf5ee95f3e75b811e0c3ace096cc2087d8891edcae54aadebe856"},{"document_id":"b91f50f98ee18cb1","name":"특정금전신탁 업무처리 모범규준","source_artifact_sha256":"0abcdbd20e4e78d4a220dd8367ba07b5d4ec66fb4bcdbc86da9ac077af41399f"},{"document_id":"166886cf9ae6299c","name":"파생결합증권·파생결합사채 신고서 작성 해설서","source_artifact_sha256":"1206d131061792a464960b31bc499c6f8ffc01dba8b83c76fbc41d8e8533f61e"},{"document_id":"b7b7cc2400d64a6c","name":"파생상품 위험한도 관리를 위한 업무처리기준","source_artifact_sha256":"afd8769d104d50161b3382936ee1bb867118049658b684fc96ce739eeb47732f"},{"document_id":"2c40b54d6f001e5c","name":"펀드의 증권대차거래 업무 가이드라인","source_artifact_sha256":"894af03ba9f6b2531b71e4dbd6a44aa32fbe737725fd49493e376969bf0b98c8"},{"document_id":"888c067d2dc22129","name":"표준무보증사채 사채관리계약서","source_artifact_sha256":"eaa6aba3a63df163cf7f5e2e0223680c3dae767870e5b7c5d6cebba2b68d0aca"},{"document_id":"6ea7807b69b8d9b8","name":"표준사채관리계약 면제 채권 기준","source_artifact_sha256":"c0d559f7958b9fc2017f5ad1719f234e33014f26660644dcbaf5b6ecc381fef7"},{"document_id":"8fa91d541c0abd17","name":"표준투자권유준칙","source_artifact_sha256":"3cd14093a32df6b67e22428a9cc487af47bd9a9f4359d320fa00aadd19f7f279"}]}')
+"""Read-only document identity diagnosis for a failed CM R8 package check.
+
+This reports the selected binding; it never repairs a hash, selects a replacement
+document, imports a package, commits code, or invokes a model.
+"""
+from collections import Counter, defaultdict
+import hashlib
+import json
+from pathlib import Path
+import sqlite3
+import sys
+import unicodedata
+
+VERSION = 'GENOS_CM_SOURCE_DIAG_20261007_R3'
+PACKAGE_SHA256 = 'bcf9705d67270965a937d3c79c6506078d4272d94821fd838141672655f8ef9f'
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def file_sha(path):
+    fingerprint = hashlib.sha256()
+    total = 0
+    with path.open('rb') as handle:
+        while chunk := handle.read(4*1024*1024):
+            fingerprint.update(chunk)
+            total += len(chunk)
+            if total % (64*1024*1024) == 0:
+                print('원문 DB 해시 확인: '+str(total//(1024*1024))+' MiB', flush=True)
+    return fingerprint.hexdigest()
+
+
+def signature(path):
+    s = path.stat()
+    return s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns
+
+
+def normalized_name(name):
+    # Suggestions only. Never used as an accepted document identity.
+    return ''.join(unicodedata.normalize('NFKC', name).split())
+
+
+def identities(expected, documents):
+    """Independently report names, hashes without names, and their intersection."""
+    by_name, by_hash = defaultdict(list), defaultdict(list)
+    for doc in documents:
+        by_name[doc['name']].append(doc)
+        by_hash[doc['source_artifact_sha256']].append(doc)
+    results = []
+    for item in expected:
+        name, fingerprint = item['name'], item['source_artifact_sha256']
+        names, hashes = by_name[name], by_hash[fingerprint]
+        exact = [d for d in names if d['source_artifact_sha256'] == fingerprint]
+        identity = ('HASH_NOT_FOUND' if not hashes else
+                    'HASH_AMBIGUOUS' if len(hashes) > 1 else
+                    'HASH_MATCH_SAME_NAME' if hashes[0]['name'] == name else 'HASH_MATCH_DIFFERENT_NAME')
+        strict = ('EXACT' if len(exact) == 1 else 'EXACT_AMBIGUOUS' if exact else
+                  'ARTIFACT_HASH_DIFFERS' if names else 'NAME_MISSING')
+        suggestions = []
+        if not names:
+            key = normalized_name(name)
+            suggestions = [d for d in documents if normalized_name(d['name']) == key]
+        results.append({'document_name': name, 'expected_source_artifact_sha256': fingerprint,
+                        'expected_document_id': item.get('document_id'),
+                        'classification': strict, 'identity_classification': identity,
+                        'name_matches': names, 'hash_matches_without_name': hashes,
+                        'spacing_name_suggestions_only': suggestions})
+    return results
+
+
+def compare(package, db):
+    expected = defaultdict(set)
+    for case in package['cases']:
+        for entry in case['entries']:
+            expected[entry['document_name']].add(entry['source_artifact_sha256'])
+    documents = [dict(row) for row in db.execute(
+        'SELECT document_id,name,source_artifact_sha256 FROM document ORDER BY name,document_id')]
+    inputs = [{'name': name, 'source_artifact_sha256': fingerprint}
+              for name, fingerprints in sorted(expected.items()) for fingerprint in sorted(fingerprints)]
+    results = identities(inputs, documents)
+    return {'document_count': len(expected), 'selected_document_count': len(documents),
+            'counts': dict(Counter(r['classification'] for r in results)),
+            'identity_counts_without_name': dict(Counter(r['identity_classification'] for r in results)),
+            'documents': results}
+
+
+def compare_all(reference, documents):
+    expected = reference['documents']
+    rows = identities(expected, documents)
+    known = {d['source_artifact_sha256'] for d in expected}
+    extras = [d for d in documents if d['source_artifact_sha256'] not in known]
+    groups = defaultdict(list)
+    for doc in documents:
+        groups[doc['source_artifact_sha256']].append(doc)
+    duplicates = [v for v in groups.values() if len(v) > 1]
+    exact_inventory = Counter(d['source_artifact_sha256'] for d in expected) == Counter(
+        d['source_artifact_sha256'] for d in documents)
+    return {'reference_documents': len(expected), 'selected_documents': len(documents),
+            'name_presence_count': sum(bool(r['name_matches']) for r in rows),
+            'strict_name_and_hash_counts': dict(Counter(r['classification'] for r in rows)),
+            'hash_counts_without_name': dict(Counter(r['identity_classification'] for r in rows)),
+            'hash_inventory_equal_without_name': exact_inventory,
+            'name_and_hash_inventory_equal': Counter((d['name'], d['source_artifact_sha256']) for d in expected) == Counter(
+                (d['name'], d['source_artifact_sha256']) for d in documents),
+            'selected_only_hash_documents': extras, 'selected_duplicate_hash_groups': duplicates,
+            'documents': rows}
+
+
+def inspect(transfer, reference=None):
+    transfer = Path(transfer).resolve(strict=True)
+    if transfer.name != 'TRANSFER':
+        raise ValueError('기존 DEV/TRANSFER에서 실행해야 합니다.')
+    root = transfer.parent
+    config_path = root/'00_SYSTEM/GENOS_SERVING_PATHS.json'
+    status_path = transfer/'cm-oneclick-r8/STATUS.json'
+    package_path = transfer/'cm-oneclick-r8/CM51_SOURCE_PACKAGE.json'
+    watched = [config_path, status_path, package_path]
+    before = {str(p): signature(p) for p in watched}
+    config_raw = config_path.read_bytes()
+    config = json.loads(config_raw)
+    status = json.loads(status_path.read_bytes())
+    package_raw = package_path.read_bytes()
+    if sha(package_raw) != PACKAGE_SHA256:
+        raise ValueError('R8 원본 패키지 해시가 다릅니다. 기존 자료를 보존했습니다.')
+    if config.get('schema_version') != 'genos-serving-paths-v1' or config.get('selection') != 'operator-fixed':
+        raise ValueError('R8의 명시 서빙 경로 설정이 아닙니다.')
+    generation = Path(config['generation']).resolve(strict=True)
+    if generation != Path(status['generation']).resolve(strict=True):
+        raise ValueError('R8 실행 기록과 서빙 설정의 generation 경로가 다릅니다.')
+    manifest_path = generation/'manifest.json'
+    database_path = generation/'store.sqlite'
+    for path in (manifest_path, database_path):
+        before[str(path)] = signature(path)
+    manifest_raw = manifest_path.read_bytes()
+    manifest = json.loads(manifest_raw)
+    manifest_sha = sha(manifest_raw)
+    if manifest_sha != config['generation_manifest_sha256'] or manifest_sha != status['generation_manifest_sha256']:
+        raise ValueError('R8 실행 후 generation manifest가 달라졌습니다.')
+    print('선택 원문 DB 해시 확인 시작: '+str(database_path), flush=True)
+    store_sha = file_sha(database_path)
+    if store_sha != manifest['store_sha256']:
+        raise ValueError('선택 원문 DB가 manifest의 store_sha256와 다릅니다.')
+    db = sqlite3.connect(database_path.as_uri()+'?mode=ro', uri=True)
+    try:
+        db.row_factory = sqlite3.Row
+        db.execute('PRAGMA query_only=ON')
+        result = compare(json.loads(package_raw), db)
+        if reference is not None:
+            documents = [dict(r) for r in db.execute(
+                'SELECT document_id,name,source_artifact_sha256 FROM document ORDER BY name,document_id')]
+            result['whole_inventory'] = compare_all(reference, documents)
+            result['reference_binding'] = {k: v for k, v in reference.items() if k != 'documents'}
+    finally:
+        db.close()
+    if any(signature(Path(p)) != sig for p, sig in before.items()):
+        raise ValueError('진단 중 선택 자료가 변경됐습니다. 결과를 사용하지 않습니다.')
+    return {'revision': VERSION, 'operation': 'READ_ONLY_DOCUMENT_IDENTITY_DIAGNOSIS',
+            'code_root': str(root), 'generation': str(generation),
+            'generation_id': manifest['generation_id'], 'generation_manifest_sha256': manifest_sha,
+            'store_sha256_manifest_pin': manifest['store_sha256'],
+            'store_hash_reverified_by_this_diagnosis': True, 'store_actual_sha256': store_sha,
+            'serving_config_sha256': sha(config_raw), 'package_sha256': sha(package_raw),
+            'python_executable': sys.executable, 'python_version': sys.version.split()[0],
+            'package_built_against': json.loads(package_raw)['built_against'],
+            'sqlite_query_only': True, 'registration_performed': False, 'model_calls': 0,
+            **result}
+
+
+def summary_lines(report):
+    whole = report['whole_inventory']
+    all_hash = whole['hash_counts_without_name']
+    cm_hash = report['identity_counts_without_name']
+    unique = lambda counts: counts.get('HASH_MATCH_SAME_NAME', 0)+counts.get('HASH_MATCH_DIFFERENT_NAME', 0)
+    lines = [
+        '전체: 기준 '+str(whole['reference_documents'])+'개 / 현장 '+str(whole['selected_documents'])+'개',
+        '문서명 일치 '+str(whole['name_presence_count'])+'개 / 원본 SHA 일치 '+str(unique(all_hash))+
+        '개 (이름만 다름 '+str(all_hash.get('HASH_MATCH_DIFFERENT_NAME', 0))+'개)',
+        '기준 원본 미발견 '+str(all_hash.get('HASH_NOT_FOUND', 0))+'개 / 동일 SHA 중복 '+
+        str(all_hash.get('HASH_AMBIGUOUS', 0))+'개 / 현장 추가·다른 원본 '+
+        str(len(whole['selected_only_hash_documents']))+'개',
+        'CM '+str(report['document_count'])+'문서: 이름+SHA 일치 '+str(report['counts'].get('EXACT', 0))+
+        '개 / 이름 무시 SHA 일치 '+str(unique(cm_hash))+'개 / 미발견 '+
+        str(cm_hash.get('HASH_NOT_FOUND', 0))+'개',
+    ]
+    kosdaq = next((r for r in report['documents'] if r['document_name'] == '코스닥시장 상장규정'), None)
+    if kosdaq is not None:
+        lines.append('코스닥시장 상장규정: 문서명 후보 '+str(len(kosdaq['name_matches']))+
+                     '개 / 같은 원본 SHA 후보 '+str(len(kosdaq['hash_matches_without_name']))+'개')
+    lines.append('전체 원본 SHA 목록 동일: '+str(whole['hash_inventory_equal_without_name']))
+    return lines
+
+
+def main(argv=None):
+    args = sys.argv[1:] if argv is None else argv
+    if len(args) != 3:
+        raise ValueError('TRANSFER와 새 진단 출력 폴더, 고정된 기준 inventory가 필요합니다.')
+    transfer, output = map(Path, args[:2])
+    reference = json.loads(args[2])
+    report = inspect(transfer, reference)
+    output = output.resolve(strict=True)
+    if output.parent != transfer.resolve(strict=True)/'cm-source-diag-r3':
+        raise ValueError('진단 결과는 TRANSFER/cm-source-diag-r3에 저장해야 합니다.')
+    target = output/'SOURCE_DIAGNOSIS.json'
+    with target.open('x', encoding='utf-8') as handle:
+        json.dump(report, handle, ensure_ascii=False, indent=2)
+        handle.write('\n')
+    print('\n'.join(summary_lines(report)), flush=True)
+    print('상세 결과='+str(target), flush=True)
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
+
+CM_SOURCE_DIAG_PY

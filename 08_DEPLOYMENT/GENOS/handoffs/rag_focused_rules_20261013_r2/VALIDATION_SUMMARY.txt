@@ -1,0 +1,18 @@
+GENOS RAG R2 초기화 오류 정정 검증 결과
+
+R1: 새 request_entry_policy 설정과 이전 workflow_tiers_policy 검증기가 함께 인계됨.
+실제 service.service 초기화에서 unknown v4 profile field / ContractError / 503을 3개 설치 조합에서 재현.
+R2: 누락 검증 파일을 MAIN53의 동일 바이트로 보완한 후 같은 3개 조합의 실제 서비스 초기화 200 확인.
+대표 조합: 기존 캐시 R3, 캐시 R4, 캐시 R4 + 진행 표시 R5 (각 R1을 먼저 적용).
+최종 독립 RUN 및 준비 명령 46개: 정상 동작과 예상한 변조 거부 6회 확인.
+각 조합의 check/apply/재실행/verify, 같은 committed checkout 모의 generation gate 3개 통과.
+원복 시 R1 코드/manifest 전체 바이트 복원, generation 불변, 허용 범위 밖 파일 불변 확인.
+허용 대상: 봉인된 R1 출력 inventory 330종. 모든 조합의 실제 부팅을 실행한 것은 아님.
+Python 3.10 문법 / Bash 구문 / ZIP과 별도 RUN 동일 바이트 / JavaScript 제외 확인.
+
+환경: WSL Python 3.14.4, 모의 원문 generation, GET /models만 모의 HTTP 응답.
+실제 서비스/profile/모델 목록 검증 함수는 실행. 실제 소켓 연결과 모델 추론 요청은 금지.
+첫 검사는 모의 모델 목록 응답 누락으로 실패했고 기록을 보존한 뒤 해당 시험 설정을 보완함.
+실제 네트워크/모델 추론 0회. 로컬 MAIN53 포인터 유지. 내부 데이터/인증정보 미포함.
+GENOS 실제 적용/commit/push/리비전/워크플로우 성공 및 현장 Python 3.11 실행은 미확인.
+사진에 내부 예외 메시지는 없어, 현장 장애에 다른 원인이 함께 있는지는 미확인.

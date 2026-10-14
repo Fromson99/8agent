@@ -204,7 +204,56 @@ def mount_info(path):
         return {'status': 'UNVERIFIED'}
 
 
-def probe(*, code_root=None, stage='code-serving', settings=None, nfs_base=BASE):
+def directory_listing(path, limit):
+    """Bounded immediate entries; do not follow data links or read file bodies."""
+    rows = []
+    with os.scandir(plain(path)) as entries:
+        for entry in entries:
+            if len(rows) >= limit:
+                return {'path': str(path), 'entries': rows, 'truncated': True}
+            if entry.is_symlink():
+                raise ValueError('symlink data entry refused: ' + entry.path)
+            info = entry.stat(follow_symlinks=False)
+            rows.append({'name': entry.name, 'kind': 'directory' if entry.is_dir(follow_symlinks=False) else 'file',
+                         'bytes': info.st_size if entry.is_file(follow_symlinks=False) else None})
+    return {'path': str(path), 'entries': rows, 'truncated': False}
+
+
+def data_listing(generation, runtime, cfg, *, offset=0, limit=100):
+    """List actual NFS entries and optionally generation-bound team metadata."""
+    if type(offset) is not int or not 0 <= offset <= 1000000 or type(limit) is not int or not 1 <= limit <= 200:
+        raise ValueError('offset must be 0..1000000 and limit must be 1..200')
+    listing = {'generation_directory': directory_listing(generation, limit),
+               'runtime_directory': directory_listing(runtime, limit),
+               'document_metadata': {'listed': False, 'reason': 'prepare with --list-team-id to list a selected team'}}
+    team = cfg.get('list_team_id')
+    if not team:
+        return listing
+    if not isinstance(team, str) or not re.fullmatch(r'[A-Za-z0-9_-]+_team', team):
+        raise ValueError('invalid prepared team folder name')
+    path = plain(generation / 'store.sqlite')
+    if any(Path(str(path) + suffix).exists() for suffix in ('-wal', '-shm', '-journal')):
+        raise ValueError('source SQLite has unresolved sidecars')
+    with closing(sqlite3.connect(path.as_uri() + '?mode=ro&immutable=1', uri=True, timeout=.2)) as db:
+        db.execute('PRAGMA query_only=ON')
+        deadline = time.monotonic() + 5
+        db.set_progress_handler(lambda: int(time.monotonic() > deadline), 1000)
+        # Same membership fields as semantic_runtime.team_scope.document_teams.
+        where = "json_extract(d.json,'$.document_metadata.team')=? OR EXISTS (SELECT 1 FROM json_each(d.json,'$.document_metadata.aliases') a WHERE json_extract(a.value,'$.team')=?)"
+        total = db.execute('SELECT count(*) FROM document d WHERE ' + where, (team, team)).fetchone()[0]
+        if total == 0:
+            raise ValueError('prepared team has no documents in selected generation: ' + team)
+        rows = db.execute('SELECT d.document_id,substr(d.name,1,500) FROM document d WHERE ' + where
+                          + ' ORDER BY d.document_id LIMIT ? OFFSET ?', (team, team, limit, offset)).fetchall()
+    listing['document_metadata'] = {'listed': True, 'team_id': team, 'total': total, 'offset': offset,
+                                    'limit': limit, 'has_more': offset + len(rows) < total,
+                                    'documents': [{'document_id': str(r[0]), 'name': str(r[1])} for r in rows],
+                                    'selection_policy': 'prepared-team-only; inherits code-serving access; not an access grant'}
+    return listing
+
+
+def probe(*, code_root=None, stage='code-serving', settings=None, nfs_base=None,
+          include_listing=False, offset=0, limit=100):
     started = time.monotonic()
     root = plain(Path(code_root or DEFAULT_ROOT).resolve(strict=True))
     settings = os.environ if settings is None else settings
@@ -229,6 +278,7 @@ def probe(*, code_root=None, stage='code-serving', settings=None, nfs_base=BASE)
         c = metadata(root / CONFIG)
         if c.get('schema_version') != REVISION:
             raise ValueError('probe config schema mismatch')
+        nfs_base = Path(nfs_base or c.get('nfs_base') or BASE)
         result['nfs_mount_entry'] = configure_mount_root(nfs_base)
         nfs_base = plain(nfs_base)
         generation, runtime = plain(Path(c['generation'])), plain(Path(c['runtime']))
@@ -272,6 +322,8 @@ def probe(*, code_root=None, stage='code-serving', settings=None, nfs_base=BASE)
             actual_state = settings.get('GENOS_STATE_DIR', '').strip() or None
             if stage == 'code-serving' and (configured != str(generation) or actual_runtime != str(runtime) or actual_state != (str(state) if state else None)):
                 raise ValueError('serving path environment differs from prepared NFS data')
+            if stage == 'code-serving' and c.get('list_team_id') and settings.get('GENOS_NFS_LIST_TEAM_ID') != c['list_team_id']:
+                raise ValueError('serving team environment differs from prepared list scope')
             return {'generation_configured': bool(configured), 'runtime_configured': bool(actual_runtime),
                     'runtime_paths_match': configured == str(generation) and actual_runtime == str(runtime) and actual_state == (str(state) if state else None)}
         check('serving_path_environment', root / CONFIG, environment)
@@ -297,6 +349,11 @@ def probe(*, code_root=None, stage='code-serving', settings=None, nfs_base=BASE)
             with os.scandir(plain(runtime)) as entries:
                 return {'directory_readable': True, 'has_entries': next(entries, None) is not None}
         check('runtime_directory', runtime, runtime_directory)
+        if include_listing and all(row['status'] != 'FAIL' for row in result['checks']):
+            def listing_read():
+                result['data_listing'] = data_listing(generation, runtime, c, offset=offset, limit=limit)
+                return {'listed': True}
+            check('data_listing', generation, listing_read)
         db, pointer = memory_path(runtime, state)
         if pointer:
             check('shortcut_pointer', pointer, lambda: {'sha256': sha(pointer)})
@@ -328,7 +385,9 @@ def probe(*, code_root=None, stage='code-serving', settings=None, nfs_base=BASE)
 
 async def gateway(data, *, code_root=None):
     import asyncio
-    report = await asyncio.to_thread(probe, code_root=code_root, stage='code-serving')
+    report = await asyncio.to_thread(probe, code_root=code_root, stage='code-serving',
+                                    include_listing=data.get('include_listing') is True,
+                                    offset=data.get('offset', 0), limit=data.get('limit', 100))
     return {'status': 200 if report['ok'] else 503, 'body': report}
 
 

@@ -224,9 +224,10 @@ def rebuild_serving(context, *, log):
         scope = {'document_version_ids': context['selection']['document_ids'],
                  'source_selection_sha256': sha(context['parent'] / 'sources/selection.json')}
         with log.phase('reuse-inputs-build-serving', model_calls=0):
+            worker_options = {'fulltext_workers': settings['fulltext_workers']} if 'fulltext_workers' in settings else {}
             result = term_generation.build_generation(context['source'], context['draft'], output / 'baseline',
                 serving=True, scope=scope, fulltext_granularity=settings['fulltext_granularity'],
-                storage_profile=settings.get('storage_profile','legacy'))
+                storage_profile=settings.get('storage_profile','legacy'), audit_profile=settings.get('audit_profile','materialized'), **worker_options)
         generation = output / 'baseline/generation'
         with log.phase('verify-serving-assets'):
             term_serving_bundle.verify_assets(generation)

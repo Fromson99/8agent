@@ -1,0 +1,91 @@
+{
+  "revision": "GENOS_URLLIB_TLS_20261014_R1",
+  "installed_contracts": {
+    "INSTALLED_query_latency_20261007_r3.xml": {
+      "tests": 56,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "INSTALLED_query_latency_20261007_r3_metrics.xml": {
+      "tests": 56,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "INSTALLED_query_latency_20261007_r4.xml": {
+      "tests": 56,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "INSTALLED_query_latency_20261007_r4_metrics.xml": {
+      "tests": 56,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "installed_contract_tests": 224,
+  "delivery_tests": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "checks": {
+    "commands": 100,
+    "legacy_mock_boots": 4,
+    "tls_success_boots": 4,
+    "tls_rejected_boots": 4,
+    "generation_gates": 4,
+    "tamper_rejections": 8,
+    "undo": 4
+  },
+  "verified_code_roots": [
+    "/tmp/pytest-of-jin/pytest-154/test_real_service_boot_upgrade0/DEV",
+    "/tmp/pytest-of-jin/pytest-154/test_real_service_boot_upgrade2/DEV",
+    "/tmp/pytest-of-jin/pytest-154/test_real_service_boot_upgrade3/DEV",
+    "/tmp/pytest-of-jin/pytest-154/test_real_service_boot_upgrade1/DEV"
+  ],
+  "known_inventories": 2640,
+  "engine_helper_pins": 30,
+  "source_files": {
+    "02_BACKEND/semantic_runtime/genos.py": "edb301c8f489f62efe0f56e661b38f3cc594096756dbc52fccb3f29f45a6e755",
+    "02_BACKEND/semantic_runtime/legal_agent/transport.py": "fcde37b4be42d1d206eae7d69d7f4e2f8523a94122775665de383dc9b8146680",
+    "02_BACKEND/semantic_runtime/stdlib_http.py": "9aaff8fc4d2e7fc91a18319307e46504748464b59bf7fcb4f0bf8fb42cd30b96"
+  },
+  "same_working_selected_field_transport_bytes": true,
+  "working_tests_before_product_changes": {
+    "tests": 70,
+    "failures": 4,
+    "errors": 0,
+    "skipped": 0
+  },
+  "unchanged_workflow_expectation_failures": [
+    "test_http_500_exposes_error_origin_and_retains_single_send[False]",
+    "test_http_500_exposes_error_origin_and_retains_single_send[True]",
+    "test_response_body_capture_preserves_the_entire_error",
+    "test_existing_service_error_text_redacts_credentials"
+  ],
+  "working_product_files_changed_this_task": [],
+  "active_release_unchanged": "public-failure-guidance-20261014-r1",
+  "active_generation": 61,
+  "real_model_calls": 0,
+  "genos_or_external_network_calls": 0,
+  "local_network": "Actual localhost HTTP/TLS with synthetic CA and model responses",
+  "field_commit": null,
+  "field_generation_path": null,
+  "field_generation_manifest_sha256": null,
+  "field_serving_revision": null,
+  "field_deployment": "NOT_VERIFIED",
+  "fixture_repairs": [
+    "Authoring glossary fixtures use workspace schema; installed runtime imports remain verified",
+    "Synthetic gateway generation prebuilt with working build tools; installed runtime, gateway and commit are verified"
+  ],
+  "limits": [
+    "Actual GENOS CA/container environment and internal inference require workflow-screen verification",
+    "Four pre-existing workflow error-display test expectations remain; no workflow file is modified",
+    "No local MAIN pointer change; external Qwen/OpenRouter adapter is separate"
+  ]
+}

@@ -10,6 +10,7 @@ import time
 from ..contracts import digest
 from ..unit_fulltext import ArticleProjection
 from .errors import ContractError, BudgetExhausted
+from .. import query_latency as latency
 
 POLICY = {'initial_units':512,'initial_chars':1600000,'read_actions':1024,
           'preview_chars':400,'context_chars':80000,'choices':16,'review_choices':8,
@@ -196,6 +197,7 @@ def activity_context(s, hit, offer):
         'extent': offer['extent'], 'block_count': offer['block_count'], 'chars': offer['chars']}
 
 
+@latency.timed('law.read.original')
 def read(s,hit,offer,*,action_state):
     current={x['id']:x for x in offers(s,hit)}
     if offer['id'] not in current or current[offer['id']]!=offer:
@@ -307,7 +309,8 @@ def group_hits(s, queue):
 
 def acquire_batch(s, hits, state):
     reads=[]
-    for h in hits:
+    unique={(h['key'],h.get('requested_unit_id')):h for h in hits}
+    for h in unique.values():
         s.context.remaining()
         opts,blocked=offer_plan(s,h);own=next((o for o in opts if o['extent']=='exact'),None)
         if own is None:raise ContractError('hit has no own original blocks')

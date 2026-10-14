@@ -156,11 +156,11 @@ def test_split_review_resumes_without_repeating_approved_windows(tmp_path, monke
     assert not (tmp_path/'structure-recipes.json').exists()
     assert any('outline' in d for d in first)
     resumed = install_recovering_provider(monkeypatch, review_limit=2)
-    _, meta = runtime.revise_pdf(pipeline, blocks, pdf, **kwargs)
-    assert not any('outline' in d for d in resumed)
-    assert all(len(d['page_window']) <= 2 for d in resumed)
-    assert not any(d['page_window'] == [1, 2] for d in resumed)
-    assert meta['coverage']['visually_reviewed_pages'] == list(range(1, 7))
+    with pytest.raises(runtime.NeedsReview):
+        runtime.revise_pdf(pipeline, blocks, pdf, **kwargs)
+    assert not resumed  # Failed provider outcome cannot be replayed by resume.
+    state=json.loads(next((tmp_path/'structure-recipe-runs/checkpoints').glob('*.json')).read_text())['state']
+    assert state['approvals'] and state['output_splits']
 
 
 def test_persistent_truncation_never_drops_adjacent_page_review(tmp_path, monkeypatch):

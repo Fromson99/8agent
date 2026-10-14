@@ -112,7 +112,7 @@ def test_existing_llm_generic_auth_path_stream_and_images(tmp_path, monkeypatch)
     monkeypatch.setenv('GENOS_LLM_SERVING_ID','456')
     monkeypatch.setenv('GENOS_LLM_KEY','PROFILE-SECRET')
     monkeypatch.delenv('GENOS_LLM_MODEL',raising=False)
-    sessions=install_transport(monkeypatch,lambda *a: response(RECIPE),models=['site-vision-model'])
+    sessions=install_transport(monkeypatch,lambda *a: {**response(RECIPE),'model':'site-vision-model'},models=['site-vision-model'])
     journal=runtime.Journal(tmp_path,'profile')
     provider=runtime.GenosCalls(journal,['data:image/png;base64,aGVsbG8='])
     from lawrag.core import llm as current_llm
@@ -222,7 +222,7 @@ def test_external_backend_rejected_before_client(tmp_path,monkeypatch):
         runtime.GenosCalls(runtime.Journal(tmp_path,'x'),[])
 
 
-def test_existing_json_mode_fallback_preserves_images(tmp_path,monkeypatch):
+def test_configured_json_mode_rejection_stops_without_hidden_retry(tmp_path,monkeypatch):
     monkeypatch.setenv('GENOS_LLM_JSON_MODE','json_schema')
     received=[]
     def reply(session,url,payload):
@@ -230,10 +230,12 @@ def test_existing_json_mode_fallback_preserves_images(tmp_path,monkeypatch):
         return 400 if len(received)==1 else response(RECIPE)
     install_transport(monkeypatch,reply)
     provider=runtime.GenosCalls(runtime.Journal(tmp_path,'schema'),['data:image/png;base64,aGVsbG8='])
-    assert provider('review','test',{}, {},True)==RECIPE
-    assert len(received)==2
-    assert received[0]['messages'][1]==received[1]['messages'][1]
-    assert 'response_format' in received[0] and 'response_format' not in received[1]
+    with pytest.raises(runtime.NeedsReview):provider('review','test',{}, {},True)
+    assert len(received)==provider.calls==1
+    assert received[0]['messages'][1]['content'][0]['image_url']['url']=='data:image/png;base64,aGVsbG8='
+    assert 'response_format' in received[0]
+    assert provider.client.log[-1].output_contract['category']=='REQUEST_SCHEMA_UNSUPPORTED'
+    assert provider.client.log[-1].physical_calls==1
 
 
 def test_schema_and_call_budget_still_enforced(tmp_path,monkeypatch):
@@ -243,7 +245,7 @@ def test_schema_and_call_budget_still_enforced(tmp_path,monkeypatch):
     provider=runtime.GenosCalls(runtime.Journal(tmp_path,'schema'),[],max_calls=1)
     with pytest.raises(ResponseError) as failure:
         provider('assemble','test',{},loop.recipe_schema({'heading':{},'number':{}}),False)
-    assert isinstance(failure.value.__cause__,jsonschema.ValidationError)
+    assert failure.value.__cause__.category=='OUTPUT_SHAPE_INVALID'
     assert failure.value.response=={'wrong':True}
     with pytest.raises(runtime.NeedsReview,match='model_call_budget'):
         provider('assemble','test',{}, {},False)
@@ -438,7 +440,7 @@ def test_invalid_answers_reach_owning_repair_loop(tmp_path,monkeypatch,stage,key
     assert error['code']==('INVALID_MODEL_JSON' if kind=='json' else 'INVALID_RESPONSE_SCHEMA')
     if kind=='schema':assert error['constraint']=='additionalProperties' and error['actual']=={'wrong':True}
     else:assert error['line']==1 and error['column']==12 and error['message']=='Expecting value'
-    assert correction['repair_feedback']['remaining_attempts']==(1 if stage=='opinions' else 2)
+    assert correction['repair_feedback']['remaining_attempts']==1
     assert correction['source_blocks'] and 'TEST-SECRET-NEVER-LOG' not in json.dumps(correction)
     assert len(tree.nodes())==2 and meta['status']=='visual_approved'
 
@@ -550,7 +552,7 @@ def test_region_hold_never_publishes_or_runs_individual_rule_generation(tmp_path
 def test_invalid_region_family_parent_is_bounded_and_not_published(tmp_path,monkeypatch):
     pdf,blocks=regional_document(tmp_path);seen=regional_provider(monkeypatch,invalid_parent=True)
     with pytest.raises(runtime.NeedsReview):runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='bad')
-    assert len([d for d in seen if 'region_instances' in d])==3
+    assert len([d for d in seen if 'region_instances' in d])==2
     assert not (tmp_path/'structure-recipes.json').exists()
 
 def test_document_page_budget_before_provider(tmp_path,monkeypatch):

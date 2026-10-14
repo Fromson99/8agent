@@ -1,0 +1,84 @@
+{
+  "status": "PASS",
+  "contract_tests": 38,
+  "delivery_cases": 50,
+  "basis_results": [
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R1",
+      "checks": 10,
+      "passed": true,
+      "unchanged_code_files": 268,
+      "same_committed_checkout_zip_comparison": {
+        "code_files": 300,
+        "commit": "9fa26b448fbcaea600f1819d97ca8238719b1ab3",
+        "code_zip_sha256": "262f7cf5626d436372a607d67f4e4ef47780a8235232ff66e0015a9c96998018",
+        "code_manifest_sha256": "997be9eb8165b0770292e9be664d1f6a53d1e847ab49d7825192a9d3c67130e9"
+      },
+      "runtime_and_current_preserved": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R2",
+      "checks": 10,
+      "passed": true,
+      "unchanged_code_files": 268,
+      "same_committed_checkout_zip_comparison": {
+        "code_files": 300,
+        "commit": "6785d8bb9805cb5f8371d910df5a940ce7b4c54c",
+        "code_zip_sha256": "b08e79909915bf229d8f859725d5c86be3796cf60619ac1fed3a31314d72c1ac",
+        "code_manifest_sha256": "54cef5c01b15d2ac5ec8cb1dd489cc9a356903f389ed27f459f818a79cfda13a"
+      },
+      "runtime_and_current_preserved": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3",
+      "checks": 10,
+      "passed": true,
+      "unchanged_code_files": 268,
+      "same_committed_checkout_zip_comparison": {
+        "code_files": 300,
+        "commit": "50cb44e169b63a9a154598bb7bf4def5f7aa1ac1",
+        "code_zip_sha256": "2ccf2c314b4a1d49afd039c2de6ce28757527b335589d195a1dabc9885f42e43",
+        "code_manifest_sha256": "8c947273e5c51ce2a968962d27f1e17b285313943017ac7ec5b23f6216bc663e"
+      },
+      "runtime_and_current_preserved": true
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4",
+      "checks": 10,
+      "passed": true,
+      "unchanged_code_files": 275,
+      "same_committed_checkout_zip_comparison": {
+        "code_files": 307,
+        "commit": "e6afd5129e706d5268ffc246613f4689c986dc6b",
+        "code_zip_sha256": "130ef9b217b944aca2c6b986d01347a0a7ba056df8208d7958e86bc3d8814a59",
+        "code_manifest_sha256": "54d3e656d9ec80c80a33b749875bca8bc99edd08ea6fa4535eb714fb09d4d793"
+      },
+      "runtime_and_current_preserved": true
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1",
+      "checks": 10,
+      "passed": true,
+      "unchanged_code_files": 272,
+      "same_committed_checkout_zip_comparison": {
+        "code_files": 304,
+        "commit": "51169be2c731dae551890566770e02b2e40e9482",
+        "code_zip_sha256": "ee6f206d37ae5c89098217dc8aa4e60da0306d8e6fede6c0f047a4ffe5e87432",
+        "code_manifest_sha256": "9d02db7158b5e740c3320edb44e3dba599116043b8381846b71bb8b76eb9f93d"
+      },
+      "runtime_and_current_preserved": true
+    }
+  ],
+  "external_model_calls": 0,
+  "field_generation_gate": "NOT_RUN_ON_GENOS",
+  "field_deployed": false,
+  "scope": "deterministic contract and exact attachment application checks",
+  "synthetic_generation_gate_tests": 2,
+  "synthetic_generation_gate_status": "PASS",
+  "local_active_pointer_changed": false,
+  "validation_commands": [
+    "PYTHONPATH=02_BACKEND .venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_query_latency_cache.py 05_TESTS/CONTRACTS/test_process_search_cache.py 05_TESTS/CONTRACTS/test_resident_data.py",
+    ".venv/bin/python 08_DEPLOYMENT/GENOS/handoffs/db_log_rollback_20261007_r1/validate_delivery.py",
+    "PYTHONPATH=02_BACKEND:05_TESTS:05_TESTS/CONTRACTS .venv/bin/python -m pytest -q 08_DEPLOYMENT/GENOS/handoffs/db_log_rollback_20261007_r1/test_generation_gate.py"
+  ]
+}

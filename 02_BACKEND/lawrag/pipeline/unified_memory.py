@@ -71,11 +71,12 @@ def migrate(source,destination,*,kind='corrected-memory'):
 
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('command',choices=['migrate','status','catalogue-compile','catalogue-verify','wiki-rebuild','backup','restore','reconcile','store-plan','store-apply','store-rollback','review-import','retention-inventory'])
+    p.add_argument('command',choices=['migrate','status','catalogue-compile','catalogue-verify','wiki-rebuild','recall-rebuild','backup','restore','reconcile','store-plan','store-apply','store-rollback','review-import','retention-inventory','package-check','package-import','package-verify','package-retire'])
     p.add_argument('--root',type=Path,default=Path(__file__).resolve().parents[3])
     p.add_argument('--runtime',type=Path);p.add_argument('--source',type=Path);p.add_argument('--output',type=Path)
     p.add_argument('--legacy-kind',choices=['corrected-memory','action-memory','v3','native','query-shortcut'],default='corrected-memory')
     p.add_argument('--generation',type=Path);p.add_argument('--principal',type=Path);p.add_argument('--binding',type=Path)
+    p.add_argument('--common',action='store_true',help='operator registers the common source catalogue; no consumer user/team file')
     p.add_argument('--store-version',type=int,choices=[3,4],default=3)
     p.add_argument('--confirm-store',action='store_true')
     p.add_argument('--expected-receipt')
@@ -83,6 +84,8 @@ def main(argv=None):
     p.add_argument('--confirm-review',action='store_true')
     p.add_argument('--backup-manifest',type=Path,action='append',default=[])
     a=p.parse_args(argv)
+    if a.common and (a.principal is not None or a.store_version!=4 or not a.command.startswith('package-')):
+        p.error('--common is exclusive with --principal and only supports v4 package commands')
     from lawrag.platform.workspace import load_layout
     runtime=a.runtime or load_layout(a.root).path('runtime')/'semantic'
     path=selected_store(runtime) if a.store_version==4 else runtime/'case-memory'/'cases-v3.sqlite'
@@ -90,7 +93,56 @@ def main(argv=None):
         from . import shortcut_operations as ops
         from semantic_runtime.legal_agent.shortcut_repository import ShortcutRepository
         principal=json.loads(a.principal.read_text()) if a.principal else None
-        if a.command=='migrate':
+        if a.command in {'package-check','package-import','package-verify','package-retire'}:
+            if a.source is None or (principal is None and not a.common):p.error('--source and --principal or --common required')
+            from . import shortcut_package as packages
+            from .legal_wiki_compiler import rebuild
+            from semantic_runtime.legal_agent.shortcut_store import store_owner
+            source=json.loads(a.source.read_text())
+            if a.common and source.get('visibility')!=packages.COMMON_VISIBILITY:
+                p.error('--common needs an explicitly common package/receipt')
+            if a.command=='package-retire':
+                if a.common:principal=packages.common_principal(receipt=source)
+                with store_owner(runtime,exclusive=True):
+                    repo=ShortcutRepository(path)
+                    try:
+                        value=packages.retire_package(repo,principal,source)
+                        value['legal_wiki']=rebuild(repo,principal,runtime/'case-memory'/'wikis'/'legal_wiki')
+                    finally:repo.close()
+            else:
+                if a.generation is None:p.error('--generation selected source store required')
+                from semantic_runtime.storage import Store
+                from semantic_runtime.term_index import TermIndex
+                from semantic_runtime.unit_fulltext import UnitFulltextIndex
+                store=Store(a.generation)
+                try:
+                    if a.common:principal=packages.common_principal(store=store)
+                    index=TermIndex(a.generation/'navigation',store)
+                    fulltext=UnitFulltextIndex(a.generation/'fulltext',index.manifest)
+                    if a.command=='package-verify':
+                        binding={'generation':store.manifest['generation_id'],'store_sha256':store.manifest['store_sha256'],
+                                 'unit_index_sha256':fulltext.manifest['index_sha256']}
+                        if source['source_binding']!=binding:raise MemoryError('registered package source generation changed')
+                        with store_owner(runtime):
+                            repo=ShortcutRepository(path)
+                            try:value=packages.verify_package(repo,principal,source)
+                            finally:repo.close()
+                    elif a.command=='package-check':
+                        binding,records=packages.resolve(source,store,principal)
+                        value={'checked':True,'cases':len(records),'source_entries':sum(len(r['targets']) for r in records),'binding':binding}
+                        resolved={t['canonical_document_name']:{k:t[k] for k in ('canonical_document_name','document_name','document_id','source_artifact_sha256','source_binding_policy')}
+                                  for record in records for t in record['targets']}
+                        value['resolved_documents']=[resolved[k] for k in sorted(resolved)]
+                    else:
+                        with store_owner(runtime,exclusive=True):
+                            repo=ShortcutRepository(path)
+                            try:
+                                value=packages.import_package(repo,principal,source,store)
+                                value={**value,'legal_wiki':rebuild(repo,principal,runtime/'case-memory'/'wikis'/'legal_wiki')}
+                            finally:repo.close()
+                finally:store.close()
+            if a.output is not None:ops._atomic(a.output,value)
+        elif a.command=='migrate':
             if a.source is None:p.error('--source required')
             value=ops.migrate(a.source,a.output or path,kind=a.legacy_kind,principal=principal,artifact_manifest=a.artifact_manifest)
         elif a.command=='store-plan':
@@ -115,6 +167,9 @@ def main(argv=None):
                 elif a.command=='retention-inventory':
                     if a.source is None:p.error('--source approved policy required')
                     value=ops.retention_inventory(repo,json.loads(a.source.read_text()),backup_manifests=a.backup_manifest)
+                elif a.command=='recall-rebuild':
+                    from semantic_runtime.legal_agent.wiki_recall import rebuild
+                    value=rebuild(repo)
                 elif a.command=='status':value=repo.status()
                 elif a.command=='reconcile':value=ops.reconcile(repo)
                 elif a.command=='backup':

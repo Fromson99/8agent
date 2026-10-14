@@ -15,7 +15,14 @@
 - D 연결·색인: 검토된 사전으로 통합 원문 전체의 출현·정의·명시 참조를 연결하고
   navigation-v3와 서빙 자원을 검증한다. 이 단계의 LLM 호출은 없다.
 
-`build-all --execute`는 A → B → C → D 순서다. B 이후는 기존 `document-release`가 담당한다.
+2026-10-08 MAIN의 `build-all --execute` 기본값은 모델 없는 A → B → compact-v2 연결·색인이다.
+팀 RAW의 native 원본 파서, VLM off, 로컬 PDF 파서를 명시한다. B에서 문서 근거를 교체한
+새 용어 초안을 준비하며 C의 모델 검토는 실행하지 않는다. `document-release reindex`가
+2026-10-03 최종 GENOS 방식의 compact-v2, navigation-v7/storage-v3와 단위 전문 색인을
+명시 선택한다. 서빙 자원과 감사 원장을 포함한 후보를 만들고 오프라인 계약을 검사한다.
+CURRENT·활성 MAIN 전환은 별도다. 완료 지식 묶음이 없으면 중단하며 legacy로 자동 전환하지 않는다.
+
+`build-all --with-model-review --execute`는 기존 A → B → C → D 순서다. B 이후는 기존 `document-release`가 담당한다.
 구조화 실패 시 용어 검토를 시작하지 않는다. 같은 명령으로 구조 캐시·검토 상태를 재사용한다.
 기존 사전·지식 데이터가 없는 환경에서 이 명령이 외부 수집이나 사전 반입을 대신하지 않는다.
 
@@ -27,8 +34,11 @@ bash 06_TOOLS/COMMANDS/genos_data_stages.sh --run-id units-001 --stage structure
 # XML/외규를 읽지 않고 내규 PDF 한 건으로 같은 구조화 경로 확인
 bash 06_TOOLS/COMMANDS/genos_data_stages.sh --run-id pdf-structure-001 --only-internal-pdf --limit 1 --stage structure --execute
 
-# 전체 구조화 → 기존/신규 용어 통합 검토 → 전체 연결·색인
+# 기본: 원본 직접 구조화 → 모델 없는 GENOS compact-v2 연결·색인
 .venv/bin/python -B 06_TOOLS/pipeline.py build-all --run-id units-001 --execute
+
+# 기존 모델 검토 구축을 명시적으로 선택
+.venv/bin/python -B 06_TOOLS/pipeline.py build-all --run-id reviewed-units-001 --with-model-review --execute
 
 # 이미 준비된 구조화 결과와 선택 용어집을 연결·색인
 .venv/bin/python -B 06_TOOLS/pipeline.py build-data-stages --run-id units-001 --stage index --execute

@@ -1,0 +1,1975 @@
+{
+  "variants": [
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3",
+      "before_signature": "668cf182c586e75f9b560d2e5f624e175c830d3876ce6cc200e12332ce809a15",
+      "after_signature": "a672640222749977bc58270a122a4c9eebbd20ccc88d76d434d1cc30796bebb5",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/stream_app.py",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "genos_diagnostics.py",
+        "genos_log_runner.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 294,
+      "service_sha256": "be5e5eb6a89b84616854e80dd7eefe96129891dc5d142aff02760bdbf0231816",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/display-r2",
+      "before_signature": "e870164068e00dcaab04f54675f649cfa1d0bdc70562c4d947ef05f93b7b7883",
+      "after_signature": "f20b03423179db483964ca419f1632f199c56db2817a3cfe6d10666a9eb1ab48",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 299,
+      "service_sha256": "be5e5eb6a89b84616854e80dd7eefe96129891dc5d142aff02760bdbf0231816",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/core-evidence-shortcut-r1",
+      "before_signature": "17cc5a377b0216b3f58b9a832947373a78d61d67010206875298fd992f1581b1",
+      "after_signature": "f20b03423179db483964ca419f1632f199c56db2817a3cfe6d10666a9eb1ab48",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/stream_app.py",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "genos_diagnostics.py",
+        "genos_log_runner.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 295,
+      "service_sha256": "be5e5eb6a89b84616854e80dd7eefe96129891dc5d142aff02760bdbf0231816",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3",
+      "before_signature": "a73c7b0f8253faae1f8d9cc89be44acf48fa62051206345259fca0d5997332ce",
+      "after_signature": "1ae0253275bc8b66f2f7c9a19d57e8d59eff13108fbbe791bf07d1269f0eeca2",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "301e7341da0a919160a42252caea7bae2d0bffa5e596c9d87c61ace1e1382edd",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/display-r2",
+      "before_signature": "d36f9ec56765138b4a8ba2016146680348d765972ae15cd3bbec1b0e0f3cb2ca",
+      "after_signature": "e972d93660d9ce8f51791e279fcdf4eca57c343ff331e4b9a3d67ee55271cd26",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 303,
+      "service_sha256": "301e7341da0a919160a42252caea7bae2d0bffa5e596c9d87c61ace1e1382edd",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-evidence-shortcut-r1",
+      "before_signature": "8669b0f24d97fa5411332a3227877af3ed3eed3101083747f259644c4dda8a74",
+      "after_signature": "e972d93660d9ce8f51791e279fcdf4eca57c343ff331e4b9a3d67ee55271cd26",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 302,
+      "service_sha256": "301e7341da0a919160a42252caea7bae2d0bffa5e596c9d87c61ace1e1382edd",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3",
+      "before_signature": "f984e63e6fcf7436c78ebaed60db5533479c83230960fd98914c8aa855975205",
+      "after_signature": "0203225fa179278de5c288a8d759a90e6d6c4a5412fe774217d3db4bfe3ae69b",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 298,
+      "service_sha256": "301e7341da0a919160a42252caea7bae2d0bffa5e596c9d87c61ace1e1382edd",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/display-r2",
+      "before_signature": "1dfe42c14e6f7d4ae67be1e0149a5ec9979e0d5a5e7825221eea7c27ae544569",
+      "after_signature": "843e57202a3ca4dec499f96e66a7150a4c1c035491633280823a1e591e00a596",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 300,
+      "service_sha256": "301e7341da0a919160a42252caea7bae2d0bffa5e596c9d87c61ace1e1382edd",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/core-evidence-shortcut-r1",
+      "before_signature": "3fc9eb20797c1af24b73c3ee6f948c47955d8107d81d7f85f078c8e35e060dba",
+      "after_signature": "843e57202a3ca4dec499f96e66a7150a4c1c035491633280823a1e591e00a596",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 299,
+      "service_sha256": "301e7341da0a919160a42252caea7bae2d0bffa5e596c9d87c61ace1e1382edd",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/core-shortcut-r1/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "380c42a06235a6625f78b9f86f2a31369844cf506e2eb69f919367e614902443",
+      "after_signature": "027440e892df5a87f834ab50b1a6199b2766a8d3f7fc9a2d567f5c47bad33207",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/stream_app.py",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "genos_diagnostics.py",
+        "genos_log_runner.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 297,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/core-shortcut-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "47852afae3e60dbf74aad3cd9d44080e51f44447073aaa72774ca44bc0b4866e",
+      "after_signature": "da91b5c05c708e09842fe22591837da61dc84b0867f01771512c401cc4d92816",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/stream_app.py",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "genos_diagnostics.py",
+        "genos_log_runner.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 297,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-shortcut-r1/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "7a3e723627df78effc516ef938323cc9388e0ea7d1d3f94d7e14ca39d56feff9",
+      "after_signature": "0e4caec1336739d30531b00d982f7dca4664c84275b00f4a91ec3abc65120801",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-shortcut-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "083fcf0978da9fcc647cd92d75b9e90f6a3fc5ac12f6683dcc9ef6c9e0e329f1",
+      "after_signature": "867e1344f3d98b9152031479c5d72b2972902001e7e15fc2b290a2ce5b742a7a",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/core-shortcut-r1/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "d4d183b63d6313a7614eb6aa4faf22487503c8179eb9cdc43963bce0c4743846",
+      "after_signature": "a6ff4dace1d7d3b71214bf9bf04288c2d08f4ab50cfc3643b106b705f23c6ea1",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/core-shortcut-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "dc15e2b7f0247786d9201d4e47a95ca757b7d4269001438c5e23bc7ad8713b75",
+      "after_signature": "78d7af50993d09d8bc9759c92dfa4c9a9250cbf24cbb1260219d5d0ca709d652",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/display-r2/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "19596f71800fab57777e77eaf1fd8a6bad0a50d98085fe60ce1dbe4ea22913d4",
+      "after_signature": "027440e892df5a87f834ab50b1a6199b2766a8d3f7fc9a2d567f5c47bad33207",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/display-r2/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "0a80a10ef19970c38c6824d5512aa50e68cc179deefb6e78acc0151bb746414a",
+      "after_signature": "da91b5c05c708e09842fe22591837da61dc84b0867f01771512c401cc4d92816",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/display-r2/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "a50669157811c24b1b79ab7ba65c458fcbc8bbe46b023154031638ba4802c06a",
+      "after_signature": "0e4caec1336739d30531b00d982f7dca4664c84275b00f4a91ec3abc65120801",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 305,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/display-r2/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "5b23e47b0d4f11ff850805a23484b4eb5306c7887c3c82f3d7e2279eabfb13d8",
+      "after_signature": "867e1344f3d98b9152031479c5d72b2972902001e7e15fc2b290a2ce5b742a7a",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 305,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/display-r2/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "981fbec26e429a4166496a9754c267c1de10107ccc2c7a521d5a6bbd84b010a9",
+      "after_signature": "a6ff4dace1d7d3b71214bf9bf04288c2d08f4ab50cfc3643b106b705f23c6ea1",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 302,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/display-r2/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "ab4e76633806f2239512f8301efa8d2b9ae4a7fd7c0229b25e9287cadd499a16",
+      "after_signature": "78d7af50993d09d8bc9759c92dfa4c9a9250cbf24cbb1260219d5d0ca709d652",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 302,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/cc5007119cc5f1add118fdcb1fb7e52dcf9b169da5b0deb5aeeeeb120c0fc3ff",
+      "before_signature": "e4565a2a76a5505f49e2a88cf0e930e8423892d98c0b328ec7dd5287e2aa3e36",
+      "after_signature": "7599a48d33f59951253beb560b02e9123befc1c5b053a8431fecae5aca9a26ef",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/stream_app.py",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "genos_diagnostics.py",
+        "genos_log_runner.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 297,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/d67681edc937c81ea9fffa1bbaa3fd20ee952edcb4f43a97237170ab5a172a1f",
+      "before_signature": "3b8f2f044193d408a40a19f6efd1a6f3a72761e73e7d662a604432c57d8c67df",
+      "after_signature": "47c10754bcaa583aeb458b85b46dd79a522d21e82b0bfb707620a20bc409373f",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/stream_app.py",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "genos_diagnostics.py",
+        "genos_log_runner.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 297,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/275eb77d3ae6c368bd173299d32f00e1752702eb2e5b6d8873828e8b792268ca",
+      "before_signature": "f26c2d30bbb40d08a76f0a9278dc546655955f5021245fa70cac6bc8a3a5997a",
+      "after_signature": "534881bbe05b00846a93b6a1aeb85838caabca3721e6552f53c3c37a7d06f223",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/5cc8a25a4bc5407962868bec4a14601dfc3ec45a311cfadf501a0f8cfa986a82",
+      "before_signature": "cc7578c451419f224a3a60f535b6993822d33089c1176a269fde88df881ba229",
+      "after_signature": "e3eac302cbc5556f5890bfc5e018d0ed55734d3a1b97f84aec90e2455596edbe",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/83389e7cd2e8791678d2e10ecd188929a00e7b476de913ed49ee3c4a7fe290a3",
+      "before_signature": "3d6a7ea8fa18476fa1a2613739d4eff808ee7cfd457be8e81c7142cabf567783",
+      "after_signature": "6782b1f655f7c1c60b8d7b4451914e3fa9d38b42791899126c9f7a7f02687277",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/a953c0c6d8ad92f6ff14f35e3a8af5689c7260a177ddc40ca58e5f1cca0efbcc",
+      "before_signature": "3c0f4b65c0fe25356b51e3b1afc097af1c0935911c2958ebfe26a926aed2b13d",
+      "after_signature": "9b04ea43a1d2c6c9490f4670f5d34362eb7ff54016ef01628b5c7a69dbe19563",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/b46414b21636c6e7aa84e599195c400ad05c1a759dd76f90c2c6d718d6bf52b3",
+      "before_signature": "16b8a29b847671269aa70a472f9c09d879694bb2652343d75395c3f6daf4ae22",
+      "after_signature": "7599a48d33f59951253beb560b02e9123befc1c5b053a8431fecae5aca9a26ef",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/829490f6066640ae5c6a97c2963b5e6cac95254ac1e38722dcead957e5d707a8",
+      "before_signature": "6290ca872b058b04faf75064e55f754a714db959e3e5514332cc60c6b745062b",
+      "after_signature": "47c10754bcaa583aeb458b85b46dd79a522d21e82b0bfb707620a20bc409373f",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/a1f4da9de0fa58e03c4784ef6be8d9ec44e6bc39f9bc5a96d3b3223f55451605",
+      "before_signature": "ee01cf9efe30186871ae408a32ee83d7f3668becb672e9a3179e872ed9560d6b",
+      "after_signature": "534881bbe05b00846a93b6a1aeb85838caabca3721e6552f53c3c37a7d06f223",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 305,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/235ec871f648943b3a5657ebb613d9e423eb74a3c9f71073ebe3fac2f9d9eae6",
+      "before_signature": "acc62b9b8f5c17ef9175b10bfa0d7b6946695a10c2ca314540251fa6d710d8ff",
+      "after_signature": "e3eac302cbc5556f5890bfc5e018d0ed55734d3a1b97f84aec90e2455596edbe",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 305,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/25afdea14553279188f02306c749ae0a87d32b144aec279c50630a9014a9e30e",
+      "before_signature": "2d9512f4d58f969aa49566a8fb27fe69d902aec3539afcb94417520bcfa4a533",
+      "after_signature": "6782b1f655f7c1c60b8d7b4451914e3fa9d38b42791899126c9f7a7f02687277",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 302,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/d8c55cbfdfef1b05fb671d058b9d24f818797776940b082b696ebd752397e48e",
+      "before_signature": "6cc9043ccc14c8cea727b08dc7e82fc4bfaf7893d5aad498f059e11247752084",
+      "after_signature": "9b04ea43a1d2c6c9490f4670f5d34362eb7ff54016ef01628b5c7a69dbe19563",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 302,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/f79249a66fb71df228fa32fc75f30f517c3647795587193baf652e875890788e",
+      "before_signature": "8d1b81ce9fe3c0e0d6533f5c5c8c50f3864e1008accd5b19dc8bb046404dcfc6",
+      "after_signature": "e713a49972c7e5ab705dd33b951235879cecc548f921a4d552cb4c7d63bfa288",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/stream_app.py",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "genos_diagnostics.py",
+        "genos_log_runner.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 297,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/bee0cbf307096ed8dc0f79c826fdede3a41f156a00e7d36212429384cb3d8e3c",
+      "before_signature": "3752802f0bbcf2e0289ec3ffd0fc31c9679921b0762352bd6ac5538335f9e0e8",
+      "after_signature": "15ad133724b1bc8cf69a6d68adcbb9b353c4c03a3a58fec2b09f7efa55e488de",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/stream_app.py",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "genos_diagnostics.py",
+        "genos_log_runner.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 297,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/2ad2f710141f238eab99dc8517e3ceafa296e405145d12673d17f8f9b3c10890",
+      "before_signature": "af5880488d7e664060af9817a3609ae411dd7f87d158709aa6a6b05434f66486",
+      "after_signature": "c28029a218314b18033cbdaac3a212af0adb3a42c13934d0223c97e861ff8330",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/0608ccae7bfa9c9b5a24a9e397467adf6de744dc58f448d647079be98d519765",
+      "before_signature": "04d000827d77a1920b1d3252962b011459581a8d2fd65c9a48c3d58225a3a93d",
+      "after_signature": "afb1c2cec20237b49c69023a3929a39a625a627e46e6140cf5e6584af75b1759",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/5463aad544b7e36c47080f349d00c037b2c194bba27dd6303e3301c808f489d2",
+      "before_signature": "c67166707077554310338e5af9a566ed9ca844e01b57c380efb7ab3be925addd",
+      "after_signature": "d7f8bdad0a908643cbc98ffab83c74c1e332c69549cbaf6f0f6472c47fdb810c",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/ecd84782485d602f467bb879fa22056ae2ae65c5e7356994a22a8df712be7bb6",
+      "before_signature": "56dad9b5f019b7955b7c97e272001be5e702d161b9496431efff434448fc954b",
+      "after_signature": "e1667b242c31a1053b4b4a3dead8f93fc49083b8d3ba5e7da36d440aac2f8c6a",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/9f48382b995ca4eb9d4bb79bb2abef2916a52cc5c8f7b1faec15dbe78b0a4f11",
+      "before_signature": "7d28300a1c21336af480ead2a39ca82c23fff8cc2f2a03d11d871fb1b495c33f",
+      "after_signature": "e713a49972c7e5ab705dd33b951235879cecc548f921a4d552cb4c7d63bfa288",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/60c1a0635ec0f6ab2df3dcc0eacffec23b3664abc29b4ffb64903d61a77f5eb3",
+      "before_signature": "551c3020e7957f532b1086a548ebad28aa434ef3a4632d5595587ce132473cea",
+      "after_signature": "15ad133724b1bc8cf69a6d68adcbb9b353c4c03a3a58fec2b09f7efa55e488de",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/586a37a18732665521ffc5e0c6e75653d565dcbd6501e2a90f4c5b1bd71eab23",
+      "before_signature": "058badc179d1ec055f9ad6bec67fa6a42274616ca106e0472aedcd0eb543aab5",
+      "after_signature": "c28029a218314b18033cbdaac3a212af0adb3a42c13934d0223c97e861ff8330",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 305,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/6eeedd749c082ff05ef323c0b822b668ae32c19770b788c2b7869a32ecacab48",
+      "before_signature": "f5b13c3367df8004bf24f42813984f2e30d124af4d2ea2b2271e6322fd1896bf",
+      "after_signature": "afb1c2cec20237b49c69023a3929a39a625a627e46e6140cf5e6584af75b1759",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 305,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/8e9dcbb9fcb3307705078422266e92da0ec5f4f7f148a6e46bc7c3d75f409de5",
+      "before_signature": "609862e9bf4f108a47d2ab53d73ba3997474e074c4674f554ff9ac16ed576b92",
+      "after_signature": "d7f8bdad0a908643cbc98ffab83c74c1e332c69549cbaf6f0f6472c47fdb810c",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 302,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/f2032ea0539efae4617c7ef638ddddb520b743ecf0ca84ea4ddca6e6d6f626bf",
+      "before_signature": "d06cc8eb4fbd9b5d696bdb78df6add0d4fdae795d7a6ad4d192acfab0e6a67c6",
+      "after_signature": "e1667b242c31a1053b4b4a3dead8f93fc49083b8d3ba5e7da36d440aac2f8c6a",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 302,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/7ff2f1232533954ce63627e189c1119fa49d47741fcdfe7387073ce17754d85a",
+      "before_signature": "45bb5b17ebf833aad07150257259e7180f11e0e5a77cfd12a5f261756b878a7a",
+      "after_signature": "79ebc84d118e30966f7785563226f353c8353eb3497adc207ab93ed890965037",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/stream_app.py",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "genos_diagnostics.py",
+        "genos_log_runner.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 297,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/83ad7d2bf2f18f8e08e707b88314547dfd618afb0ef13f2a02510ce624e0986c",
+      "before_signature": "ce383bfb2d7a50f4dd513970440d547f5b31b7989fa8ef39dc6d8efa67aa6b53",
+      "after_signature": "e4196f60266a446ffc9eabeda4491bba57e87555c4f898df90ed267c5ac10c0b",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/stream_app.py",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "genos_diagnostics.py",
+        "genos_log_runner.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 297,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/8da3c88f7bf8eb6bd4f2c2137f660a6fa31587dd9ce710ec80673b0d309ac71b",
+      "before_signature": "eabddae1711f399ee5acb856b052f8694168f35a393d50abf213c4d39df1023c",
+      "after_signature": "2e5ecb7367ab0b66a5a80f5d74ff7208ce1d8209855ff3c996d617243c8c892b",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/dcd331bba35446afcb05afae60a93805e2d4d60a0fe182f1d76a306dc244f216",
+      "before_signature": "0f5c3132f0e8a6a147485471b83e5c9723870d42da31641ded674aff94a5515b",
+      "after_signature": "225f6507fb27ad7a1b9bc0e23b973f108e50cc67560b0696e34f238db7d05b5d",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/0d883af57b4b0d8213f93e29dab7fec7f89a5f51f347da4cca422b10be7e71dc",
+      "before_signature": "d52ee603c0cfa5ada12e93b264e626adf3b34be390e01eb57e7c097f5409b107",
+      "after_signature": "5a32257ecbf961871682093bf8e5de6382df5d4a0d109847c4f3d5ece0b82e31",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/8293c24e58eea1f9228a9ebc01610a1c6143d755b37d8cc52a44f160500b8550",
+      "before_signature": "120e68c2f3abe596d0ee4e92351560044786c9138a8230218363e5dda1707228",
+      "after_signature": "4b081a0ade00985b5a9899bfa19114f8b5fcbe4923d7ec86e74bf5759745dbc5",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/5530b60f7ebba85da105e359a3869902a9819a974dd3b193099a1a7dcbe7f1ce",
+      "before_signature": "cffbf19fb5d881b010e38f639ab52c3959b43cd7568e1d69150899f074b73023",
+      "after_signature": "79ebc84d118e30966f7785563226f353c8353eb3497adc207ab93ed890965037",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/dcffd33f8e333b3c2defa108c7e2b9f942ada81baf5edf3f361b6476791a5389",
+      "before_signature": "7e92281b7bf9ce00ba3e4ea9b6a6e26c161ddecea2a117ef2afebb4c58711203",
+      "after_signature": "e4196f60266a446ffc9eabeda4491bba57e87555c4f898df90ed267c5ac10c0b",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/4c6059891e191ad458424ed60e14cb3e799f51100e634ce62bab5402aad1bd77",
+      "before_signature": "c67944d1ad2351a6189ae6b5a557a0130edf9a78f34a865d064a4ebbc3914ffd",
+      "after_signature": "2e5ecb7367ab0b66a5a80f5d74ff7208ce1d8209855ff3c996d617243c8c892b",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 305,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/40a7576afaa0b05824decee94b6e66c8255c23a8a0f43b1112d0abc7819a0ecb",
+      "before_signature": "8d6eb3e3a0c38cc94af6d61400a567169d89e7e6765f51fbee8d1fb56f60c056",
+      "after_signature": "225f6507fb27ad7a1b9bc0e23b973f108e50cc67560b0696e34f238db7d05b5d",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 305,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/761e94799557380e351003ffbfb5b89b946190bb069f64e13cc904c1b176d4d3",
+      "before_signature": "480cb35ef345e3fd6f41a6f3c70ee38e7a5806ffe3e11d8f429970ae36c0201e",
+      "after_signature": "5a32257ecbf961871682093bf8e5de6382df5d4a0d109847c4f3d5ece0b82e31",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 302,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/7015e4769cd82a8f6df537fe48c3def11cb007de8fd188c82e9cba7aa4bf4632",
+      "before_signature": "3c2d1a25a1a72e54bdbf64eb2b0779cb27d42b8d020248ee34d64203b7fb5fc2",
+      "after_signature": "4b081a0ade00985b5a9899bfa19114f8b5fcbe4923d7ec86e74bf5759745dbc5",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 302,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/4d12fbf00522aec2f79033d347fdabde96ea874cec2aaa2d664769ac97c51d95",
+      "before_signature": "c58662d62e4e3ef70affd675163543c37486a2c05545c856502831a9e38647ea",
+      "after_signature": "84c8a7ea97203baa9de38ee8f62e452571f1b79e8b4208ff4f272446880a63c1",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/stream_app.py",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "genos_diagnostics.py",
+        "genos_log_runner.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 297,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/5e0b9cdee1310b8d79a710fd7cbed5585b7f1c926e8860b54b45a9ef3e5d703d",
+      "before_signature": "d2c879eb32e3e5e67b3bcdf2a5760108b1cc54296a43a8631936b7fdfab61bf6",
+      "after_signature": "0358584e7d4d7d84eaf776ed1770d0c687abd7ad8968bd92bb6f7a669a38ea59",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/stream_app.py",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "genos_diagnostics.py",
+        "genos_log_runner.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 297,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/453f4f9866a5ad97d8e27b972123b2698e74b606ae9fecb76ee8a6be03f4293c",
+      "before_signature": "c344cff6186304855c6d13cff4966f73b5c467cb69c197cee3b0e073dd883f9b",
+      "after_signature": "097cfb02fdbe2fb828138af64462fe71e4c64e83dccb34f8d447839e99c6624f",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/cebd683560b8c0dda68ea7a8072d99cf6448484ed8bf04d3c5a03a4553270f3d",
+      "before_signature": "cd02fdbb95e112d911211b1960aade29022559d3e5ec8ea18416bf38ea79b590",
+      "after_signature": "3e837b0ed74c50335be071cd1a2fbb704c92a6c770962cf27d87e1b9a2be0828",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/803cbdf87e6f1e358dc34b10eb9d518518f95160607d99f51cb6066a99b71d54",
+      "before_signature": "d4d970cd453459d7c3a6adf6ee7f6480f406f7c45c552915b53e0853c30a65b1",
+      "after_signature": "c8f0fbefecbe4b188c28bd1446ce50d405d06749eff4650c1c4387bdea622768",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/428eb58b16b07773dfd17c88ea7b381692ce298c917db789dbc9926237ef2033",
+      "before_signature": "bb34f6256a21a1722a5269fe4365fe436a1d3ffcdd833515809f762279ab8cc8",
+      "after_signature": "29b6ea6c6a56c61ed00d4ee0ddcd13af8fa70fce166ca0562846a1d8a7abe4e7",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/83461e4486fb4c05e4c3ccd5174e154a435c388d941afd50ef62474e6f7829cf",
+      "before_signature": "f7d364bc4145e901f2639d8041b16471ec80c444dd53d8ea23e4a8fbc9a56340",
+      "after_signature": "84c8a7ea97203baa9de38ee8f62e452571f1b79e8b4208ff4f272446880a63c1",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/d306bcdaf5777e66c632bd5eab4479e80527da34c3bdafdef68153ad2b4e12b4",
+      "before_signature": "4e1c6b4b5b6aea2ca1682c95e56fa98636f22f5b257565439a6a37bef28d7089",
+      "after_signature": "0358584e7d4d7d84eaf776ed1770d0c687abd7ad8968bd92bb6f7a669a38ea59",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/929c503a5447f12654f57d14e4bde25c0832d22e89e41c80fced7fa37119b70c",
+      "before_signature": "367ae059d6480011e9fa20b88a14d8f6a9275292730c74e64ef93bd2033b7417",
+      "after_signature": "097cfb02fdbe2fb828138af64462fe71e4c64e83dccb34f8d447839e99c6624f",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 305,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/b934101fc735d82979bc5a3058e3d322ddc3bbea4c534c3f0c5b13bc071c52b6",
+      "before_signature": "839c62ecd9666061a7514995ce0ede8b5093aeb09cc078aa374e4852e495d712",
+      "after_signature": "3e837b0ed74c50335be071cd1a2fbb704c92a6c770962cf27d87e1b9a2be0828",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 305,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/88809359d9a7e2c7ca22969213a445bda407d0ce6815afa4e00e4fc8179ca394",
+      "before_signature": "ed3a09be3bfbdcf5322d059c6b39f34565002d2d12cc186c842f4661d18b86f1",
+      "after_signature": "c8f0fbefecbe4b188c28bd1446ce50d405d06749eff4650c1c4387bdea622768",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 302,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/f8679c02d5fd29422d9a2e8d026480e862e2840cd0fe62a57545b1d1a9f2ec72",
+      "before_signature": "a9afa0e8ad41df76a98987bcad621054b98504393062f65756df082d6c84e098",
+      "after_signature": "29b6ea6c6a56c61ed00d4ee0ddcd13af8fa70fce166ca0562846a1d8a7abe4e7",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 302,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/core-shortcut-r1/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "03767e7a07c4969469eb292a5bd9d87e81dc1b471c0568639bb231dd5d044518",
+      "after_signature": "078b03062b6d15ccac4bbdee3f0bc4070bcb713226e6c17cc16baec930bc68e6",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/stream_app.py",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "genos_diagnostics.py",
+        "genos_log_runner.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 297,
+      "service_sha256": "4c17a1c949a5ecbd563304ee644bb3654fe2bdb24807d417537d2c0fcb9dc703",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/core-shortcut-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "210bcdc920d6523b81754dfd887250f228361be7317f89dc4c0cec7e0ea7afe9",
+      "after_signature": "ae29a78056e9d5f85790d7cb88ddae46502b9cc6d840bdeb1f021f51af9f2f18",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/stream_app.py",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "genos_diagnostics.py",
+        "genos_log_runner.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 297,
+      "service_sha256": "4c17a1c949a5ecbd563304ee644bb3654fe2bdb24807d417537d2c0fcb9dc703",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-shortcut-r1/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "5d5fabb86f9c5612d6656c7db00306bff69c5e8f91ac7da22b12fff60d258fd6",
+      "after_signature": "b28c76c8266e61bfae630e69c9e0723c219711937d764546ab6c982503e7bd07",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "b29075964920a977a3951bd00433d2c8900e9e9ce0f92a8869c576f0b369153c",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-shortcut-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "6a8f41637adb787b841fefedfce1e6f13f0b7a220280cca07c567ee5099d92f6",
+      "after_signature": "c8e11cdc409c2cf0d975b132665689e00a5f9e4d261f57e44cf7ac303469ce75",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "b29075964920a977a3951bd00433d2c8900e9e9ce0f92a8869c576f0b369153c",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/core-shortcut-r1/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "972724d8ad5cd41f1105b8f84e820f83a5490a3d77ba3b6c35be0f4403f09a82",
+      "after_signature": "ca67c0df862d6151ffc00c58ee842de569899c3537a4c31ca3cd0bf0a99ad03c",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "b29075964920a977a3951bd00433d2c8900e9e9ce0f92a8869c576f0b369153c",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/core-shortcut-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "d81c6993bff464a3adb60813625cf9176399c020859323f2ea17ec6637aa45c8",
+      "after_signature": "2f0affe69b65241b1923c3fb8586bdba64f2c03fb323e3552be417def4497142",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/legal_agent/unified_rag.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "b29075964920a977a3951bd00433d2c8900e9e9ce0f92a8869c576f0b369153c",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/display-r2/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "76ce6348fb002f83c5efaf0fdd4b1784131b0bb83546238e127cacff93f31ccc",
+      "after_signature": "078b03062b6d15ccac4bbdee3f0bc4070bcb713226e6c17cc16baec930bc68e6",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "4c17a1c949a5ecbd563304ee644bb3654fe2bdb24807d417537d2c0fcb9dc703",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/display-r2/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "c6bd062899527e24d4d366fcd3be27d341208936ec7c5347a8f25c58f4acef86",
+      "after_signature": "ae29a78056e9d5f85790d7cb88ddae46502b9cc6d840bdeb1f021f51af9f2f18",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "4c17a1c949a5ecbd563304ee644bb3654fe2bdb24807d417537d2c0fcb9dc703",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/display-r2/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "1a55f7e65ce61482edd12a38fabc35decb788a7b3b49f7104b92c21c7099cf2a",
+      "after_signature": "b28c76c8266e61bfae630e69c9e0723c219711937d764546ab6c982503e7bd07",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 305,
+      "service_sha256": "b29075964920a977a3951bd00433d2c8900e9e9ce0f92a8869c576f0b369153c",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/display-r2/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "541860ccefe08d878f80c17eccc9da9dc1c29ff5bb5feaa686f16c5232b0c235",
+      "after_signature": "c8e11cdc409c2cf0d975b132665689e00a5f9e4d261f57e44cf7ac303469ce75",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 305,
+      "service_sha256": "b29075964920a977a3951bd00433d2c8900e9e9ce0f92a8869c576f0b369153c",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/display-r2/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "b09845b3031afd7b591ec7866c5f7537ae03440d64284e0b3579e2fc8f17b681",
+      "after_signature": "ca67c0df862d6151ffc00c58ee842de569899c3537a4c31ca3cd0bf0a99ad03c",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 302,
+      "service_sha256": "b29075964920a977a3951bd00433d2c8900e9e9ce0f92a8869c576f0b369153c",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/display-r2/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14",
+      "before_signature": "d0934ca9d83291ac9489fb26a5e7f2bd34c57558b23c820344277c2044103778",
+      "after_signature": "2f0affe69b65241b1923c3fb8586bdba64f2c03fb323e3552be417def4497142",
+      "modified_paths": [
+        "02_BACKEND/semantic_runtime/chat_adapter.py",
+        "02_BACKEND/semantic_runtime/progress.py",
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 302,
+      "service_sha256": "b29075964920a977a3951bd00433d2c8900e9e9ce0f92a8869c576f0b369153c",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/applied-display-r3",
+      "before_signature": "9b7465fb51c30d922e6312d8f16487b18913894c5f96b4e4ab1015dd4658b86f",
+      "after_signature": "a672640222749977bc58270a122a4c9eebbd20ccc88d76d434d1cc30796bebb5",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 300,
+      "service_sha256": "be5e5eb6a89b84616854e80dd7eefe96129891dc5d142aff02760bdbf0231816",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/display-r2/applied-display-r3",
+      "before_signature": "eb81d47e2a8b8f2d892c9e0f63dcf8e0188402662a2b0a190eaf33d5eada1202",
+      "after_signature": "f20b03423179db483964ca419f1632f199c56db2817a3cfe6d10666a9eb1ab48",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "be5e5eb6a89b84616854e80dd7eefe96129891dc5d142aff02760bdbf0231816",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/applied-display-r3",
+      "before_signature": "87276e31e29576600f007951326c089d3cc2974e366587ff8de4871535fabb2a",
+      "after_signature": "1ae0253275bc8b66f2f7c9a19d57e8d59eff13108fbbe791bf07d1269f0eeca2",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "301e7341da0a919160a42252caea7bae2d0bffa5e596c9d87c61ace1e1382edd",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/display-r2/applied-display-r3",
+      "before_signature": "71736c08831147a32c1d5184c3ed999004f91771120201a5cec1044459c9bab6",
+      "after_signature": "e972d93660d9ce8f51791e279fcdf4eca57c343ff331e4b9a3d67ee55271cd26",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 305,
+      "service_sha256": "301e7341da0a919160a42252caea7bae2d0bffa5e596c9d87c61ace1e1382edd",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/applied-display-r3",
+      "before_signature": "005fb2948ac9778c376158b9ed84262bc3cdf2945fe5d8fec214936c8bd730fd",
+      "after_signature": "0203225fa179278de5c288a8d759a90e6d6c4a5412fe774217d3db4bfe3ae69b",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 301,
+      "service_sha256": "301e7341da0a919160a42252caea7bae2d0bffa5e596c9d87c61ace1e1382edd",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/display-r2/applied-display-r3",
+      "before_signature": "0c6e025e797ac21af15f9f4a8bd1ff09b4a76c231ed31d7dc3f33cf54302b963",
+      "after_signature": "843e57202a3ca4dec499f96e66a7150a4c1c035491633280823a1e591e00a596",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 302,
+      "service_sha256": "301e7341da0a919160a42252caea7bae2d0bffa5e596c9d87c61ace1e1382edd",
+      "cm_package_sha256": null
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/core-shortcut-r1/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r3",
+      "before_signature": "37d3c6ac3750848de59f4ff8d457b8785276d6c1bb118b238217b93be3924856",
+      "after_signature": "027440e892df5a87f834ab50b1a6199b2766a8d3f7fc9a2d567f5c47bad33207",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 303,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/core-shortcut-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r3",
+      "before_signature": "b5d649a62b375aa358f21fc3bc09be8a39dc0f25ba94cd295e71699fd9b2e747",
+      "after_signature": "da91b5c05c708e09842fe22591837da61dc84b0867f01771512c401cc4d92816",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 303,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-shortcut-r1/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r3",
+      "before_signature": "519f71cb69a340b3adb1f18964c0551568534ee9120278464ec7234c768c16f8",
+      "after_signature": "0e4caec1336739d30531b00d982f7dca4664c84275b00f4a91ec3abc65120801",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 307,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-shortcut-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r3",
+      "before_signature": "4b9d3adbb2dddc4e473d56ca9aabf74152433bfab2d4f00cc0ad78726f960ba9",
+      "after_signature": "867e1344f3d98b9152031479c5d72b2972902001e7e15fc2b290a2ce5b742a7a",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 307,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/core-shortcut-r1/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r3",
+      "before_signature": "895c85034ffe80a51cab1a915587d1fea00f644cdeed6a9d883295f4b1d967f1",
+      "after_signature": "a6ff4dace1d7d3b71214bf9bf04288c2d08f4ab50cfc3643b106b705f23c6ea1",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R14/GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/core-shortcut-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r3",
+      "before_signature": "f08eb8f3f6a7721175a6f14c2b5dc540ef45d31d3f89ae75890eeaac5af708f2",
+      "after_signature": "78d7af50993d09d8bc9759c92dfa4c9a9250cbf24cbb1260219d5d0ca709d652",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/cc5007119cc5f1add118fdcb1fb7e52dcf9b169da5b0deb5aeeeeb120c0fc3ff/applied-display-r3",
+      "before_signature": "f2c1bf03d9a07f33f8631a530d56645151a270f5d3bce08e15f41ce3ba1c925e",
+      "after_signature": "7599a48d33f59951253beb560b02e9123befc1c5b053a8431fecae5aca9a26ef",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 303,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/d67681edc937c81ea9fffa1bbaa3fd20ee952edcb4f43a97237170ab5a172a1f/applied-display-r3",
+      "before_signature": "7ba5ad9c1dbc37753e8038346f72117f2653854416df26070c33e231a5543858",
+      "after_signature": "47c10754bcaa583aeb458b85b46dd79a522d21e82b0bfb707620a20bc409373f",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 303,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/275eb77d3ae6c368bd173299d32f00e1752702eb2e5b6d8873828e8b792268ca/applied-display-r3",
+      "before_signature": "6e7082dd05f6ccab44dbffb12a9235d64bbe069065a7c56d1a09653479a1881b",
+      "after_signature": "534881bbe05b00846a93b6a1aeb85838caabca3721e6552f53c3c37a7d06f223",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 307,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/5cc8a25a4bc5407962868bec4a14601dfc3ec45a311cfadf501a0f8cfa986a82/applied-display-r3",
+      "before_signature": "e512f1ddaec8b5e56f47b4a39a2f2a8148ece6797ba0b2d58c4a337c4e4a41e3",
+      "after_signature": "e3eac302cbc5556f5890bfc5e018d0ed55734d3a1b97f84aec90e2455596edbe",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 307,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/83389e7cd2e8791678d2e10ecd188929a00e7b476de913ed49ee3c4a7fe290a3/applied-display-r3",
+      "before_signature": "3f14df001b5d72cd2a358e4c265ddf195e4e9abd14d8f8733c6fb58c2b881567",
+      "after_signature": "6782b1f655f7c1c60b8d7b4451914e3fa9d38b42791899126c9f7a7f02687277",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R8/a953c0c6d8ad92f6ff14f35e3a8af5689c7260a177ddc40ca58e5f1cca0efbcc/applied-display-r3",
+      "before_signature": "62d5ff89d1058fd84a0fc63d4d7ac91455bf0032dbf5eec135d23475545e4d74",
+      "after_signature": "9b04ea43a1d2c6c9490f4670f5d34362eb7ff54016ef01628b5c7a69dbe19563",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "723269991bc0ed1954a22c09de2d48dc02d72a5400b33744a8e4494603115380"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/f79249a66fb71df228fa32fc75f30f517c3647795587193baf652e875890788e/applied-display-r3",
+      "before_signature": "174fdf771182d1a820acac21927dc37503f381902dc87cdca4f25bf9d7c6fdf4",
+      "after_signature": "e713a49972c7e5ab705dd33b951235879cecc548f921a4d552cb4c7d63bfa288",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 303,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/bee0cbf307096ed8dc0f79c826fdede3a41f156a00e7d36212429384cb3d8e3c/applied-display-r3",
+      "before_signature": "e4ce9ae24b0cb7eb2431b1d02153bee2baf192cf730a2042276c5d076c62891f",
+      "after_signature": "15ad133724b1bc8cf69a6d68adcbb9b353c4c03a3a58fec2b09f7efa55e488de",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 303,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/2ad2f710141f238eab99dc8517e3ceafa296e405145d12673d17f8f9b3c10890/applied-display-r3",
+      "before_signature": "d1dedf0e4e11bbbd7cf07447cac7867f4b39899cb407e7222007d96025921d26",
+      "after_signature": "c28029a218314b18033cbdaac3a212af0adb3a42c13934d0223c97e861ff8330",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 307,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/0608ccae7bfa9c9b5a24a9e397467adf6de744dc58f448d647079be98d519765/applied-display-r3",
+      "before_signature": "a3ed421c53df49605a27b8cf8f06661cbb79e8ea4320ba6bc10659744e26f8aa",
+      "after_signature": "afb1c2cec20237b49c69023a3929a39a625a627e46e6140cf5e6584af75b1759",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 307,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/5463aad544b7e36c47080f349d00c037b2c194bba27dd6303e3301c808f489d2/applied-display-r3",
+      "before_signature": "b6d0849201e12e8010b1f55dab8bfc997c4383a394e2d21fd03cb706b771c7dd",
+      "after_signature": "d7f8bdad0a908643cbc98ffab83c74c1e332c69549cbaf6f0f6472c47fdb810c",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R10/ecd84782485d602f467bb879fa22056ae2ae65c5e7356994a22a8df712be7bb6/applied-display-r3",
+      "before_signature": "1606d343a15d62aa9f818e6b77b909f83806d134599e8d37dde5e98bb23d501c",
+      "after_signature": "e1667b242c31a1053b4b4a3dead8f93fc49083b8d3ba5e7da36d440aac2f8c6a",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "47978ccd98cd8fd62a239996c57a84dc4df38b626a747026b1249debbe89b1f3"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/7ff2f1232533954ce63627e189c1119fa49d47741fcdfe7387073ce17754d85a/applied-display-r3",
+      "before_signature": "f75584a7e590d7536a6f96c12ac669dfefd54fd67630905260e2c6eb00435d99",
+      "after_signature": "79ebc84d118e30966f7785563226f353c8353eb3497adc207ab93ed890965037",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 303,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/83ad7d2bf2f18f8e08e707b88314547dfd618afb0ef13f2a02510ce624e0986c/applied-display-r3",
+      "before_signature": "5618e948aae83540605aa7cf3c1eca2085dccae0786ea16676ea820e28e442af",
+      "after_signature": "e4196f60266a446ffc9eabeda4491bba57e87555c4f898df90ed267c5ac10c0b",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 303,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/8da3c88f7bf8eb6bd4f2c2137f660a6fa31587dd9ce710ec80673b0d309ac71b/applied-display-r3",
+      "before_signature": "648593a43f87952736a40f4278ffd4079eacd302a1d5346d23433d28620ea36b",
+      "after_signature": "2e5ecb7367ab0b66a5a80f5d74ff7208ce1d8209855ff3c996d617243c8c892b",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 307,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/dcd331bba35446afcb05afae60a93805e2d4d60a0fe182f1d76a306dc244f216/applied-display-r3",
+      "before_signature": "940987dab75dfcbf0809b67302be09e1d701fdf9118103fd469f431a10a8a5d8",
+      "after_signature": "225f6507fb27ad7a1b9bc0e23b973f108e50cc67560b0696e34f238db7d05b5d",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 307,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/0d883af57b4b0d8213f93e29dab7fec7f89a5f51f347da4cca422b10be7e71dc/applied-display-r3",
+      "before_signature": "843b80766dc907fb8cb452b4de5fc13279db16f7be4f444742b0fd331f44f465",
+      "after_signature": "5a32257ecbf961871682093bf8e5de6382df5d4a0d109847c4f3d5ece0b82e31",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261007_R12/8293c24e58eea1f9228a9ebc01610a1c6143d755b37d8cc52a44f160500b8550/applied-display-r3",
+      "before_signature": "f08f18c85ac75b164fc89d7b851dbebf43dfe2d888150e6630728ee97247625a",
+      "after_signature": "4b081a0ade00985b5a9899bfa19114f8b5fcbe4923d7ec86e74bf5759745dbc5",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "b0d9e02c51a944186b8577eef0ff46aacb29e284929ef455bcb47e99c181c441"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/4d12fbf00522aec2f79033d347fdabde96ea874cec2aaa2d664769ac97c51d95/applied-display-r3",
+      "before_signature": "a8f6b1b832d9e6922100f86063a3e084056bf1a953106eab84d57816d10e2946",
+      "after_signature": "84c8a7ea97203baa9de38ee8f62e452571f1b79e8b4208ff4f272446880a63c1",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 303,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/5e0b9cdee1310b8d79a710fd7cbed5585b7f1c926e8860b54b45a9ef3e5d703d/applied-display-r3",
+      "before_signature": "66aabf102e166ec61d19fb731c81465ba17fab0407a60a0a82c32fe2bc503302",
+      "after_signature": "0358584e7d4d7d84eaf776ed1770d0c687abd7ad8968bd92bb6f7a669a38ea59",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 303,
+      "service_sha256": "bdbcd59d4eb449b9a8642280470f44a9350f8aaece97b4b8f2df2073e15f9cfa",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/453f4f9866a5ad97d8e27b972123b2698e74b606ae9fecb76ee8a6be03f4293c/applied-display-r3",
+      "before_signature": "947cf3fb14b4e102e37993a6ee60136cf2e1a7889975426bd56082b7c0b15382",
+      "after_signature": "097cfb02fdbe2fb828138af64462fe71e4c64e83dccb34f8d447839e99c6624f",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 307,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/cebd683560b8c0dda68ea7a8072d99cf6448484ed8bf04d3c5a03a4553270f3d/applied-display-r3",
+      "before_signature": "6a65a45947edffe99a34a52911a466a1e60c30042a417fe383827909a0e2249a",
+      "after_signature": "3e837b0ed74c50335be071cd1a2fbb704c92a6c770962cf27d87e1b9a2be0828",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 307,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/803cbdf87e6f1e358dc34b10eb9d518518f95160607d99f51cb6066a99b71d54/applied-display-r3",
+      "before_signature": "a7d8c8e5d5a0b3a4cf58696474c9a60e32704d9b3d26921563c8e9dcd06b2b86",
+      "after_signature": "c8f0fbefecbe4b188c28bd1446ce50d405d06749eff4650c1c4387bdea622768",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R13/428eb58b16b07773dfd17c88ea7b381692ce298c917db789dbc9926237ef2033/applied-display-r3",
+      "before_signature": "750af6e0a391d5c43c45516ec379c1577df5b6c2e5ec916a86d42a3c68576e54",
+      "after_signature": "29b6ea6c6a56c61ed00d4ee0ddcd13af8fa70fce166ca0562846a1d8a7abe4e7",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "fa804c3b4fcfa09ca49cdf45637de62540726198630ab1d95b67b545fdc5bf70",
+      "cm_package_sha256": "3c788288434a9e26d735d8c19889786212cfb0c629580487cbf2302dbacb9b09"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/core-shortcut-r1/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r3",
+      "before_signature": "ab01699fb9161ccd36d5e39eea1cfa3dfb21056b322e690cde8d4c64b544e020",
+      "after_signature": "078b03062b6d15ccac4bbdee3f0bc4070bcb713226e6c17cc16baec930bc68e6",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 303,
+      "service_sha256": "4c17a1c949a5ecbd563304ee644bb3654fe2bdb24807d417537d2c0fcb9dc703",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_QUERY_LATENCY_20261007_R3/original/db-log-rollback-r3/core-shortcut-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r3",
+      "before_signature": "2397d68bbfebda4215b6719ce50906c7a18e0def215cc05e129544c667f48507",
+      "after_signature": "ae29a78056e9d5f85790d7cb88ddae46502b9cc6d840bdeb1f021f51af9f2f18",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 303,
+      "service_sha256": "4c17a1c949a5ecbd563304ee644bb3654fe2bdb24807d417537d2c0fcb9dc703",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-shortcut-r1/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r3",
+      "before_signature": "3115eea031ab923ce29899edd6c565922433073ddb28703bad875e05f5e2a072",
+      "after_signature": "b28c76c8266e61bfae630e69c9e0723c219711937d764546ab6c982503e7bd07",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 307,
+      "service_sha256": "b29075964920a977a3951bd00433d2c8900e9e9ce0f92a8869c576f0b369153c",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_QUERY_LATENCY_20261007_R4/original/db-log-rollback-r3/core-shortcut-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r3",
+      "before_signature": "5f89c4facc17c5baf8c0bcfa74d87a7ab1f15ccd8afef112dcd62afeb8297371",
+      "after_signature": "c8e11cdc409c2cf0d975b132665689e00a5f9e4d261f57e44cf7ac303469ce75",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 307,
+      "service_sha256": "b29075964920a977a3951bd00433d2c8900e9e9ce0f92a8869c576f0b369153c",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/core-shortcut-r1/nfs-list-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r3",
+      "before_signature": "ea31d2eeaeb60a3f3e248c8731ed09057082426f528fe0df6b31a7992df0f7c7",
+      "after_signature": "ca67c0df862d6151ffc00c58ee842de569899c3537a4c31ca3cd0bf0a99ad03c",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "b29075964920a977a3951bd00433d2c8900e9e9ce0f92a8869c576f0b369153c",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    },
+    {
+      "basis": "GENOS_CM_ONECLICK_20261008_R15/full-error/GENOS_SYSTEM_LOGGING_20261007_R1/original/db-log-rollback-r3/core-shortcut-r1/onsite-source-r10/xml-body-suffix-r12/individual-body-name-r13/source-resolution-replay-r14/applied-display-r3",
+      "before_signature": "81996ec098a11bfb3f93be87edd24eb6ab4264f250bf0143cb77cf758b33423e",
+      "after_signature": "2f0affe69b65241b1923c3fb8586bdba64f2c03fb323e3552be417def4497142",
+      "modified_paths": [
+        "06_TOOLS/COMMANDS/code_ship.py",
+        "07_DOCS/REFERENCE/OPERATIONS/RAG_KEY_PROGRESS_SVG_20261007.md",
+        "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+        "main_workflow.py"
+      ],
+      "preserved_files": 304,
+      "service_sha256": "b29075964920a977a3951bd00433d2c8900e9e9ce0f92a8869c576f0b369153c",
+      "cm_package_sha256": "3628ff9eca9df3e3cba20965da1ea4211a43d3e09ab3cfe1334abaeb10c00e64"
+    }
+  ],
+  "source_display_audit": "09_ARTIFACTS/AUDITS/20261008-main-workflow-display-r1",
+  "cm_predecessor": "08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261008_r14",
+  "change_scope": "display/progress only; preserve cache, CM, service, budgets, data, settings"
+}

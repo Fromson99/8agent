@@ -42,7 +42,11 @@ def provider(monkeypatch, *, bad=False, revise=False):
                 changes=[{'template_id':'body','family':'kr_article','rule':rule}]
             return response({'verdict':'revise','reviewed_state_id':data['reviewed_state_id'],'template_changes':changes,'issues':[]})
         return response({'verdict':'approve','reviewed_state_id':data['reviewed_state_id'],'issues':[],'template_changes':[]})
-    install_transport(monkeypatch,request)
+    def bound_response(session,url,payload):
+        result=request(session,url,payload)
+        result['model']=payload['model']
+        return result
+    install_transport(monkeypatch,bound_response)
     return seen
 
 
@@ -229,7 +233,11 @@ def test_pending_review_resumes_without_recreating_templates_or_approved_windows
         issues=([{'blocks':[data['source_blocks'][0]['idx']],'reason':'ambiguous review'}]
                 if fail[0] and data['page_window']!=first_window[0] else [])
         return response({'verdict':'approve','reviewed_state_id':data['reviewed_state_id'],'issues':issues,'template_changes':[]})
-    install_transport(monkeypatch,request)
+    def bound_response(session,url,payload):
+        result=request(session,url,payload)
+        result['model']=payload['model']
+        return result
+    install_transport(monkeypatch,bound_response)
     kw=dict(store=tmp_path/'store',document='resume')
     with pytest.raises(runtime.NeedsReview):runtime.revise_pdf(pipeline,blocks,pdf,**kw)
     checkpoints=list((tmp_path/'structure-recipe-runs'/'checkpoints').glob('*.json'))
@@ -246,15 +254,13 @@ def test_pending_review_resumes_without_recreating_templates_or_approved_windows
     assert len(seen)==before
     checkpoints[0].write_text(original)
     before=len(seen);fail[0]=False
-    _,meta=runtime.revise_pdf(pipeline,blocks,pdf,**kw)
-    resumed=seen[before:]
-    assert meta['status']=='visual_approved'
-    assert resumed and all('recipe' in row for row in resumed)
-    assert 'vlm_opinions' in resumed[0]  # failed window reuses its saved VLM report
-    assert all(row['page_window']!=first_window[0] for row in resumed)
-    assert meta['coverage']['visually_reviewed_pages']==list(range(1,9))
-    # A different resolved model never reuses approvals or generated templates.
-    (tmp_path/'structure-recipes.json').unlink()
+    # Same source/binding has exhausted this decision's correction. Resume
+    # revalidates its saved responses; it cannot buy another attempt.
+    with pytest.raises(runtime.NeedsReview):runtime.revise_pdf(pipeline,blocks,pdf,**kw)
+    assert len(seen)==before
+    assert not (tmp_path/'structure-recipes.json').exists()
+    # An explicit different resolved model creates a new binding and cannot
+    # reuse the previous approvals or generated templates.
     monkeypatch.setenv('GENOS_LLM_MODEL','other-model');before=len(seen)
     runtime.revise_pdf(pipeline,blocks,pdf,**kw)
     assert any('outline' in row for row in seen[before:])

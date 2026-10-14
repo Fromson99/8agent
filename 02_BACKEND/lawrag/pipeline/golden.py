@@ -338,6 +338,8 @@ def main(argv=None):
     p.add_argument('--suite-id', default='imported-golden'); p.add_argument('--version', default='1')
     p = sub.add_parser('registry', help='CM·내규 등 골든 묶음을 하나의 등록부로 합치고 문항별 진행 상태를 계산')
     p.add_argument('--cm', type=Path); p.add_argument('--internal', type=Path, help='내규 골든 작성 CSV')
+    p.add_argument('--collection', action='append', nargs=2, metavar=('NAME', 'CSV'),
+                   help='이름을 지정한 질문 CSV 묶음; 반복 지정 가능 (예: risk_cm 질문.csv)')
     p.add_argument('--annotations', type=Path, help='{문항ID: {"tags": [...]}}'); p.add_argument('--output', required=True, type=Path)
     p = sub.add_parser('registry-status'); p.add_argument('--registry', required=True, type=Path)
     p = sub.add_parser('csv-template'); p.add_argument('--output', required=True, type=Path)
@@ -361,7 +363,7 @@ def main(argv=None):
     elif args.command in ('registry', 'registry-status'):
         from . import golden_registry
         if args.command == 'registry':
-            registry = golden_registry.build(args.cm, args.internal, args.annotations)
+            registry = golden_registry.build(args.cm, args.internal, args.annotations, collections=args.collection)
             write(args.output, registry)
         else:
             registry = golden_registry.verify(read(args.registry))

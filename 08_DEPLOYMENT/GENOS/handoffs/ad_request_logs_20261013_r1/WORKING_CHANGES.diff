@@ -1,0 +1,552 @@
+--- a/service.py
++++ b/service.py
+@@ -987,7 +987,8 @@
+     runtime_value = os.environ.get('GENOS_RUNTIME_DIR','').strip()
+     ad_runtime = Path(runtime_value).resolve() if runtime_value else (_ROOT/'90_RUNTIME/semantic')
+     start_worker(ad_runtime, application)
+-    ad_result = await asyncio.to_thread(intercept,data if isinstance(data,dict) else {},ad_runtime,application)
++    from semantic_runtime.ad_request_report import intercept as reported_ad_intercept
++    ad_result = await reported_ad_intercept(gateway, data if isinstance(data,dict) else {},ad_runtime,application)
+     if ad_result is not None:return ad_result
+     if str(data.get('API_TYPE','')).upper()=='AD_PROBE':return {'status':200,'body':{'ad_handled':False}}
+     # Transport-only identifiers never enter legal schemas, context or logs.
+--- a/02_BACKEND/semantic_runtime/request_report.py
++++ b/02_BACKEND/semantic_runtime/request_report.py
+@@ -68,11 +68,13 @@
+     may interrupt shared copies; it does not remove the original journal.
+     """
+ 
+-    def __init__(self, root, runtime, *, request_id, api_type, request, events):
++    def __init__(self, root, runtime, *, request_id, api_type, request, events,
++                 component='legal_agent', started_at=None):
+         self.root, self.runtime = root, runtime
+         self.request_id, self.api_type = request_id, api_type
+         self.request, self.events = request, events
+-        self.started_at = datetime.now(timezone.utc)
++        self.started_at = started_at or datetime.now(timezone.utc)
++        self.component = component
+         self.team = team_name(request)
+         self.log_path = None
+         self.record_id = uuid.uuid4().hex
+@@ -106,6 +108,7 @@
+         try:
+             self.context = safe_live_log(self.root, self.request_id, self.runtime,
+                                          team_id=self.team, started_at=self.started_at,
++                                         component=self.component,
+                                          attach=False)
+             path, handler, error = self.context.__enter__()
+             opened = True
+@@ -131,7 +134,7 @@
+                 if run_id is not None:
+                     handler.run_id = run_id
+                 body = self.request.get('json') if isinstance(self.request.get('json'), dict) else self.request
+-                handler.queue_detail('RAG INPUT / QUESTION', {
++                handler.queue_detail('AD INPUT / COMMAND' if self.component == 'ad_mode' else 'RAG INPUT / QUESTION', {
+                     'question': body.get('question') or body.get('q') or '',
+                     'api_type': self.api_type, 'use_llm': body.get('use_llm', True),
+                     **{key: body[key] for key in ('scope', 'team_id') if key in body},
+@@ -196,7 +199,7 @@
+             # Snapshot writes run on this finalizer, never on the gateway thread.
+             try:
+                 from .request_summary import make_row, write_row, refresh
+-                directory = report_directory(self.root, self.team, self.started_at)
++                directory = report_directory(self.root, self.team, self.started_at, component=self.component)
+                 report_path = directory / (self.record_id + '.json')
+                 row = make_row(self.request, self.result, self.events, request_id=self.request_id,
+                                started_at=self.started_at, directory=directory,
+@@ -216,7 +219,8 @@
+                 })
+                 summary = {
+                     'http_status': self.result.get('status', 200),
+-                    'answer': answer.get('text') if isinstance(answer, dict) else None,
++                    'answer': answer.get('text') if isinstance(answer, dict) else (
++                        body.get('text') if isinstance(body, dict) else None),
+                     **({key: body.get(key) for key in ('status', 'error', 'detail')}
+                        if isinstance(body, dict) else {}),
+                 }
+@@ -228,7 +232,18 @@
+                                     api_type=self.api_type, request=self.request,
+                                     result=self.result, events=self.events,
+                                     requested_at=self.started_at, live_log_path=self.log_path,
+-                                    record_id=self.record_id)
++                                    record_id=self.record_id, component=self.component)
++            if self.handler and self.component == 'ad_mode':
++                # AD has its own durable SQL journal, not a legal run journal.
++                ad_journal = json.loads(path.read_text(encoding='utf-8'))['journal']
++                for call in ad_journal.get('calls', []):
++                    self.handler.write_detail('AD MODEL REQUEST', {
++                        'sequence': call['sequence'], 'input': call.get('input')})
++                    self.handler.write_detail('AD MODEL RESPONSE', {
++                        'sequence': call['sequence'], 'response': call.get('model_output'),
++                        'plan': call.get('plan'), 'receipt': call.get('receipt')})
++                for error in ad_journal.get('errors', []):
++                    self.handler.write_detail('AD FAILURE', error)
+             self._event('shared_report.written', path=str(path))
+             phase = 'shared_trace'
+             self._event('shared_trace.started')
+@@ -765,10 +780,10 @@
+ @contextmanager
+ def live_log(root: Path, request_id: str, runtime: Path | None = None, *,
+              team_id: str = 'unassigned', started_at: datetime | None = None,
+-             attach: bool = True):
++             attach: bool = True, component: str = 'legal_agent'):
+     """Create a request-scoped NFS .log before work starts and append as it runs."""
+     obs.configure()
+-    directory = report_directory(root, team_id, started_at)
++    directory = report_directory(root, team_id, started_at, component=component)
+     safe_id = re.sub(r"[^A-Za-z0-9_.:-]", "_", request_id)[:64]
+     path = directory / f"{safe_id}-{uuid.uuid4().hex[:12]}.log"
+     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+@@ -908,12 +923,13 @@
+ def write_report(root: Path, runtime: Path, *, request_id: str, api_type: str,
+                  request: dict[str, Any], result: dict[str, Any],
+                  events: list[dict[str, Any]], requested_at: datetime | None = None,
+-                 live_log_path: Path | None = None, record_id: str | None = None) -> Path:
++                 live_log_path: Path | None = None, record_id: str | None = None,
++                 component: str = 'legal_agent') -> Path:
+     """Atomically publish one complete JSON report; callers handle I/O failure."""
+     body = result.get("body") if isinstance(result, dict) else None
+     run_id = body.get("run_id") if isinstance(body, dict) else None
+     requested_at = requested_at or datetime.now(timezone.utc)
+-    directory = report_directory(root, team_name(request), requested_at)
++    directory = report_directory(root, team_name(request), requested_at, component=component)
+     safe_id = run_id if isinstance(run_id, str) and _RUN_ID.fullmatch(run_id) else request_id
+     safe_id = re.sub(r"[^A-Za-z0-9_.:-]", "_", safe_id)[:64]
+     target = directory / f"{safe_id}-{uuid.uuid4().hex[:12]}.json"
+@@ -926,12 +942,17 @@
+             raise ValueError('live log and request report must use the same team/date directory')
+         target = live_log_path.with_suffix('.json')
+     with obs.step(_REPORT_LOG, 'shared_report.journal'):
+-        journal = _journal(runtime, run_id) if isinstance(run_id, str) else {"status": "NO_RUN_ID"}
++        if component == 'ad_mode':
++            from .ad_request_report import journal as ad_journal
++            journal = ad_journal(runtime, request_id, request)
++        else:
++            journal = _journal(runtime, run_id) if isinstance(run_id, str) else {"status": "NO_RUN_ID"}
+     report = _scrub({
+         "schema_version": "genos-request-report-v1",
+         "created_at": datetime.now(timezone.utc).isoformat(),
+         "requested_at": requested_at.isoformat(),
+         "team_id": team_name(request),
++        "component": component,
+         "live_log_path": str(live_log_path) if live_log_path is not None else None,
+         "request_id": request_id,
+         "run_id": run_id,
+@@ -985,6 +1006,9 @@
+ 
+ def format_readable_report(report: dict[str, Any]) -> str:
+     """Render a chronological, bounded human trace from the same saved JSON."""
++    if report.get('component') == 'ad_mode':
++        from .ad_request_report import readable
++        return readable(report)
+     journal = report.get("journal") or {}
+     timeline = journal.get("timeline") or []
+     result = report.get("result") or {}
+--- a/02_BACKEND/semantic_runtime/request_summary.py
++++ b/02_BACKEND/semantic_runtime/request_summary.py
+@@ -36,13 +36,17 @@
+     return team if isinstance(team, str) and re.fullmatch(r'[A-Za-z0-9_-]{1,64}_team', team) else 'unassigned'
+ 
+ 
+-def report_directory(root, team='unassigned', started_at=None):
++def report_directory(root, team='unassigned', started_at=None, *, component='legal_agent'):
+     root = Path(root)
+     if not root.is_absolute(): raise ValueError('GENOS_SHARED_LOG_DIR must be an absolute path')
+     if team != 'unassigned' and not re.fullmatch(r'[A-Za-z0-9_-]{1,64}_team', team):
+         raise ValueError('invalid report team')
+     started_at = started_at or datetime.now(timezone.utc)
+     directory = root / started_at.astimezone(KST).date().isoformat() / team
++    if component not in (None, 'legal_agent', 'ad_mode'):
++        raise ValueError('invalid report component')
++    if component is not None:
++        directory /= component
+     directory.mkdir(parents=True, exist_ok=True, mode=0o750)
+     return directory
+ 
+@@ -65,7 +69,7 @@
+     return {'requested_at': started_at.astimezone(KST).isoformat(timespec='seconds'),
+             'team': team_name(request), 'user': str(fields.get('user_id') or ''),
+             'question': question, 'answer': str(text),
+-            'status': '실패' if http >= 400 else '답변 완료' if text else '답변 없음',
++            'status': '실패' if http >= 400 or body.get('answer_status') in ('error', 'failed') else '처리 중' if body.get('answer_status') == 'pending' else '답변 완료' if text else '답변 없음',
+             'http_status': http, 'seconds': round(duration/1000, 3) if isinstance(duration, (int, float)) else '',
+             'request_id': request_id, 'run_id': str(body.get('run_id') or ''),
+             'log': relative(log_path), 'report': relative(report_path), 'error': str(error)}
+@@ -212,7 +216,7 @@
+                             if event.get('event') == 'request.started'), None)
+         started = datetime.fromisoformat(report.get('requested_at') or first_event or report['created_at'])
+         if started.tzinfo is None: started = started.replace(tzinfo=timezone.utc)
+-        directory = report_directory(root, selected_team, started)
++        directory = report_directory(root, selected_team, started, component=report.get('component'))
+         log = report.get('live_log_path')
+         row = make_row(request, report.get('result'), report.get('service_events') or [],
+                        request_id=report.get('request_id', ''), started_at=started,
+@@ -222,7 +226,9 @@
+             directories.add(directory)
+     # Also recover snapshots after a previous refresh failed, even before a full report was written.
+     for path in scan.rglob('_qa'):
+-        if path.is_dir() and (not team or path.parent.name == team): directories.add(path.parent)
++        if path.is_dir() and (not team or path.parent.name == team or
++                             (path.parent.name in ('legal_agent', 'ad_mode') and path.parent.parent.name == team)):
++            directories.add(path.parent)
+     for directory in sorted(directories): refresh(directory)
+     return sorted(directories)
+ 
+--- a/02_BACKEND/semantic_runtime/ad_model.py
++++ b/02_BACKEND/semantic_runtime/ad_model.py
+@@ -7,7 +7,20 @@
+ from .genos import from_env, advertised_model
+ from .legal_agent.transport import GenosTransport
+ from .legal_agent.workflow_tiers_policy import DEFAULT_PROFILE
+-from .provider import _structured_genos_value
++from contextlib import contextmanager
++from contextvars import ContextVar
++from .legal_agent.model_contract import structured_request, structured_value, REVISION
++
++_REQUEST_RECORDER = ContextVar('ad_model_request_recorder', default=None)
++
++
++@contextmanager
++def capture_requests(recorder):
++    token = _REQUEST_RECORDER.set(recorder)
++    try:
++        yield
++    finally:
++        _REQUEST_RECORDER.reset(token)
+ 
+ 
+ def interpret(context,schema,system):
+@@ -23,22 +36,21 @@
+     if not math.isfinite(seconds) or seconds<=0:raise ValueError('AD_MODEL: GENOS_LLM_TIMEOUT must be positive and finite')
+     tokens=int(os.environ.get('GENOS_RAG_MAX_OUTPUT_TOKENS') or DEFAULT_PROFILE['max_output_tokens'])
+     if tokens<1:raise ValueError('AD_MODEL: GENOS_RAG_MAX_OUTPUT_TOKENS must be positive')
+-    payload={'model':model,'temperature':0,'stream':False,'max_tokens':tokens,
+-        'chat_template_kwargs':{'enable_thinking':False},
+-        'messages':[{'role':'system','content':system},
+-                    {'role':'user','content':json.dumps(context,ensure_ascii=False)}],
+-        'response_format':{'type':'json_schema','json_schema':{'name':'ad_command_v1','strict':True,'schema':schema}}}
++    payload=structured_request(model=model,max_tokens=tokens,schema_name='ad_command_v1',schema=schema,
++        messages=[{'role':'system','content':system},
++                  {'role':'user','content':json.dumps(context,ensure_ascii=False)}])
++    recorder=_REQUEST_RECORDER.get()
++    if recorder is not None:recorder(payload)
+     started=time.monotonic()
+     envelope=transport.send_once(body=payload,ticket={'remaining_seconds':seconds,'attempt_id':context.get('model_call_id') or context['request_id']})
+     raw=envelope['body_json'];plan=None;decode_error=None
+     try:
+         if not isinstance(raw,dict):raise ValueError('AD_MODEL: model response is not an object')
+-        if raw.get('model') and raw['model']!=model:raise ValueError('AD_MODEL: response model differs from configured model')
+-        choices=raw.get('choices') or []
+-        if not choices or choices[0].get('finish_reason')=='length':raise ValueError('AD_MODEL: incomplete model response')
+-        plan=_structured_genos_value(raw)
++        if raw.get('model')!=model:raise ValueError('AD_MODEL: response model differs from configured model')
++        plan=structured_value(raw)
+     except Exception as exc:decode_error=str(exc)
+-    receipt={**binding,'model_call_id':context.get('model_call_id') or context['request_id'],
++    receipt={**binding,'model_contract_revision':REVISION,'model_call_id':context.get('model_call_id') or context['request_id'],
++        'http_status':envelope.get('status_code'),'response_bytes':envelope.get('response_bytes'),
+         'actual_response_model':raw.get('model') if isinstance(raw,dict) else None,
+         'seconds':time.monotonic()-started,'usage':raw.get('usage') if isinstance(raw,dict) else None,
+         'request_sha256':hashlib.sha256(json.dumps(payload,ensure_ascii=False,sort_keys=True).encode()).hexdigest(),
+--- a/02_BACKEND/semantic_runtime/ad_language.py
++++ b/02_BACKEND/semantic_runtime/ad_language.py
+@@ -228,8 +228,8 @@
+         with obs.context(request_id=request_id,api_type='AD_PROBE'):
+             obs.event(log,'ad.language.started',operation_id=operation,language_revision=REVISION)
+             # No SQL write transaction is active across this network call.
+-            from .observability import _redact_secrets
+-            def encoded(value):return _redact_secrets(json.dumps(value,ensure_ascii=False))
++            from .request_report import _scrub
++            def encoded(value):return json.dumps(_scrub(value),ensure_ascii=False)
+             from jsonschema import Draft202012Validator
+             receipts=[];base_context=context
+             for sequence in range(1,MAX_MODEL_CALLS+1):
+@@ -241,7 +241,14 @@
+                         raise ValueError('AD_INTERRUPTED: model turn lease expired')
+                     store.db.execute('INSERT INTO ad_language_call VALUES(?,?,?,?,?,?,?)',
+                         (operation,sequence,encoded(context),None,None,None,time.time()))
+-                model_output=interpret(context,SCHEMA,SYSTEM)
++                from .ad_model import capture_requests
++                def record_request(payload):
++                    # Persist the exact request before sending, including on HTTP failure.
++                    with store.transaction():
++                        store.db.execute('UPDATE ad_language_call SET input=? WHERE operation=? AND sequence=?',
++                            (encoded({'context':context,'request':payload}),operation,sequence))
++                with capture_requests(record_request):
++                    model_output=interpret(context,SCHEMA,SYSTEM)
+                 if not isinstance(model_output,dict) or set(model_output)!={'plan','receipt','raw'}:
+                     raise ValueError('AD_MODEL: interpreter must return plan, receipt and raw response')
+                 with store.transaction():
+@@ -285,9 +292,9 @@
+                 from .observability import _redact_secrets
+                 with store.transaction():
+                     store.db.execute('UPDATE ad_language_turn SET model_output=? WHERE operation=?',
+-                        (_redact_secrets(json.dumps(exc.response,ensure_ascii=False)),operation))
++                        (encoded(exc.response),operation))
+                     store.db.execute('UPDATE ad_language_call SET model_output=? WHERE operation=? AND sequence=(SELECT max(sequence) FROM ad_language_call WHERE operation=?)',
+-                        (_redact_secrets(json.dumps(exc.response,ensure_ascii=False)),operation,operation))
++                        (encoded(exc.response),operation,operation))
+             return failure(store,sid,operation,exc)
+         return {'response_schema':'ad-mode-v1','ad_mode':True,'answer_status':'error','text':error_detail(exc),'language_revision':REVISION}
+     finally:
+--- a/02_BACKEND/semantic_runtime/ad_jobs.py
++++ b/02_BACKEND/semantic_runtime/ad_jobs.py
+@@ -13,7 +13,14 @@
+ def error_detail(exc):
+     from .observability import _redact_secrets
+     # Preserve schema paths and cause chain. Only credentials are redacted.
+-    return _redact_secrets(''.join(traceback.format_exception(type(exc),exc,exc.__traceback__)))
++    detail = ''.join(traceback.format_exception(type(exc),exc,exc.__traceback__))
++    response = getattr(exc, 'response', None)
++    if isinstance(response, dict):
++        from .legal_agent.transport import _error_details
++        diagnostics = {'http_status': response.get('status_code'),
++                       **_error_details(response.get('body_json'))}
++        detail = '모델 HTTP 응답: ' + json.dumps(diagnostics, ensure_ascii=False) + '\n' + detail
++    return _redact_secrets(detail)
+ 
+ 
+ def record_error(store, exc, stage, *, session=None, job=None, operation=None):
+--- a/02_BACKEND/semantic_runtime/legal_agent/gateway.py
++++ b/02_BACKEND/semantic_runtime/legal_agent/gateway.py
+@@ -170,18 +170,7 @@
+             'finish_reason': finish}
+ 
+ 
+-def genos_wire_schema(value):
+-    """Omit JSON Schema keywords unsupported by GENOS's grammar compiler.
+-
+-    Keep the protocol definitions intact: validate_wire/validate still enforce
+-    uniqueness on the decoded model response inside the application.
+-    """
+-    if isinstance(value, dict):
+-        return {key: genos_wire_schema(child) for key, child in value.items()
+-                if key != 'uniqueItems'}
+-    if isinstance(value, list):
+-        return [genos_wire_schema(child) for child in value]
+-    return value
++from .model_contract import genos_wire_schema, structured_request, structured_content
+ 
+ 
+ def available_tool_schema(schema, view):
+@@ -261,11 +250,10 @@
+         if not self.compact:
+             user['output_schema'] = schema
+         domain = '' if self.compact else '\nDomainSpec: '+encoded(self.domain)
+-        return {'model': self.transport.binding['model'], 'max_tokens': self.profile['max_output_tokens'],
+-                   'temperature': 0, 'stream': False, 'chat_template_kwargs': {'enable_thinking': False},
+-                   'messages': [{'role': 'system', 'content': self.system+'\n'+prompt+domain+numbered_instructions},
+-                                {'role': 'user', 'content': encoded(user)}],
+-                   'response_format': {'type': 'json_schema', 'json_schema': {'name': schema_name, 'strict': True, 'schema': schema}}}
++        return structured_request(model=self.transport.binding['model'],
++            max_tokens=self.profile['max_output_tokens'], schema_name=schema_name, schema=schema,
++            messages=[{'role': 'system', 'content': self.system+'\n'+prompt+domain+numbered_instructions},
++                      {'role': 'user', 'content': encoded(user)}])
+ 
+     def generate(self, phase, view, schema_name):
+         from .answer_stream import current_sink, DraftText
+@@ -428,15 +416,8 @@
+                 raise ContractError('actual response model differs from pinned model')
+             content = None
+             try:
+-                if not isinstance(body, dict) or not isinstance(body.get('choices'), list) or len(body['choices']) != 1:
+-                    raise ProposalError('expected one structured choice')
+                 from .completion_contracts import enabled
+-                if enabled(self.profile) and body['choices'][0].get('finish_reason') in ('length', 'content_filter'):
+-                    raise ProposalError('model response did not complete normally')
+-                message = body['choices'][0]['message']
+-                content = message.get('content')
+-                if not content and len(message.get('tool_calls', [])) == 1:
+-                    content = message['tool_calls'][0]['function']['arguments']
++                content = structured_content(body, require_complete=enabled(self.profile))
+                 value = json.loads(content) if isinstance(content, str) else content
+                 if references is not None:
+                     value = references.decode(value, request['response_format']['json_schema']['schema'], schema_name)
+--- a/02_BACKEND/semantic_runtime/legal_agent/model_contract.py
++++ b/02_BACKEND/semantic_runtime/legal_agent/model_contract.py
+@@ -0,0 +1,63 @@
++"""Shared structured model wire contract for legal reasoning and AD commands.
++
++Only provider-incompatible grammar keywords are omitted on the wire. Callers
++retain their original schemas and validate the decoded value before using it.
++"""
++from copy import deepcopy
++import json
++from .errors import ProposalError
++
++REVISION = 'genos-structured-contract-20261013-r1'
++
++
++def genos_wire_schema(value):
++    if not isinstance(value, dict):
++        return deepcopy(value)
++    result = {}
++    maps = {'properties', 'patternProperties', '$defs', 'definitions', 'dependentSchemas'}
++    single = {'items', 'additionalItems', 'contains', 'additionalProperties',
++              'unevaluatedProperties', 'unevaluatedItems', 'propertyNames', 'not', 'if', 'then', 'else'}
++    for key, child in value.items():
++        if key == 'uniqueItems':
++            continue
++        if key in maps and isinstance(child, dict):
++            result[key] = {name: genos_wire_schema(schema) for name, schema in child.items()}
++        elif key in single:
++            result[key] = ([genos_wire_schema(schema) for schema in child]
++                           if isinstance(child, list) else genos_wire_schema(child))
++        elif key in {'anyOf', 'oneOf', 'allOf', 'prefixItems'} and isinstance(child, list):
++            result[key] = [genos_wire_schema(schema) for schema in child]
++        else:
++            result[key] = deepcopy(child)
++    return result
++
++
++def structured_request(*, model, max_tokens, messages, schema_name, schema):
++    return {'model': model, 'max_tokens': max_tokens, 'temperature': 0,
++            'stream': False, 'chat_template_kwargs': {'enable_thinking': False},
++            'messages': messages,
++            'response_format': {'type': 'json_schema', 'json_schema': {
++                'name': schema_name, 'strict': True, 'schema': genos_wire_schema(schema)}}}
++
++
++def structured_content(body, *, require_complete=True):
++    if (not isinstance(body, dict) or not isinstance(body.get('choices'), list)
++            or len(body['choices']) != 1 or not isinstance(body['choices'][0], dict)):
++        raise ProposalError('expected one structured choice')
++    choice = body['choices'][0]
++    if require_complete and choice.get('finish_reason') in ('length', 'content_filter'):
++        raise ProposalError('model response did not complete normally')
++    message = choice.get('message')
++    if not isinstance(message, dict):
++        raise ProposalError('expected a structured message')
++    content = message.get('content')
++    calls = message.get('tool_calls')
++    if not content and isinstance(calls, list) and len(calls) == 1:
++        function = calls[0].get('function') if isinstance(calls[0], dict) else None
++        content = function.get('arguments') if isinstance(function, dict) else None
++    return content
++
++
++def structured_value(body, *, require_complete=True):
++    content = structured_content(body, require_complete=require_complete)
++    return json.loads(content) if isinstance(content, str) else content
+--- a/02_BACKEND/semantic_runtime/ad_request_report.py
++++ b/02_BACKEND/semantic_runtime/ad_request_report.py
+@@ -0,0 +1,119 @@
++"""Export an AD request through the existing team request-report writer.
++
++AD SQL remains authoritative. Only the matching workspace/channel/chat/request
++is exported; an unhandled AD probe produces no duplicate legal request report.
++"""
++import asyncio
++from contextlib import nullcontext
++from datetime import datetime, timezone
++import json
++import os
++import sqlite3
++import time
++from pathlib import Path
++from . import observability as obs
++from .request_summary import request_fields
++
++log = obs.get_logger('ad-report')
++
++
++def bound_request(data):
++    # Match ad_gateway's body selection exactly; outer identity fields must not
++    # fill missing identities in an explicitly nested request.
++    fields = data.get('json') if isinstance(data.get('json'), dict) else data
++    workspace = os.environ.get('TEAM_ID') or os.environ.get('AD_WORKSPACE') or 'request'
++    binding = {'workspace': workspace,
++               'channel': fields.get('ad_channel') or fields.get('channel') or 'genos-chat',
++               'chat': str(fields.get('ad_session_id') or fields.get('chatId') or fields.get('session_id') or '')}
++    # AD team authority is deployment configuration, never arbitrary chat fields.
++    return {**fields, 'team_id': workspace, 'ad_report_binding': binding}
++
++
++async def intercept(gateway, data, runtime, application):
++    from . import request_report as reports
++    fields = request_fields(data)
++    request_id = obs.new_request_id(fields.get('request_id'))
++    data = {**data, 'request_id': request_id}
++    if isinstance(data.get('json'), dict):
++        data['json'] = {**data['json'], 'request_id': request_id}
++    root = os.environ.get('GENOS_SHARED_LOG_DIR', '').strip()
++    started_at, started = datetime.now(timezone.utc), time.perf_counter()
++    capture = reports.capture_events(request_id) if root else nullcontext([])
++    with capture as events, obs.context(request_id=request_id, api_type='AD_PROBE'):
++        obs.event(log, 'request.started', component='ad_mode')
++        result = await asyncio.to_thread(gateway.intercept, data, runtime, application)
++        if result is None:
++            return None
++        body = result.get('body') or {}
++        obs.event(log, 'request.finished', component='ad_mode', http_status=result.get('status'),
++                  ok=body.get('answer_status') not in ('error', 'failed'),
++                  duration_ms=int((time.perf_counter()-started)*1000))
++        if root:
++            try:
++                with reports.DeferredReport(Path(root), runtime, request_id=request_id,
++                        api_type=str(fields.get('API_TYPE') or 'AD_PROBE'),
++                        request=bound_request(data), events=events, component='ad_mode',
++                        started_at=started_at) as report:
++                    report.complete(result)
++                    obs.event(log, 'request.returning', component='ad_mode',
++                              duration_ms=int((time.perf_counter()-started)*1000))
++            except Exception as exc:
++                obs.event(log, 'shared_report.failed', level=40, error_type=type(exc).__name__)
++        return result
++
++
++def journal(runtime, request_id, request):
++    from .legal_agent.shortcut_store import selected_store
++    binding = request.get('ad_report_binding') or {}
++    if set(binding) != {'workspace', 'channel', 'chat'}:
++        return {'status': 'MISSING_AD_BINDING', 'kind': 'ad_mode'}
++    db = None
++    try:
++        path = selected_store(runtime)
++        db = sqlite3.connect(path.as_uri()+'?mode=ro', uri=True, timeout=5)
++        db.row_factory = sqlite3.Row
++        rows = db.execute('''SELECT o.* FROM ad_operation o JOIN ad_session s ON s.id=o.session
++            WHERE s.workspace=? AND s.channel=? AND s.chat=? AND o.request=?''',
++            (binding['workspace'], binding['channel'], binding['chat'], request_id)).fetchall()
++        if len(rows) != 1:
++            return {'status': 'NOT_FOUND' if not rows else 'AMBIGUOUS', 'kind': 'ad_mode'}
++        def decode(row):
++            row = dict(row)
++            for key in ('input','model_output','plan','receipt','response','before_value','after_value'):
++                if isinstance(row.get(key), str):
++                    try: row[key] = json.loads(row[key])
++                    except ValueError: pass
++            return row
++        operation = decode(rows[0])
++        tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
++        result = {'status': 'FOUND', 'kind': 'ad_mode', 'operation': operation}
++        for table, key, order in (('ad_language_call','calls','sequence'),
++                                  ('ad_change','changes','ordinal'), ('ad_error','errors','created_at')):
++            result[key] = ([decode(r) for r in db.execute(
++                f'SELECT * FROM {table} WHERE operation=? ORDER BY {order}', (operation['id'],))]
++                if table in tables else [])
++        return result
++    except Exception as exc:
++        # Logging must not alter the administration result or run SQL migrations.
++        return {'status': 'UNAVAILABLE', 'kind': 'ad_mode', 'error_type': type(exc).__name__}
++    finally:
++        if db is not None: db.close()
++
++
++def readable(report):
++    journal = report.get('journal') or {}
++    body = (report.get('result') or {}).get('body') or {}
++    lines = ['GENOS AD 요청 실행 기록', 'request_id: '+str(report.get('request_id')),
++             'team: '+str(report.get('team_id')), 'journal: '+str(journal.get('status')),
++             'answer_status: '+str(body.get('answer_status'))]
++    for call in journal.get('calls', []):
++        response = call.get('model_output') or {}
++        status = response.get('status_code') if isinstance(response, dict) else None
++        lines += ['', '모델 호출 '+str(call['sequence'])+' / HTTP '+str(status or '응답 receipt 참조'),
++                  json.dumps({'input': call.get('input'), 'response': response,
++                              'receipt': call.get('receipt'), 'plan': call.get('plan')},
++                             ensure_ascii=False, indent=2)]
++    lines += ['', '최종 응답', str(body.get('text') or ''), '', '변경/오류 기록',
++              json.dumps({'changes': journal.get('changes', []), 'errors': journal.get('errors', [])},
++                         ensure_ascii=False, indent=2)]
++    return '\n'.join(lines)+'\n'

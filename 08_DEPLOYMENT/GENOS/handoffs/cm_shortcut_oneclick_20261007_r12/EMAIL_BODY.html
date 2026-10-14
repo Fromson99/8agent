@@ -1,0 +1,10 @@
+<p><strong>이전 CM R11 대신 첨부한 R12를 사용하세요.</strong> 이름 끝의 <code>본문</code>을 추가로 연결합니다. 예: <code>중소기업기본법 본문.xml</code>. 기존 정식명·폴더·별칭·전문·조문 처리는 유지하며 시행령·시행규칙·개정문을 다른 법령의 본문으로 합치지 않습니다.</p>
+<p>R11이 코드 적용 후 <code>package-check</code>에서 실패한 현재 상태에 이어 적용합니다. 조사 한도 코드·설정과 원래 백업, R8/R10/R11 실패 로그, 원문 generation, 기존 DB 기록을 보존합니다. RAW 파일 이름 변경이나 원문 재구축·조사 한도 재적용·새 환경변수 입력은 없습니다.</p>
+<p>ZIP을 기존 <code>~/DEV/TRANSFER</code>에 올린 뒤 아래 세 줄을 실행하세요.</p>
+<pre>python3 -m zipfile -e ~/DEV/TRANSFER/GENOS_CM_ONECLICK_20261007_R12.zip ~/DEV/TRANSFER
+(cd ~/DEV/TRANSFER &amp;&amp; sha256sum -c GENOS_CM_ONECLICK_20261007_R12_SHA256SUMS.txt)
+bash ~/DEV/TRANSFER/GENOS_CM_ONECLICK_20261007_R12_RUN.txt</pre>
+<p>ZIP 안에 전체 RUN TXT·안내·SHA256SUMS가 있습니다. RUN TXT와 안내 TXT도 별도로 첨부했습니다. 별도 RUN TXT를 TRANSFER에 올렸으면 마지막 bash 한 줄로도 실행할 수 있습니다.</p>
+<p>원문 51건/근거 98개 연결 확인 → commit → 같은 checkout/generation gate → 공통 등록/검증 → 기존 origin push를 수행합니다. <code>EXIT=0</code>과 <code>READY_FOR_REVISION_DEPLOYMENT</code>이면 출력된 COMMIT으로 새 코드서빙 리비전을 배포하고 워크플로우 테스트 화면에서 질문을 확인하세요.</p>
+<p>로그/상태/문서 매핑/영수증/백업은 <code>~/DEV/TRANSFER/cm-oneclick-r12/</code>에 저장합니다. 단계 상세 오류는 <code>package-check.log</code> 등에서 확인합니다. 실제 문서 누락인 경우 이름 수정만으로 해결되지는 않습니다.</p>
+<p>이름 연결·공통 등록·예산 관련 55개 검사와 새 인계 4개 검사를 통과했습니다. 216개 recipe/engine pin, 실제 첨부 TXT의 R11 실패 → R12 등록 51건/98근거, 3설치 상태별 2회 실행·중복 방지·조사 한도/원문/기존 DB/백업 보존·같은 checkout gate/모의 push·코드 원복을 확인했습니다. 로컬 검증이며 실제 GENOS 적용·새 리비전·워크플로우 성공은 별도 확인이 필요합니다.</p>

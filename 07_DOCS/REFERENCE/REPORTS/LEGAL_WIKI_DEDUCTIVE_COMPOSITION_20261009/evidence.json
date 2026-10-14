@@ -1,0 +1,142 @@
+{
+  "kind": "legal-wiki-deductive-composition-design-evidence-v1",
+  "checked_at": "2026-10-09T15:17:50.843672+09:00",
+  "scope": "read-only source inspection, primary literature research, design artifact creation",
+  "new_experiment": false,
+  "new_model_api_calls": 0,
+  "product_code_changes": false,
+  "active_pointer_changes": false,
+  "service_execution_checked": false,
+  "genos_execution_checked": false,
+  "review": "author self-review, no independent review",
+  "binding": {
+    "release_id": "grounded-entry-20261009-r1",
+    "generation": 49,
+    "pointer_path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+    "pointer_sha256": "d69c40d81238642b03883f4131d619cfb646428505408d655be6fb3177ac0a40",
+    "manifest_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/release.json",
+    "manifest_sha256": "3e171a8a4500dcb9b4ac2cac2fd8d869c6b0491e71f7dd98877b0605f6fc7b14"
+  },
+  "local_sources": [
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "working_sha256": "897c3df26df9c7c72a096d28f6aa4205f7b90194b7b460bf40d8ae70f07555be"
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "working_sha256": "fc9f5e7216f97c2172d627136f53e9f3dd19aac92d278f93858ab702785ddd1d",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/00_SYSTEM/PIPELINE.json",
+      "selected_sha256": "fc9f5e7216f97c2172d627136f53e9f3dd19aac92d278f93858ab702785ddd1d",
+      "working_matches_selected": true
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+      "working_sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/00_SYSTEM/LEGAL_AGENT/domain-catalogue-v1.json",
+      "selected_sha256": "0e9fdf3288c8dc18e4efc7cebb92e39154db31d751060d25643a47d7cac05473",
+      "working_matches_selected": true
+    },
+    {
+      "path": "06_TOOLS/pipeline.py",
+      "working_sha256": "0a2ee7371d9e3cf55c78d58caa8ea123cb05bc6ab254ff7d6aff74057e5f8461"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/wiki_proposal.py",
+      "working_sha256": "7aa4d64fb0a701170f9055f23ad734a01beb6d58e769a939db636e4c64a4a005",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/lawrag/pipeline/wiki_proposal.py",
+      "selected_sha256": "7aa4d64fb0a701170f9055f23ad734a01beb6d58e769a939db636e4c64a4a005",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py",
+      "working_sha256": "2b202e665c7401704de10c859e5a6f6c2f919090576e0e47c8c8e2401b72b513",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/lawrag/pipeline/legal_wiki_compiler.py",
+      "selected_sha256": "2b202e665c7401704de10c859e5a6f6c2f919090576e0e47c8c8e2401b72b513",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "working_sha256": "14a4ed7c34972d75b4ffef0dd55684df6ab1c1d9917874ad976ebaa97eddffd0",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py",
+      "selected_sha256": "14a4ed7c34972d75b4ffef0dd55684df6ab1c1d9917874ad976ebaa97eddffd0",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/core_evidence_route.py",
+      "working_sha256": "4c568283620b9d0dac9b07c1df9e99c730897fc082db4366e7655e3e48810403",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/core_evidence_route.py",
+      "selected_sha256": "4c568283620b9d0dac9b07c1df9e99c730897fc082db4366e7655e3e48810403",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py",
+      "working_sha256": "826f80c7bc98c776fb313c2574118459f2348b15103c5bd921373817fffbd2eb",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py",
+      "selected_sha256": "826f80c7bc98c776fb313c2574118459f2348b15103c5bd921373817fffbd2eb",
+      "working_matches_selected": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/domain_control.py",
+      "working_sha256": "59a522ec5b70c6a4cdbdb2cf7d9d3afe98970c685e57a33cbb9ed0693bb2d5ef",
+      "selected_path": "08_DEPLOYMENT/RELEASES/grounded-entry-20261009-r1/code/02_BACKEND/semantic_runtime/legal_agent/domain_control.py",
+      "selected_sha256": "59a522ec5b70c6a4cdbdb2cf7d9d3afe98970c685e57a33cbb9ed0693bb2d5ef",
+      "working_matches_selected": true
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_RAG_LATENCY_DESIGN_20261009/README.md",
+      "working_sha256": "606161921d916116b2cfc98e2522d366aa24b24117ffcc99859938e272e9c07d"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/ONTOLOGY_RAG_LATENCY_DESIGN_20261009/evidence.json",
+      "working_sha256": "fe2543821b0edf0ef42dcb92ada086ade8755416262c9957e8295299623b3804"
+    }
+  ],
+  "research_sources": [
+    {
+      "title": "Explanation-Based Generalization: A Unifying View",
+      "url": "https://link.springer.com/article/10.1023/A:1022691120807",
+      "read_scope": "publisher abstract and bibliographic metadata; full paper not read"
+    },
+    {
+      "title": "Explanation-Based Learning: An Alternative View",
+      "url": "https://www.cs.utexas.edu/~ml/papers/ebl-mlj-86.pdf",
+      "read_scope": "targeted sections 2, 5.2, 8, 9; proof-structure limitation and schema composition"
+    },
+    {
+      "title": "OWL 2 Primer (Second Edition)",
+      "url": "https://www.w3.org/TR/owl2-primer/",
+      "read_scope": "basic entailment/open-world discussion and section 5 class construction, subclass/equivalence distinctions"
+    },
+    {
+      "title": "Souffle Provenance",
+      "url": "https://souffle-lang.github.io/provenance",
+      "read_scope": "official documentation proof-tree explanation of derived tuples"
+    },
+    {
+      "title": "Predicate Invention by Learning From Failures",
+      "url": "https://arxiv.org/abs/2104.14426",
+      "read_scope": "abstract and bibliographic metadata; full paper not read"
+    },
+    {
+      "title": "Inductive logic programming at 30",
+      "url": "https://arxiv.org/html/2102.10556v2",
+      "read_scope": "abstract and sections on predicate invention and limitations; background reading"
+    },
+    {
+      "title": "Automating Defeasible Reasoning in Law",
+      "url": "https://arxiv.org/abs/2205.07335",
+      "read_scope": "abstract and opening two PDF pages on defeasible rules, priorities and formalisation scope"
+    }
+  ],
+  "report": {
+    "path": "07_DOCS/REFERENCE/REPORTS/LEGAL_WIKI_DEDUCTIVE_COMPOSITION_20261009/README.md",
+    "sha256": "ed500f1cfe97e8a83f61156cb4be767af9daf7c404b412ec852e853f60709395",
+    "characters": 11367
+  },
+  "local_links": [
+    {
+      "target": "../ONTOLOGY_RAG_LATENCY_DESIGN_20261009/README.md",
+      "exists": true
+    }
+  ]
+}

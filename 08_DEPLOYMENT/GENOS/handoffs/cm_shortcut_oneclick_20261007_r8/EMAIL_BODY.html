@@ -1,0 +1,8 @@
+<p><strong>TXT 하나로 실행하는 최종 R8입니다.</strong> 이전 R4/R6의 환경변수·사용자 JSON·receipt 경로 입력은 모두 생략합니다.</p>
+<p><strong>RUN TXT 하나를 ~/DEV/TRANSFER에 올리고 아래 한 줄만 실행하세요.</strong></p>
+<pre>bash ~/DEV/TRANSFER/GENOS_CM_ONECLICK_20261007_R8_RUN.txt</pre>
+<p>CM_PRINCIPAL_FILE과 사용자/팀 JSON은 받지 않습니다. 다른 NFS 이관 메일에서 확인한 generation/runtime/별도state 미설정 경로를 넣었고, receipt·백업·로그는 자동 생성합니다. 코드 적용·원문51건/근거98개 확인·commit·같은 checkout/generation 배포 게이트·공통51건 등록/검증·Git push까지 자동 처리합니다. NFS 목록 확인 코드와 기존 SQLite 자료를 보존하고 재실행해도 중복 등록하지 않습니다.</p>
+<p>서빙 경로 설정도 자동 생성해 새 리비전의 service.py가 읽도록 연결했습니다. 이번 CM 배포를 위해 generation/runtime 환경변수를 직접 추가하지 않습니다. 모델·인증 설정은 기존 리비전 설정을 유지합니다.</p>
+<p><strong>완료 후 출력된 COMMIT으로 삼성 코드서빙 화면에서 새 리비전만 배포하고, 기존 워크플로우 테스트 화면에서 확인하세요.</strong> 코드 push와 리비전 배포는 별도입니다. 다른 메일의 NFS 데이터 복원은 먼저 마친 상태여야 합니다.</p>
+<p>최종 TXT의 환경변수 없는 전체 실행3회에서 실제 로컬 CM51/98의 등록·재실행·기존 SQLite 보존·동일 commit/generation gate·모의 로컬 remote push를 확인했습니다. 108개 입력 inventory/216개 recipe의 정적 코드·엔진 결속, 대표6상태 준비/변조 보존, 설정 계약9개도 통과했습니다. 모델 호출0회이고 실제 GENOS 배포·워크플로우 성공은 아직 미확인입니다.</p>
+<p>첨부는 전체 RUN TXT와 짧은 안내 TXT 두 개입니다. 이전 안내의 export/JSON 작성/수동 등록 명령은 실행하지 마세요.</p>

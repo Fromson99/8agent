@@ -55,12 +55,16 @@ def test_observation_requires_a_successful_physical_attempt(tmp_path):
             repo.review_case('C1', 'APPROVE', 'contract-reviewer', 'must not approve an abstention')
 
 
-def test_prepare_review_and_apply_builds_a_new_generation(tmp_path, term_glossary):
+@pytest.mark.parametrize('archived_audit', [False, True])
+def test_prepare_review_and_apply_builds_a_new_generation(tmp_path, term_glossary, archived_audit):
     original = source(tmp_path / 'source.sqlite', [
         ('internal:v1', '내부규정', ['관련 규정 제1조에 따른다.']),
         ('external:a', '가상규정A', ['첫 번째 후보 원문']),
         ('external:b', '가상규정B', ['두 번째 후보 원문'])])
     build_generation(original, term_glossary, tmp_path / 'built', serving=True)
+    if archived_audit:
+        from semantic_runtime.navigation_storage import archive_audit
+        archive_audit(tmp_path / 'built/audit/navigation')
     generation = tmp_path / 'built/generation'
     parent_hash = sha(generation / 'navigation/navigation.sqlite')
     plan = prepare(generation, tmp_path / 'reference-review', max_model_attempts=4)
@@ -99,7 +103,9 @@ def test_prepare_review_and_apply_builds_a_new_generation(tmp_path, term_glossar
     _verify_navigation_audit(overlay)
     assert sha(generation / 'fulltext/fulltext.sqlite') == sha(overlay / 'generation/fulltext/fulltext.sqlite')
     assert sha(generation / 'fulltext/manifest.json') != sha(overlay / 'generation/fulltext/manifest.json')
-    assert sha(tmp_path / 'built/audit/navigation/navigation.sqlite') == sha(overlay / 'audit/navigation/navigation.sqlite')
+    baseline_audit = json.loads((tmp_path / 'built/audit/navigation/manifest.json').read_text())
+    assert baseline_audit['audit_sha256'] == sha(overlay / 'audit/navigation/navigation.sqlite')
+    assert not list((tmp_path / 'built/audit').glob('.audit-restore-*'))
     proof = json.loads((overlay / 'audit/navigation/manifest.json').read_text())
     assert proof['parent_audit_manifest_sha256'] == sha(tmp_path / 'built/audit/navigation/manifest.json')
     assert proof['reference_resolution_parent_index_sha256'] == parent_hash

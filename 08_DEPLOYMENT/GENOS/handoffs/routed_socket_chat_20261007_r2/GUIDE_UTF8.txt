@@ -1,0 +1,138 @@
+GENOS 통합 Socket.IO / 기존 Python 워크플로우 SSE 선택 R2
+
+1. 무엇을 선택하는가
+
+공통 Run: python3 main_router.py
+ GENOS_MAIN_MODE=integrated : /chat -> 같은 프로세스 RAG -> Socket.IO token/end
+ GENOS_MAIN_MODE=workflow   : 기존 별도 Python run(data) -> /stream HTTP SSE -> RAG
+ 미설정 기본값: workflow. R1의 existing 값은 workflow의 호환 별칭입니다.
+ python3 main.py는 기존 직접 HTTP 채팅 실행이며 이 환경변수를 적용하지 않습니다.
+
+R1은 직접 HTTP 채팅과 직접 Socket.IO 채팅만 선택했습니다. 사용자가 원한 별도
+Python 워크플로우 / 통합 실행 선택은 이번 R2에 반영했습니다. R1 ZIP/TXT/로그는 보존하세요.
+통합에서 Socket.IO 이벤트로 답변 스트림을 보내며 HTTP SSE 프레임을 소켓에 그대로 쓰지 않습니다.
+워크플로우는 기존 /stream의 progress/answer_delta/result SSE를 계속 읽습니다.
+별도 Python 워크플로우 코드와 MAIN 44의 RAG·AD·기억·조사 완료 코드는 그대로 보존합니다.
+
+중요: 환경변수는 서버 앱을 선택합니다. GENOS 채팅앱의 연결 대상·워크플로우 정의·
+socket.io 옵션은 플랫폼 설정이므로 서버 변수가 자동으로 수정하지 않습니다.
+두 연결을 준비해 선택하거나, 모드 변경 시 아래 플랫폼 설정도 함께 맞춰야 합니다.
+현재 세션에서는 GENOS 플랫폼 설정·배포를 실행할 수 없습니다.
+
+2. 반입 / 같은 checkout 검증
+
+R2 ZIP과 R2 APPLY TXT를 같은 ~/DEV/TRANSFER 폴더에 놓으세요.
+실제 선택 generation을 아래 값에 지정합니다. 사진에서 확인한 경로가 계속
+선택된 세대라면 아래 값을 사용하고, 변경되었다면 현재 절대경로로 바꾸세요.
+
+ export GENOS_GENERATION='/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation'
+ bash ~/DEV/TRANSFER/GENOS_ROUTED_SOCKET_CHAT_20261007_R2_APPLY.txt check "$GENOS_GENERATION"
+ bash ~/DEV/TRANSFER/GENOS_ROUTED_SOCKET_CHAT_20261007_R2_APPLY.txt apply "$GENOS_GENERATION"
+ cd ~/DEV
+ python3 -m pip install -r 08_DEPLOYMENT/GENOS/requirements-socketio.txt
+
+check는 기존 파일과 세대 결속을 검사합니다. apply는 백업 후 검증된 코드만 교체합니다.
+미확인 수정은 로그의 CHECKOUT_PREFLIGHT 파일명/해시와 함께 거절하고 보존합니다.
+원문·generation·CURRENT·runtime DB·.env·기존 Git remote는 변경하지 않습니다.
+첫 단계부터 run.log/events.jsonl/ROUTED_CHAT_EXIT를 남기고 sys.executable/버전을 기록합니다.
+선행 investigation completion R1 또는 routed socket R1에서 이어 적용할 수 있습니다.
+
+두 모드 모두 같은 실제 checkout과 선택 generation에서 검증하세요.
+
+ GENOS_MAIN_MODE=workflow bash ~/DEV/TRANSFER/GENOS_ROUTED_SOCKET_CHAT_20261007_R2_APPLY.txt verify "$GENOS_GENERATION"
+ GENOS_MAIN_MODE=integrated bash ~/DEV/TRANSFER/GENOS_ROUTED_SOCKET_CHAT_20261007_R2_APPLY.txt verify "$GENOS_GENERATION"
+
+RAG loader·generation E2E·assets와 선택 앱을 확인합니다. verify 성공은 서빙 배포 성공이 아닙니다.
+Git commit/gate/push는 다음 명령으로 수행할 수 있습니다. 기존 origin의 HEAD를 force 없이 push합니다.
+명시적으로 원하는 remote/branch가 다르면 GENOS_PUSH_REMOTE와 GENOS_PUSH_BRANCH를 지정하세요.
+
+ bash ~/DEV/TRANSFER/GENOS_ROUTED_SOCKET_CHAT_20261007_R2_APPLY.txt push "$GENOS_GENERATION"
+
+새 Git 저장소로 따로 push하려면 실제 생성된 저장소 URL을 지정한 뒤 선택적으로 실행합니다.
+기존 origin/infocz는 그대로 두며 새 genos-integrated 별칭으로 HEAD를 main에 force 없이 push합니다.
+
+ export GENOS_NEW_REMOTE_URL='git@<실제-Git서버>:<조직>/<실제-새-저장소>.git'
+ bash ~/DEV/TRANSFER/GENOS_ROUTED_SOCKET_CHAT_20261007_R2_PUSH_NEW_REMOTE.txt
+
+적용·동일 checkout gate·commit·push·코드서빙 리비전 배포·플랫폼 연결은 별도 상태입니다.
+실행 TXT가 배포나 플랫폼 연결을 완료했다고 기록하지 않습니다.
+
+3. 통합 방식 설정
+
+코드서빙 Build:
+ python3 -m pip install -r 08_DEPLOYMENT/GENOS/requirements-socketio.txt
+Run:
+ python3 main_router.py
+기존 PORT가 없으면 같은 기존 수신 포트를 --port로 지정하세요.
+코드서빙 리비전 환경변수:
+ GENOS_MAIN_MODE=integrated
+ GENOS_SOCKETIO_PATH=socket.io
+ GENOS_CHAT_TRUST_PLATFORM_IDENTITY=1
+ GENOS_CHAT_GATEWAY_TOKEN=(플랫폼이 /chat에 전달하는 Bearer 토큰과 일치하는 비밀값)
+ GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6
+
+기존 내부 모델·NFS generation/runtime·team·AD/기억 설정은 유지합니다.
+키 원문은 로그·메일·Git에 남기지 않습니다.
+
+GENOS 채팅앱/컨테이너 서비스 연결:
+ 새 코드서빙을 선택하고 채팅 경로 /chat으로 연결합니다.
+ socket.io 실시간 스트리밍 사용을 켭니다.
+ 별도 GENOS Python RAG 워크플로우 단계는 이 연결에서 사용하지 않습니다.
+
+실제 연결된 SID와 플랫폼 인증을 확인해야 토큰이 전달됩니다.
+다른 서버 SID 또는 인증 미전달이면 최종 JSON만 보존하고 socketio_transport.reason을 남깁니다.
+
+4. 워크플로우 방식 설정
+
+같은 Run: python3 main_router.py
+코드서빙 리비전 환경변수:
+ GENOS_MAIN_MODE=workflow
+ GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6
+
+GENOS 채팅앱은 기존 별도 Python 워크플로우에 연결합니다.
+이 코드서빙의 socket.io 실시간 스트리밍 사용은 끕니다. 이 모드는 소켓 서버를 띄우지 않습니다.
+기존 워크플로우 Python 단계는 genos_rag_chat.py의 run(data)를 사용합니다.
+필요하면 첨부 R2_WORKFLOW_PASTE_ALL.txt 전체를 별도 편집기에 반영하세요.
+기존 최신 Python 코드와 같은 바이트이며 파일 반입/Git push가 편집기를 자동 변경하지 않습니다.
+
+워크플로우 리비전의 기존 설정을 유지합니다:
+ GENOS_BASE_URL=(실제 내부 게이트웨이 URL)
+ GENOS_CODESERVING_ID=(workflow 모드로 배포한 실제 코드서빙 ID)
+ GENOS_CODESERVING_TOKEN=(기존 게이트웨이 키)
+ GENOS_CODESERVING_TIMEOUT_SECONDS=(기존 시간)
+ GENOS_RAG_PROGRESS_UI=(기존 표시 설정)
+
+위 설정은 별도 워크플로우 환경이며 코드서빙 환경과 자동 공유되지 않습니다.
+코드서빙 /stream HTTP SSE를 읽고 기존 화면 helper로 답변을 반환합니다.
+기존 화면 helper의 플랫폼 main_socketio 사용은 그대로 유지합니다.
+워크플로우 모드에서 /chat에 일반 질문을 직접 보내면 409 wrong_entrypoint입니다.
+별도 워크플로우가 빠진 상태를 직접 실행 성공으로 오인하지 않도록 한 것입니다.
+
+5. 현장 검증 / 전환 / 원복
+
+모드 환경변수는 부팅 시 적용됩니다. 수정 뒤 재시작/새 리비전 배포가 필요합니다.
+채팅앱 대상과 소켓 옵션도 위 설정에 맞춰 바꿉니다.
+현장 질의·warmup 검증은 워크플로우 테스트 화면에서만 수행합니다.
+코드서빙 직접 테스트 UI/API 실행을 요구하지 않습니다.
+
+통합 테스트:
+ {"question":"__verify__"} -> verified
+ {"API_TYPE":"CHAT_MODE"} -> mode=integrated, executor=in-process-rag, transport=socketio
+ 실제 플랫폼 socketIOClientId를 포함한 SOCKET_CHECK -> connected=true
+ 일반 질문 -> token이 최종 JSON 전에 나타나고 end 이후 최종 답이 중복/누락 없이 표시되는지 확인
+
+기존 Python 워크플로우 테스트:
+ WORKFLOW_SETTINGS -> transport_mode=sse, route_with/without_socket_id=/stream
+ SSE_CHECK -> sse_ready=true
+ 일반 질문 -> code_serving_transport.route=/stream, opened=true, answer_events 확인
+ 최종 text·근거·Reasoner·AD/기억의 기존 표시를 확인
+
+GET /chat-mode는 코드서빙이 선택한 실행자·경로를 보여주는 모델 없는 진단 계약입니다.
+통합/워크플로우 모두 platform_binding=NOT_VERIFIED입니다. 이 값이 채팅앱 연결을 인증하지 않습니다.
+
+코드 원복은 apply가 기록한 정확한 backup을 지정합니다:
+ bash ~/DEV/TRANSFER/GENOS_ROUTED_SOCKET_CHAT_20261007_R2_APPLY.txt rollback /정확한/backup
+플랫폼의 이전 리비전·기존 워크플로우 연결과 이전 설정도 보존하고 별도로 선택합니다.
+로컬 MAIN 활성 포인터는 이 반입본으로 변경하지 않습니다.
+
+실제 GENOS 적용·push·배포·플랫폼 전환·내부 모델 질의·화면 렌더링은 아직 미확인입니다.

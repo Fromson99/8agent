@@ -1,0 +1,77 @@
+{
+  "schema_version": "genos-transfer-overlay-v1",
+  "id": "GENOS_RAG_FOCUSED_RULES_20261013_R3",
+  "transfer_only": true,
+  "deployment_zip": "apply creates APPLIED_CODE.zip from actual DEV; use that archive for gate",
+  "validation": {
+    "installation_states": 3,
+    "r2_article_menu_typeerror_reproductions": 3,
+    "r3_article_menu_pass": 3,
+    "service_boot_200_before_and_after": 6,
+    "same_committed_checkout_mock_generation_gates": 3,
+    "commands": 55,
+    "expected_tamper_rejections": 6,
+    "installed_contracts": 70,
+    "known_r2_inventories": 330,
+    "unit_fulltext_variants": 2,
+    "real_network_calls": 0,
+    "real_model_inferences": 0
+  },
+  "files": [
+    {
+      "path": "apply_patch.py",
+      "sha256": "6a5ed4ce6fc518ccbbed890828438a94022d6980ad3488e40933e2cb2219a411",
+      "bytes": 27724
+    },
+    {
+      "path": "PATCH_SPEC.json.gz",
+      "sha256": "948d5f5784e4f9f4a8dfb4890145d7fe47a252c4a4bcfbf9d9df203fa665e77a",
+      "bytes": 45325
+    },
+    {
+      "path": "GENOS_RAG_FOCUSED_RULES_20261013_R3_RUN.txt",
+      "sha256": "d0dbeb665c4bd597c92005ae34d3dcd61e3e4d4da7996ea2f8ef74c2d9fbf851",
+      "bytes": 78249
+    },
+    {
+      "path": "GUIDE_UTF8.txt",
+      "sha256": "4b68845737addbead9f707832b5753e317c0000f1d5a113e913b528b1b3a0e32",
+      "bytes": 7534
+    },
+    {
+      "path": "VALIDATION_SUMMARY.txt",
+      "sha256": "9154ff5e4128277013e03b3fbc94d114439542edc69bd2622fea52e1ba4370a4",
+      "bytes": 1931
+    },
+    {
+      "path": "VALIDATION.json",
+      "sha256": "1c2a407063b507814be73d2ece6e63a03ed58d4206cce3a2e70729b531bee0cd",
+      "bytes": 2954
+    },
+    {
+      "path": "SOURCE_BINDING.json",
+      "sha256": "e81f8f30573ede94e3b1d44d27197c16ba12e26e845bfabd15e29ec4cdaddfae",
+      "bytes": 1454
+    },
+    {
+      "path": "FIELD_OBSERVATION.json",
+      "sha256": "a3e821a7f9350cabe0394646949a2ea02688cf422bbeef69df096284e87ca948",
+      "bytes": 1509
+    },
+    {
+      "path": "INVENTORY_BINDINGS.json.gz",
+      "sha256": "7b37402752d1cfbf17c439a101777dbb180c934635fa6aca7052d4fea2f454a0",
+      "bytes": 46753
+    },
+    {
+      "path": "payload/166127bb50cb416ebff202e01f30cb53d82ddd42ecdaf003ae51416b21e0bf43/unit_fulltext.py",
+      "sha256": "166127bb50cb416ebff202e01f30cb53d82ddd42ecdaf003ae51416b21e0bf43",
+      "bytes": 24126
+    },
+    {
+      "path": "payload/3e1b875119617bfb5fcdf802f9cb294dda52d769484906dcc37115a4a8dc8d3c/unit_fulltext.py",
+      "sha256": "3e1b875119617bfb5fcdf802f9cb294dda52d769484906dcc37115a4a8dc8d3c",
+      "bytes": 22629
+    }
+  ]
+}

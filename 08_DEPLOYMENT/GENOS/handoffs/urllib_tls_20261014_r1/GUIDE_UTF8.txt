@@ -1,0 +1,90 @@
+GENOS urllib 모델 전송 전환 R1 — 2026-10-14
+
+적용 목적
+승호 integration 6b3ec4789ef2a44067999a6dc21ff1b7ef472a68의 02-els-qa/07-issuance-note와 같이
+GENOS 모델 HTTP 호출을 Python 표준 urllib로 전환합니다.
+모델 목록, 일반 JSON, 임베딩과 법률 에이전트의 최종 답변 스트리밍에 적용합니다.
+기존 단일 전송·전체 deadline·중복 전송 차단·SSE 종료 파서·근거 검증·실패 원장을 보존합니다.
+URL/모델/키/프롬프트/출력 토큰/조사 예산/캐시/DB/NFS 데이터 설정은 변경하지 않습니다.
+
+선행 상태와 설치 순서
+AD_REQUEST_LOGS R2와 ASSESSMENT_GAP_ACTION R2까지 적용된 기존 ~/DEV가 대상입니다.
+SUCCESSFUL_SHORTCUT R1, PUBLIC_FAILURE_GUIDANCE R1, MODEL_INPUT_METRICS R1의 유무를 지원합니다.
+이전 패치도 함께 적용할 예정이면 해당 패치를 먼저 적용하고 이번 URLLIB_TLS R1을 마지막에 적용하세요.
+기존 MODEL_STREAM_FIX R1의 SSE 종료 수정을 보존하면서 전송 방식을 urllib로 바꿉니다.
+과거 봉인 파일을 수정하거나 이전 설치기를 새 전송 위에 강제로 실행하지 마세요.
+알려진 전체 코드 inventory 이외의 파일 변경·잘못된 해시·알 수 없는 기존 helper는 변경 없이 거부합니다.
+
+1. ZIP을 풀고 기존 Git checkout에 적용
+ZIP을 ~/TRANSFER에 업로드한 예입니다. 업로드 위치만 실제 경로로 바꿉니다.
+
+python3 -m zipfile -e ~/TRANSFER/GENOS_URLLIB_TLS_20261014_R1.zip ~/DEV/TRANSFER/urllib-tls-r1-package
+bash ~/DEV/TRANSFER/urllib-tls-r1-package/GENOS_URLLIB_TLS_20261014_R1_RUN.txt check
+bash ~/DEV/TRANSFER/urllib-tls-r1-package/GENOS_URLLIB_TLS_20261014_R1_RUN.txt apply
+
+별도 첨부 RUN.txt도 ZIP 내부와 같은 완전한 설치기입니다.
+bash ~/TRANSFER/GENOS_URLLIB_TLS_20261014_R1_RUN.txt check
+bash ~/TRANSFER/GENOS_URLLIB_TLS_20261014_R1_RUN.txt apply
+
+RUN은 첫 단계부터 로그와 종료 코드를 남깁니다. URLLIB_TLS_LOG, BACKUP, APPLIED_CODE_ZIP,
+CODE_ZIP_SHA256, CODE_APPLIED, URLLIB_TLS_EXIT=0을 보관하세요.
+실제 sys_executable/Python 버전/기존 generation 경로·해시/현재 Git commit을 함께 출력합니다.
+~/DEV가 기존 checkout의 symlink이면 실경로를 확인해 사용하며 코드 내부 symlink는 거부합니다.
+재실행하면 전체 코드·pin을 다시 검증한 뒤 ALREADY_APPLIED로 종료합니다.
+check/apply가 실패하면 로그를 보관하고 다음 배포 단계로 진행하지 마세요.
+부분 적용은 BACKUP/receipt.json에 기록되며 5번 undo로 복구합니다.
+
+2. 같은 ~/DEV에서 commit 및 generation 배포 게이트
+cd ~/DEV
+git diff --check
+git status --short
+
+apply가 출력한 BACKUP/receipt.json의 변경 목록을 검토하고 같은 checkout에서 commit합니다.
+수정 3파일(genos.py, legal_agent/transport.py, 새 stdlib_http.py)과 연결된 엔진 manifest,
+PIPELINE.json, CODE_MANIFEST.json이 대상입니다. 기존 다른 변경은 별도로 검토합니다.
+아래 두 값은 실제 apply 출력과 현재 선택된 generation의 절대경로로 반드시 바꾸세요.
+
+TASK_TLS_BACKUP='/실제/apply/출력의/backup-경로'
+TASK_TLS_GENERATION='/현재/선택된/generation/절대경로'
+bash ~/DEV/TRANSFER/urllib-tls-r1-package/GENOS_URLLIB_TLS_20261014_R1_RUN.txt gate "$TASK_TLS_BACKUP" --generation "$TASK_TLS_GENERATION"
+
+같은 committed checkout과 APPLIED_CODE.zip·선택 generation이 통과한 뒤 그 commit을 기존 팀 remote로 push합니다.
+그 commit/generation을 선택하는 새 코드서빙 리비전을 배포하고, 별도 SSE 서버도 같은 코드로 재시작합니다.
+Git push, 새 리비전, SSE 재시작, 현장 질의 성공은 각각 별도입니다.
+원문 재구축, DB 변경, 이번 패치를 위한 워크플로우 편집기 교체는 없습니다.
+
+3. CA 설정
+ssl.create_default_context()로 Python/OpenSSL의 기본 CA 저장소와 SSL_CERT_FILE/SSL_CERT_DIR를 읽습니다.
+인증서 검증과 호스트명 검증은 켜져 있습니다. verify=False 같은 우회는 없습니다.
+현장 Python의 기본 신뢰 저장소에 올바른 사내 CA가 있으면 코드 변경만 적용하면 됩니다.
+사내 CA가 기본 저장소에 없다면 운영자가 제공한 올바른 CA 체인/번들을 컨테이너에서 읽을 수 있게
+설치하고, 실제 코드서빙 및 별도 SSE 프로세스에 SSL_CERT_FILE을 지정한 뒤 새 리비전/재시작합니다.
+로컬 셸에서만 export한 값이 코드서빙 컨테이너에 자동 반영되는 것은 아닙니다.
+REQUESTS_CA_BUNDLE은 이번 urllib 전송의 CA 설정이 아닙니다.
+유효한 CA 경로·신뢰 체인·호스트명이 맞지 않으면 실패해야 정상이며 인증서 검증을 끄지 않습니다.
+
+4. 워크플로우 테스트 화면에서 현장 확인
+코드서빙 직접 테스트 UI/API가 아닌 기존 워크플로우 테스트 화면에서 warmup/질문을 실행합니다.
+같은 request/attempt의 로그에서 다음을 확인합니다.
+- transport_backend=urllib
+- transport_revision=genos-urllib-tls-20261008-r1
+- 모델 목록/JSON/답변 스트리밍의 성공 상태와 기존 최종 답변/오류 로그
+정상 질의와 생성 중 답변 표시, 정상 종료를 확인하고 request ID와 리비전·commit·generation 해시를 보관합니다.
+인증서 실패/연결 종료/시간 초과/length 등은 실패 원장을 보존하며 성공 답변으로 등록하지 않습니다.
+CA 오류가 계속되면 실제 컨테이너의 CA 파일·체인·호스트명·환경 적용 여부를 확인해야 합니다.
+이번 외부 검증은 현장 CA 설치와 내부 모델 응답 성공을 인증하지 않습니다.
+
+5. 원복
+BACKUP은 이번 apply가 출력한 정확한 경로로 지정합니다. 이후 파일 변경이 있으면 덮어쓰지 않고 거부합니다.
+
+bash ~/DEV/TRANSFER/urllib-tls-r1-package/GENOS_URLLIB_TLS_20261014_R1_RUN.txt undo "$TASK_TLS_BACKUP"
+
+기존 파일/엔진/PIPELINE/CODE_MANIFEST를 복원하고 새 helper를 제거합니다.
+원복한 코드를 검토·commit/push하고 이전 정상 코드서빙 리비전 및 같은 검증 generation으로 복귀하며
+별도 SSE 서버도 원래 코드로 재시작합니다. undo만으로 실행 중인 리비전은 바뀌지 않습니다.
+원문 generation·DB·이전 실패 기록은 보존합니다.
+
+반영 상태
+GENOS용 작업 코드는 이미 urllib였으며 이번에 현장 인계본까지 결합했습니다.
+로컬 선택 MAIN61에는 같은 GENOS 전송 코드가 있지만 로컬 외부 Qwen/OpenRouter 호출은 별도 adapter입니다.
+로컬 선택 포인터·외부 모델 adapter는 변경하지 않습니다. GENOS 반입·commit/push·리비전·현장 성공은 미확인입니다.

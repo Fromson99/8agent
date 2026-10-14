@@ -99,6 +99,9 @@ class ShortcutRepository:
             raise
 
     def scope(self, principal, session=None, *, create=False):
+        from lawrag.pipeline.shortcut_package import COMMON_OWNER, COMMON_TEAM, is_common_operator
+        if (principal.get('user_id'), principal.get('team_id')) == (COMMON_OWNER, COMMON_TEAM) and not is_common_operator(principal):
+            raise MemoryError('reserved catalogue identity requires filesystem operator')
         if principal.get('_ad_scope'):
             row=self.db.execute('SELECT owner,team FROM sw_scope WHERE id=?',(principal['_ad_scope'],)).fetchone()
             if not row or tuple(row)!=(principal.get('user_id'),principal.get('team_id')):raise MemoryError('AD scope mismatch')
@@ -113,6 +116,14 @@ class ShortcutRepository:
         if create: self.db.execute('INSERT OR IGNORE INTO sw_scope VALUES(?,?,?,?,?)', (ident,*values))
         return ident
 
+    def knowledge_scopes(self, principal, *, include_common=True):
+        from lawrag.pipeline.shortcut_package import common_scope_id
+        own = self.scope(principal)
+        scopes = [own]
+        if include_common and principal.get('authenticated') and common_scope_id() != own:
+            scopes.append(common_scope_id())
+        return scopes
+
     def _event(self, scope, aggregate, kind, payload, *, session=None, request=None, run=None, causation=None, occurred_at=None):
         seq = self.db.execute('SELECT COALESCE(MAX(seq),0)+1 FROM sw_event WHERE aggregate_id=?',(aggregate,)).fetchone()[0]
         ident = uid('ev:')
@@ -121,6 +132,12 @@ class ShortcutRepository:
         return ident
 
     def enqueue(self, scope, consumer, aggregate, revision):
+        if consumer == 'wiki':
+            from .successful_answer import eligible
+            if not eligible(self,aggregate):return
+        if consumer == 'projection':
+            from .wiki_recall import index_unit
+            index_unit(self, aggregate, revision)
         self.db.execute("INSERT OR IGNORE INTO sw_queue(scope,consumer,aggregate_id,revision,dedup,status) VALUES(?,?,?,?,?,'PENDING')",
                         (scope,consumer,aggregate,revision,digest([scope,consumer,aggregate,revision])))
 
@@ -407,6 +424,8 @@ class ShortcutRepository:
             return value
 
     def compiler_input(self, ident, principal):
+        from .successful_answer import require
+        require(self,ident)
         case=self.investigation(ident,principal)
         row=self.db.execute('SELECT revision,offset FROM sw_compile_cursor WHERE investigation=?',(ident,)).fetchone()
         offset=row['offset'] if row and row['revision']==case['revision'] else 0
@@ -457,12 +476,23 @@ class ShortcutRepository:
         seen=set(_seen or ())
         if (unit,revision) in seen:raise MemoryError('cyclic knowledge dependency')
         seen.add((unit,revision))
-        row=self.db.execute('''SELECT k.*,u.scope,l.status FROM sw_knowledge k JOIN sw_unit u ON u.id=k.unit
-            JOIN sw_lifecycle l ON l.unit=k.unit AND l.revision=k.revision WHERE k.unit=? AND k.revision=? AND u.scope=?''',
-                            (unit,revision,self.scope(principal))).fetchone()
+        scopes=self.knowledge_scopes(principal)
+        slots=','.join('?' for _ in scopes)
+        row=self.db.execute(f'''SELECT k.*,u.scope,l.status FROM sw_knowledge k JOIN sw_unit u ON u.id=k.unit
+            JOIN sw_lifecycle l ON l.unit=k.unit AND l.revision=k.revision WHERE k.unit=? AND k.revision=? AND u.scope IN ({slots})''',
+                            (unit,revision,*scopes)).fetchone()
         if not row or row['status'] not in (('PUBLISHED','DRAFT') if allow_draft else ('PUBLISHED',)): raise MemoryError('knowledge inaccessible or stale')
         value=json.loads(row['payload'])
         if digest(value)!=row['hash']: raise MemoryError('knowledge hash mismatch')
+        from lawrag.pipeline.shortcut_package import common_scope_id, CONTRACT
+        if row['scope']==common_scope_id() and (value.get('visibility')!='COMMON'
+                or value.get('core_evidence_route',{}).get('contract')!=CONTRACT):
+            raise MemoryError('only explicitly curated source routes are common')
+        from .successful_answer import check_knowledge
+        check_knowledge(self,value)
+        if value.get('core_evidence_route'):
+            from .core_evidence_route import current
+            current(self,value,principal)
         if not set(value['documents'])<=set(principal['document_ids']): raise MemoryError('knowledge inaccessible')
         for member in value['members']:
             prefix={'ev':'event','trace':'trace','fact':'fact','inv':'shortcut'}.get(member['ref'].split(':',1)[0])
@@ -489,9 +519,11 @@ class ShortcutRepository:
                 self.investigation(t['investigation'],principal);self.read_artifact(t['artifact'],principal)
         return {**value,'unit_id':unit,'revision':revision,'hash':row['hash'],'lifecycle':row['status']}
 
-    def search(self, principal, query='', *, after='', limit=32):
+    def search(self, principal, query='', *, after='', limit=32, include_common=True):
         limit=max(1,min(int(limit),100));values=[]
-        for row in self.db.execute('SELECT id,head FROM sw_unit WHERE scope=? AND id>? ORDER BY id',(self.scope(principal),after)):
+        scopes=self.knowledge_scopes(principal,include_common=include_common)
+        slots=','.join('?' for _ in scopes)
+        for row in self.db.execute(f'SELECT id,head FROM sw_unit WHERE scope IN ({slots}) AND id>? ORDER BY id',(*scopes,after)):
             try: value=self.current(row['id'],row['head'],principal)
             except (MemoryError,OSError): continue
             if query and query.casefold() not in (value['topic']+' '+value['question']).casefold(): continue
@@ -502,6 +534,7 @@ class ShortcutRepository:
     def verification(self, unit, revision, principal, *, kind, result, policy, verifier, evidence, expires):
         if kind not in {'STRUCTURE','SOURCE','INTERPRETATION'} or result not in {'PASS','FAIL','UNKNOWN'}: raise MemoryError('invalid verification')
         if not policy or not verifier or not evidence or expires<=time.time(): raise MemoryError('bounded policy and evidence required')
+        self.require_owned_knowledge(unit,principal)
         value=self.current(unit,revision,principal,allow_draft=True);ident=uid('verify:')
         self.db.execute('INSERT INTO sw_verification VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
                         (ident,self.scope(principal),unit,revision,value['hash'],kind,result,policy,verifier,encoded(evidence),expires,now()))
@@ -537,6 +570,7 @@ class ShortcutRepository:
 
     def publish(self, unit, revision, principal, *, expected_head):
         with self.transaction():
+            self.require_owned_knowledge(unit,principal)
             value=self.current(unit,revision,principal,allow_draft=True)
             row=self.db.execute('SELECT head FROM sw_unit WHERE id=?',(unit,)).fetchone()
             if row[0]!=expected_head or expected_head!=revision:raise Conflict('knowledge head changed')
@@ -544,6 +578,11 @@ class ShortcutRepository:
             self._event(self.scope(principal),unit,'KNOWLEDGE_PUBLISHED',{'revision':revision,'hash':value['hash'],'verification':'separate receipts; publication grants no judgment status'})
             self.enqueue(self.scope(principal),'projection',unit,revision)
             return {'unit_id':unit,'revision':revision,'status':'PUBLISHED'}
+
+    def require_owned_knowledge(self, unit, principal):
+        row=self.db.execute('SELECT scope FROM sw_unit WHERE id=?',(unit,)).fetchone()
+        if not row or row[0]!=self.scope(principal):
+            raise MemoryError('catalogue reading grants no publication or verification authority')
 
     def retire(self, unit, revision, principal, *, reason, disputed=False):
         if not reason:raise MemoryError('retirement reason required')

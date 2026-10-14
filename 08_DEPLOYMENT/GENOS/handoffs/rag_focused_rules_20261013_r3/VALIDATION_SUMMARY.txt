@@ -1,0 +1,21 @@
+GENOS RAG R3 SELECT unit_keys 오류 정정 — 검증 결과
+
+원인: R1은 범위 제한 검색 호출을 포함했지만 unit_fulltext.py의 대응 변경을 누락했습니다.
+R2는 초기화 설정 검증만 수정하여 이 결함이 남았습니다.
+대표 3종(R3 캐시/R4 캐시/R4 캐시+표시 R5)의 R1·R2 적용본에서 실제 article_menu 호출의
+사진과 동일한 TypeError를 재현했습니다. R3 적용 후 같은 호출과 범위 제한 조회가 통과했습니다.
+실제 service.service 초기화도 적용 전/후 6회 모두 200입니다. GET /models만 모의 응답입니다.
+
+최종 독립 RUN 및 준비 명령 55개: 오류 재현 3회, 의도한 변조 거부 6회,
+check/apply/재실행/verify/undo, 동일 committed checkout의 모의 generation gate 3회 확인.
+원복 후 R2 전체 코드/manifest 바이트와 선택 generation 불변 확인.
+선택 키·권한 교집합, 빈 범위, 범위 변경 커서 거부, 미제한 캐시 재사용과 제한 검색 격리 확인.
+설치된 두 캐시 계열에서 기존 구조 탐색/SEARCH_BODY/원문 읽기/캐시 회귀 70개 통과.
+해당 회귀에는 fixture 구축용 지원 파일을 추가했으며, 배포 게이트는 별도 순수 설치 checkout에서 실행했습니다.
+전체 허용 R2 inventory 330종의 해시·pin·정확한 역변환을 정적으로 확인했습니다.
+unit_fulltext 2종의 변경은 4개 범위 조회 함수에 한정했고 나머지 함수는 원본 그대로입니다.
+
+WSL Python 3.14.4; Python 3.10 구문 검사와 Bash 구문 검사 통과.
+로컬 MAIN53과 데이터 세대/DB/CM/모델/전송/서비스 예산/워크플로우를 변경하지 않았습니다.
+실제 네트워크/모델 추론 0회. 검색 품질·성능 측정이나 내부 모델 인증은 아닙니다.
+GENOS 실제 반입·commit/push·새 리비전·워크플로우 성공 및 현장 Python 실행은 미확인입니다.

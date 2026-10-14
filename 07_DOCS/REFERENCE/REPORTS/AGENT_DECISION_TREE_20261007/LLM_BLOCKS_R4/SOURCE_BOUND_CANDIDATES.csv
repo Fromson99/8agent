@@ -1,0 +1,551 @@
+﻿path,line,kind,expression,note
+02_BACKEND/semantic_runtime/app.py,86,slice,obs._redact_secrets(str(exc))[:1000],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/app.py,154,bound_or_batch_call,"browse(store, category=category, folder=folder, title_query=title_query, offset=offset, limit=limit, projection=projection, document_ids=team_documents(team_id))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/app.py,160,bound_or_batch_call,"outline(store, doc_id, offset=offset, limit=limit)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/app.py,166,bound_or_batch_call,"read(store, doc_id, unit_id=unit_id, offset=offset, limit=limit)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/app.py,195,slice,candidates[offset:offset + 20],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/app.py,428,bound_or_batch_call,"repo.cases(principal, after=body.get('after', ''), limit=limit)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/app.py,430,bound_or_batch_call,"repo.history(body['investigation_id'], principal, after=body.get('after', 0), limit=limit)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/app.py,441,bound_or_batch_call,"repo.search(principal, body.get('question', ''), after=body.get('after', ''), limit=limit)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/app.py,444,bound_or_batch_call,"knowledge.wiki(kind, principal, query=body.get('question', ''), after=body.get('after', ''), limit=limit)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/app.py,445,bound_or_batch_call,"cases.events_page(body['question_id'], principal, after=body.get('after', 0), limit=limit)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/app.py,446,bound_or_batch_call,"knowledge.questions(principal, query=body.get('question', ''), after=body.get('after', ''), limit=limit)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/app.py,459,slice,sorted(feedback.glob('*.json'))[-100:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/fulltext.py,74,bound_or_batch_call,"max(0, elapsed - cpu)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/fulltext.py,95,bound_or_batch_call,"max(value.get('active_searches_peak', 0), active)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/fulltext.py,124,slice,str(row[3])[:256],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/fulltext.py,149,slice,list(dict.fromkeys(forms(tokens)))[:MAX_TERMS],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/fulltext.py,156,bound_or_batch_call,"min(start + INDEX_CHUNK_CHARS, len(text))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/fulltext.py,160,bound_or_batch_call,max(breaks),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/fulltext.py,163,slice,text[start:end],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/fulltext.py,376,bound_or_batch_call,"max(metrics['sql_fetch_max_batch_ms'], wall_ms)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/fulltext.py,381,slice,slow_batches[5:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/fulltext.py,393,bound_or_batch_call,"obs.event(obs.get_logger('fulltext'), 'fulltext.sql.started', diagnostic_revision=DIAGNOSTIC_REVISION, search_id=ident, process_id=os.getpid(), thread_id=threading.get_native_id(), active_searches_at_start=active, concurrency_scope='process', term_count=len(terms), allowed_count=len(allowed) if allowed is not None else None, limit=limit, indexed_source_count=self.manifest.get('counts', {}).get('source'))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/fulltext.py,407,slice,out[:limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/fulltext.py,414,slice,out[:limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/fulltext.py,421,bound_or_batch_call,"min(len(out), limit)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/audit_summary.py,35,slice,lines[:64 - len(footer)],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,93,bound_or_batch_call,"min(45, self.context.remaining())",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,101,bound_or_batch_call,"max(max_tokens, 4096)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,139,bound_or_batch_call,"min(self.context.deadline, time.monotonic() + timeout)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,196,slice,"digest([self.goal_id, e['evidence_id']])[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,220,bound_or_batch_call,"min(30, self.context.remaining())",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,278,bound_or_batch_call,"min(240 - (time.monotonic() - started), self.context.remaining() - 30)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,281,bound_or_batch_call,"max(0, self.profile['max_context_chars'] - 12000)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,299,bound_or_batch_call,"min(240 - (time.monotonic() - started), self.context.remaining() - 30)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,328,bound_or_batch_call,range(max_pages),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,368,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,368,schema_bound,maxItems=3,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,370,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,373,bound_or_batch_call,"min(45, self.context.remaining())",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,376,bound_or_batch_call,"self.catalogue_pages('browse', {'target': target, 'relation': 'self', 'view': 'outline', 'depth': 1}, target, max_pages=6)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,382,schema_bound,maxLength=3000,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,383,schema_bound,maxItems=3,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,384,schema_bound,maxItems=4,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,384,schema_bound,minLength=2,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,384,schema_bound,maxLength=250,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py,395,bound_or_batch_call,"min(45, self.context.remaining())",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/case_repository.py,124,slice,events[:1],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/case_repository.py,124,slice,events[-48:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/case_repository.py,128,bound_or_batch_call,"knowledge.questions(principal, limit=24, public_only=self.executor.model.pipeline.term_agent.transport.binding['trust_zone'] == 'external')",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/case_repository.py,226,bound_or_batch_call,"max(1, min(limit, 100))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/case_repository.py,226,bound_or_batch_call,"min(limit, 100)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/case_repository.py,229,slice,rows[:limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/completion_budget.py,33,bound_or_batch_call,"min(session.context.deadline, time.monotonic() + (datetime.fromisoformat(deadline_at) - datetime.now(timezone.utc)).total_seconds())",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/completion_budget.py,50,bound_or_batch_call,"max(carried[k], b[k])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py,25,schema_bound,minItems=minimum,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py,25,schema_bound,maxItems=0,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py,42,bound_or_batch_call,"range(0, len(line), 1200)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py,43,slice,line[start:start + 1200],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py,51,slice,digest(identity)[:28],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py,60,schema_bound,maxItems=12,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py,62,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py,62,schema_bound,maxLength=3000,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py,68,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py,72,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py,83,slice,errors[:16],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py,125,slice,quotes[1:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py,155,slice,"digest([gap['issue_id'], gap['kind'], gap.get('material_id')])[:20]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/completion_execution.py,67,bound_or_batch_call,range(2),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/context.py,23,slice,question[start:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/context.py,27,slice,question[start:end],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,105,bound_or_batch_call,"sqlite3.connect(path, isolation_level=None, timeout=30)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,193,bound_or_batch_call,"range(max(0, len(re.sub('\\s+', '', s)) - 1))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,193,bound_or_batch_call,"max(0, len(re.sub('\\s+', '', s)) - 1)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,193,slice,"re.sub('\\s+', '', s)[i:i + 2]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,203,slice,"sorted(rows, key=lambda r: (-r['score'], r['id']))[:32]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,236,bound_or_batch_call,range(2),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,268,slice,"digest([g['id'], g['revision']])[:24]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,299,slice,STAGES[1:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,355,bound_or_batch_call,min([start] + [effects[f] for f in changed]),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,357,bound_or_batch_call,"min(start, STAGES.index(g['pending'] or 'INTENT'))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,358,bound_or_batch_call,"min(start, 1)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,382,bound_or_batch_call,"min(start, 5)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,410,slice,STAGES[:-1],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,462,bound_or_batch_call,"max(restored_state[key], saved.get(key, 0))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,467,bound_or_batch_call,"max(count, execution.reentry_counters.get(key, 0))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py,514,bound_or_batch_call,"max(count, execution.reentry_counters.get(key, 0))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/domain_control.py,69,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/domain_control.py,69,schema_bound,maxLength=600,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/domain_control.py,88,slice,"digest([session.context.run_id, stage, session.work.run()['next_event_seq'], selected])[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py,26,bound_or_batch_call,"max(rows[-1][1], hi)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py,97,slice,raw['text'][span['start_cp']:span['end_cp']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/evidence_inventory.py,125,slice,"session.store.source(did, bid)['text'][lo:hi]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py,92,bound_or_batch_call,"range(1, len(folder.split('/')) + 1)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py,93,slice,folder.split('/')[:i],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py,139,slice,items[offset:offset + size],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py,228,bound_or_batch_call,"self.source.navigator.catalogue(n['documents'], limit=500)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py,231,bound_or_batch_call,"self.source.navigator.catalogue(n['documents'], offset=len(rows), limit=500)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py,238,slice,folder[len(prefix):],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py,422,bound_or_batch_call,"self.glossary.lookup(args['query'], limit=min(12, self.profile['page_size']), offset=offset - local_count)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py,422,bound_or_batch_call,"min(12, self.profile['page_size'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/exploration_tools.py,509,bound_or_batch_call,"max(end, stop)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/gateway.py,279,bound_or_batch_call,"max(1.0, float(response.get('retry_after') or 1.0))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/gateway.py,283,bound_or_batch_call,"max(1.0, (parsedate_to_datetime(response['retry_after']) - datetime.now(timezone.utc)).total_seconds())",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/gateway.py,364,slice,str(exc)[:2000],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/gateway.py,384,slice,str(exc)[:1000],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/gateway.py,389,bound_or_batch_call,"range(1, len(references.ids['claims']) + 1)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/gateway.py,391,slice,request['messages'][:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/gateway.py,394,slice,content[:4000],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/gateway.py,394,slice,encoded(content)[:4000],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/investigation_chain.py,20,slice,digest(payload)[:28],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/investigation_chain.py,38,slice,"digest({'origin': origin, 'decision': decision, 'turn': p.get('turn', 0), 'kind': kind})[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/investigation_chain.py,42,slice,"digest([key, len(memory['steps'])])[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/investigation_chain.py,67,slice,"digest({'kind': field, 'decision': row})[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/investigation_contracts.py,9,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/investigation_contracts.py,16,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/investigation_contracts.py,16,schema_bound,maxItems=8,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/investigation_contracts.py,28,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/investigation_contracts.py,30,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py,20,bound_or_batch_call,"max(1, min(limit, 100))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py,20,bound_or_batch_call,"min(limit, 100)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py,31,slice,rows[:limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py,35,bound_or_batch_call,"max(1, min(limit, 100))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py,35,bound_or_batch_call,"min(limit, 100)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py,44,slice,rows[:limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py,64,bound_or_batch_call,"self.questions(principal, query=options.get('query', ''), limit=options.get('limit', 32))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py,77,bound_or_batch_call,"self.wiki(kind, principal, after=after, limit=100)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_candidates.py,48,slice,"digest({'contract': CONTRACT, 'question': session.context.request['question'], 'scope': sorted(session.scope), 'index': session.matcher.unit_fulltext.manifest['index_sha256'], 'identity': identity})[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_candidates.py,65,bound_or_batch_call,"idx.law_groups_page(db, terms, allowed(s), limit=policy(s)['law_page_size'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_candidates.py,73,bound_or_batch_call,"idx.article_groups_page(db, terms, law['document_id'], allowed(s), limit=1)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_candidates.py,76,bound_or_batch_call,"idx.hit_page(db, terms, sid, allowed(s), limit=1)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,61,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,77,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,77,schema_bound,maxLength=512,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,95,schema_bound,minItems=0 if status == 'KEEP' else 1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,109,schema_bound,maxLength=1024,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,110,schema_bound,maxLength=512,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,123,schema_bound,minItems=0 if terminal else 1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,123,schema_bound,maxItems=0 if terminal else 8 if kind == 'READ_ARTICLES' else 1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,124,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,124,schema_bound,maxItems=0,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,128,schema_bound,maxItems=0,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,135,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,163,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,163,schema_bound,maxItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,257,bound_or_batch_call,"min(self.seconds - (time.monotonic() - self.start), self.s.context.remaining())",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,283,slice,"r['text'][:self.s.profile.get('preview_chars', 400)]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,323,bound_or_batch_call,"max(merged[-1][1], hi)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,331,bound_or_batch_call,"min(segment['end_cp'] - lo, limit - size)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,341,slice,raw['text'][span['start_cp']:span['end_cp']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,357,bound_or_batch_call,"self.idx.article_groups_page(self.db, self.p['catalogue']['terms'], did, lc.allowed(self.s), limit=8)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,361,bound_or_batch_call,"self.idx.hit_page(self.db, self.p['catalogue']['terms'], sid, lc.allowed(self.s), limit=3)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,364,slice,body['text'][:240],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,412,bound_or_batch_call,"max(0, len(cards) - 16)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,412,slice,cards[:16],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,413,slice,unresolved[:8],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,537,slice,list(dict.fromkeys([g for g in focus_ids if g in waiting] + waiting))[:8],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,572,slice,group['previews'][-self.policy['hit_page_size']:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,577,slice,sibling_rows[:self.policy['hit_page_size']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,745,bound_or_batch_call,"max(group['delivery'], page['page'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,840,bound_or_batch_call,"self.idx.law_groups_page(self.db, self.p['catalogue']['terms'], lc.allowed(self.s), cursor=identity['cursor'], limit=self.policy['law_page_size'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,846,bound_or_batch_call,"self.idx.article_groups_page(self.db, self.p['catalogue']['terms'], did, lc.allowed(self.s), cursor=identity.get('cursor'), limit=self.policy['article_page_size'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,872,bound_or_batch_call,"rel.navigate(self.question, self.s, selected, self.invoke, read_state=self.p['read_state'], seconds_left=self.left, max_context_chars=self.s.profile['max_context_chars'], state=self.p['reference_state'], on_checkpoint=reference_checkpoint, phase_prefix='source-reference-law-' + str(self.p['turn']) + '-', max_model_batches=1, replay_menu={'data': replay['data'], 'offered': replay['offered']} if replay else None)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,908,bound_or_batch_call,"self.idx.hit_page(self.db, self.p['catalogue']['terms'], sid, lc.allowed(self.s), cursor=cursor, limit=limit)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,993,bound_or_batch_call,"min(180, self.left())",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,1020,bound_or_batch_call,"min(180, self.left())",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/law_navigation.py,1058,bound_or_batch_call,"max(1, self.s.profile['selection_time_reserve_seconds'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/local_gemma.py,120,bound_or_batch_call,"max(0.001, min(180, float(ticket['remaining_seconds'])))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/local_gemma.py,120,bound_or_batch_call,"min(180, float(ticket['remaining_seconds']))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/local_gemma.py,122,bound_or_batch_call,"httpx.Client(timeout=seconds, trust_env=False, follow_redirects=False)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/memory_binding.py,19,bound_or_batch_call,"min(180, session.context.remaining(), timeout if timeout is not None else 180)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/memory_rag.py,20,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/memory_rag.py,45,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/memory_rag.py,99,slice,raw['text'][span['start_cp']:span['end_cp']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/memory_rag.py,106,slice,values[:7],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/memory_rag.py,106,slice,values[7:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/memory_rag.py,220,bound_or_batch_call,"self.invoke(system, data, wire, phase, timeout=timeout)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/memory_rag.py,233,bound_or_batch_call,"max(1, self.s.context.remaining() - 30)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/memory_rag.py,275,bound_or_batch_call,range(2),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/memory_rag.py,310,bound_or_batch_call,range(2),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/numbered_references.py,99,bound_or_batch_call,"range(1, len(ids) + 1)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/numbered_references.py,103,slice,ident[:1],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/numbered_references.py,123,bound_or_batch_call,"range(1, len(self.ids[kind]) + 1)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/obligation_protocol.py,7,schema_bound,minLength=4,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/obligation_protocol.py,7,schema_bound,maxLength=400,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/obligation_protocol.py,71,schema_bound,minLength=2,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/obligation_protocol.py,71,schema_bound,maxLength=2000,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/obligation_protocol.py,72,schema_bound,minLength=2,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/obligation_protocol.py,72,schema_bound,maxLength=2000,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/obligation_protocol.py,85,bound_or_batch_call,"max(4, child.get('minLength', 0))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/obligation_protocol.py,97,schema_bound,minLength=4,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/packer.py,41,bound_or_batch_call,"min(last['end_cp'], span['end_cp'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/packer.py,42,slice,last['text'][start:start + overlap],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/packer.py,42,slice,span['text'][:overlap],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/packer.py,45,slice,span['text'][overlap:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,14,schema_bound,minItems=minimum,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,14,schema_bound,maxItems=maximum,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,21,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,21,schema_bound,maxLength=10000,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,22,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,22,schema_bound,maxLength=160,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,25,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,37,schema_bound,maxLength=160,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,39,schema_bound,maxLength=500,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,57,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,60,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,64,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,65,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,71,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/protocol.py,72,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/question_obligations.py,164,slice,"digest([sorted(d['question_refs']), d['requirement'].strip()])[:16]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/readable_log.py,85,slice,text[:limit - 1],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/readable_log.py,129,slice,objects(value)[:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/readable_log.py,138,slice,rows[:6],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/readable_log.py,191,slice,value['search_queries'][:3],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/readable_log.py,196,slice,choices[:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/readable_log.py,208,slice,rows[:6],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/readable_log.py,246,slice,names[:3],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/readable_log.py,313,slice,rows[:6],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/readable_log.py,403,slice,objects(item)[:3],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relation_cards.py,12,slice,"digest([anchor, family, key])[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relation_cards.py,174,bound_or_batch_call,"self.s.glossary.inspect(c['id'], limit=12, offset=offset)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relation_cards.py,221,bound_or_batch_call,"self.s.glossary.lookup(label, limit=12, offset=offset)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relation_read_policy.py,48,slice,text[a:z],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relation_read_policy.py,50,slice,text[z:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relation_read_policy.py,51,slice,text[a:z],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relation_views.py,25,slice,observations[:8],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relation_views.py,65,bound_or_batch_call,"range(0, len(items), 4)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relation_views.py,65,slice,items[i:i + 4],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relation_views.py,89,slice,e['message'][:2000],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relation_views.py,89,slice,s.errors[-2:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_repository.py,34,slice,"digest([evidence, question])[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_repository.py,58,slice,"digest([self.run()['run_id'], parent, self.binding['profile_sha256'], operation])[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_session.py,31,bound_or_batch_call,"max(end, b)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_session.py,238,bound_or_batch_call,"min(64, self.profile['max_summary_items'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_session.py,266,slice,actions[:limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_session.py,267,slice,coverage[:limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_session.py,267,slice,checks[:limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_session.py,267,slice,outstanding[:limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_session.py,268,slice,history[-limit:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_tools.py,71,slice,items[:1],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_tools.py,73,slice,items[1:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_tools.py,95,bound_or_batch_call,"max(0, raw['text'].index(query) - 60)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_tools.py,98,bound_or_batch_call,"min(len(raw['text']), start + self.profile['preview_chars'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_tools.py,100,slice,raw['text'][start:end],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_tools.py,101,slice,raw['text'][start:end],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_tools.py,176,bound_or_batch_call,"min(self.profile['max_read_chars'], self.profile['max_context_chars'] // 8)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_tools.py,194,bound_or_batch_call,"max(end, b)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/relations_tools.py,414,bound_or_batch_call,"min(self.profile['max_read_chars'], sum((len(self.store.source(raw['document_id'], b)['text']) for b in self.block_ids(raw))))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/repository.py,144,slice,row[1:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py,128,bound_or_batch_call,"self.shortcut.search(principal, limit=8)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,171,slice,event['payload']['text'][:200],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,199,bound_or_batch_call,"max(1, min(int(limit), 100))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,199,bound_or_batch_call,"min(int(limit), 100)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,202,slice,rows[:limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,205,bound_or_batch_call,"max(1, min(int(limit), 100))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,205,bound_or_batch_call,"min(int(limit), 100)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,210,slice,values[:limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,375,bound_or_batch_call,"max(1, min(int(limit), 128))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,375,bound_or_batch_call,"min(int(limit), 128)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,393,bound_or_batch_call,"max(0, offset - seen)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,493,bound_or_batch_call,"max(1, min(int(limit), 100))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,493,bound_or_batch_call,"min(int(limit), 100)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,500,slice,values[:limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py,526,bound_or_batch_call,"min(300, 2 ** row['attempts'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_bundle.py,60,slice,raw['text'][p['start_cp']:p['end_cp']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,63,schema_bound,maxLength=2000,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,64,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,64,schema_bound,maxLength=1000,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,84,schema_bound,maxLength=2000,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,85,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,85,schema_bound,maxLength=1000,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,104,schema_bound,minItems=len(case_ids),기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,104,schema_bound,maxItems=len(case_ids),기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,106,schema_bound,maxItems=3,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,107,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,107,schema_bound,maxItems=4,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,107,schema_bound,minLength=2,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,107,schema_bound,maxLength=250,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,140,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,140,schema_bound,maxLength=1000,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,141,schema_bound,maxLength=2000,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,142,schema_bound,maxItems=3,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,143,schema_bound,maxItems=4,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,143,schema_bound,minLength=2,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,143,schema_bound,maxLength=250,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py,146,schema_bound,maxLength=250,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,24,slice,list(dict.fromkeys((v.strip() for v in variants if v.strip())))[:3],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,41,bound_or_batch_call,"max(0, match.start() - 40)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,41,slice,"line[max(0, match.start() - 40):match.start()]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,44,slice,list(dict.fromkeys(query_variants(question) + plan['queries'] + extra[:4] + numeric[:2]))[:13],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,44,slice,numeric[:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,44,slice,extra[:4],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,92,bound_or_batch_call,"max(end, z)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,179,bound_or_batch_call,"min(len(ids), SCOPED_POLICY['query_top_k'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,180,slice,ids[:4],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,184,slice,within[:8],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,185,slice,within[:32],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,187,slice,within[:32],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,188,slice,ids[:SCOPED_POLICY['query_top_k']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,191,slice,ids[:SCOPED_POLICY['query_top_k']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,215,bound_or_batch_call,"max((len(x['text']) for x in row['question_spans']), default=0)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,222,bound_or_batch_call,range(8),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,222,slice,list(dict.fromkeys((ids[i] for i in range(8) for ids in scoped_lists if len(ids) > i)))[:72],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,223,slice,"list(dict.fromkeys([*explicit, *scoped, *protected, *ordered]))[:SCOPED_POLICY['seed_limit']]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,225,slice,ordered[:SCOPED_POLICY['reference_seeds']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,256,slice,candidates[:16],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,275,slice,list(dict.fromkeys(seeds + ambiguous[:32] + related))[:SCOPED_POLICY['source_limit']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall.py,275,slice,ambiguous[:32],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py,22,slice,list(dict.fromkeys((v.strip() for v in variants if v.strip())))[:3],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py,37,bound_or_batch_call,"max(end, z)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py,104,bound_or_batch_call,"min(len(ids), POLICY['query_top_k'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py,105,slice,ids[:8],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py,106,slice,ids[:POLICY['query_top_k']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py,109,slice,ids[:POLICY['query_top_k']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py,134,bound_or_batch_call,"max((len(x['text']) for x in row['question_spans']), default=0)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py,141,slice,"list(dict.fromkeys([*explicit, *protected, *ordered]))[:POLICY['seed_limit']]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py,143,slice,ordered[:POLICY['reference_seeds']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py,183,slice,list(dict.fromkeys(seeds + related))[:POLICY['source_limit']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,68,bound_or_batch_call,"min(len(text), end)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,69,slice,text[start:start + overlap],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,69,slice,s['text'][:overlap],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,71,slice,s['text'][overlap:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,91,bound_or_batch_call,range(len(term) - 1),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,91,slice,term[i:i + 2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,92,bound_or_batch_call,"max(40, limit // 4)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,93,bound_or_batch_call,"min(len(text), i + width)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,93,bound_or_batch_call,"range(0, len(text), width)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,95,slice,text[span[0]:span[1]],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,97,bound_or_batch_call,"min(width, len(text))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,98,slice,candidates[1:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,103,slice,text[a:z],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,117,slice,direct[:4],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,119,slice,list(dict.fromkeys((r['anchor'] for r in rs if r.get('anchor'))))[:4],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,122,slice,list(dict.fromkeys(found))[:4],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,133,bound_or_batch_call,"min(item['rank'], r.get('rank', 0))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,161,schema_bound,maxItems=6,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,162,schema_bound,maxItems=limit,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,184,slice,c['via_queries'][:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,186,slice,c['via_references'][:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,190,slice,x['root_queries'][:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,192,slice,c['article'][:100],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,223,slice,p['links'][:3],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,226,slice,p['direct'][:3],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,229,bound_or_batch_call,"max(0, len(p['direct']) - 3)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,229,bound_or_batch_call,"max(0, len(p['links']) - 3)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_selection.py,247,bound_or_batch_call,"min(180, left)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,30,slice,"digest({'run': self.context.run_id, 'binding': self.context.binding_hash, 'kind': kind, 'identity': identity})[:24]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,57,slice,"digest({'run': self.context.run_id, 'operation': key, 'position': position})[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,103,slice,raw['text'][span['start_cp']:span['end_cp']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,134,slice,segments[block_offset:block_offset + page_size + 1],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,141,slice,ids[block_offset:block_offset + page_size + 1],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,147,slice,ids[block_offset:block_offset + page_size + 1],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,159,slice,rows[:page_size],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,163,bound_or_batch_call,"max(floor, char_offset if n == 0 else 0)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,164,bound_or_batch_call,"min(stop, start + remaining)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,172,slice,text[start:end],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,173,slice,text[start:end],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,197,slice,digest(e)[:28],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,211,bound_or_batch_call,"self.navigator.catalogue(self.scope, title_query=args['query'], offset=offset, limit=size)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,223,slice,units[offset:offset + size],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,246,slice,rows[:size],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,264,bound_or_batch_call,"self.glossary.lookup(args['query'], limit=min(12, size), offset=offset - local_count)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,264,bound_or_batch_call,"min(12, size)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/source_tools.py,292,slice,refs[offset:offset + size],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/structure_query.py,106,slice,"unit.get('title', '')[:100]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/structure_query.py,135,slice,definition_candidates[:8],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/structure_query.py,137,slice,matches['documents'][:3],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/structure_query.py,150,bound_or_batch_call,"range(1, len(coordinates))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/structure_query.py,165,slice,[h for h in hits if h['end'] <= mention.start][-1:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/structure_query.py,170,bound_or_batch_call,"max(previous_end, preceding[0]['end'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/structure_query.py,171,slice,question[gap_start:mention.start],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_protocol.py,8,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/tiers_protocol.py,8,schema_bound,maxLength=400,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/tiers_repository.py,17,slice,raw[fragment['start_cp']:fragment['end_cp']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_session.py,15,slice,digest(self.context.request['question'])[:24],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_session.py,69,slice,"digest([self.goal_id, e['generation_id'], e['source_artifact_hash'], e['document_id'], [(p['block_id'], p['start_cp'], p['end_cp']) for p in spans]])[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_session.py,80,slice,"digest([self.goal_id, ident])[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_session.py,135,bound_or_batch_call,range(self.profile['source_selection_attempts']),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_session.py,165,slice,raw['text'][sp['start_cp']:sp['end_cp']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,11,bound_or_batch_call,"range(p['start_cp'], p['end_cp'], maximum)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,12,bound_or_batch_call,"min(start + maximum, p['end_cp'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,15,slice,digest(value)[:28],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,36,slice,"p.get('text', '')[:180]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,36,slice,n['witness_spans'][:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,38,slice,n['targets'][:4],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,43,bound_or_batch_call,"max(0, len(n['targets']) - 4)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,54,bound_or_batch_call,"min(start + limit, len(raw))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,55,slice,raw[start:start + limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,56,bound_or_batch_call,"range(0, len(raw), limit)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,75,bound_or_batch_call,"max(256, s.profile['max_context_chars'] // 8)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,78,slice,obs[:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,81,bound_or_batch_call,"range(0, max(1, len(items)), 4)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,81,bound_or_batch_call,"max(1, len(items))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,82,slice,items[i:i + 4],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,93,slice,s.errors[-2:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tiers_views.py,115,slice,body['selectable_spans'][-len(choices):],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tools_protocol.py,31,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/tools_protocol.py,32,schema_bound,maxLength=10000,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/tools_protocol.py,34,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/tools_protocol.py,35,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/tools_protocol.py,42,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/tools_session.py,49,slice,self.errors[-2:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tools_session.py,148,bound_or_batch_call,"self.sources.source.navigator.catalogue(self.sources.scope, **filters, offset=offset, limit=500)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/tools_session.py,266,bound_or_batch_call,range(self.profile['max_same_error_repairs'] + 1),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/transport.py,36,slice,validation[:8],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/transport.py,42,slice,location[:8],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/transport.py,44,slice,location[:8],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/transport.py,91,bound_or_batch_call,"httpx.AsyncClient(trust_env=False, follow_redirects=False, timeout=httpx.Timeout(seconds, connect=min(self.target.connect_timeout, seconds)))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/transport.py,92,bound_or_batch_call,"min(self.target.connect_timeout, seconds)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/transport.py,153,bound_or_batch_call,"httpx.AsyncClient(trust_env=False, follow_redirects=False, timeout=httpx.Timeout(seconds, connect=min(self.target.connect_timeout, seconds)))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/transport.py,154,bound_or_batch_call,"min(self.target.connect_timeout, seconds)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/transport.py,178,slice,line[5:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unified_publication.py,165,slice,raw['text'][span['start_cp']:span['end_cp']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unified_rag.py,55,slice,"digest([self.s.context.run_id, raw['evidence_id']])[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unified_rag.py,65,bound_or_batch_call,"super().invoke(system, data, schema, phase, timeout=timeout)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unified_rag.py,85,slice,STAGES[:STAGES.index(stage)],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,55,bound_or_batch_call,"range(0, len(missing), 400)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,56,slice,missing[start:start + 400],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,97,slice,digest(ids)[:16],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,162,bound_or_batch_call,"max(0, min(len(text), z) - a)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,162,bound_or_batch_call,"min(len(text), z)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,163,slice,text[a:a + n],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,163,slice,p['text'][:n],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,164,slice,p['text'][n:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,179,bound_or_batch_call,"max(numbers, default=0)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,183,bound_or_batch_call,"max(state[key], supplied.get(key, 0))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,216,slice,"digest({k: v for k, v in e.items() if k != 'evidence_id'})[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,229,bound_or_batch_call,"max(end, hi)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,293,slice,digest([h['key'] for h in chunk])[:16],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,304,bound_or_batch_call,"range(max((len(v) for v in buckets.values()), default=0))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,304,bound_or_batch_call,"max((len(v) for v in buckets.values()), default=0)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,359,slice,by_source[sid][1:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,361,slice,queue[POLICY['initial_units']:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,362,slice,queue[:POLICY['initial_units']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,363,slice,queue[POLICY['batch_groups']:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_reading.py,365,slice,queue[:POLICY['batch_groups']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,79,slice,anchors[:LIMITS['anchors_per_round']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,91,slice,rows[:LIMITS['edges_per_anchor']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,119,bound_or_batch_call,range(len(raw['text'])),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,178,slice,witness[:LIMITS['witness_chars']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,193,slice,anchors[LIMITS['anchors_per_round']:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,197,bound_or_batch_call,min((priority[c['reading_policy']['obligation']] for c in g['connections'])),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,203,slice,group['connections'][:LIMITS['witnesses_per_group']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,226,schema_bound,maxItems=LIMITS['scopes_per_group'],기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,228,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,228,schema_bound,maxLength=512,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,230,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,230,schema_bound,maxLength=512,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,248,schema_bound,minItems=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,248,schema_bound,maxItems=LIMITS['scopes_per_group'],기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,254,schema_bound,minItems=len(labels),기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,254,schema_bound,maxItems=len(labels),기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,302,bound_or_batch_call,"_navigate(question, session, selected, invoke, read_state=read_state, seconds_left=seconds_left, max_context_chars=max_context_chars, initial_anchors=initial_anchors, phase_prefix=phase_prefix, state=state, on_checkpoint=on_checkpoint, max_model_batches=max_model_batches, replay_menu=replay_menu)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,378,bound_or_batch_call,"min(LIMITS['batches'], max_model_batches)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,391,slice,changed[:LIMITS['anchors_per_round']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,415,slice,changed[len(anchors):],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,424,slice,queue[:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,487,bound_or_batch_call,"min(180, left)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_relations.py,494,bound_or_batch_call,"min(180, left)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,28,schema_bound,maxItems=6,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,29,schema_bound,maxItems=limit if labels else 0,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,32,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,49,bound_or_batch_call,"min((text.find(t) for t in terms if t in text), default=0)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,50,bound_or_batch_call,"max(0, at - limit // 3)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,50,bound_or_batch_call,"min(len(text), start + limit)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,51,slice,text[start:end],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,92,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,93,schema_bound,maxItems=4,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,93,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,98,bound_or_batch_call,"min(180, left)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,108,bound_or_batch_call,"min(180, left)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,187,bound_or_batch_call,"range(progress.get('review_round', 0), POLICY['review_rounds'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,276,slice,pending[:POLICY['batch_groups']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/unit_selection.py,277,slice,pending[POLICY['batch_groups']:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/updates.py,62,slice,pending[:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py,15,bound_or_batch_call,"super().invoke(system, data, schema, phase, timeout=timeout)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py,30,bound_or_batch_call,"super().invoke(system, data, schema, phase, timeout=timeout)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py,57,bound_or_batch_call,"repo.search(self.principal, limit=8)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relation_cards.py,18,slice,"digest([anchor, family, key])[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relation_cards.py,128,bound_or_batch_call,"max(0, int((self.s.context.deadline - now) * 1000))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relation_cards.py,241,bound_or_batch_call,"self.s.glossary.inspect(c['id'], limit=12, offset=offset)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relation_cards.py,288,bound_or_batch_call,"self.s.glossary.lookup(label, limit=12, offset=offset)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py,98,slice,items[:1],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py,100,slice,items[1:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py,122,bound_or_batch_call,"max(0, raw['text'].index(query) - 60)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py,125,bound_or_batch_call,"min(len(raw['text']), start + self.profile['preview_chars'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py,127,slice,raw['text'][start:end],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py,128,slice,raw['text'][start:end],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py,246,bound_or_batch_call,"min(self.profile['max_read_chars'], self.profile['max_context_chars'] // 8)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py,288,bound_or_batch_call,"max(hi, merged[-1][1])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py,318,bound_or_batch_call,"max(b, merged[-1][1])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py,597,bound_or_batch_call,"min(self.profile['max_read_chars'], self.profile['max_context_chars'] // 8)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py,603,bound_or_batch_call,"max(1, (chars + per_page - 1) // per_page)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py,608,bound_or_batch_call,"min(self.profile['max_auto_reference_chars_per_request'], self.profile['max_context_chars'] // 4)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_protocol.py,8,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_protocol.py,8,schema_bound,maxLength=400,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_protocol.py,53,schema_bound,minLength=1,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_protocol.py,53,schema_bound,maxLength=400,기계검색 후보; 현행 적용은 수동 설명 원장 참조
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py,15,slice,digest(self.context.request['question'])[:24],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py,76,slice,"digest([self.goal_id, e['generation_id'], e['source_artifact_hash'], e['document_id'], [(p['block_id'], p['start_cp'], p['end_cp']) for p in spans]])[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py,87,slice,"digest([self.goal_id, ident])[:28]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py,129,slice,item['decision'][5:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py,135,slice,str(exc)[:800],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py,203,slice,str(exc)[:800],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py,211,slice,str(exc)[:800],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py,235,slice,"digest([(e.get('field'), e.get('message')) for e in errors])[:12]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py,252,bound_or_batch_call,range(self.profile['source_selection_attempts']),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py,328,slice,raw['text'][sp['start_cp']:sp['end_cp']],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_session.py,367,slice,self.errors[-4:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,31,bound_or_batch_call,"range(p['start_cp'], p['end_cp'], maximum)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,32,bound_or_batch_call,"min(start + maximum, p['end_cp'])",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,35,slice,digest(value)[:28],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,56,slice,"p.get('text', '')[:180]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,56,slice,n['witness_spans'][:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,58,slice,n['targets'][:4],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,63,bound_or_batch_call,"max(0, len(n['targets']) - 4)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,74,bound_or_batch_call,"min(start + limit, len(raw))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,75,slice,raw[start:start + limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,76,bound_or_batch_call,"range(0, len(raw), limit)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,88,slice,"[o for o in obs if o.get('actor') in ('MODEL', 'REVIEWER') and o.get('tool') == 'read'][:2]",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,113,bound_or_batch_call,"max(256, s.profile['max_context_chars'] // 8)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,116,slice,[o for o in obs if o.get('actor') == 'MODEL'][:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,116,slice,obs[:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,121,bound_or_batch_call,"range(0, max(1, len(items)), 4)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,121,bound_or_batch_call,"max(1, len(items))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,122,slice,items[i:i + 4],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,140,slice,s.errors[-2:],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,151,slice,digest(k)[:28],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,166,bound_or_batch_call,"max(cap, len(preferred))",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_views.py,173,slice,body['selectable_spans'][-len(choices):],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/legal_agent_adapter.py,167,slice,context.deadline_at[:10],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/navigation_match.py,77,slice,key[:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/navigation_match.py,79,slice,key[:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/navigation_match.py,80,slice,key[:2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/navigation_match.py,105,slice,query[i:i + 2],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/navigation_match.py,121,slice,text[start_raw:end_raw],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/navigation_match.py,151,slice,text[start:end],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/navigation_match.py,317,slice,rows[:self.BRIDGE_LIMIT],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/navigation_match.py,359,slice,hashlib.sha256((source + '\x00' + node).encode()).hexdigest()[:24],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/navigation_match.py,378,bound_or_batch_call,min((s['start'] for s in x['question_spans'])),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/navigation_match.py,381,bound_or_batch_call,min((s['start'] for s in x['question_spans'])),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/navigation_match.py,382,bound_or_batch_call,min((s['start'] for s in x['question_spans'])),기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/unit_fulltext.py,56,bound_or_batch_call,"islice(entries, 128)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/unit_fulltext.py,174,slice,roots[:limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+02_BACKEND/semantic_runtime/unit_fulltext.py,254,slice,roots[:limit],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+service.py,135,bound_or_batch_call,"max(value['wall_seconds'], 1800)",기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+service.py,367,slice,hashlib.sha256(str(code_root).encode()).hexdigest()[:16],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+service.py,829,slice,obs._redact_secrets(str(exc))[:1000],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+service.py,887,slice,hashlib.sha256(str(code_root).encode()).hexdigest()[:16],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함
+service.py,966,slice,obs._redact_secrets(str(exc))[:1000],기계검색 후보; 해시 ID/원문 좌표/배치/비활성 코드도 포함

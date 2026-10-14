@@ -1,0 +1,159 @@
+{
+  "status": "PASS_DISPLAY_BOUNDARIES_AND_INSTALLER",
+  "environment": "WSL synthetic models/data; no GENOS access",
+  "local_main": {
+    "release_id": "public-failure-guidance-20261014-r1",
+    "generation": 61,
+    "manifest_sha256": "4b0b1d79c966568bbe3eed3e14552256db9a059d344da34df1b859fe71034f21",
+    "selected_files_verified": 301,
+    "service_health": 200,
+    "service_search": 200,
+    "injected_failures_via_actual_service": [
+      {
+        "exception": "AdmissionRejected",
+        "http_status": 503,
+        "public_text": "현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (503)\n\n조회 번호: guidance-503"
+      },
+      {
+        "exception": "DeadlineExceeded",
+        "http_status": 504,
+        "public_text": "현재 충분한 법률 검토를 하지 못했습니다. 잠시 후 다시 요청해 주세요. (timeout)\n\n조회 번호: guidance-timeout"
+      },
+      {
+        "exception": "BudgetExhausted",
+        "http_status": 500,
+        "public_text": "현재 충분한 법률 검토를 하지 못했습니다. 검토 가능한 처리 한도에 도달했습니다. 법률 쟁점을 나누어 질문해 주세요. (limit)\n\n조회 번호: guidance-limit"
+      }
+    ]
+  },
+  "protocol_matrix_cases": 2400,
+  "qualified_contracts": 298,
+  "installed_contracts": {
+    "query_latency_20261007_r3": 147,
+    "query_latency_20261007_r4": 190
+  },
+  "editor_contracts": 15,
+  "installation_states": 6,
+  "service_boots": 12,
+  "same_committed_checkout_mock_generation_gates": 6,
+  "installer_evidence": [
+    {
+      "path": "TEST_query_latency_20261007_r3.json.gz",
+      "sha256": "1fd8fbb3d4ac2bfdda290dbba88c7b5af7e8e1349d19158f180d1774e4105b5f",
+      "commands": 20,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r3_ad_success.json.gz",
+      "sha256": "1b9c8934c014e0172e8f66e35c531b4851b161222f252d5c2abc9b7522db4bc3",
+      "commands": 22,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r3_budget_ad.json.gz",
+      "sha256": "e3bf81d50e6cebb59600afa339e33e8ddf75bc687206ff6f75bf2b5fdb1bd20c",
+      "commands": 21,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_budget.json.gz",
+      "sha256": "8ad7e3df09a024e67d05d76ba8cb869d5c9315c0078a1c6f24f8b383dfdf300f",
+      "commands": 20,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_display_budget_ad.json.gz",
+      "sha256": "2beb018988603ec2dd85914523a5803870661c8b1b8b0a9c125ba253490192a6",
+      "commands": 22,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_display_budget_ad_success.json.gz",
+      "sha256": "9f2b450cc5994d28a28979649e5836cd84d0ebe5960887ba4f984a1b25f6c542",
+      "commands": 23,
+      "expected_rejections": 2
+    }
+  ],
+  "known_predecessor_inventories": 990,
+  "source_files": {
+    "main_workflow.py": "a01e9a23d9a1b9fb28ac19901f5881b73ac9f7855b1063612134abf358e7a69a",
+    "02_BACKEND/semantic_runtime/app.py": "5a5e0bf35fd4a5d55742c4262887ccd3b089f01901e00e4ea6f772cdb227e23f",
+    "02_BACKEND/semantic_runtime/chat_adapter.py": "c6e162f68fb560a74d7920d53956133884c8619687340f34b801b5038676aef7",
+    "08_DEPLOYMENT/GENOS/stream_app.py": "f94e49f8a859e31f6eae0006d501fa4cde36e871dfdda4c0e46e6a5b4ae3e414",
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": "d2972f39bfb5013bd1349bf48c227177e6f3a3bcc91d65c85c8ab0d849443b58"
+  },
+  "field_variant_hashes": {
+    "main_workflow.py": {
+      "780476f467171c43b68bca814f0ab3c84eb3d173af35a06e685f7601d9b80331": "a5eed79447a5f1b698955411ea5eecbbefe933c2abf28dbaa5038b404120d85a",
+      "11453f26aa89193b4c2a0cea65c7c37cde5b43d74ad16f291abeb5efb394efdb": "a01e9a23d9a1b9fb28ac19901f5881b73ac9f7855b1063612134abf358e7a69a",
+      "724d68c139a180642daf9e1158913392c39d9bcaac34d3dfe3435ca6ff5c0698": "a01e9a23d9a1b9fb28ac19901f5881b73ac9f7855b1063612134abf358e7a69a"
+    },
+    "02_BACKEND/semantic_runtime/app.py": {
+      "c761741478f04baf8032bb83e7196bc3e99a8188e799f440ef106fa36002b77d": "87272413779ac451ce266a77eb09e04d18d0535e3bff67bdc8b548fdf2ae5f66",
+      "7997d8d75372ae2c8b74ae19fe8dcb29ce8961d68e98734965bbb59d337a932b": "8657bbad0a7ecbc809df7175d7489d3025bae84214927503a5bd9fc6c3ff26a1"
+    },
+    "02_BACKEND/semantic_runtime/chat_adapter.py": {
+      "0863efd57c621cda813d2e1db5120b48bf993e64cbd788bb18eaa1bf58a82102": "506ee45c5ca024575b6a71a4288eaca730059a8089a4111443be304798ca7a87",
+      "a3958ea8a3be23a18a388b7a6a46395bebb58bd8c792d01dca85ed6764d60b84": "38125e2be82dfb9099a1e03f0101e2b847e7860e1701b4396b42f03a445e88d2",
+      "d1f9a808f68e962fbd6104f692e8279f753617584614a6384d13dae4fe120080": "506ee45c5ca024575b6a71a4288eaca730059a8089a4111443be304798ca7a87",
+      "bddcf3793e57f5dbe5c2db8cf531260e1efb49c51c03f859af7779d11f33ac55": "38125e2be82dfb9099a1e03f0101e2b847e7860e1701b4396b42f03a445e88d2",
+      "f082d9843d6ddb55212e8cdfd7f4daeb3774d2107be2e32eba4c0b6ae52f0e48": "6d14aa5e474e57625fd24b680726ec73a7d4f77a4923d740103d529bedfc925e",
+      "e45425528f19b2463bacff20fcca2bd2c96e9092a860111c6d66f360d2af0cf8": "c6e162f68fb560a74d7920d53956133884c8619687340f34b801b5038676aef7"
+    },
+    "08_DEPLOYMENT/GENOS/stream_app.py": {
+      "4ea831c020c81bd4a0dd230ba27192846fd142881c964dbb33df02323008fc8c": "e19569f7b6ce838aa09e304c7800529f13f5a943ed1644fe7fc35bccd54559a9",
+      "1eea604e0c2fa601eae2b1bc951488000218b0d480ce61cfc2c443da774842c3": "1e6f720e3caa243e54d6acc31a7e54029c1f3f1c77e55ec721d03f3d8702d68f",
+      "2e4e3c3138b91253bf18c65c2ed6c0f5eecbc70ffe8c863512606eb67cdd9991": "3aeab58a2cc9a17f47199705c2d018585cdaf948008ccadc2881ec7605ec9438"
+    },
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py": {
+      "3d2915977e4e87ead20ae801d88cd6e56509b8a7313dcdaf9dfefe18394bc81d": "d2972f39bfb5013bd1349bf48c227177e6f3a3bcc91d65c85c8ab0d849443b58",
+      "2d39d7489ce132bf590a6ec290ae701df0d054545575c448330bb303957ac899": "d2972f39bfb5013bd1349bf48c227177e6f3a3bcc91d65c85c8ab0d849443b58",
+      "3718eb9667ba96a928ec1875bbe4cea86d7868539c7b9d95b4621016faa2d6fc": "d2972f39bfb5013bd1349bf48c227177e6f3a3bcc91d65c85c8ab0d849443b58",
+      "8d0eca5d082d024d3fe5bc3c18c8c9e56e24956941ea2ea435521e12a71f085f": "d2972f39bfb5013bd1349bf48c227177e6f3a3bcc91d65c85c8ab0d849443b58",
+      "e99f59775395b8c4785beab2e4e50de48bb657cfda9b70b6500a101af8d6fb6b": "d2972f39bfb5013bd1349bf48c227177e6f3a3bcc91d65c85c8ab0d849443b58",
+      "b4124f453d928037e869aec0c07ae4a86ac15eb346de9fadc7835bdf3098fcef": "d2972f39bfb5013bd1349bf48c227177e6f3a3bcc91d65c85c8ab0d849443b58",
+      "754b20d6711561c1e4ad22d008b277cfcfd0041bdf19e34117023ccdc1f1c394": "d2972f39bfb5013bd1349bf48c227177e6f3a3bcc91d65c85c8ab0d849443b58",
+      "e6d2af184713f437a01831baa37e712d82e3b48d31e9fd75d32745ca5f472390": "d2972f39bfb5013bd1349bf48c227177e6f3a3bcc91d65c85c8ab0d849443b58",
+      "ff48161bb9cf90d3f8b81900bbd691ec1166c4f450a17e680dfb2848ef28be65": "d2972f39bfb5013bd1349bf48c227177e6f3a3bcc91d65c85c8ab0d849443b58"
+    }
+  },
+  "field": {
+    "code_root": "~/DEV",
+    "git_commit": null,
+    "generation": null,
+    "generation_manifest_sha256": null,
+    "code_serving_revision": null,
+    "applied": false,
+    "deployed": false,
+    "workflow_editor_saved": false,
+    "workflow_test": "NOT_RUN"
+  },
+  "real_model_calls": 0,
+  "limitations": [
+    "Synthetic exhaustive contract audit; not unseen legal answer accuracy or GENOS performance.",
+    "Existing tests are known regression, not fresh holdout.",
+    "Five preexisting native fixture failures were reproduced on prior code and remain open; they are not claimed passed.",
+    "GENOS actual installation/deployment/internal model remains unverified.",
+    "Existing global ADR graph errors8; added errors0.",
+    "Process death or platform response blocking is outside the executing display code.",
+    "GENOS field adapters retain existing cache/transport bytes; variant hashes recorded separately from local MAIN."
+  ],
+  "main_evidence": {
+    "path": "04_EXPERIMENTS/ADR/ADR-0775-public-failure-main/artifacts/main-service-smoke.json",
+    "sha256": "8fee0d00131fa05d73d3d58270af6c1b2d8335e039fd220206d1d51c1f0c7cf1"
+  },
+  "evidence_hashes": {
+    "CONTRACTS_query_latency_20261007_r3.xml": "4e8cf8586356254a432e073057494b0b322074b21191b28a361a1c44c5a971ad",
+    "INSTALLED_CONTRACT_WRAPPERS.log": "fd3a0ec15003c9d75a27e1012feae71d972fb898f0f177d108b6fba230c6a31e",
+    "INSTALL.xml": "767ec22dd0cf38b073ce152f58122d77c2895509529c27dd9a0389a48c278ff1",
+    "CONTRACTS_query_latency_20261007_r4.xml": "70fd6d6a9193d0e3073e2f2a315793b0aec61f1f7605715ffbc219d9aef6359e",
+    "INSTALL.log": "0ecd33726c9c0d5f35dd6cfdd310d1a2b6dc7145108c4c5bdb548a7d874ae519",
+    "EDITOR.log": "d99b420c918c2babec21f6fb8fed5a0f2e519ce3ef8933602755e9bbf7501afa",
+    "INSTALLED_CONTRACT_WRAPPERS.xml": "e5c831c91ee885f9fdc059351109bbd6f9f4511bd207f7a30b35487c6c471da1",
+    "BUILD.log": "f72bb0251421543cbb3bbc3f95b81328b930c5dcc6d1a87b10542cf8184ef579",
+    "EDITOR.xml": "5001dc7d2d4764a0cb5d2f6ba9c26bf88bdd7a823aaad37b2236ac5852811569"
+  },
+  "run_txt_sha256": "081a02a9f6d8996985079b94ab9e569b0c878f6b4eb17a25c007a37d1317b7f0",
+  "editor_sha256": "f505a5a4e0a43e691d1f741238397bad059246d29dbb29a78c516dcb0852ad62",
+  "installer_sha256": "0259bb98555f3d6163acd2d31665e9da9876f50ce33d3b20ecb7647844a9504d"
+}

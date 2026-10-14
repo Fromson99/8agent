@@ -1,0 +1,49 @@
+﻿setting,selected_value,usage
+schema_version,"""system-harness-profile-v5""",프로필 설정 계약의 버전 식별자. 길이·개수 제한이 아니다.
+profile_id,"""unified-legal-agent-v6""",선택된 통합 v6 설정 묶음의 식별자.
+model_binding,null,파일null; service팩토리가고정로컬Qwen3.8 binding 주입
+max_model_attempts,40,모든 단계·수정·재시도가 함께 쓰는 물리 모델 시도 40회.
+finalization_reserve,3,전체 40회 중 마지막 판단을 위해 3회를 남김. 조사 시도 상한은 37회.
+max_tool_actions,1024,공통 원장의 도구 시도 1024회. 모든 내부 SQL 조회를 각각 한 번으로 세지는 않음.
+wall_seconds,1800,동일 요청 전체 1800초. 재개 시 최초 마감 시각을 보존.
+max_cycles,3,일반 coordinator.run 전용; 현재 run_case의 판정2회 재진입과 다름
+max_no_progress,2,같은 조사에서 진전 없는 반복 2회이면 탐색 정리.
+max_schema_repairs,1,gateway의 JSON 수정 1회. 법령 탐색과 최종 판단은 0으로 바꾸고 단계 자체 수정 사용.
+max_transport_retries,1,현재local completion팩토리1 유지; 알려진429만재시도
+max_context_chars,100000,참조 data JSON 검사 등에 적용; 모든LLM view 자동컷 아님
+max_output_tokens,6400,local모델정책6400으로factory 결속; RuntimeModel 모든호출에 적용
+max_read_chars,12000,도구 읽기 및 원문 전달 페이지의 12000자. 전체 원문 삭제 상한이 아님.
+page_size,40,원문 읽기 페이지의 블록·구간 40개.
+max_concurrent_requests_per_process,4,선택 로컬 설정은 프로세스당 동시 요청 4개. 초과 접수는 즉시 거절.
+browse_depth_limit,4,generic browse 도구; 현재 law 행동메뉴에는 browse 없음
+max_same_error_repairs,1,ToolsSession 전용; 현재법령/판단 자체수정1회와 구분
+max_review_disputes,1,일반 검토분기; 현재 최종 의미검토 없음
+preview_chars,360,법령 탐색의 읽은 위치 미리보기 앞 360자. 조항 후보 요약은 별도 240자.
+max_preview_chars,3600,generic view preview 총량; law360/240에는 전체3600자 컷 미적용
+relation_page_size,12,generic relation도구/자동prefetch; unit_relations groups16과 별개
+max_relation_chars,14000,generic relation도구; 현행 참조 메뉴24k와 별개
+relation_scan_seconds,5,호환용; 강제5초 제한 아님
+auto_reference_read_depth,1,구형자동prefetch 깊이1; 현행참조FOLLOW 깊이8
+max_auto_reference_reads_per_request,12,구형자동prefetch; 현행SYSTEM_POLICY read는자동prefetch 큐 미생성
+max_auto_reference_chars_per_request,12000,구형자동prefetch; 현행unit cumulative1.6M와 다름
+tool_finalization_reserve,4,generic system_task예약; 현재 unit_read에 별도4 예약을 강제하지 않음
+max_summary_items,60,generic coverage메타데이터 요약; 현재행동체인에60개 컷 없음
+question_obligations_enabled,true,profile검증에서true 요구; 현재사용자쟁점은INTENT 최대8
+numbered_references_enabled,true,profiletrue이지만 bounded structured 호출에서false로 오버라이드
+max_core_sources,24,"선택설정24, tier선택 경로 전용; 현행law selector 미사용"
+max_supplemental_sources,24,"선택설정24, tier선택 경로 전용; 현행law selector 미사용"
+max_source_excerpt_chars,1600,tier1600; 현행판단은모든채택원문을1200자조각화
+source_page_size,4,tier카드4; article_page_size4와 별개
+source_selection_attempts,2,tier 선택횟수. 현재law/assess 수정은 각 코드에서1회
+selection_time_reserve_seconds,30,탐색 정리에 마지막 판단용 30초를 남기는 기준. 판단 성공을 보장하지 않음.
+bounded_source_selection_enabled,true,true이며 통합v6의필수조건
+final_review_enabled,false,false; completion COMPOSE도추가생성/의미검토 없음
+candidate_navigation.mode,"""law-first-v1""",현행 법령 → 조항 → 적중 위치의 law-first-v1 탐색 경로.
+candidate_navigation.law_page_size,12,검색 법령 목록 한 페이지 12개. 이미 연 법령을 추가하면 전체 입력은 12개를 넘을 수 있음.
+candidate_navigation.article_page_size,4,법령 열기·다음 조항은 페이지당 4개. 처음 요약 메뉴의 limit=8과 별도.
+candidate_navigation.hit_page_size,8,적중 위치 페이지 8개. 최근 미리보기·형제 목록 표시에도 이 값을 사용.
+candidate_navigation.search_rounds,8,검색 표현 라운드 전체 8개. 동일 정규화 검색식을 반복하는 것은 허용하지 않음.
+candidate_navigation.allow_unresolved_completion,true,참조 미해결이 있다는 사실만으로 조사 종료를 금지하지 않음. 답변 범위는 최종 쟁점 판단에서 검사.
+candidate_navigation.investigation_control,true,원래 요구·쟁점·행동 이유·추가 조사 복귀를 추적하는 통합 조사 계약 활성.
+candidate_navigation.assessment_reentry_limit,2,최종 판단에서 추가 탐색으로 복귀 최대 2회. 기존 호출·시간 사용량은 이어받음.
+candidate_navigation.completion_contract,true,"원문을 받은 뒤 채택하고, 채택된 원문 좌표에 연결된 판단으로 답변을 구성하는 현재 계약 활성."

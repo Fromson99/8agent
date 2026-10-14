@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-08",
+  "source": "user photograph, visible terminal only",
+  "image_path": "/tmp/codex-remote-attachments/01a116dd-de81-7f60-9aea-cd286b7a3b68/ACADB005-D4FA-47AA-8AA9-199460B5272D/1-사진-1.jpg",
+  "image_sha256": "659ebf99eb5774477693c6ee84859aa1a5b0875a23d8cca6fc6969e19ab6278f",
+  "checkout_resolved": "/workspace",
+  "full_error_revision": "GENOS_FULL_ERROR_LOGGING_20261007_R10",
+  "full_error_visible_results": [
+    "CHECK PASS; changed files=44",
+    "ENGINE_BINDINGS PASS; engines=30",
+    "FULL_ERROR_RENDER PASS; 45000+ characters preserved; no model calls",
+    "CODE_APPLIED; commit/gate/push/revision/environment/workflow pending",
+    "verify EXIT=0"
+  ],
+  "full_error_backup_visible": "/workspace/TRANSFER/full-error-logging-r10/backup-25104a1e43f14286d0bb984a61fbdff",
+  "full_error_receipt_content_provided": false,
+  "CM_revision": "GENOS_CM_ONECLICK_20261008_R14",
+  "CM_error": "budget service inventory differs; preserved",
+  "CM_phase": "사전 확인",
+  "CM_exit_code": 1,
+  "CM_visible_log": "/workspace/TRANSFER/cm-oneclick-r14/logs/20261007T235637Z-66157.log",
+  "CM_code_apply_reached": false,
+  "CM_package_check_reached": false,
+  "CM_register_push_revision_verified": false,
+  "field_source_inventory_full_content_received": false,
+  "local_reproduction_service_before_sha256": "2cfb9c6e36c0a80ffd8ce1409060d4666c074479be699028ebe28272827d86af",
+  "local_reproduction_service_after_sha256": "daea3108798e70737f29288fd8e3b23eeb9f32cea7b956d583753d3e185b8276",
+  "field_full_hash_match_claimed": false,
+  "conclusion": "R14 preflight does not account for the verified full-error R10 overlay; reproduce in an isolated fixture, then preserve it using its authenticated receipt, archive and exact sealed transformation."
+}

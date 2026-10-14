@@ -1,0 +1,60 @@
+{
+  "status": "PASS_FOR_DISPLAY_CHANGE",
+  "tests_passed": 72,
+  "tests": {
+    "source_card_contracts_and_sse": 25,
+    "main_workflow_display_and_answer_stream": 35,
+    "exact_editor_live_cards": 12
+  },
+  "model_calls": 0,
+  "source_git_head": "e2c33b2298f9da9f17e9f07dabec3fe7936604b0",
+  "uncommitted_working_code": true,
+  "validated_code_root": "/home/jin/8-AGENT",
+  "validated_editor": "GENOS_WORKFLOW_SOURCE_CARDS_20261013_R1_PASTE_ALL.txt",
+  "validated_editor_sha256": "e6b1a351131b6956950c88c617c76b4b32865d391745c952522c779022704e8e",
+  "shared_source_sha256": "2a9ecf3135b326649b0c85677f4a0ea8237da1fd91a388e704c20b56b6cb620b",
+  "baseline_selected_workflow_sha256": "486a8addf51da982744d18a20e23fbe92297f0fb0716e4b524aa345f18d15ac4",
+  "existing_failures": {
+    "suite": "05_TESTS/CONTRACTS/test_genos_chat_progress.py",
+    "count": 7,
+    "reproduced_with": "08_DEPLOYMENT/RELEASES/token-stream-20261013-r1/code",
+    "reason": "Legacy expectations for inline status tokens and detailed progress conflict with the pre-existing compact/default-card policy. Same seven failures on selected baseline and working code."
+  },
+  "scope": [
+    "Markdown list parsing",
+    "21 source paths without truncation",
+    "separate groups across visible activities/model-wait/run changes",
+    "no per-document emission",
+    "flush before streamed answer or request finish",
+    "flow graph inputs retained",
+    "HTML/Markdown escaping",
+    "final-cards and optional socket",
+    "complete R4 editor compilation and live delivery",
+    "reproducible build with sealed R4 hash",
+    "git diff --check"
+  ],
+  "local_active_pointer_changed": false,
+  "field_editor_saved": false,
+  "field_browser_render": "NOT_RUN",
+  "field_model_execution": "NOT_RUN",
+  "logs": {
+    "main-tests.txt.gz": {
+      "sha256": "aae743dec13682bacbef988ca4ce16700e2a6b6c22a628d4797a21908432b3fc",
+      "restored_sha256": "09f57179c414b6167688957d42ccb67ced53a40e683259b7f94dea8500fd9fda",
+      "restore": "python3: gzip.decompress(Path(filename).read_bytes())",
+      "result": "60 passed"
+    },
+    "editor-tests.txt.gz": {
+      "sha256": "e7722a8d631d72cc8ca65672962c3399de16366876f16dce4754241943520461",
+      "restored_sha256": "7574f4fcbfe9bea424288c7f66d47cd4a1d3ffaea0c73c1c0cf74c797a3c403f",
+      "restore": "python3: gzip.decompress(Path(filename).read_bytes())",
+      "result": "12 passed"
+    },
+    "baseline-existing-regressions.txt.gz": {
+      "sha256": "e82c43ef8d7def0c8ad5c87e93bd30cea93707c3a1ad8f69e16491eb63f1d918",
+      "restored_sha256": "25b4e0a5f73603c285097a07c7fee7d72ceb517657e25b10ce117eea47cdc80b",
+      "restore": "python3: gzip.decompress(Path(filename).read_bytes())",
+      "result": "7 failed, 2 passed"
+    }
+  }
+}

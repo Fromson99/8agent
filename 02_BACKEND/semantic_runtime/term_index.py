@@ -61,7 +61,7 @@ def ro(path):
 def text_sha(text):return hashlib.sha256(text.encode()).hexdigest()
 
 def compile_index(store, legal, dictionary, output, *, glossary=None, linkage_report=None, knowledge=None,
-                  reference_scope_v2=False, audit_output=None, storage_profile='legacy'):
+                  reference_scope_v2=False, audit_output=None, storage_profile='legacy', audit_profile='materialized'):
     """Explicit selected stores only; no experiment products, mocks, or model calls."""
     progress = globals().get('_BUILD_PROGRESS', lambda **kw: None)
     phase_started = time.monotonic()
@@ -75,6 +75,8 @@ def compile_index(store, legal, dictionary, output, *, glossary=None, linkage_re
     phase('schema.start')
     output=Path(output)
     compact_v2 = storage_profile == 'compact-v2'
+    if audit_profile not in {'materialized', 'factorized-v1'} or (audit_profile != 'materialized' and not compact_v2):
+        raise ValueError('factorized audit requires compact-v2')
     if compact_v2:
         from . import navigation_build as nb
         from .reference_build import shared_reference_schema
@@ -84,9 +86,9 @@ def compile_index(store, legal, dictionary, output, *, glossary=None, linkage_re
                   'glossary':sha(glossary) if glossary else None,
                   'report':linkage_report if isinstance(linkage_report,dict) else sha(linkage_report) if linkage_report else None,
                   'knowledge':sha(Path(knowledge)/'manifest.json') if knowledge else None,
-                  'scope_v2':reference_scope_v2,'reference_inputs':reference_inputs,
+                  'scope_v2':reference_scope_v2,'reference_inputs':reference_inputs,'audit_profile':audit_profile,
                   'code':{n:sha(Path(__file__).with_name(n)) for n in
-                    ('term_index.py','term_links.py','reference_build.py','navigation_build.py','term_references.py','term_references_legacy.py','term_tools.py')}}
+                    ('term_index.py','term_links.py','reference_build.py','navigation_build.py','factorized_audit.py','term_references.py','term_references_legacy.py','term_tools.py')}}
         if audit_output is None or glossary is None:raise ValueError('compact-v2 requires explicit glossary and audit')
         if (output/'manifest.json').exists():
             if json.loads((output/'build-identity.json').read_text())!=identity:raise ValueError('navigation resume identity changed')
@@ -153,7 +155,7 @@ def compile_index(store, legal, dictionary, output, *, glossary=None, linkage_re
         if glossary is not None or linkage_report is not None or knowledge is not None:
             if glossary is None or linkage_report is None:raise ValueError('glossary and linkage report must be explicit together')
             from .term_links import LinkProjector,normalized
-            projector=LinkProjector(db,store,dictionary,glossary,linkage_report,knowledge,direct_audit=compact_v2)
+            projector=LinkProjector(db,store,dictionary,glossary,linkage_report,knowledge,direct_audit=compact_v2,audit_profile=audit_profile)
         if compact_v2 and not initialized:
             nb.put(db,'initialized',True);db.commit()
         phase('documents.start')
@@ -292,7 +294,7 @@ def compile_index(store, legal, dictionary, output, *, glossary=None, linkage_re
         phase('audit-separation.start')
         storage=None
         if compact_v2:
-            storage=nb.finish_audit(output/'navigation.sqlite',audit_output)
+            storage=nb.finish_audit(output/'navigation.sqlite',audit_output,audit_profile=audit_profile)
         elif audit_output is not None:
             from .navigation_storage import separate_navigation
             storage=separate_navigation(output/'navigation.sqlite', audit_output, compact=storage_profile=='compact-v1')
@@ -311,6 +313,16 @@ def compile_index(store, legal, dictionary, output, *, glossary=None, linkage_re
 class SourceMap(Mapping):
     def __init__(self,db,table='source'):
         self.db=db;self.table=table;self.cache={};self._load_metrics=None
+
+    def ids_for_documents(self, document_ids):
+        """ACL metadata only: do not decode every source body to find its owner."""
+        from . import query_latency as latency
+        ids = sorted(set(document_ids))
+        if not ids: return frozenset()
+        rows = latency.rows(self.db,
+            'SELECT id FROM source WHERE document_id IN (SELECT value FROM json_each(?))',
+            [json.dumps(ids)], 'scope_source_ids')
+        return frozenset(row[0] for row in rows)
 
     @contextmanager
     def measure_loads(self):
@@ -489,18 +501,38 @@ class TermIndex:
         m=self.manifest
         if m.get('schema_version') not in {'term-navigation-index-v2','term-navigation-index-v3','term-navigation-index-v4','term-navigation-index-v5','term-navigation-index-v6','term-navigation-index-v7'}:raise ValueError('unsupported term index schema')
         if m['source_store_sha256']!=store.manifest['store_sha256'] or m['source_manifest_sha256']!=digest({k:v for k,v in store.manifest.items() if k not in {'navigation','fulltext','fulltext_derivation'}}) or m['index_sha256']!=sha(path/'navigation.sqlite'):raise ValueError('term index generation/hash mismatch')
-        self.path=path;db=ro(path/'navigation.sqlite');self.terms=[json.loads(r[0]) for r in db.execute('SELECT json FROM term')];self.relations=[json.loads(r[0]) for r in db.execute('SELECT json FROM edge')];db.close()
+        self.path=path;self._cache_signature=self.cache_signature();db=self.resident_connect();self.terms=[json.loads(r[0]) for r in db.execute('SELECT json FROM term')];self.relations=[json.loads(r[0]) for r in db.execute('SELECT json FROM edge')];db.close()
         self._tools_lock=threading.Lock()
         self._tool_catalog=None
         self._definition_rows=None
         self._definition_summaries=None
+
+    def resident_connect(self):
+        from .resident_data import POOL
+        self.cache_binding()
+        db=POOL.connect(self.path/'navigation.sqlite', expected=self.manifest['index_sha256'])
+        db.row_factory=sqlite3.Row
+        return db
+
+    def cache_signature(self):
+        files=(self.path/'manifest.json', self.path/'navigation.sqlite')
+        if any(p.is_symlink() or Path(str(p)+'-wal').exists() for p in files):
+            raise ValueError('unbound navigation cache file')
+        return tuple((p.stat().st_dev,p.stat().st_ino,p.stat().st_size,p.stat().st_mtime_ns,p.stat().st_ctime_ns)
+                     for p in files)
+
+    def cache_binding(self):
+        if self.cache_signature()!=self._cache_signature:
+            raise ValueError('navigation changed; reopen and verify')
+        return (str(self.path.resolve()), self._cache_signature, self.manifest['generation_id'],
+                self.manifest['source_store_sha256'], self.manifest['index_sha256'])
 
     def tools(self,scope):
         # This cache belongs to the verified TermIndex, so generation/file-state
         # invalidation of cached_serving_index also invalidates these data.
         with self._tools_lock:
             if self._tool_catalog is None:
-                db=ro(self.path/'navigation.sqlite')
+                db=self.resident_connect()
                 try:
                     template=IndexTools(db,self.terms,self.relations,[])
                     with obs.step(log, 'tools.definition_catalog'):
@@ -523,10 +555,12 @@ class TermIndex:
                     db.close()
             else:
                 obs.event(log,'tools.cache.hit',path=str(self.path))
-        db=ro(self.path/'navigation.sqlite')
+        db=self.resident_connect()
         try:
-            return IndexTools(db,(),(),list(scope),catalog=self._tool_catalog,
+            result=IndexTools(db,(),(),list(scope),catalog=self._tool_catalog,
                               definition_rows=self._definition_rows,definition_summaries=self._definition_summaries)
+            result.sources.cache_binding=self.cache_binding
+            return result
         except BaseException:
             db.close()
             raise

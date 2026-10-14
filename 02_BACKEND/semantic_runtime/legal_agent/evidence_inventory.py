@@ -69,6 +69,8 @@ def receipt(session, group, record, basis):
             'pages_total': len(group['page_plan']),
             'delivered_pages_count': len({b['page'] for b in basis if b.get('branch_id') == group['id']
                                          and b.get('scope_id') == digest(record['offer'])}),
+            'article_delivered_complete': covers(expected(session, record['document_id'],
+                [b['block_id'] for b in session.tools.sources[record['source_id']]['blocks']]), delivered),
             'semantic_quality_certified': False}
 
 
@@ -116,6 +118,28 @@ def originals_for(session, state):
             gathered[group['source_id']].extend(b.get('spans', []))
         record = state['selected'][gid]
         sources[group['source_id']] = record
+    return _pack(session, state, sources, gathered)
+
+
+def delivered_originals_for(session, state):
+    """Bounded fallback: every page actually presented to the model, unadopted.
+
+    Used only when navigation stopped without an adoption decision. Explicitly
+    deferred or excluded branches stay out; the assessment still cites exact
+    delivered spans."""
+    sources = {}; gathered = defaultdict(list)
+    for gid, group in state['groups'].items():
+        if group['status'] in ('EXCLUDED', 'DEFERRED') or gid not in state['selected']: continue
+        pages = [b for b in state['basis_history'].values()
+                 if b.get('branch_id') == gid and b.get('accepted') and b.get('spans')]
+        if not pages: continue
+        for b in pages:
+            gathered[group['source_id']].extend(b['spans'])
+        sources[group['source_id']] = state['selected'][gid]
+    return _pack(session, state, sources, gathered)
+
+
+def _pack(session, state, sources, gathered):
     out = []
     for sid, spans in gathered.items():
         r = sources[sid]; did = r['document_id']; merged = intervals(spans)
@@ -137,5 +161,6 @@ def saved_projection(session, state):
     return [{k: deepcopy(row[k]) for k in ('material_id', 'source_id', 'document_id', 'path',
              'scope_id', 'availability', 'status', 'reason', 'decisions')}
             | {'acquired_complete': row['receipt']['acquired_complete'],
-               'delivered_complete': row['receipt']['delivered_complete']}
+               'delivered_complete': row['receipt']['delivered_complete'],
+               'article_delivered_complete': row['receipt']['article_delivered_complete']}
             for row in inventory(session, state)]

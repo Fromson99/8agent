@@ -4,6 +4,8 @@ import logging
 import time
 import uuid
 from copy import deepcopy
+from jsonschema import ValidationError
+from ..contracts import digest
 from .. import observability as obs
 from . import protocol
 from .errors import BudgetExhausted, ContractError, ProposalError, StaleProposal, TransportError
@@ -22,6 +24,8 @@ NUMBER_INSTRUCTIONS = (
 def compact_wire_view(view, phase):
     """Project redundant wire data only; original views and receipts stay intact."""
     result = deepcopy(view)
+    if result.get('input_projection')=='compact-selection-source-v1':
+        compact_original_text(result)
     for evidence in result.get('exact_evidence', []):
         text = evidence.get('text')
         if not isinstance(text, str):
@@ -39,7 +43,75 @@ def compact_wire_view(view, phase):
         numbers = result.get('reference_numbers', {})
         for kind in ('targets', 'blocks', 'cursors'):
             numbers.pop(kind, None)
+    if result.get('input_projection') in ('compact-selection-source-v2','compact-selection-source-v3'):
+        compact_original_text(result)
+        compact_evidence_metadata(result)
+    if result.get('input_projection')=='compact-selection-source-v3':
+        from .navigation_input import compact_cards
+        result=compact_cards(result)
     return result
+
+
+def compact_evidence_metadata(view):
+    """Omit opaque integrity hashes from the model copy; journal verification retains them."""
+    def walk(node):
+        if isinstance(node,list):
+            for x in node:walk(x)
+        elif isinstance(node,dict):
+            if ('block_id' in node and 'start_cp' in node and 'end_cp' in node
+                    and ('text' in node or 'text_ref' in node)):
+                for key in ('block_hash','span_hash','text_hash'):
+                    node.pop(key,None)
+            for child in node.values():walk(child)
+    walk(view)
+
+
+def compact_original_text(view):
+    """Lossless source-local references in the wire copy; never summarize originals.
+
+    Each sources[].text remains complete. Other text values are replaced only
+    when a delivered source with the same identity contains those exact bytes.
+    Offsets in text_ref address this presentation, not original block offsets.
+    """
+    originals=[];evidence_sources={}
+    for i,source in enumerate(view.get('sources',[])):
+        if not isinstance(source.get('text'),str) or not source.get('source_id'):continue
+        source['text_id']='TEXT'+str(i+1)
+        originals.append(source)
+        for span in source.get('spans',[])+source.get('adopted_spans',[]):
+            if span.get('evidence_id'):evidence_sources[span['evidence_id']]=source['source_id']
+        for eid in source.get('evidence_ids',[]):evidence_sources[eid]=source['source_id']
+    protected={id(s) for s in originals}
+    def walk(node,source_id=None):
+        if isinstance(node,list):
+            for row in node:walk(row,source_id)
+        elif isinstance(node,dict):
+            sid=node.get('source_id') or evidence_sources.get(node.get('evidence')) or source_id
+            if id(node) not in protected:
+                text=node.get('text')
+                if isinstance(text,str) and text and sid:
+                    match=next((s for s in originals if s['source_id']==sid and text in s['text']),None)
+                    if match:
+                        start=match['text'].find(text)
+                        node.pop('text')
+                        node['text_ref']={'id':match['text_id'],'start':start,'end':start+len(text)}
+            for key,child in list(node.items()):
+                if key!='text_ref':walk(child,sid)
+    walk(view)
+
+
+def compact_empty_arrays(schema):
+    """Keep the complete action union; an empty array has no item decisions."""
+    value=deepcopy(schema)
+    def walk(node):
+        if isinstance(node,list):
+            for child in node:walk(child)
+        elif isinstance(node,dict):
+            if node.get('type')=='array' and node.get('maxItems')==0:
+                node['items']={'type':'string'}
+            for child in node.values():walk(child)
+    walk(value)
+    return value
 
 
 def _count(value):
@@ -100,18 +172,9 @@ def _response_diagnostics(body):
             'finish_reason': finish}
 
 
-def genos_wire_schema(value):
-    """Omit JSON Schema keywords unsupported by GENOS's grammar compiler.
-
-    Keep the protocol definitions intact: validate_wire/validate still enforce
-    uniqueness on the decoded model response inside the application.
-    """
-    if isinstance(value, dict):
-        return {key: genos_wire_schema(child) for key, child in value.items()
-                if key != 'uniqueItems'}
-    if isinstance(value, list):
-        return [genos_wire_schema(child) for child in value]
-    return value
+from . import output_contract as output
+from .model_contract import (genos_wire_schema, structured_request, structured_content,
+                             request_metrics, response_length_metrics)
 
 
 def available_tool_schema(schema, view):
@@ -167,7 +230,12 @@ class ModelGateway:
                 schema['properties']['checks']['minItems']=len(claims)
                 schema['properties']['checks']['maxItems']=len(claims)
         numbered_instructions = ''
-        if self.profile.get('numbered_references_enabled', False):
+        if view.get('input_projection')=='compact-selection-source-v3':
+            from .navigation_input import NavigationReferences, INSTRUCTIONS
+            references=references or NavigationReferences(view)
+            view,schema=references.view(view),references.schema(schema)
+            numbered_instructions=INSTRUCTIONS
+        elif self.profile.get('numbered_references_enabled', False):
             from .numbered_references import NumberedReferences, INSTRUCTIONS
             references = references or NumberedReferences(view)
             view, schema = references.view(view), references.schema(schema)
@@ -175,59 +243,102 @@ class ModelGateway:
         schema = available_tool_schema(schema, view)
         schema = genos_wire_schema(schema)
         prompt = self.prompts[phase]
-        if numbered_instructions:
+        if numbered_instructions and view.get('input_projection')!='compact-selection-source-v3':
             prompt = prompt.replace('the ID, such as C1', 'the number, such as 1')
         if self.compact:
             view = compact_wire_view(view, phase)
+        if view.get('input_projection') in ('compact-selection-source-v1','compact-selection-source-v2','compact-selection-source-v3'):
+            schema=compact_empty_arrays(schema)
+            prompt+='\n원문은 sources[].text 또는 evidence_options[].text에 제공한다. text_ref가 있으면 해당 sources[].text_id의 본문에서 start 이상 end 미만(유니코드 문자 위치)의 정확한 원문이다. evidence_options의 text_ref도 같은 원문이며 인용에는 기존 S ID를 선택한다. 위치·해시는 서버가 검증한다.'
         user = {'view': view}
         if not self.compact:
             user['output_schema'] = schema
         domain = '' if self.compact else '\nDomainSpec: '+encoded(self.domain)
-        return {'model': self.transport.binding['model'], 'max_tokens': self.profile['max_output_tokens'],
-                   'temperature': 0, 'stream': False, 'chat_template_kwargs': {'enable_thinking': False},
-                   'messages': [{'role': 'system', 'content': self.system+'\n'+prompt+domain+numbered_instructions},
-                                {'role': 'user', 'content': encoded(user)}],
-                   'response_format': {'type': 'json_schema', 'json_schema': {'name': schema_name, 'strict': True, 'schema': schema}}}
+        return structured_request(model=self.transport.binding['model'],
+            max_tokens=self.profile['max_output_tokens'], schema_name=schema_name, schema=schema,
+            messages=[{'role': 'system', 'content': self.system+'\n'+prompt+domain+numbered_instructions},
+                      {'role': 'user', 'content': encoded(user)}])
 
-    def generate(self, phase, view, schema_name):
+    def validate_output(self, schema_name, value, view):
+        getattr(self.protocol, "validate_wire", self.protocol.validate)(schema_name,value)
+
+    def generate(self, phase, view, schema_name, *, repair_owner=None):
         from .answer_stream import current_sink, DraftText
         sink = current_sink()
+        from . import narrative_answer as narrative
+        rich = (narrative.enabled(self.profile) and schema_name == narrative.SCHEMA
+                and view.get('source_stage') == narrative.PHASE
+                and view.get('answer_presentation') == narrative.VERSION)
+        def new_projection():
+            return narrative.TokenStream(sink, view['answer_claim_ids']) if rich else DraftText(sink)
         streaming = (sink is not None and not getattr(sink, 'started', False)
-                     and phase == 'compose' and schema_name == 'Draft'
+                     and phase == 'compose' and (schema_name == 'Draft' or rich)
                      and not self.profile.get('final_review_enabled', True)
                      and self.transport.binding['trust_zone'] == 'internal'
                      and callable(getattr(self.transport, 'send_stream_once', None)))
-        projection = DraftText(sink) if streaming else None
+        projection = new_projection() if streaming else None
         references = None
-        if self.profile.get('numbered_references_enabled', False):
+        if view.get('input_projection')=='compact-selection-source-v3':
+            from .navigation_input import NavigationReferences
+            references=NavigationReferences(view)
+        elif self.profile.get('numbered_references_enabled', False):
             from .numbered_references import NumberedReferences
             references = NumberedReferences(view)
-        with obs.step(log,'model.request_build',phase=phase):
+        from .. import query_latency as latency
+        with latency.span('model.request_build',phase=phase):
             request = self.request(phase, view, schema_name, references=references)
         if streaming:
             request = {**request, 'stream': True, 'stream_options': {'include_usage': True}}
+        role = view.get('source_stage') or phase
+        spec = output.ContractSpec.from_schema(role, self.protocol.schema(schema_name))
+        if repair_owner is not None:
+            spec=output.ContractSpec(spec.role,spec.schema_hash,repair_owner)
+        repair_limit=min(1,self.profile['max_schema_repairs']) if spec.owner=='gateway' else 0
+        self.repo.event('MODEL_OUTPUT_CONTRACT', {**spec.receipt(view, self.transport.binding),
+            'wire_schema_hash':digest(request['response_format']['json_schema']['schema']),
+            'codec':type(references).__name__ if references is not None else 'canonical-v1',
+            'wire_projection':'genos-unique-items-server-v1'})
+        journal = (output.DecisionJournal(self.repo, 'gateway',
+            {'role':role,'view':{k:v for k,v in view.items() if k != 'view_id'}},
+            self.protocol.schema(schema_name)) if spec.owner == 'gateway' else None)
+        repairs=0
+        if journal:
+            previous = journal.state()
+            if previous and previous['status'] == 'ACCEPTED':
+                self.validate_output(schema_name,previous['value'],view)
+                return deepcopy(previous['value'])
+            if previous and previous['status']=='REJECTED':
+                repairs=previous['attempt']+1
+                request={**request,'messages':request['messages'][:2]+[{'role':'user','content':encoded({
+                    'repair':'Return the complete corrected object for the same task, evidence and schema.',
+                    'validation':previous['failure'],'invalid_response_excerpt':str(previous.get('proposal'))[:4000]})}]}
+            journal.reserve(repairs, max_repairs=repair_limit)
         logical = 'L'+uuid.uuid4().hex
-        retries = repairs = attempt = 0
+        retries = attempt = 0
         while True:
             remaining = self.context.remaining()
-            request_bytes = len(encoded(request).encode())
+            with latency.span('model.request_encode',phase=phase) as metrics:
+                input_metrics = request_metrics(request)
+                request_bytes = input_metrics['request_bytes']
+                metrics['request_bytes'] = request_bytes
             attempt += 1
             numbered_args = {'numbered_references': references} if references is not None else {}
             if self.compact:
                 numbered_args['wire_projection'] = WIRE_PROJECTION
-            with obs.step(log,'model.attempt_reserve',phase=phase):
+            with latency.span('model.attempt_reserve',phase=phase):
                 ident = self.repo.reserve_attempt(view, request, logical, attempt, phase, **numbered_args)
                 self.repo.attempt_sent(ident)
             attempt_started = time.perf_counter()
             fields = {'run_id': self.context.run_id, 'attempt_id': ident,
                       'logical_call_id': logical, 'phase': phase, 'schema': schema_name,
-                      'attempt_no': attempt, 'model': self.transport.binding['model']}
+                      'attempt_no': attempt, 'model': self.transport.binding['model'],
+                      'source_stage': view.get('source_stage')}
             template = request.get('chat_template_kwargs')
             template = template if isinstance(template, dict) else {}
             thinking = template.get('enable_thinking')
             thinking = thinking if type(thinking) is bool else None
             obs.event(log, 'model.attempt.started', **fields,
-                      request_bytes=request_bytes, max_tokens=request['max_tokens'],
+                      **input_metrics, max_tokens=request['max_tokens'],
                       diagnostics_version=DIAGNOSTICS_VERSION,
                       thinking_requested=thinking,
                       thinking_control_present='enable_thinking' in template,
@@ -237,25 +348,70 @@ class ModelGateway:
                 if self.transport.binding['trust_zone'] == 'external':
                     self.transport.validate_authorization(self.context)
                 ticket = {'attempt_id': ident, 'remaining_seconds': remaining}
-                if streaming:
-                    raw = self.transport.send_stream_once(body=request, ticket=ticket, on_content=projection.feed)
-                else:
-                    raw = self.transport.send_once(body=request, ticket=ticket)
+                try:
+                    from ..execution_metrics import transport_attempt
+                    with latency.span('model.transport',phase=phase,request_bytes=request_bytes,pressure=True), transport_attempt(view.get('source_stage') or view.get('phase') or phase, ident):
+                        if streaming:
+                            raw = self.transport.send_stream_once(body=request, ticket=ticket, on_content=projection.feed)
+                        else:
+                            raw = self.transport.send_once(body=request, ticket=ticket)
+                except (TransportError, ProposalError, ContractError):
+                    raise
+                except Exception as adapter_error:
+                    from .completion_contracts import enabled
+                    response=getattr(adapter_error,'response',None)
+                    if enabled(self.profile) and isinstance(response,dict) and isinstance(response.get('status_code'),int):
+                        status=response['status_code']
+                        if 200 <= status < 300:
+                            if getattr(adapter_error,'format_error',False) is True:
+                                body=response.get('body_json') or {}
+                                if body.get('model') != self.transport.binding['model']:
+                                    raise ContractError('actual response model differs from pinned model') from adapter_error
+                                error=ProposalError('model response is incomplete or invalid')
+                                error.format_error=True
+                                error.response=response
+                                raise error from adapter_error
+                            # Successful HTTP does not waive an adapter policy/binding rejection.
+                            raise ContractError('adapter rejected successful response policy') from adapter_error
+                        raise TransportError('model provider rejected request',response=response,
+                            retryable=status==429 and bool(getattr(adapter_error,'retryable',False)),
+                            unknown=status>=500) from adapter_error
+                    raise
             except TransportError as exc:
                 self.repo.finish_attempt(ident, 'UNKNOWN' if exc.unknown else 'FAILED', exc.response,
                                          {'model': self.transport.binding['model'], 'usage': None, 'error': exc.code})
                 retry_scheduled = (exc.retryable and retries < self.profile['max_transport_retries']
                                    and not (projection and projection.emitted))
                 response = exc.response if isinstance(exc.response, dict) else {}
+                from .completion_contracts import enabled
+                completion=enabled(self.profile)
+                retry_delay=0.0
+                if completion:
+                    retry_scheduled=retry_scheduled and not exc.unknown and response.get('status_code')==429
+                    if retry_scheduled:
+                        try: retry_delay=max(1.0,float(response.get('retry_after') or 1.0))
+                        except (TypeError,ValueError):
+                            from email.utils import parsedate_to_datetime
+                            from datetime import datetime,timezone
+                            try:retry_delay=max(1.0,(parsedate_to_datetime(response['retry_after'])-datetime.now(timezone.utc)).total_seconds())
+                            except (TypeError,ValueError,KeyError,OverflowError):retry_delay=1.0
+                        retry_scheduled=retry_delay<=30 and self.context.remaining()>retry_delay+1
+                    if response.get('status_code')==429:
+                        exc.http_status=503
+                        exc.code='MODEL_UPSTREAM_UNAVAILABLE'
                 obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
                           failure_kind='transport', error_code=exc.code,
                           http_status=response.get('status_code'), unknown=exc.unknown,
                           retryable=exc.retryable, retry_scheduled=retry_scheduled,
                           duration_ms=int((time.perf_counter() - attempt_started) * 1000))
                 if retry_scheduled:
+                    if retry_delay:
+                        self.repo.event('TRANSPORT_RETRY_WAIT',{'seconds':retry_delay,'source_stage':view.get('source_stage'),
+                            'acceptance':'KNOWN_REJECTED','effective_retry_limit':self.profile['max_transport_retries']})
+                        time.sleep(retry_delay)
                     retries += 1
                     if streaming:
-                        projection = DraftText(sink)
+                        projection = new_projection()
                     continue
                 raise
             except ProposalError as exc:
@@ -264,6 +420,10 @@ class ModelGateway:
                 obs.event(log, 'model.attempt.failed', level=logging.ERROR, **fields,
                           failure_kind='proposal', error_code=exc.code,
                           duration_ms=int((time.perf_counter() - attempt_started) * 1000))
+                raise
+            except ContractError as exc:
+                self.repo.finish_attempt(ident, 'FAILED', getattr(exc, 'response', None),
+                                         {'model': self.transport.binding['model'], 'usage': None, 'error': exc.code})
                 raise
             except Exception as exc:
                 self.repo.finish_attempt(ident, 'UNKNOWN', None, {'model': self.transport.binding['model'], 'usage': None, 'error': type(exc).__name__})
@@ -274,12 +434,14 @@ class ModelGateway:
             body = raw.get('body_json')
             receipt = {'model': body.get('model') if isinstance(body, dict) else None,
                        'usage': body.get('usage') if isinstance(body, dict) else None, 'attempt_id': ident}
+            length_metrics = response_length_metrics(request, body)
+            receipt['input_metrics'] = {**input_metrics, **length_metrics}
             status = self.repo.finish_attempt(ident, 'SUCCEEDED', raw, receipt)
             obs.event(log, 'model.attempt.received', **fields,
                       http_status=raw.get('status_code'), journal_status=status,
                       duration_ms=int((time.perf_counter() - attempt_started) * 1000),
                       response_bytes=raw.get('response_bytes'),
-                      **_response_diagnostics(body))
+                      **{**_response_diagnostics(body), **length_metrics})
             self.context.remaining()
             if status != 'SUCCEEDED':
                 raise StaleProposal('late model response ignored')
@@ -289,34 +451,49 @@ class ModelGateway:
                 raise ContractError('actual response model differs from pinned model')
             content = None
             try:
-                if not isinstance(body, dict) or not isinstance(body.get('choices'), list) or len(body['choices']) != 1:
-                    raise ProposalError('expected one structured choice')
-                message = body['choices'][0]['message']
-                content = message.get('content')
-                if not content and len(message.get('tool_calls', [])) == 1:
-                    content = message['tool_calls'][0]['function']['arguments']
-                value = json.loads(content) if isinstance(content, str) else content
+                from .completion_contracts import enabled
+                content = structured_content(body, require_complete=enabled(self.profile))
+                value = output.strict_json(content)
+                if str(role).startswith('source-law-navigation-'):
+                    from . import request_repair
+                    if request_repair.enabled(self.profile):
+                        before = digest(value)
+                        value, changes = request_repair.deduplicate_decision(value)
+                        if changes:
+                            self.repo.event('MODEL_OUTPUT_NORMALIZED', {'contract_version':output.VERSION,
+                                'attempt_id':ident, 'rule':'exact-decision-duplicates-v1',
+                                'raw_proposal_hash':before,'normalized_hash':digest(value),'changes':changes})
                 if references is not None:
                     value = references.decode(value, request['response_format']['json_schema']['schema'], schema_name)
-                getattr(self.protocol, "validate_wire", self.protocol.validate)(schema_name, value)
+                self.validate_output(schema_name,value,view)
                 obs.event(log, 'model.attempt.accepted', **fields, schema_repairs=repairs)
+                if journal:journal.accept(repairs, value)
                 return value
             except StaleProposal:
                 # A stale view is a runtime consistency failure, not bad JSON.
                 raise
-            except (ProposalError, ValueError, KeyError, TypeError) as exc:
-                repair_scheduled = repairs < self.profile['max_schema_repairs']
+            except (ProposalError, ValidationError) as exc:
+                repair_scheduled = (output.repairable(exc) and repairs < repair_limit
+                                    and not (projection and projection.emitted))
+                if journal:journal.reject(repairs, exc, content,can_retry=repair_scheduled)
                 obs.event(log, 'model.output.invalid', level=logging.WARNING, **fields,
                           error_type=type(exc).__name__, schema_repairs=repairs,
-                          repair_scheduled=repair_scheduled)
+                          repair_scheduled=repair_scheduled,
+                          **{**_response_diagnostics(body), **length_metrics})
                 with self.repo.transaction():
+                    from .investigation_diagnostics import exception_diagnostics
                     self.repo.event('OUTPUT_SCHEMA_INVALID', {
-                        'attempt_id': ident, 'error': str(exc)[:2000],
+                        'attempt_id': ident, 'error': str(exc),
+                        'input_metrics': {**input_metrics, **length_metrics},
+                        'diagnostics':exception_diagnostics(exc,stage=phase),
                         'schema': schema_name, 'phase': phase,
                         'source_stage': view.get('source_stage'),
                         'error_type': type(exc).__name__,
                         'repair_scheduled': repair_scheduled, 'schema_repairs': repairs})
                 if not repair_scheduled:
+                    if isinstance(exc, output.OutputContractError):
+                        exc.format_error = True
+                        raise
                     error = ProposalError('structured model output invalid after bounded repair')
                     error.format_error = True
                     raise error from exc
@@ -327,19 +504,25 @@ class ModelGateway:
                     request = {**request, 'stream': False}
                     request.pop('stream_options', None)
                 repairs += 1
+                if journal:journal.reserve(repairs, max_repairs=repair_limit)
                 # Raw output is already durable. Repair must pass the same schema
                 # and decision checks; it grants no additional source visibility.
                 # Server validation after decoding may mention internal IDs.
                 # Keep repair instructions in the same request-local vocabulary.
                 repair_error = str(exc)[:1000]
                 if references is not None:
-                    for kind, ids in references.ids.items():
-                        for number, ident in sorted(enumerate(ids, 1), key=lambda pair: -len(pair[1])):
-                            repair_error = repair_error.replace(ident, f'<{kind} choice {number}>')
+                    if hasattr(references, 'forward') and all(isinstance(x,str) for x in references.forward.values()):
+                        for ident, handle in references.forward.items():
+                            repair_error=repair_error.replace(ident,handle)
+                    else:
+                        for kind, ids in references.ids.items():
+                            for number, ident in sorted(enumerate(ids, 1), key=lambda pair: -len(pair[1])):
+                                repair_error = repair_error.replace(ident, f'<{kind} choice {number}>')
                 valid_claims = (list(range(1, len(references.ids['claims'])+1)) if references is not None
                                else [c.get('claim') or c.get('entity_id') for c in view.get('claims',[])])
                 request = {**request, 'messages': request['messages'][:2]+[{
                     'role': 'user', 'content': encoded({'repair': 'Respond again to the original task with the complete object matching the response schema. Correct the reported validation error using the same view and allowed references.',
                                                        'error_code': 'MODEL_OUTPUT_INVALID', 'schema': schema_name,
+                                                       'validation':output.diagnostics(exc),
                                                        'invalid_response_excerpt': content[:4000] if isinstance(content, str) else encoded(content)[:4000], 'error': repair_error,
                                                        'valid_claim_ids':valid_claims})}]}

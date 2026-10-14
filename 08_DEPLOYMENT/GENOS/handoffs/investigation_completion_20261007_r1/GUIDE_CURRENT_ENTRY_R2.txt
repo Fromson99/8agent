@@ -1,0 +1,14 @@
+GENOS MAIN generation 44 — 현행 실행 경로 정정 안내
+
+앞선 메일의 코드 ZIP/APPLY TXT는 그대로 사용합니다. 코드 변경이나 재발송 ZIP은 없습니다.
+현재 기본은 별도 Python 워크플로우 없이 직접 /chat으로 실행하는 통합 경로입니다.
+
+1. ZIP/APPLY TXT로 기존 ~/DEV에 백업·적용하고 동일 checkout의 generation 검증, commit, gate, push를 수행합니다.
+2. 코드서빙 Run은 python3 main.py로 지정합니다. PORT가 제공되지 않으면 기존 리비전의 실제 포트를 --port로 지정합니다. 의존성은 python3 -m pip install -r 08_DEPLOYMENT/GENOS/requirements-sse.txt입니다.
+3. GENOS_CHAT_TRANSPORT=json이 기본이며 이 설정에서도 직접 통합 실행입니다. 플랫폼의 기존 워크플로우 테스트 화면에서 코드서빙 /chat을 선택해 확인합니다. 테스트 화면 사용과 별도 Python 워크플로우 실행은 다릅니다.
+4. 일반 질의에서 execution_transport=in-process, chat_adapter_revision=main-chat-sse-20261007-r1과 최종 answer_status를 확인합니다. generation/commit/리비전/내부 모델 ID도 기록합니다.
+5. SSE는 별도 현장 확인 사항입니다. 기존 직접 JSON 경로에서 먼저 확인하며, 필요할 때 stream=true 또는 /chat?stream=1로 테스트합니다.
+6. 첨부 WORKFLOW_PASTE_ALL TXT는 기존 별도 Python 워크플로우 방식을 계속 쓰는 경우에만 편집기에 반영합니다. 직접 /chat에서는 별도 Python 단계 교체가 필요하지 않습니다. APPLY 종료 문구의 workflow editor 안내도 이 기존 방식에만 해당합니다.
+
+미해결: GENOS 실제 배포/내부 모델/SSE 수신은 아직 현장에서 확인하지 않았습니다.
+질의 루프의 후속 검토·개선 제안은 현재 generation 44에 추가 구현된 내용이 아닙니다.

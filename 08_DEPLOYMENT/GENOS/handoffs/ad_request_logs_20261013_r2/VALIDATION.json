@@ -1,0 +1,83 @@
+{
+  "status": "PASS_SCOPED_CHECKS",
+  "environment": "WSL; synthetic data/models; no GENOS access",
+  "counts": {
+    "installer_guard_tests": 8,
+    "installation_states": 6,
+    "service_boots": 12,
+    "same_committed_checkout_mock_generation_gates": 6,
+    "installer_commands": 119,
+    "r1_failure_reproductions_in_full_install_tests": 3,
+    "expected_tamper_rejections": 12,
+    "installed_contracts": 416,
+    "known_base_inventories": 330,
+    "distinct_shipped_service_variants_reversible_with_budget": 6,
+    "real_model_inferences": 0
+  },
+  "contracts": {
+    "CONTRACTS_query_latency_20261007_r3.xml": 204,
+    "CONTRACTS_query_latency_20261007_r4.xml": 212
+  },
+  "evidence": [
+    {
+      "path": "TEST_query_latency_20261007_r3.json.gz",
+      "sha256": "0bb179841315bd371e75f6192f4af45e931c142f690165de220ac7c1ffd9ab3a",
+      "commands": 19,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r3_budget.json.gz",
+      "sha256": "5526364dcfe5e15e20c8a7ee50b92c1c03ed442eec4a05d471a43b344aa58844",
+      "commands": 20,
+      "expected_rejections": 3
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4.json.gz",
+      "sha256": "88242cee75b8aef2f7e9997d8c1a98f52903bb6e04b3dbfdfd23e0f6c7527962",
+      "commands": 19,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_budget.json.gz",
+      "sha256": "4a4ef6c40e3081740e6824c87ae62c5bfe42ecdf926053b3aa535222304b44aa",
+      "commands": 20,
+      "expected_rejections": 3
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_display.json.gz",
+      "sha256": "b40bab4a078b3aba8aacd4c8c6f852b612a6a381fe15ea4a5097522ee53495e1",
+      "commands": 20,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_display_budget.json.gz",
+      "sha256": "b7e95141d4ae2b6ec134ff76de12562f3e6b9220160dd948c1ccdbf1c32cf3d5",
+      "commands": 21,
+      "expected_rejections": 3
+    }
+  ],
+  "run_txt_sha256": "f1995230308e8aa7e89c602835a88791236cf116a1314ee1a1bf879ba90ea475",
+  "installer_sha256": "190c234e4d7b6b3c7d15dccff9b73560eb836190061f6d3bfb14bde9ba7087ab",
+  "runtime_implementation_changed_from_r1": false,
+  "prior_working_contracts": {
+    "count": 116,
+    "rerun_in_this_task": false,
+    "validation_sha256": "78928507d8a296f29d0b67739f9168bcab1b3bc479e6b29eb5570132af6733f1"
+  },
+  "test_sources": {
+    "test_budget_guard.py": "af11b9f88639549a750f0693dfe746c09c676a12cd78d504da422674be109d0a",
+    "test_delivery.py": "d2932157087da6079dec8839e4ddb9a494eafc362daa4f4f3956bce0b00183a5",
+    "test_installed_contracts.py": "641c894d15e3eb37b21d6ab1bb411d7a26148f60e407928b88e8e3412170adfc",
+    "run_installed_tests.py": "02860a5c744f923c477ea8447ed3323a089b49a93e3869cbdca9b3d325587578"
+  },
+  "local_selected_release_at_seal": {
+    "release_id": "source-provider-20261013-r2",
+    "generation": 58,
+    "changed_by_this_task": false,
+    "this_patch_promoted": false
+  },
+  "limitations": [
+    "GENOS R2 install, deployment, workflow and original AD model HTTP issue remain unverified.",
+    "Previously recorded numbered-reference schema-repair test is not fixed by this installer-only change."
+  ]
+}

@@ -1,0 +1,1491 @@
+우리 legal_agent — LLM 입력·판단 흐름과 모든 관련 슬라이스·상한 주석
+작성 기준: 2026-10-07, 로컬 MAIN 선택 포인터 generation 44
+선택 릴리스: investigation-completion-v6-20261007-r1
+
+R4: 각 LLM 입력 블록에 상한·슬라이스·필드 생략을 추가한 설명 문서다.
+숫자의 단위, 실제 적용 여부, 초과 시 처리, 후속 조회 경로를 함께 적었다.
+현행/조건부/비활성 값을 구분한다. 설정에 숫자가 있다는 것과 실제 강제는 다르다.
+이번 검토는 코드 읽기와 해시 확인이며 LLM 실호출·72상태 실행 검증이 아니다.
+앞 버전 원문은 보존하고 새 파일로 작성했다.
+
+이 문서는 설명을 위한 추가 문서다. 에이전트 코드나 MAIN 포인터를 변경하지 않았다.
+현재 코드를 읽어 확인한 흐름과 아직 구현하지 않은 수정 목표를 구분한다.
+아래 A규정·B규정·10일은 설명용 모의 자료이며 실제 법률이나 실행 기록이 아니다.
+
+1. 가장 먼저 이해할 구조
+
+우리 에이전트는 코드가 현재 상황을 모아 LLM 입력을 만들고, LLM이 다음 행동이나
+판단을 제안하고, 코드가 그 제안을 검사하고 실행하는 구조다.
+
+    코드: 현재 상황을 입력으로 조립
+      → LLM: 이번 호출에 맡겨진 판단을 출력
+      → 코드: 허용된 행동·원문·현재 상태와 맞는지 검사
+      → 코드: 검색 / 원문 읽기 / 상태 기록 / 답변 구성 실행
+      → 코드: 결과를 넣어 다음 LLM 입력 조립
+
+검색 결과가 없다는 것, 읽기 도구가 실패했다는 것, 읽은 내용을 모델이 잘못
+해석했다는 것, 출력 형식이 틀렸다는 것은 서로 다른 사건이다.
+같은 '탐색 실패'로 묶으면 어떤 입력에서 무엇을 복구해야 하는지 보이지 않는다.
+
+입력 블록은 한 번의 LLM 호출 안에 넣는 내용의 묶음이다.
+블록마다 별도 LLM이나 별도 에이전트를 호출한다는 뜻은 아니다.
+
+실제 요청의 큰 형태:
+    system: 이번 판단의 역할과 지켜야 할 규칙
+    user.view: 이번 판단에 필요한 질문·상태·자료·행동 메뉴
+    response_format: 출력 JSON의 형식과 허용 ID
+
+user.view 내부의 논리적 블록을 아래에서 풀어 쓴다. 원문 전체·전체 대화·전체
+허용 문서 목록이 모든 호출에 반복 전달되지는 않는다. 현재 판단에 맞는 입력을
+만든다. 일부 출력 스키마는 user 본문에도 포함되고, compact 설정에서는 중복을
+줄인다. 출력 스키마는 법률 근거가 아니라 모델이 반환할 형식과 선택 범위다.
+
+2. 전체 호출 순서
+
+사용자 입력
+ ├─ 코드: 입력·권한·요청 ID·선택 세대·기존 사건 확인
+ ├─ 이미 게시한 동일 요청을 반환할 수 있음 → 현재성 검사 후 저장 결과 반환
+ └─ 새 실행이 필요한 요청
+     ├─ LLM 1: 조사할 요청인가, 짧은 안내로 답할 요청인가?
+     │   ├─ DIRECT → 짧은 안내 반환
+     │   └─ CASE → 사건 처리
+     ├─ LLM 2: 새 질문인가, 사실 정정인가, 재개인가, 표현 변경인가?
+     ├─ LLM 3: 고른 처리 명령이 사용자 요청을 제대로 반영하는가?
+     ├─ 새 조사에서는 LLM 4: 무엇을 답해야 하는지 Q1·Q2 등으로 나누기
+     ├─ 코드: 검색 계획 조립 → 후보 검색 → 읽기 준비
+     ├─ LLM 5: 현재 화면에서 다음 탐색 행동 고르기 [반복]
+     │   ├─ 후보 보기 → 원문 읽기 요청 → 코드 실행 → 바뀐 입력으로 LLM 5
+     │   ├─ 원문 보기 → 이어읽기 / 범위 확대 / 채택 / 보류 / 제외
+     │   ├─ 참조 조사 선택 → LLM 6의 참조 메뉴
+     │   ├─ 새 검색 선택 → 코드 검색 → 바뀐 입력으로 LLM 5
+     │   ├─ 이전 화면 복귀 → 현재 확보 자료를 보존하며 LLM 5 또는 LLM 6
+     │   └─ 조사 종료 제안 → LLM 7
+     ├─ LLM 6: 원문이 가리키는 참조를 따라갈지, 어느 범위를 읽을지 판단
+     │   └─ 코드 읽기·기록 → 탐색 입력에 반영
+     ├─ LLM 7: Q1·Q2 각각 무엇까지 근거로 답할 수 있는지 판단
+     │   ├─ 필요한 원문 부족 + 조사 가능 → 부족한 사항을 넣어 LLM 5로 복귀
+     │   ├─ 일부만 근거 확보 → 부분 답변과 미확인 사항
+     │   ├─ 모두 답할 수 있음 → 완료 답변 후보
+     │   └─ 형식·근거 연결 오류 → 제한된 수정 호출
+     └─ 코드: 채택된 판단 문장으로 답변 구성 → 인용·권한·세대 검증 → 응답
+
+현재 저장 단계는 INTENT / PLAN / RECALL / READ / SELECT / ASSESS / COMPOSE다.
+저장 단계와 LLM 호출은 일대일이 아니다. PLAN·RECALL·READ는 여기서 코드가
+수행하고, SELECT 안에서 LLM 탐색 판단이 여러 번 실행될 수 있다.
+현재 completion 계약의 COMPOSE도 코드가 구성한다. 답변 문장은 ASSESS에서
+모델이 작성한다. 별도 최종 의미 평가 LLM이 한 번 더 정답을 보증하지 않는다.
+
+LLM 1~7은 설명을 위한 호출 종류 번호다. 모든 요청이 반드시 일곱 번 호출되는
+것은 아니다. 사실 정정은 뒤 단계부터 재개할 수 있고, 표현 변경은 저장 판단을
+이용할 수 있다. 동일 계약의 절차 재사용이 성립하면 호출을 재사용할 수 있다.
+탐색 반복·참조·수정 때문에 호출 수가 늘기도 한다. 같은 실행의 예산과 시간
+제약을 함께 사용한다. 저장 단계가 나뉘었다고 독립 모델 일곱 개를 돌리지는 않는다.
+
+
+[이 입력/판단에 적용되는 슬라이스·상한·생략]
+
+L001 [현행] 원문 질문 길이 = 10000자 (계약 상한)
+  실제 처리: runtime.request의 질문 길이 계약. 초과 입력을 자동으로 앞부분만 잘라 통과시키지 않는다.
+  초과/후속 확인: 요청 계약 위반 처리. 모델이 출력하는 task 600자 제한과 별개다.
+  근거: 00_SYSTEM/SCHEMAS/term-runtime-v1.schema.json:28
+
+L002 [현행] 물리 모델 시도 = 40회 (실행 중단)
+  실제 처리: 분류·명령·확인·탐색·판단·수정·전송 재시도 모두 같은 원장에 소비한다.
+  초과/후속 확인: 동일 request 재개는 기존 사용량을 이어받는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/repository.py:298
+
+L003 [현행] 마지막 판단용 예약 = 3회; 조사 한계 37회 (실행 중단)
+  실제 처리: INVESTIGATE는 40-3=37 시도 상한, FINALIZE는 전체 40 시도 상한.
+  초과/후속 확인: 추가 조사 전 남은 조사 시도가 2회 미만이면 탐색을 정리한다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/repository.py:297
+
+L004 [현행] 도구 행동 = 1024회 (실행 중단)
+  실제 처리: 공통 원장의 reserve_tool에서 실제 도구 시도를 제한한다. 화면 이동과 모든 SQL 조회를 각각 1회로 세는 것은 아니다.
+  초과/후속 확인: 초과는 BudgetExhausted. 성공한 기록은 남는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/repository.py:330
+
+L005 [현행] 요청 시간 = 1800초 (실행 중단)
+  실제 처리: 전체 요청 deadline. 동일 요청 재개 시 최초 deadline 유지.
+  초과/후속 확인: 재개한다고 새 1800초를 주지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/completion_budget.py:33
+
+L006 [현행] 한 모델 호출 timeout = min(180초, 남은 시간, 단계 timeout) (실행 중단)
+  실제 처리: 모델 호출 단위 timeout을 제한한다. 탐색/참조도 남은 실행 시간과 함께 적용한다.
+  초과/후속 확인: 네트워크 timeout 등은 완료로 취급하지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/memory_binding.py:19
+
+L007 [현행] 모델 출력 = 6400토큰 (생성 상한)
+  실제 처리: 로컬 모델 정책의 max_output_tokens로 팩토리가 프로필 값을 결속한다. 입력 6400토큰 제한이 아니다.
+  초과/후속 확인: finish_reason이 stop이 아니면 로컬 어댑터가 불완전 응답으로 거절한다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py:55
+
+L008 [현행] 동시 요청 = 프로세스당 4개 (접수 제한)
+  실제 처리: 선택 로컬 프로필 기본값의 semaphore. 초과는 즉시 접수 거절한다.
+  초과/후속 확인: 대기열로 무한 대기시키는 설정이 아니다. GENOS의 0 오버라이드는 별도.
+  근거: 02_BACKEND/semantic_runtime/legal_agent_adapter.py:64
+
+L009 [현행] 입력 길이 설정 = 100000자 (부분 경로 검사)
+  실제 처리: 참조 JSON 입력 길이를 검사한다. 모든 memory/법령 탐색/판단 입력을 자동 슬라이스하는 공통 검사는 확인되지 않았다.
+  초과/후속 확인: 현재 법령 SELECT/ASSESS의 전체 입력은 이 값만으로 상한 보장되지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:479
+
+L010 [비활성 메타데이터] 입력 byte 메타데이터 = 2000000바이트 (강제 안 됨)
+  실제 처리: 모델 binding에 남아 있으나 프로필 코드가 inert metadata라고 명시한다. 실제 요청 크기 강제 검사로 간주할 수 없다.
+  초과/후속 확인: 크기 초과 시 2MB로 자동 자르는 동작이 없다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/domain.py:55
+
+L011 [현행] 공개 자료 범위 = 승인 목록 145문서와 요청 권한의 교집합 (권한 필터)
+  실제 처리: 개수 때문에 top145를 자르는 것이 아니라 승인된 문서 ID만 허용한다.
+  초과/후속 확인: 다음 페이지로 권한 밖 자료를 열 수 없다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/local_gemma.py:94
+
+L012 [현행] 모델/provider fallback = 0; fallback_allowed=false (전송 제한)
+  실제 처리: 고정된 Qwen3.8/Parasail 경로 외 자동 대체 없음.
+  초과/후속 확인: 장애를 다른 모델의 성공 응답으로 덮지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/local_gemma.py:54
+
+3. LLM 1 — 이번 입력에 조사 에이전트가 필요한가?
+
+실제 phase: source-request-route
+
+입력 블록:
+ A. 이번 사용자 문장: question
+ B. 진행 중인 사건의 목적·사용자 사실·상태: current_goals
+ C. 시스템이 제공하는 기능과 조회 제한: capabilities
+
+판단 단위:
+ '인사·사용법 같은 짧은 안내인가, 원문 조사나 기존 사건 처리가 필요한가?'
+
+출력:
+ DIRECT: 짧은 안내 문장과 이유
+ CASE: 사건 처리로 넘어갈 이유. 법률 답변을 이 단계에서 대신 작성하지 않는다.
+
+코드 처리:
+ DIRECT는 일반 안내 응답으로 반환한다.
+ CASE는 다음 명령 결정 입력을 만든다.
+ 법률 근거가 당장 보이지 않는다는 이유로 짧은 안내 경로에 숨기지 않는다.
+
+실패:
+ 형식이나 모델 호출이 실패하면 정상적인 CASE/DIRECT 판단을 받은 것으로
+ 처리할 수 없다. 성공한 기존 사건을 지우지 않고 실패 원인과 연결하는 것이
+ 목표다. 모든 예외가 풍부한 사용자 응답으로 연결되는 것은 현재 미완성이다.
+
+
+[이 입력/판단에 적용되는 슬라이스·상한·생략]
+
+L013 [현행] 짧은 안내 출력 길이 = 2000자 (출력 계약)
+  실제 처리: DIRECT answer의 maxLength. 질문이나 법령 본문을 2000자로 자르는 것이 아니다.
+  초과/후속 확인: 초과 출력은 계약 거절/수정 대상.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py:63
+
+L014 [현행] 분류 이유 길이 = 1000자 (출력 계약)
+  실제 처리: CASE/DIRECT reason의 최대 길이.
+  초과/후속 확인: 초과 출력은 계약 거절/수정 대상.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/source_query_planning.py:64
+
+L015 [현행] 진행 중인 사건 목록 = 별도 개수 슬라이스 없음 (상한 없음)
+  실제 처리: 현재 goals의 목적·사실·상태를 모두 투영한다.
+  초과/후속 확인: 40회 호출/6400 출력 상한이 사건 입력 개수 상한은 아니다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/case_repository.py:92
+
+4. LLM 2 — 이번 문장을 기존 작업에 어떻게 연결할까?
+
+실제 phase: memory-resolve, 필요 시 memory-resolve-repair
+
+입력 블록:
+ A. 이번 원문 문장: utterance
+ B. 현재 사건: 기존 목적, 사용자 사실, 단계, 저장 상태
+ C. 변경 이력: 최초 기록·최근 기록·사용자가 지목한 정정 기록
+ D. 조회할 수 있는 과거 질문·경험·위키 연결
+ E. 이번에 허용된 처리 명령 목록: offered_methods
+
+판단 단위:
+ '새 사건을 만들 것인가, 기존 사건의 어느 부분만 바꿀 것인가?'
+
+대표 출력:
+ CASE_START: 새 질문 조사
+ FACT_UPDATE: 사실만 수정
+ PURPOSE_REVISE: 질문 목적 수정
+ RESEARCH_REPLAN: 검색 계획 수정
+ RESEARCH_REENTER: 특정 조사 지점 재개
+ ANSWER_PRESENT: 현재 판단의 표현 변경
+ HISTORY_EXPLAIN: 조사·정정 이력 설명
+ STATE_RESTORE: 지정 기록의 지정 필드 복원
+
+코드 처리:
+ method를 내부 명령과 재개 단계로 정규화한다.
+ 이미 제공된 사건·경험 ID인지, 지정 기록이 존재하는지 등을 검사한다.
+ 사용자에게 '접수일만 바꾸라'는 요청을 받았으면 다른 목적이나 검색어까지
+ 임의로 바꾸는 명령을 허용하지 않는다.
+ 문서 접근권한은 코드가 관리한다. 모델에 허용 문서 ID 전체를 주고 모델이
+ 권한을 확대하게 하지 않는다.
+
+실패:
+ 첫 명령이 거절되면 원래 문맥 + 거절된 명령 + 오류 이유를 수정 입력으로 준다.
+ 수정 후에도 실패하면 CLARIFY로 이어질 수 있다.
+ 재개·정정의 '시작 단계'는 그 단계에서 멈추라는 뜻이 아니다. 의존 자료를
+ 복구하고 답변 구성까지 이어가는 시작점이다.
+
+
+[이 입력/판단에 적용되는 슬라이스·상한·생략]
+
+L016 [현행] 사건별 모델용 이력 = 최초 1개 + 최근 48개 + 지목한 정정 (입력 생략)
+  실제 처리: 중간 이벤트를 모델 문맥에서 생략. 중복을 제거하므로 항상 49개는 아니며 지목 정정 추가 시 49개를 넘을 수 있다.
+  초과/후속 확인: 원본 DB 이력 보존. event_count/history_partial 표시. 이력 API after/limit로 조회 가능하지만 자동 추가 호출은 아니다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/case_repository.py:124
+
+L017 [현행] 개인 과거 질문 목록 = 24개 (첫 페이지)
+  실제 처리: personal_history에 질문 페이지 24개를 공급한다.
+  초과/후속 확인: next cursor와 별도 조회 API가 있다. 명령 LLM이 이 페이지 뒤를 자동 조회하지는 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/case_repository.py:128
+
+L018 [현행] legal_wiki 힌트 목록 = 8개 (첫 페이지)
+  실제 처리: shortcut 켜짐+인증 사용자일 때 topic/question만 공급. 저장 결론은 힌트 입력에서 제외한다.
+  초과/후속 확인: 전체 위키 조회 API는 별도. 다음 힌트 페이지 자동 모델 조회 없음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:128
+
+L019 [현행] 과거 확정 경험 후보 = 현재 shortcut 경로는 [] (기능 필터)
+  실제 처리: ShortcutCases.candidates가 과거 경험으로 검증을 우회하지 못하게 빈 목록을 반환한다.
+  초과/후속 확인: CaseRepository 경로의 32 후보 제한은 별도 조건부 경로.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py:122
+
+L020 [현행] 문서 목록 입력 제거 = allowed_documents/document_ids 제거 (필드 투영)
+  실제 처리: resolver/command-check/repair 입력에서 재귀 제거. ACL용 원본은 호스트가 유지한다.
+  초과/후속 확인: 모델이 전체 문서 ID를 골라 권한을 확대하지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:30
+
+L021 [현행] 검색어 개수 = 최대 4개 (출력 계약)
+  실제 처리: 명령 queries 배열의 maxItems.
+  초과/후속 확인: 초과는 거절. 자동으로 앞 4개를 잘라 실행하지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:50
+
+L022 [현행] 검색어 길이 = 각 180자 (출력 계약)
+  실제 처리: 명령 queries 원소 길이.
+  초과/후속 확인: 초과는 거절/수정. 이후 SELECT RESEARCH 출력의 queries에는 같은 개수/길이 상한이 없다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:51
+
+L023 [현행] 사실 개수 = 최대 16개 (출력 계약)
+  실제 처리: 명령 facts 배열의 maxItems. 기존 입력 사실 목록을 매번 [:16]으로 자르는 동작은 아니다.
+  초과/후속 확인: 변경 출력 계약 거절/수정.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:54
+
+L024 [현행] 사실 이름 길이 = 100자 (출력 계약)
+  실제 처리: FACT.name 길이 제한.
+  초과/후속 확인: 초과 출력 거절/수정.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:55
+
+L025 [현행] 사실 값 길이 = 600자 (출력 계약)
+  실제 처리: FACT.value 문자열 길이 제한.
+  초과/후속 확인: 초과 출력 거절/수정.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:56
+
+L026 [현행] 목적 task 길이 = 600자 (출력 계약)
+  실제 처리: 원문 입력을 600자에서 자르는 것은 아니지만 모델이 정리하는 task 출력은 600자 이하.
+  초과/후속 확인: 원문 요구사항을 축소할 위험은 의미 검토 대상. 원문은 별도 보존.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:58
+
+L027 [현행] 명령 이유 길이 = 600자 (출력 계약)
+  실제 처리: command.reason의 maxLength.
+  초과/후속 확인: 초과 출력 거절/수정.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:59
+
+L028 [현행] 복원 필드 개수 = 최대 5개; 중복 불가 (출력 계약)
+  실제 처리: task/source_category/document_ids/facts/queries 다섯 상태 필드의 지정 복원.
+  초과/후속 확인: 없는 필드나 중복은 허용하지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:57
+
+L029 [호스트/기존 계약] 저장 명령 문서 ID 제한 = 160개, ID 각 64자 (조건부 계약)
+  실제 처리: 기본 COMMAND 계약에 존재. 현재 모델용 resolve 스키마는 document_ids를 null로 고정한다.
+  초과/후속 확인: 현행 모델이 최대160 문서를 고르는 입력/행동으로 설명하면 안 된다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:52
+
+L030 [현행] 명령 의미 수정 = 최초 1회 + 수정 1회 (재시도 제한)
+  실제 처리: resolve의 range(2). 두 번째 의미/명령 검사 실패는 CLARIFY.
+  초과/후속 확인: 출력 JSON gateway 수정 1회는 별도 층이며 같은 전체 예산 소비.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:236
+
+5. LLM 3 — 방금 고른 명령이 원래 요청과 맞는가?
+
+실제 phase: memory-command-check
+
+입력 블록:
+ A. LLM 2가 받은 사용자 문맥: context
+ B. 코드가 정규화한 명령: command
+ C. 실행 계약: 어느 단계부터 시작하며 어떤 순서로 완료해야 하는지
+
+판단 단위:
+ '사용자가 요청한 변경 범위와 실제 실행할 명령이 일치하는가?'
+
+출력: valid + reason
+
+코드 처리:
+ valid=true이면 명령을 적용한다.
+ valid=false이면 LLM 2의 제한된 수정으로 돌아간다.
+ 이 검사는 변경 명령의 적합성이다. 법률 답변이 정답인지 평가하는 단계가 아니다.
+ 형식·권한 등 코드 검사를 통과해도 모델의 의미 판단이 항상 옳다는 뜻은 아니다.
+
+
+[이 입력/판단에 적용되는 슬라이스·상한·생략]
+
+L031 [현행] check 출력/입력 개수 = 별도 maxLength/maxItems 없음 (상한 없음)
+  실제 처리: context+command+execution_contract; valid와 reason 반환. 같은 model_context 필드 제거 적용.
+  초과/후속 확인: false이면 LLM 2의 한 번 수정에 연결. 전체 출력 토큰/예산 적용.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:74
+
+6. LLM 4 — 원래 질문에서 무엇을 답해야 하는가?
+
+실제 phase: memory-intent
+
+입력 블록:
+ A. 이번 원문 질문: current_request
+ B. 기존 상태에 반영된 현재 목적·질문: question
+ C. 사용자 제공 사실: current_facts
+ D. 해당 실행 단계의 등록 도메인·방법 정보
+
+판단 단위:
+ '사용자가 요구한 답변 항목, 대상, 조건과 예외를 무엇으로 나눌까?'
+
+모의 질문: 'A규정의 신청 기한과 제출서류를 알려줘.'
+ 기대하는 요구 분리:
+ Q1: 신청 기한
+ Q2: 제출서류
+
+일반 규정 설명 요청을 특정 신청 건의 적법성 판단으로 바꾸지 않는다.
+검색에서 기한 조항만 나왔다고 Q2를 요구사항에서 없애지 않는다.
+출력에는 목적·검색용 개념·쟁점이 들어간다. 이 단계에서 근거 없는 답을 쓰지 않는다.
+
+코드 처리:
+ 쟁점 ID 중복 등을 검사하고 INTENT를 저장한다.
+ PLAN: 상태의 검색어·질문·등록 문서명 등을 이용해 검색 계획을 구성한다.
+ RECALL: 현재 색인에서 후보를 찾는다.
+ READ: 후보·원문 읽기 계약과 근거 검증을 준비한다.
+ 현재 법령 탐색 경로에서는 초기 READ가 전체 원문을 모두 읽었다는 뜻이 아니다.
+ SELECT의 행동에 따라 실제 원문 읽기와 전달이 더 발생한다.
+
+
+[이 입력/판단에 적용되는 슬라이스·상한·생략]
+
+L032 [현행] 쟁점 개수 = 최소1, 최대8개 (출력 계약)
+  실제 처리: INTENT issues 배열 제한. 원문을 앞8문장으로 자르는 코드는 아니다.
+  초과/후속 확인: 9개 이상의 요구를 그룹으로 묶을 수 있지만 요구 누락 여부는 의미적으로 확인해야 한다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/investigation_contracts.py:16
+
+L033 [현행] 목적·개념·쟁점 문장 = 별도 개수/길이 상한 없음(issues 개수 제외) (상한 없음)
+  실제 처리: purpose/concepts와 ISSUE.question/subject에 별도의 숫자 길이 상한은 없다.
+  초과/후속 확인: 전체 모델 출력 6400토큰 상한은 함께 적용.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/memory_rag.py:25
+
+L034 [현행] 기반 원문 조각 번호 = 최대64조각; 나머지는 마지막에 합침 (무손실 분할)
+  실제 처리: RequestContext.pieces의 기계적 문장 분할. 의미 쟁점 8개와 다른 번호 체계다.
+  초과/후속 확인: 63조각 이후 원문 나머지 전체를 Q64에 보존. 버리지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/context.py:19
+
+L035 [현행] 검색 변형 = 최대3개 (검색 표현 슬라이스)
+  실제 처리: 원문/업무 문맥/첫 줄 변형을 중복 제거 후 [:3].
+  초과/후속 확인: 생략한 변형 전용 다음 페이지 없음. 원문은 보존.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py:24
+
+L036 [현행] 문서명 제거 보조 검색 = 최대4개 (검색 표현 슬라이스)
+  실제 처리: focused_queries에서 extra[:4].
+  초과/후속 확인: 다른 표현은 SELECT 새 검색으로 제안 가능.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py:44
+
+L037 [현행] 수치 보조 검색 = 최대2개 (검색 표현 슬라이스)
+  실제 처리: 숫자·단위 주변에서 만든 numeric[:2].
+  초과/후속 확인: 모든 숫자 표현이 보조검색으로 생성되는 것은 아니다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py:44
+
+L038 [현행] 수치 앞 단어 탐색 범위 = 앞40자 (문맥 창)
+  실제 처리: 수치 앞 40자를 단어 후보로 삼는다. 모델 질문 입력을 40자로 자르는 것은 아니다.
+  초과/후속 확인: 원문 질문은 별도 유지.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py:41
+
+L039 [현행] 초기 검색 표현 묶음 = 최대13개 (검색 표현 슬라이스)
+  실제 처리: focused_queries가 중복 제거 후 [:13]. 실제 초기 상한이며 개별 표현 처리와 다르다.
+  초과/후속 확인: SELECT law_search_queries가 있으면 이 묶음을 대신 쓰므로 이후 검색까지 모두13개 제한은 아니다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py:44
+
+L040 [현행] 한 검색 표현의 형태소 = 최대32개 (검색 토큰 슬라이스)
+  실제 처리: 질문/검색어 각각에서 고유한 내용 형태소를 등장순 [:32]로 사용한다.
+  초과/후속 확인: 법령 본문/LLM 질문은 잘리지 않지만 뒤쪽 검색 개념이 빠질 수 있다. 여러 표현의 합집합은32개를 넘을 수 있다.
+  근거: 02_BACKEND/semantic_runtime/fulltext.py:149
+
+L041 [현행] 일상어→법률 용어 연결 = 최대4개 (검색 단서 슬라이스)
+  실제 처리: NavigationMatcher._bridge가 용어 연결 후보 [:4] 반환.
+  초과/후속 확인: 동일 표면어의 모든 연결이 시작 힌트로 들어가는 것은 아니다.
+  근거: 02_BACKEND/semantic_runtime/navigation_match.py:317
+
+L042 [현행] 명시 구조 원문 선택 = 최대16 source ID (분기 경계)
+  실제 처리: 명시 제목/조문 경로 결과가16개를 넘으면 구조 MATCH를 하지 않고 STRUCTURE_SELECTION_LIMIT으로 MISS.
+  초과/후속 확인: 앞16개만 정답처럼 확정하지 않고 전문 검색 경로로 이어진다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/structure_query.py:62
+
+L043 [현행] 명시 정의 경로 = 인용 용어 길이2~40자; 정의 후보최대16개 (분기 경계)
+  실제 처리: 한 개의 인용 용어+한 문서의 정의에서만 직접 경로. 후보 초과면 직접 경로를 쓰지 않는다.
+  초과/후속 확인: 일반 탐색은 별도 가능. 이 값으로 전체 질문을 자르지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/structure_query.py:81
+
+7. LLM 5 — 지금 보이는 화면에서 다음에 무엇을 할까?
+
+실제 phase: source-law-navigation-{turn}, 필요 시 ...-repair
+
+이 부분이 탐색의 중심이다. 아래 5-A~5-E는 다른 에이전트가 아니라 같은 탐색
+호출의 화면·판단 목적을 구분한 설명이다. 매번 현재 입력과 유효 선택지가 바뀐다.
+
+공통 입력을 여덟 블록으로 읽으면 이해하기 쉽다.
+
+ A. 질문과 쟁점
+    question, issues, assessment_gaps
+    무엇을 알아봐야 하는지, 판단 단계에서 무엇이 부족하다고 했는지.
+    SELECT에는 현재 task·facts로 만든 질문과 쟁점이 들어간다.
+    이번 원문 current_request가 별도 필드로 모든 탐색 호출에 반복되는 것은 아니다.
+
+ B. 현재 검색 후보
+    search_queries, laws[].articles, article_matches, previews, more_laws
+    어느 검색으로 어떤 문서·조항이 나왔는지, 다음 후보 페이지가 있는지.
+    검색 미리보기는 실제 원문 읽기·전달 완료와 다르다.
+
+ C. 이번에 실제로 보여주는 원문
+    sources, basis
+    읽기 요청 이후 모델에게 제시한 원문 페이지와 연결 ID.
+    법률 근거로 판단할 때는 실제 전달된 범위를 사용한다.
+
+ D. 자료 상태와 읽기 상태
+    saved_inventory, read_receipt, branches, adopted_evidence
+    저장했는지, 어디까지 확보·전달했는지, 어느 쟁점에 채택·보류·제외했는지.
+    저장 원문 목록은 내용 자체가 아니다. 저장되었다고 이번 모델이 본 것도 아니다.
+
+ E. 이전 행동과 이유
+    investigation_chain, notes, search_expression_history
+    왜 이 후보를 읽었는지, 무엇을 보류했는지, 이미 시도한 검색은 무엇인지.
+    전체 과거 원문을 매 호출마다 반복 복사하는 대신 필요한 기록을 전달한다.
+
+ F. 돌아갈 수 있는 이전 화면
+    return_points, chain_frame_id
+    보류했던 당시 후보·읽기·참조 메뉴를 다시 선택할 수 있는 출발 지점.
+    이후의 확보 자료나 판단을 통째로 되돌리는 롤백과 다르다.
+
+ G. 지금 허용된 행동 메뉴
+    actions, branches[].allowed_decisions
+    실제로 선택 가능한 행동 ID, 대상, 표시 문구와 효과.
+    모델이 없는 행동·없는 자료 ID를 만들면 코드가 거절한다.
+
+ H. 현재 상태와 한도
+    presentation_id, state_version, progress, reading_rule, completion_contract
+    어느 화면에 대한 결정인지, 진전 없는 반복인지, 읽기와 채택을 분리해야 하는지.
+    출력 스키마도 현재 메뉴의 유효 ID와 형태를 제한한다.
+
+5-A. 후보를 보고 무엇을 읽을지 결정
+
+입력 예:
+    요구: Q1 기한 / Q2 서류
+    후보: A규정 제5조, C규정 제8조
+    A규정 미리보기: '신청은 ... / 제출서류는 ...'
+    C규정 미리보기: 다른 업무의 신청
+    이번에 실제 받은 원문: 없음
+    가능한 행동: A 읽기 / C 읽기 / 다음 후보 / 새 검색 / 제시된 복귀
+
+판단:
+    어느 후보가 질문의 대상·업무 맥락에 맞는가?
+    어느 원문 범위를 먼저 읽을까?
+
+출력:
+    READ_ARTICLES / READ_PARENT / READ_SCOPE / OPEN_LAW 등 + 대상 ID + 이유
+
+코드:
+    유효한 대상과 권한을 검사 → 읽기 또는 후보 화면 변경
+    → 실제 결과를 넣어 다음 탐색 입력 생성
+
+분기:
+    관련 후보 있음 → 원문 읽기
+    후보 있지만 질문과 무관함 → 다른 후보 / 새 검색 / 제시된 복귀
+    검색 0건 → 다른 검색 / 구조 탐색으로 이어지는 메뉴 / 제시된 복귀
+    가능한 경로 소진 → PENDING 또는 한도에 따른 중단
+    검색 도구 오류 → 검색 결과 0건과 구분하여 실패 처리
+
+'0건'은 이번 검색과 자료 범위에서 찾지 못했다는 뜻이다.
+'해당 규정이 존재하지 않는다'는 법률 판단으로 바꾸면 안 된다.
+도구 예외 뒤 항상 같은 화면으로 복구하는 공통 흐름은 현재 완성되지 않았다.
+수정 목표는 성공한 결과를 유지하고 실패한 검색·이유·가능한 다음 행동을 제공하는 것이다.
+
+5-B. 읽은 원문을 어디까지 더 볼지 결정
+
+입력 예:
+    A규정 제5조 본문 일부가 이번 sources에 들어옴
+    앞 문장에서 신청 기한을 찾음
+    뒤 문장·다른 항·참조 문서는 아직 전달되지 않음
+    읽기 상태: 확보 범위와 실제 전달 범위
+    가능한 행동: 이어보기 / 상위 전체 읽기 / 다른 항 읽기 / 이후 결정
+
+판단:
+    현재 본 범위로 이 조항의 조건·예외를 파악할 수 있는가?
+    어떤 범위를 더 읽어야 하는가?
+
+코드:
+    선택한 원문 범위를 확보·검증하고 다음 입력으로 전달한다.
+    현재 계약에서 READ/VIEW 호출의 채택·보류 결정 배열은 비워야 한다.
+    원문을 가져온 동작을 채택으로 처리하지 않는다.
+
+분기:
+    원문 전달 성공 → 다음 입력에서 내용을 보고 결정
+    일부만 전달 → 이어보기나 범위 확대
+    읽기 실패 → 성공한 다른 자료는 유지; 실패한 자료를 읽었다고 표시하면 안 됨
+    시간·분량 한도 → 실제 확인한 범위와 미확인 범위 구분
+
+5-C. 읽은 자료를 채택·보류·제외할지 결정
+
+입력 예:
+    요구: Q1 기한 / Q2 서류
+    읽은 A규정 제5조: '신청 기한은 10일 ... 서류는 B규정 제2조 ...'
+    B규정 제2조: 아직 읽지 않음
+    가능한 결정: A의 해당 전달 범위를 Q1에 채택 / 보류 / 제외
+
+판단:
+    A의 읽은 범위가 어떤 쟁점의 근거인가?
+    왜 채택하거나 아직 보류할까?
+
+출력:
+    DECIDE와 branch_decisions의 ADOPT / KEEP / DEFER / EXCLUDE,
+    쟁점 ID, 실제 원문 연결 ID, 이유
+
+코드:
+    실제 전달한 원문으로 가능한 결정인지 검사 → 자료별·쟁점별 상태 기록
+    Q1의 근거 채택이 Q2까지 해결했다는 뜻은 아니다.
+    모델은 맥락에 맞는 후보를 고를 책임이 있다. 코드가 인용 ID를 검증했다고
+    선택한 조항의 의미가 질문에 맞는다는 것이 자동 보증되지는 않는다.
+
+5-D. 보류했던 자료를 다시 선택
+
+입력:
+    보류 당시 화면을 가리키는 return_points
+    현재까지 읽고 채택한 자료의 상태
+    저장 원문 목록과 별도 재열람 선택지
+
+판단과 코드:
+    RETURN_TO → 보류 당시의 후보·읽기·참조 메뉴로 돌아가 재선택
+    VIEW_SAVED_SOURCE → 저장된 특정 원문을 다시 전달
+
+두 행동은 목적이 다르다. 화면 복귀가 이후 조사 결과를 지우지는 않는다.
+재열람만으로 보류·제외 상태를 채택으로 바꾸지도 않는다.
+다시 보고 모델이 채택·보류·제외 판단을 따로 제출한다.
+
+5-E. 계속 조사할지, 판단 단계로 넘길지 결정
+
+입력:
+    요구 Q1·Q2, 채택 근거, 보류 자료, 참조 상태,
+    이전 조사 기록, 판단 단계에서 돌려보낸 assessment_gaps,
+    반복·검색 한도와 현재 가능한 행동
+
+출력:
+    RESEARCH: 검색어를 바꿔 후보 검색으로 돌아가기
+    READ...: 필요한 원문 범위를 더 읽기
+    FOLLOW_CONNECTION: 참조 메뉴 조사
+    RETURN_TO: 이전 화면 복귀
+    FINISH: 탐색을 마치고 판단으로 넘기기
+    PENDING: 이 탐색 실행에서 진행을 완료하지 못함
+
+현재 출력에는 evidence_sufficient와 sufficiency_reason도 있다.
+선택과 판단이 각각 충분성을 결정하면 '충분 → 부족 → 충분'이 반복될 수 있다.
+수정 목표: 여기서는 확보 자료·조사를 멈춘 이유를 보고하고,
+실제 답변 가능 범위는 LLM 7에서 쟁점별로 결정한다.
+
+현재 결함: FINISH를 적용할 때 현재 assessment_gaps를 제거하는 코드가 있다.
+따라서 'Q2의 B원문 부족'을 추가 조사 입력으로 받았더라도 FINISH만으로 현재
+부족 목록이 사라질 수 있다. 과거 로그 전체 삭제와는 다르지만 현재 상태 연결은 끊긴다.
+수정 목표: 조사 종료 뒤에도 부족 항목을 보존하고 해결·보류·불필요 판단의
+이유를 기록한다. 영속적인 gap ID와 처리 상태는 아직 새로 구현하지 않았다.
+
+탐색 판단 출력이 거절될 때:
+    원래 화면 + 원래 행동 메뉴 + rejected_decision + contract_error + repair_contract
+      → 한 번의 수정 제안 → 코드가 전체 결정을 다시 검증
+    잘못된 최초 제안은 실행하지 않는다.
+    law run()은 수정 실패를 MODEL_DECISION_UNRESOLVED로 정리한다.
+    채택 근거가 있으면 FINISH 결과, 없으면 PENDING 결과로 이어진다.
+    PENDING·도구 예외·참조 실패 등 다른 종료 경로는 구분해야 한다.
+    원래 화면·유효 선택지·성공한 작업을 일관되게 돌려주는 것은 수정 목표다.
+
+
+[이 입력/판단에 적용되는 슬라이스·상한·생략]
+
+L044 [현행] 법령 후보 페이지 = 12개 (페이지)
+  실제 처리: 검색 결과 법령 목록은 페이지당12개. 현재 채택/직접 지정 법령을 덧붙여 최종 laws 입력이12개를 넘을 수 있다.
+  초과/후속 확인: NEXT_LAWS. 전체 total/next_cursor 보존.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_candidates.py:65
+
+L045 [현행] 첫 자동 진입 조항 = 법령당1개 (초기 선택)
+  실제 처리: 첫 법령 페이지의 각 법령에서 조항1개를 가져온다.
+  초과/후속 확인: 법령별 OPEN_LAW로 다른 조항 선택 가능.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_candidates.py:73
+
+L046 [현행] 첫 자동 진입 적중 = 조항당1개 (초기 선택)
+  실제 처리: 첫 진입 조항에서 hit1개를 확보한다.
+  초과/후속 확인: NEXT_HITS로 다음 적중 위치.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_candidates.py:76
+
+L047 [현행] 법령 열기/다음 조항 페이지 = 4개 (페이지)
+  실제 처리: OPEN_LAW/NEXT_ARTICLES는 설정 article_page_size=4.
+  초과/후속 확인: NEXT_ARTICLES. 현재 ACTIVE 경로 추가 때문에 전체 branch 입력4개 제한은 아니다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:847
+
+L048 [현행] 후보 조항 목록의 초기 크기 = 8개 (첫 페이지)
+  실제 처리: article_menu에서 아직 저장 조항 페이지가 없으면 하드코딩 limit=8. 설정4개와 별도.
+  초과/후속 확인: 법령을 열면4개씩 제공하는 경로 이용. 이 요약 메뉴 자체가 항상8개 이하인 것도 아니며 저장 페이지를 재사용한다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:357
+
+L049 [현행] 조항 요약용 적중 = 각3개 (요약 선택)
+  실제 처리: article_menu가 처음3개의 hit 중 표시할 본문 위치를 선택.
+  초과/후속 확인: 다른 위치는 해당 조항 적중 탐색으로 확인.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:361
+
+L050 [현행] 조항 요약 미리보기 = 앞240자 (본문 슬라이스)
+  실제 처리: article_menu preview=body.text[:240].
+  초과/후속 확인: READ_ARTICLES로 원문 읽기. 전문을 읽었다는 의미 없음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:364
+
+L051 [현행] 읽은 적중 미리보기 = 앞360자 (본문 슬라이스)
+  실제 처리: add_reads가 profile.preview_chars=360으로 미리보기 생성. 코드 fallback400은 현행 설정으로 덮인다.
+  초과/후속 확인: READ_PARENT/READ_SCOPE 또는 저장 원문 재열람.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:283
+
+L052 [현행] 다음 적중 위치 페이지 = 8개 (페이지)
+  실제 처리: NEXT_HITS의 hit_page_size=8.
+  초과/후속 확인: NEXT_HITS. SQL의 total/cursor 유지.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:854
+
+L053 [현행] 미리보기 이력 표시 = 최근8개 (입력 슬라이스)
+  실제 처리: 그룹별 previews[-8:]만 현재 카드에 표시.
+  초과/후속 확인: preview_total/omitted_previews. 전체 이력은 저장되나 앞 미리보기 전용 페이지는 없다. 과거 화면/원문 확인 경로.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:572
+
+L054 [현행] 형제 구조 목록 = 앞8개 (입력 슬라이스)
+  실제 처리: 부모 범위 sibling_rows[:8]. 제목 목록이며 원문 읽기 아님.
+  초과/후속 확인: sibling_total/sibling_list_complete 표시. READ_PARENT로 부모 전체 원문.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:577
+
+L055 [현행] 이번 원문을 제시할 그룹 = 최대8그룹 (입력 페이지)
+  실제 처리: focus 우선+읽기 대기 그룹을 중복 제거 후 [:8]. 그룹당 현재 페이지를 보여준다.
+  초과/후속 확인: 나머지 그룹의 읽기/이어보기 선택지와 상태 유지.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:537
+
+L056 [현행] 그룹별 원문 전달 페이지 = 12000자 (무손실 페이지)
+  실제 처리: 좌표 구간을 max_read_chars 크기로 나눠 전달한다. 줄바꿈·메타데이터는 추가되므로 전체 JSON길이는 더 크다.
+  초과/후속 확인: READ_PARENT 이어보기. 후속 페이지 존재·실제 전달 범위 기록.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:327
+
+L057 [현행] 동시 여러 조항 읽기 선택 = 최대8대상 (출력 계약)
+  실제 처리: READ_ARTICLES targets maxItems8.
+  초과/후속 확인: 다음 호출에서 추가 조항 읽기 선택 가능.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:123
+
+L058 [현행] 다른 행동 대상 수 = 1개; FINISH/PENDING/DECIDE는0개 (출력 계약)
+  실제 처리: 여러 행동을 임의 묶어 한 번에 실행하지 못하게 제한.
+  초과/후속 확인: 다음 탐색 호출에서 다음 행동 선택.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:123
+
+L059 [현행] 선택 이유 길이 = 512자 (출력 계약)
+  실제 처리: 행동 이유와 법령/자료 이유 maxLength512.
+  초과/후속 확인: 초과 출력은 수정/거절.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:77
+
+L060 [현행] 탐색 메모 길이 = 1024자 (출력 계약)
+  실제 처리: notes maxLength1024. 현재 메모를 새 메모로 갱신하며 명시 행동·이유는 별도 이력에 보존.
+  초과/후속 확인: 메모에 모든 이력을 다시 넣는 구조가 아니다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:109
+
+L061 [현행] 충분성 이유 길이 = 512자 (출력 계약)
+  실제 처리: sufficiency_reason maxLength512.
+  초과/후속 확인: 초과는 수정/거절. 탐색 종료가 모든 쟁점 해결을 뜻하지 않음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:110
+
+L062 [현행] 요약 참조 의존 카드 = 앞16개 (입력 슬라이스)
+  실제 처리: reference_overview dependency_cards[:16].
+  초과/후속 확인: omitted_dependency_cards; FOLLOW_CONNECTION 상세 메뉴.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:412
+
+L063 [현행] 요약 미해결 참조 = 앞8개 (입력 슬라이스)
+  실제 처리: reference_overview unresolved[:8].
+  초과/후속 확인: unresolved_count는 별도. 상세 참조 메뉴/내부 상태는 별도 유지.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:413
+
+L064 [현행] 새 검색 라운드 = 전체8라운드; 초기 이후 재진입최대7회 (실행 중단)
+  실제 처리: query_history가8이면 RESEARCH 메뉴를 추가하지 않음. 동일 정규화 검색은 별도 거절.
+  초과/후속 확인: 미해결을 남기고 확보 근거 판단/중단. 평가상의 전체 호출40회와 별도.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:543
+
+L065 [현행] 진전 없는 반복 = 2회 (실행 중단)
+  실제 처리: no_progress>=2면 NO_PROGRESS 정리. 성공한 새로운 원문/선택이 있어야 진전으로 계산.
+  초과/후속 확인: 새 assessment gap 서명이 바뀌면 이 카운터는 리셋되지만 공유 모델/도구 예산은 리셋되지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1060
+
+L066 [현행] 판단 단계 시간 예약 = 30초 (실행 중단)
+  실제 처리: SELECT의 remaining-30초, 탐색 내 FINALIZATION_TIME_RESERVE 검사.
+  초과/후속 확인: 채택 근거가 있으면 판단으로 넘기고 없으면 미완료. 최종 응답30초 성공 보장 아님.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/memory_rag.py:233
+
+L067 [현행] 행동 형식·계약 수정 = 한 번 (재시도 제한)
+  실제 처리: law navigation이 한 번 교정하고 gateway schema repair는0으로 꺼 중첩을 막음.
+  초과/후속 확인: 재수정 실패는 MODEL_DECISION_UNRESOLVED bounded_result. 채택 근거가 있으면 FINISH, 없으면 PENDING.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:1030
+
+L068 [현행] 중복 입력 필드 제거 = flat articles, basis 본문, receipt span 목록 (필드 투영)
+  실제 처리: articles는 laws[].articles에 한 번만 전송. basis text/spans·read_receipt의 *_spans는 제거하고 unverified_blocks 추가.
+  초과/후속 확인: 법률 본문은 sources에서 전달. 저장된 원래 view/좌표는 보존.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:967
+
+L069 [현행] 행동·이유 체인 = 개수 슬라이스 없음 (상한 없음)
+  실제 처리: 모든 steps를 전달하며 반복 결정 내용을 judgments 참조로 중복 제거.
+  초과/후속 확인: 저장 이력과 현재 입력 증가 가능. 전역10만자 자동 컷으로 보호된다고 볼 수 없음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/investigation_chain.py:70
+
+L070 [현행] 복귀 지점·저장 목록·채택 목록·부족 목록 = 별도 개수 슬라이스 없음 (상한 없음)
+  실제 처리: 현재 생성되는 return_points/saved_inventory/adopted_evidence/assessment_gaps에 숫자 top-k 없음.
+  초과/후속 확인: 단 FINISH에서 assessment_gaps를 제거하는 현재 결함은 별도 존재.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:471
+
+L071 [현행] RESEARCH 검색어 출력 = 별도 개수·길이 max 없음 (상한 없음)
+  실제 처리: RESEARCH는 queries 최소1개. resolver의4개/180자 제한과 다른 스키마.
+  초과/후속 확인: 중복 검색·검색 라운드·전체 출력/호출 한도는 적용.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:124
+
+L072 [현행] 읽기 응답의 블록/구간 = 페이지당40개 (페이지)
+  실제 처리: page_size=40. 내부41개 조회는 다음 항목 존재를 확인하기 위한 것.
+  초과/후속 확인: block/char cursor로 같은 요청 범위의 다음 페이지.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/source_tools.py:159
+
+L073 [현행] 읽기 응답의 본문 = 페이지당12000자 (페이지)
+  실제 처리: max_read_chars. 블록 중간에서 끝나면 char cursor 보존.
+  초과/후속 확인: unit_reading.read가 cursor를 따라 요청 범위를 끝까지 읽음. 실패 시 완료 표시하지 않음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/source_tools.py:157
+
+L074 [현행] 누적 새 원문 확보량 = 1600000자 (실행 중단)
+  실제 처리: unit_reading initial_chars. 이미 확보한 검증 원문 재사용은 새 확보량과 분리.
+  초과/후속 확인: 초과 BudgetExhausted. 일회 모델 입력1.6M자 제한이 아님.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_reading.py:232
+
+L075 [현행] 누적 원문 읽기 도구 = 1024회 (실행 중단)
+  실제 처리: unit_reading read_actions. 공통 tool1024와 함께 적용.
+  초과/후속 확인: 한도가 더 먼저 걸리는 층에서 중단. 재진입 read_state 이어받음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_reading.py:242
+
+L076 [현행] 블록 길이 SQL 처리 묶음 = 400개씩 (무손실 처리 묶음)
+  실제 처리: block_chars의 SQL IN 조회를400개씩 나눔. 전체 ID를 처리함.
+  초과/후속 확인: 401번째부터 버리지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_reading.py:55
+
+8. LLM 6 — 읽은 원문이 가리키는 다른 자료를 따라갈까?
+
+실제 phase: source-reference-* 계열
+
+입력 블록:
+ A. 현재 질문: question
+ B. 이번 연결이 나온 출발 원문: sources
+ C. 출발점과 참조 대상: groups[].anchor, target
+ D. 원문에 실제 연결이 있다는 확인 자료: connections
+ E. 필요한 읽기 의무와 제공 가능한 범위: reading_obligations, read_options
+ F. 보류·미해결 참조와 아직 제시하지 않은 연결 수
+ G. 현재까지의 행동 이력과 복귀 문맥, 한도
+
+판단 단위:
+ '이 참조가 현재 질문에 필요한가? 필요하면 제시된 어느 범위를 읽을까?'
+
+모의 입력:
+    A규정 제5조에 '서류는 B규정 제2조에 따른다'라는 문장이 있음
+    참조 대상: B규정 제2조
+    B 본문: 아직 없음
+    읽기 선택지: 제시된 조·항 또는 부모 범위
+
+출력:
+ FOLLOW: 참조 대상의 선택 범위를 읽는다
+ SKIP: 관련 없다는 이유와 함께 건너뛴다
+ DEFER: 판단을 보류하고 출발 화면을 남긴다
+ 적용 판단: APPLIES / DOES_NOT_APPLY / UNDETERMINED 및 이유
+
+코드:
+    메뉴에 제시된 연결과 범위인지, 읽기 의무와 한도에 맞는지 검사
+    → 원문 읽기·검증·기록 → 탐색에 반영
+    연결을 따라 읽는 것과 최종 답변 근거로 채택하는 것은 구분한다.
+
+분기:
+    FOLLOW 성공 → B 원문 확보; 탐색에서 실제 전달 범위 확인 후 채택 판단
+    질문과 무관한 참조 → 근거 있는 SKIP; 모든 참조를 필수로 만들지 않음
+    아직 판단 못함 → DEFER와 출발 지점 유지
+    대상 못 찾음 → 미해결 참조로 구분; B 내용을 추측하지 않음
+    읽기·모델·시간 실패 → 성공한 A 자료와 미해결 B 상태를 남기는 것이 목표
+    참조가 메뉴에 없음 → 이 색인의 확인 범위에서 검증된 연결이 없다는 뜻
+
+'A가 B를 참조한다는 사실을 확인'과 'B 원문을 읽어 내용을 확인'은 다르다.
+참조 성공이 질문의 모든 요구사항 해결을 의미하지도 않는다.
+
+
+[이 입력/판단에 적용되는 슬라이스·상한·생략]
+
+L077 [현행] 한 번에 조사할 출발 원문 = 16개 (페이지/작업 묶음)
+  실제 처리: anchors_per_round=16. 초과 미조사 출발점 표시.
+  초과/후속 확인: 남은 작업과 스캔 상태를 보존. 작업/시간/호출 상한 안에서 계속.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:79
+
+L078 [현행] 출발 원문별 연결 스캔 = 256개 (페이지)
+  실제 처리: SQL257개 조회 후256개 처리. more_available와 after_reference_id 기록.
+  초과/후속 확인: cursor로 이어 스캔.256개를 전체 연결 수로 단정하지 않음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:91
+
+L079 [현행] 한 모델 메뉴의 연결 그룹 = 최대16개 (메뉴 묶음)
+  실제 처리: groups_per_batch16; 그룹 JSON24k자 조건이 먼저 걸리면 더 적음.
+  초과/후속 확인: omitted_groups/queue 유지, 후속 참조 메뉴. 실제 law 호출은 배치1개로 돌아감.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:452
+
+L080 [현행] 연결 그룹별 제시 문구 = 앞8개 (입력 슬라이스)
+  실제 처리: connections[:8]. reading_obligations는 모든 연결에서 작성.
+  초과/후속 확인: omitted_connections. 전체 내부 연결 보존; 9번째 witness 자동 이어보기 전용 메뉴는 없다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:203
+
+L081 [현행] 참조 문구 본문 = 각 앞600자 (본문 슬라이스)
+  실제 처리: witness[:600]; 전체 원문/해시로 사전 검증한 뒤 짧게 표시.
+  초과/후속 확인: witness_chars/witness_truncated 표시. 출발 원문 읽기 경로로 전체 문맥 확인 가능.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:178
+
+L082 [현행] 그룹 목록 JSON 크기 = 24000자 (메뉴 묶음)
+  실제 처리: 다음 그룹을 추가했을 때24k를 넘으면 목록 구성을 멈춤.
+  초과/후속 확인: 첫 그룹부터 초과하면 reference_item_context_limit. 해당 그룹을 자동 분할하지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:452
+
+L083 [현행] 최종 참조 입력 JSON 크기 = 100000자 (실행 중단)
+  실제 처리: 질문·출발 원문·이력 등 합친 data를 검사. gateway exact_evidence 추가 전의 검사다.
+  초과/후속 확인: 초과 reference_context_limit; 이후 wire 중복/메타데이터를 포함한 전체 HTTP100k보장 아님.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:479
+
+L084 [현행] 한 메뉴에서 FOLLOW 그룹 = 최대8개 (출력 계약)
+  실제 처리: 전체 표시16그룹은 각각 결정하지만 FOLLOW는8그룹 이하.
+  초과/후속 확인: 나머지 SKIP/DEFER 등 이유 기록. 초과는 거절/수정.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:277
+
+L085 [현행] FOLLOW 그룹별 읽기 범위 = 최대4개 (출력 계약)
+  실제 처리: scopes_per_group4; SKIP/DEFER는0개.
+  초과/후속 확인: 각 그룹에 제공한 scope만 선택. 다른 그룹 범위는 거절.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:226
+
+L086 [현행] 참조 이유·적용 이유 = 각512자 (출력 계약)
+  실제 처리: reason/applicability_reason 최대512자.
+  초과/후속 확인: 초과 거절/수정.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:228
+
+L087 [현행] 한 탐색 행동의 참조 판단 배치 = 1개 (실행 묶음)
+  실제 처리: law_navigation이 max_model_batches=1로 호출. 기본 batches64가 실제1로 좁혀짐.
+  초과/후속 확인: 한 메뉴 판단 후 탐색으로 돌아옴.64번 연속 모델 호출이 아님.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/law_navigation.py:875
+
+L088 [기본값; 현행은1] 참조 엔진 기본 배치 상한 = 64개; 현행 law 호출은1개 (조건부 기본값)
+  실제 처리: max_model_batches 미지정일 때만64. 현재 law 호출에서는min(64,1).
+  초과/후속 확인: 수정 호출 등 물리 시도40회는 별도 함께 적용.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:378
+
+L089 [현행] 참조 작업 반복 = 호출당128단계 (실행 중단)
+  실제 처리: work_steps128은 스캔·큐 처리 등 내부 반복.128 LLM 호출을 뜻하지 않음.
+  초과/후속 확인: reference_work_limit에 미조사 그룹/출발점 저장.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:380
+
+L090 [현행] 참조 깊이 = 8 (실행 중단)
+  실제 처리: 깊이8 출발 원문에서 더 재귀 스캔하지 않음. 깊이7에서 따라 읽어 깊이8 자료를 확보할 수 있음.
+  초과/후속 확인: REFERENCE_DEPTH_LIMIT로 남은 조사 표시.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:389
+
+L091 [현행] 참조 의미/선택 수정 = 한 번 (재시도 제한)
+  실제 처리: 유효 JSON이지만 연결 coverage/scope/applicability 검사에서 거절되면 수정 입력1회.
+  초과/후속 확인: gateway JSON수정1회와 별도 층. 모든 시도는 전체40회에 소비.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:494
+
+L092 [현행] 참조 전체 의무·미해결 목록 = 별도 개수 상한 없음 (상한 없음)
+  실제 처리: reading_obligations/전체 unresolved/관계 이력 등은 witness8개 표시와 별개.
+  초과/후속 확인: 24k/100k 입력 검사 때문에 큰 한 그룹에서도 멈출 수 있음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_relations.py:210
+
+9. LLM 7 — 이제 쟁점별로 어떤 답을 쓸 수 있는가?
+
+실제 phase: memory-assess, 필요 시 memory-assess-repair
+
+입력 블록:
+ A. 이번 사용자 원문: current_request
+ B. 처음 정리한 원래 요구사항: original_requirements
+ C. 현재 쟁점과 사용자 사실: issues, current_facts
+ D. 채택된 자료의 원문: sources
+ E. 실제 인용 가능한 원문 조각의 선택 ID: evidence_options
+ F. 저장되었지만 채택하지 않은 자료의 목록: saved_inventory
+ G. 보류·미해결 참조와 조사 이력: reference_navigation, investigation_chain
+ H. 추가 조사 가능 횟수 상태: reentry_budget
+ I. 수정 호출일 때만 거절된 판단과 오류: repair_feedback
+
+판단 단위:
+ 'Q1과 Q2를 각각 어느 근거로, 어느 조건에서, 어디까지 답할 수 있는가?'
+
+출력:
+ claims: 답변할 판단 문장 + 쟁점 ID + 근거 S ID
+ issue_assessments:
+    COVERED: 해당 요구를 설명할 근거를 갖춤
+    PARTIAL: 일부만 설명할 수 있음
+    INSUFFICIENT: 해당 요구에 필요한 근거가 부족함
+ gaps: 무엇이 왜 부족하고 어떤 다음 행동이 필요한지
+ disposition: ANSWER / LIMITED_ANSWER / NEEDS_INVESTIGATION
+
+모의 정상 입력:
+    Q1: 신청 기한
+    Q2: 제출서류
+    S1: 채택된 A규정 제5조의 기한 원문
+    S2: 채택된 B규정 제2조의 서류 원문
+    출력: Q1 COVERED + Q2 COVERED + 근거에 연결한 판단 문장
+
+모의 부분 입력:
+    Q1: 신청 기한
+    Q2: 제출서류
+    S1: A규정 제5조의 기한 원문
+    B규정 원문: 미확보
+    출력: Q1 COVERED, Q2 INSUFFICIENT,
+          Q2 MISSING_SOURCE 또는 UNRESOLVED_REFERENCE,
+          추가 원문 조사 행동
+
+코드 분기:
+    필요한 원문 부족 + 조사 예산·시간·횟수 남음
+      → 판단과 gaps·기존 investigation_state를 묶어 SELECT로 복귀
+      → 다음 탐색 입력 A블록의 assessment_gaps에 부족 사항 추가
+    필요한 원문 부족 + 더 조사할 수 없음 + 유효한 claims 있음
+      → LIMITED_ANSWER와 확인된 설명·남은 요구사항
+    특정 사건 적용에 필요한 사용자 사실 부족
+      → MISSING_FACT와 조건부 설명/확인할 사실
+      → 법령 내용 부족을 사용자 사실 부족으로 바꾸지 않음
+    근거 있는 claims가 하나도 없음
+      → 미완료 처리; 답을 꾸며내지 않음
+    모두 답할 수 있고 계약 검사를 통과
+      → 코드 답변 구성으로 이동
+
+모델 판단 오류와 출력 계약 오류는 구분해야 한다.
+출력 계약 검사는 쟁점 누락·중복, 근거 ID, 근거 범위와 상태 충돌을 검사한다.
+여기서 통과했어도 다른 업무 맥락의 조항을 의미적으로 골랐을 가능성은 남는다.
+
+현재 형식 오류 경로:
+    첫 판단이 계약과 충돌 → 원 입력 + 거절된 판단 + 모든 오류 이유로 수정
+    수정도 실패 → InvestigationPending으로 종료
+    이 분기는 추가 조사·부분 답변 분기보다 앞에 있다.
+    따라서 이미 확보한 조사 성과가 있어도 사용자에게 일반 미완료만 보일 수 있다.
+
+수정 목표:
+    이전에 검증된 자료와 판단은 보존
+    확정하지 못한 새 판단은 답변에 섞지 않음
+    해결되지 않은 쟁점과 형식 실패를 구분
+    사용자에게 확인한 범위·미확인 범위·중단 이유·다음 행동 제공
+
+
+[이 입력/판단에 적용되는 슬라이스·상한·생략]
+
+L093 [현행] 인용 선택 조각 = 한 조각1200자 (무손실 분할)
+  실제 처리: 채택 원문을 줄 단위로 나눈 뒤 긴 줄은1200자씩 계속 분할. 이후 조각을 버리지 않음.
+  초과/후속 확인: 모든 비공백 조각에 S ID. 조각 전체 개수 top-k 없음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py:42
+
+L094 [현행] 판단 항목(claim) 수 = 최대12개 (출력 계약)
+  실제 처리: claims 배열의 maxItems=12. 한국어 문장 부호로 센 문장 수 제한은 아니다.
+  초과/후속 확인: 초과 출력 거절/수정. 한 claim이 여러 쟁점/원문에 연결 가능.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py:60
+
+L095 [현행] 판단 항목 본문 길이 = 각3000자 (출력 계약)
+  실제 처리: claim.text 최대3000자. 원문 입력3000자 제한과 다름.
+  초과/후속 확인: 전체 출력6400토큰이 별도 적용.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py:62
+
+L096 [현행] 형식 오류 수정 메시지 = 최초16개 오류 (피드백 슬라이스)
+  실제 처리: JSON Schema 오류가 있으면 errors[:16]만 모델 수정 피드백에 연결.
+  초과/후속 확인: 나머지 오류가 이미 고쳐졌다는 뜻 아님. 다음 검사에서 다시 발견될 수 있고 수정은1회뿐.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py:83
+
+L097 [현행] 판단 수정 횟수 = 최초1회 + 수정1회 (재시도 제한)
+  실제 처리: completion_execution range(2). gateway schema repair0으로 중첩 방지.
+  초과/후속 확인: 수정 실패 InvestigationPending. 이 분기는 부분 답변 분기보다 앞.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:67
+
+L098 [현행] 판단 부족으로 추가 탐색 복귀 = 최대2회 (실행 중단)
+  실제 처리: ASSESS_GAP_REENTRY와 assessment_reentry_limit2.
+  초과/후속 확인: 한도/예산/시간 부족이면 근거 있는 claim은 부분 답변으로 이어갈 수 있음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:98
+
+L099 [현행] 부분 답변 설명 개수 = 내부 저장 계약 최대64개 (저장 계약)
+  실제 처리: 현재 completion 내부 ASSESS/COMPOSE limitations maxItems64. 구형8개 제한을 확장.
+  초과/후속 확인: 앞64개로 슬라이스하는 코드가 아님.64 초과 생성이면 저장 단계 계약 실패 가능.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py:176
+
+L100 [현행] 판단 입력 원문·근거 조각·gaps = 별도 개수/본문 길이 슬라이스 없음 (상한 없음)
+  실제 처리: 현재 채택 originals와 모든 evidence_options 공급; issue_assessments와 gaps 배열에 개별 maxItems 없음.
+  초과/후속 확인: 쟁점은 제시된 것 전부 평가하도록 코드 검사. 전체 입력10만자 공통검사 없음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:72
+
+L101 [현행] 참조 입력 필드 = pending/groups/unresolved/limits만 (필드 투영)
+  실제 처리: reference_navigation에서 선택한4필드만 판단에 전달. 전체 nav 본문·actions·batches를 복사하지 않음.
+  초과/후속 확인: SELECT 저장 상태/행동 이력은 별도 유지. projection 목적과 누락 영향 구분.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/completion_execution.py:75
+
+L102 [현행] gateway JSON 수정 = 최대1회; 법령 탐색/판단에서는0회 (재시도 제한)
+  실제 처리: resolve/check/intent/reference는 gateway max_schema_repairs1. source-law-navigation과 memory-assess는 단계 자체 수정만 사용.
+  초과/후속 확인: 서로 다른 수정 층을 모두 합쳐1회라고 설명하면 안 됨.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py:126
+
+L103 [현행] gateway 오류 로그 = 앞2000자 (로그 슬라이스)
+  실제 처리: OUTPUT_SCHEMA_INVALID 이벤트의 오류 문구.
+  초과/후속 확인: 전체 model response는 원장에 별도 보존.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/gateway.py:364
+
+L104 [현행] gateway 수정용 오류 설명 = 앞1000자 (피드백 슬라이스)
+  실제 처리: schema repair의 error 문자열.
+  초과/후속 확인: 전체 오류 목록을 보장하는 피드백은 아님.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/gateway.py:384
+
+L105 [현행] gateway 수정용 잘못된 출력 = 앞4000자 (피드백 슬라이스)
+  실제 처리: invalid_response_excerpt. 원래 출력 뒤쪽은 수정 모델 입력에 없음.
+  초과/후속 확인: 원시 출력은 원장에 보존. law/assess 자체 수정 입력은 이4000자 규칙과 별개.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/gateway.py:394
+
+L106 [현행] gateway 수정 대화 = 최초2메시지 + 최신 수정1메시지 (대화 투영)
+  실제 처리: messages[:2]에 최신 수정 지시를 붙인다. 원래 system과 user view 유지.
+  초과/후속 확인: 수정 대화를 무한 누적하지 않음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/gateway.py:391
+
+L107 [현행] 전송 재시도 = 최대1회 (재시도 제한)
+  실제 처리: completion_contract 경로에서 확실히 거절된429만 재시도. timeout/수신 불명/5xx는 자동 재전송 안 함.
+  초과/후속 확인: 다른 모델로 fallback 안 함. 재시도도 물리40회에 포함.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/gateway.py:277
+
+L108 [현행] 429 대기 = 최소1초; 최대30초 조건 (재시도 제한)
+  실제 처리: Retry-After 대기가30초 이내이고 남은 시간이 대기+1초보다 커야 재시도.
+  초과/후속 확인: 대기가 길거나 시간 부족하면 재시도하지 않고 장애 반환.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/gateway.py:285
+
+L109 [현행] 동일 원문 중복 제거 = 중복 span.text 제거 (필드 투영)
+  실제 처리: exact_evidence.text에 포함된 span.text를 wire에서 제거. 좌표/본문은 유지.
+  초과/후속 확인: 원문 요약이나 첫N자 잘라내기가 아니다. 저장 view/wire projection 검증.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/gateway.py:32
+
+L110 [현행] 출력 스키마 중복 제거 = compact user.output_schema 생략 (필드 투영)
+  실제 처리: 응답 형식의 JSON schema는 유지하고 user 본문에 중복 삽입하지 않음.
+  초과/후속 확인: 스키마를 제거해서 아무 형식이나 허용하는 동작이 아니다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py:52
+
+10. 답변 구성과 게시 — 현재 계약에서는 새 LLM 판단 호출이 없음
+
+입력:
+    저장된 ASSESS 판단 문장, 근거 연결, 쟁점별 상태, 미확인 사항, 표현 형식
+
+코드:
+    COMPOSE에서 선택된 판단 문장을 정해진 방식으로 구성
+    → 판단 문장·인용 원문·권한·코드/데이터 결속·현재성·답변 일치 검사
+    → 공통 결과를 API와 별도 워크플로우 소비자에 전달
+
+실패:
+    게시 검사 실패 → 해당 결과를 정상 게시하지 않음
+    성공한 조사·현재 미해결·검사 실패 이유·복구 정보는 보존되어야 함
+    현재 API 예외 응답은 진단을 일부 필드로 축소한다.
+    두 경로에서 풍부한 실패 성과를 같은 방식으로 표시하는 것은 수정 목표다.
+
+
+[이 입력/판단에 적용되는 슬라이스·상한·생략]
+
+L111 [현행] API 오류 detail = 앞1000자 (응답 슬라이스)
+  실제 처리: 사용자 오류 메시지 detail을1000자로 줄인다.
+  초과/후속 확인: 내부 원장/예외 진단과 구분.
+  근거: 02_BACKEND/semantic_runtime/app.py:86
+
+L112 [현행] API 진단 필드 = 지정5필드만 (필드 투영)
+  실제 처리: schema_version/stage/cause_codes/resume_available/stop_reason. 목록앞5개가 아니라 필드 whitelist.
+  초과/후속 확인: 자료 목록·blockers·issues 등 다른 상세 정보가 이 예외 응답에서 빠질 수 있음.
+  근거: 02_BACKEND/semantic_runtime/app.py:87
+
+L113 [현행] API 질문/경험/위키 페이지 = 기본32; 최대100 (페이지)
+  실제 처리: knowledge questions/search와 shortcut search의 페이지 개수.
+  초과/후속 확인: after/next. LLM2에 실제 넣는24/8과 구분.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/knowledge_repository.py:20
+
+L114 [현행] 사건 이력 페이지 = 메서드기본50; API기본32; 최대100 (페이지)
+  실제 처리: CaseRepository.events_page와 ShortcutRepository.history는 기본50, memory/query는 공통limit32 전달.
+  초과/후속 확인: after/next로 다음 이력. 이력 DB 삭제 없음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/case_repository.py:222
+
+L115 [현행] 사건/제목 표시 = 제목 앞200자 (메타데이터 슬라이스)
+  실제 처리: shortcut 사건 제목 생성에 intake text[:200]. 원래 intake 질문 본문과 다르다.
+  초과/후속 확인: 원문 intake/history에서 확인.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py:171
+
+L116 [현행] session/request ID = 각256자 (입력 계약)
+  실제 처리: 사건 API에서 비어 있지 않은 문자열과256자 제한.
+  초과/후속 확인: 초과 거절. 질문 본문 길이 제한이 아님.
+  근거: 02_BACKEND/semantic_runtime/app.py:296
+
+11. 한 질문을 처음부터 끝까지 따라가기
+
+사용자: 'A규정의 신청 기한과 제출서류를 알려줘.'
+    → LLM 1: CASE
+    → LLM 2: CASE_START
+    → LLM 3: valid=true
+    → LLM 4: Q1 기한, Q2 서류
+    → 코드: 후보 검색
+
+탐색 입력 1:
+    Q1·Q2 + A제5조 후보 + 미리보기 + READ 행동 메뉴
+    모델: A제5조 원문 읽기
+    코드: 실제 원문 확보·검증·전달 준비
+
+탐색 입력 2:
+    Q1·Q2 + A본문 '10일 / 서류는 B제2조' + 읽기 상태 + 결정 메뉴
+    모델: A의 기한 부분을 Q1 근거로 채택
+    코드: 채택 이유·쟁점·원문 연결 기록
+
+탐색 입력 3:
+    Q1 채택 상태 + Q2 + B참조 정보 + FOLLOW_CONNECTION 메뉴
+    모델: 참조 조사
+    코드: 참조 메뉴 조립
+
+참조 입력:
+    질문 + A 출발 원문 + B 대상 + 유효 읽기 범위
+    모델: B의 제시 범위 FOLLOW
+    코드: B 읽기
+
+B 읽기 성공:
+    → 탐색 입력에 B 실제 원문 제시
+    → 모델: Q2 근거로 채택
+    → 모델: FINISH로 판단 단계에 넘김
+    → 판단 입력: 원문 요청 + Q1·Q2 + A/B 채택 근거 + 참조 현황
+    → 모델: Q1·Q2 설명과 근거를 연결
+    → 코드: 구성·검증·응답
+
+B 읽기 실패 또는 끝까지 못 찾음 — 원하는 수정 후 흐름:
+    → A의 Q1 성과 유지
+    → Q2의 B 원문 부족 유지
+    → 가능하면 다른 범위·검색·출발 화면에서 재선택
+    → 더 조사할 수 없으면 판단 입력에도 Q2 부족 전달
+    → '기한은 확인 / 서류는 미확인 / B 읽기 실패 또는 탐색 범위에서 못 찾음'
+    → 다음 행동과 함께 부분 답변
+
+주의: 위 실패 흐름을 모든 예외에서 현재 이미 보장하는 것은 아니다.
+현재는 PENDING·도구 예외·수정 실패가 ASSESS 전에 실행을 종료할 수 있다.
+그 공통 실패 경로까지 기존 성과를 사용자에게 연결하는 것이 이번 수정 목표다.
+
+12. 이번 수정 목표를 LLM 입력에 연결하면
+
+문제 A: 추가 조사 후 FINISH로 현재 부족 목록 제거
+ 현재: assessment_gaps 전달 → FINISH에서 pop → 현재 상태에서 사라질 수 있음
+ 목표: Q2/gap 식별자를 유지; 해결·보류·불필요 판단의 이유를 별도로 기록
+ 영향: SELECT 입력, ASSESS 복귀, 저장 상태, 결과 소비자
+ 확인: 같은 미해결 항목이 단계 이동·종료·재개 후에도 추적되는지
+
+문제 B: 선택은 충분, 판단은 부족으로 반복
+ 현재: 선택과 판단이 각각 충분성 출력
+ 목표: 선택은 자료 현황·조사 중단 이유; 판단은 쟁점별 답변 범위
+ 영향: 탐색 출력 계약과 ASSESS 입력·복귀 계약
+ 확인: 동일 자료·동일 검색의 반복을 진행으로 세지 않는지
+
+문제 C: 판단 형식 수정 실패가 성과를 가림
+ 현재: 수정 실패에서 예외; 추가 조사·부분 답변 분기에 도달하지 못함
+ 목표: 검증된 기존 자료·판단은 유지, 확정 실패한 부분만 미완료로 표시
+ 영향: completion_execution, 진단 저장, API/워크플로우 소비자
+ 확인: 거절된 새 문장을 게시하지 않으면서 기존 성과가 동일하게 보이는지
+
+문제 D: 행동 거절·도구 실패 후 복구 일관성 부족
+ 현재: 일부 메뉴 수정은 구현되어 있으나 실패 후 원래 선택지 복귀는 통일되지 않음
+ 목표: 원래 화면·유효 행동 + 실패 대상·이유 + 성공한 자료로 복구 입력 조립
+ 영향: law_navigation, 참조 메뉴, 공통 예외 계약
+ 확인: 실패한 행동 재실행·중복 호출·예산 초기화가 생기지 않는지
+
+문제 E: 사용자 실패 응답 축소
+ 현재: 내부 기록이 있어도 API 진단 일부 필드로 축소 가능
+ 목표: 확보 자료·미해결 쟁점·중단 이유·다음 행동을 두 경로에 같은 계약으로 전달
+ 영향: app.py, 통합 결과/진단, workflow.py의 소비·표시
+ 확인: 동일 내부 결과가 두 경로에서 같은 답변 범위·실패 정보를 갖는지
+
+문제 F: 자료가 있는데 다른 맥락의 조항 선택
+ 현재: 근거·형식 검증만으로 의미 판단의 정답을 보증할 수 없음
+ 목표: 후보 채택 이유와 질문 맥락을 연결해 보이고 사용자 정정으로 재검토 지원
+ 영향: 선택 이유·이력·맥락 입력; 정답 조문을 코드로 강제하지 않음
+ 확인: 사용자 맥락 정정이 다음 명령·탐색·판단 입력에 실제 반영되는지
+
+이 수정안들은 상태·입력·출력 계약에 함께 연결되어야 한다. 프롬프트에
+'기억하라'를 넣는 것만으로 코드가 삭제한 상태나 API가 버린 필드를 복원할 수 없다.
+영속 gap 상태를 추가하면 스키마와 재개 이행도 함께 설계해야 한다.
+자료 본문은 해시로 공유하고, 입력에는 필요한 페이지와 상태를 전달하여
+같은 원문을 사건 기록·입력·보고서마다 반복 복사하지 않도록 확인해야 한다.
+
+검증·도입 목표는 작업 코드 통합 → 동일 코드 계약·연결 검증 → 적격 후보의
+MAIN 승격 → 선택 포인터와 실제 로컬 서비스 결속 확인이다. GENOS 현장 적용은
+별도다. 이 설명 문서 작성에서는 구현·새 모델 실험·MAIN 승격을 실행하지 않았다.
+지연·토큰·비용 개선 수치는 측정하지 않았다.
+
+13. 확인 근거와 한계
+
+선택 포인터:
+  01_DATA/ACTIVE/local/ACTIVE_RELEASE.json
+선택 manifest:
+  08_DEPLOYMENT/RELEASES/investigation-completion-v6-20261007-r1/release.json
+
+주요 코드:
+  02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py
+  02_BACKEND/semantic_runtime/legal_agent/case_repository.py
+  02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py
+  02_BACKEND/semantic_runtime/legal_agent/memory_binding.py
+  02_BACKEND/semantic_runtime/legal_agent/memory_rag.py
+  02_BACKEND/semantic_runtime/legal_agent/completion_execution.py
+  02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py
+  02_BACKEND/semantic_runtime/legal_agent/law_navigation.py
+  02_BACKEND/semantic_runtime/legal_agent/unit_relations.py
+  02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py
+  02_BACKEND/semantic_runtime/legal_agent/investigation_chain.py
+  02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py
+  02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py
+  02_BACKEND/semantic_runtime/legal_agent/domain_control.py
+  02_BACKEND/semantic_runtime/legal_agent/law_candidates.py
+
+이번 R4에서는 관련 파일 109개에서 작업 코드·선택 코드·manifest의 SHA-256 일치를 확인했다.
+수동 설명 항목 141개, 선택 프로필 필드 48개를 기록했다.
+기계 검색 후보 550개는 원문 좌표·ID 생성·비활성 경로도 포함하므로 모두 현행 제한을 뜻하지 않는다.
+이는 코드 연결 확인이다. 이 모의 사례를 LLM으로 실행한 결과나 72개 전체 상태
+시나리오의 실제 검증 완료를 의미하지 않는다. GENOS 현장도 확인하지 않았다.
+
+14. 설정은 있지만 현행 경로에서 같은 제한으로 쓰지 않는 항목
+
+[이 입력/판단에 적용되는 슬라이스·상한·생략]
+
+L117 [현행 law 경로 미사용] CORE/SUPPLEMENTAL 5 기본값 = 기본5+5; 선택 프로필24+24 (비활성 경로)
+  실제 처리: workflow_tiers_policy의 기본값은5지만 현재 설정24로 덮임. 현행 law SELECT는 tier 선택 함수를 실행하지 않음.
+  초과/후속 확인: 법령 근거가5개나24개에서 자동 잘린다고 설명하지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py:7
+
+L118 [현행 law 경로 미사용] 선택 원문 excerpt = 1600자 (비활성 경로)
+  실제 처리: 구형 tier 선택 span 상한. 현재 ASSESS evidence_options는1200자 조각화이며 전체를 제공.
+  초과/후속 확인: 두 설정을 같은 본문1600자 컷으로 설명하지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py:8
+
+L119 [현행 law 경로 미사용] 원문 카드 페이지 = 4개 (비활성 경로)
+  실제 처리: source_page_size4는 구형 tier wire view. 현행 law 페이지4개와 값만 같고 별도.
+  초과/후속 확인: 현재 법령 탐색에는 law/article/hit 상한이 적용.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py:8
+
+L120 [현행 law 경로 미사용] 구형 단위 초기 후보 = 512개; 첫12그룹 읽기 (비활성 경로)
+  실제 처리: unit_reading.prepare의 queue[:512], acquire_batch[:12]. law_candidates.prepare가 대신 호출됨.
+  초과/후속 확인: 현재 법령 경로를 첫12그룹 읽기라고 설명하면 정확하지 않음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_reading.py:362
+
+L121 [현행 law 경로 미사용] 구형 단위 묶음 = 그룹12000자/32단위 (비활성 경로)
+  실제 처리: group_hits 묶음 경계. law_candidates의 초기 acquire_batch는group_hits를 호출하지 않음.
+  초과/후속 확인: 그룹 분할은 내용 삭제와 별개.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_reading.py:298
+
+L122 [현행 law 경로 미사용] 구형 단위 선별 = 선택16/재검토8; 후보8배치/검토8라운드 (비활성 경로)
+  실제 처리: unit_selection 경로. 현행 law_navigation으로 먼저 dispatch.
+  초과/후속 확인: 현행 전체 모델 시도40과 별도 과거 선택 정책.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_reading.py:16
+
+L123 [현행 law 경로 미사용] 구형 단위 미리보기/입력 = 400자/80000자 (비활성 경로)
+  실제 처리: unit_reading POLICY preview_chars/context_chars. law preview는현재360 및 article240.
+  초과/후속 확인: 현재 모든 입력8만자 제한으로 설명하지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/unit_reading.py:15
+
+L124 [현행 law 경로 미사용] 구형 전역 top-k 회수 = 질의64/seed64/참조seed16/선택128; 행동384/원문480000자/묶음50000자 (비활성 경로)
+  실제 처리: source_recall_global의 숫자 정책은 law_candidates.discover 이전 dispatch 때문에 사용하지 않음.
+  초과/후속 확인: 현재 법령 디렉터리12개 페이지는 전체top64삭제와 다름.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/source_recall_global.py:14
+
+L125 [현행 law 경로 미사용] 구형 범위 top-k 회수 = 질의64/seed96/참조seed32/범위선택160/합집합288; 범위행동512·640000자/합집합행동1024·1600000자/묶음50000자 (비활성 경로)
+  실제 처리: source_recall._scoped_discover의 정책. 현재 법령 디렉터리 경로에서는 실행하지 않음.
+  초과/후속 확인: 구형의 within[:8]/[:32], scoped[:72], ambiguous[:32]도 같은 조건부 경로.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/source_recall.py:13
+
+L126 [현행 law 경로 미사용] 구형 평면 선별 = 첫16/복구8/최종24/모델2회/240초 (비활성 경로)
+  실제 처리: source_selection의 평면 selector. 현재 law_navigation에서 먼저 반환.
+  초과/후속 확인: current SELECT는remaining-30초와 공유예산을 사용.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/source_selection.py:14
+
+L127 [현행 사건 경로 미사용] source-query-plan 안내 = 법령명3/검색어4개·각250자; 목차최대32페이지·outline6페이지 (비활성 경로)
+  실제 처리: BoundedSourceSession.investigate의 별도 planner/목차 경로. 현재 사건의 native7단계에서 호출하지 않음.
+  초과/후속 확인: 현재 명령 검색어4개·180자와 혼동하지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py:326
+
+L128 [현행 LLM 판단 경로 미사용] 옛 term-agent 선언 = max_calls14/active_segments6/active_chars18000 (다른 엔진 설정)
+  실제 처리: PIPELINE에 남아 있는 document navigation limits. 현재legal_agent 물리호출은40 프로필 적용.
+  초과/후속 확인: 선언14를 현재40 상한 대신 보고하지 않는다.
+  근거: 00_SYSTEM/PIPELINE.json:541
+
+L129 [호환용 미사용] 관계 스캔 시간 = 5초 (강제 안 됨)
+  실제 처리: relation_scan_seconds는 호환용. 관계 스캔은요청deadline 사용.
+  초과/후속 확인: 현재 참조 작업에5초 watchdog이 있다고 설명하지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/relations_policy.py:7
+
+L130 [현행 SYSTEM_POLICY READ 미사용] 구형 자동 참조 읽기 = 깊이1/12대상/12000자/도구예약4 (조건부 기능)
+  실제 처리: workflow_relations_tools의 MODEL/REVIEWER READ 후 자동 prefetch. 현재unit_reading은SYSTEM_POLICY 읽기라 이 자동 큐를 생성하지 않음.
+  초과/후속 확인: 현재참조는LLM6의FOLLOW(최대8그룹·4scope·깊이8). 다른 상한이다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/workflow_relations_tools.py:521
+
+L131 [generic 도구·표시 경로] 구형 관계 표시 = 페이지12/14000자/preview총3600/요약60 (조건부 기능)
+  실제 처리: generic relation tool/view/coverage 표시 상한. 현재law 참조는unit_relations의16/24k/600 등 적용.
+  초과/후속 확인: 관련 함수가 파일에 있어도 현행law 입력의 직접상한으로 보고하지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/relations_policy.py:14
+
+L132 [현행 사건 판단 루프 미사용] 구형 반복·오류·검토 = cycle3/browse깊이4/동일오류수정1/검토이의1 (조건부 기능)
+  실제 처리: 일반ToolsSession/Coordinator.run의 상한. 현재run_case→unified_runtime 사건 실행과 구분.
+  초과/후속 확인: 현재law max_no_progress2/판단재진입2/수정1과 별도.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/tools_policy.py:8
+
+L133 [shortcut/인증/기능 설정 조건부] 위키 procedure 후보 조회 = 8페이지 항목 (조건부 조회)
+  실제 처리: WikiExecution.plans가 PLAN/ASSESS 앞에8개 조회. 현재control=true이므로 과거판단을그대로복사하는분기는미사용.
+  초과/후속 확인: 허용된 procedure의 현재원문읽기는가능. 모델힌트8개와 별도 호출.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py:57
+
+L134 [capture 꺼진 경로] 옛 경험 검색 후보 = 32개 (조건부 조회)
+  실제 처리: Memory.candidates 점수순[:32]. 현행ShortcutCases override는[]이며capture가 꺼진CaseRepository에서 가능.
+  초과/후속 확인: 질문/경험 목록API pagination과 별개.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py:203
+
+L135 [위키 컴파일 별도] 위키 구축 snapshot = 기본64기록/최대128/120000bytes (비실시간 처리)
+  실제 처리: shortcut.snapshot_page: 단일기록부터byte상한초과면거절; 페이지는다음offset으로계속.
+  초과/후속 확인: 실시간LLM입력블록제한이아님. 별도컴파일작업.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py:368
+
+L136 [위키 컴파일 별도] 위키 이전지식·관련입력·큐 = 이전지식16/관련입력3/lease60초/재시도3 (비실시간 처리)
+  실제 처리: shortcut compiler/queue의 함수 기본값. 현행질문판단의자료3개제한이아님.
+  초과/후속 확인: nightly batch 최대8은 별도운영작업; 이 보고서에서는실행하지않음.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/shortcut_repository.py:423
+
+L137 [코드 결정; 모델 선택 미사용] 도메인 선택 후보 = concept/relation 각16; reason600 (코드 결정 계약)
+  실제 처리: domain_control 스키마숫자는존재하지만 선택은코드가DISCOVERY+빈배열로고정. LLM별도호출없음.
+  초과/후속 확인: 이를법률개념16개모델선별단계로표현하면안됨.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/domain_control.py:70
+
+L138 [현행 사건 planner 미사용] 구형 구조·용어 입력 힌트 = 문서3/구조8/제목100자/용어6/정의8; 정의 문서3 초과 시 모호 표시 (비활성 경로)
+  실제 처리: structure_query.navigation_context의 첫 planner 입력 요약. 현재 사건의 명령·법령 탐색 입력을 이렇게 줄이지 않는다.
+  초과/후속 확인: 정의 후보가 많거나 여러 문서에 걸치면 앞쪽을 정답처럼 채택하지 않고 모호 상태를 표시한다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/structure_query.py:137
+
+L139 [다른 term-agent 엔진] 구형 TermAgent 실행 기본값 = 모델9회/라운드3/검색3/수정1/시간1800초; seed 앞4개 (다른 엔진 설정)
+  실제 처리: TermAgent.retrieve 기본값이며 현재 통합 v6 사건 실행에 적용되는 40회와 다르다.
+  초과/후속 확인: 이 함수의 literal[:4]도 현재 법령 후보 4개 제한으로 해석하면 안 된다.
+  근거: 02_BACKEND/semantic_runtime/term_agent.py:15
+
+L140 [shortcut 절차 재사용 조건부] 절차 재사용 불일치 설명 입력 = 별도 개수·길이 슬라이스 없음 (상한 없음)
+  실제 처리: procedure_deviation이 있으면 기대 입력·실제 입력의 비교 자료를 현재 모델 입력에 추가한다.
+  초과/후속 확인: 현재 메뉴·시스템 지시·스키마 전체가 같을 때만 저장 결정을 재사용한다. 변경 시 모델 재판단에 연결되며 큰 비교 자료에 별도 길이 제한은 없다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/wiki_execution.py:28
+
+L141 [구형 완료 계약] 구형 완료 설명 목록 압축 = 최대8항목; 앞7개 + 나머지 전체를 마지막 문자열로 합침 (무손실 목록 압축)
+  실제 처리: NativeExecution.completion_limits는 원문 뒤쪽을 삭제하지 않고 마지막 항목에 합친다.
+  초과/후속 확인: 현재 completion 계약은 limitations 최대64개이며 이 8항목 압축 경로를 쓰지 않는다.
+  근거: 02_BACKEND/semantic_runtime/legal_agent/memory_rag.py:106
+
+15. 선택 프로필의 전체 필드 — 항목 누락 없이 기록
+schema_version = "system-harness-profile-v5"
+  적용: 프로필 설정 계약의 버전 식별자. 길이·개수 제한이 아니다.
+profile_id = "unified-legal-agent-v6"
+  적용: 선택된 통합 v6 설정 묶음의 식별자.
+model_binding = null
+  적용: 파일null; service팩토리가고정로컬Qwen3.8 binding 주입
+max_model_attempts = 40
+  적용: 모든 단계·수정·재시도가 함께 쓰는 물리 모델 시도 40회.
+finalization_reserve = 3
+  적용: 전체 40회 중 마지막 판단을 위해 3회를 남김. 조사 시도 상한은 37회.
+max_tool_actions = 1024
+  적용: 공통 원장의 도구 시도 1024회. 모든 내부 SQL 조회를 각각 한 번으로 세지는 않음.
+wall_seconds = 1800
+  적용: 동일 요청 전체 1800초. 재개 시 최초 마감 시각을 보존.
+max_cycles = 3
+  적용: 일반 coordinator.run 전용; 현재 run_case의 판정2회 재진입과 다름
+max_no_progress = 2
+  적용: 같은 조사에서 진전 없는 반복 2회이면 탐색 정리.
+max_schema_repairs = 1
+  적용: gateway의 JSON 수정 1회. 법령 탐색과 최종 판단은 0으로 바꾸고 단계 자체 수정 사용.
+max_transport_retries = 1
+  적용: 현재local completion팩토리1 유지; 알려진429만재시도
+max_context_chars = 100000
+  적용: 참조 data JSON 검사 등에 적용; 모든LLM view 자동컷 아님
+max_output_tokens = 6400
+  적용: local모델정책6400으로factory 결속; RuntimeModel 모든호출에 적용
+max_read_chars = 12000
+  적용: 도구 읽기 및 원문 전달 페이지의 12000자. 전체 원문 삭제 상한이 아님.
+page_size = 40
+  적용: 원문 읽기 페이지의 블록·구간 40개.
+max_concurrent_requests_per_process = 4
+  적용: 선택 로컬 설정은 프로세스당 동시 요청 4개. 초과 접수는 즉시 거절.
+browse_depth_limit = 4
+  적용: generic browse 도구; 현재 law 행동메뉴에는 browse 없음
+max_same_error_repairs = 1
+  적용: ToolsSession 전용; 현재법령/판단 자체수정1회와 구분
+max_review_disputes = 1
+  적용: 일반 검토분기; 현재 최종 의미검토 없음
+preview_chars = 360
+  적용: 법령 탐색의 읽은 위치 미리보기 앞 360자. 조항 후보 요약은 별도 240자.
+max_preview_chars = 3600
+  적용: generic view preview 총량; law360/240에는 전체3600자 컷 미적용
+relation_page_size = 12
+  적용: generic relation도구/자동prefetch; unit_relations groups16과 별개
+max_relation_chars = 14000
+  적용: generic relation도구; 현행 참조 메뉴24k와 별개
+relation_scan_seconds = 5
+  적용: 호환용; 강제5초 제한 아님
+auto_reference_read_depth = 1
+  적용: 구형자동prefetch 깊이1; 현행참조FOLLOW 깊이8
+max_auto_reference_reads_per_request = 12
+  적용: 구형자동prefetch; 현행SYSTEM_POLICY read는자동prefetch 큐 미생성
+max_auto_reference_chars_per_request = 12000
+  적용: 구형자동prefetch; 현행unit cumulative1.6M와 다름
+tool_finalization_reserve = 4
+  적용: generic system_task예약; 현재 unit_read에 별도4 예약을 강제하지 않음
+max_summary_items = 60
+  적용: generic coverage메타데이터 요약; 현재행동체인에60개 컷 없음
+question_obligations_enabled = true
+  적용: profile검증에서true 요구; 현재사용자쟁점은INTENT 최대8
+numbered_references_enabled = true
+  적용: profiletrue이지만 bounded structured 호출에서false로 오버라이드
+max_core_sources = 24
+  적용: 선택설정24, tier선택 경로 전용; 현행law selector 미사용
+max_supplemental_sources = 24
+  적용: 선택설정24, tier선택 경로 전용; 현행law selector 미사용
+max_source_excerpt_chars = 1600
+  적용: tier1600; 현행판단은모든채택원문을1200자조각화
+source_page_size = 4
+  적용: tier카드4; article_page_size4와 별개
+source_selection_attempts = 2
+  적용: tier 선택횟수. 현재law/assess 수정은 각 코드에서1회
+selection_time_reserve_seconds = 30
+  적용: 탐색 정리에 마지막 판단용 30초를 남기는 기준. 판단 성공을 보장하지 않음.
+bounded_source_selection_enabled = true
+  적용: true이며 통합v6의필수조건
+final_review_enabled = false
+  적용: false; completion COMPOSE도추가생성/의미검토 없음
+candidate_navigation.mode = "law-first-v1"
+  적용: 현행 법령 → 조항 → 적중 위치의 law-first-v1 탐색 경로.
+candidate_navigation.law_page_size = 12
+  적용: 검색 법령 목록 한 페이지 12개. 이미 연 법령을 추가하면 전체 입력은 12개를 넘을 수 있음.
+candidate_navigation.article_page_size = 4
+  적용: 법령 열기·다음 조항은 페이지당 4개. 처음 요약 메뉴의 limit=8과 별도.
+candidate_navigation.hit_page_size = 8
+  적용: 적중 위치 페이지 8개. 최근 미리보기·형제 목록 표시에도 이 값을 사용.
+candidate_navigation.search_rounds = 8
+  적용: 검색 표현 라운드 전체 8개. 동일 정규화 검색식을 반복하는 것은 허용하지 않음.
+candidate_navigation.allow_unresolved_completion = true
+  적용: 참조 미해결이 있다는 사실만으로 조사 종료를 금지하지 않음. 답변 범위는 최종 쟁점 판단에서 검사.
+candidate_navigation.investigation_control = true
+  적용: 원래 요구·쟁점·행동 이유·추가 조사 복귀를 추적하는 통합 조사 계약 활성.
+candidate_navigation.assessment_reentry_limit = 2
+  적용: 최종 판단에서 추가 탐색으로 복귀 최대 2회. 기존 호출·시간 사용량은 이어받음.
+candidate_navigation.completion_contract = true
+  적용: 원문을 받은 뒤 채택하고, 채택된 원문 좌표에 연결된 판단으로 답변을 구성하는 현재 계약 활성.
+
+16. 읽기 편한 해석 기준
+
+페이지: 이번에 일부만 보여주며 total/cursor와 다음 선택지가 있다.
+본문 슬라이스: 앞부분/최근부분만 보여준다. 원본 저장과 모델 전달 범위는 다르다.
+출력 계약: 모델에게 허용한 개수·길이를 초과하면 거절한다. 코드가 조용히 앞N개만 실행하는 것과 다르다.
+무손실 분할: 1200자 조각,12000자 페이지,400개 SQL배치처럼 전체를 나눠 처리한다.
+실행 중단: 호출·시간·새원문·참조깊이 한도. 못 한 일을 없다고 단정하면 안 된다.
+필드 투영: 중복·권한 목록·진단 whitelist. 생략한 내용의 목적과 소비자를 확인한다.
+비활성: 설정이나 함수에 숫자가 있지만 현행 호출 경로에서는 적용되지 않는다.
+
+특히 다음 한도는 영향 추적이 필요하다.
+ - 요구사항8개/목적600자/사실16개: 입력 의도를 압축하는 모델 판단에서 요구 누락 가능.
+ - 검색 형태소32개: 긴 검색 표현의 뒷부분 개념이 검색에 반영되지 않을 수 있음.
+ - witness600자/8문구,의존카드16개,미해결8개: 일부 제시 상태와 실제 전체 상태를 구분.
+ - ASSESS 입력: 별도 전체10만자 검사가 없어 자료·이력 누적 시 큰 입력 가능.
+ - 수정 feedback16오류/1000자/4000자: 실패 원인의 뒤쪽이 수정 입력에서 빠질 수 있음.
+
+수정 목표는 각 제한 뒤에 total/omitted/continue/stop_reason을 남기고, 원래 요구와
+미해결을 보존하는 것이다. 이 문서에서 제한 값을 변경하거나 상한을 해제하지 않았다.
+이 제한이 실제 오답·지연을 얼마나 만들었는지는 이번 작업에서 측정하지 않았다.

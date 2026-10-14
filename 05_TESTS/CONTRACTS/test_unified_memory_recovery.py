@@ -52,7 +52,7 @@ def test_explicit_migration_preserves_original_and_does_not_auto_approve(memory,
         assert db.execute('PRAGMA user_version').fetchone()[0]==3
         assert db.execute('SELECT status FROM knowledge').fetchone()[0]=='LEGACY_UNBOUND'
         assert db.execute("SELECT count(*) FROM knowledge WHERE status='ACTIVE'").fetchone()[0]==0
-        restore=json.loads(db.execute("SELECT command FROM event WHERE command LIKE '%STATE_RESTORE%'").fetchone()[0])
+        restore=json.loads(db.execute("SELECT command FROM event WHERE kind='CORRECT' AND command LIKE '%STATE_RESTORE%'").fetchone()[0])
         assert restore['restore_event']==receipt['mapping']['events'][str(origin)]
     assert Path(receipt['source_snapshot']).is_file()
     assert receipt['mapping']['experiences'][kid]
@@ -117,28 +117,39 @@ def test_dependents_are_pending_when_source_experience_is_corrected(unified):
         assert db.execute('SELECT status,pending FROM goal WHERE id=?',(reused['question_id'],)).fetchone()==('PENDING','ASSESS')
 
 
-def test_interrupted_experience_rebind_resumes_after_saved_checkpoint(unified):
+def test_interrupted_experience_rebind_resumes_after_saved_checkpoint(unified,monkeypatch):
     client,send,t,p,runtime=unified
     first=ok(send());kid=ok(send(command('EXPERIENCE_CONFIRM',target=first['question_id'])))['experience_id']
-    t.fail='domain-choice-PLAN'
+    from semantic_runtime.legal_agent.domain_control import DomainCatalogue
+    original=DomainCatalogue.select
+    def interrupted(self,stage,state,session):
+        if stage=='PLAN':
+            from semantic_runtime.legal_agent.errors import TransportError
+            raise TransportError('injected policy receipt interruption')
+        return original(self,stage,state,session)
+    monkeypatch.setattr(DomainCatalogue,'select',interrupted)
     assert send(command('EXPERIENCE_REUSE',document_scope_mode='AUTHORIZED',knowledge_id=kid,
         task='모의승인규정 제1조의 승인 대상은?',facts=[],queries=['승인']),session_id='other',request_id='rebind').status_code==502
     with sqlite3.connect(runtime/'case-memory'/'cases-v3.sqlite') as db:
         assert db.execute("SELECT status,pending FROM goal WHERE session='other'").fetchone()==('PENDING','PLAN')
         assert db.execute("SELECT count(*) FROM head h JOIN goal g ON g.id=h.goal WHERE g.session='other'").fetchone()[0]==1
-    t.fail=None;result=ok(send(session_id='other',request_id='rebind'))
+    monkeypatch.setattr(DomainCatalogue,'select',original)
+    result=ok(send(session_id='other',request_id='rebind'))
     assert result['executed']==['PLAN','RECALL','READ','SELECT','ASSESS','COMPOSE']
 
 
 def test_external_context_excludes_private_other_conversation_experience(unified):
     from semantic_runtime.legal_agent.unified_runtime import open_cases
     client,send,t,p,runtime=unified
+    # Exercise the supported legacy fallback separately from v4 shortcut capture.
+    client.app.state.pipeline.contracts.pipeline['shortcut_v4']['features']['capture']=False
     gid=ok(send())['question_id'];kid=ok(send(command('EXPERIENCE_CONFIRM',target=gid)))['experience_id']
     cases=open_cases(client.app.state.pipeline,runtime,{},p)
     try:
         assert kid in {k['id'] for k in cases.candidates(p,'승인')}
         t.binding={**t.binding,'trust_zone':'external'}
         context=cases.context('new-public-session',p,'공개 승인 질문')
-        assert context['knowledge']==context['user_wiki']==context['legal_wiki']==[]
-        assert context['personal_history']['questions']==[] and context['wiki_links']=={}
+        assert context['knowledge']==context['legal_wiki']==[]
+        assert 'user_wiki' not in context and 'personal_history' not in context
+        assert context['wiki_links']=={}
     finally:cases.close()

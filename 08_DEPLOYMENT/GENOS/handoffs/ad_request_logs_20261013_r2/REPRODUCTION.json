@@ -1,0 +1,11 @@
+{
+  "status": "REPRODUCED",
+  "error": "Unknown code bytes; preserved: service.py",
+  "condition": "Verified investigation-budget R1 over stream-fix R1",
+  "same_as_photo": true,
+  "existing_files_unchanged": true,
+  "cause": "Inventory signature normalizes the approved budget overlay, but per-file service.py hash comparison used raw bytes.",
+  "field_budget_apply_evidence": "08_DEPLOYMENT/GENOS/handoffs/investigation_budget_20261007_r1/FIELD_APPLY_VERIFIED.json",
+  "r1_installer_sha256": "5d12362b6e96f35332d316c55de77e8e5b57df324cf0cb2f17e23ea57cfc24f4",
+  "real_model_calls": 0
+}

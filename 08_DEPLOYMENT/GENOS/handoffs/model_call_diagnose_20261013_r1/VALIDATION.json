@@ -1,0 +1,13 @@
+{
+  "scope": "offline read-only diagnostic helper; no model/API calls",
+  "checks": {
+    "archive_integrity_and_content_hashes": "PASS",
+    "bash_syntax": "PASS",
+    "standalone_extracted_runner_3_calls_no_content": "PASS",
+    "input_unchanged_output_private_no_overwrite": "PASS",
+    "raw_response_sidecar_refused": "PASS"
+  },
+  "archive_sha256": "2306f51b1c934e152ed767150c6221c5b6d62cd3c66c0ddd16f643a0a7cb2cca",
+  "runtime_tested": "Python 3.14.4",
+  "onsite_status": "NOT_RUN"
+}

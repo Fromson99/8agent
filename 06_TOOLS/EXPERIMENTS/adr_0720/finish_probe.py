@@ -1,0 +1,19 @@
+from pathlib import Path
+import json,hashlib,xml.etree.ElementTree as E
+R=Path(__file__).resolve().parents[3];A=R/'04_EXPERIMENTS/ADR/ADR-0720-immutable-decision-retry-resume';D=A/'artifacts';P=R/'04_EXPERIMENTS/ADR/ADR-0718-main50-request-repair-integration'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+def put(p,v):p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+def cases(p):
+ ts=list(E.parse(p).iter('testcase'));return {'tests':len(ts),'failed':sorted(t.get('name') for t in ts if t.find('failure') is not None or t.find('error') is not None)}
+base=cases(P/'artifacts/contracts/baseline/all.xml');candidate=cases(D/'contracts/rev-001/all.xml');new=cases(D/'contracts/rev-001/new.xml')
+assert base['failed']==candidate['failed'] and new['tests']==23 and not new['failed']
+result={'status':'complete','probe_only':True,'decision_eligible':False,'external_model_calls':0,'new_contracts':new,'candidate_all':candidate,'baseline_all':base,'new_regressions':[],'candidate_revision':'rev-001','all_new_contracts_pass':True,'main_unchanged':True,'critical_bug':'Same-epoch corrective transport interruption rebuilt the view with rejection feedback, changing input hash; now saved immutable input and action menu restored without third model call. Fresh user request starts new gap epoch and retains old rounds in audit history.'}
+put(D/'run-001/result.json',result)
+m=json.loads((A/'실험/manifest.json').read_text());m['results'].update(status='complete',by_arm={'resumed':{'status':'complete','contracts_passed':True,'new_tests':23,'new_regressions':0,'inherited_failures':15}},comparisons=[],usage={'model_calls':0},latency={'semantic_measurement':None},error_taxonomy=['15 identical pre-existing MAIN50 failures'])
+m['runs'][0].update(status='complete',sha256=sha(D/'run-001/result.json'));put(A/'실험/manifest.json',m)
+front=(A/'README.md').read_text().split('---',2)[1].replace('status: Proposed','status: Accepted')
+sections=[('결정 요약','동일 결정의 통신 중단 복귀 결함을 보강했다. 신규23검사와 기존271검사 대비 신규 회귀0. 모델 호출0의 probe이며 단독 승격 근거가 아니다.'),('문제와 변경 전 구조',result['critical_bug']),('가설과 사전 판정 기준','구현 전 artifacts/design/criteria.json에 불변 입력·도구 메뉴·총 호출 상한과 새 사용자 요청 경계를 고정했다.'),('실험 설계','완료한 ADR0718/repaired의 전체 서빙 코드를 상속하고 law_navigation.py와 계약 검사만 수정했다. 기존 요청 예산·인용·읽기 계약은 유지한다.'),('데이터·모델·재현성','합성 결정·원문과 실제 native Investigation.run/재개 진입점을 사용했다. 외부 모델 호출0. 후보 rev-001의 해시와 실행 로그를 보존한다.'),('결과','신규23/23 통과. 전체294개에서279통과/15실패. 기존 MAIN50도 동일15개 실패하며 신규 회귀는0이다.'),('사례별 오류 분석','수정 호출의 응답을 받기 전에 연결이 끊어져도 재개 시 입력·메뉴 해시를 유지한다. 세 번째 호출 없이 미해결 상태로 종료한다. 메뉴 변조는 거절한다. 다음 사용자 요청은 새 gap epoch를 사용하고 이전 감사 기록은 보존한다.'),('비용·지연·회수 규모','모델 호출0, 비용0. 검색 알고리즘·데이터 세대는 바꾸지 않았으며 새 사용자 요청의 상태 경계만 분리했다. 제품 지연 효과는 미측정이다.'),('해석','불변 저장 입력을 재사용해야 같은 결정이라는 계약을 지킬 수 있다. 새 평가 결과를 위한 변경은 별도 ADR로 남겼다.'),('한계와 일반화 가능 범위','모델 판단·법률 의미 정확도·실제 통신 장애율은 이 합성 검사로 인증하지 않는다. 기존15실패도 성공으로 간주하지 않는다.'),('운영 결정·롤백 조건','MAIN50 유지. 동일 코드의 후속 공개 분리 검증을 통과한 경우에만 선별 작업 코드 통합과 로컬 MAIN 배선을 진행한다. GENOS는 별도다.'),('재현 명령','06_TOOLS/EXPERIMENTS/adr_0720/run_contracts.py. 이번 실행은 완료 기록이며 새 재실행은 별도 ADR을 따른다.')]
+(A/'README.md').write_text('---'+front+'---\n\n'+'\n\n'.join(f'## {i}. {h}\n\n{b}' for i,(h,b) in enumerate(sections,1))+'\n')
+(A/'실험/README.md').write_text('# 동일 결정 복귀 계약 검증\n\n[결과](../artifacts/run-001/result.json). 합성23검사와 기존 회귀271개, 모델 호출0. 모든 로그·실패를 보존했다.\n')
+put(D/'manifest.json',{'schema_version':'adr-artifacts-v1','adr_id':'ADR-0720','created_at':m['reservation']['created_at'],'files':[{'path':str(p.relative_to(R)),'sha256':sha(p),'bytes':p.stat().st_size,'description':'Synthetic immutable retry lifecycle evidence','contains_raw_prompts_and_outputs':False} for p in D.rglob('*') if p.is_file() and p.name!='manifest.json']})
+print(json.dumps(result,ensure_ascii=False))

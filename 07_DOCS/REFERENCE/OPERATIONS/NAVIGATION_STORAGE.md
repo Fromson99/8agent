@@ -1,5 +1,38 @@
 # 용어 검색 DB와 구축 감사 원장
 
+2026-10-08 사용자 정정에 따라 로컬 MAIN 신규 구축은 **생성 중 감사량**도 줄이는
+`factorized-v1`/storage-v4를 명시 선택한다. 아래 storage-v3와 완료 후 gzip은 이전
+구현 기록으로 보존하며, 새 구축의 추가 선택은 다음 계약을 따른다.
+
+## 신규 생성의 factorized-v1 감사 계약
+
+`build-all` → `document-release reindex`의 settings가 `audit_profile=factorized-v1`을
+고정하고, 기존 `rebuild_serving` → `term_generation` → `generation_build_steps` →
+`term_index` → `LinkProjector` 경로로 전달한다. 원문 source-v2, navigation-v7,
+단위 fulltext와 모델 호출 0회는 유지한다. `term_generation.build_generation`을
+직접 호출할 때는 `storage_profile='compact-v2', audit_profile='factorized-v1'`을 명시한다.
+기본 materialized 선택 및 기존 완료 데이터는 유지하며 오래된 실행을 새 포맷으로 재개하지 않는다.
+
+| 기록 | 실제 저장 | 조회·검증 시 재현 |
+|---|---|---|
+| 후보 및 원문 출현 | `link_catalogue`, `link_occurrence` 전수 | 기존 컬럼·ID·span·해시·상태·사유 |
+| 출현×후보 근거 | 조합 행·PK·복제 ID를 쓰지 않음 | `occurrence_evidence` view의 같은 6컬럼 및 모든 accepted/held 조합 |
+| 기존 label-match 출처 | `audit_term`, `audit_source` 독립 ID 사전과 `audit_legacy_origin` 정수 쌍 | `occurrence_origin`의 LEGACY_LABEL_MATCH |
+| 용어집에서 추가한 연결 출처 | 별도 문자열 쌍 복사를 쓰지 않음 | accepted 근거의 distinct 쌍 및 VERIFIED_GLOSSARY_LINK |
+
+최종 NO_ACCEPTED_CATALOGUE_CANDIDATE 변경 전의 검증 상태를 view에서 복원하고
+문서 scope, catalogue 사유, span 실패 사유를 같은 우선순위로 판정한다. RAG의 원문·
+용어 연결 결과와 감사 논리 행은 동일하다. SQLite view 정의 자체와 retained DB는
+감사 SHA로 고정하며 manifest에 profile/재현 코드 SHA/전수 논리 건수/물리 표를 남긴다.
+검증기는 v4 물리 표/논리 view 및 독립 legacy 좌표를 확인하고 기존 v1~v3도 계속 읽는다.
+문서/참조/근거/checkpoint의 공동 트랜잭션과 중단/강제 종료 복구를 유지한다.
+완료 후 gzip과 검증 시 임시 복원은 **작게 생성한 원장**에 적용한다.
+
+이 변경은 조합별 감사 행을 상시 저장하지 않는 대신 전수 조회 때 join/dedup 계산이
+필요하다. 감사 조회는 서빙 요청과 분리된다. 원문 native audit, 작업 source/glossary,
+검색/navigation/fulltext 및 SQLite 임시/저널 용량은 별도로 필요하며, 감사 감소량만으로
+신규 전체 corpus의 최대 용량을 확정하지 않는다. GENOS 봉인 인계와 실제 현장 코드는 유지한다.
+
 2026-10-03 작업 코드에는 명시적 `compact-v2`의 navigation v7/storage-v3 경로를 추가했다.
 아래 2026-09-29의 v1/v2 snapshot 기록은 보존한다. 현재 활성 릴리스 판정에는
 `01_DATA/ACTIVE/local/ACTIVE_RELEASE.json`을 사용하며 이 문서의 과거 MAIN 기록으로 선택하지 않는다.
@@ -27,6 +60,23 @@ native 감사, 새 runtime, 새 구축 감사가 전체 보존 묶음이다. sto
 문서와 참조 checkpoint는 해당 결과와 같은 트랜잭션에 저장하고 입력/코드/범위가 바뀌면 재개를 거부한다.
 동일 파일시스템의 attached SQLite, DELETE journal, FULL sync를 사용하며 실제 GENOS NFS의
 잠금·저널 보장은 현장 검증이 필요하다. 로컬 강제 프로세스 종료 복구는 확인했다.
+
+## 2026-10-08 로컬 완료 감사 원장 압축
+
+로컬 MAIN의 모델 없는 구축은 오프라인 검증 후 완료 navigation 감사 SQLite를 gzip으로
+무손실 압축한다. 원래 감사 manifest·generation·result의 바이트와 SHA는 바꾸지 않는다.
+`archive.json`에는 복원할 파일의 권한·소유자·시각을 남긴다. 압축본 전체를 풀어 원래 SHA와
+크기가 일치하는지 확인한 뒤 평문 DB를 제거하며, 원문·근거 행을 요약하거나 버리지 않는다.
+검증·재개·승인 참조 복사에서는 임시 SQLite로 복원하고 사용 후 지운다.
+따라서 완료 후 상주 용량은 줄지만 구축 중 또는 검증 중에는 평문 감사 DB 공간이 필요하다.
+미완료 checkpoint 원장은 압축하지 않는다. GENOS 기존 ZIP·현장 코드는 변경하지 않았다.
+
+```bash
+# BUILD는 generation/, audit/, result.json이 있는 완료 구축 디렉터리다.
+.venv/bin/python -B 06_TOOLS/pipeline.py document-release archive-audit --release BUILD
+# 압축을 모르는 과거 continuation 도구를 쓰기 전 원래 DB를 복원한다.
+.venv/bin/python -B 06_TOOLS/pipeline.py document-release restore-audit --release BUILD
+```
 
 ## 2026-09-29 기존 분리/승격 기록
 

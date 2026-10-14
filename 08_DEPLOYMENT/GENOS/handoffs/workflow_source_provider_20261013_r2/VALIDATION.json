@@ -1,0 +1,28 @@
+{
+  "status": "LOCAL_PASS",
+  "candidate_contracts": 97,
+  "working_contracts": 97,
+  "prospective_matrix": {
+    "baseline": 6,
+    "candidate": 24,
+    "total": 24
+  },
+  "model_calls": 0,
+  "main_release": "source-provider-20261013-r2",
+  "main_generation": 58,
+  "selected_files_match_frozen_candidate": 297,
+  "serving_diff_from_MAIN57": [
+    "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py"
+  ],
+  "actual_local_entrypoint": "service.service",
+  "HEALTH": 200,
+  "RAG_SEARCH": 200,
+  "selected_read_rows": 12,
+  "selected_read_cards": 1,
+  "internal_label": "내부 규정",
+  "private_error_events": "Excluded before cards/flow; terminal failure shows short message and request ID",
+  "diagnostic_storage": "Existing backend journal and request logs unchanged",
+  "graph": "ADR0772 final validation PASS; repository graph has 8 pre-existing errors in older ADRs; no new ADR0772 graph errors",
+  "field_paste_and_ui_verification": "NOT_RUN",
+  "development_history": "rev001 85 passed/2 failed (HTML separator test); preserved; repaired before frozen paired audit; rev002 97 passed"
+}

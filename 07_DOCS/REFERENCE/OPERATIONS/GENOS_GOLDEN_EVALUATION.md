@@ -117,6 +117,23 @@ import 출력은 `questions.csv`, `draft.json`, `mapping.json`, `review.html`, `
 
 ## 골든 등록부 — CM·내규 묶음을 한 곳에서 관리
 
+2026-10-07 사진의 Risk팀 질문 105문항을 `risk_cm`으로 등록했다.
+[원본·외규 마킹·사용 범위](../../../../01_DATA/GOLDEN/risk_cm/README.md)와
+[현재 공통 등록부](../../../../01_DATA/GOLDEN/registry-v2-risk_cm.json)를 따른다.
+새 선택적 `--collection NAME CSV`는 기존 등록 명령에서 이름을 지정한 묶음을 읽는다.
+`--annotations`의 `scope_assessment`는 외규 단독/부분/내규 필요/확인 필요 판정과 근거를
+평가 메타데이터로 보존하며 제품 요청에 전달하지 않는다. 기존 `--cm`·`--internal`도 유지한다.
+외규만 가능 3문항을 포함하여 risk_cm 전체는 아직 `question_only`이며 정답 승인·품질
+실험·원문 반출 승인 상태가 아니다. 기준답변·날짜·필수근거 작성 전에는 import의 deferred에 남는다.
+
+```bash
+.venv/bin/python 06_TOOLS/pipeline.py golden registry \
+  --cm 01_DATA/review/cm_core_e2e_v3.json \
+  --collection risk_cm 01_DATA/GOLDEN/risk_cm/v1/questions.csv \
+  --annotations 01_DATA/GOLDEN/risk_cm/v1/annotations.json \
+  --output /새/출력/등록부.json
+```
+
 골든 묶음은 각자 원래 작성 원본을 유지한다. CM은 `01_DATA/review/cm_core_e2e_v3.json`,
 내규는 `RAW/internal/risk_team/.staging/internal-rules-20260916-v1/golden/내규_골든_질문셋.csv`다.
 등록부는 두 원본을 다시 읽어 만든 **파생 파일**이다. 직접 고치지 않는다. 답변·근거를 채우려면

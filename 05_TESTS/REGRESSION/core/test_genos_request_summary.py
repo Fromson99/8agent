@@ -40,7 +40,7 @@ def test_processes_merge_without_overwriting_rows_and_excel_has_text_and_filters
     assert len(rows) == 12 and len({row['요청 ID'] for row in rows}) == 12
     assert all(row['최종 답변'] == '답변\n승인 예외를 확인합니다.' for row in rows)
     assert all(row['소요시간(초)'] == '1.25' for row in rows)
-    assert directory.parts[-2:] == ('2026-09-29', 'risk_team')
+    assert directory.parts[-3:] == ('2026-09-29', 'risk_team', 'legal_agent')
     assert (directory / '질문답변.csv').read_bytes().startswith(b'\xef\xbb\xbf')
     with zipfile.ZipFile(directory / '질문답변.xlsx') as archive:
         sheet = ET.fromstring(archive.read('xl/worksheets/sheet1.xml'))
@@ -94,17 +94,17 @@ def test_gateway_reports_two_teams_in_separate_folders_without_waiting_for_summa
         assert result['status'] == (200 if team == 'risk_team' else 503)
     reports._FINALIZER_QUEUE.join()
     files = list((tmp_path / 'nfs').rglob('질문답변.xlsx'))
-    assert {path.parent.name for path in files} == {'risk_team', 'financial_team'}
+    assert {path.parent.parent.name for path in files} == {'risk_team', 'financial_team'}
     for path in files:
         with path.with_suffix('.csv').open(encoding='utf-8-sig', newline='') as stream:
             rows = list(csv.DictReader(stream))
-        assert len(rows) == 1 and rows[0]['팀'] == path.parent.name
+        assert len(rows) == 1 and rows[0]['팀'] == path.parent.parent.name
         log = path.parent / rows[0]['상세 로그']
         report = path.parent / rows[0]['JSON 보고서']
         assert log.exists() and report.exists() and report.with_suffix('.txt').exists()
         assert log.stem == report.stem
         assert 'fixture-private-key' not in path.with_suffix('.csv').read_text(encoding='utf-8-sig')
-        assert rows[0]['처리 상태'] == ('답변 완료' if path.parent.name == 'risk_team' else '실패')
+        assert rows[0]['처리 상태'] == ('답변 완료' if path.parent.parent.name == 'risk_team' else '실패')
     before = {path: path.read_bytes() for path in (tmp_path / 'nfs').rglob('*') if path.suffix in {'.log', '.json'}}
     summary.rebuild(tmp_path / 'nfs')
     assert all(path.read_bytes() == raw for path, raw in before.items())
@@ -116,7 +116,7 @@ def test_request_date_stays_fixed_when_report_finishes_after_midnight_and_invali
         path = reports.write_report(tmp_path, tmp_path / 'runtime', request_id='req-date', api_type='LEGAL_AGENT',
                                    request={'json': {'team_id': 'risk_team', 'question': '질문'}},
                                    result={'status': 500}, events=[], requested_at=start, live_log_path=log)
-    assert path.parent == log.parent == tmp_path / '2026-09-28' / 'risk_team'
+    assert path.parent == log.parent == tmp_path / '2026-09-28' / 'risk_team' / 'legal_agent'
     assert summary.team_name({'team_id': '../../outside'}) == 'unassigned'
     with pytest.raises(ValueError): summary.report_directory(tmp_path, '../../outside', start)
 

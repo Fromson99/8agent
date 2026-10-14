@@ -1,0 +1,65 @@
+{
+  "version": "GENOS_NO_SOCKET_CHAT_20261007_R3",
+  "recorded_at": "2026-10-07T04:00:19.500308+00:00",
+  "code_zip_sha256": "5ec5384b020cb76e8ca2f28b252850168888bed29e855c6116ee113b2002cb06",
+  "code_manifest_sha256": "30eb04071169b2aacfa0be24ab1aa1db90db900184e6695d9bc62a0243171179",
+  "apply_txt_sha256": "74b127e2570b8d4a2681f4aa4575f56d165e429c94cf0ff230a4a86353736d7f",
+  "selected_local_baseline": {
+    "release_id": "investigation-completion-v6-20261007-r1",
+    "generation": 44,
+    "active_pointer_sha256": "9a94e01a5c27bb682ee1fefcf45b47bdd63d7b8b9ff5ff2d12a0cf276fedbde7"
+  },
+  "checks": [
+    {
+      "name": "direct JSON, workflow SSE and no Socket.IO runtime",
+      "passed": 7,
+      "source": "05_TESTS/CONTRACTS/test_genos_main_router_no_socket.py"
+    },
+    {
+      "name": "existing SSE and native HTTP regression",
+      "passed": 32,
+      "source": "05_TESTS/CONTRACTS/test_genos_sse_transport.py + test_genos_native_chat_sse.py"
+    },
+    {
+      "name": "frozen R3 ZIP, R2 apply replacement, repeat, rollback, drift block, same checkout gate/local push",
+      "passed": 7,
+      "source": "test_delivery.py"
+    },
+    {
+      "name": "new remote alias/main local bare push",
+      "result": "PASS"
+    },
+    {
+      "name": "workflow/integrated start without python-socketio dependency",
+      "result": "PASS"
+    },
+    {
+      "name": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "synthetic_local_checkout": {
+    "log_archive": "LOCAL_DELIVERY_LOGS.tar.gz",
+    "log_archive_sha256": "1397d4c73d8989902a0f087ede0570871eeb7cadfc01240ebea5ca19d37fb45b",
+    "restore": "tar -xzf LOCAL_DELIVERY_LOGS.tar.gz -C <directory>",
+    "git_commit": "f446cba6fe14dee57be3f1e4363a72b041474909",
+    "generation_manifest_sha256": "3b45b4fb817fdac613e0fb1b0129b0d26215efdd3f696f34d6568cac290c7e91",
+    "purpose": "Disposable local checkout and bare remote with synthetic generation only."
+  },
+  "field_reported": {
+    "r2_apply": "USER_REPORTED",
+    "r2_push": "NOT_DONE",
+    "r2_revision": "NOT_DEPLOYED"
+  },
+  "actual_genos": {
+    "r3_check": "NOT_RUN",
+    "r3_apply": "NOT_RUN",
+    "generation_manifest_sha256": null,
+    "push_commit": null,
+    "code_serving_revision": null,
+    "platform_binding": "NOT_SELECTED",
+    "workflow_test": "NOT_RUN"
+  },
+  "local_active_pointer_changed": false,
+  "external_model_calls": 0
+}

@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+# Verify the concatenated original hash; preserve every uploaded part.
+set -Eeuo pipefail
+umask 077
+RECOVERY_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+mkdir -p -- "$RECOVERY_SCRIPT_DIR/join-recovery-logs"
+RECOVERY_RUN="$(mktemp -d "$RECOVERY_SCRIPT_DIR/join-recovery-logs/run-$(date -u +%Y%m%dT%H%M%SZ)-XXXXXXXX")"
+exec > >(tee -a "$RECOVERY_RUN/RUN.log") 2>&1
+trap 'RECOVERY_EXIT=$?; trap - EXIT; printf "{\"exit_code\":%d}\n" "$RECOVERY_EXIT" > "$RECOVERY_RUN/EXIT_STATUS.json"; printf "EXIT=%s LOG=%s\n" "$RECOVERY_EXIT" "$RECOVERY_RUN"; exit "$RECOVERY_EXIT"' EXIT
+RECOVERY_INPUT="${1:-}"
+if [[ -z "$RECOVERY_INPUT" ]]; then
+    read -r -p 'Data .zip.parts directory name: ' RECOVERY_INPUT
+fi
+python3 - "$RECOVERY_INPUT" "$RECOVERY_RUN" <<'RECOVERY_PY'
+import hashlib, json, os, re, shutil, sys, tempfile, zipfile
+from pathlib import Path
+
+run = Path(sys.argv[2])
+status = {'status': 'STARTED', 'operating_parts_modified': False,
+          'nfs_modified': False, 'git_modified': False, 'field_workflow_verified': False}
+def record():
+    (run/'STATUS.json').write_text(json.dumps(status, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+def plain(path):
+    if path.is_symlink() or not path.is_file():
+        raise ValueError('Regular file required: '+str(path))
+    return path
+def consume(path, length=None, digest=None, output=None):
+    local = hashlib.sha256()
+    before = path.stat()
+    remaining = before.st_size if length is None else length
+    if remaining < 0 or remaining > before.st_size:
+        raise ValueError('Invalid selected byte length')
+    with plain(path).open('rb') as stream:
+        while remaining:
+            chunk = stream.read(min(8*1024*1024, remaining))
+            if not chunk: raise ValueError('Part shortened while reading: '+path.name)
+            local.update(chunk)
+            if digest is not None: digest.update(chunk)
+            if output is not None: output.write(chunk)
+            remaining -= len(chunk)
+    after = path.stat()
+    if (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns) != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns):
+        raise ValueError('File changed while reading: '+path.name)
+    return local.hexdigest()
+record()
+try:
+    source = Path(sys.argv[1]).expanduser()
+    if not str(sys.argv[1]).strip(): raise ValueError('Parts directory name required')
+    if not source.is_absolute():
+        candidate = Path.cwd()/source
+        if candidate.exists(): source=candidate
+        else:
+            dev=Path(os.environ.get('GENOS_DEV_ROOT', os.environ.get('GENOS_DEV', str(Path.home()/'DEV'))))
+            candidate=dev/source
+            source=candidate if candidate.exists() else dev/'TRANSFER'/source
+    if source.is_symlink() or not source.is_dir(): raise ValueError('Regular parts directory required')
+    source=source.resolve(strict=True)
+    original=plain(source/'ORIGINAL.sha256').read_text(encoding='utf-8')
+    match=re.fullmatch(r'([0-9a-fA-F]{64})  ([^\r\n]+)\n?', original)
+    if not match: raise ValueError('Invalid ORIGINAL.sha256')
+    expected, name=match.groups();expected=expected.lower()
+    if not name.lower().endswith('.zip') or '/' in name or '\\' in name or name.startswith('.'):
+        raise ValueError('Invalid original ZIP filename')
+    inventory={}
+    for line in plain(source/'PARTS.sha256').read_text(encoding='utf-8').splitlines():
+        row=re.fullmatch(r'([0-9a-fA-F]{64})  (?:\./)?('+re.escape(name)+r'\.part[0-9]{6})', line)
+        if not row or row[2] in inventory: raise ValueError('Invalid or duplicate part checksum metadata')
+        inventory[row[2]]=row[1].lower()
+    names=sorted(inventory)
+    if not names or names != [name+f'.part{i:06d}' for i in range(len(names))]:
+        raise ValueError('Missing/nonconsecutive part checksum entries')
+    if {p.name for p in source.glob(name+'.part*')} != set(names):
+        raise ValueError('Part files and checksum inventory differ')
+    whole=hashlib.sha256();bad=[];lengths={}
+    for item in names:
+        path=plain(source/item);lengths[item]=path.stat().st_size
+        actual=consume(path, digest=whole)
+        if actual != inventory[item]: bad.append(item)
+    status.update(parts_dir=str(source), original_sha256=expected,
+                  concatenated_as_is_sha256=whole.hexdigest(), mismatching_parts=bad,
+                  part_bytes=lengths)
+    record()
+    print('AS_IS_ORIGINAL_HASH_MATCH='+str(whole.hexdigest()==expected), flush=True)
+    print('MISMATCHING_PARTS='+','.join(bad), flush=True)
+    if whole.hexdigest()!=expected:
+        if len(bad)!=1 or lengths[bad[0]]<2:
+            raise ValueError('Concatenated original hash differs; no single-part tail-byte recovery possible')
+        item=bad[0]
+        if consume(source/item, length=lengths[item]-1) != inventory[item]:
+            raise ValueError('Removing last byte does not recover original part hash; re-upload this part')
+        lengths[item]-=1
+        whole=hashlib.sha256()
+        for item in names:
+            if consume(source/item, length=lengths[item], digest=whole) != inventory[item]:
+                raise ValueError('A selected part changed or its hash differs')
+        if whole.hexdigest()!=expected:
+            raise ValueError('Recovered concatenation still differs from original ZIP')
+        status['recovery']={'method':'ignore_one_appended_tail_byte_in_output_only', 'part':bad[0],
+                            'selected_bytes':lengths[bad[0]], 'original_part_sha256_verified':True}
+        print('APPENDED_ONE_BYTE_RECOVERY_VERIFIED='+bad[0], flush=True)
+    target=source.parent/(name[:-4]+'_verified.zip')
+    checksum=Path(str(target)+'.sha256')
+    status.update(output_zip=str(target), selected_sha256=whole.hexdigest())
+    if checksum.exists() or checksum.is_symlink():
+        if plain(checksum).read_bytes() != (expected+'  '+target.name+'\n').encode():
+            raise ValueError('Conflicting checksum sidecar preserved')
+    if target.exists() or target.is_symlink():
+        if consume(plain(target))!=expected: raise ValueError('Different existing output ZIP preserved')
+    else:
+        if shutil.disk_usage(source.parent).free < sum(lengths.values())+16*1024*1024:
+            raise ValueError('Insufficient space for one verified ZIP')
+        fd, temporary=tempfile.mkstemp(prefix=target.name+'.partial-',dir=source.parent)
+        status['partial_output']=temporary;record()
+        with os.fdopen(fd,'wb') as output:
+            copied=hashlib.sha256()
+            for item in names: consume(source/item,length=lengths[item],digest=copied,output=output)
+            output.flush();os.fsync(output.fileno())
+        if copied.hexdigest()!=expected: raise ValueError('Written ZIP hash differs; partial preserved')
+        if not zipfile.is_zipfile(temporary): raise ValueError('Hash matches but input is not a ZIP')
+        os.link(temporary,target) # Atomic no-overwrite publication; keeps originals intact.
+        Path(temporary).unlink()
+        status.pop('partial_output',None)
+    if not checksum.exists():
+        with checksum.open('x',encoding='utf-8') as stream: stream.write(expected+'  '+target.name+'\n')
+    status['status']='VERIFIED_ZIP_READY';record()
+    print('VERIFIED_ZIP='+str(target),flush=True)
+    print('ORIGINAL_ZIP_SHA256='+expected,flush=True)
+    print('Original uploaded parts preserved. Supply this VERIFIED_ZIP directly to R3 inspect/all.',flush=True)
+except Exception as exc:
+    status.update(status='FAILED',error=str(exc));record()
+    print('ERROR: '+str(exc),file=sys.stderr,flush=True)
+    sys.exit(1)
+RECOVERY_PY

@@ -34,7 +34,9 @@ def run(data):
         return {'text': 'NFS 검사 FAIL: prepare가 생성한 WORKFLOW_PASTE_ALL.txt 전체를 사용하세요.', 'nfs_probe_pass': False}
     endpoint = base + '/api/gateway/code_serving/' + serving_id + '/json'
     request = urllib.request.Request(endpoint, method='POST',
-        data=json.dumps({'API_TYPE': 'NFS_DATA_PROBE', 'request_id': request_id}).encode(),
+        data=json.dumps({'API_TYPE': 'NFS_DATA_PROBE', 'request_id': request_id, 'include_listing': True,
+                         'offset': data.get('offset', 0) if isinstance(data, dict) else 0,
+                         'limit': data.get('limit', 100) if isinstance(data, dict) else 100}).encode(),
         headers={'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'})
     # Never follow redirects carrying the code-serving credential to another host.
     class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -57,7 +59,8 @@ def run(data):
             raise ValueError('diagnostic response too large')
         report = unwrap(json.loads(raw.decode('utf-8')))
         identity = report.get('probe_id') == EXPECTED_PROBE_ID and report.get('expected_commit') == EXPECTED_COMMIT
-        passed = http_status == 200 and report.get('ok') is True and identity and report.get('stage') == 'code-serving'
+        passed = (http_status == 200 and report.get('ok') is True and identity
+                  and report.get('stage') == 'code-serving' and isinstance(report.get('data_listing'), dict))
         lines = ['NFS 데이터 읽기 검사 ' + ('PASS' if passed else 'FAIL'),
                  '준비 커밋: ' + EXPECTED_COMMIT,
                  '코드서빙 응답 커밋: ' + str(report.get('expected_commit')),
@@ -69,6 +72,24 @@ def run(data):
             lines.append(str(row.get('status')) + ' | ' + str(row.get('name')) + ' | ' + str(row.get('path', ''))
                          + (' | ' + str(row['error_type']) if row.get('error_type') else '')
                          + (' | ' + str(row['reason']) if row.get('reason') else ''))
+        listing = report.get('data_listing') or {}
+        for key, label in (('generation_directory', 'generation 파일/폴더'), ('runtime_directory', 'runtime 파일/폴더')):
+            section = listing.get(key) or {}
+            lines.append(label + ': ' + str(section.get('path', '')))
+            for item in section.get('entries', []):
+                lines.append('  ' + str(item.get('kind')) + ' | ' + str(item.get('name'))
+                             + (' | ' + str(item['bytes']) + ' bytes' if item.get('bytes') is not None else ''))
+            if section.get('truncated'):
+                lines.append('  상한에 도달하여 파일/폴더 목록 일부만 표시했습니다.')
+        documents = listing.get('document_metadata') or {}
+        if documents.get('listed'):
+            lines.append('문서 목록: ' + str(documents.get('team_id')) + ' | 총 ' + str(documents.get('total')) + '건')
+            for row in documents.get('documents', []):
+                lines.append('  ' + str(row.get('document_id')) + ' | ' + str(row.get('name')))
+            if documents.get('has_more'):
+                lines.append('  다음 페이지 offset=' + str(documents['offset'] + len(documents.get('documents', []))))
+        else:
+            lines.append('문서명 목록은 준비 시 --team-id risk_team처럼 실제 팀을 지정하면 표시됩니다.')
         lines.append('검증 범위: 파일 읽기·SQL 조회·커밋 코드 대조. 전체 RAG/모델·쓰기 성공은 별도입니다.')
         return {'text': '\n'.join(lines), 'nfs_probe_pass': passed, 'request_id': request_id,
                 'nfs_probe_report': report}

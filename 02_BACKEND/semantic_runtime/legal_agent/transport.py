@@ -5,9 +5,10 @@ import json
 import logging
 import re
 import time
-import httpx
 from .. import observability as obs
 from ..genos import RETRY_STATUS, from_env
+from ..stdlib_http import (NETWORK_ERRORS, REVISION as TRANSPORT_REVISION,
+                           Timeout, is_timeout, open_response, run_with_deadline)
 from .errors import ContractError, TransportError
 
 log = obs.get_logger('legal_agent.model_http')
@@ -84,44 +85,56 @@ class GenosTransport:
         started = time.perf_counter()
         fields = {'method': method, 'operation': path, 'attempt_id': attempt_id,
                   'endpoint_identity': self.binding['endpoint_identity'],
-                  'model': self.binding['model'], 'timeout_ms': int(seconds * 1000)}
+                  'model': self.binding['model'], 'timeout_ms': int(seconds * 1000),
+                  'transport_backend': 'urllib', 'transport_revision': TRANSPORT_REVISION}
         obs.event(log, 'model_http.started', **fields)
-        try:
-            async with asyncio.timeout(seconds):
-                async with httpx.AsyncClient(trust_env=False, follow_redirects=False,
-                                             timeout=httpx.Timeout(seconds, connect=min(self.target.connect_timeout, seconds))) as client:
-                    response = await client.request(method, self.target.url(path), headers=self.target.headers, json=body)
-                    try:
-                        data = response.json()
-                    except (ValueError, UnicodeError):
-                        data = None
-                    envelope = {'status_code': response.status_code, 'body_json': data,
-                                'body_text': response.text if data is None else None,
-                                'body_sha256': hashlib.sha256(response.content).hexdigest(),
-                                'response_bytes': len(response.content)}
-                    if response.status_code >= 400:
-                        obs.event(log, 'model_http.failed', level=logging.ERROR, **fields,
-                                  http_status=response.status_code,
-                                  retryable=response.status_code in RETRY_STATUS,
-                                  duration_ms=int((time.perf_counter() - started) * 1000),
-                                  response_bytes=envelope['response_bytes'],
-                                  response_sha256=envelope['body_sha256'],
-                                  **_error_details(data))
-                        raise TransportError('upstream HTTP error', retryable=response.status_code in RETRY_STATUS, response=envelope)
-                    obs.event(log, 'model_http.finished', **fields,
+
+        def execute(deadline):
+            limits = Timeout(seconds, connect=min(self.target.connect_timeout, seconds))
+            with open_response(method, self.target.url(path), headers=self.target.headers,
+                               body=body, timeout=limits, deadline=deadline) as response:
+                raw = response.read()
+                try:
+                    data = json.loads(raw)
+                except (ValueError, UnicodeError):
+                    data = None
+                envelope = {'status_code': response.status_code,
+                            'retry_after': response.headers.get('retry-after'), 'body_json': data,
+                            'body_text': raw.decode('utf-8', 'replace') if data is None else None,
+                            'body_sha256': hashlib.sha256(raw).hexdigest(),
+                            'response_bytes': len(raw)}
+                deadline.check()
+                if response.status_code >= 300:
+                    obs.event(log, 'model_http.failed', level=logging.ERROR, **fields,
                               http_status=response.status_code,
+                              retryable=response.status_code in RETRY_STATUS,
                               duration_ms=int((time.perf_counter() - started) * 1000),
-                              response_bytes=envelope['response_bytes'])
-                    return envelope
-        except (TimeoutError, httpx.TimeoutException) as exc:
+                              response_bytes=envelope['response_bytes'],
+                              response_sha256=envelope['body_sha256'],
+                              **_error_details(data))
+                    raise TransportError('upstream HTTP error',
+                                         retryable=response.status_code in RETRY_STATUS,
+                                         response=envelope)
+                obs.event(log, 'model_http.finished', **fields,
+                          http_status=response.status_code,
+                          duration_ms=int((time.perf_counter() - started) * 1000),
+                          response_bytes=envelope['response_bytes'])
+                return envelope
+
+        try:
+            return run_with_deadline(seconds, execute)
+        except TimeoutError as exc:
             obs.event(log, 'model_http.failed', level=logging.ERROR, **fields,
                       failure_kind='timeout', duration_ms=int((time.perf_counter() - started) * 1000))
             raise TransportError('model transmission timed out', retryable=True, unknown=True) from exc
-        except httpx.TransportError as exc:
+        except NETWORK_ERRORS as exc:
+            timeout = is_timeout(exc)
             obs.event(log, 'model_http.failed', level=logging.ERROR, **fields,
-                      failure_kind='connection', error_type=type(exc).__name__,
+                      failure_kind='timeout' if timeout else 'connection',
+                      error_type=type(exc).__name__,
                       duration_ms=int((time.perf_counter() - started) * 1000))
-            raise TransportError('model connection failed', retryable=True, unknown=True) from exc
+            message = 'model transmission timed out' if timeout else 'model connection failed'
+            raise TransportError(message, retryable=True, unknown=True) from exc
 
     def send_once(self, *, body, ticket):
         with asyncio.Runner() as runner:
@@ -131,116 +144,116 @@ class GenosTransport:
     async def _stream_request(self, body, ticket, on_content):
         """One HTTP send; reconstruct the canonical response and retain SSE events."""
         seconds = ticket['remaining_seconds']
-        events, content, reasoning, arguments = [], [], [], []
+        from .model_stream import ModelEventStream
+        stream = ModelEventStream()
+        events = stream.events
+        content, reasoning, arguments = [], [], []
         actual_model = None
         usage = None
         finish = None
         call_id = call_name = None
-        completed = False
         pending_deltas = []
-        digest = hashlib.sha256()
-        size = 0
+        http_status = None
+        content_type = None
         fields = {'attempt_id': ticket.get('attempt_id'), 'model': self.binding['model'],
-                  'operation': '/chat/completions', 'stream_requested': True}
+                  'operation': '/chat/completions', 'stream_requested': True,
+                  'transport_backend': 'urllib', 'transport_revision': TRANSPORT_REVISION}
         started = time.perf_counter()
         obs.event(log, 'model_http.started', **fields)
         def partial():
-            return {'status_code': None, 'body_json': None, 'stream_events': events,
-                    'body_sha256': digest.hexdigest(), 'response_bytes': size,
-                    'stream_complete': False}
-        try:
-            async with asyncio.timeout(seconds):
-                async with httpx.AsyncClient(trust_env=False, follow_redirects=False,
-                        timeout=httpx.Timeout(seconds, connect=min(self.target.connect_timeout, seconds))) as client:
-                    async with client.stream('POST', self.target.url('/chat/completions'),
-                                             headers=self.target.headers, json=body) as response:
-                        if response.status_code >= 400:
-                            raw = await response.aread()
-                            try: data = json.loads(raw)
-                            except ValueError: data = None
-                            envelope = {'status_code': response.status_code, 'body_json': data,
-                                        'body_sha256': hashlib.sha256(raw).hexdigest(), 'response_bytes': len(raw)}
-                            raise TransportError('upstream HTTP error', retryable=response.status_code in RETRY_STATUS, response=envelope)
-                        # A gateway may buffer even when stream=true. Consume that same
-                        # response without retransmitting or claiming incremental delivery.
-                        if 'application/json' in response.headers.get('content-type', ''):
-                            raw = await response.aread()
-                            data = json.loads(raw)
-                            return {'status_code': response.status_code, 'body_json': data,
-                                    'body_sha256': hashlib.sha256(raw).hexdigest(), 'response_bytes': len(raw)}
-                        frame = []
-                        async for line in response.aiter_lines():
-                            size += len(line.encode()) + 1
-                            digest.update((line+'\n').encode())
-                            if size > 16 * 1024 * 1024:
-                                raise TransportError('model stream exceeds response limit', unknown=True)
-                            if line.startswith('data:'):
-                                frame.append(line[5:].lstrip())
-                                continue
-                            if line or not frame:
-                                continue
-                            raw_event = '\n'.join(frame); frame = []
-                            if raw_event == '[DONE]':
-                                completed = True
-                                break
-                            event = json.loads(raw_event)
-                            if not isinstance(event, dict) or event.get('error'):
-                                raise TransportError('model stream returned an error', unknown=True)
-                            events.append(event)
-                            if event.get('model'):
-                                actual_model = event['model']
-                                if actual_model != self.binding['model']:
-                                    raise ContractError('actual response model differs from pinned model')
-                                for text in pending_deltas:
+            return {'status_code': http_status, 'body_json': None, 'stream_events': list(events),
+                    'body_sha256': stream.digest.hexdigest(), 'response_bytes': stream.size,
+                    'stream_complete': False, 'content_type': content_type,
+                    'stream_diagnostics': stream.diagnostics()}
+        def execute(deadline):
+            nonlocal actual_model, usage, finish, call_id, call_name, http_status, content_type
+            limits = Timeout(seconds, connect=min(self.target.connect_timeout, seconds))
+            with open_response('POST', self.target.url('/chat/completions'),
+                               headers=self.target.headers, body=body,
+                               timeout=limits, deadline=deadline) as response:
+                http_status = response.status_code
+                content_type = response.headers.get('content-type', '').split(';', 1)[0].strip().lower()
+                if response.status_code >= 300:
+                    raw = response.read()
+                    try: data = json.loads(raw)
+                    except ValueError: data = None
+                    envelope = {'status_code': response.status_code, 'retry_after': response.headers.get('retry-after'), 'body_json': data,
+                                'body_sha256': hashlib.sha256(raw).hexdigest(), 'response_bytes': len(raw)}
+                    raise TransportError('upstream HTTP error', retryable=response.status_code in RETRY_STATUS, response=envelope)
+                # A gateway may buffer even when stream=true. Consume that same
+                # response without retransmitting or claiming incremental delivery.
+                if content_type == 'application/json':
+                    raw = response.read()
+                    data = json.loads(raw)
+                    return {'status_code': response.status_code, 'retry_after': response.headers.get('retry-after'), 'body_json': data,
+                            'body_sha256': hashlib.sha256(raw).hexdigest(), 'response_bytes': len(raw)}
+                if content_type != 'text/event-stream':
+                    raise TransportError('unexpected model stream content type', unknown=True)
+                for event in stream.iter_events(response.iter_lines()):
+                    if event.get('model'):
+                        actual_model = event['model']
+                        if actual_model != self.binding['model']:
+                            raise ContractError('actual response model differs from pinned model')
+                        for text in pending_deltas:
+                            deadline.check()
+                            on_content(text)
+                        pending_deltas.clear()
+                    if event.get('usage') is not None:
+                        usage = event['usage']
+                    for choice in event.get('choices', []):
+                        if choice.get('index', 0) != 0:
+                            raise TransportError('expected one streamed choice', unknown=True)
+                        delta = choice.get('delta') or {}
+                        if isinstance(delta.get('reasoning_content'), str):
+                            reasoning.append(delta['reasoning_content'])
+                        text = delta.get('content')
+                        if isinstance(text, str):
+                            if arguments:
+                                raise TransportError('mixed model output channels', unknown=True)
+                            content.append(text)
+                            if actual_model:
+                                deadline.check()
+                                on_content(text)
+                            else: pending_deltas.append(text)
+                        for call in delta.get('tool_calls') or []:
+                            if call.get('index', 0) != 0 or content:
+                                raise TransportError('expected one structured output channel', unknown=True)
+                            function = call.get('function') or {}
+                            call_id = call.get('id') or call_id
+                            call_name = function.get('name') or call_name
+                            text = function.get('arguments')
+                            if isinstance(text, str):
+                                arguments.append(text)
+                                if actual_model:
+                                    deadline.check()
                                     on_content(text)
-                                pending_deltas.clear()
-                            if event.get('usage') is not None:
-                                usage = event['usage']
-                            for choice in event.get('choices', []):
-                                if choice.get('index', 0) != 0:
-                                    raise TransportError('expected one streamed choice', unknown=True)
-                                delta = choice.get('delta') or {}
-                                if isinstance(delta.get('reasoning_content'), str):
-                                    reasoning.append(delta['reasoning_content'])
-                                text = delta.get('content')
-                                if isinstance(text, str):
-                                    if arguments:
-                                        raise TransportError('mixed model output channels', unknown=True)
-                                    content.append(text)
-                                    if actual_model: on_content(text)
-                                    else: pending_deltas.append(text)
-                                for call in delta.get('tool_calls') or []:
-                                    if call.get('index', 0) != 0 or content:
-                                        raise TransportError('expected one structured output channel', unknown=True)
-                                    function = call.get('function') or {}
-                                    call_id = call.get('id') or call_id
-                                    call_name = function.get('name') or call_name
-                                    text = function.get('arguments')
-                                    if isinstance(text, str):
-                                        arguments.append(text)
-                                        if actual_model: on_content(text)
-                                        else: pending_deltas.append(text)
-                                if choice.get('finish_reason') is not None:
-                                    finish = choice['finish_reason']
-                        if not completed or finish is None:
-                            raise TransportError('model stream ended before completion', unknown=True)
-                        message = {'role': 'assistant', 'content': ''.join(content)}
-                        if reasoning:
-                            message['reasoning_content'] = ''.join(reasoning)
-                        if arguments:
-                            message['tool_calls'] = [{'id': call_id, 'type': 'function',
-                                'function': {'name': call_name, 'arguments': ''.join(arguments)}}]
-                        data = {'model': actual_model, 'usage': usage,
-                                'choices': [{'index': 0, 'message': message, 'finish_reason': finish}]}
-                        obs.event(log, 'model_http.finished', **fields,
-                                  duration_ms=int((time.perf_counter()-started)*1000), response_bytes=size)
-                        return {'status_code': response.status_code, 'body_json': data,
-                                'body_sha256': digest.hexdigest(), 'response_bytes': size,
-                                'stream_events': events}
-        except (TimeoutError, httpx.TimeoutException) as exc:
+                                else: pending_deltas.append(text)
+                        if choice.get('finish_reason') is not None:
+                            finish = choice['finish_reason']
+                stream.require_complete()
+                message = {'role': 'assistant', 'content': ''.join(content)}
+                if reasoning:
+                    message['reasoning_content'] = ''.join(reasoning)
+                if arguments:
+                    message['tool_calls'] = [{'id': call_id, 'type': 'function',
+                        'function': {'name': call_name, 'arguments': ''.join(arguments)}}]
+                data = {'model': actual_model, 'usage': usage,
+                        'choices': [{'index': 0, 'message': message, 'finish_reason': finish}]}
+                deadline.check()
+                obs.event(log, 'model_http.finished', **fields,
+                          duration_ms=int((time.perf_counter()-started)*1000), response_bytes=stream.size, **stream.diagnostics())
+                return {'status_code': response.status_code, 'retry_after': response.headers.get('retry-after'), 'body_json': data,
+                        'body_sha256': stream.digest.hexdigest(), 'response_bytes': stream.size,
+                        'stream_events': events, 'stream_complete': True,
+                        'content_type': content_type, 'stream_diagnostics': stream.diagnostics()}
+
+        try:
+            return run_with_deadline(seconds, execute)
+        except TimeoutError as exc:
             raise TransportError('model transmission timed out', retryable=True, unknown=True, response=partial()) from exc
-        except httpx.TransportError as exc:
-            raise TransportError('model connection failed', retryable=True, unknown=True, response=partial()) from exc
+        except NETWORK_ERRORS as exc:
+            message = 'model transmission timed out' if is_timeout(exc) else 'model connection failed'
+            raise TransportError(message, retryable=True, unknown=True, response=partial()) from exc
         except TransportError as exc:
             if exc.response is None:
                 exc.response = partial()

@@ -48,3 +48,13 @@ class TransportError(LegalAgentError):
 
 class PublicationConflict(LegalAgentError):
     code = 'PUBLICATION_CONFLICT'
+
+
+class InvestigationPending(LegalAgentError):
+    code = 'SOURCE_INVESTIGATION_INCOMPLETE'
+    http_status = 422
+
+    def __init__(self, message, *, stage='SELECT', diagnostics=None):
+        super().__init__(message)
+        self.failure_stage = stage
+        self.diagnostics = diagnostics or {}

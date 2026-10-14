@@ -1,0 +1,13 @@
+    import httpx
+    import semantic_runtime.legal_agent.transport as module
+    actual = module.httpx.AsyncClient
+    def handler(request):
+        requests.append(json.loads(request.content))
+        payload = (json.dumps(json_body).encode() if json_body is not None else
+                   b''.join(item.encode() if isinstance(item,str) else item for item in frames))
+        return httpx.Response(status,content=payload,headers={'content-type':'application/json' if json_body is not None else 'text/event-stream'})
+    class LocalClient(actual):
+        def __init__(self,*args,**kwargs):
+            kwargs['transport']=httpx.MockTransport(handler)
+            super().__init__(*args,**kwargs)
+    monkeypatch.setattr(module.httpx,'AsyncClient',LocalClient)

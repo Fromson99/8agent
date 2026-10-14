@@ -150,7 +150,8 @@ def test_compact_v2_full_build_exact_and_readable(tmp_path,term_glossary,monkeyp
 
 
 @pytest.mark.parametrize('interruption',['documents','references','evidence','audit'])
-def test_substage_resume_is_exact(tmp_path,term_glossary,monkeypatch,interruption):
+@pytest.mark.parametrize('audit_profile',['materialized','factorized-v1'])
+def test_substage_resume_is_exact(tmp_path,term_glossary,monkeypatch,interruption,audit_profile):
     from semantic_runtime import term_index,term_links,navigation_build
     source=corpus(tmp_path/'source.sqlite',70)
     out=tmp_path/'resumed'
@@ -171,24 +172,26 @@ def test_substage_resume_is_exact(tmp_path,term_glossary,monkeypatch,interruptio
         elif interruption=='evidence':patch.setattr(term_links.LinkProjector,'finish',stop)
         else:patch.setattr(navigation_build,'finish_audit',stop)
         with pytest.raises(RuntimeError,match='controlled'):
-            build_generation(source,term_glossary,out,serving=True,storage_profile='compact-v2',fulltext_granularity='unit')
+            build_generation(source,term_glossary,out,serving=True,storage_profile='compact-v2',fulltext_granularity='unit',audit_profile=audit_profile)
     partial=tmp_path/'.resumed.building/generation/navigation/navigation.sqlite'
     with closing(sqlite3.connect(partial)) as db:
         assert db.execute("SELECT count(*) FROM navigation_checkpoint WHERE stage='document'").fetchone()[0]>0
         if interruption=='references':
             assert db.execute("SELECT count(*) FROM navigation_checkpoint WHERE stage='reference-source'").fetchone()[0]>=64
-    build_generation(source,term_glossary,out,serving=True,storage_profile='compact-v2',fulltext_granularity='unit')
-    build_generation(source,term_glossary,tmp_path/'fresh',serving=True,storage_profile='compact-v2',fulltext_granularity='unit')
+    build_generation(source,term_glossary,out,serving=True,storage_profile='compact-v2',fulltext_granularity='unit',audit_profile=audit_profile)
+    build_generation(source,term_glossary,tmp_path/'fresh',serving=True,storage_profile='compact-v2',fulltext_granularity='unit',audit_profile=audit_profile)
     compare_builds(tmp_path/'fresh',out);verify_build(out)
 
 
-def test_shared_reference_review_apply(tmp_path,term_glossary,monkeypatch):
+@pytest.mark.parametrize('audit_profile',['materialized','factorized-v1'])
+@pytest.mark.parametrize('archived_audit',[False,True])
+def test_shared_reference_review_apply(tmp_path,term_glossary,monkeypatch,audit_profile,archived_audit):
     import test_reference_resolution as cases
     original=cases.build_generation
     def compact(*args,**kwargs):
-        return original(*args,**kwargs,storage_profile='compact-v2')
+        return original(*args,**kwargs,storage_profile='compact-v2',audit_profile=audit_profile)
     monkeypatch.setattr(cases,'build_generation',compact)
-    cases.test_prepare_review_and_apply_builds_a_new_generation(tmp_path,term_glossary)
+    cases.test_prepare_review_and_apply_builds_a_new_generation(tmp_path,term_glossary,archived_audit)
 
 
 def test_resume_refuses_changed_input(tmp_path,term_glossary,monkeypatch):
@@ -203,20 +206,20 @@ def test_resume_refuses_changed_input(tmp_path,term_glossary,monkeypatch):
         build_generation(source,term_glossary,tmp_path/'built',storage_profile='compact-v2')
 
 
-def test_process_crash_recovers_joint_audit_transaction(tmp_path,term_glossary):
+@pytest.mark.parametrize('audit_profile',['materialized','factorized-v1'])
+def test_process_crash_recovers_joint_audit_transaction(tmp_path,term_glossary,audit_profile):
     import os,subprocess,sys
     source=corpus(tmp_path/'source.sqlite',70);out=tmp_path/'crashed'
-    runner=ROOT/'02_BACKEND/lawrag/research/candidates/adr_0634/compact/runner.py'
     script=tmp_path/'crash.py'
-    script.write_text('import runpy,os\nrunpy.run_path('+repr(str(runner))+')\n'
+    script.write_text('import sys,os\nsys.path.insert(0,'+repr(str(ROOT/'02_BACKEND'))+')\n'
         'from semantic_runtime import term_index\nfrom lawrag.pipeline.term_generation import build_generation\n'
         'def progress(**kw):\n'
         '    if kw.get("task")=="document-navigation" and kw.get("completed")==65:os._exit(91)\n'
         'term_index._BUILD_PROGRESS=progress\n'
-        'build_generation('+','.join(repr(str(p)) for p in (source,term_glossary,out))+',storage_profile="compact-v2")\n')
+        'build_generation('+','.join(repr(str(p)) for p in (source,term_glossary,out))+',storage_profile="compact-v2",audit_profile='+repr(audit_profile)+')\n')
     result=subprocess.run([sys.executable,str(script)],capture_output=True,text=True,
                           env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1'})
     assert result.returncode==91,result.stdout+result.stderr
-    build_generation(source,term_glossary,out,storage_profile='compact-v2')
-    build_generation(source,term_glossary,tmp_path/'fresh',storage_profile='compact-v2')
+    build_generation(source,term_glossary,out,storage_profile='compact-v2',audit_profile=audit_profile)
+    build_generation(source,term_glossary,tmp_path/'fresh',storage_profile='compact-v2',audit_profile=audit_profile)
     compare_builds(tmp_path/'fresh',out)

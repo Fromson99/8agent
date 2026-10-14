@@ -1,0 +1,199 @@
+{
+  "version": "GENOS_ROUTED_SOCKET_CHAT_20261007_R2",
+  "recorded_at": "2026-10-07T03:40:12.247629+00:00",
+  "runtime": {
+    "environment": "WSL local",
+    "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+    "executable": "/home/jin/8-AGENT/.venv/bin/python"
+  },
+  "code_zip_sha256": "0bcb9c6ba70e23fcc055d8c944ce943a5a210fca86164f51b0b9b17ce7b21ab3",
+  "code_manifest_sha256": "352ae448bfe3a240dc0650abd39440a7a341afa6c296a5e4d15c78de6c1e8de5",
+  "apply_txt_sha256": "4f2978467151f3d43e9660b850832c670d1589fd296d09d69afa11c41b5dd30d",
+  "selected_local_baseline": {
+    "schema_version": "semantic-runtime-active-v2",
+    "release_id": "investigation-completion-v6-20261007-r1",
+    "generation": 44,
+    "manifest_path": "08_DEPLOYMENT/RELEASES/investigation-completion-v6-20261007-r1/release.json",
+    "release_manifest_sha256": "6cdc683ec72f373be0005ce5ff6ba873aba436b2d71a9211978e7aaba61bdd1b",
+    "activated_at": "2026-10-07T02:50:44.577540+00:00",
+    "deployment_basis": "VALIDATED_ADR_PROMOTION",
+    "quality_certified": false,
+    "legacy_fallback": false,
+    "previous_active_sha256": "57890b7744d1397451799773cb29b087c8e45938f6b8c97d25a0acde8281d44d",
+    "qualification": {
+      "source": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0680-investigation-main-consumer-integration/실험/manifest.json",
+        "sha256": "bb70035e64eede6ee88cbe1bd7c50990f441948a2f402829f54d72f211101ae3"
+      },
+      "readme": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0680-investigation-main-consumer-integration/README.md",
+        "sha256": "6ab0fafb2d805f445514384e5f81719bf085cd716f70e5012a81097e717b97ee"
+      },
+      "arm": "integrated",
+      "result": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0680-investigation-main-consumer-integration/artifacts/run-001/result.json",
+        "sha256": "baaac2be70b57e8431b67628cac188a50225e3f80dc9adff65a53c63d0f4e26e"
+      },
+      "rebase": {
+        "path": "04_EXPERIMENTS/ADR/ADR-0680-investigation-main-consumer-integration/artifacts/design/release-rebase.json",
+        "sha256": "a9bf5dc854a4a45fbb1ea03e1af1372b1a8cc3231f935abea5725fb9581f3b60"
+      }
+    }
+  },
+  "tests": {
+    "routed_modes_actual_socketio_sse_and_dependency_isolation": {
+      "passed": 8,
+      "command": "PYTHONPATH=.:02_BACKEND:08_DEPLOYMENT/GENOS:05_TESTS:05_TESTS/CONTRACTS .venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_genos_main_router_socketio.py"
+    },
+    "existing_sse_and_native_http": {
+      "passed": 32,
+      "command": "PYTHONPATH=.:02_BACKEND:08_DEPLOYMENT/GENOS:05_TESTS:05_TESTS/CONTRACTS .venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_genos_sse_transport.py 05_TESTS/CONTRACTS/test_genos_native_chat_sse.py"
+    },
+    "frozen_delivery_both_modes_apply_repeat_rollback_same_checkout_gate_local_push": {
+      "passed": 8,
+      "seconds": 15.37
+    },
+    "total_passed": 48
+  },
+  "fixture_update": {
+    "previous_failures": 13,
+    "reason": "Existing SSE response mocks were used by the current AD_PROBE preflight. A separate empty AD result now isolates transport; live HTTP test verifies AD_PROBE and LEGAL_AGENT. Product workflow bytes unchanged."
+  },
+  "checks": {
+    "python311_serving_syntax": "PASS",
+    "python310_workflow_syntax": "PASS",
+    "bash_syntax": "PASS",
+    "r1_delivered_bytes_preserved": "PASS",
+    "r2_zip_working_code_parity": "PASS",
+    "main44_unmodified_except_startup_helper": "PASS",
+    "active_pointer_unchanged": "PASS",
+    "original_workflow_unchanged": "PASS",
+    "input_data_and_runtime_preserved": "PASS",
+    "git_diff_check": "PASS",
+    "workflow_without_socket_dependency_or_backend_import": "PASS"
+  },
+  "synthetic_local_push_receipts": [
+    {
+      "chat_mode": "workflow",
+      "source": "synthetic local checkout and local bare remote",
+      "events": [
+        {
+          "at": "2026-10-07T03:38:04.136895+00:00",
+          "stage": "START",
+          "mode": "all",
+          "code_root": "/tmp/genos-routed-chat-modes-r2-validation/test_same_checkout_gate_and_lo0/DEV"
+        },
+        {
+          "at": "2026-10-07T03:38:04.144811+00:00",
+          "stage": "ZIP_VERIFIED",
+          "code_zip_sha256": "0bcb9c6ba70e23fcc055d8c944ce943a5a210fca86164f51b0b9b17ce7b21ab3",
+          "code_manifest_sha256": "352ae448bfe3a240dc0650abd39440a7a341afa6c296a5e4d15c78de6c1e8de5"
+        },
+        {
+          "at": "2026-10-07T03:38:04.194192+00:00",
+          "stage": "GENERATION_SELECTED",
+          "path": "/tmp/genos-routed-chat-modes-r2-validation/test_same_checkout_gate_and_lo0/built/generation",
+          "manifest_sha256": "806b81d2fb837dda61f4dbb79dce20b64d131640d848a907f29e483c036157b3"
+        },
+        {
+          "at": "2026-10-07T03:38:05.555903+00:00",
+          "stage": "GIT_COMMITTED",
+          "commit": "7325c83d0910a2909000a2232ab155fd0258da63"
+        },
+        {
+          "at": "2026-10-07T03:38:05.851813+00:00",
+          "stage": "RELEASE_GATE_PASS",
+          "seconds": 0.296
+        },
+        {
+          "at": "2026-10-07T03:38:05.981588+00:00",
+          "stage": "GIT_PUSHED",
+          "commit": "7325c83d0910a2909000a2232ab155fd0258da63",
+          "remote": "origin",
+          "branch": "master",
+          "generation": "/tmp/genos-routed-chat-modes-r2-validation/test_same_checkout_gate_and_lo0/built/generation",
+          "generation_manifest_sha256": "806b81d2fb837dda61f4dbb79dce20b64d131640d848a907f29e483c036157b3"
+        },
+        {
+          "at": "2026-10-07T03:38:05.981686+00:00",
+          "stage": "COMPLETE",
+          "mode": "all",
+          "code_serving_revision": "NOT_DEPLOYED",
+          "chat_binding": "NOT_SELECTED",
+          "workflow_test": "NOT_RUN"
+        }
+      ]
+    },
+    {
+      "chat_mode": "integrated",
+      "source": "synthetic local checkout and local bare remote",
+      "events": [
+        {
+          "at": "2026-10-07T03:38:06.352007+00:00",
+          "stage": "START",
+          "mode": "all",
+          "code_root": "/tmp/genos-routed-chat-modes-r2-validation/test_same_checkout_gate_and_lo1/DEV"
+        },
+        {
+          "at": "2026-10-07T03:38:06.359261+00:00",
+          "stage": "ZIP_VERIFIED",
+          "code_zip_sha256": "0bcb9c6ba70e23fcc055d8c944ce943a5a210fca86164f51b0b9b17ce7b21ab3",
+          "code_manifest_sha256": "352ae448bfe3a240dc0650abd39440a7a341afa6c296a5e4d15c78de6c1e8de5"
+        },
+        {
+          "at": "2026-10-07T03:38:06.409087+00:00",
+          "stage": "GENERATION_SELECTED",
+          "path": "/tmp/genos-routed-chat-modes-r2-validation/test_same_checkout_gate_and_lo1/built/generation",
+          "manifest_sha256": "b90b97074bc3daf6b0ec43c221c04c88d79eaa4d1ae8eb9737093fb0f831a9fb"
+        },
+        {
+          "at": "2026-10-07T03:38:07.881560+00:00",
+          "stage": "GIT_COMMITTED",
+          "commit": "aef13a2b555361aceef37d5175f9d58ad9581ca2"
+        },
+        {
+          "at": "2026-10-07T03:38:08.191427+00:00",
+          "stage": "RELEASE_GATE_PASS",
+          "seconds": 0.31
+        },
+        {
+          "at": "2026-10-07T03:38:08.326570+00:00",
+          "stage": "GIT_PUSHED",
+          "commit": "aef13a2b555361aceef37d5175f9d58ad9581ca2",
+          "remote": "origin",
+          "branch": "master",
+          "generation": "/tmp/genos-routed-chat-modes-r2-validation/test_same_checkout_gate_and_lo1/built/generation",
+          "generation_manifest_sha256": "b90b97074bc3daf6b0ec43c221c04c88d79eaa4d1ae8eb9737093fb0f831a9fb"
+        },
+        {
+          "at": "2026-10-07T03:38:08.326713+00:00",
+          "stage": "COMPLETE",
+          "mode": "all",
+          "code_serving_revision": "NOT_DEPLOYED",
+          "chat_binding": "NOT_SELECTED",
+          "workflow_test": "NOT_RUN"
+        }
+      ]
+    }
+  ],
+  "log_archive": {
+    "path": "LOCAL_DELIVERY_LOGS.tar.gz",
+    "sha256": "c194678c4bba9f3240b51295a5dfa14ea13ad4093db589ed01258921b7e545d1",
+    "bytes": 198001,
+    "restore": "tar -xzf LOCAL_DELIVERY_LOGS.tar.gz -C <directory>"
+  },
+  "actual_genos": {
+    "generation_path": null,
+    "generation_manifest_sha256": null,
+    "code_applied": false,
+    "push_commit": null,
+    "code_serving_revision": null,
+    "platform_binding": "NOT_SELECTED",
+    "workflow_test": "NOT_RUN",
+    "socketio_rendering": "NOT_VERIFIED"
+  },
+  "platform_binding_switch": "MANUAL_PLATFORM_CONFIGURATION",
+  "local_active_pointer_changed": false,
+  "email_sent": false,
+  "external_model_calls": 0
+}

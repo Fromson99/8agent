@@ -1,0 +1,30 @@
+{
+  "schema_version": "zip-parts-text-validation-v1",
+  "validated_at_utc": "2026-10-07T08:33:08.823190+00:00",
+  "test_result": "7 passed in 6.48s",
+  "test_command": ".venv/bin/python -m pytest -q 05_TESTS/CONTRACTS/test_zip_parts_text.py",
+  "checks": [
+    "Actual Windows PowerShell ReadAllText -> ScriptBlock invocation of exact TXT source",
+    "No file extension rename or executable file creation",
+    "Korean/spaced filenames with optional .zip and quotes",
+    "Round-trip SHA-256 and original preservation",
+    "Corrupted fragments fail without publishing restored ZIP",
+    "Existing restored output preserved and new name selected",
+    "Missing/invalid names fail",
+    "Complete source parsed by Windows PowerShell parser"
+  ],
+  "sources": {
+    "ZIP_SPLIT_RUN.txt": "23023ad924990ad1f449038a22bbbd9bd90a819532109cc91cf537a0690d481f",
+    "ZIP_JOIN_RUN.txt": "a61af606084c48b504d51fc4fa5dc9ce823f8abbaf296366a689b8eac55c3421"
+  },
+  "source_r2": {
+    "1_SPLIT_ZIP.cmd": "c7461c40f60f37490728fe4bbc860b722ca4bbf0903fdb9fbe41f3c709d71ce7",
+    "2_JOIN_ZIP.cmd": "bd80a02f95ec6b39d7c8941345c4d3a872377d4fdfa0500f22782ba7bb49c00c"
+  },
+  "test_sha256": "6988ec1ce2e11f0bc9e6c4ae805afc3577e52f33076ff49f8da54fccf8470ddc",
+  "commands": {
+    "ZIP_SPLIT_RUN.txt": "& ([scriptblock]::Create([IO.File]::ReadAllText(([Environment]::GetFolderPath('Desktop')+'\\ZIP_SPLIT_RUN.txt'))))",
+    "ZIP_JOIN_RUN.txt": "& ([scriptblock]::Create([IO.File]::ReadAllText(([Environment]::GetFolderPath('Desktop')+'\\ZIP_JOIN_RUN.txt'))))"
+  },
+  "scope": "Plain-text source delivery for desktop ZIP split/join; real user ZIP, DRM, GENOS, data generations and MAIN unchanged"
+}

@@ -1,0 +1,77 @@
+{
+  "created_at": "2026-10-07T06:14:19.091095+00:00",
+  "validation_mode": "synthetic-contract-regression-not-model-or-speed-experiment",
+  "external_model_calls": 0,
+  "search_completion_observability_tests": {
+    "passed": 81,
+    "failed": 0,
+    "output": "SEARCH_TEST_OUTPUT.txt.gz"
+  },
+  "handoff_tests": {
+    "passed": 9,
+    "failed": 0,
+    "output": "FINAL_DELIVERY_TEST_OUTPUT.txt",
+    "covers": [
+      "all ZIP hashes and Python grammar",
+      "separate Bash TXT syntax and loader grammar",
+      "R3 apply, repeat, verify, rollback (workflow/integrated)",
+      "committed same-checkout gate and mock local Git push (workflow/integrated)",
+      "unknown field edit preserved",
+      "direct older selected MAIN baseline to cumulative ZIP",
+      "timing-only log summary",
+      "INFO heartbeat active step"
+    ]
+  },
+  "known_prior_contract_failures": {
+    "count": 7,
+    "reproduced_in_frozen_no_socket_r3": true,
+    "isolated_module_root": "baseline R3 extracted semantic_runtime, synthetic test data built with local tooling",
+    "output": "BASELINE_KNOWN_FAILURES.txt.gz",
+    "meaning": "legacy fixtures conflict with pre-existing adoption/repair contracts; not introduced by this patch"
+  },
+  "frozen_code_zip_sha256": "7bff620da3a60a7d13852b6a90838ac2e22ec092f83354d20079872fcffe3927",
+  "source_base_code_zip_sha256": "5ec5384b020cb76e8ca2f28b252850168888bed29e855c6116ee113b2002cb06",
+  "workspace_concurrent_drift": "CONCURRENT_WORKSPACE_DRIFT.json",
+  "drift_handling": "already-frozen R3 baseline, working changes preserved; disposable checkout verifies shipped code",
+  "raw_records": {
+    "SEARCH_TEST_OUTPUT.txt": {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r2/SEARCH_TEST_OUTPUT.txt.gz",
+      "sha256": "ffc1a7360d4f20d34a4b1a254a858c73417dd7552d14f72dde53a6d0c603b6ac",
+      "gzip_sha256": "fd89aea02a2fda096597bb250dbd0d45905ee6ce715ef138a42003d8befccff1",
+      "bytes": 1627,
+      "restore": "python3 -m gzip -d SEARCH_TEST_OUTPUT.txt.gz"
+    },
+    "BASELINE_KNOWN_FAILURES.txt": {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r2/BASELINE_KNOWN_FAILURES.txt.gz",
+      "sha256": "30efb43ed9128af535237c6441f5620befe674f86faaf78152e13cbe02ce0d7c",
+      "gzip_sha256": "5b9a602a8f21e4efb7d2a9d06e7f689b2983a1d210457f9d440e74c0ccbaba84",
+      "bytes": 26492,
+      "restore": "python3 -m gzip -d BASELINE_KNOWN_FAILURES.txt.gz"
+    },
+    "EXTENDED_RUN_INITIAL.txt": {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r2/EXTENDED_RUN_INITIAL.txt.gz",
+      "sha256": "ef92d4a6577260310bfc0a8775d63aa9170cd1a0f6577fbe063ec806cceac0ee",
+      "gzip_sha256": "d848e0af1102be92c27384d3cbee8cfa1662ed3e74f008b69b8e97c258ae645a",
+      "bytes": 20791,
+      "restore": "python3 -m gzip -d EXTENDED_RUN_INITIAL.txt.gz"
+    },
+    "DELIVERY_TEST_OUTPUT.txt": {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r2/DELIVERY_TEST_OUTPUT.txt.gz",
+      "sha256": "f41befe55b83158f9e1a15378ff00a673e3f26fe9e6cbb36c667814ea6667e12",
+      "gzip_sha256": "3b6b508ef2c90349d6572195ab0aea0295472dcbbf1925efe61d899a518734bd",
+      "bytes": 585,
+      "restore": "python3 -m gzip -d DELIVERY_TEST_OUTPUT.txt.gz"
+    },
+    "CONCURRENT_DRIFT_TEST_OUTPUT.txt": {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/query_latency_20261007_r2/CONCURRENT_DRIFT_TEST_OUTPUT.txt.gz",
+      "sha256": "8602003bc613b72d7e3a12528af5cf7474709330e7ab737127a3ea2640a7452c",
+      "gzip_sha256": "eb0de98e8e58516c8b5e4420b5106df83b44e2c0b89657f3d8f9065a55ba1bc7",
+      "bytes": 1976,
+      "restore": "python3 -m gzip -d CONCURRENT_DRIFT_TEST_OUTPUT.txt.gz"
+    }
+  },
+  "genos_applied": false,
+  "genos_internal_question_performance": "NOT_MEASURED",
+  "genos_code_serving_revision": null,
+  "local_active_pointer_changed_by_this_task": false
+}

@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import sys,json;from semantic_runtime.legal_agent.workflow_tiers_policy import profile;profile(json.load(open(sys.argv[1])))
+                                                                                           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/genos-r1-profile-repro-39ri486s/02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py", line 15, in profile
+    if set(value)-set(DEFAULT_PROFILE): raise ContractError('unknown v4 profile field')
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+semantic_runtime.legal_agent.errors.ContractError: unknown v4 profile field

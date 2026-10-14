@@ -1,0 +1,92 @@
+GENOS RAG 최적화 패치 R1 — MAIN53 검증 코드 기반 / 2026-10-13
+
+1. 이번 첨부를 사용합니다
+GENOS_RAG_FOCUSED_RULES_20261013_R1.zip
+GENOS_RAG_FOCUSED_RULES_20261013_R1_RUN.txt (ZIP 없이도 독립 실행 가능)
+기존 캐시 R4, CM, 오류 로그, 진행 화면, 워크플로우 편집기 수정 위에 적용하는 RAG 패치입니다.
+이전 캐시/진행 화면/CM ZIP을 다시 덮어쓰지 마세요. 기존 기능과 설치 이력을 보존합니다.
+최초 코드 목록 전체의 hash가 알려진 조합과 일치할 때만 적용합니다.
+알 수 없는 코드 조합이나 로컬 수정은 덮어쓰지 않고 실패 로그를 남깁니다.
+
+2. 변경 내용
+- 모델에 전달하는 탐색 입력을 압축하고 선택한 검색어·질문 범위를 계속 유지합니다.
+- 불필요한 재탐색·같은 원문의 반복 읽기를 줄이고 실패 후 상태·재시도 한도를 보존합니다.
+- 특정 문서 안에서 제목을 못 찾은 경우 문서 전체 부재로 단정하지 않습니다.
+- 조건/의무/허용을 원문에 연결하고 답변 구성의 반복을 줄입니다. 완료 계약은 v8입니다.
+기존 GENOS 캐시 코드·캐시 설정·내부 모델/인증·서비스 예산·CM 저장소·원문 generation·CURRENT·DB는 유지합니다.
+원문 재구축이나 NFS 데이터 교체가 필요하지 않습니다. 워크플로우 편집기는 이번 패치로 교체하지 않습니다.
+
+3. 적용 — 기존 ~/DEV에서 실행
+첨부 RUN.txt를 ~/DEV/TRANSFER에 올린 후:
+
+bash ~/DEV/TRANSFER/GENOS_RAG_FOCUSED_RULES_20261013_R1_RUN.txt
+
+기본 동작은 백업 → 코드 적용 → 설치 코드 검증입니다. 실제 서버 교체는 아래 4단계입니다.
+별도 GENOS checkout이면 기존 경로를 명시합니다. 예: GENOS_DEV_ROOT=/실제/DEV bash ..._RUN.txt
+현장 python3를 사용하며 실행 경로/버전을 기록합니다. 별도 Python 위치가 필요한 경우
+GENOS_PYTHON_DIR에 기존 python3가 들어 있는 폴더를 지정합니다. 새 Python 설치는 하지 않습니다.
+
+ZIP으로 실행할 경우:
+python3 -m zipfile -e ~/DEV/TRANSFER/GENOS_RAG_FOCUSED_RULES_20261013_R1.zip ~/DEV/TRANSFER/rag-focused-rules-r1-delivery
+cd ~/DEV/TRANSFER/rag-focused-rules-r1-delivery
+sha256sum -c PACKAGE_SHA256SUMS.txt
+bash GENOS_RAG_FOCUSED_RULES_20261013_R1_RUN.txt
+
+읽기 전용 사전 검사 / 적용 후 검사:
+bash ~/DEV/TRANSFER/GENOS_RAG_FOCUSED_RULES_20261013_R1_RUN.txt check
+bash ~/DEV/TRANSFER/GENOS_RAG_FOCUSED_RULES_20261013_R1_RUN.txt verify
+
+확인할 출력: FOCUSED_RAG_ALL_PROFILES PASS / completion=investigation-completion-v8
+BACKUP=... / APPLIED_CODE_ZIP=... / CODE_ZIP_SHA256=... / CODE_APPLIED
+재실행은 ALREADY_APPLIED로 검증합니다. 로그 경로는 FOCUSED_RAG_LOG에 출력합니다.
+실패 시 같은 로그와 .exit 파일에 상태가 남습니다. 앞선 백업/로그를 지우지 않습니다.
+
+4. 같은 checkout에서 commit → gate → push → 새 리비전
+아래 두 값은 현장에서 실제 값으로 바꿉니다. 임의의 세대를 새로 만들거나 선택하지 않습니다.
+TASK_BACKUP: 이번 apply의 BACKUP= 줄에 나온 절대경로.
+GENOS_GENERATION: 현재 서비스가 사용하는 generation 절대경로.
+00_SYSTEM/GENOS_SERVING_PATHS.json이 있으면 기록된 generation/manifest SHA와 대조합니다.
+
+export TASK_BACKUP='/이번_apply가_출력한_BACKUP_절대경로'
+export GENOS_GENERATION='/현재_서비스가_선택한_generation_절대경로'
+cd ~/DEV
+python3 - "$TASK_BACKUP/receipt.json" <<'COMMIT_PY'
+import json,subprocess,sys
+receipt=json.load(open(sys.argv[1],encoding='utf-8'))
+paths=[row['path'] for row in receipt['files']]
+subprocess.run(['git','diff','--check','--',*paths],check=True)
+subprocess.run(['git','diff','--stat','--',*paths],check=True)
+subprocess.run(['git','add','-f','--',*paths],check=True)
+subprocess.run(['git','commit','--only','-m','Apply focused RAG rules MAIN53 patch R1','--',*paths],check=True)
+COMMIT_PY
+bash ~/DEV/TRANSFER/GENOS_RAG_FOCUSED_RULES_20261013_R1_RUN.txt gate "$TASK_BACKUP" --generation "$GENOS_GENERATION" && git rev-parse HEAD && git push
+
+gate PASS를 확인한 경우에만 push합니다. 순서대로 실행하고 실패하면 다음 명령으로 진행하지 않습니다.
+gate는 실제 설치한 DEV에서 만든 APPLIED_CODE.zip과 같은 committed checkout으로
+기존 generation E2E 및 verify_assets를 검사합니다. 데이터 hash를 임의로 갱신하지 않습니다.
+gate 이후 코드를 바꾸면 다시 commit/gate해야 합니다.
+플랫폼에서 위 commit과 같은 generation을 선택한 새 코드서빙 리비전을 배포합니다.
+별도 SSE 서버도 같은 checkout의 기존 시작 설정으로 재시작합니다. 기존 주소/포트/모델 설정을 유지합니다.
+Git push만으로 실행 중인 리비전이나 워크플로우 편집기가 자동 갱신된다고 보지 않습니다.
+
+5. 현장 확인 — 워크플로우 테스트 화면에서만
+기존 워크플로우의 Python 편집기 R4/연결 설정을 유지합니다.
+워크플로우 테스트 화면에서 warmup과 실제 질문 소수를 실행합니다.
+구조 위치 탐색, 동일 원문 반복 읽기, 오류 복구 이후 진행, 원문 인용과 의무/허용 표현을 확인합니다.
+실제 commit / 코드서빙 revision / generation 절대경로 및 manifest SHA / request_id를 기록합니다.
+completion_policy_version=investigation-completion-v8 및 이번 설치 receipt를 함께 대조합니다.
+HEALTH 성공만으로 현장 질의 성공을 대신하지 않습니다. 코드서빙 직접 테스트 UI/API 실행을 요구하지 않습니다.
+
+6. 실패·재개·원복
+apply 실패 시 실패 로그와 BACKUP을 보존합니다. 알려진 원본/패치 바이트의 부분 적용만 원복 가능합니다.
+bash ~/DEV/TRANSFER/GENOS_RAG_FOCUSED_RULES_20261013_R1_RUN.txt undo "$TASK_BACKUP"
+이후 코드/원본 백업이 바뀌었으면 덮어쓰지 않고 멈춥니다. 확인 후 같은 RUN을 다시 실행합니다.
+Git에 반영한 경우 원래 commit을 확인해 원복 commit을 만들고 다시 gate/push합니다.
+서버 리비전도 기존 검증 리비전으로 되돌립니다. 데이터·DB·로그·캐시 설정은 삭제하지 않습니다.
+
+7. 검증 범위와 남은 제한
+MAIN53 공개 소량 실험에서는 입력 토큰 감소와 핵심 계약 통과를 확인했습니다.
+현장 인계 코드의 모의 검사와 GENOS 내부 모델의 실제 성능은 구분합니다.
+조건 AND/OR 판단 오류, 의미상 중복 문장, 모델 형식 복구로 인한 지연은 남아 있습니다.
+정확한 로컬 검사 수는 VALIDATION_SUMMARY.txt에 있습니다.
+이 인계는 GENOS 현장 적용·push·리비전 배포·워크플로우 성공 확인을 뜻하지 않습니다.

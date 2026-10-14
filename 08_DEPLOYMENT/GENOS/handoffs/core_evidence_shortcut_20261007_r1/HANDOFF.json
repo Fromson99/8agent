@@ -1,0 +1,32 @@
+{
+  "version": "GENOS_CORE_EVIDENCE_SHORTCUT_20261007_R1",
+  "created_at": "2026-10-07T08:17:21.278371+00:00",
+  "working_root": "/home/jin/8-AGENT",
+  "working_git_head": "e2c33b2298f9da9f17e9f07dabec3fe7936604b0",
+  "code_zip_sha256": "0fcfdeee4aaa66a40c25771f9fa88af40994cdc54d78575261284b8b1236952a",
+  "code_manifest_sha256": "e59cd21fa4e8ee37421f3f2afa60c48c292809aef23c768a2a9ad10a695e1125",
+  "run_txt_sha256": "b4ee15d37df1f9351d0b6f7659abd90c1a7d59fa9abc608bbbe0ea565cc01915",
+  "base_inventory_count": 9,
+  "prerequisite": "DB_LOG_ROLLBACK_R3",
+  "local_active_pointer_sha256": "ed89ee45580e1e95108c9147bddc8be5e00396b741c7a51fc4c3cd3db6d9338c",
+  "local_active_pointer_changed": false,
+  "field_generation": null,
+  "field_generation_manifest_sha256": null,
+  "field_git_commit": null,
+  "field_code_serving_revision": null,
+  "genos_applied": false,
+  "genos_deployed": false,
+  "workflow_test": "NOT_RUN",
+  "email_status": "NOT_SENT",
+  "delivery_validation": {
+    "inventories": 9,
+    "txt_commands": 90,
+    "field_variant_contracts": "3 x 23 PASS",
+    "same_checkout_mock_generation_gate": "3 PASS"
+  },
+  "prerequisite_run_txt": {
+    "path": "08_DEPLOYMENT/GENOS/handoffs/db_log_rollback_20261007_r3/GENOS_DB_LOG_ROLLBACK_20261007_R3_RUN.txt",
+    "sha256": "5b8dc8185865cea54a070d59d1e7b52cd5ef856bbf0d22f1a00c17111f41cdf1",
+    "bytes": 1703110
+  }
+}

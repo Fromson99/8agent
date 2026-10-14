@@ -1,0 +1,78 @@
+{
+  "observed_date": "2026-10-07",
+  "environment": "GENOS codespace RAW browser; user-provided photos",
+  "photos": [
+    {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r11/FIELD_RAW_NAMES_1.jpg",
+      "sha256": "b66ca2cb3b41ca23aceda3fcea85c101db97d968880bf5e362e01d281389a6c6"
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/cm_shortcut_oneclick_20261007_r11/FIELD_RAW_NAMES_2.jpg",
+      "sha256": "43c22d314c271e19554cf3bad539a3773caa3a538e3b23c4309ff3a93fea9d82"
+    }
+  ],
+  "user_context": "Another conversation identified possible original-name mismatches; user recalls prior name-adjustment logic.",
+  "raw_folders_visible": [
+    "01_DATA/RAW/external/risk_team/law/개인정보 보호법 시행령",
+    "01_DATA/RAW/external/financial_team/krx/코스닥시장 공시규정"
+  ],
+  "raw_files_visible": [
+    "개인정보 보호법 시행령 본문.xml",
+    "개인정보 보호법 시행령 본문.xml.md",
+    "코스닥시장 공시규정 조문.html",
+    "코스닥시장 공시규정_개정문.hwpx",
+    "코스닥시장 공시규정_개정문.pdf",
+    "코스닥시장 공시규정_전문.hwpx",
+    "코스닥시장 공시규정_전문.pdf"
+  ],
+  "related_code": {
+    "legacy_xml_upload_title": "02_BACKEND/lawrag/api/routers/structure.py:181; removes trailing 본문 from XML filename stem",
+    "current_builder_title": "02_BACKEND/lawrag/pipeline/genos_build.py:136; XML official title or explicit name tag, then file stem",
+    "team_catalogue_title": "02_BACKEND/lawrag/pipeline/team_raw.py:308; explicit catalogue name may override inventory name",
+    "published_display_name": "02_BACKEND/lawrag/pipeline/document_representations.py:18 and genos_build.py:319; folder path/title plus document_metadata preserved",
+    "cm_matcher": "02_BACKEND/lawrag/pipeline/shortcut_package.py:65; removes 전문/조문 suffixes but not 본문"
+  },
+  "ordinary_matcher_checks": [
+    {
+      "environment": "WSL ordinary read-only matcher check; mock labels only",
+      "logical_name": "개인정보 보호법 시행령",
+      "mock_stored_name": "external > risk_team > law > 개인정보 보호법 시행령 > 개인정보 보호법 시행령 본문",
+      "sealed_R11_match": true
+    },
+    {
+      "environment": "WSL ordinary read-only matcher check; mock labels only",
+      "logical_name": "코스닥시장 공시규정",
+      "mock_stored_name": "external > financial_team > krx > 코스닥시장 공시규정 > 코스닥시장 공시규정 조문",
+      "sealed_R11_match": true
+    },
+    {
+      "environment": "WSL ordinary read-only matcher check; mock labels only",
+      "logical_name": "코스닥시장 공시규정",
+      "mock_stored_name": "코스닥시장 공시규정_전문.hwpx",
+      "sealed_R11_match": true
+    },
+    {
+      "environment": "WSL ordinary read-only matcher check; mock labels only",
+      "logical_name": "중소기업기본법",
+      "mock_stored_name": "중소기업기본법 본문",
+      "sealed_R11_match": false
+    },
+    {
+      "environment": "WSL ordinary read-only matcher check; mock labels only",
+      "logical_name": "중소기업기본법",
+      "mock_stored_name": "external > financial_team > law > 중소기업기본법 > 중소기업기본법 본문",
+      "sealed_R11_match": true
+    }
+  ],
+  "confirmed_implementation_gap": "R11 does not recognize a standalone <logical-title> 본문 name without a separate exact title/folder/alias label.",
+  "field_small_business_missing_cause_confirmed": false,
+  "field_selected_source_document_name_visible": false,
+  "raw_presence_proves_selected_generation_presence": false,
+  "historical_normalizer_field_execution_identified": false,
+  "working_runtime_code_modified": false,
+  "generation_modified": false,
+  "local_MAIN_modified": false,
+  "actual_genos_access": false,
+  "code_serving_revision": null,
+  "workflow_verified": false
+}

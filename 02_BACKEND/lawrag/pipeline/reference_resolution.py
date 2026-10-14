@@ -196,6 +196,10 @@ class BuildContext:
 
 
 class ReferenceGateway(ModelGateway):
+    def validate_output(self, schema_name, value, view):
+        super().validate_output(schema_name,value,view)
+        protocol.validate_batch(value,self.context.binding["reference_cases"])
+
     def request(self, *args, **kwargs):
         body = super().request(*args, **kwargs)
         # Journal the actual OpenRouter routing and thinking controls as well.

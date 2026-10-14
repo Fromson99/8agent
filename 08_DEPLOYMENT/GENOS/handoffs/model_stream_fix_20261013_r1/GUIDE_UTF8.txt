@@ -1,0 +1,92 @@
+GENOS 최종 답변 스트림 종료 처리 수정 R1 — 2026-10-13
+
+이 파일은 실제 수정 코드의 적용 안내입니다. 앞서 보낸 설계 메일의 첨부는 실행 패치가
+아닙니다. 이번 GENOS_MODEL_STREAM_FIX_20261013_R1.zip과 같은 이름의 RUN.txt를 사용합니다.
+
+적용 대상은 앞서 발송한 최종 답변 토큰 스트리밍 R2가 적용된 기존 ~/DEV입니다.
+모델 스트리밍 자체와 생성 중 본문 송신을 유지합니다. 로컬 urllib 버전을 현장에 덮어쓰지
+않고, 현장의 httpx 전송 방식에 같은 파서를 연결했습니다. 알려진 R2 코드 inventory330종에
+일치할 때만 파일을 백업하고 적용합니다. 알 수 없는 코드 차이는 덮어쓰지 않습니다.
+
+수정 내용
+- [DONE] 수신 시 finish_reason이 없어도 전송을 완료하고 기존 JSON/schema/근거 검증으로 넘깁니다.
+- 정상 EOF 직전 마지막 [DONE] 프레임에 빈 줄이 없어도 처리합니다.
+- usage-only 이벤트와 CRLF/여러 data 줄을 처리합니다.
+- [DONE] 없는 EOF, 네트워크 중단, length/content_filter, 오류 이벤트는 계속 실패합니다.
+- 실제 HTTP 상태, DONE 수신, EOF, 마지막 프레임과 종료 사유를 stream_diagnostics에 저장합니다.
+- 수정 파일은 transport.py와 새 model_stream.py입니다. 관련 엔진·PIPELINE·코드 목록의 해시도
+  함께 결속합니다. 모델 선택·프롬프트·예산·원문·DB·캐시와 기존 답변 검증은 유지합니다.
+
+1. ZIP을 기존 DEV의 TRANSFER에 업로드하고 풉니다.
+아래 첫 경로는 실제 업로드한 ZIP 경로로 바꿉니다. ZIP 안의 실행 TXT와 별도 첨부 실행 TXT는
+동일한 파일입니다. RUN.txt는 코드와 패치 목록을 내장해 ZIP 해제 없이도 실행할 수 있습니다.
+
+python3 -m zipfile -e /실제/업로드/GENOS_MODEL_STREAM_FIX_20261013_R1.zip ~/DEV/TRANSFER/model-stream-fix-r1-package
+bash ~/DEV/TRANSFER/model-stream-fix-r1-package/GENOS_MODEL_STREAM_FIX_20261013_R1_RUN.txt check
+bash ~/DEV/TRANSFER/model-stream-fix-r1-package/GENOS_MODEL_STREAM_FIX_20261013_R1_RUN.txt apply
+
+기본 적용 대상은 ~/DEV입니다. 필요할 때만 GENOS_DEV_ROOT에 실제 기존 checkout 경로를 지정합니다.
+RUN 시작부터 지속 로그와 종료 코드를 남깁니다. 실제 Python 경로·버전과 checkout을 출력합니다.
+apply 결과의 BACKUP 및 APPLIED_CODE_ZIP 경로를 보관합니다. 다시 apply하면 검증 후
+ALREADY_APPLIED로 종료합니다. check 실패 시 다음 단계로 진행하지 않습니다.
+기존 R2가 적용되지 않았다는 경우 앞서 발송한 R2를 적용해야 하며, 다른 코드를 임의로
+새 inventory로 인정하거나 해시만 다시 쓰지 않습니다.
+
+2. 변경 파일과 Git diff를 검토하고 실제 push할 ~/DEV에 commit합니다.
+다른 미완료 작업을 통째로 commit하지 않습니다. 변경 파일 목록은 BACKUP/receipt.json의
+files에 있습니다. 소스와 엔진·PIPELINE·CODE_MANIFEST를 빠짐없이 포함해야 합니다.
+
+cd ~/DEV
+git diff --check
+git status --short
+
+3. 같은 checkout·commit과 현재 선택 generation으로 배포 게이트를 실행합니다.
+아래 두 값을 현장 apply 출력과 현재 선택 설정의 실제 절대경로로 바꿉니다.
+원문 generation을 다시 만들거나 NFS manifest를 수정하는 작업은 필요하지 않습니다.
+
+TASK_BACKUP='/실제/apply/출력의/backup-경로'
+TASK_GENERATION='/현재/선택된/generation/절대경로'
+bash ~/DEV/TRANSFER/model-stream-fix-r1-package/GENOS_MODEL_STREAM_FIX_20261013_R1_RUN.txt gate "$TASK_BACKUP" --generation "$TASK_GENERATION"
+
+게이트는 apply가 만든 APPLIED_CODE.zip과 실제 Git checkout의 파일, 같은 checkout에서
+generation E2E 및 verify_assets를 확인합니다. 게이트 통과 후 수정하면 다시 commit/gate합니다.
+검증한 commit을 기존 배포 branch로 push하고 같은 commit 및 generation으로 새 코드서빙
+리비전을 배포합니다. 별도 SSE 서버도 같은 수정 코드로 재시작해야 합니다.
+Git push·코드서빙 리비전·SSE 재시작은 코드 적용과 별도입니다.
+이번 수정은 기존 워크플로우 R4 또는 후속 소스 카드 편집기를 그대로 사용하며 재붙여넣기가 없습니다.
+
+4. 워크플로우 테스트 화면에서 확인합니다.
+warmup과 기존 질문을 실행하여 생성 완료 전에 최종 답변 본문이 보이는지 확인합니다.
+모델 JSON 키/근거 ID가 본문에 노출되지 않아야 하고 완료 후 중복 답변이 없어야 합니다.
+부분 송신 후 실패하면 기존 실패 응답으로 종료하며 다른 답변을 재호출해 이어 붙이지 않습니다.
+전체 JSON·스키마·근거 검증은 유지되므로 잘못된 모델 출력은 여전히 실패할 수 있습니다.
+직접 코드서빙 테스트 UI/API를 사용할 필요가 없습니다.
+실제 commit, 코드서빙 리비전, generation 경로/manifest SHA, request_id를 기록합니다.
+
+이번 사진에는 DONE 기록이 없어, 현장 서버가 DONE을 실제로 보내지 않는 경우까지 해결됐다고
+판정하지 않습니다. 새 원장의 response.stream_diagnostics.done_marker/eof_received 등을 통해
+이 경우를 구분할 수 있습니다. 서버가 종료 신호 없이 끊으면 완성 답변으로 저장하지 않습니다.
+
+5. 원복
+apply가 출력한 정확한 BACKUP 경로를 사용합니다. 이후 다른 수정이 있으면 보호를 위해 거부합니다.
+
+bash ~/DEV/TRANSFER/model-stream-fix-r1-package/GENOS_MODEL_STREAM_FIX_20261013_R1_RUN.txt undo "$TASK_BACKUP"
+
+원복은 기존 narrative R2 코드로 돌아갑니다. 이 버전에는 이번 종료 판정 문제가 남아 있습니다.
+이미 배포했다면 이전 검증 코드 리비전 복귀와 별도 SSE 재시작도 각각 수행합니다.
+기존 원문·DB·캐시·실패 로그·백업은 삭제하지 않습니다.
+
+검증 범위
+로컬 작업 코드의 관련 계약115개(실제 Gateway 연결 검사 포함 종료 계약26개 포함)를 확인했습니다.
+현장 코드 설치 조합의 계약284개, 대표 설치3상태/명령55개, 서비스 초기화6회,
+같은 committed checkout의 모의 generation 배포 게이트3회를 통과했습니다.
+중복되는 테스트 수를 독립 표본이나 실제 현장 성공 횟수로 해석하지 않습니다.
+검사는 모의 데이터/통신이며 실제 외부·내부 모델 호출은 0회입니다.
+WSL 작업 코드와 인계 패키지에 수정이 반영됐고 이 작업에서는 로컬 선택 포인터를 변경하지 않았습니다.
+최종 확인 시 로컬 선택은 별도 작업의 source-cards-20261013-r1(MAIN57)이며 이번 전송 수정은
+그 선택 릴리스에 포함되지 않았습니다. GENOS는 이 패치로 기존 현장 R2 코드를 갱신합니다.
+GENOS 반입·push·리비전·SSE 재시작·실제 화면 성공은 현장에서 확인해야 합니다.
+
+공식 문서 확인
+https://genos-docs.gitbook.io/default/v1.8.6/advanced-tutorials/guides/api/llm.md
+https://genos-docs.gitbook.io/default/v1.8.6/advanced-tutorials/guides/workflow/mocking-flowise/theory.md

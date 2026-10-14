@@ -14,9 +14,41 @@ _LOCK = threading.Lock()
 def generation_key(store):
     if hasattr(store, 'check_unchanged'):
         store.check_unchanged()
-        return ('catalogue-v2', *store.binding_signature())
+        return ('catalogue-v2', *store.binding_signature(), getattr(store, '_projected_team_binding', None))
     # In-memory adapters are request-local; never borrow another adapter's data.
-    return ('catalogue-v2', id(store), digest(store.manifest))
+    return ('catalogue-v2', id(store), digest(store.manifest), getattr(store, '_projected_team_binding', None))
+
+
+def bind_projected_teams(store, projection):
+    """Explicit hash-bound SourceSet membership for legacy unassigned documents.
+
+    This selection metadata grants no access and never overrides native teams.
+    The caller loads the projection through the pinned serving profile.
+    """
+    if projection is None or not projection.get('team_memberships'):
+        for name in ('_projected_team_binding', '_projected_teams'):
+            if hasattr(store, name): delattr(store, name)
+        return
+    if any(projection.get(key) != store.manifest[key] for key in ('generation_id', 'store_sha256')):
+        raise ValueError('stale team source projection')
+    memberships = {}
+    if not isinstance(projection['team_memberships'], dict):
+        raise ValueError('projected team membership map required')
+    for did, teams in projection['team_memberships'].items():
+        row = store.db.execute('SELECT source_artifact_sha256,json FROM document WHERE document_id=?', (did,)).fetchone()
+        origin = projection.get('documents', {}).get(did)
+        if not row or not origin or origin.get('status') != 'verified' or origin.get('source_artifact_sha256') != row[0]:
+            raise ValueError('team source projection provenance mismatch')
+        metadata = json.loads(row[1]).get('document_metadata') or {}
+        if any(location.get('team') for location in [metadata, *metadata.get('aliases', [])] if isinstance(location, dict)):
+            raise ValueError('team source projection cannot override native teams')
+        if not isinstance(teams, list) or not teams or len(teams) != len(set(teams)):
+            raise ValueError('explicit unique projected teams required')
+        for team in teams:
+            validate_team_id(team)
+        memberships[did] = frozenset(teams)
+    store._projected_team_binding = digest(projection)
+    store._projected_teams = MappingProxyType(memberships)
 
 
 def prepared_catalogue(store):
@@ -38,6 +70,8 @@ def prepared_catalogue(store):
                 teams[did] = frozenset(location['team'] for location in locations
                     if isinstance(location, dict) and isinstance(location.get('team'), str)
                     and re.fullmatch(r'[A-Za-z0-9_-]+_team', location['team']))
+                if did in getattr(store, '_projected_teams', {}):
+                    teams[did] = store._projected_teams[did]
                 roles[did] = role_of_metadata(metadata)
         if generation_key(store) != key:
             raise ValueError('source changed during catalogue preparation')

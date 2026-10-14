@@ -1,0 +1,111 @@
+GENOS 조사 완료 계약 R1 — 로컬 MAIN generation 44 반입본
+
+선택 릴리스: investigation-completion-v6-20261007-r1
+서빙 268파일은 검증 후보·현재 작업 코드·선택 릴리스와 동일합니다.
+설치기·gate·기존 NFS/채팅 호환 파일을 포함한 ZIP은 코드 290파일입니다.
+ZIP SHA-256: f740a0ccc005cd72b3ff3992a7cbd0739963af09b4b8ab40936313a3f271ed72
+
+이전 조사 제어 R2/R3/R4 및 별도 native chat R1 대신 이번 ZIP/APPLY 쌍을 사용합니다.
+기존의 알려진 선행 코드 해시와 NFS 훅은 허용하고 임의 현장 수정은 보존합니다.
+데이터·CURRENT·기존 SQL 원본은 변경하지 않으며 데이터 재구축은 필요하지 않습니다.
+JavaScript, 원문 데이터, DB, 인증키는 ZIP에 넣지 않았습니다.
+
+반영된 변경
+- 읽기와 채택 분리, 저장 원문 재열람, 기존 검색·읽기 시점 RETURN_TO
+- 같은 요청의 재개 예산, 마무리 예산, 반복 탐색 한도
+- 쟁점별 부족분과 최대 두 번의 재조사 복귀
+- 실제 원문 span 인용, 확정 판단 이후 추가 법률 문장 생성 방지
+- 모델 출력·상류 실패 분류와 워크플로우/채팅 JSON·SSE 상태 표시
+
+알려진 한계
+새 독립 16질문: 자동 정답 14, 미답 2. 기존 12회귀: 응답 10, 미답 2.
+회귀 응답 10개를 모두 정답으로 판정한 것이 아닙니다. 개인정보 자료제출 맥락 오류가 남았습니다.
+부족분 분류 모순·재조사 후 같은 판단 반복·반복 검색 후 복구 실패가 남아 있습니다.
+후속 전체 의사결정 트리 검토와 그 수정 제안은 이번 코드에 구현된 내용이 아닙니다.
+55개 관련 계약 통과는 법률 답변 정답 인증이 아니며 quality_certified=false입니다.
+GENOS 내부 모델 결과·현장 반입·Git push·코드서빙 리비전·워크플로우 검증은 현장에서 확인합니다.
+
+사용자 안내 — 모델 판단과 시스템 실패 구분
+질문에 업무 주체·행위·목적·적용 시점과 원하는 범위를 적으면 맥락을 좁힐 수 있습니다.
+예: '감독기관의 조사 권한 문맥에서, 자료제출을 요구하는 주체와 대상을 설명해 주세요.'
+일반 규칙 질문과 특정 사건 적용 질문을 구분하고 필요한 조건·예외 포함 여부를 적습니다.
+판단이 어긋나면 질문의 의도와 원문을 함께 지정해 재검토를 요청합니다.
+원문 누락·상태 유실·미해결 항목 은폐는 사용자가 질문을 고쳐 보완할 책임이 아니라 시스템 개선 대상입니다.
+
+현장 실행
+ZIP과 APPLY TXT를 기존 ~/DEV/TRANSFER에 저장합니다. 기존 Git checkout에 적용합니다.
+~/DEV 별칭은 사진처럼 /workspace 실제 root로 해결됩니다. 현장은 python3를 사용하며
+실행 로그에 실제 sys.executable과 버전을 남깁니다. Python 3.11 이상이 필요합니다.
+
+cd "$HOME/DEV/TRANSFER"
+export GENOS_DEV="$HOME/DEV"
+export GENOS_GENERATION="/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation"
+bash GENOS_INVESTIGATION_COMPLETION_20261007_R1_APPLY.txt inspect
+bash GENOS_INVESTIGATION_COMPLETION_20261007_R1_APPLY.txt all "$GENOS_GENERATION"
+
+실제 현장 generation 선택이 달라졌다면 GENOS_GENERATION에 정확한 절대경로를 지정합니다.
+기본값은 사진에서 선택된 기존 generation이며 날짜순 폴더를 자동 선택하지 않습니다.
+
+inspect는 코드/Git 상태를 읽고 CHECKOUT_PREFLIGHT JSON을 기록합니다. 적용/커밋/push는
+수행하지 않습니다. all도 동일 검사를 먼저 수행합니다. 관리 대상의 알려진 해시와
+다른 수정은 덮어쓰지 않고 중단합니다. 관계없는 staged/추적 변경 및 merge 충돌도
+파일 적용 전에 중단합니다. 관리 파일에 working tree와 다른 미확인 staged 내용이
+있어도 보존하고 중단합니다. 원문이나 키 내용은 보고서에 넣지 않습니다.
+
+보고서에는 다음 목록이 있습니다.
+  mismatches: 허용되지 않은 코드의 경로와 실제/목표 해시
+  unrelated_tracked_or_staged_paths: 이번 ZIP 범위 밖의 수정 파일명
+  unknown_staged_bytes: 관리 파일에서 미확인 상태로 staged된 내용의 경로/해시
+  unmerged_paths: merge 충돌 파일명
+사진 2의 미표시 수정 파일명은 이 보고서로 확인할 수 있습니다. 보고서 파일 경로는
+CHECKOUT_PREFLIGHT 이벤트에 출력됩니다. 미확인 변경이 남으면 원래 변경을 검토해
+분리 처리한 뒤 다시 실행합니다. 일괄 reset/checkout/stash/commit으로 우회하지 않습니다.
+
+all 순서
+  적용 전 코드·Git 상태 → 선택 generation/cache 확인 → 파일별 백업/적용 →
+  실제 checkout service/service.py 로더 검사 → generation E2E 및 verify_assets →
+  ZIP 범위 파일만 commit → 같은 checkout release gate → 기존 remote/branch로 push
+
+설치된 R7 helper의 미커밋 변경은 이번 ZIP 범위에 포함되어 조사 제어와 함께 검증/커밋됩니다.
+이번 완료 계약 R1의 일반 RAG 배포를 위해 NFS R7 all/prepare를 먼저 성공시킬 필요는 없습니다.
+NFS 코드 복사 및 진단 리비전 검사가 별도로 필요하다면 이번 완료 계약 R1 push 이후 R7 prepare/push와
+그 검사 ID의 WORKFLOW_PASTE_ALL 절차를 별도 진단 워크플로우에서 실행합니다.
+실제 데이터 ZIP 생성은 기존 R7 pack-data로 별도로 수행합니다. 쓰기가 멈춘 상태에서만
+--writers-stopped를 사용하며 출력은 ~/DEV/TRANSFER입니다. 이번 완료 계약 R1 all은 데이터 ZIP을 생성하지 않습니다.
+
+기록
+기본 로그: ~/DEV/TRANSFER/investigation-completion-r1-logs/
+RUN.log 역할의 모드별 .log, events.jsonl, CHECKOUT_PREFLIGHT-<시각>-<PID>.json을 보존합니다.
+20초마다 긴 검사 단계의 진행 표시가 나옵니다.
+종료 마커: INVESTIGATION_CONTROL_EXIT=0
+CODE_APPLIED의 backup 경로 및 GIT_PUSHED의 commit/generation/manifest hash를 보관합니다.
+같은 반입본 재실행은 바이트를 대조하며 기존 적용 영수증을 재사용합니다.
+
+단계별 명령
+bash GENOS_INVESTIGATION_COMPLETION_20261007_R1_APPLY.txt check "$GENOS_GENERATION"
+bash GENOS_INVESTIGATION_COMPLETION_20261007_R1_APPLY.txt apply "$GENOS_GENERATION"
+bash GENOS_INVESTIGATION_COMPLETION_20261007_R1_APPLY.txt verify "$GENOS_GENERATION"
+bash GENOS_INVESTIGATION_COMPLETION_20261007_R1_APPLY.txt push "$GENOS_GENERATION"
+
+코드서빙·워크플로우는 별도 반영
+GIT_PUSHED/RELEASE_GATE_PASS의 정확한 commit과 같은 generation으로 새 코드서빙
+리비전을 배포합니다. 다음 설정과 기존 내부 모델·임베딩·인증 설정을 대조합니다.
+  SEMANTIC_LLM_BACKEND=genos
+  GENOS_RAG_IMPLEMENTATION=legal-agent-unified-v6
+  GENOS_GENERATION=이번 실행에서 검증한 절대경로
+  GENOS_RUNTIME_DIR=/nfs-root/diamo/8-agent/runtime
+키 값을 사진/메일/로그로 출력하지 않습니다. 워크플로우 Python 단계는 제공한
+WORKFLOW_PASTE_ALL TXT 전체를 편집기에 반영합니다. Git push만으로 편집기가 바뀌지 않습니다.
+실제 warmup/질의는 워크플로우 테스트 화면에서만 확인합니다. 코드서빙 직접 테스트
+UI/API 실행을 요구하지 않습니다. 요청 ID·내부 model ID·시간·코드 리비전·generation과
+실제 판단/행동/이유 체인, 원문 인용, 상태 보존을 기록합니다.
+
+원복
+apply가 출력한 정확한 backup 절대경로를 지정합니다.
+bash GENOS_INVESTIGATION_COMPLETION_20261007_R1_APPLY.txt rollback "/실제_backup_절대경로"
+이후 변경이 있으면 자동 원복을 거부합니다. 이미 push/배포했다면 검토한 복구 commit과
+이전 코드 리비전/검증된 generation, 이전 워크플로우 전체 코드로 복귀합니다.
+
+현장 이번 완료 계약 R1 적용·실제 generation 전체 gate·push·리비전 배포·내부 질의는 아직 미확인입니다.
+로컬 검증 범위와 해시는 DELIVERY_VALIDATION.json 및 HANDOFF.json에 기록합니다.
+

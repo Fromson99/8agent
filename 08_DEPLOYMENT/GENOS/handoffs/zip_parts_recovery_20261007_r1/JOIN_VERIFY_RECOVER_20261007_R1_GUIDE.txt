@@ -1,0 +1,43 @@
+분할 조각 크기 제한 없이 전체 원본 SHA로 확인하는 병합·복구 도구
+
+기존 NFS/코드서빙 R3 실행본은 유지하고, 병합만 이번 보조 도구로 먼저 수행합니다.
+사진의 part000030은 49,000,001 bytes이고 다른 조각은 SHA가 일치했습니다.
+Windows의 47,852KB 표시는 반올림이므로 1바이트 차이를 구별하지 못합니다.
+
+1. JOIN_VERIFY_RECOVER_20261007_R1.zip을 ~/DEV/TRANSFER에 올리고 코드스페이스 터미널에서 해제합니다.
+
+cd ~/DEV
+python3 -m zipfile -e TRANSFER/JOIN_VERIFY_RECOVER_20261007_R1.zip TRANSFER/JOIN_VERIFY_RECOVER_20261007_R1
+(cd TRANSFER/JOIN_VERIFY_RECOVER_20261007_R1 && sha256sum -c SHA256SUMS.txt)
+bash TRANSFER/JOIN_VERIFY_RECOVER_20261007_R1/JOIN_VERIFY_RECOVER_20261007_R1_RUN.txt genos-rag-data-20261007T002029Z-7c0b050f.zip.parts
+
+다른 데이터면 마지막 .zip.parts 이름만 바꿉니다. 인자를 생략하면 이름을 질문합니다.
+조각/원본 해시 파일을 읽고 크기 상한 없이 현재 조각의 병합 SHA를 먼저 계산합니다.
+전체 SHA가 ORIGINAL.sha256과 같으면 그대로 VERIFIED_ZIP을 생성합니다.
+불일치 시 한 조각의 끝 1바이트를 제외한 내용이 PARTS.sha256의 해당 원본 해시와
+일치하는 경우만 복원 후보로 선택합니다. 후보 전체 SHA도 ORIGINAL.sha256과 같아야
+출력합니다. 원본 조각/메타데이터는 수정하지 않습니다. 1바이트가 어디서 추가됐는지
+확정하지 않으며 중간 삽입/다른 내용 변경/여러 조각 변경은 복원 성공으로 처리하지 않습니다.
+
+성공 시 기존 조각 폴더의 상위 TRANSFER에 genos-rag-data-20261007T002029Z-7c0b050f_verified.zip 및 .zip.sha256이 생깁니다.
+기존 동일 ZIP은 해시 확인 후 재사용하고 다른 파일은 덮어쓰지 않습니다.
+실패하면 RUN.log/STATUS.json/EXIT_STATUS.json을 확인합니다. 후보가 원본 SHA와 다르면
+데이터 복원으로 진행하지 않고 해당 조각을 다시 반입해야 합니다.
+
+2. 성공 출력의 VERIFIED_ZIP 경로를 기존 R3에 직접 전달합니다. 조각 폴더를 다시 지정하면
+원본 part000030이 보존되어 있으므로 기존 PARTS.sha256 검사에서 다시 실패합니다.
+
+cd ~/DEV
+bash TRANSFER/GENOS_TRANSFER_NFS_LIST_20261007_R3/GENOS_TRANSFER_NFS_LIST_20261007_R3_RUN.txt inspect TRANSFER/genos-rag-data-20261007T002029Z-7c0b050f_verified.zip
+
+3. 검사 보고서 검토/대상 RAG·AD 쓰기 정상 종료 후:
+bash TRANSFER/GENOS_TRANSFER_NFS_LIST_20261007_R3/GENOS_TRANSFER_NFS_LIST_20261007_R3_RUN.txt all TRANSFER/genos-rag-data-20261007T002029Z-7c0b050f_verified.zip --writers-stopped --accept-live-archive
+
+기존 R3 안내대로 정확한 commit의 새 코드서빙 리비전, SERVING_ENV_PATHS.txt,
+WORKFLOW_PASTE_ALL.txt 편집기 반영과 워크플로우 테스트 화면을 각각 확인합니다.
+새 도구는 코드 적용/Git/NFS를 변경하지 않습니다. FINAL ZIP을 R3에 넘긴 후의 복원은 별도입니다.
+
+모의 검사12개: 정상 병합, 49MB 초과 원본 해시 일치, 30번 끝 추가 1바이트 복원,
+재실행, 중간 삽입/내용 변경/복수 변경/전체 SHA 불일치/누락/추가/심볼릭 링크 차단,
+다른 기존 출력 보존. 원본 조각 불변과 R3의 직접 ZIP 입력 소비를 확인했습니다.
+GENOS 현장 원인/복구·복원·배포 성공은 아직 미확인입니다.

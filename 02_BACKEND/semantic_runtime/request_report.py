@@ -36,6 +36,31 @@ _FINALIZER_THREADS = []
 _REPORT_LOG = obs.get_logger('request-report')
 
 
+def final_response_summary(result):
+    """Keep public failure guidance distinct from a verified answer in logs."""
+    result = result if isinstance(result, dict) else {}
+    body = result.get('body')
+    body = body if isinstance(body, dict) else {}
+    answer = body.get('answer')
+    answer = answer.get('text') if isinstance(answer, dict) else None
+    text = body.get('text')
+    message = body.get('message')
+    status = body.get('answer_status')
+    failed = (status in ('failed', 'error') or
+              (type(result.get('status')) is int and result['status'] >= 400))
+    kind = ('failure_guidance' if failed and (message or text) else
+            'incomplete_answer' if failed and answer else
+            'answer' if isinstance(answer, str) and answer else
+            'service_text' if isinstance(text, str) and text else 'no_answer')
+    return {'http_status': result.get('status', 200),
+        'final_text_kind': kind, 'answer_present': isinstance(answer, str) and bool(answer),
+        'answer_chars': len(answer) if isinstance(answer, str) else 0,
+        'delivery_confirmed': False,
+        **({'answer': answer} if answer is not None else {}),
+        **{key: body[key] for key in ('text', 'message', 'answer_status', 'failure_reason',
+            'error_code', 'code', 'request_id', 'status', 'error', 'detail') if key in body}}
+
+
 def _finalizer_worker():
     while True:
         context, report = _FINALIZER_QUEUE.get()
@@ -68,11 +93,13 @@ class DeferredReport:
     may interrupt shared copies; it does not remove the original journal.
     """
 
-    def __init__(self, root, runtime, *, request_id, api_type, request, events):
+    def __init__(self, root, runtime, *, request_id, api_type, request, events,
+                 component='legal_agent', started_at=None):
         self.root, self.runtime = root, runtime
         self.request_id, self.api_type = request_id, api_type
         self.request, self.events = request, events
-        self.started_at = datetime.now(timezone.utc)
+        self.started_at = started_at or datetime.now(timezone.utc)
+        self.component = component
         self.team = team_name(request)
         self.log_path = None
         self.record_id = uuid.uuid4().hex
@@ -106,6 +133,7 @@ class DeferredReport:
         try:
             self.context = safe_live_log(self.root, self.request_id, self.runtime,
                                          team_id=self.team, started_at=self.started_at,
+                                         component=self.component,
                                          attach=False)
             path, handler, error = self.context.__enter__()
             opened = True
@@ -131,7 +159,7 @@ class DeferredReport:
                 if run_id is not None:
                     handler.run_id = run_id
                 body = self.request.get('json') if isinstance(self.request.get('json'), dict) else self.request
-                handler.queue_detail('RAG INPUT / QUESTION', {
+                handler.queue_detail('AD INPUT / COMMAND' if self.component == 'ad_mode' else 'RAG INPUT / QUESTION', {
                     'question': body.get('question') or body.get('q') or '',
                     'api_type': self.api_type, 'use_llm': body.get('use_llm', True),
                     **{key: body[key] for key in ('scope', 'team_id') if key in body},
@@ -175,9 +203,16 @@ class DeferredReport:
                 self.handler.stop_event.set()
 
     def complete(self, result):
+        summary = final_response_summary(result)
+        obs.event(_REPORT_LOG, 'request.outcome', request_id=self.request_id,
+                  **{key: summary[key] for key in ('http_status', 'final_text_kind', 'answer_present', 'answer_chars')})
         if self.admitted:
             self.request = deepcopy(self.request)
             self.result = deepcopy(result)
+            if self.handler:
+                # Service detaches the handler before complete(). Enqueue the
+                # outcome explicitly so NFS/report publication cannot hide it.
+                self.handler.queue_detail('SERVICE OUTCOME', summary)
 
     def _event(self, name, **fields):
         obs.event(_REPORT_LOG, name, **fields)
@@ -196,7 +231,7 @@ class DeferredReport:
             # Snapshot writes run on this finalizer, never on the gateway thread.
             try:
                 from .request_summary import make_row, write_row, refresh
-                directory = report_directory(self.root, self.team, self.started_at)
+                directory = report_directory(self.root, self.team, self.started_at, component=self.component)
                 report_path = directory / (self.record_id + '.json')
                 row = make_row(self.request, self.result, self.events, request_id=self.request_id,
                                started_at=self.started_at, directory=directory,
@@ -214,21 +249,25 @@ class DeferredReport:
                                    if row['event'] == 'request.returning'), {}),
                     'delivery_confirmed': False,
                 })
-                summary = {
-                    'http_status': self.result.get('status', 200),
-                    'answer': answer.get('text') if isinstance(answer, dict) else None,
-                    **({key: body.get(key) for key in ('status', 'error', 'detail')}
-                       if isinstance(body, dict) else {}),
-                }
-                self.handler.write_detail('FINAL RESPONSE / ANSWER', {
-                    key: value for key, value in summary.items() if value is not None})
+                self.handler.write_detail('FINAL RESPONSE / ANSWER', final_response_summary(self.result))
             self._event('shared_report.started')
             with obs.step(_REPORT_LOG, 'shared_report.publish'):
                 path = write_report(self.root, self.runtime, request_id=self.request_id,
                                     api_type=self.api_type, request=self.request,
                                     result=self.result, events=self.events,
                                     requested_at=self.started_at, live_log_path=self.log_path,
-                                    record_id=self.record_id)
+                                    record_id=self.record_id, component=self.component)
+            if self.handler and self.component == 'ad_mode':
+                # AD has its own durable SQL journal, not a legal run journal.
+                ad_journal = json.loads(path.read_text(encoding='utf-8'))['journal']
+                for call in ad_journal.get('calls', []):
+                    self.handler.write_detail('AD MODEL REQUEST', {
+                        'sequence': call['sequence'], 'input': call.get('input')})
+                    self.handler.write_detail('AD MODEL RESPONSE', {
+                        'sequence': call['sequence'], 'response': call.get('model_output'),
+                        'plan': call.get('plan'), 'receipt': call.get('receipt')})
+                for error in ad_journal.get('errors', []):
+                    self.handler.write_detail('AD FAILURE', error)
             self._event('shared_report.written', path=str(path))
             phase = 'shared_trace'
             self._event('shared_trace.started')
@@ -246,6 +285,11 @@ class DeferredReport:
 _SECRET_FIELDS = ("authorization", "password", "secret", "credential", "api_key", "access_token", "refresh_token")
 _RUN_ID = re.compile(r"[a-f0-9]{32}\Z")
 _LIVE_DIAGNOSTIC_FIELD_NAMES = frozenset({
+    'input_metrics_revision', 'request_size_basis', 'input_message_count',
+    'input_content_chars', 'input_content_utf8_bytes', 'input_system_chars', 'input_user_chars',
+    'input_nontext_messages', 'input_messages_json_bytes', 'response_format_chars',
+    'response_format_utf8_bytes', 'context_limit_known', 'prompt_plus_max_tokens',
+    'output_cap_reached', 'length_diagnosis',
     'diagnostics_version', 'thinking_requested', 'thinking_control_present',
     'stream_requested', 'thinking_observation', 'reasoning_field_present',
     'reasoning_nonempty', 'thought_channel_marker_present', 'reasoning_chars',
@@ -255,6 +299,9 @@ _LIVE_DIAGNOSTIC_FIELD_NAMES = frozenset({
 })
 _FULLTEXT_DIAGNOSTIC_FIELD_NAMES = frozenset(['active_searches_at_finish', 'active_searches_at_start', 'active_searches_peak', 'allowed_count', 'batch_cpu_ms', 'batch_no', 'batch_rows', 'batch_wall_ms', 'bounds_enabled', 'bounds_tokenize_ms', 'cache_size', 'concurrency_scope', 'connect_ms', 'cpu_nr_throttled_delta', 'cpu_throttled_usec_delta', 'facts_ms', 'fetched_count', 'index_bytes', 'indexed_source_count', 'involuntary_switches_delta', 'limit', 'location_count', 'major_faults_delta', 'mapping_status', 'minor_faults_delta', 'mmap_size', 'page_size', 'progress_event_count', 'result_count', 'route_handle_ms', 'scheduler_wait_ms', 'scope_filter_ms', 'scope_rejected_count', 'search_id', 'selected_count', 'source_cache_hits', 'source_json_chars', 'source_json_cpu_ms', 'source_json_decode_ms', 'source_load_errors', 'source_lookup_count', 'source_sql_count', 'source_sql_cpu_ms', 'source_sql_execute_ms', 'source_sql_fetch_ms', 'source_sql_max_ms', 'sql_count', 'sql_execute_cpu_ms', 'sql_execute_ms', 'sql_fetch_batch_count', 'sql_fetch_cpu_ms', 'sql_fetch_max_batch_ms', 'sql_fetch_ms', 'sql_first_row_cpu_ms', 'sql_first_row_ms', 'sql_status', 'temp_store', 'term_count', 'thread_cpu_ms', 'thread_id', 'thread_non_cpu_ms', 'thread_read_bytes_delta', 'thread_read_chars_delta', 'thread_read_syscalls_delta', 'uses_temp_sort', 'voluntary_switches_delta', 'work_ms'])
 _LIVE_FIELD_NAMES = (frozenset({
+    'cache_storage', 'dataset_bytes', 'resident_memory_reserved_bytes', 'resident_local_bytes',
+    'cache_scope', 'cache_wait_ms', 'cache_entries', 'cache_bytes', 'cache_evictions', 'cache_admitted',
+    'query_count', 'match_count', 'cache_overflow', 'law_count', 'action_count', 'branch_count',
     'sql_count','sql_execute_ms','sql_first_row_ms','sql_fetch_ms','scope_filter_ms','fetched_count',
     'selected_count','begin_ms','body_ms','commit_ms','committed','dropped_count','write_error_count',
     'process_id','sqlite_version','mount_type',
@@ -264,12 +311,13 @@ _LIVE_FIELD_NAMES = (frozenset({
     "work_ms", "thread_cpu_ms", "start_log_ms", "previous_log_ms",
     "previous_event", "previous_step", "elapsed_ms", "diagnostic_revision", "observability_revision",
     "document_count", "unit_count", "checked_count", "cache_hit",
-    "team_selected", "request_id", "run_id", "worker_id",
+    "team_selected", "request_id", "run_id", "worker_id", "attempt_id", "logical_call_id", "source_stage",
     "scan_elapsed_ms", "scan_limit_ms", "deadline_scope",
     "error_type", "error_code", "failure_kind", "retry_scheduled", "retryable",
     "read_actions", "queued", "selected_count", "read_complete_count",
     "read_partial_count", "source_chars", "answer_chars", "question_chars",
     "ok", "gate", "cycle",
+    "final_text_kind", "answer_present",
 }) | _LIVE_DIAGNOSTIC_FIELD_NAMES) | _FULLTEXT_DIAGNOSTIC_FIELD_NAMES
 _LIVE_SCALAR = re.compile(r"[A-Za-z0-9_.:-]{1,96}\Z")
 _OPAQUE_KEY = re.compile(r"(^id$|_id$|_ids$|^hash$|_hash$|_sha256$|^seq$|_seq$|^version$|_version$|_revision$|_cursor$)")
@@ -313,11 +361,14 @@ def _model_reply(response: Any) -> Any:
     return _human_value(body)
 
 
-def _tool_summary(record: dict[str, Any]) -> dict[str, Any]:
+def _tool_summary(record: dict[str, Any], *, evidence_count=None) -> dict[str, Any]:
     action = record.get("request") or {}
     args = action.get("args", {}) if isinstance(action, dict) else {}
     result = record.get("result") or {}
     summary: dict[str, Any] = {"tool": record.get("tool"), "status": record.get("status")}
+    if type(evidence_count) is int and evidence_count >= 0 and record.get('tool') == 'case_evidence_rebind':
+        summary['returned_count'] = evidence_count
+        summary['reason'] = '저장된 원문을 현재 요청의 권한·자료 세대와 대조해 재결속'
     if isinstance(args, dict):
         summary["input"] = {key: value for key, value in args.items()
                             if key in {"query", "text", "mode", "view", "relation", "depth"}}
@@ -358,12 +409,19 @@ def _live_diagnostic_value(key: str, value: Any) -> str | None:
     if value is None:
         return 'null'
     if key in {'thinking_requested', 'thinking_control_present', 'stream_requested',
-               'reasoning_field_present', 'reasoning_nonempty', 'thought_channel_marker_present'}:
+               'reasoning_field_present', 'reasoning_nonempty', 'thought_channel_marker_present',
+               'context_limit_known', 'output_cap_reached'}:
         return str(value).lower() if type(value) is bool else None
     if key == 'thinking_observation':
         return value if value in ('unknown', 'no_reasoning_reported', 'reasoning_reported') else None
     if key == 'finish_reason':
         return value if value in ('stop', 'length', 'tool_calls', 'function_call', 'content_filter') else None
+    if key == 'length_diagnosis':
+        return value if value in ('output_cap_reached', 'length_stop_cause_unknown', 'content_filter', 'no_length_stop', 'unknown') else None
+    if key == 'request_size_basis':
+        return value if value == 'canonical_json' else None
+    if key == 'input_metrics_revision':
+        return value if value == 'model-input-metrics-20261014-r1' else None
     if key == 'diagnostics_version':
         return _live_value(value)
     return str(value) if type(value) is int and value >= 0 else None
@@ -493,6 +551,8 @@ class _LiveLog(logging.Handler):
             choices = body.get('choices') if isinstance(body, dict) else None
             choices = choices if isinstance(choices, list) else []
             request = data.get('request')
+            from .legal_agent.model_contract import request_metrics, response_length_metrics
+            input_metrics = {**request_metrics(request), **response_length_metrics(request, body)}
             messages = request.get('messages', []) if isinstance(request, dict) else []
             correction = None
             if isinstance(messages, list) and len(messages) > 2:
@@ -511,7 +571,7 @@ class _LiveLog(logging.Handler):
                 'validation_error': correction.get('error') if isinstance(correction, dict) else None,
                 'body_sha256': response.get('body_sha256'),
                 'response_bytes': response.get('response_bytes'), 'choices': [],
-                'received_body': body}
+                'received_body': body, 'input_metrics': input_metrics}
             for index, choice in enumerate(choices):
                 if not isinstance(choice, dict):
                     raw['choices'].append({'position': index, 'invalid_choice': choice})
@@ -593,7 +653,7 @@ class _LiveLog(logging.Handler):
                 blocks: list[tuple[int, str, Any, str | None]] = []
                 from .progress import ProgressCapture
                 projected = []
-                projection = ProgressCapture(self.request_id, self.runtime, projected.append)
+                projection = ProgressCapture(self.request_id, self.runtime, projected.append, compact_public=False)
                 projection.run_id = self.run_id
                 projection._bind_scope(db)
                 scope_row = db.execute("SELECT payload_json FROM event WHERE kind='CASE_EXECUTION_CONTEXT' ORDER BY seq DESC LIMIT 1").fetchone()
@@ -624,7 +684,11 @@ class _LiveLog(logging.Handler):
                     if kind == "OBSERVATION" and "observation" in tables:
                         for row in db.execute("SELECT * FROM observation WHERE created_seq=?", (seq,)):
                             record = _decode_json_columns(dict(row))
-                            blocks.append((seq, "TOOL RESULT", _tool_summary(record), stamp))
+                            evidence_count = None
+                            if record.get('tool') == 'case_evidence_rebind' and 'observation_evidence' in tables:
+                                evidence_count = db.execute('SELECT COUNT(*) FROM observation_evidence WHERE observation_id=?',
+                                    (record['observation_id'],)).fetchone()[0]
+                            blocks.append((seq, "TOOL RESULT", _tool_summary(record, evidence_count=evidence_count), stamp))
                     if kind in {"ATTEMPT_RESERVED", "ATTEMPT_FINISHED"} and "model_attempt" in tables:
                         attempt_id = payload.get("attempt_id") if isinstance(payload, dict) else None
                         attempt = db.execute("SELECT * FROM model_attempt WHERE attempt_id=?", (attempt_id,)).fetchone()
@@ -635,8 +699,10 @@ class _LiveLog(logging.Handler):
                             phase = view["phase"] if view is not None else None
                             if kind == "ATTEMPT_RESERVED":
                                 from .legal_agent.readable_log import wire_view
+                                from .legal_agent.model_contract import request_metrics
                                 presented = wire_view(data.get('request') or {})
                                 blocks.append((seq, "MODEL CALL", {
+                                    'input_metrics': request_metrics(data.get('request')),
                                     "phase": presented.get('source_stage') or phase,
                                     "view": presented, "attempt": data.get("attempt_no"),
                                     "status": "started"}, stamp))
@@ -673,7 +739,7 @@ class _LiveLog(logging.Handler):
             if error != self.poll_error:
                 self.poll_error = error
                 self.write_detail("TRACE READER ERROR", {"error_type": error,
-                                                         "detail": _one_line(exc, 200)})
+                                                         "detail": str(exc)})
 
     def heartbeat(self) -> None:
         self.acquire()
@@ -731,6 +797,8 @@ class _LiveLog(logging.Handler):
             if isinstance(fields.get('failure_diagnostics'),dict):
                 from .legal_agent.readable_log import failure_rows
                 self.stream.write('\n'.join(failure_rows(_scrub(fields['failure_diagnostics'])))+'\n')
+            if fields.get('error_record'):
+                self.stream.write(str(fields['error_record'])+'\n')
             if record.exc_info and record.exc_info[0]:
                 # The live shared log must show the failing frame and original
                 # exception immediately, even if final report publication fails.
@@ -753,10 +821,10 @@ class _LiveLog(logging.Handler):
 @contextmanager
 def live_log(root: Path, request_id: str, runtime: Path | None = None, *,
              team_id: str = 'unassigned', started_at: datetime | None = None,
-             attach: bool = True):
+             attach: bool = True, component: str = 'legal_agent'):
     """Create a request-scoped NFS .log before work starts and append as it runs."""
     obs.configure()
-    directory = report_directory(root, team_id, started_at)
+    directory = report_directory(root, team_id, started_at, component=component)
     safe_id = re.sub(r"[^A-Za-z0-9_.:-]", "_", request_id)[:64]
     path = directory / f"{safe_id}-{uuid.uuid4().hex[:12]}.log"
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
@@ -813,6 +881,8 @@ class _RequestCapture(logging.Handler):
                  "event": record.getMessage(), **record.fields}
         if getattr(record, 'async_exc_type', None):
             event["exc_type"] = record.async_exc_type
+        if getattr(record, 'async_exception', None):
+            event['traceback'] = record.async_exception
         self.events.append(event)
 
 
@@ -894,12 +964,21 @@ def _journal(runtime: Path, run_id: str) -> dict[str, Any]:
 def write_report(root: Path, runtime: Path, *, request_id: str, api_type: str,
                  request: dict[str, Any], result: dict[str, Any],
                  events: list[dict[str, Any]], requested_at: datetime | None = None,
-                 live_log_path: Path | None = None, record_id: str | None = None) -> Path:
+                 live_log_path: Path | None = None, record_id: str | None = None,
+                 component: str = 'legal_agent') -> Path:
     """Atomically publish one complete JSON report; callers handle I/O failure."""
     body = result.get("body") if isinstance(result, dict) else None
     run_id = body.get("run_id") if isinstance(body, dict) else None
+    run_id_basis = 'response'
+    if not isinstance(run_id, str) or not _RUN_ID.fullmatch(run_id):
+        # Public failure projection intentionally omits internal run IDs. Use
+        # only this request's captured events, never a newest-file guess.
+        run_id = next((row['run_id'] for row in reversed(events)
+                       if isinstance(row.get('run_id'), str) and _RUN_ID.fullmatch(row['run_id'])
+                       and row.get('request_id') == request_id), None)
+        run_id_basis = 'captured_event' if run_id else 'unavailable'
     requested_at = requested_at or datetime.now(timezone.utc)
-    directory = report_directory(root, team_name(request), requested_at)
+    directory = report_directory(root, team_name(request), requested_at, component=component)
     safe_id = run_id if isinstance(run_id, str) and _RUN_ID.fullmatch(run_id) else request_id
     safe_id = re.sub(r"[^A-Za-z0-9_.:-]", "_", safe_id)[:64]
     target = directory / f"{safe_id}-{uuid.uuid4().hex[:12]}.json"
@@ -912,15 +991,21 @@ def write_report(root: Path, runtime: Path, *, request_id: str, api_type: str,
             raise ValueError('live log and request report must use the same team/date directory')
         target = live_log_path.with_suffix('.json')
     with obs.step(_REPORT_LOG, 'shared_report.journal'):
-        journal = _journal(runtime, run_id) if isinstance(run_id, str) else {"status": "NO_RUN_ID"}
+        if component == 'ad_mode':
+            from .ad_request_report import journal as ad_journal
+            journal = ad_journal(runtime, request_id, request)
+        else:
+            journal = _journal(runtime, run_id) if isinstance(run_id, str) else {"status": "NO_RUN_ID"}
     report = _scrub({
         "schema_version": "genos-request-report-v1",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "requested_at": requested_at.isoformat(),
         "team_id": team_name(request),
+        "component": component,
         "live_log_path": str(live_log_path) if live_log_path is not None else None,
         "request_id": request_id,
         "run_id": run_id,
+        "run_id_basis": run_id_basis,
         "api_type": api_type,
         "contains_internal_content": True,
         "coverage": "Recorded application events and journal state, including prompts, model replies, tool results, decisions and final response. Model hidden reasoning is unavailable.",
@@ -971,6 +1056,9 @@ def _action_line(action: Any) -> str:
 
 def format_readable_report(report: dict[str, Any]) -> str:
     """Render a chronological, bounded human trace from the same saved JSON."""
+    if report.get('component') == 'ad_mode':
+        from .ad_request_report import readable
+        return readable(report)
     journal = report.get("journal") or {}
     timeline = journal.get("timeline") or []
     result = report.get("result") or {}
@@ -1026,6 +1114,8 @@ def format_readable_report(report: dict[str, Any]) -> str:
             if isinstance(event.get('failure_diagnostics'),dict):
                 from .legal_agent.readable_log import failure_rows
                 lines.extend(failure_rows(_scrub(event['failure_diagnostics'])))
+            if event.get('error_record'):lines.append(str(event['error_record']))
+            if event.get('traceback'):lines.append(str(event['traceback']))
             continue
         event = item.get("event") or {}
         kind = _one_line(event.get("kind"), 80)
@@ -1064,6 +1154,9 @@ def format_readable_report(report: dict[str, Any]) -> str:
                   "source_bundle: " + _one_line(bundle.get("status")),
                   "claims: " + str(len(answer.get("claims") or [])),
                   "answer_chars: " + str(len(str(answer.get("text") or ""))),
+                  "final_text_kind: " + final_response_summary(result)['final_text_kind'],
+                  *[key + ': ' + _one_line(body[key]) for key in
+                    ('message', 'answer_status', 'failure_reason', 'error_code', 'code') if key in body],
                   "", "상세 원장: 같은 이름의 .json 파일 (내부 자료 포함)"])
     return "\n".join(lines) + "\n"
 

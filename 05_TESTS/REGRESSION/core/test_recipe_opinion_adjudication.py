@@ -44,7 +44,7 @@ def test_opinion_decision_gates_approval(decision,blocks,verdict,valid):
     if valid:assert r.request_review('window-review-test',data,{},call)['verdict']==verdict
     else:
         with pytest.raises(ValueError,match='review_pending'):r.request_review('window-review-test',data,{},call)
-        assert len(calls)==4  # one opinion call, three adjudication attempts
+        assert len(calls)==3  # one opinion call, initial adjudication plus one correction
 
 
 def test_omitted_opinion_never_silently_disappears():

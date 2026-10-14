@@ -2,6 +2,7 @@
 import pytest
 from test_batch_reference_navigation import connected, initial, decision, rel
 from semantic_runtime.legal_agent.source_selection import select_sources
+from semantic_runtime.legal_agent.errors import ProposalError
 
 
 def test_compact_menu_has_fixed_columns_and_exact_scope_ids(connected):
@@ -19,20 +20,19 @@ def test_omitted_group_is_summarized_and_cannot_be_reported_complete(connected,m
     def forbidden(*a):raise AssertionError('oversized detailed batch must not call model')
     out=rel.navigate('예외',s,{'U1':rec['unit_reads'][0]},forbidden,
         read_state={'count':0,'chars':0},seconds_left=lambda:120,max_context_chars=80000)
-    data=out['batches'][0]['data']
-    assert out['pending'] and data['omitted_groups']==1
-    assert data['all_group_summaries'][0]['target']['document_id']=='detail'
-    assert not data['all_group_summaries'][0]['read_options_presented']
+    assert out['pending'] and not out['batches']
+    limit=next(x for x in out['limits'] if x['kind']=='reference_item_context_limit')
+    assert limit['unexamined_groups'] and limit['first_item_chars']>limit['context_chars_limit']
 
 
 def test_one_invalid_pair_is_redecided_before_any_chosen_read(connected):
     s,_=connected;rec,sid=initial(s);phases=[]
     def invoke(system,data,schema,phase,timeout):
         phases.append(phase)
-        if phase=='source-unit-triage':return {'issues':[], 'needs_search':False, 'choices':[{'id':data['units'][0]['id'],'scope':'exact:999','reason':'잘못된 쌍'}]}
+        if phase=='source-unit-triage':return {'issues':[], 'needs_search':False, 'choices':[{'id':data['units'][0]['id'],'scope':'exact:999','status':'ADOPT','reason':'잘못된 쌍'}]}
         if phase=='source-unit-choice-repair':
             assert data['rejected_decision']['choices'][0]['scope']=='exact:999'
-            return {'issues':[],'needs_search':False,'choices':[{'id':data['units'][0]['id'],'scope':'exact:2','reason':'제시된 행의 실제 원문 범위를 다시 확인'}]}
+            return {'issues':[],'needs_search':False,'choices':[{'id':data['units'][0]['id'],'scope':'exact:2','status':'ADOPT','reason':'제시된 행의 실제 원문 범위를 다시 확인'}]}
         if phase.startswith('source-reference-batch'):return decision(data)
         return {'issues':[],'choices':[],'needs_search':False}
     out=select_sources('승인',rec,invoke,remaining_seconds=120,session=s)
@@ -44,7 +44,7 @@ def test_invalid_redecision_stops_without_recursive_repairs(connected):
     s,_=connected;rec,sid=initial(s);phases=[]
     def invoke(system,data,schema,phase,timeout):
         phases.append(phase)
-        return {'issues':[],'needs_search':False,'choices':[{'id':data['units'][0]['id'],'scope':'exact:999','reason':'잘못된 쌍'}]}
-    with pytest.raises(ValueError,match='scope'):
+        return {'issues':[],'needs_search':False,'choices':[{'id':data['units'][0]['id'],'scope':'exact:999','status':'ADOPT','reason':'잘못된 쌍'}]}
+    with pytest.raises(ProposalError):
         select_sources('승인',rec,invoke,remaining_seconds=120,session=s)
     assert phases==['source-unit-triage','source-unit-choice-repair']

@@ -25,6 +25,7 @@ class ExperimentTransportError(ExperimentCallError):
 
 class ExperimentFormatError(ExperimentCallError):
     """The provider replied, but the model output violated its contract."""
+    format_error = True
     def __init__(self, message, *, response=None):
         super().__init__(message);self.response=response
 
@@ -235,7 +236,7 @@ class OpenRouterProxyClient:
             self._write(out/'error.json',{'http_status':response.status_code,'error':'Non-JSON response'})
             raise ExperimentProviderError('OpenRouter returned non-JSON response') from None
         self._write(out/'response.json',raw)
-        envelope={'status_code':response.status_code,'body_json':raw,'body_text':None,
+        envelope={'status_code':response.status_code,'retry_after':response.headers.get('retry-after'),'body_json':raw,'body_text':None,
                   'body_sha256':hashlib.sha256(response.content).hexdigest()}
         if not response.is_success or raw.get('error'):
             raise ExperimentProviderError(f'OpenRouter HTTP {response.status_code}; response saved without request headers',
@@ -283,7 +284,7 @@ class OpenRouterProxyClient:
             self._write(out/'error.json',{'http_status':response.status_code,'error':'Non-JSON response'})
             raise ExperimentProviderError('OpenRouter returned non-JSON response') from None
         self._write(out/'response.json',raw)
-        envelope={'status_code':response.status_code,'body_json':raw,'body_text':None,
+        envelope={'status_code':response.status_code,'retry_after':response.headers.get('retry-after'),'body_json':raw,'body_text':None,
                   'body_sha256':hashlib.sha256(response.content).hexdigest()}
         if not response.is_success or raw.get('error'):
             raise ExperimentProviderError(f'OpenRouter HTTP {response.status_code}; response saved without request headers',

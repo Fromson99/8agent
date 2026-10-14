@@ -127,6 +127,34 @@ def test_filter_does_not_touch_other_team_or_internal(tmp_path):
     p.parent.mkdir(parents=True); p.symlink_to('/does/not/exist')
     assert len(list(teams.inputs(tmp_path, exclude_internal=True, teams=['third_team']))) == 1
 
+
+def test_operator_input_exclusion_is_hash_bound_and_preserves_original(tmp_path):
+    removed = pdf(tmp_path / 'RAW/external/financial_team/fss/large.pdf')
+    kept = put(removed.parent / 'kept.docx', 'native original')
+    expected = sha(removed)
+    catalogue = tmp_path / 'CATALOG/BUILD_EXCLUSIONS.json'
+    build.atomic(catalogue, {'schema_version': 'document-build-exclusions-v1', 'documents': [{
+        'path': str(removed.relative_to(tmp_path)), 'sha256': expected,
+        'document_id': expected[:16], 'reason': 'explicit operator selection'}]})
+    plan, report = teams.collect(tmp_path, emit=lambda _: None)
+    assert report['ok'] and [r['path'] for r in plan['files']] == [str(kept)]
+    assert plan['input_exclusions'] == {'path': str(catalogue.relative_to(tmp_path)), 'sha256': sha(catalogue)}
+    excluded = next(r for r in report['excluded'] if r['reason'] == 'operator_excluded_input')
+    assert excluded['sha256'] == expected and excluded['original_preserved']
+    assert removed.is_file() and sha(removed) == expected
+    removed.write_bytes(b'%PDF-changed-original')
+    with pytest.raises(ValueError, match='excluded input changed'):
+        teams.collect(tmp_path, emit=lambda _: None)
+
+
+def test_operator_input_exclusions_reject_paths_outside_team_raw(tmp_path):
+    build.atomic(tmp_path / 'CATALOG/BUILD_EXCLUSIONS.json', {
+        'schema_version': 'document-build-exclusions-v1', 'documents': [{
+            'path': '../outside.pdf', 'sha256': 'a' * 64,
+            'document_id': 'a' * 16, 'reason': 'invalid selection'}]})
+    with pytest.raises(ValueError, match='invalid excluded input path'):
+        teams.collect(tmp_path, emit=lambda _: None)
+
 def test_pending_request_is_not_resubmitted(tmp_path, monkeypatch):
     source = put(tmp_path / 'RAW/internal/risk_team/a.hwp', 'native')
     import hashlib

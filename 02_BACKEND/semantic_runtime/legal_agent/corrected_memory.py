@@ -148,6 +148,8 @@ class Memory:
         except BaseException: self.db.execute('ROLLBACK'); raise
     def stage_recorded(self,node,stage,payload,execution):
         pass
+    def stage_committed(self,node,stage,payload,execution):
+        pass
     def route_fields(self,gid):
         return {}
     def route_accepted(self,gid,revision,route_id,payload,body):
@@ -172,6 +174,24 @@ class Memory:
         return {**dict(r),'state':json.loads(r['state'])} if r else None
     def parts(self, gid):
         return {r['stage']:{**dict(r),'payload':json.loads(r['payload'])} for r in self.db.execute('SELECT n.* FROM head h JOIN node n ON n.id=h.node WHERE h.goal=?',(gid,))}
+    def investigation_hints(self, gid, session, g, execution):
+        """Labels from this case's own history for the next investigation; never evidence."""
+        from .law_navigation import prior_summary
+        hints={}
+        records=getattr(execution,'history_records',None) or []
+        if g and len(records)>1:
+            hints['case_history']=[{'kind':r['kind'],'utterance':r['utterance'][:300],'changes':list(r['changes'])}
+                                   for r in records[-6:]]
+        experience=getattr(execution,'experience_hint',None)
+        if experience:hints['experience_queries']=list(experience.get('queries') or [])[:4]
+        if not g:
+            row=self.db.execute("SELECT id,state FROM goal WHERE session=? AND id<>? AND status='READY' ORDER BY ordinal DESC LIMIT 1",
+                                (session,gid)).fetchone()
+            state=self.parts(row['id']).get('SELECT',{}).get('payload',{}).get('investigation_state') if row else None
+            if state:
+                hints.update(prior_summary(state),origin='PREVIOUS_QUESTION_IN_SESSION',
+                             previous_question=json.loads(row['state'])['task'][:300])
+        return hints or None
     def events(self, gid):
         out=[]; ordinal=0
         for r in self.db.execute('SELECT * FROM event WHERE goal=? AND after_state IS NOT NULL ORDER BY id',(gid,)):
@@ -216,13 +236,25 @@ class Memory:
         if c['knowledge_id'] and c['knowledge_id'] not in {k['id'] for k in context['knowledge']}:raise MemoryError('knowledge not offered')
         if c['action'] in ('REUSE','REMAP') and not c['knowledge_id']:raise MemoryError('knowledge required')
         if c['action']=='REUSE' and c['target'] in context['wiki_links'] and c['knowledge_id']!=context['wiki_links'][c['target']]:raise MemoryError('reuse must honor corrected wiki association')
-        if c['document_ids'] is not None and not set(c['document_ids'])<={d['id'] for d in context['allowed_documents']}:raise MemoryError('document outside access scope')
+        if c['document_ids'] is not None and not set(c['document_ids'])<={d['id'] for d in context['allowed_documents']}:
+            from .errors import ContractError
+            raise ContractError('document outside access scope')
         if c['restore_fields']:
             events=goals.get(c['target'],{}).get('events',[])
             if c['restore_event'] not in {e['id'] for e in events}:raise MemoryError('original event not retrieved')
         elif c['restore_event'] is not None:raise MemoryError('restoration fields required')
         if c['facts'] is not None and len({f['name'] for f in c['facts']})!=len(c['facts']):raise MemoryError('duplicate fact name')
         if (c['action'] in ('INSPECT','FINALIZE','REMAP') or (c['action']=='REUSE' and c['target'] is not None)) and (any(c[f] is not None for f in ('task','document_ids','facts','queries')) or c['source_category']!='KEEP' or c['restore_fields']):raise MemoryError('read/confirm/link command cannot hide a condition edit')
+    def output_decision_state(self,key):
+        from .errors import ContractError
+        row=self.db.execute("SELECT command FROM event WHERE kind='OUTPUT_DECISION_STATE' AND request=? ORDER BY id DESC LIMIT 1",(key,)).fetchone()
+        if row is None:return None
+        record=json.loads(row[0])
+        if digest(record['row'])!=record['hash']:raise ContractError('command decision journal hash mismatch')
+        return record['row']
+    def output_decision_event(self,value):
+        self.db.execute('INSERT INTO event(goal,request,utterance,command,kind) VALUES(NULL,?,?,?,?)',
+            (value['decision_key'],'',encoded({'row':value,'hash':digest(value)}),'OUTPUT_DECISION_STATE'))
     def resolve(self,context):
         context={**context,'offered_methods':METHODS}
         visible=model_context(context)
@@ -233,20 +265,32 @@ class Memory:
         closed['properties']['document_ids']={'type':'null'}
         for field,ids in [('target',[g['id'] for g in context['goals']]),('knowledge_id',[k['id'] for k in context['knowledge']])]:
             closed['properties'][field]={'anyOf':[{'type':'string','enum':ids},{'type':'null'}]} if ids else {'type':'null'}
-        for attempt in range(2):
-            c=self.invoke(RESOLVE+'\n명령 종류는 offered_methods에서 method_id로 선택한다. action은 출력하지 않는다. HISTORY_EXPLAIN은 최초/정정/이유/과정의 기록 설명, ANSWER_PRESENT는 내용 유지와 표 등 표현 변경이다. FACT_UPDATE는 사실만, RESEARCH_REPLAN은 새 근거가 필요한 검색계획도 변경할 때 사용한다. STATE_RESTORE는 원래 이벤트의 지정 필드만 복원한다. 미변경 task·queries를 다시 작성하지 않는다. stage는 RESEARCH_REENTER일 때만 명시 요청을 따른다. 나머지는 서버가 method에 맞게 결정한다.',data,closed,'memory-resolve' if not attempt else 'memory-resolve-repair')
-            try:
-                try:c=normalize(c,context)
-                except ValueError as exc:raise MemoryError(str(exc)) from exc
-                self.admit(c,context)
-                check=self.invoke(VERIFY_COMMAND,{'context':visible,'command':model_context(c),'execution_contract':{'stage_means':'restart entry, never a stopping point','requested_entry':c['stage'],'ordered_stages':STAGES,'success_ends_at':'COMPOSE','dependency_recovery_may_start_earlier':True}},CHECK,'memory-command-check')
-                validate(check,CHECK)
-                if not check['valid']:raise MemoryError(check['reason'])
-                return c
-            except (MemoryError, ValidationError) as exc:
-                if attempt:return {'action':'CLARIFY','reason':str(exc)}
-                data={**visible,'repair_feedback':str(exc),'rejected_command':model_context(c)}
-        raise MemoryError('resolver budget exhausted')
+        from . import output_contract as output
+        def prepare(raw):
+            output.validate_shape(raw,closed)
+            try:command=normalize(raw,context)
+            except ValueError as exc:
+                raise output.OutputContractError(str(exc),[output.issue('COMMAND_FIELDS_CONFLICT')],category='DECISION_CONFLICT') from exc
+            try:self.admit(command,context)
+            except MemoryError as exc:
+                raise output.OutputContractError(str(exc),[output.issue('COMMAND_ADMISSION_CONFLICT')],category='DECISION_CONFLICT') from exc
+            return command
+        def propose(payload,attempt):
+            raw=self.invoke(RESOLVE+'\n명령 종류는 offered_methods에서 method_id로 선택한다. action은 출력하지 않는다. HISTORY_EXPLAIN은 최초/정정/이유/과정의 기록 설명, ANSWER_PRESENT는 내용 유지와 표 등 표현 변경이다. FACT_UPDATE는 사실만, RESEARCH_REPLAN은 새 근거가 필요한 검색계획도 변경할 때 사용한다. STATE_RESTORE는 원래 이벤트의 지정 필드만 복원한다. 미변경 task·queries를 다시 작성하지 않는다. stage는 RESEARCH_REENTER일 때만 명시 요청을 따른다. 나머지는 서버가 method에 맞게 결정한다.',payload,closed,'memory-resolve' if not attempt else 'memory-resolve-repair')
+            command=prepare(raw)
+            check=self.invoke(VERIFY_COMMAND,{'context':visible,'command':model_context(command),'execution_contract':{'stage_means':'restart entry, never a stopping point','requested_entry':command['stage'],'ordered_stages':STAGES,'success_ends_at':'COMPOSE','dependency_recovery_may_start_earlier':True}},CHECK,'memory-command-check')
+            return {'command':raw,'check':check}
+        def verify(value):
+            prepare(value['command']);output.validate_shape(value['check'],CHECK)
+            if not value['check']['valid']:
+                raise output.OutputContractError(value['check']['reason'],[output.issue('COMMAND_INTENT_CONFLICT')],category='DECISION_CONFLICT')
+        try:
+            value=output.bounded_decision(self,'command-resolver',data,{'command':closed,'check':CHECK},propose,verify,
+                identity={'request':getattr(self,'_resolve_request',{}),'context':context,'binding':self.executor.binding})
+            return prepare(value['command'])
+        except output.OutputContractError as exc:
+            if not output.repairable(exc):raise
+            return {'action':'CLARIFY','reason':str(exc)}
     def checked_knowledge(self,kid,principal):
         row=self.db.execute("SELECT * FROM knowledge WHERE id=? AND owner=? AND team=? AND status='ACTIVE'",
             (kid,principal['user_id'],principal['team_id'])).fetchone()
@@ -320,6 +364,7 @@ class Memory:
         self.db.execute("UPDATE request SET status='COMPLETE',response=? WHERE id=?",(encoded(result),request_id))
         return result
     def _execute(self,body,principal):
+        self._resolve_request={'body':body,'principal':principal}
         session=body['session_id'];context=self.context(session,principal,body['question']);c=self.resolve(context)
         if c['action']=='CLARIFY':return {'status':'CLARIFY','answer':None,'reason':c['reason']}
         g=self.goal(c['target'],session) if c['target'] else None
@@ -417,12 +462,16 @@ class Memory:
                             self.stage_recorded(cur.lastrowid,stage,payload,execution)
                             if getattr(self,'resume_requests',False):
                                 self.db.execute('UPDATE goal SET pending=? WHERE id=?',(STAGES[STAGES.index(stage)+1],gid))
+                        self.stage_committed(cur.lastrowid,stage,payload,execution)
                 if reuse_candidate is not None:
                     execution.experience_hint={'experience_id':reuse_candidate['id'],'conditions_match':reuse is not None,
                         'queries':reuse_candidate['payload']['state']['queries']}
+                execution.investigation_hints=self.investigation_hints(gid,session,g,execution)
                 next_stage=start
                 reentries=0
-                persisted=parts.get('SELECT',{}).get('payload',{}).get('investigation_state',{})
+                # Loop bounds belong to one request; only a resumed request keeps them.
+                resumed=getattr(self,'resume_goal',None)==gid
+                persisted=parts.get('SELECT',{}).get('payload',{}).get('investigation_state',{}) if resumed else {}
                 execution.reentry_counters=dict(persisted.get('reentry_counters',{}))
                 for key in ('SEARCH_REENTRY','ASSESS_GAP_REENTRY','CONTRACT_REPAIR','TOOL_RESUME'):execution.reentry_counters.setdefault(key,0)
                 while next_stage<len(STAGES):
@@ -489,6 +538,9 @@ class Memory:
                         reentries=execution.reentry_counters['SEARCH_REENTRY']
                         if kind=='ASSESS_GAP_REENTRY':
                             checkpoint=json.loads(encoded(recovery.payload['investigation_state']))
+                            from .request_repair import enabled, new_epoch
+                            if enabled(execution.s.sources.profile):
+                                checkpoint=new_epoch(checkpoint,reason='ASSESS_GAP_REENTRY')
                             checkpoint['assessment_gaps']=recovery.payload['gaps']
                             checkpoint['reentry_counters']=dict(execution.reentry_counters)
                             execution.assessment_gaps=recovery.payload['gaps']
@@ -522,8 +574,9 @@ class Memory:
                         self.db.execute('INSERT OR REPLACE INTO head VALUES(?,?,?)',(gid,stage,cur.lastrowid))
                         pending=STAGES[next_stage+1] if next_stage+1<len(STAGES) else stage
                         self.db.execute('UPDATE goal SET pending=? WHERE id=?',(pending,gid))
+                        self.stage_recorded(cur.lastrowid,stage,payload,execution)
                     parts[stage]={'id':cur.lastrowid,'payload':payload};executed.append(stage)
-                    self.stage_recorded(cur.lastrowid,stage,payload,execution)
+                    self.stage_committed(cur.lastrowid,stage,payload,execution)
                     if stage=='SELECT':
                         with self.transaction():
                             self.db.execute('DELETE FROM stage_progress WHERE goal=?',(gid,))

@@ -313,7 +313,8 @@ def test_v6_default_profile_and_derived_unit_index_boot_without_manual_injection
         request={'question':'긴급 승인 예외','document_ids':['d'],'use_llm':False}
         with p.term_agent.open_session(request,query=p.plan(request['question'],['d']),runtime=tmp_path/'native') as s:
             rec=SourceRecall(s.sources).prepare()
-            assert rec['law_navigation']['law_page']['total']==1
+            assert rec['discovery_mode']=='structure'
+            assert rec['law_navigation']['law_page']['total']==0  # No title/coordinate matches; no silent body fallback
     finally:p.store.close()
 
 

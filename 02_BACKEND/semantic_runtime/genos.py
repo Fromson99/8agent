@@ -153,10 +153,17 @@ def request_json(
 ) -> dict[str, Any]:
     """Issue one GET/POST request, retrying only network, 429, and transient 5xx."""
 
-    import httpx
-
+    from .stdlib_http import Client, NETWORK_ERRORS, Timeout, REVISION
     owned = session is None
-    client = session if session is not None else httpx.Client(trust_env=True, follow_redirects=False)
+    client = session if session is not None else Client()
+    network_errors = NETWORK_ERRORS
+    timeout_type = Timeout
+    if session is not None:
+        # Preserve callers' explicitly injected legacy session adapters. The
+        # production default sends only through Python's urllib transport.
+        import httpx
+        network_errors += (httpx.RequestError,)
+        timeout_type = httpx.Timeout
     last = ""
     last_exception = None
     try:
@@ -172,6 +179,8 @@ def request_json(
                 max_retries=target.max_retries,
                 connect_timeout=target.connect_timeout,
                 read_timeout=target.read_timeout,
+                transport_backend="urllib" if owned else "injected-session",
+                transport_revision=REVISION if owned else None,
             )
             try:
                 response = client.request(
@@ -179,10 +188,10 @@ def request_json(
                     target.url(path),
                     headers=target.headers,
                     json=payload,
-                    timeout=httpx.Timeout(target.read_timeout, connect=target.connect_timeout),
+                    timeout=timeout_type(target.read_timeout, connect=target.connect_timeout),
                     follow_redirects=False,
                 )
-            except httpx.RequestError as exc:
+            except network_errors as exc:
                 last = type(exc).__name__
                 last_exception = exc
                 obs.event(

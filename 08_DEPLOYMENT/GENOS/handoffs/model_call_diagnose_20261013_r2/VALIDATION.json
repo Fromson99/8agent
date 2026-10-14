@@ -1,0 +1,30 @@
+{
+  "kind": "read-only saved GENOS request-report diagnostics",
+  "schema_version": "model-stream-diagnostic-validation-v1",
+  "synthetic_unit_tests": 12,
+  "standalone_checks": [
+    "bash_syntax",
+    "embedded_source_matches_working_tool",
+    "independent_run_exit_zero",
+    "original_json_unchanged",
+    "summary_and_terminal_hide_payloads",
+    "stream_case_found",
+    "output_permissions_0600",
+    "repeat_refuses_overwrite",
+    "explicit_new_output_works",
+    "input_output_collision_preserves_original",
+    "wrong_input_rejected_without_output",
+    "missing_argument_usage"
+  ],
+  "source_sha256": "d094954cad9a332b12d506fc2a4389f7a70bb885c843857206b74c4d9f221d2f",
+  "run_sha256": "8a3c82a37bffab767cfe44e78bde411f637e8ee1d9ca7086aab6ad983af8bad5",
+  "real_model_calls": 0,
+  "real_genos_calls": 0,
+  "field_failure_root_cause": "UNCONFIRMED",
+  "field_response_bytes_from_photo": 6069,
+  "limitations": [
+    "Historical stream_events do not retain DONE markers or the unparsed trailing frame.",
+    "RAW response display omits saved stream_events; null body is not evidence of zero input bytes.",
+    "JSON parsing success is not completion or answer validation."
+  ]
+}

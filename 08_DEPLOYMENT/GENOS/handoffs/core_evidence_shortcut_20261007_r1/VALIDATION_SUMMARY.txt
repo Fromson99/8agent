@@ -1,0 +1,26 @@
+GENOS 핵심 근거 shortcut R1 인계본 검증
+
+- 검증 기준: ADR0683 동결 후보의 기능 변경분 + 알려진 기존 GENOS 코드의 보존 병합
+- 9개 허용 inventory: 계측 R3/R4 또는 시스템 로그 R1 + DB 로그 롤백 R3
+- 첨부 독립 RUN TXT 실제 check/apply/재실행/verify/undo/변조 보존: 90명령 PASS
+- 실제 설치 코드의 모든 profile StageRunner 검사 및 30개 엔진 등록/코드/schema 결속 PASS
+- 각 선행 코드 3종의 실제 병합 설치본에 핵심 계약23개: 3회 모두 PASS(총69)
+- 동일 commit된 checkout에서 APPLIED_CODE.zip 전수 비교: 9회 PASS
+- 동일 checkout의 compact 모의 generation E2E + verify_assets 배포 gate: 3회 PASS
+- 원문 generation/CURRENT 및 기존 runtime 보존 PASS
+- ZIP JS/JSX/MJS/CJS 제외, Bash 구문, 추가/수정 Python의 3.11 문법 확인 PASS
+- 외부 모델 호출: 0
+
+사전 작업 코드 검증: 핵심23/23, 기존 회귀146/148.
+기존 signing 검사와 제공되지 않은 experience ID를 강제하는 mock 기대2개 실패 보존.
+후보의 동일148 회귀145 통과/3실패, 기준146 통과/2실패라는 원 기록도 보존.
+후보·기준 fixture 혼합 및 cache가 mock CASE_START로 바꾼 원 결과는 ADR0683에 기록.
+이번 인계 검증은 코드/상태/배선 계약 검사이며 새 모델 성능 실험이 아닙니다.
+
+현장 GENOS apply/Git push/리비전 배포/실제 내부 질의: 미확인.
+로컬 MAIN pointer generation45: 변경하지 않음.
+현장 generation 경로/manifest 해시, commit, 리비전은 RUN receipt와 gate receipt에 기록.
+로컬 검증에 사용한 코드 루트는 각 모의 DEV이며 실제 field checkout이 아닙니다.
+
+원 기록: VALIDATION.json, DELIVERY_TESTS.log.gz(gzip -dc로 복원), GENERATION_GATE.xml.
+정확한 각 병합 코드/이전 inventory/동결 후보 지문: ZIP의 SOURCE_BINDING.json.

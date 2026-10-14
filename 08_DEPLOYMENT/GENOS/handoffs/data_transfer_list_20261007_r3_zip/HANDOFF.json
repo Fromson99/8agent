@@ -1,0 +1,64 @@
+{
+  "version": "GENOS_TRANSFER_NFS_LIST_20261007_R3",
+  "runner_sha256": "24eff33bc244e73b97d4390ca70d785a5c7f2d13075abd21d174a9544f2f4922",
+  "code_zip_sha256": "0975d80dcd50ab3143211ac52321b69f063d3354b0aa83b75e638cb161679a14",
+  "code_manifest_sha256": "d2032a89fc9a16f4d8a3330e79be21b39743a32efd1d61f17714308a43977e27",
+  "embedded_envelope_sha256": "c809cbfe9ed39b700d79e3fc2471752e300e75e67958e19d4a144047f74a4a86",
+  "code_members": [
+    "02_BACKEND/semantic_runtime/nfs_data_probe.py",
+    "06_TOOLS/COMMANDS/genos_nfs_probe_handoff.py",
+    "06_TOOLS/COMMANDS/genos_rag_data_bundle.py",
+    "06_TOOLS/COMMANDS/genos_pack_rag_data.sh",
+    "08_DEPLOYMENT/GENOS/workflow/genos_nfs_data_probe.py"
+  ],
+  "target_nfs_root": "/nfs-root/diamo/8-agent",
+  "default_generation": "/nfs-root/diamo/8-agent/term-releases/financial-risk-success-20261005-schema-r2/generation",
+  "default_runtime": "/nfs-root/diamo/8-agent/runtime",
+  "default_state": null,
+  "source_path_evidence": [
+    "GENOS.md NFS R7/R6 field-path records",
+    "nfs_read_probe_20261006_r7/GUIDE_UTF8.txt"
+  ],
+  "data_zip_contains_existing_generation_and_runtime": true,
+  "operating_data_in_code_handoff": false,
+  "email_attachments_plain_txt_only": false,
+  "javascript_excluded": true,
+  "field_execution": false,
+  "field_commit": null,
+  "field_generation_manifest_sha256": null,
+  "code_serving_revision": null,
+  "workflow_verified": false,
+  "parent": "GENOS_TRANSFER_NFS_LIST_20261007_R1",
+  "packaging_only": true,
+  "runner_bytes_identical_to_r1": true,
+  "runner_name": "GENOS_TRANSFER_NFS_LIST_20261007_R3_RUN.txt",
+  "zip_sha256": "016a60b61dd4465454f6daa48aab4bd55da52abefbda6195a2beffb60aeea549",
+  "zip_members": {
+    "GENOS_TRANSFER_NFS_LIST_20261007_R3_RUN.txt": {
+      "bytes": 91174,
+      "sha256": "24eff33bc244e73b97d4390ca70d785a5c7f2d13075abd21d174a9544f2f4922"
+    },
+    "GENOS_TRANSFER_NFS_LIST_20261007_R3_GUIDE.txt": {
+      "bytes": 13502,
+      "sha256": "23537b3fb99605d9f6a228525debd916514a8b6c965eb1955b265cacbef63a0d"
+    },
+    "SPLIT_TRANSFER_ZIP.txt": {
+      "bytes": 2439,
+      "sha256": "93b491efcaa68912eed83ca9a35efe28315d5d37c7131faaaf2eaaf4b42432bc"
+    },
+    "JOIN_TRANSFER_ZIP.txt": {
+      "bytes": 2045,
+      "sha256": "0aea79bdbc39db888acf222e56916f4b0838124934f297de7c3e337d972b94ba"
+    },
+    "CODE_MANIFEST.json": {
+      "bytes": 2488,
+      "sha256": "d2032a89fc9a16f4d8a3330e79be21b39743a32efd1d61f17714308a43977e27"
+    },
+    "SHA256SUMS.txt": {
+      "bytes": 484,
+      "sha256": "20d7583f7db93da668690eb06c059ecbccbca7173723acc923eb871321d6d866"
+    }
+  },
+  "preferred_execution": "Extract ZIP in GENOS codespace and execute its internal RUN TXT",
+  "field_drm_verified": false
+}

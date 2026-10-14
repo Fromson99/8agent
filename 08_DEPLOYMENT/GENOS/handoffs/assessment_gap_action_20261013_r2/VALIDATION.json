@@ -1,0 +1,100 @@
+{
+  "status": "PASS_SCOPED_FIX_AND_INSTALLER",
+  "environment": "WSL, synthetic model/data only; no GENOS access",
+  "local_main": {
+    "release_id": "assessment-gap-action-20261013-r1",
+    "generation": 60,
+    "manifest_sha256": "6ff4b8bb9bc1cc05a7246172a5761d970618c9fd8d05e3e942c98443f45c69b4",
+    "selected_files_verified": 301,
+    "service_health": 200,
+    "service_search": 200,
+    "patch_selected": true
+  },
+  "matrix_cases": 952,
+  "unique_contracts_passed": 353,
+  "installed_contracts": {
+    "query_latency_20261007_r3": 171,
+    "query_latency_20261007_r4": 171
+  },
+  "installation_states": 6,
+  "service_boots": 12,
+  "same_committed_checkout_mock_generation_gates": 6,
+  "installer_evidence": [
+    {
+      "path": "TEST_query_latency_20261007_r3.json.gz",
+      "sha256": "b0c584f18e3bf6e1a90854b210d90d279553e04a2f202881452c0505b0923238",
+      "commands": 19,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r3_ad_success.json.gz",
+      "sha256": "2562ce1b1eef32ea437679b760b774f09637760cf32dc64120b4fa6fc64f3fb8",
+      "commands": 21,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r3_budget_ad.json.gz",
+      "sha256": "589dbadf5787ed6de673d97ef66be628ff76e5384b09c47ff716199bbdba2fcd",
+      "commands": 20,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_budget.json.gz",
+      "sha256": "95a406230fb5719608a0b658b04fa3b0ecef9cd83936f9d2f0eb67b2d1dea3d6",
+      "commands": 19,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_display_budget_ad.json.gz",
+      "sha256": "8b5d9e22a3d3530a971bd3a0c8a151cc7c189c3c8d734aa8a6de24e800231e15",
+      "commands": 21,
+      "expected_rejections": 2
+    },
+    {
+      "path": "TEST_query_latency_20261007_r4_display_budget_ad_success.json.gz",
+      "sha256": "bf813c579ad13ece1224adf3fa4c3edda0e98d8fe2214d6d93d2d53220996cea",
+      "commands": 22,
+      "expected_rejections": 2
+    }
+  ],
+  "known_predecessor_inventories": 990,
+  "source_files": {
+    "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py": "b3fbe5f16b6322654b363e1487a38a0026bd6762aa70ca4bb89cb62d4cb2db08",
+    "02_BACKEND/semantic_runtime/legal_agent/completion_v5.py": "e52d57b3b4b2206970772233bf25a7289ee5f15a426b000df1f8ab49cf77bb7f",
+    "02_BACKEND/semantic_runtime/legal_agent/completion_v6.py": "ff3eafefaa0d40d4401bdfbea92411bc1665b54560cdd20fa6c601579e623804"
+  },
+  "field": {
+    "code_root": "~/DEV",
+    "git_commit": null,
+    "generation": null,
+    "generation_manifest_sha256": null,
+    "code_serving_revision": null,
+    "applied": false,
+    "deployed": false,
+    "workflow_test": "NOT_RUN"
+  },
+  "real_model_calls": 0,
+  "limitations": [
+    "Exhaustive synthetic contract audit, not unseen legal answer accuracy or GENOS performance.",
+    "Known regressions supplement the matrix; same bytes with two fixture path setup fixes, original errors preserved.",
+    "Four prior unrelated recovery failures remain tracked in BL-010.",
+    "GENOS field deployment/internal model unverified."
+  ],
+  "prior_four_recovery_failures": {
+    "path": "08_DEPLOYMENT/GENOS/handoffs/assessment_gap_action_20261013_r1/PREIMAGE_RECOVERY.xml",
+    "sha256": "3bbe4de7e8afe003727d9bbc1944226bf226209fcc68f4f7efa4644b59d264b0",
+    "resolved": false
+  },
+  "main_evidence": {
+    "path": "04_EXPERIMENTS/ADR/ADR-0774-assessment-gap-action-main/artifacts/main-service-smoke.json",
+    "sha256": "5f3afcca8950a0d43f8d98edd6e9f3d89895e6ca1af88c3370efdc26780423d0"
+  },
+  "evidence_hashes": {
+    "CONTRACTS_query_latency_20261007_r3.xml": "a35a40b5cf4c5ae08317c42a5dd23437cf284669fa20ccea75ec2a42b51bb5db",
+    "CONTRACTS_query_latency_20261007_r4.xml": "044ca31fe5e8649a2a7716a0f84411359caa9907651bf92cb8c7f39e5b02bf57",
+    "INSTALL_TESTS.xml": "907b77d3851ba54bc7c4a6349a4a0d3031098c441306d4c66f730f4c32acbd8b",
+    "INSTALL_TESTS.log": "6ea8f188d12a368b73bbe9385ceda37e295b0eb7cac0831ba0c80adebd440089"
+  },
+  "run_txt_sha256": "d0ccfbe7bf20043c1c9dc5a3f9e64f4ed83f9c040f31c24eb34e70360eaba406",
+  "installer_sha256": "9baccda24b9652517783e43d479c0bdac60fa1367d79cf0ef49ff27fe0089a83"
+}

@@ -1,0 +1,91 @@
+{
+  "at": "2026-10-07T06:46:06.182542+00:00",
+  "code_zip_sha256": "d90023ab2b86c184ba6249b94cd6ad9f9d08c29bbde580a79ef0b72fac931312",
+  "code_manifest_sha256": "0f59896f3da02bc0cb89d8a7f2f50a6a38c74531490d64b572a4812deb213da6",
+  "code_files": 307,
+  "validation_mode": "synthetic unit/integration contracts and actual TXT installer/gate/mock local push; no performance or model experiment",
+  "integrated_tests": {
+    "passed": 118,
+    "failed": 0,
+    "deselected_preexisting_fixture_failures": 2,
+    "record": {
+      "path": "INTEGRATED.log.gz",
+      "raw_sha256": "db8f73f332c711bbf22df8bdb855e989b7d4fa3da7347cbfe3a4fe73867396cb",
+      "gzip_sha256": "d7dd92338372c50aeb7f8f81f70696799ac148e7f38e50ffe3c0ed8eb56d58bc",
+      "restore": "python3 -m gzip -d INTEGRATED.log.gz"
+    }
+  },
+  "handoff_tests": {
+    "passed": 9,
+    "failed": 0,
+    "additional_resident_contract_repeat": 7,
+    "record": {
+      "path": "DELIVERY.log.gz",
+      "raw_sha256": "ebe4cc7e9171856fa620bf0bc5ce9fab9cc11af118d35cbaa96b321ea5cd1718",
+      "gzip_sha256": "bd302acae25503e0d676fc7b9546051ac562f0a8020bff4aaa25de5629b3c7ab",
+      "restore": "python3 -m gzip -d DELIVERY.log.gz"
+    },
+    "scope": [
+      "frozen file inventory and Python/Bash grammar",
+      "actual apply/repeat/verify/rollback in both modes",
+      "same-checkout generation gate and mock Git push",
+      "actual new-remote TXT filename/alias/origin preservation",
+      "unknown field code preserved",
+      "ZIP hash failure before mutation",
+      "NFS failure preserves recoverable raw logs",
+      "standalone workflow logger reference grammar"
+    ]
+  },
+  "unique_tests_passed": 127,
+  "whole_dataset_scope": [
+    "source Store",
+    "navigation SQLite",
+    "own-block/legacy FTS",
+    "actually consumed serving glossary SQLite"
+  ],
+  "whole_dataset_tests": [
+    "different uncached questions reuse loaded complete data",
+    "request/connection close retains keeper",
+    "readonly/ACL/snapshot hash and mutation",
+    "concurrent initial load single-flight",
+    "RAM budget fallback retains whole local data",
+    "failed load/deadline cleanup"
+  ],
+  "preexisting_local_layout_issue": {
+    "workspace_sha256": "912f635a34e145f03ca07b6fd4aa7c291e4a547bd41fb6cb29fbd489a40cc330",
+    "activation_receipt_expected": "fe38abc82993ee536c432ae8a934ff768b3c3dcb58006d3cea8652774ee777e6",
+    "production_receipt_modified": false,
+    "test_fixture_only": "explicit_fixture_runtime.py gives synthetic apps explicit disposable runtime_root",
+    "record": {
+      "path": "INITIAL_LAYOUT_FAILURE.log.gz",
+      "raw_sha256": "e78f32eb1338ca00c62790a4fc1b9b4307fc1a6e59e1e6bb0f46ee385d06dff1",
+      "gzip_sha256": "0ba51245286291c58970dbe266a637e515900a80b053461b5c0bd5466b2f923f",
+      "restore": "python3 -m gzip -d INITIAL_LAYOUT_FAILURE.log.gz"
+    }
+  },
+  "preexisting_fixture_failures": [
+    "test_original_body_and_expansion_are_chosen_together",
+    "test_cross_unit_scope_is_rejected"
+  ],
+  "fixture_failure_basis": "Same two stale adoption/status expectations are recorded among previous R3 baseline failures. Preserved, not a search/ACL/ranking regression.",
+  "old_fixture_record": {
+    "path": "OLD_FIXTURE_FAILURE.log.gz",
+    "raw_sha256": "9c38fb504c79ed6eeee220d1763d448ef01a5fe5f99166f3779751a86f0fef59",
+    "gzip_sha256": "5a2274faa4084bf4b122103482bd84ad52ee6ce9f9bc99f6a09760b5622e341d",
+    "restore": "python3 -m gzip -d OLD_FIXTURE_FAILURE.log.gz"
+  },
+  "python_executable": "/home/jin/8-AGENT/.venv/bin/python",
+  "python_version": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+  "python311_serving_grammar": true,
+  "python310_workflow_reference_grammar": true,
+  "bash_grammar": true,
+  "server_ram_user_reported_gib": 16,
+  "resident_ram_budget_mib": 8192,
+  "auxiliary_result_cache_mib": 128,
+  "snapshot_ttl": null,
+  "data_pins_rewritten": false,
+  "local_active_pointer_changed": false,
+  "genos_deployed": false,
+  "field_speed_verified": false,
+  "external_model_calls": 0
+}

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
+mkdir -p logs
+TASK_LOG="logs/verify-$(date -u +%Y%m%dT%H%M%SZ)-$$.log"
+exec > >(tee -a "$TASK_LOG") 2>&1
+trap 'TASK_STATUS=$?; echo "EXIT=$TASK_STATUS LOG=$TASK_LOG"; exit "$TASK_STATUS"' EXIT
+sha256sum -c PACKAGE_SHA256SUMS.txt
+python3 - <<'VERIFY_PY'
+import ast
+from pathlib import Path
+ast.parse(Path('GENOS_WORKFLOW_LIVE_CARDS_20261008_R2_PASTE_ALL.txt').read_text(encoding='utf-8'), feature_version=(3, 10))
+print('EDITOR_FILES_VERIFIED; paste the complete PASTE_ALL.txt into the existing workflow Python editor')
+VERIFY_PY

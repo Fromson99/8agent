@@ -13,18 +13,19 @@ from test_structure_first_search import structured_generation
 def module(name,path):
  spec=importlib.util.spec_from_file_location(name,path);out=importlib.util.module_from_spec(spec);spec.loader.exec_module(out);return out
 
-def test_workflow_signed_identity_and_service_preservation(monkeypatch):
+def test_workflow_unsigned_session_and_service_preservation(monkeypatch):
  workflow=module('memory_workflow',ROOT/'08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py')
  service=module('memory_service',ROOT/'service.py')
- monkeypatch.setenv('GENOS_MEMORY_ENABLED','1');monkeypatch.setenv('GENOS_MEMORY_SIGNING_KEY','s'*40);monkeypatch.setenv('TEAM_ID','risk_team')
+ monkeypatch.setenv('GENOS_MEMORY_ENABLED','1');monkeypatch.delenv('GENOS_MEMORY_SIGNING_KEY',raising=False);monkeypatch.setenv('TEAM_ID','risk_team')
  raw=workflow._request_body('모의 요청',{'userInfo':{'userId':'u/one'},'chatId':'s/one','request_id':'r'})
  normalized=service._normalize(raw)['json']
- principal=memory_identity.verify_assertion(normalized)
+ principal=memory_identity.validate_session(normalized)
  assert principal['team_id']=='risk_team' and principal['user_id'].startswith('u-')
  assert normalized['session_id']==raw['session_id']
  assert raw['user_id']!=workflow._request_body('모의 요청',{'userId':'u-one','chatId':'s-one'})['user_id']
- changed={**normalized,'team_id':'other_team'}
- with pytest.raises(m.MemoryError):memory_identity.verify_assertion(changed)
+ assert 'memory_authorization' not in raw
+ changed={**normalized,'session_id':''}
+ with pytest.raises(m.MemoryError):memory_identity.validate_session(changed)
  monkeypatch.setenv('GENOS_MEMORY_ENABLED','0')
  old=workflow._request_body('모의 요청',{'userId':'u','chatId':'s'})
  assert 'memory' not in old and 'session_id' not in service._normalize(old)['json']
@@ -32,7 +33,7 @@ def test_workflow_signed_identity_and_service_preservation(monkeypatch):
 @pytest.mark.parametrize('data',[{}, {'userId':'u'},{'chatId':'s'}])
 def test_anonymous_memory_is_rejected(monkeypatch,data):
  workflow=module('memory_workflow',ROOT/'08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py')
- monkeypatch.setenv('GENOS_MEMORY_ENABLED','1');monkeypatch.setenv('GENOS_MEMORY_SIGNING_KEY','s'*40);monkeypatch.setenv('TEAM_ID','risk_team')
+ monkeypatch.setenv('GENOS_MEMORY_ENABLED','1');monkeypatch.delenv('GENOS_MEMORY_SIGNING_KEY',raising=False);monkeypatch.setenv('TEAM_ID','risk_team')
  with pytest.raises(ValueError,match='식별자'):workflow._request_body('모의 요청',data)
 
 def test_api_multiturn_uses_authenticated_principal_and_safe_response(tmp_path,generation):
@@ -57,12 +58,15 @@ def test_api_multiturn_uses_authenticated_principal_and_safe_response(tmp_path,g
   assert api.post('/v1/rag/ask',json={**body,'user_id':'other','request_id':'r4'}).status_code==422
   assert api.post('/v1/rag/ask',json={**body,'document_ids':['private'],'request_id':'r5'}).status_code==422
 
-def test_api_fails_without_trusted_adapter(tmp_path,generation,monkeypatch):
+def test_unsigned_api_still_requires_selected_documents(tmp_path,generation,monkeypatch):
+ from semantic_runtime import team_scope
+ monkeypatch.setattr(team_scope,'select_documents',lambda store,team:[])
  monkeypatch.delenv('GENOS_MEMORY_SIGNING_KEY',raising=False)
  app=create_app(tmp_path,generation,contracts_root=ROOT,provider=object(),implementation='legal-agent-tools-v5',legal_agent_profile=settings(),legal_agent_transport=Transport())
  with TestClient(app) as api:
   response=api.post('/v1/rag/ask',json={'memory':True,'question':'모의 요청','session_id':'s','request_id':'r','user_id':'u','team_id':'risk_team'})
-  assert response.status_code==422 and 'signing adapter' in response.json()['detail']
+  assert response.status_code==422 and response.json()['answer_status']=='failed'
+  assert 'no documents authorized' not in response.text
 
 def test_real_native_retrieval_read_selection_reentry_and_publication(tmp_path,structured_generation):
     generation=structured_generation

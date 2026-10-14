@@ -18,10 +18,12 @@ def capture(request_id, sink):
     def send(text):
         nonlocal seq
         send.started = True
+        send.text += text
         seq += 1
         sink({'schema_version': 'rag-answer-delta-v1', 'request_id': request_id,
               'seq': seq, 'text': text})
 
+    send.text = ''
     token = _sink.set(send)
     try:
         yield
@@ -35,8 +37,9 @@ def current_sink():
 
 class DraftText:
     """Small streaming JSON lexer; full JSON/schema validation stays in Gateway."""
-    def __init__(self, sink):
+    def __init__(self, sink, before_text=None):
         self.sink = sink
+        self.before_text = before_text
         self.stack = []
         self.mode = None
         self.key = False
@@ -119,6 +122,8 @@ class DraftText:
                 self.key = bool(frame and frame['kind'] == '{' and frame['state'] == 'key')
                 path = self._path()
                 self.target = not self.key and len(path) == 3 and path[0] == 'paragraphs' and type(path[1]) is int and path[2] == 'text'
+                if self.target and self.before_text is not None:
+                    self.before_text(path[1])
                 self.string = ''; self.first = False
             elif char in '{[':
                 self.stack.append({'kind': char, 'path': self._path(), 'key': None, 'index': 0,

@@ -1,0 +1,68 @@
+{
+  "revision": "GENOS_MODEL_INPUT_METRICS_20261014_R1",
+  "working_tests": {
+    "tests": 166,
+    "failures": 9,
+    "errors": 0,
+    "skipped": 0
+  },
+  "unchanged_baseline_tests": {
+    "tests": 36,
+    "failures": 9,
+    "errors": 0,
+    "skipped": 0
+  },
+  "unchanged_failures": [
+    "test_full_bounded_pipeline_repairs_plan_then_publishes_answer",
+    "test_progress_describes_correction_without_raw_response[False]",
+    "test_progress_describes_correction_without_raw_response[True]",
+    "test_selection_errors_do_not_adopt_rejected_choices[blank-source-omission-review]",
+    "test_selection_errors_do_not_adopt_rejected_choices[blank-source-triage]",
+    "test_selection_errors_do_not_adopt_rejected_choices[duplicate-source-omission-review]",
+    "test_selection_errors_do_not_adopt_rejected_choices[duplicate-source-triage]",
+    "test_selection_errors_do_not_adopt_rejected_choices[outside-source-omission-review]",
+    "test_selection_errors_do_not_adopt_rejected_choices[outside-source-triage]"
+  ],
+  "delivery_tests": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed_contract_tests": 80,
+  "service_boots": 8,
+  "same_checkout_synthetic_generation_gates": 4,
+  "installer_commands": 94,
+  "verified_code_roots": [
+    "/tmp/pytest-of-jin/pytest-145/test_real_service_boot_upgrade0/DEV",
+    "/tmp/pytest-of-jin/pytest-145/test_real_service_boot_upgrade2/DEV",
+    "/tmp/pytest-of-jin/pytest-145/test_real_service_boot_upgrade1/DEV",
+    "/tmp/pytest-of-jin/pytest-145/test_real_service_boot_upgrade3/DEV"
+  ],
+  "known_inventories": 1320,
+  "source_files": {
+    "02_BACKEND/semantic_runtime/legal_agent/model_contract.py": "fcf09fbf548b5caa2cac0f5da99f5a7a88a36595ca93a2e7364769eef9a56939",
+    "02_BACKEND/semantic_runtime/legal_agent/gateway.py": "2e18301982178649a23c6320e2bdd6393023d2067d48e7c7300f9fd2242d5d6e",
+    "02_BACKEND/semantic_runtime/observability.py": "00cb1dc975327fb7de384167becb26486125e04f497f3b03ef266ec9f8e00b29",
+    "02_BACKEND/semantic_runtime/request_report.py": "316ba81a8da823953493a3849d2fd0ec8b14e3bd52693ea38e14f87838775a47"
+  },
+  "real_model_calls": 0,
+  "real_network_calls": 0,
+  "active_release_unchanged": "public-failure-guidance-20261014-r1",
+  "active_generation": 61,
+  "genos_field_deployment": "NOT_VERIFIED",
+  "field_commit": null,
+  "field_generation_path": null,
+  "field_generation_manifest_sha256": null,
+  "field_serving_revision": null,
+  "test_data": "synthetic generation built locally; installed readers/API and same installed engine pins verified",
+  "limits": [
+    "length root cause and internal context capacity require field evidence",
+    "nine existing broad-suite failures remain",
+    "no MAIN promotion or GENOS deployment"
+  ],
+  "fixture_repairs": [
+    "build-only factorized_audit absent in field bundle; prebuilt synthetic tree supplied",
+    "isolated synthetic tree directory to avoid fixture database collision"
+  ]
+}

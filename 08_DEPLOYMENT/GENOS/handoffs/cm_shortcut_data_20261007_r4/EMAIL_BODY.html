@@ -1,0 +1,7 @@
+<p>CM본부 질의 중 과거 오답·미답변 기록이 있는 51건 전체를 shortcut과 legal_wiki에 등록할 수 있는 최종 자료입니다. 검토 정본의 주 조문·예외·정의·준용·위임 근거 98개(21문서)를 연결했습니다.</p>
+<p><b>최종 사용본은 GENOS_CM_SHORTCUT_DATA_20261007_R4입니다.</b> CM 데이터 인계 R1/R2/R3 대신 이번 R4 ZIP과 동일 이름 RUN.txt를 사용해 주세요. 데이터 자체는 검증한 cm51-curated-20261007-r2를 유지합니다. 선행 핵심근거 shortcut R1 설치9종과 최신 화면표시 R2 설치18종, 총27종의 알려진 CODE_MANIFEST에 맞춘 패치로 기존 화면·검색·로그 설정을 보존합니다.</p>
+<p>기존 DB나 원문 generation을 교체하지 않습니다. 현장 원문 파일/조문 본문 해시와 실제 사용자·팀·문서 권한을 확인한 뒤 기존 SQL에 추가하고 legal_wiki projection을 생성합니다. 재실행 중복 방지와 해당 등록 자료만 retire하는 롤백을 포함합니다. 현재 원문을 다시 읽고 SELECT/ASSESS로 판단하며, 업무 기준답변은 검토 기록으로 보존합니다. 법률 해석 승인이나 과거 답변 자동 재생으로 취급하지 않습니다.</p>
+<p>첨부 GUIDE의 순서대로 기존 ~/DEV에 check/apply/verify, 동일 checkout commit/gate, push 및 코드서빙 리비전 확인 후 실제 runtime/state와 요청 사용자·팀으로 data-check/data-import/data-verify를 수행해 주세요. 독립 RUN.txt에 코드와 데이터가 모두 포함돼 있어 ZIP 해제 없이 실행할 수 있으며 현장 명령은 python3입니다. 새 workflow Python 단계 변경은 요구하지 않습니다.</p>
+<p>사진의 “벤처기업의 주식매수선택권은 언제부터 행사할 수 있나요?” 입력을 CM-016에 연결했습니다. 현장 적용 후 워크플로우 테스트 화면에서 CORE_EVIDENCE_ROUTE_USED와 현재 확보한 벤처기업법/시행령 근거, 답변·예외 판단 상태를 확인해 주세요.</p>
+<p>로컬 등록51건/근거98개와 반입·권한·재실행·롤백을 검증했습니다. 이 작업의 모델 호출은 0회입니다. 로컬 MAIN45 선택 포인터는 그대로이며 새 curated 소비 코드는 이번 인계본/작업 코드에 있습니다. 실제 GENOS 적용·push·리비전 배포·내부 모델 답변 성공은 현장 확인 전까지 미확인입니다. CM 등록 사례는 이후 평가에서 training/in-sample로 표시합니다.</p>
+<p>첨부: 최종 ZIP, 독립 RUN TXT, 사용 안내, 검증 요약, SHA256SUMS. 첨부 ZIP에는 JS/JSX/MJS/CJS 파일이 없습니다.</p>

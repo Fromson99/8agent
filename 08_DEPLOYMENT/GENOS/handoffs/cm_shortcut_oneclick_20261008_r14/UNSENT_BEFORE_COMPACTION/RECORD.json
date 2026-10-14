@@ -1,0 +1,42 @@
+{
+  "status": "UNSENT_DRAFT_NOT_VALIDATED",
+  "reason": "Remove unused historical blob copies; inventories and every supported upgrade remain pinned",
+  "files": [
+    {
+      "name": "GENOS_CM_ONECLICK_20261008_R14.zip",
+      "bytes": 13181508,
+      "sha256": "865ff62a5f379d80a799fdfd2e5b3db1377920566ac38635f13b90f528335185"
+    },
+    {
+      "name": "PATCH_SPEC.json.gz",
+      "bytes": 13099377,
+      "sha256": "4cfdb6e9e73848e0401281ea00728e90dea0ebfd0a97977c0732d21ba6b3f161"
+    },
+    {
+      "name": "HANDOFF.json",
+      "bytes": 7329,
+      "sha256": "1d182953ef43d08e10db7ae9ca2b8e4261b0112708df9ca10cf6dc9637df153a"
+    },
+    {
+      "name": "GENOS_CM_ONECLICK_20261008_R14_SHA256SUMS.txt",
+      "bytes": 212,
+      "sha256": "64fb60f521e9270801222017e1dbb9b6cc003cedda9617395508819149bf7ed0"
+    },
+    {
+      "name": "GENOS_CM_ONECLICK_20261008_R14_RUN.txt",
+      "bytes": 17486707,
+      "sha256": "808c9522a554f9db7668f18cfde63bd9624fb698e234d7a7084e926055a5eca0"
+    },
+    {
+      "name": "GUIDE_UTF8.txt",
+      "bytes": 3581,
+      "sha256": "3981bd42c4f01da3c3c2d98c3e3ac110055625765b10acdf2ac8352b0a5f448d"
+    },
+    {
+      "name": "GENOS_CM_ONECLICK_20261008_R14_GUIDE.txt",
+      "bytes": 3581,
+      "sha256": "3981bd42c4f01da3c3c2d98c3e3ac110055625765b10acdf2ac8352b0a5f448d"
+    }
+  ],
+  "restore": "python3 -m gzip -d <name>.txt.gz"
+}

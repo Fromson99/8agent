@@ -1,0 +1,43 @@
+{
+  "shared_catalogue": true,
+  "cases": 51,
+  "entries": 98,
+  "readers": [
+    {
+      "user_id": "jin",
+      "team_id": "CM",
+      "shared_units": 51,
+      "same_unit": true
+    },
+    {
+      "user_id": "common-other-user",
+      "team_id": "risk_team",
+      "shared_units": 51,
+      "same_unit": true
+    },
+    {
+      "user_id": "common-other-team-user",
+      "team_id": "financial_team",
+      "shared_units": 51,
+      "same_unit": true
+    }
+  ],
+  "counts": [
+    {
+      "visibility": "COMMON",
+      "status": "PUBLISHED",
+      "units": 51
+    },
+    {
+      "visibility": "PRIVATE",
+      "status": "RETIRED",
+      "units": 102
+    }
+  ],
+  "sqlite": "/home/jin/8-AGENT/90_RUNTIME/semantic/case-memory/cases-v4.sqlite",
+  "source_store_sha256_unchanged": "cd64bf1301bc68d58741c332748084691b9f57136f827bb782f71b68068c66a2",
+  "MAIN_pointer_sha256_unchanged": "ed89ee45580e1e95108c9147bddc8be5e00396b741c7a51fc4c3cd3db6d9338c",
+  "MAIN45_includes_common_consumer": false,
+  "model_calls": 0,
+  "GENOS_field_verified": false
+}

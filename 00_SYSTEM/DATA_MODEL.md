@@ -59,6 +59,16 @@ receipt를 거친 결과만 새 navigation 세대에 반영한다. 미승인 후
 
 ## 결속과 이행
 
+2026-10-08 로컬 MAIN의 신규 `compact-v2` 구축은 `audit_profile=factorized-v1`을
+명시 선택한다. `term-navigation-storage-v4` 감사 DB의 `link_catalogue`와
+`link_occurrence`는 검증·확정된 입력 기록이고, 기존 label-match 연결은 독립 ID 사전과
+정수 키로 저장한다. `occurrence_evidence`/`occurrence_origin`은 이전과 같은 컬럼·행·
+ACCEPTED/HELD 사유를 복원하는 view다. 출현×후보 곱과 출처의 문자열 복사본은 생성하지 않는다.
+본문/선택 source/navigation/fulltext의 논리 계약은 유지하며 재개 identity에 audit profile과
+재현 코드 SHA를 포함한다. 같은 트랜잭션의 checkpoint·검증·승인 참조 overlay는 v4를 읽는다.
+기존 v1/v2/v3 감사와 완료 세대는 보존한다. 이 설정은 로컬 작업 구축의 변경이며 기존
+선택 RAG 데이터 및 GENOS 봉인 ZIP/현장 실행을 바꾸지 않는다.
+
 2026-09-29 신규 공통 용어 generation은 검색 navigation과 구축 감사 원장을 분리한다.
 `link_catalogue`, `link_occurrence`, `occurrence_evidence`, `occurrence_origin`은 분리 전
 완성 DB snapshot인 `audit/navigation/navigation.sqlite`에 보존하고 검색 DB에서만 제외한다.

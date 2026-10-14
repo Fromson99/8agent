@@ -35,7 +35,7 @@ def test_warmed_glossary_connections_are_reused_without_request_handles(generati
 
 def app_for(tmp_path, generation, transport=None, profile=None):
     return create_app(tmp_path,generation,contracts_root=ROOT,provider=object(),implementation='legal-agent-tools-v5',
-        legal_agent_profile=profile or PROFILE,legal_agent_transport=transport or Transport())
+        legal_agent_profile=profile or PROFILE,legal_agent_transport=transport or Transport(),runtime_root=tmp_path/'runtime')
 def source_checks(s, claim):
     return [{'source':eid,'quote':s.work.evidence(eid)['spans'][0]['text'],'draft_quote':claim['text'],
              'dimensions':{key:'PRESERVED' for key in obligation_protocol.DIMENSIONS},'reason':'원문 조건과 초안 대조'} for eid in claim['evidence']]
@@ -257,8 +257,9 @@ def test_tool_execution_failure_returns_actual_stage_to_serving_caller(tmp_path,
         with TestClient(app) as client:
             response=client.post('/v1/rag/ask',json={'question':'승인 기준은?'})
         assert response.status_code==500
-        assert response.json()['code']=='SOURCE_TOOL_ERROR'
-        assert 'fulltext_tool.rank' in response.json()['detail']
+        assert response.json()['answer_status']=='failed'
+        assert 'fulltext_tool.rank' not in response.text
+        assert response.json()['answer_status']=='failed'
     finally:
         app.state.pipeline.store.close()
 
@@ -534,15 +535,19 @@ def test_pipeline_cli_uses_coordinator_and_finishes_journal(tmp_path,generation)
     spec=importlib.util.spec_from_file_location('v5_engine_host',ROOT/'02_BACKEND/PIPELINE/engine_host.py')
     host=importlib.util.module_from_spec(spec);spec.loader.exec_module(host)
     root=tmp_path;config=json.loads((ROOT/'00_SYSTEM/PIPELINE.json').read_text())
+    # This legacy CLI contract explicitly selects the complete v5 profile.
+    config['profiles']['legal-rag']=deepcopy(config['profiles']['legal-agent-rag-v5'])
     pins={}
     paths={'00_SYSTEM/PIPELINE.json','00_SYSTEM/WORKSPACE.json','00_SYSTEM/SCHEMAS/pipeline-engine-v1.schema.json'}
     for step in config['profiles']['legal-rag']['nodes']:
         path=config['engines'][step['engine']]['manifest'];paths.add(path)
         pins.update(json.loads((ROOT/path).read_text())['files'])
     paths.update(pins)
+    paths.update(str(p.relative_to(ROOT)) for p in (ROOT/'00_SYSTEM/LEGAL_AGENT').glob('*.json'))
     paths.update(x['schema_path'] for x in config['contracts'].values())
     for relative in paths:
         target=root/relative;target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(ROOT/relative,target)
+    (root/'00_SYSTEM/PIPELINE.json').write_text(json.dumps(config))
     active=root/'01_DATA/ACTIVE/local';active.mkdir(parents=True,exist_ok=True)
     release=active/'release.json';release.write_text(json.dumps({'files':pins,'data_path':str(generation.relative_to(root))}))
     (active/'ACTIVE_RELEASE.json').write_text(json.dumps({'schema_version':'semantic-runtime-active-v2','manifest_path':str(release.relative_to(root)),'release_manifest_sha256':sha(release)}))

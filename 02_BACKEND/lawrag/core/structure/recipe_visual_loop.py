@@ -1,4 +1,5 @@
 """Bounded composition/review/rebuild promoted by explicit ADR0358 user exception."""
+from .recipe_output import ResponseError, StructureDecisionError
 import copy
 import hashlib
 import json
@@ -21,24 +22,24 @@ def validate(recipe,catalog):
     if isinstance(recipe,dict) and 'regions' in recipe:
         from . import recipe_regions
         return recipe_regions.validate(recipe,catalog)
-    if not {'tag','version','levels'} <= set(recipe) or set(recipe)-{'tag','version','levels','reference_candidates','heading_candidates','parent_map','heading_rules'}:raise ValueError('Closed recipe fields only')
+    if not {'tag','version','levels'} <= set(recipe) or set(recipe)-{'tag','version','levels','reference_candidates','heading_candidates','parent_map','heading_rules'}:raise StructureDecisionError('Closed recipe fields only')
     refs=recipe.get('reference_candidates',[])
-    if not isinstance(refs,list) or len(refs)>128 or any(not isinstance(x,str) or not x or len(x)>128 for x in refs) or len(set(refs))!=len(refs):raise ValueError('Invalid reference candidates')
+    if not isinstance(refs,list) or len(refs)>128 or any(not isinstance(x,str) or not x or len(x)>128 for x in refs) or len(set(refs))!=len(refs):raise StructureDecisionError('Invalid reference candidates')
     heads=recipe.get('heading_candidates',[])
-    if not isinstance(heads,list) or len(heads)>128 or any(not isinstance(x,str) or not x or len(x)>128 for x in heads) or len(set(heads))!=len(heads):raise ValueError('Invalid heading candidates')
-    if set(heads)&set(refs):raise ValueError('Conflicting heading and reference candidates')
-    if not re.fullmatch(r'[A-Za-z0-9가-힣_-]{1,64}',recipe['tag']):raise ValueError('Invalid tag')
-    if type(recipe['version']) is not int or recipe['version']<1:raise ValueError('Invalid version')
+    if not isinstance(heads,list) or len(heads)>128 or any(not isinstance(x,str) or not x or len(x)>128 for x in heads) or len(set(heads))!=len(heads):raise StructureDecisionError('Invalid heading candidates')
+    if set(heads)&set(refs):raise StructureDecisionError('Conflicting heading and reference candidates')
+    if not re.fullmatch(r'[A-Za-z0-9가-힣_-]{1,64}',recipe['tag']):raise StructureDecisionError('Invalid tag')
+    if type(recipe['version']) is not int or recipe['version']<1:raise StructureDecisionError('Invalid version')
     levels=recipe['levels']
-    if not isinstance(levels,list) or not 1<=len(levels)<=min(16,max(1,len(catalog))):raise ValueError('Invalid ladder depth')
-    if any(not isinstance(x,list) or not x for x in levels):raise ValueError('Empty or non-list level')
+    if not isinstance(levels,list) or not 1<=len(levels)<=min(16,max(1,len(catalog))):raise StructureDecisionError('Invalid ladder depth')
+    if any(not isinstance(x,list) or not x for x in levels):raise StructureDecisionError('Empty or non-list level')
     flat=[k for row in levels for k in row]
     if any(not isinstance(k,str) for k in flat) or len(flat)!=len(set(flat)) or set(flat)!=set(catalog):
-        raise ValueError('Every observed component must appear exactly once; missing='+str(sorted(set(catalog)-set(flat)))+'; unknown='+str(sorted(set(flat)-set(catalog)))+'; duplicate='+str(sorted({k for k in flat if flat.count(k)>1})))
+        raise StructureDecisionError('Every observed component must appear exactly once; missing='+str(sorted(set(catalog)-set(flat)))+'; unknown='+str(sorted(set(flat)-set(catalog)))+'; duplicate='+str(sorted({k for k in flat if flat.count(k)>1})))
     if 'parent_map' in recipe:
         from .recipe_patch import levels_from_parents
         expected=levels_from_parents(recipe['parent_map'],catalog)
-        if [set(x) for x in expected] != [set(x) for x in levels]: raise ValueError('Parent map and executable levels disagree')
+        if [set(x) for x in expected] != [set(x) for x in levels]: raise StructureDecisionError('Parent map and executable levels disagree')
     if 'heading_rules' in recipe:
         from . import recipe_template
         recipe_template.validate(recipe,catalog)
@@ -157,7 +158,7 @@ def merge_window_decisions(recipe, data):
             continue
         new=set(out[key])
         unknown=new-visible-old
-        if unknown:raise ValueError('Decision cites unseen source candidate IDs: '+str(sorted(unknown)))
+        if unknown:raise StructureDecisionError('Decision cites unseen source candidate IDs: '+str(sorted(unknown)))
         out[key]=sorted((old-visible)|(new&visible))
     return out
 
@@ -165,14 +166,14 @@ def merge_window_decisions(recipe, data):
 def check_visible_references(recipe, data):
     protected={c['id'] for c in data.get('source_candidates',[]) if c.get('protected_heading')}
     bad=protected & set(recipe.get('reference_candidates',[]))
-    if bad: raise ValueError('Protected source headings cannot be references; remove IDs from reference_candidates: '+str(sorted(bad)))
+    if bad: raise StructureDecisionError('Protected source headings cannot be references; remove IDs from reference_candidates: '+str(sorted(bad)))
     previous = set(data.get('recipe', {}).get('reference_candidates', []))
     visible = {c['id'] for c in data.get('source_candidates', [])}
     if not (set(recipe.get('reference_candidates', [])) ^ previous) <= visible:
-        raise ValueError('Reference decision cites unseen source candidate IDs: '+str(sorted((set(recipe.get('reference_candidates',[])) ^ previous)-visible))+'; retain previous out-of-window decisions')
+        raise StructureDecisionError('Reference decision cites unseen source candidate IDs: '+str(sorted((set(recipe.get('reference_candidates',[])) ^ previous)-visible))+'; retain previous out-of-window decisions')
     old_heads=set(data.get('recipe',{}).get('heading_candidates',[]))
     if not (set(recipe.get('heading_candidates',[])) ^ old_heads) <= visible:
-        raise ValueError('Heading decision cites unseen source candidate IDs: '+str(sorted((set(recipe.get('heading_candidates',[])) ^ old_heads)-visible))+'; retain previous out-of-window decisions')
+        raise StructureDecisionError('Heading decision cites unseen source candidate IDs: '+str(sorted((set(recipe.get('heading_candidates',[])) ^ old_heads)-visible))+'; retain previous out-of-window decisions')
 
 
 def build(engine,blocks,recipe,catalog,original_inventory,*,draft=False):
@@ -351,7 +352,7 @@ def request_review(phase, data, catalog, call, *, seen_levels=(), save=None):
     raise AssertionError('Unreachable')
 
 
-def request_recipe(phase, data, catalog, call, vision=False, *, max_attempts=3, check=None):
+def request_recipe(phase, data, catalog, call, vision=False, *, max_attempts=2, check=None):
     """Retry only invalid structural objects, not provider/network/budget failures.
 
     Each retry gets the original source context and explicit validation feedback.
@@ -359,7 +360,7 @@ def request_recipe(phase, data, catalog, call, vision=False, *, max_attempts=3, 
     """
     import jsonschema
     import json
-    if not 1 <= max_attempts <= 3:
+    if not 1 <= max_attempts <= 2:
         raise ValueError('Invalid recipe attempt limit')
     request = copy.deepcopy(data)
     last_error = None
@@ -378,7 +379,7 @@ def request_recipe(phase, data, catalog, call, vision=False, *, max_attempts=3, 
                 check_visible_references(recipe, data)
                 if check is not None: check(recipe)
                 return recipe
-            except (ValueError, TypeError, KeyError) as exc:
+            except (ValueError,) as exc:
                 last_error = str(exc)
                 request['invalid_recipe'] = copy.deepcopy(recipe)
         request['validation_feedback'] = {

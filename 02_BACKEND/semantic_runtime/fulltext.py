@@ -317,7 +317,8 @@ class FulltextIndex:
 
     def connect(self):
         started = time.perf_counter()
-        db = sqlite3.connect('file:'+str(self.path/'fulltext.sqlite')+'?mode=ro', uri=True, check_same_thread=False)
+        from .resident_data import POOL
+        db = POOL.connect(self.path/'fulltext.sqlite', expected=self.manifest['fulltext_sha256'])
         connect_ms = (time.perf_counter()-started)*1000
         try:
             started = time.perf_counter()

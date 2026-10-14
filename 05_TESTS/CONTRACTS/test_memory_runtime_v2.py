@@ -1,6 +1,4 @@
 import copy
-import hashlib
-import hmac
 import importlib.util
 import json
 import sqlite3
@@ -90,7 +88,7 @@ def test_failed_correction_retires_stale_knowledge_and_recovers(memory):
     assert out['executed']==['SELECT','ASSESS','COMPOSE']
 def test_reuse_rebinds_nodes_and_isolation(memory):
     db,f,w,send,p=memory;first=start(send);gid=first['goal_id'];kid=send(command('EXPERIENCE_CONFIRM',target=gid))['knowledge_id']
-    out=send(command('EXPERIENCE_REUSE',knowledge_id=kid,document_scope_mode='EXPLICIT',**first['state']),session='new')
+    out=send(command('EXPERIENCE_REUSE',knowledge_id=kid,document_scope_mode='AUTHORIZED',**{**first['state'],'document_ids':None}),session='new')
     assert out['status']=='REUSED' and out['executed']==['COMPOSE']
     assert {db.db.execute('SELECT goal FROM node WHERE id=?',(n,)).fetchone()[0] for n in db.route(out['goal_id'])['payload']['nodes'].values()}=={out['goal_id']}
     assert db.candidates({**p,'user_id':'other'},'보고')==[]
@@ -110,27 +108,26 @@ def test_read_only_methods_cannot_hide_mutations(memory,field,value):
     out=send(command('HISTORY_EXPLAIN',target=gid,**{field:value}))
     assert out['status']=='CLARIFY' and db.goal(gid,'s')==before
 
-def signed_body():
-    key='a'*40;body={'memory':True,'question':'public','user_id':'u','team_id':'risk_team','session_id':'s','request_id':'r'}
-    body['memory_authorization']={'issued_at':1000,'signature':hmac.new(key.encode(),memory_identity.signed_bytes(body,1000),hashlib.sha256).hexdigest()}
-    return key,body
+def session_body():
+    return {'memory':True,'question':'public','user_id':'u','team_id':'risk_team','session_id':'s','request_id':'r'}
 
-def test_signature_and_envelope_normalization():
-    key,body=signed_body()
-    assert memory_identity.verify_assertion(body,key,1000)=={'user_id':'u','team_id':'risk_team'}
+def test_unsigned_session_and_envelope_normalization():
+    body=session_body()
+    assert memory_identity.validate_session(body)=={'user_id':'u','team_id':'risk_team'}
     normalized={k:v for k,v in {'API_TYPE':'LEGAL_AGENT','channel':'genos-chat',**body}.items() if k not in ('API_TYPE','channel')}
-    assert memory_identity.verify_assertion(normalized,key,1000)
-@pytest.mark.parametrize('field,value',[('user_id','attacker'),('question','other'),('team_id','other_team'),('document_ids',['secret']),('session_id','other')])
-def test_assertion_cannot_be_retargeted(field,value):
-    key,body=signed_body();body[field]=value
-    with pytest.raises(m.MemoryError,match='invalid'):memory_identity.verify_assertion(body,key,1000)
-@pytest.mark.parametrize('key,now',[('',1000),('a'*40,2000)])
-def test_missing_key_and_expired_assertion(key,now):
-    _,body=signed_body()
-    with pytest.raises(m.MemoryError):memory_identity.verify_assertion(body,key,now)
+    assert memory_identity.validate_session(normalized)=={'user_id':'u','team_id':'risk_team'}
+
+@pytest.mark.parametrize('field,value',[('user_id',''),('team_id',None),('session_id','anonymous'),('request_id',''),('expected_revision',0)])
+def test_unsigned_session_rejects_invalid_selectors(field,value):
+    with pytest.raises(m.MemoryError):memory_identity.validate_session({**session_body(),field:value})
+
+@pytest.mark.parametrize('key',['','obsolete-key'])
+def test_signing_environment_has_no_runtime_dependency(monkeypatch,key):
+    monkeypatch.setenv('GENOS_MEMORY_SIGNING_KEY',key)
+    assert memory_identity.validate_session(session_body())=={'user_id':'u','team_id':'risk_team'}
 
 def test_native_selection_consumes_fallback(monkeypatch):
-    source=S(force_fulltext_recall=False)
+    source=S(force_fulltext_recall=False,profile={})
     native=memory_rag.NativeExecution(S(verify=lambda x:None,question=lambda x:'Q'),S(sources=source,work=S(event=lambda *x:None)),{}, {})
     monkeypatch.setattr(memory_rag,'select_sources',lambda *a,**k:{'final_ids':[], 'needs_fulltext':True})
     parts={'PLAN':{'payload':{'law_names':[],'queries':['Q']}},'READ':{'payload':{'record':{'discovery_mode':'structure'}}}}

@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
+import re
 
 from semantic_runtime.contracts import sha
 from .golden import TAGS, read, seal, verify
@@ -17,6 +18,7 @@ from .golden_authoring import csv_rows, csv_target, input_cases
 VERSION = 'term-golden-registry-v1'
 # 사진 전사가 질문 자체를 확정하지 못한 상태. 'transcribed' 는 원본 대조 전이라 경고만 남긴다.
 INCOMPLETE_TRANSCRIPTION = ('partial', 'uncertain', 'source_placeholder')
+SCOPE_ASSESSMENTS = ('external_only', 'external_partial', 'internal_required', 'needs_review')
 
 
 def _cm_entries(path):
@@ -37,9 +39,10 @@ def _cm_entries(path):
     return entries, lineage
 
 
-def _internal_entries(path):
+def _internal_entries(path, collection='internal'):
     path = Path(path)
-    lineage = {'input_path': str(path.resolve()), 'input_sha256': sha(path), 'format': 'internal-csv'}
+    lineage = {'input_path': str(path.resolve()), 'input_sha256': sha(path),
+               'format': 'internal-csv' if collection == 'internal' else 'question-csv'}
     grouped = {}
     for row in csv_rows(path):
         cid = row['문항ID'].strip()
@@ -49,13 +52,15 @@ def _internal_entries(path):
         entry = grouped.get(cid)
         if entry is None:
             entry = grouped[cid] = {
-                'id': cid, 'collection': 'internal', 'question': values[0],
+                'id': cid, 'collection': collection, 'question': values[0],
                 'reference_answer': values[1] or None, 'as_of': values[2] or None, 'targets': [],
                 'facets': {'team': row.get('팀', '')},
                 'provenance': {'input_sha256': lineage['input_sha256'], 'source_row': row.get('원본행'),
                                'photos': row.get('원본사진'), 'transcription': row.get('전사상태'),
                                'note': row.get('확인사항')},
                 'blockers': [], 'warnings': [], '_values': values}
+            if row.get('기존문항ID', '').strip():
+                entry['provenance']['previous_case_id'] = row['기존문항ID'].strip()
         elif entry['_values'] != values:
             raise ValueError(f'{cid}: same case ID has conflicting question/answer/date')
         if row['문서명'].strip() or row['조문'].strip():
@@ -92,12 +97,18 @@ def _complete(entry):
     entry['signals'] = {'required_documents': len(required)}
 
 
-def build(cm=None, internal=None, annotations=None):
+def build(cm=None, internal=None, annotations=None, *, collections=None):
     entries, sources = [], {}
     if cm:
         found, sources['cm'] = _cm_entries(cm); entries += found
     if internal:
         found, sources['internal'] = _internal_entries(internal); entries += found
+    for name, path in collections or []:
+        if not re.fullmatch(r'[a-z][a-z0-9_]{0,63}', name) or name in ('cm', 'internal', 'annotations'):
+            raise ValueError('invalid or reserved collection name: ' + name)
+        if name in sources:
+            raise ValueError('duplicate collection source: ' + name)
+        found, sources[name] = _internal_entries(path, name); entries += found
     if not entries:
         raise ValueError('at least one collection source required')
     ids = [e['id'] for e in entries]
@@ -114,6 +125,16 @@ def build(cm=None, internal=None, annotations=None):
         if not isinstance(tags, list) or set(tags) - set(TAGS):
             raise ValueError(f"{entry['id']}: unknown tag")
         entry['tags'] = sorted(set(tags))
+        assessment = notes.get(entry['id'], {}).get('scope_assessment')
+        if assessment is not None:
+            if not isinstance(assessment, dict) or assessment.get('status') not in SCOPE_ASSESSMENTS:
+                raise ValueError(f"{entry['id']}: invalid scope assessment")
+            if (type(assessment.get('external_only_answerable')) is not bool or
+                    assessment['external_only_answerable'] != (assessment['status'] == 'external_only')):
+                raise ValueError(f"{entry['id']}: inconsistent external-only marking")
+            if not assessment.get('reason'):
+                raise ValueError(f"{entry['id']}: scope assessment reason required")
+            entry['scope_assessment'] = assessment
         _complete(entry)
     return seal({'schema_version': VERSION, 'sources': sources, 'summary': summarize(entries), 'cases': entries})
 
@@ -145,5 +166,7 @@ def ready_cases(registry):
                       'as_of': entry['as_of'], 'targets': entry['targets'],
                       'collection': entry['collection'], 'tags': entry['tags'],
                       'registry_notes': {'facets': entry['facets'], 'provenance': entry['provenance'],
-                                         'warnings': entry['warnings'], 'signals': entry['signals']}})
+                                         'warnings': entry['warnings'], 'signals': entry['signals'],
+                                         **({'scope_assessment': entry['scope_assessment']}
+                                            if 'scope_assessment' in entry else {})}})
     return cases, deferred

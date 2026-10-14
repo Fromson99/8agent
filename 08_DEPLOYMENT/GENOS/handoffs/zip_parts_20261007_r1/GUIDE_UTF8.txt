@@ -1,0 +1,100 @@
+Windows ZIP 분할·병합 / GENOS 병합
+
+1. 포함 파일
+
+Split-ZipParts.ps1 : Windows PowerShell 5.1 이상에서 파일 분할
+Join-ZipParts.ps1  : Windows PowerShell 5.1 이상에서 파일 병합
+Join-ZipParts.py   : GENOS/Linux에서 python3로 파일 병합 (추가 설치 없음)
+
+두 PS1 파일을 같은 폴더에 저장하고 그 폴더에서 PowerShell을 연다.
+탐색기에서 파일 확장자를 표시하여 .ps1.txt가 아니라 .ps1인지 확인한다.
+스크립트는 ASCII로 작성되어 PowerShell 5.1의 한글 소스 인코딩 문제를 피한다.
+원본·조각·출력 파일명에는 한글, 공백, 대괄호를 사용할 수 있다.
+
+2. Windows에서 분할
+
+아래 D:\Transfer\nfs-data.zip 부분을 실제 ZIP 경로로 바꾼다.
+
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\Split-ZipParts.ps1" -InputFile "D:\Transfer\nfs-data.zip"
+
+기본 출력 폴더: D:\Transfer\nfs-data.zip.parts
+조각 이름: nfs-data.zip.part0001, nfs-data.zip.part0002, ...
+기본 조각 크기: 최대 49,000,000 bytes (십진수 49MB)
+마지막 조각만 더 작을 수 있다. 모두 50,000,000 bytes 미만이다.
+ZIP을 풀거나 다시 압축하지 않고 원본 바이트를 그대로 분할한다.
+각 조각은 단독으로 압축 해제할 수 있는 ZIP이 아니다.
+이미 존재하는 출력 폴더는 덮어쓰지 않는다.
+
+다른 출력 폴더를 지정하려면:
+
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\Split-ZipParts.ps1" -InputFile "D:\Transfer\nfs-data.zip" -OutputDirectory "D:\Transfer\nfs-parts"
+
+선택 옵션 -ChunkSizeMB는 1~50 범위의 정수다. 기본값 49를 권장한다.
+PowerShell의 50MB 리터럴은 52,428,800 bytes이므로 조각 크기에 사용하지 않는다.
+스크립트는 1MB를 1,000,000 bytes로 계산한다.
+
+3. 전송
+
+.parts 폴더 안의 모든 .partNNNN 파일과 parts-manifest.json을 함께 옮긴다.
+각 조각을 별도 파일로 업로드한다. 전체 폴더를 다시 하나의 큰 ZIP으로 묶지 않는다.
+manifest에는 조각 순서, 크기, SHA-256 및 원본 크기·SHA-256이 들어 있다.
+원본 ZIP과 조각은 확인이 끝날 때까지 보존한다.
+
+4. Windows에서 합치기
+
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\Join-ZipParts.ps1" -PartsDirectory "D:\Transfer\nfs-data.zip.parts" -OutputFile "D:\Restored\nfs-data.zip"
+
+-OutputFile을 생략하면 .parts 폴더의 상위 폴더에 원본 이름으로 복원한다.
+그 위치에 원본이 남아 있으면 덮어쓰지 않고 중단하므로 다른 출력 위치를 지정한다.
+manifest에 기록된 순서로만 합치며 추가로 들어 있는 다른 파일은 사용하지 않는다.
+모든 조각과 완성 파일의 크기·SHA-256이 일치해야 OK가 출력된다.
+검증 전에는 .partial-... 이름으로 쓰고 완료 뒤 지정 파일명으로 발행한다.
+누락·손상·해시 불일치 시 실패하며 기존 출력 파일은 덮어쓰지 않는다.
+실패 중 생긴 임시 파일/폴더는 .partial-... 이름으로 보존한다.
+재실행은 원본 조각을 고친 뒤 같은 명령으로 가능하다. 이전 임시 파일은 재사용하지 않는다.
+
+5. GENOS/Linux에서 합치기
+
+Join-ZipParts.py와 조각 폴더를 GENOS의 ~/DEV/TRANSFER로 옮긴 경우:
+
+cd ~/DEV
+python3 TRANSFER/Join-ZipParts.py TRANSFER/nfs-data.zip.parts --output TRANSFER/nfs-data.zip
+
+실제 조각 폴더명에 맞게 변경한다. 위 명령은 복원 ZIP만 만든다.
+압축 해제, NFS generation 교체, CURRENT 전환, Git push, 코드서빙 배포는 별도다.
+기존 해제 안내를 사용할 때도 먼저 이 병합 명령의 OK를 확인한다.
+GENOS 현장 실제 경로·DRM·업로드 허용 여부는 이 외부 개발 세션에서 확인하지 않았다.
+
+6. 메모리·저장공간
+
+파일 내용은 1MiB 버퍼로 읽고 쓰므로 GB 단위 전체 내용을 메모리에 올리지 않는다.
+분할 시 원본 ZIP 외에 원본 크기 정도의 조각 저장공간이 추가로 필요하다.
+병합 시 조각 외에 원본 크기 정도의 복원 저장공간이 추가로 필요하다.
+해시 계산과 저장한 바이트 확인 때문에 파일을 추가로 읽는다.
+느린 디스크/NFS에서는 진행률이 잠시 멈춰 보여도 해시를 계산 중일 수 있다.
+
+7. DRM에 관한 답변
+
+ZIP/분할 파일/PS1에 DRM이 적용되지 않는다고 보장할 수 없다.
+사내 DRM은 확장자, 저장 위치, 내용, 프로그램에 따른 정책을 적용할 수 있다.
+기존 현장 기록에는 PS1 자체의 NASCA DRM 표식과 ZIP 내부 문서의 DRM 사례가 있다.
+분할은 DRM을 해제하는 작업이 아니며 ZIP 내부 문서의 기존 보호 상태도 유지된다.
+이 도구는 보안 에이전트나 DRM 정책을 변경하지 않는다.
+Windows에서 투명 복호화된 내용을 읽을 수 있어도 전송 대상에서 읽히는지는 별도다.
+따라서 실제 전송 대상에서 병합 SHA-256 검증까지 통과해야 동일 바이트 전달을 확인한다.
+해시 일치는 원본 ZIP 내부 문서가 DRM 없이 열리는지 인증하지 않는다.
+
+실행 명령의 -ExecutionPolicy Bypass는 새 PowerShell 프로세스에만 적용된다.
+레지스트리/영구 실행 정책을 변경하거나 조직 Group Policy를 무시하지 않는다.
+DRM 파일의 NASCA 표식/깨진 소스로 발생한 ParserError는 이 옵션으로 해결되지 않는다.
+
+공식 참고:
+PowerShell 숫자 단위:
+https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_numeric_literals?view=powershell-5.1
+PowerShell 프로세스 실행 정책:
+https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies?view=powershell-5.1
+Microsoft Endpoint DLP의 ZIP 등 아카이브 처리 예시 (현장 NASCA 정책의 근거는 아님):
+https://learn.microsoft.com/en-us/purview/endpoint-dlp-learn-about
+
+실제 현장 DRM 기록:
+07_DOCS/REFERENCE/OPERATIONS/GENOS_ZIP_TO_PDF_NFS.md, 2절 및 11절

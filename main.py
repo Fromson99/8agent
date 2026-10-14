@@ -5,8 +5,12 @@ import hmac
 import os
 from pathlib import Path
 import sys
-from fastapi import Body, HTTPException, Request
 ROOT=Path(__file__).resolve().parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0,str(ROOT))
+from genos_diagnostics import install as install_system_logging
+install_system_logging("main")
+from fastapi import Body, HTTPException, Request
 sys.path.insert(0,str(ROOT/'02_BACKEND'))
 sys.path.insert(0,str(ROOT/'08_DEPLOYMENT/GENOS'))
 from stream_app import app,http_health,stream_response

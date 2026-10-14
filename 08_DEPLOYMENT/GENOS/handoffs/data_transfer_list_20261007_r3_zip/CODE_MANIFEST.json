@@ -1,0 +1,59 @@
+{
+  "format": "8agent-code/1",
+  "id": "nfs-data-probe-20261006-r1",
+  "scope": "Existing NFS diagnostic hook plus actual file/team document metadata list; no RAG changes",
+  "files": [
+    {
+      "path": "02_BACKEND/semantic_runtime/nfs_data_probe.py",
+      "bytes": 22257,
+      "sha256": "a1527451d51e13d1cabf6a99d6b2ed2e8b5e21dd661cfd51411bdbda867b4cc7",
+      "allowed_predecessors": [
+        "6ea84cf5a38440212939f16a966c7b70b65295705482620f9225f6ead1fcee6a",
+        "8cf0625e93a2ecc4267ccd345197ebecd1f2abda8c65fe57c0fe097bfd93775e",
+        "cb4823e70bacacb4d104e03d7febd56df144ca4793aced34de0cabe6ca7b2fa5"
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_nfs_probe_handoff.py",
+      "bytes": 22975,
+      "sha256": "8808a682fe7d747bc12cff28b9fa1be560aa1b9469911d4904579f37dec23032",
+      "allowed_predecessors": [
+        "558ce7a0e19346febc099fcb2096c3572fa041026a3856445225506b1973a606",
+        "795e75011725d9d4b83017bd1106bcb7cc3d42d08b5275674bd09817acc52bfe",
+        "a858059fb564216653a205b3f7bdea88580f0c1035a4dd158d4b86e5cf873030"
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_pack_rag_data.sh",
+      "bytes": 518,
+      "sha256": "7f7b7a7e9699ec8a610aa3039d43b237ee2896c9314c8ed063c74af08c4872ad",
+      "allowed_predecessors": [
+        "42ff394015bb4658086e3325b910f1b9273cd58c8569ab7bc4a85c1b6125d63c",
+        "565a8ac8a7797c1077b6dd0ac4fbb919330f2862a7b8cc4930264b74fab6db09",
+        "7f7b7a7e9699ec8a610aa3039d43b237ee2896c9314c8ed063c74af08c4872ad"
+      ]
+    },
+    {
+      "path": "06_TOOLS/COMMANDS/genos_rag_data_bundle.py",
+      "bytes": 39969,
+      "sha256": "9f4460cf87b59dae9c2727866a203e248a7fbbcb6a1495ba0ff5365402eb9010",
+      "allowed_predecessors": [
+        "00c93b25ac4e4c49cb7a474327b5ea107df526e09e6a87a12aa20c5a239592dd",
+        "43059dec161a0d7da34a1a6b9974e0a9efc17959c021997233b9fa23bce748b5",
+        "7378ad62e31369ea48a2f1512750f3891bd15be0d9a382128e4b47fed0347ee8",
+        "9f4460cf87b59dae9c2727866a203e248a7fbbcb6a1495ba0ff5365402eb9010",
+        "f1796bbf11d2b76ea364129098ea2b21bb23ec28abb3337e9b65a0a01f5ca757"
+      ]
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/workflow/genos_nfs_data_probe.py",
+      "bytes": 6219,
+      "sha256": "c8be265913b16e69911103d93ebb5ce4a95cbb5f2b32dcbfa0d9dd315b34ffdf",
+      "allowed_predecessors": [
+        "1b52307a84102f3a5629ffd15207b7648114a93c55fa64ff7753fb38d5848f6a"
+      ]
+    }
+  ],
+  "field_commit": null,
+  "code_serving_revision": null
+}

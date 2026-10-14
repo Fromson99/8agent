@@ -10,7 +10,7 @@ from test_legal_agent_v5 import app_for
 from test_unified_legal_agent import ScriptedTransport
 from lawrag.pipeline.term_generation import build_generation
 from semantic_runtime.legal_agent.source_selection import select_sources
-from semantic_runtime.legal_agent.errors import ContractError
+from semantic_runtime.legal_agent.errors import ContractError, ProposalError
 rel = pytest.importorskip('semantic_runtime.legal_agent.unit_relations')
 
 
@@ -59,7 +59,7 @@ def initial(s):
 
 
 def decision(data, action='SKIP'):
-    return {'decisions': [{'id': g['id'], 'action': action, 'scopes': [], 'reason': '이번 질문의 조사 범위에 따른 선택', 'applicability':'DOES_NOT_APPLY','applicability_reason':'이번 질문은 승인 기준이며 단순 인용 문서 전체는 추가 근거로 필요하지 않음'} for g in data['groups']], 'needs_more': False}
+    return {'decisions': [{'id': g['id'], 'action': action, 'scopes': [], 'reason': '이번 질문의 조사 범위에 따른 선택', 'applicability':('UNDETERMINED' if action=='DEFER' else 'APPLIES' if action=='FOLLOW' else 'DOES_NOT_APPLY'),'applicability_reason':'이번 질문은 승인 기준이며 단순 인용 문서 전체는 추가 근거로 필요하지 않음'} for g in data['groups']], 'needs_more': False}
 
 
 def test_reverse_links_are_grouped_with_verified_witnesses_and_closed_scopes(connected):
@@ -81,12 +81,12 @@ def test_follow_reads_only_chosen_paragraph_and_review_receives_it(connected):
     def invoke(system, data, schema, phase, timeout):
         phases.append(phase)
         if phase == 'source-unit-triage':
-            return {'issues': ['예외'], 'choices': [{'id': data['units'][0]['id'], 'scope': 'exact:2', 'reason': '실제 원칙을 먼저 읽음'}], 'needs_search': False}
+            return {'issues': ['예외'], 'choices': [{'id': data['units'][0]['id'], 'scope': 'exact:2', 'status':'ADOPT','reason': '실제 원칙을 먼저 읽음'}], 'needs_search': False}
         if phase.startswith('source-reference-batch'):
             value = decision(data)
             if data['round'] == 1:
                 chosen = next(g for g in data['groups'] if g['target']['document_id'] == 'detail')
-                next(d for d in value['decisions'] if d['id'] == chosen['id']).update(action='FOLLOW', scopes=['subtree:1'])
+                next(d for d in value['decisions'] if d['id'] == chosen['id']).update(action='FOLLOW',applicability='APPLIES', scopes=['subtree:1'])
             return value
         assert any('책임자 확인' in v['text'] and '정해진 보고' in v['text'] for v in data['sources'])
         assert any('제2조 예외' in v['text'] for v in data['sources'])  # governing heading retained
@@ -106,7 +106,7 @@ def test_skip_keeps_related_sources_unread_and_reason_is_recorded(connected):
     def invoke(system, data, schema, phase, timeout):
         if phase.startswith('source-reference-batch'):
             return decision(data)
-        return {'issues': [], 'choices': ([{'id': data['units'][0]['id'], 'scope': 'exact:2', 'reason': '원칙 확인'}] if phase.endswith('triage') else []), 'needs_search': False}
+        return {'issues': [], 'choices': ([{'id': data['units'][0]['id'], 'scope': 'exact:2', 'status':'ADOPT','reason': '원칙 확인'}] if phase.endswith('triage') else []), 'needs_search': False}
     out = select_sources('원칙', rec, invoke, remaining_seconds=120, session=s)
     assert out['final_ids'] == [sid] and out['reference_navigation']['actions'] == []
     assert out['reference_navigation']['batches'][0]['decision']['decisions'][0]['reason']
@@ -114,11 +114,12 @@ def test_skip_keeps_related_sources_unread_and_reason_is_recorded(connected):
 
 def test_defer_remains_pending(connected):
     s, _ = connected
+    s.profile.setdefault('candidate_navigation',{})['allow_unresolved_completion']=False
     rec, sid = initial(s)
     def invoke(system, data, schema, phase, timeout):
         if phase.startswith('source-reference-batch'):
             return decision(data, 'DEFER')
-        return {'issues': [], 'choices': ([{'id': data['units'][0]['id'], 'scope': 'exact:2', 'reason': '원칙 확인'}] if phase.endswith('triage') else []), 'needs_search': False}
+        return {'issues': [], 'choices': ([{'id': data['units'][0]['id'], 'scope': 'exact:2', 'status':'ADOPT','reason': '원칙 확인'}] if phase.endswith('triage') else []), 'needs_search': False}
     out = select_sources('예외', rec, invoke, remaining_seconds=120, session=s)
     assert out['status'] == 'pending' and not out['needs_fulltext']
     assert out['next_action'] == 'CONTINUE_REFERENCES'
@@ -157,18 +158,18 @@ def test_reference_choices_cannot_escape_closed_group_contract(connected, change
     rec, sid = initial(s)
     groups, _, _, _ = rel.catalog(s, [sid], {}, set())
     offered = {'R1': groups[0]}
-    v = {'decisions': [{'id':'R1','action':'FOLLOW','scopes':['subtree:1'],'reason':'확인'}], 'needs_more':False}
+    v = {'decisions': [{'id':'R1','action':'FOLLOW','scopes':['subtree:1'],'reason':'확인','applicability':'APPLIES','applicability_reason':'원문 관계 적용'}], 'needs_more':False}
     if change == 'unoffered':v['decisions'][0]['scopes'] = ['subtree:999']
     if change == 'skip_read':v['decisions'][0]['action'] = 'SKIP'
     if change == 'missing_decision':v['decisions'] = []
     if change == 'duplicate':v['decisions'] *= 2
-    with pytest.raises(ContractError):rel.validate(v, offered)
+    with pytest.raises((ContractError,ProposalError)):rel.validate(v, offered)
 
 
 def test_empty_menu_schema_has_no_empty_enum():
     value = rel.schema({})
     assert value['properties']['decisions']['maxItems'] == 0
-    assert 'enum' not in value['properties']['decisions']['items']['properties']['id']
+    assert '"enum": []' not in json.dumps(value) and value['properties']['decisions']['minItems']==0
 
 
 def test_grouping_collapses_duplicate_edges_without_per_edge_model_calls(connected, monkeypatch):
@@ -205,8 +206,10 @@ def test_related_originals_reach_shared_assessment_after_confirmation(connected,
                 choices=[]
                 if phase=='source-unit-triage':
                     row=next(r for r in v['units'] if v['laws'][r['law']]=='모의승인규정' and any(o[0]=='exact:2' for o in r['read_options']))
-                    choices=[{'id':row['id'],'scope':'exact:2','reason':'긴급 승인 원칙 확인'}]
+                    choices=[{'id':row['id'],'scope':'exact:2','status':'ADOPT','reason':'긴급 승인 원칙 확인'}]
                 else:assert any('책임자 확인' in x['text'] for x in v['sources'])
+                if 'status' not in body['response_format']['json_schema']['schema']['properties']['choices']['items']['properties']:
+                    for choice in choices:choice.pop('status',None)
                 return wire({'issues':['긴급 승인 예외'],'choices':choices,'needs_search':False})
             if phase.startswith('source-reference-batch'):
                 self.phases.append(phase)
@@ -214,7 +217,7 @@ def test_related_originals_reach_shared_assessment_after_confirmation(connected,
                 if v['round']==1:
                     for group in v['groups']:
                         if group['target']['document_id']=='detail':
-                            next(d for d in value['decisions'] if d['id']==group['id']).update(action='FOLLOW',scopes=['subtree:1'])
+                            next(d for d in value['decisions'] if d['id']==group['id']).update(action='FOLLOW',applicability='APPLIES',scopes=['subtree:1'])
                 return wire(value)
             if phase in ('memory-assess','memory-compose'):
                 assert any('책임자 확인' in x['text'] and x['document_id']=='detail' for x in v['sources'])
@@ -267,13 +270,13 @@ def test_bounded_path_adopts_new_reference_source_with_exact_evidence(connected,
         def send_once(self, *, body, ticket):
             v=json.loads(body['messages'][1]['content'])['view'];phase=v.get('source_stage',v['phase'])
             if phase in ('source-unit-triage','source-unit-review'):
-                return wire({'issues':['예외'],'choices':([{'id':v['units'][0]['id'],'scope':'subtree:0','reason':'명시 조항 원문을 확인'}] if phase.endswith('triage') else []),'needs_search':False})
+                return wire({'issues':['예외'],'choices':([{'id':v['units'][0]['id'],'scope':'subtree:0','status':'ADOPT','reason':'명시 조항 원문을 확인'}] if phase.endswith('triage') else []),'needs_search':False})
             if phase.startswith('source-reference-batch'):
                 value=decision(v)
                 if v['round']==1:
                     for group in v['groups']:
                         if group['target']['document_id']=='detail':
-                            next(d for d in value['decisions'] if d['id']==group['id']).update(action='FOLLOW',scopes=['subtree:1'])
+                            next(d for d in value['decisions'] if d['id']==group['id']).update(action='FOLLOW',applicability='APPLIES',scopes=['subtree:1'])
                 return wire(value)
             return super().send_once(body=body,ticket=ticket)
     app=app_for(tmp_path/'bounded',tmp_path/'built/generation',Transport(),settings())

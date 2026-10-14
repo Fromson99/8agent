@@ -1,0 +1,74 @@
+--- R2
++++ R3
+@@ -257,7 +257,7 @@
+         return roots if limit is None else roots[:limit]
+ 
+     @latency.timed('unit_fts.bind')
+-    def _page_query(self, terms, allowed, cursor, limit, kind, identity=None):
++    def _page_query(self, terms, allowed, cursor, limit, kind, identity=None, unit_keys=None):
+         """Bind pagination to the immutable index, query, ACL and group identity."""
+         from .contracts import digest
+         self.check_unchanged()
+@@ -267,7 +267,8 @@
+         if scope-self.source_ids:
+             raise ValueError('unit FTS does not cover requested article scope')
+         binding = digest({'index': self.manifest['index_sha256'], 'order': 'best-own-block-match-v1', 'terms': sorted(set(terms)),
+-                          'scope': sorted(scope), 'kind': kind, 'identity': identity})
++                          'scope': sorted(scope), 'kind': kind, 'identity': identity,
++                          **({'unit_keys':sorted(set(unit_keys))} if unit_keys is not None else {})})
+         offset = 0
+         if cursor is not None:
+             if (set(cursor) != {'binding', 'offset'} or cursor['binding'] != binding
+@@ -280,14 +281,16 @@
+             where += ' AND u.document_id=?'; params.append(identity)
+         elif kind == 'hits':
+             where += ' AND u.source_id=?'; params.append(identity)
+-        return where, params, binding, offset, bool(terms and scope)
+-
+-    def law_groups_page(self, db, terms, allowed=None, *, cursor=None, limit=12):
++        if unit_keys is not None:
++            where += ' AND u.key IN (SELECT value FROM json_each(?))'; params.append(json.dumps(sorted(set(unit_keys))))
++        return where, params, binding, offset, bool(terms and scope and (unit_keys is None or unit_keys))
++
++    def law_groups_page(self, db, terms, allowed=None, *, cursor=None, limit=12, unit_keys=None):
+         """All matching laws remain addressable before any top-k source selection."""
+-        where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'laws')
++        where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'laws', unit_keys=unit_keys)
+         if not nonempty:
+             return {'items': [], 'total': 0, 'next_cursor': None}
+-        projection = self._projection(db, terms, allowed)
++        projection = self._projection(db, terms, allowed) if unit_keys is None else None
+         if projection is not None:
+             return self._cached_page(projection['laws'], binding, offset, limit)
+         join = ' FROM unit_fts JOIN unit u ON u.key=unit_fts.key WHERE '+where
+@@ -302,11 +305,11 @@
+         return {'items': items, 'total': total, 'next_cursor':
+                 {'binding': binding, 'offset': offset+len(items)} if offset+len(items)<total else None}
+ 
+-    def article_groups_page(self, db, terms, document_id, allowed=None, *, cursor=None, limit=8):
+-        where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'articles', document_id)
++    def article_groups_page(self, db, terms, document_id, allowed=None, *, cursor=None, limit=8, unit_keys=None):
++        where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'articles', document_id, unit_keys=unit_keys)
+         if not nonempty:
+             return {'items': [], 'total': 0, 'next_cursor': None}
+-        projection = self._projection(db, terms, allowed)
++        projection = self._projection(db, terms, allowed) if unit_keys is None else None
+         if projection is not None:
+             return self._cached_page(projection['articles'].get(document_id, []), binding, offset, limit)
+         join = ' FROM unit_fts JOIN unit u ON u.key=unit_fts.key WHERE '+where
+@@ -318,12 +321,12 @@
+         return {'items': items, 'total': total, 'next_cursor':
+                 {'binding': binding, 'offset': offset+len(items)} if offset+len(items)<total else None}
+ 
+-    def hit_page(self, db, terms, source_id, allowed=None, *, cursor=None, limit=16):
++    def hit_page(self, db, terms, source_id, allowed=None, *, cursor=None, limit=16, unit_keys=None):
+         """Retrieve one source's own-block hits; lexical score stays server-side."""
+-        where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'hits', source_id)
++        where, params, binding, offset, nonempty = self._page_query(terms, allowed, cursor, limit, 'hits', source_id, unit_keys=unit_keys)
+         if not nonempty:
+             return {'items': [], 'total': 0, 'next_cursor': None}
+-        projection = self._projection(db, terms, allowed)
++        projection = self._projection(db, terms, allowed) if unit_keys is None else None
+         if projection is not None:
+             hits = projection['hits'].get(source_id, [])
+             keys = [key for _, key in hits[offset:offset+limit]]

@@ -1,0 +1,1 @@
+첫 검사는 HTTP 모의 테스트에 동일 GENOS_STATE_DIR을 주어 격리된 runtime 경로/요청 ID 계약을 깨뜨렸다. 해당 원 기록을 DELIVERY_FIRST_FAILURE.log.gz로 보존한다. HTTP 회귀는 개별 runtime에서 실행하고, 별도 영속 state 옵션은 실제 CM data-check/import/verify/retire 명령으로 따로 검증한다. 제품 코드나 채점 기준은 바꾸지 않았다.

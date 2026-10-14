@@ -182,6 +182,9 @@ class Exchange:
     stop_reason: str = ""
     at: str = ""
     error: str = ""
+    output_contract: dict = field(default_factory=dict)
+    normalizations: list[dict] = field(default_factory=list)
+    physical_calls: int | None = None
     # 이 호출에 함께 보낸 그림의 **개수**. 픽셀 자체는 로그에 남기지 않는다 —
     # 감사 로그가 base64 로 뒤덮이면 사람이 못 읽는다. 몇 장을 보고 답했는지는 남는다.
     images: int = 0
@@ -197,6 +200,8 @@ class Exchange:
                 "ttft_ms": self.ttft_ms,
                 "system": self.system, "user": self.user,
                 "raw_response": self.raw_response, "error": self.error,
+                "output_contract":self.output_contract,"physical_calls":self.physical_calls,
+                "normalizations":self.normalizations,
                 "provider_response": self.provider_response,
                 "provider_usage": self.provider_usage,
                 "requested_thinking": self.requested_thinking}
@@ -318,19 +323,12 @@ class LLM:
 
     @staticmethod
     def _extract_json(text: str) -> str:
-        """프롬프트 모드의 응답에서 JSON 몸통만 남긴다 — 사고 태그·코드 울타리·
-        앞뒤 잡담을 걷어낸다. 엔진이 스키마를 강제할 때는 그대로 통과한다."""
+        """Remove only a complete outer JSON fence; never salvage prose or thinking."""
         import re
-        t = text.strip()
-        t = re.sub(r"<think>.*?</think>", "", t, flags=re.S).strip()
-        m = re.search(r"```(?:json)?\s*(.*?)```", t, flags=re.S)
-        if m:
-            t = m.group(1).strip()
-        if not t.startswith(("{", "[")):
-            a, b = t.find("{"), t.rfind("}")
-            if a != -1 and b > a:
-                t = t[a:b + 1]
-        return t
+        t=text.strip()
+        fence=re.fullmatch(r"```(?:json)?\s*\n(.*?)\n```",t,flags=re.S)
+        return fence.group(1).strip() if fence else t
+
 
     def _require_openai_attestation(self, response) -> None:
         """Verify GenOS/local serving revision on every sealed response."""
@@ -398,13 +396,14 @@ class LLM:
                                  {"role": "user", "content": content}]}
             if enable_thinking is not None:
                 # Same serving option already used by GENOS's inference check.
-                # Keep it on schema fallback; never silently turn reasoning back on.
+                # Retain the explicit thinking option in every configured output mode.
                 body["chat_template_kwargs"] = {"enable_thinking": enable_thinking}
             if mode == "json_schema":
+                from semantic_runtime.legal_agent.model_contract import genos_wire_schema
                 body["response_format"] = {
                     "type": "json_schema",
                     "json_schema": {"name": ex.kind.replace(".", "_"),
-                                    "schema": schema, "strict": True}}
+                                    "schema": genos_wire_schema(schema), "strict": True}}
                 body["stream_options"] = {"include_usage": True}
             elif mode == "json_object":
                 body["response_format"] = {"type": "json_object"}
@@ -412,26 +411,22 @@ class LLM:
 
         mode = self._json_mode
         while True:
+            ex.physical_calls = (ex.physical_calls or 0) + 1
             resp = self._session.post(self._genos_url + "/v1/chat/completions",
                                       json=_payload(mode), stream=True,
                                       timeout=(15, 120), allow_redirects=False)
             self._require_openai_attestation(resp)
             if resp.status_code == 400 and mode != "prompt":
-                if _sealed():
-                    raise RuntimeError(
-                        "sealed product LLM rejected required JSON Schema mode"
-                    )
-                # 엔진이 이 형식을 모른다 — 한 단계 내려가고, 세션 내내 그 길로.
-                nxt = "prompt"
-                log.warning("%s가 %s 를 거부(400: %s) — %s 모드로 내려간다",
-                            self._backend_label, mode, resp.text[:200], nxt)
-                self._json_mode = mode = nxt
-                continue
+                from semantic_runtime.legal_agent.output_contract import OutputContractError,issue
+                raise OutputContractError('provider rejected the configured structured request mode',
+                    [issue('REQUEST_SCHEMA_UNSUPPORTED',repairable=False)],
+                    category='REQUEST_SCHEMA_UNSUPPORTED',repairable=False)
             resp.raise_for_status()
             break
 
         text, finish = "", ""
         response_model_seen = False
+        done = False
         for raw in resp.iter_lines():
             if not raw:
                 continue
@@ -440,19 +435,22 @@ class LLM:
                 continue
             payload = line[len("data:"):].strip()
             if payload == "[DONE]":
+                done = True
                 break
             try:
                 chunk = json.loads(payload)
-            except json.JSONDecodeError:
-                continue
+            except json.JSONDecodeError as exc:
+                from semantic_runtime.legal_agent.output_contract import OutputContractError,issue
+                raise OutputContractError('invalid model stream event',
+                    [issue('MODEL_STREAM_FRAME_INVALID',repairable=False)],
+                    category='OUTPUT_INCOMPLETE',repairable=False) from exc
             ex.provider_response.append(chunk)
             response_model = chunk.get("model")
             if response_model is not None:
                 response_model_seen = True
-                if _sealed() and response_model != model:
-                    raise RuntimeError(
-                        "sealed product LLM response names another model"
-                    )
+                if (self.backend=='genos' or _sealed()) and response_model != model:
+                    from semantic_runtime.legal_agent.errors import ContractError
+                    raise ContractError('product LLM response names another model')
             if chunk.get("usage"):
                 u = chunk["usage"]
                 ex.provider_usage = u
@@ -467,12 +465,27 @@ class LLM:
                     ex.raw_response = text
                 if ch.get("finish_reason"):
                     finish = ch["finish_reason"]
-        if _sealed() and not response_model_seen:
-            raise RuntimeError("sealed product LLM response has no model identity")
+        if (self.backend=='genos' or _sealed()) and not response_model_seen:
+            from semantic_runtime.legal_agent.errors import ContractError
+            raise ContractError('product LLM response has no model identity')
+        if not done:
+            from semantic_runtime.legal_agent.output_contract import OutputContractError,issue
+            raise OutputContractError('model stream ended without its completion marker',
+                [issue('MODEL_STREAM_INCOMPLETE',repairable=False)],category='OUTPUT_INCOMPLETE',repairable=False)
+        if finish not in ('','stop','length','content_filter'):
+            from semantic_runtime.legal_agent.output_contract import OutputContractError,issue
+            raise OutputContractError('unsupported model completion reason',
+                [issue('MODEL_FINISH_REASON_INVALID',repairable=False)],category='OUTPUT_INCOMPLETE',repairable=False)
         stop = {"stop": "end_turn", "length": "max_tokens",
                 "content_filter": "refusal"}.get(finish, finish or "end_turn")
         if mode != "json_schema":
+            original = text
             text = self._extract_json(text)
+            if text != original:
+                from hashlib import sha256
+                ex.normalizations.append({'rule':'complete_outer_json_fence_or_whitespace',
+                    'raw_sha256':sha256(original.encode()).hexdigest(),
+                    'normalized_sha256':sha256(text.encode()).hexdigest()})
         return text, stop
 
     def structured(self, kind: str, system: str, user: str, schema: dict,
@@ -572,9 +585,12 @@ class LLM:
                 ex.error = (f"출력이 max_tokens={max_tokens} 에서 잘림 "
                             f"(out {ex.usage.get('output_tokens', '?')}) — 원응답·추론 사용량과 서버 설정 확인")
                 return None
-            ex.parsed = json.loads(text)
+            from semantic_runtime.legal_agent.output_contract import strict_json
+            ex.parsed = strict_json(text)
             return ex.parsed
         except Exception as exc:                       # 호출·파싱 실패를 삼키지 않는다
+            from semantic_runtime.legal_agent.output_contract import diagnostics
+            ex.output_contract = diagnostics(exc)
             ex.error = f"{type(exc).__name__}: {exc}"
             return None
         finally:

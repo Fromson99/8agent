@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "scope": "GENOS native foldable agent panel through separate Python workflow",
+  "working_contracts": 106,
+  "exact_editor_contracts": 12,
+  "prior_live_card_reference_contracts": 4,
+  "r5_before_regression": {
+    "failed": 8,
+    "passed": 2
+  },
+  "r2_native_panel_regression": "FAIL; NOT_SENT and preserved",
+  "source_path": "08_DEPLOYMENT/GENOS/workflow/genos_rag_chat.py",
+  "source_sha256": "0ccbd94ecb33f05b45dbebfbe3938a03b88f6c4709af008187d2daa0459eff71",
+  "paste_sha256": "e120a5a45273df031028519692bb914504fecccf3b377d5f1678ee310e89990e",
+  "logs": {
+    "r3-contracts.txt": "b0c94540550d26327c7185222ff471240a417a12b2627293af6763eb710b07c1",
+    "r3-exact-editor-tests.txt": "376851034aa87b97c6b97dc0e680730a65024146359637065e7fec7c231f94b5",
+    "before-tests.txt": "68485bda072e3b12d325c0681f35acf287b89ea19ed4146c456e191c23bf5b09",
+    "r2-panel-contract-before.txt": "9d628b1952bbf7589ac355a8c481fa8183d2b43b61b42d3b1468f0ea2ccda79d"
+  },
+  "native_feature_reference": "native-feature-reference.json",
+  "native_feature_reference_sha256": "85769eaf04e516013fce67a2b1d659139b905df8066681d02400c57b0b760c3f",
+  "panel_contract": [
+    "nonempty token before first preparation card",
+    "cumulative agentFlowExecutedData",
+    "nodeId/status FINISHED",
+    "Visible Reasoner / JSON visible_rationale",
+    "same emitted cards in final dict",
+    "end event"
+  ],
+  "local_http_transport": "PASS",
+  "model_calls": 0,
+  "genos_access": false,
+  "field_workflow_test": "NOT_RUN",
+  "local_active_pointer_sha256": "ed89ee45580e1e95108c9147bddc8be5e00396b741c7a51fc4c3cd3db6d9338c"
+}

@@ -51,6 +51,9 @@ class CaseRepository(Memory):
         if not getattr(self,'owner_held',False):
             with self.owner(body,principal):return self.execute(body,principal)
         self.__dict__.pop('request_routing',None)
+        self.executor.__dict__.pop('request_entry',None)
+        self._entry_body=body
+        self._entry_principal=principal
         self.identity(body['session_id'],principal)
         old=self.db.execute('SELECT status,input_hash FROM request WHERE id=?',(self.request_key(body,principal),)).fetchone()
         self.resume_goal=None
@@ -76,6 +79,10 @@ class CaseRepository(Memory):
                 'target':g['id'],'knowledge_id':None,'stage':g['pending'] or 'INTENT','task':None,
                 'source_category':'KEEP','document_ids':None,'facts':None,'queries':None,
                 'restore_event':None,'restore_fields':[],'format':'prose','reason':'resume the recorded incomplete request'}
+        entry=getattr(self.executor,'request_entry',None)
+        if entry is not None and entry['command'] is not None:
+            self.admit(entry['command'],context)
+            return dict(entry['command'])
         c=super().resolve(context)
         if c['action'] in ('START','REUSE') and c.get('target') is None:
             from ..pipeline import route_question
@@ -87,6 +94,9 @@ class CaseRepository(Memory):
         """Route before commands, procedure replay, or any legal checkpoints."""
         from .source_query_planning import (CASE_ROUTING_SYSTEM, CAPABILITIES,
             case_routing_schema, validate_case_routing)
+        if not hasattr(self,'request_routing'):
+            from .request_entry import eligible,run
+            if eligible(self,context):run(self,context)
         if not hasattr(self,'request_routing'):
             data={'question':context['utterance'],
                 'current_goals':[{'task':g['state']['task'],'facts':g['state']['facts'],
@@ -125,8 +135,6 @@ class CaseRepository(Memory):
             keep.update(e['id'] for e in events if e.get('correction_ordinal') in ordinals)
             g['events']=[e for e in events if e['id'] in keep]
             g['event_count']=len(events);g['history_partial']=len(g['events'])!=len(events)
-        context['personal_history']=knowledge.questions(principal,limit=24,
-            public_only=self.executor.model.pipeline.term_agent.transport.binding['trust_zone']=='external')
         valid=[]
         for k in context['knowledge']:
             try:knowledge.get(k['id'],principal)
@@ -135,8 +143,7 @@ class CaseRepository(Memory):
         context['knowledge']=valid
         context['wiki_links']={question:experience for question,experience in context['wiki_links'].items()
             if experience in {k['id'] for k in valid}}
-        # Two views of these exact refs are supplied before the same resolver runs.
-        context['user_wiki']=[{'experience_id':k['id'],'question_id':k['bundle'],'conditions':k['state']} for k in valid]
+        # Legal experience refs remain available without a personal wiki/history view.
         context['legal_wiki']=[{'experience_id':k['id'],'concepts':k['concepts']} for k in valid]
         return context
 
@@ -154,6 +161,20 @@ class CaseRepository(Memory):
         if ref is None:raise MemoryError('stage has no native judgment reference')
         if ref['payload_hash']!=digest(payload):raise MemoryError('native judgment hash mismatch')
         self.db.execute('INSERT INTO judgment_ref VALUES(?,?)',(node,encoded(ref)))
+
+    def stage_committed(self,node,stage,payload,execution):
+        # The native journal records validation first; public acceptance follows
+        # the durable case revision/head transaction. A late result stays private.
+        pending=getattr(execution,'pending_judgment',None)
+        if not pending:return
+        with self.transaction():
+            row=self.db.execute('SELECT n.hash,n.revision,g.revision FROM node n JOIN goal g ON g.id=n.goal JOIN head h ON h.node=n.id WHERE n.id=? AND h.stage=?',(node,stage)).fetchone()
+            if row is None or row[0]!=digest(payload) or row[1]!=row[2]:
+                raise Conflict('late committed judgment')
+            with execution.s.work.transaction():
+                execution.s.work.event('CASE_JUDGMENT_ACCEPTED', {**pending,
+                    'case_node':node,'request_revision':row[1]})
+        execution.pending_judgment=None
 
     def route_fields(self,gid):
         refs={r['stage']:json.loads(r['ref']) for r in self.db.execute(

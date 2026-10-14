@@ -12,10 +12,10 @@ class UnifiedRag(NativeRag):
         self.model=model;self.domain=catalogue
         from ..contracts import cached_code_sha
         code=digest({name:cached_code_sha(Path(__file__).with_name(name)) for name in
-            ('corrected_memory.py','memory_methods.py','memory_rag.py','case_repository.py','knowledge_repository.py',
-             'domain_control.py','procedure_memory.py','wiki_execution.py','shortcut_cases.py','unified_rag.py','unified_runtime.py','unified_publication.py',
+            ('wiki_recall.py','law_title_hints.py','request_entry.py','corrected_memory.py','memory_methods.py','memory_rag.py','case_repository.py','knowledge_repository.py',
+             'domain_control.py','procedure_memory.py','wiki_execution.py','core_evidence_route.py','shortcut_cases.py','unified_rag.py','unified_runtime.py','unified_publication.py',
              'source_recall.py','source_recall_global.py','source_selection.py','unit_reading.py','unit_selection.py','unit_relations.py','relation_read_policy.py',
-             'law_candidates.py','law_navigation.py','investigation_chain.py','evidence_inventory.py','investigation_contracts.py')})
+             'law_candidates.py','law_navigation.py','investigation_chain.py','evidence_inventory.py','investigation_contracts.py','completion_contracts.py','completion_execution.py','completion_v5.py','request_repair.py','completion_budget.py','memory_binding.py')})
         self.binding.update(catalogue_hash=catalogue.hash,method_policy_hash=catalogue.method_hash,
             profile=digest(pipeline.term_agent.profile),code=code,
             pipeline=digest(pipeline.contracts.pipeline))
@@ -66,7 +66,7 @@ class UnifiedExecution(NativeExecution):
 
     def record(self,stage,payload,*,origin=None):
         with self.s.work.transaction():
-            seq=self.s.work.event('CASE_JUDGMENT_ACCEPTED',{'stage':stage,'payload_hash':digest(payload),
+            seq=self.s.work.event('CASE_JUDGMENT_VALIDATED',{'stage':stage,'payload_hash':digest(payload),
                 'domain_choice':self.domain_choice,'origin':origin})
             ident='case:'+stage
             dependencies=[('case_stage','case:'+previous) for previous in
@@ -78,6 +78,8 @@ class UnifiedExecution(NativeExecution):
         self.last_judgment_ref={'run_id':self.s.context.run_id,'kind':'case_stage',
             'entity_id':ident,'version':h['version'],'payload_hash':digest(payload),
             'choice_id':self.domain_choice['choice_id']}
+        self.pending_judgment = {'stage':stage,'payload_hash':digest(payload),
+            'validated_seq':seq,'origin':origin,'domain_choice':self.domain_choice}
 
     @staticmethod
     def host_stages_before(stage):
@@ -90,6 +92,12 @@ class UnifiedExecution(NativeExecution):
 
     def stage(self,stage,state,parts,utterance,format):
         self.domain_choice=self.host.domain.select(stage,state,self.s)
-        payload=super().stage(stage,state,parts,utterance,format)
+        from .corrected_memory import Reenter
+        try:
+            payload=super().stage(stage,state,parts,utterance,format)
+        except Reenter as recovery:
+            self.s.work.event('CASE_STAGE_REENTRY', {'from_stage':stage,'stage':recovery.stage,
+                'gaps':recovery.payload.get('gaps',[]),'reason':recovery.reason})
+            raise
         self.record(stage,payload)
         return payload

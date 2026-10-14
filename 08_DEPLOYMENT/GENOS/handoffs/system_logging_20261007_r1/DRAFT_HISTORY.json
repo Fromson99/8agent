@@ -1,0 +1,14 @@
+{
+  "status": "UNSENT_UNCOMPLETED_PACKAGING_DRAFT",
+  "old_zip_sha256": "ef57f4b8190c9b922f337bf1aac415ab0d306e5eb60532d0f06fbf3f916a8c83",
+  "corrections": [
+    "run-specific artifact directory",
+    "one deployment stdout/stderr copy",
+    "AD probe error raw log",
+    "keep public error diagnostic size contract",
+    "fsync local directory"
+  ],
+  "precheck_failures_sha256": "bafeb634f8a9c916fc06299421a6e65f8b88c37afc47d3694e568180873ef2d6",
+  "baseline_http_failures": 4,
+  "fixture_fix": "make AD_PROBE successful when isolating legal HTTP errors"
+}

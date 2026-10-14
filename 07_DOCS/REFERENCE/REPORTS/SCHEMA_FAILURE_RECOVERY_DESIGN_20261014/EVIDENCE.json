@@ -1,0 +1,922 @@
+{
+  "schema_version": "schema-recovery-design-evidence-v1",
+  "recorded_at": "2026-10-14T05:48:59.117461+00:00",
+  "task_status": "DESIGN_ONLY",
+  "method": "Local source inspection and byte-hash comparison. Source contents were read in relevant excerpts unless noted in conversation; hashing is not a full content review.",
+  "git": {
+    "head": "e2c33b2298f9da9f17e9f07dabec3fe7936604b0",
+    "dirty": true,
+    "porcelain_nul_sha256": "50aab4e418edb4357a35501a757e245d21c5356963319be7830b7afa96ce525e",
+    "note": "Many preexisting changes; HEAD is not the working or running-code fingerprint. Status includes this documentation work."
+  },
+  "selected_local": {
+    "pointer": {
+      "path": "01_DATA/ACTIVE/local/ACTIVE_RELEASE.json",
+      "exists": true,
+      "sha256": "ce4861815108bf634c853d95fc4964645193aea18356f69c5557711b1779c42b"
+    },
+    "release_id": "public-failure-guidance-20261014-r1",
+    "generation": 61,
+    "release_manifest": {
+      "path": "08_DEPLOYMENT/RELEASES/public-failure-guidance-20261014-r1/release.json",
+      "exists": true,
+      "sha256": "4b0b1d79c966568bbe3eed3e14552256db9a059d344da34df1b859fe71034f21"
+    },
+    "release_manifest_matches_pointer": true,
+    "data_manifest": {
+      "path": "01_DATA/TERM_RELEASES/native-cm-serving-20261008-r2-index/serving/baseline/generation/manifest.json",
+      "exists": true,
+      "sha256": "d45898e5e82503d255c1d0626f60091ea1f31993d1b3f2ffb1ae968293953379"
+    },
+    "data_manifest_matches_release": true,
+    "quality_certified": false,
+    "scope": "Stored pointer, manifest and listed code files only; no running service or full data inventory validation."
+  },
+  "selected_profile": {
+    "path": "08_DEPLOYMENT/RELEASES/public-failure-guidance-20261014-r1/code/00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json",
+    "sha256": "54150f85895492fed7dbb1d3d83c0a0643f9035b38f741731732a2366f8ac2a2",
+    "max_model_attempts": 40,
+    "max_schema_repairs": 1,
+    "max_transport_retries": 1,
+    "completion_policy_version": "investigation-completion-v8",
+    "classification": "Configuration limits, not observed attempts or GENOS settings."
+  },
+  "working_selected_comparison": [
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "working_sha256": "46929d758c191d478c548a8c324085c6b3d4a8baeab508f7935cf61dbaacfcf5",
+      "selected_sha256": "46929d758c191d478c548a8c324085c6b3d4a8baeab508f7935cf61dbaacfcf5",
+      "manifest_sha256": "46929d758c191d478c548a8c324085c6b3d4a8baeab508f7935cf61dbaacfcf5",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_repair.py",
+      "working_sha256": "05b037732f33c8ead06b6043f59d49229b0b6c0328c7b16af824a7284c2910c6",
+      "selected_sha256": "05b037732f33c8ead06b6043f59d49229b0b6c0328c7b16af824a7284c2910c6",
+      "manifest_sha256": "05b037732f33c8ead06b6043f59d49229b0b6c0328c7b16af824a7284c2910c6",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/navigation_input.py",
+      "working_sha256": "4eb1af110f840ed5a8b8b5435f003cf39e3e7bb8302c3a8b6eda810978d6c851",
+      "selected_sha256": "4eb1af110f840ed5a8b8b5435f003cf39e3e7bb8302c3a8b6eda810978d6c851",
+      "manifest_sha256": "4eb1af110f840ed5a8b8b5435f003cf39e3e7bb8302c3a8b6eda810978d6c851",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/numbered_references.py",
+      "working_sha256": "ce16f1ab356c0db081bc024a3f65df6efb4d1f9cf5c82f5b4dfd36df8f47f2a6",
+      "selected_sha256": "ce16f1ab356c0db081bc024a3f65df6efb4d1f9cf5c82f5b4dfd36df8f47f2a6",
+      "manifest_sha256": "ce16f1ab356c0db081bc024a3f65df6efb4d1f9cf5c82f5b4dfd36df8f47f2a6",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/relations_repository.py",
+      "working_sha256": "0961e00f67a16913cc9863f137463e1c9ddba90cb38dff715bc3f893288cd89e",
+      "selected_sha256": "0961e00f67a16913cc9863f137463e1c9ddba90cb38dff715bc3f893288cd89e",
+      "manifest_sha256": "0961e00f67a16913cc9863f137463e1c9ddba90cb38dff715bc3f893288cd89e",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/model_contract.py",
+      "working_sha256": "fcf09fbf548b5caa2cac0f5da99f5a7a88a36595ca93a2e7364769eef9a56939",
+      "selected_sha256": "8552c9348c072387395ac39102a0fcae4db0d2d31a8cd707b0c8c8fafe17dfa8",
+      "manifest_sha256": "8552c9348c072387395ac39102a0fcae4db0d2d31a8cd707b0c8c8fafe17dfa8",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": false,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/wire_schema.py",
+      "working_sha256": "8dea8d23ed37e3193cbb31313c89b52b289a73abddad095af156b3f9feecdf5e",
+      "selected_sha256": "8dea8d23ed37e3193cbb31313c89b52b289a73abddad095af156b3f9feecdf5e",
+      "manifest_sha256": "8dea8d23ed37e3193cbb31313c89b52b289a73abddad095af156b3f9feecdf5e",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/local_gemma.py",
+      "working_sha256": "d10e7306805060504a8c794e57704621cda1a140155de4b077d3c3be657e4eb3",
+      "selected_sha256": "d10e7306805060504a8c794e57704621cda1a140155de4b077d3c3be657e4eb3",
+      "manifest_sha256": "d10e7306805060504a8c794e57704621cda1a140155de4b077d3c3be657e4eb3",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/transport.py",
+      "working_sha256": "fcde37b4be42d1d206eae7d69d7f4e2f8523a94122775665de383dc9b8146680",
+      "selected_sha256": "fcde37b4be42d1d206eae7d69d7f4e2f8523a94122775665de383dc9b8146680",
+      "manifest_sha256": "fcde37b4be42d1d206eae7d69d7f4e2f8523a94122775665de383dc9b8146680",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/model_stream.py",
+      "working_sha256": "d946b7ea411139ec949626f76b160a6c375ea01a5d944b1cb63ecc11316c2df6",
+      "selected_sha256": "d946b7ea411139ec949626f76b160a6c375ea01a5d944b1cb63ecc11316c2df6",
+      "manifest_sha256": "d946b7ea411139ec949626f76b160a6c375ea01a5d944b1cb63ecc11316c2df6",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/gateway.py",
+      "working_sha256": "2e18301982178649a23c6320e2bdd6393023d2067d48e7c7300f9fd2242d5d6e",
+      "selected_sha256": "2b0bc4e4c30022e5dcc477882d36854ed1451deac9c46c3bd367b6a7436ddfcd",
+      "manifest_sha256": "2b0bc4e4c30022e5dcc477882d36854ed1451deac9c46c3bd367b6a7436ddfcd",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": false,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/bounded_source_session.py",
+      "working_sha256": "943305304e743a9c043ff5b7f24e7b7478f5c2abb6a6111e645b58de4dbe479d",
+      "selected_sha256": "943305304e743a9c043ff5b7f24e7b7478f5c2abb6a6111e645b58de4dbe479d",
+      "manifest_sha256": "943305304e743a9c043ff5b7f24e7b7478f5c2abb6a6111e645b58de4dbe479d",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unit_relations.py",
+      "working_sha256": "e161064cfc43301764df41c95e13319fa1ba0c78e6c2dde6f4e73515e198803c",
+      "selected_sha256": "e161064cfc43301764df41c95e13319fa1ba0c78e6c2dde6f4e73515e198803c",
+      "manifest_sha256": "e161064cfc43301764df41c95e13319fa1ba0c78e6c2dde6f4e73515e198803c",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_entry.py",
+      "working_sha256": "da4cd0eb666891b1f0da08ac651cfd7d89b3f531bdaf99f2aa0cc248d65c01cb",
+      "selected_sha256": "da4cd0eb666891b1f0da08ac651cfd7d89b3f531bdaf99f2aa0cc248d65c01cb",
+      "manifest_sha256": "da4cd0eb666891b1f0da08ac651cfd7d89b3f531bdaf99f2aa0cc248d65c01cb",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/investigation_contracts.py",
+      "working_sha256": "19e703e687d6a362b8ae276ad9f204037fc58aeba2b5eafbb6156a8f05d96f90",
+      "selected_sha256": "19e703e687d6a362b8ae276ad9f204037fc58aeba2b5eafbb6156a8f05d96f90",
+      "manifest_sha256": "19e703e687d6a362b8ae276ad9f204037fc58aeba2b5eafbb6156a8f05d96f90",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/source_selection.py",
+      "working_sha256": "28eb5b3fc96dbebd7d111768e3b50fbfdfe006df356a75d7277937a0a1f7f805",
+      "selected_sha256": "28eb5b3fc96dbebd7d111768e3b50fbfdfe006df356a75d7277937a0a1f7f805",
+      "manifest_sha256": "28eb5b3fc96dbebd7d111768e3b50fbfdfe006df356a75d7277937a0a1f7f805",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_execution.py",
+      "working_sha256": "3343dbe66275e4e2c3eb2e18ebd69669814fcf837b4f5cd6e7ad50a9ec70dc2c",
+      "selected_sha256": "3343dbe66275e4e2c3eb2e18ebd69669814fcf837b4f5cd6e7ad50a9ec70dc2c",
+      "manifest_sha256": "3343dbe66275e4e2c3eb2e18ebd69669814fcf837b4f5cd6e7ad50a9ec70dc2c",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py",
+      "working_sha256": "b3fbe5f16b6322654b363e1487a38a0026bd6762aa70ca4bb89cb62d4cb2db08",
+      "selected_sha256": "b3fbe5f16b6322654b363e1487a38a0026bd6762aa70ca4bb89cb62d4cb2db08",
+      "manifest_sha256": "b3fbe5f16b6322654b363e1487a38a0026bd6762aa70ca4bb89cb62d4cb2db08",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_v5.py",
+      "working_sha256": "e52d57b3b4b2206970772233bf25a7289ee5f15a426b000df1f8ab49cf77bb7f",
+      "selected_sha256": "e52d57b3b4b2206970772233bf25a7289ee5f15a426b000df1f8ab49cf77bb7f",
+      "manifest_sha256": "e52d57b3b4b2206970772233bf25a7289ee5f15a426b000df1f8ab49cf77bb7f",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_v6.py",
+      "working_sha256": "ff3eafefaa0d40d4401bdfbea92411bc1665b54560cdd20fa6c601579e623804",
+      "selected_sha256": "ff3eafefaa0d40d4401bdfbea92411bc1665b54560cdd20fa6c601579e623804",
+      "manifest_sha256": "ff3eafefaa0d40d4401bdfbea92411bc1665b54560cdd20fa6c601579e623804",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_v7.py",
+      "working_sha256": "c7157be910b6fdbe8367a5b52820c712d1810793820e92a31d7f62aebd32a8dd",
+      "selected_sha256": "c7157be910b6fdbe8367a5b52820c712d1810793820e92a31d7f62aebd32a8dd",
+      "manifest_sha256": "c7157be910b6fdbe8367a5b52820c712d1810793820e92a31d7f62aebd32a8dd",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_v8.py",
+      "working_sha256": "18f8333d74c4a9987b5d6dd39023a1db639b8391fe3994d06628a60afeb373df",
+      "selected_sha256": "18f8333d74c4a9987b5d6dd39023a1db639b8391fe3994d06628a60afeb373df",
+      "manifest_sha256": "18f8333d74c4a9987b5d6dd39023a1db639b8391fe3994d06628a60afeb373df",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_budget.py",
+      "working_sha256": "814e3aa1988d17c74f3cecc858ec7313c27cd18ad94b4b0a9c7648d6189ea47a",
+      "selected_sha256": "814e3aa1988d17c74f3cecc858ec7313c27cd18ad94b4b0a9c7648d6189ea47a",
+      "manifest_sha256": "814e3aa1988d17c74f3cecc858ec7313c27cd18ad94b4b0a9c7648d6189ea47a",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/corrected_memory.py",
+      "working_sha256": "d56689c3da2fabe9d7b56740ecdee09d78f3aff93d7d60994bc37ebcd2afec3c",
+      "selected_sha256": "d56689c3da2fabe9d7b56740ecdee09d78f3aff93d7d60994bc37ebcd2afec3c",
+      "manifest_sha256": "d56689c3da2fabe9d7b56740ecdee09d78f3aff93d7d60994bc37ebcd2afec3c",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/repository.py",
+      "working_sha256": "fd37b10336a32fa49f22d287fa5717f4171251f23579079b8827a0d3a24a107a",
+      "selected_sha256": "fd37b10336a32fa49f22d287fa5717f4171251f23579079b8827a0d3a24a107a",
+      "manifest_sha256": "fd37b10336a32fa49f22d287fa5717f4171251f23579079b8827a0d3a24a107a",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_runtime.py",
+      "working_sha256": "7ae1e91243f32a1fc4ad1f9483fe80058167c94bc4fa4d53bc2bd81044f418d7",
+      "selected_sha256": "7ae1e91243f32a1fc4ad1f9483fe80058167c94bc4fa4d53bc2bd81044f418d7",
+      "manifest_sha256": "7ae1e91243f32a1fc4ad1f9483fe80058167c94bc4fa4d53bc2bd81044f418d7",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/narrative_answer.py",
+      "working_sha256": "e4156582f4b8bdd720513e5f89a04125e3a848af6fa3ed96180138983b8bc4e3",
+      "selected_sha256": "e4156582f4b8bdd720513e5f89a04125e3a848af6fa3ed96180138983b8bc4e3",
+      "manifest_sha256": "e4156582f4b8bdd720513e5f89a04125e3a848af6fa3ed96180138983b8bc4e3",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/answer_stream.py",
+      "working_sha256": "74afdef6a6a19123e7dfa6e996fab2d1262acb82981e9239077ec1cc218f629a",
+      "selected_sha256": "74afdef6a6a19123e7dfa6e996fab2d1262acb82981e9239077ec1cc218f629a",
+      "manifest_sha256": "74afdef6a6a19123e7dfa6e996fab2d1262acb82981e9239077ec1cc218f629a",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/unified_publication.py",
+      "working_sha256": "74f47090783f8602c86033f293669b305223c5de371e95bb4c615cc591bb7c57",
+      "selected_sha256": "74f47090783f8602c86033f293669b305223c5de371e95bb4c615cc591bb7c57",
+      "manifest_sha256": "74f47090783f8602c86033f293669b305223c5de371e95bb4c615cc591bb7c57",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/shortcut_cases.py",
+      "working_sha256": "cc569367706982a7bf4a27289af0ba714c326fa473da94b1160602ab1de107d6",
+      "selected_sha256": "cc569367706982a7bf4a27289af0ba714c326fa473da94b1160602ab1de107d6",
+      "manifest_sha256": "cc569367706982a7bf4a27289af0ba714c326fa473da94b1160602ab1de107d6",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/investigation_diagnostics.py",
+      "working_sha256": "03e85cd11f2ff327e126b53a038bb30d0e822ffc1c480f077420e7c08b4caeca",
+      "selected_sha256": "03e85cd11f2ff327e126b53a038bb30d0e822ffc1c480f077420e7c08b4caeca",
+      "manifest_sha256": "03e85cd11f2ff327e126b53a038bb30d0e822ffc1c480f077420e7c08b4caeca",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/readable_log.py",
+      "working_sha256": "4b55e7d0e73c43eae703cd9959df5471fb1b6971b617eae8104d8e83b0824fdf",
+      "selected_sha256": "4b55e7d0e73c43eae703cd9959df5471fb1b6971b617eae8104d8e83b0824fdf",
+      "manifest_sha256": "4b55e7d0e73c43eae703cd9959df5471fb1b6971b617eae8104d8e83b0824fdf",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/workflow_tiers_policy.py",
+      "working_sha256": "a0460e95e915e6fa7d1c8c4208d680d2a133cbbbf6a9e72778a8cd62c55c0084",
+      "selected_sha256": "a0460e95e915e6fa7d1c8c4208d680d2a133cbbbf6a9e72778a8cd62c55c0084",
+      "manifest_sha256": "a0460e95e915e6fa7d1c8c4208d680d2a133cbbbf6a9e72778a8cd62c55c0084",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_candidates.py",
+      "working_sha256": "41bc9e490beaa86a38556e75eea33e09da10a0185ad1536e04b3de61f6cb60ea",
+      "selected_sha256": "41bc9e490beaa86a38556e75eea33e09da10a0185ad1536e04b3de61f6cb60ea",
+      "manifest_sha256": "41bc9e490beaa86a38556e75eea33e09da10a0185ad1536e04b3de61f6cb60ea",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/memory_rag.py",
+      "working_sha256": "3a340dcb528f3d7653a01aaa43c92764f72e1b634023e7bafd836e25a332e2bc",
+      "selected_sha256": "3a340dcb528f3d7653a01aaa43c92764f72e1b634023e7bafd836e25a332e2bc",
+      "manifest_sha256": "3a340dcb528f3d7653a01aaa43c92764f72e1b634023e7bafd836e25a332e2bc",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/app.py",
+      "working_sha256": "5a5e0bf35fd4a5d55742c4262887ccd3b089f01901e00e4ea6f772cdb227e23f",
+      "selected_sha256": "5a5e0bf35fd4a5d55742c4262887ccd3b089f01901e00e4ea6f772cdb227e23f",
+      "manifest_sha256": "5a5e0bf35fd4a5d55742c4262887ccd3b089f01901e00e4ea6f772cdb227e23f",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/request_report.py",
+      "working_sha256": "316ba81a8da823953493a3849d2fd0ec8b14e3bd52693ea38e14f87838775a47",
+      "selected_sha256": "c9cf5c13f490432ec4cba2096039b6b0bc5d7eb9d16bcdbdc894a228b4509f64",
+      "manifest_sha256": "c9cf5c13f490432ec4cba2096039b6b0bc5d7eb9d16bcdbdc894a228b4509f64",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": false,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ad_model.py",
+      "working_sha256": "0854300bd6dff40e59cee254af9d3ca73c5db0063d750b20d7b9fdee28468212",
+      "selected_sha256": "0854300bd6dff40e59cee254af9d3ca73c5db0063d750b20d7b9fdee28468212",
+      "manifest_sha256": "0854300bd6dff40e59cee254af9d3ca73c5db0063d750b20d7b9fdee28468212",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ad_language.py",
+      "working_sha256": "d2476e66a91057e1d2c73bc4e145dcb9f22abcc765cd4fe5820f17e121f28c44",
+      "selected_sha256": "d2476e66a91057e1d2c73bc4e145dcb9f22abcc765cd4fe5820f17e121f28c44",
+      "manifest_sha256": "d2476e66a91057e1d2c73bc4e145dcb9f22abcc765cd4fe5820f17e121f28c44",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ad_store.py",
+      "working_sha256": "66ca5859d71db70f917816c344f10ad30ff96671d769d462a3f5a110c56bf897",
+      "selected_sha256": "66ca5859d71db70f917816c344f10ad30ff96671d769d462a3f5a110c56bf897",
+      "manifest_sha256": "66ca5859d71db70f917816c344f10ad30ff96671d769d462a3f5a110c56bf897",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ad_request_report.py",
+      "working_sha256": "52ea6db79c62ef6799951aaa5c7fcf097317eaf3a924adc98cf0db4fdc0a002c",
+      "selected_sha256": "52ea6db79c62ef6799951aaa5c7fcf097317eaf3a924adc98cf0db4fdc0a002c",
+      "manifest_sha256": "52ea6db79c62ef6799951aaa5c7fcf097317eaf3a924adc98cf0db4fdc0a002c",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/reference_resolution_protocol.py",
+      "working_sha256": "3d8a6baa411b28f15c5d7e30e4b33db2eaea054a65d0263fb27fa943a7c56fa2",
+      "selected_sha256": "3d8a6baa411b28f15c5d7e30e4b33db2eaea054a65d0263fb27fa943a7c56fa2",
+      "manifest_sha256": "3d8a6baa411b28f15c5d7e30e4b33db2eaea054a65d0263fb27fa943a7c56fa2",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/genos_backend.py",
+      "working_sha256": "2ffe046f1105c319038390dcefba558c09d8c964338c299c67f20aa8cdade13b",
+      "selected_sha256": "2ffe046f1105c319038390dcefba558c09d8c964338c299c67f20aa8cdade13b",
+      "manifest_sha256": "2ffe046f1105c319038390dcefba558c09d8c964338c299c67f20aa8cdade13b",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/reference_resolution.py",
+      "working_sha256": "bb37e61081c3fd6cafb6654029fcb94a52285f1214294b06d36a0deb89f992d1",
+      "selected_sha256": null,
+      "manifest_sha256": null,
+      "working_exists": true,
+      "selected_exists": false,
+      "working_equals_selected": null,
+      "selected_matches_manifest": null
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/llm.py",
+      "working_sha256": "7a8494fc7b1fa84edb899f1967ff26500c358871be382554ecaeb0e9e164364a",
+      "selected_sha256": null,
+      "manifest_sha256": null,
+      "working_exists": true,
+      "selected_exists": false,
+      "working_equals_selected": null,
+      "selected_matches_manifest": null
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_runtime.py",
+      "working_sha256": "064dbe6751da8000242256762f02c0a281797d8617fec9f350f64b123b2ad556",
+      "selected_sha256": null,
+      "manifest_sha256": null,
+      "working_exists": true,
+      "selected_exists": false,
+      "working_equals_selected": null,
+      "selected_matches_manifest": null
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_output.py",
+      "working_sha256": "de805ff7bc08fb1c55b5106be727b4b1b0b0ae8711e899feb72d8ac7373f5ae3",
+      "selected_sha256": null,
+      "manifest_sha256": null,
+      "working_exists": true,
+      "selected_exists": false,
+      "working_equals_selected": null,
+      "selected_matches_manifest": null
+    },
+    {
+      "path": "service.py",
+      "working_sha256": "68e2b5a45eb652ad46614c67f639f14dc99c6f0d61173456f099c82065f9f82c",
+      "selected_sha256": "68e2b5a45eb652ad46614c67f639f14dc99c6f0d61173456f099c82065f9f82c",
+      "manifest_sha256": "68e2b5a45eb652ad46614c67f639f14dc99c6f0d61173456f099c82065f9f82c",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "06_TOOLS/pipeline.py",
+      "working_sha256": "0a2ee7371d9e3cf55c78d58caa8ea123cb05bc6ab254ff7d6aff74057e5f8461",
+      "selected_sha256": null,
+      "manifest_sha256": null,
+      "working_exists": true,
+      "selected_exists": false,
+      "working_equals_selected": null,
+      "selected_matches_manifest": null
+    },
+    {
+      "path": "00_SYSTEM/LEGAL_AGENT/profile-unified-v6.json",
+      "working_sha256": "54150f85895492fed7dbb1d3d83c0a0643f9035b38f741731732a2366f8ac2a2",
+      "selected_sha256": "54150f85895492fed7dbb1d3d83c0a0643f9035b38f741731732a2366f8ac2a2",
+      "manifest_sha256": "54150f85895492fed7dbb1d3d83c0a0643f9035b38f741731732a2366f8ac2a2",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "working_sha256": "068c2237dfae40fc551556f65b2a86c8316c7bc51792f47d311b4e5491e61ebb",
+      "selected_sha256": "22e6a29dfd14fe6915440a5371d68fcebb2f68a6e29890123e420209d291443d",
+      "manifest_sha256": "22e6a29dfd14fe6915440a5371d68fcebb2f68a6e29890123e420209d291443d",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": false,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "working_sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219",
+      "selected_sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219",
+      "manifest_sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    },
+    {
+      "path": "00_SYSTEM/EXPERIMENT_MODEL_POLICY.json",
+      "working_sha256": "8ef308aa9bbe3685409ac0b8b908028691e0af4f330f34022695ea9859d68bab",
+      "selected_sha256": "8ef308aa9bbe3685409ac0b8b908028691e0af4f330f34022695ea9859d68bab",
+      "manifest_sha256": "8ef308aa9bbe3685409ac0b8b908028691e0af4f330f34022695ea9859d68bab",
+      "working_exists": true,
+      "selected_exists": true,
+      "working_equals_selected": true,
+      "selected_matches_manifest": true
+    }
+  ],
+  "source_files": [
+    {
+      "path": "00_SYSTEM/ARCHITECTURE.md",
+      "exists": true,
+      "sha256": "c3689de07fe0a28109893ef555690522bf578bfcd54a8d05579b1641cbecc91e"
+    },
+    {
+      "path": "00_SYSTEM/EXPERIMENT_MODEL_POLICY.json",
+      "exists": true,
+      "sha256": "8ef308aa9bbe3685409ac0b8b908028691e0af4f330f34022695ea9859d68bab"
+    },
+    {
+      "path": "00_SYSTEM/PIPELINE.json",
+      "exists": true,
+      "sha256": "068c2237dfae40fc551556f65b2a86c8316c7bc51792f47d311b4e5491e61ebb"
+    },
+    {
+      "path": "00_SYSTEM/WORKSPACE.json",
+      "exists": true,
+      "sha256": "fa6598ce03ec9729ee195bafbe0a8aa56e255f848765210b58b2b24ca4452219"
+    },
+    {
+      "path": "01_DATA/GOLDEN/risk_cm/README.md",
+      "exists": true,
+      "sha256": "df5542ab8408fcde969450e263dfa5794219d83f1e00b5fae4021f094451cc80"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/llm.py",
+      "exists": true,
+      "sha256": "7a8494fc7b1fa84edb899f1967ff26500c358871be382554ecaeb0e9e164364a"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_output.py",
+      "exists": true,
+      "sha256": "de805ff7bc08fb1c55b5106be727b4b1b0b0ae8711e899feb72d8ac7373f5ae3"
+    },
+    {
+      "path": "02_BACKEND/lawrag/core/structure/recipe_runtime.py",
+      "exists": true,
+      "sha256": "064dbe6751da8000242256762f02c0a281797d8617fec9f350f64b123b2ad556"
+    },
+    {
+      "path": "02_BACKEND/lawrag/pipeline/reference_resolution.py",
+      "exists": true,
+      "sha256": "bb37e61081c3fd6cafb6654029fcb94a52285f1214294b06d36a0deb89f992d1"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ad_language.py",
+      "exists": true,
+      "sha256": "d2476e66a91057e1d2c73bc4e145dcb9f22abcc765cd4fe5820f17e121f28c44"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/ad_model.py",
+      "exists": true,
+      "sha256": "0854300bd6dff40e59cee254af9d3ca73c5db0063d750b20d7b9fdee28468212"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/genos_backend.py",
+      "exists": true,
+      "sha256": "2ffe046f1105c319038390dcefba558c09d8c964338c299c67f20aa8cdade13b"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_v8.py",
+      "exists": true,
+      "sha256": "18f8333d74c4a9987b5d6dd39023a1db639b8391fe3994d06628a60afeb373df"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/law_navigation.py",
+      "exists": true,
+      "sha256": "46929d758c191d478c548a8c324085c6b3d4a8baeab508f7935cf61dbaacfcf5"
+    },
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/request_repair.py",
+      "exists": true,
+      "sha256": "05b037732f33c8ead06b6043f59d49229b0b6c0328c7b16af824a7284c2910c6"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0389-pdf-parent-template-schema/README.md",
+      "exists": true,
+      "sha256": "a1cba3c6c9843476d4838f42450a58af00b54802e38b3c96e3d8565023d366ed"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0453-gemini-schema-400-diagnosis/README.md",
+      "exists": true,
+      "sha256": "84531795d439621bdd69a5f9a24fd41413c5bd7282c8ef9b1b3fbfdfd325df2f"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0457-portable-synthesis-schema/README.md",
+      "exists": true,
+      "sha256": "1eb6e6c08d104e2e3e0280ab54c0a4cf9ae03e89f484b5432657c78303e314c8"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0464-genos-proxy-schema-repair/README.md",
+      "exists": true,
+      "sha256": "90f5b069c81363be48ffcd535695d41ecfd61c81e9d53f17498590944832dea7"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0593-rag-chain-native-kind-repair/README.md",
+      "exists": true,
+      "sha256": "0732c3eb6a58756e0bb1fd7ca4d27780669c3b13c26c4f95ed3a14d9701b467f"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0594-rag-chain-strict-contracts/README.md",
+      "exists": true,
+      "sha256": "b5e0b100ed87f896f51142b6e27f26b22a3241be203444516122f0ffd09932f9"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0595-rag-chain-command-repair/README.md",
+      "exists": true,
+      "sha256": "01423d116767d61fd6f2828c847879b84657d9aab107a69c556c6f48e293dce7"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0601-rag-chain-empty-state-guards/README.md",
+      "exists": true,
+      "sha256": "719cee872a2def80d97516a9c11be37e493df6e1862d52ba9721b266273a4e2b"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0606-native-memory-command-verifier-repair/README.md",
+      "exists": true,
+      "sha256": "53cb9e824bfacad511671bc35a2b96459f51757191cc7516d233a96b87adc10e"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0661-law-navigation-state-contract-probe/README.md",
+      "exists": true,
+      "sha256": "0190adb40c34d62851c1a259b87efd43d479424b29dd30b852dda46e67ea3fc1"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0663-law-navigation-one-repair-probe/README.md",
+      "exists": true,
+      "sha256": "e4c585d958fe90bbf3e3f25a034b88f2c27dabcb9057c125306eda44239d0b89"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0664-law-navigation-patch-repair-probe/README.md",
+      "exists": true,
+      "sha256": "8dfa9ff3177875370c0da9e9a8e44cc733df5f60d3684cafb7ccce4ac3b04b80"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0665-selection-tool-contract-fixes/README.md",
+      "exists": true,
+      "sha256": "f536e65b3f085deed45de703923270a837a190ebd60f4661ac8262f8be584bc0"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0665-selection-tool-contract-fixes/artifacts/design/frozen-design.json",
+      "exists": true,
+      "sha256": "cf5c9267418e1e6cff56f0abcd1106c9d4eb082653c510888a57e68f0e720a0c"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0666-selection-schema-provider-closure/README.md",
+      "exists": true,
+      "sha256": "bd917ea8a727056e29efb6386576a8187466d0e3b2632456161e911fbe18fbdc"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0667-selection-original-basis-closure/README.md",
+      "exists": true,
+      "sha256": "697357c31cbcdb76c2257c7548d8f728c3ca4c58cd3bec08f7560b6ffa7ae245"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0668-selection-provider-anyof/README.md",
+      "exists": true,
+      "sha256": "9c2e058af4f5ccc0fe6a9da91419017accc4420af1543b655c9c3f0aabef3962"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0669-reference-complete-action-schema/README.md",
+      "exists": true,
+      "sha256": "e139ec08a580516d6ad5efc20f3043c66f1f6739b5b533afcf244bd9d212dab2"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0670-public-provider-schema-adapter/README.md",
+      "exists": true,
+      "sha256": "133a738926a72d96feed0a6e1e3ae90b1dac3ec52863b67e26362af48f37ec45"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0676-investigation-reinspection-repair/README.md",
+      "exists": true,
+      "sha256": "842e696c164b67c02e0324536307d735a27fc96b083195dc7223274e31805914"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0678-investigation-contract-completion/README.md",
+      "exists": true,
+      "sha256": "82953cca360958356780418cea894a129dfadcc8d1493e998a51976aa087336a"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0679-investigation-completion-qualification/README.md",
+      "exists": true,
+      "sha256": "36ac67b152d5da9660193ac29f43fdf925936f39c7221ee7b319d3f890ae5b09"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0696-structured-decision-wire-repair/README.md",
+      "exists": true,
+      "sha256": "f2748322f4e300c2437ae4944352ca068c5d4f38d9b81625076fc932810e933c"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0702-exception-state-wire-contract/README.md",
+      "exists": true,
+      "sha256": "c89f9c286c2c8ba1eeac72695f2a09a0dcc63f845140c53860ca3b56d7e2127e"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0718-main50-request-repair-integration/README.md",
+      "exists": true,
+      "sha256": "2d26e4681a4e35d6d7c09a8ed3b40e2127484ba6dcea39e28dc26c74ce89ecea"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0723-source-target-recovery-complete/README.md",
+      "exists": true,
+      "sha256": "77e75c551c0cf213d7fc29cd045cef6c56882272e187ad4c212c6d98d200690e"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0724-source-recovery-boundary-fix/README.md",
+      "exists": true,
+      "sha256": "fa3632f71ff9ce27192c4267ab27b5bc3e546ff3c7d867cb05d844ea81c7f237"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0725-source-recovery-public-qualification/MAIN_RESULT.md",
+      "exists": true,
+      "sha256": "9990ece1ed70b403747eec4fd8a66c041a61f19e23c7eeb1a86672889f0a37f8"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0727-navigation-input-binding/README.md",
+      "exists": true,
+      "sha256": "a0de7a5b95aaa2241add49b94010bd4eea0e5eea08877ecd8784a449bd242451"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0729-compact-branch-choice-contract/README.md",
+      "exists": true,
+      "sha256": "204529d831e9107d7b97eddad1d6f439d183cc670f09fa37f61094ae33de3a3a"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0730-compact-choice-public-qualification/README.md",
+      "exists": true,
+      "sha256": "09b746372cae133bd5dd1ea92522fd7a45c414fcf9cad920c66fbb1ac8f6edf8"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0746-source-span-norm-contract/README.md",
+      "exists": true,
+      "sha256": "b19672f454a81b76cc0afaad4cd657647f08eee19a9609922bcc76e754eda42d"
+    },
+    {
+      "path": "04_EXPERIMENTS/ADR/ADR-0774-assessment-gap-action-main/README.md",
+      "exists": true,
+      "sha256": "c3d1bcaa19353ca1e0200b95c3f5da1b7d51e6a9e3258f2459a38829a1229a6e"
+    },
+    {
+      "path": "07_DOCS/BACKLOG.md",
+      "exists": true,
+      "sha256": "3c822f33579e58837860159d63e99eec6347fa2c0f9739fa94e286ed6828f8db"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/AGENT_FAILURE_RECOVERY_POLICY.md",
+      "exists": true,
+      "sha256": "6b80893f7fdfe9a487945f17c7a0256be9d144d69b007f74887f73a53039d099"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/OPERATIONS/MODEL_DECISION_REPAIR_20260929.md",
+      "exists": true,
+      "sha256": "0716bab47d0119a7c1312ce716c78a6765dbd65a12c9c2df136c1ac08b06fb4f"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/MAIN50_CM51_REPAIR_IMPLEMENTATION_PLAN_20261009/PLAN.md",
+      "exists": true,
+      "sha256": "c580cd150a22935cf4a5868084bd8ddb82ce656faaa3dda7bb582a6d8fc39385"
+    },
+    {
+      "path": "07_DOCS/REFERENCE/REPORTS/MAIN53_SEARCH_RECOVERY_PLAN_20261013/PLAN.md",
+      "exists": true,
+      "sha256": "3e09c56a34c26e1481ec1867ab61cb9df813466e153ceb3031f81e6334fd34ed"
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/ad_request_logs_20261013_r1/GUIDE_UTF8.txt",
+      "exists": true,
+      "sha256": "48aa3ca984a16280b88964520a1a7c7d2d60fbb0aa8e37f3ad259220ac3535e0"
+    },
+    {
+      "path": "08_DEPLOYMENT/GENOS/handoffs/model_input_metrics_20261014_r1/FINDINGS_UTF8.txt",
+      "exists": true,
+      "sha256": "2fe5e765568acfd1600a4fb5fa4db4516ee152863bb9a040df2415b22765bc93"
+    },
+    {
+      "path": "09_ARTIFACTS/AUDITS/20261013-model-stream-photo/FINDINGS.json",
+      "exists": true,
+      "sha256": "452001e2e9a4b3bb176847896df67e5bee08e2c7a7ae4055e196922333c8f3a6"
+    },
+    {
+      "path": "AGENTS.md",
+      "exists": true,
+      "sha256": "5fd341b5de3b1942c229efcdbc41d42cb82bba596ad41f1dfe8348181233a10f"
+    },
+    {
+      "path": "GENOS.md",
+      "exists": true,
+      "sha256": "2abce71ef2953da5a3a53c2bfbc210bf80d4f6eb5cf51c5fa4a8a92e8c9228a7"
+    }
+  ],
+  "photos": [
+    {
+      "path": "/tmp/codex-remote-attachments/01a138e2-852d-7e82-b057-6b7efe9d5cc1/C99793BC-0F2B-422F-94BC-D8ECE259C240/1-사진-1.jpg",
+      "exists": true,
+      "sha256": "ffadd84545edae65783b0408d030d2ae290772a8cba5e2ba9e25a92ef6823084"
+    },
+    {
+      "path": "/tmp/codex-remote-attachments/01a138e2-852d-7e82-b057-6b7efe9d5cc1/C99793BC-0F2B-422F-94BC-D8ECE259C240/2-사진-2.jpg",
+      "exists": true,
+      "sha256": "e094937d65b9095dfbed52d7c1656a717626624f6397e46786cc919e4aac1e05"
+    }
+  ],
+  "prior_turn_diagnostics": {
+    "origin": "Earlier photo-diagnosis turn in this conversation; not rerun in the design turn. Original tool output is the test-result source.",
+    "related_tests_passed": 6,
+    "old_fixture_failures": 1,
+    "failed_fixture": "test_law_navigation_one_repair_adr0663::test_second_invalid_is_saved_and_resume_cannot_retry_again (KeyError: articles before intended assertion)",
+    "synthetic_cases": [
+      "valid accepted",
+      "exact duplicate normalized then accepted",
+      "same branch with different reason retained then rejected",
+      "whitespace reason passed shape but failed domain validation"
+    ],
+    "scope": "Local synthetic/contract evidence, not model effectiveness, full regression or GENOS verification."
+  },
+  "not_executed": [
+    "product code implementation",
+    "new model calls or comparative experiments",
+    "new ADR reservation",
+    "local running service API validation",
+    "MAIN activation",
+    "GENOS access or deployment"
+  ],
+  "unknown": [
+    "GENOS actual release/profile for photos",
+    "raw failed model response behind photos",
+    "which disjunct caused photographed duplicate branch or missing reason",
+    "current production error rates",
+    "future improvement, cost and schedule"
+  ],
+  "code_symbols": [
+    {
+      "path": "02_BACKEND/semantic_runtime/legal_agent/completion_contracts.py",
+      "symbol": "source_gap_actions",
+      "note": "Function in existing module, not a standalone source_gap_actions.py."
+    }
+  ],
+  "working_selected_summary": {
+    "files": 53,
+    "same": 44,
+    "different": 4,
+    "outside_serving_package": 5,
+    "difference_interpretation": "Preexisting working-tree input/length metrics, request outcome reporting, and engine manifest pins differ from stored selected release. Preserve in later integration; no running service implication."
+  }
+}

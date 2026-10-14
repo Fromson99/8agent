@@ -1,0 +1,26 @@
+<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.65">
+<p>안녕하세요.<br>요청하신 배포·빌드·환경 오류와 일반 서버 로그를 NFS에 저장하는 반입본을 전달드립니다.</p>
+<p>이번 로그 기능 적용에는 <b>GENOS_SYSTEM_LOGGING_20261007_R1.zip</b>과 같은 버전의 <b>APPLY.txt</b>를 사용해 주세요. 검증한 query-latency R3 기반의 누적 코드이며, 기존 데이터 generation을 재구축하지 않습니다.</p>
+<p><b>저장 위치:</b> <code>/nfs-root/diamo/8-agent/logs/system/&lt;run_id&gt;/</code><br>
+첫 ZIP 검사부터 적용·빌드·서버 시작 단계, stdout/stderr, 일반 Python 로그, 전체 traceback, 워크플로우 HTTP 오류 응답 원문을 기록합니다. 실제 Python·코드 해시·설정 경로·종료 코드도 남깁니다. 환경변수 전체나 인증키 값을 덤프하지 않습니다.<br>
+NFS 쓰기 실패 시 로컬 임시 spool에 보관하며, 복구 명령으로 배포를 다시 실행하지 않고 로그만 재전송할 수 있습니다. 컨테이너 삭제 전에는 pending spool을 회수해 주세요.</p>
+<p><b>첨부 5개</b></p>
+<ul>
+<li><b>GENOS_SYSTEM_LOGGING_20261007_R1.zip</b>: JavaScript를 제외한 코드 304개</li>
+<li><b>GENOS_SYSTEM_LOGGING_20261007_R1_APPLY.txt</b>: 기존 ~/DEV 검사·백업·적용·검증·gate·push·원복 스크립트</li>
+<li><b>GENOS_SYSTEM_LOGGING_20261007_R1_WORKFLOW_PASTE_ALL.txt</b>: 분리 워크플로우 Python 편집기에 반영할 전체 코드</li>
+<li><b>GUIDE_UTF8.txt</b>: 환경 설정, 빌드·시작 명령, 로그 확인·복구·원복 안내</li>
+<li><b>SHA256SUMS</b>: 파일 무결성 해시</li>
+</ul>
+<p><b>시작 순서</b><br>ZIP과 APPLY.txt를 같은 폴더에 두고 실제 선택 generation을 지정한 뒤 실행해 주세요.</p>
+<pre style="background:#f3f4f6;padding:12px;white-space:pre-wrap">export GENOS_GENERATION='&lt;실제 선택 NFS generation 절대경로&gt;'
+export GENOS_SYSTEM_LOG_DIR=/nfs-root/diamo/8-agent/logs/system
+bash GENOS_SYSTEM_LOGGING_20261007_R1_APPLY.txt check "$GENOS_GENERATION"
+bash GENOS_SYSTEM_LOGGING_20261007_R1_APPLY.txt apply "$GENOS_GENERATION"
+bash GENOS_SYSTEM_LOGGING_20261007_R1_APPLY.txt verify "$GENOS_GENERATION"</pre>
+<p>check 실패 시 중단하고 출력에 표시된 NFS/SPOOL의 원문 로그를 확인해 주세요. 모르는 현장 수정은 덮어쓰지 않습니다. 이후 gate·push와 코드서빙 새 리비전 배포, 빌드·시작 명령에 로그 수집기를 연결하는 절차는 GUIDE_UTF8.txt에 있습니다.</p>
+<p>분리 방식은 WORKFLOW_PASTE_ALL.txt 전체를 워크플로우 Python 편집기에 따로 반영하고, 코드서빙과 워크플로우 양쪽의 로그 경로·NFS 마운트·권한을 확인해 주세요. 통합 직접 JSON 방식은 편집기 교체가 필요 없습니다. 현장 질의 검증은 워크플로우 테스트 화면에서 진행합니다.</p>
+<p><b>검증 범위:</b> 로컬 관련 검사 75개를 통과했습니다. GENOS 현장 적용·Git push·새 리비전 배포·실제 NFS 쓰기와 내부 모델 질의 검증은 아직 수행하지 않았습니다.<br>
+업로드 화면·이미지 pull·스케줄러·마운트·Python 실행 이전의 플랫폼 오류는 별도 플랫폼 로그를 원문으로 내보내 같은 NFS에 보관해야 합니다.</p>
+<p>ZIP SHA-256: <code>a9cc0727dee161cef62747f13c40bb895d4b28e71803e89dac8bc775e26ed149</code></p>
+</div>

@@ -1,0 +1,334 @@
+{
+  "719": {
+    "strict_success": false,
+    "checks": {
+      "all_requests": true,
+      "candidate_primary_supported": true,
+      "candidate_repeat_supported": true,
+      "no_paired_supported_regression": true,
+      "all_successful_citations_verified": true,
+      "all_candidate_primary_gold_presented": true,
+      "public_scope_only": true,
+      "actual_binding_valid": true,
+      "approved_judgment_and_gap_state_valid": false,
+      "raw_diagnostics_in_public_zero": true,
+      "no_new_contract_regressions": true,
+      "all20_new_contracts_pass": true,
+      "same_code_to_release": true,
+      "unseen_primary_roots": true,
+      "physical_call_accounting": true,
+      "content_preserved": true,
+      "unexpected_http500_zero": true,
+      "main_unchanged": true,
+      "frozen_files_unchanged": true,
+      "actual_model_provider_binding": true
+    },
+    "primary_comparison": {
+      "baseline": {
+        "supported": 3,
+        "calls": 16,
+        "input_tokens": 139103,
+        "request_seconds": 325.56780929199886,
+        "final_answer_excluded_calls": 12,
+        "final_answer_excluded_seconds": 132.92502563599737
+      },
+      "repaired": {
+        "supported": 3,
+        "calls": 12,
+        "input_tokens": 98484,
+        "request_seconds": 260.2596393049989,
+        "final_answer_excluded_calls": 9,
+        "final_answer_excluded_seconds": 69.28032806400188
+      }
+    },
+    "cases": {
+      "baseline": [
+        {
+          "case_id": "H01",
+          "http_status": 200,
+          "physical_model_attempts": 8,
+          "request_seconds": 151.7458750450005,
+          "reader_requests": 3,
+          "reader_reused": 1,
+          "reader_new_chars": 530,
+          "fulltext_global_events": 0,
+          "logical_navigation_steps": 3,
+          "rejected_proposals": 0,
+          "answer_coverage": "PARTIAL"
+        },
+        {
+          "case_id": "H02",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 90.99640195599932,
+          "reader_requests": 4,
+          "reader_reused": 1,
+          "reader_new_chars": 915,
+          "fulltext_global_events": 0,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        },
+        {
+          "case_id": "H03",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 82.82553229099904,
+          "reader_requests": 14,
+          "reader_reused": 2,
+          "reader_new_chars": 1703,
+          "fulltext_global_events": 1,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        }
+      ],
+      "repaired": [
+        {
+          "case_id": "H01",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 59.9674470760001,
+          "reader_requests": 3,
+          "reader_reused": 1,
+          "reader_new_chars": 530,
+          "fulltext_global_events": 0,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        },
+        {
+          "case_id": "H02",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 101.85687303399936,
+          "reader_requests": 4,
+          "reader_reused": 1,
+          "reader_new_chars": 915,
+          "fulltext_global_events": 0,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        },
+        {
+          "case_id": "H03",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 98.43531919499947,
+          "reader_requests": 14,
+          "reader_reused": 2,
+          "reader_new_chars": 2172,
+          "fulltext_global_events": 1,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        },
+        {
+          "case_id": "S01",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 64.15239363799992,
+          "reader_requests": 3,
+          "reader_reused": 1,
+          "reader_new_chars": 530,
+          "fulltext_global_events": 0,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        },
+        {
+          "case_id": "S02",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 99.97651152700018,
+          "reader_requests": 4,
+          "reader_reused": 1,
+          "reader_new_chars": 915,
+          "fulltext_global_events": 0,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        },
+        {
+          "case_id": "S03",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 80.1023485220012,
+          "reader_requests": 14,
+          "reader_reused": 2,
+          "reader_new_chars": 1766,
+          "fulltext_global_events": 1,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        }
+      ]
+    }
+  },
+  "721": {
+    "strict_success": false,
+    "checks": {
+      "all_requests": true,
+      "candidate_primary_supported": true,
+      "candidate_repeat_supported": false,
+      "no_paired_supported_regression": true,
+      "all_successful_citations_verified": true,
+      "all_candidate_primary_gold_presented": true,
+      "public_scope_only": true,
+      "actual_binding_valid": true,
+      "approved_judgment_and_gap_state_valid": true,
+      "raw_diagnostics_in_public_zero": true,
+      "no_new_contract_regressions": true,
+      "all23_new_contracts_pass": true,
+      "same_code_to_release": true,
+      "unseen_primary_roots": true,
+      "physical_call_accounting": true,
+      "content_preserved": true,
+      "unexpected_http500_zero": true,
+      "main_unchanged": true,
+      "frozen_files_unchanged": true,
+      "actual_model_provider_binding": true
+    },
+    "primary_comparison": {
+      "baseline": {
+        "supported": 3,
+        "calls": 12,
+        "input_tokens": 170892,
+        "request_seconds": 268.4356408700005,
+        "final_answer_excluded_calls": 9,
+        "final_answer_excluded_seconds": 67.45152031999896
+      },
+      "repaired": {
+        "supported": 3,
+        "calls": 12,
+        "input_tokens": 130397,
+        "request_seconds": 317.78447451600186,
+        "final_answer_excluded_calls": 9,
+        "final_answer_excluded_seconds": 72.97910766799941
+      }
+    },
+    "cases": {
+      "baseline": [
+        {
+          "case_id": "H01",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 60.812070762000076,
+          "reader_requests": 3,
+          "reader_reused": 1,
+          "reader_new_chars": 726,
+          "fulltext_global_events": 0,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        },
+        {
+          "case_id": "H02",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 88.88205711000046,
+          "reader_requests": 7,
+          "reader_reused": 1,
+          "reader_new_chars": 1430,
+          "fulltext_global_events": 0,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        },
+        {
+          "case_id": "H03",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 118.74151299799996,
+          "reader_requests": 18,
+          "reader_reused": 1,
+          "reader_new_chars": 4343,
+          "fulltext_global_events": 1,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        }
+      ],
+      "repaired": [
+        {
+          "case_id": "H01",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 82.15464953999981,
+          "reader_requests": 3,
+          "reader_reused": 1,
+          "reader_new_chars": 726,
+          "fulltext_global_events": 0,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        },
+        {
+          "case_id": "H02",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 106.796388226001,
+          "reader_requests": 6,
+          "reader_reused": 1,
+          "reader_new_chars": 1430,
+          "fulltext_global_events": 0,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        },
+        {
+          "case_id": "H03",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 128.83343675000106,
+          "reader_requests": 16,
+          "reader_reused": 0,
+          "reader_new_chars": 2067,
+          "fulltext_global_events": 1,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        },
+        {
+          "case_id": "S01",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 92.54158045599979,
+          "reader_requests": 3,
+          "reader_reused": 1,
+          "reader_new_chars": 726,
+          "fulltext_global_events": 0,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        },
+        {
+          "case_id": "S02",
+          "http_status": 200,
+          "physical_model_attempts": 4,
+          "request_seconds": 103.41544388900002,
+          "reader_requests": 6,
+          "reader_reused": 1,
+          "reader_new_chars": 1430,
+          "fulltext_global_events": 0,
+          "logical_navigation_steps": 2,
+          "rejected_proposals": 0,
+          "answer_coverage": "COVERED"
+        },
+        {
+          "case_id": "S03",
+          "http_status": 502,
+          "physical_model_attempts": 3,
+          "request_seconds": 62.81341387700013,
+          "reader_requests": 18,
+          "reader_reused": 1,
+          "reader_new_chars": 4343,
+          "fulltext_global_events": 1,
+          "logical_navigation_steps": 1,
+          "rejected_proposals": 0,
+          "answer_coverage": null
+        }
+      ]
+    }
+  }
+}

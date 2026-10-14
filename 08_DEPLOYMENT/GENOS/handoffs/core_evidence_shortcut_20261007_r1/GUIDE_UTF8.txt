@@ -1,0 +1,107 @@
+GENOS 핵심 근거 shortcut R1 — 2026-10-07
+사용 파일: GENOS_CORE_EVIDENCE_SHORTCUT_20261007_R1.zip 및 동일 이름 RUN.txt
+
+1. 구현한 동작
+fulltext → A 검토 → B 확인 → 예외 C 확인 뒤 최종 근거로 B·C를 채택하면,
+shortcut에는 B·C를 다시 읽을 원문 위치와 필요한 조건만 남습니다.
+A의 실패한 탐색과 과거 법률 결론을 답으로 복제하지 않습니다.
+현재 조건/권한/데이터 세대가 맞으면 B·C를 직접 확보해 현재 SELECT·ASSESS로
+선택 및 충분성을 판단합니다. 더 필요한 자료가 있으면 기존 fulltext로 돌아갑니다.
+
+멀티턴으로 최종 근거가 D로 바뀌면 성공한 답변 발행 뒤 현재 head를 D로 바꿉니다.
+정정이 시작되면 이전 head는 현재 재사용에서 제외하며, 정정 실패·중단 중에도
+되살리지 않습니다. 이전 이력은 보존하고 goal/branch별 조건을 섞지 않습니다.
+SQL v4의 기존 sw_unit/sw_knowledge/sw_member/sw_dependency가 정본입니다.
+legal_wiki 파일은 기존 compiler projection이며, 현재 상태·권한은 SQL에서 확인합니다.
+같은 normalized task/facts/category로 찾습니다. 표현이 다른 질문의 일반화 및
+GENOS 내부 모델의 법률 정확도/속도는 현장 검증 전까지 미확인입니다.
+
+2. 적용 전제와 변경 범위
+이번 자료는 전체 과거 코드로 덮어쓰는 ZIP이 아니라 해시 고정 기능 패치입니다.
+검색 계측 R3 또는 R4 또는 시스템 로그 R1에 DB 로그 롤백 R3가 적용된
+9개 알려진 CODE_MANIFEST inventory만 허용합니다. 먼저 함께 첨부한
+GENOS_DB_LOG_ROLLBACK_20261007_R3_RUN.txt로 check/apply/verify를 마치십시오.
+이미 R3 적용 상태이면 로그 롤백 R1/R2로 돌아가지 않습니다.
+계측 R1/R2 등 더 오래된 코드나 알 수 없는 현장 수정은 새 패치가 중단하고 보존합니다.
+이 경우 LOG와 CODE_MANIFEST.json을 확인하여 해당 상태에 맞는 인계본을 준비해야 합니다.
+
+8개 runtime 모듈(새 core_evidence_route 포함), 30개 engine manifest,
+PIPELINE의 feature 및 등록 해시, CODE_MANIFEST만 변경합니다(총40파일).
+기존 검색 캐시, 무소켓 전송, DB 세부 로그 롤백 상태는 각 선행 코드에서 보존합니다.
+WORKSPACE, NFS 원문/generation/CURRENT, 기존 SQLite 이력은 바꾸지 않습니다.
+새 데이터 재구축이나 SQL 스키마 이행은 필요하지 않습니다.
+분리 workflow Python 단계는 이 기능 패치에서 변경하지 않습니다.
+
+3. 반입/확인/적용
+첨부 RUN.txt는 코드와 패치가 모두 포함된 독립 실행 파일입니다.
+ZIP 해제는 필수가 아닙니다. ZIP을 ~/DEV에 그대로 덮어 풀지 마십시오.
+모든 명령은 첫 단계부터 TRANSFER/core-evidence-shortcut-r1/logs에 기록합니다.
+DEV 선택은 GENOS_DEV_ROOT → GENOS_DEV → ~/DEV 순서이며 루트 링크를 해결합니다.
+현장 명령은 python3를 사용하고 실제 executable/version을 로그에 남깁니다.
+
+예: 첨부 파일을 ~/DEV/TRANSFER/core-shortcut-r1에 저장한 경우
+cd ~/DEV/TRANSFER/core-shortcut-r1
+sha256sum -c SHA256SUMS.txt
+bash GENOS_DB_LOG_ROLLBACK_20261007_R3_RUN.txt check
+bash GENOS_DB_LOG_ROLLBACK_20261007_R3_RUN.txt apply
+bash GENOS_DB_LOG_ROLLBACK_20261007_R3_RUN.txt verify
+bash GENOS_CORE_EVIDENCE_SHORTCUT_20261007_R1_RUN.txt check
+bash GENOS_CORE_EVIDENCE_SHORTCUT_20261007_R1_RUN.txt apply
+bash GENOS_CORE_EVIDENCE_SHORTCUT_20261007_R1_RUN.txt verify
+
+check는 설치 inventory 전체와 변경 결과, PIPELINE→engine→code/schema 연결을
+쓰기 전에 검사합니다. apply는 변경 전 파일을 먼저 백업하고 receipt를 남깁니다.
+성공 시 BACKUP 및 APPLIED_CODE_ZIP 경로를 출력합니다.
+같은 apply를 다시 실행하면 파일 해시를 확인하고 ALREADY_APPLIED로 끝납니다.
+apply가 중단되면 임의 rehash/삭제로 계속하지 말고 출력된 BACKUP으로 undo하십시오.
+
+4. 같은 checkout의 배포 게이트
+apply/verify 성공 후 변경 목록을 검토하고 실제 push할 ~/DEV에서 commit하십시오.
+새 core_evidence_route.py 및 CODE_MANIFEST.json도 Git에 포함되어야 합니다.
+git diff --check와 git status로 다른 변경을 확인하고 섞어서 commit하지 마십시오.
+
+사용자가 직접 채울 값:
+TASK_BACKUP = apply가 출력한 BACKUP 절대경로
+GENOS_GENERATION = 기존 코드서빙이 실제 선택한 generation 디렉터리의 절대경로
+아래 두 값은 예시가 아니라 반드시 현장 출력/설정에서 채워야 합니다.
+
+export TASK_BACKUP='/현장에서_apply가_출력한_BACKUP_절대경로'
+export GENOS_GENERATION='/현장_코드서빙의_실제_선택_generation_절대경로'
+bash GENOS_CORE_EVIDENCE_SHORTCUT_20261007_R1_RUN.txt gate "$TASK_BACKUP" --generation "$GENOS_GENERATION"
+
+이 명령은 APPLIED_CODE.zip과 commit된 동일 checkout의 모든 코드를 대조하고
+그 checkout의 Python으로 generation E2E와 verify_assets를 실행합니다.
+PASS 뒤 코드/pin을 바꾸면 commit/gate를 다시 수행해야 합니다.
+통과 commit을 push하고 새 코드서빙 리비전이 같은 commit/generation을 쓰는지
+확인하십시오. 코드 적용, push, 리비전 배포, 환경변수 반영은 각각 별도 상태입니다.
+health의 generation ID만으로 선택 경로와 코드 일치를 판정하지 않습니다.
+
+5. 현장 기능 확인
+실제 질의와 warmup은 GENOS 워크플로우 테스트 화면에서만 실행합니다.
+동일 목적/사실 조건으로 완료한 질문을 다시 물어 core route 재사용과 현재 원문을
+확인한 다음, 조건을 바꾸어 최종 근거가 바뀌는 멀티턴을 확인하십시오.
+정정 시작/중단 중 구 head 비노출, 성공 뒤 새 head, 추가 조사 시 fulltext 복귀,
+권한/세대 불일치 시 구 원문 경로 거절을 요청 ID 및 상태 기록으로 확인합니다.
+적용 이전 완료 case를 모두 shortcut으로 자동 재작성하지 않습니다.
+활성 기능으로 새로 성공한 답변 발행이 현재 route를 만듭니다.
+DB 저장 경로와 legal_wiki projection은 실제 서비스 설정을 따라 확인하십시오.
+GENOS 내부 데이터 성능/정답률을 외부 모의 계약 결과로 대신하지 않습니다.
+
+6. 원복
+apply가 출력한 정확한 BACKUP 경로를 사용하십시오.
+bash GENOS_CORE_EVIDENCE_SHORTCUT_20261007_R1_RUN.txt undo "$TASK_BACKUP"
+
+현재/백업 해시를 모두 먼저 검사합니다. 이후 다른 수정이 있으면 덮어쓰지 않습니다.
+새로 추가한 모듈만 제거하고 변경 전 코드/등록 pin/inventory를 복원합니다.
+원문·DB·완료한 이전 이력은 보존합니다. 현장 serving은 원래 commit/리비전과
+검증된 generation으로 별도 복귀하고 워크플로우 테스트 화면에서 확인하십시오.
+
+7. 검증 및 상태
+ADR0683 동결 후보와 통합 작업 코드의 핵심 계약23개 통과.
+작업 코드의 기존 회귀148개 중146개 통과, 과거 signing 및 unoffered experience
+모의 기대 검사2개 실패는 원 기록을 보존했습니다. 실패를 통과로 재채점하지 않았습니다.
+이번 GENOS 인계본의 각 선행 코드에 병합한 뒤 수행한 TXT/계약/generation 검사
+결과는 첨부 VALIDATION_SUMMARY.txt와 ZIP의 SOURCE_BINDING.json을 참조하십시오.
+실제 내부 모델 호출은 없고 GENOS 현장 적용·push·배포·질의는 미확인입니다.
+로컬 활성 MAIN session-runtime-v6-20261007-r1, pointer generation45는 그대로입니다.
+로컬 MAIN 승격도 이번 메일 발송과 별도입니다.

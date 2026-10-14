@@ -65,6 +65,9 @@ class Pipeline:
             self.term_agent=TermAgent(self,config)
         else:
             raise ValueError('unknown term agent implementation: '+implementation)
+        from .folder_navigation import load_origin_projection
+        from .team_scope import bind_projected_teams
+        bind_projected_teams(self.store, load_origin_projection(self.contracts.root, self.term_agent.config, self.store))
 
     def document_roles(self):
         """document_id -> role, from hash-bound stored metadata of this generation."""

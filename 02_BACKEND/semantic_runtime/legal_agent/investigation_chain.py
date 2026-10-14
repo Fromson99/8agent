@@ -51,6 +51,7 @@ def begin(p, data, decision, actions=None, *, kind='NAVIGATION'):
          'reference_decisions':deepcopy(decision.get('decisions',[])),
          'basis_refs':deepcopy(decision.get('basis_refs',[])),
          'queries':deepcopy(decision.get('queries',[])),
+         **({'structure_filter':deepcopy(decision['structure_filter'])} if 'structure_filter' in decision else {}),
          'notes':decision.get('notes',''),'sufficiency_reason':decision.get('sufficiency_reason',''),
          'status':'ACCEPTED'}
     memory['steps'].append(row)
@@ -74,6 +75,42 @@ def context(p):
             'entry_search':{'queries':memory['frames'][memory['entry_frame_id']]['data'].get('search_queries',[]) if memory['entry_frame_id'] else [],
                 'reason':'현재 질문의 원문 근거를 찾기 위한 실행된 검색 계획','reason_origin':'SYSTEM_ENTRY'},
             'memory_rule':'과거 메뉴로 돌아가도 확보 원문·채택·보류·후속 판단을 되돌리지 않는다'}
+
+def compact(chain, *, tail=8, reason_chars=200, brief=False):
+    """Model-facing projection: every step stays visible, older steps shortened.
+
+    The durable chain (context) is unchanged; only steps before the last `tail`
+    drop target objects, notes and judgment detail while keeping action, reason,
+    queries and the recorded outcome."""
+    steps=(chain or {}).get('steps',[])
+    if brief:
+        rows=[]
+        for step in steps:
+            row={k:deepcopy(step[k]) for k in ('id','number','action','status','queries','structure_filter','outcome','progress','basis_refs') if k in step}
+            row['reason']=(step.get('reason') or '')[:reason_chars]
+            row['targets']=[{k:deepcopy(t[k]) for k in ('id','label') if k in t} |
+                {'location':{k:deepcopy(v) for k,v in t.get('identity',{}).items()
+                             if k in ('document_id','source_id','unit_id','branch_id','frame_id','page','scope') and not isinstance(v,(dict,list))}}
+                for t in step.get('targets',[]) if isinstance(t,dict)]
+            rows.append(row)
+        return {k:deepcopy(v) for k,v in (chain or {}).items() if k not in ('steps','judgments')} | {
+            'steps':rows,'compacted_steps':len(rows),
+            'compaction_rule':'Every action, target, query and recorded result remains; full decisions and reasons stay in the durable journal.'}
+    if len(steps)<=tail:return chain
+    older=[]
+    for step in steps[:-tail]:
+        row={'number':step.get('number'),'action':step.get('action'),'status':step.get('status'),
+             'reason':(step.get('reason') or '')[:reason_chars],
+             'targets':[t.get('label') for t in step.get('targets',[]) if isinstance(t,dict)]}
+        for key in ('queries','outcome','progress'):
+            if step.get(key):row[key]=deepcopy(step[key])
+        older.append(row)
+    recent=deepcopy(steps[-tail:])
+    refs={r for s in recent for r in s.get('judgment_refs',[])}
+    return {**{k:deepcopy(v) for k,v in chain.items() if k not in ('steps','judgments')},
+            'steps':older+recent,'judgments':[deepcopy(j) for j in chain.get('judgments',[]) if j['id'] in refs],
+            'compacted_steps':len(older),
+            'compaction_rule':'older steps keep action, reason, queries and outcome; full detail stays in the durable journal'}
 
 def points(p):
     rows=[]

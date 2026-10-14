@@ -151,7 +151,7 @@ def test_accepted_findings_cannot_be_approved_by_action(tmp_path,monkeypatch):
     with pytest.raises(runtime.NeedsReview) as failure:
         runtime.revise_pdf(pipeline,blocks,pdf,store=tmp_path/'store',document='conflict')
     assert failure.value.diagnostic['code']=='COMPACT_RESPONSE_INVALID'
-    assert sum(x.get('task')=='review_action' for x in seen)==3
+    assert sum(x.get('task')=='review_action' for x in seen)==2
     assert not (tmp_path/'structure-recipes.json').exists()
 
 

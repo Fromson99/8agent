@@ -1,0 +1,13 @@
+GENOS urllib 전송 R1 — 검증 요약
+
+설치본 전송/스트림/gateway/임베딩 계약 224개 통과(4조합 합계).
+실제 RUN check/apply/중복 apply/verify/변조 거부/undo/동일 checkout generation gate 4조합 통과.
+설치 전 모의 부팅 4회, 설치 후 실제 localhost TLS 부팅 성공 4회·미신뢰 인증서 거부 4회.
+정확한 committed checkout의 합성 generation 배포 gate 4회 통과. 명령 100개 기록.
+알려진 선행 inventory 2640종, 새 helper의 엔진 pin 30개 결속.
+3개 전송 파일은 작업 코드·선택 MAIN61·설치본의 SHA-256이 동일.
+변경 전 작업 확대 검사 70개 중 66통과/4실패. 4개는 변경하지 않는 워크플로우의 공개 오류 표시 기대 불일치.
+검사 준비 중 fixture의 생성용 스키마/모듈 누락을 보완한 기록과 초기 실패는 보존.
+실제 모델 추론 및 GENOS/외부망 호출 0회. 실제 통신 검사는 localhost 합성 TLS만 사용.
+현장 반입·CA 환경·commit/push·새 리비전·SSE 재시작·워크플로우 성공은 미확인.
+로컬 MAIN61 포인터와 외부 Qwen/OpenRouter adapter는 유지.

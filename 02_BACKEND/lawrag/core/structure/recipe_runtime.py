@@ -24,7 +24,7 @@ import uuid
 from . import recipe_visual_loop as loop
 from . import recipe_rules
 
-VERSION = "genos-recipe-v37-disclosure-budget-diagnostics"
+VERSION = "genos-recipe-v38-output-contract-recovery"
 
 
 def accepts_warnings():
@@ -66,11 +66,14 @@ def call_failure(exchange, *, phase, max_tokens, response_path):
                   '현재 코드의 출력 상한 80000 도달; 요청 분할 또는 출력량 축소 필요')
     elif exchange.stop_reason == 'refusal':
         code, summary = 'MODEL_REFUSAL', '모델이 요청을 거절함'
-    elif exchange.error.startswith('JSONDecodeError:'):
+    elif (exchange.error.startswith('JSONDecodeError:') or
+          (getattr(exchange,'output_contract',{}) or {}).get('category')=='OUTPUT_JSON_INVALID'):
         code, summary = 'INVALID_MODEL_JSON', '모델 응답의 JSON 해석 실패'
     diagnostic = {'code': code, 'summary': summary, 'phase': phase,
                   'max_tokens': max_tokens, 'next_action': action,
                   'response_path': str(response_path)}
+    diagnostic['output_contract'] = getattr(exchange,'output_contract',{}) or {}
+    diagnostic['correction_owner'] = 'recipe-stage'
     output = exchange.usage.get('output_tokens')
     if type(output) is int:
         diagnostic['output_tokens'] = output
@@ -240,6 +243,80 @@ class GenosCalls:
         return self._request(phase, system, data, schema, vision)
 
     def _request(self, phase, system, data, schema, vision):
+        """Reuse recorded proposals and charges inside the existing checkpoint lock.
+
+        Consumers still validate each returned proposal. A reserved call with no
+        recorded outcome is unknown; restarting never authorizes a second send.
+        The small ledger stores hashes/paths rather than duplicate source bodies.
+        """
+        if not hasattr(self,'recovery_path'):
+            return self._send_request(phase,system,data,schema,vision)
+        from .recipe_output import ResponseError
+        from semantic_runtime.legal_agent.output_contract import OutputContractError,diagnostics
+        key=loop.digest([phase,system,data,schema,vision,
+            [hashlib.sha256(x.encode()).hexdigest() for x in self.images] if vision else []])
+        previous=next((r for r in reversed(self.recovery['events']) if r['key']==key),None)
+        if previous:
+            if previous['status']=='RESERVED':
+                raise NeedsReview('model_call_outcome_unknown; no automatic replay')
+            path=Path(previous['path'])
+            if not path.resolve().is_relative_to(self.journal.directory.parent.resolve()) or sha(path)!=previous['sha256']:
+                raise NeedsReview('model_call_receipt_hash_mismatch')
+            result=json.loads(path.read_text())
+            self.journal.event('model.response.reused',phase=phase,receipt=str(path),calls=self.calls)
+            if result['status']=='RETURNED':return copy.deepcopy(result['value'])
+            if result['type']=='ResponseError':
+                error=ResponseError(result['message'],result.get('response'),diagnostic=result.get('diagnostic'))
+                contract=result.get('contract') or {}
+                if contract.get('issues'):
+                    raise error from OutputContractError(result['message'],contract['issues'],
+                        category=contract['category'],repairable=contract['repairable'])
+                raise error
+            raise NeedsReview(result['message'],diagnostic=result.get('diagnostic'))
+        if self.calls>=self.max_calls:
+            raise NeedsReview('model_call_budget_exhausted',diagnostic={'code':'model_call_budget_exhausted',
+                'calls':self.calls,'max_calls':self.max_calls,'phase':phase})
+        charge=self.calls+1
+        self.recovery['calls']=charge
+        self.recovery['events'].append({'key':key,'status':'RESERVED','call':charge,'phase':phase})
+        self._save_recovery()
+        try:
+            value=self._send_request(phase,system,data,schema,vision)
+            result={'status':'RETURNED','value':value}
+        except Exception as exc:
+            result={'status':'FAILED','type':type(exc).__name__,'message':str(exc),
+                'response':getattr(exc,'response',None),'diagnostic':getattr(exc,'diagnostic',None),
+                'contract':diagnostics(exc)}
+            raise
+        finally:
+            # Hard interruption leaves RESERVED, intentionally not replayable.
+            self.calls=max(self.calls,charge)
+            if 'result' in locals():
+                path=self.journal.directory/f'call-{charge}-recovery-result.json'
+                atomic(path,result)
+                self.recovery['events'].append({'key':key,'status':result['status'],'call':charge,
+                    'path':str(path),'sha256':sha(path),'phase':phase})
+                self._save_recovery()
+        return value
+
+    def bind_recovery(self, checkpoint, binding):
+        """Caller holds tag_lock(checkpoint) throughout all calls and commits."""
+        self.recovery_path=checkpoint.parent/'model-calls'/checkpoint.name
+        expected={'version':'recipe-call-ledger-v1','binding':binding,'max_calls':self.max_calls}
+        if self.recovery_path.exists():
+            envelope=json.loads(self.recovery_path.read_text());state=envelope['state']
+            if envelope['sha256']!=loop.digest(state) or any(state.get(k)!=v for k,v in expected.items()):
+                raise NeedsReview('model_call_ledger_binding_or_hash_mismatch')
+            if state['calls']!=sum(r['status']=='RESERVED' for r in state['events']):
+                raise NeedsReview('model_call_ledger_charge_mismatch')
+            self.recovery=state;self.calls=state['calls']
+        else:self.recovery={**copy.deepcopy(expected),'calls':0,'events':[]}
+
+    def _save_recovery(self):
+        self.recovery_path.parent.mkdir(parents=True,exist_ok=True)
+        atomic(self.recovery_path,{'state':self.recovery,'sha256':loop.digest(self.recovery)})
+
+    def _send_request(self, phase, system, data, schema, vision):
         import jsonschema
         from .recipe_output import COMPACT, ResponseError
         system += COMPACT
@@ -302,10 +379,11 @@ class GenosCalls:
             # Regional review owns normalization, schema validation and bounded
             # clarification, so malformed reviews can reach that recovery loop.
             if not phase.startswith('window-review-'):
+                from semantic_runtime.legal_agent.output_contract import validate_shape,OutputContractError,diagnostics
                 try:
-                    jsonschema.validate(value, schema)
-                except jsonschema.ValidationError as exc:
-                    raise ResponseError('Model response violates the response schema', value) from exc
+                    validate_shape(value,schema)
+                except OutputContractError as exc:
+                    raise ResponseError('Model response violates the response schema',value,diagnostic=diagnostics(exc)) from exc
             self.journal.save(f"call-{self.calls}-{phase}.json", value)
             return value
 
@@ -417,6 +495,7 @@ def revise_pdf(engine, blocks, pdf, *, store, document, hints=None, source_evide
                 return images
             checkpoint = journal.directory.parent / 'checkpoints' / (loop.digest([document,binding])+'.json')
             with tag_lock(checkpoint):
+                call.bind_recovery(checkpoint,binding)
                 result, recipe, rules, coverage = recipe_pages.run(
                     engine, blocks, pages, baseline, catalog, anchors, call, journal,
                     width=max_pages, render=render, full_review=mode == "full",

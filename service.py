@@ -29,9 +29,15 @@ from contextvars import copy_context
 
 
 _ROOT = Path(__file__).resolve().parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+from genos_diagnostics import install as install_system_logging
 _BACKEND = _ROOT / "02_BACKEND"
 if str(_BACKEND) not in sys.path:
     sys.path.insert(0, str(_BACKEND))
+from semantic_runtime.deployment_paths import install as _install_deployment_paths, verify_generation as _verify_deployment_generation
+_DEPLOYMENT_PATHS = _install_deployment_paths(_ROOT)
+_SYSTEM_LOGS = install_system_logging("service")
 from semantic_runtime import observability as obs
 from semantic_runtime import request_report
 
@@ -145,6 +151,44 @@ def _genos_v5_admission_profile(value):
     return {**value, 'max_concurrent_requests_per_process': 0}
 
 
+def _investigation_profile(value):
+    """Apply operator budgets to a copy; request bodies cannot override them."""
+    result = {**value, 'candidate_navigation': dict(value.get('candidate_navigation', {}))}
+    settings = (
+        ('GENOS_RAG_MAX_MODEL_ATTEMPTS', 'max_model_attempts', False, 1),
+        ('GENOS_RAG_MAX_TOOL_ACTIONS', 'max_tool_actions', False, 1),
+        ('GENOS_RAG_WALL_SECONDS', 'wall_seconds', False, 1),
+        ('GENOS_RAG_SEARCH_ROUNDS', 'search_rounds', True, 1),
+        ('GENOS_RAG_ASSESSMENT_REENTRY_LIMIT', 'assessment_reentry_limit', True, 0),
+    )
+    for name, key, nested, minimum in settings:
+        raw = os.environ.get(name, '').strip()
+        if not raw:
+            continue
+        try:
+            limit = int(raw)
+        except ValueError as exc:
+            raise ValueError(f'{name} must be an integer >= {minimum}') from exc
+        if limit < minimum:
+            raise ValueError(f'{name} must be an integer >= {minimum}')
+        if key == 'max_model_attempts' and limit <= value['finalization_reserve']:
+            raise ValueError(f'{name} must exceed finalization_reserve ({value["finalization_reserve"]})')
+        if key == 'max_tool_actions' and limit <= value['tool_finalization_reserve']:
+            raise ValueError(f'{name} must exceed tool_finalization_reserve ({value["tool_finalization_reserve"]})')
+        target = result['candidate_navigation'] if nested else result
+        target[key] = limit
+    return result
+
+
+def _investigation_budget(value):
+    navigation = value['candidate_navigation']
+    return {**{key: value[key] for key in (
+        'max_model_attempts', 'finalization_reserve', 'max_tool_actions', 'wall_seconds', 'max_no_progress')},
+        'investigation_model_attempts': value['max_model_attempts'] - value['finalization_reserve'],
+        'search_rounds': navigation['search_rounds'],
+        'assessment_reentry_limit': navigation['assessment_reentry_limit']}
+
+
 def _genos_v5_environment_binding(request_profile=None):
     """Build a v5 model binding in memory for a GENOS data generation."""
 
@@ -181,8 +225,9 @@ def _genos_v5_environment_binding(request_profile=None):
         "endpoint_identity": hashlib.sha256(target.root.encode()).hexdigest(),
         "trust_zone": "internal",
     }
-    configured_profile = profile(_genos_v5_wait_profile({**request_profile, "model_binding": model_binding,
-                                  "max_output_tokens": output_tokens}), require_model=True)
+    configured_profile = profile(_investigation_profile(_genos_v5_wait_profile(
+        {**request_profile, "model_binding": model_binding, "max_output_tokens": output_tokens})),
+        require_model=True)
     return configured_profile, GenosTransport(target, model_binding)
 
 
@@ -197,6 +242,7 @@ def _explicit_generation() -> tuple[Path, Path, dict[str, Any]] | None:
         raise RuntimeError("GENOS_GENERATION must be an existing non-symlink directory")
     generation = path.resolve()
     manifest = _json(generation / "manifest.json")
+    _verify_deployment_generation(_DEPLOYMENT_PATHS, generation)
     if manifest.get("schema_version") not in {"term-source-generation-v1", "term-source-generation-v2"}:
         raise RuntimeError("GENOS_GENERATION has an unsupported manifest")
     return _ROOT, generation, {
@@ -342,6 +388,9 @@ def application():
     with obs.step(log, "binding.resolve"):
         code_root, generation, binding = _resolve_binding()
         _require_pecab_generation(generation, code_root)
+    if _SYSTEM_LOGS is not None:
+        _SYSTEM_LOGS.event("runtime.binding.resolved", code_root=str(code_root), generation=str(generation),
+                          generation_manifest_sha256=_sha(generation / "manifest.json"), binding=binding)
     obs.event(
         log,
         "binding.resolved",
@@ -407,7 +456,7 @@ def application():
                     **pinned_profile,
                     "model_binding": local_transport.binding,
                     "max_output_tokens": local_transport.policy["max_output_tokens"],
-                    "max_transport_retries": 0,
+                    "max_transport_retries": (pinned_profile.get("max_transport_retries", 0) if pinned_profile.get("candidate_navigation", {}).get("completion_contract") else 0),
                 }, require_model=True)
                 options["legal_agent_transport"] = local_transport
         if selected_implementation in ("legal-agent-v1", "legal-agent-tools-v2", "legal-agent-tools-v3", "legal-agent-tools-v4", "legal-agent-tools-v5","legal-agent-unified-v6"):
@@ -447,6 +496,20 @@ def application():
             obs.event(log, 'runtime.request_admission',
                       max_concurrent_requests_per_process=options['legal_agent_profile']['max_concurrent_requests_per_process'],
                       unlimited=options['legal_agent_profile']['max_concurrent_requests_per_process'] == 0)
+        if selected_implementation in ('legal-agent-tools-v5', 'legal-agent-unified-v6'):
+            if binding.get('mode') == 'local-release':
+                budget_profile = importlib.import_module(package_name + '.legal_agent.workflow_tiers_policy').profile
+            else:
+                from semantic_runtime.legal_agent.workflow_tiers_policy import profile as budget_profile
+            options['legal_agent_profile'] = budget_profile(_investigation_profile(options['legal_agent_profile']))
+            binding.update(
+                investigation_budget=_investigation_budget(options['legal_agent_profile']),
+                effective_profile_sha256=hashlib.sha256(json.dumps(options['legal_agent_profile'],
+                    sort_keys=True, separators=(',', ':')).encode()).hexdigest(),
+                service_entry_sha256=_sha(Path(__file__)),
+            )
+            obs.event(log, 'runtime.investigation_budget', **binding['investigation_budget'],
+                      effective_profile_sha256=binding['effective_profile_sha256'])
         _APP = create_app(
             runtime,
             generation,
@@ -538,7 +601,7 @@ def _normalize(data: dict[str, Any]) -> dict[str, Any]:
             if control in {"WARMUP", "WARMUP_STATUS"}:
                 return {"op": control.lower()}
         if api_type in {"LEGAL_AGENT", "ELS_QUERY"} and isinstance(body, dict):
-            removed = {"channel"} if body.get("memory") is True or 'memory_authorization' in body else {"channel", "session_id", "request_id", "user_id"}
+            removed = {"channel", "memory_authorization"} if body.get("memory") is True else {"channel", "session_id", "request_id", "user_id", "memory_authorization"}
             body = {key: value for key, value in body.items() if key not in removed}
         return {"op": "call", "method": "POST", "path": "/v1/rag/ask", "json": body}
     if api_type == "PIPELINE_BOOTSTRAP_EXTERNAL":
@@ -723,21 +786,28 @@ async def _pipeline(request: dict[str, Any]) -> dict[str, Any]:
             )
         return {"status": 200 if result.get("ok") else 500, "body": result}
     except (ValueError, FileNotFoundError) as exc:
+        obs.event(log, "pipeline.input.failed", level=logging.ERROR, exc_info=True,
+                  error_type=type(exc).__name__)
         return {
             "status": 400,
             "body": {"error": str(exc), "error_type": type(exc).__name__},
         }
     except Exception as exc:  # noqa: BLE001
+        from semantic_runtime.legal_agent.investigation_diagnostics import exception_diagnostics
+        failure=exception_diagnostics(exc)
         obs.event(
             log,
             "pipeline.failed",
             level=logging.ERROR,
             exc_info=True,
             error_type=type(exc).__name__,
+            failure_diagnostics=failure,
         )
         return {
             "status": 500,
-            "body": {"error": "pipeline request failed", "error_type": type(exc).__name__},
+            "body": {"error": "pipeline request failed", "error_type": type(exc).__name__,
+                'detail':obs._redact_secrets(str(exc)),
+                'failure_diagnostics':request_report._scrub(failure)},
         }
 
 
@@ -813,6 +883,8 @@ async def _call(data: dict[str, Any]) -> dict[str, Any]:
         )
         return {"status": response.status_code, "body": body}
     except Exception as exc:
+        from semantic_runtime.legal_agent.investigation_diagnostics import exception_diagnostics
+        failure=exception_diagnostics(exc)
         obs.event(
             log,
             "runtime.request.failed",
@@ -821,12 +893,14 @@ async def _call(data: dict[str, Any]) -> dict[str, Any]:
             method=method,
             path=path,
             error_type=type(exc).__name__,
+            failure_diagnostics=failure,
         )
         return {
             "status": 500,
             "body": {"error": "runtime request failed", "code": "RUNTIME_REQUEST_ERROR",
                      "error_type": type(exc).__name__,
-                     "detail": obs._redact_secrets(str(exc))[:1000]},
+                     "detail": obs._redact_secrets(str(exc)),
+                     "failure_diagnostics": request_report._scrub(failure)},
         }
 
 
@@ -894,6 +968,11 @@ def _ad_control():
 
 async def service(config: dict, data: dict) -> dict[str, Any]:
     """GENOS JSON gateway contract with one correlated event stream per request."""
+    # GENOS_CACHE_DIAGNOSTICS_HOOK_V1
+    if isinstance(data, dict) and str(data.get("API_TYPE", "")).strip().upper() == "CACHE_DIAGNOSTICS":
+        from semantic_runtime.cache_diagnostics import collect as _collect_cache_diagnostics
+        return {"status": 200, "body": await asyncio.to_thread(_collect_cache_diagnostics, globals())}
+
     # GENOS_NFS_PROBE_HOOK_V1
     if isinstance(data, dict) and str(data.get("API_TYPE", "")).strip().upper() == "NFS_DATA_PROBE":
         import importlib.util as _nfs_util
@@ -908,7 +987,8 @@ async def service(config: dict, data: dict) -> dict[str, Any]:
     runtime_value = os.environ.get('GENOS_RUNTIME_DIR','').strip()
     ad_runtime = Path(runtime_value).resolve() if runtime_value else (_ROOT/'90_RUNTIME/semantic')
     start_worker(ad_runtime, application)
-    ad_result = await asyncio.to_thread(intercept,data if isinstance(data,dict) else {},ad_runtime,application)
+    from semantic_runtime.ad_request_report import intercept as reported_ad_intercept
+    ad_result = await reported_ad_intercept(gateway, data if isinstance(data,dict) else {},ad_runtime,application)
     if ad_result is not None:return ad_result
     if str(data.get('API_TYPE','')).upper()=='AD_PROBE':return {'status':200,'body':{'ad_handled':False}}
     # Transport-only identifiers never enter legal schemas, context or logs.
@@ -950,12 +1030,15 @@ async def _reported_dispatch(config, data, payload, question_body, started, repo
     try:
         result = await _dispatch(config, data)
     except Exception as exc:  # noqa: BLE001
+        from semantic_runtime.legal_agent.investigation_diagnostics import exception_diagnostics
+        failure=exception_diagnostics(exc)
         obs.event(
             log,
             "request.crashed",
             level=logging.ERROR,
             exc_info=True,
             error_type=type(exc).__name__,
+            failure_diagnostics=failure,
         )
         result = {
             "status": 500,
@@ -963,7 +1046,8 @@ async def _reported_dispatch(config, data, payload, question_body, started, repo
                 "error": "unhandled code-serving error",
                 "code": "CODE_SERVING_ERROR",
                 "error_type": type(exc).__name__,
-                "detail": obs._redact_secrets(str(exc))[:1000],
+                "detail": obs._redact_secrets(str(exc)),
+                "failure_diagnostics": request_report._scrub(failure),
                 "request_id": request_id,
             },
         }
@@ -981,6 +1065,11 @@ async def _reported_dispatch(config, data, payload, question_body, started, repo
     )
     if report:
         report.complete(result)
+    if isinstance(body, dict) and status >= 400:
+        from semantic_runtime.chat_adapter import views
+        obs.event(log, 'request.failure_retained', level=logging.ERROR,
+                  request_id=request_id, failure_diagnostics=body)
+        result = {**result, 'body': views().public_response(body, status=status, request_id=request_id)}
     return result
 
 __all__ = ["application", "service"]

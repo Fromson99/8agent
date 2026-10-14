@@ -116,6 +116,8 @@ def admit(proposal, snapshots, catalogue):
 
 
 def _check_inputs(repo,principal,snapshots):
+    from semantic_runtime.legal_agent.successful_answer import compiler_binding
+    compiler_binding(repo,snapshots)
     for snapshot in snapshots:
         if repo.investigation(snapshot['case']['id'],principal)!=snapshot['case']:raise Conflict('compiler case changed')
         for source in snapshot['sources']:
@@ -138,7 +140,10 @@ def compile_snapshots(repo, principal, snapshots, *, model, binding, catalogue=N
     _check_inputs(repo,principal,snapshots)
     from .wiki_proposal import offered, schema, normalize
     from jsonschema import validate
-    segments,sources,records=offered(snapshots)
+    from semantic_runtime.legal_agent.successful_answer import compiler_binding,compiler_records
+    success_bindings=compiler_binding(repo,snapshots)
+    admitted,excluded_records=compiler_records(repo,snapshots)
+    segments,sources,records=offered(admitted)
     prior={v['unit_id']:v for sn in snapshots for v in sn.get('prior_knowledge',[])}
     model_schema=schema(segments,sources,prior)
     raw=model(PROMPT,
@@ -150,7 +155,7 @@ def compile_snapshots(repo, principal, snapshots, *, model, binding, catalogue=N
     for link in links:
         if link['prior_unit'] not in prior or link['prior_revision']!=prior[link['prior_unit']]['revision']:raise MemoryError('unoffered prior knowledge revision')
         if link['unit'] not in {u['id'] for u in proposal['units']}:raise MemoryError('unknown linking unit')
-    units,refs=admit(proposal,snapshots,catalogue or {})
+    units,refs=admit(proposal,admitted,catalogue or {})
     if any(x.get('window',{}).get('partial_context') for x in snapshots):
         for unit in units:
             unit['completeness']='OPEN'
@@ -159,12 +164,16 @@ def compile_snapshots(repo, principal, snapshots, *, model, binding, catalogue=N
     build=uid('build:');scope=repo.scope(principal)
     manifest={'schema_version':'legal-wiki-build-v1','inputs':[{'id':s['case']['id'],'revision':s['case']['revision'],'hash':s['hash'],'window':s.get('window')} for s in snapshots],
               'binding':binding,'prompt_hash':digest(PROMPT),'raw_output':raw,'offered_segments':records,'output':proposal,'output_hash':digest(proposal),'units':[]}
+    manifest['successful_publications']=success_bindings
+    manifest['excluded_unsuccessful_records']=excluded_records
     with repo.transaction():
         if commit_guard:commit_guard()
         _check_inputs(repo,principal,snapshots)
+        if compiler_binding(repo,snapshots)!=success_bindings:raise Conflict('successful answer changed during wiki compilation')
         for snapshot in snapshots:
             if repo.investigation(snapshot['case']['id'],principal)!=snapshot['case']: raise Conflict('correction during compile; requeue latest revision')
         for value in units:
+            value['successful_publications']={key:success_bindings[key] for key in value['input_cases']}
             # Stable identity based on declared topic and source case set, not session or text hash.
             unit='unit:'+digest([scope,value['input_cases'],value['topic'],value['question']])
             from semantic_runtime.ad_store import excluded
@@ -249,7 +258,7 @@ def rebuild(repo, principal, directory):
     watermark=repo.db.execute("SELECT COALESCE(MAX(id),0) FROM sw_queue WHERE scope=? AND consumer='projection'",(repo.scope(principal),)).fetchone()[0]
     values=[];after=''
     while True:
-        page=repo.search(principal,after=after,limit=100);values.extend(page['pages'])
+        page=repo.search(principal,after=after,limit=100,include_common=False);values.extend(page['pages'])
         if not page['next']: break
         after=page['next']
     data={'schema_version':'legal-wiki-projection-v1','scope':repo.scope(principal),'pages':values,'authority':'shortcut DB; recheck current permissions before serving'}

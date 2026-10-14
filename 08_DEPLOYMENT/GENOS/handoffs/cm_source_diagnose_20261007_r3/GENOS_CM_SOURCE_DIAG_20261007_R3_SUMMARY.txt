@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+task_transfer="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+python3 - "$task_transfer" <<'CM_SOURCE_SUMMARY_PY'
+import json,sys
+from pathlib import Path
+def summary_lines(report):
+    whole = report['whole_inventory']
+    all_hash = whole['hash_counts_without_name']
+    cm_hash = report['identity_counts_without_name']
+    unique = lambda counts: counts.get('HASH_MATCH_SAME_NAME', 0)+counts.get('HASH_MATCH_DIFFERENT_NAME', 0)
+    lines = [
+        '전체: 기준 '+str(whole['reference_documents'])+'개 / 현장 '+str(whole['selected_documents'])+'개',
+        '문서명 일치 '+str(whole['name_presence_count'])+'개 / 원본 SHA 일치 '+str(unique(all_hash))+
+        '개 (이름만 다름 '+str(all_hash.get('HASH_MATCH_DIFFERENT_NAME', 0))+'개)',
+        '기준 원본 미발견 '+str(all_hash.get('HASH_NOT_FOUND', 0))+'개 / 동일 SHA 중복 '+
+        str(all_hash.get('HASH_AMBIGUOUS', 0))+'개 / 현장 추가·다른 원본 '+
+        str(len(whole['selected_only_hash_documents']))+'개',
+        'CM '+str(report['document_count'])+'문서: 이름+SHA 일치 '+str(report['counts'].get('EXACT', 0))+
+        '개 / 이름 무시 SHA 일치 '+str(unique(cm_hash))+'개 / 미발견 '+
+        str(cm_hash.get('HASH_NOT_FOUND', 0))+'개',
+    ]
+    kosdaq = next((r for r in report['documents'] if r['document_name'] == '코스닥시장 상장규정'), None)
+    if kosdaq is not None:
+        lines.append('코스닥시장 상장규정: 문서명 후보 '+str(len(kosdaq['name_matches']))+
+                     '개 / 같은 원본 SHA 후보 '+str(len(kosdaq['hash_matches_without_name']))+'개')
+    lines.append('전체 원본 SHA 목록 동일: '+str(whole['hash_inventory_equal_without_name']))
+    return lines
+reports=list((Path(sys.argv[1])/'cm-source-diag-r2').glob('*/SOURCE_DIAGNOSIS.json'))
+if not reports: raise SystemExit('저장된 R2 결과가 없습니다. 진단이 완료된 뒤 실행하세요.')
+path=max(reports,key=lambda p:p.stat().st_mtime_ns)
+report=json.loads(path.read_bytes())
+print('저장된 R2 결과 요약 (재검사 없음)')
+print('\n'.join(summary_lines(report)))
+
+CM_SOURCE_SUMMARY_PY

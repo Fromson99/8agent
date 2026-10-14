@@ -1,0 +1,61 @@
+{
+  "references": [
+    {
+      "commit": "6b3ec4789ef2a44067999a6dc21ff1b7ef472a68",
+      "path": "02-els-qa/core/genos.py",
+      "sha256": "1e4db980f4c50774fb86494a44c17ca8cec260c580abf629cc01ada276e3d3ac",
+      "lines": [
+        63,
+        97
+      ],
+      "excerpt": "class _NoRedirect(urllib.request.HTTPRedirectHandler):\n    \"\"\"리다이렉트를 따라가지 않는다 — 3xx 는 그대로 실패로 본다.\n\n    urllib 은 기본으로 따라가는데, POST 를 받은 301·302 를 GET 으로 바꿔 다시 건다.\n    게이트웨이 주소를 잘못 적었을 때 엉뚱한 페이지가 200 으로 돌아오면 원인이\n    가려진다. 예전 httpx 도 따라가지 않았다.\n    \"\"\"\n\n    def redirect_request(self, req, fp, code, msg, headers, newurl):\n        return None\n\n\n_open = urllib.request.build_opener(_NoRedirect).open\n\n\ndef _send(url: str, headers: dict[str, str], data: bytes | None,\n          timeout: float) -> tuple[int, bytes]:\n    \"\"\"한 번 보내고 (상태 코드, 본문)을 돌려준다. 4xx·5xx 도 예외가 아니라 값으로 온다.\n\n    urllib 은 400 이상을 `HTTPError` 로 던진다. 재시도할지(429·5xx) 바로 멈출지는\n    상태 코드로 가르므로, 여기서 값으로 바꿔 부르는 쪽이 한 갈래로 보게 한다.\n    연결 실패·타임아웃은 그대로 던진다.\n    \"\"\"\n    request = urllib.request.Request(url, data=data, headers=headers,\n                                     method=\"GET\" if data is None else \"POST\")\n    try:\n        with _open(request, timeout=timeout) as res:\n            return res.status, res.read()\n    except urllib.error.HTTPError as exc:\n        try:\n            body = exc.read()\n        except Exception:                       # noqa: BLE001 — 본문을 못 읽어도 상태 코드는 남긴다\n            body = b\"\"\n        return exc.code, body\n",
+      "url": "https://github.com/infoczAI/agent8/blob/6b3ec4789ef2a44067999a6dc21ff1b7ef472a68/02-els-qa/core/genos.py"
+    },
+    {
+      "commit": "6b3ec4789ef2a44067999a6dc21ff1b7ef472a68",
+      "path": "07-issuance-note/core/genos.py",
+      "sha256": "070bc93103cc922ca3c432ccf36c2380eb21422665973cd7ba7c3240374bb88e",
+      "lines": [
+        273,
+        289
+      ],
+      "excerpt": "def _send(request: urllib.request.Request, timeout: float) -> dict[str, Any]:\n    with urllib.request.urlopen(request, timeout=timeout) as res:\n        return json.loads(res.read().decode(\"utf-8\"))\n\n\ndef reachable(endpoint: Endpoint, *, timeout: float = 5.0) -> bool:\n    \"\"\"지금 이 서빙을 부를 수 있는가 — 모델 목록을 한 번 물어본다.\n\n    부르는 쪽이 이 결과로 **그 경로가 없는 것처럼** 동작할지 정한다. 조용히\n    느려지거나 요청 한복판에서 죽는 것보다, 처음부터 없는 셈 치는 편이 낫다.\n    \"\"\"\n    request = urllib.request.Request(endpoint.models_url, headers=dict(endpoint.headers))\n    try:\n        with urllib.request.urlopen(request, timeout=timeout) as res:\n            return res.status == 200\n    except Exception:\n        return False",
+      "url": "https://github.com/infoczAI/agent8/blob/6b3ec4789ef2a44067999a6dc21ff1b7ef472a68/07-issuance-note/core/genos.py"
+    },
+    {
+      "commit": "6b3ec4789ef2a44067999a6dc21ff1b7ef472a68",
+      "path": "07-issuance-note/core/report/llm.py",
+      "sha256": "94eacefd0f569db42f1f969ea61aec444260930e487835f2bc7e7c1a9a474396",
+      "lines": [
+        244,
+        255
+      ],
+      "excerpt": "\n        def call() -> Completion:\n            try:\n                payload = genos.chat(self.endpoint, body)\n            except genos.ServingTimeout as exc:\n                raise LLMTimeout(str(exc)) from exc\n            except genos.ServingError as exc:\n                raise LLMError(str(exc)) from exc\n            return Completion(\n                text=_read(_choice_text, payload),\n                model=self.model,\n                usage=_choice_usage(payload),",
+      "url": "https://github.com/infoczAI/agent8/blob/6b3ec4789ef2a44067999a6dc21ff1b7ef472a68/07-issuance-note/core/report/llm.py"
+    }
+  ],
+  "transport_change_commit": "2e33171ac",
+  "finding": "Both Seungho model adapters use urllib; our field handoff retained httpx until this integration. Preserve our deadlines, single send and token SSE contracts.",
+  "selected_release": "public-failure-guidance-20261014-r1",
+  "selected_generation": 61,
+  "same_genos_transport_files": {
+    "02_BACKEND/semantic_runtime/genos.py": {
+      "working_sha256": "edb301c8f489f62efe0f56e661b38f3cc594096756dbc52fccb3f29f45a6e755",
+      "selected_sha256": "edb301c8f489f62efe0f56e661b38f3cc594096756dbc52fccb3f29f45a6e755",
+      "manifest_sha256": "edb301c8f489f62efe0f56e661b38f3cc594096756dbc52fccb3f29f45a6e755"
+    },
+    "02_BACKEND/semantic_runtime/legal_agent/transport.py": {
+      "working_sha256": "fcde37b4be42d1d206eae7d69d7f4e2f8523a94122775665de383dc9b8146680",
+      "selected_sha256": "fcde37b4be42d1d206eae7d69d7f4e2f8523a94122775665de383dc9b8146680",
+      "manifest_sha256": "fcde37b4be42d1d206eae7d69d7f4e2f8523a94122775665de383dc9b8146680"
+    },
+    "02_BACKEND/semantic_runtime/stdlib_http.py": {
+      "working_sha256": "9aaff8fc4d2e7fc91a18319307e46504748464b59bf7fcb4f0bf8fb42cd30b96",
+      "selected_sha256": "9aaff8fc4d2e7fc91a18319307e46504748464b59bf7fcb4f0bf8fb42cd30b96",
+      "manifest_sha256": "9aaff8fc4d2e7fc91a18319307e46504748464b59bf7fcb4f0bf8fb42cd30b96"
+    }
+  },
+  "local_external_model_adapter": "Separate LocalQwen38Transport still uses httpx; not a GENOS internal model path.",
+  "production_pointer_changed": false,
+  "genos_accessed": false
+}
