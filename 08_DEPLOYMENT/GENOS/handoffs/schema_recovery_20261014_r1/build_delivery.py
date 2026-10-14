@@ -43,7 +43,18 @@ def main():
             if key not in cache:
                 if n in baseline:
                     assert n in before,n
-                    try:raw=old.transform(before[n],baseline[n],target,n)
+                    # Some sealed field inventories intentionally omit duplicate raw tracebacks.
+                    # Keep that presentation choice; only add the typed contract diagnostic.
+                    if n.endswith('/investigation_diagnostics.py'):
+                        anchor="    if getattr(exc, 'diagnostics', None) is not None:"
+                        addition="    from .output_contract import diagnostics\n    out['output_contract'] = diagnostics(exc)\n"
+                        assert before[n].decode().count(anchor)==1
+                        assert 'output_contract' not in before[n].decode()
+                        raw=before[n].decode().replace(anchor,addition+anchor).encode()
+                        ast.parse(raw);cache[key]=raw
+                    try:
+                        if n.endswith('/investigation_diagnostics.py'):pass
+                        else:raw=old.transform(before[n],baseline[n],target,n)
                     except ValueError:
                         with tempfile.TemporaryDirectory() as td:
                             paths=[Path(td)/x for x in ('field','base','candidate')]
